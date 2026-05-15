@@ -118,4 +118,16 @@ download endpoint before building the dense index:
 export HF_ENDPOINT=https://hf-mirror.com
 ```
 
+Evaluate BM25, dense, and hybrid RRF retrieval against the seed diagnostic set:
+
+```powershell
+python scripts/evaluate_retrieval.py --retrievers bm25,dense,hybrid --device cuda
+```
+
+The seed evaluation set is intentionally small and diagnostic:
+
+```text
+eval_sets/sec_tech_10k_seed.jsonl
+```
+
 Generated SEC cache and indexes are intentionally excluded from Git.

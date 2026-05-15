@@ -329,3 +329,40 @@ Follow-up and safety notes:
   in-process retrieval runner/API before larger query sets.
 - This is retrieval feasibility evidence only. It does not yet prove final
   retrieval quality because there is no gold query set or evaluation metric.
+
+## 2026-05-15 Seed Retrieval Evaluation
+
+Problem or prompt:
+对当前 BM25/dense 召回效果做一个可重复的评估，而不是只看两条手写 smoke query。
+
+Reasoning and decision:
+先建立一个小型 seed gold set：30 条公司/年份明确的问题，每条标注 1-2 个
+current EvidenceObject IDs。这个集合用于诊断召回链路，不作为最终人工 benchmark。
+同时比较两种检索场景：ticker/year 已由上游 agent 识别后的 filtered 检索，以及
+不带 metadata filter 的全库检索。
+
+Work completed:
+- Added `eval_sets/sec_tech_10k_seed.jsonl`.
+- Added retrieval evaluation utilities and `scripts/evaluate_retrieval.py`.
+- Added hybrid RRF retriever and `scripts/search_hybrid.py`.
+- Ran cloud evaluation for BM25, dense MiniLM, and hybrid RRF.
+- Saved detailed JSON reports under `reports/retrieval_eval/`.
+
+Result and evidence:
+- Filtered mode, using ticker/year from the gold query:
+  - BM25: MRR 0.568, Hit@5 0.833, Hit@10 0.867, Mean Recall@10 0.833.
+  - Dense MiniLM: MRR 0.628, Hit@5 0.833, Hit@10 0.867, Mean Recall@10 0.833.
+  - Hybrid RRF: MRR 0.701, Hit@5 0.867, Hit@10 1.000, Mean Recall@10 0.950.
+- Unfiltered full-corpus mode:
+  - BM25: MRR 0.325, Hit@5 0.600, Hit@10 0.733, Mean Recall@10 0.700.
+  - Dense MiniLM: MRR 0.462, Hit@5 0.633, Hit@10 0.733, Mean Recall@10 0.683.
+  - Hybrid RRF: MRR 0.521, Hit@5 0.700, Hit@10 0.733, Mean Recall@10 0.667.
+- Main report:
+  `reports/retrieval_eval/sec_tech_10k_seed_eval_summary.md`.
+
+Follow-up and safety notes:
+- Hybrid RRF is the best current baseline when ticker/year filters are applied.
+- Full-corpus retrieval is materially weaker, so company/year parsing and
+  query routing should be treated as first-class retrieval components.
+- The seed set must be human-reviewed and expanded before making final quality
+  claims.

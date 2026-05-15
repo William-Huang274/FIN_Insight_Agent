@@ -1,6 +1,7 @@
 data/raw_private/
 data/processed_private/
 data/indexes/
+data/logs/*.jsonl
 *.pdf
 *.html
 *.htm
@@ -13,3 +14,4 @@ __pycache__/
 .venv/
 venv/
 *.pyc
+!data/logs/.gitkeep

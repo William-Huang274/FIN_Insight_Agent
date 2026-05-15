@@ -1,0 +1,8 @@
+beautifulsoup4>=4.12.3
+lxml>=5.2.0
+numpy>=1.26.0
+pydantic>=2.7.0
+PyYAML>=6.0.1
+rank-bm25>=0.2.2
+requests>=2.32.0
+tqdm>=4.66.0

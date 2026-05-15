@@ -74,6 +74,10 @@ block fields, including `block_id`, `block_heading`, `block_type`,
 `block_part_index`, and `block_part_count`, so long sections can be split
 without losing their business context.
 
+HTML tables are serialized into atomic `TABLE_START` / `TABLE_END` blocks before
+chunking. The chunker does not split inside a table block, and table-bearing
+chunks are marked with `contains_table=true`.
+
 Small parser smoke test:
 
 ```powershell

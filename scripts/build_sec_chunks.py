@@ -91,6 +91,7 @@ def main() -> None:
         split_block_ids = {
             chunk.block_id for chunk in chunks if chunk.block_part_count > 1
         }
+        table_block_ids = {chunk.block_id for chunk in chunks if chunk.contains_table}
         per_filing_summary.append(
             {
                 "ticker": record.ticker,
@@ -98,6 +99,7 @@ def main() -> None:
                 "chunks": len(chunks),
                 "blocks": len(block_ids),
                 "split_blocks": len(split_block_ids),
+                "table_blocks": len(table_block_ids),
                 "sections": dict(sorted(section_counts.items())),
             }
         )
@@ -112,6 +114,7 @@ def main() -> None:
     split_block_ids = {
         chunk.block_id for chunk in all_chunks if chunk.block_part_count > 1
     }
+    table_block_ids = {chunk.block_id for chunk in all_chunks if chunk.contains_table}
 
     summary = {
         "input_records": len(records),
@@ -119,6 +122,7 @@ def main() -> None:
         "chunks": len(all_chunks),
         "blocks": len(block_ids),
         "split_blocks": len(split_block_ids),
+        "table_blocks": len(table_block_ids),
         "section_chunk_counts": dict(sorted(aggregate.items())),
         "filings": per_filing_summary,
     }

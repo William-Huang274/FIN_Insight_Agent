@@ -86,6 +86,7 @@ class SecFilingChunk(BaseModel):
     block_char_end: int
     block_part_index: int
     block_part_count: int
+    contains_table: bool = False
     text: str = Field(min_length=1)
     char_start: int
     char_end: int
@@ -174,7 +175,7 @@ def build_semantic_blocks(
                 section=section.section,
                 block_index=len(blocks) + 1,
                 block_heading=boundary["heading"],
-                block_type=_block_type_for_item(section.item_code),
+                block_type=_block_type_for_item(section.item_code, block_text),
                 char_start=block_paragraphs[0][1],
                 char_end=block_paragraphs[-1][2],
                 text=block_text,
@@ -258,6 +259,7 @@ def read_chunks_jsonl(path: str | Path) -> list[SecFilingChunk]:
 
 def _find_section_candidates(text: str) -> list[dict]:
     lines = _line_offsets(text)
+    table_start_by_line_idx = _table_start_by_line_index(lines)
     candidates: list[dict] = []
     for line_idx, (start, line) in enumerate(lines):
         item_code = _parse_line_item_code(line)
@@ -268,11 +270,12 @@ def _find_section_candidates(text: str) -> list[dict]:
         compact = _compact_text(combined)
         definition = SECTION_DEFINITION_BY_ITEM[item_code]
         if any(marker in compact[:260] for marker in definition.markers):
+            candidate_start = table_start_by_line_idx.get(line_idx, start)
             candidates.append(
                 {
                     "item_code": item_code,
                     "section": definition.canonical_title,
-                    "start": start,
+                    "start": candidate_start,
                     "line_idx": line_idx,
                 }
             )
@@ -328,27 +331,66 @@ def _line_offsets(text: str) -> list[tuple[int, str]]:
     return offsets
 
 
+def _table_start_by_line_index(lines: list[tuple[int, str]]) -> dict[int, int]:
+    table_start_by_line_idx: dict[int, int] = {}
+    current_table_start: int | None = None
+    for idx, (start, line) in enumerate(lines):
+        if _is_table_start(line):
+            current_table_start = start
+        if current_table_start is not None:
+            table_start_by_line_idx[idx] = current_table_start
+        if _is_table_end(line):
+            current_table_start = None
+    return table_start_by_line_idx
+
+
 def _section_paragraphs(section: SecFilingSection) -> list[tuple[str, int, int, int]]:
-    paragraphs: list[tuple[str, int, int, int]] = []
-    for match in re.finditer(r"[^\n]+", section.text):
-        paragraph = match.group(0).strip()
-        if not paragraph:
-            continue
-        start = section.char_start + match.start()
-        end = section.char_start + match.end()
-        paragraphs.append((paragraph, start, end, _word_count(paragraph)))
-    return paragraphs
+    return _paragraphs_with_table_blocks(section.text, section.char_start)
 
 
 def _block_paragraphs(block: SecSemanticBlock) -> list[tuple[str, int, int, int]]:
+    return _paragraphs_with_table_blocks(block.text, block.char_start)
+
+
+def _paragraphs_with_table_blocks(
+    text: str, base_char_start: int
+) -> list[tuple[str, int, int, int]]:
     paragraphs: list[tuple[str, int, int, int]] = []
-    for match in re.finditer(r"[^\n]+", block.text):
-        paragraph = match.group(0).strip()
+    lines: list[tuple[str, int, int]] = []
+    pos = 0
+    for raw_line in text.splitlines(keepends=True):
+        stripped = raw_line.strip()
+        if stripped:
+            start = base_char_start + pos + raw_line.find(stripped)
+            end = start + len(stripped)
+            lines.append((stripped, start, end))
+        pos += len(raw_line)
+
+    idx = 0
+    while idx < len(lines):
+        line, start, end = lines[idx]
+        if _is_table_start(line):
+            table_lines = [line]
+            table_start = start
+            table_end = end
+            idx += 1
+            while idx < len(lines):
+                next_line, _, next_end = lines[idx]
+                table_lines.append(next_line)
+                table_end = next_end
+                idx += 1
+                if _is_table_end(next_line):
+                    break
+            paragraph = "\n".join(table_lines).strip()
+        else:
+            paragraph = line
+            table_start = start
+            table_end = end
+            idx += 1
+
         if not paragraph:
             continue
-        start = block.char_start + match.start()
-        end = block.char_start + match.end()
-        paragraphs.append((paragraph, start, end, _word_count(paragraph)))
+        paragraphs.append((paragraph, table_start, table_end, _word_count(paragraph)))
     return paragraphs
 
 
@@ -358,6 +400,8 @@ def _find_semantic_heading_indices(
     heading_indices: list[int] = []
     for idx, paragraph in enumerate(paragraphs):
         line = paragraph[0]
+        if _contains_table_block(line):
+            continue
         prev_line = paragraphs[idx - 1][0] if idx > 0 else None
         next_line = paragraphs[idx + 1][0] if idx + 1 < len(paragraphs) else None
         if _is_semantic_heading(
@@ -435,6 +479,8 @@ def _is_semantic_heading(
 
 
 def _is_heading_candidate_shape(line: str) -> bool:
+    if _contains_table_block(line):
+        return False
     if len(line) < 3 or len(line) > 220:
         return False
     if _word_count(line) > 28:
@@ -581,7 +627,11 @@ def _merge_tiny_blocks(
     return renumbered
 
 
-def _block_type_for_item(item_code: str) -> str:
+def _block_type_for_item(item_code: str, block_text: str = "") -> str:
+    if _contains_table_block(block_text):
+        if item_code == "8":
+            return "financial_table_or_note"
+        return "table"
     return {
         "1": "business_subsection",
         "1A": "risk_factor",
@@ -605,6 +655,18 @@ def _uppercase_ratio(line: str) -> float:
 
 def _currency_or_number_token_count(line: str) -> int:
     return len(re.findall(r"[$]?\(?-?\d[\d,]*(?:\.\d+)?%?\)?", line))
+
+
+def _is_table_start(line: str) -> bool:
+    return line.startswith("[TABLE_START")
+
+
+def _is_table_end(line: str) -> bool:
+    return line == "[TABLE_END]"
+
+
+def _contains_table_block(text: str) -> bool:
+    return "[TABLE_START" in text and "[TABLE_END]" in text
 
 
 def _append_chunk(

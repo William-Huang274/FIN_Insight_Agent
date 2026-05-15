@@ -231,3 +231,43 @@ Follow-up and safety notes:
   cross-reference or a concise business heading.
 - EvidenceObject builder should map `block_heading` to `subsection` and carry
   the block/part fields in metadata.
+
+## 2026-05-15 Table-Aware Chunking Update
+
+Problem or prompt:
+Prevent financial tables from being flattened into ordinary paragraph lines and
+split apart during SEC chunking.
+
+Reasoning and decision:
+Serialize each HTML `<table>` into an atomic text block before section and
+chunk processing. Use `TABLE_START` and `TABLE_END` markers so the chunker can
+keep the table header, units, period labels, and rows together. If a block with
+tables still exceeds the target retrieval size, split only between paragraphs
+or complete table blocks, never inside a table marker pair.
+
+Work completed:
+- Updated `extract_sec_html_text` to replace HTML tables with serialized table
+  blocks.
+- Updated paragraph extraction to treat `TABLE_START ... TABLE_END` as one
+  indivisible paragraph.
+- Added `contains_table` to `SecFilingChunk`.
+- Updated chunk summaries to report `table_blocks`.
+- Adjusted section boundary detection so Item headings embedded in one-row SEC
+  heading tables start at `TABLE_START`, avoiding broken table markers.
+
+Result and evidence:
+- Full tech-universe chunk build produced:
+  - 2,842 chunks
+  - 1,894 semantic blocks
+  - 485 split blocks
+  - 598 table-bearing blocks
+- Table-bearing chunk count: 982.
+- Table marker integrity check found 0 chunks with unmatched `TABLE_START` or
+  `TABLE_END`.
+- Maximum table-bearing chunk length: 1,765 words.
+
+Follow-up and safety notes:
+- Table blocks are preserved for retrieval and citation, but this is not yet a
+  full structured table extraction layer. Later numeric extraction should add
+  a dedicated table object/table index rather than relying only on text
+  serialization.

@@ -28,6 +28,11 @@ def extract_sec_html_text(html_path: str | Path) -> str:
         tag.decompose()
     for tag in soup.find_all(style=_is_hidden_style):
         tag.decompose()
+    for table_index, table in enumerate(list(soup.find_all("table")), start=1):
+        table_text = _serialize_html_table(table, table_index)
+        replacement = soup.new_tag("div")
+        replacement.string = f"\n{table_text}\n"
+        table.replace_with(replacement)
 
     raw_text = soup.get_text("\n")
     return _normalize_extracted_text(raw_text)
@@ -98,6 +103,7 @@ def build_chunks_for_filing(
                         block_char_end=block.char_end,
                         block_part_index=block_part_index,
                         block_part_count=block_part_count,
+                        contains_table=_contains_table_block(chunk_text),
                         text=chunk_text,
                         char_start=char_start,
                         char_end=char_end,
@@ -139,6 +145,32 @@ def _is_hidden_style(style: str | None) -> bool:
         return False
     normalized = style.replace(" ", "").lower()
     return "display:none" in normalized or "visibility:hidden" in normalized
+
+
+def _serialize_html_table(table, table_index: int) -> str:
+    rows: list[list[str]] = []
+    for row in table.find_all("tr"):
+        cells = row.find_all(["th", "td"], recursive=False)
+        if not cells:
+            cells = row.find_all(["th", "td"])
+        values = [_clean_cell_text(cell.get_text(" ", strip=True)) for cell in cells]
+        values = [value for value in values if value]
+        if values:
+            rows.append(values)
+
+    lines = [f"[TABLE_START id={table_index} rows={len(rows)}]"]
+    for row in rows:
+        lines.append(" | ".join(row))
+    lines.append("[TABLE_END]")
+    return "\n".join(lines)
+
+
+def _clean_cell_text(value: str) -> str:
+    return re.sub(r"\s+", " ", value.replace("\xa0", " ")).strip()
+
+
+def _contains_table_block(text: str) -> bool:
+    return "[TABLE_START" in text and "[TABLE_END]" in text
 
 
 def _build_chunk_id(

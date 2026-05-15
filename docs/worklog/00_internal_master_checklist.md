@@ -16,6 +16,7 @@
 - [x] Add section-aware SEC filing parser.
 - [x] Add SEC filing chunk builder script.
 - [x] Upgrade SEC chunking to semantic block-aware chunks with part labels.
+- [x] Add table-aware chunking to preserve HTML table boundaries.
 - [ ] Add BM25 index and retriever.
 - [ ] Add dense index and retriever.
 - [ ] Add hybrid RRF retriever.

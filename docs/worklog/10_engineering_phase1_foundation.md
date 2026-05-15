@@ -100,3 +100,34 @@ Follow-up and safety notes:
 - Raw SEC HTML and metadata remain ignored under `data/raw_private/`.
 - The earlier JPM banking smoke-test cache under the old layout is harmless
   local generated data and is not part of the tech universe benchmark.
+
+## 2026-05-15 SEC Manifest Builder
+
+Problem or prompt:
+Create a stable traversal layer so downstream parsers do not need to scan the
+raw SEC folder structure directly.
+
+Reasoning and decision:
+Build a JSONL manifest from metadata sidecars using the order
+`year -> category_slug -> ticker -> *.metadata.json -> matching HTML`. The
+manifest is filtered by `configs/sec_tech_universe.yaml` by default so the JPM
+smoke-test filing does not enter the tech benchmark.
+
+Work completed:
+- Added `src/connectors/sec_filing_manifest.py`.
+- Added `scripts/build_sec_manifest.py`.
+- Generated
+  `data/processed_private/manifests/sec_tech_10k_manifest.jsonl`.
+
+Result and evidence:
+- Manifest record count: 30.
+- Years: 2023, 2024, 2025.
+- Tickers: `AAPL`, `ADBE`, `AMD`, `AMZN`, `GOOGL`, `META`, `MSFT`, `NVDA`,
+  `PANW`, and `SNOW`.
+- Filter smoke test for 2024 `MSFT` and `NVDA` returned 2 records.
+
+Follow-up and safety notes:
+- The manifest is generated under `data/processed_private/`, which is ignored
+  by Git.
+- The next parser should read this manifest rather than globbing raw HTML
+  files directly.

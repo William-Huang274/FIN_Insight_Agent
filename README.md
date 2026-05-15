@@ -51,4 +51,16 @@ data/raw_private/sec/2024/mega-cap_software_cloud/MSFT/10-K.html
 data/raw_private/sec/2024/ai_gpu_semiconductor/NVDA/10-K.html
 ```
 
+Build a manifest for downstream parsers:
+
+```powershell
+python scripts/build_sec_manifest.py
+```
+
+Default manifest output:
+
+```text
+data/processed_private/manifests/sec_tech_10k_manifest.jsonl
+```
+
 Generated SEC cache and indexes are intentionally excluded from Git.

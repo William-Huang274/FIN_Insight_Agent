@@ -1,0 +1,118 @@
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+import yaml
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = REPO_ROOT / "src"
+sys.path.insert(0, str(SRC_ROOT))
+
+from connectors import (  # noqa: E402
+    collect_sec_filing_manifest,
+    write_sec_filing_manifest_jsonl,
+)
+
+
+def parse_csv(raw: str | None, upper: bool = False) -> list[str] | None:
+    if not raw:
+        return None
+    values = [value.strip() for value in raw.split(",") if value.strip()]
+    if upper:
+        values = [value.upper() for value in values]
+    return values
+
+
+def parse_years(raw: str | None) -> list[int] | None:
+    if not raw:
+        return None
+    return [int(value.strip()) for value in raw.split(",") if value.strip()]
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Build a JSONL manifest from cached SEC filing metadata."
+    )
+    parser.add_argument(
+        "--config",
+        default="configs/sec_tech_universe.yaml",
+        help="Optional universe config used as default years/tickers/categories.",
+    )
+    parser.add_argument(
+        "--root",
+        default="data/raw_private/sec",
+        help="SEC raw cache root.",
+    )
+    parser.add_argument(
+        "--output",
+        default="data/processed_private/manifests/sec_tech_10k_manifest.jsonl",
+        help="Output manifest JSONL path.",
+    )
+    parser.add_argument("--years", help="Optional comma-separated fiscal years.")
+    parser.add_argument("--tickers", help="Optional comma-separated ticker filter.")
+    parser.add_argument(
+        "--categories",
+        help="Optional comma-separated category_slug filter.",
+    )
+    parser.add_argument(
+        "--form-types",
+        default="10-K",
+        help="Comma-separated form type filter.",
+    )
+    parser.add_argument(
+        "--allow-missing-html",
+        action="store_true",
+        help="Include metadata records even if the corresponding HTML is missing.",
+    )
+    return parser.parse_args()
+
+
+def load_config_defaults(path: Path | None) -> dict[str, list[str] | list[int]]:
+    if path is None or not path.exists():
+        return {}
+    with path.open("r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+    companies = config.get("companies", [])
+    return {
+        "years": [int(year) for year in config.get("years", [])],
+        "tickers": [company["ticker"].upper() for company in companies],
+        "categories": [company["category_slug"] for company in companies],
+        "form_types": [config.get("form_type", "10-K")],
+    }
+
+
+def main() -> None:
+    args = parse_args()
+    config_defaults = load_config_defaults(REPO_ROOT / args.config if args.config else None)
+    years = parse_years(args.years) or config_defaults.get("years")
+    tickers = parse_csv(args.tickers, upper=True) or config_defaults.get("tickers")
+    categories = parse_csv(args.categories) or config_defaults.get("categories")
+    form_types = parse_csv(args.form_types, upper=True) or config_defaults.get("form_types")
+
+    records = collect_sec_filing_manifest(
+        root=REPO_ROOT / args.root,
+        years=years,
+        tickers=tickers,
+        categories=categories,
+        form_types=form_types,
+        require_html=not args.allow_missing_html,
+    )
+    output_path = REPO_ROOT / args.output
+    write_sec_filing_manifest_jsonl(records, output_path)
+
+    summary = {
+        "output": str(output_path),
+        "records": len(records),
+        "years": sorted({record.fiscal_year for record in records}),
+        "tickers": sorted({record.ticker for record in records}),
+        "categories": sorted({record.category_slug for record in records}),
+    }
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()

@@ -456,3 +456,46 @@ Follow-up and safety notes:
 - Larger `max_seq_length=8192` is not needed for the current corpus because no
   current evidence text exceeds 4,096 Qwen tokens.
 - No credentials or private connection details were written to repo logs.
+
+## 2026-05-15 Complex Finance Query Retrieval Probe
+
+Problem or prompt:
+用户要求围绕当前 10 家公司的常见金融问题和更深的金融分析问题直接查询 top5
+evidence，用人工检查判断当前 retrieval 指标是否真正有价值。
+
+Reasoning and decision:
+使用云端已构建的 Qwen3-Embedding-0.6B seq8192 batch16 dense index 作为主检索器，
+并同时检查 equal-weight BM25+dense RRF。每个问题同时保存 filtered top5 和
+unfiltered top5：filtered 模拟上游 agent 已识别 ticker/year 的场景，unfiltered
+用于暴露错公司/错年份漂移。
+
+Work completed:
+- 设计并执行 12 条复杂查询：
+  - 常见金融问题：云收入、iPhone/Services、数据中心收入、AWS margin/capex、
+    广告收入/AI capex、广告/cloud/capex。
+  - 深度金融问题：ARR/RPO、consumption/RPO/customer metrics、platformization
+    /billings/RPO、segment mix/margin/inventory、supply-chain/customer risk、
+    liquidity/leases/commitments。
+- 保存 raw top5 JSON 和人工检查报告。
+- 建立对应 model run ledger。
+
+Result and evidence:
+- Probe runtime: 19.209 seconds after model load.
+- Unfiltered dense top5 中，目标 ticker/year 命中 41/60；说明 metadata filter
+  仍然是必须组件，不是可选优化。
+- Filtered top5 的人工判断：
+  - Good: MSFT cloud/AI margin, AAPL iPhone/Services margin, SNOW
+    consumption/RPO/customer metrics, AMD segment/margin/inventory, and NVIDIA
+    supply/customer risk with hybrid.
+  - Partial: AMZN AWS/capex, META ads/AI capex, GOOGL ads/cloud/capex, ADBE
+    ARR/RPO, AMZN liquidity/leases/commitments.
+  - Weak: PANW platformization/billings/RPO.
+- Raw report:
+  `reports/retrieval_eval/sec_tech_10k_complex_query_probe.md`.
+
+Follow-up and safety notes:
+- 当前 seed metrics 有价值，但只能说明已知 evidence IDs 的排序，不足以证明
+  深度金融问题的多 facet 覆盖。
+- 下一步应把这类复杂问题转成 reviewed qrels，并实现 query decomposition 或
+  facet-aware retrieval；在此之前不建议直接上 reranker。
+- No credentials or private connection details were written to repo logs.

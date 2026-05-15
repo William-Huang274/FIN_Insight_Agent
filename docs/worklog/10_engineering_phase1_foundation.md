@@ -180,3 +180,54 @@ Follow-up and safety notes:
   that short Item 8 record instead of inventing a different citation boundary.
 - Next step should convert chunks into `EvidenceObject` records and then build
   the BM25 retrieval baseline.
+
+## 2026-05-15 Semantic Block-Aware Chunking Update
+
+Problem or prompt:
+Avoid arbitrary chunk splitting that cuts financial business language apart.
+When long same-section content must be split, preserve the larger business
+block and section context on every part.
+
+Reasoning and decision:
+Use SEC Item sections as hard boundaries, then identify semantic blocks inside
+each Item from business headings, risk headings, MD&A headings, market-risk
+headings, and financial statement/note headings. Split only when a semantic
+block exceeds the target retrieval size, and label every split with the same
+`block_id`, `block_heading`, `block_type`, `block_part_index`, and
+`block_part_count`.
+
+Work completed:
+- Added `SecSemanticBlock`.
+- Extended `SecFilingChunk` with parent block and part fields.
+- Updated chunk IDs from section-only chunks to block-aware IDs such as
+  `MSFT_2024_10K_ITEM7_BLOCK_0008_PART_01_OF_02`.
+- Tightened Item 8 heading rules so normal table rows are less likely to
+  become standalone semantic blocks.
+
+Result and evidence:
+- Smoke test for 2024 `MSFT` and `NVDA` produced:
+  - 174 chunks
+  - 133 semantic blocks
+  - 22 split blocks
+- Full tech-universe run produced:
+  - 2,919 chunks
+  - 2,088 semantic blocks
+  - 460 split blocks
+- Full run section chunk counts:
+  - Item 1: 420
+  - Item 1A: 989
+  - Item 7: 570
+  - Item 7A: 51
+  - Item 8: 889
+- Full run word count summary:
+  - Minimum: 32
+  - Median: 448
+  - Maximum: 1,683
+
+Follow-up and safety notes:
+- Chunk length is now a secondary constraint after semantic boundary
+  preservation.
+- Some short chunks remain by design where the original filing uses a short
+  cross-reference or a concise business heading.
+- EvidenceObject builder should map `block_heading` to `subsection` and carry
+  the block/part fields in metadata.

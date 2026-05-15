@@ -11,7 +11,8 @@ from connectors import SecFilingManifestRecord
 from .section_splitter import (
     DEFAULT_OUTPUT_ITEMS,
     SecFilingChunk,
-    chunk_section,
+    build_semantic_blocks,
+    chunk_semantic_block,
     find_10k_sections,
 )
 
@@ -44,53 +45,73 @@ def build_chunks_for_filing(
     chunks: list[SecFilingChunk] = []
 
     for section in sections:
-        section_chunks = chunk_section(
-            section,
-            target_words=target_words,
-            overlap_words=overlap_words,
-            min_words=min_words,
-        )
-        for chunk_text, char_start, char_end in section_chunks:
-            chunk_index = len(
-                [
-                    chunk
-                    for chunk in chunks
-                    if chunk.item_code == section.item_code
-                ]
-            ) + 1
-            chunks.append(
-                SecFilingChunk(
-                    chunk_id=_build_chunk_id(
+        blocks = build_semantic_blocks(section)
+        for block in blocks:
+            block_id = _build_block_id(
+                ticker=manifest_record.ticker,
+                fiscal_year=manifest_record.fiscal_year,
+                source_type=manifest_record.source_type,
+                item_code=section.item_code,
+                block_index=block.block_index,
+            )
+            block_chunks = chunk_semantic_block(
+                block,
+                target_words=target_words,
+                overlap_words=overlap_words,
+                min_words=min_words,
+            )
+            block_part_count = len(block_chunks)
+            for block_part_index, (chunk_text, char_start, char_end) in enumerate(
+                block_chunks,
+                start=1,
+            ):
+                chunk_index = len(
+                    [
+                        chunk
+                        for chunk in chunks
+                        if chunk.item_code == section.item_code
+                    ]
+                ) + 1
+                chunk_id = _build_chunk_id(
+                    block_id=block_id,
+                    block_part_index=block_part_index,
+                    block_part_count=block_part_count,
+                )
+                chunks.append(
+                    SecFilingChunk(
+                        chunk_id=chunk_id,
                         ticker=manifest_record.ticker,
+                        company=manifest_record.company,
                         fiscal_year=manifest_record.fiscal_year,
+                        category=manifest_record.category,
+                        category_slug=manifest_record.category_slug,
                         source_type=manifest_record.source_type,
+                        form_type=manifest_record.form_type,
+                        section=section.section,
                         item_code=section.item_code,
                         chunk_index=chunk_index,
-                    ),
-                    ticker=manifest_record.ticker,
-                    company=manifest_record.company,
-                    fiscal_year=manifest_record.fiscal_year,
-                    category=manifest_record.category,
-                    category_slug=manifest_record.category_slug,
-                    source_type=manifest_record.source_type,
-                    form_type=manifest_record.form_type,
-                    section=section.section,
-                    item_code=section.item_code,
-                    chunk_index=chunk_index,
-                    text=chunk_text,
-                    char_start=char_start,
-                    char_end=char_end,
-                    source_url=manifest_record.filing_url,
-                    local_path=manifest_record.html_path,
-                    metadata={
-                        "accession_number": manifest_record.accession_number,
-                        "filing_date": manifest_record.filing_date,
-                        "report_date": manifest_record.report_date,
-                        "primary_document": manifest_record.primary_document,
-                        "metadata_path": manifest_record.metadata_path,
-                    },
+                        block_id=block_id,
+                        block_index=block.block_index,
+                        block_heading=block.block_heading,
+                        block_type=block.block_type,
+                        block_char_start=block.char_start,
+                        block_char_end=block.char_end,
+                        block_part_index=block_part_index,
+                        block_part_count=block_part_count,
+                        text=chunk_text,
+                        char_start=char_start,
+                        char_end=char_end,
+                        source_url=manifest_record.filing_url,
+                        local_path=manifest_record.html_path,
+                        metadata={
+                            "accession_number": manifest_record.accession_number,
+                            "filing_date": manifest_record.filing_date,
+                            "report_date": manifest_record.report_date,
+                            "primary_document": manifest_record.primary_document,
+                            "metadata_path": manifest_record.metadata_path,
+                        },
+                    )
                 )
-            )
     return chunks
 
 
@@ -121,12 +142,22 @@ def _is_hidden_style(style: str | None) -> bool:
 
 
 def _build_chunk_id(
+    block_id: str,
+    block_part_index: int,
+    block_part_count: int,
+) -> str:
+    if block_part_count <= 1:
+        return f"{block_id}_CHUNK_0001"
+    return f"{block_id}_PART_{block_part_index:02d}_OF_{block_part_count:02d}"
+
+
+def _build_block_id(
     ticker: str,
     fiscal_year: int,
     source_type: str,
     item_code: str,
-    chunk_index: int,
+    block_index: int,
 ) -> str:
     source_key = re.sub(r"[^A-Z0-9]", "", source_type.upper())
     item_key = f"ITEM{item_code.upper()}"
-    return f"{ticker.upper()}_{fiscal_year}_{source_key}_{item_key}_CHUNK_{chunk_index:04d}"
+    return f"{ticker.upper()}_{fiscal_year}_{source_key}_{item_key}_BLOCK_{block_index:04d}"

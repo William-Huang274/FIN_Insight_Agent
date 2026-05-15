@@ -55,6 +55,17 @@ class SecFilingSection(BaseModel):
     text: str
 
 
+class SecSemanticBlock(BaseModel):
+    item_code: str
+    section: str
+    block_index: int
+    block_heading: str
+    block_type: str
+    char_start: int
+    char_end: int
+    text: str = Field(min_length=1)
+
+
 class SecFilingChunk(BaseModel):
     chunk_id: str
     ticker: str
@@ -67,6 +78,14 @@ class SecFilingChunk(BaseModel):
     section: str
     item_code: str
     chunk_index: int
+    block_id: str
+    block_index: int
+    block_heading: str
+    block_type: str
+    block_char_start: int
+    block_char_end: int
+    block_part_index: int
+    block_part_count: int
     text: str = Field(min_length=1)
     char_start: int
     char_end: int
@@ -123,13 +142,55 @@ def find_10k_sections(
     return sections
 
 
-def chunk_section(
+def build_semantic_blocks(
     section: SecFilingSection,
+) -> list[SecSemanticBlock]:
+    paragraphs = _section_paragraphs(section)
+    if not paragraphs:
+        return []
+
+    heading_indices = _find_semantic_heading_indices(paragraphs, section.item_code)
+    boundaries = _build_block_boundaries(paragraphs, heading_indices, section)
+    blocks: list[SecSemanticBlock] = []
+
+    for block_index, boundary in enumerate(boundaries, start=1):
+        start_idx = boundary["start_idx"]
+        end_idx = (
+            boundaries[block_index]["start_idx"]
+            if block_index < len(boundaries)
+            else len(paragraphs)
+        )
+        block_paragraphs = paragraphs[start_idx:end_idx]
+        if not block_paragraphs:
+            continue
+
+        block_text = "\n".join(paragraph[0] for paragraph in block_paragraphs).strip()
+        if not block_text:
+            continue
+
+        blocks.append(
+            SecSemanticBlock(
+                item_code=section.item_code,
+                section=section.section,
+                block_index=len(blocks) + 1,
+                block_heading=boundary["heading"],
+                block_type=_block_type_for_item(section.item_code),
+                char_start=block_paragraphs[0][1],
+                char_end=block_paragraphs[-1][2],
+                text=block_text,
+            )
+        )
+
+    return _merge_tiny_blocks(blocks)
+
+
+def chunk_semantic_block(
+    block: SecSemanticBlock,
     target_words: int = 900,
     overlap_words: int = 150,
     min_words: int = 80,
 ) -> list[tuple[str, int, int]]:
-    paragraphs = _section_paragraphs(section)
+    paragraphs = _block_paragraphs(block)
     if not paragraphs:
         return []
 
@@ -147,6 +208,25 @@ def chunk_section(
 
     if current:
         _append_chunk(chunks, current, min_words=min_words, force=not chunks)
+    return chunks
+
+
+def chunk_section(
+    section: SecFilingSection,
+    target_words: int = 900,
+    overlap_words: int = 150,
+    min_words: int = 80,
+) -> list[tuple[str, int, int]]:
+    chunks: list[tuple[str, int, int]] = []
+    for block in build_semantic_blocks(section):
+        chunks.extend(
+            chunk_semantic_block(
+                block,
+                target_words=target_words,
+                overlap_words=overlap_words,
+                min_words=min_words,
+            )
+        )
     return chunks
 
 
@@ -258,6 +338,273 @@ def _section_paragraphs(section: SecFilingSection) -> list[tuple[str, int, int, 
         end = section.char_start + match.end()
         paragraphs.append((paragraph, start, end, _word_count(paragraph)))
     return paragraphs
+
+
+def _block_paragraphs(block: SecSemanticBlock) -> list[tuple[str, int, int, int]]:
+    paragraphs: list[tuple[str, int, int, int]] = []
+    for match in re.finditer(r"[^\n]+", block.text):
+        paragraph = match.group(0).strip()
+        if not paragraph:
+            continue
+        start = block.char_start + match.start()
+        end = block.char_start + match.end()
+        paragraphs.append((paragraph, start, end, _word_count(paragraph)))
+    return paragraphs
+
+
+def _find_semantic_heading_indices(
+    paragraphs: list[tuple[str, int, int, int]], item_code: str
+) -> list[int]:
+    heading_indices: list[int] = []
+    for idx, paragraph in enumerate(paragraphs):
+        line = paragraph[0]
+        prev_line = paragraphs[idx - 1][0] if idx > 0 else None
+        next_line = paragraphs[idx + 1][0] if idx + 1 < len(paragraphs) else None
+        if _is_semantic_heading(
+            line=line,
+            item_code=item_code,
+            prev_line=prev_line,
+            next_line=next_line,
+        ):
+            heading_indices.append(idx)
+    return heading_indices
+
+
+def _build_block_boundaries(
+    paragraphs: list[tuple[str, int, int, int]],
+    heading_indices: list[int],
+    section: SecFilingSection,
+) -> list[dict]:
+    if not heading_indices:
+        return [{"start_idx": 0, "heading": section.section}]
+
+    boundaries: list[dict] = []
+    first_heading_idx = heading_indices[0]
+    if paragraphs[first_heading_idx][1] - section.char_start <= 600:
+        boundaries.append(
+            {
+                "start_idx": 0,
+                "heading": _clean_heading(paragraphs[first_heading_idx][0]),
+            }
+        )
+        remaining_heading_indices = heading_indices[1:]
+    else:
+        boundaries.append({"start_idx": 0, "heading": section.section})
+        remaining_heading_indices = heading_indices
+
+    for heading_idx in remaining_heading_indices:
+        heading = _clean_heading(paragraphs[heading_idx][0])
+        if boundaries and heading_idx <= boundaries[-1]["start_idx"]:
+            continue
+        boundaries.append({"start_idx": heading_idx, "heading": heading})
+
+    return boundaries
+
+
+def _is_semantic_heading(
+    line: str,
+    item_code: str,
+    prev_line: str | None,
+    next_line: str | None,
+) -> bool:
+    stripped = line.strip()
+    if not _is_heading_candidate_shape(stripped):
+        return False
+    if _is_noise_heading(stripped):
+        return False
+    if _parse_line_item_code(stripped):
+        return False
+    if next_line is not None and _is_noise_heading(next_line):
+        return False
+
+    word_count = _word_count(stripped)
+    upper_ratio = _uppercase_ratio(stripped)
+    has_lower = any(char.islower() for char in stripped)
+
+    if item_code == "1A" and _looks_like_risk_heading(stripped, next_line):
+        return True
+    if item_code == "8":
+        return _looks_like_financial_heading(stripped)
+    if upper_ratio >= 0.72 and word_count <= 14:
+        return True
+    if has_lower and word_count <= 9 and _looks_like_title_heading(stripped, next_line):
+        return True
+    if stripped.endswith(":") and word_count <= 12:
+        return True
+    return False
+
+
+def _is_heading_candidate_shape(line: str) -> bool:
+    if len(line) < 3 or len(line) > 220:
+        return False
+    if _word_count(line) > 28:
+        return False
+    if re.fullmatch(r"[\d\s.,$()%/-]+", line):
+        return False
+    if line.startswith(("•", "-", "*")):
+        return False
+    if line.count("|") >= 2:
+        return False
+    return True
+
+
+def _is_noise_heading(line: str) -> bool:
+    compact = _compact_text(line)
+    if compact in {"tableofcontents", "parti", "partii", "partiii", "partiv"}:
+        return True
+    if compact in {"form10k", "annualreport", "index"}:
+        return True
+    if compact in {
+        "inc",
+        "usiness",
+        "kfactors",
+        "mentsandsupplementarydata",
+        "financialconditionandresultsofoperations",
+    }:
+        return True
+    if re.fullmatch(r"\d+", line.strip()):
+        return True
+    if re.search(r"\bpage\b\s*\d+", line, flags=re.IGNORECASE):
+        return True
+    if re.search(r"\b(year ended|in millions|in thousands|except per share)\b", line, flags=re.IGNORECASE):
+        return True
+    if _currency_or_number_token_count(line) >= 3:
+        return True
+    return False
+
+
+def _looks_like_risk_heading(line: str, next_line: str | None) -> bool:
+    if next_line is None or _word_count(next_line) < 12:
+        return False
+    compact = _compact_text(line)
+    if len(compact) < 24:
+        return False
+    risk_terms = (
+        "risk",
+        "may",
+        "could",
+        "adverse",
+        "failure",
+        "fail",
+        "unable",
+        "depend",
+        "subject",
+        "uncertain",
+        "competition",
+        "regulation",
+        "security",
+        "privacy",
+        "supply",
+        "litigation",
+        "intellectualproperty",
+        "macroeconomic",
+    )
+    lowered = line.lower()
+    return any(term in lowered or term in compact for term in risk_terms)
+
+
+def _looks_like_financial_heading(line: str) -> bool:
+    return bool(
+        re.search(
+            r"^\s*(note\s+\d+|consolidated\s+statements?|balance\s+sheets?|income\s+statements?|cash\s+flows?|stockholders|liabilities\s+and\s+stockholders)",
+            line,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _looks_like_title_heading(line: str, next_line: str | None) -> bool:
+    if next_line is None or _word_count(next_line) < 10:
+        return False
+    if line.endswith("."):
+        return False
+    title_terms = (
+        "overview",
+        "general",
+        "revenue",
+        "expenses",
+        "income",
+        "margin",
+        "segment",
+        "liquidity",
+        "capital",
+        "cash",
+        "cloud",
+        "gaming",
+        "services",
+        "products",
+        "operations",
+        "customers",
+        "competition",
+        "research",
+        "development",
+        "critical",
+    )
+    lowered = line.lower()
+    return any(term in lowered for term in title_terms)
+
+
+def _merge_tiny_blocks(
+    blocks: list[SecSemanticBlock],
+    min_words: int = 50,
+) -> list[SecSemanticBlock]:
+    if not blocks:
+        return []
+    if len(blocks) > 1 and _word_count(blocks[0].text) < min_words:
+        first = blocks[0]
+        second = blocks[1]
+        blocks = [
+            second.model_copy(
+                update={
+                    "char_start": first.char_start,
+                    "text": f"{first.text}\n{second.text}",
+                }
+            )
+        ] + blocks[2:]
+
+    merged: list[SecSemanticBlock] = []
+    for block in blocks:
+        if merged and _word_count(block.text) < min_words:
+            previous = merged[-1]
+            merged[-1] = previous.model_copy(
+                update={
+                    "char_end": block.char_end,
+                    "text": f"{previous.text}\n{block.text}",
+                }
+            )
+        else:
+            merged.append(block)
+
+    renumbered: list[SecSemanticBlock] = []
+    for idx, block in enumerate(merged, start=1):
+        renumbered.append(block.model_copy(update={"block_index": idx}))
+    return renumbered
+
+
+def _block_type_for_item(item_code: str) -> str:
+    return {
+        "1": "business_subsection",
+        "1A": "risk_factor",
+        "7": "mdna_subsection",
+        "7A": "market_risk_subsection",
+        "8": "financial_statement_or_note",
+    }.get(item_code, "section_subsection")
+
+
+def _clean_heading(line: str) -> str:
+    heading = re.sub(r"\s+", " ", line).strip()
+    return heading.rstrip(":")
+
+
+def _uppercase_ratio(line: str) -> float:
+    letters = [char for char in line if char.isalpha()]
+    if not letters:
+        return 0.0
+    return sum(1 for char in letters if char.isupper()) / len(letters)
+
+
+def _currency_or_number_token_count(line: str) -> int:
+    return len(re.findall(r"[$]?\(?-?\d[\d,]*(?:\.\d+)?%?\)?", line))
 
 
 def _append_chunk(

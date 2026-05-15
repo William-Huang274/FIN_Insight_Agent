@@ -87,11 +87,17 @@ def main() -> None:
         all_chunks.extend(chunks)
 
         section_counts = Counter(chunk.item_code for chunk in chunks)
+        block_ids = {chunk.block_id for chunk in chunks}
+        split_block_ids = {
+            chunk.block_id for chunk in chunks if chunk.block_part_count > 1
+        }
         per_filing_summary.append(
             {
                 "ticker": record.ticker,
                 "fiscal_year": record.fiscal_year,
                 "chunks": len(chunks),
+                "blocks": len(block_ids),
+                "split_blocks": len(split_block_ids),
                 "sections": dict(sorted(section_counts.items())),
             }
         )
@@ -102,10 +108,17 @@ def main() -> None:
     for chunk in all_chunks:
         aggregate[chunk.item_code] += 1
 
+    block_ids = {chunk.block_id for chunk in all_chunks}
+    split_block_ids = {
+        chunk.block_id for chunk in all_chunks if chunk.block_part_count > 1
+    }
+
     summary = {
         "input_records": len(records),
         "output": str(REPO_ROOT / args.output),
         "chunks": len(all_chunks),
+        "blocks": len(block_ids),
+        "split_blocks": len(split_block_ids),
         "section_chunk_counts": dict(sorted(aggregate.items())),
         "filings": per_filing_summary,
     }

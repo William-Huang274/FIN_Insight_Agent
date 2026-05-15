@@ -69,6 +69,11 @@ Build section-aware chunks from the manifest:
 python scripts/build_sec_chunks.py
 ```
 
+Chunks are built with semantic boundaries first. Each chunk keeps its parent
+block fields, including `block_id`, `block_heading`, `block_type`,
+`block_part_index`, and `block_part_count`, so long sections can be split
+without losing their business context.
+
 Small parser smoke test:
 
 ```powershell

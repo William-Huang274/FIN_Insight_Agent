@@ -53,10 +53,43 @@
   - Dense Qwen: MRR 0.634, Hit@5 0.833, Hit@10 0.900, Mean Recall@10 0.867.
   - Hybrid RRF + Qwen: MRR 0.519, Hit@5 0.767, Hit@10 0.867, Mean Recall@10 0.833.
 
+## Seq8192 And Batch Probe
+- Token-length analysis over `evidence_search_text` for 2,842 records:
+  - Minimum: 85.
+  - Median: 791.
+  - Mean: 856.1.
+  - Maximum: 3,536.
+  - P95: 1,742.
+  - P99: 2,335.
+  - Records over 4,096 tokens: 0.
+  - Records over 8,192 tokens: 0.
+- Rebuild A: seq8192, batch 32.
+  - Output: `data/indexes/dense/sec_tech_10k_qwen3_embedding_0_6b_seq8192_bs32/`.
+  - Elapsed: 105.67 seconds.
+  - Peak CUDA allocated/reserved: 16.700 / 18.557 GB.
+  - Index size: 25.123 MB.
+- Rebuild B: seq8192, batch 16.
+  - Output: `data/indexes/dense/sec_tech_10k_qwen3_embedding_0_6b_seq8192_bs16/`.
+  - Elapsed: 96.76 seconds.
+  - Peak CUDA allocated/reserved: 8.984 / 11.150 GB.
+  - Index size: 25.123 MB.
+- Seq8192 batch 16 evaluation:
+  - Filtered dense Qwen: MRR 0.716, Hit@5 0.900, Hit@10 0.933,
+    Mean Recall@10 0.917, Mean Precision@10 0.117, Mean nDCG@10 0.747.
+  - Filtered hybrid RRF + Qwen: MRR 0.649, Hit@5 0.867, Hit@10 0.967,
+    Mean Recall@10 0.950, Mean Precision@10 0.123, Mean nDCG@10 0.711.
+  - Unfiltered dense Qwen: MRR 0.652, Hit@5 0.867, Hit@10 0.900,
+    Mean Recall@10 0.867, Mean Precision@10 0.110, Mean nDCG@10 0.689.
+  - Unfiltered hybrid RRF + Qwen: MRR 0.541, Hit@5 0.767, Hit@10 0.867,
+    Mean Recall@10 0.833, Mean Precision@10 0.107, Mean nDCG@10 0.595.
+
 ## Interpretation
 - Qwen3-Embedding-0.6B is a clear improvement over MiniLM for dense retrieval on the current seed set.
 - The biggest lift is in unfiltered full-corpus retrieval, where dense Qwen Hit@10 improved from MiniLM's 0.733 to 0.900.
 - Equal-weight RRF with BM25 is not automatically better once the dense model is stronger. The next hybrid step should test weighted RRF or dense-first retrieval with BM25 as a fallback.
+- Opening max sequence length from 4,096 to 8,192 is safe on the RTX 4090, but
+  current evidence records do not need it because no record exceeds 4,096
+  tokens. Larger batch size was not faster on this corpus.
 
 ## Safety Notes
 - The user asked for Qwen3.5; no dedicated Qwen3.5 embedding model was used. This run used the official ModelScope Qwen3 embedding model.

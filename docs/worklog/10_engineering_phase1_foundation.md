@@ -406,3 +406,53 @@ Follow-up and safety notes:
 - Simple equal-weight RRF can hurt Qwen's ranking, so the next hybrid iteration
   should test weighted RRF or dense-first retrieval with BM25 fallback.
 - Model weights remain ignored under `data/models_private/`.
+
+## 2026-05-15 Retrieval Metric And Qwen Batch Probe
+
+Problem or prompt:
+用户要求除了 Hit 以外补充 nDCG 和 Precision，检查是否召回不相关内容、真值是否
+排在前面，并说明当前真值是怎么判断的。同时建议利用 4090 显存调大 Qwen 的
+max length 和 batch size。
+
+Reasoning and decision:
+把 `precision@k` 和 `nDCG@k` 加到 evaluation code 和 JSON 报告里。对当前 seed
+set 明确标注：这些真值是从当前 EvidenceObject store 中由 agent 选出的直接回答
+问题的 evidence IDs，不是穷尽人工 relevance labels。因此 precision 只能解释为
+对 seed qrels 的命中比例，不能直接等同于真实不相关率。
+
+Work completed:
+- Updated retrieval evaluation to emit per-query and summary
+  `precision@k` / `nDCG@k`.
+- Re-ran MiniLM BM25/dense/hybrid evaluation on cloud.
+- Rebuilt Qwen dense index with `max_seq_length=8192` and batch sizes 16/32.
+- Re-ran Qwen seq8192 dense and hybrid evaluation.
+- Pulled updated eval reports and runtime JSON back to the local repo.
+
+Result and evidence:
+- Current Qwen tokenizer length over 2,842 EvidenceObjects:
+  - Median: 791 tokens.
+  - P95: 1,742 tokens.
+  - Maximum: 3,536 tokens.
+  - Over 4,096 tokens: 0.
+- Filtered mode:
+  - Dense Qwen seq8192: MRR 0.716, Hit@10 0.933, Precision@10 0.117,
+    nDCG@10 0.747.
+  - Hybrid RRF + Qwen seq8192: MRR 0.649, Hit@10 0.967,
+    Precision@10 0.123, nDCG@10 0.711.
+- Unfiltered mode:
+  - Dense Qwen seq8192: MRR 0.652, Hit@10 0.900, Precision@10 0.110,
+    nDCG@10 0.689.
+  - Hybrid RRF + Qwen seq8192: MRR 0.541, Hit@10 0.867,
+    Precision@10 0.107, nDCG@10 0.595.
+- Runtime:
+  - seq8192 batch 16: 96.76 seconds, 8.984 GB peak CUDA allocated.
+  - seq8192 batch 32: 105.67 seconds, 16.700 GB peak CUDA allocated.
+
+Follow-up and safety notes:
+- Qwen dense should remain the main dense baseline for now.
+- Equal-weight RRF can increase Hit@10 while hurting MRR/nDCG, so the next
+  retrieval experiment should test weighted RRF or dense-first retrieval with
+  BM25 fallback.
+- Larger `max_seq_length=8192` is not needed for the current corpus because no
+  current evidence text exceeds 4,096 Qwen tokens.
+- No credentials or private connection details were written to repo logs.

@@ -23,8 +23,10 @@
 - [x] Add hybrid RRF retriever.
 - [x] Add seed gold evidence query set.
 - [x] Add retrieval evaluation script.
+- [x] Add precision and nDCG metrics to retrieval evaluation.
 - [ ] Add an in-process retrieval runner/API to avoid reloading the dense model
       for every query.
+- [ ] Test weighted RRF or dense-first retrieval with BM25 fallback.
 - [ ] Promote seed gold set to reviewed gold set with human-checked labels.
 
 ## Phase 1 Smoke Tests
@@ -36,3 +38,4 @@
 - [x] Dense retrieval smoke test on cloud GPU using MiniLM embeddings.
 - [x] Seed retrieval evaluation for BM25, dense, and hybrid RRF.
 - [x] ModelScope Qwen3-Embedding-0.6B dense retrieval evaluation.
+- [x] Qwen seq8192 batch-size probe on cloud RTX 4090.

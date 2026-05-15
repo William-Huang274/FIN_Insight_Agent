@@ -20,6 +20,9 @@
 - Gold set: `eval_sets/sec_tech_10k_seed.jsonl`.
 - Query count: 30.
 - Label source: agent-curated seed labels from the current EvidenceObject store.
+- Label protocol: each seed query has a known ticker/year and 1-2 current
+  EvidenceObject IDs that directly answer the question. Labels are not
+  exhaustive corpus relevance judgments.
 - Evidence store: `data/processed_private/evidence_objects/sec_tech_10k_evidence.jsonl`.
 - Evidence count: 2,842.
 - Indexes:
@@ -34,13 +37,28 @@
 
 ## Results
 - Ticker/year filtered mode:
-  - BM25: MRR 0.568, Hit@5 0.833, Hit@10 0.867, Mean Recall@10 0.833.
-  - Dense MiniLM: MRR 0.628, Hit@5 0.833, Hit@10 0.867, Mean Recall@10 0.833.
-  - Hybrid RRF: MRR 0.701, Hit@5 0.867, Hit@10 1.000, Mean Recall@10 0.950.
+  - BM25: MRR 0.568, Hit@5 0.833, Hit@10 0.867, Mean Recall@10 0.833,
+    Mean Precision@10 0.110, Mean nDCG@10 0.623.
+  - Dense MiniLM: MRR 0.628, Hit@5 0.833, Hit@10 0.867,
+    Mean Recall@10 0.833, Mean Precision@10 0.110, Mean nDCG@10 0.657.
+  - Hybrid RRF: MRR 0.701, Hit@5 0.867, Hit@10 1.000,
+    Mean Recall@10 0.950, Mean Precision@10 0.123, Mean nDCG@10 0.741.
 - Unfiltered full-corpus mode:
-  - BM25: MRR 0.325, Hit@5 0.600, Hit@10 0.733, Mean Recall@10 0.700.
-  - Dense MiniLM: MRR 0.462, Hit@5 0.633, Hit@10 0.733, Mean Recall@10 0.683.
-  - Hybrid RRF: MRR 0.521, Hit@5 0.700, Hit@10 0.733, Mean Recall@10 0.667.
+  - BM25: MRR 0.325, Hit@5 0.600, Hit@10 0.733, Mean Recall@10 0.700,
+    Mean Precision@10 0.090, Mean nDCG@10 0.405.
+  - Dense MiniLM: MRR 0.462, Hit@5 0.633, Hit@10 0.733,
+    Mean Recall@10 0.683, Mean Precision@10 0.087, Mean nDCG@10 0.483.
+  - Hybrid RRF: MRR 0.521, Hit@5 0.700, Hit@10 0.733,
+    Mean Recall@10 0.667, Mean Precision@10 0.087, Mean nDCG@10 0.533.
+
+## Metric Interpretation
+- `precision@k` is qrel precision against the seed labels. Since labels are not
+  exhaustive, non-matched retrieved chunks are not automatically irrelevant.
+- `nDCG@k` measures whether the known truth IDs are ranked early. This is more
+  useful than Hit@10 for deciding whether retrieval output will be comfortable
+  for an answer synthesizer or reranker.
+- The current reports include `top_hit` metadata and text previews for manual
+  error inspection.
 
 ## Experiment Governance
 - Hypothesis: hybrid RRF should improve seed retrieval robustness over BM25 or dense alone.

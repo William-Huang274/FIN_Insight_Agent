@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from statistics import mean
@@ -98,10 +99,14 @@ def score_query(
         "reciprocal_rank": 1.0 / best_rank if best_rank else 0.0,
     }
     for k in k_values:
-        top_k = set(ranked_ids[:k])
+        top_k_ids = ranked_ids[:k]
+        top_k = set(top_k_ids)
         matched = sorted(relevant & top_k)
+        relevant_count = len(matched)
         score[f"hit@{k}"] = bool(matched)
-        score[f"recall@{k}"] = len(matched) / len(relevant)
+        score[f"precision@{k}"] = relevant_count / k
+        score[f"recall@{k}"] = relevant_count / len(relevant)
+        score[f"ndcg@{k}"] = ndcg_at_k(top_k_ids, relevant, k)
         score[f"matched@{k}"] = matched
     if results:
         score["top_hit"] = {
@@ -121,6 +126,19 @@ def score_query(
     return score
 
 
+def ndcg_at_k(ranked_ids: list[str], relevant: set[str], k: int) -> float:
+    dcg = 0.0
+    for rank, evidence_id in enumerate(ranked_ids[:k], start=1):
+        if evidence_id in relevant:
+            dcg += 1.0 / math.log2(rank + 1)
+
+    ideal_relevant_count = min(len(relevant), k)
+    if ideal_relevant_count == 0:
+        return 0.0
+    idcg = sum(1.0 / math.log2(rank + 1) for rank in range(1, ideal_relevant_count + 1))
+    return dcg / idcg
+
+
 def summarize_scores(
     per_query: list[dict[str, Any]],
     k_values: tuple[int, ...],
@@ -137,6 +155,12 @@ def summarize_scores(
         )
         summary[f"mean_recall@{k}"] = (
             mean(item[f"recall@{k}"] for item in per_query) if per_query else 0.0
+        )
+        summary[f"mean_precision@{k}"] = (
+            mean(item[f"precision@{k}"] for item in per_query) if per_query else 0.0
+        )
+        summary[f"mean_ndcg@{k}"] = (
+            mean(item[f"ndcg@{k}"] for item in per_query) if per_query else 0.0
         )
     misses = [item["query_id"] for item in per_query if not item[f"hit@{max(k_values)}"]]
     return {"summary": summary, "misses_at_max_k": misses, "per_query": per_query}

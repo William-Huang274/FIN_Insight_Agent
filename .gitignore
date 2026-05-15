@@ -1,0 +1,15 @@
+data/raw_private/
+data/processed_private/
+data/indexes/
+*.pdf
+*.html
+*.htm
+*.parquet
+*.sqlite
+.env
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+*.pyc

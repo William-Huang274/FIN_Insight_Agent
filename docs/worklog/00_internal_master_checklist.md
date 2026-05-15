@@ -40,3 +40,7 @@
 - [x] ModelScope Qwen3-Embedding-0.6B dense retrieval evaluation.
 - [x] Qwen seq8192 batch-size probe on cloud RTX 4090.
 - [x] Complex finance query top5 retrieval probe.
+- [x] Complex multi-facet retrieval qrels and facet-aware evaluation.
+- [ ] Human-review and expand complex multi-facet qrels.
+- [ ] Add automatic query decomposition for complex finance questions.
+- [ ] Test dense-first retrieval with controlled BM25 fallback or reranking.

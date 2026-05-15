@@ -499,3 +499,53 @@ Follow-up and safety notes:
 - 下一步应把这类复杂问题转成 reviewed qrels，并实现 query decomposition 或
   facet-aware retrieval；在此之前不建议直接上 reranker。
 - No credentials or private connection details were written to repo logs.
+
+## 2026-05-15 Complex Multi-Facet Retrieval Evaluation
+
+Problem or prompt:
+用户要求把复杂问题做成多 facet qrels，并实现 query decomposition 或 facet-aware
+retrieval，检查相对 dense/hybrid baseline 的效果。
+
+Reasoning and decision:
+先把上一轮 12 条复杂金融问题拆成可评估的 qrels：每条复杂 query 包含 3 个
+facet，每个 facet 标注当前 EvidenceObject store 中可直接支撑该 facet 的 evidence
+IDs。为了验证 decomposition 本身和融合策略的差异，同时测试 naive RRF 和
+facet-first round-robin 两种融合方式。
+
+Work completed:
+- Added `eval_sets/sec_tech_10k_complex_multifacet.jsonl` with 12 complex
+  queries and 36 facet labels.
+- Added multi-facet evaluation metrics:
+  `facet_coverage@k`, `all_facets_hit@k`, and `facet_mrr`.
+- Added facet-aware retrieval utilities with RRF and round-robin fusion.
+- Added `scripts/evaluate_multifacet_retrieval.py`.
+- Ran local BM25 diagnostic and cloud Qwen filtered/unfiltered evaluations.
+
+Result and evidence:
+- Filtered Qwen results:
+  - `dense`: nDCG@10 0.766, FacetCov@10 0.833, AllFacets@10 0.583.
+  - `hybrid`: nDCG@10 0.794, FacetCov@10 0.889, AllFacets@10 0.667.
+  - `facet_dense RRF`: nDCG@10 0.689, FacetCov@10 0.806,
+    AllFacets@10 0.417.
+  - `facet_hybrid RRF`: nDCG@10 0.679, FacetCov@10 0.778,
+    AllFacets@10 0.417.
+  - `facet_dense_rr`: nDCG@10 0.852, FacetCov@10 0.889,
+    AllFacets@10 0.667.
+  - `facet_hybrid_rr`: nDCG@10 0.853, FacetCov@10 0.917,
+    AllFacets@10 0.750.
+- Unfiltered Qwen results:
+  - `dense`: nDCG@10 0.674, FacetCov@10 0.806, AllFacets@10 0.500.
+  - `facet_dense_rr`: nDCG@10 0.743, FacetCov@5 0.750,
+    AllFacets@10 0.417.
+- Summary report:
+  `reports/retrieval_eval/sec_tech_10k_complex_multifacet_eval_summary.md`.
+
+Follow-up and safety notes:
+- 当前 multi-facet qrels 是 agent-authored diagnostic labels，不是最终人工
+  reviewed benchmark；precision 只能解释为命中当前 gold IDs 的比例。
+- Query decomposition 有价值，但 naive RRF 会把 facet query 的候选冲散；
+  facet-first round-robin 更符合多维金融问题的证据覆盖目标。
+- Ticker/year routing 仍然是必须组件。全库无过滤检索下，dense baseline 更稳，
+  hybrid RRF 噪声更明显。
+- 下一步应做人审 multi-facet qrels，再测试 automatic decomposition、dense-first
+  BM25 fallback 或 reranker。

@@ -17,13 +17,19 @@
 - [x] Add SEC filing chunk builder script.
 - [x] Upgrade SEC chunking to semantic block-aware chunks with part labels.
 - [x] Add table-aware chunking to preserve HTML table boundaries.
-- [ ] Add BM25 index and retriever.
-- [ ] Add dense index and retriever.
+- [x] Add SEC chunk to EvidenceObject conversion.
+- [x] Add BM25 index and retriever.
+- [x] Add dense index and retriever.
 - [ ] Add hybrid RRF retriever.
 - [ ] Add gold evidence query set.
 - [ ] Add retrieval evaluation.
+- [ ] Add an in-process retrieval runner/API to avoid reloading the dense model
+      for every query.
 
 ## Phase 1 Smoke Tests
 
 - [x] SEC 10-K download smoke test for JPM 2024.
 - [x] EvidenceObject JSONL read/write smoke test.
+- [x] SEC tech EvidenceObject build smoke test.
+- [x] BM25 retrieval smoke test on MSFT/NVDA queries.
+- [x] Dense retrieval smoke test on cloud GPU using MiniLM embeddings.

@@ -271,3 +271,61 @@ Follow-up and safety notes:
   full structured table extraction layer. Later numeric extraction should add
   a dedicated table object/table index rather than relying only on text
   serialization.
+
+## 2026-05-15 Evidence Store, BM25, And Dense Retrieval Smoke
+
+Problem or prompt:
+在 table-aware chunk 基础上，先把 chunks 统一转换成 EvidenceObject，然后试跑
+BM25 和 dense retrieval，验证当前 10-K 语义切分是否能支持基本检索。
+
+Reasoning and decision:
+先不进入 hybrid/RRF 或 agent workflow。用 EvidenceObject 作为唯一检索输入，
+这样 BM25、dense、后续 reranker 和 citation 都共享同一套 schema。dense 先用
+`sentence-transformers/all-MiniLM-L6-v2` 做小模型烟测，目标是验证端到端可行性，
+不是最终金融检索模型选择。
+
+Work completed:
+- Added SEC chunk to EvidenceObject conversion.
+- Added BM25 index builder and retriever.
+- Added dense numpy cosine index builder and retriever.
+- Added CLI smoke scripts for building and querying both retrieval baselines.
+- Synced code and processed SEC data to the cloud workspace
+  `/root/autodl-tmp/FIN_Insight_Agent`.
+
+Result and evidence:
+- `python -m compileall src scripts` passed locally and on cloud.
+- EvidenceObject build:
+  - Input chunks: 2,842.
+  - EvidenceObjects: 2,842.
+  - Table-bearing evidence: 982.
+  - Evidence types:
+    `business_description` 423, `risk_disclosure` 989,
+    `management_discussion` 524, `market_risk_disclosure` 47,
+    `financial_statement_or_note` 859.
+- BM25 smoke:
+  - MSFT 2024 cloud revenue query top hit:
+    `MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001`, MD&A highlights, with
+    Microsoft Cloud revenue growth.
+  - NVDA 2025 supply/customer concentration query top hits included
+    `NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001` and
+    `NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_01_OF_03`.
+- Dense smoke on cloud:
+  - GPU: NVIDIA GeForce RTX 4090.
+  - Model: `sentence-transformers/all-MiniLM-L6-v2`.
+  - Embedding dim: 384.
+  - Records: 2,842.
+  - Dense index size: about 18.2 MB.
+  - Build elapsed: about 51.5 seconds after using the Hugging Face mirror
+    endpoint.
+  - MSFT 2024 cloud revenue dense top hit matched the BM25 top hit.
+  - NVDA 2025 dense top hits included customer concentration and supply-chain
+    risk evidence.
+
+Follow-up and safety notes:
+- Direct `huggingface.co` access from the cloud host timed out; setting
+  `HF_ENDPOINT=https://hf-mirror.com` made model download work.
+- Current dense CLI reloads the embedding model per query, so query scripts are
+  acceptable for smoke tests but not for interactive evaluation. Add an
+  in-process retrieval runner/API before larger query sets.
+- This is retrieval feasibility evidence only. It does not yet prove final
+  retrieval quality because there is no gold query set or evaluation metric.

@@ -5,4 +5,5 @@ pydantic>=2.7.0
 PyYAML>=6.0.1
 rank-bm25>=0.2.2
 requests>=2.32.0
+sentence-transformers>=3.0.0
 tqdm>=4.66.0

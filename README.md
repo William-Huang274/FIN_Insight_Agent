@@ -12,7 +12,8 @@ Phase 1 focuses on retrieval quality before building a full agent:
 ## Current Scope
 
 This repository currently contains the Phase 1 skeleton, the
-`EvidenceObject` schema, and a SEC EDGAR connector smoke test.
+`EvidenceObject` schema, a SEC EDGAR connector, section/table-aware SEC
+chunking, and first BM25/dense retrieval smoke baselines.
 
 ## Setup
 
@@ -82,6 +83,39 @@ Small parser smoke test:
 
 ```powershell
 python scripts/build_sec_chunks.py --years 2024 --tickers MSFT,NVDA --output data/processed_private/chunks/sec_tech_10k_chunks_smoke.jsonl
+```
+
+Convert chunks into the unified EvidenceObject store:
+
+```powershell
+python scripts/build_evidence_store.py
+```
+
+Default evidence output:
+
+```text
+data/processed_private/evidence_objects/sec_tech_10k_evidence.jsonl
+```
+
+Build and query the BM25 baseline:
+
+```powershell
+python scripts/build_bm25_index.py
+python scripts/search_bm25.py "What drove Microsoft cloud revenue growth in 2024?" --ticker MSFT --year 2024 --top-k 5
+```
+
+Build and query the dense embedding baseline:
+
+```powershell
+python scripts/build_dense_index.py --device cuda --batch-size 128
+python scripts/search_dense.py "What drove Microsoft cloud revenue growth in 2024?" --ticker MSFT --year 2024 --top-k 5 --device cuda
+```
+
+On cloud machines that cannot reach `huggingface.co` directly, set the model
+download endpoint before building the dense index:
+
+```bash
+export HF_ENDPOINT=https://hf-mirror.com
 ```
 
 Generated SEC cache and indexes are intentionally excluded from Git.

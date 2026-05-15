@@ -36,3 +36,33 @@ Result and evidence:
 Follow-up and safety notes:
 - Generated private data remains under `data/raw_private/`,
   `data/processed_private/`, and `data/indexes/`, which are ignored by Git.
+
+## 2026-05-15 SEC Candidate Universe Scan
+
+Problem or prompt:
+Assess whether using 2023-2025 SEC filings for Nasdaq technology companies is
+feasible for the next data collection step.
+
+Reasoning and decision:
+Use SEC 10-K metadata availability as the first feasibility gate before
+downloading many large HTML filings. Interpret 2023-2025 by fiscal/report year,
+not filing calendar year, because calendar-year companies file FY2025 reports
+in early 2026.
+
+Work completed:
+- Scanned 10-K metadata for 22 tickers across fiscal years 2023, 2024, and
+  2025: `MSFT`, `AAPL`, `NVDA`, `GOOGL`, `META`, `AMZN`, `AVGO`, `ADBE`,
+  `CSCO`, `INTC`, `AMD`, `QCOM`, `TXN`, `AMAT`, `MU`, `INTU`, `ADP`, `PANW`,
+  `CRWD`, `MDB`, `SNOW`, and `TEAM`.
+
+Result and evidence:
+- All 66 ticker-year combinations were found in SEC metadata.
+- The scan used metadata lookup only and did not download all filing HTMLs.
+- This supports a Phase 1 data scope of a small, sector-diverse Nasdaq tech
+  sample before scaling to the full candidate list.
+
+Follow-up and safety notes:
+- Recommended first download batch: 8-10 companies across software, internet,
+  semiconductors, hardware, cloud, and cybersecurity.
+- Keep the first retrieval benchmark smaller than the full 22-company universe
+  until parsing and evaluation are stable.

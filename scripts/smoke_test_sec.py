@@ -30,6 +30,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--ticker", default="JPM", help="Ticker symbol, e.g. JPM.")
     parser.add_argument("--year", type=int, default=2024, help="Fiscal year by reportDate.")
     parser.add_argument("--form-type", default="10-K", help="SEC form type.")
+    parser.add_argument("--category", help="Optional business category.")
+    parser.add_argument("--category-slug", help="Optional filesystem-safe category slug.")
     parser.add_argument(
         "--cache-dir",
         default=os.getenv("SEC_CACHE_DIR", "data/raw_private/sec"),
@@ -61,6 +63,8 @@ def main() -> None:
         ticker=args.ticker,
         form_type=args.form_type,
         year=args.year,
+        category=args.category,
+        category_slug=args.category_slug,
     )
     print(json.dumps(result, indent=2, ensure_ascii=False))
 

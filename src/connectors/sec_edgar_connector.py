@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -128,28 +129,46 @@ class SecEdgarConnector:
         filing_meta: dict[str, Any],
         ticker: str,
         year: int | None = None,
+        category: str | None = None,
+        category_slug: str | None = None,
     ) -> dict[str, Any]:
         fiscal_year = int(year or filing_meta["fiscal_year"])
         ticker_upper = ticker.upper()
         form_type = filing_meta["form_type"]
-        output_dir = self.cache_dir / ticker_upper / str(fiscal_year)
+        resolved_category = category or "uncategorized"
+        resolved_category_slug = self._slugify_category(
+            category_slug or resolved_category
+        )
+        output_dir = (
+            self.cache_dir
+            / str(fiscal_year)
+            / resolved_category_slug
+            / ticker_upper
+        )
         html_path = output_dir / f"{form_type}.html"
         metadata_path = output_dir / f"{form_type}.metadata.json"
 
         result = {
             **filing_meta,
             "ticker": ticker_upper,
+            "category": resolved_category,
+            "category_slug": resolved_category_slug,
+            "cache_layout": "year/category/ticker",
             "local_html_path": str(html_path),
             "local_metadata_path": str(metadata_path),
         }
 
         if html_path.exists() and metadata_path.exists():
+            cached_metadata = self._read_json(metadata_path)
+            result = {**cached_metadata, **result}
             result["cache_status"] = "hit"
+            self._write_json(metadata_path, result)
             self._append_log(
                 {
                     "event": "sec_download_cache_hit",
                     "ticker": ticker_upper,
                     "year": fiscal_year,
+                    "category_slug": resolved_category_slug,
                     "form_type": form_type,
                     "local_html_path": str(html_path),
                 }
@@ -168,6 +187,7 @@ class SecEdgarConnector:
                 "event": "sec_download_success",
                 "ticker": ticker_upper,
                 "year": fiscal_year,
+                "category_slug": resolved_category_slug,
                 "form_type": form_type,
                 "filing_url": filing_meta["filing_url"],
                 "local_html_path": str(html_path),
@@ -180,10 +200,18 @@ class SecEdgarConnector:
         ticker: str,
         form_type: str = "10-K",
         year: int = 2024,
+        category: str | None = None,
+        category_slug: str | None = None,
     ) -> dict[str, Any]:
         cik = self.get_cik(ticker)
         filing_meta = self.find_filing(cik=cik, form_type=form_type, year=year)
-        return self.download_filing_html(filing_meta, ticker=ticker, year=year)
+        return self.download_filing_html(
+            filing_meta,
+            ticker=ticker,
+            year=year,
+            category=category,
+            category_slug=category_slug,
+        )
 
     def _get_company_tickers(self) -> dict[str, Any]:
         cache_path = self.cache_dir / "_reference" / "company_tickers.json"
@@ -292,6 +320,14 @@ class SecEdgarConnector:
     @staticmethod
     def _normalize_cik(cik: str | int) -> str:
         return f"{int(cik):010d}"
+
+    @staticmethod
+    def _slugify_category(category: str) -> str:
+        slug = category.strip().lower()
+        slug = slug.replace("&", "and")
+        slug = re.sub(r"[^a-z0-9-]+", "_", slug)
+        slug = re.sub(r"_+", "_", slug).strip("_")
+        return slug or "uncategorized"
 
     @classmethod
     def _build_filing_url(

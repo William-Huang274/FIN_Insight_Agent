@@ -9,6 +9,9 @@
 - [x] Add EvidenceObject schema and JSONL helpers.
 - [x] Add SEC EDGAR connector with recent and historical submission lookup.
 - [x] Add SEC smoke test script.
+- [x] Add first Nasdaq tech universe config.
+- [x] Add batch SEC filing download script.
+- [x] Download first tech universe 10-K HTML cache.
 - [ ] Add section-aware SEC filing parser.
 - [ ] Add BM25 index and retriever.
 - [ ] Add dense index and retriever.

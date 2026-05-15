@@ -34,8 +34,21 @@ python scripts/smoke_test_sec.py --ticker JPM --year 2024
 Expected local cache:
 
 ```text
-data/raw_private/sec/JPM/2024/10-K.html
-data/raw_private/sec/JPM/2024/10-K.metadata.json
+data/raw_private/sec/2024/uncategorized/JPM/10-K.html
+data/raw_private/sec/2024/uncategorized/JPM/10-K.metadata.json
+```
+
+Batch download the first technology universe:
+
+```powershell
+python scripts/download_sec_filings.py --config configs/sec_tech_universe.yaml
+```
+
+The technology universe cache is organized by fiscal year, category, and ticker:
+
+```text
+data/raw_private/sec/2024/mega-cap_software_cloud/MSFT/10-K.html
+data/raw_private/sec/2024/ai_gpu_semiconductor/NVDA/10-K.html
 ```
 
 Generated SEC cache and indexes are intentionally excluded from Git.

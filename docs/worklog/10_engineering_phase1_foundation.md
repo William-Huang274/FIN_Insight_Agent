@@ -66,3 +66,37 @@ Follow-up and safety notes:
   semiconductors, hardware, cloud, and cybersecurity.
 - Keep the first retrieval benchmark smaller than the full 22-company universe
   until parsing and evaluation are stable.
+
+## 2026-05-15 SEC Cache Layout And First Tech Batch
+
+Problem or prompt:
+Organize downloaded SEC filings by fiscal year and business category so the
+raw data layout supports later category-level retrieval comparisons.
+
+Reasoning and decision:
+Use `data/raw_private/sec/<year>/<category_slug>/<ticker>/<form>.html`.
+Keep the human-readable category in filing metadata, and use filesystem-safe
+slugs for folder names because category labels may contain `/`.
+
+Work completed:
+- Added `configs/sec_tech_universe.yaml` with the first 10-company technology
+  universe:
+  `MSFT`, `AAPL`, `NVDA`, `GOOGL`, `META`, `AMZN`, `AMD`, `ADBE`, `PANW`,
+  and `SNOW`.
+- Updated the SEC connector cache layout to `year/category/ticker`.
+- Added `scripts/download_sec_filings.py` for configured batch downloads.
+- Downloaded 30 filings: 10 companies across fiscal years 2023, 2024, and
+  2025.
+
+Result and evidence:
+- Tech universe raw HTML count: 30.
+- Tech universe raw HTML size: 87,434,064 bytes.
+- Example path:
+  `data/raw_private/sec/2024/mega-cap_software_cloud/MSFT/10-K.html`.
+- JPM smoke test also works with the new default uncategorized layout:
+  `data/raw_private/sec/2024/uncategorized/JPM/10-K.html`.
+
+Follow-up and safety notes:
+- Raw SEC HTML and metadata remain ignored under `data/raw_private/`.
+- The earlier JPM banking smoke-test cache under the old layout is harmless
+  local generated data and is not part of the tech universe benchmark.

@@ -1,0 +1,37 @@
+form_type: "10-K"
+years:
+  - 2023
+  - 2024
+  - 2025
+
+companies:
+  - ticker: MSFT
+    category: "mega-cap software/cloud"
+    category_slug: "mega-cap_software_cloud"
+  - ticker: AAPL
+    category: "hardware/ecosystem"
+    category_slug: "hardware_ecosystem"
+  - ticker: NVDA
+    category: "AI/GPU semiconductor"
+    category_slug: "ai_gpu_semiconductor"
+  - ticker: GOOGL
+    category: "search/ads/cloud"
+    category_slug: "search_ads_cloud"
+  - ticker: META
+    category: "social/ads/AI infra"
+    category_slug: "social_ads_ai_infra"
+  - ticker: AMZN
+    category: "ecommerce/cloud"
+    category_slug: "ecommerce_cloud"
+  - ticker: AMD
+    category: "semiconductor challenger"
+    category_slug: "semiconductor_challenger"
+  - ticker: ADBE
+    category: "creative/software SaaS"
+    category_slug: "creative_software_saas"
+  - ticker: PANW
+    category: "cybersecurity"
+    category_slug: "cybersecurity"
+  - ticker: SNOW
+    category: "data/cloud software"
+    category_slug: "data_cloud_software"

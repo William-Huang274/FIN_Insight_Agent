@@ -2,6 +2,7 @@ data/raw_private/
 data/processed_private/
 data/indexes/
 data/logs/*.jsonl
+data/logs/*.json
 *.pdf
 *.html
 *.htm

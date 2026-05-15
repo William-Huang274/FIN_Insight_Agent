@@ -131,3 +131,52 @@ Follow-up and safety notes:
   by Git.
 - The next parser should read this manifest rather than globbing raw HTML
   files directly.
+
+## 2026-05-15 SEC Parser And Chunk Builder
+
+Problem or prompt:
+Implement SEC filing parsing and section-aware chunking for the downloaded
+10-K HTML filings.
+
+Reasoning and decision:
+Use a conservative parser before building retrieval indexes. Extract visible
+HTML text, detect 10-K `Item` sections from cleaned line spans, filter out table
+of contents entries by requiring an actual Item 1 body span, and emit only the
+Phase 1 target sections: Item 1, Item 1A, Item 7, Item 7A, and Item 8.
+
+Work completed:
+- Added `src/ingestion/parse_sec_filing.py`.
+- Added `src/ingestion/section_splitter.py`.
+- Added `scripts/build_sec_chunks.py`.
+- Built a small smoke output for 2024 `MSFT` and `NVDA`.
+- Built full tech-universe chunks from 30 filings.
+
+Result and evidence:
+- `python -m compileall src scripts` passed.
+- Smoke test for 2024 `MSFT` and `NVDA` produced 102 chunks:
+  - Item 1: 23
+  - Item 1A: 35
+  - Item 7: 18
+  - Item 7A: 2
+  - Item 8: 24
+- Full tech-universe run produced 1,829 chunks from 30 filings:
+  - Item 1: 255
+  - Item 1A: 592
+  - Item 7: 290
+  - Item 7A: 44
+  - Item 8: 648
+- Chunk word count summary for the full run:
+  - Minimum: 32
+  - Median: 925
+  - Maximum: 1,630
+- Output path:
+  `data/processed_private/chunks/sec_tech_10k_chunks.jsonl`.
+
+Follow-up and safety notes:
+- Generated chunk JSONL is under `data/processed_private/` and is ignored by
+  Git.
+- Some companies, such as NVDA, use Item 8 as a short cross-reference to
+  consolidated financial statements elsewhere in the filing. The parser keeps
+  that short Item 8 record instead of inventing a different citation boundary.
+- Next step should convert chunks into `EvidenceObject` records and then build
+  the BM25 retrieval baseline.

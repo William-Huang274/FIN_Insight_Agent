@@ -63,4 +63,16 @@ Default manifest output:
 data/processed_private/manifests/sec_tech_10k_manifest.jsonl
 ```
 
+Build section-aware chunks from the manifest:
+
+```powershell
+python scripts/build_sec_chunks.py
+```
+
+Small parser smoke test:
+
+```powershell
+python scripts/build_sec_chunks.py --years 2024 --tickers MSFT,NVDA --output data/processed_private/chunks/sec_tech_10k_chunks_smoke.jsonl
+```
+
 Generated SEC cache and indexes are intentionally excluded from Git.

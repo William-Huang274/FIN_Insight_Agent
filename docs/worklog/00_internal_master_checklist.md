@@ -13,7 +13,8 @@
 - [x] Add batch SEC filing download script.
 - [x] Download first tech universe 10-K HTML cache.
 - [x] Add SEC filing manifest scanner and JSONL builder.
-- [ ] Add section-aware SEC filing parser.
+- [x] Add section-aware SEC filing parser.
+- [x] Add SEC filing chunk builder script.
 - [ ] Add BM25 index and retriever.
 - [ ] Add dense index and retriever.
 - [ ] Add hybrid RRF retriever.

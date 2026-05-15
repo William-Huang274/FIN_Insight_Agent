@@ -20,6 +20,9 @@ class DenseRetriever:
         ]
         self.embeddings = np.load(path / "embeddings.npy")
         self.model = SentenceTransformer(self.metadata["model_name"], device=device)
+        if self.metadata.get("max_seq_length") is not None:
+            self.model.max_seq_length = int(self.metadata["max_seq_length"])
+        self.query_prompt_name = self.metadata.get("query_prompt_name")
 
     def search(
         self,
@@ -27,12 +30,14 @@ class DenseRetriever:
         top_k: int = 10,
         filters: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
-        query_embedding = self.model.encode(
-            [query],
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            show_progress_bar=False,
-        ).astype("float32")[0]
+        encode_kwargs = {
+            "convert_to_numpy": True,
+            "normalize_embeddings": True,
+            "show_progress_bar": False,
+        }
+        if self.query_prompt_name:
+            encode_kwargs["prompt_name"] = self.query_prompt_name
+        query_embedding = self.model.encode([query], **encode_kwargs).astype("float32")[0]
         scores = self.embeddings @ query_embedding
 
         candidate_indices = self._filtered_indices(filters)

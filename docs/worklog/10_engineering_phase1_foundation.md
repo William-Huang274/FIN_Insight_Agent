@@ -366,3 +366,43 @@ Follow-up and safety notes:
   query routing should be treated as first-class retrieval components.
 - The seed set must be human-reviewed and expanded before making final quality
   claims.
+
+## 2026-05-15 ModelScope Qwen Embedding Evaluation
+
+Problem or prompt:
+用户希望试用 Qwen 系 embedding，并要求从魔塔社区下载模型。
+
+Reasoning and decision:
+未使用生成式 Qwen3.5 foundation model 直接做 embedding；本次选择 ModelScope 上的
+`Qwen/Qwen3-Embedding-0.6B` 作为 Qwen 系官方 embedding 模型。为了不低估
+Qwen embedding，对 query 编码启用模型自带的 `query` prompt，并将文档最大长度
+设为 4096。
+
+Work completed:
+- Added ModelScope download script.
+- Added dense index metadata support for `query_prompt_name` and
+  `max_seq_length`.
+- Downloaded Qwen3-Embedding-0.6B to ignored private model cache.
+- Built `data/indexes/dense/sec_tech_10k_qwen3_embedding_0_6b/`.
+- Evaluated dense Qwen and Qwen+BM25 RRF on filtered and unfiltered seed sets.
+
+Result and evidence:
+- Model cache size: about 1.2 GB.
+- Index build elapsed: about 86.5 seconds.
+- Dense index size: about 26 MB.
+- Embedding dimension: 1024.
+- Filtered dense Qwen: MRR 0.709, Hit@5 0.867, Hit@10 0.933,
+  Mean Recall@10 0.917.
+- Filtered hybrid RRF + Qwen: MRR 0.640, Hit@5 0.867, Hit@10 0.967,
+  Mean Recall@10 0.950.
+- Unfiltered dense Qwen: MRR 0.634, Hit@5 0.833, Hit@10 0.900,
+  Mean Recall@10 0.867.
+- Unfiltered hybrid RRF + Qwen: MRR 0.519, Hit@5 0.767, Hit@10 0.867,
+  Mean Recall@10 0.833.
+
+Follow-up and safety notes:
+- Qwen dense is now the best dense baseline and strongly improves full-corpus
+  retrieval over MiniLM.
+- Simple equal-weight RRF can hurt Qwen's ranking, so the next hybrid iteration
+  should test weighted RRF or dense-first retrieval with BM25 fallback.
+- Model weights remain ignored under `data/models_private/`.

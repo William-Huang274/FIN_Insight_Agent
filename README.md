@@ -118,6 +118,20 @@ download endpoint before building the dense index:
 export HF_ENDPOINT=https://hf-mirror.com
 ```
 
+Download a Qwen embedding model from ModelScope and build a separate dense
+index:
+
+```bash
+python scripts/download_modelscope_model.py --model-id Qwen/Qwen3-Embedding-0.6B --cache-dir data/models_private/modelscope
+python scripts/build_dense_index.py \
+  --model data/models_private/modelscope/Qwen/Qwen3-Embedding-0___6B \
+  --output-dir data/indexes/dense/sec_tech_10k_qwen3_embedding_0_6b \
+  --device cuda \
+  --batch-size 8 \
+  --query-prompt-name query \
+  --max-seq-length 4096
+```
+
 Evaluate BM25, dense, and hybrid RRF retrieval against the seed diagnostic set:
 
 ```powershell

@@ -1,5 +1,6 @@
 data/raw_private/
 data/processed_private/
+data/models_private/
 data/indexes/
 data/logs/*.jsonl
 data/logs/*.json

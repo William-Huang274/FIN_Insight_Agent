@@ -25,6 +25,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", default="sentence-transformers/all-MiniLM-L6-v2")
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--device", help="Optional sentence-transformers device, e.g. cuda or cpu.")
+    parser.add_argument(
+        "--query-prompt-name",
+        help="Optional sentence-transformers prompt name to use when encoding queries.",
+    )
+    parser.add_argument(
+        "--max-seq-length",
+        type=int,
+        help="Optional sentence-transformers max sequence length for document/query encoding.",
+    )
     return parser.parse_args()
 
 
@@ -36,6 +45,8 @@ def main() -> None:
         model_name=args.model,
         batch_size=args.batch_size,
         device=args.device,
+        query_prompt_name=args.query_prompt_name,
+        max_seq_length=args.max_seq_length,
     )
     print(json.dumps(metadata, indent=2, ensure_ascii=False))
 

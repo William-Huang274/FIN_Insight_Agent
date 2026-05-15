@@ -15,6 +15,8 @@ def build_dense_index(
     model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
     batch_size: int = 64,
     device: str | None = None,
+    query_prompt_name: str | None = None,
+    max_seq_length: int | None = None,
 ) -> dict:
     from sentence_transformers import SentenceTransformer
 
@@ -23,6 +25,8 @@ def build_dense_index(
     texts = [evidence_search_text(record) for record in records]
 
     model = SentenceTransformer(model_name, device=device)
+    if max_seq_length is not None:
+        model.max_seq_length = max_seq_length
     embeddings = model.encode(
         texts,
         batch_size=batch_size,
@@ -43,6 +47,8 @@ def build_dense_index(
         "records": len(records),
         "index_type": "dense_numpy_cosine",
         "model_name": model_name,
+        "query_prompt_name": query_prompt_name,
+        "max_seq_length": max_seq_length,
         "embedding_dim": int(embeddings.shape[1]) if embeddings.size else 0,
         "normalized": True,
     }

@@ -35,3 +35,4 @@
 - [x] BM25 retrieval smoke test on MSFT/NVDA queries.
 - [x] Dense retrieval smoke test on cloud GPU using MiniLM embeddings.
 - [x] Seed retrieval evaluation for BM25, dense, and hybrid RRF.
+- [x] ModelScope Qwen3-Embedding-0.6B dense retrieval evaluation.

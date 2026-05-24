@@ -104,6 +104,7 @@ def test_query_contract_recognizes_mixed_with_8k_earnings_policy() -> None:
     assert clean["source_policy"] == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
     assert clean["source_tiers"] == ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
     assert any("8-K earnings-release evidence" in caveat for caveat in clean["required_caveats"])
+    assert clean["source_coverage_gaps"] == []
     assert result["report"]["status"] == "pass"
 
 
@@ -150,6 +151,80 @@ def test_runtime_case_adds_8k_source_boundary_gate() -> None:
     assert "Label 8-K earnings-release evidence as company-authored unaudited material." in case["gold_points"]
     assert any("Do not treat company-authored 8-K" in trap for trap in case["hallucination_traps"])
     assert case["required_caveats"][0]["required"] is True
+
+
+def test_llm_contract_normalization_preserves_8k_source_tier() -> None:
+    interactive = _load_interactive_module()
+    inventory = {
+        "inventory_digest": "inv-8k",
+        "companies": [
+            {
+                "ticker": "MSFT",
+                "filings": [
+                    {"year": 2026, "form_type": "10-Q", "source_tier": "primary_sec_filing"},
+                    {
+                        "year": 2026,
+                        "form_type": "8-K",
+                        "source_tier": "company_authored_unaudited_sec_filing",
+                    },
+                ],
+            },
+            {
+                "ticker": "AMZN",
+                "filings": [
+                    {"year": 2026, "form_type": "10-Q", "source_tier": "primary_sec_filing"},
+                    {
+                        "year": 2026,
+                        "form_type": "8-K",
+                        "source_tier": "company_authored_unaudited_sec_filing",
+                    },
+                ],
+            },
+        ],
+    }
+    fallback = {
+        "schema_version": "interactive_query_contract_v0.2",
+        "task_type": "company_comparison",
+        "focus_tickers": ["MSFT", "AMZN"],
+        "filing_types": ["10-Q", "8-K"],
+        "source_tiers": ["primary_sec_filing"],
+        "decomposed_tasks": [
+            {
+                "task_id": "compare_cloud",
+                "question_zh": "Compare cloud performance.",
+                "required_tickers": ["MSFT", "AMZN"],
+                "required_metric_families": ["cloud_revenue"],
+            }
+        ],
+    }
+    planned = {
+        "task_type": "company_comparison",
+        "focus_tickers": ["MSFT", "AMZN"],
+        "filing_types": ["10-Q", "8-K"],
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+        "metric_families": ["cloud_revenue"],
+        "decomposed_tasks": fallback["decomposed_tasks"],
+    }
+
+    contract = interactive._normalize_llm_query_contract(
+        planned,
+        fallback,
+        ["MSFT", "AMZN"],
+        [2026],
+        inventory,
+    )
+    contract = interactive._repair_query_contract_from_prompt(
+        contract,
+        "结合MSFT和AMZN的2026 10-Q以及8-K earnings release",
+        ["MSFT", "AMZN"],
+        [2026],
+        inventory,
+    )
+    validated = interactive._validate_query_contract(contract, ["MSFT", "AMZN"], [2026], inventory)
+
+    assert validated["source_policy"] == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
+    assert validated["source_tiers"] == ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
+    assert validated["source_coverage_gaps"] == []
 
 
 def test_connector_selects_earnings_release_exhibit_99_1(monkeypatch, tmp_path: Path) -> None:

@@ -304,6 +304,10 @@ P1 应先接 SEC EDGAR 路径下的 8-K earnings release，而不是直接接 IR
   - first real SEC download selected a Microsoft `Item 5.02,9.01` press release because the selector treated `9.01 + press release` as sufficient;
   - fixed the root selector rule so P1 requires `Item 2.02` for earnings-release discovery;
   - `scripts/build_sec_8k_earnings_manifest.py` now also filters cached records without `Item 2.02`, so stale pilot cache cannot pollute downstream chunks.
+- Cloud mixed-chain contract issue found and fixed:
+  - first mixed-with-8K DeepSeek run had 8-K rows in the combined BM25 context, but the final Query Contract was normalized back to `source_tiers=["primary_sec_filing"]`;
+  - root cause was `_normalize_llm_query_contract(...)` ignoring planner-provided `source_tiers`, plus source coverage checking every requested tier against every filing type;
+  - fixed interactive contract normalization/repair to preserve mixed source tiers, and fixed Query Contract coverage so 10-K/10-Q require `primary_sec_filing` while 8-K requires `company_authored_unaudited_sec_filing`.
 - Added local tests for:
   - EvidenceObject accepting the unaudited 8-K source tier;
   - Query Contract recognizing mixed 10-K/10-Q/8-K with the new source policy and caveat;
@@ -313,7 +317,8 @@ P1 应先接 SEC EDGAR 路径下的 8-K earnings release，而不是直接接 IR
   - SEC connector rejecting generic `9.01` press releases that are not `Item 2.02` earnings releases;
   - 8-K earnings manifest builder preserving exhibit HTML paths, current-report period metadata, and unaudited source tier;
   - 8-K earnings manifest builder rejecting cached non-`Item 2.02` press releases;
-  - 8-K earnings parser producing source-bounded chunks and EvidenceObject records.
+  - 8-K earnings parser producing source-bounded chunks and EvidenceObject records;
+  - LLM Query Contract normalization preserving 8-K source tiers through repair/validation.
 - No BM25 index, mixed runtime command, rendered-answer source-boundary display check, or cloud pilot has been added yet.
 - No new SEC 8-K data has been downloaded.
 
@@ -327,7 +332,7 @@ git diff --check -- src/connectors/sec_edgar_connector.py src/evidence/schema.py
 
 Result:
 
-- Targeted local tests: `50 passed`.
+- Targeted local tests: `51 passed`.
 - `py_compile` passed.
 - `git diff --check` passed.
 

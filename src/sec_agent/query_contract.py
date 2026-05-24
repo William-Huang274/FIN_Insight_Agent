@@ -407,7 +407,8 @@ def _source_coverage_gaps(
                         }
                     )
                     continue
-                missing_tiers = sorted(set(required_tiers) - available_tiers)
+                required_tiers_for_form = _required_source_tiers_for_form(form, required_tiers)
+                missing_tiers = sorted(set(required_tiers_for_form) - available_tiers)
                 if missing_tiers:
                     gaps.append(
                         {
@@ -423,6 +424,16 @@ def _source_coverage_gaps(
                 if len(gaps) >= 40:
                     return gaps
     return gaps
+
+
+def _required_source_tiers_for_form(form_type: str, source_tiers: list[str]) -> list[str]:
+    form = str(form_type or "").upper().strip()
+    requested = [str(tier) for tier in source_tiers if str(tier)]
+    if form in {"10-K", "10-Q"} and "primary_sec_filing" in requested:
+        return ["primary_sec_filing"]
+    if form == "8-K" and "company_authored_unaudited_sec_filing" in requested:
+        return ["company_authored_unaudited_sec_filing"]
+    return requested or ["primary_sec_filing"]
 
 
 def _period_type_for_form(form_type: str) -> str:

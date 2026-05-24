@@ -3394,6 +3394,13 @@ def _normalize_llm_query_contract(
         planned.get("filing_types") or planned.get("source_types"),
         _selected_form_types(project_inventory, tickers, years),
     ) or list(fallback.get("filing_types") or ["10-K"])
+    allowed_source_tiers = _selected_source_tiers(project_inventory, tickers, years, filing_types)
+    source_tiers = _merge_source_tiers(
+        _clamp_source_tiers(planned.get("source_tiers") or (planned.get("scope") or {}).get("source_tiers"), allowed_source_tiers)
+        or _clamp_source_tiers(fallback.get("source_tiers") or (fallback.get("scope") or {}).get("source_tiers"), allowed_source_tiers)
+        or [],
+        _source_policy_source_tiers(filing_types, allowed_source_tiers),
+    )
     clean.update(
         {
             "task_type": task_type,
@@ -3402,7 +3409,9 @@ def _normalize_llm_query_contract(
             "focus_tickers": focus,
             "years": years,
             "filing_types": filing_types,
-            "scope": _contract_scope(tickers, focus, years, filing_types),
+            "source_tiers": source_tiers,
+            "source_policy": _source_policy_for_scope(filing_types, source_tiers),
+            "scope": _contract_scope(tickers, focus, years, filing_types, source_tiers),
             "analysis_axes": _string_list(planned.get("analysis_axes"), max_items=10) or clean.get("analysis_axes") or [],
             "facets": _string_list(planned.get("facets"), max_items=10) or clean.get("facets") or [],
             "metric_families": _metric_family_list(planned.get("metric_families")) or clean.get("metric_families") or [],
@@ -3505,8 +3514,14 @@ def _repair_query_contract_from_prompt(
     allowed_filing_types = _selected_form_types(project_inventory, tickers, years)
     filing_types = _clamp_form_types(repaired.get("filing_types"), allowed_filing_types)
     repaired["filing_types"] = _source_policy_filing_types(filing_types or allowed_filing_types, allowed_filing_types)
-    repaired["source_policy"] = _source_policy_for_filing_types(repaired["filing_types"])
-    repaired["scope"] = _contract_scope(tickers, focus, years, repaired["filing_types"])
+    allowed_source_tiers = _selected_source_tiers(project_inventory, tickers, years, repaired["filing_types"])
+    repaired["source_tiers"] = _merge_source_tiers(
+        _clamp_source_tiers(repaired.get("source_tiers") or (repaired.get("scope") or {}).get("source_tiers"), allowed_source_tiers)
+        or [],
+        _source_policy_source_tiers(repaired["filing_types"], allowed_source_tiers),
+    )
+    repaired["source_policy"] = _source_policy_for_scope(repaired["filing_types"], repaired["source_tiers"])
+    repaired["scope"] = _contract_scope(tickers, focus, years, repaired["filing_types"], repaired["source_tiers"])
 
     _append_contract_task(repaired, _user_question_anchor_task(prompt_text, focus, repaired))
     for task in _prompt_driven_repair_tasks(prompt_text, focus, tickers):
@@ -3582,6 +3597,37 @@ def _source_policy_for_filing_types(filing_types: list[str]) -> str:
     if forms and forms <= {"10-K", "10-Q"} and "10-Q" in forms:
         return "SEC_PRIMARY_MIXED_RECENT"
     return "SEC_ONLY"
+
+
+def _source_policy_for_scope(filing_types: list[str], source_tiers: list[str]) -> str:
+    forms = {str(form or "").upper().strip() for form in filing_types if str(form or "").strip()}
+    tiers = {str(tier or "").strip() for tier in source_tiers if str(tier or "").strip()}
+    if "8-K" in forms and "company_authored_unaudited_sec_filing" in tiers:
+        return "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
+    return _source_policy_for_filing_types(filing_types)
+
+
+def _source_policy_source_tiers(filing_types: list[str], allowed: list[str]) -> list[str]:
+    forms = {str(form or "").upper().strip() for form in filing_types if str(form or "").strip()}
+    allowed_set = {str(tier or "").strip() for tier in allowed if str(tier or "").strip()}
+    if "8-K" in forms and "company_authored_unaudited_sec_filing" in allowed_set:
+        return [
+            tier
+            for tier in ("primary_sec_filing", "company_authored_unaudited_sec_filing")
+            if tier in allowed_set
+        ]
+    if "primary_sec_filing" in allowed_set:
+        return ["primary_sec_filing"]
+    return list(allowed)
+
+
+def _merge_source_tiers(primary: list[str], required: list[str]) -> list[str]:
+    merged = []
+    for tier in [*primary, *required]:
+        value = str(tier or "").strip()
+        if value and value not in merged:
+            merged.append(value)
+    return merged
 
 
 def _is_broad_ai_scope_prompt(prompt: str, mentioned_tickers: list[str]) -> bool:
@@ -3928,14 +3974,18 @@ def _contract_scope(
     focus_tickers: list[str],
     years: list[int],
     filing_types: list[str],
+    source_tiers: list[str] | None = None,
 ) -> dict[str, Any]:
-    return {
+    scope = {
         "universe_tickers": list(search_tickers),
         "focus_tickers": list(focus_tickers),
         "years": list(years),
         "filing_types": list(filing_types),
         "sec_sections": list(DEFAULT_SECTIONS),
     }
+    if source_tiers:
+        scope["source_tiers"] = list(source_tiers)
+    return scope
 
 
 def _clamp_tickers(value: Any, allowed: list[str]) -> list[str]:
@@ -3966,6 +4016,33 @@ def _selected_form_types(project_inventory: dict[str, Any], tickers: list[str], 
     return sorted(forms) or ["10-K"]
 
 
+def _selected_source_tiers(
+    project_inventory: dict[str, Any],
+    tickers: list[str],
+    years: list[int],
+    form_types: list[str],
+) -> list[str]:
+    selected = {ticker.upper() for ticker in tickers}
+    selected_years = {int(year) for year in years}
+    selected_forms = {str(form or "").upper().strip() for form in form_types if str(form or "").strip()}
+    tiers = set()
+    for company in project_inventory.get("companies") or []:
+        ticker = str(company.get("ticker") or "").upper()
+        if selected and ticker not in selected:
+            continue
+        for filing in company.get("filings") or []:
+            year = _int_or_none(filing.get("year"))
+            if selected_years and year not in selected_years:
+                continue
+            form_type = str(filing.get("form_type") or filing.get("source_type") or "").upper().strip()
+            if selected_forms and form_type not in selected_forms:
+                continue
+            source_tier = str(filing.get("source_tier") or "primary_sec_filing").strip()
+            if source_tier:
+                tiers.add(source_tier)
+    return sorted(tiers) or ["primary_sec_filing"]
+
+
 def _clamp_form_types(value: Any, allowed: list[str]) -> list[str]:
     allowed_set = {str(item).upper() for item in allowed}
     out = []
@@ -3973,6 +4050,16 @@ def _clamp_form_types(value: Any, allowed: list[str]) -> list[str]:
         form_type = str(item or "").upper().strip()
         if form_type in allowed_set and form_type not in out:
             out.append(form_type)
+    return out
+
+
+def _clamp_source_tiers(value: Any, allowed: list[str]) -> list[str]:
+    allowed_set = {str(item or "").strip() for item in allowed if str(item or "").strip()}
+    out = []
+    for item in value or []:
+        source_tier = str(item or "").strip()
+        if source_tier in allowed_set and source_tier not in out:
+            out.append(source_tier)
     return out
 
 

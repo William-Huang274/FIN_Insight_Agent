@@ -1,9 +1,30 @@
-data/raw_private/
-data/processed_private/
-data/models_private/
-data/indexes/
-data/logs/*.jsonl
-data/logs/*.json
+/data/raw_private/
+/data/processed_private/
+/data/models_private/
+/data/indexes/
+/data/logs/*.jsonl
+/data/logs/*.json
+
+# Local diagnostics and sync scratch
+/.tmp_*/
+*.tmp
+*.bak
+
+# Runtime and evaluation outputs
+/eval/
+/reports/demo/
+/reports/evidence_packs/
+/reports/evidence_pool/
+/reports/exact_value_ledgers/
+/reports/logs/
+/reports/metrics/
+/reports/quality/
+/reports/query_contracts/
+/reports/verifier/
+/reports/retrieval_eval/*.json
+/reports/retrieval_eval/*.jsonl
+/reports/retrieval_eval/*.csv
+
 *.pdf
 *.html
 *.htm
@@ -16,4 +37,4 @@ __pycache__/
 .venv/
 venv/
 *.pyc
-!data/logs/.gitkeep
+!/data/logs/.gitkeep

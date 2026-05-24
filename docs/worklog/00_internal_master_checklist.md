@@ -245,6 +245,9 @@
 - [x] Fix mixed retrieval context so sparse latest-10-Q source policy does not collapse to `context rows=0`.
 - [x] Fix focused mixed-period prompts so generic comparison does not trigger peer-readthrough.
 - [x] Add MSFT 10-Q cash-flow/capex period-role repair and derived FCF proxy rows for mixed answer support.
+- [x] Record the new information-source expansion governance stage before adding 8-K, IR, market snapshot, consensus, or news sources.
+- [ ] Draft the first source-specific plan for SEC 8-K earnings release / Exhibit 99.1 before implementation.
+- [ ] Implement the 8-K earnings-release pilot only after source contract, parser schema, retrieval/coverage, renderer/gate, and rollback criteria are documented.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
 - [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.
 - [ ] Validate earlier-node resume from a real partial replay, especially `build_coverage_matrix` or `build_judgment_plan`.

@@ -252,6 +252,7 @@
 - [x] Add SEC 8-K earnings-release discovery and Ex-99.1 exhibit selection for the 5-company pilot.
 - [x] Add 8-K earnings-release downloader/manifest builder for the 5-company pilot.
 - [x] Add 8-K earnings-release parser/chunker and runtime source-boundary gate tests before cloud pilot.
+- [x] Run cloud 8-K earnings pilot build plus mixed 10-Q/8-K DeepSeek smoke for MSFT/AMZN.
 - [ ] Add rendered-answer source-boundary display check after first 8-K evidence artifacts exist.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
 - [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.

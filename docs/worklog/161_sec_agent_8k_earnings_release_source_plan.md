@@ -336,9 +336,56 @@ Result:
 - `py_compile` passed.
 - `git diff --check` passed.
 
+## Cloud Pilot Validation
+
+Date: 2026-05-25
+
+Environment:
+
+- Cloud path: `/root/autodl-tmp/FIN_Insight_Agent`
+- Python: `/root/autodl-tmp/envs/sec-agent-cu128/bin/python`
+- Source policy: `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS`
+- Pilot companies: `MSFT`, `AMZN`, `GOOGL`, `META`, `NVDA`
+- Pilot years: `2026`, `2027`
+
+Validation commands:
+
+```bash
+python -m pytest tests/test_sec_agent_8k_earnings_source.py tests/test_sec_agent_context_source_policy.py tests/test_sec_agent_10q_source_contract.py tests/test_sec_benchmark_eval_mixed_context.py -q
+python scripts/download_sec_8k_earnings.py --allow-missing --rate-limit 1.0
+python scripts/build_sec_8k_earnings_manifest.py
+python scripts/build_sec_8k_earnings_chunks.py
+python scripts/build_evidence_store.py --chunks data/processed_private/chunks/sec_tech_8k_earnings_pilot_chunks_2026_2027.jsonl --output data/processed_private/evidence/sec_tech_8k_earnings_pilot_evidence_2026_2027.jsonl
+python scripts/build_bm25_index.py --evidence data/processed_private/evidence/sec_tech_8k_earnings_pilot_evidence_2026_2027.jsonl --output-dir data/indexes/bm25/sec_tech_8k_earnings_pilot_2026_2027
+```
+
+Cloud results:
+
+- Cloud targeted tests: `51 passed`.
+- SEC 8-K earnings-release downloader selected valid `Item 2.02,9.01` records for `MSFT` and `AMZN` in filing year 2026.
+- `GOOGL`, `META`, `NVDA`, and 2027 pilot rows had no selected `Item 2.02` earnings-release 8-K in this pilot run.
+- 8-K manifest: `data/processed_private/manifests/sec_tech_8k_earnings_pilot_manifest_2026_2027.jsonl`, `2` records.
+- 8-K chunks: `data/processed_private/chunks/sec_tech_8k_earnings_pilot_chunks_2026_2027.jsonl`, `24` chunks.
+- 8-K evidence: `data/processed_private/evidence/sec_tech_8k_earnings_pilot_evidence_2026_2027.jsonl`, `24` EvidenceObjects.
+- 8-K BM25: `data/indexes/bm25/sec_tech_8k_earnings_pilot_2026_2027`, `24` records.
+- Combined mixed-with-8K evidence: `data/processed_private/evidence_objects/sec_tech_primary_mixed_with_8k_earnings_pilot_evidence_fy2023_2027.jsonl`, `10,321` records.
+- Combined mixed-with-8K BM25: `data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_pilot_fy2023_2027`, `10,321` records.
+
+Real DeepSeek mixed-chain smoke:
+
+- Run path: `/root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/interactive_sec_agent/20260525_021707_490c9357a2`
+- Prompt scope: `MSFT,AMZN`, year `2026`, forms `10-Q,8-K`.
+- Query Contract source policy: `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS`.
+- Query Contract source tiers: `primary_sec_filing`, `company_authored_unaudited_sec_filing`.
+- Source coverage gaps: `0`.
+- Coverage summary: filing types covered `10-Q`, `8-K`; source tiers covered `primary_sec_filing`, `company_authored_unaudited_sec_filing`; context rows `80`; ledger rows `70`.
+- Answer behavior: the rendered answer used 10-Q ledger values for exact financial metrics and cited MSFT 8-K earnings-release evidence for management/AI revenue-run-rate commentary.
+- Gate status: deterministic coverage completed, but final `qwen_answer_gate_pass` remained false; this is retained as a quality follow-up rather than bypassed.
+
 ## Follow-Up
 
-- Run a real SEC 8-K pilot download/build on cloud, then build the pilot BM25 index and run mixed retrieval smoke.
+- Add rendered-answer source-boundary display checks for 8-K evidence labels.
+- Investigate remaining `qwen_answer_gate_pass` failure on the mixed-with-8K DeepSeek smoke.
 - Keep all P1 artifacts in pilot-specific paths until source selection, retrieval, renderer labels, and gates pass.
 - Update this document after implementation with concrete artifact paths, row counts, tests, and cloud run IDs.
 

@@ -967,6 +967,7 @@ def _normalize_answer(
         normalized = _ensure_required_caveats(normalized, case)
         normalized = _ensure_required_not_found(normalized, case)
         normalized = _apply_coverage_matrix_constraints(normalized, case)
+        normalized = _remove_false_missing_ledger_claims(normalized, ledger_rows)
     normalized = _strip_inline_metric_ids_from_prose(normalized, ledger_rows)
     violations = _ledger_text_contract_violations(normalized, ledger_rows)
     if violations:
@@ -2455,18 +2456,26 @@ PROTOCOL_NO_NUMBER_MARKERS = (
     "本协议不包含具体数值",
     "本协议不包含任何具体数字",
     "本协议不包含任何具体数值",
+    "本协议不提供最终数字",
+    "本协议不提供最终数值",
     "当前协议不包含具体数字",
     "当前协议不包含具体数值",
     "当前协议不包含任何具体数字",
     "当前协议不包含任何具体数值",
+    "当前协议不提供最终数字",
+    "当前协议不提供最终数值",
     "协议不包含具体数字",
     "协议不包含具体数值",
     "协议不包含任何具体数字",
     "协议不包含任何具体数值",
+    "协议不提供最终数字",
+    "协议不提供最终数值",
     "this protocol does not contain specific numbers",
     "this protocol does not include specific numbers",
+    "this protocol does not provide final numbers",
     "current protocol does not contain specific numbers",
     "current protocol does not include specific numbers",
+    "current protocol does not provide final numbers",
 )
 
 
@@ -2488,7 +2497,7 @@ def _remove_false_missing_ledger_claims(answer: dict[str, Any], ledger_rows: lis
     def claims_protocol_has_no_numbers(text: str) -> bool:
         lowered = str(text or "").lower()
         return any(marker.lower() in lowered for marker in PROTOCOL_NO_NUMBER_MARKERS) or re.search(
-            r"(?:本|当前)?协议不包含[^。；,，]*具体(?:数字|数值)",
+            r"(?:本|当前)?协议不(?:包含|含有|提供)[^。；,，]*(?:具体|最终)(?:数字|数值)",
             str(text or ""),
         ) is not None
 
@@ -2521,8 +2530,9 @@ def _remove_false_missing_ledger_claims(answer: dict[str, Any], ledger_rows: lis
             )
         return any((ticker, year, family) in available for ticker in tickers for year in years for family in metric_families)
 
-    for key in ("not_found", "limitations"):
-        answer[key] = [item for item in _string_list(answer.get(key)) if not contradicts_ledger(item)]
+    for key in ("not_found", "limitations", "source_limitations"):
+        if key in answer or key != "source_limitations":
+            answer[key] = [item for item in _string_list(answer.get(key)) if not contradicts_ledger(item)]
     return answer
 
 

@@ -51,6 +51,32 @@ MISSING_CLAIM_MARKERS = (
     "only disclosed",
 )
 GENERIC_DATA_MISSING_MARKERS = ("完整数据", "complete data", "all data")
+PROTOCOL_NO_NUMBER_MARKERS = (
+    "本协议不包含具体数字",
+    "本协议不包含具体数值",
+    "本协议不包含任何具体数字",
+    "本协议不包含任何具体数值",
+    "本协议不提供最终数字",
+    "本协议不提供最终数值",
+    "当前协议不包含具体数字",
+    "当前协议不包含具体数值",
+    "当前协议不包含任何具体数字",
+    "当前协议不包含任何具体数值",
+    "当前协议不提供最终数字",
+    "当前协议不提供最终数值",
+    "协议不包含具体数字",
+    "协议不包含具体数值",
+    "协议不包含任何具体数字",
+    "协议不包含任何具体数值",
+    "协议不提供最终数字",
+    "协议不提供最终数值",
+    "this protocol does not contain specific numbers",
+    "this protocol does not include specific numbers",
+    "this protocol does not provide final numbers",
+    "current protocol does not contain specific numbers",
+    "current protocol does not include specific numbers",
+    "current protocol does not provide final numbers",
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -171,7 +197,7 @@ def _validate_agent_row(row: dict[str, Any], available: set[tuple[str, int, str]
 
 def _missing_statement_locations(answer: dict[str, Any]) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
-    for key in ("not_found", "limitations"):
+    for key in ("not_found", "limitations", "source_limitations"):
         for index, item in enumerate(answer.get(key) or [], start=1):
             text = str(item or "")
             if _looks_like_missing_statement(text):
@@ -182,6 +208,8 @@ def _missing_statement_locations(answer: dict[str, Any]) -> list[dict[str, str]]
 def _false_missing_matches(text: str, available: set[tuple[str, int, str]]) -> list[tuple[str, int, str]]:
     raw = str(text or "")
     lowered = raw.lower()
+    if _claims_protocol_has_no_numbers(raw):
+        return sorted(available)[:8]
     years = {int(match.group(0)) for match in re.finditer(r"\b20\d{2}\b", raw)}
     if not years:
         return []
@@ -216,7 +244,16 @@ def _false_missing_matches(text: str, available: set[tuple[str, int, str]]) -> l
 
 def _looks_like_missing_statement(text: str) -> bool:
     lowered = str(text or "").lower()
-    return any(marker.lower() in lowered for marker in MISSING_CLAIM_MARKERS)
+    return any(marker.lower() in lowered for marker in MISSING_CLAIM_MARKERS) or _claims_protocol_has_no_numbers(text)
+
+
+def _claims_protocol_has_no_numbers(text: str) -> bool:
+    raw = str(text or "")
+    lowered = raw.lower()
+    return any(marker.lower() in lowered for marker in PROTOCOL_NO_NUMBER_MARKERS) or re.search(
+        r"(?:本|当前)?协议不(?:包含|含有|提供)[^。；,，]*(?:具体|最终)(?:数字|数值)",
+        raw,
+    ) is not None
 
 
 def _int_or_none(value: Any) -> int | None:

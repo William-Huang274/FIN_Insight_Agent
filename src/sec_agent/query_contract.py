@@ -548,17 +548,32 @@ def _normalize_required_caveats(values: list[str], normalizations: list[dict[str
 
 def _normalize_required_caveat_text(value: str) -> str:
     text = str(value or "").strip()
+    ledger_only_replacement = "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。"
     replacements = {
-        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含具体数字。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
-        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含具体数值。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
-        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含任何具体数字。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
-        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含任何具体数值。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
-        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含具体数字。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
-        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含具体数值。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
-        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含任何具体数字。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
-        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含任何具体数值。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
+        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含具体数字。": ledger_only_replacement,
+        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含具体数值。": ledger_only_replacement,
+        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含任何具体数字。": ledger_only_replacement,
+        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含任何具体数值。": ledger_only_replacement,
+        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含具体数字。": ledger_only_replacement,
+        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含具体数值。": ledger_only_replacement,
+        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含任何具体数字。": ledger_only_replacement,
+        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含任何具体数值。": ledger_only_replacement,
+        "所有精确数值必须来自运行时Exact-Value Ledger，本协议不包含具体数字。": ledger_only_replacement,
+        "所有精确数值必须来自运行时Exact-Value Ledger，本协议不包含具体数值。": ledger_only_replacement,
+        "所有精确数值必须来自运行时Exact-Value Ledger，本协议不包含任何具体数字。": ledger_only_replacement,
+        "所有精确数值必须来自运行时Exact-Value Ledger，本协议不包含任何具体数值。": ledger_only_replacement,
+        "所有精确数值必须来自运行时Exact-Value Ledger，本协议不提供最终数字。": ledger_only_replacement,
+        "所有精确数值必须来自运行时Exact-Value Ledger，本协议不提供最终数值。": ledger_only_replacement,
     }
-    return replacements.get(text, text)
+    if text in replacements:
+        return replacements[text]
+    if re.search(
+        r"精确数值.*(?:运行时)?\s*Exact-Value Ledger.*(?:本|当前)?协议不(?:包含|含有|提供)[^。；,，]*(?:具体|任何|最终)?(?:数字|数值)",
+        text,
+        flags=re.I,
+    ):
+        return ledger_only_replacement
+    return text
 
 
 def _is_broad_task(contract: dict[str, Any]) -> bool:

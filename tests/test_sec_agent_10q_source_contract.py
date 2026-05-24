@@ -32,6 +32,15 @@ def _load_synthesis_module():
     return module
 
 
+def _load_ledger_missing_gate_module():
+    path = REPO_ROOT / "scripts" / "validate_sec_benchmark_ledger_missing_consistency.py"
+    spec = importlib.util.spec_from_file_location("ledger_missing_gate_under_test", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_query_contract_records_10q_inventory_gap_for_selected_ticker() -> None:
     inventory = {
         "inventory_digest": "inv-test",
@@ -67,7 +76,10 @@ def test_query_contract_records_10q_inventory_gap_for_selected_ticker() -> None:
         "filing_types": ["10-Q"],
         "source_tiers": ["primary_sec_filing"],
         "metric_families": ["cloud_revenue"],
-        "required_caveats": ["精确数值必须从运行时Exact-Value Ledger提取，本协议不包含具体数字。"],
+        "required_caveats": [
+            "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含具体数字。",
+            "所有精确数值必须来自运行时Exact-Value Ledger，本协议不包含具体数字。",
+        ],
         "decomposed_tasks": [
             {
                 "task_id": "cloud_latest_quarter",
@@ -402,9 +414,14 @@ def test_synthesis_removes_protocol_has_no_numbers_limitation_when_ledger_exists
     synthesis = _load_synthesis_module()
     answer = {
         "not_found": ["NVDA 2026 10-Q still missing"],
+        "source_limitations": [
+            "精确数值必须从运行时Exact-Value Ledger提取，本协议不提供最终数字。",
+            "10-Q evidence is unaudited quarterly evidence.",
+        ],
         "limitations": [
             "精确数值必须来自运行时Exact-Value Ledger，本协议不包含具体数字。",
             "所有精确数值必须来自运行时Exact-Value Ledger，本协议不包含任何具体数字。",
+            "精确数值必须从运行时Exact-Value Ledger提取，本协议不提供最终数字。",
             "Evidence Coverage Matrix records source inventory gaps.",
         ],
     }
@@ -420,7 +437,29 @@ def test_synthesis_removes_protocol_has_no_numbers_limitation_when_ledger_exists
     cleaned = synthesis._remove_false_missing_ledger_claims(answer, ledger_rows)
 
     assert cleaned["not_found"] == ["NVDA 2026 10-Q still missing"]
+    assert cleaned["source_limitations"] == ["10-Q evidence is unaudited quarterly evidence."]
     assert cleaned["limitations"] == ["Evidence Coverage Matrix records source inventory gaps."]
+
+
+def test_ledger_missing_gate_flags_protocol_no_final_numbers_with_ledger() -> None:
+    gate = _load_ledger_missing_gate_module()
+    answer = {
+        "source_limitations": [
+            "精确数值必须从运行时Exact-Value Ledger提取，本协议不提供最终数字。"
+        ],
+        "limitations": [],
+        "not_found": [],
+    }
+    locations = gate._missing_statement_locations(answer)
+    available = {("AMZN", 2026, "cloud_revenue")}
+
+    assert locations == [
+        {
+            "location": "source_limitations[1]",
+            "text": "精确数值必须从运行时Exact-Value Ledger提取，本协议不提供最终数字。",
+        }
+    ]
+    assert gate._false_missing_matches(locations[0]["text"], available) == [("AMZN", 2026, "cloud_revenue")]
 
 
 def test_structured_extractor_aligns_multirow_percentage_change_columns() -> None:

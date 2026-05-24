@@ -4,7 +4,7 @@
 
 - Date: 2026-05-24
 - Scope: Stage 1 SEC 10-Q pilot follow-up after the multi-row table-header parser fix.
-- Status: cloud 10-Q structured-object/object-BM25 rebuild complete; local API gate accounting fix complete; patched cloud rerun pending because the SSH endpoint became unreachable.
+- Status: cloud 10-Q structured-object/object-BM25 rebuild complete; API gate accounting and false protocol-no-number caveat fixes complete; patched cloud DeepSeek rerun passed deterministic gates and targeted postchecks.
 
 ## Problem
 
@@ -151,15 +151,52 @@ Result: `11 passed`.
 
 ## Cloud Patch Rerun Status
 
-The next intended step was to upload the local patch to cloud and rerun the same 10-Q DeepSeek prompt with a smaller synthesis pack, targeting a clean `answered_api_model` output:
+After the SSH endpoint came back, the local patch was uploaded to cloud and the same 10-Q DeepSeek prompt was rerun with a smaller synthesis pack:
 
 - `EVIDENCE_PACK_CONTEXT_ROWS=32`
 - `--max-tokens 4000`
 
-However, the cloud SSH endpoint `connect.westb.seetacloud.com:25360` began rejecting connections before the patched files could be uploaded:
+Cloud validation before rerun:
 
-- Retry count: `3`
-- Result: unable to connect to port `25360`
+- `py_compile` for the patched scripts: passed.
+- `tests/test_sec_agent_10q_source_contract.py` plus `tests/test_sec_benchmark_post_gate_usage.py`: `12 passed`.
+
+The first clean API rerun after the gate-accounting patch produced `answer_status=answered_api_model`, `finish_reason=stop`, and `model_answer_ratio=1.0`, but the updated ledger-missing gate correctly flagged a remaining false caveat:
+
+- Bad text: `本协议不提供最终数字`
+- Gate result after patch replay: `ledger_missing_consistency_gate_pass=false`
+- Root cause: the synthesis cleanup covered `not_found` / `limitations` but not all `source_limitations`, and Query Contract required-caveat normalization missed the variant `所有精确数值必须来自运行时Exact-Value Ledger，本协议不包含具体数字。`
+
+Follow-up fix:
+
+- `scripts/run_sec_eval_synthesis_qwen9b_backend.py`
+  - Extends protocol-no-number detection to `不提供最终数字/数值`.
+  - Scans `source_limitations` in addition to `not_found` and `limitations`.
+  - Re-runs the false-missing cleanup after required-caveat and coverage repairs.
+- `scripts/validate_sec_benchmark_ledger_missing_consistency.py`
+  - Treats protocol-no-number statements as missing-evidence contradictions when ledger rows exist.
+  - Scans `source_limitations`.
+- `src/sec_agent/query_contract.py`
+  - Normalizes `所有精确数值必须来自运行时Exact-Value Ledger，本协议不包含具体数字。` and related variants to the safe ledger-only caveat.
+
+Final cloud DeepSeek rerun:
+
+- Run root: `/root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/interactive_sec_agent/20260524_180138_3cc2b2f480`
+- Answer status: `answered_api_model`
+- Finish reason: `stop`
+- Evidence pack rows: `32`
+- Ledger rows: `64`
+- DeepSeek latency: `59447 ms`
+- Tokens: `input_tokens=35626`, `output_tokens=3083`
+- End-to-end elapsed: `104.5665 sec`
+- Gates: `ok=true`, `pass=12`, `fail=[]`
+- Model-answer gate: `model_answer_ratio=1.0`
+- Targeted postchecks:
+  - `protocol_no_specific_numbers=false`
+  - `protocol_no_final_numbers=false`
+  - `known_bad_gm=false`
+  - `known_bad_oi=false`
+  - `bad_ledger_rows=0`
 
 No secrets or API keys were written to repository files.
 
@@ -167,10 +204,10 @@ No secrets or API keys were written to repository files.
 
 Proceed with the object-index rebuild as complete. The stale 10-Q object index risk identified in `157` is resolved on the cloud artifacts that current manual tests use.
 
-Keep the patched API gate accounting and compact evidence-pack default as the next committed code change. It fixes a real post-gate accounting bug and keeps truncation repair visible instead of treating it as a clean answer.
+Keep the patched API gate accounting, compact evidence-pack default, false protocol-no-number cleanup, and ledger-missing gate expansion as the current accepted code path. The final cloud run is a clean Stage 1 10-Q DeepSeek diagnostic pass.
 
 ## Follow-Up
 
-- When the cloud SSH endpoint is reachable again, upload the patched files and rerun the 10-Q DeepSeek prompt with `EVIDENCE_PACK_CONTEXT_ROWS=32` and `--max-tokens 4000`.
-- Accept the rerun only if `answer_status=answered_api_model`, deterministic gates pass, and targeted bad-marker checks remain empty.
-- Do not promote truncation-repaired API output as an all-green run.
+- Add a separate mixed 10-K/10-Q prompt that explicitly requires audited annual versus unaudited quarterly evidence boundaries.
+- Promote period-role extraction for QTD/YTD/TTM/annual before using 10-Q exact values beyond the current diagnostic Stage 1 pilot.
+- Do not promote truncation-repaired API output as an all-green run in future API smoke tests.

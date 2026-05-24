@@ -247,6 +247,41 @@ def test_connector_downloads_8k_earnings_release_exhibit(tmp_path: Path) -> None
     assert "_prefetched_exhibit_html" not in metadata
 
 
+def test_connector_does_not_select_generic_9_01_press_release(monkeypatch, tmp_path: Path) -> None:
+    connector = SecEdgarConnector(user_agent="FinSight-Agent/0.1 test@example.com", cache_dir=tmp_path)
+    submissions = {
+        "name": "MICROSOFT CORP",
+        "filings": {
+            "recent": {
+                "form": ["8-K"],
+                "accessionNumber": ["0001193125-26-224155"],
+                "primaryDocument": ["d125909d8k.htm"],
+                "filingDate": ["2026-05-14"],
+                "reportDate": ["2026-05-13"],
+                "acceptanceDateTime": ["2026-05-14T20:28:48.000Z"],
+                "primaryDocDescription": ["8-K"],
+                "items": ["5.02,9.01"],
+            }
+        },
+    }
+    primary_html = """
+    <html><body><table>
+      <tr><td>EX-99.1</td><td><a href="d125909dex991.htm">d125909dex991.htm</a></td><td>Press Release of Microsoft Corporation dated May 14, 2026</td></tr>
+    </table></body></html>
+    """
+
+    monkeypatch.setattr(connector, "get_company_submissions", lambda cik: submissions)
+    monkeypatch.setattr(connector, "_request_json", lambda url: {"directory": {"item": []}})
+    monkeypatch.setattr(connector, "_request_text", lambda url: primary_html)
+
+    try:
+        connector.find_earnings_release_8k("789019", 2026)
+    except SecEdgarConnectorError as exc:
+        assert "No earnings-release 8-K exhibit found" in str(exc)
+    else:
+        raise AssertionError("expected SecEdgarConnectorError")
+
+
 def test_connector_rejects_8k_without_earnings_release_exhibit(monkeypatch, tmp_path: Path) -> None:
     connector = SecEdgarConnector(user_agent="FinSight-Agent/0.1 test@example.com", cache_dir=tmp_path)
     submissions = {
@@ -309,6 +344,7 @@ def test_8k_earnings_manifest_builder_collects_exhibit_paths(tmp_path: Path) -> 
                 "period_end": "2026-04-24",
                 "period_type": "current_report",
                 "fiscal_period_source": "not_applicable",
+                "filing_items": "2.02,9.01",
                 "accession_number": "0000789019-26-000111",
                 "primary_document": "msft-20260424.htm",
                 "filing_url": "https://www.sec.gov/Archives/edgar/data/789019/000078901926000111/msft-20260424.htm",
@@ -334,6 +370,38 @@ def test_8k_earnings_manifest_builder_collects_exhibit_paths(tmp_path: Path) -> 
     assert record.period_type == "current_report"
     assert record.html_path == str(exhibit_path.resolve())
     assert record.metadata_path == str(metadata_path)
+
+
+def test_8k_manifest_builder_rejects_cached_non_202_item_press_release(tmp_path: Path) -> None:
+    manifest = _load_8k_manifest_module()
+    cache_root = tmp_path / "sec_8k_earnings"
+    filing_dir = cache_root / "2026" / "mega-cap_software_cloud" / "MSFT" / "000119312526224155"
+    filing_dir.mkdir(parents=True)
+    (filing_dir / "ex991.htm").write_text("<html>Generic press release</html>", encoding="utf-8")
+    (filing_dir / "metadata.json").write_text(
+        json.dumps(
+            {
+                "ticker": "MSFT",
+                "company": "MICROSOFT CORP",
+                "fiscal_year": 2026,
+                "category": "mega-cap software/cloud",
+                "category_slug": "mega-cap_software_cloud",
+                "form_type": "8-K",
+                "source_type": "8-K",
+                "source_tier": "company_authored_unaudited_sec_filing",
+                "filing_items": "5.02,9.01",
+                "period_type": "current_report",
+                "accession_number": "0001193125-26-224155",
+                "exhibit_document": "ex991.htm",
+                "local_html_path": "ex991.htm",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    records = manifest.collect_8k_earnings_manifest(cache_root, years=[2026], tickers=["MSFT"])
+
+    assert records == []
 
 
 def test_8k_earnings_parser_builds_source_bounded_chunks_and_evidence(tmp_path: Path) -> None:

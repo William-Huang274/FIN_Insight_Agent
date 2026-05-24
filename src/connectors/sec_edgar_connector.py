@@ -772,7 +772,7 @@ class SecEdgarConnector:
     @staticmethod
     def _filing_items_include_earnings_release(value: str | None) -> bool:
         normalized = re.sub(r"\s+", "", str(value or "").lower())
-        return "2.02" in normalized or "item2.02" in normalized or "9.01" in normalized or "item9.01" in normalized
+        return "2.02" in normalized or "item2.02" in normalized
 
     @classmethod
     def _exhibit_descriptions_from_primary_html(cls, html: str) -> dict[str, str]:
@@ -817,8 +817,6 @@ class SecEdgarConnector:
             "financial results",
             "results of operations",
             "quarterly results",
-            "press release",
-            "news release",
             "reports results",
             "announces results",
             "shareholder letter",

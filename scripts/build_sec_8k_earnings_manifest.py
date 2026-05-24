@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Iterable
@@ -99,6 +100,8 @@ def collect_8k_earnings_manifest(
         if ticker_filter and ticker not in ticker_filter:
             continue
         if category_filter and category_slug not in category_filter:
+            continue
+        if not _filing_items_include_earnings_release(metadata.get("filing_items")):
             continue
         html_path = Path(str(metadata.get("local_html_path") or metadata.get("local_exhibit_path") or ""))
         if not html_path.is_absolute():
@@ -200,6 +203,11 @@ def _int_or_none(value: Any) -> int | None:
         return int(str(value))
     except Exception:
         return None
+
+
+def _filing_items_include_earnings_release(value: Any) -> bool:
+    normalized = re.sub(r"\s+", "", str(value or "").lower())
+    return "2.02" in normalized or "item2.02" in normalized
 
 
 if __name__ == "__main__":

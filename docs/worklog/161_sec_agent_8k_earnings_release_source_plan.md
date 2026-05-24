@@ -300,13 +300,19 @@ P1 应先接 SEC EDGAR 路径下的 8-K earnings release，而不是直接接 IR
   - chunks carry `source_boundary=company_authored_unaudited_sec_filing`, `unaudited=true`, `management_view=true`, and `exclude_from_exact_value_ledger=true`;
   - reported period hints such as quarter ended date, fiscal quarter, and fiscal year are captured as metadata when present.
 - Added runtime source-boundary gate text for `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS` so cases explicitly forbid treating 8-K earnings-release evidence as audited 10-K/10-Q financial statement evidence.
+- Cloud pilot selector issue found and fixed:
+  - first real SEC download selected a Microsoft `Item 5.02,9.01` press release because the selector treated `9.01 + press release` as sufficient;
+  - fixed the root selector rule so P1 requires `Item 2.02` for earnings-release discovery;
+  - `scripts/build_sec_8k_earnings_manifest.py` now also filters cached records without `Item 2.02`, so stale pilot cache cannot pollute downstream chunks.
 - Added local tests for:
   - EvidenceObject accepting the unaudited 8-K source tier;
   - Query Contract recognizing mixed 10-K/10-Q/8-K with the new source policy and caveat;
   - Context API and tool harness accepting the new policy without executing the graph;
   - runtime case generation injecting the 8-K unaudited source-boundary gate;
   - SEC connector selecting an earnings-release Ex-99.1, downloading its exhibit cache, and rejecting an investor-presentation Ex-99.1;
+  - SEC connector rejecting generic `9.01` press releases that are not `Item 2.02` earnings releases;
   - 8-K earnings manifest builder preserving exhibit HTML paths, current-report period metadata, and unaudited source tier;
+  - 8-K earnings manifest builder rejecting cached non-`Item 2.02` press releases;
   - 8-K earnings parser producing source-bounded chunks and EvidenceObject records.
 - No BM25 index, mixed runtime command, rendered-answer source-boundary display check, or cloud pilot has been added yet.
 - No new SEC 8-K data has been downloaded.
@@ -321,7 +327,7 @@ git diff --check -- src/connectors/sec_edgar_connector.py src/evidence/schema.py
 
 Result:
 
-- Targeted local tests: `48 passed`.
+- Targeted local tests: `50 passed`.
 - `py_compile` passed.
 - `git diff --check` passed.
 

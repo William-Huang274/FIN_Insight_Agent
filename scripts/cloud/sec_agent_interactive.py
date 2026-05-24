@@ -1255,7 +1255,7 @@ def _select_synthesis_evidence_pack(
     ledger_rows: list[dict[str, Any]],
     coverage_matrix: dict[str, Any],
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    default_rows = 96 if _uses_api_backend(args) else 48
+    default_rows = 48
     max_rows = _clamped_int_env("EVIDENCE_PACK_CONTEXT_ROWS", default_rows, 8, 96)
     selected_rows = qwen_adapter._select_prompt_context_rows(
         context_rows,

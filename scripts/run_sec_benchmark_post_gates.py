@@ -526,9 +526,11 @@ def main() -> None:
     ledger_unit = _read_json(ledger_unit_report) if ledger_unit_report else None
     qwen_gate_pass = True
     qwen_ratio = None
+    model_ratio = None
     if qwen_usage is not None:
         qwen_ratio = qwen_usage["qwen_ratio"]
-        qwen_gate_pass = True if qwen_ratio is None else qwen_ratio >= args.min_qwen_answer_ratio
+        model_ratio = qwen_usage.get("model_ratio", qwen_ratio)
+        qwen_gate_pass = True if model_ratio is None else model_ratio >= args.min_qwen_answer_ratio
     summary = {
         "schema_version": "sec_benchmark_post_gates_v0.1",
         "gold_run_dir": str((REPO_ROOT / args.gold_run_dir).resolve()),
@@ -616,6 +618,7 @@ def main() -> None:
         "ledger_unit_summary": (ledger_unit.get("summary") if ledger_unit else None),
         "min_qwen_answer_ratio": args.min_qwen_answer_ratio,
         "qwen_answer_ratio": qwen_ratio,
+        "model_answer_ratio": model_ratio,
         "qwen_answer_gate_pass": qwen_gate_pass,
         "qwen_usage": qwen_usage,
     }
@@ -651,10 +654,15 @@ def _qwen_usage(run_dir: Path, case_task_types: dict[str, str]) -> dict:
             "eligible_answered": 0,
             "qwen_answered": 0,
             "qwen_ledger_repaired": 0,
+            "api_model_answered": 0,
+            "api_model_repaired": 0,
+            "model_answered": 0,
+            "model_repaired": 0,
             "fallback_answered": 0,
             "failed_eligible_outputs": 0,
             "trap_outputs_excluded": 0,
             "qwen_ratio": 0.0,
+            "model_ratio": 0.0,
         }
     rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
     trap_rows = [
@@ -672,9 +680,14 @@ def _qwen_usage(run_dir: Path, case_task_types: dict[str, str]) -> dict:
     total_answered = len(answered)
     qwen_answered = sum(str(row.get("answer_status")) == "answered_qwen9b" for row in eligible)
     qwen_ledger_repaired = sum(str(row.get("answer_status")) == "answered_qwen9b_ledger_repair" for row in eligible)
+    api_model_answered = sum(str(row.get("answer_status")) == "answered_api_model" for row in eligible)
+    api_model_repaired = sum(_is_api_model_repair(row) for row in eligible)
+    model_answered = qwen_answered + api_model_answered
+    model_repaired = qwen_ledger_repaired + api_model_repaired
     fallback_answered = sum(_is_contract_fallback(row) for row in eligible)
     failed_eligible_outputs = sum(str(row.get("status")) != "answered" for row in eligible)
     qwen_ratio = (qwen_answered / len(eligible)) if eligible else None
+    model_ratio = (model_answered / len(eligible)) if eligible else None
     return {
         "total_outputs": len(rows),
         "total_answered": total_answered,
@@ -682,10 +695,15 @@ def _qwen_usage(run_dir: Path, case_task_types: dict[str, str]) -> dict:
         "eligible_answered": len(eligible_answered),
         "qwen_answered": qwen_answered,
         "qwen_ledger_repaired": qwen_ledger_repaired,
+        "api_model_answered": api_model_answered,
+        "api_model_repaired": api_model_repaired,
+        "model_answered": model_answered,
+        "model_repaired": model_repaired,
         "fallback_answered": fallback_answered,
         "failed_eligible_outputs": failed_eligible_outputs,
         "trap_outputs_excluded": len(trap_rows),
         "qwen_ratio": round(qwen_ratio, 4) if qwen_ratio is not None else None,
+        "model_ratio": round(model_ratio, 4) if model_ratio is not None else None,
     }
 
 
@@ -693,6 +711,11 @@ def _is_contract_fallback(row: dict) -> bool:
     answer_status = str(row.get("answer_status") or "")
     notes = " ".join(str(note) for note in row.get("score_notes") or [])
     return answer_status.startswith("answered_contract_fallback") or "backend_mode:contract_fallback" in notes
+
+
+def _is_api_model_repair(row: dict) -> bool:
+    answer_status = str(row.get("answer_status") or "")
+    return answer_status.startswith("answered_api_model_") and answer_status != "answered_api_model"
 
 
 if __name__ == "__main__":

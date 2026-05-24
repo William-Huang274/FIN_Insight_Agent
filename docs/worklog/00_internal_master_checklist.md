@@ -44,7 +44,9 @@
 - [x] Cloud-rerun the 2026 10-Q pilot after source-scope filtering changes.
 - [x] Fix 10-Q ledger role issues exposed by real DeepSeek output: false no-number caveats, MSFT gross-margin percentage-change rows, and MSFT operating-income growth amounts.
 - [ ] Gate mixed-source answers with explicit audited annual vs unaudited quarterly evidence boundaries.
-- [ ] Rebuild/version the 10-Q object index after multi-row table-header alignment changes.
+- [x] Rebuild/version the 10-Q object index after multi-row table-header alignment changes.
+- [x] Count clean API model answers in the post-gate model-answer usage check while keeping repaired/truncated outputs visible.
+- [ ] Cloud-rerun the patched 10-Q DeepSeek API prompt with a compact evidence pack and require clean `answered_api_model` output.
 - [x] EvidenceObject JSONL read/write smoke test.
 - [x] SEC tech EvidenceObject build smoke test.
 - [x] BM25 retrieval smoke test on MSFT/NVDA queries.

@@ -36,6 +36,8 @@
 - [x] Add SEC 10-Q five-company primary-filing pilot.
 - [x] Build mixed 10-K/10-Q manifest with filing-level period metadata.
 - [x] Parse 10-Q filings without reusing incorrect 10-K section labels.
+- [x] Run real DeepSeek API smoke on the 2026 10-Q pilot and render a placeholder-free answer.
+- [x] Add 10-Q runtime-ledger safeguards for AWS operating income, MSFT cloud growth percentages, and false operating-income/gross-margin rows.
 - [ ] Gate mixed-source answers with explicit audited annual vs unaudited quarterly evidence boundaries.
 - [x] EvidenceObject JSONL read/write smoke test.
 - [x] SEC tech EvidenceObject build smoke test.

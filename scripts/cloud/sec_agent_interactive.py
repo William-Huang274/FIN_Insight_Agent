@@ -1153,7 +1153,7 @@ def _ask_llm_server(
             "direct_answer/investment_thesis/summary 不得写精确数字或metric_id。"
             "what_changed/why_it_matters/peer_readthrough/counterarguments 若写精确数字，必须绑定 metric_ids/evidence_ids。"
             "counterarguments 要说明什么会削弱或推翻 thesis；watch_items 要说明未来SEC披露中该看什么。"
-            "watch_items.source_to_watch 必须使用枚举 future_10k 或 not_available_current_policy，不要写 SEC-only 等自由文本。"
+            "watch_items.source_to_watch 必须使用枚举 future_10k、future_10q、future_sec_filing 或 not_available_current_policy，不要写 SEC-only 等自由文本。"
             "watch_items 不要写 Direct Customer A/B 等匿名客户标签；应写 major customers 或 customer concentration 这类指标族观察项。"
             "why_it_matters 只解释 focus_tickers 的核心 Judgment Plan drivers；同行或竞争对手的定量指标必须放在 peer_readthrough，不要放进 why_it_matters。"
             "涉及竞争对手时必须区分直接竞争、间接替代、供应商/客户/云厂商自研或证据不足，不能只列公司名。"
@@ -1733,10 +1733,13 @@ def _build_runtime_ledger(
         if record.get("object_type") == "metric":
             row = _ledger_row_from_metric(case["case_id"], record)
             if row and _ledger_row_allowed(row, query_contract, context_by_object_id.get(object_id)):
-                key = _ledger_dedupe_key(row)
-                if key not in seen:
-                    rows.append(row)
-                    seen.add(key)
+                for candidate in [row, *_ledger_growth_rate_rows_from_metric(case["case_id"], record, row)]:
+                    if not _ledger_row_allowed(candidate, query_contract, context_by_object_id.get(object_id)):
+                        continue
+                    key = _ledger_dedupe_key(candidate)
+                    if key not in seen:
+                        rows.append(candidate)
+                        seen.add(key)
         elif record.get("object_type") == "table":
             for row in _ledger_rows_from_table(case["case_id"], record, set(case["years"])):
                 if not _ledger_row_allowed(row, query_contract, context_by_object_id.get(object_id)):
@@ -1755,7 +1758,7 @@ def _build_runtime_ledger(
 
 
 def _filing_year_from_source_id(value: Any) -> int | None:
-    match = re.search(r"_(20\d{2})_10K_", str(value or ""))
+    match = re.search(r"_(20\d{2})_(?:10K|10Q)_", str(value or ""))
     return int(match.group(1)) if match else None
 
 
@@ -1809,6 +1812,50 @@ def _ledger_row_from_metric(case_id: str, record: dict[str, Any]) -> dict[str, A
         "source_text": record.get("context"),
         "record_title": record.get("title"),
     }
+
+
+def _ledger_growth_rate_rows_from_metric(
+    case_id: str,
+    record: dict[str, Any],
+    base_row: dict[str, Any],
+) -> list[dict[str, Any]]:
+    context = str(record.get("context") or "")
+    family = str(base_row.get("metric_family") or "")
+    if family not in {
+        "advertising_revenue",
+        "cloud_revenue",
+        "data_center_revenue",
+        "infrastructure_software",
+        "operating_income",
+        "product_revenue",
+        "revenue",
+        "semiconductor_solutions",
+        "semiconductor_systems",
+        "services_revenue",
+        "subscription_revenue",
+        "total_revenue",
+    }:
+        return []
+    if not _contains_any(context.lower(), ("increase", "increased", "decrease", "decreased", "grew", "growth", "declined")):
+        return []
+    rows = []
+    for match in re.finditer(r"\bor\s+(-?\d+(?:\.\d+)?)\s*%", context, flags=re.I):
+        value = float(match.group(1))
+        raw = f"{match.group(1)}%"
+        row = dict(base_row)
+        row.update(
+            {
+                "metric_id": f"{case_id}::{base_row.get('ticker')}::{base_row.get('fiscal_year')}::{family}::percentage_rate",
+                "metric_role": "percentage_rate",
+                "metric_name": f"{base_row.get('metric_name') or family} growth rate",
+                "raw_value_text": raw,
+                "display_value_zh": raw,
+                "value": value,
+                "unit": "percent",
+            }
+        )
+        rows.append(row)
+    return rows[:2]
 
 
 def _ledger_rows_from_table(case_id: str, record: dict[str, Any], years: set[int]) -> list[dict[str, Any]]:
@@ -1939,16 +1986,17 @@ def _supplement_contract_metric_family_ledger(
             family = str(row.get("metric_family") or "")
             if family not in desired_families:
                 continue
+            force_segment_add = _is_high_value_segment_metric(row)
             row_year = str(row.get("fiscal_year") or "")
             key_by_family_ticker_year = (family, ticker, row_year)
-            if key_by_family_ticker_year in family_ticker_years:
+            if key_by_family_ticker_year in family_ticker_years and not force_segment_add:
                 continue
             covered_years = {
                 year
                 for row_family, row_ticker, year in family_ticker_years
                 if row_family == family and row_ticker == ticker and year
             }
-            if years and len(covered_years) >= len(years):
+            if years and len(covered_years) >= len(years) and not force_segment_add:
                 continue
             if not _ledger_row_allowed(row, query_contract, None):
                 continue
@@ -1961,6 +2009,25 @@ def _supplement_contract_metric_family_ledger(
             added += 1
             if added >= supplement_limit:
                 return
+
+
+def _is_high_value_segment_metric(row: dict[str, Any]) -> bool:
+    family = str(row.get("metric_family") or "")
+    if family not in {"cloud_revenue", "data_center_revenue", "operating_income"}:
+        return False
+    label = " ".join(str(row.get(key) or "") for key in ("metric_name", "row_label", "active_group", "table_title", "source_text")).lower()
+    return any(
+        term in label
+        for term in (
+            "aws",
+            "azure",
+            "cloud",
+            "data center",
+            "compute & networking",
+            "intelligent cloud",
+            "server products and cloud services",
+        )
+    )
 
 
 def _supplement_banking_context_ledger(
@@ -2948,7 +3015,7 @@ def _repair_query_contract_from_prompt(
         len(mentioned) >= 2 and _contains_any(lowered, ("和", "与", "哪个", "谁", "差异", "不同", "比较", "对比", "更", "compare"))
     )
     broad_ai_prompt = _is_broad_ai_scope_prompt(prompt_text, mentioned)
-    offscope_terms = _offscope_gap_terms(prompt_text)
+    offscope_terms = _offscope_gap_terms(prompt_text, years=years)
     risk_dominant_prompt = _contains_any(lowered, ("风险", "risk", "出口管制", "export control", "客户集中", "customer concentration", "供应风险"))
 
     if broad_ai_prompt:
@@ -3247,17 +3314,19 @@ def _append_contract_task(contract: dict[str, Any], task: dict[str, Any]) -> Non
     contract["decomposed_tasks"] = tasks[:8]
 
 
-def _offscope_gap_terms(prompt: str) -> list[str]:
+def _offscope_gap_terms(prompt: str, *, years: Iterable[int] | None = None) -> list[str]:
     text = str(prompt or "").lower()
     terms = []
+    available_years = {int(year) for year in years or [] if _int_or_none(year) is not None}
     checks = {
-        "2026": ("2026", "二零二六"),
         "市场预期": ("市场预期", "consensus", "forecast", "预测"),
         "forecast": ("forecast", "预测"),
         "stock": ("股价", "stock price", "share price"),
         "valuation": ("估值", "valuation", "p/e"),
         "macro": ("美联储", "降息", "macro", "fed", "federal reserve"),
     }
+    if 2026 not in available_years and _contains_any(text, ("2026", "二零二六")):
+        terms.append("2026")
     for label, aliases in checks.items():
         if _contains_any(text, aliases):
             terms.append(label)
@@ -3281,7 +3350,13 @@ def _apply_offscope_repairs(contract: dict[str, Any], gap_terms: list[str]) -> N
         caveats.append(caveat)
     contract["required_caveats"] = caveats[:10]
     forbidden = [str(item) for item in contract.get("forbidden_claims") or [] if str(item)]
-    forbidden_claim = "Do not answer with stock price, valuation, analyst consensus, macro scenario, 2026 forecast, news, earnings calls, 10-Q, or 8-K evidence."
+    allowed_forms = {str(item).upper() for item in contract.get("filing_types") or [] if str(item)}
+    blocked_forms = [form for form in ("10-K", "10-Q", "8-K") if form not in allowed_forms]
+    blocked_form_text = f", {', '.join(blocked_forms)} evidence" if blocked_forms else ""
+    forbidden_claim = (
+        "Do not answer with stock price, valuation, analyst consensus, macro scenario, "
+        f"forecast, news, earnings calls{blocked_form_text}."
+    )
     if forbidden_claim not in forbidden:
         forbidden.append(forbidden_claim)
     contract["forbidden_claims"] = forbidden[:10]
@@ -3289,7 +3364,7 @@ def _apply_offscope_repairs(contract: dict[str, Any], gap_terms: list[str]) -> N
         if not isinstance(task, dict):
             continue
         question = str(task.get("question_zh") or "")
-        if _contains_any(question.lower(), ("2026", "市场预期", "forecast", "股价", "估值", "valuation", "美联储", "降息", "macro")):
+        if _contains_any(question.lower(), tuple(term.lower() for term in gap_terms)):
             task["question_zh"] = _short_text(
                 f"{question}（该外部假设当前不支持/unsupported；只检索 SEC 内相关财务或风险披露。）",
                 240,
@@ -3298,7 +3373,7 @@ def _apply_offscope_repairs(contract: dict[str, Any], gap_terms: list[str]) -> N
         repaired_values = []
         for item in contract.get(key) or []:
             text = str(item)
-            if _contains_any(text.lower(), ("2026", "市场预期", "forecast", "股价", "估值", "valuation", "美联储", "降息", "macro")):
+            if _contains_any(text.lower(), tuple(term.lower() for term in gap_terms)):
                 text = f"unsupported under SEC-only source policy: {text}"
             repaired_values.append(text)
         if repaired_values:
@@ -3881,12 +3956,13 @@ def _format_evidence_refs(evidence_ids: list[str]) -> list[str]:
 
 
 def _short_evidence_ref(evidence_id: str) -> str:
-    match = re.match(r"^([A-Z]+)_(\d{4})_10K_(ITEM\d+[A-Z]?)", str(evidence_id or ""))
+    match = re.match(r"^([A-Z]+)_(\d{4})_(10K|10Q)_(ITEM\d+[A-Z]?)", str(evidence_id or ""))
     if not match:
         return str(evidence_id or "")[:80]
-    ticker, year, item = match.groups()
+    ticker, year, form, item = match.groups()
     item_text = item.replace("ITEM", "Item ")
-    return f"{ticker} {year} 10-K {item_text}"
+    form_text = form.replace("10K", "10-K").replace("10Q", "10-Q")
+    return f"{ticker} {year} {form_text} {item_text}"
 
 
 def _gateway_debug(result: dict[str, Any] | None) -> dict[str, Any]:
@@ -4482,7 +4558,8 @@ def _ledger_row_allowed(
     name = " ".join(str(row.get(key) or "") for key in ("metric_name", "row_label", "column_label"))
     name_lower = name.lower()
     source_signal_lower = " ".join(
-        str(row.get(key) or "") for key in ("metric_name", "row_label", "column_label", "record_title", "source_text")
+        str(row.get(key) or "")
+        for key in ("metric_name", "row_label", "column_label", "table_title", "record_title", "source_text")
     ).lower()
     row_text_lower = _ledger_row_text(row, context_row).lower()
     column_label_lower = str(row.get("column_label") or "").lower()
@@ -4571,7 +4648,12 @@ def _ledger_row_allowed(
         "total_revenue",
     }
     if family in revenue_like_families and row.get("unit") == "percent":
-        return False
+        is_growth_rate = str(row.get("metric_role") or "") == "percentage_rate" and _contains_any(
+            row_text_lower,
+            ("increase", "increased", "decrease", "decreased", "grew", "growth", "declined"),
+        )
+        if not is_growth_rate:
+            return False
     if family in revenue_like_families and row.get("unit") == "usd_millions":
         value = row.get("value")
         if isinstance(value, (int, float)) and 0 <= abs(float(value)) < 1000:
@@ -4584,8 +4666,22 @@ def _ledger_row_allowed(
         return False
     if family in revenue_like_families and not _has_revenue_measure_signal(family, row_text_lower):
         return False
-    if family == "operating_income" and not any(
+    is_operating_income_segment_table = "operating income by segment" in source_signal_lower
+    has_operating_income_name = any(
         term in name_lower for term in ("operating income", "income from operations", "operating profit", "营业利润", "经营利润")
+    )
+    if family == "operating_income" and not has_operating_income_name and not is_operating_income_segment_table:
+        return False
+    if family == "operating_income" and any(
+        term in name_lower
+        for term in (
+            "revenue",
+            "net sales",
+            "operating expense",
+            "operating expenses",
+            "cost of revenue",
+            "cost of sales",
+        )
     ):
         return False
     if family == "operating_income" and row.get("unit") == "percent":
@@ -4594,7 +4690,15 @@ def _ledger_row_allowed(
         return False
     if family == "operating_income" and any(
         term in source_signal_lower
-        for term in ("increase in operating income", "decrease in operating income", "effect of this change", "benefit of")
+        for term in (
+            "increase in operating income",
+            "decrease in operating income",
+            "effect of this change",
+            "benefit of",
+            "impacted operating income",
+            "impact on operating income",
+            "foreign exchange rates",
+        )
     ):
         return False
     if family == "operating_cash_flow" and "lease" in name_lower:
@@ -4612,6 +4716,18 @@ def _ledger_row_allowed(
         return False
     if family == "gross_margin" and row.get("unit") != "percent":
         return False
+    if family == "gross_margin":
+        if str(row.get("metric_role") or "") == "percentage_rate" and _contains_any(
+            row_text_lower,
+            ("increase", "increased", "decrease", "decreased", "grew", "growth", "declined"),
+        ):
+            return False
+        value = row.get("value")
+        raw_value = str(row.get("raw_value_text") or "")
+        if "%" not in raw_value and ("in millions" in source_signal_lower or "except percentages" in source_signal_lower):
+            return False
+        if isinstance(value, (int, float)) and abs(float(value)) > 100:
+            return False
     if family == "capital_expenditure_proxy" and not any(
         term in source_signal_lower
         for term in (
@@ -4625,7 +4741,7 @@ def _ledger_row_allowed(
     ):
         return False
     if family == "capital_expenditure_proxy" and any(
-        term in name_lower for term in ("operating activities", "financing activities", "free cash flow")
+        term in name_lower for term in ("operating activities", "investing activities", "financing activities", "free cash flow")
     ):
         return False
     if family == "capital_expenditure_proxy" and any(
@@ -5090,7 +5206,9 @@ def _append_rendered_items(lines: list[str], title: str, rows: list[Any], text_k
         metric_ids = [str(value) for value in (item.get("metric_ids") or item.get("supporting_metric_ids") or []) if str(value or "").strip()]
         evidence_ids = [str(value) for value in (item.get("evidence_ids") or item.get("supporting_evidence_ids") or []) if str(value or "").strip()]
         if metric_ids or evidence_ids:
-            lines.append(f"   - Support: {len(metric_ids)} metric refs, {len(evidence_ids)} evidence refs")
+            evidence_text = ", ".join(_format_evidence_refs(evidence_ids))
+            suffix = f"; evidence: {evidence_text}" if evidence_text else ""
+            lines.append(f"   - Support: {len(metric_ids)} metric refs, {len(evidence_ids)} evidence refs{suffix}")
     lines.append("")
 
 

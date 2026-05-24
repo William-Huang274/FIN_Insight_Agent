@@ -352,7 +352,7 @@ def _build_prompt(
         "what_changed 只写事实变化，必须带 metric_ids/evidence_ids；why_it_matters 写业务含义和二阶判断，必须带证据。"
         "peer_readthrough 仅在竞争/对比问题中使用，必须区分直接竞争、间接替代、供应商/客户/云厂商自研或证据不足，不能只列公司名。"
         "counterarguments 至少 2 条：说明什么证据会削弱或推翻 thesis；watch_items 至少 3 条：说明未来 SEC 披露中应该观察的指标或当前 source policy 下无法观察的事项。"
-        "watch_items.source_to_watch 必须使用枚举 future_10k 或 not_available_current_policy，不要写 SEC-only 等自由文本。"
+        "watch_items.source_to_watch 必须使用枚举 future_10k、future_10q、future_sec_filing 或 not_available_current_policy，不要写 SEC-only 等自由文本。"
         "watch_items 不要写 Direct Customer A/B 等匿名客户标签；应写 major customers 或 customer concentration 这类指标族观察项。"
         "source_limitations 必须短且具体，不能只写泛泛的 SEC-only。"
         "长度控制：what_changed 最多 4 条，why_it_matters 最多 4 条，peer_readthrough 最多 4 条，counterarguments 最多 2 条，watch_items 最多 3 条；每个文本字段 1-2 句。\n"
@@ -465,7 +465,7 @@ def _output_schema_for_profile(summary_hint: str, table_schema: str, api_memo_mo
         '    {"claim": "可能削弱thesis的反证或风险", "why_it_could_weaken_thesis": "...", "metric_ids": ["..."], "evidence_ids": ["..."], "confidence": "high|medium|low"}\n'
         "  ],\n"
         '  "watch_items": [\n'
-        '    {"item": "未来要观察的SEC指标/披露", "why_it_matters": "...", "source_to_watch": "future_10k|not_available_current_policy", "metric_family": "..."}\n'
+        '    {"item": "未来要观察的SEC指标/披露", "why_it_matters": "...", "source_to_watch": "future_10k|future_10q|future_sec_filing|not_available_current_policy", "metric_family": "..."}\n'
         "  ],\n"
         '  "source_limitations": ["具体证据边界"],\n'
         '  "not_found": [],\n'
@@ -1100,8 +1100,12 @@ def _normalize_watch_items(value: Any) -> list[dict[str, str]]:
 def _normalize_source_to_watch(value: Any) -> str:
     text = str(value or "").strip()
     lower = text.lower()
+    if "future_10q" in lower or "10-q" in lower or "10q" in lower:
+        return "future_10q"
     if "future_10k" in lower or ("future" in lower and "10-k" in lower):
         return "future_10k"
+    if "future_sec" in lower or ("future" in lower and "filing" in lower):
+        return "future_sec_filing"
     if "not_available" in lower or "unavailable" in lower or "sec-only" in lower or "source policy" in lower:
         return "not_available_current_policy"
     return text or "future_10k"
@@ -2308,6 +2312,25 @@ def _sanitize_unsupported_exact_values(
             )
         )
     ]
+    placeholder_markers = ("当前引用未保留", "精确金额未获当前引用保留", "精确比例未获当前引用保留")
+    memo_text_keys = {
+        "what_changed": ("claim",),
+        "why_it_matters": ("insight", "business_implication"),
+        "peer_readthrough": ("peer_or_group", "role", "readthrough", "caveat"),
+        "counterarguments": ("claim", "why_it_could_weaken_thesis", "caveat"),
+    }
+    for list_key, text_keys in memo_text_keys.items():
+        answer[list_key] = [
+            item
+            for item in answer.get(list_key) or []
+            if not (
+                isinstance(item, dict)
+                and any(
+                    marker in " ".join(str(item.get(key) or "") for key in text_keys)
+                    for marker in placeholder_markers
+                )
+            )
+        ]
     for key in ("not_found", "limitations"):
         cleaned = []
         for item in answer.get(key) or []:

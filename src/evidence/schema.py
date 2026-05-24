@@ -8,7 +8,11 @@ from pydantic import BaseModel, Field
 
 
 SourceType = Literal["10-K", "10-Q", "8-K", "annual_report"]
-SourceTier = Literal["primary_filing", "primary_sec_filing"]
+SourceTier = Literal[
+    "primary_filing",
+    "primary_sec_filing",
+    "company_authored_unaudited_sec_filing",
+]
 
 
 class EvidenceObject(BaseModel):

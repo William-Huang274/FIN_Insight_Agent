@@ -1,4 +1,5 @@
 from .parse_sec_filing import build_chunks_for_filing, extract_sec_html_text
+from .sec_8k_earnings_parser import build_8k_earnings_chunks
 from .section_splitter import (
     SecFilingChunk,
     SecFilingSection,
@@ -15,6 +16,7 @@ __all__ = [
     "SecFilingChunk",
     "SecFilingSection",
     "SecSemanticBlock",
+    "build_8k_earnings_chunks",
     "build_chunks_for_filing",
     "build_semantic_blocks",
     "extract_sec_html_text",

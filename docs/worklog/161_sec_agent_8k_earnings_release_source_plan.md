@@ -282,12 +282,52 @@ P1 应先接 SEC EDGAR 路径下的 8-K earnings release，而不是直接接 IR
 ## Work Completed
 
 - Created the P1 source-specific plan.
-- No source connector, parser, downloader, index, or runtime chain has been changed yet.
+- Implemented the first source-contract slice:
+  - widened `EvidenceObject.SourceTier` to allow `company_authored_unaudited_sec_filing`;
+  - added `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS` to Query Contract source-policy inference, Context API, tool harness, controller routing defaults, and interactive planner/runtime policy helpers;
+  - added `configs/sec_tech_8k_earnings_pilot_2026_2027.yaml` for the 5-company pilot scope.
+- Implemented connector-side 8-K earnings-release discovery:
+  - `SecEdgarConnector.find_earnings_release_8k(...)` finds `8-K` rows for a filing year, requires earnings-related filing items, fetches filing detail `index.json`, parses the primary 8-K exhibit table, and selects an earnings-release `EX-99.1` / `EX-99.01` / `EX-99` exhibit by type and description;
+  - investor-presentation, slide, webcast, and transcript exhibits are explicitly rejected in this selector;
+  - selected metadata carries `source_tier=company_authored_unaudited_sec_filing`, `source_policy=SEC_PRIMARY_MIXED_WITH_8K_EARNINGS`, exhibit URL, accession, filing date, and unaudited/current-report period metadata.
+- Added pilot download/manifest entry points:
+  - `scripts/download_sec_8k_earnings.py` reads `configs/sec_tech_8k_earnings_pilot_2026_2027.yaml`, selects one earnings-release 8-K exhibit per ticker/year, and writes raw SEC HTML/metadata under private cache layout `data/raw_private/sec_8k_earnings/<filing_year>/<category>/<ticker>/<accession>/`;
+  - `scripts/build_sec_8k_earnings_manifest.py` converts the private cache metadata into a `SecFilingManifestRecord` JSONL manifest at `data/processed_private/manifests/sec_tech_8k_earnings_pilot_manifest_2026_2027.jsonl`;
+  - both paths stay under private ignored directories for raw SEC artifacts and generated manifests.
+- Added parser/chunker support:
+  - `src/ingestion/sec_8k_earnings_parser.py` parses the selected earnings-release exhibit instead of forcing it through 10-K/10-Q Item splitting;
+  - `scripts/build_sec_8k_earnings_chunks.py` converts the 8-K earnings manifest into source-bounded `SecFilingChunk` JSONL;
+  - chunks carry `source_boundary=company_authored_unaudited_sec_filing`, `unaudited=true`, `management_view=true`, and `exclude_from_exact_value_ledger=true`;
+  - reported period hints such as quarter ended date, fiscal quarter, and fiscal year are captured as metadata when present.
+- Added runtime source-boundary gate text for `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS` so cases explicitly forbid treating 8-K earnings-release evidence as audited 10-K/10-Q financial statement evidence.
+- Added local tests for:
+  - EvidenceObject accepting the unaudited 8-K source tier;
+  - Query Contract recognizing mixed 10-K/10-Q/8-K with the new source policy and caveat;
+  - Context API and tool harness accepting the new policy without executing the graph;
+  - runtime case generation injecting the 8-K unaudited source-boundary gate;
+  - SEC connector selecting an earnings-release Ex-99.1, downloading its exhibit cache, and rejecting an investor-presentation Ex-99.1;
+  - 8-K earnings manifest builder preserving exhibit HTML paths, current-report period metadata, and unaudited source tier;
+  - 8-K earnings parser producing source-bounded chunks and EvidenceObject records.
+- No BM25 index, mixed runtime command, rendered-answer source-boundary display check, or cloud pilot has been added yet.
 - No new SEC 8-K data has been downloaded.
+
+Validation:
+
+```powershell
+python -m pytest tests/test_sec_agent_8k_earnings_source.py tests/test_sec_agent_context_source_policy.py tests/test_sec_agent_10q_source_contract.py tests/test_sec_benchmark_eval_mixed_context.py -q
+python -m py_compile src/connectors/sec_edgar_connector.py src/evidence/schema.py src/evidence/evidence_builder.py src/ingestion/sec_8k_earnings_parser.py src/ingestion/__init__.py src/sec_agent/query_contract.py src/sec_agent/tool_harness.py src/sec_agent/tool_controller.py src/sec_agent/context_api.py scripts/cloud/sec_agent_interactive.py scripts/download_sec_8k_earnings.py scripts/build_sec_8k_earnings_manifest.py scripts/build_sec_8k_earnings_chunks.py
+git diff --check -- src/connectors/sec_edgar_connector.py src/evidence/schema.py src/evidence/evidence_builder.py src/ingestion/sec_8k_earnings_parser.py src/ingestion/__init__.py src/sec_agent/query_contract.py src/sec_agent/tool_harness.py src/sec_agent/tool_controller.py src/sec_agent/context_api.py scripts/cloud/sec_agent_interactive.py tests/test_sec_agent_8k_earnings_source.py configs/sec_tech_8k_earnings_pilot_2026_2027.yaml scripts/download_sec_8k_earnings.py scripts/build_sec_8k_earnings_manifest.py scripts/build_sec_8k_earnings_chunks.py docs/worklog/161_sec_agent_8k_earnings_release_source_plan.md docs/worklog/README.md docs/worklog/00_internal_master_checklist.md
+```
+
+Result:
+
+- Targeted local tests: `48 passed`.
+- `py_compile` passed.
+- `git diff --check` passed.
 
 ## Follow-Up
 
-- Implement the P1 source contract and connector changes first.
+- Run a real SEC 8-K pilot download/build on cloud, then build the pilot BM25 index and run mixed retrieval smoke.
 - Keep all P1 artifacts in pilot-specific paths until source selection, retrieval, renderer labels, and gates pass.
 - Update this document after implementation with concrete artifact paths, row counts, tests, and cloud run IDs.
 

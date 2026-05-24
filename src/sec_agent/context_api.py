@@ -387,7 +387,7 @@ def _can_bootstrap_new_session(snapshot: dict[str, Any]) -> bool:
 
 def _default_source_policy() -> str:
     value = str(os.environ.get("SEC_AGENT_SOURCE_POLICY") or "SEC_ONLY_10K").strip()
-    if value in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT"}:
+    if value in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT", "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"}:
         return value
     return "SEC_ONLY_10K"
 

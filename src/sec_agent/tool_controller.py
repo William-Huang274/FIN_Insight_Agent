@@ -29,7 +29,7 @@ Routing rules:
 - Use resume_analysis when the user asks to continue an interrupted or partial analysis.
 
 Constraints:
-- Supported source policies are SEC_ONLY_10K and SEC_PRIMARY_MIXED_RECENT.
+- Supported source policies are SEC_ONLY_10K, SEC_PRIMARY_MIXED_RECENT, and SEC_PRIMARY_MIXED_WITH_8K_EARNINGS.
 - Use the runtime default source policy when starting or revising memo analysis.
 - Never call external news, market data, price, analyst consensus, or web tools.
 - Keep session_id, user_id, tenant_id, and active_answer_id isolated to the runtime context.
@@ -713,7 +713,7 @@ def _default_source_policy(context: dict[str, Any]) -> str:
     ]
     for value in candidates:
         policy = str(value or "").strip()
-        if policy in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT"}:
+        if policy in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT", "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"}:
             return policy
     return "SEC_ONLY_10K"
 

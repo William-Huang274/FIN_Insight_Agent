@@ -22,6 +22,10 @@ QUARTERLY_EVIDENCE_TYPE_BY_ITEM = {
     "4": "controls_disclosure",
     "1A": "risk_disclosure",
 }
+EIGHT_K_EVIDENCE_TYPE_BY_ITEM = {
+    "exhibit_99_1": "management_commentary",
+    "2.02": "management_commentary",
+}
 
 
 def build_evidence_from_chunks(
@@ -113,6 +117,9 @@ def infer_topics(chunk: SecFilingChunk) -> list[str]:
 
 
 def _evidence_type_for_chunk(chunk: SecFilingChunk) -> str:
-    if str(chunk.form_type or chunk.source_type or "").upper() == "10-Q":
+    form = str(chunk.form_type or chunk.source_type or "").upper()
+    if form == "8-K":
+        return EIGHT_K_EVIDENCE_TYPE_BY_ITEM.get(chunk.item_code, "company_authored_disclosure")
+    if form == "10-Q":
         return QUARTERLY_EVIDENCE_TYPE_BY_ITEM.get(chunk.item_code, "filing_disclosure")
     return EVIDENCE_TYPE_BY_ITEM.get(chunk.item_code, "filing_disclosure")

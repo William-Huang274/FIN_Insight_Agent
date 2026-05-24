@@ -248,9 +248,11 @@
 - [x] Record the new information-source expansion governance stage before adding 8-K, IR, market snapshot, consensus, or news sources.
 - [x] Draft the first source-specific plan for SEC 8-K earnings release / Exhibit 99.1 before implementation.
 - [ ] Implement the 8-K earnings-release pilot only after source contract, parser schema, retrieval/coverage, renderer/gate, and rollback criteria are documented.
-- [ ] Extend source contracts for `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS` and `company_authored_unaudited_sec_filing`.
-- [ ] Add SEC 8-K earnings-release discovery and Ex-99.1 exhibit selection for the 5-company pilot.
-- [ ] Add 8-K earnings-release parser/chunker and renderer/gate source-boundary tests before cloud pilot.
+- [x] Extend source contracts for `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS` and `company_authored_unaudited_sec_filing`.
+- [x] Add SEC 8-K earnings-release discovery and Ex-99.1 exhibit selection for the 5-company pilot.
+- [x] Add 8-K earnings-release downloader/manifest builder for the 5-company pilot.
+- [x] Add 8-K earnings-release parser/chunker and runtime source-boundary gate tests before cloud pilot.
+- [ ] Add rendered-answer source-boundary display check after first 8-K evidence artifacts exist.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
 - [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.
 - [ ] Validate earlier-node resume from a real partial replay, especially `build_coverage_matrix` or `build_judgment_plan`.

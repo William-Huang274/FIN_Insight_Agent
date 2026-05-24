@@ -317,6 +317,13 @@ def _source_policy_for_scope(filing_types: list[str], source_tiers: list[str]) -
     forms = {str(form).upper() for form in filing_types if str(form)}
     tiers = {str(tier) for tier in source_tiers if str(tier)}
     primary_sec_only = not tiers or tiers <= {"primary_sec_filing"}
+    mixed_with_8k = bool(
+        "8-K" in forms
+        and "company_authored_unaudited_sec_filing" in tiers
+        and tiers <= {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
+    )
+    if mixed_with_8k:
+        return "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
     if primary_sec_only and forms == {"10-K"}:
         return "SEC_ONLY_10K"
     if primary_sec_only and forms and forms <= {"10-K", "10-Q"} and "10-Q" in forms:
@@ -335,6 +342,10 @@ def _source_policy_caveats(filing_types: list[str]) -> tuple[str, ...]:
         )
     if {"10-K", "10-Q"} <= forms:
         caveats.append("When 10-K and 10-Q evidence both appear, label audited annual versus unaudited quarterly boundaries.")
+    if "8-K" in forms:
+        caveats.append(
+            "8-K earnings-release evidence is company-authored unaudited management material; do not treat it as audited financial statement evidence."
+        )
     return tuple(caveats)
 
 
@@ -420,6 +431,8 @@ def _period_type_for_form(form_type: str) -> str:
         return "annual"
     if form == "10-Q":
         return "quarterly"
+    if form == "8-K":
+        return "current_report"
     return "unknown"
 
 

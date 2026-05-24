@@ -2743,6 +2743,7 @@ def _build_case(
             "All precise numeric values must come from the runtime Exact-Value Ledger.",
             "State not_found when SEC context or ledger does not support a requested exact metric.",
             "Caveat segment-definition, proxy-metric, and source-boundary limitations.",
+            *_source_policy_gold_points(source_policy),
         ],
         "numeric_checks": _generic_numeric_checks(prompt, tickers, years, query_contract),
         "hard_gates": [
@@ -2756,10 +2757,30 @@ def _build_case(
             "Do not use non-SEC sources.",
             "Do not infer exact values or market share when the ledger does not provide them.",
             "Do not attribute another company's segment or product metric to the scoped companies.",
+            *_source_policy_hallucination_traps(source_policy),
         ],
         "failure_types": failure_types,
         "score_weights": {"retrieval": 2, "factuality": 3, "coverage": 2, "synthesis": 2, "citation": 1},
     }
+
+
+def _source_policy_gold_points(source_policy: str) -> list[str]:
+    if source_policy == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS":
+        return [
+            "Label 8-K earnings-release evidence as company-authored unaudited material.",
+            "Do not use 8-K earnings-release values as audited Exact-Value Ledger facts.",
+        ]
+    if source_policy == "SEC_PRIMARY_MIXED_RECENT":
+        return ["Label 10-Q evidence as unaudited quarterly material when relevant."]
+    return []
+
+
+def _source_policy_hallucination_traps(source_policy: str) -> list[str]:
+    if source_policy == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS":
+        return [
+            "Do not treat company-authored 8-K earnings-release evidence as audited 10-K/10-Q financial statement evidence."
+        ]
+    return []
 
 
 def _semantic_gate_policy_for_prompt(
@@ -3320,8 +3341,8 @@ def _query_planner_system_prompt(project_inventory: dict[str, Any], tickers: lis
         f"- required_metric_families / metric_families 只能优先使用这些 ontology 名称：{ontology}\n"
         "- focus_tickers 必须来自 SELECTED COMPANY FILINGS；如果用户问全局趋势，可以选择一个 evidence-relevant 子集，但 search_scope 仍由系统保留。\n"
         "- years 必须来自候选 scope；不要规划项目没有的年份。\n"
-        "- filing_types 必须来自 SELECTED COMPANY FILINGS；如 ACTIVE SOURCE POLICY 是 SEC_PRIMARY_MIXED_RECENT 且 10-Q 可用，必须保留 10-Q 及其未经审计季报边界。\n"
-        "- source_tiers 只能来自 PROJECT SOURCE INVENTORY；Stage 1 只允许 primary_sec_filing。\n"
+        "- filing_types 必须来自 SELECTED COMPANY FILINGS；如 ACTIVE SOURCE POLICY 是 SEC_PRIMARY_MIXED_RECENT 且 10-Q 可用，必须保留 10-Q 及其未经审计季报边界；如 ACTIVE SOURCE POLICY 是 SEC_PRIMARY_MIXED_WITH_8K_EARNINGS 且 8-K 可用，必须保留 8-K 但标注公司未审计管理层口径。\n"
+        "- source_tiers 只能来自 PROJECT SOURCE INVENTORY；10-K/10-Q 使用 primary_sec_filing，8-K earnings release 使用 company_authored_unaudited_sec_filing。\n"
         "- decomposed_tasks 要服务于用户问题，避免机械套用行业模板；宽问题至少拆成 2 个任务。\n"
         "- 如果用户问银行盈利质量、净息差、存贷款或信用风险，优先使用银行指标族："
         "net_interest_income、net_interest_margin、provision_for_credit_losses、net_charge_offs、"
@@ -3338,8 +3359,8 @@ def _query_planner_system_prompt(project_inventory: dict[str, Any], tickers: lis
         '  "task_type": "...",\n'
         '  "focus_tickers": ["..."],\n'
         '  "years": [2023],\n'
-        '  "filing_types": ["10-K", "10-Q"],\n'
-        '  "source_tiers": ["primary_sec_filing"],\n'
+        '  "filing_types": ["10-K", "10-Q", "8-K"],\n'
+        '  "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],\n'
         '  "analysis_axes": ["growth", "profitability"],\n'
         '  "facets": ["..."],\n'
         '  "metric_families": ["..."],\n'
@@ -3531,7 +3552,7 @@ def _repair_query_contract_from_prompt(
 
 def _runtime_source_policy() -> str:
     value = str(os.environ.get("SEC_AGENT_SOURCE_POLICY") or "").strip()
-    if value in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT"}:
+    if value in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT", "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"}:
         return value
     return ""
 
@@ -3539,6 +3560,10 @@ def _runtime_source_policy() -> str:
 def _source_policy_filing_types(current: list[str], allowed: list[str]) -> list[str]:
     allowed_set = {str(form or "").upper().strip() for form in allowed if str(form or "").strip()}
     current_set = {str(form or "").upper().strip() for form in current if str(form or "").strip()}
+    if _runtime_source_policy() == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS":
+        mixed = [form for form in ("10-K", "10-Q", "8-K") if form in allowed_set]
+        if mixed:
+            return mixed
     if _runtime_source_policy() == "SEC_PRIMARY_MIXED_RECENT":
         mixed = [form for form in ("10-K", "10-Q") if form in allowed_set]
         if mixed:
@@ -3550,6 +3575,8 @@ def _source_policy_filing_types(current: list[str], allowed: list[str]) -> list[
 
 def _source_policy_for_filing_types(filing_types: list[str]) -> str:
     forms = {str(form or "").upper().strip() for form in filing_types if str(form or "").strip()}
+    if "8-K" in forms:
+        return "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
     if forms == {"10-K"}:
         return "SEC_ONLY_10K"
     if forms and forms <= {"10-K", "10-Q"} and "10-Q" in forms:
@@ -4627,8 +4654,8 @@ def _parse_years(value: str) -> list[int]:
 
 
 def _default_years_for_runtime_source_policy() -> list[int]:
-    if _runtime_source_policy() == "SEC_PRIMARY_MIXED_RECENT":
-        return [2023, 2024, 2025, 2026]
+    if _runtime_source_policy() in {"SEC_PRIMARY_MIXED_RECENT", "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"}:
+        return [2023, 2024, 2025, 2026, 2027]
     return list(DEFAULT_YEARS)
 
 

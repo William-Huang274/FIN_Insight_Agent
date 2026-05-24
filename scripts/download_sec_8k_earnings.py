@@ -1,0 +1,149 @@
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = REPO_ROOT / "src"
+sys.path.insert(0, str(SRC_ROOT))
+
+from connectors import SecEdgarConnector, SecEdgarConnectorError  # noqa: E402
+
+
+def load_env_file(path: Path) -> None:
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+def parse_csv_filter(raw: str | None) -> set[str] | None:
+    if not raw:
+        return None
+    return {value.strip().upper() for value in raw.split(",") if value.strip()}
+
+
+def parse_year_filter(raw: str | None) -> set[int] | None:
+    if not raw:
+        return None
+    return {int(value.strip()) for value in raw.split(",") if value.strip()}
+
+
+def load_config(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Download SEC 8-K earnings-release exhibits for a configured pilot universe."
+    )
+    parser.add_argument(
+        "--config",
+        default="configs/sec_tech_8k_earnings_pilot_2026_2027.yaml",
+        help="Pilot universe YAML config.",
+    )
+    parser.add_argument(
+        "--cache-dir",
+        default=os.getenv("SEC_8K_EARNINGS_CACHE_DIR", "data/raw_private/sec_8k_earnings"),
+        help="Private 8-K earnings-release cache directory.",
+    )
+    parser.add_argument(
+        "--user-agent",
+        default=os.getenv("SEC_USER_AGENT"),
+        help="SEC User-Agent. Defaults to SEC_USER_AGENT.",
+    )
+    parser.add_argument("--tickers", help="Optional comma-separated ticker filter.")
+    parser.add_argument("--years", help="Optional comma-separated filing-year filter.")
+    parser.add_argument(
+        "--after-date",
+        help="Optional filing-date lower bound in YYYY-MM-DD; only later 8-K rows are selected.",
+    )
+    parser.add_argument("--limit", type=int, help="Optional max filings to process.")
+    parser.add_argument("--dry-run", action="store_true", help="Print planned fetches only.")
+    parser.add_argument(
+        "--allow-missing",
+        action="store_true",
+        help="Return success when some requested earnings-release 8-Ks are missing.",
+    )
+    parser.add_argument("--rate-limit", type=float, default=2.0)
+    return parser.parse_args()
+
+
+def main() -> None:
+    load_env_file(REPO_ROOT / ".env")
+    args = parse_args()
+    config = load_config(REPO_ROOT / args.config)
+
+    user_agent = args.user_agent or os.getenv("SEC_USER_AGENT") or "FinSight-Agent/0.1 contact@example.com"
+    ticker_filter = parse_csv_filter(args.tickers)
+    year_filter = parse_year_filter(args.years)
+    years = [int(year) for year in config.get("years", [])]
+    if year_filter is not None:
+        years = [year for year in years if year in year_filter]
+    companies = config.get("companies", [])
+    if ticker_filter is not None:
+        companies = [company for company in companies if str(company.get("ticker") or "").upper() in ticker_filter]
+
+    connector = SecEdgarConnector(
+        user_agent=user_agent,
+        cache_dir=REPO_ROOT / args.cache_dir,
+        log_path=REPO_ROOT / "data/logs/download_log.jsonl",
+        rate_limit=args.rate_limit,
+    )
+
+    processed = 0
+    failures: list[dict[str, Any]] = []
+    for year in years:
+        for company in companies:
+            if args.limit is not None and processed >= args.limit:
+                break
+            ticker = str(company["ticker"]).upper()
+            category = str(company.get("category") or "uncategorized")
+            category_slug = str(company.get("category_slug") or category)
+            planned = {
+                "ticker": ticker,
+                "year": year,
+                "form_type": "8-K",
+                "source_tier": "company_authored_unaudited_sec_filing",
+                "category": category,
+                "category_slug": category_slug,
+            }
+            if args.dry_run:
+                print(json.dumps(planned, ensure_ascii=False))
+                processed += 1
+                continue
+            try:
+                result = connector.fetch_earnings_release_8k(
+                    ticker=ticker,
+                    year=year,
+                    after_date=args.after_date,
+                    category=category,
+                    category_slug=category_slug,
+                )
+                print(json.dumps(result, ensure_ascii=False))
+            except SecEdgarConnectorError as exc:
+                failure = {**planned, "error": str(exc)}
+                failures.append(failure)
+                print(json.dumps(failure, ensure_ascii=False), file=sys.stderr)
+            processed += 1
+        if args.limit is not None and processed >= args.limit:
+            break
+
+    if failures and not args.allow_missing:
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()

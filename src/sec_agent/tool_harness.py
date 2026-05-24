@@ -21,7 +21,11 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SESSION_ROOT = REPO_ROOT / "eval" / "sec_cases" / "session_harness"
 SESSION_SCHEMA_VERSION = "sec_agent_session_state_v0.1"
 TOOL_RESULT_SCHEMA_VERSION = "sec_agent_tool_result_v0.1"
-SUPPORTED_SOURCE_POLICIES = {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT"}
+SUPPORTED_SOURCE_POLICIES = {
+    "SEC_ONLY_10K",
+    "SEC_PRIMARY_MIXED_RECENT",
+    "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+}
 
 ANALYSIS_ARTIFACT_KEYS = (
     "query_contract",
@@ -711,8 +715,8 @@ def _default_years_for_source_policy(source_policy: str) -> list[int]:
                 continue
         if years:
             return sorted(dict.fromkeys(years))
-    if str(source_policy or "").strip() == "SEC_PRIMARY_MIXED_RECENT":
-        return [2023, 2024, 2025, 2026]
+    if str(source_policy or "").strip() in {"SEC_PRIMARY_MIXED_RECENT", "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"}:
+        return [2023, 2024, 2025, 2026, 2027]
     return [2023, 2024, 2025]
 
 

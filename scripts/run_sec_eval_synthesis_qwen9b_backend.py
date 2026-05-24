@@ -226,6 +226,11 @@ def _build_prompt(
                 "metric_id": row.get("metric_id"),
                 "ticker": row.get("ticker"),
                 "fiscal_year": row.get("fiscal_year"),
+                "period": row.get("period"),
+                "period_role": row.get("period_role") or "unknown",
+                "period_end": row.get("period_end"),
+                "fiscal_period": row.get("fiscal_period"),
+                "form_type": row.get("form_type") or row.get("source_type"),
                 "metric_family": row.get("metric_family"),
                 "metric_role": row.get("metric_role"),
                 "metric_display_name_zh": metric_contract["display_name_zh"],
@@ -350,8 +355,9 @@ def _build_prompt(
         "memo fields 是 direct_answer、investment_thesis、what_changed、why_it_matters、peer_readthrough、counterarguments、watch_items、source_limitations。"
         "direct_answer 必须 1-2 句直接回答用户；investment_thesis 必须 3-5 句形成可争辩观点。"
         "what_changed 只写事实变化，必须带 metric_ids/evidence_ids；why_it_matters 写业务含义和二阶判断，必须带证据。"
-        "peer_readthrough 仅在竞争/对比问题中使用，必须区分直接竞争、间接替代、供应商/客户/云厂商自研或证据不足，不能只列公司名。"
-        "counterarguments 至少 2 条：说明什么证据会削弱或推翻 thesis；watch_items 至少 3 条：说明未来 SEC 披露中应该观察的指标或当前 source policy 下无法观察的事项。"
+        "peer_readthrough 仅在明确涉及同行/竞争对手且有当前 metric_ids/evidence_ids 支撑时使用；单公司跨期比较或无同行证据时必须输出空数组。"
+        "counterarguments 只能写当前证据支持的反向证据，必须带 metric_ids/evidence_ids；未来可能削弱 thesis 的待观察事项必须放入 watch_items 或 source_limitations，不要写成 counterarguments。"
+        "watch_items 至少 3 条：说明未来 SEC 披露中应该观察的指标或当前 source policy 下无法观察的事项。"
         "watch_items.source_to_watch 必须使用枚举 future_10k、future_10q、future_sec_filing 或 not_available_current_policy，不要写 SEC-only 等自由文本。"
         "watch_items 不要写 Direct Customer A/B 等匿名客户标签；应写 major customers 或 customer concentration 这类指标族观察项。"
         "source_limitations 必须短且具体，不能只写泛泛的 SEC-only。"
@@ -388,6 +394,10 @@ def _build_prompt(
         "8. 必须按 Metric Naming Rules 命名指标，不能使用 disallowed_claim_terms_zh。\n"
         "9. RPO 只能称为“剩余履约义务（RPO）”，不能称为预测经常性收入或预测数据。\n"
         "10. Billings 只能称为“Billings/账单额/开票额”，不能称为收入；必须说明它不同于确认收入。\n"
+        "10a. Exact-Value Ledger 的 period_role 是硬语义字段：annual=年报全年，qtd=单季度，ytd=年初至今，ttm=过去十二个月，instant=时点数。"
+        "如果同时出现 annual/qtd/ytd/ttm/instant，必须在结论或 caveat 中明确区分，不能把不同 period_role 的数值当成同一口径直接比较。\n"
+        "10b. 不得把 cloud_revenue、services_revenue 或普通服务收入推断为 ARR、订阅收入、经常性收入特征、续费质量或高粘性订阅模式；"
+        "只有当前 ledger/context 明确含 subscription_revenue、arr_or_recurring_proxy、deferred_revenue 或 RPO 支撑时才可这样表述。\n"
         "11. 只讨论当前 case 的 ledger metrics；不要把不属于当前 case 的公司或指标写进 limitations。\n"
         "12. 如果任务包含多个年份，必须区分各年份新增、持续或重复披露的关键变化，不能把所有年份压成一条泛化趋势。\n"
         "13. 对 Evidence Text 中直接支撑结论的命名产品、架构、合作关系、监管事项或风险机制要保留名称；但仍不能复述未授权精确数值。\n"
@@ -927,6 +937,11 @@ def _normalize_answer(
         "limitations": _string_list(answer.get("limitations")),
     }
     normalized = _ensure_legacy_fields_from_memo(normalized)
+    if case and not _case_allows_peer_readthrough(case):
+        peer_count = len(normalized.get("peer_readthrough") or [])
+        normalized["peer_readthrough"] = []
+        if peer_count:
+            normalized["_peer_readthrough_contract_sanitized_count"] = peer_count
     normalized = _ensure_comparability_source_limitation(normalized)
     requires_cell_table = _requires_cell_table_case(case or {}, ledger_rows)
     cell_table = _normalize_cell_table(answer.get("cell_table"), ledger_rows, allowed_evidence_ids)
@@ -963,6 +978,7 @@ def _normalize_answer(
     normalized, sanitized_count = _sanitize_unsupported_exact_values(normalized, ledger_rows)
     normalized = _remove_false_missing_ledger_claims(normalized, ledger_rows)
     normalized, named_sanitized_count = _sanitize_unsupported_named_facts(normalized, context_rows, ledger_rows)
+    normalized, metric_role_sanitized_count = _sanitize_metric_role_term_overclaims(normalized, ledger_rows)
     if case:
         normalized = _ensure_required_caveats(normalized, case)
         normalized = _ensure_required_not_found(normalized, case)
@@ -986,6 +1002,7 @@ def _normalize_answer(
     normalized["_qwen_output_status"] = "valid_json"
     normalized["_ledger_text_contract_sanitized_count"] = sanitized_count
     normalized["_named_fact_contract_sanitized_count"] = named_sanitized_count
+    normalized["_metric_role_term_sanitized_count"] = metric_role_sanitized_count
     return normalized
 
 
@@ -1003,6 +1020,7 @@ def _normalize_memo_fields(
             allowed_evidence_ids,
             text_keys=("claim",),
             extra_keys=("confidence",),
+            require_support=True,
         ),
         "why_it_matters": _normalize_memo_items(
             answer.get("why_it_matters"),
@@ -1010,12 +1028,14 @@ def _normalize_memo_fields(
             allowed_evidence_ids,
             text_keys=("insight", "business_implication"),
             extra_keys=("confidence",),
+            require_support=True,
         ),
         "peer_readthrough": _normalize_memo_items(
             answer.get("peer_readthrough"),
             allowed_metric_ids,
             allowed_evidence_ids,
             text_keys=("peer_or_group", "role", "readthrough", "caveat"),
+            require_support=True,
         ),
         "counterarguments": _normalize_memo_items(
             answer.get("counterarguments"),
@@ -1023,6 +1043,7 @@ def _normalize_memo_fields(
             allowed_evidence_ids,
             text_keys=("claim", "why_it_could_weaken_thesis"),
             extra_keys=("confidence",),
+            require_support=True,
         ),
         "watch_items": _normalize_watch_items(answer.get("watch_items")),
         "source_limitations": _string_list(answer.get("source_limitations"))[:8],
@@ -1054,6 +1075,36 @@ def _ensure_comparability_source_limitation(answer: dict[str, Any]) -> dict[str,
     return answer
 
 
+def _case_allows_peer_readthrough(case: dict[str, Any]) -> bool:
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    tasks = [task for task in contract.get("decomposed_tasks") or [] if isinstance(task, dict)]
+    if any(task.get("peer_tickers") for task in tasks):
+        return True
+    peer_terms = (
+        "peer",
+        "competitor",
+        "competition",
+        "competitive",
+        "rival",
+        "竞争",
+        "竞争对手",
+        "竞品",
+        "同行",
+        "同行业",
+        "对手",
+    )
+    focus = [str(item).upper() for item in contract.get("focus_tickers") or [] if str(item)]
+    task_type = str(case.get("task_type") or contract.get("task_type") or "")
+    if task_type.startswith("peer") and len(focus) >= 2:
+        return True
+    for task in tasks:
+        task_text = " ".join(str(task.get(key) or "") for key in ("task_id", "question_zh", "question")).lower()
+        required = [str(item).upper() for item in task.get("required_tickers") or [] if str(item)]
+        if len(required) >= 2 and any(term.lower() in task_text for term in peer_terms):
+            return True
+    return False
+
+
 def _answer_text_for_semantic_guard(answer: dict[str, Any]) -> str:
     parts: list[str] = []
     for key, value in answer.items():
@@ -1075,6 +1126,7 @@ def _normalize_memo_items(
     *,
     text_keys: tuple[str, ...],
     extra_keys: tuple[str, ...] = (),
+    require_support: bool = False,
 ) -> list[dict[str, Any]]:
     rows = value if isinstance(value, list) else []
     normalized = []
@@ -1086,6 +1138,8 @@ def _normalize_memo_items(
             row[key] = str(item.get(key) or "")
         row["metric_ids"] = [mid for mid in _string_list(item.get("metric_ids")) if mid in allowed_metric_ids]
         row["evidence_ids"] = [eid for eid in _string_list(item.get("evidence_ids")) if eid in allowed_evidence_ids]
+        if require_support and not row["metric_ids"] and not row["evidence_ids"]:
+            continue
         normalized.append(row)
     return normalized
 
@@ -1191,6 +1245,8 @@ def _cell_from_ledger_row(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "ticker": str(row.get("ticker") or ""),
         "fiscal_year": int(row.get("fiscal_year") or 0),
+        "period": str(row.get("period") or ""),
+        "period_role": str(row.get("period_role") or "unknown"),
         "metric_family": str(row.get("metric_family") or ""),
         "metric_name": str(row.get("metric_name") or ""),
         "value": row.get("value"),
@@ -2092,6 +2148,63 @@ def _cleanup_unsupported_named_fact_text(text: str) -> str:
     return cleaned.strip()
 
 
+def _sanitize_metric_role_term_overclaims(
+    answer: dict[str, Any],
+    ledger_rows: list[dict[str, Any]],
+) -> tuple[dict[str, Any], int]:
+    families = {str(row.get("metric_family") or "") for row in ledger_rows}
+    if families & {"subscription_revenue", "arr_or_recurring_proxy", "deferred_revenue", "rpo"}:
+        return answer, 0
+    if not families & {"services_revenue", "cloud_revenue"}:
+        return answer, 0
+
+    replacements = (
+        ("经常性收入特征最强的部分", "收入端表现较强的部分"),
+        ("经常性收入特征", "收入端持续性仍需后续指标验证"),
+        ("高粘性和持续变现能力", "收入增长表现"),
+        ("云化订阅模式具有", "云服务收入呈现"),
+        ("订阅模式具有", "服务收入呈现"),
+    )
+
+    def rewrite(text: str) -> tuple[str, int]:
+        rewritten = str(text or "")
+        count = 0
+        for source, target in replacements:
+            if source in rewritten:
+                rewritten = rewritten.replace(source, target)
+                count += 1
+        return rewritten, count
+
+    sanitized_count = 0
+    for key in ("summary", "direct_answer", "investment_thesis"):
+        rewritten, count = rewrite(str(answer.get(key) or ""))
+        if count:
+            answer[key] = rewritten
+            sanitized_count += count
+
+    memo_list_specs = {
+        "what_changed": ("claim",),
+        "why_it_matters": ("insight", "business_implication"),
+        "peer_readthrough": ("peer_or_group", "role", "readthrough", "caveat"),
+        "counterarguments": ("claim", "why_it_could_weaken_thesis", "caveat"),
+    }
+    for field, text_keys in memo_list_specs.items():
+        for item in answer.get(field) or []:
+            if not isinstance(item, dict):
+                continue
+            for key in text_keys:
+                rewritten, count = rewrite(str(item.get(key) or ""))
+                if count:
+                    item[key] = rewritten
+                    sanitized_count += count
+
+    if sanitized_count:
+        answer.setdefault("limitations", []).append(
+            "未由 ARR、订阅收入、递延收入或 RPO 支撑的收入质量表述已降级为收入端观察。"
+        )
+    return answer, sanitized_count
+
+
 def _named_tokens(text: str) -> list[str]:
     tokens: list[str] = []
     for match in re.finditer(r"\b[A-Z][A-Za-z0-9&.-]{2,}(?:\s+[A-Z][A-Za-z0-9&.-]{1,}){0,3}\b", str(text or "")):
@@ -2545,6 +2658,16 @@ def _unsupported_value_replacement(value: str) -> str:
 def _cleanup_unsupported_value_text(text: str) -> str:
     cleaned = str(text or "")
     cleaned = re.sub(
+        r"从当前引用未保留的精确比例(?:的水平)?(?:跃升至|提升至|跃升|提升|增至|增长至|上升至)当前引用未保留的精确比例",
+        "较前期进一步提升",
+        cleaned,
+    )
+    cleaned = re.sub(
+        r"当前引用未保留的精确比例(?:的水平)?",
+        "相应披露比例",
+        cleaned,
+    )
+    cleaned = re.sub(
         r"(同比(?:增长|增加|下降|减少)?)\s*当前引用未保留的精确金额",
         r"\1，但精确金额未获当前引用保留",
         cleaned,
@@ -2572,6 +2695,11 @@ def _cleanup_unsupported_value_text(text: str) -> str:
     cleaned = re.sub(
         r"占比超过当前引用未保留的精确比例",
         "占比达到披露阈值",
+        cleaned,
+    )
+    cleaned = re.sub(
+        r"当前引用未保留的精确金额",
+        "相应披露金额",
         cleaned,
     )
     return re.sub(r"\s+", " ", cleaned).strip()
@@ -2722,7 +2850,8 @@ def _fallback_answer_from_ledger(
             {
                 "point": (
                     f"{row.get('ticker')} {row.get('fiscal_year')} {row.get('metric_family')} "
-                    f"{row.get('metric_role')} = {row.get('display_value_zh')} ({metric_id})"
+                    f"{row.get('metric_role')} {row.get('period_role') or 'period_role_unknown'} = "
+                    f"{row.get('display_value_zh')} ({metric_id})"
                 ),
                 "metric_ids": [metric_id] if metric_id else [],
                 "evidence_ids": [str(row.get("source_evidence_id") or "")] if row.get("source_evidence_id") else [],
@@ -2820,19 +2949,19 @@ def _deterministic_ledger_summary(ledger_rows: list[dict[str, Any]]) -> str:
         grouped.setdefault(str(row.get("metric_family") or "unknown_metric"), []).append(row)
     fragments = []
     for family, rows in grouped.items():
-        sorted_rows = sorted(rows, key=lambda row: (int(row.get("fiscal_year") or 0), str(row.get("metric_role") or "")))
+        sorted_rows = sorted(rows, key=lambda row: (int(row.get("fiscal_year") or 0), str(row.get("period_role") or ""), str(row.get("metric_role") or "")))
         first = sorted_rows[0]
         last = sorted_rows[-1]
         first_metric_id = str(first.get("metric_id") or "")
         last_metric_id = str(last.get("metric_id") or "")
         if first_metric_id == last_metric_id:
             fragments.append(
-                f"{family} 在 {first.get('fiscal_year')} 年为 {first.get('display_value_zh')} ({first_metric_id})。"
+                f"{family} 在 {first.get('fiscal_year')} 年 {first.get('period_role') or 'period_role_unknown'} 口径为 {first.get('display_value_zh')} ({first_metric_id})。"
             )
         else:
             fragments.append(
-                f"{family} 从 {first.get('fiscal_year')} 年的 {first.get('display_value_zh')} ({first_metric_id}) "
-                f"到 {last.get('fiscal_year')} 年的 {last.get('display_value_zh')} ({last_metric_id})。"
+                f"{family} 从 {first.get('fiscal_year')} 年 {first.get('period_role') or 'period_role_unknown'} 口径的 {first.get('display_value_zh')} ({first_metric_id}) "
+                f"到 {last.get('fiscal_year')} 年 {last.get('period_role') or 'period_role_unknown'} 口径的 {last.get('display_value_zh')} ({last_metric_id})。"
             )
     return " ".join(fragments[:3]) + " 该结论仅使用 Exact-Value Ledger 中的数值。"
 

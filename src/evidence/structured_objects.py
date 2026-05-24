@@ -37,6 +37,7 @@ class StructuredObject(BaseModel):
     period_type: str | None = None
     duration_months: int | None = None
     fiscal_period: str | None = None
+    period_role: str | None = None
     section: str | None = None
     subsection: str | None = None
     source_url: str | None = None

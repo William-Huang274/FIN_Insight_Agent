@@ -209,21 +209,48 @@ def find_10q_sections(
             definitions_by_item=QUARTERLY_SECTION_DEFINITION_BY_ITEM,
         )
     )
-    if not candidates:
-        return []
-    actual_start = _find_actual_item_start(
+    if candidates:
+        actual_start = _find_actual_item_start(
+            candidates=candidates,
+            text=text,
+            preferred_item_code="1",
+            min_start_span_chars=min_start_span_chars,
+        )
+        candidates = [candidate for candidate in candidates if candidate["start"] >= actual_start]
+
+    sections = _sections_from_10q_candidates(
         candidates=candidates,
         text=text,
-        preferred_item_code="1",
-        min_start_span_chars=min_start_span_chars,
+        output_item_set=output_item_set,
+        min_section_chars=min_section_chars,
     )
-    candidates = [candidate for candidate in candidates if candidate["start"] >= actual_start]
+    if _has_primary_10q_section_coverage(sections, text):
+        return sections
+
+    nontraditional_sections = _find_nontraditional_10q_sections(
+        text=text,
+        output_item_set=output_item_set,
+        min_section_chars=min_section_chars,
+    )
+    if nontraditional_sections:
+        return nontraditional_sections
+    return sections
+
+
+def _sections_from_10q_candidates(
+    candidates: list[dict],
+    text: str,
+    output_item_set: set[str] | None,
+    min_section_chars: int,
+) -> list[SecFilingSection]:
     if not candidates:
         return []
 
     sections: list[SecFilingSection] = []
     for idx, candidate in enumerate(candidates):
         item_code = candidate["item_code"]
+        if item_code not in QUARTERLY_SECTION_DEFINITION_BY_ITEM:
+            continue
         if output_item_set is not None and item_code not in output_item_set:
             continue
 
@@ -244,6 +271,17 @@ def find_10q_sections(
             )
         )
     return sections
+
+
+def _has_primary_10q_section_coverage(sections: list[SecFilingSection], text: str) -> bool:
+    if not sections:
+        return False
+    item_codes = {section.item_code for section in sections}
+    if {"1", "2"}.issubset(item_codes):
+        return True
+    if len(item_codes) >= 2 and min(section.char_start for section in sections) < int(len(text) * 0.75):
+        return True
+    return False
 
 
 def build_semantic_blocks(
@@ -484,11 +522,97 @@ def _find_nontraditional_10k_sections(
     return sections
 
 
+def _find_nontraditional_10q_sections(
+    text: str,
+    output_item_set: set[str] | None,
+    min_section_chars: int,
+) -> list[SecFilingSection]:
+    """Handle 10-Q layouts whose readable headings omit formal Item labels."""
+    lines = _line_offsets(text)
+    table_start_by_line_idx = _table_start_by_line_index(lines)
+    lower_bound = max(4500, int(len(text) * 0.03))
+
+    item1 = _find_nontraditional_marker(
+        lines,
+        markers=(
+            "consolidated condensed financial statements",
+            "consolidated condensed statements of operations",
+            "consolidated statements of operations",
+            "statement of operations unaudited",
+            "financial statements and notes",
+        ),
+        after=lower_bound,
+        allow_table_lines=True,
+    )
+    item2 = _find_nontraditional_marker(
+        lines,
+        markers=(
+            "managements discussion and analysis",
+            "management discussion and analysis",
+            "managements discussion and analysis of financial condition and results of operations",
+        ),
+        after=lower_bound,
+    )
+    earliest_primary_start = min(
+        marker["start"] for marker in (item1, item2) if marker is not None
+    ) if item1 is not None or item2 is not None else lower_bound
+    item1a = _find_nontraditional_marker(
+        lines,
+        markers=("risk factors and other key information", "risk factors"),
+        after=earliest_primary_start + 1,
+    )
+    item3 = _find_nontraditional_marker(
+        lines,
+        markers=("quantitative and qualitative disclosures about market risk",),
+        after=earliest_primary_start + 1,
+    )
+    item4 = _find_nontraditional_marker(
+        lines,
+        markers=("controls and procedures",),
+        after=earliest_primary_start + 1,
+    )
+    latest_section_start = max(
+        marker["start"]
+        for marker in (item1, item2, item1a, item3, item4)
+        if marker is not None
+    ) if any(marker is not None for marker in (item1, item2, item1a, item3, item4)) else earliest_primary_start
+    end_marker = _find_nontraditional_marker(
+        lines,
+        markers=("exhibits", "signatures", "form 10 q cross reference index"),
+        after=latest_section_start + 1,
+    )
+
+    candidates = [
+        candidate
+        for candidate in [
+            _nontraditional_candidate("1", item1, table_start_by_line_idx),
+            _nontraditional_candidate("2", item2, table_start_by_line_idx),
+            _nontraditional_candidate("1A", item1a, table_start_by_line_idx),
+            _nontraditional_candidate("3", item3, table_start_by_line_idx),
+            _nontraditional_candidate("4", item4, table_start_by_line_idx),
+            _end_boundary_candidate(end_marker, table_start_by_line_idx),
+        ]
+        if candidate is not None
+    ]
+    candidates.sort(key=lambda candidate: candidate["start"])
+    candidates = _dedupe_nontraditional_boundaries(candidates)
+    if not any(candidate["item_code"] in {"1", "2"} for candidate in candidates):
+        return []
+
+    return _sections_from_10q_candidates(
+        candidates=candidates,
+        text=text,
+        output_item_set=output_item_set,
+        min_section_chars=min_section_chars,
+    )
+
+
 def _find_nontraditional_marker(
     lines: list[tuple[int, str]],
     markers: tuple[str, ...],
     after: int,
     before: int | None = None,
+    allow_table_lines: bool = False,
 ) -> dict | None:
     marker_set = {_compact_text(marker) for marker in markers}
     for line_idx, (start, line) in enumerate(lines):
@@ -496,7 +620,7 @@ def _find_nontraditional_marker(
             continue
         if before is not None and start >= before:
             break
-        if "|" in line:
+        if "|" in line and not allow_table_lines:
             continue
         compact = _compact_text(line)
         if any(compact == marker or compact.startswith(marker) for marker in marker_set):
@@ -504,16 +628,54 @@ def _find_nontraditional_marker(
     return None
 
 
-def _nontraditional_candidate(item_code: str, marker: dict | None) -> dict | None:
+def _nontraditional_candidate(
+    item_code: str,
+    marker: dict | None,
+    table_start_by_line_idx: dict[int, int] | None = None,
+) -> dict | None:
     if marker is None:
         return None
-    definition = SECTION_DEFINITION_BY_ITEM[item_code]
+    definition = (
+        QUARTERLY_SECTION_DEFINITION_BY_ITEM.get(item_code)
+        or SECTION_DEFINITION_BY_ITEM[item_code]
+    )
+    start = marker["start"]
+    if table_start_by_line_idx is not None:
+        start = table_start_by_line_idx.get(marker["line_idx"], start)
     return {
         "item_code": item_code,
         "section": definition.canonical_title,
-        "start": marker["start"],
+        "start": start,
         "line_idx": marker["line_idx"],
     }
+
+
+def _end_boundary_candidate(
+    marker: dict | None,
+    table_start_by_line_idx: dict[int, int] | None = None,
+) -> dict | None:
+    if marker is None:
+        return None
+    start = marker["start"]
+    if table_start_by_line_idx is not None:
+        start = table_start_by_line_idx.get(marker["line_idx"], start)
+    return {"item_code": "__END__", "section": "End", "start": start, "line_idx": marker["line_idx"]}
+
+
+def _dedupe_nontraditional_boundaries(candidates: list[dict]) -> list[dict]:
+    deduped: list[dict] = []
+    for candidate in candidates:
+        if (
+            deduped
+            and deduped[-1]["item_code"] == candidate["item_code"]
+            and candidate["start"] - deduped[-1]["start"] <= 80
+        ):
+            deduped[-1] = candidate
+            continue
+        if deduped and deduped[-1]["start"] == candidate["start"]:
+            continue
+        deduped.append(candidate)
+    return deduped
 
 
 def _dedupe_close_candidates(candidates: list[dict], close_chars: int = 80) -> list[dict]:

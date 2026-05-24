@@ -18,6 +18,7 @@ TABLE_PATTERN = re.compile(
 )
 YEAR_PATTERN = re.compile(r"(?:20\d{2}|19\d{2}|Jan\s+\d{1,2},\s+20\d{2}|Nov\s+\d{1,2},\s+20\d{2})")
 NUMBER_PATTERN = re.compile(r"(?P<prefix>[$(]?\s*)(?P<number>-?\d[\d,]*(?:\.\d+)?)\s*(?P<suffix>%|million|billion)?\)?", re.I)
+MONTH_PATTERN = r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)"
 
 CLAIM_KEYWORDS: dict[str, tuple[str, ...]] = {
     "revenue_visibility": ("remaining performance obligations", "rpo", "deferred revenue", "visibility", "recognized as revenue"),
@@ -96,7 +97,15 @@ def extract_tables(evidence: EvidenceObject) -> list[TableObject]:
         context_before = _context_before(evidence.text, match.start())
         context_after = _context_after(evidence.text, match.end())
         candidate_periods = _extract_periods(match.group("body")) or _extract_nearest_context_periods(context_before)
-        cells = _table_cells(rows, candidate_periods, context_before, context_after)
+        cells = _table_cells(
+            rows,
+            candidate_periods,
+            context_before,
+            context_after,
+            form_type=evidence.metadata.get("form_type") or evidence.source_type,
+            period_type=evidence.period_type or evidence.metadata.get("period_type"),
+            duration_months=evidence.duration_months or evidence.metadata.get("duration_months"),
+        )
         object_id = _object_id(evidence.evidence_id, "TABLE", table_index)
         tables.append(
             TableObject(
@@ -137,9 +146,10 @@ def extract_table_metrics(evidence: EvidenceObject, table: TableObject) -> list[
     metrics: list[MetricObject] = []
     header_index = _table_header_index(table.rows)
     header = table.rows[header_index] if header_index is not None else []
-    data_rows = table.rows[header_index + 1 :] if header_index is not None else table.rows
+    data_start = _table_data_start_index(table.rows, header_index)
+    data_rows = table.rows[data_start:]
     active_group: str | None = None
-    row_offset = header_index + 2 if header_index is not None else 1
+    row_offset = data_start + 1
     for row_index, row in enumerate(data_rows, start=row_offset):
         if not row:
             continue
@@ -180,6 +190,7 @@ def extract_table_metrics(evidence: EvidenceObject, table: TableObject) -> list[
                     value=value,
                     unit=cell.get("unit") or unit,
                     period=cell.get("period"),
+                    period_role=cell.get("period_role"),
                     segment=segment,
                     table_object_id=table.object_id,
                     row_label=row_label,
@@ -194,6 +205,7 @@ def extract_table_metrics(evidence: EvidenceObject, table: TableObject) -> list[
                         "logical_column_index": cell.get("logical_column_index"),
                         "cell_key": cell.get("cell_key"),
                         "cell_kind": cell.get("cell_kind"),
+                        "period_role": cell.get("period_role"),
                         "block_id": evidence.metadata.get("block_id"),
                         "form_type": evidence.metadata.get("form_type") or evidence.source_type,
                         "source_tier": evidence.source_tier,
@@ -234,6 +246,7 @@ def extract_sentence_metrics(evidence: EvidenceObject) -> list[MetricObject]:
                     value=value,
                     unit=unit,
                     period=_extract_period(sentence) or (str(evidence.fiscal_year) if evidence.fiscal_year else None),
+                    period_role=_period_role_for_sentence(evidence, sentence),
                     segment=_infer_segment(sentence, None, evidence.subsection),
                     context=_trim(sentence, 500),
                     extraction_method="sentence_heuristic",
@@ -241,6 +254,7 @@ def extract_sentence_metrics(evidence: EvidenceObject) -> list[MetricObject]:
                     metadata={
                         "sentence_index": sent_index,
                         "match_index": match_index,
+                        "period_role": _period_role_for_sentence(evidence, sentence),
                         "block_id": evidence.metadata.get("block_id"),
                         "form_type": evidence.metadata.get("form_type") or evidence.source_type,
                         "source_tier": evidence.source_tier,
@@ -310,6 +324,7 @@ def extract_banking_ixbrl_metrics(evidence: EvidenceObject) -> list[MetricObject
                 value=value,
                 unit=unit,
                 period=period,
+                period_role=_period_role_for_ixbrl_context(context, evidence),
                 segment=segment,
                 table_object_id=None,
                 row_label=metric_name,
@@ -325,6 +340,7 @@ def extract_banking_ixbrl_metrics(evidence: EvidenceObject) -> list[MetricObject
                     "ixbrl_scale": attrs.get("scale"),
                     "ixbrl_decimals": attrs.get("decimals"),
                     "ixbrl_context_period": context.get("period"),
+                    "period_role": _period_role_for_ixbrl_context(context, evidence),
                     "ixbrl_context_members": members,
                     "is_banking_metric": True,
                     "block_id": evidence.metadata.get("block_id"),
@@ -393,6 +409,161 @@ def _period_object_fields(evidence: EvidenceObject) -> dict[str, Any]:
         "duration_months": evidence.duration_months or evidence.metadata.get("duration_months"),
         "fiscal_period": evidence.fiscal_period or evidence.metadata.get("fiscal_period"),
     }
+
+
+def _period_role_for_sentence(evidence: EvidenceObject, sentence: str) -> str | None:
+    return _period_role_for_texts(
+        sentence,
+        form_type=evidence.metadata.get("form_type") or evidence.source_type,
+        period_type=evidence.period_type or evidence.metadata.get("period_type"),
+        duration_months=evidence.duration_months or evidence.metadata.get("duration_months"),
+    )
+
+
+def _period_role_for_ixbrl_context(context: dict[str, Any], evidence: EvidenceObject) -> str | None:
+    if str(context.get("period") or "").lower() == "instant":
+        return "instant"
+    start = str(context.get("start") or "")
+    end = str(context.get("end") or "")
+    duration_months = _duration_months_from_dates(start, end)
+    if duration_months is not None:
+        if duration_months <= 4:
+            return "qtd"
+        if duration_months <= 10:
+            return "ytd"
+        if duration_months <= 13:
+            return "annual"
+    return _period_role_for_texts(
+        evidence.subsection,
+        evidence.section,
+        form_type=evidence.metadata.get("form_type") or evidence.source_type,
+        period_type=evidence.period_type or evidence.metadata.get("period_type"),
+        duration_months=evidence.duration_months or evidence.metadata.get("duration_months"),
+    )
+
+
+def _period_role_for_table_cell(table: TableObject, column_label: str | None, row_label: str | None) -> str | None:
+    return _period_role_for_table_cell_parts(
+        form_type=table.form_type or table.source_type,
+        period_type=table.period_type,
+        duration_months=table.duration_months,
+        column_label=column_label,
+        row_label=row_label,
+        active_group=None,
+        title=table.title,
+        context_before=table.text_before,
+        context_after=table.text_after,
+    )
+
+
+def _period_role_for_table_cell_parts(
+    *,
+    form_type: str | None,
+    period_type: str | None,
+    duration_months: Any,
+    column_label: str | None,
+    row_label: str | None,
+    active_group: str | None,
+    title: str | None,
+    context_before: str | None,
+    context_after: str | None,
+) -> str | None:
+    role = _period_role_from_text(column_label)
+    if role:
+        return role
+    context_role = _period_role_for_texts(
+        row_label,
+        active_group,
+        title,
+        context_before,
+        context_after,
+        form_type=form_type,
+        period_type=period_type,
+        duration_months=duration_months,
+    )
+    return context_role
+
+
+def _period_role_for_texts(
+    *texts: Any,
+    form_type: Any = None,
+    period_type: Any = None,
+    duration_months: Any = None,
+) -> str | None:
+    for text in texts:
+        role = _period_role_from_text(text)
+        if role:
+            return role
+    form = str(form_type or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
+    if form == "10-K" or str(period_type or "").lower() == "annual" or _int_or_none(duration_months) == 12:
+        return "annual"
+    return None
+
+
+def _period_role_from_text(value: Any) -> str | None:
+    text = re.sub(r"\s+", " ", str(value or "").lower()).strip()
+    if not text:
+        return None
+    role_patterns = {
+        "ttm": (
+            r"\bttm\b",
+            r"trailing\s+twelve\s+months",
+            r"twelve\s+months\s+ended",
+            r"12\s+months\s+ended",
+        ),
+        "ytd": (
+            r"\bytd\b",
+            r"year[-\s]?to[-\s]?date",
+            r"six\s+months\s+ended",
+            r"nine\s+months\s+ended",
+            r"6\s+months\s+ended",
+            r"9\s+months\s+ended",
+        ),
+        "qtd": (
+            r"three\s+months\s+ended",
+            r"3\s+months\s+ended",
+            r"quarter\s+ended",
+            r"for\s+the\s+quarter",
+            r"\bquarterly\b",
+        ),
+        "annual": (
+            r"year\s+ended",
+            r"fiscal\s+year",
+            r"for\s+the\s+year",
+            r"\bannual\b",
+        ),
+        "instant": (
+            rf"as\s+of\s+{MONTH_PATTERN}",
+            r"\bat\s+(?:the\s+)?(?:period|quarter|year)[-\s]?end\b",
+        ),
+    }
+    matches = {
+        role
+        for role, patterns in role_patterns.items()
+        if any(re.search(pattern, text, flags=re.I) for pattern in patterns)
+    }
+    if len(matches) == 1:
+        return next(iter(matches))
+    return None
+
+
+def _duration_months_from_dates(start: str, end: str) -> int | None:
+    match_start = re.match(r"^(\d{4})-(\d{2})-\d{2}$", start)
+    match_end = re.match(r"^(\d{4})-(\d{2})-\d{2}$", end)
+    if not match_start or not match_end:
+        return None
+    start_month = int(match_start.group(1)) * 12 + int(match_start.group(2))
+    end_month = int(match_end.group(1)) * 12 + int(match_end.group(2))
+    return max(1, end_month - start_month + 1)
+
+
+def _int_or_none(value: Any) -> int | None:
+    try:
+        if value is None or value == "":
+            return None
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _source_object_fields(evidence: EvidenceObject) -> dict[str, Any]:
@@ -544,8 +715,15 @@ def _banking_ixbrl_context_text(
 def _parse_table_rows(body: str) -> list[list[str]]:
     rows: list[list[str]] = []
     for line in body.splitlines():
-        cells = [_clean_cell(cell) for cell in line.split("|")]
-        cells = [cell for cell in cells if cell]
+        cells = []
+        for raw_cell in line.split("|"):
+            cell = _clean_cell(raw_cell)
+            if not cell:
+                continue
+            if cell == ")" and cells:
+                cells[-1] = f"{cells[-1]})"
+                continue
+            cells.append(cell)
         if cells:
             rows.append(cells)
     return rows
@@ -613,13 +791,26 @@ def _table_header_index(rows: list[list[str]]) -> int | None:
 def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) -> list[dict[str, Any]]:
     table_unit = _infer_table_unit(table)
     logical_values = _logical_value_cells(row)
+    header_index = _table_header_index(table.rows)
+    expanded_labels = _logical_column_labels_for_rows(
+        table.rows,
+        header_index,
+        table.candidate_periods,
+        len(logical_values),
+    )
     numeric_values = []
     for logical_index, cell in enumerate(logical_values):
         raw = str(cell["raw_value"])
         value, parsed_unit = _parse_number(raw)
         if value is None or _is_standalone_year(raw):
             continue
-        column_label = _logical_column_label(header, table.candidate_periods, logical_index, len(logical_values))
+        column_label = _logical_column_label(
+            header,
+            table.candidate_periods,
+            logical_index,
+            len(logical_values),
+            expanded_labels=expanded_labels,
+        )
         period = _period_for_column_label(column_label)
         if period is None and not _is_change_column(column_label):
             periods = table.candidate_periods
@@ -632,6 +823,11 @@ def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) ->
                 "parsed_unit": parsed_unit,
                 "period": period,
                 "column_label": column_label,
+                "period_role": _period_role_for_table_cell(
+                    column_label=column_label,
+                    row_label=row[0] if row else "",
+                    table=table,
+                ),
                 "unit": _infer_cell_unit(raw, column_label, table_unit),
                 "cell_kind": _cell_kind(column_label),
             }
@@ -648,14 +844,19 @@ def _table_cells(
     candidate_periods: list[str],
     context_before: str | None,
     context_after: str | None,
+    *,
+    form_type: str | None = None,
+    period_type: str | None = None,
+    duration_months: int | None = None,
 ) -> list[dict[str, Any]]:
     header_index = _table_header_index(rows)
     header = rows[header_index] if header_index is not None else []
-    data_rows = rows[header_index + 1 :] if header_index is not None else rows
+    data_start = _table_data_start_index(rows, header_index)
+    data_rows = rows[data_start:]
     table_unit = _infer_table_unit_from_values(rows=rows, context_before=context_before, context_after=context_after)
     cells = []
     active_group: str | None = None
-    row_offset = header_index + 2 if header_index is not None else 1
+    row_offset = data_start + 1
     for row_index, row in enumerate(data_rows, start=row_offset):
         if not row:
             continue
@@ -666,16 +867,34 @@ def _table_cells(
         if not row_label or _looks_like_header(row_label) or _is_table_unit_row(row):
             continue
         logical_values = _logical_value_cells(row)
+        expanded_labels = _logical_column_labels_for_rows(rows, header_index, candidate_periods, len(logical_values))
         for logical_index, cell in enumerate(logical_values):
             raw = str(cell["raw_value"])
             value, parsed_unit = _parse_number(raw)
             if value is None or _is_standalone_year(raw):
                 continue
-            column_label = _logical_column_label(header, candidate_periods, logical_index, len(logical_values))
+            column_label = _logical_column_label(
+                header,
+                candidate_periods,
+                logical_index,
+                len(logical_values),
+                expanded_labels=expanded_labels,
+            )
             period = _period_for_column_label(column_label)
             if period is None and not _is_change_column(column_label) and logical_index < len(candidate_periods):
                 period = candidate_periods[logical_index]
             unit = _infer_cell_unit(raw, column_label, table_unit) or parsed_unit
+            period_role = _period_role_for_table_cell_parts(
+                form_type=form_type,
+                period_type=period_type,
+                duration_months=duration_months,
+                column_label=column_label,
+                row_label=row_label,
+                active_group=active_group,
+                title=_infer_table_title(context_before),
+                context_before=context_before,
+                context_after=context_after,
+            )
             cells.append(
                 {
                     "cell_key": f"{_safe_cell_key(row_label)}__{_safe_cell_key(column_label or f'col_{logical_index + 1}')}",
@@ -685,6 +904,7 @@ def _table_cells(
                     "row_label": row_label,
                     "column_label": column_label,
                     "period": period,
+                    "period_role": period_role,
                     "raw_value": raw,
                     "value": value,
                     "unit": unit,
@@ -721,8 +941,10 @@ def _logical_column_label(
     candidate_periods: list[str],
     logical_index: int,
     logical_count: int | None = None,
+    *,
+    expanded_labels: list[str] | None = None,
 ) -> str | None:
-    expanded = _expanded_logical_column_labels(header, candidate_periods, logical_count)
+    expanded = expanded_labels or _expanded_logical_column_labels(header, candidate_periods, logical_count)
     if logical_index < len(expanded):
         return expanded[logical_index]
     if logical_index < len(header):
@@ -730,6 +952,78 @@ def _logical_column_label(
     if logical_index < len(candidate_periods):
         return candidate_periods[logical_index]
     return None
+
+
+def _table_data_start_index(rows: list[list[str]], header_index: int | None) -> int:
+    if header_index is None:
+        return 0
+    next_index = header_index + 1
+    if (
+        next_index < len(rows)
+        and _header_has_period_role(rows[header_index])
+        and _is_year_header_row(rows[next_index])
+    ):
+        return next_index + 1
+    return next_index
+
+
+def _logical_column_labels_for_rows(
+    rows: list[list[str]],
+    header_index: int | None,
+    candidate_periods: list[str],
+    logical_count: int | None,
+) -> list[str]:
+    if header_index is None or not logical_count:
+        return []
+    header = rows[header_index]
+    expanded = _expanded_logical_column_labels(header, candidate_periods, logical_count)
+    if expanded:
+        return expanded
+    if header_index > 0:
+        grouped = _expanded_period_group_year_labels(rows[header_index - 1], header, logical_count)
+        if grouped:
+            return grouped
+    next_index = header_index + 1
+    if next_index < len(rows):
+        grouped = _expanded_period_group_year_labels(header, rows[next_index], logical_count)
+        if grouped:
+            return grouped
+    return []
+
+
+def _expanded_period_group_year_labels(
+    group_header: list[str],
+    year_header: list[str],
+    logical_count: int | None,
+) -> list[str]:
+    if not logical_count or not _is_year_header_row(year_header):
+        return []
+    groups = [
+        str(cell or "").strip()
+        for cell in group_header
+        if str(cell or "").strip()
+        and not _is_table_unit_row([str(cell or "").strip()])
+        and _period_role_from_text(cell)
+    ]
+    years = [_extract_period(cell) for cell in year_header]
+    years = [year for year in years if year]
+    if not groups or not years or len(years) != logical_count or len(years) % len(groups) != 0:
+        return []
+    span = len(years) // len(groups)
+    labels: list[str] = []
+    for group_index, group in enumerate(groups):
+        for year in years[group_index * span : (group_index + 1) * span]:
+            labels.append(f"{group} {year}")
+    return labels if len(labels) == logical_count else []
+
+
+def _header_has_period_role(row: list[str]) -> bool:
+    return any(_period_role_from_text(cell) for cell in row)
+
+
+def _is_year_header_row(row: list[str]) -> bool:
+    years = [_extract_period(cell) for cell in row if str(cell or "").strip()]
+    return len(years) >= 2 and len(years) == len([cell for cell in row if str(cell or "").strip()])
 
 
 def _expanded_logical_column_labels(

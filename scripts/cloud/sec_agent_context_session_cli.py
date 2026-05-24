@@ -67,12 +67,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--timeout-s", type=int, default=int(os.environ.get("TIMEOUT_S", "180")))
     parser.add_argument("--query-planner", default=os.environ.get("QUERY_PLANNER", "llm"), choices=("heuristic", "llm"))
     parser.add_argument("--bge-device", default=os.environ.get("BGE_DEVICE", "cuda"))
+    parser.add_argument(
+        "--manifest-path",
+        default=os.environ.get("MANIFEST_PATH", "data/processed_private/manifests/sec_tech_10k_manifest.jsonl"),
+    )
+    parser.add_argument("--bm25-index-dir", default=os.environ.get("BM25_INDEX_DIR", "data/indexes/bm25/sec_tech_10k"))
+    parser.add_argument(
+        "--object-bm25-index-dir",
+        default=os.environ.get("OBJECT_BM25_INDEX_DIR", "data/indexes/bm25/sec_tech_10k_objects"),
+    )
+    parser.add_argument("--source-policy", default=os.environ.get("SEC_AGENT_SOURCE_POLICY", "SEC_ONLY_10K"))
     parser.add_argument("--graph-verbose", action="store_true", help="Do not pass --quiet to the graph runner.")
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.source_policy:
+        os.environ["SEC_AGENT_SOURCE_POLICY"] = str(args.source_policy)
     if args.controller_backend != "heuristic" and args.api_key_env and not os.environ.get(args.api_key_env):
         print(f"{args.api_key_env} is not set in this shell.", file=sys.stderr)
         return 2
@@ -234,6 +246,12 @@ def _graph_args(args: argparse.Namespace) -> list[str]:
         "--bge-first",
         "--bge-device",
         args.bge_device,
+        "--manifest-path",
+        args.manifest_path,
+        "--bm25-index-dir",
+        args.bm25_index_dir,
+        "--object-bm25-index-dir",
+        args.object_bm25_index_dir,
     ]
     if args.api_key_env:
         result.extend(["--api-key-env", args.api_key_env])

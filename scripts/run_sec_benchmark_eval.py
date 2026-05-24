@@ -222,7 +222,7 @@ def _prepare_trace(
     trace = _base_trace(case, mode, status="context_prepared")
     trace["planner_output"] = _deterministic_plan(case)
     trace["source_resolver_output"] = _source_resolver(case, manifest_index)
-    if trace["source_resolver_output"]["missing_filings"]:
+    if _source_missing_is_fatal(case, trace["source_resolver_output"]):
         trace["status"] = "source_missing"
         return trace
     if mode == "gold_context":
@@ -368,15 +368,18 @@ def _numeric_check_object_queries(check: dict[str, Any]) -> list[str]:
     metric = str(check.get("metric") or "").strip()
     aliases = {
         "advertising_revenue": "advertising revenue Google advertising revenue by source",
+        "arr_or_recurring_proxy": "annual recurring revenue ARR recurring revenue",
         "operating_income": "total income from operations operating income segment profitability",
         "capital_expenditure_proxy": "purchases of property and equipment capital expenditures data center infrastructure capex",
-        "capex": "purchases of property and equipment capital expenditures cash flow",
+        "capex": "purchases of property and equipment capital expenditures data center infrastructure capex cash flow",
         "ppe_purchases": "purchases of property and equipment additions to property and equipment cash flow",
         "cash_flow": "net cash provided by operating activities operating cash flow",
         "free_cash_flow_proxy": "free cash flow net cash provided by operating activities purchases of property and equipment",
         "research_and_development": "research and development R&D AI infrastructure costs",
         "gross_margin": "gross margin gross profit margin",
+        "deferred_revenue": "deferred revenue unearned revenue contract liabilities",
         "subscription_revenue": "subscription revenue subscription and support revenue",
+        "rpo": "remaining performance obligations RPO contracted backlog revenue visibility",
         "services_revenue": "services revenue service revenue services net sales",
         "product_revenue": "product revenue revenue disaggregation",
         "revenue": "revenue net sales total revenue",
@@ -640,10 +643,29 @@ def _context_row_rerank_text(row: dict[str, Any]) -> str:
 
 def _requirement_queries(case: dict[str, Any]) -> list[str]:
     queries: list[str] = []
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    for item in contract.get("qualitative_queries") or []:
+        text = str(item or "").strip()
+        if len(text) >= 8:
+            queries.append(text)
+    for task in contract.get("decomposed_tasks") or []:
+        if not isinstance(task, dict):
+            continue
+        task_parts = [
+            str(task.get("question_zh") or task.get("question") or "").strip(),
+            " ".join(str(family).replace("_", " ") for family in task.get("required_metric_families") or []),
+        ]
+        text = " ".join(part for part in task_parts if part).strip()
+        if len(text) >= 8:
+            queries.append(text)
+    for item in contract.get("facets") or []:
+        text = str(item or "").replace("_", " ").strip()
+        if len(text) >= 8:
+            queries.append(text)
     for field in ("gold_points", "hallucination_traps"):
         for item in case.get(field) or []:
             text = str(item or "").strip()
-            if len(text) >= 12:
+            if _is_domain_requirement_query(text):
                 queries.append(text)
     task_type = str(case.get("task_type") or "")
     if "semiconductor" in task_type:
@@ -681,9 +703,46 @@ def _requirement_queries(case: dict[str, Any]) -> list[str]:
             continue
         seen.add(key)
         deduped.append(query)
-        if len(deduped) >= 12:
+        if len(deduped) >= 16:
             break
     return deduped
+
+
+def _is_domain_requirement_query(text: str) -> bool:
+    lowered = str(text or "").lower()
+    if len(lowered) < 12:
+        return False
+    generic_policy_terms = (
+        "do not use non-sec",
+        "answer only from retrieved",
+        "precise numeric values",
+        "exact-value ledger",
+        "source policy",
+        "citation validator",
+        "do not infer exact values",
+        "do not attribute another company's",
+    )
+    if any(term in lowered for term in generic_policy_terms):
+        return False
+    domain_terms = (
+        "revenue",
+        "margin",
+        "operating income",
+        "cash flow",
+        "capital expenditure",
+        "capex",
+        "rpo",
+        "remaining performance",
+        "risk",
+        "customer concentration",
+        "export control",
+        "cloud",
+        "data center",
+        "semiconductor",
+        "advertising",
+        "subscription",
+    )
+    return any(term in lowered for term in domain_terms)
 
 
 def _base_trace(case: dict[str, Any], mode: str, status: str) -> dict[str, Any]:
@@ -733,7 +792,37 @@ def _source_resolver(case: dict[str, Any], manifest_index: dict[tuple[str, int, 
                     )
                 else:
                     missing.append({"ticker": ticker, "year": year, "filing_type": filing_type})
-    return {"available_filings": available, "missing_filings": missing}
+    if not available:
+        status = "missing_all"
+    elif missing:
+        status = "partial"
+    else:
+        status = "complete"
+    return {
+        "status": status,
+        "available_filings": available,
+        "missing_filings": missing,
+        "available_count": len(available),
+        "missing_count": len(missing),
+    }
+
+
+def _source_missing_is_fatal(case: dict[str, Any], resolver_output: dict[str, Any]) -> bool:
+    missing = resolver_output.get("missing_filings") or []
+    if not missing:
+        return False
+    if not resolver_output.get("available_filings"):
+        return True
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    source_policy = str(case.get("source_policy") or contract.get("source_policy") or "")
+    filing_types = {
+        _normalize_form_type(item)
+        for item in (case.get("filing_types") or contract.get("filing_types") or [])
+        if _normalize_form_type(item)
+    }
+    if source_policy == "SEC_PRIMARY_MIXED_RECENT" or "10-Q" in filing_types:
+        return False
+    return False if (case.get("source_coverage_gaps") or contract.get("source_coverage_gaps")) else True
 
 
 def _context_summary(rows: list[dict[str, Any]], context_path: Path | None) -> dict[str, Any]:

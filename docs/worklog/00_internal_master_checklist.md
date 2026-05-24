@@ -47,6 +47,10 @@
 - [x] Rebuild/version the 10-Q object index after multi-row table-header alignment changes.
 - [x] Count clean API model answers in the post-gate model-answer usage check while keeping repaired/truncated outputs visible.
 - [x] Cloud-rerun the patched 10-Q DeepSeek API prompt with a compact evidence pack and require clean `answered_api_model` output.
+- [x] Expand 2026 10-Q ingestion/index artifacts to the current 30-company universe and rebuild mixed 10-K/10-Q artifacts.
+- [x] Propagate `period_role` into structured extraction, runtime ledger metric IDs, and rendered metric references for QTD/YTD/annual separation.
+- [x] Fix ContextManager mixed-session bootstrap so `SEC_PRIMARY_MIXED_RECENT` cannot be overwritten by stale controller defaults.
+- [ ] Cloud-run a real `session-mixed-deepseek` full DAG prompt on the mixed 10-K/10-Q artifacts after syncing the latest source changes.
 - [x] EvidenceObject JSONL read/write smoke test.
 - [x] SEC tech EvidenceObject build smoke test.
 - [x] BM25 retrieval smoke test on MSFT/NVDA queries.
@@ -235,6 +239,12 @@
 - [x] Add a small single-process ContextManager API load smoke over JSON store and fixture harness dispatch.
 - [x] Add a real ContextManager-backed manual session CLI for free-form cloud prompts and follow-up context inspection.
 - [x] Cloud-run one manual `session-deepseek` prompt plus at least one follow-up turn and record run/context paths.
+- [x] Interpret SEC downloader/manifest `years` as fiscal years using `DocumentFiscalYearFocus`, not calendar `reportDate` alone.
+- [x] Render 10-Q comparative columns with both value fiscal year and source filing fiscal year so prior-year columns are not mislabeled as separate filings.
+- [x] Build the next mixed-source artifact with a fiscal-year-aware interim policy: latest available 10-Q after each company's latest accepted audited 10-K.
+- [x] Fix mixed retrieval context so sparse latest-10-Q source policy does not collapse to `context rows=0`.
+- [x] Fix focused mixed-period prompts so generic comparison does not trigger peer-readthrough.
+- [x] Add MSFT 10-Q cash-flow/capex period-role repair and derived FCF proxy rows for mixed answer support.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
 - [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.
 - [ ] Validate earlier-node resume from a real partial replay, especially `build_coverage_matrix` or `build_judgment_plan`.

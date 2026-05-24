@@ -110,17 +110,63 @@ def main() -> None:
         form_types=form_types,
         require_html=not args.allow_missing_html,
     )
+    records_before_dedupe = len(records)
+    records = _dedupe_manifest_records(records)
     output_path = REPO_ROOT / args.output
     write_sec_filing_manifest_jsonl(records, output_path)
 
     summary = {
         "output": str(output_path),
         "records": len(records),
+        "records_before_dedupe": records_before_dedupe,
+        "duplicates_removed": records_before_dedupe - len(records),
         "years": sorted({record.fiscal_year for record in records}),
         "tickers": sorted({record.ticker for record in records}),
         "categories": sorted({record.category_slug for record in records}),
     }
     print(json.dumps(summary, indent=2, ensure_ascii=False))
+
+
+def _dedupe_manifest_records(records):
+    best_by_key = {}
+    for record in records:
+        key = (
+            record.ticker.upper(),
+            str(record.form_type or record.source_type or "").upper(),
+            int(record.fiscal_year),
+            record.accession_number or record.primary_document or record.filing_url or record.html_path,
+        )
+        current = best_by_key.get(key)
+        if current is None or _record_preference(record) > _record_preference(current):
+            best_by_key[key] = record
+    return sorted(
+        best_by_key.values(),
+        key=lambda record: (
+            record.ticker.upper(),
+            int(record.fiscal_year),
+            str(record.form_type or record.source_type or "").upper(),
+            str(record.fiscal_period or ""),
+            str(record.period_end or ""),
+        ),
+    )
+
+
+def _record_preference(record) -> tuple[int, int, str]:
+    cache_year = _cache_directory_year(record.html_path)
+    return (
+        1 if cache_year == int(record.fiscal_year) else 0,
+        1 if record.fiscal_year_source == "document_fiscal_year_focus" else 0,
+        str(record.html_path or ""),
+    )
+
+
+def _cache_directory_year(path: str | Path | None) -> int | None:
+    if not path:
+        return None
+    for part in reversed(Path(path).parts):
+        if part.isdigit() and len(part) == 4:
+            return int(part)
+    return None
 
 
 if __name__ == "__main__":

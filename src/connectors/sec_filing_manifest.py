@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,8 @@ class SecFilingManifestRecord(BaseModel):
     company: str | None = None
     cik: str | None = None
     fiscal_year: int
+    fiscal_year_source: str | None = None
+    document_fiscal_year_focus: int | None = None
     category: str
     category_slug: str
     form_type: str
@@ -25,6 +28,8 @@ class SecFilingManifestRecord(BaseModel):
     period_type: str | None = None
     duration_months: int | None = None
     fiscal_period: str | None = None
+    fiscal_period_source: str | None = None
+    document_fiscal_period_focus: str | None = None
     accession_number: str | None = None
     primary_document: str | None = None
     document_description: str | None = None
@@ -59,8 +64,6 @@ def iter_sec_filing_manifest(
     for year_dir in sorted(root_path.iterdir()):
         if not year_dir.is_dir() or not year_dir.name.isdigit():
             continue
-        if year_filter is not None and year_dir.name not in year_filter:
-            continue
 
         for category_dir in sorted(year_dir.iterdir()):
             if not category_dir.is_dir():
@@ -88,7 +91,7 @@ def iter_sec_filing_manifest(
                         continue
 
                     metadata = _read_json(metadata_path)
-                    yield _build_record(
+                    record = _build_record(
                         year=int(year_dir.name),
                         category_slug=category_dir.name,
                         ticker=ticker,
@@ -97,6 +100,9 @@ def iter_sec_filing_manifest(
                         metadata_path=metadata_path,
                         metadata=metadata,
                     )
+                    if year_filter is not None and str(record.fiscal_year) not in year_filter:
+                        continue
+                    yield record
 
 
 def collect_sec_filing_manifest(
@@ -156,34 +162,44 @@ def _build_record(
     metadata_path: Path,
     metadata: dict[str, Any],
 ) -> SecFilingManifestRecord:
+    document_year, document_period = _document_fiscal_focus(html_path)
+    document_year = metadata.get("document_fiscal_year_focus") or document_year
+    document_period = metadata.get("document_fiscal_period_focus") or document_period
     period = _filing_period_metadata(
         form_type=str(metadata.get("form_type") or form_type),
         report_date=metadata.get("report_date"),
+        fiscal_period_focus=document_period,
+        fiscal_year_focus=document_year,
     )
+    merged_metadata = {**metadata, **period}
     return SecFilingManifestRecord(
         ticker=ticker,
-        company=metadata.get("company"),
-        cik=metadata.get("cik"),
-        fiscal_year=int(metadata.get("fiscal_year") or year),
-        category=metadata.get("category") or category_slug,
-        category_slug=metadata.get("category_slug") or category_slug,
-        form_type=metadata.get("form_type") or form_type,
-        source_type=metadata.get("form_type") or form_type,
-        source_tier=metadata.get("source_tier") or "primary_sec_filing",
-        filing_date=metadata.get("filing_date"),
-        report_date=metadata.get("report_date"),
-        period_end=metadata.get("period_end") or period["period_end"],
-        period_type=metadata.get("period_type") or period["period_type"],
-        duration_months=metadata.get("duration_months") or period["duration_months"],
-        fiscal_period=metadata.get("fiscal_period") or period["fiscal_period"],
-        accession_number=metadata.get("accession_number"),
-        primary_document=metadata.get("primary_document"),
-        document_description=metadata.get("document_description"),
-        filing_url=metadata.get("filing_url"),
+        company=merged_metadata.get("company"),
+        cik=merged_metadata.get("cik"),
+        fiscal_year=int(merged_metadata.get("fiscal_year") or year),
+        fiscal_year_source=merged_metadata.get("fiscal_year_source"),
+        document_fiscal_year_focus=merged_metadata.get("document_fiscal_year_focus"),
+        category=merged_metadata.get("category") or category_slug,
+        category_slug=merged_metadata.get("category_slug") or category_slug,
+        form_type=merged_metadata.get("form_type") or form_type,
+        source_type=merged_metadata.get("form_type") or form_type,
+        source_tier=merged_metadata.get("source_tier") or "primary_sec_filing",
+        filing_date=merged_metadata.get("filing_date"),
+        report_date=merged_metadata.get("report_date"),
+        period_end=merged_metadata.get("period_end"),
+        period_type=merged_metadata.get("period_type"),
+        duration_months=merged_metadata.get("duration_months"),
+        fiscal_period=merged_metadata.get("fiscal_period"),
+        fiscal_period_source=merged_metadata.get("fiscal_period_source"),
+        document_fiscal_period_focus=merged_metadata.get("document_fiscal_period_focus"),
+        accession_number=merged_metadata.get("accession_number"),
+        primary_document=merged_metadata.get("primary_document"),
+        document_description=merged_metadata.get("document_description"),
+        filing_url=merged_metadata.get("filing_url"),
         html_path=str(html_path),
         metadata_path=str(metadata_path),
-        cache_layout=metadata.get("cache_layout") or "year/category/ticker",
-        metadata={**period, **metadata},
+        cache_layout=merged_metadata.get("cache_layout") or "year/category/ticker",
+        metadata=merged_metadata,
     )
 
 
@@ -214,11 +230,26 @@ def _normalize_strings(
     return set(values)
 
 
-def _filing_period_metadata(form_type: str, report_date: str | None) -> dict[str, Any]:
+def _filing_period_metadata(
+    form_type: str,
+    report_date: str | None,
+    fiscal_period_focus: str | None = None,
+    fiscal_year_focus: int | str | None = None,
+) -> dict[str, Any]:
     normalized_form = str(form_type or "").upper().strip()
     period_end = str(report_date or "").strip() or None
+    document_period = _normalize_document_fiscal_period_focus(fiscal_period_focus)
+    document_year = _normalize_document_fiscal_year_focus(fiscal_year_focus)
+    fiscal_year_fields: dict[str, Any] = {}
+    if document_year is not None:
+        fiscal_year_fields = {
+            "fiscal_year": document_year,
+            "fiscal_year_source": "document_fiscal_year_focus",
+            "document_fiscal_year_focus": document_year,
+        }
     if normalized_form == "10-K":
         return {
+            **fiscal_year_fields,
             "period_end": period_end,
             "period_type": "annual",
             "duration_months": 12,
@@ -226,7 +257,18 @@ def _filing_period_metadata(form_type: str, report_date: str | None) -> dict[str
             "fiscal_period_source": "form_type",
         }
     if normalized_form == "10-Q":
+        if document_period:
+            return {
+                **fiscal_year_fields,
+                "period_end": period_end,
+                "period_type": "quarterly",
+                "duration_months": 3,
+                "fiscal_period": document_period,
+                "fiscal_period_source": "document_fiscal_period_focus",
+                "document_fiscal_period_focus": document_period,
+            }
         return {
+            **fiscal_year_fields,
             "period_end": period_end,
             "period_type": "quarterly",
             "duration_months": 3,
@@ -234,12 +276,38 @@ def _filing_period_metadata(form_type: str, report_date: str | None) -> dict[str
             "fiscal_period_source": "calendar_quarter_from_period_end",
         }
     return {
+        **fiscal_year_fields,
         "period_end": period_end,
         "period_type": None,
         "duration_months": None,
         "fiscal_period": None,
         "fiscal_period_source": "unknown",
     }
+
+
+def _document_fiscal_focus(html_path: Path) -> tuple[int | None, str | None]:
+    if not html_path.exists():
+        return None, None
+    text = html_path.read_text(encoding="utf-8", errors="ignore")
+    year_match = re.search(r"DocumentFiscalYearFocus\b[^>]*>\s*(20\d{2}|19\d{2})\s*<", text, flags=re.I)
+    period_match = re.search(r"DocumentFiscalPeriodFocus\b[^>]*>\s*(FY|Q[1-4])\s*<", text, flags=re.I)
+    fiscal_year = _normalize_document_fiscal_year_focus(year_match.group(1)) if year_match else None
+    fiscal_period = _normalize_document_fiscal_period_focus(period_match.group(1)) if period_match else None
+    return fiscal_year, fiscal_period
+
+
+def _normalize_document_fiscal_period_focus(value: str | None) -> str | None:
+    normalized = str(value or "").upper().strip()
+    return normalized if normalized in {"FY", "Q1", "Q2", "Q3", "Q4"} else None
+
+
+def _normalize_document_fiscal_year_focus(value: int | str | None) -> int | None:
+    if value is None:
+        return None
+    match = re.search(r"(20\d{2}|19\d{2})", str(value))
+    if not match:
+        return None
+    return int(match.group(1))
 
 
 def _calendar_quarter(period_end: str | None) -> str | None:

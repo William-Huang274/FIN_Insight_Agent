@@ -225,13 +225,18 @@ def _task_coverage_row(
     ledger_years = _row_years(relevant_ledger)
     context_years = _row_years(relevant_context)
     covered_years = sorted(ledger_years | context_years)
-    covered_metric_families = sorted(_ledger_metric_families(relevant_ledger) | _context_metric_families(relevant_context, required_metric_families))
+    actual_metric_families = _ledger_metric_families(relevant_ledger) | _context_metric_families(relevant_context, required_metric_families)
+    covered_metric_families = sorted(actual_metric_families | _matched_required_families(actual_metric_families, required_metric_families))
     covered_filing_types = sorted(_row_filing_types(relevant_ledger) | _row_filing_types(relevant_context))
     covered_source_tiers = sorted(_row_source_tiers(relevant_ledger) | _row_source_tiers(relevant_context))
 
     missing_tickers = sorted(set(required_tickers) - set(covered_tickers))
     missing_peer_tickers = sorted(set(peer_tickers) - set(covered_peer_tickers))
-    missing_metric_families = sorted(set(required_metric_families) - set(covered_metric_families))
+    missing_metric_families = sorted(
+        required
+        for required in set(required_metric_families)
+        if not _family_matches_required(required, list(actual_metric_families))
+    )
     missing_years = sorted(set(years) - set(covered_years))
     missing_filing_types = sorted(set(filing_types) - set(covered_filing_types))
     missing_source_tiers = sorted(set(source_tiers) - set(covered_source_tiers))
@@ -378,7 +383,7 @@ def _row_matches_task(
     if not _row_matches_source_scope(row, filing_types, source_tiers):
         return False
     family = str(row.get("metric_family") or "")
-    return not required_metric_families or family in set(required_metric_families)
+    return not required_metric_families or _family_matches_required(family, required_metric_families)
 
 
 def _context_matches_task(
@@ -424,10 +429,41 @@ def _ledger_metric_families(rows: list[dict[str, Any]]) -> set[str]:
     return {str(row.get("metric_family") or "") for row in rows if row.get("metric_family")}
 
 
+def _matched_required_families(actual_families: set[str], required_metric_families: list[str]) -> set[str]:
+    matched = set()
+    for required in required_metric_families:
+        if _family_matches_required(required, list(actual_families)):
+            matched.add(required)
+    return matched
+
+
+def _family_matches_required(family: str, required_metric_families: list[str]) -> bool:
+    family_set = _family_equivalence_set(family)
+    for required in required_metric_families:
+        if family_set & _family_equivalence_set(required):
+            return True
+    return False
+
+
+def _family_equivalence_set(family: str) -> set[str]:
+    value = str(family or "")
+    groups = (
+        {"capex", "capital_expenditure_proxy", "ppe_purchases"},
+        {"cash_flow", "operating_cash_flow", "free_cash_flow_proxy"},
+        {"arr_or_recurring_proxy", "rpo", "deferred_revenue", "subscription_revenue"},
+    )
+    for group in groups:
+        if value in group:
+            return set(group)
+    return {value}
+
+
 def _contains_family_alias(text: str, families: list[str]) -> bool:
     lowered = str(text or "").lower()
     for family in families:
-        probes = METRIC_FAMILY_ALIASES.get(family, (family.replace("_", " "),))
+        probes = []
+        for equivalent in sorted(_family_equivalence_set(family)):
+            probes.extend(METRIC_FAMILY_ALIASES.get(equivalent, (equivalent.replace("_", " "),)))
         if any(str(probe).lower() in lowered for probe in probes):
             return True
     return False

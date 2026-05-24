@@ -75,9 +75,11 @@ class SecEdgarConnector:
         submissions = self.get_company_submissions(normalized_cik)
         recent = submissions.get("filings", {}).get("recent", {})
         selected_block = recent
-        selected_idx = self._find_filing_index(recent, form_type=form_type, year=year)
+        selected_match = self._find_filing_match(
+            recent, cik=normalized_cik, form_type=form_type, fiscal_year=year
+        )
 
-        if selected_idx is None:
+        if selected_match is None:
             for file_info in submissions.get("filings", {}).get("files", []):
                 file_name = file_info.get("name")
                 if not file_name:
@@ -85,18 +87,22 @@ class SecEdgarConnector:
                 historical_block = self.get_company_submission_file(
                     normalized_cik, file_name=file_name
                 )
-                selected_idx = self._find_filing_index(
-                    historical_block, form_type=form_type, year=year
+                selected_match = self._find_filing_match(
+                    historical_block,
+                    cik=normalized_cik,
+                    form_type=form_type,
+                    fiscal_year=year,
                 )
-                if selected_idx is not None:
+                if selected_match is not None:
                     selected_block = historical_block
                     break
 
-        if selected_idx is None:
+        if selected_match is None:
             raise SecEdgarConnectorError(
-                f"No {form_type} filing found for CIK {normalized_cik} and year {year}."
+                f"No {form_type} filing found for CIK {normalized_cik} and fiscal year {year}."
             )
 
+        selected_idx = int(selected_match["idx"])
         accession_number = self._get_recent_value(
             selected_block, "accessionNumber", selected_idx
         )
@@ -105,7 +111,13 @@ class SecEdgarConnector:
         )
         filing_url = self._build_filing_url(normalized_cik, accession_number, primary_document)
         report_date = self._get_recent_value(selected_block, "reportDate", selected_idx)
-        period = self._filing_period_metadata(form_type=form_type, report_date=report_date)
+        period = self._filing_period_metadata(
+            form_type=form_type,
+            report_date=report_date,
+            fiscal_period_focus=selected_match.get("document_fiscal_period_focus"),
+            fiscal_year_focus=selected_match.get("document_fiscal_year_focus"),
+        )
+        resolved_fiscal_year = int(period.get("fiscal_year") or year)
 
         return {
             "ticker": None,
@@ -113,7 +125,8 @@ class SecEdgarConnector:
             "cik": normalized_cik,
             "form_type": form_type,
             "source_tier": "primary_sec_filing",
-            "fiscal_year": year,
+            "requested_fiscal_year": year,
+            "fiscal_year": resolved_fiscal_year,
             "filing_date": self._get_recent_value(selected_block, "filingDate", selected_idx),
             "report_date": report_date,
             **period,
@@ -126,6 +139,7 @@ class SecEdgarConnector:
                 selected_block, "primaryDocDescription", selected_idx
             ),
             "filing_url": filing_url,
+            "_prefetched_html": selected_match.get("html"),
         }
 
     def download_filing_html(
@@ -136,7 +150,7 @@ class SecEdgarConnector:
         category: str | None = None,
         category_slug: str | None = None,
     ) -> dict[str, Any]:
-        fiscal_year = int(year or filing_meta["fiscal_year"])
+        fiscal_year = int(filing_meta.get("fiscal_year") or year)
         ticker_upper = ticker.upper()
         form_type = filing_meta["form_type"]
         resolved_category = category or "uncategorized"
@@ -152,8 +166,12 @@ class SecEdgarConnector:
         html_path = output_dir / f"{form_type}.html"
         metadata_path = output_dir / f"{form_type}.metadata.json"
 
+        prefetched_html = str(filing_meta.get("_prefetched_html") or "")
+        public_filing_meta = {
+            key: value for key, value in filing_meta.items() if not str(key).startswith("_")
+        }
         result = {
-            **filing_meta,
+            **public_filing_meta,
             "ticker": ticker_upper,
             "category": resolved_category,
             "category_slug": resolved_category_slug,
@@ -164,25 +182,42 @@ class SecEdgarConnector:
 
         if html_path.exists() and metadata_path.exists():
             cached_metadata = self._read_json(metadata_path)
-            result = {**cached_metadata, **result}
-            result["cache_status"] = "hit"
-            self._write_json(metadata_path, result)
+            if self._cached_filing_matches_request(
+                cached_metadata, public_filing_meta
+            ) and self._cached_html_matches_request(html_path, public_filing_meta):
+                result = {**cached_metadata, **result}
+                self._apply_document_fiscal_focus(result, html_path)
+                result["cache_status"] = "hit"
+                self._write_json(metadata_path, result)
+                self._append_log(
+                    {
+                        "event": "sec_download_cache_hit",
+                        "ticker": ticker_upper,
+                        "year": fiscal_year,
+                        "category_slug": resolved_category_slug,
+                        "form_type": form_type,
+                        "local_html_path": str(html_path),
+                    }
+                )
+                return result
             self._append_log(
                 {
-                    "event": "sec_download_cache_hit",
+                    "event": "sec_download_cache_stale",
                     "ticker": ticker_upper,
                     "year": fiscal_year,
                     "category_slug": resolved_category_slug,
                     "form_type": form_type,
                     "local_html_path": str(html_path),
+                    "cached_accession_number": cached_metadata.get("accession_number"),
+                    "requested_accession_number": public_filing_meta.get("accession_number"),
                 }
             )
-            return result
 
-        html = self._request_text(filing_meta["filing_url"])
+        html = prefetched_html or self._request_text(filing_meta["filing_url"])
         output_dir.mkdir(parents=True, exist_ok=True)
         html_path.write_text(html, encoding="utf-8")
 
+        self._apply_document_fiscal_focus(result, html_path, html=html)
         result["cache_status"] = "downloaded"
         result["downloaded_at"] = datetime.now(timezone.utc).isoformat()
         self._write_json(metadata_path, result)
@@ -246,28 +281,72 @@ class SecEdgarConnector:
         )
         return data
 
-    @classmethod
-    def _find_filing_index(
-        cls, filing_block: dict[str, list[Any]], form_type: str, year: int
-    ) -> int | None:
+    def _find_filing_match(
+        self,
+        filing_block: dict[str, list[Any]],
+        cik: str,
+        form_type: str,
+        fiscal_year: int,
+    ) -> dict[str, Any] | None:
         forms = filing_block.get("form", [])
-        matches = []
-        fallback_matches = []
+        fallback_match: dict[str, Any] | None = None
         for idx, form in enumerate(forms):
             if form != form_type:
                 continue
-            report_date = cls._get_recent_value(filing_block, "reportDate", idx)
-            filing_date = cls._get_recent_value(filing_block, "filingDate", idx)
-            if report_date.startswith(str(year)):
-                matches.append(idx)
-            elif filing_date.startswith(str(year)):
-                fallback_matches.append(idx)
+            report_date = self._get_recent_value(filing_block, "reportDate", idx)
+            filing_date = self._get_recent_value(filing_block, "filingDate", idx)
+            date_matches = report_date.startswith(str(fiscal_year)) or filing_date.startswith(str(fiscal_year))
+            if not self._should_probe_document_fiscal_focus(
+                report_date=report_date,
+                filing_date=filing_date,
+                fiscal_year=fiscal_year,
+            ):
+                continue
+            accession_number = self._get_recent_value(filing_block, "accessionNumber", idx)
+            primary_document = self._get_recent_value(filing_block, "primaryDocument", idx)
+            if not accession_number or not primary_document:
+                continue
+            filing_url = self._build_filing_url(cik, accession_number, primary_document)
+            html = self._request_text(filing_url)
+            document_fiscal_year = self._document_fiscal_year_focus_from_html(html)
+            document_fiscal_period = self._document_fiscal_period_focus_from_html(html)
+            if document_fiscal_year == fiscal_year:
+                return {
+                    "idx": idx,
+                    "html": html,
+                    "document_fiscal_year_focus": document_fiscal_year,
+                    "document_fiscal_period_focus": document_fiscal_period,
+                }
+            if document_fiscal_year is None and date_matches and fallback_match is None:
+                fallback_match = {
+                    "idx": idx,
+                    "html": html,
+                    "document_fiscal_period_focus": document_fiscal_period,
+                }
+                continue
+            continue
 
-        if matches:
-            return matches[0]
-        if fallback_matches:
-            return fallback_matches[0]
+        if fallback_match is not None:
+            return fallback_match
         return None
+
+    @staticmethod
+    def _should_probe_document_fiscal_focus(
+        report_date: str | None,
+        filing_date: str | None,
+        fiscal_year: int,
+    ) -> bool:
+        date_years = {
+            year
+            for year in (
+                SecEdgarConnector._date_year(report_date),
+                SecEdgarConnector._date_year(filing_date),
+            )
+            if year is not None
+        }
+        if not date_years:
+            return True
+        return bool(date_years & {fiscal_year - 1, fiscal_year, fiscal_year + 1})
 
     def _request_json(self, url: str) -> dict[str, Any]:
         response = self._request(url)
@@ -315,6 +394,55 @@ class SecEdgarConnector:
             f.write("\n")
 
     @staticmethod
+    def _cached_filing_matches_request(
+        cached_metadata: dict[str, Any],
+        requested_metadata: dict[str, Any],
+    ) -> bool:
+        comparable_fields = ("accession_number", "primary_document", "filing_url")
+        matched_any = False
+        for field in comparable_fields:
+            requested_value = str(requested_metadata.get(field) or "").strip()
+            cached_value = str(cached_metadata.get(field) or "").strip()
+            if not requested_value:
+                continue
+            if not cached_value:
+                return False
+            matched_any = True
+            if cached_value != requested_value:
+                return False
+        return matched_any
+
+    @classmethod
+    def _cached_html_matches_request(
+        cls,
+        html_path: Path,
+        requested_metadata: dict[str, Any],
+    ) -> bool:
+        form_type = str(requested_metadata.get("form_type") or "").upper().strip()
+        if form_type not in {"10-K", "10-Q"}:
+            return True
+
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+        document_year = cls._document_fiscal_year_focus_from_html(text)
+        requested_year = cls._normalize_document_fiscal_year_focus(
+            requested_metadata.get("document_fiscal_year_focus")
+            or requested_metadata.get("fiscal_year")
+        )
+        if requested_year is not None and document_year != requested_year:
+            return False
+
+        if form_type != "10-Q":
+            return True
+        requested_period = cls._normalize_document_fiscal_period_focus(
+            requested_metadata.get("document_fiscal_period_focus")
+            or requested_metadata.get("fiscal_period")
+        )
+        if requested_period is None:
+            return True
+        document_period = cls._document_fiscal_period_focus_from_html(text)
+        return document_period == requested_period
+
+    @staticmethod
     def _get_recent_value(recent: dict[str, list[Any]], key: str, idx: int) -> str:
         values = recent.get(key, [])
         if idx >= len(values) or values[idx] is None:
@@ -322,11 +450,26 @@ class SecEdgarConnector:
         return str(values[idx])
 
     @staticmethod
-    def _filing_period_metadata(form_type: str, report_date: str | None) -> dict[str, Any]:
+    def _filing_period_metadata(
+        form_type: str,
+        report_date: str | None,
+        fiscal_period_focus: str | None = None,
+        fiscal_year_focus: int | str | None = None,
+    ) -> dict[str, Any]:
         normalized_form = str(form_type or "").upper().strip()
         period_end = str(report_date or "").strip() or None
+        document_period = SecEdgarConnector._normalize_document_fiscal_period_focus(fiscal_period_focus)
+        document_year = SecEdgarConnector._normalize_document_fiscal_year_focus(fiscal_year_focus)
+        fiscal_year_fields: dict[str, Any] = {}
+        if document_year is not None:
+            fiscal_year_fields = {
+                "fiscal_year": document_year,
+                "fiscal_year_source": "document_fiscal_year_focus",
+                "document_fiscal_year_focus": document_year,
+            }
         if normalized_form == "10-K":
             return {
+                **fiscal_year_fields,
                 "period_end": period_end,
                 "period_type": "annual",
                 "duration_months": 12,
@@ -334,7 +477,18 @@ class SecEdgarConnector:
                 "fiscal_period_source": "form_type",
             }
         if normalized_form == "10-Q":
+            if document_period:
+                return {
+                    **fiscal_year_fields,
+                    "period_end": period_end,
+                    "period_type": "quarterly",
+                    "duration_months": 3,
+                    "fiscal_period": document_period,
+                    "fiscal_period_source": "document_fiscal_period_focus",
+                    "document_fiscal_period_focus": document_period,
+                }
             return {
+                **fiscal_year_fields,
                 "period_end": period_end,
                 "period_type": "quarterly",
                 "duration_months": 3,
@@ -342,12 +496,94 @@ class SecEdgarConnector:
                 "fiscal_period_source": "calendar_quarter_from_period_end",
             }
         return {
+            **fiscal_year_fields,
             "period_end": period_end,
             "period_type": None,
             "duration_months": None,
             "fiscal_period": None,
             "fiscal_period_source": "unknown",
         }
+
+    @classmethod
+    def _apply_document_fiscal_focus(
+        cls,
+        metadata: dict[str, Any],
+        html_path: Path,
+        html: str | None = None,
+    ) -> None:
+        if str(metadata.get("form_type") or "").upper().strip() not in {"10-K", "10-Q"}:
+            return
+        text = html if html is not None else html_path.read_text(encoding="utf-8", errors="ignore")
+        document_year = cls._document_fiscal_year_focus_from_html(text)
+        document_period = cls._document_fiscal_period_focus_from_html(text)
+        if not document_year and not document_period:
+            return
+        metadata.update(
+            cls._filing_period_metadata(
+                form_type=str(metadata.get("form_type") or ""),
+                report_date=metadata.get("report_date") or metadata.get("period_end"),
+                fiscal_period_focus=document_period,
+                fiscal_year_focus=document_year,
+            )
+        )
+
+    @staticmethod
+    def _document_fiscal_year_focus_from_html(html: str) -> int | None:
+        value = SecEdgarConnector._ixbrl_document_focus_value(html, "DocumentFiscalYearFocus")
+        return SecEdgarConnector._normalize_document_fiscal_year_focus(value)
+
+    @staticmethod
+    def _document_fiscal_period_focus_from_html(html: str) -> str | None:
+        value = SecEdgarConnector._ixbrl_document_focus_value(html, "DocumentFiscalPeriodFocus")
+        if value:
+            return SecEdgarConnector._normalize_document_fiscal_period_focus(value)
+
+        # Preserve compatibility with older local fixtures that omit the ix: tag prefix.
+        match = re.search(
+            r"DocumentFiscalPeriodFocus\b[^>]*>\s*(FY|Q[1-4])\s*<",
+            html or "",
+            flags=re.I,
+        )
+        if not match:
+            return None
+        return SecEdgarConnector._normalize_document_fiscal_period_focus(match.group(1))
+
+    @staticmethod
+    def _normalize_document_fiscal_period_focus(value: str | None) -> str | None:
+        normalized = str(value or "").upper().strip()
+        return normalized if normalized in {"FY", "Q1", "Q2", "Q3", "Q4"} else None
+
+    @staticmethod
+    def _ixbrl_document_focus_value(html: str, focus_name: str) -> str | None:
+        pattern = (
+            rf"<ix:nonNumeric\b[^>]*\bname=[\"'][^\"']*{re.escape(focus_name)}[\"'][^>]*>"
+            r"(?P<body>.*?)</ix:nonNumeric>"
+        )
+        match = re.search(pattern, html or "", flags=re.I | re.S)
+        if not match:
+            return None
+        text = re.sub(r"<[^>]+>", " ", match.group("body"))
+        text = re.sub(r"\s+", " ", text).strip()
+        return text or None
+
+    @staticmethod
+    def _normalize_document_fiscal_year_focus(value: int | str | None) -> int | None:
+        if value is None:
+            return None
+        match = re.search(r"(20\d{2}|19\d{2})", str(value))
+        if not match:
+            return None
+        return int(match.group(1))
+
+    @staticmethod
+    def _date_year(value: str | None) -> int | None:
+        text = str(value or "")
+        if len(text) < 4:
+            return None
+        try:
+            return int(text[:4])
+        except ValueError:
+            return None
 
     @staticmethod
     def _calendar_quarter(period_end: str | None) -> str | None:

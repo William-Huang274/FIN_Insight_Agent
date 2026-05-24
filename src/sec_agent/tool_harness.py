@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -20,6 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SESSION_ROOT = REPO_ROOT / "eval" / "sec_cases" / "session_harness"
 SESSION_SCHEMA_VERSION = "sec_agent_session_state_v0.1"
 TOOL_RESULT_SCHEMA_VERSION = "sec_agent_tool_result_v0.1"
+SUPPORTED_SOURCE_POLICIES = {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT"}
 
 ANALYSIS_ARTIFACT_KEYS = (
     "query_contract",
@@ -125,7 +127,7 @@ class SecAgentToolHarness:
                     "tenant_id": {"type": "string"},
                     "session_id": {"type": "string"},
                     "years": {"type": "array", "items": {"type": "integer"}},
-                    "source_policy": {"type": "string", "enum": ["SEC_ONLY_10K"]},
+                    "source_policy": {"type": "string", "enum": sorted(SUPPORTED_SOURCE_POLICIES)},
                     "preferred_output": {"type": "string"},
                     "execute": {"type": "boolean", "description": "Run the graph now instead of recording a plan only."},
                 },
@@ -242,8 +244,13 @@ class SecAgentToolHarness:
         query = str(query or "").strip()
         if not query:
             return ToolResult("start_memo_analysis", "error", {}, "query is required")
-        if source_policy != "SEC_ONLY_10K":
-            return ToolResult("start_memo_analysis", "error", {}, "only SEC_ONLY_10K is supported")
+        if source_policy not in SUPPORTED_SOURCE_POLICIES:
+            return ToolResult(
+                "start_memo_analysis",
+                "error",
+                {},
+                f"unsupported source_policy: {source_policy}",
+            )
 
         session = self._load_or_create_session(
             session_id=session_id or _session_id(query),
@@ -254,9 +261,10 @@ class SecAgentToolHarness:
         turn = self._new_turn(session, "start_memo_analysis", {"query": query, "execute": execute})
         session["preferences"]["preferred_output"] = preferred_output
         session["active_query"] = query
+        selected_years = [int(item) for item in (years or _default_years_for_source_policy(source_policy))]
         session["active_scope"] = {
             "selected_tickers": _infer_tickers_from_query(query),
-            "selected_years": [int(item) for item in (years or [2023, 2024, 2025])],
+            "selected_years": selected_years,
             "source_policy": source_policy,
         }
         analysis = {
@@ -273,7 +281,7 @@ class SecAgentToolHarness:
         }
 
         if execute:
-            execution = self._run_graph_analysis(query, answer_id=answer_id, graph_args=graph_args or [])
+            execution = self._run_graph_analysis(query, answer_id=answer_id, graph_args=graph_args or [], years=selected_years)
             analysis.update(execution)
             session["active_answer_id"] = answer_id
             session["active_scope"].update(execution.get("scope") or {})
@@ -353,6 +361,7 @@ class SecAgentToolHarness:
                 tenant_id=str(session.get("tenant_id") or "default_tenant"),
                 session_id=session["session_id"],
                 years=revised_years,
+                source_policy=str((session.get("active_scope") or {}).get("source_policy") or "SEC_ONLY_10K"),
                 preferred_output=str((session.get("preferences") or {}).get("preferred_output") or "investment_memo"),
                 execute=True,
                 graph_args=graph_args or [],
@@ -548,8 +557,11 @@ class SecAgentToolHarness:
             return ToolResult("get_session_state", "error", {}, "user_id does not match session owner")
         return ToolResult("get_session_state", "completed", _compact_session(session))
 
-    def _run_graph_analysis(self, query: str, *, answer_id: str, graph_args: list[str]) -> dict[str, Any]:
+    def _run_graph_analysis(self, query: str, *, answer_id: str, graph_args: list[str], years: list[int]) -> dict[str, Any]:
         started = time.time()
+        graph_args = list(graph_args or [])
+        if years and "--years" not in graph_args:
+            graph_args.extend(["--years", ",".join(str(int(year)) for year in years)])
         command = [
             self.python,
             "scripts/cloud/sec_agent_graph_runner.py",
@@ -606,7 +618,7 @@ class SecAgentToolHarness:
             "updated_at": _utc_now(),
             "preferences": {
                 "language": "zh",
-                "default_source_policy": "SEC_ONLY_10K",
+                "default_source_policy": _default_source_policy(),
                 "default_years": [2023, 2024, 2025],
                 "preferred_output": "investment_memo",
                 "risk_tone": "conservative",
@@ -677,6 +689,31 @@ def _tool_spec(name: str, description: str, properties: dict[str, Any], *, requi
             },
         },
     }
+
+
+def _default_source_policy() -> str:
+    value = str(os.environ.get("SEC_AGENT_SOURCE_POLICY") or "SEC_ONLY_10K").strip()
+    if value in SUPPORTED_SOURCE_POLICIES:
+        return value
+    return "SEC_ONLY_10K"
+
+
+def _default_years_for_source_policy(source_policy: str) -> list[int]:
+    raw = str(os.environ.get("YEARS") or "").strip()
+    if raw:
+        years = []
+        for part in re.split(r"[,;\s]+", raw):
+            if not part:
+                continue
+            try:
+                years.append(int(part))
+            except ValueError:
+                continue
+        if years:
+            return sorted(dict.fromkeys(years))
+    if str(source_policy or "").strip() == "SEC_PRIMARY_MIXED_RECENT":
+        return [2023, 2024, 2025, 2026]
+    return [2023, 2024, 2025]
 
 
 def _compact_session(session: dict[str, Any]) -> dict[str, Any]:

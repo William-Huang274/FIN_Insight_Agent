@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from dataclasses import dataclass
@@ -10,7 +11,7 @@ from sec_agent.llm_gateway import chat_completion
 from sec_agent.tool_harness import KNOWN_TICKERS, SecAgentToolHarness, ToolResult
 
 
-SEC_AGENT_CONTROLLER_SYSTEM_PROMPT = """You are the controller for an SEC-only investment memo agent.
+SEC_AGENT_CONTROLLER_SYSTEM_PROMPT = """You are the controller for an SEC-primary investment memo agent.
 
 Your job is to choose high-level tools. Do not directly answer memo, evidence,
 coverage, source, resume, or reformat requests when a tool is available.
@@ -23,12 +24,13 @@ Routing rules:
   In that case pass set_tickers with exactly the requested comparison companies and execute=true.
 - Use get_session_state first when the user asks which prior memo/session is active or uses ambiguous references that require session resolution.
 - Use explain_evidence only when the user asks where a claim, driver, metric, or evidence came from, or asks for proof/citation/source of an existing memo item.
-- Use inspect_coverage when the user asks whether evidence is complete, whether there are gaps, or asks for current/latest/buy-sell topics that exceed the SEC_ONLY_10K source boundary.
+- Use inspect_coverage when the user asks whether evidence is complete, whether there are gaps, or asks for current/latest/buy-sell topics that exceed the active SEC source boundary.
 - Use reformat_answer for style, audience, bullet, or section-only transformations of an existing memo.
 - Use resume_analysis when the user asks to continue an interrupted or partial analysis.
 
 Constraints:
-- The only source policy for analysis is SEC_ONLY_10K.
+- Supported source policies are SEC_ONLY_10K and SEC_PRIMARY_MIXED_RECENT.
+- Use the runtime default source policy when starting or revising memo analysis.
 - Never call external news, market data, price, analyst consensus, or web tools.
 - Keep session_id, user_id, tenant_id, and active_answer_id isolated to the runtime context.
 - Prefer one tool call per turn unless a follow-up tool is clearly required after a tool result.
@@ -303,6 +305,8 @@ def _compact_runtime_context(
     initial_state = initial_state if isinstance(initial_state, dict) else {}
     expected_context = runtime_context.get("expected_context") if isinstance(runtime_context, dict) else {}
     expected_context = expected_context if isinstance(expected_context, dict) else {}
+    bootstrap = runtime_context.get("bootstrap") if isinstance(runtime_context, dict) else {}
+    bootstrap = bootstrap if isinstance(bootstrap, dict) else {}
     return {
         "session_id": session_id or str(initial_state.get("session_id") or ""),
         "user_id": user_id or str(initial_state.get("user_id") or ""),
@@ -315,6 +319,7 @@ def _compact_runtime_context(
             "available_artifacts": initial_state.get("available_artifacts") or [],
             "missing_artifacts": initial_state.get("missing_artifacts") or [],
         },
+        "bootstrap": bootstrap,
         "expected_context": expected_context,
         "prior_tool_calls": runtime_context.get("prior_tool_calls") or [],
     }
@@ -334,12 +339,16 @@ def _compact_context_manager_snapshot(
     active_session = context_snapshot.get("active_session") if isinstance(context_snapshot.get("active_session"), dict) else {}
     expected_context = runtime_context.get("expected_context") if isinstance(runtime_context.get("expected_context"), dict) else {}
     artifact_state = lossless.get("artifact_state") if isinstance(lossless.get("artifact_state"), dict) else {}
+    active_scope = lossless.get("active_scope") if isinstance(lossless.get("active_scope"), dict) else {}
+    source_policy = str(lossless.get("source_policy") or active_scope.get("source_policy") or "")
     return {
         "session_id": session_id or str(lossless.get("session_id") or active_session.get("session_id") or ""),
         "user_id": user_id or str(identity.get("user_id") or active_session.get("user_id") or ""),
         "tenant_id": tenant_id or str(identity.get("tenant_id") or active_session.get("tenant_id") or ""),
         "active_answer_id": active_answer_id
         or str(lossless.get("active_answer_id") or active_session.get("active_answer_id") or ""),
+        "active_scope": active_scope,
+        "source_policy": source_policy,
         "initial_state": {
             "precondition": "context_manager_snapshot",
             "active_answer_id": lossless.get("active_answer_id", ""),
@@ -412,7 +421,7 @@ def _fill_runtime_defaults(name: str, args: dict[str, Any], context: dict[str, A
         if context.get("active_answer_id"):
             result["answer_id"] = context["active_answer_id"]
     if name == "start_memo_analysis":
-        result.setdefault("source_policy", "SEC_ONLY_10K")
+        result["source_policy"] = _default_source_policy(context)
         result.setdefault("preferred_output", "investment_memo")
     if name == "reformat_answer":
         result.setdefault("preserve_citations", True)
@@ -441,6 +450,10 @@ def _canonicalize_tool_arguments(name: str, args: dict[str, Any], *, user_messag
     result = dict(args)
     if name == "start_memo_analysis":
         result["query"] = str(user_message or result.get("query") or "")
+        if not result.get("years"):
+            years = _extract_years(user_message)
+            if years:
+                result["years"] = years
     if name == "reformat_answer":
         current_format = str(result.get("format") or "")
         result["format"] = (
@@ -626,7 +639,7 @@ def _heuristic_arguments(name: str, text: str, context: dict[str, Any]) -> dict[
             "tenant_id": tenant_id,
             "session_id": session_id,
             "years": years or [2023, 2024, 2025],
-            "source_policy": "SEC_ONLY_10K",
+            "source_policy": _default_source_policy(context),
             "preferred_output": "investment_memo",
             "execute": True,
         }
@@ -685,6 +698,26 @@ def _heuristic_arguments(name: str, text: str, context: dict[str, Any]) -> dict[
     return {"session_id": session_id}
 
 
+def _default_source_policy(context: dict[str, Any]) -> str:
+    context_snapshot = context.get("context_snapshot") if isinstance(context.get("context_snapshot"), dict) else {}
+    lossless = context_snapshot.get("lossless_fields") if isinstance(context_snapshot.get("lossless_fields"), dict) else {}
+    snapshot_scope = lossless.get("active_scope") if isinstance(lossless.get("active_scope"), dict) else {}
+    candidates = [
+        ((context.get("bootstrap") or {}) if isinstance(context.get("bootstrap"), dict) else {}).get("source_policy"),
+        ((context.get("active_scope") or {}) if isinstance(context.get("active_scope"), dict) else {}).get("source_policy"),
+        lossless.get("source_policy"),
+        snapshot_scope.get("source_policy"),
+        ((context.get("expected_context") or {}) if isinstance(context.get("expected_context"), dict) else {}).get("source_policy"),
+        context.get("source_policy"),
+        os.environ.get("SEC_AGENT_SOURCE_POLICY"),
+    ]
+    for value in candidates:
+        policy = str(value or "").strip()
+        if policy in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT"}:
+            return policy
+    return "SEC_ONLY_10K"
+
+
 def _looks_like_state_check(text: str, normalized: str) -> bool:
     if _contains_any(normalized, ("active memo", "current state", "session state", "active_answer_id")):
         return True
@@ -733,7 +766,7 @@ def _contains_any(text: str, needles: tuple[str, ...]) -> bool:
 
 def _extract_years(text: str) -> list[int]:
     years = []
-    for match in re.findall(r"\b(20\d{2})\b", text):
+    for match in re.findall(r"(?<!\d)(20\d{2})(?!\d)", text):
         year = int(match)
         if year not in years:
             years.append(year)

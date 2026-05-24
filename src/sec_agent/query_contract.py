@@ -197,9 +197,10 @@ def validate_query_contract(
         normalizations,
     )
     clean["evidence_gaps"] = _normalize_evidence_gaps(clean.get("evidence_gaps"))
+    source_gap_tickers = _source_gap_tickers(clean, scope_tickers)
     source_coverage_gaps = _source_coverage_gaps(
         project_inventory,
-        scope_tickers,
+        source_gap_tickers,
         years,
         filing_types,
         source_tiers,
@@ -270,6 +271,21 @@ def _selected_form_types(project_inventory: dict[str, Any], tickers: list[str], 
     return sorted(forms) or ["10-K"]
 
 
+def _source_gap_tickers(contract: dict[str, Any], scope_tickers: list[str]) -> list[str]:
+    """Report inventory gaps for the asked-about company set, not the whole search universe."""
+    selected = _unique_upper(contract.get("focus_tickers") or [])
+    allowed = set(scope_tickers)
+    for task in contract.get("decomposed_tasks") or []:
+        if not isinstance(task, dict):
+            continue
+        selected.extend(
+            ticker
+            for ticker in _unique_upper([*(task.get("required_tickers") or []), *(task.get("peer_tickers") or [])])
+            if ticker in allowed and ticker not in selected
+        )
+    return [ticker for ticker in selected if ticker in allowed] or scope_tickers
+
+
 def _selected_source_tiers(
     project_inventory: dict[str, Any],
     tickers: list[str],
@@ -330,20 +346,29 @@ def _source_coverage_gaps(
     source_tiers: list[str],
 ) -> list[dict[str, Any]]:
     lookup: dict[tuple[str, int, str], set[str]] = {}
+    available_forms_by_year: dict[int, set[str]] = {}
+    selected_tickers = {str(ticker or "").upper() for ticker in tickers if str(ticker or "").strip()}
+    selected_years = {int(year) for year in years if _int_or_none(year) is not None}
     for company in project_inventory.get("companies") or []:
         ticker = str(company.get("ticker") or "").upper()
         if not ticker:
+            continue
+        if selected_tickers and ticker not in selected_tickers:
             continue
         for filing in company.get("filings") or []:
             year = _int_or_none(filing.get("year"))
             form_type = str(filing.get("form_type") or filing.get("source_type") or "").upper().strip()
             if year is None or not form_type:
                 continue
+            if selected_years and int(year) not in selected_years:
+                continue
+            available_forms_by_year.setdefault(int(year), set()).add(form_type)
             key = (ticker, int(year), form_type)
             lookup.setdefault(key, set()).add(str(filing.get("source_tier") or "primary_sec_filing"))
 
     gaps: list[dict[str, Any]] = []
     required_tiers = [str(tier) for tier in source_tiers if str(tier)] or ["primary_sec_filing"]
+    selected_forms = {str(form or "").upper().strip() for form in filing_types if str(form or "").strip()}
     for ticker in tickers:
         ticker_text = str(ticker or "").upper()
         if not ticker_text:
@@ -352,7 +377,9 @@ def _source_coverage_gaps(
             year_value = _int_or_none(year)
             if year_value is None:
                 continue
-            for form_type in filing_types:
+            year_available_forms = available_forms_by_year.get(int(year_value), set())
+            year_required_forms = sorted((selected_forms & year_available_forms) or selected_forms)
+            for form_type in year_required_forms:
                 form = str(form_type or "").upper().strip()
                 if not form:
                     continue

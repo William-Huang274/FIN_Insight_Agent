@@ -29,9 +29,12 @@ Usage:
   bash scripts/cloud/sec_agent_interactive.sh ask "your free-form prompt"
   bash scripts/cloud/sec_agent_interactive.sh ask-bge-first "your free-form prompt"
   bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
+  bash scripts/cloud/sec_agent_interactive.sh chat-mixed-deepseek
   bash scripts/cloud/sec_agent_interactive.sh ask-deepseek "your free-form prompt"
+  bash scripts/cloud/sec_agent_interactive.sh ask-mixed-deepseek "your free-form prompt"
   bash scripts/cloud/sec_agent_interactive.sh graph-ask-deepseek "your free-form prompt"
   bash scripts/cloud/sec_agent_interactive.sh session-deepseek
+  bash scripts/cloud/sec_agent_interactive.sh session-mixed-deepseek
   bash scripts/cloud/sec_agent_interactive.sh graph-inspect-state /path/to/sec_agent_state.json
   bash scripts/cloud/sec_agent_interactive.sh graph-resume-state /path/to/sec_agent_state.json
   bash scripts/cloud/sec_agent_interactive.sh plan "your free-form prompt"
@@ -49,12 +52,14 @@ Common overrides:
   USER_OUTPUT=1 bash scripts/cloud/sec_agent_interactive.sh ask-deepseek "..."
   QUERY_PLANNER=llm DEEPSEEK_API_KEY=... bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
   DEEPSEEK_API_KEY=... bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
+  DEEPSEEK_API_KEY=... YEARS=2023,2024,2025,2026 bash scripts/cloud/sec_agent_interactive.sh session-mixed-deepseek
 
 Notes:
   Default scope is TICKERS=ALL, which resolves to all companies in the SEC 10-K manifest.
   BGE-first mode stops Qwen before retrieval, runs BGE-M3 on CUDA by default, then starts Qwen for synthesis.
   Query planner system prompts are injected with a manifest-derived project source inventory.
   DeepSeek mode reads the key from DEEPSEEK_API_KEY; do not store API keys in files.
+  Mixed mode uses accepted 2023-2025 10-K plus 2026 10-Q BM25/object-BM25 artifacts.
   The exact-value ledger is built at runtime from retrieved structured SEC objects; it is gate-checked but not human-reviewed gold.
 EOF
 }
@@ -81,9 +86,19 @@ ensure_qwen_server() {
   BASE_URL="$BASE_URL" MODEL_NAME="$MODEL_NAME" bash scripts/cloud/qwen9b_interactive.sh start
 }
 
+use_mixed_10k_10q_sources() {
+  export MANIFEST_PATH="${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_primary_mixed_10k_latest_10q_manifest_fy2023_2027.jsonl}"
+  export BM25_INDEX_DIR="${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_10k_latest_10q_fy2023_2027}"
+  export OBJECT_BM25_INDEX_DIR="${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_10k_latest_10q_fy2023_2027_objects}"
+  export SEC_AGENT_SOURCE_POLICY="${SEC_AGENT_SOURCE_POLICY:-SEC_PRIMARY_MIXED_RECENT}"
+}
+
 agent_flags() {
   local flags=(--llm-backend "$LLM_BACKEND" --base-url "$BASE_URL" --chat-completions-path "$CHAT_COMPLETIONS_PATH" --model "$MODEL_NAME")
   flags+=(--query-planner "${QUERY_PLANNER:-heuristic}")
+  flags+=(--manifest-path "${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_10k_manifest.jsonl}")
+  flags+=(--bm25-index-dir "${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k}")
+  flags+=(--object-bm25-index-dir "${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k_objects}")
   if [[ -n "$API_KEY_ENV" ]]; then
     flags+=(--api-key-env "$API_KEY_ENV")
   fi
@@ -176,6 +191,10 @@ run_context_session() {
   local session_flags=(--llm-backend "$LLM_BACKEND" --base-url "$BASE_URL" --chat-completions-path "$CHAT_COMPLETIONS_PATH" --model "$MODEL_NAME")
   session_flags+=(--query-planner "${QUERY_PLANNER:-llm}")
   session_flags+=(--bge-device "${BGE_DEVICE:-cuda}")
+  session_flags+=(--manifest-path "${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_10k_manifest.jsonl}")
+  session_flags+=(--bm25-index-dir "${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k}")
+  session_flags+=(--object-bm25-index-dir "${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k_objects}")
+  session_flags+=(--source-policy "${SEC_AGENT_SOURCE_POLICY:-SEC_ONLY_10K}")
   if [[ -n "$API_KEY_ENV" ]]; then
     session_flags+=(--api-key-env "$API_KEY_ENV")
   fi
@@ -194,6 +213,27 @@ case "$cmd" in
     run_chat "$@"
     ;;
   chat-deepseek|chat-api)
+    export LLM_BACKEND=deepseek
+    if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
+      export BASE_URL="https://api.deepseek.com"
+    fi
+    if [[ "$CHAT_COMPLETIONS_PATH" == "/v1/chat/completions" ]]; then
+      export CHAT_COMPLETIONS_PATH="/chat/completions"
+    fi
+  if [[ "$MODEL_NAME" == "qwen9b" ]]; then
+    export MODEL_NAME="deepseek-v4-pro"
+  fi
+  export API_KEY_ENV="${API_KEY_ENV:-DEEPSEEK_API_KEY}"
+  export REASONING_EFFORT="${REASONING_EFFORT:-}"
+  export ENABLE_THINKING="${ENABLE_THINKING:-0}"
+  export BGE_FIRST="${BGE_FIRST:-1}"
+  export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
+  export MAX_TOKENS="${MAX_TOKENS:-8000}"
+  shift || true
+  run_chat "$@"
+  ;;
+  chat-mixed-deepseek|chat-mixed-api)
+    use_mixed_10k_10q_sources
     export LLM_BACKEND=deepseek
     if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
       export BASE_URL="https://api.deepseek.com"
@@ -242,6 +282,27 @@ case "$cmd" in
   shift || true
   run_ask "$@"
   ;;
+  ask-mixed-deepseek|ask-mixed-api)
+    use_mixed_10k_10q_sources
+    export LLM_BACKEND=deepseek
+    if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
+      export BASE_URL="https://api.deepseek.com"
+    fi
+    if [[ "$CHAT_COMPLETIONS_PATH" == "/v1/chat/completions" ]]; then
+      export CHAT_COMPLETIONS_PATH="/chat/completions"
+    fi
+    if [[ "$MODEL_NAME" == "qwen9b" ]]; then
+      export MODEL_NAME="deepseek-v4-pro"
+    fi
+    export API_KEY_ENV="${API_KEY_ENV:-DEEPSEEK_API_KEY}"
+  export REASONING_EFFORT="${REASONING_EFFORT:-}"
+  export ENABLE_THINKING="${ENABLE_THINKING:-0}"
+  export BGE_FIRST="${BGE_FIRST:-1}"
+  export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
+  export MAX_TOKENS="${MAX_TOKENS:-8000}"
+  shift || true
+  run_ask "$@"
+  ;;
   graph-ask)
     shift || true
     run_graph_ask "$@"
@@ -267,6 +328,25 @@ case "$cmd" in
   run_graph_ask "$@"
   ;;
   session-deepseek|session-api)
+    export LLM_BACKEND=deepseek
+    if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
+      export BASE_URL="https://api.deepseek.com"
+    fi
+    if [[ "$CHAT_COMPLETIONS_PATH" == "/v1/chat/completions" ]]; then
+      export CHAT_COMPLETIONS_PATH="/chat/completions"
+    fi
+    if [[ "$MODEL_NAME" == "qwen9b" ]]; then
+      export MODEL_NAME="deepseek-v4-pro"
+    fi
+  export API_KEY_ENV="${API_KEY_ENV:-DEEPSEEK_API_KEY}"
+  export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
+  export BGE_DEVICE="${BGE_DEVICE:-cuda}"
+  export SYNTHESIS_MAX_TOKENS="${SYNTHESIS_MAX_TOKENS:-8000}"
+  shift || true
+  run_context_session "$@"
+  ;;
+  session-mixed-deepseek|session-mixed-api)
+    use_mixed_10k_10q_sources
     export LLM_BACKEND=deepseek
     if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
       export BASE_URL="https://api.deepseek.com"

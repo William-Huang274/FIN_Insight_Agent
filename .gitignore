@@ -6,6 +6,7 @@
 /data/logs/*.json
 
 # Local diagnostics and sync scratch
+/.tmp_*
 /.tmp_*/
 *.tmp
 *.bak

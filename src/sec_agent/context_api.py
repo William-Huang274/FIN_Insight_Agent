@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import threading
+import os
 import time
 import uuid
 from dataclasses import dataclass
@@ -233,7 +234,7 @@ class SecAgentContextRequestHandler:
             "prior_tool_calls": prior_tool_calls or [],
             "bootstrap": {
                 "allow_new_session": True,
-                "source_policy": "SEC_ONLY_10K",
+                "source_policy": _default_source_policy(),
             },
         }
         controller_result = self.controller.run_turn(
@@ -268,7 +269,7 @@ class SecAgentContextRequestHandler:
                 "session_id": resolved_session_id,
                 "user_id": user_id,
                 "tenant_id": tenant_id,
-                "source_policy": "SEC_ONLY_10K",
+                "source_policy": _default_source_policy(),
                 "preferred_output": "investment_memo",
             }
         dispatch_arguments = _dispatch_arguments(
@@ -280,7 +281,7 @@ class SecAgentContextRequestHandler:
         dispatch_arguments["session_id"] = resolved_session_id
         dispatch_arguments["user_id"] = user_id
         dispatch_arguments["tenant_id"] = tenant_id
-        dispatch_arguments.setdefault("source_policy", "SEC_ONLY_10K")
+        dispatch_arguments["source_policy"] = _default_source_policy()
         dispatch_arguments.setdefault("preferred_output", "investment_memo")
 
         tool_result = self.harness.dispatch(str(tool_call.get("name") or ""), dispatch_arguments).to_dict()
@@ -382,6 +383,13 @@ def _can_bootstrap_new_session(snapshot: dict[str, Any]) -> bool:
         return False
     reason = str(snapshot.get("reason") or "")
     return reason == "no_sessions_for_user" or reason.startswith("session not found:")
+
+
+def _default_source_policy() -> str:
+    value = str(os.environ.get("SEC_AGENT_SOURCE_POLICY") or "SEC_ONLY_10K").strip()
+    if value in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT"}:
+        return value
+    return "SEC_ONLY_10K"
 
 
 def _new_session_id() -> str:

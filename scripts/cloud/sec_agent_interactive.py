@@ -109,6 +109,10 @@ AI_METRIC_FAMILIES = {
     "services_revenue",
     "gross_margin",
     "research_and_development",
+    "arr_or_recurring_proxy",
+    "deferred_revenue",
+    "free_cash_flow_proxy",
+    "rpo",
     "subscription_revenue",
     "total_revenue",
 }
@@ -178,19 +182,23 @@ PEER_INTENT_TERMS = (
     "peers",
     "rival",
     "rivals",
-    "compare",
-    "comparison",
-    "versus",
-    "vs",
     "竞争",
     "竞争对手",
     "竞品",
     "同行",
     "同行业",
     "对手",
+)
+COMPARISON_INTENT_TERMS = (
+    "compare",
+    "comparison",
+    "versus",
+    "vs",
     "对比",
     "比较",
     "相比",
+    "差异",
+    "不同",
 )
 DOMAIN_CATEGORY_TOKENS = {
     "semiconductor",
@@ -237,9 +245,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--prompt", default="")
     parser.add_argument("--tickers", default=os.environ.get("TICKERS", DEFAULT_TICKER_SCOPE))
     parser.add_argument("--years", default=os.environ.get("YEARS", ""))
-    parser.add_argument("--manifest-path", default="data/processed_private/manifests/sec_tech_10k_manifest.jsonl")
-    parser.add_argument("--bm25-index-dir", default="data/indexes/bm25/sec_tech_10k")
-    parser.add_argument("--object-bm25-index-dir", default="data/indexes/bm25/sec_tech_10k_objects")
+    parser.add_argument(
+        "--manifest-path",
+        default=os.environ.get("MANIFEST_PATH", "data/processed_private/manifests/sec_tech_10k_manifest.jsonl"),
+    )
+    parser.add_argument("--bm25-index-dir", default=os.environ.get("BM25_INDEX_DIR", "data/indexes/bm25/sec_tech_10k"))
+    parser.add_argument(
+        "--object-bm25-index-dir",
+        default=os.environ.get("OBJECT_BM25_INDEX_DIR", "data/indexes/bm25/sec_tech_10k_objects"),
+    )
     parser.add_argument("--bge-model", default=os.environ.get("BGE_MODEL", "/root/autodl-tmp/modelscope_cache/BAAI/bge-reranker-v2-m3"))
     parser.add_argument("--bge-device", default=os.environ.get("BGE_DEVICE", ""))
     parser.add_argument("--evidence-top-k", type=int, default=int(os.environ.get("EVIDENCE_TOP_K", "4")))
@@ -330,7 +344,7 @@ def run_plan_preview(args: argparse.Namespace, prompt: str) -> None:
     manifest_rows = _read_jsonl(REPO_ROOT / args.manifest_path)
     available = _available_scope(manifest_rows)
     tickers = _resolve_tickers(args.tickers, prompt, available)
-    years = _parse_years(args.years) or _infer_years(prompt) or list(DEFAULT_YEARS)
+    years = _parse_years(args.years) or _infer_years(prompt) or _default_years_for_runtime_source_policy()
     tickers, years = _filter_available(tickers, years, available)
     project_inventory = _project_inventory(args, manifest_rows)
     contract = _build_query_contract(args, prompt, tickers, years, project_inventory)
@@ -355,7 +369,7 @@ def run_one(args: argparse.Namespace, prompt: str) -> Path:
     manifest_rows = _read_jsonl(REPO_ROOT / args.manifest_path)
     available = _available_scope(manifest_rows)
     tickers = _resolve_tickers(args.tickers, prompt, available)
-    years = _parse_years(args.years) or _infer_years(prompt) or list(DEFAULT_YEARS)
+    years = _parse_years(args.years) or _infer_years(prompt) or _default_years_for_runtime_source_policy()
     tickers, years = _filter_available(tickers, years, available)
     if not tickers or not years:
         raise RuntimeError("No available SEC filings matched inferred scope. Use /scope TICKERS YEARS.")
@@ -853,7 +867,7 @@ def _stage_synthesize_memo(
         "llm_gateway": _gateway_debug(llm_gateway_result),
         "claim_first": claim_first_report["summary"],
     }
-    _write_run_outputs(paths["qwen_dir"], _trace_with_context_rows(trace, selected_context_rows), qwen_result, args, started)
+    _write_run_outputs(paths["qwen_dir"], _trace_with_context_rows(trace, selected_context_rows), qwen_result, args, started, ledger_rows)
     _add_state_artifact(state, "memo_answer", paths["qwen_dir"] / "agent_outputs.jsonl", row_count=1)
     _add_state_artifact(
         state,
@@ -1151,11 +1165,15 @@ def _ask_llm_server(
             "peer_readthrough、counterarguments、watch_items、source_limitations、not_found、limitations。"
             "不要输出 legacy summary、decision_drivers 或 key_points；系统会从 memo 字段派生 gate 字段。"
             "direct_answer/investment_thesis/summary 不得写精确数字或metric_id。"
-            "what_changed/why_it_matters/peer_readthrough/counterarguments 若写精确数字，必须绑定 metric_ids/evidence_ids。"
-            "counterarguments 要说明什么会削弱或推翻 thesis；watch_items 要说明未来SEC披露中该看什么。"
+            "what_changed/why_it_matters/peer_readthrough/counterarguments 每条都必须绑定当前 metric_ids/evidence_ids；无ID支撑的判断不要写入这些数组。"
+            "peer_readthrough 仅在明确涉及同行/竞争对手且有当前证据ID支撑时使用；单公司跨期比较或无同行证据时必须输出空数组。"
+            "counterarguments 只能写当前证据支持的反向证据；未来可能削弱 thesis 的待观察事项必须放入 watch_items 或 source_limitations。"
+            "watch_items 要说明未来SEC披露中该看什么。"
             "watch_items.source_to_watch 必须使用枚举 future_10k、future_10q、future_sec_filing 或 not_available_current_policy，不要写 SEC-only 等自由文本。"
             "watch_items 不要写 Direct Customer A/B 等匿名客户标签；应写 major customers 或 customer concentration 这类指标族观察项。"
             "why_it_matters 只解释 focus_tickers 的核心 Judgment Plan drivers；同行或竞争对手的定量指标必须放在 peer_readthrough，不要放进 why_it_matters。"
+            "不得把 cloud_revenue、services_revenue 或普通服务收入推断为 ARR、订阅收入、经常性收入特征、续费质量或高粘性订阅模式；"
+            "只有当前 metric_ids/evidence_ids 明确支持 subscription_revenue、ARR、递延收入或 RPO 时才可这样表述。"
             "涉及竞争对手时必须区分直接竞争、间接替代、供应商/客户/云厂商自研或证据不足，不能只列公司名。"
             "不要写当前引用证据未明确支持的产品代号、竞品产品名或公司名；若没有 evidence_ids 支撑，用泛化描述。"
             "长度控制：what_changed最多4条，why_it_matters最多4条，peer_readthrough最多4条，counterarguments最多2条，watch_items最多3条。"
@@ -1759,6 +1777,7 @@ def _build_runtime_ledger(
     _supplement_ai_focus_ledger(case, records, rows, seen, query_contract)
     _supplement_contract_metric_family_ledger(case, records, rows, seen, query_contract)
     _supplement_banking_context_ledger(case, context_rows, rows, seen, query_contract)
+    _supplement_free_cash_flow_proxy(case, rows, seen, query_contract)
     rows.sort(key=lambda row: _ledger_row_rank(row, query_contract, context_by_object_id.get(str(row.get("object_id") or ""))), reverse=True)
     rows = _cap_ledger_rows(rows, query_contract, args.ledger_max_rows)
     _dedupe_metric_ids(rows)
@@ -1802,6 +1821,187 @@ def _ledger_source_fields(record: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _ledger_period_role(record: dict[str, Any], cell: dict[str, Any] | None = None) -> str | None:
+    metadata = record.get("metadata") if isinstance(record.get("metadata"), dict) else {}
+    cell = cell or {}
+    explicit = cell.get("period_role") or record.get("period_role") or metadata.get("period_role")
+    if explicit:
+        return str(explicit)
+    repaired = _period_role_from_10q_cash_flow_column(record, cell)
+    if repaired:
+        return repaired
+    for value in (
+        cell.get("column_label"),
+        record.get("column_label"),
+        cell.get("row_label"),
+        record.get("row_label"),
+        record.get("context"),
+        record.get("title"),
+        record.get("text_before"),
+        record.get("text_after"),
+    ):
+        role = _period_role_from_text(value)
+        if role:
+            return role
+    source_fields = _ledger_source_fields(record)
+    form_type = str(source_fields.get("form_type") or "")
+    period_type = str(source_fields.get("period_type") or "").lower()
+    duration = _int_or_none(source_fields.get("duration_months"))
+    if form_type == "10-K" or period_type == "annual" or duration == 12:
+        return "annual"
+    if form_type == "10-Q" and (period_type == "quarterly" or duration == 3):
+        return "qtd"
+    return None
+
+
+def _period_role_from_10q_cash_flow_column(record: dict[str, Any], cell: dict[str, Any] | None = None) -> str | None:
+    metadata = record.get("metadata") if isinstance(record.get("metadata"), dict) else {}
+    cell = cell or {}
+    source_fields = _ledger_source_fields(record)
+    form_type = str(source_fields.get("form_type") or "").upper()
+    if form_type != "10-Q":
+        return None
+    text = " ".join(
+        str(part or "")
+        for part in (
+            record.get("subsection"),
+            record.get("section"),
+            record.get("title"),
+            record.get("context"),
+            record.get("metric_name"),
+            record.get("row_label"),
+            cell.get("row_label"),
+        )
+    ).lower()
+    if "cash flow" not in text and "cash flows" not in text and "net cash" not in text and "property and equipment" not in text:
+        return None
+    column_index = _int_or_none(cell.get("column_index") or metadata.get("column_index"))
+    logical_index = _int_or_none(cell.get("logical_column_index") or metadata.get("logical_column_index"))
+    index = column_index if column_index is not None else logical_index
+    if index is None:
+        return None
+    if _is_legacy_parenthesized_cash_flow_column(record, cell):
+        if index in {1, 3}:
+            return "qtd"
+        if index in {5, 7}:
+            return "ytd"
+        return None
+    # Some legacy parsed rows keep standalone ")" cells as columns, so capex
+    # cash-flow cells land at 1/3/5/7 instead of 1/2/3/4.
+    if index in {1, 2}:
+        return "qtd"
+    if index in {3, 4}:
+        return "ytd"
+    if index in {5, 6}:
+        return "ytd"
+    return None
+
+
+def _period_year_from_10q_cash_flow_column(record: dict[str, Any], cell: dict[str, Any] | None = None) -> int | None:
+    metadata = record.get("metadata") if isinstance(record.get("metadata"), dict) else {}
+    source_fields = _ledger_source_fields(record)
+    if str(source_fields.get("form_type") or "").upper() != "10-Q":
+        return None
+    source_year = _year_from_value(record.get("fiscal_year"))
+    if source_year is None:
+        return None
+    text = " ".join(
+        str(part or "")
+        for part in (
+            record.get("subsection"),
+            record.get("section"),
+            record.get("title"),
+            record.get("context"),
+            record.get("metric_name"),
+            record.get("row_label"),
+            (cell or {}).get("row_label"),
+        )
+    ).lower()
+    if "cash flow" not in text and "cash flows" not in text and "net cash" not in text and "property and equipment" not in text:
+        return None
+    column_index = _int_or_none((cell or {}).get("column_index") or metadata.get("column_index"))
+    logical_index = _int_or_none((cell or {}).get("logical_column_index") or metadata.get("logical_column_index"))
+    index = column_index if column_index is not None else logical_index
+    if index is None:
+        return None
+    if _is_legacy_parenthesized_cash_flow_column(record, cell):
+        if index in {1, 5}:
+            return source_year
+        if index in {3, 7}:
+            return source_year - 1
+        return None
+    if index in {1, 3, 5}:
+        return source_year
+    if index in {2, 4, 6, 7}:
+        return source_year - 1
+    return None
+
+
+def _is_legacy_parenthesized_cash_flow_column(record: dict[str, Any], cell: dict[str, Any] | None = None) -> bool:
+    cell = cell or {}
+    raw = str(cell.get("raw_value") or record.get("raw_value") or "").strip()
+    if not raw.startswith("("):
+        return False
+    text = " ".join(
+        str(part or "")
+        for part in (
+            record.get("subsection"),
+            record.get("context"),
+            record.get("metric_name"),
+            record.get("row_label"),
+            cell.get("row_label"),
+        )
+    ).lower()
+    return "cash flow" in text or "cash flows" in text or "property and equipment" in text
+
+
+def _period_role_from_text(value: Any) -> str | None:
+    text = re.sub(r"\s+", " ", str(value or "").lower()).strip()
+    if not text:
+        return None
+    patterns = {
+        "ttm": (
+            r"\bttm\b",
+            r"trailing\s+twelve\s+months",
+            r"twelve\s+months\s+ended",
+            r"12\s+months\s+ended",
+        ),
+        "ytd": (
+            r"\bytd\b",
+            r"year[-\s]?to[-\s]?date",
+            r"six\s+months\s+ended",
+            r"nine\s+months\s+ended",
+            r"6\s+months\s+ended",
+            r"9\s+months\s+ended",
+        ),
+        "qtd": (
+            r"three\s+months\s+ended",
+            r"3\s+months\s+ended",
+            r"quarter\s+ended",
+            r"for\s+the\s+quarter",
+            r"\bquarterly\b",
+        ),
+        "annual": (
+            r"year\s+ended",
+            r"fiscal\s+year",
+            r"for\s+the\s+year",
+            r"\bannual\b",
+        ),
+        "instant": (
+            r"as\s+of\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)",
+            r"\bat\s+(?:the\s+)?(?:period|quarter|year)[-\s]?end\b",
+        ),
+    }
+    matches = {
+        role
+        for role, role_patterns in patterns.items()
+        if any(re.search(pattern, text, flags=re.I) for pattern in role_patterns)
+    }
+    if len(matches) == 1:
+        return next(iter(matches))
+    return None
+
+
 def _form_type_from_source_id(value: Any) -> str:
     text = str(value or "").upper()
     if "_10Q_" in text:
@@ -1821,7 +2021,11 @@ def _ledger_row_from_metric(case_id: str, record: dict[str, Any]) -> dict[str, A
     if unit not in VALID_UNITS or not raw or _is_bad_numeric_raw(raw, unit):
         return None
     ticker = str(record.get("ticker") or "").upper()
-    year = _year_from_value(record.get("period")) or _year_from_value(record.get("fiscal_year"))
+    year = (
+        _period_year_from_10q_cash_flow_column(record)
+        or _year_from_value(record.get("period"))
+        or _year_from_value(record.get("fiscal_year"))
+    )
     year = _metric_sentence_year(record, raw, year)
     if not ticker or year is None:
         return None
@@ -1832,19 +2036,23 @@ def _ledger_row_from_metric(case_id: str, record: dict[str, Any]) -> dict[str, A
     metric_context = str(record.get("context") or "")
     family = _metric_family(metric_name, metric_context)
     role = _metric_role(" ".join(part for part in (metric_name, metric_context) if part), unit)
+    period_role = _ledger_period_role(record)
+    value = _normalized_ledger_value(record.get("value"), raw, family)
     return {
-        "metric_id": f"{case_id}::{ticker}::{year}::{family}::{role}",
+        "metric_id": _ledger_metric_id(case_id, ticker, year, family, role, period_role=period_role),
         "case_id": case_id,
         "ticker": ticker,
         "fiscal_year": year,
+        "source_fiscal_year": _year_from_value(record.get("fiscal_year")),
         "period": str(record.get("period") or year),
+        "period_role": period_role,
         **_ledger_source_fields(record),
         "metric_family": family,
         "metric_role": role,
         "metric_name": metric_name,
         "raw_value_text": raw,
         "display_value_zh": _display_value_zh(raw, unit),
-        "value": record.get("value"),
+        "value": value,
         "unit": unit,
         "object_id": record.get("object_id"),
         "source_evidence_id": record.get("source_evidence_id"),
@@ -1887,9 +2095,17 @@ def _ledger_growth_rate_rows_from_metric(
         value = float(match.group(1))
         raw = f"{match.group(1)}%"
         row = dict(base_row)
+        period_role = str(base_row.get("period_role") or "")
         row.update(
             {
-                "metric_id": f"{case_id}::{base_row.get('ticker')}::{base_row.get('fiscal_year')}::{family}::percentage_rate",
+                "metric_id": _ledger_metric_id(
+                    case_id,
+                    str(base_row.get("ticker") or ""),
+                    base_row.get("fiscal_year"),
+                    family,
+                    "percentage_rate",
+                    period_role=period_role,
+                ),
                 "metric_role": "percentage_rate",
                 "metric_name": f"{base_row.get('metric_name') or family} growth rate",
                 "raw_value_text": raw,
@@ -1908,7 +2124,11 @@ def _ledger_rows_from_table(case_id: str, record: dict[str, Any], years: set[int
     for cell in record.get("cells") or []:
         unit = str(cell.get("unit") or "")
         raw = str(cell.get("raw_value") or "")
-        year = _year_from_value(cell.get("period")) or _year_from_value(cell.get("column_label"))
+        year = (
+            _period_year_from_10q_cash_flow_column(record, cell)
+            or _year_from_value(cell.get("period"))
+            or _year_from_value(cell.get("column_label"))
+        )
         if unit not in VALID_UNITS or not raw or _is_bad_numeric_raw(raw, unit) or year is None or (years and year not in years):
             continue
         metric_name = " ".join(str(part) for part in (cell.get("active_group"), cell.get("row_label")) if part)
@@ -1918,20 +2138,32 @@ def _ledger_rows_from_table(case_id: str, record: dict[str, Any], years: set[int
             continue
         family = _metric_family(metric_name, str(record.get("title") or ""))
         role = _metric_role(metric_name, unit)
+        period_role = _ledger_period_role(record, cell)
+        value = _normalized_ledger_value(cell.get("value"), raw, family)
         rows.append(
             {
-                "metric_id": f"{case_id}::{ticker}::{year}::{family}::{role}::{_slug(str(cell.get('row_label') or 'row'))}",
+                "metric_id": _ledger_metric_id(
+                    case_id,
+                    ticker,
+                    year,
+                    family,
+                    role,
+                    period_role=period_role,
+                    suffix=_slug(str(cell.get("row_label") or "row")),
+                ),
                 "case_id": case_id,
                 "ticker": ticker,
                 "fiscal_year": year,
+                "source_fiscal_year": _year_from_value(record.get("fiscal_year")),
                 "period": str(cell.get("period") or year),
+                "period_role": period_role,
                 **_ledger_source_fields(record),
                 "metric_family": family,
                 "metric_role": role,
                 "metric_name": metric_name,
                 "raw_value_text": raw,
                 "display_value_zh": _display_value_zh(raw, unit),
-                "value": cell.get("value"),
+                "value": value,
                 "unit": unit,
                 "object_id": record.get("object_id"),
                 "source_evidence_id": record.get("source_evidence_id"),
@@ -1945,6 +2177,15 @@ def _ledger_rows_from_table(case_id: str, record: dict[str, Any], years: set[int
             }
         )
     return rows
+
+
+def _normalized_ledger_value(value: Any, raw: str, family: str) -> Any:
+    if not isinstance(value, (int, float)):
+        return value
+    raw_text = str(raw or "").strip()
+    if raw_text.startswith("(") and family in {"capital_expenditure_proxy"}:
+        return -abs(float(value))
+    return value
 
 
 def _supplement_ai_focus_ledger(
@@ -1978,9 +2219,14 @@ def _supplement_ai_focus_ledger(
             else:
                 row["metric_name"] = str(row.get("row_label") or row.get("metric_name") or "Data Center revenue")
             row["metric_role"] = "total_value"
-            row["metric_id"] = (
-                f"{case.get('case_id')}::{ticker}::{row.get('fiscal_year')}::"
-                f"data_center_revenue::total_value::{_slug(str(row.get('row_label') or 'segment'))}"
+            row["metric_id"] = _ledger_metric_id(
+                str(case.get("case_id") or ""),
+                ticker,
+                row.get("fiscal_year"),
+                "data_center_revenue",
+                "total_value",
+                period_role=row.get("period_role"),
+                suffix=_slug(str(row.get("row_label") or "segment")),
             )
             if not _ledger_row_allowed(row, query_contract, None):
                 continue
@@ -2003,11 +2249,13 @@ def _supplement_contract_metric_family_ledger(
     desired_families = _contract_required_metric_families(query_contract)
     if not focus or not desired_families:
         return
-    family_ticker_years: set[tuple[str, str, str]] = set(
+    family_ticker_periods: set[tuple[str, str, str, str, str]] = set(
         (
             str(row.get("metric_family") or ""),
             str(row.get("ticker") or "").upper(),
             str(row.get("fiscal_year") or ""),
+            str(row.get("form_type") or row.get("source_type") or ""),
+            str(row.get("period_role") or ""),
         )
         for row in rows
     )
@@ -2033,15 +2281,14 @@ def _supplement_contract_metric_family_ledger(
                 continue
             force_segment_add = _is_high_value_segment_metric(row)
             row_year = str(row.get("fiscal_year") or "")
-            key_by_family_ticker_year = (family, ticker, row_year)
-            if key_by_family_ticker_year in family_ticker_years and not force_segment_add:
-                continue
-            covered_years = {
-                year
-                for row_family, row_ticker, year in family_ticker_years
-                if row_family == family and row_ticker == ticker and year
-            }
-            if years and len(covered_years) >= len(years) and not force_segment_add:
+            key_by_family_ticker_period = (
+                family,
+                ticker,
+                row_year,
+                str(row.get("form_type") or row.get("source_type") or ""),
+                str(row.get("period_role") or ""),
+            )
+            if key_by_family_ticker_period in family_ticker_periods and not force_segment_add:
                 continue
             if not _ledger_row_allowed(row, query_contract, None):
                 continue
@@ -2050,7 +2297,7 @@ def _supplement_contract_metric_family_ledger(
                 continue
             rows.append(row)
             seen.add(key)
-            family_ticker_years.add(key_by_family_ticker_year)
+            family_ticker_periods.add(key_by_family_ticker_period)
             added += 1
             if added >= supplement_limit:
                 return
@@ -2125,6 +2372,112 @@ def _supplement_banking_context_ledger(
             added += 1
             if added >= limit:
                 return
+
+
+def _supplement_free_cash_flow_proxy(
+    case: dict[str, Any],
+    rows: list[dict[str, Any]],
+    seen: set[tuple[str, str, str, str]],
+    query_contract: dict[str, Any],
+) -> None:
+    desired_families = _contract_required_metric_families(query_contract)
+    if "free_cash_flow_proxy" not in desired_families:
+        return
+    by_key: dict[tuple[str, int, str, str, str], dict[str, dict[str, Any]]] = {}
+    for row in rows:
+        family = str(row.get("metric_family") or "")
+        if family not in {"operating_cash_flow", "capital_expenditure_proxy"}:
+            continue
+        year = _int_or_none(row.get("fiscal_year"))
+        if year is None:
+            continue
+        role = str(row.get("period_role") or "")
+        if role not in {"qtd", "ytd", "annual", "ttm"}:
+            continue
+        key = (
+            str(row.get("ticker") or "").upper(),
+            int(year),
+            str(row.get("form_type") or row.get("source_type") or ""),
+            role,
+            str(row.get("period_end") or ""),
+        )
+        current = by_key.setdefault(key, {})
+        if family not in current or _free_cash_flow_input_rank(row) > _free_cash_flow_input_rank(current[family]):
+            current[family] = row
+    for (ticker, year, form_type, role, period_end), family_rows in by_key.items():
+        ocf = family_rows.get("operating_cash_flow")
+        capex = family_rows.get("capital_expenditure_proxy")
+        if not ocf or not capex:
+            continue
+        ocf_value = _numeric_value(ocf.get("value"))
+        capex_value = _numeric_value(capex.get("value"))
+        if ocf_value is None or capex_value is None:
+            continue
+        if capex_value > 0:
+            capex_value = -capex_value
+        derived = ocf_value + capex_value
+        unit = str(ocf.get("unit") or capex.get("unit") or "usd_millions")
+        row = {
+            "metric_id": _ledger_metric_id(
+                str(case.get("case_id") or ""),
+                ticker,
+                year,
+                "free_cash_flow_proxy",
+                "derived_value",
+                period_role=role,
+                suffix="ocf_less_capex",
+            ),
+            "case_id": str(case.get("case_id") or ""),
+            "ticker": ticker,
+            "fiscal_year": year,
+            "source_fiscal_year": ocf.get("source_fiscal_year") or capex.get("source_fiscal_year"),
+            "period": str(ocf.get("period") or capex.get("period") or year),
+            "period_role": role,
+            "source_type": ocf.get("source_type") or capex.get("source_type"),
+            "form_type": form_type,
+            "source_tier": ocf.get("source_tier") or capex.get("source_tier"),
+            "period_end": period_end or ocf.get("period_end") or capex.get("period_end"),
+            "period_type": ocf.get("period_type") or capex.get("period_type"),
+            "duration_months": ocf.get("duration_months") or capex.get("duration_months"),
+            "fiscal_period": ocf.get("fiscal_period") or capex.get("fiscal_period"),
+            "metric_family": "free_cash_flow_proxy",
+            "metric_role": "derived_value",
+            "metric_name": "operating cash flow less additions to property and equipment",
+            "raw_value_text": f"{derived:,.0f}",
+            "display_value_zh": _display_number_value_zh(derived, unit),
+            "value": derived,
+            "unit": unit,
+            "object_id": ocf.get("object_id") or capex.get("object_id"),
+            "source_evidence_id": ocf.get("source_evidence_id") or capex.get("source_evidence_id"),
+            "section": ocf.get("section") or capex.get("section"),
+            "row_label": "Net cash from operations less additions to property and equipment",
+            "column_label": ocf.get("column_label") or capex.get("column_label"),
+            "source_text": "Derived from current Exact-Value Ledger rows; not a separately reported SEC line item.",
+            "input_metric_ids": [ocf.get("metric_id"), capex.get("metric_id")],
+            "input_evidence_ids": [ocf.get("source_evidence_id"), capex.get("source_evidence_id")],
+        }
+        if not _ledger_row_allowed(row, query_contract, None):
+            continue
+        key = _ledger_dedupe_key(row)
+        if key in seen:
+            continue
+        rows.append(row)
+        seen.add(key)
+
+
+def _free_cash_flow_input_rank(row: dict[str, Any]) -> tuple[int, int]:
+    role_score = {"ytd": 4, "annual": 3, "qtd": 2, "ttm": 1}.get(str(row.get("period_role") or ""), 0)
+    value = _numeric_value(row.get("value"))
+    return (role_score, int(abs(value or 0)))
+
+
+def _numeric_value(value: Any) -> float | None:
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        return float(str(value).replace(",", ""))
+    except Exception:
+        return None
 
 
 def _banking_ledger_rows_from_context(
@@ -2231,12 +2584,22 @@ def _banking_context_ledger_row(
     role = "percentage_rate" if unit == "percent" else "total_value"
     evidence_id = str(context_row.get("evidence_id") or context_row.get("source_evidence_id") or "")
     metric_name = _banking_metric_label(family)
+    period_role = "annual"
     return {
-        "metric_id": f"{case_id}::{ticker}::{fiscal_year}::{family}::{role}::context",
+        "metric_id": _ledger_metric_id(
+            case_id,
+            ticker,
+            fiscal_year,
+            family,
+            role,
+            period_role=period_role,
+            suffix="context",
+        ),
         "case_id": case_id,
         "ticker": ticker,
         "fiscal_year": fiscal_year,
         "period": str(fiscal_year),
+        "period_role": period_role,
         "metric_family": family,
         "metric_role": role,
         "metric_name": metric_name,
@@ -2290,6 +2653,31 @@ def _contract_required_metric_families(query_contract: dict[str, Any]) -> set[st
     return families
 
 
+def _contract_has_peer_scope(query_contract: dict[str, Any]) -> bool:
+    peer_terms = (
+        "peer",
+        "competitor",
+        "competition",
+        "competitive",
+        "rival",
+        "竞争",
+        "竞争对手",
+        "竞品",
+        "同行",
+        "同行业",
+        "对手",
+    )
+    for task in query_contract.get("decomposed_tasks") or []:
+        if not isinstance(task, dict):
+            continue
+        if task.get("peer_tickers"):
+            return True
+        task_text = " ".join(str(task.get(key) or "") for key in ("task_id", "question_zh", "question")).lower()
+        if _contains_any(task_text, peer_terms):
+            return True
+    return False
+
+
 def _contract_has_banking_intent(query_contract: dict[str, Any]) -> bool:
     families = _contract_required_metric_families(query_contract)
     if families & BANKING_METRIC_FAMILIES:
@@ -2320,11 +2708,7 @@ def _build_case(
     source_tiers = [str(item) for item in (query_contract.get("source_tiers") or ["primary_sec_filing"]) if str(item)]
     source_policy = str(query_contract.get("source_policy") or "SEC_ONLY")
     is_ai_industry = query_task_type == "ai_industry_financial_trend"
-    is_peer = (
-        not is_ai_industry
-        and len(tickers) >= 2
-        and bool(re.search(r"compare|comparison|versus|vs|对比|比较|相比|行业", prompt, re.I))
-    )
+    is_peer = not is_ai_industry and _contract_has_peer_scope(query_contract)
     query_contract["semantic_gate"] = _semantic_gate_policy_for_prompt(prompt, query_contract, is_peer)
     failure_types = ["source_policy_violation", "proxy_as_direct_metric"]
     if is_peer:
@@ -2925,16 +3309,18 @@ def _query_planner_system_prompt(project_inventory: dict[str, Any], tickers: lis
     inv = inventory_prompt(project_inventory, selected_tickers=tickers, selected_years=years)
     ontology = ", ".join(METRIC_FAMILY_ONTOLOGY)
     task_types = ", ".join(sorted(QUERY_TASK_TYPES))
+    runtime_policy = _runtime_source_policy() or "SEC_ONLY_10K"
     return (
         "你是 FIN Insight Agent 的 Query Contract planner。你的任务不是回答用户问题，而是把自由问题改写成后续 SEC 检索、"
         "Exact-Value Ledger、Judgment Plan 和 synthesis 都能执行的任务协议。\n\n"
         f"{inv}\n\n"
+        f"ACTIVE SOURCE POLICY: {runtime_policy}\n"
         "CONTRACT RULES\n"
         f"- task_type 必须属于：{task_types}\n"
         f"- required_metric_families / metric_families 只能优先使用这些 ontology 名称：{ontology}\n"
         "- focus_tickers 必须来自 SELECTED COMPANY FILINGS；如果用户问全局趋势，可以选择一个 evidence-relevant 子集，但 search_scope 仍由系统保留。\n"
         "- years 必须来自候选 scope；不要规划项目没有的年份。\n"
-        "- filing_types 必须来自 SELECTED COMPANY FILINGS；如 10-Q 可用，必须保留其未经审计季报边界。\n"
+        "- filing_types 必须来自 SELECTED COMPANY FILINGS；如 ACTIVE SOURCE POLICY 是 SEC_PRIMARY_MIXED_RECENT 且 10-Q 可用，必须保留 10-Q 及其未经审计季报边界。\n"
         "- source_tiers 只能来自 PROJECT SOURCE INVENTORY；Stage 1 只允许 primary_sec_filing。\n"
         "- decomposed_tasks 要服务于用户问题，避免机械套用行业模板；宽问题至少拆成 2 个任务。\n"
         "- 如果用户问银行盈利质量、净息差、存贷款或信用风险，优先使用银行指标族："
@@ -3067,7 +3453,11 @@ def _repair_query_contract_from_prompt(
     focus = _clamp_tickers(focus, tickers) or tickers
     has_peer_intent = _has_peer_intent(prompt_text)
     comparative_intent = has_peer_intent or (
-        len(mentioned) >= 2 and _contains_any(lowered, ("和", "与", "哪个", "谁", "差异", "不同", "比较", "对比", "更", "compare"))
+        len(mentioned) >= 2
+        and _contains_any(
+            lowered,
+            ("和", "与", "哪个", "谁", "更", *COMPARISON_INTENT_TERMS),
+        )
     )
     broad_ai_prompt = _is_broad_ai_scope_prompt(prompt_text, mentioned)
     offscope_terms = _offscope_gap_terms(prompt_text, years=years)
@@ -3091,8 +3481,10 @@ def _repair_query_contract_from_prompt(
     repaired["focus_tickers"] = focus
     repaired["search_scope_tickers"] = tickers
     repaired["years"] = years
-    filing_types = _clamp_form_types(repaired.get("filing_types"), _selected_form_types(project_inventory, tickers, years))
-    repaired["filing_types"] = filing_types or _selected_form_types(project_inventory, tickers, years)
+    allowed_filing_types = _selected_form_types(project_inventory, tickers, years)
+    filing_types = _clamp_form_types(repaired.get("filing_types"), allowed_filing_types)
+    repaired["filing_types"] = _source_policy_filing_types(filing_types or allowed_filing_types, allowed_filing_types)
+    repaired["source_policy"] = _source_policy_for_filing_types(repaired["filing_types"])
     repaired["scope"] = _contract_scope(tickers, focus, years, repaired["filing_types"])
 
     _append_contract_task(repaired, _user_question_anchor_task(prompt_text, focus, repaired))
@@ -3120,9 +3512,49 @@ def _repair_query_contract_from_prompt(
         repaired["required_caveats"].append("SEC-only evidence boundary.")
     if "Precise values must come from runtime Exact-Value Ledger only." not in repaired["required_caveats"]:
         repaired["required_caveats"].append("Precise values must come from runtime Exact-Value Ledger only.")
+    task_families = {
+        str(family)
+        for task in repaired.get("decomposed_tasks") or []
+        if isinstance(task, dict)
+        for family in task.get("required_metric_families") or []
+        if str(family)
+    }
+    rules = repaired.get("ledger_rules") if isinstance(repaired.get("ledger_rules"), dict) else {}
+    existing_allowed = {str(item) for item in rules.get("allowed_metric_families") or [] if str(item)}
+    if existing_allowed or task_families:
+        rules["allowed_metric_families"] = sorted(existing_allowed | task_families | set(repaired.get("metric_families") or []))
+        repaired["ledger_rules"] = rules
     repaired["project_inventory"] = inventory_brief(project_inventory)
     repaired["project_inventory_digest"] = project_inventory.get("inventory_digest")
     return repaired
+
+
+def _runtime_source_policy() -> str:
+    value = str(os.environ.get("SEC_AGENT_SOURCE_POLICY") or "").strip()
+    if value in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT"}:
+        return value
+    return ""
+
+
+def _source_policy_filing_types(current: list[str], allowed: list[str]) -> list[str]:
+    allowed_set = {str(form or "").upper().strip() for form in allowed if str(form or "").strip()}
+    current_set = {str(form or "").upper().strip() for form in current if str(form or "").strip()}
+    if _runtime_source_policy() == "SEC_PRIMARY_MIXED_RECENT":
+        mixed = [form for form in ("10-K", "10-Q") if form in allowed_set]
+        if mixed:
+            return mixed
+    if _runtime_source_policy() == "SEC_ONLY_10K" and "10-K" in allowed_set:
+        return ["10-K"]
+    return sorted(current_set & allowed_set) or sorted(allowed_set)
+
+
+def _source_policy_for_filing_types(filing_types: list[str]) -> str:
+    forms = {str(form or "").upper().strip() for form in filing_types if str(form or "").strip()}
+    if forms == {"10-K"}:
+        return "SEC_ONLY_10K"
+    if forms and forms <= {"10-K", "10-Q"} and "10-Q" in forms:
+        return "SEC_PRIMARY_MIXED_RECENT"
+    return "SEC_ONLY"
 
 
 def _is_broad_ai_scope_prompt(prompt: str, mentioned_tickers: list[str]) -> bool:
@@ -3693,9 +4125,13 @@ def _task_company_scope(task: dict[str, Any], fallback_tickers: list[str]) -> li
 def _family_search_alias(family: str) -> str:
     aliases = {
         "advertising_revenue": "advertising revenue ads revenue",
+        "arr_or_recurring_proxy": "annual recurring revenue ARR recurring revenue",
         "capital_expenditure_proxy": "capital expenditures purchases of property and equipment data center infrastructure capex",
+        "capex": "capital expenditures purchases of property and equipment data center infrastructure capex",
         "cloud_revenue": "cloud revenue AWS Azure cloud services",
         "data_center_revenue": "data center revenue compute networking AI accelerator",
+        "deferred_revenue": "deferred revenue unearned revenue contract liabilities",
+        "free_cash_flow_proxy": "free cash flow operating cash flow capital expenditures purchases of property and equipment",
         "gross_margin": "gross margin gross profit margin",
         "infrastructure_software": "infrastructure software security software platform revenue",
         "asset_quality": "asset quality nonperforming assets nonperforming loans charge-offs credit quality",
@@ -3716,6 +4152,7 @@ def _family_search_alias(family: str) -> str:
         "provision_for_credit_losses": "provision for credit losses credit loss provision provision for loan losses",
         "research_and_development": "research and development R&D AI infrastructure costs",
         "revenue": "revenue net sales total revenue",
+        "rpo": "remaining performance obligations RPO contracted backlog revenue visibility",
         "semiconductor_solutions": "semiconductor solutions revenue",
         "semiconductor_systems": "semiconductor systems revenue",
         "services_revenue": "services revenue service revenue",
@@ -3732,6 +4169,7 @@ def _write_run_outputs(
     synthesis: dict[str, Any],
     args: argparse.Namespace,
     started: float,
+    ledger_rows: list[dict[str, Any]] | None = None,
 ) -> None:
     qwen_dir.mkdir(parents=True, exist_ok=True)
     case_id = str(trace.get("case_id") or "")
@@ -3798,6 +4236,7 @@ def _write_run_outputs(
         _rendered_answer_markdown(
             user_query=str((synthesis.get("debug") or {}).get("user_query") or ""),
             answer=synthesis.get("answer") or {},
+            metric_rows={str(row.get("metric_id") or ""): row for row in (ledger_rows or []) if row.get("metric_id")},
         ),
     )
 
@@ -3946,19 +4385,49 @@ def _format_metric_refs(metric_ids: list[str], metric_rows: dict[str, dict[str, 
             str(row.get("ticker") or ""),
             str(row.get("fiscal_year") or ""),
             str(row.get("metric_family") or ""),
+            str(row.get("period_role") or ""),
             str(row.get("display_value_zh") or row.get("raw_value_text") or ""),
         )
         if key in seen:
             continue
         seen.add(key)
         ticker = str(row.get("ticker") or "").upper()
-        year = str(row.get("fiscal_year") or "")
+        year_label = _display_metric_ref_year(row)
+        period_label = _display_period_role(row)
         label = _display_metric_label(row)
         value = str(row.get("display_value_zh") or row.get("raw_value_text") or "").strip()
-        refs.append(f"{ticker} {year} {label}: {value}")
+        refs.append(f"{ticker} {year_label} {period_label} {label}: {value}")
         if len(refs) >= 4:
             break
     return refs
+
+
+def _display_metric_ref_year(row: dict[str, Any]) -> str:
+    value_year = _int_or_none(row.get("fiscal_year"))
+    source_year = _int_or_none(row.get("source_fiscal_year"))
+    if value_year is not None and source_year is not None and value_year != source_year:
+        return f"FY{value_year} comparable in FY{source_year} filing"
+    if value_year is not None:
+        return f"FY{value_year}"
+    return str(row.get("fiscal_year") or "").strip()
+
+
+def _display_period_role(row: dict[str, Any]) -> str:
+    role = str(row.get("period_role") or "").strip().lower()
+    form_type = str(row.get("form_type") or row.get("source_type") or "").strip()
+    fiscal_period = str(row.get("fiscal_period") or "").strip()
+    period_end = str(row.get("period_end") or "").strip()
+    labels = {
+        "annual": "annual",
+        "qtd": "QTD",
+        "ytd": "YTD",
+        "ttm": "TTM",
+        "instant": "point-in-time",
+    }
+    label = labels.get(role, "period-role-unknown")
+    prefix = " ".join(part for part in (form_type, fiscal_period) if part)
+    suffix = f" period_end={period_end}" if period_end and role in {"qtd", "ytd", "ttm", "instant"} else ""
+    return " ".join(part for part in (prefix, label) if part).strip() + suffix
 
 
 def _display_metric_label(row: dict[str, Any]) -> str:
@@ -4157,6 +4626,12 @@ def _parse_years(value: str) -> list[int]:
     return sorted(set(years))
 
 
+def _default_years_for_runtime_source_policy() -> list[int]:
+    if _runtime_source_policy() == "SEC_PRIMARY_MIXED_RECENT":
+        return [2023, 2024, 2025, 2026]
+    return list(DEFAULT_YEARS)
+
+
 def _infer_tickers(prompt: str, available: set[tuple[str, int]]) -> list[str]:
     lowered = prompt.lower()
     found = []
@@ -4271,7 +4746,7 @@ def _category_tokens(text: str) -> set[str]:
 
 
 def _infer_years(prompt: str) -> list[int]:
-    years = sorted({int(match.group(0)) for match in re.finditer(r"\b20\d{2}\b", prompt)})
+    years = sorted({int(match.group(1)) for match in re.finditer(r"(?<!\d)(20\d{2})(?!\d)", prompt)})
     if len(years) >= 2:
         return list(range(min(years), max(years) + 1))
     return years
@@ -4315,7 +4790,7 @@ def _metric_family(name: str, context: str = "") -> str:
         ("loans", ("average loans", "total loans", "loan portfolio", "loans retained", "loans")),
         ("total_assets", ("total assets",)),
         ("capital_expenditure_proxy", ("capital expenditure", "capex", "property and equipment", "ppe")),
-        ("operating_cash_flow", ("operating cash", "cash provided by operating")),
+        ("operating_cash_flow", ("operating cash", "cash provided by operating", "net cash from operations")),
         ("free_cash_flow_proxy", ("free cash flow",)),
         ("research_and_development", ("research and development", "r&d")),
         ("operating_income", ("operating income", "income from operations", "operating profit")),
@@ -4774,7 +5249,12 @@ def _ledger_row_allowed(
         return False
     if family == "operating_cash_flow" and not any(
         term in row_text_lower
-        for term in ("net cash provided by operating activities", "cash provided by operating activities", "operating cash flow")
+        for term in (
+            "net cash provided by operating activities",
+            "cash provided by operating activities",
+            "net cash from operations",
+            "operating cash flow",
+        )
     ):
         return False
     if family == "research_and_development" and any(term in name_lower for term in ("deduction", "capitalizing")):
@@ -4815,6 +5295,7 @@ def _ledger_row_allowed(
             "capital expenditures",
             "capex",
             "purchases of property and equipment",
+            "additions to property and equipment",
             "purchase of property",
             "net purchase of property",
         )
@@ -4881,6 +5362,7 @@ def _ledger_row_rank(
         "semiconductor_systems": 88,
         "semiconductor_solutions": 88,
         "capital_expenditure_proxy": 82,
+        "free_cash_flow_proxy": 80,
         "operating_cash_flow": 76,
         "operating_income": 74,
         "infrastructure_software": 70,
@@ -5057,16 +5539,62 @@ def _display_value_zh(raw: str, unit: str) -> str:
     text = str(raw or "").strip()
     if unit == "usd_millions":
         stripped = re.sub(r"\b(million|millions)\b", "", text.replace("$", ""), flags=re.I).strip()
+        if stripped.startswith("(") and not stripped.endswith(")"):
+            stripped = f"{stripped})"
+        stripped = re.sub(r"^\(\s+", "(", stripped)
         return f"{stripped}（百万美元）"
     if unit == "usd_billions":
         stripped = re.sub(r"\b(billion|billions)\b", "", text.replace("$", ""), flags=re.I).strip()
+        if stripped.startswith("(") and not stripped.endswith(")"):
+            stripped = f"{stripped})"
+        stripped = re.sub(r"^\(\s+", "(", stripped)
         return f"{stripped}（十亿美元）"
     if unit == "usd_thousands":
         stripped = re.sub(r"\b(thousand|thousands)\b", "", text.replace("$", ""), flags=re.I).strip()
+        if stripped.startswith("(") and not stripped.endswith(")"):
+            stripped = f"{stripped})"
+        stripped = re.sub(r"^\(\s+", "(", stripped)
         return f"{stripped}（千美元）"
     if unit == "percent":
         return text if "%" in text else f"{text}%"
     return text
+
+
+def _display_number_value_zh(value: float, unit: str) -> str:
+    raw = f"{value:,.0f}"
+    if unit == "usd_millions":
+        return f"{raw}（百万美元）"
+    if unit == "usd_billions":
+        return f"{value:,.1f}（十亿美元）"
+    if unit == "usd_thousands":
+        return f"{raw}（千美元）"
+    if unit == "percent":
+        return f"{value:g}%"
+    return f"{value:g}"
+
+
+def _ledger_metric_id(
+    case_id: Any,
+    ticker: Any,
+    fiscal_year: Any,
+    metric_family: Any,
+    metric_role: Any,
+    *,
+    period_role: Any = None,
+    suffix: Any = None,
+) -> str:
+    parts = [
+        str(case_id or ""),
+        str(ticker or "").upper(),
+        str(fiscal_year or ""),
+        str(metric_family or ""),
+        str(metric_role or ""),
+    ]
+    if period_role:
+        parts.append(str(period_role))
+    if suffix:
+        parts.append(str(suffix))
+    return "::".join(parts)
 
 
 def _ledger_dedupe_key(row: dict[str, Any]) -> tuple[str, str, str, str]:
@@ -5074,7 +5602,10 @@ def _ledger_dedupe_key(row: dict[str, Any]) -> tuple[str, str, str, str]:
         str(row.get("ticker") or ""),
         str(row.get("fiscal_year") or ""),
         str(row.get("metric_family") or ""),
-        str(row.get("raw_value_text") or ""),
+        "|".join(
+            str(row.get(key) or "")
+            for key in ("metric_role", "period_role", "period", "raw_value_text")
+        ),
     )
 
 
@@ -5137,6 +5668,9 @@ def _config_summary(args: argparse.Namespace) -> dict[str, Any]:
         "enable_thinking": bool(args.enable_thinking),
         "tickers": args.tickers or "<infer/default>",
         "years": args.years or "<infer/default>",
+        "manifest_path": args.manifest_path,
+        "bm25_index_dir": args.bm25_index_dir,
+        "object_bm25_index_dir": args.object_bm25_index_dir,
         "bge_model": args.bge_model,
         "bge_device": args.bge_device,
         "bge_first": args.bge_first,
@@ -5228,7 +5762,11 @@ def _input_output_markdown(user_query: str, raw_output: str, answer: dict[str, A
     )
 
 
-def _rendered_answer_markdown(user_query: str, answer: dict[str, Any]) -> str:
+def _rendered_answer_markdown(
+    user_query: str,
+    answer: dict[str, Any],
+    metric_rows: dict[str, dict[str, Any]] | None = None,
+) -> str:
     lines = ["# SEC Agent Answer", ""]
     query = str(user_query or "").strip()
     if query:
@@ -5253,14 +5791,15 @@ def _rendered_answer_markdown(user_query: str, answer: dict[str, Any]) -> str:
     if thesis:
         lines.extend(["## 投资判断", "", thesis, ""])
 
-    _append_rendered_items(lines, "关键变化", answer.get("what_changed") or [], ("claim", "point", "insight"))
-    _append_rendered_items(lines, "为什么重要", answer.get("why_it_matters") or [], ("insight", "business_implication", "claim"))
+    metric_rows = metric_rows or {}
+    _append_rendered_items(lines, "关键变化", answer.get("what_changed") or [], ("claim", "point", "insight"), metric_rows)
+    _append_rendered_items(lines, "为什么重要", answer.get("why_it_matters") or [], ("insight", "business_implication", "claim"), metric_rows)
     if not has_memo_fields:
-        _append_rendered_items(lines, "决策驱动", answer.get("decision_drivers") or [], ("driver_claim", "why_it_matters", "caveat"))
-        _append_rendered_items(lines, "关键要点", answer.get("key_points") or [], ("point", "claim", "insight"))
-    _append_rendered_items(lines, "同行/竞争映射", answer.get("peer_readthrough") or [], ("peer_or_group", "role", "readthrough", "caveat"))
-    _append_rendered_items(lines, "反证与风险", answer.get("counterarguments") or [], ("claim", "why_it_could_weaken_thesis", "caveat"))
-    _append_rendered_items(lines, "后续观察项", answer.get("watch_items") or [], ("item", "why_it_matters", "source_to_watch"))
+        _append_rendered_items(lines, "决策驱动", answer.get("decision_drivers") or [], ("driver_claim", "why_it_matters", "caveat"), metric_rows)
+        _append_rendered_items(lines, "关键要点", answer.get("key_points") or [], ("point", "claim", "insight"), metric_rows)
+    _append_rendered_items(lines, "同行/竞争映射", answer.get("peer_readthrough") or [], ("peer_or_group", "role", "readthrough", "caveat"), metric_rows)
+    _append_rendered_items(lines, "反证与风险", answer.get("counterarguments") or [], ("claim", "why_it_could_weaken_thesis", "caveat"), metric_rows)
+    _append_rendered_items(lines, "后续观察项", answer.get("watch_items") or [], ("item", "why_it_matters", "source_to_watch"), metric_rows)
 
     limitations = [
         _clean_display_text(item)
@@ -5275,7 +5814,13 @@ def _rendered_answer_markdown(user_query: str, answer: dict[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _append_rendered_items(lines: list[str], title: str, rows: list[Any], text_keys: tuple[str, ...]) -> None:
+def _append_rendered_items(
+    lines: list[str],
+    title: str,
+    rows: list[Any],
+    text_keys: tuple[str, ...],
+    metric_rows: dict[str, dict[str, Any]] | None = None,
+) -> None:
     items = [item for item in rows if isinstance(item, dict)]
     if not items:
         return
@@ -5288,9 +5833,18 @@ def _append_rendered_items(lines: list[str], title: str, rows: list[Any], text_k
         metric_ids = [str(value) for value in (item.get("metric_ids") or item.get("supporting_metric_ids") or []) if str(value or "").strip()]
         evidence_ids = [str(value) for value in (item.get("evidence_ids") or item.get("supporting_evidence_ids") or []) if str(value or "").strip()]
         if metric_ids or evidence_ids:
+            metric_text = "；".join(_format_metric_refs(metric_ids, metric_rows or {}))
             evidence_text = ", ".join(_format_evidence_refs(evidence_ids))
-            suffix = f"; evidence: {evidence_text}" if evidence_text else ""
-            lines.append(f"   - Support: {len(metric_ids)} metric refs, {len(evidence_ids)} evidence refs{suffix}")
+            support_parts = []
+            if metric_text:
+                support_parts.append(f"metrics: {metric_text}")
+            elif metric_ids:
+                support_parts.append(f"{len(metric_ids)} metric refs")
+            if evidence_text:
+                support_parts.append(f"evidence: {evidence_text}")
+            elif evidence_ids:
+                support_parts.append(f"{len(evidence_ids)} evidence refs")
+            lines.append(f"   - Support: {'; '.join(support_parts)}")
     lines.append("")
 
 

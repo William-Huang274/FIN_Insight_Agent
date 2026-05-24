@@ -104,6 +104,7 @@ def extract_tables(evidence: EvidenceObject) -> list[TableObject]:
                 source_evidence_id=evidence.evidence_id,
                 ticker=evidence.ticker,
                 fiscal_year=evidence.fiscal_year,
+                **_period_object_fields(evidence),
                 section=evidence.section,
                 subsection=evidence.subsection,
                 source_url=evidence.source_url,
@@ -165,6 +166,7 @@ def extract_table_metrics(evidence: EvidenceObject, table: TableObject) -> list[
                     source_evidence_id=evidence.evidence_id,
                     ticker=evidence.ticker,
                     fiscal_year=evidence.fiscal_year,
+                    **_period_object_fields(evidence),
                     section=evidence.section,
                     subsection=evidence.subsection,
                     source_url=evidence.source_url,
@@ -215,6 +217,7 @@ def extract_sentence_metrics(evidence: EvidenceObject) -> list[MetricObject]:
                     source_evidence_id=evidence.evidence_id,
                     ticker=evidence.ticker,
                     fiscal_year=evidence.fiscal_year,
+                    **_period_object_fields(evidence),
                     section=evidence.section,
                     subsection=evidence.subsection,
                     source_url=evidence.source_url,
@@ -287,6 +290,7 @@ def extract_banking_ixbrl_metrics(evidence: EvidenceObject) -> list[MetricObject
                 source_evidence_id=evidence.evidence_id,
                 ticker=evidence.ticker,
                 fiscal_year=evidence.fiscal_year,
+                **_period_object_fields(evidence),
                 section=evidence.section,
                 subsection=evidence.subsection,
                 source_url=evidence.source_url,
@@ -333,6 +337,7 @@ def extract_claims(evidence: EvidenceObject) -> list[ClaimObject]:
                 source_evidence_id=evidence.evidence_id,
                 ticker=evidence.ticker,
                 fiscal_year=evidence.fiscal_year,
+                **_period_object_fields(evidence),
                 section=evidence.section,
                 subsection=evidence.subsection,
                 source_url=evidence.source_url,
@@ -364,6 +369,15 @@ def _is_banking_ixbrl_anchor(evidence: EvidenceObject) -> bool:
     category = str(evidence.metadata.get("category") or "").lower()
     ticker = str(evidence.ticker or "").upper()
     return "bank" in category or ticker in {"JPM"}
+
+
+def _period_object_fields(evidence: EvidenceObject) -> dict[str, Any]:
+    return {
+        "period_end": evidence.period_end or evidence.metadata.get("period_end"),
+        "period_type": evidence.period_type or evidence.metadata.get("period_type"),
+        "duration_months": evidence.duration_months or evidence.metadata.get("duration_months"),
+        "fiscal_period": evidence.fiscal_period or evidence.metadata.get("fiscal_period"),
+    }
 
 
 def _resolve_local_filing_path(evidence: EvidenceObject) -> Path | None:

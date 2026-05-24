@@ -1,4 +1,6 @@
 form_type: "10-K"
+form_types:
+  - "10-K"
 years:
   - 2023
   - 2024

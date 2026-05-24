@@ -60,8 +60,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--form-types",
-        default="10-K",
-        help="Comma-separated form type filter.",
+        help="Comma-separated form type filter. Defaults to config form_types/form_type.",
     )
     parser.add_argument(
         "--allow-missing-html",
@@ -81,8 +80,18 @@ def load_config_defaults(path: Path | None) -> dict[str, list[str] | list[int]]:
         "years": [int(year) for year in config.get("years", [])],
         "tickers": [company["ticker"].upper() for company in companies],
         "categories": [company["category_slug"] for company in companies],
-        "form_types": [config.get("form_type", "10-K")],
+        "form_types": _config_form_types(config),
     }
+
+
+def _config_form_types(config: dict) -> list[str]:
+    configured = config.get("form_types")
+    if isinstance(configured, list):
+        values = [str(value).strip().upper() for value in configured if str(value).strip()]
+        if values:
+            return values
+    form_type = str(config.get("form_type") or "10-K").strip().upper()
+    return [form_type]
 
 
 def main() -> None:

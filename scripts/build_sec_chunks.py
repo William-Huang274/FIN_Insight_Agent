@@ -48,8 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tickers", help="Optional comma-separated ticker filter.")
     parser.add_argument(
         "--items",
-        default="1,1A,7,7A,8",
-        help="Comma-separated 10-K item codes to emit.",
+        help="Comma-separated item codes to emit. Defaults are form-specific.",
     )
     parser.add_argument("--target-words", type=int, default=900)
     parser.add_argument("--overlap-words", type=int, default=150)
@@ -96,6 +95,10 @@ def main() -> None:
             {
                 "ticker": record.ticker,
                 "fiscal_year": record.fiscal_year,
+                "form_type": record.form_type,
+                "period_end": record.period_end,
+                "period_type": record.period_type,
+                "fiscal_period": record.fiscal_period,
                 "chunks": len(chunks),
                 "blocks": len(block_ids),
                 "split_blocks": len(split_block_ids),
@@ -107,8 +110,10 @@ def main() -> None:
     write_chunks_jsonl(all_chunks, REPO_ROOT / args.output)
 
     aggregate = defaultdict(int)
+    form_counts = Counter()
     for chunk in all_chunks:
         aggregate[chunk.item_code] += 1
+        form_counts[chunk.form_type] += 1
 
     block_ids = {chunk.block_id for chunk in all_chunks}
     split_block_ids = {
@@ -124,6 +129,7 @@ def main() -> None:
         "split_blocks": len(split_block_ids),
         "table_blocks": len(table_block_ids),
         "section_chunk_counts": dict(sorted(aggregate.items())),
+        "form_chunk_counts": dict(sorted(form_counts.items())),
         "filings": per_filing_summary,
     }
     print(json.dumps(summary, indent=2, ensure_ascii=False))

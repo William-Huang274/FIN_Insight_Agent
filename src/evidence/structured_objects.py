@@ -30,6 +30,10 @@ class StructuredObject(BaseModel):
     source_evidence_id: str
     ticker: str
     fiscal_year: int | None = None
+    period_end: str | None = None
+    period_type: str | None = None
+    duration_months: int | None = None
+    fiscal_period: str | None = None
     section: str | None = None
     subsection: str | None = None
     source_url: str | None = None

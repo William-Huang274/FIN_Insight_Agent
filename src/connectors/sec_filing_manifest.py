@@ -17,9 +17,14 @@ class SecFilingManifestRecord(BaseModel):
     category_slug: str
     form_type: str
     source_type: str = "10-K"
+    source_tier: str = "primary_sec_filing"
 
     filing_date: str | None = None
     report_date: str | None = None
+    period_end: str | None = None
+    period_type: str | None = None
+    duration_months: int | None = None
+    fiscal_period: str | None = None
     accession_number: str | None = None
     primary_document: str | None = None
     document_description: str | None = None
@@ -151,6 +156,10 @@ def _build_record(
     metadata_path: Path,
     metadata: dict[str, Any],
 ) -> SecFilingManifestRecord:
+    period = _filing_period_metadata(
+        form_type=str(metadata.get("form_type") or form_type),
+        report_date=metadata.get("report_date"),
+    )
     return SecFilingManifestRecord(
         ticker=ticker,
         company=metadata.get("company"),
@@ -160,8 +169,13 @@ def _build_record(
         category_slug=metadata.get("category_slug") or category_slug,
         form_type=metadata.get("form_type") or form_type,
         source_type=metadata.get("form_type") or form_type,
+        source_tier=metadata.get("source_tier") or "primary_sec_filing",
         filing_date=metadata.get("filing_date"),
         report_date=metadata.get("report_date"),
+        period_end=metadata.get("period_end") or period["period_end"],
+        period_type=metadata.get("period_type") or period["period_type"],
+        duration_months=metadata.get("duration_months") or period["duration_months"],
+        fiscal_period=metadata.get("fiscal_period") or period["fiscal_period"],
         accession_number=metadata.get("accession_number"),
         primary_document=metadata.get("primary_document"),
         document_description=metadata.get("document_description"),
@@ -169,7 +183,7 @@ def _build_record(
         html_path=str(html_path),
         metadata_path=str(metadata_path),
         cache_layout=metadata.get("cache_layout") or "year/category/ticker",
-        metadata=metadata,
+        metadata={**period, **metadata},
     )
 
 
@@ -198,3 +212,43 @@ def _normalize_strings(
     if upper:
         return {value.upper() for value in values}
     return set(values)
+
+
+def _filing_period_metadata(form_type: str, report_date: str | None) -> dict[str, Any]:
+    normalized_form = str(form_type or "").upper().strip()
+    period_end = str(report_date or "").strip() or None
+    if normalized_form == "10-K":
+        return {
+            "period_end": period_end,
+            "period_type": "annual",
+            "duration_months": 12,
+            "fiscal_period": "FY",
+            "fiscal_period_source": "form_type",
+        }
+    if normalized_form == "10-Q":
+        return {
+            "period_end": period_end,
+            "period_type": "quarterly",
+            "duration_months": 3,
+            "fiscal_period": _calendar_quarter(period_end),
+            "fiscal_period_source": "calendar_quarter_from_period_end",
+        }
+    return {
+        "period_end": period_end,
+        "period_type": None,
+        "duration_months": None,
+        "fiscal_period": None,
+        "fiscal_period_source": "unknown",
+    }
+
+
+def _calendar_quarter(period_end: str | None) -> str | None:
+    if not period_end or len(period_end) < 7:
+        return None
+    try:
+        month = int(period_end[5:7])
+    except ValueError:
+        return None
+    if month < 1 or month > 12:
+        return None
+    return f"Q{((month - 1) // 3) + 1}"

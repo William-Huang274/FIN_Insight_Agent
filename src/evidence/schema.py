@@ -8,19 +8,23 @@ from pydantic import BaseModel, Field
 
 
 SourceType = Literal["10-K", "10-Q", "8-K", "annual_report"]
-SourceTier = Literal["primary_filing"]
+SourceTier = Literal["primary_filing", "primary_sec_filing"]
 
 
 class EvidenceObject(BaseModel):
     evidence_id: str
     source_type: SourceType
-    source_tier: SourceTier = "primary_filing"
+    source_tier: SourceTier = "primary_sec_filing"
     license_scope: str = "public"
     redistributable: bool = False
 
     ticker: str
     company: str | None = None
     fiscal_year: int | None = None
+    period_end: str | None = None
+    period_type: str | None = None
+    duration_months: int | None = None
+    fiscal_period: str | None = None
     publication_date: str | None = None
 
     section: str | None = None

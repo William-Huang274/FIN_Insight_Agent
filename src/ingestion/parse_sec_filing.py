@@ -9,11 +9,10 @@ from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 
 from connectors import SecFilingManifestRecord
 from .section_splitter import (
-    DEFAULT_OUTPUT_ITEMS,
     SecFilingChunk,
     build_semantic_blocks,
     chunk_semantic_block,
-    find_10k_sections,
+    find_sec_filing_sections,
 )
 
 
@@ -40,13 +39,17 @@ def extract_sec_html_text(html_path: str | Path) -> str:
 
 def build_chunks_for_filing(
     manifest_record: SecFilingManifestRecord,
-    output_items: Iterable[str] | None = DEFAULT_OUTPUT_ITEMS,
+    output_items: Iterable[str] | None = None,
     target_words: int = 900,
     overlap_words: int = 150,
     min_words: int = 80,
 ) -> list[SecFilingChunk]:
     text = extract_sec_html_text(manifest_record.html_path)
-    sections = find_10k_sections(text, output_items=output_items)
+    sections = find_sec_filing_sections(
+        text,
+        form_type=manifest_record.form_type,
+        output_items=output_items,
+    )
     chunks: list[SecFilingChunk] = []
 
     for section in sections:
@@ -92,6 +95,11 @@ def build_chunks_for_filing(
                         category_slug=manifest_record.category_slug,
                         source_type=manifest_record.source_type,
                         form_type=manifest_record.form_type,
+                        source_tier=manifest_record.source_tier,
+                        period_end=manifest_record.period_end,
+                        period_type=manifest_record.period_type,
+                        duration_months=manifest_record.duration_months,
+                        fiscal_period=manifest_record.fiscal_period,
                         section=section.section,
                         item_code=section.item_code,
                         chunk_index=chunk_index,
@@ -113,6 +121,11 @@ def build_chunks_for_filing(
                             "accession_number": manifest_record.accession_number,
                             "filing_date": manifest_record.filing_date,
                             "report_date": manifest_record.report_date,
+                            "period_end": manifest_record.period_end,
+                            "period_type": manifest_record.period_type,
+                            "duration_months": manifest_record.duration_months,
+                            "fiscal_period": manifest_record.fiscal_period,
+                            "fiscal_period_source": manifest_record.metadata.get("fiscal_period_source"),
                             "primary_document": manifest_record.primary_document,
                             "metadata_path": manifest_record.metadata_path,
                         },

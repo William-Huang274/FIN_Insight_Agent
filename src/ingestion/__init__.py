@@ -4,7 +4,9 @@ from .section_splitter import (
     SecFilingSection,
     SecSemanticBlock,
     build_semantic_blocks,
+    find_10q_sections,
     find_10k_sections,
+    find_sec_filing_sections,
     read_chunks_jsonl,
     write_chunks_jsonl,
 )
@@ -16,7 +18,9 @@ __all__ = [
     "build_chunks_for_filing",
     "build_semantic_blocks",
     "extract_sec_html_text",
+    "find_10q_sections",
     "find_10k_sections",
+    "find_sec_filing_sections",
     "read_chunks_jsonl",
     "write_chunks_jsonl",
 ]

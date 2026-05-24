@@ -28,6 +28,7 @@ def build_project_inventory(
     categories: dict[str, set[str]] = defaultdict(set)
     form_counts: Counter[str] = Counter()
     source_counts: Counter[str] = Counter()
+    source_tier_counts: Counter[str] = Counter()
     year_counts: Counter[int] = Counter()
 
     for row in manifest_rows:
@@ -45,6 +46,7 @@ def build_project_inventory(
                 "years": set(),
                 "form_types": set(),
                 "source_types": set(),
+                "source_tiers": set(),
                 "filings": [],
             },
         )
@@ -55,12 +57,16 @@ def build_project_inventory(
         company["years"].add(year)
         form_type = str(row.get("form_type") or row.get("source_type") or "").upper().strip()
         source_type = str(row.get("source_type") or form_type).upper().strip()
+        source_tier = str(row.get("source_tier") or "primary_sec_filing").strip()
         if form_type:
             company["form_types"].add(form_type)
             form_counts[form_type] += 1
         if source_type:
             company["source_types"].add(source_type)
             source_counts[source_type] += 1
+        if source_tier:
+            company["source_tiers"].add(source_tier)
+            source_tier_counts[source_tier] += 1
         year_counts[year] += 1
         category = str(row.get("category") or "uncategorized").strip() or "uncategorized"
         categories[category].add(ticker)
@@ -69,8 +75,13 @@ def build_project_inventory(
                 "year": year,
                 "form_type": form_type,
                 "source_type": source_type,
+                "source_tier": source_tier,
                 "filing_date": str(row.get("filing_date") or ""),
                 "report_date": str(row.get("report_date") or ""),
+                "period_end": str(row.get("period_end") or row.get("report_date") or ""),
+                "period_type": str(row.get("period_type") or ""),
+                "duration_months": row.get("duration_months"),
+                "fiscal_period": str(row.get("fiscal_period") or ""),
                 "accession_number": str(row.get("accession_number") or ""),
             }
         )
@@ -81,7 +92,8 @@ def build_project_inventory(
         item["years"] = sorted(item["years"])
         item["form_types"] = sorted(item["form_types"])
         item["source_types"] = sorted(item["source_types"])
-        item["filings"] = sorted(item["filings"], key=lambda filing: (filing["year"], filing["form_type"]))
+        item["source_tiers"] = sorted(item["source_tiers"])
+        item["filings"] = sorted(item["filings"], key=lambda filing: (filing["year"], filing["form_type"], filing["period_end"]))
         normalized_companies.append(item)
 
     inventory = {
@@ -93,6 +105,7 @@ def build_project_inventory(
         "years": sorted(year_counts),
         "form_types": dict(sorted(form_counts.items())),
         "source_types": dict(sorted(source_counts.items())),
+        "source_tiers": dict(sorted(source_tier_counts.items())),
         "sections": list(sections),
         "categories": [
             {"category": category, "tickers": sorted(tickers), "count": len(tickers)}
@@ -125,6 +138,7 @@ def inventory_brief(inventory: dict[str, Any]) -> dict[str, Any]:
         "years": inventory.get("years") or [],
         "form_types": inventory.get("form_types") or {},
         "source_types": inventory.get("source_types") or {},
+        "source_tiers": inventory.get("source_tiers") or {},
         "categories": inventory.get("categories") or [],
     }
 
@@ -154,6 +168,7 @@ def inventory_prompt(
                 "years": available_years,
                 "forms": item.get("form_types") or [],
                 "sources": item.get("source_types") or [],
+                "source_tiers": item.get("source_tiers") or [],
             }
         )
     companies = companies[:max_companies]
@@ -165,6 +180,7 @@ def inventory_prompt(
         f"- available_years_total: {', '.join(str(item) for item in inventory.get('years') or [])}",
         f"- available_form_types: {', '.join(_counter_keys(inventory.get('form_types') or {})) or '<none>'}",
         f"- available_source_types: {', '.join(_counter_keys(inventory.get('source_types') or {})) or '<none>'}",
+        f"- available_source_tiers: {', '.join(_counter_keys(inventory.get('source_tiers') or {})) or '<none>'}",
         f"- indexed_sections: {', '.join(str(item) for item in inventory.get('sections') or [])}",
         "",
         "INDUSTRY / CATEGORY COVERAGE",
@@ -181,7 +197,8 @@ def inventory_prompt(
             "- "
             f"{item['ticker']} | {item['company']} | {item['category']} | "
             f"years={','.join(str(year) for year in item['years'])} | "
-            f"forms={','.join(str(form) for form in item['forms']) or '<none>'}"
+            f"forms={','.join(str(form) for form in item['forms']) or '<none>'} | "
+            f"source_tiers={','.join(str(tier) for tier in item['source_tiers']) or '<none>'}"
         )
     lines.extend(
         [
@@ -189,8 +206,9 @@ def inventory_prompt(
             "PLANNER BOUNDARY RULES",
             "- Choose only tickers, years, form types, and source types listed above.",
             "- If the user asks for data outside the inventory, keep it as a caveat or mark it unsupported; do not pretend the source exists.",
-            "- Treat SEC filings as the only evidence boundary unless the user explicitly changes the project scope.",
-            "- Do not mention 8-K, 10-Q, earnings calls, market prices, macro data, or news unless the inventory lists those source types.",
+            "- Treat SEC filings as the only evidence boundary unless the active source policy explicitly changes the project scope.",
+            "- Do not mention 8-K, earnings calls, market prices, macro data, or news unless the inventory lists those source types or source tiers.",
+            "- If 10-Q is available, label it as unaudited quarterly SEC evidence and do not mix it with annual 10-K values without period caveats.",
             "- Build the task around available materials first, then record missing materials as evidence gaps.",
         ]
     )

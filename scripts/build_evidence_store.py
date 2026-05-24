@@ -47,6 +47,15 @@ def main() -> None:
         "evidence_type_counts": dict(
             sorted(Counter(obj.evidence_type for obj in evidence_objects).items())
         ),
+        "source_type_counts": dict(
+            sorted(Counter(obj.source_type for obj in evidence_objects).items())
+        ),
+        "source_tier_counts": dict(
+            sorted(Counter(obj.source_tier for obj in evidence_objects).items())
+        ),
+        "period_type_counts": dict(
+            sorted(Counter(str(obj.period_type or "unknown") for obj in evidence_objects).items())
+        ),
         "table_evidence": sum(
             1 for obj in evidence_objects if obj.metadata.get("contains_table")
         ),

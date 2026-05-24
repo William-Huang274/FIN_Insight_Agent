@@ -46,6 +46,25 @@ SECTION_DEFINITION_BY_ITEM = {
 }
 DEFAULT_OUTPUT_ITEMS = ("1", "1A", "7", "7A", "8")
 
+QUARTERLY_SECTION_DEFINITIONS: tuple[SectionDefinition, ...] = (
+    SectionDefinition(
+        "1",
+        "Item 1. Financial Statements",
+        (
+            "item1financialstatements",
+            "item1condensedconsolidatedfinancialstatements",
+        ),
+    ),
+    SectionDefinition("2", "Item 2. Management's Discussion and Analysis", ("item2management",)),
+    SectionDefinition("3", "Item 3. Quantitative and Qualitative Disclosures About Market Risk", ("item3quantitativeandqualitative",)),
+    SectionDefinition("4", "Item 4. Controls and Procedures", ("item4controlsandprocedures",)),
+    SectionDefinition("1A", "Item 1A. Risk Factors", ("item1ariskfactors",)),
+)
+QUARTERLY_SECTION_DEFINITION_BY_ITEM = {
+    definition.item_code: definition for definition in QUARTERLY_SECTION_DEFINITIONS
+}
+DEFAULT_10Q_OUTPUT_ITEMS = ("1", "2", "3", "4", "1A")
+
 
 class SecFilingSection(BaseModel):
     item_code: str
@@ -75,6 +94,11 @@ class SecFilingChunk(BaseModel):
     category_slug: str | None = None
     source_type: str
     form_type: str
+    source_tier: str = "primary_sec_filing"
+    period_end: str | None = None
+    period_type: str | None = None
+    duration_months: int | None = None
+    fiscal_period: str | None = None
     section: str
     item_code: str
     chunk_index: int
@@ -148,6 +172,78 @@ def find_10k_sections(
         output_item_set=output_item_set,
         min_section_chars=min_section_chars,
     )
+
+
+def find_sec_filing_sections(
+    text: str,
+    form_type: str = "10-K",
+    output_items: Iterable[str] | None = None,
+    min_start_span_chars: int = 3000,
+    min_section_chars: int = 100,
+) -> list[SecFilingSection]:
+    normalized_form = str(form_type or "").upper().strip()
+    if normalized_form == "10-Q":
+        return find_10q_sections(
+            text=text,
+            output_items=output_items,
+            min_section_chars=min_section_chars,
+        )
+    return find_10k_sections(
+        text=text,
+        output_items=output_items if output_items is not None else DEFAULT_OUTPUT_ITEMS,
+        min_start_span_chars=min_start_span_chars,
+        min_section_chars=min_section_chars,
+    )
+
+
+def find_10q_sections(
+    text: str,
+    output_items: Iterable[str] | None = DEFAULT_10Q_OUTPUT_ITEMS,
+    min_start_span_chars: int = 1000,
+    min_section_chars: int = 100,
+) -> list[SecFilingSection]:
+    output_item_set = _normalize_item_filter(output_items)
+    candidates = _dedupe_close_candidates(
+        _find_section_candidates_with_definitions(
+            text=text,
+            definitions_by_item=QUARTERLY_SECTION_DEFINITION_BY_ITEM,
+        )
+    )
+    if not candidates:
+        return []
+    actual_start = _find_actual_item_start(
+        candidates=candidates,
+        text=text,
+        preferred_item_code="1",
+        min_start_span_chars=min_start_span_chars,
+    )
+    candidates = [candidate for candidate in candidates if candidate["start"] >= actual_start]
+    if not candidates:
+        return []
+
+    sections: list[SecFilingSection] = []
+    for idx, candidate in enumerate(candidates):
+        item_code = candidate["item_code"]
+        if output_item_set is not None and item_code not in output_item_set:
+            continue
+
+        start = candidate["start"]
+        end = candidates[idx + 1]["start"] if idx + 1 < len(candidates) else len(text)
+        section_text = text[start:end].strip()
+        if len(section_text) < min_section_chars:
+            continue
+
+        definition = QUARTERLY_SECTION_DEFINITION_BY_ITEM[item_code]
+        sections.append(
+            SecFilingSection(
+                item_code=item_code,
+                section=definition.canonical_title,
+                char_start=start,
+                char_end=end,
+                text=section_text,
+            )
+        )
+    return sections
 
 
 def build_semantic_blocks(
@@ -265,17 +361,27 @@ def read_chunks_jsonl(path: str | Path) -> list[SecFilingChunk]:
 
 
 def _find_section_candidates(text: str) -> list[dict]:
+    return _find_section_candidates_with_definitions(
+        text=text,
+        definitions_by_item=SECTION_DEFINITION_BY_ITEM,
+    )
+
+
+def _find_section_candidates_with_definitions(
+    text: str,
+    definitions_by_item: dict[str, SectionDefinition],
+) -> list[dict]:
     lines = _line_offsets(text)
     table_start_by_line_idx = _table_start_by_line_index(lines)
     candidates: list[dict] = []
     for line_idx, (start, line) in enumerate(lines):
         item_code = _parse_line_item_code(line)
-        if item_code not in SECTION_DEFINITION_BY_ITEM:
+        if item_code not in definitions_by_item:
             continue
 
         combined = " ".join(candidate_line for _, candidate_line in lines[line_idx : line_idx + 12])
         compact = _compact_text(combined)
-        definition = SECTION_DEFINITION_BY_ITEM[item_code]
+        definition = definitions_by_item[item_code]
         if any(marker in compact[:260] for marker in definition.markers):
             candidate_start = table_start_by_line_idx.get(line_idx, start)
             candidates.append(
@@ -427,8 +533,22 @@ def _dedupe_close_candidates(candidates: list[dict], close_chars: int = 80) -> l
 def _find_actual_item1_start(
     candidates: list[dict], text: str, min_start_span_chars: int
 ) -> int:
+    return _find_actual_item_start(
+        candidates=candidates,
+        text=text,
+        preferred_item_code="1",
+        min_start_span_chars=min_start_span_chars,
+    )
+
+
+def _find_actual_item_start(
+    candidates: list[dict],
+    text: str,
+    preferred_item_code: str,
+    min_start_span_chars: int,
+) -> int:
     for idx, candidate in enumerate(candidates):
-        if candidate["item_code"] != "1":
+        if candidate["item_code"] != preferred_item_code:
             continue
         next_start = candidates[idx + 1]["start"] if idx + 1 < len(candidates) else len(text)
         if next_start - candidate["start"] >= min_start_span_chars:

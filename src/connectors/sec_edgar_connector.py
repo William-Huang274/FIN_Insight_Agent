@@ -104,15 +104,19 @@ class SecEdgarConnector:
             selected_block, "primaryDocument", selected_idx
         )
         filing_url = self._build_filing_url(normalized_cik, accession_number, primary_document)
+        report_date = self._get_recent_value(selected_block, "reportDate", selected_idx)
+        period = self._filing_period_metadata(form_type=form_type, report_date=report_date)
 
         return {
             "ticker": None,
             "company": submissions.get("name"),
             "cik": normalized_cik,
             "form_type": form_type,
+            "source_tier": "primary_sec_filing",
             "fiscal_year": year,
             "filing_date": self._get_recent_value(selected_block, "filingDate", selected_idx),
-            "report_date": self._get_recent_value(selected_block, "reportDate", selected_idx),
+            "report_date": report_date,
+            **period,
             "acceptance_datetime": self._get_recent_value(
                 selected_block, "acceptanceDateTime", selected_idx
             ),
@@ -316,6 +320,46 @@ class SecEdgarConnector:
         if idx >= len(values) or values[idx] is None:
             return ""
         return str(values[idx])
+
+    @staticmethod
+    def _filing_period_metadata(form_type: str, report_date: str | None) -> dict[str, Any]:
+        normalized_form = str(form_type or "").upper().strip()
+        period_end = str(report_date or "").strip() or None
+        if normalized_form == "10-K":
+            return {
+                "period_end": period_end,
+                "period_type": "annual",
+                "duration_months": 12,
+                "fiscal_period": "FY",
+                "fiscal_period_source": "form_type",
+            }
+        if normalized_form == "10-Q":
+            return {
+                "period_end": period_end,
+                "period_type": "quarterly",
+                "duration_months": 3,
+                "fiscal_period": SecEdgarConnector._calendar_quarter(period_end),
+                "fiscal_period_source": "calendar_quarter_from_period_end",
+            }
+        return {
+            "period_end": period_end,
+            "period_type": None,
+            "duration_months": None,
+            "fiscal_period": None,
+            "fiscal_period_source": "unknown",
+        }
+
+    @staticmethod
+    def _calendar_quarter(period_end: str | None) -> str | None:
+        if not period_end or len(period_end) < 7:
+            return None
+        try:
+            month = int(period_end[5:7])
+        except ValueError:
+            return None
+        if month < 1 or month > 12:
+            return None
+        return f"Q{((month - 1) // 3) + 1}"
 
     @staticmethod
     def _normalize_cik(cik: str | int) -> str:

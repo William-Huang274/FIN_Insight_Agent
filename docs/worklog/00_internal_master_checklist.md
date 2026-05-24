@@ -5,6 +5,7 @@
 - [x] Initialize local Git repository with `main`.
 - [x] Create feature branch without a `codex` prefix.
 - [x] Add private data and generated artifact ignore rules.
+- [x] Add Git hygiene rules and checkpoint current SEC agent development state.
 - [x] Add Phase 1 project skeleton.
 - [x] Add EvidenceObject schema and JSONL helpers.
 - [x] Add SEC EDGAR connector with recent and historical submission lookup.
@@ -32,6 +33,10 @@
 ## Phase 1 Smoke Tests
 
 - [x] SEC 10-K download smoke test for JPM 2024.
+- [x] Add SEC 10-Q five-company primary-filing pilot.
+- [x] Build mixed 10-K/10-Q manifest with filing-level period metadata.
+- [x] Parse 10-Q filings without reusing incorrect 10-K section labels.
+- [ ] Gate mixed-source answers with explicit audited annual vs unaudited quarterly evidence boundaries.
 - [x] EvidenceObject JSONL read/write smoke test.
 - [x] SEC tech EvidenceObject build smoke test.
 - [x] BM25 retrieval smoke test on MSFT/NVDA queries.

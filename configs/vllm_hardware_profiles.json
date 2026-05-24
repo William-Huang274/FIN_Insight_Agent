@@ -1,0 +1,130 @@
+{
+  "schema_version": "vllm_hardware_profiles_v0.1",
+  "profiles": {
+    "rtx4090_24gb": {
+      "description": "Historical single RTX 4090 profile. Keep this as the rollback/default reference.",
+      "hardware": {
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "vram_gb": 24,
+        "architecture": "Ada",
+        "compute_capability": "sm_89"
+      },
+      "compatibility_notes": [
+        "Validated by prior project runs with Qwen3.5-9B FP16 vLLM text-only mode.",
+        "Avoid CPU offload for the 9B mainline; old 27B GPTQ diagnostics required offload and were too slow on 24GB."
+      ],
+      "defaults": {
+        "common": {
+          "dtype": "float16",
+          "quantization": "none",
+          "gpu_memory_utilization": 0.9,
+          "cpu_offload_gb": 0.0,
+          "max_num_seqs": 1,
+          "language_model_only": true,
+          "skip_mm_profiling": true
+        },
+        "sec_benchmark_synthesis": {
+          "max_model_len": 32768,
+          "max_tokens": 2600
+        },
+        "query_contract_planner": {
+          "max_model_len": 32768,
+          "max_tokens": 2200
+        },
+        "driver_pack_planner": {
+          "max_model_len": 32768,
+          "max_tokens": 2600
+        },
+        "long_context_synthesis": {
+          "max_model_len": 131072,
+          "synthesis_max_tokens": 8500,
+          "context_safety_margin": 1200,
+          "gpu_memory_utilization": 0.95
+        },
+        "small_verifier": {
+          "dtype": "bfloat16",
+          "max_model_len": 4096,
+          "max_num_seqs": 64,
+          "gpu_memory_utilization": 0.86,
+          "prompt_batch_size": 512,
+          "max_new_tokens": 48,
+          "enforce_eager": false
+        },
+        "planner_evidence_demo": {
+          "max_model_len": 8192,
+          "gpu_memory_utilization": 0.86,
+          "max_num_seqs": 2,
+          "planner_max_tokens": 1024,
+          "verifier_max_tokens": 120,
+          "synthesis_max_tokens": 650
+        }
+      }
+    },
+    "rtx5090_32gb": {
+      "description": "Blackwell RTX 5090 32GB profile for the current cloud machine. Use explicitly while migration settles.",
+      "hardware": {
+        "gpu": "NVIDIA GeForce RTX 5090",
+        "vram_gb": 32,
+        "architecture": "Blackwell",
+        "compute_capability": "sm_120"
+      },
+      "compatibility_notes": [
+        "Requires a vLLM/PyTorch/CUDA stack with Blackwell sm_120 support; prefer CUDA 12.8+ wheels on this host.",
+        "Do not reuse old CUDA 12.1/12.4 wheels if torch reports no sm_120 kernel support.",
+        "On the current torch/vLLM stack, keep Python asserts enabled. Use TORCHDYNAMO_DISABLE=1 to bypass the torch.compile duplicate-template import bug; do not use python -O/PYTHONOPTIMIZE because it disables vLLM KV-cache grouping asserts.",
+        "Disable FlashInfer sampler on this host until its sm_120 capability detection is validated.",
+        "The profile raises context and verifier batch budgets but still leaves headroom for the desktop/session process."
+      ],
+      "runtime_env": {
+        "TORCHDYNAMO_DISABLE": "1",
+        "VLLM_USE_FLASHINFER_SAMPLER": "0"
+      },
+      "defaults": {
+        "common": {
+          "dtype": "float16",
+          "quantization": "none",
+          "gpu_memory_utilization": 0.92,
+          "cpu_offload_gb": 0.0,
+          "max_num_seqs": 1,
+          "language_model_only": true,
+          "skip_mm_profiling": true
+        },
+        "sec_benchmark_synthesis": {
+          "max_model_len": 65536,
+          "max_tokens": 6000
+        },
+        "query_contract_planner": {
+          "max_model_len": 65536,
+          "max_tokens": 2600
+        },
+        "driver_pack_planner": {
+          "max_model_len": 65536,
+          "max_tokens": 3200
+        },
+        "long_context_synthesis": {
+          "max_model_len": 131072,
+          "synthesis_max_tokens": 8500,
+          "context_safety_margin": 1200,
+          "gpu_memory_utilization": 0.94
+        },
+        "small_verifier": {
+          "dtype": "bfloat16",
+          "max_model_len": 4096,
+          "max_num_seqs": 96,
+          "gpu_memory_utilization": 0.9,
+          "prompt_batch_size": 768,
+          "max_new_tokens": 48,
+          "enforce_eager": false
+        },
+        "planner_evidence_demo": {
+          "max_model_len": 16384,
+          "gpu_memory_utilization": 0.9,
+          "max_num_seqs": 2,
+          "planner_max_tokens": 1400,
+          "verifier_max_tokens": 160,
+          "synthesis_max_tokens": 1000
+        }
+      }
+    }
+  }
+}

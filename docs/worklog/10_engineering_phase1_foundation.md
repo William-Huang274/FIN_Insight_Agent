@@ -549,3 +549,145 @@ Follow-up and safety notes:
   hybrid RRF 噪声更明显。
 - 下一步应做人审 multi-facet qrels，再测试 automatic decomposition、dense-first
   BM25 fallback 或 reranker。
+
+## 2026-05-15 Qwen3.5 27B GPTQ Serving Diagnostic
+
+Problem or prompt:
+用户要求先不要设置 fallback，排查当前 Qwen3.5 27B 4bit 量化版本为什么输出慢，
+以及是否误用了 CPU 推理。
+
+Reasoning and decision:
+停止继续跑业务 demo，转为最小 vLLM serving benchmark。重点检查模型配置、
+vLLM device、CPU offload、GPU 利用率、首轮/第二轮短输出 token/s，并验证
+`enforce_eager` 是否是主因。
+
+Work completed:
+- 确认云端无残留进程和显存占用。
+- 检查 `Qwen/Qwen3.5-27B-GPTQ-Int4` 的 `config.json`。
+- 分别测试 `offload=14GB`、`offload=10GB`、`offload=6GB` 和
+  `offload=10GB + CUDA graph/torch compile`。
+- 建立 model run ledger:
+  `reports/model_runs/20260515_phase1_qwen35_27b_gptq_serving_diagnostic.md`。
+
+Result and evidence:
+- 不是 CPU-only 推理。vLLM 日志显示 `device_config=cuda`，使用
+  `gptq_marlin` 和 FlashAttention；生成时 GPU memory 约 21.4GB，GPU util
+  100%。
+- 当前模型不是理想的纯文本 planner。配置包含 `vision_config`、image/video
+  token，vLLM profiling 进入 `qwen3_vl.py`、`embed_multimodal`、`visual`。
+- `offload=14GB` 第二轮短输出约 0.71 tok/s。
+- `offload=10GB` 第二轮短输出约 0.97 tok/s。
+- `offload=6GB` 即使 `max_model_len=2048` 也在 multimodal profiling 阶段 OOM。
+- 关闭 `enforce_eager` 后 cold start 增加到约 360s，第二轮仍约 0.93 tok/s，
+  不是主要瓶颈。
+
+Follow-up and safety notes:
+- 当前 artifact 标记为 `diagnostic-only`，不继续作为 planner/summarizer demo
+  主线。
+- 下一步应换纯文本 quantized instruct 模型；进入业务链路前先通过 serving gate：
+  无 `vision_config`、无 multimodal profiling、尽量 `cpu_offload_gb=0`，短 JSON
+  第二轮生成至少达到数 tok/s。
+- 不推广被 fallback 兜底生成的业务 demo 结果。
+
+## 2026-05-15 Qwen3.5 9B Resident Full-Chain Demo
+
+Problem or prompt:
+用户要求改用 Qwen3.5-9B 常驻在当前 4090 云端上，把 planner 到总结阶段的
+全链路 demo 跑通，并用日常任务、综合研究、深度推理三类 query 检查实际效果。
+
+Reasoning and decision:
+27B GPTQ 在 4090 24GB 上必须 CPU offload，不能作为交互式主线。9B 权重约
+18GB，vLLM 可用 `language_model_only=True` 和 `skip_mm_profiling=True`
+进入 text-only 路径，因此先作为当前单卡主线 demo。实验不启用 planner
+fallback，避免把兜底 query 当成 decomposition 效果。
+
+Work completed:
+- 将 demo 脚本泛化为 `scripts/run_qwen_planner_evidence_demo.py`。
+- 默认模型改为 `Qwen/Qwen3.5-9B`，默认 `cpu_offload_gb=0`、
+  `gpu_memory_utilization=0.86`、`planner_max_tokens=1024`。
+- 增加 `language_model_only`、`skip_mm_profiling`、`allow_fallback_planner`
+  参数；默认不允许 planner fallback。
+- 在云端用 hybrid retrieval、CPU dense query encoder、batched verifier 跑完
+  三类 query。
+- 建立 model run ledger:
+  `reports/model_runs/20260515_phase1_qwen35_9b_full_chain_demo.md`。
+
+Result and evidence:
+- 9B serving gate 通过：vLLM 日志显示 `device_config=cuda`、text-only mode、
+  无 CPU offload；`gpu_memory_utilization=0.86` 下 KV cache 约 59,068 tokens。
+- 第一次 `gpu_memory_utilization=0.92` 因云端另一个进程占用约 1.75GB 显存而
+  启动失败；降到 0.86 后成功。
+- 第一次 `planner_max_tokens=512` 三题都因 JSON 截断解析失败；改成 compact
+  JSON prompt 和 1024 tokens 后三题 planner 均解析成功。
+- v2 总 wall time 约 286.9s，其中 resident model load 约 90.1s；三题链路
+  分别约 58.5s、61.9s、62.6s。
+- Planner 生成 12 个 SearchTask；24 个候选经 verifier 标注为 8 direct、
+  14 partial、2 false。
+- 12 个 task pack 中 7 个找到 direct evidence，5 个只有 partial/no direct。
+- Apple 日常 query evidence quality 为 `good`；Microsoft/Alphabet 综合研究
+  和 NVIDIA 深度推理均为 `mixed`，主要瓶颈是部分 facet top-2 候选没有直接证据。
+
+Follow-up and safety notes:
+- 该 run 标记为 `diagnostic-only`；model verifier 标签和最终答案不能当作人工
+  评测结论。
+- 当前主要瓶颈从 serving 可行性转为 evidence coverage：Alphabet cloud/capex、
+  NVIDIA CSP demand 等 facet 需要更深的 per-task retrieval/verification 或更强
+  reranker。
+- 下一步优先做 structured decoding/guided JSON，避免 planner/verifier 格式不稳；
+  同时对 missing-direct task 自适应扩大候选和上下文扩展。
+
+## 2026-05-16 Qwen3.5 9B Evidence-Pack Hardening V3-V6
+
+Problem or prompt:
+用户要求继续推进 9B 常驻 planner-to-synthesis demo，检查 planner、解析、召回、
+verifier、最终总结链路的实际表现，并继续改善复杂金融问题的 evidence coverage。
+
+Reasoning and decision:
+当前产品目标更接近 precision-sensitive financial evidence pack，而不是普通 RAG
+top-k 引用。因此改动重点放在三个位置：结构化输出稳定性、缺 direct 时的
+bounded adaptive verification、以及 query variant fusion 的噪声控制。table
+rescue 作为诊断项测试，但不作为默认策略，除非它能证明提升 direct coverage
+且不显著增加 false/partial 噪声。
+
+Work completed:
+- Added vLLM structured JSON decoding for planner, verifier, and synthesis.
+- Added adaptive verification: first verify top-2, then only for missing-direct
+  tasks verify extra candidates up to `adaptive_verify_k`.
+- Added task query variants and variant fusion.
+- Added original-query-priority variant fusion with `variant_original_quota=2`.
+- Added revenue/capex-specific query variants such as `disaggregated revenues`
+  and `purchases of property and equipment`.
+- Added optional table-rescue verification, then set default back to
+  `--table-rescue-k 0` after diagnostics showed no direct-gain benefit.
+- Ran cloud v3, v4, v5, and v6 on Qwen3.5-9B text-only vLLM with no CPU offload.
+- Pulled all v3-v6 demo JSON/log artifacts back to local `reports/demo/`.
+
+Result and evidence:
+- v2 baseline: 7/12 task packs with direct evidence, 24 verified candidates,
+  8 direct / 14 partial / 2 false, 286.9s total.
+- v3 structured + adaptive: 7/12 direct, 44 verified, 8 direct / 24 partial /
+  12 false, 358.6s total.
+- v4 variants: 8/12 direct, 52 verified, 12 direct / 22 partial / 18 false,
+  419.0s total.
+- v5 original-query-priority variants: 8/12 direct, 44 verified, 9 direct /
+  23 partial / 12 false, 414.2s total.
+- v6 table-rescue diagnostic: 9/12 direct, 50 verified, 10 direct / 25 partial /
+  15 false, 402.4s total.
+- v6's direct improvement came from the new `disaggregated revenues` query
+  variant, which moved `GOOGL_2025_10K_ITEM8_BLOCK_0003_CHUNK_0001` into
+  adaptive verification for the Alphabet cloud revenue task.
+- Table rescue triggered on three tasks and verified six extra candidates, but
+  did not add a direct hit in this query set.
+- Remote demo process was confirmed stopped after v6 completion.
+- Detailed ledger:
+  `reports/model_runs/20260515_phase1_qwen35_9b_full_chain_demo.md`.
+
+Follow-up and safety notes:
+- Keep structured JSON, adaptive verification, task query variants, and
+  original-query-priority fusion as the current demo default.
+- Keep `--table-rescue-k` available for diagnostics, but default it to `0`.
+- Remaining weak facets are MSFT AI capex, GOOGL AI capex, and NVIDIA CSP-demand
+  durability. These likely need better financial-task wording, reviewed qrels,
+  and a precision-oriented semantic reranker/verifier gate rather than wider
+  blind recall.
+- No credentials or private connection details were written to repo logs.

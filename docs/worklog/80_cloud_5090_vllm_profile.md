@@ -1,0 +1,52 @@
+# Cloud 5090 vLLM Profile
+
+## 2026-05-19 5090 / Blackwell 适配
+
+- Problem: 云端资源从单卡 RTX 4090 24GB 更换为 RTX 5090 32GB。需要适配 Blackwell 架构和 32GB 显存，同时不能删除或覆盖 4090 回滚配置。
+- Reasoning and decision: 不把 5090 参数写死进各脚本默认值；新增共享 vLLM hardware profile 层。老命令不传 profile 时继续沿用脚本历史默认；云端新卡通过 `--hardware-profile rtx5090_32gb` 或 `FIN_VLLM_HARDWARE_PROFILE=rtx5090_32gb` 显式启用。所有显式 CLI 参数优先级高于 profile，便于单次实验覆盖。
+- Work completed:
+  - 新增 `configs/vllm_hardware_profiles.json`，包含 `rtx4090_24gb` 和 `rtx5090_32gb` 两套 profile。
+  - 新增 `scripts/vllm_hardware_profiles.py`，统一加载 profile、合并 workload defaults、保留 CLI override。
+  - 新增 `scripts/check_vllm_blackwell_env.py`，检查 GPU、compute capability、torch CUDA build、vLLM/transformers availability。
+  - 接入 profile 的入口：`run_sec_benchmark_vllm_synthesis_from_traces.py`、`run_qwen_small_verifier_vllm.py`、`run_query_contract_planner.py`、`run_driver_pack_planner.py`、`run_calibrated_synthesis_demo.py`、`run_qwen_planner_evidence_demo.py`。
+- 5090 profile defaults:
+  - SEC benchmark resident synthesis: `max_model_len=65536`、`max_tokens=6000`、`gpu_memory_utilization=0.92`、`cpu_offload_gb=0.0`、`max_num_seqs=1`。
+  - Long-context synthesis: `max_model_len=131072`、`synthesis_max_tokens=8500`、`gpu_memory_utilization=0.94`。
+  - Small verifier: `max_num_seqs=96`、`prompt_batch_size=768`、`gpu_memory_utilization=0.90`、`dtype=bfloat16`。
+  - Query/Driver planners: context 从 32k 提到 64k，输出预算小幅上调。
+- Compatibility note: Blackwell / RTX 5090 需要支持 `sm_120` 的 PyTorch/vLLM/CUDA 栈。官方 vLLM CUDA 安装文档提示 Blackwell 使用 CUDA 12.8+ 的 PyTorch wheels；本次远端实际环境为 torch `2.11.0+cu130`、vLLM `0.21.0`，满足该方向。
+- Remote check:
+  - Host path: `/root/autodl-tmp/FIN_Insight_Agent`
+  - GPU: `NVIDIA GeForce RTX 5090`, `32607 MiB`, driver `580.76.05`, compute capability `12.0`
+  - Python: `/root/miniconda3/bin/python`, Python `3.12.3`
+  - Torch: `2.11.0+cu130`, CUDA build `13.0`, CUDA available, device `sm_120`
+  - vLLM: `0.21.0`
+  - Remote env check: `scripts/check_vllm_blackwell_env.py --expected-profile rtx5090_32gb --json` returned `compatible=true`
+- Remote safety:
+  - Did not write secrets to repo or logs.
+  - Before overwriting remote scripts, backed up existing files to `/root/autodl-tmp/FIN_Insight_Agent/.tmp_5090_profile_backup_20260519_125528`.
+  - Before syncing the corrected TorchDynamo/runtime-env patch, backed up the touched remote files to `/root/autodl-tmp/FIN_Insight_Agent/.tmp_5090_torchdynamo_profile_backup_20260519_1338`.
+  - Did not touch `data/`, `data/models_private/`, or migration artifacts.
+- Verification:
+  - Local `py_compile` passed for the profile helper, env checker, and all six vLLM entrypoints.
+  - Remote `py_compile` passed for the same files with `/root/miniconda3/bin/python`.
+  - Local/remote profile override smoke confirmed `--hardware-profile rtx5090_32gb` sets `max_model_len=65536` while preserving explicit `--max-tokens 7000`.
+- Follow-up finding during first 5090 smoke:
+  - `import vllm` is not sufficient as a readiness check on this stack. Plain `from vllm import LLM` failed under Python asserts with torch inductor `AssertionError: duplicate template name`.
+  - `/root/miniconda3/bin/python -O -c "from vllm import LLM"` can make the import pass, but this is unsafe for generation: `python -O` / `PYTHONOPTIMIZE=1` disables vLLM asserts that Qwen3.5 hybrid KV-cache grouping relies on, which then caused a `MambaSpec` / full-attention backend mismatch.
+  - Correct profile-level workaround is to keep Python asserts enabled and set `TORCHDYNAMO_DISABLE=1`; additionally set `VLLM_USE_FLASHINFER_SAMPLER=0` until FlashInfer sampler sm_120 detection is validated.
+  - `scripts/check_vllm_blackwell_env.py` now reports normal `LLM` import, TorchDynamo-disabled import, and optimized import only as a diagnostic. Its recommendation is `TORCHDYNAMO_DISABLE=1`, not `python -O`.
+- 5090 reviewed10 single-case smoke:
+  - Trace: `eval/sec_cases/outputs/run_20260519_revenue_income_cfo_pipeline_context_traces_top20_5090`
+  - Qwen output: `eval/sec_cases/outputs/run_20260519_revenue_income_cfo_pipeline_qwen9b_vllm_structured_6000_table_metricids_5090_torchdynamo_off`
+  - Gates: `reports/quality/cloud5090_reviewed10_revenue_table_pipeline_qwen9b_post_gates_torchdynamo_off/sec_benchmark_post_gates_summary.json`
+  - Log: `reports/logs/20260519_5090_reviewed10_revenue_table_pipeline_torchdynamo_off.log`
+  - Result: `answer_status_counts={"answered_qwen9b":1}`; profile applied `TORCHDYNAMO_DISABLE=1` and `VLLM_USE_FLASHINFER_SAMPLER=0`; elapsed `124.4674s`; `qwen_answer_ratio=1.0`.
+  - Gates passed: answer ledger, metric-role term, table-cell, named-fact, ledger-missing consistency, abstract-judgment skip/pass, and ledger-unit. Table-cell gate validated 48/48 cells; ledger-unit gate passed 98/98 rows.
+  - Trap, gold-vs-pipeline, and answer-vs-Judgment-Plan gates were intentionally skipped because this was a single non-trap hardware/profile smoke, not the full reviewed10 + 2 trap bundle.
+- Model run ledger:
+  - `reports/model_runs/20260519_sec_benchmark_reviewed10_5090_table_smoke.md`
+- Next step:
+  - 5090 profile can now be used for bounded SEC benchmark runs, with the runtime env coming from `rtx5090_32gb`.
+  - Do not promote this single-case smoke as a full noisy benchmark or a full reviewed10 bundle.
+  - If needed before larger gold-set runs, test the previously deferred 27B 4bit text-only feasibility on 5090 with 4k / 8k / 32k contexts and no CPU offload.

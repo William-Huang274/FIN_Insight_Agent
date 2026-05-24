@@ -140,7 +140,14 @@ def find_10k_sections(
                 text=section_text,
             )
         )
-    return sections
+    if sections:
+        return sections
+
+    return _find_nontraditional_10k_sections(
+        text=text,
+        output_item_set=output_item_set,
+        min_section_chars=min_section_chars,
+    )
 
 
 def build_semantic_blocks(
@@ -280,6 +287,127 @@ def _find_section_candidates(text: str) -> list[dict]:
                 }
             )
     return candidates
+
+
+def _find_nontraditional_10k_sections(
+    text: str,
+    output_item_set: set[str] | None,
+    min_section_chars: int,
+) -> list[SecFilingSection]:
+    """Handle readable 10-K layouts where formal Item labels only appear in an index."""
+    lines = _line_offsets(text)
+    lower_bound = max(8000, int(len(text) * 0.02))
+
+    item7 = _find_nontraditional_marker(
+        lines,
+        markers=("management's discussion and analysis",),
+        after=lower_bound,
+    )
+    if item7 is None:
+        return []
+
+    item1 = _find_nontraditional_marker(
+        lines,
+        markers=(
+            "a year in review",
+            "fundamentals of our business",
+            "fundamental of our business",
+            "our business",
+            "overview",
+        ),
+        after=lower_bound,
+        before=item7["start"],
+    )
+    item1a = _find_nontraditional_marker(
+        lines,
+        markers=("risk factors and other key information", "risk factors"),
+        after=item7["start"] + 1,
+    )
+    item7a = _find_nontraditional_marker(
+        lines,
+        markers=("quantitative and qualitative disclosures about market risk",),
+        after=item7["start"] + 1,
+    )
+    latest_before_item8 = max(
+        marker["start"] for marker in (item7, item1a, item7a) if marker is not None
+    )
+    item8 = _find_nontraditional_marker(
+        lines,
+        markers=(
+            "financial statements and supplemental details",
+            "financial statements and supplementary data",
+        ),
+        after=latest_before_item8 + 1,
+    )
+
+    candidates = [
+        candidate
+        for candidate in [
+            _nontraditional_candidate("1", item1),
+            _nontraditional_candidate("7", item7),
+            _nontraditional_candidate("1A", item1a),
+            _nontraditional_candidate("7A", item7a),
+            _nontraditional_candidate("8", item8),
+        ]
+        if candidate is not None
+    ]
+    candidates.sort(key=lambda candidate: candidate["start"])
+    if not candidates:
+        return []
+
+    sections: list[SecFilingSection] = []
+    for idx, candidate in enumerate(candidates):
+        item_code = candidate["item_code"]
+        if output_item_set is not None and item_code not in output_item_set:
+            continue
+        start = candidate["start"]
+        end = candidates[idx + 1]["start"] if idx + 1 < len(candidates) else len(text)
+        section_text = text[start:end].strip()
+        if len(section_text) < min_section_chars:
+            continue
+        definition = SECTION_DEFINITION_BY_ITEM[item_code]
+        sections.append(
+            SecFilingSection(
+                item_code=item_code,
+                section=definition.canonical_title,
+                char_start=start,
+                char_end=end,
+                text=section_text,
+            )
+        )
+    return sections
+
+
+def _find_nontraditional_marker(
+    lines: list[tuple[int, str]],
+    markers: tuple[str, ...],
+    after: int,
+    before: int | None = None,
+) -> dict | None:
+    marker_set = {_compact_text(marker) for marker in markers}
+    for line_idx, (start, line) in enumerate(lines):
+        if start < after:
+            continue
+        if before is not None and start >= before:
+            break
+        if "|" in line:
+            continue
+        compact = _compact_text(line)
+        if any(compact == marker or compact.startswith(marker) for marker in marker_set):
+            return {"start": start, "line_idx": line_idx, "line": line}
+    return None
+
+
+def _nontraditional_candidate(item_code: str, marker: dict | None) -> dict | None:
+    if marker is None:
+        return None
+    definition = SECTION_DEFINITION_BY_ITEM[item_code]
+    return {
+        "item_code": item_code,
+        "section": definition.canonical_title,
+        "start": marker["start"],
+        "line_idx": marker["line_idx"],
+    }
 
 
 def _dedupe_close_candidates(candidates: list[dict], close_chars: int = 80) -> list[dict]:

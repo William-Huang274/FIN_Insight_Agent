@@ -1,0 +1,171 @@
+# SEC Agent ContextManager 与 State Replay 验收 v1
+
+## Prompt
+- 用户决定下一轮用新一轮 case 验收真实 state replay，而不是只做 route-only。
+- 需要把多轮上下文压缩问题纳入 ContextManager 的具体实现：
+  - 不可丢状态必须结构化保存。
+  - summary 只能辅助，不能覆盖 active answer、scope、artifact state、resume cursor、权限和 source policy。
+  - 需要控制 controller context 体积，避免多 session / 多 answer / 多 ticker 历史导致注意力涣散。
+- 云端暂不可用，先做本地脚本和确定性验证；云端可用后再同步执行。
+
+## Reasoning And Decision
+- 当前 harness 已有 `session_state.json`，足够作为 session-level JSON store；缺的是 user/session 上层 context manager。
+- v1 不引入数据库和长期记忆，避免把架构复杂度提前拉高。
+- ContextManager v1 的职责限定为：
+  - 按 `tenant_id + user_id` 过滤可见 session。
+  - 维护 user profile 中的 `active_session_id`、`recent_session_ids`、`last_references`。
+  - 从 session state 构造 controller-facing compact snapshot。
+  - 将 `identity`、`active_answer_id`、`active_scope`、`artifact_state`、`resume.next_ready_node`、`source_policy` 放入 lossless fields。
+  - 将 conversation summary、recent turns、session candidates 作为 bounded hints。
+  - ambiguous reference 无 active session 且候选不唯一时，返回 `clarification_required` 和 bounded candidates，而不是猜。
+- 压缩预算采用启发式 token estimate：
+  - controller snapshot 目标预算 `3000` estimated tokens。
+  - `6000` estimated tokens 以上标记 high attention risk。
+  - recent turns 默认限制 `5`。
+  - candidate sessions 默认限制 `3`。
+
+## Work Completed
+- 新增 `src/sec_agent/context_store.py`：
+  - `JsonContextStore` 管理 user profile JSON。
+  - 保存 active session、recent sessions、preferences、last references。
+- 新增 `src/sec_agent/context_manager.py`：
+  - `ContextBudget`
+  - `SecAgentContextManager`
+  - `ingest_sessions`
+  - `set_active_session`
+  - `clear_active_session`
+  - `list_user_sessions`
+  - `build_controller_context`
+  - `apply_tool_result`
+  - `validate_snapshot`
+- 更新 `src/sec_agent/__init__.py`，导出 `ContextBudget` 和 `SecAgentContextManager`。
+- 新增 state replay eval set：
+  - `eval_sets/sec_agent_context_state_replay_eval_v1.json`
+  - `7` cases：
+    - reload 后恢复 active answer。
+    - 显式 session switch 不泄露上一 session active state。
+    - 用户 B 访问用户 A session 被拒绝。
+    - partial resume 前后 artifact state / `next_ready_node` 变化。
+    - reformat 只 invalidated `rendered_answer` 且不影响 evidence explanation。
+    - 无 active 且候选不唯一时返回 clarification/candidates。
+    - compression budget guard。
+- 新增本地 replay runner：
+  - `scripts/evaluate_sec_agent_context_state_replay.py`
+  - 生成 fixture world：用户 A 拥有 NVDA completed session、AMZN/META completed session、AMZN/META partial session；用户 B 用于越权访问测试。
+  - 模拟 process restart：重新实例化 `SecAgentContextManager` 并读取持久 JSON state。
+  - 模拟 partial resume completion：补齐 coverage/Judgment Plan/synthesis/gates/render artifacts 后验证 context snapshot 更新。
+- 新增 context-managed controller evaluator：
+  - `scripts/evaluate_sec_agent_context_managed_tool_controller.py`
+  - 为宽版 `6` scenario / `23` turn suite 生成同名真实 fixture sessions。
+  - 每轮先通过 `ContextManager.build_controller_context()` 构造 snapshot，再交给 `DeepSeekToolController.run_turn()`。
+  - 旧 evaluator 的手工 `runtime_context` 路径保留；新 evaluator 专门验证真实 session JSON -> ContextManager snapshot -> controller routing。
+- 新增 context-managed dispatch replay evaluator：
+  - `scripts/evaluate_sec_agent_context_managed_dispatch_replay.py`
+  - 流程：`ContextManager.build_controller_context()` -> controller route-only 选 tool -> 手动调用 `SecAgentToolHarness.dispatch()` -> `ContextManager.apply_tool_result()` -> 重新构造 post snapshot。
+  - 对 `resume_analysis` 使用 fixture-level downstream completion 模拟，避免在 dispatch replay 中跑真实 DAG，同时让后续 evidence follow-up 能读到 resumed artifacts。
+- 新增 request-level ContextManager handler：
+  - `src/sec_agent/context_api.py`
+  - `SecAgentContextRequestHandler.handle_turn()` 封装真实 API 入口应该执行的边界流程：
+    - load/build context snapshot
+    - clarification / access-denied early return
+    - route controller
+    - dispatch selected harness tool
+    - apply tool result back into ContextManager
+    - rebuild post-turn snapshot
+  - v1 使用 process-local `RLock` 包住 JSON-backed context/session read-modify-write；多进程或生产服务仍需要 DB/Redis/file-lock 事务。
+- 更新 `src/sec_agent/context_store.py`：
+  - user profile 保存改为临时文件 + atomic replace。
+  - Windows 小压测暴露过一次 `WinError 5` replace 竞争/占用问题，已增加短重试。
+- 新增 API/request smoke：
+  - `scripts/evaluate_sec_agent_context_api_smoke.py`
+  - 覆盖 no-active ambiguous clarification、显式 session coverage、active follow-up evidence、显式切 session、reformat 局部失效、跨用户拒绝。
+- 新增小压测：
+  - `scripts/benchmark_sec_agent_context_api.py`
+  - 单进程、多线程、fixture harness dispatch，不调用 DeepSeek，不跑真实 SEC DAG。
+- 更新 `src/sec_agent/tool_controller.py`：
+  - `_compact_runtime_context()` 支持 `runtime_context["context_snapshot"]`。
+  - controller prompt 中保留 lossless fields、session candidates、compression report 和 summary，供工具路由使用。
+
+## Validation
+- 语法检查：
+  - `python -m py_compile src/sec_agent/context_store.py src/sec_agent/context_manager.py src/sec_agent/__init__.py scripts/evaluate_sec_agent_context_state_replay.py`
+  - 结果：通过。
+- Eval set JSON：
+  - `python -m json.tool eval_sets/sec_agent_context_state_replay_eval_v1.json`
+  - 结果：通过。
+- State replay：
+  - 输出：`reports/quality/local_context_state_replay_v1.json`
+  - 结果：`7/7` 通过。
+  - 关键细节：
+    - reload active answer：`ctx_session_a_nvda_2024` / `ctx_ans_a_nvda_2024`，estimated tokens `2096`。
+    - explicit switch：active tickers `AMZN/META`，candidate count `0`，无 NVDA active leakage。
+    - cross-user boundary：`access_denied`。
+    - partial resume：before `next_ready_node=build_coverage_matrix`，after `next_ready_node=null`，complete artifacts `10`。
+    - reformat：invalidated artifacts 仅 `["rendered_answer"]`，post-reformat evidence explanation 返回 AMZN advertising metric/evidence IDs。
+    - ambiguous no-active：`clarification_required`，candidate count `3`，不猜 active answer。
+    - compression guard：estimated tokens `2467`，recent turns `5`，candidate sessions `3`，attention risk `low`。
+- 既有回归：
+  - `reports/quality/local_tool_harness_dispatch_fixtures_after_context_manager_v1.json`：`11/11` 通过。
+  - `reports/quality/local_tool_controller_noncontiguous_followup_route_heuristic_after_context_manager_v1.json`：`6` scenarios / `23` turns，tool pass `23/23`，arg pass `23/23`。
+- 云端确定性验证：
+  - 云端节点：SeeTaCloud，repo path `/root/autodl-tmp/FIN_Insight_Agent`，Python `/root/autodl-tmp/envs/sec-agent-cu128/bin/python`。
+  - 已同步 ContextManager / replay / harness eval 相关文件。
+  - 语法检查与 eval JSON 校验：通过。
+  - `reports/quality/cloud_context_state_replay_v1.json`：`7/7` 通过。
+  - `reports/quality/cloud_tool_harness_dispatch_fixtures_after_context_manager_v1.json`：`11/11` 通过。
+  - `reports/quality/cloud_tool_controller_noncontiguous_followup_route_heuristic_after_context_manager_v1.json`：`6` scenarios / `23` turns，tool pass `23/23`，arg pass `23/23`。
+  - 本轮云端验证为确定性脚本，不调用 DeepSeek API，不跑 GPU。
+- Context-managed controller 验证：
+  - 本地：`reports/quality/local_context_managed_tool_controller_route_heuristic_v1.json`
+    - `6` scenarios / `23` turns，tool pass `23/23`，arg pass `23/23`，snapshot pass `23/23`。
+  - 云端 heuristic：`reports/quality/cloud_context_managed_tool_controller_route_heuristic_v1.json`
+    - `6` scenarios / `23` turns，tool pass `23/23`，arg pass `23/23`，snapshot pass `23/23`。
+  - 云端 DeepSeek route-only：`reports/quality/cloud_context_managed_tool_controller_route_deepseek_v1.json`
+    - `6` scenarios / `23` turns，tool pass `23/23`，arg pass `23/23`，snapshot pass `23/23`，`failure_count=0`。
+    - 这轮调用 DeepSeek API，但仍是 route-only，不跑真实 DAG，不跑 GPU。
+- Context-managed dispatch replay：
+  - 本地 heuristic：`reports/quality/local_context_managed_dispatch_replay_heuristic_v1.json`
+    - `6` scenarios / `23` turns，tool pass `23/23`，arg pass `23/23`，snapshot pass `23/23`，dispatch pass `23/23`，context update pass `23/23`。
+  - 云端 heuristic：`reports/quality/cloud_context_managed_dispatch_replay_heuristic_v1.json`
+    - `6` scenarios / `23` turns，tool/arg/snapshot/dispatch/context update 均 `23/23`。
+  - 云端 DeepSeek：`reports/quality/cloud_context_managed_dispatch_replay_deepseek_v1.json`
+    - `6` scenarios / `23` turns，tool/arg/snapshot/dispatch/context update 均 `23/23`，`failure_count=0`。
+    - 这轮调用 DeepSeek API，只执行 fixture harness dispatch，不跑真实 SEC DAG，不跑 GPU。
+- API/request-level smoke：
+  - 语法检查：
+    - `python -m py_compile src/sec_agent/context_store.py src/sec_agent/context_api.py src/sec_agent/__init__.py scripts/evaluate_sec_agent_context_api_smoke.py scripts/benchmark_sec_agent_context_api.py`
+    - 结果：通过。
+  - 输出：`reports/quality/local_context_api_smoke_heuristic_v1.json`
+  - 结果：`6/6` 通过，覆盖：
+    - no-active ambiguous reference -> `clarification_required`
+    - explicit session inspect coverage -> `inspect_coverage`
+    - active follow-up evidence -> `explain_evidence`
+    - explicit session switch -> `get_session_state`
+    - follow-up reformat -> `reformat_answer` 且仅 invalidated `rendered_answer`
+    - cross-user session access -> `access_denied` 且无 tool call。
+- ContextManager API 小压测：
+  - 输出：`reports/quality/local_context_api_load_heuristic_v1.json`
+  - workload：mixed，`120` requests，`8` concurrency，`10` warmup。
+  - 结果：`120/120` 通过，`failure_count=0`。
+  - 吞吐：`16.9839` requests/sec。
+  - latency：p50 `468.0 ms`，p90 `794.8 ms`，p95 `880.15 ms`，p99 `1013.16 ms`，max `1430.0 ms`。
+  - 状态分布：`completed=96`，`access_denied=24`。
+  - 工具分布：`inspect_coverage=24`，`explain_evidence=24`，`get_session_state=24`，`reformat_answer=24`，denied no-tool `24`。
+  - 限制：这是单进程 JSON-store + process-local lock 压测，只能证明 demo/request boundary 在当前 harness 下稳定；不能代表多进程生产并发。
+- API smoke 后回归：
+  - `reports/quality/local_context_state_replay_after_api_smoke_v1.json`：`7/7` 通过。
+  - `reports/quality/local_context_managed_dispatch_replay_after_api_smoke_heuristic_v1.json`：`6` scenarios / `23` turns，tool/arg/snapshot/dispatch/context update 均 `23/23`。
+
+## Remaining Work
+- 若要变成真实服务，下一步是接 FastAPI/Flask 或现有 server 入口，把 HTTP auth 后的 `tenant_id/user_id/session_id/message` 映射到 `SecAgentContextRequestHandler.handle_turn()`。
+- 生产并发前需要替换 JSON store 的单进程锁：
+  - SQLite/Postgres 事务，或 Redis session/context store。
+  - 至少需要跨进程 file lock，才能支持多 worker。
+- 可以补一轮云端 DeepSeek request-level API smoke，但这不是当前本地 handler 正确性的必要条件；DeepSeek route/dispatch 已在前一轮 `23/23` 通过。
+- 后续压测应分两类：
+  - Context-only/harness fixture throughput。
+  - 真实 SEC DAG + BGE/GPU/API synthesis 端到端时延。
+
+## Safety Notes
+- API smoke / 小压测没有云端执行、没有模型调用、没有 API key 或云端密码写入文件。
+- v1 仍只做 JSON store；已经加 process-local lock 和 atomic replace retry，但数据库化/事务化仍是生产化前置条件。

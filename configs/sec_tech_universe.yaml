@@ -23,15 +23,75 @@ companies:
   - ticker: AMZN
     category: "ecommerce/cloud"
     category_slug: "ecommerce_cloud"
+  - ticker: AVGO
+    category: "semiconductor/networking"
+    category_slug: "semiconductor_networking"
+  - ticker: CSCO
+    category: "networking/security"
+    category_slug: "networking_security"
+  - ticker: INTC
+    category: "semiconductor IDM"
+    category_slug: "semiconductor_idm"
   - ticker: AMD
     category: "semiconductor challenger"
     category_slug: "semiconductor_challenger"
+  - ticker: QCOM
+    category: "mobile/semiconductor"
+    category_slug: "mobile_semiconductor"
+  - ticker: TXN
+    category: "analog semiconductor"
+    category_slug: "analog_semiconductor"
+  - ticker: AMAT
+    category: "semiconductor equipment"
+    category_slug: "semiconductor_equipment"
+  - ticker: MU
+    category: "memory semiconductor"
+    category_slug: "memory_semiconductor"
+  - ticker: INTU
+    category: "financial software"
+    category_slug: "financial_software"
+  - ticker: ADP
+    category: "payroll/HCM software"
+    category_slug: "payroll_hcm_software"
   - ticker: ADBE
     category: "creative/software SaaS"
     category_slug: "creative_software_saas"
   - ticker: PANW
     category: "cybersecurity"
     category_slug: "cybersecurity"
+  - ticker: CRWD
+    category: "cybersecurity"
+    category_slug: "cybersecurity"
   - ticker: SNOW
     category: "data/cloud software"
     category_slug: "data_cloud_software"
+  - ticker: JPM
+    category: "banking/financial services"
+    category_slug: "banking_financial_services"
+  - ticker: V
+    category: "payments network/financial services"
+    category_slug: "payments_financial_services"
+  - ticker: JNJ
+    category: "healthcare/pharma/devices"
+    category_slug: "healthcare_pharma_devices"
+  - ticker: LLY
+    category: "pharmaceuticals/obesity diabetes"
+    category_slug: "pharmaceutical_obesity_diabetes"
+  - ticker: CAT
+    category: "industrial machinery"
+    category_slug: "industrial_machinery"
+  - ticker: GE
+    category: "aerospace/industrial"
+    category_slug: "aerospace_industrial"
+  - ticker: WMT
+    category: "consumer retail"
+    category_slug: "consumer_retail"
+  - ticker: PG
+    category: "consumer staples"
+    category_slug: "consumer_staples"
+  - ticker: XOM
+    category: "energy/integrated oil gas"
+    category_slug: "energy_integrated_oil_gas"
+  - ticker: CVX
+    category: "energy/integrated oil gas"
+    category_slug: "energy_integrated_oil_gas"

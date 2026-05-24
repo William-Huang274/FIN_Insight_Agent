@@ -1176,9 +1176,11 @@ def _ask_llm_server(
             "只有当前 metric_ids/evidence_ids 明确支持 subscription_revenue、ARR、递延收入或 RPO 时才可这样表述。"
             "涉及竞争对手时必须区分直接竞争、间接替代、供应商/客户/云厂商自研或证据不足，不能只列公司名。"
             "不要写当前引用证据未明确支持的产品代号、竞品产品名或公司名；若没有 evidence_ids 支撑，用泛化描述。"
-            "长度控制：what_changed最多4条，why_it_matters最多4条，peer_readthrough最多4条，counterarguments最多2条，watch_items最多3条。"
-            "每条对象的 metric_ids 和 evidence_ids 各最多保留3个代表性ID，不能把全部支持ID塞入答案。"
-            "direct_answer 最多3句，investment_thesis 最多5句；优先给结论和分化逻辑，不要展开审计明细。"
+            "长度控制：what_changed最多3条，why_it_matters最多3条，peer_readthrough最多3条，counterarguments最多1条，watch_items最多2条。"
+            "每条对象的 metric_ids 和 evidence_ids 各最多保留2个代表性ID，不能把全部支持ID塞入答案。"
+            "每个对象的主文本字段最多80个中文字符；不要输出 confidence 或 schema 之外的字段。"
+            "source_limitations最多4条，避免重复同一句限制。"
+            "direct_answer 最多2句，investment_thesis 最多3句；优先给结论和分化逻辑，不要展开审计明细。"
             "不能使用股价、估值、新闻、电话会、分析师预期或source policy外信息。"
         )
     elif api_insight_mode:
@@ -4351,6 +4353,7 @@ def _write_run_outputs(
             user_query=str((synthesis.get("debug") or {}).get("user_query") or ""),
             answer=synthesis.get("answer") or {},
             metric_rows={str(row.get("metric_id") or ""): row for row in (ledger_rows or []) if row.get("metric_id")},
+            evidence_rows=_evidence_rows_by_id(trace.get("context_rows") or []),
         ),
     )
 
@@ -4367,9 +4370,10 @@ def _print_answer(
 ) -> None:
     answer = synthesis.get("answer") or {}
     metric_rows = {str(row.get("metric_id") or ""): row for row in ledger_rows if row.get("metric_id")}
+    evidence_rows = _evidence_rows_by_id(context_rows)
     print("\nassistant>")
     if answer.get("direct_answer") or answer.get("investment_thesis"):
-        _print_memo_answer(answer, metric_rows)
+        _print_memo_answer(answer, metric_rows, evidence_rows)
         show_legacy_sections = False
     else:
         print(_clean_display_text(answer.get("summary") or ""))
@@ -4383,7 +4387,7 @@ def _print_answer(
             mids = driver.get("supporting_metric_ids") or []
             eids = driver.get("supporting_evidence_ids") or []
             metric_refs = _format_metric_refs([str(item) for item in mids], metric_rows)
-            evidence_refs = _format_evidence_refs([str(item) for item in eids])
+            evidence_refs = _format_evidence_refs([str(item) for item in eids], evidence_rows)
             if metric_refs:
                 print(f"   依据数值: {'；'.join(metric_refs)}")
             if evidence_refs:
@@ -4393,7 +4397,7 @@ def _print_answer(
             mids = point.get("metric_ids") or []
             eids = point.get("evidence_ids") or []
             metric_refs = _format_metric_refs([str(item) for item in mids], metric_rows)
-            evidence_refs = _format_evidence_refs([str(item) for item in eids])
+            evidence_refs = _format_evidence_refs([str(item) for item in eids], evidence_rows)
             if metric_refs:
                 print(f"   依据数值: {'；'.join(metric_refs)}")
             if evidence_refs:
@@ -4425,7 +4429,11 @@ def _print_answer(
     print(f"[elapsed] {round(time.time() - started, 2)} sec")
 
 
-def _print_memo_answer(answer: dict[str, Any], metric_rows: dict[str, dict[str, Any]]) -> None:
+def _print_memo_answer(
+    answer: dict[str, Any],
+    metric_rows: dict[str, dict[str, Any]],
+    evidence_rows: dict[str, dict[str, Any]] | None = None,
+) -> None:
     direct = _clean_display_text(answer.get("direct_answer") or answer.get("summary") or "")
     thesis = _clean_display_text(answer.get("investment_thesis") or "")
     if direct:
@@ -4434,10 +4442,11 @@ def _print_memo_answer(answer: dict[str, Any], metric_rows: dict[str, dict[str, 
     if thesis:
         print("\n投资判断")
         print(thesis)
-    _print_memo_items("关键变化", answer.get("what_changed") or [], ("claim",), metric_rows)
-    _print_memo_items("为什么重要", answer.get("why_it_matters") or [], ("insight", "business_implication"), metric_rows)
-    _print_memo_items("同行/竞争映射", answer.get("peer_readthrough") or [], ("peer_or_group", "role", "readthrough", "caveat"), metric_rows)
-    _print_memo_items("反证与风险", answer.get("counterarguments") or [], ("claim", "why_it_could_weaken_thesis"), metric_rows)
+    evidence_rows = evidence_rows or {}
+    _print_memo_items("关键变化", answer.get("what_changed") or [], ("claim",), metric_rows, evidence_rows)
+    _print_memo_items("为什么重要", answer.get("why_it_matters") or [], ("insight", "business_implication"), metric_rows, evidence_rows)
+    _print_memo_items("同行/竞争映射", answer.get("peer_readthrough") or [], ("peer_or_group", "role", "readthrough", "caveat"), metric_rows, evidence_rows)
+    _print_memo_items("反证与风险", answer.get("counterarguments") or [], ("claim", "why_it_could_weaken_thesis"), metric_rows, evidence_rows)
     watch_items = [item for item in answer.get("watch_items") or [] if isinstance(item, dict)]
     if watch_items:
         print("\n后续观察项")
@@ -4461,6 +4470,7 @@ def _print_memo_items(
     rows: list[Any],
     text_keys: tuple[str, ...],
     metric_rows: dict[str, dict[str, Any]],
+    evidence_rows: dict[str, dict[str, Any]] | None = None,
 ) -> None:
     items = [item for item in rows if isinstance(item, dict)]
     if not items:
@@ -4472,7 +4482,7 @@ def _print_memo_items(
         if text:
             print(f"{idx}. {text}")
         metric_refs = _format_metric_refs([str(mid) for mid in item.get("metric_ids") or []], metric_rows)
-        evidence_refs = _format_evidence_refs([str(eid) for eid in item.get("evidence_ids") or []])
+        evidence_refs = _format_evidence_refs([str(eid) for eid in item.get("evidence_ids") or []], evidence_rows or {})
         if metric_refs:
             print(f"   依据数值: {'；'.join(metric_refs)}")
         if evidence_refs:
@@ -4580,11 +4590,27 @@ def _display_metric_label(row: dict[str, Any]) -> str:
     return label
 
 
-def _format_evidence_refs(evidence_ids: list[str]) -> list[str]:
+def _evidence_rows_by_id(context_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    rows: dict[str, dict[str, Any]] = {}
+    for row in context_rows:
+        if not isinstance(row, dict):
+            continue
+        for key in ("evidence_id", "source_evidence_id", "object_id", "chunk_id"):
+            value = str(row.get(key) or "").strip()
+            if value and value not in rows:
+                rows[value] = row
+    return rows
+
+
+def _format_evidence_refs(
+    evidence_ids: list[str],
+    evidence_rows: dict[str, dict[str, Any]] | None = None,
+) -> list[str]:
     refs = []
     seen = set()
+    evidence_rows = evidence_rows or {}
     for evidence_id in evidence_ids:
-        text = _short_evidence_ref(evidence_id)
+        text = _short_evidence_ref(evidence_id, evidence_rows.get(str(evidence_id or "").strip()))
         if not text or text in seen:
             continue
         refs.append(text)
@@ -4594,14 +4620,63 @@ def _format_evidence_refs(evidence_ids: list[str]) -> list[str]:
     return refs
 
 
-def _short_evidence_ref(evidence_id: str) -> str:
-    match = re.match(r"^([A-Z]+)_(\d{4})_(10K|10Q)_(ITEM\d+[A-Z]?)", str(evidence_id or ""))
-    if not match:
-        return str(evidence_id or "")[:80]
-    ticker, year, form, item = match.groups()
-    item_text = item.replace("ITEM", "Item ")
-    form_text = form.replace("10K", "10-K").replace("10Q", "10-Q")
-    return f"{ticker} {year} {form_text} {item_text}"
+def _short_evidence_ref(evidence_id: str, row: dict[str, Any] | None = None) -> str:
+    evidence_id = str(evidence_id or "").strip()
+    row = row or {}
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    source_tier = str(row.get("source_tier") or metadata.get("source_tier") or "").strip()
+    boundary = _source_boundary_label(source_tier)
+
+    if evidence_id.startswith("8K_EARNINGS::"):
+        parts = evidence_id.split("::")
+        ticker = (parts[1] if len(parts) > 1 else str(row.get("ticker") or "")).upper()
+        exhibit = _display_8k_exhibit(parts[3] if len(parts) > 3 else row.get("exhibit") or metadata.get("exhibit"))
+        period = _display_evidence_period(row)
+        label = " ".join(part for part in (ticker, period, "8-K earnings release", exhibit) if part).strip()
+        return f"{label} ({boundary or 'company-authored unaudited'})"
+
+    match = re.match(r"^([A-Z]+)_(\d{4})_(10K|10Q|8K)_(ITEM\d+[A-Z]?)", evidence_id)
+    if match:
+        ticker, year, form, item = match.groups()
+        item_text = item.replace("ITEM", "Item ")
+        form_text = form.replace("10K", "10-K").replace("10Q", "10-Q").replace("8K", "8-K")
+        suffix = f" ({boundary})" if boundary else ""
+        return f"{ticker} {year} {form_text} {item_text}{suffix}"
+
+    if row:
+        ticker = str(row.get("ticker") or "").upper()
+        year = str(row.get("fiscal_year") or metadata.get("fiscal_year") or "").strip()
+        form = _normalize_form_type(row.get("form_type") or row.get("source_type") or metadata.get("form_type") or "")
+        suffix = f" ({boundary})" if boundary else ""
+        label = " ".join(part for part in (ticker, year, form) if part).strip()
+        if label:
+            return f"{label}{suffix}"
+    return evidence_id[:80]
+
+
+def _source_boundary_label(source_tier: str) -> str:
+    labels = {
+        "primary_sec_filing": "SEC primary filing",
+        "company_authored_unaudited_sec_filing": "company-authored unaudited",
+    }
+    return labels.get(str(source_tier or "").strip(), "")
+
+
+def _display_8k_exhibit(value: Any) -> str:
+    text = str(value or "").upper().replace(".", "")
+    if "991" in text:
+        return "Exhibit 99.1"
+    if text.startswith("EX"):
+        return text
+    return ""
+
+
+def _display_evidence_period(row: dict[str, Any]) -> str:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    fiscal_year = row.get("fiscal_year") or metadata.get("reported_fiscal_year") or metadata.get("fiscal_year")
+    fiscal_period = row.get("fiscal_period") or metadata.get("reported_fiscal_period") or metadata.get("fiscal_period")
+    parts = [str(part).strip() for part in (fiscal_year, fiscal_period) if str(part or "").strip()]
+    return " ".join(parts)
 
 
 def _gateway_debug(result: dict[str, Any] | None) -> dict[str, Any]:
@@ -5880,6 +5955,7 @@ def _rendered_answer_markdown(
     user_query: str,
     answer: dict[str, Any],
     metric_rows: dict[str, dict[str, Any]] | None = None,
+    evidence_rows: dict[str, dict[str, Any]] | None = None,
 ) -> str:
     lines = ["# SEC Agent Answer", ""]
     query = str(user_query or "").strip()
@@ -5906,14 +5982,15 @@ def _rendered_answer_markdown(
         lines.extend(["## 投资判断", "", thesis, ""])
 
     metric_rows = metric_rows or {}
-    _append_rendered_items(lines, "关键变化", answer.get("what_changed") or [], ("claim", "point", "insight"), metric_rows)
-    _append_rendered_items(lines, "为什么重要", answer.get("why_it_matters") or [], ("insight", "business_implication", "claim"), metric_rows)
+    evidence_rows = evidence_rows or {}
+    _append_rendered_items(lines, "关键变化", answer.get("what_changed") or [], ("claim", "point", "insight"), metric_rows, evidence_rows)
+    _append_rendered_items(lines, "为什么重要", answer.get("why_it_matters") or [], ("insight", "business_implication", "claim"), metric_rows, evidence_rows)
     if not has_memo_fields:
-        _append_rendered_items(lines, "决策驱动", answer.get("decision_drivers") or [], ("driver_claim", "why_it_matters", "caveat"), metric_rows)
-        _append_rendered_items(lines, "关键要点", answer.get("key_points") or [], ("point", "claim", "insight"), metric_rows)
-    _append_rendered_items(lines, "同行/竞争映射", answer.get("peer_readthrough") or [], ("peer_or_group", "role", "readthrough", "caveat"), metric_rows)
-    _append_rendered_items(lines, "反证与风险", answer.get("counterarguments") or [], ("claim", "why_it_could_weaken_thesis", "caveat"), metric_rows)
-    _append_rendered_items(lines, "后续观察项", answer.get("watch_items") or [], ("item", "why_it_matters", "source_to_watch"), metric_rows)
+        _append_rendered_items(lines, "决策驱动", answer.get("decision_drivers") or [], ("driver_claim", "why_it_matters", "caveat"), metric_rows, evidence_rows)
+        _append_rendered_items(lines, "关键要点", answer.get("key_points") or [], ("point", "claim", "insight"), metric_rows, evidence_rows)
+    _append_rendered_items(lines, "同行/竞争映射", answer.get("peer_readthrough") or [], ("peer_or_group", "role", "readthrough", "caveat"), metric_rows, evidence_rows)
+    _append_rendered_items(lines, "反证与风险", answer.get("counterarguments") or [], ("claim", "why_it_could_weaken_thesis", "caveat"), metric_rows, evidence_rows)
+    _append_rendered_items(lines, "后续观察项", answer.get("watch_items") or [], ("item", "why_it_matters", "source_to_watch"), metric_rows, evidence_rows)
 
     limitations = [
         _clean_display_text(item)
@@ -5934,6 +6011,7 @@ def _append_rendered_items(
     rows: list[Any],
     text_keys: tuple[str, ...],
     metric_rows: dict[str, dict[str, Any]] | None = None,
+    evidence_rows: dict[str, dict[str, Any]] | None = None,
 ) -> None:
     items = [item for item in rows if isinstance(item, dict)]
     if not items:
@@ -5948,7 +6026,7 @@ def _append_rendered_items(
         evidence_ids = [str(value) for value in (item.get("evidence_ids") or item.get("supporting_evidence_ids") or []) if str(value or "").strip()]
         if metric_ids or evidence_ids:
             metric_text = "；".join(_format_metric_refs(metric_ids, metric_rows or {}))
-            evidence_text = ", ".join(_format_evidence_refs(evidence_ids))
+            evidence_text = ", ".join(_format_evidence_refs(evidence_ids, evidence_rows or {}))
             support_parts = []
             if metric_text:
                 support_parts.append(f"metrics: {metric_text}")

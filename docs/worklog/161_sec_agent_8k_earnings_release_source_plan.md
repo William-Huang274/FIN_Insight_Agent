@@ -300,6 +300,16 @@ P1 应先接 SEC EDGAR 路径下的 8-K earnings release，而不是直接接 IR
   - chunks carry `source_boundary=company_authored_unaudited_sec_filing`, `unaudited=true`, `management_view=true`, and `exclude_from_exact_value_ledger=true`;
   - reported period hints such as quarter ended date, fiscal quarter, and fiscal year are captured as metadata when present.
 - Added runtime source-boundary gate text for `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS` so cases explicitly forbid treating 8-K earnings-release evidence as audited 10-K/10-Q financial statement evidence.
+- Added rendered-answer source-boundary labels:
+  - `8K_EARNINGS::...` evidence now renders as `8-K earnings release ... (company-authored unaudited)`;
+  - 10-K/10-Q evidence now renders with `(SEC primary filing)` when source metadata is available;
+  - the renderer maps answer evidence IDs back to selected context rows so source-tier metadata survives into CLI/session previews.
+- Tightened the DeepSeek `api_memo_v1` synthesis prompt for mixed-source answers:
+  - fewer memo rows per section;
+  - at most two representative `metric_ids` / `evidence_ids` per item;
+  - no schema-extra fields such as `confidence`;
+  - shorter direct answer, thesis, and source limitations.
+- Hardened the shell wrapper so DeepSeek chat/ask/graph/session modes pass explicit synthesis token settings and raise low inherited `MAX_TOKENS` / `SYNTHESIS_MAX_TOKENS` values to `8000` for API synthesis runs. This fixes the prior mixed-with-8K run where `requested_max_tokens=2200` caused `finish_reason=length` and `answered_api_model_truncation_repair`.
 - Cloud pilot selector issue found and fixed:
   - first real SEC download selected a Microsoft `Item 5.02,9.01` press release because the selector treated `9.01 + press release` as sufficient;
   - fixed the root selector rule so P1 requires `Item 2.02` for earnings-release discovery;
@@ -319,7 +329,7 @@ P1 应先接 SEC EDGAR 路径下的 8-K earnings release，而不是直接接 IR
   - 8-K earnings manifest builder rejecting cached non-`Item 2.02` press releases;
   - 8-K earnings parser producing source-bounded chunks and EvidenceObject records;
   - LLM Query Contract normalization preserving 8-K source tiers through repair/validation.
-- Rendered-answer source-boundary display checks remain open.
+- Rendered-answer source-boundary display checks completed locally and on cloud.
 - Raw SEC 8-K data was downloaded only on the cloud private ignored paths during validation; no raw SEC HTML or processed private artifacts were committed.
 
 Validation:
@@ -332,7 +342,10 @@ git diff --check -- src/connectors/sec_edgar_connector.py src/evidence/schema.py
 
 Result:
 
-- Targeted local tests: `51 passed`.
+- Targeted local tests before renderer/gate follow-up: `51 passed`.
+- Targeted local tests after renderer/gate follow-up:
+  - `python -m pytest tests/test_sec_agent_8k_earnings_source.py tests/test_sec_agent_context_source_policy.py tests/test_sec_agent_10q_source_contract.py tests/test_sec_benchmark_eval_mixed_context.py tests/test_sec_benchmark_post_gate_usage.py -q`
+  - Result: `54 passed`.
 - `py_compile` passed.
 - `git diff --check` passed.
 
@@ -382,11 +395,58 @@ Real DeepSeek mixed-chain smoke:
 - Answer behavior: the rendered answer used 10-Q ledger values for exact financial metrics and cited MSFT 8-K earnings-release evidence for management/AI revenue-run-rate commentary.
 - Gate status: deterministic coverage completed, but final `qwen_answer_gate_pass` remained false; this is retained as a quality follow-up rather than bypassed.
 
+Root-cause follow-up:
+
+- The failing `qwen_answer_gate_pass` was not a missing answer. The run had `answer_status=answered_api_model_truncation_repair`.
+- Raw gateway metadata showed `finish_reason=length`, `requested_max_tokens=2200`, `output_tokens=2200`.
+- Root cause was an inherited low synthesis-token setting in the session path plus verbose mixed-source memo output, not a post-gate accounting bug.
+- Fix applied:
+  - session wrapper now raises low API synthesis token settings to `8000`;
+  - direct graph/interactive wrapper now forwards `--max-tokens` when `MAX_TOKENS` is set;
+  - memo prompt now enforces a shorter schema and fewer IDs.
+
+Renderer/gate cloud validation:
+
+- Run path: `/root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/interactive_sec_agent/20260525_025246_490c9357a2`
+- Prompt scope: `MSFT,AMZN`, year `2026`, forms `10-Q,8-K`.
+- Intentionally injected `SYNTHESIS_MAX_TOKENS=2200` before invoking the wrapper.
+- CLI banner showed `synthesis_max_tokens: 8000`.
+- Gate summary:
+  - `answer_status=answered_api_model`
+  - `qwen_answer_gate_pass=true`
+  - `model_answer_ratio=1.0`
+  - no failed deterministic gate keys
+  - `finish_reason=stop`
+  - `requested_max_tokens=8000`
+  - `output_tokens=1929`
+- This run did not choose an 8-K evidence citation in the final answer, but it did render 10-Q support with `(SEC primary filing)`.
+
+Focused 8-K renderer/gate cloud validation:
+
+- Run path: `/root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/interactive_sec_agent/20260525_025655_f5658b615f`
+- Prompt scope: `MSFT`, year `2026`, forms `10-Q,8-K`.
+- Prompt asked specifically for MSFT 2026 8-K earnings release / AI run-rate evidence boundary.
+- Gate summary:
+  - `answer_status=answered_api_model`
+  - `qwen_answer_gate_pass=true`
+  - `model_answer_ratio=1.0`
+  - no failed deterministic gate keys
+  - `finish_reason=stop`
+  - `requested_max_tokens=8000`
+  - `output_tokens=2081`
+- Rendered answer showed both source boundaries:
+  - `MSFT 2026 8-K earnings release Exhibit 99.1 (company-authored unaudited)`
+  - `MSFT 2026 10-Q Item 2 (SEC primary filing)`
+
+Backward renderer check:
+
+- Re-rendered prior run `/root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/interactive_sec_agent/20260525_021707_490c9357a2` with the patched renderer.
+- The old `8K_EARNINGS::...` support IDs now render as `MSFT 2026 8-K earnings release Exhibit 99.1 (company-authored unaudited)`.
+
 ## Follow-Up
 
-- Add rendered-answer source-boundary display checks for 8-K evidence labels.
-- Investigate remaining `qwen_answer_gate_pass` failure on the mixed-with-8K DeepSeek smoke.
-- Keep all P1 artifacts in pilot-specific paths until source selection, retrieval, renderer labels, and gates pass.
+- Keep all P1 artifacts in pilot-specific paths until source selection, retrieval, renderer labels, and gates pass for a broader company set.
+- Expand beyond the current `MSFT`/`AMZN` selected 8-K pilot only after the next source-specific plan records how to handle missing `Item 2.02` rows and non-calendar fiscal quarters.
 - Update this document after implementation with concrete artifact paths, row counts, tests, and cloud run IDs.
 
 ## Safety Notes

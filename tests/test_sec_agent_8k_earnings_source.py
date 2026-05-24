@@ -543,3 +543,44 @@ def test_8k_earnings_parser_builds_source_bounded_chunks_and_evidence(tmp_path: 
     assert evidence[0].evidence_type == "management_commentary"
     assert evidence[0].source_url.endswith("/ex991.htm")
     assert evidence[0].metadata["source_boundary"] == "company_authored_unaudited_sec_filing"
+
+
+def test_renderer_labels_8k_and_primary_sec_source_boundaries() -> None:
+    interactive = _load_interactive_module()
+    eight_k_id = "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001"
+    ten_q_id = "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04"
+    context_rows = [
+        {
+            "evidence_id": eight_k_id,
+            "ticker": "MSFT",
+            "fiscal_year": 2026,
+            "fiscal_period": "Q1",
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+        },
+        {
+            "evidence_id": ten_q_id,
+            "ticker": "MSFT",
+            "fiscal_year": 2026,
+            "form_type": "10-Q",
+            "source_tier": "primary_sec_filing",
+        },
+    ]
+    answer = {
+        "what_changed": [
+            {
+                "claim": "Management commentary and 10-Q filing evidence are shown separately.",
+                "evidence_ids": [eight_k_id, ten_q_id],
+            }
+        ]
+    }
+
+    rendered = interactive._rendered_answer_markdown(
+        "test",
+        answer,
+        metric_rows={},
+        evidence_rows=interactive._evidence_rows_by_id(context_rows),
+    )
+
+    assert "MSFT 2026 Q1 8-K earnings release Exhibit 99.1 (company-authored unaudited)" in rendered
+    assert "MSFT 2026 10-Q Item 2 (SEC primary filing)" in rendered

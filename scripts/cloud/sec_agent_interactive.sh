@@ -86,6 +86,15 @@ ensure_qwen_server() {
   BASE_URL="$BASE_URL" MODEL_NAME="$MODEL_NAME" bash scripts/cloud/qwen9b_interactive.sh start
 }
 
+ensure_min_int_env() {
+  local name="$1"
+  local minimum="$2"
+  local current="${!name:-}"
+  if ! [[ "$current" =~ ^[0-9]+$ ]] || (( current < minimum )); then
+    export "$name=$minimum"
+  fi
+}
+
 use_mixed_10k_10q_sources() {
   export MANIFEST_PATH="${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_primary_mixed_10k_latest_10q_manifest_fy2023_2027.jsonl}"
   export BM25_INDEX_DIR="${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_10k_latest_10q_fy2023_2027}"
@@ -99,6 +108,12 @@ agent_flags() {
   flags+=(--manifest-path "${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_10k_manifest.jsonl}")
   flags+=(--bm25-index-dir "${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k}")
   flags+=(--object-bm25-index-dir "${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k_objects}")
+  if [[ -n "${MAX_TOKENS:-}" ]]; then
+    flags+=(--max-tokens "$MAX_TOKENS")
+  fi
+  if [[ -n "${PLANNER_MAX_TOKENS:-}" ]]; then
+    flags+=(--planner-max-tokens "$PLANNER_MAX_TOKENS")
+  fi
   if [[ -n "$API_KEY_ENV" ]]; then
     flags+=(--api-key-env "$API_KEY_ENV")
   fi
@@ -195,6 +210,10 @@ run_context_session() {
   session_flags+=(--bm25-index-dir "${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k}")
   session_flags+=(--object-bm25-index-dir "${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k_objects}")
   session_flags+=(--source-policy "${SEC_AGENT_SOURCE_POLICY:-SEC_ONLY_10K}")
+  session_flags+=(--graph-max-tokens "${SYNTHESIS_MAX_TOKENS:-8000}")
+  if [[ -n "${CONTROLLER_MAX_TOKENS:-}" ]]; then
+    session_flags+=(--max-tokens "$CONTROLLER_MAX_TOKENS")
+  fi
   if [[ -n "$API_KEY_ENV" ]]; then
     session_flags+=(--api-key-env "$API_KEY_ENV")
   fi
@@ -229,6 +248,7 @@ case "$cmd" in
   export BGE_FIRST="${BGE_FIRST:-1}"
   export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
   export MAX_TOKENS="${MAX_TOKENS:-8000}"
+  ensure_min_int_env MAX_TOKENS 8000
   shift || true
   run_chat "$@"
   ;;
@@ -250,6 +270,7 @@ case "$cmd" in
   export BGE_FIRST="${BGE_FIRST:-1}"
   export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
   export MAX_TOKENS="${MAX_TOKENS:-8000}"
+  ensure_min_int_env MAX_TOKENS 8000
   shift || true
   run_chat "$@"
   ;;
@@ -279,6 +300,7 @@ case "$cmd" in
   export BGE_FIRST="${BGE_FIRST:-1}"
   export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
   export MAX_TOKENS="${MAX_TOKENS:-8000}"
+  ensure_min_int_env MAX_TOKENS 8000
   shift || true
   run_ask "$@"
   ;;
@@ -300,6 +322,7 @@ case "$cmd" in
   export BGE_FIRST="${BGE_FIRST:-1}"
   export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
   export MAX_TOKENS="${MAX_TOKENS:-8000}"
+  ensure_min_int_env MAX_TOKENS 8000
   shift || true
   run_ask "$@"
   ;;
@@ -324,6 +347,7 @@ case "$cmd" in
   export BGE_FIRST="${BGE_FIRST:-1}"
   export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
   export MAX_TOKENS="${MAX_TOKENS:-8000}"
+  ensure_min_int_env MAX_TOKENS 8000
   shift || true
   run_graph_ask "$@"
   ;;
@@ -342,6 +366,7 @@ case "$cmd" in
   export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
   export BGE_DEVICE="${BGE_DEVICE:-cuda}"
   export SYNTHESIS_MAX_TOKENS="${SYNTHESIS_MAX_TOKENS:-8000}"
+  ensure_min_int_env SYNTHESIS_MAX_TOKENS 8000
   shift || true
   run_context_session "$@"
   ;;
@@ -361,6 +386,7 @@ case "$cmd" in
   export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
   export BGE_DEVICE="${BGE_DEVICE:-cuda}"
   export SYNTHESIS_MAX_TOKENS="${SYNTHESIS_MAX_TOKENS:-8000}"
+  ensure_min_int_env SYNTHESIS_MAX_TOKENS 8000
   shift || true
   run_context_session "$@"
   ;;

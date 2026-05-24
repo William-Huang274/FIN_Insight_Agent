@@ -161,11 +161,16 @@ def _run_qwen_once(case: dict[str, Any], context_rows: list[dict[str, Any]], arg
     judgment_plan = _judgment_plan_for_case(args.judgment_plan_path, str(case.get("case_id") or ""))
     prompt = _build_prompt(case, context_rows, ledger_rows, judgment_plan)
     if hasattr(tokenizer, "apply_chat_template"):
-        numeric_system_rule = (
-            "所有精确数值只能来自 Exact-Value Ledger。"
-            if ledger_rows
-            else "Exact-Value Ledger 为空时，除年份外不要输出任何金额、百分比、逗号大数或倍数。"
-        )
+        has_8k_context = _has_company_authored_8k_context(case, context_rows)
+        if ledger_rows and has_8k_context:
+            numeric_system_rule = (
+                "审计/季报财务精确数值只能来自 Exact-Value Ledger；"
+                "8-K earnings release 数字只能作为带 evidence_id 的公司未审计管理层材料引用，不能当作 audited ledger fact。"
+            )
+        elif ledger_rows:
+            numeric_system_rule = "所有精确数值只能来自 Exact-Value Ledger。"
+        else:
+            numeric_system_rule = "Exact-Value Ledger 为空时，除年份外不要输出任何金额、百分比、逗号大数或倍数。"
         messages = [
             {
                 "role": "system",
@@ -210,6 +215,22 @@ def _qwen_failure_type(qwen_output_status: str) -> str:
     return "qwen_output_invalid_json_repaired"
 
 
+def _has_company_authored_8k_context(case: dict[str, Any], context_rows: list[dict[str, Any]]) -> bool:
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    source_policy = str(case.get("source_policy") or contract.get("source_policy") or "")
+    source_tiers = {str(tier or "") for tier in (contract.get("source_tiers") or case.get("source_tiers") or [])}
+    if source_policy != "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS" and "company_authored_unaudited_sec_filing" not in source_tiers:
+        return False
+    return any(_is_company_authored_8k_context_row(row) for row in context_rows)
+
+
+def _is_company_authored_8k_context_row(row: dict[str, Any]) -> bool:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    form_type = str(row.get("form_type") or row.get("source_type") or metadata.get("form_type") or "").upper()
+    source_tier = str(row.get("source_tier") or metadata.get("source_tier") or metadata.get("source_boundary") or "")
+    return form_type == "8-K" and source_tier == "company_authored_unaudited_sec_filing"
+
+
 def _build_prompt(
     case: dict[str, Any],
     context_rows: list[dict[str, Any]],
@@ -218,6 +239,7 @@ def _build_prompt(
 ) -> str:
     case_id = str(case.get("case_id") or "")
     prompt = str(case.get("prompt") or "")
+    has_8k_context = _has_company_authored_8k_context(case, context_rows)
     compact_ledger = []
     for row in ledger_rows:
         metric_contract = _metric_contract(row)
@@ -260,6 +282,13 @@ def _build_prompt(
                 "source_kind": row.get("source_kind"),
                 "ticker": row.get("ticker"),
                 "fiscal_year": row.get("fiscal_year"),
+                "fiscal_period": row.get("fiscal_period") or row.get("reported_fiscal_period"),
+                "period_role": row.get("period_role"),
+                "form_type": row.get("form_type") or row.get("source_type"),
+                "source_tier": row.get("source_tier"),
+                "source_boundary": row.get("source_boundary")
+                or (row.get("metadata") or {}).get("source_boundary")
+                or row.get("source_tier"),
                 "section": row.get("section"),
                 "object_id": row.get("object_id"),
                 "evidence_id": row.get("evidence_id"),
@@ -295,15 +324,27 @@ def _build_prompt(
         else:
             summary_rule = "1. summary 只能写一句短判断，不写任何精确数字、金额、百分比、逗号大数或 metric_id。\n"
             summary_hint = "一句中文短判断，不写精确数字或metric_id；数值证据放在drivers/key_points"
-        numeric_rule = (
-            f"{summary_rule}"
-            "2. 所有精确数字必须逐字使用 Exact-Value Ledger 的 display_value_zh，不能四舍五入、换算单位或改写成亿美元/十亿美元口语表达。\n"
-            "3. decision_drivers/key_points 如果写精确数字，必须在同一对象的 supporting_metric_ids 或 metric_ids 数组中放入对应 metric_id；不要在自然语言字段里内联很长的方括号 metric_id。\n"
-            "4. 不能把 percentage_rate 当成 total_value，不能把 period_change_amount 当成 total_value；不要自行计算或输出 ledger 中不存在的派生倍数、近似倍数或百分比变化。\n"
-            "5. Evidence Text 只能用于解释口径、业务含义和 caveat，不能从中自由抄新数字。\n"
-            "6. 如果 Evidence Text 里有 ledger 没列出的对比期数字，不能写出该数字；包括 2023/2024 对比期、百分比、近似数、四舍五入数和单位换算数。只能定性说明来源文本包含对比期信息。\n"
-            "7. 如果 ledger 缺少某个必须指标，写入 not_found，并降级结论。\n"
-        )
+        if has_8k_context:
+            numeric_rule = (
+                f"{summary_rule}"
+                "2. 10-K/10-Q 财报精确数字必须逐字使用 Exact-Value Ledger 的 display_value_zh，不能四舍五入、换算单位或改写成亿美元/十亿美元口语表达。\n"
+                "3. decision_drivers/key_points 如果写 10-K/10-Q 财报精确数字，必须在同一对象的 supporting_metric_ids 或 metric_ids 数组中放入对应 metric_id；不要在自然语言字段里内联很长的方括号 metric_id。\n"
+                "4. 8-K earnings release 的金额、百分比或业务 KPI 只能作为 company-authored unaudited management material 引用：同一对象必须带对应 8-K evidence_ids，并在文本或 caveat/source_limitations 中标注未审计公司材料边界。\n"
+                "5. 不能把 8-K earnings release 数字写成 audited Exact-Value Ledger fact，也不能用它替代 10-K/10-Q ledger；若同一指标需要审计/季报口径，仍以 ledger 为准。\n"
+                "6. 不能把 percentage_rate 当成 total_value，不能把 period_change_amount 当成 total_value；不要自行计算或输出 ledger/8-K evidence 中不存在的派生倍数、近似倍数或百分比变化。\n"
+                "7. 非 8-K company-authored earnings-release 的 Evidence Text 只能用于解释口径、业务含义和 caveat，不能从中自由抄新数字。\n"
+                "8. 如果 ledger 缺少某个必须财报指标，写入 not_found，并降级结论；不要用 8-K 数字填补 audited/quarterly filing ledger 缺口。\n"
+            )
+        else:
+            numeric_rule = (
+                f"{summary_rule}"
+                "2. 所有精确数字必须逐字使用 Exact-Value Ledger 的 display_value_zh，不能四舍五入、换算单位或改写成亿美元/十亿美元口语表达。\n"
+                "3. decision_drivers/key_points 如果写精确数字，必须在同一对象的 supporting_metric_ids 或 metric_ids 数组中放入对应 metric_id；不要在自然语言字段里内联很长的方括号 metric_id。\n"
+                "4. 不能把 percentage_rate 当成 total_value，不能把 period_change_amount 当成 total_value；不要自行计算或输出 ledger 中不存在的派生倍数、近似倍数或百分比变化。\n"
+                "5. Evidence Text 只能用于解释口径、业务含义和 caveat，不能从中自由抄新数字。\n"
+                "6. 如果 Evidence Text 里有 ledger 没列出的对比期数字，不能写出该数字；包括 2023/2024 对比期、百分比、近似数、四舍五入数和单位换算数。只能定性说明来源文本包含对比期信息。\n"
+                "7. 如果 ledger 缺少某个必须指标，写入 not_found，并降级结论。\n"
+            )
     else:
         numeric_rule = (
             "1. 本 case 没有 Exact-Value Ledger 行，因此只能做定性 SEC 文本总结。\n"
@@ -438,11 +479,16 @@ def _build_prompt(
         f"{json.dumps(compact_ledger, ensure_ascii=False)}\n"
         "Evidence Text:\n"
         f"{json.dumps(compact_rows, ensure_ascii=False)}\n"
-        f"{_output_schema_for_profile(summary_hint, table_schema, api_memo_mode)}"
+        f"{_output_schema_for_profile(summary_hint, table_schema, api_memo_mode, has_8k_context)}"
     )
 
 
-def _output_schema_for_profile(summary_hint: str, table_schema: str, api_memo_mode: bool) -> str:
+def _output_schema_for_profile(
+    summary_hint: str,
+    table_schema: str,
+    api_memo_mode: bool,
+    supports_8k_context: bool = False,
+) -> str:
     if not api_memo_mode:
         return (
             "只输出一个 JSON object，不要 markdown，不要额外解释。结构如下：\n"
@@ -457,13 +503,18 @@ def _output_schema_for_profile(summary_hint: str, table_schema: str, api_memo_mo
             '  "limitations": []\n'
             "}"
         )
+    precise_value_rule = (
+        "事实变化；如含精确数值必须来自ledger，或来自同对象 evidence_ids 指向的 company-authored unaudited 8-K earnings release 并标注边界"
+        if supports_8k_context
+        else "事实变化；如含精确数值必须来自ledger"
+    )
     return (
         "只输出一个 JSON object，不要 markdown，不要额外解释。结构如下：\n"
         "{\n"
         '  "direct_answer": "1-2句直接回答用户，不写精确数值",\n'
         '  "investment_thesis": "3-5句投研判断；解释增长质量、证据强弱和边界，不写精确数值",\n'
         '  "what_changed": [\n'
-        '    {"claim": "事实变化；如含精确数值必须来自ledger", "metric_ids": ["..."], "evidence_ids": ["..."], "confidence": "high|medium|low"}\n'
+        f'    {{"claim": "{precise_value_rule}", "metric_ids": ["..."], "evidence_ids": ["..."], "confidence": "high|medium|low"}}\n'
         "  ],\n"
         '  "why_it_matters": [\n'
         '    {"insight": "业务含义/二阶判断", "business_implication": "为什么这改变增长质量、竞争、现金流或风险判断", "metric_ids": ["..."], "evidence_ids": ["..."], "confidence": "high|medium|low"}\n'
@@ -975,7 +1026,7 @@ def _normalize_answer(
         normalized = _ensure_proxy_driver_caveats(normalized)
         normalized = _attach_weak_plan_caveats_to_key_points(normalized, judgment_plan)
     normalized = _ground_metric_locations_to_ledger_sources(normalized, ledger_rows)
-    normalized, sanitized_count = _sanitize_unsupported_exact_values(normalized, ledger_rows)
+    normalized, sanitized_count = _sanitize_unsupported_exact_values(normalized, ledger_rows, context_rows)
     normalized = _remove_false_missing_ledger_claims(normalized, ledger_rows)
     normalized, named_sanitized_count = _sanitize_unsupported_named_facts(normalized, context_rows, ledger_rows)
     normalized, metric_role_sanitized_count = _sanitize_metric_role_term_overclaims(normalized, ledger_rows)
@@ -985,7 +1036,7 @@ def _normalize_answer(
         normalized = _apply_coverage_matrix_constraints(normalized, case)
         normalized = _remove_false_missing_ledger_claims(normalized, ledger_rows)
     normalized = _strip_inline_metric_ids_from_prose(normalized, ledger_rows)
-    violations = _ledger_text_contract_violations(normalized, ledger_rows)
+    violations = _ledger_text_contract_violations(normalized, ledger_rows, context_rows)
     if violations:
         repaired = _fallback_answer_from_ledger(json.dumps(answer, ensure_ascii=False), ledger_rows, context_rows)
         repaired["_qwen_output_status"] = "valid_json_ledger_contract_repair"
@@ -2363,24 +2414,99 @@ def _strip_inline_metric_ids_from_prose(
     return answer
 
 
+def _answer_cited_evidence_ids(answer: dict[str, Any]) -> list[str]:
+    ids: list[str] = []
+    for driver in answer.get("decision_drivers") or []:
+        if isinstance(driver, dict):
+            ids.extend(_string_list(driver.get("supporting_evidence_ids")))
+    for point in answer.get("key_points") or []:
+        if isinstance(point, dict):
+            ids.extend(_string_list(point.get("evidence_ids")))
+    for list_key in ("what_changed", "why_it_matters", "peer_readthrough", "counterarguments"):
+        for item in answer.get(list_key) or []:
+            if isinstance(item, dict):
+                ids.extend(_string_list(item.get("evidence_ids")))
+    return _unique_strings(ids)
+
+
+def _context_rows_by_id(context_rows: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    rows_by_id: dict[str, list[dict[str, Any]]] = {}
+    for row in context_rows:
+        if not isinstance(row, dict):
+            continue
+        for row_id in _context_row_ids(row):
+            rows_by_id.setdefault(row_id, []).append(row)
+    return rows_by_id
+
+
+def _hit_supported_by_cited_8k_evidence(
+    hit_text: str,
+    evidence_ids: list[str],
+    context_rows_by_id: dict[str, list[dict[str, Any]]],
+    answer_gate: Any,
+) -> bool:
+    if not evidence_ids:
+        return False
+    for evidence_id in evidence_ids:
+        for row in context_rows_by_id.get(evidence_id, []):
+            if not _is_company_authored_8k_context_row(row):
+                continue
+            evidence_text = _row_text(row)
+            if not evidence_text:
+                continue
+            if answer_gate._compact(hit_text) and answer_gate._compact(hit_text) in answer_gate._compact(evidence_text):
+                return True
+            if any(_exact_hits_equivalent(hit_text, evidence_hit["text"], answer_gate) for evidence_hit in answer_gate._exact_value_hits(evidence_text)):
+                return True
+    return False
+
+
+def _exact_hits_equivalent(left: str, right: str, answer_gate: Any) -> bool:
+    left_parsed = answer_gate._parse_hit_value(left)
+    right_parsed = answer_gate._parse_hit_value(right)
+    if not left_parsed or not right_parsed:
+        return False
+    if left_parsed["unit"] == right_parsed["unit"]:
+        return abs(float(left_parsed["value"]) - float(right_parsed["value"])) <= 1e-6
+    left_usd = _as_usd_millions(left_parsed)
+    right_usd = _as_usd_millions(right_parsed)
+    if left_usd is not None and right_usd is not None:
+        return abs(left_usd - right_usd) <= 1e-6
+    return False
+
+
+def _as_usd_millions(parsed: dict[str, Any]) -> float | None:
+    unit = str(parsed.get("unit") or "")
+    value = float(parsed.get("value") or 0.0)
+    multipliers = {
+        "usd_millions": 1.0,
+        "usd_billions": 1000.0,
+        "usd_hundred_millions": 100.0,
+        "usd_ten_thousands": 0.01,
+    }
+    multiplier = multipliers.get(unit)
+    return value * multiplier if multiplier is not None else None
+
+
 def _sanitize_unsupported_exact_values(
     answer: dict[str, Any],
     ledger_rows: list[dict[str, Any]],
+    context_rows: list[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], int]:
     import validate_sec_benchmark_answer_ledger as answer_gate
 
     row_matchers = [answer_gate._row_matcher(row) for row in ledger_rows]
+    context_rows_by_id = _context_rows_by_id(context_rows or [])
+    answer_level_evidence_ids = _answer_cited_evidence_ids(answer)
     sanitized_count = 0
 
-    def supported(hit: dict[str, Any], text: str, metric_ids: list[str]) -> bool:
+    def supported(hit: dict[str, Any], text: str, metric_ids: list[str], evidence_ids: list[str]) -> bool:
         matched_rows = [
             matcher["row"]
             for matcher in row_matchers
             if answer_gate._hit_matches_row(hit["text"], matcher)
         ]
-        if not matched_rows:
-            return False
-        return any(
+        ledger_supported = bool(matched_rows) and any(
             answer_gate._metric_id_supported(
                 text=text,
                 span=hit["span"],
@@ -2390,12 +2516,20 @@ def _sanitize_unsupported_exact_values(
             )
             for row in matched_rows
         )
+        if ledger_supported:
+            return True
+        return _hit_supported_by_cited_8k_evidence(
+            hit["text"],
+            evidence_ids,
+            context_rows_by_id,
+            answer_gate,
+        )
 
-    def sanitize_text(text: str, metric_ids: list[str]) -> tuple[str, int]:
+    def sanitize_text(text: str, metric_ids: list[str], evidence_ids: list[str]) -> tuple[str, int]:
         rewritten = str(text or "")
         count = 0
         for hit in reversed(answer_gate._exact_value_hits(rewritten)):
-            if supported(hit, rewritten, metric_ids):
+            if supported(hit, rewritten, metric_ids, evidence_ids):
                 continue
             start, end = hit["span"]
             replacement = _unsupported_value_replacement(hit["text"])
@@ -2407,24 +2541,26 @@ def _sanitize_unsupported_exact_values(
             rewritten = _cleanup_unsupported_value_text(rewritten)
         return rewritten, count
 
-    answer["summary"], count = sanitize_text(str(answer.get("summary") or ""), [])
+    answer["summary"], count = sanitize_text(str(answer.get("summary") or ""), [], answer_level_evidence_ids)
     sanitized_count += count
     for key in ("direct_answer", "investment_thesis"):
         if key in answer:
-            answer[key], count = sanitize_text(str(answer.get(key) or ""), [])
+            answer[key], count = sanitize_text(str(answer.get(key) or ""), [], answer_level_evidence_ids)
             sanitized_count += count
     for driver in answer.get("decision_drivers") or []:
         if not isinstance(driver, dict):
             continue
         metric_ids = _string_list(driver.get("supporting_metric_ids"))
+        evidence_ids = _string_list(driver.get("supporting_evidence_ids"))
         for key in ("driver_claim", "why_it_matters", "caveat"):
-            driver[key], count = sanitize_text(str(driver.get(key) or ""), metric_ids)
+            driver[key], count = sanitize_text(str(driver.get(key) or ""), metric_ids, evidence_ids)
             sanitized_count += count
     for point in answer.get("key_points") or []:
         if not isinstance(point, dict):
             continue
         metric_ids = _string_list(point.get("metric_ids"))
-        point["point"], count = sanitize_text(str(point.get("point") or ""), metric_ids)
+        evidence_ids = _string_list(point.get("evidence_ids"))
+        point["point"], count = sanitize_text(str(point.get("point") or ""), metric_ids, evidence_ids)
         sanitized_count += count
     memo_specs = {
         "what_changed": ("metric_ids", ("claim",)),
@@ -2438,8 +2574,9 @@ def _sanitize_unsupported_exact_values(
             if not isinstance(item, dict):
                 continue
             metric_ids = _string_list(item.get(metric_key)) if metric_key else []
+            evidence_ids = _string_list(item.get("evidence_ids"))
             for text_key in text_keys:
-                item[text_key], count = sanitize_text(str(item.get(text_key) or ""), metric_ids)
+                item[text_key], count = sanitize_text(str(item.get(text_key) or ""), metric_ids, evidence_ids)
                 if list_key == "watch_items":
                     item[text_key] = _sanitize_watch_item_text(str(item.get(text_key) or ""))
                 sanitized_count += count
@@ -2478,13 +2615,13 @@ def _sanitize_unsupported_exact_values(
     for key in ("not_found", "limitations"):
         cleaned = []
         for item in answer.get(key) or []:
-            text, count = sanitize_text(str(item or ""), [])
+            text, count = sanitize_text(str(item or ""), [], [])
             sanitized_count += count
             cleaned.append(text)
         answer[key] = cleaned
     cleaned_source_limitations = []
     for item in answer.get("source_limitations") or []:
-        text, count = sanitize_text(str(item or ""), [])
+        text, count = sanitize_text(str(item or ""), [], [])
         sanitized_count += count
         cleaned_source_limitations.append(text)
     if "source_limitations" in answer:
@@ -2664,7 +2801,7 @@ def _cleanup_unsupported_value_text(text: str) -> str:
     )
     cleaned = re.sub(
         r"当前引用未保留的精确比例(?:的水平)?",
-        "相应披露比例",
+        "精确比例未获当前引用保留",
         cleaned,
     )
     cleaned = re.sub(
@@ -2699,16 +2836,41 @@ def _cleanup_unsupported_value_text(text: str) -> str:
     )
     cleaned = re.sub(
         r"当前引用未保留的精确金额",
-        "相应披露金额",
+        "精确金额未获当前引用保留",
         cleaned,
     )
+    cleaned = re.sub(r"（精确(?:金额|比例)未获当前引用保留）", "", cleaned)
+    cleaned = re.sub(r"精确比例未获当前引用保留的((?:季度|同比|年化)?(?:增速|增长率|增幅))", r"\1", cleaned)
+    cleaned = re.sub(r"精确金额未获当前引用保留的((?:季度|年度|年化)?(?:规模|收入|支出|成本|金额))", r"\1", cleaned)
+    cleaned = re.sub(r"((?:增速|增长率|增幅|同比增长|同比增加))(?:为|达到|约|超过)?精确比例未获当前引用保留", r"\1未进入当前 ledger", cleaned)
+    cleaned = re.sub(r"((?:收入|支出|成本|金额|run-rate|运行率))(?:为|达到|约|超过|突破)?精确金额未获当前引用保留", r"\1精确金额未进入当前引用", cleaned)
+    cleaned = cleaned.replace("精确比例未获当前引用保留", "具体比例未进入当前 ledger")
+    cleaned = cleaned.replace("精确金额未获当前引用保留", "具体金额未进入当前引用")
+    cleaned = re.sub(
+        r"((?:成本|收入)?增幅)未进入当前 ledger\s*远超\s*((?:成本|收入)?增幅)未进入当前 ledger",
+        r"\1与\2的精确比较未进入当前 ledger",
+        cleaned,
+    )
+    cleaned = re.sub(
+        r"((?:增速|增长率|增幅))(?:达|达到|为|维持)?具体比例未进入当前 ledger",
+        r"\1较快（具体比例未进入当前 ledger）",
+        cleaned,
+    )
+    cleaned = re.sub(r"增长具体比例未进入当前 ledger", "增长，但具体比例未进入当前 ledger", cleaned)
+    cleaned = re.sub(r"维持具体比例未进入当前 ledger", "维持较快增长", cleaned)
     return re.sub(r"\s+", " ", cleaned).strip()
 
 
-def _ledger_text_contract_violations(answer: dict[str, Any], ledger_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _ledger_text_contract_violations(
+    answer: dict[str, Any],
+    ledger_rows: list[dict[str, Any]],
+    context_rows: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
     import validate_sec_benchmark_answer_ledger as answer_gate
 
     row_matchers = [answer_gate._row_matcher(row) for row in ledger_rows]
+    context_rows_by_id = _context_rows_by_id(context_rows or [])
+    answer_level_evidence_ids = _answer_cited_evidence_ids(answer)
     violations: list[dict[str, Any]] = []
     for location in answer_gate._answer_locations(answer):
         for hit in answer_gate._exact_value_hits(location["text"]):
@@ -2728,6 +2890,14 @@ def _ledger_text_contract_violations(answer: dict[str, Any], ledger_rows: list[d
                     window=240,
                 )
             ]
+            supported_by_8k = _hit_supported_by_cited_8k_evidence(
+                hit["text"],
+                answer_level_evidence_ids,
+                context_rows_by_id,
+                answer_gate,
+            )
+            if supported_by_8k:
+                continue
             if not matched_rows:
                 violations.append(
                     {

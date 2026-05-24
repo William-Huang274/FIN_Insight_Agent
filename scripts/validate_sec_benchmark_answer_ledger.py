@@ -65,10 +65,12 @@ def main() -> None:
         rows_by_case.setdefault(str(row.get("case_id") or ""), []).append(row)
 
     agent_rows = _read_jsonl(run_dir / "agent_outputs.jsonl")
+    context_rows_by_case = _trace_context_rows_by_case(run_dir)
     case_results = [
         _validate_agent_row(
             agent,
             rows_by_case.get(str(agent.get("case_id") or ""), []),
+            context_rows=context_rows_by_case.get(str(agent.get("case_id") or ""), []),
             require_metric_id_support=args.require_metric_id_support,
             metric_id_window=args.metric_id_window,
         )
@@ -122,6 +124,7 @@ def _validate_agent_row(
     agent: dict[str, Any],
     ledger_rows: list[dict[str, Any]],
     *,
+    context_rows: list[dict[str, Any]] | None = None,
     require_metric_id_support: bool,
     metric_id_window: int,
 ) -> dict[str, Any]:
@@ -138,6 +141,8 @@ def _validate_agent_row(
             "hits": [],
         }
     row_matchers = [_row_matcher(row) for row in ledger_rows]
+    context_rows_by_id = _context_rows_by_id(context_rows or [])
+    answer_level_evidence_ids = _answer_cited_evidence_ids(agent.get("answer") or {})
     failures: list[dict[str, Any]] = []
     hits: list[dict[str, Any]] = []
     for location in _answer_locations(agent.get("answer") or {}):
@@ -161,7 +166,15 @@ def _validate_agent_row(
                 "matched_metric_ids": [row.get("metric_id") for row in matched_rows],
                 "supported_metric_ids": [row.get("metric_id") for row in supported_rows],
             }
-            if not matched_rows:
+            supported_by_8k = _hit_supported_by_cited_8k_evidence(
+                hit["text"],
+                answer_level_evidence_ids,
+                context_rows_by_id,
+            )
+            if supported_by_8k:
+                hit_report["status"] = "pass"
+                hit_report["supported_source"] = "company_authored_unaudited_8k_evidence"
+            elif not matched_rows:
                 failure = {
                     "type": "exact_value_not_in_case_ledger",
                     "location": location["location"],
@@ -263,6 +276,104 @@ def _memo_answer_locations(answer: dict[str, Any]) -> list[dict[str, Any]]:
     for index, item in enumerate(answer.get("source_limitations") or [], start=1):
         rows.append({"location": f"source_limitations[{index}]", "text": str(item or ""), "metric_ids": []})
     return [row for row in rows if str(row.get("text") or "").strip()]
+
+
+def _answer_cited_evidence_ids(answer: dict[str, Any]) -> list[str]:
+    ids: list[str] = []
+    for driver in answer.get("decision_drivers") or []:
+        if isinstance(driver, dict):
+            ids.extend(_string_list(driver.get("supporting_evidence_ids")))
+    for point in answer.get("key_points") or []:
+        if isinstance(point, dict):
+            ids.extend(_string_list(point.get("evidence_ids")))
+    for field in ("what_changed", "why_it_matters", "peer_readthrough", "counterarguments"):
+        for item in answer.get(field) or []:
+            if isinstance(item, dict):
+                ids.extend(_string_list(item.get("evidence_ids")))
+    return list(dict.fromkeys(ids))
+
+
+def _context_rows_by_id(context_rows: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    rows_by_id: dict[str, list[dict[str, Any]]] = {}
+    for row in context_rows:
+        if not isinstance(row, dict):
+            continue
+        for row_id in _context_row_ids(row):
+            rows_by_id.setdefault(row_id, []).append(row)
+    return rows_by_id
+
+
+def _context_row_ids(row: dict[str, Any]) -> set[str]:
+    ids: set[str] = set()
+    for key in ("evidence_id", "source_evidence_id", "object_id"):
+        value = str(row.get(key) or "")
+        if value:
+            ids.add(value)
+    return ids
+
+
+def _is_company_authored_8k_context_row(row: dict[str, Any]) -> bool:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    form_type = str(row.get("form_type") or row.get("source_type") or metadata.get("form_type") or "").upper()
+    source_tier = str(row.get("source_tier") or metadata.get("source_tier") or metadata.get("source_boundary") or "")
+    return form_type == "8-K" and source_tier == "company_authored_unaudited_sec_filing"
+
+
+def _row_text(row: dict[str, Any]) -> str:
+    for key in ("text", "preview", "raw_text", "content"):
+        value = row.get(key)
+        if value:
+            return str(value)
+    return ""
+
+
+def _hit_supported_by_cited_8k_evidence(
+    hit_text: str,
+    evidence_ids: list[str],
+    context_rows_by_id: dict[str, list[dict[str, Any]]],
+) -> bool:
+    if not evidence_ids:
+        return False
+    hit_norm = _compact(hit_text)
+    for evidence_id in evidence_ids:
+        for row in context_rows_by_id.get(evidence_id, []):
+            if not _is_company_authored_8k_context_row(row):
+                continue
+            evidence_text = _row_text(row)
+            if not evidence_text:
+                continue
+            if hit_norm and hit_norm in _compact(evidence_text):
+                return True
+            if any(_exact_hits_equivalent(hit_text, evidence_hit["text"]) for evidence_hit in _exact_value_hits(evidence_text)):
+                return True
+    return False
+
+
+def _exact_hits_equivalent(left: str, right: str) -> bool:
+    left_parsed = _parse_hit_value(left)
+    right_parsed = _parse_hit_value(right)
+    if not left_parsed or not right_parsed:
+        return False
+    if left_parsed["unit"] == right_parsed["unit"]:
+        return _near(float(left_parsed["value"]), float(right_parsed["value"]))
+    left_usd = _as_usd_millions(left_parsed)
+    right_usd = _as_usd_millions(right_parsed)
+    if left_usd is not None and right_usd is not None:
+        return _near(left_usd, right_usd)
+    return False
+
+
+def _as_usd_millions(parsed: dict[str, Any]) -> float | None:
+    unit = str(parsed.get("unit") or "")
+    value = float(parsed.get("value") or 0.0)
+    multipliers = {
+        "usd_millions": 1.0,
+        "usd_billions": 1000.0,
+        "usd_hundred_millions": 100.0,
+        "usd_ten_thousands": 0.01,
+    }
+    multiplier = multipliers.get(unit)
+    return value * multiplier if multiplier is not None else None
 
 
 def _exact_value_hits(text: str) -> list[dict[str, Any]]:
@@ -403,6 +514,19 @@ def _read_json(path: Path) -> dict[str, Any]:
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def _trace_context_rows_by_case(run_dir: Path) -> dict[str, list[dict[str, Any]]]:
+    rows_by_case: dict[str, list[dict[str, Any]]] = {}
+    for path in (run_dir / "trace_logs.jsonl", run_dir.parent / "trace" / "trace_logs.jsonl"):
+        if not path.exists():
+            continue
+        for trace in _read_jsonl(path):
+            case_id = str(trace.get("case_id") or "")
+            context_rows = trace.get("context_rows")
+            if case_id and isinstance(context_rows, list):
+                rows_by_case[case_id] = [row for row in context_rows if isinstance(row, dict)]
+    return rows_by_case
 
 
 def _resolve(path: str) -> Path:

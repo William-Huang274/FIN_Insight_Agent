@@ -443,6 +443,67 @@ Backward renderer check:
 - Re-rendered prior run `/root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/interactive_sec_agent/20260525_021707_490c9357a2` with the patched renderer.
 - The old `8K_EARNINGS::...` support IDs now render as `MSFT 2026 8-K earnings release Exhibit 99.1 (company-authored unaudited)`.
 
+## 8-K Numeric Support And Gate Follow-Up
+
+Date: 2026-05-25
+
+Problem:
+
+- A focused MSFT mixed 10-Q/8-K DeepSeek smoke still exposed placeholder-like rendered text such as `相应披露金额` / `相应披露比例`.
+- Root cause was not missing 8-K retrieval. The selected context contained 8-K evidence and source-tier metadata, but two contracts were still too ledger-only:
+  - synthesis normalization treated every non-ledger exact value as unsupported, even when a number was cited from `company_authored_unaudited_sec_filing` 8-K evidence;
+  - `validate_sec_benchmark_answer_ledger.py` read only `agent_outputs.jsonl` + ledger rows, so the post-gate could not see trace context rows and failed cited 8-K values such as Azure growth `40%`.
+
+Fix:
+
+- `scripts/run_sec_eval_synthesis_qwen9b_backend.py`
+  - prompt context now exposes `form_type`, `source_tier`, `source_boundary`, `fiscal_period`, and `period_role` for evidence rows;
+  - mixed-with-8K prompt rules now distinguish 10-K/10-Q ledger-authoritative financial statement values from 8-K company-authored unaudited management-material numbers;
+  - `_sanitize_unsupported_exact_values(...)` and `_ledger_text_contract_violations(...)` now allow exact values that match cited 8-K evidence rows with `source_tier=company_authored_unaudited_sec_filing`;
+  - unsupported 10-Q/ledger-missing values are rewritten into explicit boundary language such as `具体比例未进入当前 ledger`, not `相应披露金额/比例`.
+- `scripts/validate_sec_benchmark_answer_ledger.py`
+  - answer-ledger gate now loads `trace_logs.jsonl` context rows when present;
+  - cited 8-K evidence numbers are accepted as `company_authored_unaudited_8k_evidence`, while normal 10-K/10-Q exact values remain ledger-gated.
+- Tests were added/updated for:
+  - preserving cited 8-K earnings-release exact values;
+  - rejecting uncited 8-K-style numbers from primary 10-Q evidence;
+  - answer-ledger gate accepting cited 8-K evidence numbers;
+  - cleanup text avoiding `相应披露...` placeholders and old internal phrases.
+
+Validation:
+
+```bash
+python -m pytest tests/test_sec_agent_8k_earnings_source.py tests/test_sec_agent_10q_source_contract.py -q
+python -m py_compile scripts/run_sec_eval_synthesis_qwen9b_backend.py scripts/validate_sec_benchmark_answer_ledger.py
+```
+
+Results:
+
+- Local targeted tests: `51 passed`.
+- Local `py_compile`: passed.
+- Cloud targeted tests: `51 passed`.
+- Cloud `py_compile`: passed.
+- Re-ran answer-ledger gate only on previous failing run:
+  - run path: `/root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/interactive_sec_agent/20260525_032944_7ff1e81ba8`
+  - output: `post_gates/sec_benchmark_answer_ledger_gate_rerun_after_8k_fix.json`
+  - result: `can_enter_gate=true`, `pass_count=1`, `fail_count=0`.
+- Real DeepSeek mixed-with-8K smoke after validator fix:
+  - run path: `/root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/interactive_sec_agent/20260525_034625_7ff1e81ba8`
+  - result: `qwen_answer_gate_pass=true`, `finish_reason=stop`, source boundaries rendered, 8-K AI run-rate values retained.
+- Real DeepSeek mixed-with-8K smoke after cleanup polish:
+  - run path: `/root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/interactive_sec_agent/20260525_035026_7ff1e81ba8`
+  - result: `[gates] ok=True pass=12 fail=[]`, context rows `65`, ledger rows `3`;
+  - rendered answer retained 8-K AI run-rate numbers with `company-authored unaudited` evidence boundary.
+- Deterministic replay of the last raw model output after cleanup polish:
+  - `contains_xiangying=False`
+  - `contains_old_phrase=False`
+  - `contains_bad_join=False`
+  - `_qwen_output_status=valid_json`
+
+Current caveat:
+
+- The answer can still mention that a requested exact value is not in the current ledger, using explicit boundary language. This is intentional: it preserves the evidence contract without inventing a value or hiding a source gap.
+
 ## Follow-Up
 
 - Keep all P1 artifacts in pilot-specific paths until source selection, retrieval, renderer labels, and gates pass for a broader company set.

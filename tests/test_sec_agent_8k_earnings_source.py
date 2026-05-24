@@ -38,6 +38,27 @@ def _load_interactive_module():
     return module
 
 
+def _load_synthesis_module():
+    path = REPO_ROOT / "scripts" / "run_sec_eval_synthesis_qwen9b_backend.py"
+    scripts_root = str(REPO_ROOT / "scripts")
+    if scripts_root not in sys.path:
+        sys.path.insert(0, scripts_root)
+    spec = importlib.util.spec_from_file_location("sec_agent_synthesis_8k_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_answer_ledger_validator_module():
+    path = REPO_ROOT / "scripts" / "validate_sec_benchmark_answer_ledger.py"
+    spec = importlib.util.spec_from_file_location("answer_ledger_validator_8k_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_evidence_object_accepts_8k_earnings_source_tier() -> None:
     evidence = EvidenceObject(
         evidence_id="8K_EARNINGS::MSFT::000000::EX99_1::0001",
@@ -151,6 +172,205 @@ def test_runtime_case_adds_8k_source_boundary_gate() -> None:
     assert "Label 8-K earnings-release evidence as company-authored unaudited material." in case["gold_points"]
     assert any("Do not treat company-authored 8-K" in trap for trap in case["hallucination_traps"])
     assert case["required_caveats"][0]["required"] is True
+
+
+def test_synthesis_preserves_cited_8k_earnings_release_numbers() -> None:
+    synthesis = _load_synthesis_module()
+    eight_k_id = "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001"
+    answer = {
+        "direct_answer": "微软云表现强，但 8-K 数字只能作为未审计管理层材料。",
+        "investment_thesis": "10-Q ledger 和 8-K 管理层材料共同指向云业务仍在增长。",
+        "what_changed": [
+            {
+                "claim": "8-K earnings release 显示 Microsoft Cloud revenue was $46.7 billion and Azure grew 39%，该数字来自公司未审计管理层材料。",
+                "metric_ids": [],
+                "evidence_ids": [eight_k_id],
+                "confidence": "medium",
+            }
+        ],
+        "source_limitations": ["8-K earnings release is company-authored unaudited management material."],
+    }
+    context_rows = [
+        {
+            "evidence_id": eight_k_id,
+            "ticker": "MSFT",
+            "fiscal_year": 2026,
+            "fiscal_period": "Q1",
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "text": "Microsoft Cloud revenue was $46.7 billion and Azure and other cloud services revenue grew 39%.",
+        }
+    ]
+
+    normalized = synthesis._normalize_answer(
+        answer,
+        ledger_rows=[
+            {
+                "metric_id": "MSFT_2026_10Q_CLOUD_REVENUE",
+                "value": 46700.0,
+                "unit": "usd_millions",
+                "display_value_zh": "46,700（百万美元）",
+            }
+        ],
+        context_rows=context_rows,
+        case={
+            "query_contract": {
+                "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+                "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+            }
+        },
+    )
+
+    payload = json.dumps(normalized, ensure_ascii=False)
+    assert "$46.7 billion" in payload
+    assert "39%" in payload
+    assert "相应披露金额" not in payload
+    assert "相应披露比例" not in payload
+    assert normalized["_qwen_output_status"] == "valid_json"
+    assert normalized["_ledger_text_contract_sanitized_count"] == 0
+
+
+def test_synthesis_rejects_uncited_8k_numbers_from_primary_evidence() -> None:
+    synthesis = _load_synthesis_module()
+    primary_id = "MSFT_2026_10Q_ITEM2_BLOCK_0001_PART_01_OF_01"
+    answer = {
+        "direct_answer": "微软云表现强。",
+        "investment_thesis": "10-Q evidence supports a conservative read.",
+        "what_changed": [
+            {
+                "claim": "Azure grew 39%，但该数字没有被当前引用的 10-Q evidence 支撑。",
+                "metric_ids": [],
+                "evidence_ids": [primary_id],
+                "confidence": "medium",
+            }
+        ],
+    }
+    context_rows = [
+        {
+            "evidence_id": primary_id,
+            "ticker": "MSFT",
+            "fiscal_year": 2026,
+            "form_type": "10-Q",
+            "source_tier": "primary_sec_filing",
+            "text": "Microsoft discusses cloud demand without disclosing Azure growth percentage in this excerpt.",
+        }
+    ]
+
+    normalized = synthesis._normalize_answer(
+        answer,
+        ledger_rows=[
+            {
+                "metric_id": "MSFT_2026_10Q_CLOUD_REVENUE",
+                "value": 46700.0,
+                "unit": "usd_millions",
+                "display_value_zh": "46,700（百万美元）",
+            }
+        ],
+        context_rows=context_rows,
+        case={},
+    )
+
+    payload = json.dumps(normalized, ensure_ascii=False)
+    assert "39%" not in payload
+    assert normalized["_ledger_text_contract_sanitized_count"] >= 1
+
+
+def test_synthesis_cleanup_uses_explicit_missing_value_language() -> None:
+    synthesis = _load_synthesis_module()
+
+    cleaned = synthesis._cleanup_unsupported_value_text(
+        "收入增幅当前引用未保留的精确比例，并且AI run-rate突破当前引用未保留的精确金额。"
+    )
+
+    assert "相应披露" not in cleaned
+    assert "增幅未进入当前 ledger" in cleaned
+    assert "run-rate精确金额未进入当前引用" in cleaned
+
+
+def test_synthesis_cleanup_removes_missing_value_phrase_from_growth_modifier() -> None:
+    synthesis = _load_synthesis_module()
+
+    cleaned = synthesis._cleanup_unsupported_value_text(
+        "Azure在10-Q中精确比例未获当前引用保留的季度增速是经审阅的硬证据。"
+    )
+
+    assert "精确比例未获当前引用保留的季度增速" not in cleaned
+    assert "季度增速" in cleaned
+
+
+def test_answer_ledger_gate_accepts_cited_8k_earnings_release_number() -> None:
+    validator = _load_answer_ledger_validator_module()
+    eight_k_id = "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0002::PART_02_OF_03"
+    result = validator._validate_agent_row(
+        {
+            "case_id": "case",
+            "mode": "pipeline_context",
+            "status": "answered",
+            "answer": {
+                "what_changed": [
+                    {
+                        "claim": "8-K earnings release 显示 Azure 和其他云服务收入增长40%。",
+                        "metric_ids": [],
+                        "evidence_ids": [eight_k_id],
+                    }
+                ]
+            },
+        },
+        ledger_rows=[],
+        context_rows=[
+            {
+                "evidence_id": eight_k_id,
+                "form_type": "8-K",
+                "source_tier": "company_authored_unaudited_sec_filing",
+                "text": "Azure and other cloud services revenue grew 40%.",
+            }
+        ],
+        require_metric_id_support=True,
+        metric_id_window=240,
+    )
+
+    assert result["status"] == "pass"
+    assert result["hits"][0]["supported_source"] == "company_authored_unaudited_8k_evidence"
+
+
+def test_synthesis_prompt_exposes_8k_source_boundary_and_numeric_contract() -> None:
+    synthesis = _load_synthesis_module()
+    prompt = synthesis._build_prompt(
+        {
+            "case_id": "case_8k_prompt",
+            "prompt": "结合MSFT 10-Q和8-K解释云业务",
+            "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+            "query_contract": {
+                "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+                "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+            },
+        },
+        [
+            {
+                "evidence_id": "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001",
+                "ticker": "MSFT",
+                "fiscal_year": 2026,
+                "fiscal_period": "Q1",
+                "form_type": "8-K",
+                "source_tier": "company_authored_unaudited_sec_filing",
+                "text": "Microsoft Cloud revenue was $46.7 billion.",
+            }
+        ],
+        [
+            {
+                "metric_id": "MSFT_2026_10Q_CLOUD_REVENUE",
+                "value": 46700.0,
+                "unit": "usd_millions",
+                "display_value_zh": "46,700（百万美元）",
+                "metric_family": "cloud_revenue",
+            }
+        ],
+    )
+
+    assert '"form_type": "8-K"' in prompt
+    assert '"source_tier": "company_authored_unaudited_sec_filing"' in prompt
+    assert "8-K earnings release 的金额、百分比或业务 KPI" in prompt
+    assert "不能把 8-K earnings release 数字写成 audited Exact-Value Ledger fact" in prompt
 
 
 def test_llm_contract_normalization_preserves_8k_source_tier() -> None:

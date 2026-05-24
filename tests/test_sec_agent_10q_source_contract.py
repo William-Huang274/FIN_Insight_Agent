@@ -675,7 +675,7 @@ def test_synthesis_cleanup_removes_unsupported_ratio_placeholders() -> None:
 
     assert "当前引用未保留" not in cleaned
     assert "较前期进一步提升" in cleaned
-    assert "精确金额未获当前引用保留" in cleaned
+    assert "具体金额未进入当前引用" in cleaned
 
 
 def test_api_memo_normalization_downgrades_recurring_quality_overclaim() -> None:

@@ -319,8 +319,8 @@ P1 应先接 SEC EDGAR 路径下的 8-K earnings release，而不是直接接 IR
   - 8-K earnings manifest builder rejecting cached non-`Item 2.02` press releases;
   - 8-K earnings parser producing source-bounded chunks and EvidenceObject records;
   - LLM Query Contract normalization preserving 8-K source tiers through repair/validation.
-- No BM25 index, mixed runtime command, rendered-answer source-boundary display check, or cloud pilot has been added yet.
-- No new SEC 8-K data has been downloaded.
+- Rendered-answer source-boundary display checks remain open.
+- Raw SEC 8-K data was downloaded only on the cloud private ignored paths during validation; no raw SEC HTML or processed private artifacts were committed.
 
 Validation:
 

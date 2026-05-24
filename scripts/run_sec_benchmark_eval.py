@@ -272,13 +272,15 @@ def _pipeline_context_rows(
     prompt = str(case.get("prompt") or "")
     companies = [str(ticker).upper() for ticker in case.get("companies") or []]
     years = [int(year) for year in case.get("years") or []]
+    source_filters = _case_source_filters(case)
     for ticker in companies:
         for year in years:
-            for hit in bm25.search(prompt, top_k=evidence_top_k, filters={"ticker": ticker, "fiscal_year": year}):
+            for hit in bm25.search(prompt, top_k=evidence_top_k, filters={"ticker": ticker, "fiscal_year": year, **source_filters}):
                 key = ("evidence", hit.get("evidence_id"))
                 if key in seen:
                     continue
                 seen.add(key)
+                record = hit.get("record") or {}
                 rows.append(
                     {
                         "source_kind": "evidence_object",
@@ -289,16 +291,18 @@ def _pipeline_context_rows(
                         "ticker": hit.get("ticker"),
                         "fiscal_year": hit.get("fiscal_year"),
                         "section": hit.get("section"),
+                        **_context_source_fields(record),
                         "preview": hit.get("text_preview") or hit.get("preview"),
-                        "text": (hit.get("record") or {}).get("text") or hit.get("text_preview") or hit.get("preview"),
+                        "text": record.get("text") or hit.get("text_preview") or hit.get("preview"),
                     }
                 )
             for query in _requirement_queries(case):
-                for hit in bm25.search(query, top_k=min(5, evidence_top_k), filters={"ticker": ticker, "fiscal_year": year}):
+                for hit in bm25.search(query, top_k=min(5, evidence_top_k), filters={"ticker": ticker, "fiscal_year": year, **source_filters}):
                     key = ("evidence", hit.get("evidence_id"))
                     if key in seen:
                         continue
                     seen.add(key)
+                    record = hit.get("record") or {}
                     rows.append(
                         {
                             "source_kind": "evidence_object",
@@ -310,8 +314,9 @@ def _pipeline_context_rows(
                             "ticker": hit.get("ticker"),
                             "fiscal_year": hit.get("fiscal_year"),
                             "section": hit.get("section"),
+                            **_context_source_fields(record),
                             "preview": hit.get("text_preview") or hit.get("preview"),
-                            "text": (hit.get("record") or {}).get("text") or hit.get("text_preview") or hit.get("preview"),
+                            "text": record.get("text") or hit.get("text_preview") or hit.get("preview"),
                         }
                     )
     for check in case.get("numeric_checks") or []:
@@ -322,7 +327,12 @@ def _pipeline_context_rows(
                     hits = object_bm25.search(
                         metric_query,
                         top_k=object_top_k,
-                        filters={"ticker": [ticker], "fiscal_year": year, "object_type": ["metric", "table"]},
+                        filters={
+                            "ticker": [ticker],
+                            "fiscal_year": year,
+                            "object_type": ["metric", "table"],
+                            **source_filters,
+                        },
                     )
                     for hit in hits:
                         key = ("object", hit.get("object_id"))
@@ -346,6 +356,7 @@ def _pipeline_context_rows(
                                 "ticker": hit.get("ticker"),
                                 "fiscal_year": hit.get("fiscal_year"),
                                 "section": hit.get("section"),
+                                **_context_source_fields(record),
                                 "preview": hit.get("preview"),
                                 "text": object_text,
                             }
@@ -405,6 +416,57 @@ def _numeric_check_object_queries(check: dict[str, Any]) -> list[str]:
         seen.add(key)
         deduped.append(query)
     return deduped
+
+
+def _case_source_filters(case: dict[str, Any]) -> dict[str, Any]:
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    filing_types = [
+        _normalize_form_type(item)
+        for item in (case.get("filing_types") or contract.get("filing_types") or [])
+        if _normalize_form_type(item)
+    ]
+    source_tiers = [
+        str(item)
+        for item in (case.get("source_tiers") or contract.get("source_tiers") or [])
+        if str(item)
+    ]
+    filters: dict[str, Any] = {}
+    if filing_types:
+        filters["form_type"] = filing_types
+    if source_tiers:
+        filters["source_tier"] = source_tiers
+    return filters
+
+
+def _context_source_fields(record: dict[str, Any]) -> dict[str, Any]:
+    metadata = record.get("metadata") if isinstance(record.get("metadata"), dict) else {}
+    source_type = str(record.get("source_type") or metadata.get("source_type") or "").upper().strip()
+    form_type = str(record.get("form_type") or metadata.get("form_type") or source_type).upper().strip()
+    if not form_type:
+        form_type = _form_type_from_source_id(record.get("source_evidence_id") or record.get("evidence_id") or record.get("object_id"))
+    source_tier = str(record.get("source_tier") or metadata.get("source_tier") or "").strip()
+    return {
+        "source_type": _normalize_form_type(source_type or form_type),
+        "form_type": _normalize_form_type(form_type),
+        "source_tier": source_tier or "primary_sec_filing",
+        "period_end": record.get("period_end") or metadata.get("period_end"),
+        "period_type": record.get("period_type") or metadata.get("period_type"),
+        "duration_months": record.get("duration_months") or metadata.get("duration_months"),
+        "fiscal_period": record.get("fiscal_period") or metadata.get("fiscal_period"),
+    }
+
+
+def _form_type_from_source_id(value: Any) -> str:
+    text = str(value or "").upper()
+    if "_10Q_" in text:
+        return "10-Q"
+    if "_10K_" in text:
+        return "10-K"
+    return ""
+
+
+def _normalize_form_type(value: Any) -> str:
+    return str(value or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
 
 
 def _load_context_reranker(args: argparse.Namespace) -> Any:

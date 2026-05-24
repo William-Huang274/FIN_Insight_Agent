@@ -117,10 +117,15 @@ def validate_query_contract(
     selected_tickers_clean = _unique_upper(selected_tickers)
     selected_years_clean = _unique_ints(selected_years)
     allowed_forms = _selected_form_types(project_inventory, selected_tickers_clean, selected_years_clean)
+    allowed_source_tiers = _selected_source_tiers(
+        project_inventory,
+        selected_tickers_clean,
+        selected_years_clean,
+        allowed_forms,
+    )
 
     clean = dict(contract)
     clean["schema_version"] = "interactive_query_contract_v0.2"
-    clean["source_policy"] = "SEC_ONLY"
 
     task_type = str(clean.get("task_type") or "").strip()
     if task_type not in QUERY_TASK_TYPES:
@@ -152,11 +157,22 @@ def validate_query_contract(
         normalizations.append({"field": "filing_types", "action": "filled_from_project_inventory"})
     clean["filing_types"] = filing_types
 
+    source_tiers = _clamp_source_tiers(
+        clean.get("source_tiers") or (clean.get("scope") or {}).get("source_tiers"),
+        allowed_source_tiers,
+    )
+    if not source_tiers:
+        source_tiers = allowed_source_tiers
+        normalizations.append({"field": "source_tiers", "action": "filled_from_project_inventory"})
+    clean["source_tiers"] = source_tiers
+    clean["source_policy"] = _source_policy_for_scope(filing_types, source_tiers)
+
     clean["scope"] = {
         "universe_tickers": scope_tickers,
         "focus_tickers": focus_tickers,
         "years": years,
         "filing_types": filing_types,
+        "source_tiers": source_tiers,
         "sec_sections": list(sections),
     }
 
@@ -169,8 +185,8 @@ def validate_query_contract(
     if not _scope_has_banking_company(clean["focus_tickers"], project_inventory):
         clean = _drop_nonbank_banking_scope(clean, warnings, normalizations)
     clean["required_caveats"] = _ensure_required_items(
-        _string_list(clean.get("required_caveats"), max_items=12, max_chars=260),
-        DEFAULT_REQUIRED_CAVEATS,
+        _normalize_required_caveats(_string_list(clean.get("required_caveats"), max_items=12, max_chars=260), normalizations),
+        (*DEFAULT_REQUIRED_CAVEATS, *_source_policy_caveats(filing_types)),
         "required_caveats",
         normalizations,
     )
@@ -181,6 +197,22 @@ def validate_query_contract(
         normalizations,
     )
     clean["evidence_gaps"] = _normalize_evidence_gaps(clean.get("evidence_gaps"))
+    source_coverage_gaps = _source_coverage_gaps(
+        project_inventory,
+        scope_tickers,
+        years,
+        filing_types,
+        source_tiers,
+    )
+    clean["source_coverage_gaps"] = source_coverage_gaps
+    if source_coverage_gaps:
+        warnings.append(
+            {
+                "type": "source_coverage_gaps",
+                "gap_count": len(source_coverage_gaps),
+                "sample": source_coverage_gaps[:5],
+            }
+        )
     clean["planner_confidence"] = _planner_confidence(clean.get("planner_confidence"))
     clean["project_inventory"] = inventory_brief(project_inventory)
     clean["project_inventory_digest"] = project_inventory.get("inventory_digest")
@@ -210,7 +242,10 @@ def validate_query_contract(
             "tickers": selected_tickers_clean,
             "years": selected_years_clean,
             "filing_types": allowed_forms,
+            "source_tiers": allowed_source_tiers,
+            "source_policy": clean["source_policy"],
         },
+        "source_coverage_gaps": source_coverage_gaps,
         "inventory_digest": project_inventory.get("inventory_digest"),
     }
     clean["query_contract_validation"] = report
@@ -233,6 +268,139 @@ def _selected_form_types(project_inventory: dict[str, Any], tickers: list[str], 
             if form_type:
                 forms.add(form_type)
     return sorted(forms) or ["10-K"]
+
+
+def _selected_source_tiers(
+    project_inventory: dict[str, Any],
+    tickers: list[str],
+    years: list[int],
+    form_types: list[str],
+) -> list[str]:
+    selected = {ticker.upper() for ticker in tickers}
+    selected_years = {int(year) for year in years}
+    selected_forms = {str(form).upper() for form in form_types}
+    tiers = set()
+    for company in project_inventory.get("companies") or []:
+        ticker = str(company.get("ticker") or "").upper()
+        if selected and ticker not in selected:
+            continue
+        for filing in company.get("filings") or []:
+            year = _int_or_none(filing.get("year"))
+            if selected_years and year not in selected_years:
+                continue
+            form_type = str(filing.get("form_type") or filing.get("source_type") or "").upper().strip()
+            if selected_forms and form_type not in selected_forms:
+                continue
+            source_tier = str(filing.get("source_tier") or "primary_sec_filing").strip()
+            if source_tier:
+                tiers.add(source_tier)
+    return sorted(tiers) or ["primary_sec_filing"]
+
+
+def _source_policy_for_scope(filing_types: list[str], source_tiers: list[str]) -> str:
+    forms = {str(form).upper() for form in filing_types if str(form)}
+    tiers = {str(tier) for tier in source_tiers if str(tier)}
+    primary_sec_only = not tiers or tiers <= {"primary_sec_filing"}
+    if primary_sec_only and forms == {"10-K"}:
+        return "SEC_ONLY_10K"
+    if primary_sec_only and forms and forms <= {"10-K", "10-Q"} and "10-Q" in forms:
+        return "SEC_PRIMARY_MIXED_RECENT"
+    if primary_sec_only:
+        return "SEC_ONLY"
+    return "MIXED_SOURCE"
+
+
+def _source_policy_caveats(filing_types: list[str]) -> tuple[str, ...]:
+    forms = {str(form).upper() for form in filing_types if str(form)}
+    caveats = []
+    if "10-Q" in forms:
+        caveats.append(
+            "10-Q evidence is unaudited quarterly SEC evidence; do not mix quarterly, YTD, and annual values without period caveats."
+        )
+    if {"10-K", "10-Q"} <= forms:
+        caveats.append("When 10-K and 10-Q evidence both appear, label audited annual versus unaudited quarterly boundaries.")
+    return tuple(caveats)
+
+
+def _source_coverage_gaps(
+    project_inventory: dict[str, Any],
+    tickers: list[str],
+    years: list[int],
+    filing_types: list[str],
+    source_tiers: list[str],
+) -> list[dict[str, Any]]:
+    lookup: dict[tuple[str, int, str], set[str]] = {}
+    for company in project_inventory.get("companies") or []:
+        ticker = str(company.get("ticker") or "").upper()
+        if not ticker:
+            continue
+        for filing in company.get("filings") or []:
+            year = _int_or_none(filing.get("year"))
+            form_type = str(filing.get("form_type") or filing.get("source_type") or "").upper().strip()
+            if year is None or not form_type:
+                continue
+            key = (ticker, int(year), form_type)
+            lookup.setdefault(key, set()).add(str(filing.get("source_tier") or "primary_sec_filing"))
+
+    gaps: list[dict[str, Any]] = []
+    required_tiers = [str(tier) for tier in source_tiers if str(tier)] or ["primary_sec_filing"]
+    for ticker in tickers:
+        ticker_text = str(ticker or "").upper()
+        if not ticker_text:
+            continue
+        for year in years:
+            year_value = _int_or_none(year)
+            if year_value is None:
+                continue
+            for form_type in filing_types:
+                form = str(form_type or "").upper().strip()
+                if not form:
+                    continue
+                key = (ticker_text, int(year_value), form)
+                available_tiers = lookup.get(key, set())
+                if not available_tiers:
+                    gaps.append(
+                        {
+                            "ticker": ticker_text,
+                            "year": int(year_value),
+                            "form_type": form,
+                            "period_type": _period_type_for_form(form),
+                            "reason": _missing_form_reason(form),
+                        }
+                    )
+                    continue
+                missing_tiers = sorted(set(required_tiers) - available_tiers)
+                if missing_tiers:
+                    gaps.append(
+                        {
+                            "ticker": ticker_text,
+                            "year": int(year_value),
+                            "form_type": form,
+                            "missing_source_tiers": missing_tiers,
+                            "available_source_tiers": sorted(available_tiers),
+                            "period_type": _period_type_for_form(form),
+                            "reason": "source_tier_not_in_inventory",
+                        }
+                    )
+                if len(gaps) >= 40:
+                    return gaps
+    return gaps
+
+
+def _period_type_for_form(form_type: str) -> str:
+    form = str(form_type or "").upper()
+    if form == "10-K":
+        return "annual"
+    if form == "10-Q":
+        return "quarterly"
+    return "unknown"
+
+
+def _missing_form_reason(form_type: str) -> str:
+    form = str(form_type or "").upper().replace("-", "").lower()
+    if form:
+        return f"{form}_not_in_inventory"
+    return "filing_type_not_in_inventory"
 
 
 def _normalize_decomposed_tasks(value: Any, contract: dict[str, Any], warnings: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -367,6 +535,32 @@ def _ensure_required_items(
     return out[:16]
 
 
+def _normalize_required_caveats(values: list[str], normalizations: list[dict[str, Any]]) -> list[str]:
+    out: list[str] = []
+    for value in values:
+        normalized = _normalize_required_caveat_text(value)
+        if normalized != value:
+            normalizations.append({"field": "required_caveats", "action": "normalized_false_no_number_caveat"})
+        if normalized and normalized not in out:
+            out.append(normalized)
+    return out
+
+
+def _normalize_required_caveat_text(value: str) -> str:
+    text = str(value or "").strip()
+    replacements = {
+        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含具体数字。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
+        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含具体数值。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
+        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含任何具体数字。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
+        "精确数值必须从运行时Exact-Value Ledger提取，本协议不包含任何具体数值。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
+        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含具体数字。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
+        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含具体数值。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
+        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含任何具体数字。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
+        "精确数值必须从运行时Exact-Value Ledger提取，当前协议不包含任何具体数值。": "精确数值必须从运行时 Exact-Value Ledger 提取；不得使用模型记忆或未授权来源补数。",
+    }
+    return replacements.get(text, text)
+
+
 def _is_broad_task(contract: dict[str, Any]) -> bool:
     task_type = str(contract.get("task_type") or "")
     focus_count = len(contract.get("focus_tickers") or [])
@@ -401,6 +595,16 @@ def _clamp_form_types(value: Any, allowed: list[str]) -> list[str]:
         form_type = str(item or "").upper().strip()
         if form_type in allowed_set and form_type not in out:
             out.append(form_type)
+    return out
+
+
+def _clamp_source_tiers(value: Any, allowed: list[str]) -> list[str]:
+    allowed_set = {str(item) for item in allowed}
+    out = []
+    for item in value or []:
+        source_tier = str(item or "").strip()
+        if source_tier in allowed_set and source_tier not in out:
+            out.append(source_tier)
     return out
 
 

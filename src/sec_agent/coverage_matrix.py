@@ -92,8 +92,24 @@ def build_coverage_matrix(
         query_contract.get("search_scope_tickers") or (query_contract.get("scope") or {}).get("universe_tickers") or focus_tickers
     )
     years = _unique_ints(query_contract.get("years") or (query_contract.get("scope") or {}).get("years") or case.get("years") or [])
+    filing_types = _unique_form_types(query_contract.get("filing_types") or (query_contract.get("scope") or {}).get("filing_types") or [])
+    source_tiers = _unique_strings(query_contract.get("source_tiers") or (query_contract.get("scope") or {}).get("source_tiers") or [])
+    source_coverage_gaps = [
+        gap for gap in query_contract.get("source_coverage_gaps") or [] if isinstance(gap, dict)
+    ]
     matrix_rows = [
-        _task_coverage_row(task, idx, query_contract, focus_tickers, search_tickers, years, context_rows, ledger_rows)
+        _task_coverage_row(
+            task,
+            idx,
+            query_contract,
+            focus_tickers,
+            search_tickers,
+            years,
+            filing_types,
+            source_tiers,
+            context_rows,
+            ledger_rows,
+        )
         for idx, task in enumerate(tasks, start=1)
     ]
 
@@ -104,6 +120,10 @@ def build_coverage_matrix(
     covered_metric_families = sorted({family for row in matrix_rows for family in row.get("covered_metric_families") or []})
     missing_metric_families = sorted({family for row in matrix_rows for family in row.get("missing_metric_families") or []})
     covered_focus_tickers = sorted({ticker for row in matrix_rows for ticker in row.get("covered_focus_tickers") or []})
+    covered_filing_types = sorted({form for row in matrix_rows for form in row.get("covered_filing_types") or []})
+    covered_source_tiers = sorted({tier for row in matrix_rows for tier in row.get("covered_source_tiers") or []})
+    missing_filing_types = sorted({form for row in matrix_rows for form in row.get("missing_filing_types") or []})
+    missing_source_tiers = sorted({tier for row in matrix_rows for tier in row.get("missing_source_tiers") or []})
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -111,11 +131,15 @@ def build_coverage_matrix(
         "case_id": case.get("case_id") or query_contract.get("case_id") or run_id,
         "run_id": run_id,
         "source": "query_contract_plus_retrieved_context_plus_runtime_ledger",
+        "source_policy": query_contract.get("source_policy"),
+        "filing_types": filing_types,
+        "source_tiers": source_tiers,
         "task_type": query_contract.get("task_type"),
         "focus_tickers": focus_tickers,
         "search_scope_tickers": search_tickers,
         "years": years,
         "tasks": matrix_rows,
+        "source_coverage_gaps": source_coverage_gaps,
         "summary": {
             "task_count": len(matrix_rows),
             "primary_task_count": len(primary_rows),
@@ -126,6 +150,11 @@ def build_coverage_matrix(
             "covered_focus_tickers": covered_focus_tickers,
             "covered_metric_families": covered_metric_families,
             "missing_metric_families": missing_metric_families,
+            "covered_filing_types": covered_filing_types,
+            "covered_source_tiers": covered_source_tiers,
+            "missing_filing_types": missing_filing_types,
+            "missing_source_tiers": missing_source_tiers,
+            "source_coverage_gap_count": len(source_coverage_gaps),
             "ledger_row_count": len(ledger_rows),
             "context_row_count": len(context_rows),
         },
@@ -139,6 +168,8 @@ def _task_coverage_row(
     focus_tickers: list[str],
     search_tickers: list[str],
     years: list[int],
+    filing_types: list[str],
+    source_tiers: list[str],
     context_rows: list[dict[str, Any]],
     ledger_rows: list[dict[str, Any]],
 ) -> dict[str, Any]:
@@ -178,12 +209,12 @@ def _task_coverage_row(
     relevant_ledger = [
         row
         for row in ledger_rows
-        if _row_matches_task(row, required_tickers, peer_tickers, years, required_metric_families)
+        if _row_matches_task(row, required_tickers, peer_tickers, years, filing_types, source_tiers, required_metric_families)
     ]
     relevant_context = [
         row
         for row in context_rows
-        if _context_matches_task(row, required_tickers, peer_tickers, years, required_metric_families, task_text)
+        if _context_matches_task(row, required_tickers, peer_tickers, years, filing_types, source_tiers, required_metric_families, task_text)
     ]
 
     ledger_tickers = _row_tickers(relevant_ledger)
@@ -195,11 +226,15 @@ def _task_coverage_row(
     context_years = _row_years(relevant_context)
     covered_years = sorted(ledger_years | context_years)
     covered_metric_families = sorted(_ledger_metric_families(relevant_ledger) | _context_metric_families(relevant_context, required_metric_families))
+    covered_filing_types = sorted(_row_filing_types(relevant_ledger) | _row_filing_types(relevant_context))
+    covered_source_tiers = sorted(_row_source_tiers(relevant_ledger) | _row_source_tiers(relevant_context))
 
     missing_tickers = sorted(set(required_tickers) - set(covered_tickers))
     missing_peer_tickers = sorted(set(peer_tickers) - set(covered_peer_tickers))
     missing_metric_families = sorted(set(required_metric_families) - set(covered_metric_families))
     missing_years = sorted(set(years) - set(covered_years))
+    missing_filing_types = sorted(set(filing_types) - set(covered_filing_types))
+    missing_source_tiers = sorted(set(source_tiers) - set(covered_source_tiers))
     support_level = _support_level(
         priority=priority,
         required_tickers=required_tickers,
@@ -225,10 +260,14 @@ def _task_coverage_row(
         "covered_focus_tickers": covered_focus_tickers,
         "covered_years": covered_years,
         "covered_metric_families": covered_metric_families,
+        "covered_filing_types": covered_filing_types,
+        "covered_source_tiers": covered_source_tiers,
         "missing_tickers": missing_tickers,
         "missing_peer_tickers": missing_peer_tickers,
         "missing_metric_families": missing_metric_families,
         "missing_years": missing_years,
+        "missing_filing_types": missing_filing_types,
+        "missing_source_tiers": missing_source_tiers,
         "context_row_count": len(relevant_context),
         "ledger_row_count": len(relevant_ledger),
         "support_level": support_level,
@@ -239,6 +278,8 @@ def _task_coverage_row(
             missing_peer_tickers=missing_peer_tickers,
             missing_metric_families=missing_metric_families,
             missing_years=missing_years,
+            missing_filing_types=missing_filing_types,
+            missing_source_tiers=missing_source_tiers,
         ),
         "sample_metric_ids": _unique_strings([row.get("metric_id") for row in relevant_ledger])[:8],
         "sample_evidence_ids": _unique_strings(
@@ -297,6 +338,8 @@ def _must_caveats(
     missing_peer_tickers: list[str],
     missing_metric_families: list[str],
     missing_years: list[int],
+    missing_filing_types: list[str],
+    missing_source_tiers: list[str],
 ) -> list[str]:
     caveats = []
     if support_level in {"partial", "insufficient"}:
@@ -309,6 +352,10 @@ def _must_caveats(
         caveats.append(f"Missing required metric-family coverage: {', '.join(missing_metric_families)}.")
     if missing_years:
         caveats.append(f"Missing requested fiscal-year coverage: {', '.join(str(year) for year in missing_years)}.")
+    if missing_filing_types:
+        caveats.append(f"Missing requested filing-type coverage: {', '.join(missing_filing_types)}.")
+    if missing_source_tiers:
+        caveats.append(f"Missing requested source-tier coverage: {', '.join(missing_source_tiers)}.")
     return caveats[:6]
 
 
@@ -317,6 +364,8 @@ def _row_matches_task(
     required_tickers: list[str],
     peer_tickers: list[str],
     years: list[int],
+    filing_types: list[str],
+    source_tiers: list[str],
     required_metric_families: list[str],
 ) -> bool:
     ticker = str(row.get("ticker") or "").upper()
@@ -325,6 +374,8 @@ def _row_matches_task(
             return False
     year = _int_or_none(row.get("fiscal_year"))
     if years and year not in set(years):
+        return False
+    if not _row_matches_source_scope(row, filing_types, source_tiers):
         return False
     family = str(row.get("metric_family") or "")
     return not required_metric_families or family in set(required_metric_families)
@@ -335,6 +386,8 @@ def _context_matches_task(
     required_tickers: list[str],
     peer_tickers: list[str],
     years: list[int],
+    filing_types: list[str],
+    source_tiers: list[str],
     required_metric_families: list[str],
     task_text: str,
 ) -> bool:
@@ -344,6 +397,8 @@ def _context_matches_task(
             return False
     year = _int_or_none(row.get("fiscal_year"))
     if years and year not in set(years):
+        return False
+    if not _row_matches_source_scope(row, filing_types, source_tiers):
         return False
     text = _row_text(row)
     if not required_metric_families:
@@ -408,6 +463,47 @@ def _row_years(rows: list[dict[str, Any]]) -> set[int]:
     return {year for row in rows if (year := _int_or_none(row.get("fiscal_year"))) is not None}
 
 
+def _row_filing_types(rows: list[dict[str, Any]]) -> set[str]:
+    return {form for row in rows if (form := _row_filing_type(row))}
+
+
+def _row_source_tiers(rows: list[dict[str, Any]]) -> set[str]:
+    return {_row_source_tier(row) or "primary_sec_filing" for row in rows}
+
+
+def _row_matches_source_scope(row: dict[str, Any], filing_types: list[str], source_tiers: list[str]) -> bool:
+    if filing_types:
+        form_type = _row_filing_type(row)
+        if not form_type or form_type not in set(filing_types):
+            return False
+    if source_tiers:
+        source_tier = _row_source_tier(row) or "primary_sec_filing"
+        if source_tier not in set(source_tiers):
+            return False
+    return True
+
+
+def _row_filing_type(row: dict[str, Any]) -> str:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    for key in ("form_type", "source_type", "filing_type"):
+        value = _normalize_form_type(row.get(key) or metadata.get(key))
+        if value:
+            return value
+    source_id = " ".join(
+        str(row.get(key) or "")
+        for key in ("source_evidence_id", "evidence_id", "object_id")
+    )
+    match = re.search(r"_(10K|10Q)_", source_id, flags=re.I)
+    if match:
+        return _normalize_form_type(match.group(1))
+    return ""
+
+
+def _row_source_tier(row: dict[str, Any]) -> str:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    return str(row.get("source_tier") or metadata.get("source_tier") or "").strip()
+
+
 def _row_text(row: dict[str, Any]) -> str:
     return "\n".join(
         str(row.get(key) or "")
@@ -428,6 +524,19 @@ def _unique_upper(values: Any) -> list[str]:
         if value and value not in out:
             out.append(value)
     return out
+
+
+def _unique_form_types(values: Any) -> list[str]:
+    out = []
+    for item in values or []:
+        value = _normalize_form_type(item)
+        if value and value not in out:
+            out.append(value)
+    return out
+
+
+def _normalize_form_type(value: Any) -> str:
+    return str(value or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
 
 
 def _unique_strings(values: Any) -> list[str]:

@@ -66,13 +66,40 @@ class BM25Retriever:
 def _record_matches(record: dict[str, Any], filters: dict[str, Any]) -> bool:
     metadata = record.get("metadata", {})
     for key, expected in filters.items():
-        actual = metadata.get(key, record.get(key))
+        actual = _record_filter_value(record, metadata, key)
         if isinstance(expected, (list, tuple, set)):
-            if actual not in expected:
+            expected_values = {_normalize_filter_value(key, item) for item in expected}
+            if _normalize_filter_value(key, actual) not in expected_values:
                 return False
-        elif actual != expected:
+        elif _normalize_filter_value(key, actual) != _normalize_filter_value(key, expected):
             return False
     return True
+
+
+def _record_filter_value(record: dict[str, Any], metadata: dict[str, Any], key: str) -> Any:
+    if key in {"form_type", "source_type", "filing_type"}:
+        value = metadata.get(key, record.get(key))
+        if value:
+            return value
+        return _form_type_from_source_id(record.get("source_evidence_id") or record.get("evidence_id") or record.get("object_id"))
+    if key == "source_tier":
+        return metadata.get(key, record.get(key)) or "primary_sec_filing"
+    return metadata.get(key, record.get(key))
+
+
+def _normalize_filter_value(key: str, value: Any) -> Any:
+    if key in {"form_type", "source_type", "filing_type"}:
+        return str(value or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
+    return value
+
+
+def _form_type_from_source_id(value: Any) -> str:
+    text = str(value or "").upper()
+    if "_10Q_" in text:
+        return "10-Q"
+    if "_10K_" in text:
+        return "10-K"
+    return ""
 
 
 def _preview(text: str, max_chars: int = 280) -> str:

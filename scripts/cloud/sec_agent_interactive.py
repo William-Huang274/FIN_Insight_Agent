@@ -1221,10 +1221,14 @@ def _compact_coverage_matrix_for_prompt(coverage_matrix: dict[str, Any]) -> dict
                 "covered_tickers": task.get("covered_tickers") or [],
                 "covered_peer_tickers": task.get("covered_peer_tickers") or [],
                 "covered_metric_families": task.get("covered_metric_families") or [],
+                "covered_filing_types": task.get("covered_filing_types") or [],
+                "covered_source_tiers": task.get("covered_source_tiers") or [],
                 "missing_tickers": task.get("missing_tickers") or [],
                 "missing_peer_tickers": task.get("missing_peer_tickers") or [],
                 "missing_metric_families": task.get("missing_metric_families") or [],
                 "missing_years": task.get("missing_years") or [],
+                "missing_filing_types": task.get("missing_filing_types") or [],
+                "missing_source_tiers": task.get("missing_source_tiers") or [],
                 "ledger_row_count": task.get("ledger_row_count"),
                 "context_row_count": task.get("context_row_count"),
                 "must_caveat": task.get("must_caveat") or [],
@@ -1234,6 +1238,10 @@ def _compact_coverage_matrix_for_prompt(coverage_matrix: dict[str, Any]) -> dict
         )
     return {
         "schema_version": coverage_matrix.get("schema_version"),
+        "source_policy": coverage_matrix.get("source_policy"),
+        "filing_types": coverage_matrix.get("filing_types") or [],
+        "source_tiers": coverage_matrix.get("source_tiers") or [],
+        "source_coverage_gaps": (coverage_matrix.get("source_coverage_gaps") or [])[:10],
         "summary": coverage_matrix.get("summary") or {},
         "tasks": tasks,
     }
@@ -1776,6 +1784,37 @@ def _metric_sentence_year(record: dict[str, Any], raw: str, default_year: int | 
     return default_year
 
 
+def _ledger_source_fields(record: dict[str, Any]) -> dict[str, Any]:
+    metadata = record.get("metadata") if isinstance(record.get("metadata"), dict) else {}
+    source_type = str(record.get("source_type") or metadata.get("source_type") or "").upper().strip()
+    form_type = str(record.get("form_type") or metadata.get("form_type") or source_type).upper().strip()
+    if not form_type:
+        form_type = _form_type_from_source_id(record.get("source_evidence_id") or record.get("object_id"))
+    source_tier = str(record.get("source_tier") or metadata.get("source_tier") or "").strip()
+    return {
+        "source_type": _normalize_form_type(source_type or form_type),
+        "form_type": _normalize_form_type(form_type),
+        "source_tier": source_tier or "primary_sec_filing",
+        "period_end": record.get("period_end") or metadata.get("period_end"),
+        "period_type": record.get("period_type") or metadata.get("period_type"),
+        "duration_months": record.get("duration_months") or metadata.get("duration_months"),
+        "fiscal_period": record.get("fiscal_period") or metadata.get("fiscal_period"),
+    }
+
+
+def _form_type_from_source_id(value: Any) -> str:
+    text = str(value or "").upper()
+    if "_10Q_" in text:
+        return "10-Q"
+    if "_10K_" in text:
+        return "10-K"
+    return ""
+
+
+def _normalize_form_type(value: Any) -> str:
+    return str(value or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
+
+
 def _ledger_row_from_metric(case_id: str, record: dict[str, Any]) -> dict[str, Any] | None:
     unit = str(record.get("unit") or "")
     raw = str(record.get("raw_value") or "")
@@ -1789,14 +1828,17 @@ def _ledger_row_from_metric(case_id: str, record: dict[str, Any]) -> dict[str, A
     metric_name = str(record.get("metric_name") or record.get("row_label") or "metric")
     if _is_low_signal_metric(metric_name, unit):
         return None
-    family = _metric_family(metric_name, str(record.get("context") or ""))
-    role = _metric_role(metric_name, unit)
+    metadata = record.get("metadata") if isinstance(record.get("metadata"), dict) else {}
+    metric_context = str(record.get("context") or "")
+    family = _metric_family(metric_name, metric_context)
+    role = _metric_role(" ".join(part for part in (metric_name, metric_context) if part), unit)
     return {
         "metric_id": f"{case_id}::{ticker}::{year}::{family}::{role}",
         "case_id": case_id,
         "ticker": ticker,
         "fiscal_year": year,
         "period": str(record.get("period") or year),
+        **_ledger_source_fields(record),
         "metric_family": family,
         "metric_role": role,
         "metric_name": metric_name,
@@ -1809,6 +1851,8 @@ def _ledger_row_from_metric(case_id: str, record: dict[str, Any]) -> dict[str, A
         "section": record.get("section"),
         "row_label": record.get("row_label"),
         "column_label": record.get("column_label"),
+        "cell_kind": record.get("cell_kind") or metadata.get("cell_kind"),
+        "table_object_id": record.get("table_object_id") or metadata.get("table_object_id"),
         "source_text": record.get("context"),
         "record_title": record.get("title"),
     }
@@ -1881,6 +1925,7 @@ def _ledger_rows_from_table(case_id: str, record: dict[str, Any], years: set[int
                 "ticker": ticker,
                 "fiscal_year": year,
                 "period": str(cell.get("period") or year),
+                **_ledger_source_fields(record),
                 "metric_family": family,
                 "metric_role": role,
                 "metric_name": metric_name,
@@ -2271,6 +2316,9 @@ def _build_case(
 ) -> dict[str, Any]:
     query_contract = dict(query_contract)
     query_task_type = str(query_contract.get("task_type") or "")
+    filing_types = [str(item).upper() for item in (query_contract.get("filing_types") or ["10-K"])]
+    source_tiers = [str(item) for item in (query_contract.get("source_tiers") or ["primary_sec_filing"]) if str(item)]
+    source_policy = str(query_contract.get("source_policy") or "SEC_ONLY")
     is_ai_industry = query_task_type == "ai_industry_financial_trend"
     is_peer = (
         not is_ai_industry
@@ -2292,11 +2340,13 @@ def _build_case(
         "level": "interactive",
         "companies": tickers,
         "years": years,
-        "filing_types": [str(item).upper() for item in (query_contract.get("filing_types") or ["10-K"])],
+        "filing_types": filing_types,
         "task_type": query_task_type if is_ai_industry else ("peer_comparison_interactive" if is_peer else "single_or_multi_company_interactive"),
         "prompt": prompt,
         "allowed_sources": ["SEC"],
-        "source_policy": "SEC_ONLY",
+        "source_policy": source_policy,
+        "source_tiers": source_tiers,
+        "source_coverage_gaps": query_contract.get("source_coverage_gaps") or [],
         "query_contract": query_contract,
         "semantic_gate": query_contract.get("semantic_gate") or {},
         "prompt_context_max_rows": 64 if is_ai_industry else 32,
@@ -2619,6 +2669,7 @@ def _build_heuristic_query_contract(
             "focus_tickers": focus,
             "years": years,
             "filing_types": filing_types,
+            "source_tiers": ["primary_sec_filing"],
             "scope": _contract_scope(tickers, focus, years, filing_types),
             "analysis_axes": ["growth", "profitability", "cash_flow", "capital_intensity", "segment_mix", "risk", "comparability"],
             "decomposed_tasks": decomposed_tasks,
@@ -2708,6 +2759,7 @@ def _build_heuristic_query_contract(
             "focus_tickers": focus,
             "years": years,
             "filing_types": filing_types,
+            "source_tiers": ["primary_sec_filing"],
             "scope": _contract_scope(tickers, focus, years, filing_types),
             "analysis_axes": ["growth", "profitability", "funding_mix", "asset_quality", "credit_risk", "capital", "comparability"],
             "decomposed_tasks": [
@@ -2882,6 +2934,8 @@ def _query_planner_system_prompt(project_inventory: dict[str, Any], tickers: lis
         f"- required_metric_families / metric_families 只能优先使用这些 ontology 名称：{ontology}\n"
         "- focus_tickers 必须来自 SELECTED COMPANY FILINGS；如果用户问全局趋势，可以选择一个 evidence-relevant 子集，但 search_scope 仍由系统保留。\n"
         "- years 必须来自候选 scope；不要规划项目没有的年份。\n"
+        "- filing_types 必须来自 SELECTED COMPANY FILINGS；如 10-Q 可用，必须保留其未经审计季报边界。\n"
+        "- source_tiers 只能来自 PROJECT SOURCE INVENTORY；Stage 1 只允许 primary_sec_filing。\n"
         "- decomposed_tasks 要服务于用户问题，避免机械套用行业模板；宽问题至少拆成 2 个任务。\n"
         "- 如果用户问银行盈利质量、净息差、存贷款或信用风险，优先使用银行指标族："
         "net_interest_income、net_interest_margin、provision_for_credit_losses、net_charge_offs、"
@@ -2898,7 +2952,8 @@ def _query_planner_system_prompt(project_inventory: dict[str, Any], tickers: lis
         '  "task_type": "...",\n'
         '  "focus_tickers": ["..."],\n'
         '  "years": [2023],\n'
-        '  "filing_types": ["10-K"],\n'
+        '  "filing_types": ["10-K", "10-Q"],\n'
+        '  "source_tiers": ["primary_sec_filing"],\n'
         '  "analysis_axes": ["growth", "profitability"],\n'
         '  "facets": ["..."],\n'
         '  "metric_families": ["..."],\n'
@@ -3401,6 +3456,7 @@ def _planner_seed_for_prompt(contract: dict[str, Any]) -> dict[str, Any]:
         "focus_tickers": contract.get("focus_tickers"),
         "years": contract.get("years"),
         "filing_types": contract.get("filing_types"),
+        "source_tiers": contract.get("source_tiers"),
         "analysis_axes": contract.get("analysis_axes"),
         "facets": contract.get("facets"),
         "metric_families": contract.get("metric_families"),
@@ -4548,6 +4604,13 @@ def _is_prior_comparison_metric(row: dict[str, Any]) -> bool:
     return False
 
 
+def _is_change_column_label(value: Any) -> bool:
+    text = str(value or "").lower()
+    if not text:
+        return False
+    return " vs " in text or " versus " in text or re.search(r"(^|[\s$%])change($|\s)", text) is not None
+
+
 def _ledger_row_allowed(
     row: dict[str, Any],
     query_contract: dict[str, Any],
@@ -4686,6 +4749,8 @@ def _ledger_row_allowed(
         return False
     if family == "operating_income" and row.get("unit") == "percent":
         return False
+    if family == "operating_income" and str(row.get("metric_role") or "") == "period_change_amount":
+        return False
     if family == "operating_income" and any(term in name_lower for term in ("non-operating", "other operating", "interest income", "interest expense")):
         return False
     if family == "operating_income" and any(
@@ -4693,6 +4758,10 @@ def _ledger_row_allowed(
         for term in (
             "increase in operating income",
             "decrease in operating income",
+            "operating income increased",
+            "operating income decreased",
+            "operating income grew",
+            "operating income declined",
             "effect of this change",
             "benefit of",
             "impacted operating income",
@@ -4717,6 +4786,17 @@ def _ledger_row_allowed(
     if family == "gross_margin" and row.get("unit") != "percent":
         return False
     if family == "gross_margin":
+        if str(row.get("cell_kind") or "").lower() == "change_value":
+            return False
+        if _is_change_column_label(row.get("column_label")):
+            return False
+        if (
+            row.get("unit") == "percent"
+            and "%" in str(row.get("raw_value_text") or "")
+            and str(row.get("metric_name") or "").strip().lower() == "gross margin"
+            and not str(row.get("column_label") or "").strip()
+        ):
+            return False
         if str(row.get("metric_role") or "") == "percentage_rate" and _contains_any(
             row_text_lower,
             ("increase", "increased", "decrease", "decreased", "grew", "growth", "declined"),
@@ -4964,10 +5044,12 @@ def _cap_ai_industry_ledger_rows(rows: list[dict[str, Any]], query_contract: dic
 
 def _metric_role(name: str, unit: str) -> str:
     text = name.lower()
-    if unit == "percent" or "%" in text or "margin" in text or "rate" in text:
+    if unit == "percent":
         return "percentage_rate"
     if "change" in text or "increase" in text or "decrease" in text:
         return "period_change_amount"
+    if "%" in text or "margin" in text or "rate" in text:
+        return "percentage_rate"
     return "total_value"
 
 

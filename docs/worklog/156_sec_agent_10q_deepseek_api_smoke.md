@@ -107,10 +107,11 @@ Residual limitations:
 
 ## Next Steps
 
-- Add a small regression test for 10-Q Query Contract allowed/forbidden filing consistency.
-- Add a ledger unit test for:
+- Completed in `157_sec_agent_10q_source_scope_contract.md`: add a small regression test for 10-Q Query Contract allowed/forbidden filing consistency and source inventory gaps.
+- Completed in `157_sec_agent_10q_source_scope_contract.md`: add ledger/source-scope regression tests for:
   - AWS operating income from `Operating income by segment`.
   - MSFT cloud revenue growth percentage extraction.
   - rejection of operating-expense/revenue rows from operating-income ledgers.
   - rejection of gross-margin change rates as margin levels.
+- Completed in `157_sec_agent_10q_source_scope_contract.md`: make retrieval and Coverage Matrix enforce requested `filing_types` / `source_tiers`, so 10-K rows cannot satisfy 10-Q-only tasks.
 - Later, improve section/table parsing so MSFT segment tables preserve row groups instead of relying on defensive ledger filters.

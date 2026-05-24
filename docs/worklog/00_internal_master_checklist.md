@@ -38,7 +38,13 @@
 - [x] Parse 10-Q filings without reusing incorrect 10-K section labels.
 - [x] Run real DeepSeek API smoke on the 2026 10-Q pilot and render a placeholder-free answer.
 - [x] Add 10-Q runtime-ledger safeguards for AWS operating income, MSFT cloud growth percentages, and false operating-income/gross-margin rows.
+- [x] Add 10-Q source-scope regression tests covering Query Contract gaps, retrieval filters, Coverage Matrix filing/source matching, and runtime ledger metadata.
+- [x] Add source-tier/form-type coverage and inventory gap reporting to Evidence Coverage Matrix.
+- [x] Filter retrieval candidates by requested filing/source scope for mixed 10-K/10-Q runs.
+- [x] Cloud-rerun the 2026 10-Q pilot after source-scope filtering changes.
+- [x] Fix 10-Q ledger role issues exposed by real DeepSeek output: false no-number caveats, MSFT gross-margin percentage-change rows, and MSFT operating-income growth amounts.
 - [ ] Gate mixed-source answers with explicit audited annual vs unaudited quarterly evidence boundaries.
+- [ ] Rebuild/version the 10-Q object index after multi-row table-header alignment changes.
 - [x] EvidenceObject JSONL read/write smoke test.
 - [x] SEC tech EvidenceObject build smoke test.
 - [x] BM25 retrieval smoke test on MSFT/NVDA queries.

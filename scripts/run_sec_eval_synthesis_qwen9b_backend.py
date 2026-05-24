@@ -492,10 +492,14 @@ def _coverage_matrix_for_prompt(case: dict[str, Any]) -> dict[str, Any]:
                 "covered_tickers": task.get("covered_tickers") or [],
                 "covered_peer_tickers": task.get("covered_peer_tickers") or [],
                 "covered_metric_families": task.get("covered_metric_families") or [],
+                "covered_filing_types": task.get("covered_filing_types") or [],
+                "covered_source_tiers": task.get("covered_source_tiers") or [],
                 "missing_tickers": task.get("missing_tickers") or [],
                 "missing_peer_tickers": task.get("missing_peer_tickers") or [],
                 "missing_metric_families": task.get("missing_metric_families") or [],
                 "missing_years": task.get("missing_years") or [],
+                "missing_filing_types": task.get("missing_filing_types") or [],
+                "missing_source_tiers": task.get("missing_source_tiers") or [],
                 "must_caveat": task.get("must_caveat") or [],
                 "sample_metric_ids": task.get("sample_metric_ids") or [],
                 "sample_evidence_ids": task.get("sample_evidence_ids") or [],
@@ -503,6 +507,10 @@ def _coverage_matrix_for_prompt(case: dict[str, Any]) -> dict[str, Any]:
         )
     return {
         "schema_version": value.get("schema_version"),
+        "source_policy": value.get("source_policy"),
+        "filing_types": value.get("filing_types") or [],
+        "source_tiers": value.get("source_tiers") or [],
+        "source_coverage_gaps": (value.get("source_coverage_gaps") or [])[:10],
         "summary": value.get("summary") or {},
         "tasks": compact_tasks,
     }
@@ -514,8 +522,9 @@ def _coverage_rule_for_prompt(coverage_matrix: dict[str, Any]) -> str:
     return (
         "21. Evidence Coverage Matrix 是检索后、模型前的确定性覆盖报告；必须服从它的 support_level。\n"
         "22. support_level=strong/medium 的任务可以形成对应分析结论；partial 只能给弱或中等结论并写 caveat；insufficient 必须写入 not_found 或 limitations，不能假装答完。\n"
-        "23. 如果 primary task 不完整，summary 必须说明答案是 partial；不能把 missing_peer_tickers、missing_metric_families 或 missing_years 当成已覆盖事实。\n"
+        "23. 如果 primary task 不完整，summary 必须说明答案是 partial；不能把 missing_peer_tickers、missing_metric_families、missing_years、missing_filing_types 或 source_coverage_gaps 当成已覆盖事实。\n"
         "24. decision_drivers/key_points 应优先使用 coverage matrix 的 sample_metric_ids/sample_evidence_ids；不要为 coverage matrix 标为缺失的任务新增强结论。\n"
+        "25. 如果 source_coverage_gaps 显示某 ticker/year/form_type 不在 inventory，必须把它写成来源缺口，不能用模型记忆或其他 form_type 补上。\n"
     )
 
 
@@ -1237,16 +1246,37 @@ def _apply_coverage_matrix_constraints(answer: dict[str, Any], case: dict[str, A
         for task in tasks
         if task.get("priority") == "primary" and task.get("support_level") not in {"strong", "medium"}
     ]
+    source_gaps = [gap for gap in coverage.get("source_coverage_gaps") or [] if isinstance(gap, dict)]
     if summary.get("answer_status") in {"partial", "insufficient"} or primary_incomplete:
         answer.setdefault("limitations", []).append(
             "Evidence Coverage Matrix marks at least one primary task as partial or insufficient; answer strength is downgraded."
         )
+    if source_gaps:
+        answer.setdefault("limitations", []).append(
+            "Evidence Coverage Matrix records source inventory gaps; missing filing types cannot be filled from model memory or another source tier."
+        )
+        for gap in source_gaps[:6]:
+            answer.setdefault("not_found", []).append(
+                "source_gap: "
+                + "; ".join(
+                    f"{key}={gap.get(key)}"
+                    for key in ("ticker", "year", "form_type", "reason")
+                    if gap.get(key) is not None
+                )
+            )
     for task in primary_incomplete:
         fragments = [
             f"task_id={task.get('task_id')}",
             f"support_level={task.get('support_level')}",
         ]
-        for key in ("missing_tickers", "missing_peer_tickers", "missing_metric_families", "missing_years"):
+        for key in (
+            "missing_tickers",
+            "missing_peer_tickers",
+            "missing_metric_families",
+            "missing_years",
+            "missing_filing_types",
+            "missing_source_tiers",
+        ):
             values = task.get(key) or []
             if values:
                 fragments.append(f"{key}={','.join(str(item) for item in values)}")
@@ -2420,6 +2450,24 @@ MISSING_CLAIM_MARKERS = (
     "only disclosed",
 )
 GENERIC_DATA_MISSING_MARKERS = ("完整数据", "complete data", "all data")
+PROTOCOL_NO_NUMBER_MARKERS = (
+    "本协议不包含具体数字",
+    "本协议不包含具体数值",
+    "本协议不包含任何具体数字",
+    "本协议不包含任何具体数值",
+    "当前协议不包含具体数字",
+    "当前协议不包含具体数值",
+    "当前协议不包含任何具体数字",
+    "当前协议不包含任何具体数值",
+    "协议不包含具体数字",
+    "协议不包含具体数值",
+    "协议不包含任何具体数字",
+    "协议不包含任何具体数值",
+    "this protocol does not contain specific numbers",
+    "this protocol does not include specific numbers",
+    "current protocol does not contain specific numbers",
+    "current protocol does not include specific numbers",
+)
 
 
 def _remove_false_missing_ledger_claims(answer: dict[str, Any], ledger_rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -2437,9 +2485,18 @@ def _remove_false_missing_ledger_claims(answer: dict[str, Any], ledger_rows: lis
     if not available:
         return answer
 
+    def claims_protocol_has_no_numbers(text: str) -> bool:
+        lowered = str(text or "").lower()
+        return any(marker.lower() in lowered for marker in PROTOCOL_NO_NUMBER_MARKERS) or re.search(
+            r"(?:本|当前)?协议不包含[^。；,，]*具体(?:数字|数值)",
+            str(text or ""),
+        ) is not None
+
     def contradicts_ledger(text: str) -> bool:
         raw = str(text or "")
         lowered = raw.lower()
+        if claims_protocol_has_no_numbers(raw):
+            return True
         if not raw or not any(marker.lower() in lowered for marker in MISSING_CLAIM_MARKERS):
             return False
         years = {int(match.group(0)) for match in re.finditer(r"\b20\d{2}\b", raw)}

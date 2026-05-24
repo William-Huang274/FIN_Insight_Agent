@@ -104,6 +104,7 @@ def extract_tables(evidence: EvidenceObject) -> list[TableObject]:
                 source_evidence_id=evidence.evidence_id,
                 ticker=evidence.ticker,
                 fiscal_year=evidence.fiscal_year,
+                **_source_object_fields(evidence),
                 **_period_object_fields(evidence),
                 section=evidence.section,
                 subsection=evidence.subsection,
@@ -124,6 +125,8 @@ def extract_tables(evidence: EvidenceObject) -> list[TableObject]:
                     "table_index": table_index,
                     "block_id": evidence.metadata.get("block_id"),
                     "item_code": evidence.metadata.get("item_code"),
+                    "form_type": evidence.metadata.get("form_type") or evidence.source_type,
+                    "source_tier": evidence.source_tier,
                 },
             )
         )
@@ -166,6 +169,7 @@ def extract_table_metrics(evidence: EvidenceObject, table: TableObject) -> list[
                     source_evidence_id=evidence.evidence_id,
                     ticker=evidence.ticker,
                     fiscal_year=evidence.fiscal_year,
+                    **_source_object_fields(evidence),
                     **_period_object_fields(evidence),
                     section=evidence.section,
                     subsection=evidence.subsection,
@@ -191,6 +195,8 @@ def extract_table_metrics(evidence: EvidenceObject, table: TableObject) -> list[
                         "cell_key": cell.get("cell_key"),
                         "cell_kind": cell.get("cell_kind"),
                         "block_id": evidence.metadata.get("block_id"),
+                        "form_type": evidence.metadata.get("form_type") or evidence.source_type,
+                        "source_tier": evidence.source_tier,
                     },
                 )
             )
@@ -217,6 +223,7 @@ def extract_sentence_metrics(evidence: EvidenceObject) -> list[MetricObject]:
                     source_evidence_id=evidence.evidence_id,
                     ticker=evidence.ticker,
                     fiscal_year=evidence.fiscal_year,
+                    **_source_object_fields(evidence),
                     **_period_object_fields(evidence),
                     section=evidence.section,
                     subsection=evidence.subsection,
@@ -235,6 +242,8 @@ def extract_sentence_metrics(evidence: EvidenceObject) -> list[MetricObject]:
                         "sentence_index": sent_index,
                         "match_index": match_index,
                         "block_id": evidence.metadata.get("block_id"),
+                        "form_type": evidence.metadata.get("form_type") or evidence.source_type,
+                        "source_tier": evidence.source_tier,
                     },
                 )
             )
@@ -290,6 +299,7 @@ def extract_banking_ixbrl_metrics(evidence: EvidenceObject) -> list[MetricObject
                 source_evidence_id=evidence.evidence_id,
                 ticker=evidence.ticker,
                 fiscal_year=evidence.fiscal_year,
+                **_source_object_fields(evidence),
                 **_period_object_fields(evidence),
                 section=evidence.section,
                 subsection=evidence.subsection,
@@ -319,6 +329,8 @@ def extract_banking_ixbrl_metrics(evidence: EvidenceObject) -> list[MetricObject
                     "is_banking_metric": True,
                     "block_id": evidence.metadata.get("block_id"),
                     "item_code": evidence.metadata.get("item_code"),
+                    "form_type": evidence.metadata.get("form_type") or evidence.source_type,
+                    "source_tier": evidence.source_tier,
                 },
             )
         )
@@ -337,6 +349,7 @@ def extract_claims(evidence: EvidenceObject) -> list[ClaimObject]:
                 source_evidence_id=evidence.evidence_id,
                 ticker=evidence.ticker,
                 fiscal_year=evidence.fiscal_year,
+                **_source_object_fields(evidence),
                 **_period_object_fields(evidence),
                 section=evidence.section,
                 subsection=evidence.subsection,
@@ -354,6 +367,8 @@ def extract_claims(evidence: EvidenceObject) -> list[ClaimObject]:
                     "sentence_index": sentence_index,
                     "block_id": evidence.metadata.get("block_id"),
                     "item_code": evidence.metadata.get("item_code"),
+                    "form_type": evidence.metadata.get("form_type") or evidence.source_type,
+                    "source_tier": evidence.source_tier,
                 },
             )
         )
@@ -377,6 +392,15 @@ def _period_object_fields(evidence: EvidenceObject) -> dict[str, Any]:
         "period_type": evidence.period_type or evidence.metadata.get("period_type"),
         "duration_months": evidence.duration_months or evidence.metadata.get("duration_months"),
         "fiscal_period": evidence.fiscal_period or evidence.metadata.get("fiscal_period"),
+    }
+
+
+def _source_object_fields(evidence: EvidenceObject) -> dict[str, Any]:
+    form_type = str(evidence.metadata.get("form_type") or evidence.source_type or "").upper().strip()
+    return {
+        "source_type": evidence.source_type,
+        "form_type": form_type,
+        "source_tier": evidence.source_tier or evidence.metadata.get("source_tier"),
     }
 
 
@@ -595,7 +619,7 @@ def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) ->
         value, parsed_unit = _parse_number(raw)
         if value is None or _is_standalone_year(raw):
             continue
-        column_label = _logical_column_label(header, table.candidate_periods, logical_index)
+        column_label = _logical_column_label(header, table.candidate_periods, logical_index, len(logical_values))
         period = _period_for_column_label(column_label)
         if period is None and not _is_change_column(column_label):
             periods = table.candidate_periods
@@ -641,12 +665,13 @@ def _table_cells(
             continue
         if not row_label or _looks_like_header(row_label) or _is_table_unit_row(row):
             continue
-        for logical_index, cell in enumerate(_logical_value_cells(row)):
+        logical_values = _logical_value_cells(row)
+        for logical_index, cell in enumerate(logical_values):
             raw = str(cell["raw_value"])
             value, parsed_unit = _parse_number(raw)
             if value is None or _is_standalone_year(raw):
                 continue
-            column_label = _logical_column_label(header, candidate_periods, logical_index)
+            column_label = _logical_column_label(header, candidate_periods, logical_index, len(logical_values))
             period = _period_for_column_label(column_label)
             if period is None and not _is_change_column(column_label) and logical_index < len(candidate_periods):
                 period = candidate_periods[logical_index]
@@ -691,12 +716,44 @@ def _logical_value_cells(row: list[str]) -> list[dict[str, Any]]:
     return cells
 
 
-def _logical_column_label(header: list[str], candidate_periods: list[str], logical_index: int) -> str | None:
+def _logical_column_label(
+    header: list[str],
+    candidate_periods: list[str],
+    logical_index: int,
+    logical_count: int | None = None,
+) -> str | None:
+    expanded = _expanded_logical_column_labels(header, candidate_periods, logical_count)
+    if logical_index < len(expanded):
+        return expanded[logical_index]
     if logical_index < len(header):
         return header[logical_index]
     if logical_index < len(candidate_periods):
         return candidate_periods[logical_index]
     return None
+
+
+def _expanded_logical_column_labels(
+    header: list[str],
+    candidate_periods: list[str],
+    logical_count: int | None,
+) -> list[str]:
+    if not header or not logical_count:
+        return []
+    labels = [str(item or "").strip() for item in header if str(item or "").strip()]
+    if labels and _is_table_unit_row([labels[0]]):
+        labels = labels[1:]
+    change_positions = [index for index, label in enumerate(labels) if _is_change_column(label)]
+    if not change_positions or len(candidate_periods) < 2:
+        return []
+    expanded: list[str] = []
+    for change_index in change_positions:
+        group_label = labels[change_index - 1] if change_index > 0 else ""
+        for period in candidate_periods[:2]:
+            expanded.append(" ".join(part for part in (group_label, period) if part).strip())
+        expanded.append(labels[change_index])
+    if len(expanded) >= logical_count:
+        return expanded[:logical_count]
+    return []
 
 
 def _period_for_column_label(column_label: str | None) -> str | None:

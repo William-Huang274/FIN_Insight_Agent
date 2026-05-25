@@ -143,8 +143,9 @@ def normalize_market_snapshot_fixture(
         latest = latest_by_ticker.get(ticker)
         if not latest:
             continue
+        close_price = latest.get("adjusted_close")
         field_status = {
-            field: "provided" if latest.get(field) is not None else "missing_not_provided"
+            field: "provided" if _snapshot_field_value(latest, field) is not None else "missing_not_provided"
             for field in SNAPSHOT_NUMERIC_FIELDS
         }
         snapshots.append(
@@ -156,7 +157,7 @@ def normalize_market_snapshot_fixture(
                 "as_of_date": as_of.isoformat(),
                 "provider": str(latest.get("provider") or provider),
                 "currency": str(latest.get("currency") or currency or DEFAULT_CURRENCY),
-                "close_price": latest.get("adjusted_close"),
+                "close_price": close_price,
                 "market_cap": latest.get("market_cap"),
                 "enterprise_value": latest.get("enterprise_value"),
                 "pe_ttm": latest.get("pe_ttm"),
@@ -801,6 +802,12 @@ def _default_field_definitions() -> dict[str, str]:
 
 def _price(row: dict[str, Any]) -> float | None:
     return _float_or_none(row.get("adjusted_close") or row.get("close"))
+
+
+def _snapshot_field_value(row: dict[str, Any], field: str) -> Any:
+    if field == "close_price":
+        return row.get("adjusted_close") if row.get("adjusted_close") is not None else row.get("close")
+    return row.get(field)
 
 
 def _parse_date(value: Any) -> date:

@@ -47,6 +47,15 @@ def _load_qwen_adapter_module():
     return module
 
 
+def _load_market_script(name: str):
+    path = REPO_ROOT / "scripts" / "market" / name
+    spec = importlib.util.spec_from_file_location(name.replace(".py", ""), path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _write_fixture(path: Path) -> None:
     tickers = {
         "NVDA": {"base": 100.0, "daily": 0.0030, "ev_sales": 22.0, "pe": 48.0},
@@ -157,6 +166,9 @@ def test_market_snapshot_fixture_duckdb_analytics_and_evidence(tmp_path: Path) -
     assert bars_path.with_suffix(".parquet").exists()
     assert snapshot_path.exists()
     assert snapshot_path.with_suffix(".parquet").exists()
+    snapshot_rows = {row["ticker"]: row for row in _jsonl_rows(snapshot_path)}
+    assert snapshot_rows["NVDA"]["close_price"] is not None
+    assert snapshot_rows["NVDA"]["field_status"]["close_price"] == "provided"
 
     analytics_path = output_root / "analytics" / f"{snapshot_id}_3m_analytics.jsonl"
     analytics_summary = compute_market_analytics(
@@ -241,6 +253,88 @@ def test_market_snapshot_fixture_rejects_duplicate_ticker_date(tmp_path: Path) -
             as_of_date="2026-05-25",
             tickers=["NVDA"],
         )
+
+
+def test_fmp_valuation_enrichment_maps_fields_to_latest_rows() -> None:
+    module = _load_market_script("07_enrich_market_snapshot_valuation_fmp.py")
+    valuations = {
+        "MSFT": module._extract_fmp_valuation(
+            "MSFT",
+            {"symbol": "MSFT", "marketCap": 3_100_000_000_000, "pe": 32.5},
+            {
+                "enterpriseValueTTM": 3_250_000_000_000,
+                "evToSalesTTM": 11.8,
+                "enterpriseValueOverEBITDATTM": 22.4,
+            },
+        )
+    }
+    rows = [
+        {"ticker": "MSFT", "date": "2026-05-21", "close": "410", "market_cap": ""},
+        {"ticker": "MSFT", "date": "2026-05-22", "close": "418", "market_cap": ""},
+        {"ticker": "SPY", "date": "2026-05-22", "close": "745", "market_cap": ""},
+    ]
+
+    summary = module._enrich_latest_rows(
+        rows,
+        valuations=valuations,
+        tickers=["MSFT"],
+        benchmark_tickers=["SPY"],
+        valuation_source_url="https://financialmodelingprep.com/stable/batch-quote?symbols=MSFT",
+        valuation_as_of_date="2026-05-25",
+    )
+
+    assert summary["enriched_ticker_count"] == 1
+    assert summary["field_coverage"]["market_cap"] == 1
+    assert rows[0]["market_cap"] == ""
+    assert rows[1]["market_cap"] == 3_100_000_000_000
+    assert rows[1]["enterprise_value"] == 3_250_000_000_000
+    assert rows[1]["pe_ttm"] == 32.5
+    assert rows[1]["ev_sales_ttm"] == 11.8
+    assert rows[1]["ev_ebitda_ttm"] == 22.4
+    assert rows[2]["market_cap"] == ""
+
+
+def test_market_events_from_sec_manifest_selects_latest_event(tmp_path: Path) -> None:
+    module = _load_market_script("08_build_market_events_from_sec_manifest.py")
+    manifest = tmp_path / "manifest.jsonl"
+    rows = [
+        {"ticker": "MSFT", "form_type": "10-Q", "fiscal_year": 2026, "filing_date": "2026-04-20", "accession_number": "old"},
+        {"ticker": "MSFT", "form_type": "10-Q", "fiscal_year": 2026, "filing_date": "2026-05-01", "accession_number": "new"},
+        {"ticker": "MSFT", "form_type": "8-K", "fiscal_year": 2026, "filing_date": "2026-04-25", "accession_number": "8k"},
+        {"ticker": "NVDA", "form_type": "10-K", "fiscal_year": 2026, "filing_date": "2026-03-01", "accession_number": "10k"},
+    ]
+    manifest.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+
+    events, skipped = module.build_events(
+        manifest_paths=[manifest],
+        tickers=["MSFT", "NVDA"],
+        years=[2026],
+        form_types=["10-Q", "8-K"],
+    )
+
+    assert skipped == []
+    assert events == [
+        {
+            "ticker": "MSFT",
+            "event_type": "8k_earnings_release",
+            "event_date": "2026-04-25",
+            "source": "sec_manifest",
+            "form_type": "8-K",
+            "fiscal_year": 2026,
+            "accession_number": "8k",
+            "filing_url": "",
+        },
+        {
+            "ticker": "MSFT",
+            "event_type": "latest_10q_filing",
+            "event_date": "2026-05-01",
+            "source": "sec_manifest",
+            "form_type": "10-Q",
+            "fiscal_year": 2026,
+            "accession_number": "new",
+            "filing_url": "",
+        },
+    ]
 
 
 def test_query_contract_accepts_market_snapshot_external_source_tier() -> None:

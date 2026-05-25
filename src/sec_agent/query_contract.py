@@ -268,6 +268,18 @@ def _selected_form_types(project_inventory: dict[str, Any], tickers: list[str], 
             form_type = str(filing.get("form_type") or filing.get("source_type") or "").upper().strip()
             if form_type:
                 forms.add(form_type)
+    for gap in project_inventory.get("source_coverage_gaps") or []:
+        if not isinstance(gap, dict):
+            continue
+        ticker = str(gap.get("ticker") or "").upper()
+        if selected and ticker not in selected:
+            continue
+        year = _int_or_none(gap.get("year") or gap.get("filing_year") or gap.get("fiscal_year"))
+        if selected_years and year not in selected_years:
+            continue
+        form_type = str(gap.get("form_type") or gap.get("source_type") or "").upper().strip()
+        if form_type:
+            forms.add(form_type)
     return sorted(forms) or ["10-K"]
 
 
@@ -310,6 +322,21 @@ def _selected_source_tiers(
             source_tier = str(filing.get("source_tier") or "primary_sec_filing").strip()
             if source_tier:
                 tiers.add(source_tier)
+    for gap in project_inventory.get("source_coverage_gaps") or []:
+        if not isinstance(gap, dict):
+            continue
+        ticker = str(gap.get("ticker") or "").upper()
+        if selected and ticker not in selected:
+            continue
+        year = _int_or_none(gap.get("year") or gap.get("filing_year") or gap.get("fiscal_year"))
+        if selected_years and year not in selected_years:
+            continue
+        form_type = str(gap.get("form_type") or gap.get("source_type") or "").upper().strip()
+        if selected_forms and form_type not in selected_forms:
+            continue
+        source_tier = str(gap.get("source_tier") or "").strip()
+        if source_tier:
+            tiers.add(source_tier)
     return sorted(tiers) or ["primary_sec_filing"]
 
 
@@ -378,8 +405,26 @@ def _source_coverage_gaps(
             lookup.setdefault(key, set()).add(str(filing.get("source_tier") or "primary_sec_filing"))
 
     gaps: list[dict[str, Any]] = []
+    gap_keys: set[tuple[str, int, str, str]] = set()
     required_tiers = [str(tier) for tier in source_tiers if str(tier)] or ["primary_sec_filing"]
     selected_forms = {str(form or "").upper().strip() for form in filing_types if str(form or "").strip()}
+    for gap in _inventory_source_coverage_gaps(
+        project_inventory,
+        tickers=tickers,
+        years=years,
+        filing_types=filing_types,
+        source_tiers=source_tiers,
+    ):
+        key = (
+            str(gap.get("ticker") or "").upper(),
+            int(gap.get("year") or 0),
+            str(gap.get("form_type") or "").upper(),
+            str(gap.get("reason") or gap.get("reason_code") or ""),
+        )
+        if key in gap_keys:
+            continue
+        gaps.append(gap)
+        gap_keys.add(key)
     for ticker in tickers:
         ticker_text = str(ticker or "").upper()
         if not ticker_text:
@@ -397,32 +442,89 @@ def _source_coverage_gaps(
                 key = (ticker_text, int(year_value), form)
                 available_tiers = lookup.get(key, set())
                 if not available_tiers:
-                    gaps.append(
-                        {
-                            "ticker": ticker_text,
-                            "year": int(year_value),
-                            "form_type": form,
-                            "period_type": _period_type_for_form(form),
-                            "reason": _missing_form_reason(form),
-                        }
-                    )
+                    reason = _missing_form_reason(form)
+                    gap_key = (ticker_text, int(year_value), form, reason)
+                    if gap_key not in gap_keys:
+                        gaps.append(
+                            {
+                                "ticker": ticker_text,
+                                "year": int(year_value),
+                                "form_type": form,
+                                "period_type": _period_type_for_form(form),
+                                "reason": reason,
+                            }
+                        )
+                        gap_keys.add(gap_key)
                     continue
                 required_tiers_for_form = _required_source_tiers_for_form(form, required_tiers)
                 missing_tiers = sorted(set(required_tiers_for_form) - available_tiers)
                 if missing_tiers:
-                    gaps.append(
-                        {
-                            "ticker": ticker_text,
-                            "year": int(year_value),
-                            "form_type": form,
-                            "missing_source_tiers": missing_tiers,
-                            "available_source_tiers": sorted(available_tiers),
-                            "period_type": _period_type_for_form(form),
-                            "reason": "source_tier_not_in_inventory",
-                        }
-                    )
+                    reason = "source_tier_not_in_inventory"
+                    gap_key = (ticker_text, int(year_value), form, reason)
+                    if gap_key not in gap_keys:
+                        gaps.append(
+                            {
+                                "ticker": ticker_text,
+                                "year": int(year_value),
+                                "form_type": form,
+                                "missing_source_tiers": missing_tiers,
+                                "available_source_tiers": sorted(available_tiers),
+                                "period_type": _period_type_for_form(form),
+                                "reason": reason,
+                            }
+                        )
+                        gap_keys.add(gap_key)
                 if len(gaps) >= 40:
                     return gaps
+    return gaps
+
+
+def _inventory_source_coverage_gaps(
+    project_inventory: dict[str, Any],
+    *,
+    tickers: list[str],
+    years: list[int],
+    filing_types: list[str],
+    source_tiers: list[str],
+) -> list[dict[str, Any]]:
+    selected_tickers = {str(ticker or "").upper() for ticker in tickers if str(ticker or "").strip()}
+    selected_years = {int(year) for year in years if _int_or_none(year) is not None}
+    selected_forms = {str(form or "").upper().strip() for form in filing_types if str(form or "").strip()}
+    selected_tiers = {str(tier or "").strip() for tier in source_tiers if str(tier or "").strip()}
+    gaps: list[dict[str, Any]] = []
+    for row in project_inventory.get("source_coverage_gaps") or []:
+        if not isinstance(row, dict):
+            continue
+        ticker = str(row.get("ticker") or "").upper().strip()
+        year = _int_or_none(row.get("year") or row.get("filing_year") or row.get("fiscal_year"))
+        form = str(row.get("form_type") or row.get("source_type") or "").upper().strip()
+        tier = str(row.get("source_tier") or "").strip()
+        if not ticker or year is None or not form:
+            continue
+        if selected_tickers and ticker not in selected_tickers:
+            continue
+        if selected_years and int(year) not in selected_years:
+            continue
+        if selected_forms and form not in selected_forms:
+            continue
+        if selected_tiers and tier and tier not in selected_tiers:
+            continue
+        reason = str(row.get("reason_code") or row.get("reason") or "source_gap_in_inventory").strip()
+        gap = {
+            "ticker": ticker,
+            "year": int(year),
+            "form_type": form,
+            "source_tier": tier or None,
+            "period_type": _period_type_for_form(form),
+            "reason": reason,
+        }
+        if row.get("category"):
+            gap["category"] = row.get("category")
+        if row.get("category_slug"):
+            gap["category_slug"] = row.get("category_slug")
+        if row.get("source"):
+            gap["source"] = row.get("source")
+        gaps.append(gap)
     return gaps
 
 

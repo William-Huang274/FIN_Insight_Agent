@@ -16,6 +16,7 @@ from evidence import build_evidence_from_chunks  # noqa: E402
 from evidence.schema import EvidenceObject  # noqa: E402
 from ingestion import build_8k_earnings_chunks  # noqa: E402
 from sec_agent.query_contract import validate_query_contract  # noqa: E402
+from sec_agent.project_inventory import build_project_inventory  # noqa: E402
 from sec_agent.tool_harness import SecAgentToolHarness  # noqa: E402
 from sec_agent.context_api import _default_source_policy  # noqa: E402
 
@@ -23,6 +24,15 @@ from sec_agent.context_api import _default_source_policy  # noqa: E402
 def _load_8k_manifest_module():
     path = REPO_ROOT / "scripts" / "build_sec_8k_earnings_manifest.py"
     spec = importlib.util.spec_from_file_location("build_sec_8k_earnings_manifest_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_8k_downloader_module():
+    path = REPO_ROOT / "scripts" / "download_sec_8k_earnings.py"
+    spec = importlib.util.spec_from_file_location("download_sec_8k_earnings_under_test", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -573,6 +583,9 @@ def test_connector_does_not_select_generic_9_01_press_release(monkeypatch, tmp_p
         connector.find_earnings_release_8k("789019", 2026)
     except SecEdgarConnectorError as exc:
         assert "No earnings-release 8-K exhibit found" in str(exc)
+        assert exc.reason_code == "no_item_2_02_8k_for_filing_year"
+        assert exc.diagnostics["eight_k_rows_in_year"] == 1
+        assert exc.diagnostics["item_2_02_8k_rows"] == 0
     else:
         raise AssertionError("expected SecEdgarConnectorError")
 
@@ -609,8 +622,37 @@ def test_connector_rejects_8k_without_earnings_release_exhibit(monkeypatch, tmp_
         connector.find_earnings_release_8k("789019", 2026)
     except SecEdgarConnectorError as exc:
         assert "No earnings-release 8-K exhibit found" in str(exc)
+        assert exc.reason_code == "no_earnings_release_exhibit_for_item_2_02_8k"
+        assert exc.diagnostics["item_2_02_8k_rows"] == 1
+        assert exc.diagnostics["non_earnings_exhibit_count"] == 1
     else:
         raise AssertionError("expected SecEdgarConnectorError")
+
+
+def test_8k_downloader_builds_structured_missing_record() -> None:
+    downloader = _load_8k_downloader_module()
+    planned = {
+        "ticker": "NVDA",
+        "year": 2027,
+        "form_type": "8-K",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "category": "AI/GPU semiconductor",
+        "category_slug": "ai_gpu_semiconductor",
+    }
+    exc = SecEdgarConnectorError(
+        "No earnings-release 8-K exhibit found for CIK 0001045810 and filing year 2027 "
+        "(reason_code=no_item_2_02_8k_for_filing_year).",
+        reason_code="no_item_2_02_8k_for_filing_year",
+        diagnostics={"eight_k_rows_in_year": 2, "item_2_02_8k_rows": 0},
+    )
+
+    record = downloader.build_missing_record(planned, exc, after_date="2026-01-01")
+
+    assert record["schema_version"] == "sec_8k_earnings_source_gap_v0.1"
+    assert record["ticker"] == "NVDA"
+    assert record["filing_year"] == 2027
+    assert record["reason_code"] == "no_item_2_02_8k_for_filing_year"
+    assert record["diagnostics"]["eight_k_rows_in_year"] == 2
 
 
 def test_8k_earnings_manifest_builder_collects_exhibit_paths(tmp_path: Path) -> None:
@@ -697,6 +739,127 @@ def test_8k_manifest_builder_rejects_cached_non_202_item_press_release(tmp_path:
     records = manifest.collect_8k_earnings_manifest(cache_root, years=[2026], tickers=["MSFT"])
 
     assert records == []
+
+
+def test_8k_manifest_builder_reports_cached_source_gaps(tmp_path: Path) -> None:
+    manifest = _load_8k_manifest_module()
+    cache_root = tmp_path / "sec_8k_earnings"
+    filing_dir = cache_root / "2026" / "mega-cap_software_cloud" / "MSFT" / "000119312526224155"
+    filing_dir.mkdir(parents=True)
+    (filing_dir / "ex991.htm").write_text("<html>Generic press release</html>", encoding="utf-8")
+    (filing_dir / "metadata.json").write_text(
+        json.dumps(
+            {
+                "ticker": "MSFT",
+                "company": "MICROSOFT CORP",
+                "fiscal_year": 2026,
+                "category": "mega-cap software/cloud",
+                "category_slug": "mega-cap_software_cloud",
+                "form_type": "8-K",
+                "source_type": "8-K",
+                "source_tier": "company_authored_unaudited_sec_filing",
+                "filing_items": "5.02,9.01",
+                "period_type": "current_report",
+                "accession_number": "0001193125-26-224155",
+                "exhibit_document": "ex991.htm",
+                "local_html_path": "ex991.htm",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    records, gaps = manifest.collect_8k_earnings_manifest_with_gaps(
+        cache_root,
+        years=[2026],
+        tickers=["MSFT"],
+        expected_scope=[
+            {
+                "ticker": "MSFT",
+                "year": 2026,
+                "category": "mega-cap software/cloud",
+                "category_slug": "mega-cap_software_cloud",
+                "source_tier": "company_authored_unaudited_sec_filing",
+            },
+            {
+                "ticker": "NVDA",
+                "year": 2026,
+                "category": "AI/GPU semiconductor",
+                "category_slug": "ai_gpu_semiconductor",
+                "source_tier": "company_authored_unaudited_sec_filing",
+            },
+        ],
+    )
+
+    assert records == []
+    assert {gap["ticker"]: gap["reason_code"] for gap in gaps} == {
+        "MSFT": "cached_8k_missing_item_2_02",
+        "NVDA": "no_cached_8k_earnings_metadata",
+    }
+
+
+def test_query_contract_uses_inventory_8k_source_gap_reasons() -> None:
+    manifest_rows = [
+        {
+            "ticker": "MSFT",
+            "company": "MICROSOFT CORP",
+            "fiscal_year": 2026,
+            "category": "mega-cap software/cloud",
+            "category_slug": "mega-cap_software_cloud",
+            "form_type": "10-Q",
+            "source_type": "10-Q",
+            "source_tier": "primary_sec_filing",
+            "html_path": "msft-10q.html",
+            "metadata_path": "msft-10q.metadata.json",
+        }
+    ]
+    inventory = build_project_inventory(
+        manifest_rows,
+        manifest_path="manifest.jsonl",
+        bm25_index_dir="bm25",
+        object_bm25_index_dir="objects",
+        bge_model="bge",
+        source_gap_rows=[
+            {
+                "ticker": "MSFT",
+                "year": 2026,
+                "form_type": "8-K",
+                "source_tier": "company_authored_unaudited_sec_filing",
+                "reason_code": "no_item_2_02_8k_for_filing_year",
+                "source": "download_sec_8k_earnings",
+            }
+        ],
+    )
+    result = validate_query_contract(
+        {
+            "task_type": "general_sec_financial_question",
+            "search_scope_tickers": ["MSFT"],
+            "focus_tickers": ["MSFT"],
+            "years": [2026],
+            "filing_types": ["10-Q", "8-K"],
+            "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+            "metric_families": ["cloud_revenue"],
+            "decomposed_tasks": [
+                {
+                    "task_id": "cloud_8k_boundary",
+                    "question_zh": "Use 10-Q values and explain whether 8-K earnings release exists.",
+                    "priority": "primary",
+                    "required_tickers": ["MSFT"],
+                    "required_metric_families": ["cloud_revenue"],
+                }
+            ],
+        },
+        selected_tickers=["MSFT"],
+        selected_years=[2026],
+        project_inventory=inventory,
+    )
+
+    gaps = result["contract"]["source_coverage_gaps"]
+    assert any(
+        gap["ticker"] == "MSFT"
+        and gap["form_type"] == "8-K"
+        and gap["reason"] == "no_item_2_02_8k_for_filing_year"
+        for gap in gaps
+    )
 
 
 def test_8k_earnings_parser_builds_source_bounded_chunks_and_evidence(tmp_path: Path) -> None:

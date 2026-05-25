@@ -504,10 +504,59 @@ Current caveat:
 
 - The answer can still mention that a requested exact value is not in the current ledger, using explicit boundary language. This is intentional: it preserves the evidence contract without inventing a value or hiding a source gap.
 
+## 8-K Source Gap Reason Follow-Up
+
+Date: 2026-05-25
+
+Problem:
+
+- The P1 pilot showed that only `MSFT` and `AMZN` selected valid `Item 2.02` earnings-release 8-K exhibits, while `GOOGL`, `META`, `NVDA`, and 2027 pilot rows did not.
+- Before expanding coverage to the broader company universe, the chain needs durable source-gap reasons rather than relying on stderr text or generic `8k_not_in_inventory` coverage gaps.
+- This is a collection/source-contract issue, not an answer fallback issue: missing 8-K evidence must remain missing evidence, with a reason code that the planner, Coverage Matrix, and renderer can surface.
+
+Fix:
+
+- `src/connectors/sec_edgar_connector.py`
+  - `SecEdgarConnectorError` now carries optional `reason_code` and `diagnostics`.
+  - 8-K earnings-release discovery records counts for SEC 8-K rows in the filing year, rows with `Item 2.02`, Ex-99 candidates, non-earnings exhibits, low-score exhibits, and selected candidates.
+  - Failed discovery is classified as `no_8k_filings_available`, `no_8k_for_filing_year`, `no_item_2_02_8k_for_filing_year`, `no_earnings_release_exhibit_for_item_2_02_8k`, or `earnings_release_8k_not_selected`.
+- `scripts/download_sec_8k_earnings.py`
+  - writes structured missing-source JSONL records through `--missing-output` / `SEC_8K_EARNINGS_MISSING_OUTPUT`;
+  - default generated path is `data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_missing_2026_2027.jsonl`.
+- `scripts/build_sec_8k_earnings_manifest.py`
+  - adds `collect_8k_earnings_manifest_with_gaps(...)`;
+  - writes manifest-stage gap JSONL through `--gap-output`;
+  - classifies cached metadata skips such as `cached_8k_missing_item_2_02`, `selected_8k_exhibit_html_missing`, `invalid_8k_earnings_metadata_identity`, and expected-scope gaps such as `no_cached_8k_earnings_metadata`.
+- `src/sec_agent/project_inventory.py`, `src/sec_agent/query_contract.py`, and `scripts/cloud/sec_agent_interactive.py`
+  - support optional `source_gap_rows` / `--source-gap-path` / `SOURCE_GAP_PATH`;
+  - project inventory now carries selected source gaps into planner inventory text;
+  - Query Contract validation preserves source-gap form/tier scope and emits the specific 8-K reason instead of only a generic inventory miss.
+
+Validation:
+
+```bash
+python -m pytest tests/test_sec_agent_8k_earnings_source.py -q
+python -m pytest tests/test_sec_agent_10q_source_contract.py tests/test_sec_agent_context_source_policy.py tests/test_sec_benchmark_eval_mixed_context.py -q
+python -m py_compile src/connectors/sec_edgar_connector.py src/sec_agent/project_inventory.py src/sec_agent/query_contract.py scripts/download_sec_8k_earnings.py scripts/build_sec_8k_earnings_manifest.py scripts/cloud/sec_agent_interactive.py
+git diff --check -- scripts/build_sec_8k_earnings_manifest.py scripts/cloud/sec_agent_interactive.py scripts/download_sec_8k_earnings.py src/connectors/sec_edgar_connector.py src/sec_agent/project_inventory.py src/sec_agent/query_contract.py tests/test_sec_agent_8k_earnings_source.py
+```
+
+Results:
+
+- 8-K source tests: `22 passed`.
+- 10-Q/source-policy/mixed-context regression tests: `39 passed`.
+- `py_compile`: passed.
+- `git diff --check`: passed.
+
+Next use on cloud:
+
+- Re-run the 8-K downloader with `--allow-missing` and keep both downloader and manifest gap JSONL under `data/processed_private/source_gaps/`.
+- When running mixed-with-8K sessions, pass `SOURCE_GAP_PATH=<gap-jsonl>` so `project_inventory.json`, Query Contract, and Coverage Matrix expose source-gap reasons before broadening the company set.
+
 ## Follow-Up
 
 - Keep all P1 artifacts in pilot-specific paths until source selection, retrieval, renderer labels, and gates pass for a broader company set.
-- Expand beyond the current `MSFT`/`AMZN` selected 8-K pilot only after the next source-specific plan records how to handle missing `Item 2.02` rows and non-calendar fiscal quarters.
+- Expand beyond the current `MSFT`/`AMZN` selected 8-K pilot only after the cloud gap report confirms whether missing rows are SEC-source absence, `Item 2.02` absence, exhibit-selection absence, or cache/manifest contract failure.
 - Update this document after implementation with concrete artifact paths, row counts, tests, and cloud run IDs.
 
 ## Safety Notes

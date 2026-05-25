@@ -73,6 +73,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, help="Optional max filings to process.")
     parser.add_argument("--dry-run", action="store_true", help="Print planned fetches only.")
     parser.add_argument(
+        "--missing-output",
+        default=os.getenv(
+            "SEC_8K_EARNINGS_MISSING_OUTPUT",
+            "data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_missing_2026_2027.jsonl",
+        ),
+        help="Write structured missing-source records for planned 8-K earnings releases that cannot be selected.",
+    )
+    parser.add_argument(
         "--allow-missing",
         action="store_true",
         help="Return success when some requested earnings-release 8-Ks are missing.",
@@ -134,15 +142,61 @@ def main() -> None:
                 )
                 print(json.dumps(result, ensure_ascii=False))
             except SecEdgarConnectorError as exc:
-                failure = {**planned, "error": str(exc)}
+                failure = build_missing_record(planned, exc, after_date=args.after_date)
                 failures.append(failure)
                 print(json.dumps(failure, ensure_ascii=False), file=sys.stderr)
             processed += 1
         if args.limit is not None and processed >= args.limit:
             break
 
+    if failures and args.missing_output:
+        write_jsonl(failures, REPO_ROOT / args.missing_output)
+
     if failures and not args.allow_missing:
         raise SystemExit(1)
+
+
+def build_missing_record(
+    planned: dict[str, Any],
+    exc: SecEdgarConnectorError,
+    *,
+    after_date: str | None = None,
+) -> dict[str, Any]:
+    reason_code = getattr(exc, "reason_code", None) or classify_missing_reason(str(exc))
+    diagnostics = getattr(exc, "diagnostics", {}) or {}
+    return {
+        "schema_version": "sec_8k_earnings_source_gap_v0.1",
+        "source": "download_sec_8k_earnings",
+        "status": "missing",
+        **planned,
+        "filing_year": planned.get("year"),
+        "requested_item_codes": ["2.02"],
+        "requested_exhibit_types": ["EX-99.1", "EX-99.01", "EX-99"],
+        "after_date": after_date,
+        "reason_code": reason_code,
+        "reason": reason_code,
+        "error": str(exc),
+        "diagnostics": diagnostics,
+    }
+
+
+def classify_missing_reason(message: str) -> str:
+    text = str(message or "").lower()
+    if "ticker not found" in text:
+        return "ticker_not_found_in_sec_reference"
+    if "reason_code=" in text:
+        return text.split("reason_code=", 1)[1].split(")", 1)[0].split(";", 1)[0].strip()
+    if "no earnings-release 8-k" in text:
+        return "earnings_release_8k_not_selected"
+    return "sec_8k_earnings_download_error"
+
+
+def write_jsonl(rows: list[dict[str, Any]], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        for row in rows:
+            f.write(json.dumps(row, ensure_ascii=False))
+            f.write("\n")
 
 
 if __name__ == "__main__":

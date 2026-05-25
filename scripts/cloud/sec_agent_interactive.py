@@ -249,6 +249,11 @@ def parse_args() -> argparse.Namespace:
         "--manifest-path",
         default=os.environ.get("MANIFEST_PATH", "data/processed_private/manifests/sec_tech_10k_manifest.jsonl"),
     )
+    parser.add_argument(
+        "--source-gap-path",
+        default=os.environ.get("SOURCE_GAP_PATH", ""),
+        help="Optional JSONL with structured source coverage gaps, for example 8-K earnings-release missing reasons.",
+    )
     parser.add_argument("--bm25-index-dir", default=os.environ.get("BM25_INDEX_DIR", "data/indexes/bm25/sec_tech_10k"))
     parser.add_argument(
         "--object-bm25-index-dir",
@@ -2832,6 +2837,7 @@ def _required_caveat_specs(caveats: list[Any]) -> list[dict[str, Any]]:
 
 
 def _project_inventory(args: argparse.Namespace, manifest_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    source_gap_rows = _read_jsonl(_repo_path(args.source_gap_path)) if args.source_gap_path else []
     return build_project_inventory(
         manifest_rows,
         manifest_path=args.manifest_path,
@@ -2839,6 +2845,7 @@ def _project_inventory(args: argparse.Namespace, manifest_rows: list[dict[str, A
         object_bm25_index_dir=args.object_bm25_index_dir,
         bge_model=args.bge_model,
         sections=DEFAULT_SECTIONS,
+        source_gap_rows=source_gap_rows,
     )
 
 
@@ -5896,6 +5903,11 @@ def _run(cmd: list[str], *, stream: bool = False) -> None:
 
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _repo_path(path: str | Path) -> Path:
+    value = Path(path)
+    return value if value.is_absolute() else REPO_ROOT / value
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:

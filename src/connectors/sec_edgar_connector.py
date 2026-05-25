@@ -13,7 +13,16 @@ import requests
 
 
 class SecEdgarConnectorError(RuntimeError):
-    pass
+    def __init__(
+        self,
+        message: str,
+        *,
+        reason_code: str | None = None,
+        diagnostics: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.reason_code = reason_code
+        self.diagnostics = diagnostics or {}
 
 
 class SecEdgarConnector:
@@ -360,12 +369,18 @@ class SecEdgarConnector:
         normalized_cik = self._normalize_cik(cik)
         submissions = self.get_company_submissions(normalized_cik)
         recent = submissions.get("filings", {}).get("recent", {})
+        diagnostics = self._new_earnings_release_8k_diagnostics(
+            cik=normalized_cik,
+            year=year,
+            after_date=after_date,
+        )
         selected_block = recent
         selected_match = self._find_earnings_release_8k_match(
             recent,
             cik=normalized_cik,
             year=year,
             after_date=after_date,
+            diagnostics=diagnostics,
         )
 
         if selected_match is None:
@@ -381,14 +396,29 @@ class SecEdgarConnector:
                     cik=normalized_cik,
                     year=year,
                     after_date=after_date,
+                    diagnostics=diagnostics,
                 )
                 if selected_match is not None:
                     selected_block = historical_block
                     break
 
         if selected_match is None:
+            reason_code = self._earnings_release_8k_missing_reason(diagnostics)
+            diagnostics["reason_code"] = reason_code
+            self._append_log(
+                {
+                    "event": "sec_8k_earnings_missing",
+                    "cik": normalized_cik,
+                    "year": year,
+                    "reason_code": reason_code,
+                    "diagnostics": diagnostics,
+                }
+            )
             raise SecEdgarConnectorError(
-                f"No earnings-release 8-K exhibit found for CIK {normalized_cik} and filing year {year}."
+                f"No earnings-release 8-K exhibit found for CIK {normalized_cik} and filing year {year} "
+                f"(reason_code={reason_code}).",
+                reason_code=reason_code,
+                diagnostics=diagnostics,
             )
 
         selected_idx = int(selected_match["idx"])
@@ -539,23 +569,39 @@ class SecEdgarConnector:
         cik: str,
         year: int,
         after_date: str | None = None,
+        diagnostics: dict[str, Any] | None = None,
     ) -> dict[str, Any] | None:
         forms = filing_block.get("form", [])
         for idx, form in enumerate(forms):
             if str(form or "").upper().strip() != "8-K":
                 continue
+            self._increment_diagnostic(diagnostics, "eight_k_rows_seen")
             filing_date = self._get_recent_value(filing_block, "filingDate", idx)
             if not filing_date.startswith(str(year)):
                 continue
+            self._increment_diagnostic(diagnostics, "eight_k_rows_in_year")
             if after_date and filing_date and filing_date <= after_date:
+                self._increment_diagnostic(diagnostics, "eight_k_rows_filtered_by_after_date")
                 continue
             accession_number = self._get_recent_value(filing_block, "accessionNumber", idx)
             primary_document = self._get_recent_value(filing_block, "primaryDocument", idx)
             if not accession_number or not primary_document:
+                self._increment_diagnostic(diagnostics, "eight_k_rows_missing_accession_or_primary_document")
                 continue
             filing_items = self._get_recent_value(filing_block, "items", idx)
             if not self._filing_items_include_earnings_release(filing_items):
+                self._increment_diagnostic(diagnostics, "eight_k_rows_without_item_2_02")
                 continue
+            self._increment_diagnostic(diagnostics, "item_2_02_8k_rows")
+            self._append_diagnostic_sample(
+                diagnostics,
+                "item_2_02_accession_samples",
+                {
+                    "accession_number": accession_number,
+                    "filing_date": filing_date,
+                    "items": filing_items,
+                },
+            )
             primary_url = self._build_filing_url(cik, accession_number, primary_document)
             primary_html = self._request_text(primary_url)
             detail_index = self.get_filing_detail_index(cik, accession_number)
@@ -563,6 +609,7 @@ class SecEdgarConnector:
                 detail_index,
                 primary_html=primary_html,
                 filing_items=filing_items,
+                diagnostics=diagnostics,
             )
             if exhibit:
                 return {
@@ -570,7 +617,67 @@ class SecEdgarConnector:
                     "primary_html": primary_html,
                     "exhibit": exhibit,
                 }
+            self._increment_diagnostic(diagnostics, "item_2_02_8k_rows_without_selected_exhibit")
         return None
+
+    @staticmethod
+    def _new_earnings_release_8k_diagnostics(
+        *,
+        cik: str,
+        year: int,
+        after_date: str | None,
+    ) -> dict[str, Any]:
+        return {
+            "schema_version": "sec_8k_earnings_discovery_diagnostics_v0.1",
+            "cik": cik,
+            "filing_year": int(year),
+            "after_date": after_date,
+            "eight_k_rows_seen": 0,
+            "eight_k_rows_in_year": 0,
+            "eight_k_rows_filtered_by_after_date": 0,
+            "eight_k_rows_missing_accession_or_primary_document": 0,
+            "eight_k_rows_without_item_2_02": 0,
+            "item_2_02_8k_rows": 0,
+            "item_2_02_8k_rows_without_selected_exhibit": 0,
+            "filing_detail_item_count": 0,
+            "ex_99_item_count": 0,
+            "non_earnings_exhibit_count": 0,
+            "low_score_exhibit_count": 0,
+            "selected_exhibit_candidate_count": 0,
+            "item_2_02_accession_samples": [],
+        }
+
+    @staticmethod
+    def _increment_diagnostic(diagnostics: dict[str, Any] | None, key: str, amount: int = 1) -> None:
+        if diagnostics is None:
+            return
+        diagnostics[key] = int(diagnostics.get(key) or 0) + amount
+
+    @staticmethod
+    def _append_diagnostic_sample(
+        diagnostics: dict[str, Any] | None,
+        key: str,
+        value: dict[str, Any],
+        *,
+        limit: int = 5,
+    ) -> None:
+        if diagnostics is None:
+            return
+        samples = diagnostics.setdefault(key, [])
+        if isinstance(samples, list) and len(samples) < limit:
+            samples.append(value)
+
+    @staticmethod
+    def _earnings_release_8k_missing_reason(diagnostics: dict[str, Any]) -> str:
+        if int(diagnostics.get("eight_k_rows_in_year") or 0) == 0:
+            if int(diagnostics.get("eight_k_rows_seen") or 0) == 0:
+                return "no_8k_filings_available"
+            return "no_8k_for_filing_year"
+        if int(diagnostics.get("item_2_02_8k_rows") or 0) == 0:
+            return "no_item_2_02_8k_for_filing_year"
+        if int(diagnostics.get("selected_exhibit_candidate_count") or 0) == 0:
+            return "no_earnings_release_exhibit_for_item_2_02_8k"
+        return "earnings_release_8k_not_selected"
 
     @staticmethod
     def _should_probe_document_fiscal_focus(
@@ -711,11 +818,14 @@ class SecEdgarConnector:
         *,
         primary_html: str = "",
         filing_items: str = "",
+        diagnostics: dict[str, Any] | None = None,
     ) -> dict[str, Any] | None:
         descriptions = cls._exhibit_descriptions_from_primary_html(primary_html)
         candidates: list[tuple[int, dict[str, Any]]] = []
         has_earnings_item = cls._filing_items_include_earnings_release(filing_items)
-        for sequence, item in enumerate(cls._filing_detail_items(filing_detail_index), start=1):
+        detail_items = cls._filing_detail_items(filing_detail_index)
+        cls._increment_diagnostic(diagnostics, "filing_detail_item_count", len(detail_items))
+        for sequence, item in enumerate(detail_items, start=1):
             name = str(item.get("name") or "").strip()
             if not name:
                 continue
@@ -723,8 +833,10 @@ class SecEdgarConnector:
             exhibit_type = cls._infer_exhibit_type(name, description)
             if exhibit_type not in {"EX-99.1", "EX-99.01", "EX-99"}:
                 continue
+            cls._increment_diagnostic(diagnostics, "ex_99_item_count")
             description_text = description or str(item.get("description") or "")
             if cls._looks_like_non_earnings_exhibit(description_text):
+                cls._increment_diagnostic(diagnostics, "non_earnings_exhibit_count")
                 continue
             score = 0
             reason = []
@@ -744,7 +856,9 @@ class SecEdgarConnector:
                 score += 1
                 reason.append("8k_item_2_02_or_9_01")
             if score < 5:
+                cls._increment_diagnostic(diagnostics, "low_score_exhibit_count")
                 continue
+            cls._increment_diagnostic(diagnostics, "selected_exhibit_candidate_count")
             candidates.append(
                 (
                     score,

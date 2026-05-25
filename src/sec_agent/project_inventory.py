@@ -23,6 +23,7 @@ def build_project_inventory(
     object_bm25_index_dir: str,
     bge_model: str,
     sections: tuple[str, ...] = DEFAULT_SECTIONS,
+    source_gap_rows: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     companies: dict[str, dict[str, Any]] = {}
     categories: dict[str, set[str]] = defaultdict(set)
@@ -96,6 +97,7 @@ def build_project_inventory(
         item["filings"] = sorted(item["filings"], key=lambda filing: (filing["year"], filing["form_type"], filing["period_end"]))
         normalized_companies.append(item)
 
+    normalized_source_gaps = _normalize_source_gap_rows(source_gap_rows or [])
     inventory = {
         "schema_version": "project_source_inventory_v0.1",
         "source": "manifest_derived",
@@ -112,6 +114,11 @@ def build_project_inventory(
             for category, tickers in sorted(categories.items())
         ],
         "companies": normalized_companies,
+        "source_coverage_gaps": normalized_source_gaps,
+        "source_coverage_gap_count": len(normalized_source_gaps),
+        "source_coverage_gap_reasons": dict(
+            sorted(Counter(str(gap.get("reason_code") or "unknown") for gap in normalized_source_gaps).items())
+        ),
         "indexes": {
             "manifest_path": manifest_path,
             "bm25_index_dir": bm25_index_dir,
@@ -140,6 +147,8 @@ def inventory_brief(inventory: dict[str, Any]) -> dict[str, Any]:
         "source_types": inventory.get("source_types") or {},
         "source_tiers": inventory.get("source_tiers") or {},
         "categories": inventory.get("categories") or [],
+        "source_coverage_gap_count": inventory.get("source_coverage_gap_count") or 0,
+        "source_coverage_gap_reasons": inventory.get("source_coverage_gap_reasons") or {},
     }
 
 
@@ -200,6 +209,20 @@ def inventory_prompt(
             f"forms={','.join(str(form) for form in item['forms']) or '<none>'} | "
             f"source_tiers={','.join(str(tier) for tier in item['source_tiers']) or '<none>'}"
         )
+    selected_gaps = _selected_source_gap_rows(
+        inventory.get("source_coverage_gaps") or [],
+        selected_tickers=selected_tickers,
+        selected_years=selected_years,
+    )
+    if selected_gaps:
+        lines.extend(["", "SELECTED SOURCE GAPS"])
+        for gap in selected_gaps[:20]:
+            lines.append(
+                "- "
+                f"{gap.get('ticker')} {gap.get('year')} {gap.get('form_type')} | "
+                f"tier={gap.get('source_tier') or '<unknown>'} | "
+                f"reason={gap.get('reason_code') or gap.get('reason') or '<unknown>'}"
+            )
     lines.extend(
         [
             "",
@@ -224,6 +247,64 @@ def _int_or_none(value: Any) -> int | None:
         return int(str(value))
     except Exception:
         return None
+
+
+def _normalize_source_gap_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    normalized: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        ticker = str(row.get("ticker") or "").upper().strip()
+        year = _int_or_none(row.get("year") or row.get("filing_year") or row.get("fiscal_year"))
+        form_type = str(row.get("form_type") or row.get("source_type") or "").upper().strip()
+        reason_code = str(row.get("reason_code") or row.get("reason") or "").strip()
+        if not ticker or year is None or not form_type or not reason_code:
+            continue
+        normalized.append(
+            {
+                "ticker": ticker,
+                "year": int(year),
+                "form_type": form_type,
+                "source_tier": str(row.get("source_tier") or "").strip(),
+                "category": str(row.get("category") or "").strip(),
+                "category_slug": str(row.get("category_slug") or "").strip(),
+                "reason_code": reason_code,
+                "reason": str(row.get("reason") or reason_code).strip(),
+                "source": str(row.get("source") or "").strip(),
+                "status": str(row.get("status") or "missing").strip(),
+                "metadata_path": str(row.get("metadata_path") or "").strip(),
+                "accession_number": str(row.get("accession_number") or "").strip(),
+            }
+        )
+    return sorted(
+        normalized,
+        key=lambda gap: (
+            str(gap.get("ticker") or ""),
+            int(gap.get("year") or 0),
+            str(gap.get("form_type") or ""),
+            str(gap.get("reason_code") or ""),
+        ),
+    )
+
+
+def _selected_source_gap_rows(
+    rows: list[dict[str, Any]],
+    *,
+    selected_tickers: list[str],
+    selected_years: list[int],
+) -> list[dict[str, Any]]:
+    tickers = {str(ticker).upper() for ticker in selected_tickers}
+    years = {int(year) for year in selected_years}
+    selected = []
+    for row in rows:
+        ticker = str(row.get("ticker") or "").upper()
+        year = _int_or_none(row.get("year"))
+        if tickers and ticker not in tickers:
+            continue
+        if years and year not in years:
+            continue
+        selected.append(row)
+    return selected
 
 
 def _jsonable(value: Any) -> Any:

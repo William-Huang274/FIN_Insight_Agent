@@ -166,6 +166,7 @@ def _run_qwen_once(case: dict[str, Any], context_rows: list[dict[str, Any]], arg
             numeric_system_rule = (
                 "审计/季报财务精确数值只能来自 Exact-Value Ledger；"
                 "8-K earnings release 数字只能作为带 evidence_id 的公司未审计管理层材料引用，不能当作 audited ledger fact。"
+                "当8-K证据能解释业绩、guidance、demand、capex/投资节奏或管理层评论时，要主动引用并标注来源边界。"
             )
         elif ledger_rows:
             numeric_system_rule = "所有精确数值只能来自 Exact-Value Ledger。"
@@ -229,6 +230,24 @@ def _is_company_authored_8k_context_row(row: dict[str, Any]) -> bool:
     form_type = str(row.get("form_type") or row.get("source_type") or metadata.get("form_type") or "").upper()
     source_tier = str(row.get("source_tier") or metadata.get("source_tier") or metadata.get("source_boundary") or "")
     return form_type == "8-K" and source_tier == "company_authored_unaudited_sec_filing"
+
+
+def _eight_k_usage_rule(has_8k_context: bool, api_memo_mode: bool) -> str:
+    if not has_8k_context:
+        return ""
+    target_fields = (
+        "what_changed、why_it_matters、peer_readthrough、counterarguments 或 source_limitations"
+        if api_memo_mode
+        else "decision_drivers、key_points、caveat 或 limitations"
+    )
+    return (
+        "8-K Source Usage Rule: Evidence Text 中已有 8-K earnings release 时，"
+        "不能只在 source_limitations 泛泛提及。"
+        "当 8-K 内容能解释业绩表现、guidance、demand、capex/投资节奏、"
+        "management commentary 或业务动能时，必须在"
+        f"{target_fields} 引用对应 8-K evidence_ids，并标注“公司8-K业绩新闻稿，未审计/管理层口径”。"
+        "10-K/10-Q ledger 仍负责审计/季报财务数值；8-K 支持解释和管理层口径，不替代 ledger。\n"
+    )
 
 
 def _build_prompt(
@@ -426,12 +445,14 @@ def _build_prompt(
         else ""
     )
     coverage_rule = _coverage_rule_for_prompt(coverage_matrix)
+    eight_k_usage_rule = _eight_k_usage_rule(has_8k_context, api_memo_mode)
     return (
         "你是SEC财务分析助手。输出中文，严禁编造。\n"
         "不要输出 Thinking Process、思考过程、分析过程或草稿。\n"
         "不要使用 markdown；最终只能输出 JSON object。\n"
         "硬约束：\n"
         f"{numeric_rule}"
+        f"{eight_k_usage_rule}"
         "8. 必须按 Metric Naming Rules 命名指标，不能使用 disallowed_claim_terms_zh。\n"
         "9. RPO 只能称为“剩余履约义务（RPO）”，不能称为预测经常性收入或预测数据。\n"
         "10. Billings 只能称为“Billings/账单额/开票额”，不能称为收入；必须说明它不同于确认收入。\n"

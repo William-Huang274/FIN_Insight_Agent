@@ -207,6 +207,7 @@ def test_runtime_case_adds_8k_source_boundary_gate() -> None:
     )
 
     assert "Label 8-K earnings-release evidence as company-authored unaudited material." in case["gold_points"]
+    assert any("Use retrieved 8-K earnings-release evidence as qualitative support" in point for point in case["gold_points"])
     assert any("Do not treat company-authored 8-K" in trap for trap in case["hallucination_traps"])
     assert case["required_caveats"][0]["required"] is True
 
@@ -408,6 +409,9 @@ def test_synthesis_prompt_exposes_8k_source_boundary_and_numeric_contract() -> N
     assert '"source_tier": "company_authored_unaudited_sec_filing"' in prompt
     assert "8-K earnings release 的金额、百分比或业务 KPI" in prompt
     assert "不能把 8-K earnings release 数字写成 audited Exact-Value Ledger fact" in prompt
+    assert "不能只在 source_limitations 泛泛提及" in prompt
+    assert "业绩表现、guidance、demand、capex/投资节奏" in prompt
+    assert "公司8-K业绩新闻稿，未审计/管理层口径" in prompt
 
 
 def test_llm_contract_normalization_preserves_8k_source_tier() -> None:

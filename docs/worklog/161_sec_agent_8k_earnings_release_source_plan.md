@@ -678,7 +678,65 @@ Results:
 
 Remaining limitation:
 
-- The validated chain now retrieves and carries 8-K evidence through Coverage Matrix, but rendered answers still tend to ground quantitative bullet support in 10-Q ledger rows and mention 8-K mostly as a source-boundary caveat. Next improvement should make synthesis explicitly cite 8-K management-commentary rows when the prompt asks for `8-K业绩新闻稿` interpretation, without promoting 8-K numbers into the audited/exact-value ledger.
+- The validated chain retrieves and carries 8-K evidence through Coverage Matrix, but the synthesis contract still leaned too much toward ledger-only support. The correct product behavior is not "mention 8-K only when the user explicitly asks"; in `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS`, retrieved 8-K earnings-release evidence should be routine qualitative support for earnings explanation, guidance, demand commentary, capex/investment cadence, management commentary, and business momentum when relevant. It must be cited with a company-authored unaudited / management-view boundary and must not replace 10-K/10-Q ledger authority for audited or quarterly financial statement values.
+
+## 8-K Proactive Earnings Support Contract
+
+Problem:
+
+- User review correctly identified that 8-K earnings-release evidence is an explanatory support source for investment analysis, not a source that should appear only when the user explicitly asks for `8-K业绩新闻稿`.
+- The API memo system prompt still said all precise numbers must come from the Exact-Value Ledger. That conflicted with the mixed 8-K contract, where 8-K values/KPIs may be cited only as company-authored unaudited management material with evidence IDs.
+
+Decision:
+
+- Mixed 8-K mode now treats retrieved 8-K earnings-release rows as proactive qualitative support when they explain earnings performance, guidance, demand, capex/investment cadence, management commentary, or business momentum.
+- 8-K support must carry explicit boundary text: `公司8-K业绩新闻稿，未审计/管理层口径` or equivalent English source-boundary rendering.
+- 10-K/10-Q ledger remains authoritative for audited/quarterly financial statement values; 8-K must not be promoted into the audited Exact-Value Ledger.
+
+Implementation:
+
+- `scripts/run_sec_eval_synthesis_qwen9b_backend.py`
+  - Added an 8-K usage rule to `_build_prompt(...)`: if 8-K earnings-release rows are present, synthesis cannot only mention them in `source_limitations`; relevant rows must be cited in memo/driver fields with 8-K evidence IDs and source boundary.
+  - Updated local Qwen chat-template system rule so mixed 8-K evidence is proactively cited for earnings explanation while remaining non-ledger/unaudited.
+- `scripts/cloud/sec_agent_interactive.py`
+  - Made the API memo system prompt source-aware. In mixed 8-K context, it no longer says every precise number can only come from the Exact-Value Ledger; it distinguishes 10-K/10-Q ledger values from cited unaudited 8-K management material.
+  - Added a runtime case gold point requiring retrieved 8-K earnings-release evidence to be used as qualitative support when relevant.
+- `tests/test_sec_agent_8k_earnings_source.py`
+  - Added contract assertions that runtime cases include proactive 8-K qualitative support.
+  - Added prompt assertions for the "cannot only mention in source_limitations" rule and the required `公司8-K业绩新闻稿，未审计/管理层口径` boundary.
+
+Local verification:
+
+```bash
+python -m pytest tests/test_sec_agent_8k_earnings_source.py -q
+python -m py_compile scripts/cloud/sec_agent_interactive.py scripts/run_sec_eval_synthesis_qwen9b_backend.py
+```
+
+Result:
+
+- `tests/test_sec_agent_8k_earnings_source.py`: `27 passed`.
+
+Cloud validation on RTX 5090 node:
+
+- Synced the changed synthesis/source-policy files to `/root/autodl-tmp/FIN_Insight_Agent`.
+- Remote verification:
+
+```bash
+/root/autodl-tmp/envs/sec-agent-cu128/bin/python -m pytest tests/test_sec_agent_8k_earnings_source.py -q
+/root/autodl-tmp/envs/sec-agent-cu128/bin/python -m py_compile scripts/cloud/sec_agent_interactive.py scripts/run_sec_eval_synthesis_qwen9b_backend.py
+```
+
+- Remote test result: `27 passed`.
+- Real mixed 10-Q/8-K DeepSeek smoke:
+  - Prompt: `结合MSFT和AMZN最新10-Q和8-K业绩新闻稿，解释云业务和AI相关业绩表现、管理层口径及证据边界。`
+  - Run root: `eval/sec_cases/outputs/interactive_sec_agent/20260525_132042_8eb6b5d419`.
+  - Gates: `ok=True`, `pass=12`, `fail=[]`.
+  - Coverage: `complete=True`, `primary_complete=True`, context rows `120`, ledger rows `80`.
+  - Answer behavior: final rendered answer cited `MSFT 2026 8-K earnings release Exhibit 99.1 (company-authored unaudited)` in `关键变化`, `为什么重要`, `反证与风险`, and `证据边界`; it also cited `AMZN 2026 8-K earnings release Exhibit 99.1 (company-authored unaudited)` in `为什么重要` and source-boundary sections.
+
+Residual issue:
+
+- The renderer can still produce awkward `依据数值` labels when a percentage/rate ledger row is attached to a cloud-revenue narrative. This is a metric-label rendering issue, separate from 8-K source-policy usage, and should be fixed before broad presentation-quality demos.
 
 ## Safety Notes
 

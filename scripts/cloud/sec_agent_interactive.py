@@ -1155,6 +1155,7 @@ def _ask_llm_server(
         synthesis_profile = os.environ.get("SYNTHESIS_PROFILE", "api_memo_v1")
         prompt_case["synthesis_profile"] = synthesis_profile
     user_prompt = qwen_adapter._build_prompt(prompt_case, context_rows, ledger_rows, judgment_plan)
+    has_8k_context = qwen_adapter._has_company_authored_8k_context(prompt_case, context_rows)
     query_contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
     focus_tickers = [str(item).upper() for item in (query_contract.get("focus_tickers") or case.get("companies") or [])]
     is_broad_ai = str(query_contract.get("task_type") or case.get("task_type") or "") == "ai_industry_financial_trend" or (
@@ -1164,9 +1165,16 @@ def _ask_llm_server(
     driver_cap = 8 if is_broad_ai else (6 if api_insight_mode else 4)
     point_cap = 8 if is_broad_ai else (7 if api_insight_mode else 5)
     if synthesis_profile == "api_memo_v1":
+        numeric_source_rule = (
+            "10-K/10-Q财务精确数值必须来自 Exact-Value Ledger；"
+            "8-K earnings release 只能作为带 evidence_id 的公司未审计/管理层口径材料引用，不能当作 audited ledger fact。"
+            "当8-K证据能解释业绩、guidance、demand、capex/投资节奏或管理层评论时，要主动引用并标注来源边界。"
+            if has_8k_context
+            else "必须只基于给定证据回答；所有精确数值只能来自 Exact-Value Ledger。"
+        )
         system_content = (
             "你是SEC证据约束下的财务分析师，输出目标是高质量投研memo，而不是审计清单。"
-            "必须只基于给定证据回答；所有精确数值只能来自 Exact-Value Ledger。"
+            f"{numeric_source_rule}"
             "必须输出 valid JSON object，只包含 memo schema：direct_answer、investment_thesis、what_changed、why_it_matters、"
             "peer_readthrough、counterarguments、watch_items、source_limitations、not_found、limitations。"
             "不要输出 legacy summary、decision_drivers 或 key_points；系统会从 memo 字段派生 gate 字段。"
@@ -2775,6 +2783,7 @@ def _build_case(
 def _source_policy_gold_points(source_policy: str) -> list[str]:
     if source_policy == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS":
         return [
+            "Use retrieved 8-K earnings-release evidence as qualitative support for earnings explanation, guidance, demand commentary, capex/investment cadence, and business momentum when relevant; label it as company-authored unaudited material.",
             "Label 8-K earnings-release evidence as company-authored unaudited material.",
             "Do not use 8-K earnings-release values as audited Exact-Value Ledger facts.",
         ]

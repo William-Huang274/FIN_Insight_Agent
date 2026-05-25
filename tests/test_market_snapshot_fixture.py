@@ -600,6 +600,77 @@ def test_heuristic_market_contract_does_not_keep_sec_only_valuation_gap() -> Non
     assert "valuation is outside the current SEC-only" not in rendered_contract
 
 
+def test_interactive_market_contract_accepts_runtime_snapshot_seed() -> None:
+    interactive = _load_interactive_module()
+    inventory = {
+        "inventory_digest": "inv-market-runtime-seed",
+        "companies": [
+            {
+                "ticker": "NVDA",
+                "company": "NVIDIA",
+                "category": "semiconductor",
+                "filings": [{"year": 2025, "form_type": "10-K", "source_tier": "primary_sec_filing"}],
+            }
+        ],
+        "categories": [{"category": "semiconductor", "tickers": ["NVDA"]}],
+    }
+
+    contract = interactive._build_query_contract(
+        SimpleNamespace(
+            query_planner="heuristic",
+            market_snapshot_id="market_pilot_2026-05-25_7co_v1",
+            market_as_of_date="2026-05-25",
+        ),
+        "Compare NVDA fundamentals with recent market reaction and valuation context",
+        ["NVDA"],
+        [2025],
+        inventory,
+    )
+
+    assert contract["market_snapshot"]["snapshot_id"] == "market_pilot_2026-05-25_7co_v1"
+    assert contract["market_snapshot"]["as_of_date"] == "2026-05-25"
+    assert contract["market_source_gaps"] == []
+
+
+def test_cross_industry_market_prompt_with_jpm_does_not_become_banking_only() -> None:
+    interactive = _load_interactive_module()
+    tickers = ["MSFT", "NVDA", "JPM", "CVX", "PG", "LLY", "WMT"]
+    inventory = {
+        "inventory_digest": "inv-market-cross-industry",
+        "companies": [
+            {
+                "ticker": ticker,
+                "company": ticker,
+                "category": "banking/financial services" if ticker == "JPM" else "cross-industry",
+                "filings": [
+                    {"year": 2025, "form_type": "10-K", "source_tier": "primary_sec_filing"},
+                    {"year": 2026, "form_type": "10-Q", "source_tier": "primary_sec_filing"},
+                ],
+            }
+            for ticker in tickers
+        ],
+        "categories": [{"category": "cross-industry", "tickers": tickers}],
+    }
+
+    contract = interactive._build_query_contract(
+        SimpleNamespace(
+            query_planner="heuristic",
+            market_snapshot_id="market_pilot_2026-05-25_7co_v1",
+            market_as_of_date="2026-05-25",
+        ),
+        "结合SEC 10-Q/10-K和本地市场快照，比较MSFT、NVDA、JPM、CVX、PG、LLY、WMT的基本面动能、市场反应和估值语境是否匹配",
+        tickers,
+        [2025, 2026],
+        inventory,
+    )
+
+    assert "market_snapshot" in contract["source_tiers"]
+    assert contract["market_source_gaps"] == []
+    assert "revenue" in contract["metric_families"]
+    assert "net_interest_income" not in contract["metric_families"]
+    assert all(not str(task.get("task_id", "")).startswith("bank_") for task in contract["decomposed_tasks"])
+
+
 def test_synthesis_normalizer_allows_cited_market_snapshot_values() -> None:
     qwen_adapter = _load_qwen_adapter_module()
     evidence_id = "MARKET_SNAPSHOT::market_pilot_2026-05-25_unit_v1::NVDA::3M::2026-05-25"

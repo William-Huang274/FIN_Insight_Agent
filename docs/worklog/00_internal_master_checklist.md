@@ -270,7 +270,8 @@
 - [ ] Add fundamental-market divergence analytics after SEC/8-K driver outputs are available.
 - [x] Extend Evidence Coverage Matrix, Judgment Plan, synthesis, deterministic gates, renderer, and ContextManager artifact refs for market snapshot source boundaries.
 - [x] Run a local stage-level market snapshot main-chain smoke covering context injection, graph artifact refs, validation, synthesis normalizer, and renderer boundary.
-- [ ] Run a 7-company local fixture smoke before any real-time/provider API integration.
+- [x] Run a 7-company local fixture smoke before any real-time/provider API integration.
+- [ ] Run one real DeepSeek API full-chain synthesis with the 7-company market snapshot evidence pack.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
 - [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.
 - [ ] Validate earlier-node resume from a real partial replay, especially `build_coverage_matrix` or `build_judgment_plan`.

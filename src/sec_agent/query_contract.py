@@ -68,6 +68,44 @@ DEFAULT_FORBIDDEN_CLAIMS = (
     "Do not make a risk or industry claim without retrieved SEC evidence.",
 )
 
+MARKET_SOURCE_TIER = "market_snapshot"
+MARKET_SOURCE_POLICY = "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT"
+MARKET_WINDOWS = {"3M", "6M", "YTD", "1Y"}
+MARKET_FIELDS = {
+    "close_price",
+    "market_cap",
+    "enterprise_value",
+    "return_1d",
+    "return_5d",
+    "return_1m",
+    "return_3m",
+    "return_ytd",
+    "relative_return_vs_benchmark_3m",
+    "max_drawdown_3m",
+    "volatility_3m",
+    "pe_ttm",
+    "ev_sales_ttm",
+    "ev_ebitda_ttm",
+    "peer_ev_sales_rank",
+    "peer_ev_sales_bucket",
+}
+MARKET_ANALYSIS_TOOLS = {
+    "return_summary",
+    "peer_relative_return",
+    "valuation_peer_rank",
+    "post_filing_event_return",
+    "fundamental_market_divergence",
+}
+MARKET_REQUIRED_CAVEATS = (
+    "Market snapshot evidence is non-real-time and must carry snapshot_id, as_of_date, and field refs.",
+    "Market snapshot values support market/valuation/return claims only; SEC ledger remains authoritative for reported fundamentals.",
+)
+MARKET_FORBIDDEN_CLAIMS = (
+    "Do not make unstamped current/latest market claims without market_snapshot as_of_date.",
+    "Do not use market data to overwrite SEC reported financial facts.",
+    "Do not infer unavailable market or valuation fields from model memory.",
+)
+
 BANKING_METRIC_FAMILIES = {
     "allowance_for_credit_losses",
     "asset_quality",
@@ -157,13 +195,21 @@ def validate_query_contract(
         normalizations.append({"field": "filing_types", "action": "filled_from_project_inventory"})
     clean["filing_types"] = filing_types
 
-    source_tiers = _clamp_source_tiers(
-        clean.get("source_tiers") or (clean.get("scope") or {}).get("source_tiers"),
-        allowed_source_tiers,
-    )
+    raw_source_tiers = clean.get("source_tiers") or (clean.get("scope") or {}).get("source_tiers")
+    market_requested = _market_snapshot_requested(clean, raw_source_tiers)
+    allowed_source_tiers_for_contract = list(allowed_source_tiers)
+    if market_requested and MARKET_SOURCE_TIER not in allowed_source_tiers_for_contract:
+        allowed_source_tiers_for_contract.append(MARKET_SOURCE_TIER)
+    source_tiers = _clamp_source_tiers(raw_source_tiers, allowed_source_tiers_for_contract)
     if not source_tiers:
         source_tiers = allowed_source_tiers
         normalizations.append({"field": "source_tiers", "action": "filled_from_project_inventory"})
+    if market_requested and not [tier for tier in source_tiers if tier != MARKET_SOURCE_TIER]:
+        source_tiers = [tier for tier in allowed_source_tiers if tier not in source_tiers] + source_tiers
+        normalizations.append({"field": "source_tiers", "action": "added_sec_tiers_for_market_snapshot_contract"})
+    if market_requested and MARKET_SOURCE_TIER not in source_tiers:
+        source_tiers.append(MARKET_SOURCE_TIER)
+        normalizations.append({"field": "source_tiers", "action": "added_market_snapshot_tier"})
     clean["source_tiers"] = source_tiers
     clean["source_policy"] = _source_policy_for_scope(filing_types, source_tiers)
 
@@ -176,6 +222,13 @@ def validate_query_contract(
         "sec_sections": list(sections),
     }
 
+    if market_requested:
+        clean["market_snapshot"] = _normalize_market_snapshot_contract(
+            clean.get("market_snapshot"),
+            warnings,
+            normalizations,
+        )
+
     clean["analysis_axes"] = _string_list(clean.get("analysis_axes"), max_items=12, max_chars=80)
     clean["facets"] = _string_list(clean.get("facets"), max_items=12, max_chars=96)
     clean["metric_families"] = _metric_family_list(clean.get("metric_families"), warnings, field="metric_families")
@@ -186,13 +239,13 @@ def validate_query_contract(
         clean = _drop_nonbank_banking_scope(clean, warnings, normalizations)
     clean["required_caveats"] = _ensure_required_items(
         _normalize_required_caveats(_string_list(clean.get("required_caveats"), max_items=12, max_chars=260), normalizations),
-        (*DEFAULT_REQUIRED_CAVEATS, *_source_policy_caveats(filing_types)),
+        (*DEFAULT_REQUIRED_CAVEATS, *_source_policy_caveats(filing_types, source_tiers)),
         "required_caveats",
         normalizations,
     )
     clean["forbidden_claims"] = _ensure_required_items(
         _string_list(clean.get("forbidden_claims"), max_items=12, max_chars=260),
-        DEFAULT_FORBIDDEN_CLAIMS,
+        _forbidden_claims_for_scope(source_tiers),
         "forbidden_claims",
         normalizations,
     )
@@ -206,12 +259,21 @@ def validate_query_contract(
         source_tiers,
     )
     clean["source_coverage_gaps"] = source_coverage_gaps
+    clean["market_source_gaps"] = _market_source_gaps(clean.get("market_snapshot")) if market_requested else []
     if source_coverage_gaps:
         warnings.append(
             {
                 "type": "source_coverage_gaps",
                 "gap_count": len(source_coverage_gaps),
                 "sample": source_coverage_gaps[:5],
+            }
+        )
+    if clean["market_source_gaps"]:
+        warnings.append(
+            {
+                "type": "market_source_gaps",
+                "gap_count": len(clean["market_source_gaps"]),
+                "sample": clean["market_source_gaps"][:5],
             }
         )
     clean["planner_confidence"] = _planner_confidence(clean.get("planner_confidence"))
@@ -247,6 +309,7 @@ def validate_query_contract(
             "source_policy": clean["source_policy"],
         },
         "source_coverage_gaps": source_coverage_gaps,
+        "market_source_gaps": clean["market_source_gaps"],
         "inventory_digest": project_inventory.get("inventory_digest"),
     }
     clean["query_contract_validation"] = report
@@ -343,6 +406,8 @@ def _selected_source_tiers(
 def _source_policy_for_scope(filing_types: list[str], source_tiers: list[str]) -> str:
     forms = {str(form).upper() for form in filing_types if str(form)}
     tiers = {str(tier) for tier in source_tiers if str(tier)}
+    if MARKET_SOURCE_TIER in tiers:
+        return MARKET_SOURCE_POLICY
     primary_sec_only = not tiers or tiers <= {"primary_sec_filing"}
     mixed_with_8k = bool(
         "8-K" in forms
@@ -360,8 +425,9 @@ def _source_policy_for_scope(filing_types: list[str], source_tiers: list[str]) -
     return "MIXED_SOURCE"
 
 
-def _source_policy_caveats(filing_types: list[str]) -> tuple[str, ...]:
+def _source_policy_caveats(filing_types: list[str], source_tiers: list[str]) -> tuple[str, ...]:
     forms = {str(form).upper() for form in filing_types if str(form)}
+    tiers = {str(tier) for tier in source_tiers if str(tier)}
     caveats = []
     if "10-Q" in forms:
         caveats.append(
@@ -373,7 +439,129 @@ def _source_policy_caveats(filing_types: list[str]) -> tuple[str, ...]:
         caveats.append(
             "8-K earnings-release evidence is company-authored unaudited management material; do not treat it as audited financial statement evidence."
         )
+    if MARKET_SOURCE_TIER in tiers:
+        caveats.extend(MARKET_REQUIRED_CAVEATS)
     return tuple(caveats)
+
+
+def _forbidden_claims_for_scope(source_tiers: list[str]) -> tuple[str, ...]:
+    tiers = {str(tier) for tier in source_tiers if str(tier)}
+    if MARKET_SOURCE_TIER not in tiers:
+        return DEFAULT_FORBIDDEN_CLAIMS
+    return (
+        "Do not use news, earnings calls, or macro data outside the project inventory.",
+        "Do not make a risk or industry claim without retrieved evidence.",
+        *MARKET_FORBIDDEN_CLAIMS,
+    )
+
+
+def _market_snapshot_requested(contract: dict[str, Any], raw_source_tiers: Any) -> bool:
+    tiers = {str(tier or "").strip() for tier in _list_like(raw_source_tiers) if str(tier or "").strip()}
+    market = contract.get("market_snapshot")
+    if MARKET_SOURCE_TIER in tiers or str(contract.get("source_policy") or "") == MARKET_SOURCE_POLICY:
+        return True
+    if isinstance(market, dict):
+        return bool(market.get("required") or market.get("snapshot_id") or market.get("as_of_date"))
+    return False
+
+
+def _normalize_market_snapshot_contract(
+    value: Any,
+    warnings: list[dict[str, Any]],
+    normalizations: list[dict[str, Any]],
+) -> dict[str, Any]:
+    market = dict(value) if isinstance(value, dict) else {}
+    if not isinstance(value, dict):
+        normalizations.append({"field": "market_snapshot", "action": "created_required_market_snapshot_contract"})
+
+    window = str(market.get("window") or market.get("market_window") or "3M").upper().strip()
+    if window not in MARKET_WINDOWS:
+        warnings.append({"type": "invalid_market_window_normalized", "value": window})
+        window = "3M"
+
+    fields = _market_field_list(market.get("fields") or market.get("market_fields"))
+    if not fields:
+        fields = [
+            "close_price",
+            "return_3m",
+            "relative_return_vs_benchmark_3m",
+            "max_drawdown_3m",
+            "ev_sales_ttm",
+        ]
+        normalizations.append({"field": "market_snapshot.fields", "action": "filled_default_market_fields"})
+
+    tools = _market_tool_list(market.get("analysis_tools") or market.get("market_analysis_tools"))
+    if not tools:
+        tools = ["return_summary", "peer_relative_return", "valuation_peer_rank"]
+        normalizations.append({"field": "market_snapshot.analysis_tools", "action": "filled_default_market_tools"})
+
+    snapshot_id = _short_text(market.get("snapshot_id"), 96)
+    as_of_date = _date_text(market.get("as_of_date"))
+    provider = _short_text(market.get("provider") or "manual_fixture", 80)
+    clean = {
+        "required": True,
+        "snapshot_id": snapshot_id,
+        "as_of_date": as_of_date,
+        "window": window,
+        "fields": fields,
+        "analysis_tools": tools,
+        "provider": provider,
+    }
+    if market.get("benchmark_ticker"):
+        clean["benchmark_ticker"] = _short_text(market.get("benchmark_ticker"), 16).upper()
+    return clean
+
+
+def _market_source_gaps(market: Any) -> list[dict[str, Any]]:
+    if not isinstance(market, dict) or not market.get("required"):
+        return []
+    gaps = []
+    if not market.get("snapshot_id"):
+        gaps.append({"source_tier": MARKET_SOURCE_TIER, "reason": "missing_market_snapshot_id"})
+    if not market.get("as_of_date"):
+        gaps.append({"source_tier": MARKET_SOURCE_TIER, "reason": "missing_market_snapshot_as_of_date"})
+    if not market.get("fields"):
+        gaps.append({"source_tier": MARKET_SOURCE_TIER, "reason": "missing_market_fields"})
+    if not market.get("analysis_tools"):
+        gaps.append({"source_tier": MARKET_SOURCE_TIER, "reason": "missing_market_analysis_tools"})
+    return gaps
+
+
+def _market_field_list(value: Any) -> list[str]:
+    out = []
+    for item in _list_like(value):
+        field = _slug(str(item or ""))
+        if field in MARKET_FIELDS and field not in out:
+            out.append(field)
+        if len(out) >= 16:
+            break
+    return out
+
+
+def _market_tool_list(value: Any) -> list[str]:
+    out = []
+    for item in _list_like(value):
+        tool = _slug(str(item or ""))
+        if tool in MARKET_ANALYSIS_TOOLS and tool not in out:
+            out.append(tool)
+        if len(out) >= 5:
+            break
+    return out
+
+
+def _date_text(value: Any) -> str:
+    text = _short_text(value, 20)
+    return text if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text) else ""
+
+
+def _list_like(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, (list, tuple, set)):
+        return list(value)
+    return []
 
 
 def _source_coverage_gaps(
@@ -406,14 +594,15 @@ def _source_coverage_gaps(
 
     gaps: list[dict[str, Any]] = []
     gap_keys: set[tuple[str, int, str, str]] = set()
-    required_tiers = [str(tier) for tier in source_tiers if str(tier)] or ["primary_sec_filing"]
+    sec_source_tiers = [str(tier) for tier in source_tiers if str(tier) and str(tier) != MARKET_SOURCE_TIER]
+    required_tiers = sec_source_tiers or ["primary_sec_filing"]
     selected_forms = {str(form or "").upper().strip() for form in filing_types if str(form or "").strip()}
     for gap in _inventory_source_coverage_gaps(
         project_inventory,
         tickers=tickers,
         years=years,
         filing_types=filing_types,
-        source_tiers=source_tiers,
+        source_tiers=sec_source_tiers,
     ):
         key = (
             str(gap.get("ticker") or "").upper(),

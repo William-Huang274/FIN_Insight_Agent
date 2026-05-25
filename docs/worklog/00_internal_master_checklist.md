@@ -264,9 +264,10 @@
 - [x] Add DuckDB/parquet market snapshot storage and catalog builder under private data paths.
 - [x] Add deterministic market analytics tools for returns, relative returns, drawdown, volatility, valuation rank, and compact evidence-pack rows.
 - [x] Run a synthetic local CLI/unit smoke for market snapshot normalization, analytics, evidence pack, validation, and DuckDB catalog.
-- [ ] Add event-window return analytics for 8-K earnings release and latest 10-Q filing dates.
+- [x] Add event-window return analytics for 8-K earnings release and latest 10-Q filing dates.
+- [x] Extend Query Contract validator/source-policy handling for `market_snapshot`, `market_window`, `market_fields`, and `market_analysis_tools`.
+- [ ] Extend interactive planner prompt/normalizer for `market_snapshot`, `market_window`, `market_fields`, and `market_analysis_tools`.
 - [ ] Add fundamental-market divergence analytics after SEC/8-K driver outputs are available.
-- [ ] Extend Query Contract planner/validator for `market_snapshot`, `market_window`, `market_fields`, and `market_analysis_tools`.
 - [ ] Extend Evidence Coverage Matrix, Judgment Plan, synthesis, deterministic gates, renderer, and ContextManager artifact refs for market snapshot source boundaries.
 - [ ] Run a 7-company local fixture smoke before any real-time/provider API integration.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.

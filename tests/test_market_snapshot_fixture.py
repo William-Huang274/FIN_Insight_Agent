@@ -21,6 +21,7 @@ from sec_agent.market_snapshot import (  # noqa: E402
     normalize_market_snapshot_fixture,
     validate_market_snapshot,
 )
+from sec_agent.query_contract import validate_query_contract  # noqa: E402
 
 
 def _write_fixture(path: Path) -> None:
@@ -78,15 +79,42 @@ def _write_fixture(path: Path) -> None:
                 )
 
 
+def _write_events(path: Path) -> None:
+    rows = []
+    for ticker in ("NVDA", "MSFT", "JPM"):
+        rows.append(
+            {
+                "ticker": ticker,
+                "event_type": "8k_earnings_release",
+                "event_date": "2026-05-10",
+                "source": "unit_fixture_8k",
+            }
+        )
+        rows.append(
+            {
+                "ticker": ticker,
+                "event_type": "latest_10q_filing",
+                "event_date": "2026-05-12",
+                "source": "unit_fixture_10q",
+            }
+        )
+    with path.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=["ticker", "event_type", "event_date", "source"])
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def _jsonl_rows(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def test_market_snapshot_fixture_duckdb_analytics_and_evidence(tmp_path: Path) -> None:
     fixture_path = tmp_path / "market_fixture.csv"
+    events_path = tmp_path / "market_events.csv"
     output_root = tmp_path / "processed_market"
     snapshot_id = "market_pilot_2026-05-25_unit_v1"
     _write_fixture(fixture_path)
+    _write_events(events_path)
 
     normalize_summary = normalize_market_snapshot_fixture(
         input_path=fixture_path,
@@ -115,6 +143,7 @@ def test_market_snapshot_fixture_duckdb_analytics_and_evidence(tmp_path: Path) -
         window="3M",
         benchmark_ticker="SPY",
         tickers=["NVDA", "MSFT", "JPM"],
+        events_path=events_path,
     )
     analytics_rows = {row["ticker"]: row for row in _jsonl_rows(analytics_path)}
     assert analytics_summary["analytics_count"] == 3
@@ -122,6 +151,9 @@ def test_market_snapshot_fixture_duckdb_analytics_and_evidence(tmp_path: Path) -
     assert analytics_rows["NVDA"]["market_reaction"]["return_3m"] is not None
     assert analytics_rows["NVDA"]["market_reaction"]["relative_return_vs_benchmark_3m"] is not None
     assert analytics_rows["NVDA"]["valuation_context"]["peer_ev_sales_bucket"] == "upper_middle"
+    assert analytics_rows["NVDA"]["event_window"]["8k_earnings_release_return_5d"] is not None
+    assert analytics_rows["NVDA"]["event_window"]["latest_10q_filing_return_5d"] is not None
+    assert analytics_rows["NVDA"]["event_window_metadata"][0]["anchor_date"] >= "2026-05-10"
     assert "outperformed_benchmark_3m" in analytics_rows["NVDA"]["derived_signals"]
 
     catalog_summary = build_market_snapshot_catalog(
@@ -143,6 +175,7 @@ def test_market_snapshot_fixture_duckdb_analytics_and_evidence(tmp_path: Path) -
     assert evidence_summary["row_count"] == 3
     assert evidence_rows[0]["source_tier"] == "market_snapshot"
     assert evidence_rows[0]["field_refs"]
+    assert evidence_rows[0]["event_window_metadata"]
     assert "as_of_date=2026-05-25" in evidence_rows[0]["source_boundary"]
     assert "daily_bars" not in evidence_rows[0]
 
@@ -185,3 +218,97 @@ def test_market_snapshot_fixture_rejects_duplicate_ticker_date(tmp_path: Path) -
             as_of_date="2026-05-25",
             tickers=["NVDA"],
         )
+
+
+def test_query_contract_accepts_market_snapshot_external_source_tier() -> None:
+    inventory = {
+        "inventory_digest": "inv-market",
+        "companies": [
+            {
+                "ticker": "NVDA",
+                "company": "NVIDIA",
+                "category": "semiconductor",
+                "filings": [
+                    {"year": 2025, "form_type": "10-K", "source_tier": "primary_sec_filing"},
+                    {"year": 2026, "form_type": "10-Q", "source_tier": "primary_sec_filing"},
+                    {
+                        "year": 2026,
+                        "form_type": "8-K",
+                        "source_tier": "company_authored_unaudited_sec_filing",
+                    },
+                ],
+            }
+        ],
+        "categories": [{"category": "semiconductor", "tickers": ["NVDA"]}],
+    }
+    contract = {
+        "task_type": "company_comparison",
+        "search_scope_tickers": ["NVDA"],
+        "focus_tickers": ["NVDA"],
+        "years": [2025, 2026],
+        "filing_types": ["10-K", "10-Q", "8-K"],
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+        "metric_families": ["data_center_revenue"],
+        "decomposed_tasks": [
+            {
+                "task_id": "fundamental_market_reaction",
+                "question_zh": "Compare filed fundamentals with market reaction.",
+                "priority": "primary",
+                "required_tickers": ["NVDA"],
+                "required_metric_families": ["data_center_revenue"],
+            }
+        ],
+        "market_snapshot": {
+            "required": True,
+            "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            "as_of_date": "2026-05-25",
+            "window": "3M",
+            "fields": [
+                "close_price",
+                "return_3m",
+                "relative_return_vs_benchmark_3m",
+                "ev_sales_ttm",
+                "not_allowed_field",
+            ],
+            "analysis_tools": [
+                "return_summary",
+                "peer_relative_return",
+                "valuation_peer_rank",
+                "post_filing_event_return",
+                "unsupported_tool",
+            ],
+            "benchmark_ticker": "SPY",
+        },
+    }
+
+    result = validate_query_contract(
+        contract,
+        selected_tickers=["NVDA"],
+        selected_years=[2025, 2026],
+        project_inventory=inventory,
+    )
+    clean = result["contract"]
+
+    assert result["report"]["status"] == "pass"
+    assert clean["source_policy"] == "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT"
+    assert clean["source_tiers"] == [
+        "primary_sec_filing",
+        "company_authored_unaudited_sec_filing",
+        "market_snapshot",
+    ]
+    assert clean["market_snapshot"]["fields"] == [
+        "close_price",
+        "return_3m",
+        "relative_return_vs_benchmark_3m",
+        "ev_sales_ttm",
+    ]
+    assert clean["market_snapshot"]["analysis_tools"] == [
+        "return_summary",
+        "peer_relative_return",
+        "valuation_peer_rank",
+        "post_filing_event_return",
+    ]
+    assert clean["market_source_gaps"] == []
+    assert clean["source_coverage_gaps"] == []
+    assert any("Market snapshot evidence is non-real-time" in caveat for caveat in clean["required_caveats"])
+    assert any("Do not use market data to overwrite SEC reported financial facts" in claim for claim in clean["forbidden_claims"])

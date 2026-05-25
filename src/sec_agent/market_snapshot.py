@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import json
 import math
+import re
 from collections import defaultdict
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -18,6 +19,7 @@ TRADING_DAY_WINDOWS = {
     "1m": 21,
     "3m": 63,
 }
+EVENT_WINDOW_DAYS = (1, 3, 5, 10)
 SNAPSHOT_NUMERIC_FIELDS = (
     "close_price",
     "market_cap",
@@ -228,6 +230,7 @@ def compute_market_analytics(
     window: str = "3M",
     benchmark_ticker: str | None = None,
     tickers: Iterable[str] | None = None,
+    events_path: str | Path | None = None,
 ) -> dict[str, Any]:
     bars = _read_jsonl(bars_path)
     snapshots = _read_jsonl(snapshot_path)
@@ -247,6 +250,7 @@ def compute_market_analytics(
     benchmark_returns = _return_bundle(grouped.get(benchmark, [])) if benchmark else {}
     valuation_rows = [row for row in snapshots if _ticker(row.get("ticker")) in selected]
     ev_sales_ranks = _peer_ranks(valuation_rows, "ev_sales_ttm")
+    events_by_ticker = _read_market_events(events_path) if events_path else {}
 
     analytics = []
     for ticker in sorted(selected):
@@ -259,6 +263,10 @@ def compute_market_analytics(
         if benchmark_returns.get("return_3m") is not None and returns.get("return_3m") is not None:
             relative_3m = float(returns["return_3m"]) - float(benchmark_returns["return_3m"])
         rank_info = ev_sales_ranks.get(ticker, {})
+        event_window, event_window_metadata, event_window_gaps = _event_window_returns(
+            rows,
+            events_by_ticker.get(ticker, []),
+        )
         as_of_date = str(snapshot.get("as_of_date") or (rows[-1]["date"] if rows else ""))
         row = {
             "schema_version": SCHEMA_VERSION,
@@ -282,10 +290,9 @@ def compute_market_analytics(
                 "peer_ev_sales_rank": rank_info.get("rank"),
                 "peer_ev_sales_bucket": rank_info.get("bucket"),
             },
-            "event_window": {
-                "after_8k_earnings_release_5d": None,
-                "after_latest_10q_filing_5d": None,
-            },
+            "event_window": event_window,
+            "event_window_metadata": event_window_metadata,
+            "event_window_gaps": event_window_gaps,
             "derived_signals": _derived_signals(returns, relative_3m, max_drawdown, rank_info.get("bucket")),
             "source_boundary": f"market_snapshot; non-real-time; as_of_date={as_of_date}",
         }
@@ -300,6 +307,7 @@ def compute_market_analytics(
         "analytics_count": len(analytics),
         "tickers": [row["ticker"] for row in analytics],
         "benchmark_ticker": benchmark or None,
+        "events_path": str(events_path) if events_path else None,
     }
 
 
@@ -339,6 +347,8 @@ def build_market_evidence_pack(
                 "market_reaction": item.get("market_reaction") or {},
                 "valuation_context": item.get("valuation_context") or {},
                 "event_window": item.get("event_window") or {},
+                "event_window_metadata": item.get("event_window_metadata") or [],
+                "event_window_gaps": item.get("event_window_gaps") or [],
                 "derived_signals": item.get("derived_signals") or [],
                 "field_refs": field_refs,
                 "source_boundary": item.get("source_boundary"),
@@ -392,6 +402,13 @@ def validate_market_snapshot(
                 errors.append({"type": "analytics_invalid_source_tier", "row": idx})
             if not row.get("source_boundary"):
                 warnings.append({"type": "analytics_missing_source_boundary", "row": idx})
+            event_window = row.get("event_window") or {}
+            if not isinstance(event_window, dict):
+                errors.append({"type": "analytics_invalid_event_window", "row": idx})
+            else:
+                for field, value in event_window.items():
+                    if value is not None and not isinstance(value, (int, float)):
+                        errors.append({"type": "analytics_non_numeric_event_window", "row": idx, "field": field})
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -433,6 +450,50 @@ def _read_jsonl(path: str | Path) -> list[dict[str, Any]]:
         if isinstance(payload, dict):
             rows.append(payload)
     return rows
+
+
+def _read_market_events(path: str | Path) -> dict[str, list[dict[str, Any]]]:
+    path = Path(path)
+    if not path.exists():
+        raise ValueError(f"market event file not found: {path}")
+    rows = _read_rows(path)
+    if not rows:
+        raise ValueError(f"market event file has no rows: {path}")
+    errors = []
+    seen_ticker_event_types = set()
+    events: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for idx, row in enumerate(rows, start=1):
+        ticker = _ticker(row.get("ticker") or row.get("symbol"))
+        event_type = _event_type(row.get("event_type") or row.get("event_name") or row.get("type") or row.get("filing_type"))
+        try:
+            event_date = _parse_date(row.get("event_date") or row.get("date") or row.get("filed_date"))
+        except ValueError:
+            errors.append({"row": idx, "type": "invalid_or_missing_event_date", "ticker": ticker})
+            continue
+        if not ticker:
+            errors.append({"row": idx, "type": "missing_event_ticker"})
+            continue
+        if not event_type:
+            errors.append({"row": idx, "type": "missing_event_type", "ticker": ticker})
+            continue
+        key = (ticker, event_type)
+        if key in seen_ticker_event_types:
+            errors.append({"row": idx, "type": "duplicate_ticker_event_type", "ticker": ticker, "event_type": event_type})
+            continue
+        seen_ticker_event_types.add(key)
+        events[ticker].append(
+            {
+                "event_type": event_type,
+                "event_date": event_date.isoformat(),
+                "source": str(row.get("source") or ""),
+            }
+        )
+    if errors:
+        raise ValueError(
+            "invalid market event rows: "
+            + json.dumps(errors[:20], ensure_ascii=False, sort_keys=True)
+        )
+    return events
 
 
 def _write_jsonl(path: str | Path, rows: list[dict[str, Any]]) -> None:
@@ -548,6 +609,78 @@ def _annualized_volatility(rows: list[dict[str, Any]], days: int) -> float | Non
     return math.sqrt(variance) * math.sqrt(252)
 
 
+def _event_window_returns(
+    rows: list[dict[str, Any]],
+    events: list[dict[str, Any]],
+) -> tuple[dict[str, float], list[dict[str, Any]], list[dict[str, Any]]]:
+    if not rows or not events:
+        return {}, [], []
+    dates = [_parse_date(row["date"]) for row in rows]
+    returns: dict[str, float] = {}
+    metadata = []
+    gaps = []
+    for event in sorted(events, key=lambda item: (item["event_type"], item["event_date"])):
+        event_type = str(event["event_type"])
+        event_date = _parse_date(event["event_date"])
+        anchor_idx = next((idx for idx, row_date in enumerate(dates) if row_date >= event_date), None)
+        if anchor_idx is None:
+            gaps.append(
+                {
+                    "event_type": event_type,
+                    "event_date": event_date.isoformat(),
+                    "reason": "no_market_bar_on_or_after_event_date",
+                }
+            )
+            continue
+        anchor_price = _price(rows[anchor_idx])
+        if anchor_price in (None, 0):
+            gaps.append(
+                {
+                    "event_type": event_type,
+                    "event_date": event_date.isoformat(),
+                    "anchor_date": rows[anchor_idx]["date"],
+                    "reason": "missing_anchor_price",
+                }
+            )
+            continue
+        metadata.append(
+            {
+                "event_type": event_type,
+                "event_date": event_date.isoformat(),
+                "anchor_date": rows[anchor_idx]["date"],
+                "source": event.get("source") or "",
+            }
+        )
+        for days in EVENT_WINDOW_DAYS:
+            target_idx = anchor_idx + days
+            field = f"{event_type}_return_{days}d"
+            if target_idx >= len(rows):
+                gaps.append(
+                    {
+                        "event_type": event_type,
+                        "event_date": event_date.isoformat(),
+                        "anchor_date": rows[anchor_idx]["date"],
+                        "window": f"{days}d",
+                        "reason": "insufficient_bars_after_event",
+                    }
+                )
+                continue
+            target_price = _price(rows[target_idx])
+            if target_price is None:
+                gaps.append(
+                    {
+                        "event_type": event_type,
+                        "event_date": event_date.isoformat(),
+                        "anchor_date": rows[anchor_idx]["date"],
+                        "window": f"{days}d",
+                        "reason": "missing_target_price",
+                    }
+                )
+                continue
+            returns[field] = (target_price / float(anchor_price)) - 1.0
+    return returns, metadata, gaps
+
+
 def _peer_ranks(rows: list[dict[str, Any]], field: str) -> dict[str, dict[str, Any]]:
     valued = [
         (_ticker(row.get("ticker")), _float_or_none(row.get(field)))
@@ -646,6 +779,9 @@ def _market_evidence_text(analytics: dict[str, Any], field_refs: list[dict[str, 
     for field in ("return_3m", "relative_return_vs_benchmark_3m", "max_drawdown_3m", "volatility_3m", "pe_ttm", "ev_sales_ttm"):
         if field in values:
             fragments.append(f"{field}={_format_number(values[field])}")
+    event_fields = sorted(field for field in values if field.endswith("_return_5d"))
+    for field in event_fields[:2]:
+        fragments.append(f"{field}={_format_number(values[field])}")
     signals = analytics.get("derived_signals") or []
     if signals:
         fragments.append("signals=" + ",".join(str(item) for item in signals[:4]))
@@ -678,6 +814,12 @@ def _parse_date(value: Any) -> date:
 
 def _ticker(value: Any) -> str:
     return str(value or "").strip().upper()
+
+
+def _event_type(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    text = re.sub(r"[^a-z0-9]+", "_", text).strip("_")
+    return text[:64]
 
 
 def _upper_list(values: Iterable[str] | None) -> list[str]:

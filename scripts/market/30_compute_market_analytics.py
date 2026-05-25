@@ -36,6 +36,7 @@ def main() -> int:
     parser.add_argument("--window", default="3M")
     parser.add_argument("--benchmark-ticker", default="")
     parser.add_argument("--tickers", default="")
+    parser.add_argument("--events", default="", help="Optional CSV/JSON/JSONL event dates for event-window returns.")
     args = parser.parse_args()
 
     if hasattr(sys.stdout, "reconfigure"):
@@ -62,6 +63,7 @@ def main() -> int:
         window=args.window,
         benchmark_ticker=args.benchmark_ticker or None,
         tickers=_split_csv(args.tickers),
+        events_path=args.events or None,
     )
     print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
     return 0

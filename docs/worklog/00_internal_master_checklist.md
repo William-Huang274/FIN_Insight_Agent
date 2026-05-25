@@ -268,7 +268,8 @@
 - [x] Extend Query Contract validator/source-policy handling for `market_snapshot`, `market_window`, `market_fields`, and `market_analysis_tools`.
 - [x] Extend interactive planner prompt/normalizer for `market_snapshot`, `market_window`, `market_fields`, and `market_analysis_tools`.
 - [ ] Add fundamental-market divergence analytics after SEC/8-K driver outputs are available.
-- [ ] Extend Evidence Coverage Matrix, Judgment Plan, synthesis, deterministic gates, renderer, and ContextManager artifact refs for market snapshot source boundaries.
+- [x] Extend Evidence Coverage Matrix, Judgment Plan, synthesis, deterministic gates, renderer, and ContextManager artifact refs for market snapshot source boundaries.
+- [x] Run a local stage-level market snapshot main-chain smoke covering context injection, graph artifact refs, validation, synthesis normalizer, and renderer boundary.
 - [ ] Run a 7-company local fixture smoke before any real-time/provider API integration.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
 - [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.

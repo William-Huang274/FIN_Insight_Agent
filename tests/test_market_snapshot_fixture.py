@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import csv
+import importlib.util
 import json
 import sys
 from datetime import date, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -21,7 +23,28 @@ from sec_agent.market_snapshot import (  # noqa: E402
     normalize_market_snapshot_fixture,
     validate_market_snapshot,
 )
+from sec_agent.coverage_matrix import build_coverage_matrix  # noqa: E402
+from sec_agent.graph_nodes import state_resume_report  # noqa: E402
+from sec_agent.graph_state import SecAgentState  # noqa: E402
 from sec_agent.query_contract import validate_query_contract  # noqa: E402
+
+
+def _load_interactive_module():
+    path = REPO_ROOT / "scripts" / "cloud" / "sec_agent_interactive.py"
+    spec = importlib.util.spec_from_file_location("sec_agent_interactive_market_test", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_qwen_adapter_module():
+    path = REPO_ROOT / "scripts" / "run_sec_eval_synthesis_qwen9b_backend.py"
+    spec = importlib.util.spec_from_file_location("qwen_adapter_market_test", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _write_fixture(path: Path) -> None:
@@ -248,6 +271,9 @@ def test_query_contract_accepts_market_snapshot_external_source_tier() -> None:
         "years": [2025, 2026],
         "filing_types": ["10-K", "10-Q", "8-K"],
         "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+        "forbidden_claims": [
+            "Do not use market prices, news, earnings calls, or macro data outside the project inventory.",
+        ],
         "metric_families": ["data_center_revenue"],
         "decomposed_tasks": [
             {
@@ -310,5 +336,312 @@ def test_query_contract_accepts_market_snapshot_external_source_tier() -> None:
     ]
     assert clean["market_source_gaps"] == []
     assert clean["source_coverage_gaps"] == []
+    assert result["report"]["selected_scope"]["source_tiers"] == clean["source_tiers"]
+    assert "SEC-only evidence boundary." not in clean["required_caveats"]
+    assert any("Project evidence boundary includes SEC filings and non-real-time market snapshot" in caveat for caveat in clean["required_caveats"])
     assert any("Market snapshot evidence is non-real-time" in caveat for caveat in clean["required_caveats"])
+    assert "Do not use market prices, news, earnings calls, or macro data outside the project inventory." not in clean["forbidden_claims"]
     assert any("Do not use market data to overwrite SEC reported financial facts" in claim for claim in clean["forbidden_claims"])
+
+
+def test_coverage_matrix_tracks_market_snapshot_fields_and_refs() -> None:
+    market_evidence_id = "MARKET_SNAPSHOT::market_pilot_2026-05-25_unit_v1::NVDA::3M::2026-05-25"
+    contract = {
+        "case_id": "market_coverage_unit",
+        "task_type": "company_comparison",
+        "focus_tickers": ["NVDA"],
+        "search_scope_tickers": ["NVDA"],
+        "years": [2025, 2026],
+        "filing_types": ["10-K", "10-Q"],
+        "source_tiers": ["primary_sec_filing", "market_snapshot"],
+        "metric_families": ["data_center_revenue"],
+        "decomposed_tasks": [
+            {
+                "task_id": "fundamental_market_reaction",
+                "question_zh": "Compare filed data center fundamentals with market reaction.",
+                "priority": "primary",
+                "required_tickers": ["NVDA"],
+                "required_metric_families": ["data_center_revenue"],
+            }
+        ],
+        "market_snapshot": {
+            "required": True,
+            "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            "as_of_date": "2026-05-25",
+            "window": "3M",
+            "fields": ["return_3m", "relative_return_vs_benchmark_3m", "ev_sales_ttm"],
+            "analysis_tools": ["return_summary", "peer_relative_return", "valuation_peer_rank"],
+        },
+    }
+    ledger_rows = [
+        {
+            "metric_id": "metric_nvda_2025_dc",
+            "ticker": "NVDA",
+            "fiscal_year": 2025,
+            "metric_family": "data_center_revenue",
+            "form_type": "10-K",
+            "source_tier": "primary_sec_filing",
+            "source_evidence_id": "NVDA_2025_10K_ITEM7",
+        },
+        {
+            "metric_id": "metric_nvda_2026_dc",
+            "ticker": "NVDA",
+            "fiscal_year": 2026,
+            "metric_family": "data_center_revenue",
+            "form_type": "10-Q",
+            "source_tier": "primary_sec_filing",
+            "source_evidence_id": "NVDA_2026_10Q_ITEM2",
+        },
+    ]
+    context_rows = [
+        {
+            "evidence_id": market_evidence_id,
+            "object_id": market_evidence_id,
+            "source_type": "market_snapshot",
+            "source_tier": "market_snapshot",
+            "ticker": "NVDA",
+            "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            "as_of_date": "2026-05-25",
+            "window": "3M",
+            "text": "NVDA market snapshot as of 2026-05-25; return_3m=0.18; relative_return_vs_benchmark_3m=0.11; ev_sales_ttm=22.5.",
+            "market_reaction": {"return_3m": 0.18, "relative_return_vs_benchmark_3m": 0.11},
+            "valuation_context": {"ev_sales_ttm": 22.5},
+            "field_refs": [
+                {
+                    "field_ref": "MARKET::market_pilot_2026-05-25_unit_v1::NVDA::return_3m::2026-05-25",
+                    "field_name": "return_3m",
+                    "value": 0.18,
+                    "as_of_date": "2026-05-25",
+                    "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+                }
+            ],
+        }
+    ]
+
+    matrix = build_coverage_matrix(
+        case={"case_id": "market_coverage_unit"},
+        query_contract=contract,
+        context_rows=context_rows,
+        ledger_rows=ledger_rows,
+        run_id="market_coverage_unit",
+    )
+
+    summary = matrix["summary"]
+    task = matrix["tasks"][0]
+    assert summary["market_snapshot_requested"] is True
+    assert summary["market_snapshot_support_complete"] is True
+    assert summary["covered_market_fields"] == ["ev_sales_ttm", "relative_return_vs_benchmark_3m", "return_3m"]
+    assert task["covered_source_tiers"] == ["market_snapshot", "primary_sec_filing"]
+    assert task["covered_market_tools"] == ["return_summary", "peer_relative_return", "valuation_peer_rank"]
+    assert task["sample_market_field_refs"] == ["MARKET::market_pilot_2026-05-25_unit_v1::NVDA::return_3m::2026-05-25"]
+
+
+def test_interactive_market_context_loader_and_renderer_boundary(tmp_path: Path) -> None:
+    interactive = _load_interactive_module()
+    evidence_id = "MARKET_SNAPSHOT::market_pilot_2026-05-25_unit_v1::NVDA::3M::2026-05-25"
+    evidence_path = tmp_path / "market_evidence.jsonl"
+    row = {
+        "evidence_id": evidence_id,
+        "object_id": evidence_id,
+        "source_type": "market_snapshot",
+        "source_tier": "market_snapshot",
+        "ticker": "NVDA",
+        "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+        "as_of_date": "2026-05-25",
+        "window": "3M",
+        "text": "NVDA market snapshot as of 2026-05-25; return_3m=0.18.",
+        "field_refs": [
+            {
+                "field_ref": "MARKET::market_pilot_2026-05-25_unit_v1::NVDA::return_3m::2026-05-25",
+                "field_name": "return_3m",
+                "value": 0.18,
+                "as_of_date": "2026-05-25",
+                "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            }
+        ],
+    }
+    evidence_path.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+    contract = {
+        "focus_tickers": ["NVDA"],
+        "source_tiers": ["primary_sec_filing", "market_snapshot"],
+        "market_snapshot": {
+            "required": True,
+            "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            "as_of_date": "2026-05-25",
+            "fields": ["return_3m"],
+        },
+    }
+
+    loaded_rows = interactive._load_market_context_rows(str(evidence_path), contract)
+    assert len(loaded_rows) == 1
+    answer = {"what_changed": [{"claim": "Market reaction evidence is available.", "evidence_ids": [evidence_id]}]}
+    rendered = interactive._rendered_answer_markdown(
+        "market test",
+        answer,
+        metric_rows={},
+        evidence_rows=interactive._evidence_rows_by_id(loaded_rows),
+    )
+
+    assert "NVDA 3M market snapshot as_of=2026-05-25" in rendered
+    assert "market snapshot; non-real-time; snapshot_id=market_pilot_2026-05-25_unit_v1" in rendered
+
+
+def test_interactive_attach_market_snapshot_stage_writes_state_artifact(tmp_path: Path) -> None:
+    interactive = _load_interactive_module()
+    evidence_id = "MARKET_SNAPSHOT::market_pilot_2026-05-25_unit_v1::NVDA::3M::2026-05-25"
+    evidence_path = tmp_path / "market_evidence.jsonl"
+    evidence_path.write_text(
+        json.dumps(
+            {
+                "evidence_id": evidence_id,
+                "object_id": evidence_id,
+                "source_type": "market_snapshot",
+                "source_tier": "market_snapshot",
+                "ticker": "NVDA",
+                "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+                "as_of_date": "2026-05-25",
+                "window": "3M",
+                "text": "NVDA market snapshot as of 2026-05-25; return_3m=0.18.",
+                "field_refs": [
+                    {
+                        "field_ref": "MARKET::market_pilot_2026-05-25_unit_v1::NVDA::return_3m::2026-05-25",
+                        "field_name": "return_3m",
+                        "value": 0.18,
+                        "as_of_date": "2026-05-25",
+                        "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "run"
+    trace_dir = output_dir / "trace"
+    trace_dir.mkdir(parents=True)
+    state = SecAgentState.create(
+        run_id="market_stage_unit",
+        user_query="compare fundamentals and market reaction",
+        output_dir=output_dir,
+        selected_tickers=["NVDA"],
+        selected_years=[2025],
+    )
+    contract = {
+        "focus_tickers": ["NVDA"],
+        "source_tiers": ["primary_sec_filing", "market_snapshot"],
+        "market_snapshot": {
+            "required": True,
+            "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            "as_of_date": "2026-05-25",
+            "fields": ["return_3m"],
+        },
+    }
+
+    trace, context_rows = interactive._stage_attach_market_snapshot_context(
+        SimpleNamespace(market_evidence_path=str(evidence_path)),
+        state,
+        {"query_contract": contract},
+        {
+            "trace_dir": trace_dir,
+            "market_context_path": output_dir / "market_snapshot_context_rows.jsonl",
+        },
+        {"context_rows": [], "context_summary": {}},
+        [],
+        lambda *args, **kwargs: None,
+    )
+
+    assert len(context_rows) == 1
+    assert trace["context_summary"]["market_context_row_count"] == 1
+    assert (output_dir / "market_snapshot_context_rows.jsonl").exists()
+    assert "market_snapshot_context" in state.artifacts
+    assert "market_snapshot_context" not in state_resume_report(state)["missing_artifacts"]
+
+
+def test_heuristic_market_contract_does_not_keep_sec_only_valuation_gap() -> None:
+    interactive = _load_interactive_module()
+    inventory = {
+        "inventory_digest": "inv-market-heuristic",
+        "companies": [
+            {
+                "ticker": "NVDA",
+                "company": "NVIDIA",
+                "category": "semiconductor",
+                "filings": [{"year": 2025, "form_type": "10-K", "source_tier": "primary_sec_filing"}],
+            },
+            {
+                "ticker": "MSFT",
+                "company": "Microsoft",
+                "category": "software",
+                "filings": [{"year": 2025, "form_type": "10-K", "source_tier": "primary_sec_filing"}],
+            },
+        ],
+        "categories": [{"category": "mixed", "tickers": ["NVDA", "MSFT"]}],
+    }
+
+    prompt = "Compare NVDA and MSFT fundamentals with recent 3M market reaction and valuation context"
+    contract = interactive._build_heuristic_query_contract(
+        prompt,
+        ["NVDA", "MSFT"],
+        [2025],
+        inventory,
+    )
+    contract = interactive._repair_query_contract_from_prompt(
+        contract,
+        "Compare NVDA and MSFT fundamentals with recent 3M market reaction and valuation context",
+        ["NVDA", "MSFT"],
+        [2025],
+        inventory,
+    )
+    rendered_contract = json.dumps(contract, ensure_ascii=False)
+
+    assert "market_snapshot" in contract["source_tiers"]
+    assert "unsupported under SEC-only source policy" not in rendered_contract
+    assert "valuation is outside the current SEC-only" not in rendered_contract
+
+
+def test_synthesis_normalizer_allows_cited_market_snapshot_values() -> None:
+    qwen_adapter = _load_qwen_adapter_module()
+    evidence_id = "MARKET_SNAPSHOT::market_pilot_2026-05-25_unit_v1::NVDA::3M::2026-05-25"
+    context_rows = [
+        {
+            "evidence_id": evidence_id,
+            "object_id": evidence_id,
+            "source_type": "market_snapshot",
+            "source_tier": "market_snapshot",
+            "ticker": "NVDA",
+            "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            "as_of_date": "2026-05-25",
+            "text": "NVDA market snapshot as of 2026-05-25; return_3m=18%; ev_sales_ttm=22.5.",
+            "field_refs": [
+                {"field_name": "return_3m", "value": 0.18, "as_of_date": "2026-05-25", "snapshot_id": "market_pilot_2026-05-25_unit_v1"},
+                {"field_name": "ev_sales_ttm", "value": 22.5, "as_of_date": "2026-05-25", "snapshot_id": "market_pilot_2026-05-25_unit_v1"},
+            ],
+        }
+    ]
+    answer = {
+        "direct_answer": "Market snapshot supports a positive market reaction.",
+        "what_changed": [
+            {
+                "claim": "NVDA 3M return was 18% and EV/Sales was 22.5 in the snapshot.",
+                "metric_ids": [],
+                "evidence_ids": [evidence_id],
+                "confidence": "medium",
+            }
+        ],
+        "source_limitations": ["market_snapshot is non-real-time as of 2026-05-25."],
+    }
+
+    normalized = qwen_adapter._normalize_answer(
+        answer,
+        ledger_rows=[],
+        context_rows=context_rows,
+        judgment_plan=None,
+        case={
+            "query_contract": {"source_tiers": ["market_snapshot"]},
+            "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT",
+        },
+    )
+
+    assert normalized["_qwen_output_status"] == "valid_json"
+    assert normalized["what_changed"][0]["claim"] == "NVDA 3M return was 18% and EV/Sales was 22.5 in the snapshot."

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from sec_agent.graph_state import ARTIFACT_KEYS, SecAgentState
+from sec_agent.graph_state import ARTIFACT_KEYS, OPTIONAL_ARTIFACT_KEYS, SecAgentState
 
 
 GRAPH_NODE_ORDER = (
@@ -164,7 +164,9 @@ def state_resume_report(state: SecAgentState) -> dict[str, Any]:
         "ready_nodes": ready_nodes,
         "next_ready_node": ready_nodes[0] if ready_nodes else None,
         "blocked_nodes": blocked_nodes,
-        "missing_artifacts": [key for key, value in artifact_status.items() if not value.get("exists")],
+        "missing_artifacts": [
+            key for key, value in artifact_status.items() if not value.get("exists") and key not in OPTIONAL_ARTIFACT_KEYS
+        ],
         "digest_mismatch_artifacts": [
             key for key, value in artifact_status.items() if value.get("exists") and not value.get("digest_ok")
         ],

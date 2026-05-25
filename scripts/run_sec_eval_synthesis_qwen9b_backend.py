@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import subprocess
 import sys
@@ -232,6 +233,49 @@ def _is_company_authored_8k_context_row(row: dict[str, Any]) -> bool:
     return form_type == "8-K" and source_tier == "company_authored_unaudited_sec_filing"
 
 
+def _has_market_snapshot_context(case: dict[str, Any], context_rows: list[dict[str, Any]]) -> bool:
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    source_policy = str(case.get("source_policy") or contract.get("source_policy") or "")
+    source_tiers = {str(tier or "") for tier in (contract.get("source_tiers") or case.get("source_tiers") or [])}
+    if source_policy != "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT" and "market_snapshot" not in source_tiers:
+        return False
+    return any(_is_market_snapshot_context_row(row) for row in context_rows)
+
+
+def _is_market_snapshot_context_row(row: dict[str, Any]) -> bool:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    values = {
+        str(row.get("source_tier") or "").strip(),
+        str(row.get("source_type") or "").strip(),
+        str(row.get("source_kind") or "").strip(),
+        str(metadata.get("source_tier") or "").strip(),
+        str(metadata.get("source_type") or "").strip(),
+    }
+    if "market_snapshot" in values:
+        return True
+    evidence_id = " ".join(str(row.get(key) or "") for key in ("evidence_id", "source_evidence_id", "object_id"))
+    return "MARKET_SNAPSHOT::" in evidence_id
+
+
+def _market_fields_for_prompt(row: dict[str, Any]) -> list[dict[str, Any]]:
+    fields = []
+    for ref in row.get("field_refs") or []:
+        if not isinstance(ref, dict):
+            continue
+        fields.append(
+            {
+                "field_ref": ref.get("field_ref"),
+                "field_name": ref.get("field_name"),
+                "value": ref.get("value"),
+                "as_of_date": ref.get("as_of_date") or row.get("as_of_date"),
+                "snapshot_id": ref.get("snapshot_id") or row.get("snapshot_id"),
+            }
+        )
+        if len(fields) >= 12:
+            break
+    return fields
+
+
 def _eight_k_usage_rule(has_8k_context: bool, api_memo_mode: bool) -> str:
     if not has_8k_context:
         return ""
@@ -250,6 +294,23 @@ def _eight_k_usage_rule(has_8k_context: bool, api_memo_mode: bool) -> str:
     )
 
 
+def _market_snapshot_usage_rule(has_market_context: bool, api_memo_mode: bool) -> str:
+    if not has_market_context:
+        return ""
+    target_fields = (
+        "what_changed、why_it_matters、peer_readthrough、counterarguments 或 source_limitations"
+        if api_memo_mode
+        else "decision_drivers、key_points、caveat 或 limitations"
+    )
+    return (
+        "Market Snapshot Usage Rule: Evidence Text 中已有 market_snapshot 时，"
+        "它只能支持非实时的股价/收益率/相对收益/回撤/估值语境判断。"
+        f"所有市场或估值数值必须在 {target_fields} 绑定对应 market_snapshot evidence_ids，"
+        "并明确 snapshot_id/as_of_date/source boundary。"
+        "market_snapshot 不得覆盖 SEC Exact-Value Ledger 中的财报事实，也不得扩展为实时行情、新闻、分析师预期或模型记忆。\n"
+    )
+
+
 def _build_prompt(
     case: dict[str, Any],
     context_rows: list[dict[str, Any]],
@@ -259,6 +320,7 @@ def _build_prompt(
     case_id = str(case.get("case_id") or "")
     prompt = str(case.get("prompt") or "")
     has_8k_context = _has_company_authored_8k_context(case, context_rows)
+    has_market_context = _has_market_snapshot_context(case, context_rows)
     compact_ledger = []
     for row in ledger_rows:
         metric_contract = _metric_contract(row)
@@ -308,6 +370,9 @@ def _build_prompt(
                 "source_boundary": row.get("source_boundary")
                 or (row.get("metadata") or {}).get("source_boundary")
                 or row.get("source_tier"),
+                "snapshot_id": row.get("snapshot_id") if _is_market_snapshot_context_row(row) else None,
+                "as_of_date": row.get("as_of_date") if _is_market_snapshot_context_row(row) else None,
+                "market_fields": _market_fields_for_prompt(row) if _is_market_snapshot_context_row(row) else [],
                 "section": row.get("section"),
                 "object_id": row.get("object_id"),
                 "evidence_id": row.get("evidence_id"),
@@ -324,16 +389,26 @@ def _build_prompt(
             summary_rule = (
                 "1. direct_answer 和 investment_thesis 必须写中文投研 memo 风格判断；不能写任何精确数字、金额、百分比、逗号大数或 metric_id。"
                 "所有精确数字只能出现在 what_changed、why_it_matters、peer_readthrough、counterarguments 等带 metric_ids 的对象里。"
-                "memo 判断必须解释证据共同说明什么、为什么重要、有哪些反证、后续要看什么，不能给投资建议。\n"
+                "memo 判断必须解释证据共同说明什么、为什么重要、有哪些反证、后续要看什么，不能给投资建议。"
+                + (
+                    "如果有 market_snapshot 证据，direct_answer/investment_thesis 可以定性概括市场反应或估值语境，但精确市场数值仍只能放入带 market evidence_ids 的对象。\n"
+                    if has_market_context
+                    else "\n"
+                )
             )
             summary_hint = (
                 "system-derived legacy summary；do not emit in api_memo_v1"
             )
         elif api_insight_mode:
+            source_scope_sentence = (
+                "summary 可以定性概括 market_snapshot 支持的市场反应或估值语境，但不得写精确市场数值，且后续 drivers/key_points 必须绑定 market evidence_ids。"
+                if has_market_context
+                else "summary 可以做证据约束下的解释和二阶判断，但不能写股价、投资建议、新闻、行业市场规模或 SEC 证据外事实。"
+            )
             summary_rule = (
                 "1. summary 必须写成 4-7 句中文 analyst thesis：先给出自己的综合判断，再解释这些指标共同说明了什么、为什么重要、哪部分证据还不完整。"
                 "summary 不能写任何精确数字、金额、百分比、逗号大数或 metric_id；所有精确数字仍只能放在 decision_drivers/key_points 并绑定 metric_id。"
-                "summary 可以做证据约束下的解释和二阶判断，但不能写股价、投资建议、新闻、行业市场规模或 SEC 证据外事实。"
+                f"{source_scope_sentence}"
                 "summary 中命名的公司、业务层或指标主题，必须在后续 decision_drivers/key_points 中有对应支撑。\n"
             )
             summary_hint = (
@@ -343,6 +418,12 @@ def _build_prompt(
         else:
             summary_rule = "1. summary 只能写一句短判断，不写任何精确数字、金额、百分比、逗号大数或 metric_id。\n"
             summary_hint = "一句中文短判断，不写精确数字或metric_id；数值证据放在drivers/key_points"
+        market_value_rule = (
+            "Market snapshot 的价格、收益率、相对收益、回撤和估值倍数只能作为 market_snapshot evidence_ids 支撑的非实时市场证据引用；"
+            "必须保留 as_of_date/source boundary，不能覆盖 SEC ledger 财报事实，也不能补充实时行情或模型记忆。\n"
+            if has_market_context
+            else ""
+        )
         if has_8k_context:
             numeric_rule = (
                 f"{summary_rule}"
@@ -353,6 +434,7 @@ def _build_prompt(
                 "6. 不能把 percentage_rate 当成 total_value，不能把 period_change_amount 当成 total_value；不要自行计算或输出 ledger/8-K evidence 中不存在的派生倍数、近似倍数或百分比变化。\n"
                 "7. 非 8-K company-authored earnings-release 的 Evidence Text 只能用于解释口径、业务含义和 caveat，不能从中自由抄新数字。\n"
                 "8. 如果 ledger 缺少某个必须财报指标，写入 not_found，并降级结论；不要用 8-K 数字填补 audited/quarterly filing ledger 缺口。\n"
+                f"{market_value_rule}"
             )
         else:
             numeric_rule = (
@@ -363,6 +445,7 @@ def _build_prompt(
                 "5. Evidence Text 只能用于解释口径、业务含义和 caveat，不能从中自由抄新数字。\n"
                 "6. 如果 Evidence Text 里有 ledger 没列出的对比期数字，不能写出该数字；包括 2023/2024 对比期、百分比、近似数、四舍五入数和单位换算数。只能定性说明来源文本包含对比期信息。\n"
                 "7. 如果 ledger 缺少某个必须指标，写入 not_found，并降级结论。\n"
+                f"{market_value_rule}"
             )
     else:
         numeric_rule = (
@@ -446,6 +529,7 @@ def _build_prompt(
     )
     coverage_rule = _coverage_rule_for_prompt(coverage_matrix)
     eight_k_usage_rule = _eight_k_usage_rule(has_8k_context, api_memo_mode)
+    market_usage_rule = _market_snapshot_usage_rule(has_market_context, api_memo_mode)
     return (
         "你是SEC财务分析助手。输出中文，严禁编造。\n"
         "不要输出 Thinking Process、思考过程、分析过程或草稿。\n"
@@ -453,6 +537,7 @@ def _build_prompt(
         "硬约束：\n"
         f"{numeric_rule}"
         f"{eight_k_usage_rule}"
+        f"{market_usage_rule}"
         "8. 必须按 Metric Naming Rules 命名指标，不能使用 disallowed_claim_terms_zh。\n"
         "9. RPO 只能称为“剩余履约义务（RPO）”，不能称为预测经常性收入或预测数据。\n"
         "10. Billings 只能称为“Billings/账单额/开票额”，不能称为收入；必须说明它不同于确认收入。\n"
@@ -500,7 +585,7 @@ def _build_prompt(
         f"{json.dumps(compact_ledger, ensure_ascii=False)}\n"
         "Evidence Text:\n"
         f"{json.dumps(compact_rows, ensure_ascii=False)}\n"
-        f"{_output_schema_for_profile(summary_hint, table_schema, api_memo_mode, has_8k_context)}"
+        f"{_output_schema_for_profile(summary_hint, table_schema, api_memo_mode, has_8k_context, has_market_context)}"
     )
 
 
@@ -509,6 +594,7 @@ def _output_schema_for_profile(
     table_schema: str,
     api_memo_mode: bool,
     supports_8k_context: bool = False,
+    supports_market_context: bool = False,
 ) -> str:
     if not api_memo_mode:
         return (
@@ -529,6 +615,8 @@ def _output_schema_for_profile(
         if supports_8k_context
         else "事实变化；如含精确数值必须来自ledger"
     )
+    if supports_market_context:
+        precise_value_rule += "；市场/估值数值只能来自同对象 evidence_ids 指向的 market_snapshot 并标注 as_of_date"
     return (
         "只输出一个 JSON object，不要 markdown，不要额外解释。结构如下：\n"
         "{\n"
@@ -576,6 +664,11 @@ def _coverage_matrix_for_prompt(case: dict[str, Any]) -> dict[str, Any]:
                 "covered_metric_families": task.get("covered_metric_families") or [],
                 "covered_filing_types": task.get("covered_filing_types") or [],
                 "covered_source_tiers": task.get("covered_source_tiers") or [],
+                "required_market_fields": task.get("required_market_fields") or [],
+                "covered_market_fields": task.get("covered_market_fields") or [],
+                "missing_market_fields": task.get("missing_market_fields") or [],
+                "required_market_tools": task.get("required_market_tools") or [],
+                "covered_market_tools": task.get("covered_market_tools") or [],
                 "missing_tickers": task.get("missing_tickers") or [],
                 "missing_peer_tickers": task.get("missing_peer_tickers") or [],
                 "missing_metric_families": task.get("missing_metric_families") or [],
@@ -585,6 +678,7 @@ def _coverage_matrix_for_prompt(case: dict[str, Any]) -> dict[str, Any]:
                 "must_caveat": task.get("must_caveat") or [],
                 "sample_metric_ids": task.get("sample_metric_ids") or [],
                 "sample_evidence_ids": task.get("sample_evidence_ids") or [],
+                "sample_market_field_refs": task.get("sample_market_field_refs") or [],
             }
         )
     return {
@@ -593,6 +687,7 @@ def _coverage_matrix_for_prompt(case: dict[str, Any]) -> dict[str, Any]:
         "filing_types": value.get("filing_types") or [],
         "source_tiers": value.get("source_tiers") or [],
         "source_coverage_gaps": (value.get("source_coverage_gaps") or [])[:10],
+        "market_snapshot_coverage": value.get("market_snapshot_coverage") or {},
         "summary": value.get("summary") or {},
         "tasks": compact_tasks,
     }
@@ -607,6 +702,7 @@ def _coverage_rule_for_prompt(coverage_matrix: dict[str, Any]) -> str:
         "23. 如果 primary task 不完整，summary 必须说明答案是 partial；不能把 missing_peer_tickers、missing_metric_families、missing_years、missing_filing_types 或 source_coverage_gaps 当成已覆盖事实。\n"
         "24. decision_drivers/key_points 应优先使用 coverage matrix 的 sample_metric_ids/sample_evidence_ids；不要为 coverage matrix 标为缺失的任务新增强结论。\n"
         "25. 如果 source_coverage_gaps 显示某 ticker/year/form_type 不在 inventory，必须把它写成来源缺口，不能用模型记忆或其他 form_type 补上。\n"
+        "26. 如果 market_snapshot_coverage 显示 requested=true，市场/估值/收益率判断必须绑定 market evidence_ids；missing_market_fields 不能用模型记忆补齐。\n"
     )
 
 
@@ -770,6 +866,25 @@ def _select_prompt_context_rows(
     if add_required_8k_source_boundary_rows():
         return selected
 
+    def add_required_market_snapshot_rows() -> bool:
+        if not _coverage_requires_market_snapshot_context(coverage_matrix or {}):
+            return False
+        candidates = [
+            (idx, row)
+            for idx, row in enumerate(context_rows)
+            if idx not in seen and _is_market_snapshot_context_row(row)
+        ]
+        max_required_rows = min(8, len(candidates), max_rows - len(selected))
+        for added, (idx, row) in enumerate(candidates, start=1):
+            if append_row(idx, row):
+                return True
+            if added >= max_required_rows:
+                return False
+        return False
+
+    if add_required_market_snapshot_rows():
+        return selected
+
     if coverage_ids:
         coverage_id_set = set(coverage_ids)
         for evidence_id in coverage_ids:
@@ -888,6 +1003,26 @@ def _coverage_requires_company_authored_8k_context(coverage_matrix: dict[str, An
     return (
         source_policy == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
         or ("8-K" in filing_types and "company_authored_unaudited_sec_filing" in source_tiers)
+    )
+
+
+def _coverage_requires_market_snapshot_context(coverage_matrix: dict[str, Any]) -> bool:
+    if not coverage_matrix:
+        return False
+    summary = coverage_matrix.get("summary") if isinstance(coverage_matrix.get("summary"), dict) else {}
+    source_policy = str(coverage_matrix.get("source_policy") or summary.get("source_policy") or "")
+    source_tiers = {
+        str(item or "")
+        for item in [
+            *(coverage_matrix.get("source_tiers") or []),
+            *(summary.get("covered_source_tiers") or []),
+        ]
+    }
+    market_coverage = coverage_matrix.get("market_snapshot_coverage") if isinstance(coverage_matrix.get("market_snapshot_coverage"), dict) else {}
+    return (
+        source_policy == "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT"
+        or "market_snapshot" in source_tiers
+        or bool(market_coverage.get("market_snapshot_requested"))
     )
 
 
@@ -2627,6 +2762,79 @@ def _hit_supported_by_cited_8k_evidence(
     return False
 
 
+def _hit_supported_by_cited_market_evidence(
+    hit_text: str,
+    evidence_ids: list[str],
+    context_rows_by_id: dict[str, list[dict[str, Any]]],
+    answer_gate: Any,
+) -> bool:
+    if not evidence_ids:
+        return False
+    hit_compact = answer_gate._compact(hit_text)
+    hit_parsed = answer_gate._parse_hit_value(hit_text)
+    for evidence_id in evidence_ids:
+        for row in context_rows_by_id.get(evidence_id, []):
+            if not _is_market_snapshot_context_row(row):
+                continue
+            evidence_text = _row_text(row)
+            if hit_compact and hit_compact in answer_gate._compact(evidence_text):
+                return True
+            if any(_exact_hits_equivalent(hit_text, evidence_hit["text"], answer_gate) for evidence_hit in answer_gate._exact_value_hits(evidence_text)):
+                return True
+            for value in _market_numeric_values(row):
+                if _market_hit_matches_value(hit_parsed, value):
+                    return True
+    return False
+
+
+def _market_numeric_values(row: dict[str, Any]) -> list[float]:
+    values: list[float] = []
+    for ref in row.get("field_refs") or []:
+        if isinstance(ref, dict):
+            number = _float_or_none(ref.get("value"))
+            if number is not None:
+                values.append(number)
+    for group_name in ("market_reaction", "valuation_context", "event_window"):
+        group = row.get(group_name)
+        if not isinstance(group, dict):
+            continue
+        for value in group.values():
+            number = _float_or_none(value)
+            if number is not None:
+                values.append(number)
+    for field in ("close_price", "market_cap", "enterprise_value", "pe_ttm", "ev_sales_ttm", "ev_ebitda_ttm"):
+        number = _float_or_none(row.get(field))
+        if number is not None:
+            values.append(number)
+    return values
+
+
+def _float_or_none(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        number = float(str(value).replace(",", "").strip())
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _market_hit_matches_value(hit_parsed: dict[str, Any] | None, value: float) -> bool:
+    if not hit_parsed:
+        return False
+    try:
+        hit_value = float(hit_parsed.get("value") or 0.0)
+    except (TypeError, ValueError):
+        return False
+    unit = str(hit_parsed.get("unit") or "")
+    candidates = [value]
+    if abs(value) <= 2:
+        candidates.append(value * 100.0)
+    if unit == "percent":
+        candidates.append(value * 100.0)
+    return any(abs(hit_value - candidate) <= 1e-6 for candidate in candidates)
+
+
 def _exact_hits_equivalent(left: str, right: str, answer_gate: Any) -> bool:
     left_parsed = answer_gate._parse_hit_value(left)
     right_parsed = answer_gate._parse_hit_value(right)
@@ -2685,6 +2893,11 @@ def _sanitize_unsupported_exact_values(
         if ledger_supported:
             return True
         return _hit_supported_by_cited_8k_evidence(
+            hit["text"],
+            evidence_ids,
+            context_rows_by_id,
+            answer_gate,
+        ) or _hit_supported_by_cited_market_evidence(
             hit["text"],
             evidence_ids,
             context_rows_by_id,
@@ -3089,7 +3302,13 @@ def _ledger_text_contract_violations(
                 context_rows_by_id,
                 answer_gate,
             )
-            if supported_by_8k:
+            supported_by_market = _hit_supported_by_cited_market_evidence(
+                hit["text"],
+                answer_level_evidence_ids,
+                context_rows_by_id,
+                answer_gate,
+            )
+            if supported_by_8k or supported_by_market:
                 continue
             if not matched_rows:
                 violations.append(

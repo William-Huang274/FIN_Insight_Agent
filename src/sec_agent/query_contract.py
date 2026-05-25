@@ -59,7 +59,6 @@ METRIC_FAMILY_ONTOLOGY = sorted(
 )
 
 DEFAULT_REQUIRED_CAVEATS = (
-    "SEC-only evidence boundary.",
     "Precise values must come from runtime Exact-Value Ledger only.",
 )
 
@@ -237,14 +236,23 @@ def validate_query_contract(
     clean["decomposed_tasks"] = _normalize_decomposed_tasks(clean.get("decomposed_tasks"), clean, warnings)
     if not _scope_has_banking_company(clean["focus_tickers"], project_inventory):
         clean = _drop_nonbank_banking_scope(clean, warnings, normalizations)
+    required_caveats = _normalize_required_caveats(
+        _string_list(clean.get("required_caveats"), max_items=12, max_chars=260),
+        normalizations,
+    )
+    if MARKET_SOURCE_TIER in set(source_tiers):
+        required_caveats = [caveat for caveat in required_caveats if caveat != "SEC-only evidence boundary."]
     clean["required_caveats"] = _ensure_required_items(
-        _normalize_required_caveats(_string_list(clean.get("required_caveats"), max_items=12, max_chars=260), normalizations),
+        required_caveats,
         (*DEFAULT_REQUIRED_CAVEATS, *_source_policy_caveats(filing_types, source_tiers)),
         "required_caveats",
         normalizations,
     )
+    forbidden_claims = _string_list(clean.get("forbidden_claims"), max_items=12, max_chars=260)
+    if MARKET_SOURCE_TIER in set(source_tiers):
+        forbidden_claims = [claim for claim in forbidden_claims if claim != DEFAULT_FORBIDDEN_CLAIMS[0]]
     clean["forbidden_claims"] = _ensure_required_items(
-        _string_list(clean.get("forbidden_claims"), max_items=12, max_chars=260),
+        forbidden_claims,
         _forbidden_claims_for_scope(source_tiers),
         "forbidden_claims",
         normalizations,
@@ -305,7 +313,7 @@ def validate_query_contract(
             "tickers": selected_tickers_clean,
             "years": selected_years_clean,
             "filing_types": allowed_forms,
-            "source_tiers": allowed_source_tiers,
+            "source_tiers": source_tiers,
             "source_policy": clean["source_policy"],
         },
         "source_coverage_gaps": source_coverage_gaps,
@@ -429,6 +437,12 @@ def _source_policy_caveats(filing_types: list[str], source_tiers: list[str]) -> 
     forms = {str(form).upper() for form in filing_types if str(form)}
     tiers = {str(tier) for tier in source_tiers if str(tier)}
     caveats = []
+    if MARKET_SOURCE_TIER in tiers:
+        caveats.append("Project evidence boundary includes SEC filings and non-real-time market snapshot only.")
+    elif "company_authored_unaudited_sec_filing" in tiers:
+        caveats.append("Project evidence boundary includes SEC filings and company-authored 8-K material only.")
+    else:
+        caveats.append("SEC-only evidence boundary.")
     if "10-Q" in forms:
         caveats.append(
             "10-Q evidence is unaudited quarterly SEC evidence; do not mix quarterly, YTD, and annual values without period caveats."

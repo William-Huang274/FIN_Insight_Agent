@@ -259,6 +259,13 @@
 - [x] Add rendered-answer source-boundary display check after first 8-K evidence artifacts exist.
 - [x] Add structured 8-K earnings-release source-gap reason records before broadening coverage.
 - [x] Add 8-K source-gap merge and session wrapper propagation for mixed-with-8K cloud testing.
+- [x] Draft the offline `market_snapshot` fixture source plan before implementation.
+- [ ] Add market snapshot schema validation for local CSV/JSON fixture inputs.
+- [ ] Add DuckDB/parquet market snapshot storage and catalog builder under private data paths.
+- [ ] Add deterministic market analytics tools for returns, relative returns, drawdown, volatility, valuation rank, event windows, and fundamental-market divergence.
+- [ ] Extend Query Contract planner/validator for `market_snapshot`, `market_window`, `market_fields`, and `market_analysis_tools`.
+- [ ] Extend Evidence Coverage Matrix, Judgment Plan, synthesis, deterministic gates, renderer, and ContextManager artifact refs for market snapshot source boundaries.
+- [ ] Run a 7-company local fixture smoke before any real-time/provider API integration.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
 - [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.
 - [ ] Validate earlier-node resume from a real partial replay, especially `build_coverage_matrix` or `build_judgment_plan`.

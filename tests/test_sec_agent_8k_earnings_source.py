@@ -4,6 +4,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -212,6 +213,172 @@ def test_runtime_case_adds_8k_source_boundary_gate() -> None:
     assert case["required_caveats"][0]["required"] is True
 
 
+def test_planner_prompt_uses_compact_json_contract() -> None:
+    interactive = _load_interactive_module()
+    prompt = interactive._query_planner_system_prompt(
+        {
+            "inventory_digest": "inv",
+            "companies": [],
+            "categories": [],
+            "form_types": {"10-Q": 1, "8-K": 1},
+        },
+        ["GE", "PG", "TXN"],
+        [2026],
+    )
+
+    assert '  "evidence_gaps"' not in prompt
+    assert "不要输出 evidence_gaps" in prompt
+    assert "最多 5 个任务" in prompt
+    assert "不超过 80 字" in prompt
+
+
+def test_planner_normalization_limits_tasks_and_field_lengths() -> None:
+    interactive = _load_interactive_module()
+    inventory = {
+        "inventory_digest": "inv-compact",
+        "companies": [
+            {
+                "ticker": "GE",
+                "company": "GE",
+                "filings": [
+                    {"year": 2026, "form_type": "10-Q", "source_tier": "primary_sec_filing"},
+                    {"year": 2026, "form_type": "8-K", "source_tier": "company_authored_unaudited_sec_filing"},
+                ],
+            }
+        ],
+        "categories": [],
+    }
+    fallback = {
+        "task_type": "company_comparison",
+        "search_scope_tickers": ["GE"],
+        "focus_tickers": ["GE"],
+        "years": [2026],
+        "filing_types": ["10-Q", "8-K"],
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+        "metric_families": ["revenue"],
+        "decomposed_tasks": [],
+        "required_caveats": [],
+        "forbidden_claims": [],
+    }
+    planned = {
+        **fallback,
+        "decomposed_tasks": [
+            {
+                "task_id": f"task_{idx}",
+                "question_zh": "这是一条很长的 planner 任务问题，用来验证输出契约会被截断到固定长度并避免接近 token 上限。" * 3,
+                "priority": "primary",
+                "required_tickers": ["GE"],
+                "required_metric_families": ["revenue"],
+            }
+            for idx in range(8)
+        ],
+        "required_caveats": ["长 caveat " * 80 for _ in range(8)],
+        "forbidden_claims": ["长 forbidden " * 80 for _ in range(8)],
+        "evidence_gaps": [{"task_id": "gap", "gap": "gap text " * 80} for _ in range(8)],
+    }
+
+    clean = interactive._normalize_llm_query_contract(planned, fallback, ["GE"], [2026], inventory)
+    clean = interactive._apply_planner_output_limits(clean)
+
+    assert len(clean["decomposed_tasks"]) == 5
+    assert all(len(task["question_zh"]) <= 80 for task in clean["decomposed_tasks"])
+    assert len(clean["required_caveats"]) <= 6
+    assert all(len(item) <= 120 for item in clean["required_caveats"])
+    assert len(clean["forbidden_claims"]) <= 6
+    assert all(len(item) <= 120 for item in clean["forbidden_claims"])
+    assert len(clean["evidence_gaps"]) <= 4
+
+
+def test_planner_retries_length_truncated_json_before_fallback(monkeypatch) -> None:
+    interactive = _load_interactive_module()
+    monkeypatch.setenv("SEC_AGENT_SOURCE_POLICY", "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS")
+    monkeypatch.setattr(interactive, "_ensure_llm_ready", lambda args: None)
+    calls: list[int | None] = []
+
+    def fake_planner(args, prompt, tickers, years, project_inventory, fallback, *, max_tokens=None, retry_reason=""):
+        calls.append(max_tokens)
+        if len(calls) == 1:
+            return (
+                '{"schema_version":"interactive_query_contract_planner_v0.1","task_type":"company_comparison",'
+                '"focus_tickers":["GE"],"years":[2026],"decomposed_tasks":[',
+                {
+                    "status": "ok",
+                    "finish_reason": "length",
+                    "output_tokens": 100,
+                    "trace_tags": {"requested_max_tokens": 100},
+                },
+            )
+        return (
+            json.dumps(
+                {
+                    "schema_version": "interactive_query_contract_planner_v0.1",
+                    "rewritten_question_zh": "比较GE最新10-Q和8-K业绩驱动。",
+                    "task_type": "company_comparison",
+                    "focus_tickers": ["GE"],
+                    "years": [2026],
+                    "filing_types": ["10-Q", "8-K"],
+                    "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                    "facets": ["revenue", "management_discussion"],
+                    "metric_families": ["revenue"],
+                    "decomposed_tasks": [
+                        {
+                            "task_id": "ge_latest_drivers",
+                            "question_zh": "比较GE最新季度业绩驱动和8-K管理层解释。",
+                            "priority": "primary",
+                            "required_tickers": ["GE"],
+                            "peer_tickers": [],
+                            "required_metric_families": ["revenue"],
+                        }
+                    ],
+                    "required_caveats": ["8-K为公司未审计管理层口径。"],
+                    "forbidden_claims": ["不要使用市场价格或分析师预期。"],
+                    "planner_confidence": "high",
+                },
+                ensure_ascii=False,
+            ),
+            {
+                "status": "ok",
+                "finish_reason": "stop",
+                "output_tokens": 120,
+                "trace_tags": {"requested_max_tokens": 300},
+            },
+        )
+
+    monkeypatch.setattr(interactive, "_ask_query_contract_planner", fake_planner)
+    args = SimpleNamespace(
+        query_planner="llm",
+        llm_backend="deepseek",
+        model="deepseek-v4-pro",
+        planner_max_tokens=100,
+        planner_retry_max_tokens=300,
+        planner_timeout_s=180,
+        planner_fail_closed=True,
+        quiet=True,
+    )
+    inventory = {
+        "inventory_digest": "inv-retry",
+        "companies": [
+            {
+                "ticker": "GE",
+                "company": "GE",
+                "filings": [
+                    {"year": 2026, "form_type": "10-Q", "source_tier": "primary_sec_filing"},
+                    {"year": 2026, "form_type": "8-K", "source_tier": "company_authored_unaudited_sec_filing"},
+                ],
+            }
+        ],
+        "categories": [],
+    }
+
+    contract = interactive._build_query_contract(args, "比较GE最新10-Q和8-K业绩驱动", ["GE"], [2026], inventory)
+    trace = contract["_planner_trace"]
+
+    assert calls == [None, 300]
+    assert contract["planner_status"] == "ok"
+    assert trace["status"] == "parsed_after_length_retry"
+    assert trace["retry"]["parse_status"] == "parsed"
+
+
 def test_full30_8k_earnings_config_covers_entire_company_universe() -> None:
     downloader = _load_8k_downloader_module()
     config = downloader.load_config(REPO_ROOT / "configs" / "sec_tech_8k_earnings_full30_2026_2027.yaml")
@@ -324,6 +491,71 @@ def test_synthesis_rejects_uncited_8k_numbers_from_primary_evidence() -> None:
     payload = json.dumps(normalized, ensure_ascii=False)
     assert "39%" not in payload
     assert normalized["_ledger_text_contract_sanitized_count"] >= 1
+
+
+def test_synthesis_caps_weak_plan_memo_language_and_restores_plan_drivers() -> None:
+    synthesis = _load_synthesis_module()
+    metric_id = "INTERACTIVE_TEST::JPM::2026::revenue::total_value::qtd"
+    evidence_id = "JPM_2026_10Q_ITEM2_BLOCK_0001_CHUNK_0001"
+    answer = {
+        "direct_answer": "JPM是当前样本里的最强明确赢家。",
+        "investment_thesis": "JPM明显优于其他公司，但该判断应受SEC证据边界约束。",
+        "why_it_matters": [
+            {
+                "insight": "JPM收入和管理层解释在当前证据中相对更完整。",
+                "business_implication": "该结论仍需要后续10-Q继续验证。",
+                "metric_ids": [metric_id],
+                "evidence_ids": [evidence_id],
+            }
+        ],
+    }
+    judgment_plan = {
+        "main_judgment": {"strength": "weak"},
+        "drivers": [
+            {
+                "rank": 1,
+                "claim": "JPM has weak SEC support under the current evidence boundary.",
+                "supporting_metric_ids": [metric_id],
+                "supporting_evidence_ids": [evidence_id],
+                "conclusion_strength": "weak",
+                "caveats": ["10-Q和8-K证据边界限制主结论强度。"],
+            }
+        ],
+    }
+
+    normalized = synthesis._normalize_answer(
+        answer,
+        ledger_rows=[
+            {
+                "metric_id": metric_id,
+                "ticker": "JPM",
+                "fiscal_year": 2026,
+                "metric_family": "revenue",
+                "metric_role": "total_value",
+                "source_evidence_id": evidence_id,
+            }
+        ],
+        context_rows=[
+            {
+                "evidence_id": evidence_id,
+                "ticker": "JPM",
+                "fiscal_year": 2026,
+                "form_type": "10-Q",
+                "source_tier": "primary_sec_filing",
+                "text": "JPM revenue discussion and management explanation.",
+            }
+        ],
+        judgment_plan=judgment_plan,
+        case={},
+    )
+
+    payload = json.dumps(normalized, ensure_ascii=False)
+    assert "最强" not in payload
+    assert "明确赢家" not in payload
+    assert "明显优于" not in payload
+    assert normalized["decision_drivers"]
+    assert normalized["decision_drivers"][0]["conclusion_strength"] == "weak"
+    assert "Judgment Plan main strength is weak" in payload
 
 
 def test_synthesis_cleanup_uses_explicit_missing_value_language() -> None:

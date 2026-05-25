@@ -1119,6 +1119,9 @@ def _normalize_answer(
         normalized = _ensure_required_not_found(normalized, case)
         normalized = _apply_coverage_matrix_constraints(normalized, case)
         normalized = _remove_false_missing_ledger_claims(normalized, ledger_rows)
+    if judgment_plan:
+        normalized = _ensure_plan_legacy_drivers(normalized, judgment_plan)
+        normalized = _constrain_memo_language_to_judgment_plan_strength(normalized, judgment_plan)
     normalized = _strip_inline_metric_ids_from_prose(normalized, ledger_rows)
     violations = _ledger_text_contract_violations(normalized, ledger_rows, context_rows)
     if violations:
@@ -1479,6 +1482,84 @@ def _apply_coverage_matrix_constraints(answer: dict[str, Any], case: dict[str, A
                 caveat = str(driver.get("caveat") or "").strip()
                 downgrade = "Coverage Matrix indicates incomplete primary-task evidence."
                 driver["caveat"] = f"{caveat}；{downgrade}" if caveat else downgrade
+    return answer
+
+
+def _ensure_plan_legacy_drivers(answer: dict[str, Any], judgment_plan: dict[str, Any]) -> dict[str, Any]:
+    if answer.get("decision_drivers"):
+        return answer
+    plan_drivers = [driver for driver in judgment_plan.get("drivers") or [] if isinstance(driver, dict)]
+    if not plan_drivers:
+        return answer
+    answer["decision_drivers"] = [
+        _answer_driver_from_judgment_plan_driver(driver)
+        for driver in plan_drivers[:8]
+        if _string_list(driver.get("supporting_metric_ids")) or _string_list(driver.get("supporting_evidence_ids"))
+    ]
+    return answer
+
+
+def _constrain_memo_language_to_judgment_plan_strength(
+    answer: dict[str, Any],
+    judgment_plan: dict[str, Any],
+) -> dict[str, Any]:
+    main_strength = str((judgment_plan.get("main_judgment") or {}).get("strength") or "").lower()
+    if main_strength not in {"weak", "medium"}:
+        return answer
+
+    changed = False
+
+    def rewrite(text: Any) -> str:
+        nonlocal changed
+        rewritten = str(text or "")
+        replacements = (
+            (r"明确赢家", "当前证据相对更有支撑的一方"),
+            (r"simple winner", "better-supported case"),
+            (r"strong winner", "better-supported case"),
+            (r"明显优于", "在当前证据边界内相对更有支撑"),
+            (r"最强", "相对更有支撑"),
+        )
+        for pattern, replacement in replacements:
+            updated = re.sub(pattern, replacement, rewritten, flags=re.IGNORECASE)
+            if updated != rewritten:
+                changed = True
+                rewritten = updated
+        return rewritten
+
+    for key in ("summary", "direct_answer", "investment_thesis"):
+        answer[key] = rewrite(answer.get(key))
+
+    list_specs = {
+        "decision_drivers": ("driver_claim", "why_it_matters", "caveat"),
+        "key_points": ("point",),
+        "what_changed": ("claim",),
+        "why_it_matters": ("insight", "business_implication"),
+        "peer_readthrough": ("peer_or_group", "role", "readthrough", "caveat"),
+        "counterarguments": ("claim", "why_it_could_weaken_thesis", "caveat"),
+        "watch_items": ("item", "why_it_matters"),
+    }
+    for list_key, text_keys in list_specs.items():
+        for item in answer.get(list_key) or []:
+            if not isinstance(item, dict):
+                continue
+            for text_key in text_keys:
+                if text_key in item:
+                    item[text_key] = rewrite(item.get(text_key))
+
+    if answer.get("direct_answer") or answer.get("investment_thesis"):
+        answer["summary"] = " ".join(
+            part for part in (str(answer.get("direct_answer") or ""), str(answer.get("investment_thesis") or "")) if part
+        ).strip()
+    if changed:
+        note = (
+            f"Judgment Plan main strength is {main_strength}; comparative language is capped to the validated evidence boundary."
+        )
+        existing = set(_string_list(answer.get("source_limitations")))
+        if note not in existing:
+            answer.setdefault("source_limitations", []).append(note)
+        existing_limitations = set(_string_list(answer.get("limitations")))
+        if note not in existing_limitations:
+            answer.setdefault("limitations", []).append(note)
     return answer
 
 

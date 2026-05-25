@@ -78,6 +78,12 @@ DEFAULT_SECTIONS = (
     "Item 7. Management's Discussion and Analysis",
     "Item 8. Financial Statements and Supplementary Data",
 )
+PLANNER_DEFAULT_MAX_TOKENS = 3000
+PLANNER_DEFAULT_RETRY_MAX_TOKENS = 4000
+PLANNER_MAX_DECOMPOSED_TASKS = 5
+PLANNER_TASK_QUESTION_MAX_CHARS = 80
+PLANNER_MAX_SHORT_LIST_ITEMS = 6
+PLANNER_MAX_CAVEAT_CHARS = 120
 VALID_UNITS = {"usd_millions", "usd_billions", "usd_thousands", "percent"}
 AI_FOCUS_TICKERS = (
     "NVDA",
@@ -269,8 +275,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-tokens", type=int, default=int(os.environ.get("MAX_TOKENS", "4000")))
     parser.add_argument("--temperature", type=float, default=float(os.environ.get("TEMPERATURE", "0.0")))
     parser.add_argument("--query-planner", default=os.environ.get("QUERY_PLANNER", "heuristic"), choices=("heuristic", "llm"))
-    parser.add_argument("--planner-max-tokens", type=int, default=int(os.environ.get("PLANNER_MAX_TOKENS", "1800")))
+    parser.add_argument("--planner-max-tokens", type=int, default=int(os.environ.get("PLANNER_MAX_TOKENS", str(PLANNER_DEFAULT_MAX_TOKENS))))
+    parser.add_argument(
+        "--planner-retry-max-tokens",
+        type=int,
+        default=int(os.environ.get("PLANNER_RETRY_MAX_TOKENS", str(PLANNER_DEFAULT_RETRY_MAX_TOKENS))),
+    )
     parser.add_argument("--planner-timeout-s", type=int, default=int(os.environ.get("PLANNER_TIMEOUT_S", "180")))
+    parser.add_argument("--planner-fail-closed", action="store_true", default=_env_bool("PLANNER_FAIL_CLOSED"))
     parser.add_argument("--output-root", default="eval/sec_cases/outputs/interactive_sec_agent")
     parser.add_argument("--print-config", action="store_true")
     parser.add_argument("--plan-only", action="store_true")
@@ -2896,6 +2908,7 @@ def _build_query_contract(
 ) -> dict[str, Any]:
     fallback = _build_heuristic_query_contract(prompt, tickers, years, project_inventory)
     fallback = _repair_query_contract_from_prompt(fallback, prompt, tickers, years, project_inventory)
+    fallback = _apply_planner_output_limits(fallback)
     if args.query_planner != "llm":
         fallback["planner_backend"] = "heuristic"
         fallback["planner_status"] = "ok"
@@ -2927,11 +2940,45 @@ def _build_query_contract(
         if not parsed:
             planner_trace["status"] = "parse_failed"
             planner_trace["parse_error"] = "planner_returned_no_contract_json_object"
-            raise ValueError("planner_returned_no_json_object")
-        planner_trace["status"] = "parsed"
+            if _planner_retry_needed(planner_gateway_result) and args.planner_retry_max_tokens > args.planner_max_tokens:
+                retry_raw, retry_gateway_result = _ask_query_contract_planner(
+                    args,
+                    prompt,
+                    tickers,
+                    years,
+                    project_inventory,
+                    fallback,
+                    max_tokens=args.planner_retry_max_tokens,
+                    retry_reason="length_truncated_json",
+                )
+                retry_parsed = _extract_planner_json_object(retry_raw)
+                planner_trace["retry"] = {
+                    "reason": "finish_reason_length_parse_failed",
+                    "raw_output": retry_raw,
+                    "raw_output_chars": len(retry_raw),
+                    "llm_gateway": _gateway_debug(retry_gateway_result),
+                    "parse_status": "parsed" if retry_parsed else "parse_failed",
+                }
+                if retry_parsed:
+                    raw = retry_raw
+                    planner_gateway_result = retry_gateway_result
+                    parsed = retry_parsed
+                    planner_trace.update(
+                        {
+                            "status": "parsed_after_length_retry",
+                            "raw_output": raw,
+                            "raw_output_chars": len(raw),
+                            "llm_gateway": _gateway_debug(planner_gateway_result),
+                        }
+                    )
+            if not parsed:
+                raise ValueError("planner_returned_no_json_object")
+        if planner_trace.get("status") != "parsed_after_length_retry":
+            planner_trace["status"] = "parsed"
         planner_trace["parsed_contract"] = parsed
         contract = _normalize_llm_query_contract(parsed, fallback, tickers, years, project_inventory)
         contract = _repair_query_contract_from_prompt(contract, prompt, tickers, years, project_inventory)
+        contract = _apply_planner_output_limits(contract)
         contract["planner_backend"] = f"llm:{args.llm_backend}"
         contract["planner_status"] = "ok"
         contract["planner_model"] = args.model
@@ -2942,6 +2989,8 @@ def _build_query_contract(
         validated["_planner_trace"] = planner_trace
         return validated
     except Exception as exc:
+        if getattr(args, "planner_fail_closed", False):
+            raise
         if not args.quiet:
             print(f"[plan] llm planner failed; using heuristic contract: {type(exc).__name__}: {exc}")
         fallback["planner_backend"] = f"llm:{args.llm_backend}"
@@ -2949,6 +2998,7 @@ def _build_query_contract(
         fallback["planner_model"] = args.model
         fallback["planner_error"] = f"{type(exc).__name__}: {str(exc)[:240]}"
         fallback = _repair_query_contract_from_prompt(fallback, prompt, tickers, years, project_inventory)
+        fallback = _apply_planner_output_limits(fallback)
         planner_trace.update(
             {
                 "status": "fallback_after_error",
@@ -2962,6 +3012,16 @@ def _build_query_contract(
         planner_trace["validated_contract_summary"] = _planner_contract_summary(validated)
         validated["_planner_trace"] = planner_trace
         return validated
+
+
+def _planner_retry_needed(result: dict[str, Any]) -> bool:
+    finish_reason = str((result or {}).get("finish_reason") or "").strip().lower()
+    if finish_reason == "length":
+        return True
+    trace_tags = (result or {}).get("trace_tags") if isinstance((result or {}).get("trace_tags"), dict) else {}
+    requested = _int_or_none(trace_tags.get("requested_max_tokens"))
+    output_tokens = _int_or_none((result or {}).get("output_tokens"))
+    return requested is not None and output_tokens is not None and output_tokens >= max(1, requested - 8)
 
 
 def _detach_planner_trace(contract: dict[str, Any]) -> dict[str, Any] | None:
@@ -3322,6 +3382,9 @@ def _ask_query_contract_planner(
     years: list[int],
     project_inventory: dict[str, Any],
     fallback: dict[str, Any],
+    *,
+    max_tokens: int | None = None,
+    retry_reason: str = "",
 ) -> tuple[str, dict[str, Any]]:
     system_content = _query_planner_system_prompt(project_inventory, tickers, years)
     user_content = (
@@ -3334,13 +3397,14 @@ def _ask_query_contract_planner(
         f"{json.dumps(_planner_seed_for_prompt(fallback), ensure_ascii=False, indent=2)}\n\n"
         "请只返回一个 JSON object，不要 markdown。"
     )
+    requested_max_tokens = int(max_tokens or args.planner_max_tokens)
     return _chat_completion_content(
         args,
         [
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content},
         ],
-        max_tokens=args.planner_max_tokens,
+        max_tokens=requested_max_tokens,
         temperature=0.0,
         timeout_s=args.planner_timeout_s,
         role="planner",
@@ -3348,6 +3412,7 @@ def _ask_query_contract_planner(
             "inventory_digest": str(project_inventory.get("inventory_digest") or ""),
             "selected_ticker_count": len(tickers),
             "selected_years": ",".join(str(year) for year in years),
+            "planner_retry_reason": retry_reason,
         },
     )
 
@@ -3369,15 +3434,18 @@ def _query_planner_system_prompt(project_inventory: dict[str, Any], tickers: lis
         "- years 必须来自候选 scope；不要规划项目没有的年份。\n"
         "- filing_types 必须来自 SELECTED COMPANY FILINGS；如 ACTIVE SOURCE POLICY 是 SEC_PRIMARY_MIXED_RECENT 且 10-Q 可用，必须保留 10-Q 及其未经审计季报边界；如 ACTIVE SOURCE POLICY 是 SEC_PRIMARY_MIXED_WITH_8K_EARNINGS 且 8-K 可用，必须保留 8-K 但标注公司未审计管理层口径。\n"
         "- source_tiers 只能来自 PROJECT SOURCE INVENTORY；10-K/10-Q 使用 primary_sec_filing，8-K earnings release 使用 company_authored_unaudited_sec_filing。\n"
-        "- decomposed_tasks 要服务于用户问题，避免机械套用行业模板；宽问题至少拆成 2 个任务。\n"
+        f"- decomposed_tasks 要服务于用户问题，避免机械套用行业模板；宽问题至少拆成 2 个任务，最多 {PLANNER_MAX_DECOMPOSED_TASKS} 个任务，每个 question_zh 不超过 {PLANNER_TASK_QUESTION_MAX_CHARS} 字。\n"
         "- 如果用户问银行盈利质量、净息差、存贷款或信用风险，优先使用银行指标族："
         "net_interest_income、net_interest_margin、provision_for_credit_losses、net_charge_offs、"
         "allowance_for_credit_losses、nonperforming_assets、nonperforming_loans、deposits、loans、capital_ratio、total_assets。\n"
         "- 如果用户问题包含同行、竞争对手、peer、替代、自研、对比等意图，必须新增 peer_competition_mapping 或 peer_comparison 任务；"
         "该任务必须写 required_tickers 和 peer_tickers，peer_tickers 只能来自 PROJECT SOURCE INVENTORY。\n"
-        "- forbidden_claims 必须覆盖所有超出当前材料的常见风险，例如 market price/news/macro/earnings-call/未列出的 filing type。\n"
-        "- 如果用户问到项目资料没有的来源，写入 required_caveats 或 evidence_gaps，不要把它当成已有证据。\n"
+        f"- required_caveats 和 forbidden_claims 各最多 {PLANNER_MAX_SHORT_LIST_ITEMS} 条，每条不超过 {PLANNER_MAX_CAVEAT_CHARS} 字；只写短标签式约束。\n"
+        "- 不要输出 evidence_gaps；如果用户问到项目资料没有的来源，用一条短 required_caveats/forbidden_claims 标明边界。\n"
         "- 不能输出最终答案、精确数字、metric_id、evidence_id 或 SEC 原文长引用。\n\n"
+        "OUTPUT LIMITS\n"
+        f"- metric_queries/qualitative_queries 各最多 {PLANNER_MAX_SHORT_LIST_ITEMS} 条，每条不超过 80 字。\n"
+        "- 不要解释、不要 markdown、不要代码块、不要 trailing comments。\n\n"
         "RETURN JSON SCHEMA\n"
         "{\n"
         '  "schema_version": "interactive_query_contract_planner_v0.1",\n'
@@ -3395,7 +3463,6 @@ def _query_planner_system_prompt(project_inventory: dict[str, Any], tickers: lis
         '  "decomposed_tasks": [{"task_id": "...", "question_zh": "...", "priority": "primary|supporting|caveat", "required_tickers": ["..."], "peer_tickers": ["..."], "required_metric_families": ["..."]}],\n'
         '  "required_caveats": ["..."],\n'
         '  "forbidden_claims": ["..."],\n'
-        '  "evidence_gaps": [{"task_id": "...", "gap": "..."}],\n'
         '  "planner_confidence": "high|medium|low"\n'
         "}"
     )
@@ -3438,15 +3505,15 @@ def _normalize_llm_query_contract(
             "source_tiers": source_tiers,
             "source_policy": _source_policy_for_scope(filing_types, source_tiers),
             "scope": _contract_scope(tickers, focus, years, filing_types, source_tiers),
-            "analysis_axes": _string_list(planned.get("analysis_axes"), max_items=10) or clean.get("analysis_axes") or [],
-            "facets": _string_list(planned.get("facets"), max_items=10) or clean.get("facets") or [],
+            "analysis_axes": _string_list(planned.get("analysis_axes"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS) or clean.get("analysis_axes") or [],
+            "facets": _string_list(planned.get("facets"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS) or clean.get("facets") or [],
             "metric_families": _metric_family_list(planned.get("metric_families")) or clean.get("metric_families") or [],
-            "metric_queries": _string_list(planned.get("metric_queries"), max_items=8, max_chars=180) or clean.get("metric_queries") or [],
-            "qualitative_queries": _string_list(planned.get("qualitative_queries"), max_items=8, max_chars=180) or clean.get("qualitative_queries") or [],
-            "required_caveats": _string_list(planned.get("required_caveats"), max_items=10, max_chars=240)
+            "metric_queries": _string_list(planned.get("metric_queries"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS, max_chars=80) or clean.get("metric_queries") or [],
+            "qualitative_queries": _string_list(planned.get("qualitative_queries"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS, max_chars=80) or clean.get("qualitative_queries") or [],
+            "required_caveats": _string_list(planned.get("required_caveats"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS, max_chars=PLANNER_MAX_CAVEAT_CHARS)
             or clean.get("required_caveats")
             or [],
-            "forbidden_claims": _string_list(planned.get("forbidden_claims"), max_items=10, max_chars=240)
+            "forbidden_claims": _string_list(planned.get("forbidden_claims"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS, max_chars=PLANNER_MAX_CAVEAT_CHARS)
             or clean.get("forbidden_claims")
             or [],
             "evidence_gaps": _normalize_evidence_gaps(planned.get("evidence_gaps")),
@@ -3856,7 +3923,7 @@ def _repair_task(
 ) -> dict[str, Any]:
     return {
         "task_id": task_id,
-        "question_zh": question_zh,
+        "question_zh": _short_text(question_zh, PLANNER_TASK_QUESTION_MAX_CHARS),
         "priority": priority,
         "required_metric_families": _dedupe_metric_families(families),
         "required_tickers": required_tickers[:8],
@@ -3873,7 +3940,7 @@ def _append_contract_task(contract: dict[str, Any], task: dict[str, Any]) -> Non
                 continue
             existing["question_zh"] = _short_text(
                 f"{existing.get('question_zh') or ''} {task.get('question_zh') or ''}",
-                240,
+                PLANNER_TASK_QUESTION_MAX_CHARS,
             )
             existing["required_metric_families"] = _dedupe_metric_families(
                 [*(existing.get("required_metric_families") or []), *(task.get("required_metric_families") or [])]
@@ -3893,11 +3960,11 @@ def _append_contract_task(contract: dict[str, Any], task: dict[str, Any]) -> Non
         if task_families and task_families <= existing_families and (not task_tickers or task_tickers <= existing_tickers):
             existing["question_zh"] = _short_text(
                 f"{existing.get('question_zh') or ''} {task.get('question_zh') or ''}",
-                240,
+                PLANNER_TASK_QUESTION_MAX_CHARS,
             )
             return
     tasks.append(task)
-    contract["decomposed_tasks"] = tasks[:8]
+    contract["decomposed_tasks"] = tasks[:PLANNER_MAX_DECOMPOSED_TASKS]
 
 
 def _offscope_gap_terms(prompt: str, *, years: Iterable[int] | None = None) -> list[str]:
@@ -3929,12 +3996,12 @@ def _apply_offscope_repairs(contract: dict[str, Any], gap_terms: list[str]) -> N
         gap_text = f"{term} is outside the current SEC-only project source inventory; treat it as unsupported, not as evidence."
         if not any(term.lower() in str(item.get("gap") or "").lower() for item in gaps):
             gaps.append({"task_id": "source_policy_gap", "gap": gap_text})
-    contract["evidence_gaps"] = gaps[:8]
+    contract["evidence_gaps"] = gaps[:4]
     caveats = [str(item) for item in contract.get("required_caveats") or [] if str(item)]
     caveat = "外部来源/未来年份/市场预期/股价估值/macro 假设不在当前 SEC-only source policy 内；只能作为 evidence gap。"
     if caveat not in caveats:
         caveats.append(caveat)
-    contract["required_caveats"] = caveats[:10]
+    contract["required_caveats"] = [_short_text(item, PLANNER_MAX_CAVEAT_CHARS) for item in caveats[:PLANNER_MAX_SHORT_LIST_ITEMS]]
     forbidden = [str(item) for item in contract.get("forbidden_claims") or [] if str(item)]
     allowed_forms = {str(item).upper() for item in contract.get("filing_types") or [] if str(item)}
     blocked_forms = [form for form in ("10-K", "10-Q", "8-K") if form not in allowed_forms]
@@ -3945,7 +4012,7 @@ def _apply_offscope_repairs(contract: dict[str, Any], gap_terms: list[str]) -> N
     )
     if forbidden_claim not in forbidden:
         forbidden.append(forbidden_claim)
-    contract["forbidden_claims"] = forbidden[:10]
+    contract["forbidden_claims"] = [_short_text(item, PLANNER_MAX_CAVEAT_CHARS) for item in forbidden[:PLANNER_MAX_SHORT_LIST_ITEMS]]
     for task in contract.get("decomposed_tasks") or []:
         if not isinstance(task, dict):
             continue
@@ -3953,7 +4020,7 @@ def _apply_offscope_repairs(contract: dict[str, Any], gap_terms: list[str]) -> N
         if _contains_any(question.lower(), tuple(term.lower() for term in gap_terms)):
             task["question_zh"] = _short_text(
                 f"{question}（该外部假设当前不支持/unsupported；只检索 SEC 内相关财务或风险披露。）",
-                240,
+                PLANNER_TASK_QUESTION_MAX_CHARS,
             )
     for key in ("metric_queries", "qualitative_queries", "facets", "analysis_axes"):
         repaired_values = []
@@ -3988,10 +4055,8 @@ def _planner_seed_for_prompt(contract: dict[str, Any]) -> dict[str, Any]:
         "years": contract.get("years"),
         "filing_types": contract.get("filing_types"),
         "source_tiers": contract.get("source_tiers"),
-        "analysis_axes": contract.get("analysis_axes"),
         "facets": contract.get("facets"),
         "metric_families": contract.get("metric_families"),
-        "required_caveats": contract.get("required_caveats"),
     }
 
 
@@ -4128,14 +4193,14 @@ def _normalize_decomposed_tasks(value: Any, contract: dict[str, Any]) -> list[di
         tasks.append(
             {
                 "task_id": task_id,
-                "question_zh": _short_text(item.get("question_zh") or item.get("question") or "", 240),
+                "question_zh": _short_text(item.get("question_zh") or item.get("question") or "", PLANNER_TASK_QUESTION_MAX_CHARS),
                 "priority": priority,
                 "required_metric_families": families,
                 "required_tickers": required_tickers,
                 "peer_tickers": peer_tickers,
             }
         )
-        if len(tasks) >= 8:
+        if len(tasks) >= PLANNER_MAX_DECOMPOSED_TASKS:
             break
     return tasks
 
@@ -4145,13 +4210,13 @@ def _normalize_evidence_gaps(value: Any) -> list[dict[str, str]]:
     for item in value or []:
         if isinstance(item, dict):
             task_id = _slug(str(item.get("task_id") or "gap"))[:64] or "gap"
-            gap = _short_text(item.get("gap") or item.get("description") or "", 240)
+            gap = _short_text(item.get("gap") or item.get("description") or "", PLANNER_MAX_CAVEAT_CHARS)
         else:
             task_id = "gap"
-            gap = _short_text(item, 240)
+            gap = _short_text(item, PLANNER_MAX_CAVEAT_CHARS)
         if gap:
             gaps.append({"task_id": task_id, "gap": gap})
-        if len(gaps) >= 8:
+        if len(gaps) >= 4:
             break
     return gaps
 
@@ -4159,6 +4224,39 @@ def _normalize_evidence_gaps(value: Any) -> list[dict[str, str]]:
 def _planner_confidence(value: Any) -> str:
     text = str(value or "").strip().lower()
     return text if text in {"high", "medium", "low"} else "medium"
+
+
+def _apply_planner_output_limits(contract: dict[str, Any]) -> dict[str, Any]:
+    limited = dict(contract)
+    tasks = []
+    for task in limited.get("decomposed_tasks") or []:
+        if not isinstance(task, dict):
+            continue
+        row = dict(task)
+        row["question_zh"] = _short_text(row.get("question_zh") or row.get("question") or "", PLANNER_TASK_QUESTION_MAX_CHARS)
+        row["required_metric_families"] = _metric_family_list(row.get("required_metric_families"))
+        row["required_tickers"] = _clamp_tickers(row.get("required_tickers"), limited.get("search_scope_tickers") or limited.get("focus_tickers") or [])[:8]
+        row["peer_tickers"] = _clamp_tickers(row.get("peer_tickers"), limited.get("search_scope_tickers") or limited.get("focus_tickers") or [])[:8]
+        tasks.append(row)
+        if len(tasks) >= PLANNER_MAX_DECOMPOSED_TASKS:
+            break
+    limited["decomposed_tasks"] = tasks
+    limited["metric_queries"] = _string_list(limited.get("metric_queries"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS, max_chars=80)
+    limited["qualitative_queries"] = _string_list(limited.get("qualitative_queries"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS, max_chars=80)
+    limited["analysis_axes"] = _string_list(limited.get("analysis_axes"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS, max_chars=80)
+    limited["facets"] = _string_list(limited.get("facets"), max_items=PLANNER_MAX_SHORT_LIST_ITEMS, max_chars=80)
+    limited["required_caveats"] = _string_list(
+        limited.get("required_caveats"),
+        max_items=PLANNER_MAX_SHORT_LIST_ITEMS,
+        max_chars=PLANNER_MAX_CAVEAT_CHARS,
+    )
+    limited["forbidden_claims"] = _string_list(
+        limited.get("forbidden_claims"),
+        max_items=PLANNER_MAX_SHORT_LIST_ITEMS,
+        max_chars=PLANNER_MAX_CAVEAT_CHARS,
+    )
+    limited["evidence_gaps"] = _normalize_evidence_gaps(limited.get("evidence_gaps"))[:4]
+    return limited
 
 
 def _short_text(value: Any, max_chars: int) -> str:
@@ -5940,6 +6038,8 @@ def _config_summary(args: argparse.Namespace) -> dict[str, Any]:
         "max_tokens": args.max_tokens,
         "query_planner": args.query_planner,
         "planner_max_tokens": args.planner_max_tokens,
+        "planner_retry_max_tokens": args.planner_retry_max_tokens,
+        "planner_fail_closed": bool(args.planner_fail_closed),
         "planner_timeout_s": args.planner_timeout_s,
         "output_root": args.output_root,
         "quiet": bool(args.quiet),

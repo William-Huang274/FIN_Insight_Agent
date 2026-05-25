@@ -404,6 +404,7 @@ def run_one(args: argparse.Namespace, prompt: str) -> Path:
         years=years,
         project_inventory=project_inventory,
     )
+    state.source_policy = str(query_contract.get("source_policy") or _runtime_source_policy() or "SEC_ONLY")
     _write_sec_agent_state(state)
 
     case = _build_case(prompt, tickers, years, run_id, query_contract)

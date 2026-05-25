@@ -48,6 +48,15 @@ def _load_source_gap_merge_module():
     return module
 
 
+def _load_benchmark_eval_module():
+    path = REPO_ROOT / "scripts" / "run_sec_benchmark_eval.py"
+    spec = importlib.util.spec_from_file_location("run_sec_benchmark_eval_8k_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _load_context_session_cli_module():
     path = REPO_ROOT / "scripts" / "cloud" / "sec_agent_context_session_cli.py"
     spec = importlib.util.spec_from_file_location("sec_agent_context_session_cli_8k_under_test", path)
@@ -815,6 +824,57 @@ def test_8k_manifest_builder_reports_cached_source_gaps(tmp_path: Path) -> None:
     }
 
 
+def test_8k_manifest_builder_drops_candidate_gap_when_scope_has_valid_release(tmp_path: Path) -> None:
+    manifest = _load_8k_manifest_module()
+    cache_root = tmp_path / "sec_8k_earnings"
+    stale_dir = cache_root / "2026" / "mega-cap_software_cloud" / "MSFT" / "000119312526111111"
+    valid_dir = cache_root / "2026" / "mega-cap_software_cloud" / "MSFT" / "000119312526222222"
+    stale_dir.mkdir(parents=True)
+    valid_dir.mkdir(parents=True)
+    (stale_dir / "ex991.htm").write_text("<html>Generic press release</html>", encoding="utf-8")
+    (valid_dir / "ex991.htm").write_text("<html>Microsoft earnings release</html>", encoding="utf-8")
+    base_metadata = {
+        "ticker": "MSFT",
+        "company": "MICROSOFT CORP",
+        "fiscal_year": 2026,
+        "category": "mega-cap software/cloud",
+        "category_slug": "mega-cap_software_cloud",
+        "form_type": "8-K",
+        "source_type": "8-K",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "period_type": "current_report",
+        "exhibit_document": "ex991.htm",
+        "local_html_path": "ex991.htm",
+    }
+    (stale_dir / "metadata.json").write_text(
+        json.dumps({**base_metadata, "accession_number": "0001193125-26-111111", "filing_items": "5.02,9.01"}),
+        encoding="utf-8",
+    )
+    (valid_dir / "metadata.json").write_text(
+        json.dumps({**base_metadata, "accession_number": "0001193125-26-222222", "filing_items": "2.02,9.01"}),
+        encoding="utf-8",
+    )
+
+    records, gaps = manifest.collect_8k_earnings_manifest_with_gaps(
+        cache_root,
+        years=[2026],
+        tickers=["MSFT"],
+        expected_scope=[
+            {
+                "ticker": "MSFT",
+                "year": 2026,
+                "category": "mega-cap software/cloud",
+                "category_slug": "mega-cap_software_cloud",
+                "source_tier": "company_authored_unaudited_sec_filing",
+            }
+        ],
+    )
+
+    assert len(records) == 1
+    assert records[0].accession_number == "0001193125-26-222222"
+    assert gaps == []
+
+
 def test_query_contract_uses_inventory_8k_source_gap_reasons() -> None:
     manifest_rows = [
         {
@@ -944,6 +1004,68 @@ def test_context_session_forwards_source_gap_path_to_graph_args() -> None:
     assert graph_args[graph_args.index("--source-gap-path") + 1] == "data/processed_private/source_gaps/merged.jsonl"
     assert "--manifest-path" in graph_args
     assert graph_args[graph_args.index("--manifest-path") + 1] == "data/processed_private/manifests/mixed_with_8k.jsonl"
+
+
+def test_mixed_8k_pipeline_context_adds_source_aware_requirement_queries() -> None:
+    evaluator = _load_benchmark_eval_module()
+    queries = evaluator._requirement_queries(
+        {
+            "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+            "query_contract": {
+                "filing_types": ["10-Q", "8-K"],
+                "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+            },
+        }
+    )
+
+    assert any("Exhibit 99.1 earnings release" in query for query in queries)
+    assert any("company-authored unaudited" in query for query in queries)
+
+
+def test_mixed_8k_pipeline_context_reserves_requested_8k_rows_after_rerank() -> None:
+    evaluator = _load_benchmark_eval_module()
+    case = {
+        "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+        "companies": ["MSFT"],
+        "query_contract": {
+            "focus_tickers": ["MSFT"],
+            "filing_types": ["10-Q", "8-K"],
+            "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+        },
+    }
+    scored = [
+        {
+            "ticker": "MSFT",
+            "form_type": "10-Q",
+            "source_tier": "primary_sec_filing",
+            "source_kind": "evidence_object",
+            "evidence_id": "msft-10q-cloud",
+            "rerank_score": 1.0,
+        },
+        {
+            "ticker": "MSFT",
+            "form_type": "10-Q",
+            "source_tier": "primary_sec_filing",
+            "source_kind": "evidence_object",
+            "evidence_id": "msft-10q-capex",
+            "rerank_score": 0.9,
+        },
+        {
+            "ticker": "MSFT",
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "source_kind": "evidence_object",
+            "evidence_id": "msft-8k-ex991",
+            "rerank_score": 0.1,
+        },
+    ]
+
+    rows = evaluator._apply_context_reservations(case, scored, top_k=2)
+
+    assert len(rows) == 2
+    reserved = [row for row in rows if row["form_type"] == "8-K"]
+    assert len(reserved) == 1
+    assert reserved[0]["reservation_policy"] == "requested_8k_earnings_source_coverage"
 
 
 def test_8k_earnings_parser_builds_source_bounded_chunks_and_evidence(tmp_path: Path) -> None:

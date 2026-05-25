@@ -546,12 +546,34 @@ def _rerank_context_rows(
 def _apply_context_reservations(case: dict[str, Any], scored: list[dict[str, Any]], top_k: int) -> list[dict[str, Any]]:
     if not scored or top_k <= 0:
         return scored[:top_k]
-    peer_tickers = _case_peer_tickers(case)
-    if not peer_tickers:
-        return scored[:top_k]
-
     reserved: list[dict[str, Any]] = []
     seen_reserved = set()
+    _extend_source_coverage_reservations(case, scored, reserved, seen_reserved)
+    peer_tickers = _case_peer_tickers(case)
+    if peer_tickers:
+        _extend_peer_structured_reservations(case, scored, reserved, seen_reserved, peer_tickers)
+
+    if not reserved:
+        return scored[:top_k]
+
+    reserve_cap = min(len(reserved), max(1, top_k // 4))
+    reserved = reserved[:reserve_cap]
+    reserved_keys = {_context_row_key(row) for row in reserved}
+    primary_budget = max(0, top_k - len(reserved))
+    primary = [row for row in scored if _context_row_key(row) not in reserved_keys][:primary_budget]
+    merged = primary + reserved
+    for rank, row in enumerate(merged, start=1):
+        row["context_rank_after_reservation"] = rank
+    return merged
+
+
+def _extend_peer_structured_reservations(
+    case: dict[str, Any],
+    scored: list[dict[str, Any]],
+    reserved: list[dict[str, Any]],
+    seen_reserved: set[tuple[str, str]],
+    peer_tickers: list[str],
+) -> None:
     per_peer_limit = 2
     for ticker in peer_tickers:
         count = 0
@@ -563,25 +585,49 @@ def _apply_context_reservations(case: dict[str, Any], scored: list[dict[str, Any
             key = _context_row_key(row)
             if key in seen_reserved:
                 continue
+            row["reservation_policy"] = "peer_structured_object"
             reserved.append(row)
             seen_reserved.add(key)
             count += 1
             if count >= per_peer_limit:
                 break
 
-    if not reserved:
-        return scored[:top_k]
-    reserve_cap = min(len(reserved), max(1, top_k // 4))
-    reserved = reserved[:reserve_cap]
-    reserved_keys = {_context_row_key(row) for row in reserved}
-    primary_budget = max(0, top_k - len(reserved))
-    primary = [row for row in scored if _context_row_key(row) not in reserved_keys][:primary_budget]
-    merged = primary + reserved
-    for rank, row in enumerate(merged, start=1):
-        row["context_rank_after_reservation"] = rank
-        if _context_row_key(row) in reserved_keys:
-            row["reservation_policy"] = "peer_structured_object"
-    return merged
+
+def _extend_source_coverage_reservations(
+    case: dict[str, Any],
+    scored: list[dict[str, Any]],
+    reserved: list[dict[str, Any]],
+    seen_reserved: set[tuple[str, str]],
+) -> None:
+    if not _case_requests_8k_earnings(case):
+        return
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    focus_tickers = [
+        str(ticker).upper()
+        for ticker in (contract.get("focus_tickers") or case.get("companies") or [])
+        if str(ticker).strip()
+    ]
+    if not focus_tickers:
+        focus_tickers = sorted({str(row.get("ticker") or "").upper() for row in scored if row.get("ticker")})
+    per_ticker_limit = 2
+    for ticker in focus_tickers:
+        count = 0
+        for row in scored:
+            if str(row.get("ticker") or "").upper() != ticker:
+                continue
+            if _normalize_form_type(row.get("form_type")) != "8-K":
+                continue
+            if str(row.get("source_tier") or "") != "company_authored_unaudited_sec_filing":
+                continue
+            key = _context_row_key(row)
+            if key in seen_reserved:
+                continue
+            row["reservation_policy"] = "requested_8k_earnings_source_coverage"
+            reserved.append(row)
+            seen_reserved.add(key)
+            count += 1
+            if count >= per_ticker_limit:
+                break
 
 
 def _case_peer_tickers(case: dict[str, Any]) -> list[str]:
@@ -644,6 +690,13 @@ def _context_row_rerank_text(row: dict[str, Any]) -> str:
 def _requirement_queries(case: dict[str, Any]) -> list[str]:
     queries: list[str] = []
     contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    if _case_requests_8k_earnings(case):
+        queries.extend(
+            [
+                "8-K Exhibit 99.1 earnings release cloud management commentary guidance outlook demand AI capital expenditures",
+                "earnings release company-authored unaudited cloud revenue AWS Azure management outlook",
+            ]
+        )
     for item in contract.get("qualitative_queries") or []:
         text = str(item or "").strip()
         if len(text) >= 8:
@@ -706,6 +759,26 @@ def _requirement_queries(case: dict[str, Any]) -> list[str]:
         if len(deduped) >= 16:
             break
     return deduped
+
+
+def _case_requests_8k_earnings(case: dict[str, Any]) -> bool:
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    source_policy = str(case.get("source_policy") or contract.get("source_policy") or "")
+    filing_types = {
+        _normalize_form_type(item)
+        for item in (case.get("filing_types") or contract.get("filing_types") or [])
+        if _normalize_form_type(item)
+    }
+    source_tiers = {
+        str(item)
+        for item in (case.get("source_tiers") or contract.get("source_tiers") or [])
+        if str(item)
+    }
+    return (
+        source_policy == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
+        or "8-K" in filing_types
+        or "company_authored_unaudited_sec_filing" in source_tiers
+    )
 
 
 def _is_domain_requirement_query(text: str) -> bool:

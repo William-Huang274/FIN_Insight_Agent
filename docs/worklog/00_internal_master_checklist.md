@@ -50,6 +50,8 @@
 - [x] Expand 2026 10-Q ingestion/index artifacts to the current 30-company universe and rebuild mixed 10-K/10-Q artifacts.
 - [x] Propagate `period_role` into structured extraction, runtime ledger metric IDs, and rendered metric references for QTD/YTD/annual separation.
 - [x] Fix ContextManager mixed-session bootstrap so `SEC_PRIMARY_MIXED_RECENT` cannot be overwritten by stale controller defaults.
+- [x] Add SEC 8-K earnings-release pilot source-gap merge/session wiring and fix mixed 10-Q/8-K retrieval, graph-state source policy, and substantive follow-up routing on the RTX 5090 cloud node.
+- [ ] Improve mixed 10-Q/8-K synthesis so rendered answers explicitly cite retrieved 8-K management-commentary rows when the user asks for earnings-release interpretation, while keeping 8-K numbers out of the audited Exact-Value Ledger.
 - [ ] Cloud-run a real `session-mixed-deepseek` full DAG prompt on the mixed 10-K/10-Q artifacts after syncing the latest source changes.
 - [x] EvidenceObject JSONL read/write smoke test.
 - [x] SEC tech EvidenceObject build smoke test.

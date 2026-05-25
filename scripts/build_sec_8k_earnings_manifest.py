@@ -160,6 +160,7 @@ def collect_8k_earnings_manifest_with_gaps(
             continue
         records.append(_record_from_metadata(year, ticker, category_slug, html_path, metadata_path, metadata))
     deduped = _dedupe_records(records)
+    gaps = _drop_candidate_gaps_for_covered_scope(gaps, deduped)
     gaps = _dedupe_gaps(
         _expected_scope_gaps(
             expected_scope,
@@ -256,6 +257,34 @@ def _dedupe_records(records: list[SecFilingManifestRecord]) -> list[SecFilingMan
         best_by_key.values(),
         key=lambda record: (record.ticker.upper(), int(record.fiscal_year), str(record.filing_date or "")),
     )
+
+
+def _drop_candidate_gaps_for_covered_scope(
+    gaps: list[dict[str, Any]],
+    records: list[SecFilingManifestRecord],
+) -> list[dict[str, Any]]:
+    covered = {
+        (
+            str(record.ticker or "").upper(),
+            int(record.fiscal_year),
+            str(record.source_tier or ""),
+            str(record.category_slug or ""),
+        )
+        for record in records
+    }
+    if not covered:
+        return gaps
+    return [
+        gap
+        for gap in gaps
+        if (
+            str(gap.get("ticker") or "").upper(),
+            int(gap.get("year") or gap.get("filing_year") or 0),
+            str(gap.get("source_tier") or ""),
+            str(gap.get("category_slug") or ""),
+        )
+        not in covered
+    ]
 
 
 def _gap_from_metadata(metadata_path: Path, metadata: dict[str, Any], reason_code: str) -> dict[str, Any]:

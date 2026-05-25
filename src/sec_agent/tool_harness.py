@@ -335,8 +335,9 @@ class SecAgentToolHarness:
         base = replacement if replacement else current
         revised_tickers = sorted((set(base) | set(add)) - remove)
         revised_years = [int(item) for item in (years or (session.get("active_scope") or {}).get("selected_years") or [2023, 2024, 2025])]
+        source_policy = str((session.get("active_scope") or {}).get("source_policy") or "SEC_ONLY_10K")
         invalidated = SCOPE_INVALIDATES
-        revised_query = _scope_revision_query(active_query, revised_tickers, revised_years)
+        revised_query = _scope_revision_query(active_query, revised_tickers, revised_years, source_policy=source_policy)
         turn = self._new_turn(
             session,
             "revise_memo_scope",
@@ -365,7 +366,7 @@ class SecAgentToolHarness:
                 tenant_id=str(session.get("tenant_id") or "default_tenant"),
                 session_id=session["session_id"],
                 years=revised_years,
-                source_policy=str((session.get("active_scope") or {}).get("source_policy") or "SEC_ONLY_10K"),
+                source_policy=source_policy,
                 preferred_output=str((session.get("preferences") or {}).get("preferred_output") or "investment_memo"),
                 execute=True,
                 graph_args=graph_args or [],
@@ -1054,17 +1055,36 @@ def _compact_coverage_tasks(tasks: list[dict[str, Any]]) -> list[dict[str, Any]]
     return compact
 
 
-def _scope_revision_query(active_query: str, tickers: list[str], years: list[int]) -> str:
+def _scope_revision_query(active_query: str, tickers: list[str], years: list[int], *, source_policy: str) -> str:
     topic_context = _strip_scope_terms(active_query)
     ticker_text = ", ".join(tickers) if tickers else "the current active company set"
     year_text = ", ".join(str(item) for item in years) if years else "the current active fiscal years"
+    memo_label, source_boundary = _scope_revision_source_boundary(source_policy)
     return (
-        "请重新生成一版 SEC-only 10-K 投资备忘录，并把下面的 revised scope 作为唯一公司和年份约束。\n"
+        f"请重新生成一版 {memo_label}，并把下面的 revised scope 作为唯一公司和年份约束。\n"
         f"- 目标公司: {ticker_text}\n"
         f"- 目标年份: {year_text}\n"
-        "- 来源边界: 只使用 SEC 10-K；不要引入外部新闻、股价、分析师观点或当前市场数据。\n"
+        f"- 来源边界: {source_boundary}\n"
         "- Scope 规则: 不要继承上一轮里未列出的公司或年份；不要做同行对比，除非目标公司自己的 10-K 文本中作为背景出现。\n"
         f"- 保留的分析主题: {topic_context or 'AI/growth, margin/profitability changes, and key SEC-filed risks.'}"
+    )
+
+
+def _scope_revision_source_boundary(source_policy: str) -> tuple[str, str]:
+    policy = str(source_policy or "").strip()
+    if policy == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS":
+        return (
+            "SEC 10-K/10-Q/8-K 混合投资备忘录",
+            "只使用 SEC 10-K、10-Q 和公司 8-K 业绩新闻稿；8-K 只能作为公司未审计/管理层口径，不能替代 10-K/10-Q 财务报表数值；不要引入外部新闻、股价、分析师观点或当前市场数据。",
+        )
+    if policy == "SEC_PRIMARY_MIXED_RECENT":
+        return (
+            "SEC 10-K/10-Q 混合投资备忘录",
+            "只使用 SEC 10-K 和 10-Q；10-Q 为未经审计季报口径；不要引入外部新闻、股价、分析师观点或当前市场数据。",
+        )
+    return (
+        "SEC-only 10-K 投资备忘录",
+        "只使用 SEC 10-K；不要引入外部新闻、股价、分析师观点或当前市场数据。",
     )
 
 

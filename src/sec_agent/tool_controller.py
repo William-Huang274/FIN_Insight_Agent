@@ -246,6 +246,13 @@ class DeepSeekToolController:
             args = {key: value for key, value in args.items() if key in self._allowed_args[name]}
         args = _fill_runtime_defaults(name, args, runtime_context)
         args = _canonicalize_tool_arguments(name, args, user_message=user_message)
+        if name == "start_memo_analysis":
+            args["query"] = _query_with_active_scope_for_followup(
+                str(args.get("query") or ""),
+                context=runtime_context,
+                active_scope=_active_scope(runtime_context),
+                source_policy=str(args.get("source_policy") or ""),
+            )
         if name in EXECUTE_CAPABLE_TOOLS and (route_only or not self.config.execute_tools):
             args["execute"] = False
         return {
@@ -422,6 +429,15 @@ def _fill_runtime_defaults(name: str, args: dict[str, Any], context: dict[str, A
             result["answer_id"] = context["active_answer_id"]
     if name == "start_memo_analysis":
         result["source_policy"] = _default_source_policy(context)
+        active_scope = _active_scope(context)
+        if not result.get("years") and active_scope.get("selected_years"):
+            result["years"] = [int(item) for item in active_scope.get("selected_years") or []]
+        result["query"] = _query_with_active_scope_for_followup(
+            str(result.get("query") or ""),
+            context=context,
+            active_scope=active_scope,
+            source_policy=str(result.get("source_policy") or ""),
+        )
         result.setdefault("preferred_output", "investment_memo")
     if name == "reformat_answer":
         result.setdefault("preserve_citations", True)
@@ -436,6 +452,14 @@ def _guarded_tool_name(name: str, *, user_message: str, runtime_context: dict[st
     heuristic_name = _heuristic_tool_name(user_message)
     if heuristic_name == "get_session_state":
         return "get_session_state"
+    if name == "revise_memo_scope" and not _looks_like_scope_revision_request(user_message, runtime_context):
+        if heuristic_name in {"inspect_coverage", "explain_evidence", "reformat_answer", "get_session_state"}:
+            return heuristic_name
+        return "start_memo_analysis"
+    if name == "resume_analysis" and not _looks_like_stage_resume_request(user_message):
+        if heuristic_name in {"inspect_coverage", "explain_evidence", "reformat_answer", "get_session_state"}:
+            return heuristic_name
+        return "start_memo_analysis"
     if name == "get_session_state" and heuristic_name in {
         "resume_analysis",
         "inspect_coverage",
@@ -449,7 +473,11 @@ def _guarded_tool_name(name: str, *, user_message: str, runtime_context: dict[st
 def _canonicalize_tool_arguments(name: str, args: dict[str, Any], *, user_message: str) -> dict[str, Any]:
     result = dict(args)
     if name == "start_memo_analysis":
-        result["query"] = str(user_message or result.get("query") or "")
+        existing_query = str(result.get("query") or "")
+        if existing_query.startswith("在当前 session 范围内回答用户追问"):
+            result["query"] = existing_query
+        else:
+            result["query"] = str(user_message or existing_query)
         if not result.get("years"):
             years = _extract_years(user_message)
             if years:
@@ -716,6 +744,120 @@ def _default_source_policy(context: dict[str, Any]) -> str:
         if policy in {"SEC_ONLY_10K", "SEC_PRIMARY_MIXED_RECENT", "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"}:
             return policy
     return "SEC_ONLY_10K"
+
+
+def _active_scope(context: dict[str, Any]) -> dict[str, Any]:
+    context_snapshot = context.get("context_snapshot") if isinstance(context.get("context_snapshot"), dict) else {}
+    lossless = context_snapshot.get("lossless_fields") if isinstance(context_snapshot.get("lossless_fields"), dict) else {}
+    candidates = [
+        context.get("active_scope"),
+        lossless.get("active_scope"),
+        ((context.get("expected_context") or {}) if isinstance(context.get("expected_context"), dict) else {}).get(
+            "active_scope"
+        ),
+    ]
+    for candidate in candidates:
+        if isinstance(candidate, dict) and candidate:
+            return candidate
+    return {}
+
+
+def _query_with_active_scope_for_followup(
+    query: str,
+    *,
+    context: dict[str, Any],
+    active_scope: dict[str, Any],
+    source_policy: str,
+) -> str:
+    text = str(query or "").strip()
+    if not text or _extract_tickers(text) or _extract_years(text):
+        return text
+    if not context.get("active_answer_id"):
+        return text
+    tickers = [str(item).upper() for item in active_scope.get("selected_tickers") or [] if str(item).strip()]
+    years = [int(item) for item in active_scope.get("selected_years") or []]
+    if not tickers and not years:
+        return text
+    ticker_text = ", ".join(tickers) if tickers else "沿用当前公司范围"
+    year_text = ", ".join(str(year) for year in years) if years else "沿用当前年份范围"
+    return (
+        "在当前 session 范围内回答用户追问："
+        f"目标公司: {ticker_text}; 目标年份: {year_text}; 来源边界: {_source_policy_followup_boundary(source_policy)}。\n"
+        f"用户追问: {text}"
+    )
+
+
+def _source_policy_followup_boundary(source_policy: str) -> str:
+    if source_policy == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS":
+        return "只使用 SEC 10-K、10-Q 和公司 8-K 业绩新闻稿；8-K 只能作为公司未审计/管理层口径"
+    if source_policy == "SEC_PRIMARY_MIXED_RECENT":
+        return "只使用 SEC 10-K 和 10-Q；10-Q 为未经审计季报口径"
+    return "只使用 SEC 10-K"
+
+
+def _looks_like_scope_revision_request(text: str, context: dict[str, Any]) -> bool:
+    normalized = str(text or "").lower()
+    scope_terms = (
+        "scope",
+        "focus",
+        "only",
+        "exclude",
+        "remove",
+        "add ",
+        "change to",
+        "switch to",
+        "只看",
+        "只分析",
+        "单独看",
+        "限定",
+        "范围",
+        "改成",
+        "换成",
+        "加入",
+        "加上",
+        "去掉",
+        "剔除",
+        "排除",
+        "目标公司",
+        "目标年份",
+        "重跑",
+    )
+    if any(term in normalized for term in scope_terms):
+        return True
+    active_scope = _active_scope(context)
+    active_tickers = {str(item).upper() for item in active_scope.get("selected_tickers") or [] if str(item).strip()}
+    mentioned_tickers = set(_extract_tickers(text))
+    if mentioned_tickers and active_tickers and mentioned_tickers != active_tickers:
+        return True
+    active_years = {int(item) for item in active_scope.get("selected_years") or []}
+    mentioned_years = set(_extract_years(text))
+    if mentioned_years and active_years and mentioned_years != active_years:
+        return True
+    return False
+
+
+def _looks_like_stage_resume_request(text: str) -> bool:
+    normalized = str(text or "").lower()
+    resume_terms = (
+        "resume",
+        "continue running",
+        "continue the run",
+        "rerun missing",
+        "from state",
+        "state path",
+        "interrupted",
+        "failed run",
+        "继续跑",
+        "继续执行",
+        "恢复",
+        "续跑",
+        "中断",
+        "失败",
+        "缺失",
+        "artifact",
+        "state",
+    )
+    return any(term in normalized for term in resume_terms)
 
 
 def _looks_like_state_check(text: str, normalized: str) -> bool:

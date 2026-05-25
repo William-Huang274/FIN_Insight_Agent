@@ -620,6 +620,66 @@ SOURCE_GAP_PATH=data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_so
 - Expand beyond the current `MSFT`/`AMZN` selected 8-K pilot only after the cloud gap report confirms whether missing rows are SEC-source absence, `Item 2.02` absence, exhibit-selection absence, or cache/manifest contract failure.
 - Update this document after implementation with concrete artifact paths, row counts, tests, and cloud run IDs.
 
+## 5090 Cloud Root-Cause Fix And Real Session Validation
+
+Date: 2026-05-25
+
+Problem:
+
+- New RTX 5090 cloud node had the correct `sec-agent-cu128` runtime, but the first mixed 10-Q/8-K real session exposed three chain defects:
+  - `MSFT` had a valid selected 2026 8-K earnings release in the mixed manifest, yet manifest-stage source gaps still emitted `cached_8k_missing_item_2_02` for a separate stale cached candidate, causing the planner/coverage layer to think 8-K was missing.
+  - Chinese prompts mentioning `8-K业绩新闻稿` retrieved only 10-Q rows because candidate-generation queries did not bridge to English SEC terms such as `Exhibit 99.1 earnings release`.
+  - Multi-turn follow-up routing treated substantive prompts such as `继续比较两家公司...` as `revise_memo_scope` or `resume_analysis`, so the second turn either rewrote the task with stale scope text or returned existing state instead of running a new scoped analysis.
+
+Fix:
+
+- `scripts/build_sec_8k_earnings_manifest.py`
+  - Drops candidate-level manifest gaps when the same ticker/year/source-tier/category scope already has a valid selected earnings-release 8-K record.
+  - This keeps source gaps as coverage gaps, not discarded-candidate diagnostics.
+- `scripts/run_sec_benchmark_eval.py`
+  - Adds source-aware requirement queries for mixed 8-K cases, including `8-K Exhibit 99.1 earnings release cloud management commentary guidance outlook demand AI capital expenditures`.
+  - Adds a small deterministic `requested_8k_earnings_source_coverage` reservation after BGE rerank so requested 8-K source-tier rows are not squeezed out by 10-Q numeric rows.
+- `scripts/cloud/sec_agent_interactive.py`
+  - Writes the actual Query Contract source policy into `sec_agent_state.json` instead of leaving the graph-state default `SEC_ONLY`.
+- `src/sec_agent/tool_harness.py`
+  - Makes `revise_memo_scope` regenerated query text source-policy aware; mixed 8-K sessions now say `SEC 10-K/10-Q/8-K 混合投资备忘录` and preserve the 8-K unaudited boundary instead of hard-coding `SEC-only 10-K`.
+- `src/sec_agent/tool_controller.py`
+  - Reroutes non-scope `revise_memo_scope` calls to scoped `start_memo_analysis`.
+  - Reroutes substantive `resume_analysis` calls such as `继续比较...` to scoped `start_memo_analysis`; explicit interrupted/missing-artifact resume requests still use `resume_analysis`.
+  - Injects current session tickers, years, and source boundary into follow-up prompts that omit explicit ticker/year mentions.
+
+Validation:
+
+```bash
+python -m pytest tests/test_sec_agent_8k_earnings_source.py tests/test_sec_agent_context_source_policy.py -q
+python -m py_compile scripts/build_sec_8k_earnings_manifest.py scripts/run_sec_benchmark_eval.py scripts/cloud/sec_agent_interactive.py src/sec_agent/tool_harness.py src/sec_agent/tool_controller.py
+```
+
+Results:
+
+- Local targeted regression suite: `34 passed`.
+- Cloud targeted regression suite on RTX 5090 / cu128 runtime: `34 passed`.
+- Cloud 8-K manifest rebuild:
+  - `data/processed_private/manifests/sec_tech_8k_earnings_pilot_manifest_2026_2027.jsonl`: `2` records (`MSFT`, `AMZN`, filing year `2026`).
+  - `data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_manifest_gaps_2026_2027.jsonl`: `8` rows, all `no_cached_8k_earnings_metadata`.
+  - merged source gaps: `8` rows, reasons `no_8k_for_filing_year=5`, `no_earnings_release_exhibit_for_item_2_02_8k=3`; no false `MSFT` gap remains.
+- Real two-turn mixed 8-K DeepSeek session:
+  - Session: `manual_session_20260525_125413`.
+  - Turn 1 run root: `eval/sec_cases/outputs/interactive_sec_agent/20260525_125447_293213cab9`.
+    - Tool: `start_memo_analysis`.
+    - Query Contract: `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS`, filing types `10-Q, 8-K`, source tiers `primary_sec_filing, company_authored_unaudited_sec_filing`.
+    - Retrieval context: `120` rows, `116` 10-Q and `4` 8-K rows.
+    - Coverage summary: covered filing types `10-Q, 8-K`; no missing source tiers; source-gap count `0`.
+  - Turn 2 run root: `eval/sec_cases/outputs/interactive_sec_agent/20260525_125709_29dcd9b03a`.
+    - Tool: `start_memo_analysis`, not `revise_memo_scope` or `resume_analysis`.
+    - User query was rewritten with current session scope: `目标公司: AMZN, MSFT; 目标年份: 2026; 来源边界: 只使用 SEC 10-K、10-Q 和公司 8-K 业绩新闻稿...`.
+    - Retrieval context: `120` rows, `110` 10-Q and `10` 8-K rows.
+    - Coverage summary: covered filing types `10-Q, 8-K`; no missing source tiers; source-gap count `0`.
+
+Remaining limitation:
+
+- The validated chain now retrieves and carries 8-K evidence through Coverage Matrix, but rendered answers still tend to ground quantitative bullet support in 10-Q ledger rows and mention 8-K mostly as a source-boundary caveat. Next improvement should make synthesis explicitly cite 8-K management-commentary rows when the prompt asks for `8-K业绩新闻稿` interpretation, without promoting 8-K numbers into the audited/exact-value ledger.
+
 ## Safety Notes
 
 - No API keys, passwords, or cloud credentials were written to this document.

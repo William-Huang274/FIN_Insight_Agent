@@ -30,11 +30,14 @@ Usage:
   bash scripts/cloud/sec_agent_interactive.sh ask-bge-first "your free-form prompt"
   bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
   bash scripts/cloud/sec_agent_interactive.sh chat-mixed-deepseek
+  bash scripts/cloud/sec_agent_interactive.sh chat-mixed-8k-deepseek
   bash scripts/cloud/sec_agent_interactive.sh ask-deepseek "your free-form prompt"
   bash scripts/cloud/sec_agent_interactive.sh ask-mixed-deepseek "your free-form prompt"
+  bash scripts/cloud/sec_agent_interactive.sh ask-mixed-8k-deepseek "your free-form prompt"
   bash scripts/cloud/sec_agent_interactive.sh graph-ask-deepseek "your free-form prompt"
   bash scripts/cloud/sec_agent_interactive.sh session-deepseek
   bash scripts/cloud/sec_agent_interactive.sh session-mixed-deepseek
+  bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
   bash scripts/cloud/sec_agent_interactive.sh graph-inspect-state /path/to/sec_agent_state.json
   bash scripts/cloud/sec_agent_interactive.sh graph-resume-state /path/to/sec_agent_state.json
   bash scripts/cloud/sec_agent_interactive.sh plan "your free-form prompt"
@@ -53,6 +56,7 @@ Common overrides:
   QUERY_PLANNER=llm DEEPSEEK_API_KEY=... bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
   DEEPSEEK_API_KEY=... bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
   DEEPSEEK_API_KEY=... YEARS=2023,2024,2025,2026 bash scripts/cloud/sec_agent_interactive.sh session-mixed-deepseek
+  SOURCE_GAP_PATH=data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_source_gaps_merged_2026_2027.jsonl bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
 
 Notes:
   Default scope is TICKERS=ALL, which resolves to all companies in the SEC 10-K manifest.
@@ -60,6 +64,7 @@ Notes:
   Query planner system prompts are injected with a manifest-derived project source inventory.
   DeepSeek mode reads the key from DEEPSEEK_API_KEY; do not store API keys in files.
   Mixed mode uses accepted 2023-2025 10-K plus 2026 10-Q BM25/object-BM25 artifacts.
+  Mixed 8-K mode adds pilot SEC 8-K earnings-release evidence and optional source gap reasons.
   The exact-value ledger is built at runtime from retrieved structured SEC objects; it is gate-checked but not human-reviewed gold.
 EOF
 }
@@ -102,10 +107,21 @@ use_mixed_10k_10q_sources() {
   export SEC_AGENT_SOURCE_POLICY="${SEC_AGENT_SOURCE_POLICY:-SEC_PRIMARY_MIXED_RECENT}"
 }
 
+use_mixed_10k_10q_8k_sources() {
+  export MANIFEST_PATH="${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_pilot_manifest_fy2023_2027.jsonl}"
+  export BM25_INDEX_DIR="${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_pilot_fy2023_2027}"
+  export OBJECT_BM25_INDEX_DIR="${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_10k_latest_10q_fy2023_2027_objects}"
+  export SOURCE_GAP_PATH="${SOURCE_GAP_PATH:-data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_source_gaps_merged_2026_2027.jsonl}"
+  export SEC_AGENT_SOURCE_POLICY="${SEC_AGENT_SOURCE_POLICY:-SEC_PRIMARY_MIXED_WITH_8K_EARNINGS}"
+}
+
 agent_flags() {
   local flags=(--llm-backend "$LLM_BACKEND" --base-url "$BASE_URL" --chat-completions-path "$CHAT_COMPLETIONS_PATH" --model "$MODEL_NAME")
   flags+=(--query-planner "${QUERY_PLANNER:-heuristic}")
   flags+=(--manifest-path "${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_10k_manifest.jsonl}")
+  if [[ -n "${SOURCE_GAP_PATH:-}" ]]; then
+    flags+=(--source-gap-path "$SOURCE_GAP_PATH")
+  fi
   flags+=(--bm25-index-dir "${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k}")
   flags+=(--object-bm25-index-dir "${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k_objects}")
   if [[ -n "${MAX_TOKENS:-}" ]]; then
@@ -207,6 +223,9 @@ run_context_session() {
   session_flags+=(--query-planner "${QUERY_PLANNER:-llm}")
   session_flags+=(--bge-device "${BGE_DEVICE:-cuda}")
   session_flags+=(--manifest-path "${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_10k_manifest.jsonl}")
+  if [[ -n "${SOURCE_GAP_PATH:-}" ]]; then
+    session_flags+=(--source-gap-path "$SOURCE_GAP_PATH")
+  fi
   session_flags+=(--bm25-index-dir "${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k}")
   session_flags+=(--object-bm25-index-dir "${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k_objects}")
   session_flags+=(--source-policy "${SEC_AGENT_SOURCE_POLICY:-SEC_ONLY_10K}")
@@ -254,6 +273,28 @@ case "$cmd" in
   ;;
   chat-mixed-deepseek|chat-mixed-api)
     use_mixed_10k_10q_sources
+    export LLM_BACKEND=deepseek
+    if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
+      export BASE_URL="https://api.deepseek.com"
+    fi
+    if [[ "$CHAT_COMPLETIONS_PATH" == "/v1/chat/completions" ]]; then
+      export CHAT_COMPLETIONS_PATH="/chat/completions"
+    fi
+  if [[ "$MODEL_NAME" == "qwen9b" ]]; then
+    export MODEL_NAME="deepseek-v4-pro"
+  fi
+  export API_KEY_ENV="${API_KEY_ENV:-DEEPSEEK_API_KEY}"
+  export REASONING_EFFORT="${REASONING_EFFORT:-}"
+  export ENABLE_THINKING="${ENABLE_THINKING:-0}"
+  export BGE_FIRST="${BGE_FIRST:-1}"
+  export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
+  export MAX_TOKENS="${MAX_TOKENS:-8000}"
+  ensure_min_int_env MAX_TOKENS 8000
+  shift || true
+  run_chat "$@"
+  ;;
+  chat-mixed-8k-deepseek|chat-mixed-8k-api)
+    use_mixed_10k_10q_8k_sources
     export LLM_BACKEND=deepseek
     if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
       export BASE_URL="https://api.deepseek.com"
@@ -326,6 +367,28 @@ case "$cmd" in
   shift || true
   run_ask "$@"
   ;;
+  ask-mixed-8k-deepseek|ask-mixed-8k-api)
+    use_mixed_10k_10q_8k_sources
+    export LLM_BACKEND=deepseek
+    if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
+      export BASE_URL="https://api.deepseek.com"
+    fi
+    if [[ "$CHAT_COMPLETIONS_PATH" == "/v1/chat/completions" ]]; then
+      export CHAT_COMPLETIONS_PATH="/chat/completions"
+    fi
+    if [[ "$MODEL_NAME" == "qwen9b" ]]; then
+      export MODEL_NAME="deepseek-v4-pro"
+    fi
+    export API_KEY_ENV="${API_KEY_ENV:-DEEPSEEK_API_KEY}"
+  export REASONING_EFFORT="${REASONING_EFFORT:-}"
+  export ENABLE_THINKING="${ENABLE_THINKING:-0}"
+  export BGE_FIRST="${BGE_FIRST:-1}"
+  export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
+  export MAX_TOKENS="${MAX_TOKENS:-8000}"
+  ensure_min_int_env MAX_TOKENS 8000
+  shift || true
+  run_ask "$@"
+  ;;
   graph-ask)
     shift || true
     run_graph_ask "$@"
@@ -372,6 +435,26 @@ case "$cmd" in
   ;;
   session-mixed-deepseek|session-mixed-api)
     use_mixed_10k_10q_sources
+    export LLM_BACKEND=deepseek
+    if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
+      export BASE_URL="https://api.deepseek.com"
+    fi
+    if [[ "$CHAT_COMPLETIONS_PATH" == "/v1/chat/completions" ]]; then
+      export CHAT_COMPLETIONS_PATH="/chat/completions"
+    fi
+    if [[ "$MODEL_NAME" == "qwen9b" ]]; then
+      export MODEL_NAME="deepseek-v4-pro"
+    fi
+  export API_KEY_ENV="${API_KEY_ENV:-DEEPSEEK_API_KEY}"
+  export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
+  export BGE_DEVICE="${BGE_DEVICE:-cuda}"
+  export SYNTHESIS_MAX_TOKENS="${SYNTHESIS_MAX_TOKENS:-8000}"
+  ensure_min_int_env SYNTHESIS_MAX_TOKENS 8000
+  shift || true
+  run_context_session "$@"
+  ;;
+  session-mixed-8k-deepseek|session-mixed-8k-api)
+    use_mixed_10k_10q_8k_sources
     export LLM_BACKEND=deepseek
     if [[ "$BASE_URL" == "http://127.0.0.1:8000" ]]; then
       export BASE_URL="https://api.deepseek.com"

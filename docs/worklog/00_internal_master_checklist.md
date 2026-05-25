@@ -255,6 +255,7 @@
 - [x] Run cloud 8-K earnings pilot build plus mixed 10-Q/8-K DeepSeek smoke for MSFT/AMZN.
 - [x] Add rendered-answer source-boundary display check after first 8-K evidence artifacts exist.
 - [x] Add structured 8-K earnings-release source-gap reason records before broadening coverage.
+- [x] Add 8-K source-gap merge and session wrapper propagation for mixed-with-8K cloud testing.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
 - [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.
 - [ ] Validate earlier-node resume from a real partial replay, especially `build_coverage_matrix` or `build_judgment_plan`.

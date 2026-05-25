@@ -71,6 +71,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--manifest-path",
         default=os.environ.get("MANIFEST_PATH", "data/processed_private/manifests/sec_tech_10k_manifest.jsonl"),
     )
+    parser.add_argument(
+        "--source-gap-path",
+        default=os.environ.get("SOURCE_GAP_PATH", ""),
+        help="Optional JSONL with structured source coverage gaps to forward into graph runs.",
+    )
     parser.add_argument("--bm25-index-dir", default=os.environ.get("BM25_INDEX_DIR", "data/indexes/bm25/sec_tech_10k"))
     parser.add_argument(
         "--object-bm25-index-dir",
@@ -253,6 +258,8 @@ def _graph_args(args: argparse.Namespace) -> list[str]:
         "--object-bm25-index-dir",
         args.object_bm25_index_dir,
     ]
+    if args.source_gap_path:
+        result.extend(["--source-gap-path", args.source_gap_path])
     if args.api_key_env:
         result.extend(["--api-key-env", args.api_key_env])
     if not args.graph_verbose:
@@ -550,6 +557,8 @@ def _print_start_banner(*, args: argparse.Namespace, state: dict[str, str], sess
     )
     print(f"session_root: {session_root.resolve()}")
     print(f"context_root: {context_root.resolve()}")
+    if args.source_gap_path:
+        print(f"source_gap_path: {args.source_gap_path}")
     print(f"turn_log: {state['turn_log']}")
 
 

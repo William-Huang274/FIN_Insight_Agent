@@ -553,6 +553,67 @@ Next use on cloud:
 - Re-run the 8-K downloader with `--allow-missing` and keep both downloader and manifest gap JSONL under `data/processed_private/source_gaps/`.
 - When running mixed-with-8K sessions, pass `SOURCE_GAP_PATH=<gap-jsonl>` so `project_inventory.json`, Query Contract, and Coverage Matrix expose source-gap reasons before broadening the company set.
 
+## 8-K Source Gap Merge And Session Wiring
+
+Date: 2026-05-25
+
+Problem:
+
+- The prior follow-up made downloader and manifest stages emit source-gap JSONL, but cloud operation would still require manually choosing one `SOURCE_GAP_PATH`.
+- If both files exist, manifest expected-scope gaps such as `no_cached_8k_earnings_metadata` can be less specific than downloader discovery reasons such as `no_item_2_02_8k_for_filing_year`.
+- The real ContextManager-backed session path also did not forward `SOURCE_GAP_PATH` into the graph runner, so `session-mixed-deepseek`-style testing could miss the new gap reasons.
+
+Fix:
+
+- Added `scripts/merge_sec_source_gaps.py`.
+  - It merges repeated `--input` JSONL files into one planner/coverage source-gap file.
+  - It ranks discovery-stage reasons above manifest cache-absence reasons for the same ticker/year/form/source-tier/category scope.
+  - Default output: `data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_source_gaps_merged_2026_2027.jsonl`.
+- Updated `scripts/cloud/sec_agent_interactive.sh`.
+  - Added `chat-mixed-8k-deepseek`, `ask-mixed-8k-deepseek`, and `session-mixed-8k-deepseek`.
+  - These commands default to:
+    - `SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_EARNINGS`;
+    - `MANIFEST_PATH=data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_pilot_manifest_fy2023_2027.jsonl`;
+    - `BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_pilot_fy2023_2027`;
+    - `SOURCE_GAP_PATH=data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_source_gaps_merged_2026_2027.jsonl`.
+- Updated `scripts/cloud/sec_agent_context_session_cli.py`.
+  - Added `--source-gap-path` / `SOURCE_GAP_PATH`.
+  - `_graph_args(...)` now forwards the source-gap path into `sec_agent_graph_runner.py`, which forwards it to `sec_agent_interactive.py`.
+- Updated `scripts/cloud/sec_agent_interactive.py` config output to display the active source gap path.
+
+Validation:
+
+```bash
+python -m pytest tests/test_sec_agent_8k_earnings_source.py -q
+python -m pytest tests/test_sec_agent_context_source_policy.py tests/test_sec_agent_10q_source_contract.py -q
+python -m py_compile scripts/merge_sec_source_gaps.py scripts/cloud/sec_agent_context_session_cli.py scripts/cloud/sec_agent_interactive.py
+bash -n scripts/cloud/sec_agent_interactive.sh
+python scripts/merge_sec_source_gaps.py --input data/processed_private/source_gaps/not_exists_a.jsonl --input data/processed_private/source_gaps/not_exists_b.jsonl --allow-missing-inputs --output .tmp_sec_gap_merge_smoke/merged.jsonl
+python scripts/cloud/sec_agent_interactive.py --print-config --source-gap-path data/processed_private/source_gaps/example.jsonl
+```
+
+Results:
+
+- 8-K source tests: `24 passed`.
+- Context/source-policy and 10-Q contract regressions: `35 passed`.
+- `py_compile`: passed.
+- `bash -n`: exit code `0` (WSL printed a local warning only).
+- Merge smoke with missing optional inputs: succeeded with `merged_rows=0`; temporary output directory was removed.
+- Interactive config smoke displayed the provided `source_gap_path`.
+
+Cloud command sequence after sync:
+
+```bash
+python scripts/download_sec_8k_earnings.py --allow-missing --rate-limit 1.0
+python scripts/build_sec_8k_earnings_manifest.py
+python scripts/merge_sec_source_gaps.py \
+  --input data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_missing_2026_2027.jsonl \
+  --input data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_manifest_gaps_2026_2027.jsonl \
+  --allow-missing-inputs
+SOURCE_GAP_PATH=data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_source_gaps_merged_2026_2027.jsonl \
+  bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
+```
+
 ## Follow-Up
 
 - Keep all P1 artifacts in pilot-specific paths until source selection, retrieval, renderer labels, and gates pass for a broader company set.

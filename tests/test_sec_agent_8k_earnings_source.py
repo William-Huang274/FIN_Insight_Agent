@@ -39,6 +39,24 @@ def _load_8k_downloader_module():
     return module
 
 
+def _load_source_gap_merge_module():
+    path = REPO_ROOT / "scripts" / "merge_sec_source_gaps.py"
+    spec = importlib.util.spec_from_file_location("merge_sec_source_gaps_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_context_session_cli_module():
+    path = REPO_ROOT / "scripts" / "cloud" / "sec_agent_context_session_cli.py"
+    spec = importlib.util.spec_from_file_location("sec_agent_context_session_cli_8k_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _load_interactive_module():
     path = REPO_ROOT / "scripts" / "cloud" / "sec_agent_interactive.py"
     spec = importlib.util.spec_from_file_location("sec_agent_interactive_8k_under_test", path)
@@ -860,6 +878,72 @@ def test_query_contract_uses_inventory_8k_source_gap_reasons() -> None:
         and gap["reason"] == "no_item_2_02_8k_for_filing_year"
         for gap in gaps
     )
+
+
+def test_source_gap_merge_prefers_discovery_reason_over_manifest_cache_gap() -> None:
+    merger = _load_source_gap_merge_module()
+    rows = [
+        {
+            "source": "build_sec_8k_earnings_manifest",
+            "ticker": "NVDA",
+            "year": 2027,
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "category_slug": "ai_gpu_semiconductor",
+            "reason_code": "no_cached_8k_earnings_metadata",
+        },
+        {
+            "source": "download_sec_8k_earnings",
+            "ticker": "NVDA",
+            "filing_year": 2027,
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "category_slug": "ai_gpu_semiconductor",
+            "reason_code": "no_item_2_02_8k_for_filing_year",
+            "diagnostics": {"eight_k_rows_in_year": 3, "item_2_02_8k_rows": 0},
+        },
+        {
+            "source": "build_sec_8k_earnings_manifest",
+            "ticker": "MSFT",
+            "year": 2026,
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "category_slug": "mega-cap_software_cloud",
+            "reason_code": "selected_8k_exhibit_html_missing",
+            "html_path": "missing/ex991.htm",
+        },
+    ]
+
+    merged = merger.merge_source_gaps(rows)
+
+    assert len(merged) == 2
+    nvda = next(row for row in merged if row["ticker"] == "NVDA")
+    assert nvda["reason_code"] == "no_item_2_02_8k_for_filing_year"
+    assert nvda["discarded_gap_reasons"] == ["no_cached_8k_earnings_metadata"]
+    assert nvda["diagnostics"]["item_2_02_8k_rows"] == 0
+    msft = next(row for row in merged if row["ticker"] == "MSFT")
+    assert msft["reason_code"] == "selected_8k_exhibit_html_missing"
+
+
+def test_context_session_forwards_source_gap_path_to_graph_args() -> None:
+    session_cli = _load_context_session_cli_module()
+    args = session_cli.parse_args(
+        [
+            "--source-policy",
+            "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+            "--source-gap-path",
+            "data/processed_private/source_gaps/merged.jsonl",
+            "--manifest-path",
+            "data/processed_private/manifests/mixed_with_8k.jsonl",
+        ]
+    )
+
+    graph_args = session_cli._graph_args(args)
+
+    assert "--source-gap-path" in graph_args
+    assert graph_args[graph_args.index("--source-gap-path") + 1] == "data/processed_private/source_gaps/merged.jsonl"
+    assert "--manifest-path" in graph_args
+    assert graph_args[graph_args.index("--manifest-path") + 1] == "data/processed_private/manifests/mixed_with_8k.jsonl"
 
 
 def test_8k_earnings_parser_builds_source_bounded_chunks_and_evidence(tmp_path: Path) -> None:

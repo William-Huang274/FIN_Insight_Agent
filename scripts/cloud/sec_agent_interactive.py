@@ -5865,6 +5865,7 @@ def _config_summary(args: argparse.Namespace) -> dict[str, Any]:
         "tickers": args.tickers or "<infer/default>",
         "years": args.years or "<infer/default>",
         "manifest_path": args.manifest_path,
+        "source_gap_path": args.source_gap_path or None,
         "bm25_index_dir": args.bm25_index_dir,
         "object_bm25_index_dir": args.object_bm25_index_dir,
         "bge_model": args.bge_model,

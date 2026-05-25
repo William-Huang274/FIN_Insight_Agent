@@ -678,6 +678,53 @@ def test_synthesis_cleanup_removes_unsupported_ratio_placeholders() -> None:
     assert "具体金额未进入当前引用" in cleaned
 
 
+def test_api_memo_normalization_drops_final_unsupported_value_placeholders() -> None:
+    module = _load_synthesis_module()
+    answer = {
+        "direct_answer": "test",
+        "investment_thesis": "test",
+        "decision_drivers": [
+            {
+                "driver_claim": "RPO从具体金额未进入当前引用增至具体金额未进入当前引用。",
+                "why_it_matters": "visibility read",
+                "supporting_metric_ids": ["m1"],
+                "supporting_evidence_ids": ["e1"],
+            }
+        ],
+        "why_it_matters": [
+            {
+                "insight": "资本支出从具体金额未进入当前引用降至具体金额未进入当前引用。",
+                "business_implication": "cash-flow read",
+                "metric_ids": ["m1"],
+                "evidence_ids": ["e1"],
+            }
+        ],
+        "counterarguments": [
+            {
+                "claim": "毛利率仅为具体比例未进入当前 ledger。",
+                "why_it_could_weaken_thesis": "profitability risk",
+                "metric_ids": ["m1"],
+                "evidence_ids": ["e1"],
+            }
+        ],
+        "limitations": ["具体金额未进入当前引用的候选比较已降级。"],
+    }
+
+    normalized = module._normalize_answer(
+        answer,
+        ledger_rows=[{"metric_id": "m1"}],
+        context_rows=[{"evidence_id": "e1"}],
+        case={},
+    )
+    payload = str(normalized)
+
+    assert normalized["decision_drivers"] == []
+    assert normalized["why_it_matters"] == []
+    assert normalized["counterarguments"] == []
+    assert "具体金额未进入当前引用" not in payload
+    assert "具体比例未进入当前 ledger" not in payload
+
+
 def test_api_memo_normalization_downgrades_recurring_quality_overclaim() -> None:
     module = _load_synthesis_module()
     answer = {

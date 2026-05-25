@@ -107,17 +107,64 @@ Final real mixed 8-K DeepSeek smoke:
   - AMD `Data Center net revenue of $5.8 billion` is now `data_center_revenue::total_value::qtd`.
   - AMD `57%` remains `data_center_revenue::percentage_rate::qtd`.
 
+## 2026-05-25 Gap Closure Follow-up
+
+Problem:
+
+- The first full30 run still had 3 2026 gaps: `GE`, `PG`, and `TXN`.
+- Manual SEC inspection showed these were not source absences:
+  - `GE` used an earnings-release filename without `EX99`, e.g. `ge1q2026earningsrelease.htm`.
+  - `PG` used compact `EXHIBIT991` naming and a primary 8-K row without an `href`.
+  - `TXN` used `EX99` with description text `Registrant's News Release`, which the scoring logic treated too weakly.
+- A GE/PG/TXN mixed-8K smoke also exposed rendered memo placeholders such as `具体金额未进入当前引用`; this came from the unsupported-value sanitizer leaving its final placeholder wording inside memo arrays.
+
+Implementation:
+
+- `src/connectors/sec_edgar_connector.py`
+  - `_infer_exhibit_type(...)` now recognizes compact `EXHIBIT991` / `EXHIBIT9901`.
+  - Earnings-release filenames/descriptions can be selected as `EX-99` even without explicit `EX99` text.
+  - `news release` and `press release` are treated as earnings-release support terms.
+- `scripts/run_sec_eval_synthesis_qwen9b_backend.py`
+  - Added final unsupported-value placeholder markers and removes memo/driver/key-point items containing those markers after exact-value sanitization.
+  - Drops placeholder-containing `limitations` / `source_limitations` rows; the generic "unauthorized exact values removed" limitation remains.
+- Tests:
+  - Added connector regressions for `EXHIBIT991`, earnings-release filenames without EX99, and `News Release` EX99 descriptions.
+  - Added memo normalization regression that removes final `具体金额未进入当前引用` / `具体比例未进入当前 ledger` placeholders from rendered structures.
+
+Cloud rebuild after fix:
+
+- 8-K full30 manifest: `data/processed_private/manifests/sec_tech_8k_earnings_full30_manifest_2026_2027.jsonl` = `30` rows, `30` tickers, all in filing year `2026`.
+- 8-K chunks/evidence: `362` rows.
+- Mixed 10-K/latest-10-Q/8-K manifest: `149` rows.
+- Mixed evidence and BM25 records: `10,659` rows.
+- Merged 8-K source gaps: `30` rows, all `2027` `no_8k_for_filing_year`; `2026` missing tickers = `[]`.
+
+Cloud smoke:
+
+- Prompt: `结合最新10-Q和8-K业绩新闻稿，比较GE、PG、TXN的最新业绩驱动、管理层解释和证据边界`
+- Final run root: `eval/sec_cases/outputs/interactive_sec_agent/20260525_154627_53c63abcf7`
+- Gates: `ok=True`, `pass=12`, `fail=[]`.
+- Ledger rows: `15`; context rows: `120`.
+- Placeholder scan over `qwen/rendered_answer.md` and `qwen/input_output.md`: no matches for `具体金额未进入当前引用`, `具体比例未进入当前 ledger`, `当前引用未保留`, `精确金额未获当前引用保留`, or `精确比例未获当前引用保留`.
+- 8-K citation check:
+  - `runtime_evidence_pack.json`: `GE=3`, `PG=4`, `TXN=1` `8K_EARNINGS::*` IDs.
+  - `qwen/input_output.md`: `GE=4`, `PG=6`, `TXN=5` `8K_EARNINGS::*` IDs.
+
+Residual risk:
+
+- The cleanup smoke completed with all gates green, but the planner step used the existing heuristic fallback because one DeepSeek planner call returned no JSON object. The earlier same-scope smoke had `planner=llm:deepseek:ok`, so this is recorded as a planner-output stability follow-up rather than a source-ingestion blocker.
+- `2027` 8-K gaps remain expected by date; do not interpret them as connector failures before 2027 filing-year 8-Ks exist.
+
 ## Remaining Limitations
 
 - 2027 8-K coverage is unavailable by date, not a parser failure.
-- 2026 still has 3 companies with no selected earnings-release exhibit; these should be inspected case by case before claiming full 30/30 8-K support.
 - 8-K values are still company-authored unaudited management material. They can support explanation and management commentary, but must not replace audited 10-K or reviewed 10-Q ledger facts.
 - The cloud project directory is not a Git repository on the new node; Git hygiene remains local-first, with cloud used for artifact build and smoke validation.
 
 ## Next Step
 
-- Inspect the 3 remaining 2026 8-K gaps to decide whether they are true source absences, non-standard exhibit labels, or source-policy exclusions.
-- After that, run one broader full30 mixed-8k prompt cohort instead of only NVDA/AMD/MSFT, so source-tier reservation and renderer behavior are tested outside the AI semiconductor/cloud cluster.
+- Stabilize the DeepSeek planner JSON-only path so mixed-8K runs do not intermittently rely on heuristic planner fallback.
+- Run a broader prompt cohort across non-tech, industrial, financial, consumer, and energy names to validate that 8-K evidence is cited only for management explanation/source-boundary support and not promoted into audited ledger authority.
 
 ## Safety Notes
 

@@ -2674,11 +2674,20 @@ def _sanitize_unsupported_exact_values(
             isinstance(point, dict)
             and (
                 "未在 Exact-Value Ledger 中授权" in str(point.get("point") or "")
-                or "当前引用未保留" in str(point.get("point") or "")
+                or _contains_unsupported_value_placeholder(point.get("point"))
             )
         )
     ]
-    placeholder_markers = ("当前引用未保留", "精确金额未获当前引用保留", "精确比例未获当前引用保留")
+    answer["decision_drivers"] = [
+        driver
+        for driver in answer.get("decision_drivers") or []
+        if not (
+            isinstance(driver, dict)
+            and _contains_unsupported_value_placeholder(
+                " ".join(str(driver.get(key) or "") for key in ("driver_claim", "why_it_matters", "caveat"))
+            )
+        )
+    ]
     memo_text_keys = {
         "what_changed": ("claim",),
         "why_it_matters": ("insight", "business_implication"),
@@ -2692,8 +2701,8 @@ def _sanitize_unsupported_exact_values(
             if not (
                 isinstance(item, dict)
                 and any(
-                    marker in " ".join(str(item.get(key) or "") for key in text_keys)
-                    for marker in placeholder_markers
+                    _contains_unsupported_value_placeholder(item.get(key))
+                    for key in text_keys
                 )
             )
         ]
@@ -2702,13 +2711,15 @@ def _sanitize_unsupported_exact_values(
         for item in answer.get(key) or []:
             text, count = sanitize_text(str(item or ""), [], [])
             sanitized_count += count
-            cleaned.append(text)
+            if not _contains_unsupported_value_placeholder(text):
+                cleaned.append(text)
         answer[key] = cleaned
     cleaned_source_limitations = []
     for item in answer.get("source_limitations") or []:
         text, count = sanitize_text(str(item or ""), [], [])
         sanitized_count += count
-        cleaned_source_limitations.append(text)
+        if not _contains_unsupported_value_placeholder(text):
+            cleaned_source_limitations.append(text)
     if "source_limitations" in answer:
         answer["source_limitations"] = cleaned_source_limitations
     if sanitized_count:
@@ -2736,6 +2747,22 @@ def _sanitize_unsupported_derived_multipliers(text: str) -> tuple[str, int]:
         rewritten,
     )
     return rewritten, count_a + count_b + count_c
+
+
+UNSUPPORTED_VALUE_PLACEHOLDER_MARKERS = (
+    "当前引用未保留",
+    "精确金额未获当前引用保留",
+    "精确比例未获当前引用保留",
+    "具体金额未进入当前引用",
+    "具体比例未进入当前 ledger",
+    "精确金额未进入当前引用",
+    "精确比例未进入当前 ledger",
+)
+
+
+def _contains_unsupported_value_placeholder(text: Any) -> bool:
+    raw = str(text or "")
+    return any(marker in raw for marker in UNSUPPORTED_VALUE_PLACEHOLDER_MARKERS)
 
 
 TICKER_ALIASES = {

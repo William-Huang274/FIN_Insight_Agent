@@ -918,13 +918,21 @@ class SecEdgarConnector:
         text = f"{name} {description}".upper()
         compact = re.sub(r"[^A-Z0-9]+", "", text)
         normalized_text = re.sub(r"\s+", " ", text)
-        if re.search(r"EX[-_\s]?99(?:\.|-|_)?0?1\b", text) or "EX991" in compact or "EX9901" in compact:
+        if (
+            re.search(r"EX[-_\s]?99(?:\.|-|_)?0?1\b", text)
+            or "EX991" in compact
+            or "EX9901" in compact
+            or "EXHIBIT991" in compact
+            or "EXHIBIT9901" in compact
+        ):
             return "EX-99.1"
         if re.search(r"(?:^|[\s>;:|])99(?:\.|-|_)?0?1(?:[\s<;:|]|$)", normalized_text):
             return "EX-99.1"
         if re.search(r"EX[-_\s]?99\b", text) or "EX99" in compact:
             return "EX-99"
         if re.search(r"(?:^|[\s>;:|])99(?:[\s<;:|]|$)", normalized_text):
+            return "EX-99"
+        if SecEdgarConnector._looks_like_earnings_release_text(f"{name} {description}"):
             return "EX-99"
         return None
 
@@ -938,6 +946,8 @@ class SecEdgarConnector:
             "quarterly results",
             "reports results",
             "announces results",
+            "news release",
+            "press release",
             "shareholder letter",
         )
         return any(term in lowered for term in terms)

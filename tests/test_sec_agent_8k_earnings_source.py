@@ -677,6 +677,126 @@ def test_connector_selects_plain_99_1_press_release_exhibit(monkeypatch, tmp_pat
     assert "Press Release" in filing["exhibit_description"]
 
 
+def test_connector_selects_exhibit991_filename_without_primary_href(monkeypatch, tmp_path: Path) -> None:
+    connector = SecEdgarConnector(user_agent="FinSight-Agent/0.1 test@example.com", cache_dir=tmp_path)
+    submissions = {
+        "name": "PROCTER & GAMBLE Co",
+        "filings": {
+            "recent": {
+                "form": ["8-K"],
+                "accessionNumber": ["0000080424-26-000056"],
+                "primaryDocument": ["pg-20260424.htm"],
+                "filingDate": ["2026-04-24"],
+                "reportDate": ["2026-04-24"],
+                "acceptanceDateTime": ["2026-04-24T20:00:00.000Z"],
+                "primaryDocDescription": ["8-K"],
+                "items": ["2.02,9.01"],
+            }
+        },
+    }
+    detail_index = {
+        "directory": {
+            "item": [
+                {"name": "pg-20260424.htm", "type": "text/html"},
+                {"name": "fy2526q3jfm8-kexhibit991.htm", "type": "text/html"},
+            ]
+        }
+    }
+    primary_html = """
+    <html><body>
+      <p>ITEM 9.01 FINANCIAL STATEMENTS AND EXHIBITS</p>
+      <p>99.1 News Release by The Procter & Gamble Company dated April 24, 2026.</p>
+    </body></html>
+    """
+
+    monkeypatch.setattr(connector, "get_company_submissions", lambda cik: submissions)
+    monkeypatch.setattr(connector, "_request_json", lambda url: detail_index)
+    monkeypatch.setattr(connector, "_request_text", lambda url: primary_html)
+
+    filing = connector.find_earnings_release_8k("80424", 2026)
+
+    assert filing["exhibit_document"] == "fy2526q3jfm8-kexhibit991.htm"
+    assert filing["exhibit_type"] == "EX-99.1"
+
+
+def test_connector_selects_earningsrelease_filename_without_ex99(monkeypatch, tmp_path: Path) -> None:
+    connector = SecEdgarConnector(user_agent="FinSight-Agent/0.1 test@example.com", cache_dir=tmp_path)
+    submissions = {
+        "name": "GE AEROSPACE",
+        "filings": {
+            "recent": {
+                "form": ["8-K"],
+                "accessionNumber": ["0000040545-26-000026"],
+                "primaryDocument": ["ge-20260421.htm"],
+                "filingDate": ["2026-04-21"],
+                "reportDate": ["2026-04-21"],
+                "acceptanceDateTime": ["2026-04-21T20:00:00.000Z"],
+                "primaryDocDescription": ["8-K"],
+                "items": ["2.02,9.01"],
+            }
+        },
+    }
+    detail_index = {
+        "directory": {
+            "item": [
+                {"name": "ge-20260421.htm", "type": "text/html"},
+                {"name": "ge1q2026earningsrelease.htm", "type": "text/html"},
+            ]
+        }
+    }
+
+    monkeypatch.setattr(connector, "get_company_submissions", lambda cik: submissions)
+    monkeypatch.setattr(connector, "_request_json", lambda url: detail_index)
+    monkeypatch.setattr(connector, "_request_text", lambda url: "<html>Item 2.02 earnings release</html>")
+
+    filing = connector.find_earnings_release_8k("40545", 2026)
+
+    assert filing["exhibit_document"] == "ge1q2026earningsrelease.htm"
+    assert filing["exhibit_type"] == "EX-99"
+
+
+def test_connector_scores_news_release_ex99_as_earnings_release(monkeypatch, tmp_path: Path) -> None:
+    connector = SecEdgarConnector(user_agent="FinSight-Agent/0.1 test@example.com", cache_dir=tmp_path)
+    submissions = {
+        "name": "TEXAS INSTRUMENTS INC",
+        "filings": {
+            "recent": {
+                "form": ["8-K"],
+                "accessionNumber": ["0000097476-26-000097"],
+                "primaryDocument": ["txn-20260422.htm"],
+                "filingDate": ["2026-04-22"],
+                "reportDate": ["2026-04-22"],
+                "acceptanceDateTime": ["2026-04-22T20:00:00.000Z"],
+                "primaryDocDescription": ["8-K"],
+                "items": ["2.02,9.01"],
+            }
+        },
+    }
+    detail_index = {
+        "directory": {
+            "item": [
+                {"name": "txn-20260422.htm", "type": "text/html"},
+                {"name": "q12026txnex99-eredgar.htm", "type": "text/html"},
+            ]
+        }
+    }
+    primary_html = """
+    <html><body><table>
+      <tr><td>99</td><td><a href="q12026txnex99-eredgar.htm">Registrant's News Release</a></td></tr>
+    </table></body></html>
+    """
+
+    monkeypatch.setattr(connector, "get_company_submissions", lambda cik: submissions)
+    monkeypatch.setattr(connector, "_request_json", lambda url: detail_index)
+    monkeypatch.setattr(connector, "_request_text", lambda url: primary_html)
+
+    filing = connector.find_earnings_release_8k("97476", 2026)
+
+    assert filing["exhibit_document"] == "q12026txnex99-eredgar.htm"
+    assert filing["exhibit_type"] == "EX-99"
+    assert "News Release" in filing["exhibit_description"]
+
+
 def test_connector_downloads_8k_earnings_release_exhibit(tmp_path: Path) -> None:
     connector = SecEdgarConnector(user_agent="FinSight-Agent/0.1 test@example.com", cache_dir=tmp_path)
     filing_meta = {

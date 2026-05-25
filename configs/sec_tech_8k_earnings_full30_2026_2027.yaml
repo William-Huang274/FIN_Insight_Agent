@@ -1,0 +1,119 @@
+form_type: "8-K"
+form_types:
+  - "8-K"
+years:
+  - 2026
+  - 2027
+source_policy: "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
+source_tier: "company_authored_unaudited_sec_filing"
+selection:
+  item_codes:
+    - "2.02"
+    - "9.01"
+  exhibit_types:
+    - "EX-99.1"
+    - "EX-99.01"
+    - "EX-99"
+  include_terms:
+    - "earnings"
+    - "financial results"
+    - "quarterly results"
+    - "press release"
+    - "reports results"
+    - "announces results"
+  exclude_terms:
+    - "investor presentation"
+    - "presentation"
+    - "slides"
+    - "transcript"
+companies:
+  - ticker: MSFT
+    category: "mega-cap software/cloud"
+    category_slug: "mega-cap_software_cloud"
+  - ticker: AAPL
+    category: "hardware/ecosystem"
+    category_slug: "hardware_ecosystem"
+  - ticker: NVDA
+    category: "AI/GPU semiconductor"
+    category_slug: "ai_gpu_semiconductor"
+  - ticker: GOOGL
+    category: "search/ads/cloud"
+    category_slug: "search_ads_cloud"
+  - ticker: META
+    category: "social/ads/AI infra"
+    category_slug: "social_ads_ai_infra"
+  - ticker: AMZN
+    category: "ecommerce/cloud"
+    category_slug: "ecommerce_cloud"
+  - ticker: AVGO
+    category: "semiconductor/networking"
+    category_slug: "semiconductor_networking"
+  - ticker: CSCO
+    category: "networking/security"
+    category_slug: "networking_security"
+  - ticker: INTC
+    category: "semiconductor IDM"
+    category_slug: "semiconductor_idm"
+  - ticker: AMD
+    category: "semiconductor challenger"
+    category_slug: "semiconductor_challenger"
+  - ticker: QCOM
+    category: "mobile/semiconductor"
+    category_slug: "mobile_semiconductor"
+  - ticker: TXN
+    category: "analog semiconductor"
+    category_slug: "analog_semiconductor"
+  - ticker: AMAT
+    category: "semiconductor equipment"
+    category_slug: "semiconductor_equipment"
+  - ticker: MU
+    category: "memory semiconductor"
+    category_slug: "memory_semiconductor"
+  - ticker: INTU
+    category: "financial software"
+    category_slug: "financial_software"
+  - ticker: ADP
+    category: "payroll/HCM software"
+    category_slug: "payroll_hcm_software"
+  - ticker: ADBE
+    category: "creative/software SaaS"
+    category_slug: "creative_software_saas"
+  - ticker: PANW
+    category: "cybersecurity"
+    category_slug: "cybersecurity"
+  - ticker: CRWD
+    category: "cybersecurity"
+    category_slug: "cybersecurity"
+  - ticker: SNOW
+    category: "data/cloud software"
+    category_slug: "data_cloud_software"
+  - ticker: JPM
+    category: "banking/financial services"
+    category_slug: "banking_financial_services"
+  - ticker: V
+    category: "payments network/financial services"
+    category_slug: "payments_financial_services"
+  - ticker: JNJ
+    category: "healthcare/pharma/devices"
+    category_slug: "healthcare_pharma_devices"
+  - ticker: LLY
+    category: "pharmaceuticals/obesity diabetes"
+    category_slug: "pharmaceutical_obesity_diabetes"
+  - ticker: CAT
+    category: "industrial machinery"
+    category_slug: "industrial_machinery"
+  - ticker: GE
+    category: "aerospace/industrial"
+    category_slug: "aerospace_industrial"
+  - ticker: WMT
+    category: "consumer retail"
+    category_slug: "consumer_retail"
+  - ticker: PG
+    category: "consumer staples"
+    category_slug: "consumer_staples"
+  - ticker: XOM
+    category: "energy/integrated oil gas"
+    category_slug: "energy_integrated_oil_gas"
+  - ticker: CVX
+    category: "energy/integrated oil gas"
+    category_slug: "energy_integrated_oil_gas"

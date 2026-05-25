@@ -56,7 +56,7 @@ Common overrides:
   QUERY_PLANNER=llm DEEPSEEK_API_KEY=... bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
   DEEPSEEK_API_KEY=... bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
   DEEPSEEK_API_KEY=... YEARS=2023,2024,2025,2026 bash scripts/cloud/sec_agent_interactive.sh session-mixed-deepseek
-  SOURCE_GAP_PATH=data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_source_gaps_merged_2026_2027.jsonl bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
+  SOURCE_GAP_PATH=data/processed_private/source_gaps/sec_tech_8k_earnings_full30_source_gaps_merged_2026_2027.jsonl bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
 
 Notes:
   Default scope is TICKERS=ALL, which resolves to all companies in the SEC 10-K manifest.
@@ -64,7 +64,7 @@ Notes:
   Query planner system prompts are injected with a manifest-derived project source inventory.
   DeepSeek mode reads the key from DEEPSEEK_API_KEY; do not store API keys in files.
   Mixed mode uses accepted 2023-2025 10-K plus 2026 10-Q BM25/object-BM25 artifacts.
-  Mixed 8-K mode adds pilot SEC 8-K earnings-release evidence and optional source gap reasons.
+  Mixed 8-K mode adds full30 SEC 8-K earnings-release evidence and optional source gap reasons.
   The exact-value ledger is built at runtime from retrieved structured SEC objects; it is gate-checked but not human-reviewed gold.
 EOF
 }
@@ -108,10 +108,10 @@ use_mixed_10k_10q_sources() {
 }
 
 use_mixed_10k_10q_8k_sources() {
-  export MANIFEST_PATH="${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_pilot_manifest_fy2023_2027.jsonl}"
-  export BM25_INDEX_DIR="${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_pilot_fy2023_2027}"
+  export MANIFEST_PATH="${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl}"
+  export BM25_INDEX_DIR="${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027}"
   export OBJECT_BM25_INDEX_DIR="${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_10k_latest_10q_fy2023_2027_objects}"
-  export SOURCE_GAP_PATH="${SOURCE_GAP_PATH:-data/processed_private/source_gaps/sec_tech_8k_earnings_pilot_source_gaps_merged_2026_2027.jsonl}"
+  export SOURCE_GAP_PATH="${SOURCE_GAP_PATH:-data/processed_private/source_gaps/sec_tech_8k_earnings_full30_source_gaps_merged_2026_2027.jsonl}"
   export SEC_AGENT_SOURCE_POLICY="${SEC_AGENT_SOURCE_POLICY:-SEC_PRIMARY_MIXED_WITH_8K_EARNINGS}"
 }
 

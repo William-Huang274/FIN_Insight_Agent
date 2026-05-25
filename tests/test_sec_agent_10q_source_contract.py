@@ -691,6 +691,14 @@ def test_api_memo_normalization_downgrades_recurring_quality_overclaim() -> None
                 "evidence_ids": [],
             }
         ],
+        "decision_drivers": [
+            {
+                "driver_claim": "服务收入增长。",
+                "why_it_matters": "经常性收入特征优于硬件厂商。",
+                "metric_ids": ["m1"],
+                "evidence_ids": [],
+            }
+        ],
     }
 
     normalized = module._normalize_answer(
@@ -703,6 +711,10 @@ def test_api_memo_normalization_downgrades_recurring_quality_overclaim() -> None
     text = " ".join(
         str(item.get("insight") or "") + " " + str(item.get("business_implication") or "")
         for item in normalized["why_it_matters"]
+    )
+    text += " " + " ".join(
+        str(item.get("driver_claim") or "") + " " + str(item.get("why_it_matters") or "")
+        for item in normalized["decision_drivers"]
     )
     assert "经常性收入特征" not in text
     assert "高粘性" not in text
@@ -1361,6 +1373,91 @@ def test_runtime_ledger_and_renderer_surface_period_role() -> None:
 
     assert "10-Q Q1 QTD period_end=2026-03-31" in rendered
     assert "10-Q Q1 YTD period_end=2026-03-31" in rendered
+
+
+def test_renderer_uses_metric_role_for_percentage_rate_labels() -> None:
+    interactive = _load_interactive_module()
+    row = {
+        "metric_id": "m_cloud_growth",
+        "ticker": "MSFT",
+        "fiscal_year": 2026,
+        "form_type": "10-Q",
+        "fiscal_period": "Q3",
+        "period_role": "qtd",
+        "period_end": "2026-03-31",
+        "metric_family": "cloud_revenue",
+        "metric_role": "percentage_rate",
+        "metric_name": "Server products and cloud services growth rate",
+        "display_value_zh": "17%",
+    }
+
+    rendered = interactive._rendered_answer_markdown(
+        "test",
+        {"what_changed": [{"claim": "Cloud growth rate is supported.", "metric_ids": ["m_cloud_growth"]}]},
+        {"m_cloud_growth": row},
+    )
+
+    assert "云业务收入增长率" in rendered
+    assert "云业务收入: 17%" not in rendered
+
+
+def test_sentence_amount_before_growth_rate_stays_total_value() -> None:
+    interactive = _load_interactive_module()
+    record = {
+        "object_id": "AMD_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001_METRIC_SENT",
+        "source_evidence_id": "AMD_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001",
+        "ticker": "AMD",
+        "fiscal_year": 2026,
+        "source_type": "10-Q",
+        "form_type": "10-Q",
+        "source_tier": "primary_sec_filing",
+        "period_end": "2026-03-28",
+        "period_type": "quarterly",
+        "duration_months": 3,
+        "fiscal_period": "Q1",
+        "metric_name": "Data Center net revenue",
+        "raw_value": "$5.8 billion",
+        "value": 5.8,
+        "unit": "usd_billions",
+        "context": (
+            "Data Center net revenue of $5.8 billion for the three months ended "
+            "March 28, 2026 increased by 57%, compared to net revenue of $3.7 billion "
+            "for the prior year period."
+        ),
+    }
+
+    row = interactive._ledger_row_from_metric("case", record)
+
+    assert row is not None
+    assert row["metric_family"] == "data_center_revenue"
+    assert row["metric_role"] == "total_value"
+
+
+def test_sentence_amount_after_increased_by_is_period_change() -> None:
+    interactive = _load_interactive_module()
+    record = {
+        "object_id": "AMD_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001_METRIC_SENT",
+        "source_evidence_id": "AMD_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001",
+        "ticker": "AMD",
+        "fiscal_year": 2026,
+        "source_type": "10-Q",
+        "form_type": "10-Q",
+        "source_tier": "primary_sec_filing",
+        "period_end": "2026-03-28",
+        "period_type": "quarterly",
+        "duration_months": 3,
+        "fiscal_period": "Q1",
+        "metric_name": "Data Center net revenue",
+        "raw_value": "$2.1 billion",
+        "value": 2.1,
+        "unit": "usd_billions",
+        "context": "Data Center net revenue increased by $2.1 billion from the prior year period.",
+    }
+
+    row = interactive._ledger_row_from_metric("case", record)
+
+    assert row is not None
+    assert row["metric_role"] == "period_change_amount"
 
 
 def test_renderer_marks_prior_year_comparable_columns_from_current_10q() -> None:

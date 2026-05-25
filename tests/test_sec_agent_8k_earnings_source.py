@@ -212,6 +212,19 @@ def test_runtime_case_adds_8k_source_boundary_gate() -> None:
     assert case["required_caveats"][0]["required"] is True
 
 
+def test_full30_8k_earnings_config_covers_entire_company_universe() -> None:
+    downloader = _load_8k_downloader_module()
+    config = downloader.load_config(REPO_ROOT / "configs" / "sec_tech_8k_earnings_full30_2026_2027.yaml")
+    tickers = [str(company.get("ticker") or "").upper() for company in config.get("companies") or []]
+
+    assert config["source_policy"] == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
+    assert config["source_tier"] == "company_authored_unaudited_sec_filing"
+    assert config["years"] == [2026, 2027]
+    assert len(tickers) == 30
+    assert len(set(tickers)) == 30
+    assert {"MSFT", "AMZN", "NVDA", "JPM", "CVX"}.issubset(set(tickers))
+
+
 def test_synthesis_preserves_cited_8k_earnings_release_numbers() -> None:
     synthesis = _load_synthesis_module()
     eight_k_id = "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001"
@@ -414,6 +427,87 @@ def test_synthesis_prompt_exposes_8k_source_boundary_and_numeric_contract() -> N
     assert "公司8-K业绩新闻稿，未审计/管理层口径" in prompt
 
 
+def test_prompt_context_selection_reserves_requested_8k_source_rows() -> None:
+    synthesis = _load_synthesis_module()
+    context_rows = [
+        {
+            "source_kind": "structured_object",
+            "object_id": f"OBJ_{idx:03d}",
+            "source_evidence_id": f"TENQ_{idx:03d}",
+            "ticker": "MSFT",
+            "fiscal_year": 2026,
+            "form_type": "10-Q",
+            "source_tier": "primary_sec_filing",
+        }
+        for idx in range(70)
+    ]
+    eight_k_rows = [
+        {
+            "source_kind": "evidence_object",
+            "evidence_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::CHUNK_0001",
+            "ticker": "NVDA",
+            "fiscal_year": 2026,
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "text": "NVIDIA management commentary from Exhibit 99.1.",
+        },
+        {
+            "source_kind": "evidence_object",
+            "evidence_id": "8K_EARNINGS::AMD::000000248826000072::Q12026991HTM::BLOCK_0003::CHUNK_0001",
+            "ticker": "AMD",
+            "fiscal_year": 2026,
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "text": "AMD management commentary from Exhibit 99.1.",
+        },
+        {
+            "source_kind": "evidence_object",
+            "evidence_id": "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001",
+            "ticker": "MSFT",
+            "fiscal_year": 2026,
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "text": "Microsoft Cloud and AI strength from Exhibit 99.1.",
+        },
+    ]
+    context_rows.extend(eight_k_rows)
+    ledger_rows = [
+        {
+            "metric_id": f"metric_{idx:03d}",
+            "object_id": f"OBJ_{idx:03d}",
+            "source_evidence_id": f"TENQ_{idx:03d}",
+        }
+        for idx in range(70)
+    ]
+    coverage_matrix = {
+        "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+        "filing_types": ["10-Q", "8-K"],
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+        "tasks": [
+            {
+                "task_id": "ledger_fills_prompt_budget",
+                "priority": "primary",
+                "sample_metric_ids": [f"metric_{idx:03d}" for idx in range(70)],
+            }
+        ],
+    }
+
+    selected = synthesis._select_prompt_context_rows(
+        context_rows,
+        ledger_rows,
+        coverage_matrix=coverage_matrix,
+        max_rows=48,
+    )
+
+    selected_8k_ids = {
+        row.get("evidence_id")
+        for row in selected
+        if row.get("source_tier") == "company_authored_unaudited_sec_filing"
+    }
+    assert len(selected) == 48
+    assert selected_8k_ids == {row["evidence_id"] for row in eight_k_rows}
+
+
 def test_llm_contract_normalization_preserves_8k_source_tier() -> None:
     interactive = _load_interactive_module()
     inventory = {
@@ -536,6 +630,51 @@ def test_connector_selects_earnings_release_exhibit_99_1(monkeypatch, tmp_path: 
     assert "Press Release" in filing["exhibit_description"]
     assert filing["earnings_release_candidate_reason"]
     assert filing["exhibit_url"].endswith("/000078901926000111/ex991.htm")
+
+
+def test_connector_selects_plain_99_1_press_release_exhibit(monkeypatch, tmp_path: Path) -> None:
+    connector = SecEdgarConnector(user_agent="FinSight-Agent/0.1 test@example.com", cache_dir=tmp_path)
+    submissions = {
+        "name": "NVIDIA CORP",
+        "filings": {
+            "recent": {
+                "form": ["8-K"],
+                "accessionNumber": ["0001045810-26-000051"],
+                "primaryDocument": ["nvda-20260527.htm"],
+                "filingDate": ["2026-05-27"],
+                "reportDate": ["2026-05-27"],
+                "acceptanceDateTime": ["2026-05-27T20:00:00.000Z"],
+                "primaryDocDescription": ["8-K"],
+                "items": ["2.02,9.01"],
+            }
+        },
+    }
+    detail_index = {
+        "directory": {
+            "item": [
+                {"name": "nvda-20260527.htm", "type": "text/html"},
+                {"name": "q1fy27pr.htm", "type": "text/html"},
+                {"name": "q1fy27cfocommentary.htm", "type": "text/html"},
+            ]
+        }
+    }
+    primary_html = """
+    <html><body><table>
+      <tr><td>99.1</td><td><a href="q1fy27pr.htm">Press Release</a></td></tr>
+      <tr><td>99.2</td><td><a href="q1fy27cfocommentary.htm">CFO Commentary</a></td></tr>
+    </table></body></html>
+    """
+
+    monkeypatch.setattr(connector, "get_company_submissions", lambda cik: submissions)
+    monkeypatch.setattr(connector, "_request_json", lambda url: detail_index)
+    monkeypatch.setattr(connector, "_request_text", lambda url: primary_html)
+
+    filing = connector.find_earnings_release_8k("1045810", 2026)
+
+    assert filing["accession_number"] == "0001045810-26-000051"
+    assert filing["exhibit_document"] == "q1fy27pr.htm"
+    assert filing["exhibit_type"] == "EX-99.1"
+    assert "Press Release" in filing["exhibit_description"]
 
 
 def test_connector_downloads_8k_earnings_release_exhibit(tmp_path: Path) -> None:

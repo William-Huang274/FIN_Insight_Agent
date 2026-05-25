@@ -2051,7 +2051,14 @@ def _ledger_row_from_metric(case_id: str, record: dict[str, Any]) -> dict[str, A
     metadata = record.get("metadata") if isinstance(record.get("metadata"), dict) else {}
     metric_context = str(record.get("context") or "")
     family = _metric_family(metric_name, metric_context)
-    role = _metric_role(" ".join(part for part in (metric_name, metric_context) if part), unit)
+    role_text = " ".join(
+        str(record.get(key) or "")
+        for key in ("metric_name", "row_label", "column_label")
+        if str(record.get(key) or "")
+    )
+    role = _metric_role(role_text or metric_name, unit)
+    if role == "total_value" and unit != "percent" and _raw_amount_is_period_change(raw, metric_context):
+        role = "period_change_amount"
     period_role = _ledger_period_role(record)
     value = _normalized_ledger_value(record.get("value"), raw, family)
     return {
@@ -4573,6 +4580,7 @@ def _display_period_role(row: dict[str, Any]) -> str:
 
 def _display_metric_label(row: dict[str, Any]) -> str:
     family = str(row.get("metric_family") or "")
+    role = str(row.get("metric_role") or "").strip().lower()
     name = str(row.get("metric_name") or row.get("row_label") or "").strip()
     family_labels = {
         "data_center_revenue": "数据中心/计算收入",
@@ -4601,10 +4609,28 @@ def _display_metric_label(row: dict[str, Any]) -> str:
         "provision_for_credit_losses": "信用损失拨备",
         "total_assets": "总资产",
     }
-    label = family_labels.get(family, family or "指标")
+    base_label = family_labels.get(family, family or "指标")
+    label = _display_metric_role_label(base_label, role, name)
     if name and len(name) <= 42 and name.lower() not in {"total", "revenue", "net sales"}:
         return f"{name} ({label})"
     return label
+
+
+def _display_metric_role_label(base_label: str, role: str, name: str) -> str:
+    name_lower = str(name or "").lower()
+    if role == "percentage_rate":
+        if any(term in name_lower for term in ("growth", "grew", "increase", "decrease", "decline")):
+            if base_label.endswith("收入"):
+                return f"{base_label}增长率"
+            return f"{base_label}变化率"
+        if "margin" in name_lower or "毛利率" in base_label or base_label.endswith("率"):
+            return base_label
+        return f"{base_label}百分比指标"
+    if role == "period_change_amount":
+        return f"{base_label}期间变动额"
+    if role == "derived_value":
+        return f"{base_label}（派生）"
+    return base_label
 
 
 def _evidence_rows_by_id(context_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -5739,6 +5765,30 @@ def _metric_role(name: str, unit: str) -> str:
     if "%" in text or "margin" in text or "rate" in text:
         return "percentage_rate"
     return "total_value"
+
+
+def _raw_amount_is_period_change(raw: str, context: str) -> bool:
+    raw_text = str(raw or "").strip()
+    source = str(context or "")
+    if not raw_text or not source:
+        return False
+    candidates = [
+        raw_text,
+        raw_text.replace("$", "").strip(),
+        re.sub(r"\s+", " ", raw_text.replace("$", "")).strip(),
+    ]
+    lowered = source.lower()
+    for candidate in {item.lower() for item in candidates if item}:
+        start = lowered.find(candidate)
+        if start < 0:
+            continue
+        before = lowered[max(0, start - 80) : start]
+        if re.search(
+            r"(?:increase|increased|decrease|decreased|change|changed|grew|declined|higher|lower|up|down)\s+(?:by|of|approximately|about|nearly|roughly)?\s*$",
+            before,
+        ):
+            return True
+    return False
 
 
 def _display_value_zh(raw: str, unit: str) -> str:

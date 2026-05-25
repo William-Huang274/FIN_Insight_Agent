@@ -718,15 +718,57 @@ def _select_prompt_context_rows(
     selected: list[dict[str, Any]] = []
     seen: set[int] = set()
 
+    def append_row(idx: int, row: dict[str, Any]) -> bool:
+        if idx in seen:
+            return False
+        selected.append(row)
+        seen.add(idx)
+        return len(selected) >= max_rows
+
     def add_if(predicate: Any) -> bool:
         for idx, row in enumerate(context_rows):
             if idx in seen or not predicate(row):
                 continue
-            selected.append(row)
-            seen.add(idx)
-            if len(selected) >= max_rows:
+            if append_row(idx, row):
                 return True
         return False
+
+    def add_required_8k_source_boundary_rows() -> bool:
+        if not _coverage_requires_company_authored_8k_context(coverage_matrix or {}):
+            return False
+        candidates = [
+            (idx, row)
+            for idx, row in enumerate(context_rows)
+            if idx not in seen and _is_company_authored_8k_context_row(row)
+        ]
+        if not candidates:
+            return False
+        per_ticker_seen: set[str] = set()
+        added_count = 0
+        max_required_rows = min(6, len(candidates), max_rows - len(selected))
+        for idx, row in candidates:
+            ticker = str(row.get("ticker") or "").upper()
+            if ticker and ticker in per_ticker_seen:
+                continue
+            if ticker:
+                per_ticker_seen.add(ticker)
+            added_count += 1
+            if append_row(idx, row):
+                return True
+            if added_count >= max_required_rows:
+                return False
+        for idx, row in candidates:
+            if idx in seen:
+                continue
+            added_count += 1
+            if append_row(idx, row):
+                return True
+            if added_count >= max_required_rows:
+                return False
+        return False
+
+    if add_required_8k_source_boundary_rows():
+        return selected
 
     if coverage_ids:
         coverage_id_set = set(coverage_ids)
@@ -734,9 +776,7 @@ def _select_prompt_context_rows(
             for idx, row in enumerate(context_rows):
                 if idx in seen or evidence_id not in _context_row_ids(row):
                     continue
-                selected.append(row)
-                seen.add(idx)
-                if len(selected) >= max_rows:
+                if append_row(idx, row):
                     return selected
         add_if(lambda row: bool(_context_row_ids(row) & coverage_id_set))
         if len(selected) >= max_rows:
@@ -751,9 +791,7 @@ def _select_prompt_context_rows(
         evidence_id = str(row.get("evidence_id") or "")
         source_kind = str(row.get("source_kind") or "")
         if source_kind == "evidence_object" and evidence_id in preferred_source_ids:
-            selected.append(row)
-            seen.add(idx)
-            if len(selected) >= max_rows:
+            if append_row(idx, row):
                 return selected
 
     add_if(_is_microsoft_cloud_scope_row)
@@ -826,6 +864,31 @@ def _coverage_priority_evidence_ids(coverage_matrix: dict[str, Any], ledger_rows
         if item and item not in out:
             out.append(item)
     return out
+
+
+def _coverage_requires_company_authored_8k_context(coverage_matrix: dict[str, Any]) -> bool:
+    if not coverage_matrix:
+        return False
+    summary = coverage_matrix.get("summary") if isinstance(coverage_matrix.get("summary"), dict) else {}
+    source_policy = str(coverage_matrix.get("source_policy") or summary.get("source_policy") or "")
+    filing_types = {
+        str(item or "").upper()
+        for item in [
+            *(coverage_matrix.get("filing_types") or []),
+            *(summary.get("covered_filing_types") or []),
+        ]
+    }
+    source_tiers = {
+        str(item or "")
+        for item in [
+            *(coverage_matrix.get("source_tiers") or []),
+            *(summary.get("covered_source_tiers") or []),
+        ]
+    }
+    return (
+        source_policy == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
+        or ("8-K" in filing_types and "company_authored_unaudited_sec_filing" in source_tiers)
+    )
 
 
 def _context_row_ids(row: dict[str, Any]) -> set[str]:
@@ -2255,6 +2318,7 @@ def _sanitize_metric_role_term_overclaims(
             sanitized_count += count
 
     memo_list_specs = {
+        "decision_drivers": ("driver_claim", "why_it_matters", "caveat"),
         "what_changed": ("claim",),
         "why_it_matters": ("insight", "business_implication"),
         "peer_readthrough": ("peer_or_group", "role", "readthrough", "caveat"),

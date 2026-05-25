@@ -33,7 +33,16 @@ from sec_agent.graph_state import SecAgentState  # noqa: E402
 from sec_agent.llm_gateway import chat_completion_content as gateway_chat_completion_content  # noqa: E402
 from sec_agent.model_routes import public_routes_for_backend, route_for_role  # noqa: E402
 from sec_agent.project_inventory import build_project_inventory, inventory_brief, inventory_prompt  # noqa: E402
-from sec_agent.query_contract import METRIC_FAMILY_ONTOLOGY, QUERY_TASK_TYPES, validate_query_contract  # noqa: E402
+from sec_agent.query_contract import (  # noqa: E402
+    MARKET_ANALYSIS_TOOLS,
+    MARKET_FIELDS,
+    MARKET_SOURCE_POLICY,
+    MARKET_SOURCE_TIER,
+    MARKET_WINDOWS,
+    METRIC_FAMILY_ONTOLOGY,
+    QUERY_TASK_TYPES,
+    validate_query_contract,
+)
 
 
 KNOWN_COMPANIES: dict[str, tuple[str, ...]] = {
@@ -3433,7 +3442,9 @@ def _query_planner_system_prompt(project_inventory: dict[str, Any], tickers: lis
         "- focus_tickers 必须来自 SELECTED COMPANY FILINGS；如果用户问全局趋势，可以选择一个 evidence-relevant 子集，但 search_scope 仍由系统保留。\n"
         "- years 必须来自候选 scope；不要规划项目没有的年份。\n"
         "- filing_types 必须来自 SELECTED COMPANY FILINGS；如 ACTIVE SOURCE POLICY 是 SEC_PRIMARY_MIXED_RECENT 且 10-Q 可用，必须保留 10-Q 及其未经审计季报边界；如 ACTIVE SOURCE POLICY 是 SEC_PRIMARY_MIXED_WITH_8K_EARNINGS 且 8-K 可用，必须保留 8-K 但标注公司未审计管理层口径。\n"
-        "- source_tiers 只能来自 PROJECT SOURCE INVENTORY；10-K/10-Q 使用 primary_sec_filing，8-K earnings release 使用 company_authored_unaudited_sec_filing。\n"
+        "- source_tiers 只能来自 PROJECT SOURCE INVENTORY；10-K/10-Q 使用 primary_sec_filing，8-K earnings release 使用 company_authored_unaudited_sec_filing；只有当用户明确或隐含询问股价、估值、市场反应、相对收益、是否 priced in 时，才可额外加入外部 source tier market_snapshot。\n"
+        "- market_snapshot 不是 SEC filing；不得用它替代 SEC ledger。若请求 market_snapshot，必须输出 market_snapshot object，包含 required/window/fields/analysis_tools；snapshot_id 和 as_of_date 只有在 seed 明确提供时才能填写，否则留空让后续 coverage 标记 source gap。\n"
+        "- market_snapshot.window 只能是 3M、6M、YTD、1Y；fields 最多 16 个，优先 close_price、market_cap、return_3m、relative_return_vs_benchmark_3m、max_drawdown_3m、volatility_3m、pe_ttm、ev_sales_ttm；analysis_tools 最多 5 个，优先 return_summary、peer_relative_return、valuation_peer_rank、post_filing_event_return、fundamental_market_divergence。\n"
         f"- decomposed_tasks 要服务于用户问题，避免机械套用行业模板；宽问题至少拆成 2 个任务，最多 {PLANNER_MAX_DECOMPOSED_TASKS} 个任务，每个 question_zh 不超过 {PLANNER_TASK_QUESTION_MAX_CHARS} 字。\n"
         "- 如果用户问银行盈利质量、净息差、存贷款或信用风险，优先使用银行指标族："
         "net_interest_income、net_interest_margin、provision_for_credit_losses、net_charge_offs、"
@@ -3454,7 +3465,8 @@ def _query_planner_system_prompt(project_inventory: dict[str, Any], tickers: lis
         '  "focus_tickers": ["..."],\n'
         '  "years": [2023],\n'
         '  "filing_types": ["10-K", "10-Q", "8-K"],\n'
-        '  "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],\n'
+        '  "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],\n'
+        '  "market_snapshot": {"required": false, "snapshot_id": "", "as_of_date": "", "window": "3M", "fields": ["return_3m"], "analysis_tools": ["return_summary"]},\n'
         '  "analysis_axes": ["growth", "profitability"],\n'
         '  "facets": ["..."],\n'
         '  "metric_families": ["..."],\n'
@@ -3488,12 +3500,18 @@ def _normalize_llm_query_contract(
         _selected_form_types(project_inventory, tickers, years),
     ) or list(fallback.get("filing_types") or ["10-K"])
     allowed_source_tiers = _selected_source_tiers(project_inventory, tickers, years, filing_types)
+    market_requested = _market_snapshot_requested_from_planner(planned) or _market_snapshot_requested_from_planner(fallback)
+    allowed_source_tiers_for_contract = list(allowed_source_tiers)
+    if market_requested and MARKET_SOURCE_TIER not in allowed_source_tiers_for_contract:
+        allowed_source_tiers_for_contract.append(MARKET_SOURCE_TIER)
     source_tiers = _merge_source_tiers(
-        _clamp_source_tiers(planned.get("source_tiers") or (planned.get("scope") or {}).get("source_tiers"), allowed_source_tiers)
-        or _clamp_source_tiers(fallback.get("source_tiers") or (fallback.get("scope") or {}).get("source_tiers"), allowed_source_tiers)
+        _clamp_source_tiers(planned.get("source_tiers") or (planned.get("scope") or {}).get("source_tiers"), allowed_source_tiers_for_contract)
+        or _clamp_source_tiers(fallback.get("source_tiers") or (fallback.get("scope") or {}).get("source_tiers"), allowed_source_tiers_for_contract)
         or [],
         _source_policy_source_tiers(filing_types, allowed_source_tiers),
     )
+    if market_requested and MARKET_SOURCE_TIER not in source_tiers:
+        source_tiers.append(MARKET_SOURCE_TIER)
     clean.update(
         {
             "task_type": task_type,
@@ -3525,6 +3543,11 @@ def _normalize_llm_query_contract(
     clean["decomposed_tasks"] = _normalize_decomposed_tasks(planned.get("decomposed_tasks"), clean)
     if not clean.get("decomposed_tasks"):
         clean["decomposed_tasks"] = fallback.get("decomposed_tasks") or []
+    if market_requested:
+        clean["market_snapshot"] = _normalize_market_snapshot_planner_block(
+            planned.get("market_snapshot") or fallback.get("market_snapshot"),
+            prompt_text=str(planned.get("rewritten_question_zh") or ""),
+        )
     if task_type == "ai_industry_financial_trend":
         clean.setdefault("ledger_rules", {})
         task_families = {
@@ -3608,13 +3631,21 @@ def _repair_query_contract_from_prompt(
     filing_types = _clamp_form_types(repaired.get("filing_types"), allowed_filing_types)
     repaired["filing_types"] = _source_policy_filing_types(filing_types or allowed_filing_types, allowed_filing_types)
     allowed_source_tiers = _selected_source_tiers(project_inventory, tickers, years, repaired["filing_types"])
+    market_requested = _has_market_snapshot_intent(prompt_text) or _market_snapshot_requested_from_planner(repaired)
+    allowed_source_tiers_for_contract = list(allowed_source_tiers)
+    if market_requested and MARKET_SOURCE_TIER not in allowed_source_tiers_for_contract:
+        allowed_source_tiers_for_contract.append(MARKET_SOURCE_TIER)
     repaired["source_tiers"] = _merge_source_tiers(
-        _clamp_source_tiers(repaired.get("source_tiers") or (repaired.get("scope") or {}).get("source_tiers"), allowed_source_tiers)
+        _clamp_source_tiers(repaired.get("source_tiers") or (repaired.get("scope") or {}).get("source_tiers"), allowed_source_tiers_for_contract)
         or [],
         _source_policy_source_tiers(repaired["filing_types"], allowed_source_tiers),
     )
+    if market_requested and MARKET_SOURCE_TIER not in repaired["source_tiers"]:
+        repaired["source_tiers"].append(MARKET_SOURCE_TIER)
     repaired["source_policy"] = _source_policy_for_scope(repaired["filing_types"], repaired["source_tiers"])
     repaired["scope"] = _contract_scope(tickers, focus, years, repaired["filing_types"], repaired["source_tiers"])
+    if market_requested:
+        _apply_market_snapshot_repairs(repaired, prompt_text)
 
     _append_contract_task(repaired, _user_question_anchor_task(prompt_text, focus, repaired))
     for task in _prompt_driven_repair_tasks(prompt_text, focus, tickers):
@@ -3692,9 +3723,165 @@ def _source_policy_for_filing_types(filing_types: list[str]) -> str:
     return "SEC_ONLY"
 
 
+def _has_market_snapshot_intent(prompt: str) -> bool:
+    text = str(prompt or "").lower()
+    return _contains_any(
+        text,
+        (
+            "market reaction",
+            "market performance",
+            "share price",
+            "stock price",
+            "valuation",
+            "market cap",
+            "multiple",
+            "p/e",
+            "ev/sales",
+            "return",
+            "drawdown",
+            "volatility",
+            "priced in",
+            "price in",
+            "跑赢",
+            "跑输",
+            "股价",
+            "市场反应",
+            "市场表现",
+            "相对收益",
+            "收益率",
+            "回撤",
+            "波动率",
+            "估值",
+            "市值",
+            "已经反映",
+            "是否反映",
+            "估值语境",
+        ),
+    )
+
+
+def _market_snapshot_requested_from_planner(contract: dict[str, Any]) -> bool:
+    tiers = {str(tier or "").strip() for tier in (contract.get("source_tiers") or []) if str(tier or "").strip()}
+    market = contract.get("market_snapshot")
+    if MARKET_SOURCE_TIER in tiers or str(contract.get("source_policy") or "") == MARKET_SOURCE_POLICY:
+        return True
+    return isinstance(market, dict) and bool(market.get("required") or market.get("fields") or market.get("analysis_tools"))
+
+
+def _normalize_market_snapshot_planner_block(value: Any, *, prompt_text: str = "") -> dict[str, Any]:
+    market = dict(value) if isinstance(value, dict) else {}
+    window = str(market.get("window") or market.get("market_window") or "3M").upper().strip()
+    if window not in MARKET_WINDOWS:
+        window = "3M"
+    fields = _market_field_list(market.get("fields") or market.get("market_fields"))
+    tools = _market_tool_list(market.get("analysis_tools") or market.get("market_analysis_tools"))
+    if not fields:
+        fields = _default_market_fields_for_prompt(prompt_text)
+    if not tools:
+        tools = _default_market_tools_for_prompt(prompt_text)
+    return {
+        "required": True,
+        "snapshot_id": _short_text(market.get("snapshot_id"), 96),
+        "as_of_date": _market_date_text(market.get("as_of_date")),
+        "window": window,
+        "fields": fields,
+        "analysis_tools": tools,
+        "provider": _short_text(market.get("provider") or "manual_fixture", 80),
+        "benchmark_ticker": _short_text(market.get("benchmark_ticker") or "SPY", 16).upper(),
+    }
+
+
+def _default_market_fields_for_prompt(prompt: str) -> list[str]:
+    text = str(prompt or "").lower()
+    fields = ["close_price", "return_3m", "relative_return_vs_benchmark_3m", "max_drawdown_3m"]
+    if _contains_any(text, ("valuation", "multiple", "p/e", "ev/sales", "估值", "市值")):
+        fields.extend(["market_cap", "pe_ttm", "ev_sales_ttm"])
+    if _contains_any(text, ("volatility", "波动")):
+        fields.append("volatility_3m")
+    return _dedupe_strings([field for field in fields if field in MARKET_FIELDS])[:16]
+
+
+def _default_market_tools_for_prompt(prompt: str) -> list[str]:
+    text = str(prompt or "").lower()
+    tools = ["return_summary", "peer_relative_return"]
+    if _contains_any(text, ("valuation", "multiple", "p/e", "ev/sales", "估值", "市值")):
+        tools.append("valuation_peer_rank")
+    if _contains_any(text, ("8-k", "10-q", "filing", "earnings release", "业绩", "财报")):
+        tools.append("post_filing_event_return")
+    if _contains_any(text, ("divergence", "priced in", "是否反映", "已经反映", "分歧")):
+        tools.append("fundamental_market_divergence")
+    return _dedupe_strings([tool for tool in tools if tool in MARKET_ANALYSIS_TOOLS])[:5]
+
+
+def _apply_market_snapshot_repairs(contract: dict[str, Any], prompt: str) -> None:
+    contract["market_snapshot"] = _normalize_market_snapshot_planner_block(contract.get("market_snapshot"), prompt_text=prompt)
+    required_caveats = contract.setdefault("required_caveats", [])
+    for caveat in (
+        "Market snapshot is non-real-time and must show snapshot_id/as_of_date.",
+        "Market data supports valuation/return claims only; SEC ledger controls reported fundamentals.",
+    ):
+        if caveat not in required_caveats:
+            required_caveats.append(caveat)
+    forbidden_claims = contract.setdefault("forbidden_claims", [])
+    for claim in (
+        "Do not make current/latest market claims without market snapshot date.",
+        "Do not use market data to overwrite SEC reported facts.",
+    ):
+        if claim not in forbidden_claims:
+            forbidden_claims.append(claim)
+
+
+def _market_field_list(value: Any) -> list[str]:
+    out = []
+    for item in _list_like(value):
+        field = _slug(str(item or ""))
+        if field in MARKET_FIELDS and field not in out:
+            out.append(field)
+        if len(out) >= 16:
+            break
+    return out
+
+
+def _market_tool_list(value: Any) -> list[str]:
+    out = []
+    for item in _list_like(value):
+        tool = _slug(str(item or ""))
+        if tool in MARKET_ANALYSIS_TOOLS and tool not in out:
+            out.append(tool)
+        if len(out) >= 5:
+            break
+    return out
+
+
+def _market_date_text(value: Any) -> str:
+    text = _short_text(value, 20)
+    return text if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text) else ""
+
+
+def _list_like(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, (list, tuple, set)):
+        return list(value)
+    return []
+
+
+def _dedupe_strings(values: list[str]) -> list[str]:
+    out = []
+    for value in values:
+        text = str(value or "").strip()
+        if text and text not in out:
+            out.append(text)
+    return out
+
+
 def _source_policy_for_scope(filing_types: list[str], source_tiers: list[str]) -> str:
     forms = {str(form or "").upper().strip() for form in filing_types if str(form or "").strip()}
     tiers = {str(tier or "").strip() for tier in source_tiers if str(tier or "").strip()}
+    if MARKET_SOURCE_TIER in tiers:
+        return MARKET_SOURCE_POLICY
     if "8-K" in forms and "company_authored_unaudited_sec_filing" in tiers:
         return "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
     return _source_policy_for_filing_types(filing_types)
@@ -4256,6 +4443,8 @@ def _apply_planner_output_limits(contract: dict[str, Any]) -> dict[str, Any]:
         max_chars=PLANNER_MAX_CAVEAT_CHARS,
     )
     limited["evidence_gaps"] = _normalize_evidence_gaps(limited.get("evidence_gaps"))[:4]
+    if _market_snapshot_requested_from_planner(limited):
+        limited["market_snapshot"] = _normalize_market_snapshot_planner_block(limited.get("market_snapshot"))
     return limited
 
 

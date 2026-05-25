@@ -230,6 +230,8 @@ def test_planner_prompt_uses_compact_json_contract() -> None:
     assert "不要输出 evidence_gaps" in prompt
     assert "最多 5 个任务" in prompt
     assert "不超过 80 字" in prompt
+    assert "market_snapshot" in prompt
+    assert "只有当用户明确或隐含询问股价" in prompt
 
 
 def test_planner_normalization_limits_tasks_and_field_lengths() -> None:
@@ -287,6 +289,78 @@ def test_planner_normalization_limits_tasks_and_field_lengths() -> None:
     assert len(clean["forbidden_claims"]) <= 6
     assert all(len(item) <= 120 for item in clean["forbidden_claims"])
     assert len(clean["evidence_gaps"]) <= 4
+
+
+def test_planner_normalization_preserves_market_snapshot_contract() -> None:
+    interactive = _load_interactive_module()
+    inventory = {
+        "inventory_digest": "inv-market-planner",
+        "companies": [
+            {
+                "ticker": "NVDA",
+                "company": "NVIDIA",
+                "filings": [
+                    {"year": 2025, "form_type": "10-K", "source_tier": "primary_sec_filing"},
+                    {"year": 2026, "form_type": "10-Q", "source_tier": "primary_sec_filing"},
+                    {"year": 2026, "form_type": "8-K", "source_tier": "company_authored_unaudited_sec_filing"},
+                ],
+            }
+        ],
+        "categories": [],
+    }
+    fallback = {
+        "task_type": "company_comparison",
+        "search_scope_tickers": ["NVDA"],
+        "focus_tickers": ["NVDA"],
+        "years": [2025, 2026],
+        "filing_types": ["10-K", "10-Q", "8-K"],
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+        "metric_families": ["data_center_revenue"],
+        "decomposed_tasks": [
+            {
+                "task_id": "fundamentals",
+                "question_zh": "Compare filed fundamentals.",
+                "required_tickers": ["NVDA"],
+                "required_metric_families": ["data_center_revenue"],
+            }
+        ],
+        "required_caveats": [],
+        "forbidden_claims": [],
+    }
+    planned = {
+        **fallback,
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+        "market_snapshot": {
+            "required": True,
+            "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            "as_of_date": "2026-05-25",
+            "window": "3M",
+            "fields": ["return_3m", "ev_sales_ttm", "bad_field"],
+            "analysis_tools": ["return_summary", "valuation_peer_rank", "bad_tool"],
+        },
+    }
+
+    contract = interactive._normalize_llm_query_contract(
+        planned,
+        fallback,
+        ["NVDA"],
+        [2025, 2026],
+        inventory,
+    )
+    contract = interactive._repair_query_contract_from_prompt(
+        contract,
+        "结合NVDA财报、8-K和市场反应/估值语境，判断增长是否已经反映在股价里",
+        ["NVDA"],
+        [2025, 2026],
+        inventory,
+    )
+    validated = interactive._validate_query_contract(contract, ["NVDA"], [2025, 2026], inventory)
+
+    assert validated["source_policy"] == "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT"
+    assert validated["source_tiers"] == ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"]
+    assert validated["market_snapshot"]["fields"] == ["return_3m", "ev_sales_ttm"]
+    assert validated["market_snapshot"]["analysis_tools"] == ["return_summary", "valuation_peer_rank"]
+    assert validated["market_source_gaps"] == []
 
 
 def test_planner_retries_length_truncated_json_before_fallback(monkeypatch) -> None:

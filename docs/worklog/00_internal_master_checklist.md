@@ -272,6 +272,9 @@
 - [x] Run a local stage-level market snapshot main-chain smoke covering context injection, graph artifact refs, validation, synthesis normalizer, and renderer boundary.
 - [x] Run a 7-company local fixture smoke before any real-time/provider API integration.
 - [x] Run one real DeepSeek API full-chain synthesis with the 7-company market snapshot evidence pack.
+- [x] Probe free/no-key real market snapshot providers and save the first full30 Yahoo chart 3M price/volume snapshot under private data paths.
+- [ ] Add provider capability registry and renderer/gate wording for price-only vs valuation-capable market snapshots.
+- [ ] Decide whether to add a key-backed free-tier valuation provider after documenting key handling, rate limits, and provider terms.
 - [ ] Improve bank table parser column/header binding so JPM bank metrics do not rely only on runtime ledger filters.
 - [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
 - [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.

@@ -234,8 +234,11 @@ def validate_query_contract(
     clean["metric_queries"] = _string_list(clean.get("metric_queries"), max_items=10, max_chars=220)
     clean["qualitative_queries"] = _string_list(clean.get("qualitative_queries"), max_items=10, max_chars=220)
     clean["decomposed_tasks"] = _normalize_decomposed_tasks(clean.get("decomposed_tasks"), clean, warnings)
-    if not _scope_has_banking_company(clean["focus_tickers"], project_inventory):
+    banking_tickers = _banking_tickers_for_scope(clean["focus_tickers"], project_inventory)
+    if not banking_tickers:
         clean = _drop_nonbank_banking_scope(clean, warnings, normalizations)
+    else:
+        clean = _scope_mixed_banking_metrics(clean, banking_tickers, warnings, normalizations)
     required_caveats = _normalize_required_caveats(
         _string_list(clean.get("required_caveats"), max_items=12, max_chars=260),
         normalizations,
@@ -796,22 +799,80 @@ def _normalize_decomposed_tasks(value: Any, contract: dict[str, Any], warnings: 
 
 
 def _scope_has_banking_company(focus_tickers: list[str], project_inventory: dict[str, Any]) -> bool:
+    return bool(_banking_tickers_for_scope(focus_tickers, project_inventory))
+
+
+def _banking_tickers_for_scope(focus_tickers: list[str], project_inventory: dict[str, Any]) -> list[str]:
     focus = {str(ticker or "").upper() for ticker in focus_tickers}
+    banking: list[str] = []
     for category in (project_inventory.get("categories") or []):
         category_name = str(category.get("category") or "").lower()
         if "bank" not in category_name and "financial" not in category_name:
             continue
         for ticker in category.get("tickers") or []:
-            if str(ticker or "").upper() in focus:
-                return True
+            ticker_text = str(ticker or "").upper()
+            if ticker_text in focus and ticker_text not in banking:
+                banking.append(ticker_text)
     for company in project_inventory.get("companies") or []:
         ticker = str(company.get("ticker") or "").upper()
-        if ticker not in focus:
+        if ticker not in focus or ticker in banking:
             continue
         category_name = str(company.get("category") or "").lower()
         if "bank" in category_name or "financial" in category_name:
-            return True
-    return False
+            banking.append(ticker)
+    return [ticker for ticker in focus_tickers if str(ticker).upper() in set(banking)]
+
+
+def _scope_mixed_banking_metrics(
+    contract: dict[str, Any],
+    banking_tickers: list[str],
+    warnings: list[dict[str, Any]],
+    normalizations: list[dict[str, Any]],
+) -> dict[str, Any]:
+    clean = dict(contract)
+    banking_set = {str(ticker).upper() for ticker in banking_tickers}
+    focus = _unique_upper(clean.get("focus_tickers") or [])
+    mixed_scope = bool(banking_set and set(focus) - banking_set)
+    if not mixed_scope:
+        rules = clean.get("ledger_rules") if isinstance(clean.get("ledger_rules"), dict) else {}
+        rules["banking_metric_tickers"] = [ticker for ticker in focus if ticker in banking_set]
+        clean["ledger_rules"] = rules
+        return clean
+
+    metric_families = list(clean.get("metric_families") or [])
+    filtered_metric_families = [family for family in metric_families if family not in BANKING_METRIC_FAMILIES]
+    if len(filtered_metric_families) != len(metric_families):
+        normalizations.append({"field": "metric_families", "action": "scoped_banking_families_to_banking_tasks"})
+    clean["metric_families"] = filtered_metric_families
+
+    filtered_tasks = []
+    for task in clean.get("decomposed_tasks") or []:
+        task = dict(task)
+        families = list(task.get("required_metric_families") or [])
+        banking_families = [family for family in families if family in BANKING_METRIC_FAMILIES]
+        if not banking_families:
+            filtered_tasks.append(task)
+            continue
+        task_text = " ".join(str(task.get(key) or "") for key in ("task_id", "question_zh", "question")).lower()
+        required_tickers = _clamp_tickers(task.get("required_tickers"), focus)
+        scoped_banking_tickers = [ticker for ticker in required_tickers if ticker in banking_set]
+        has_banking_terms = _contains_any(task_text, BANKING_TASK_TERMS)
+        if has_banking_terms and scoped_banking_tickers:
+            if set(required_tickers) - banking_set:
+                normalizations.append({"field": "decomposed_tasks.required_tickers", "action": "narrowed_banking_task_to_banking_tickers", "task_id": task.get("task_id")})
+            task["required_tickers"] = scoped_banking_tickers
+            filtered_tasks.append(task)
+            continue
+        task["required_metric_families"] = [family for family in families if family not in BANKING_METRIC_FAMILIES]
+        warnings.append({"type": "dropped_banking_metric_family_for_mixed_nonbank_task", "task_id": task.get("task_id")})
+        if task["required_metric_families"]:
+            filtered_tasks.append(task)
+    clean["decomposed_tasks"] = filtered_tasks
+
+    rules = clean.get("ledger_rules") if isinstance(clean.get("ledger_rules"), dict) else {}
+    rules["banking_metric_tickers"] = [ticker for ticker in focus if ticker in banking_set]
+    clean["ledger_rules"] = rules
+    return clean
 
 
 def _drop_nonbank_banking_scope(

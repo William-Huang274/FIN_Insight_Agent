@@ -3,6 +3,7 @@
 | Run ID | Date | Type | Status | Summary |
 | --- | --- | --- | --- | --- |
 | `20260524_sec_agent_10q_pilot_deepseek_api_smoke_v1` | 2026-05-24 | inference smoke | diagnostic-only | Ran the 2026 10-Q MSFT/AMZN pilot through DeepSeek `deepseek-v4-pro`; final cloud run `20260524_125319_3cc2b2f480` produced a clean rendered answer with no exact-value placeholders, 66 runtime ledger rows, all deterministic factual gates passing, and `mean_score_pct=0.88`, while the coarse `qwen_answer_gate_pass` remained false due to claim downgrades. |
+| `20260525_market_snapshot_7co_deepseek_cloud_full_chain_v1` | 2026-05-25 | inference smoke | completed | Ran the 7-company SEC mixed 10-K/10-Q plus offline market snapshot chain through cloud DeepSeek `deepseek-v4-pro`; final run `20260525_222900_44f4a210b8` passed 12/12 gates with complete market support, 48 ledger rows, 127 context rows, `verified` claim status, JPM-only banking metric scope, and no non-JPM banking rows. |
 | `20260515_phase1_bm25_dense_smoke` | 2026-05-15 | retrieval smoke | completed | Built EvidenceObject store, BM25 index, and MiniLM dense index for 2,842 SEC 10-K evidence records. |
 | `20260515_phase1_seed_retrieval_eval` | 2026-05-15 | retrieval evaluation | completed | Evaluated BM25, dense MiniLM, and hybrid RRF on 30 seed evidence queries with and without ticker/year filters. |
 | `20260515_phase1_qwen3_embedding_eval` | 2026-05-15 | retrieval evaluation | completed | Downloaded Qwen3-Embedding-0.6B from ModelScope, built a 1024-dim dense index, and evaluated it on the seed query set. |

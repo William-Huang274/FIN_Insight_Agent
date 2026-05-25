@@ -3937,6 +3937,7 @@ def _repair_query_contract_from_prompt(
     _append_contract_task(repaired, _user_question_anchor_task(prompt_text, focus, repaired))
     for task in _prompt_driven_repair_tasks(prompt_text, focus, tickers):
         _append_contract_task(repaired, task)
+    _ensure_mixed_banking_task(repaired, focus, project_inventory)
     if has_peer_intent:
         _ensure_peer_mapping_task(repaired, prompt_text, focus, tickers, project_inventory)
     if offscope_terms:
@@ -4404,6 +4405,60 @@ def _ensure_peer_mapping_task(
     )
     task["peer_tickers"] = peer_tickers[:8]
     _append_contract_task(contract, task)
+
+
+def _ensure_mixed_banking_task(
+    contract: dict[str, Any],
+    focus_tickers: list[str],
+    project_inventory: dict[str, Any],
+) -> None:
+    banking_tickers = _banking_tickers_for_focus(focus_tickers, project_inventory)
+    if not banking_tickers or len({str(ticker).upper() for ticker in focus_tickers}) <= len(set(banking_tickers)):
+        return
+    banking_set = set(banking_tickers)
+    for task in contract.get("decomposed_tasks") or []:
+        if not isinstance(task, dict):
+            continue
+        families = {str(item) for item in task.get("required_metric_families") or []}
+        required = {str(item).upper() for item in task.get("required_tickers") or []}
+        if families & BANKING_METRIC_FAMILIES and required and required <= banking_set:
+            return
+    task = _repair_task(
+        "mixed_scope_banking_metrics",
+        "对混合行业范围中的银行/金融公司单独提取净利息、信贷损失、不良资产等银行指标，且不与非银行公司直接混比。",
+        [
+            "net_interest_income",
+            "net_interest_margin",
+            "provision_for_credit_losses",
+            "net_charge_offs",
+            "nonperforming_assets",
+            "allowance_for_credit_losses",
+        ],
+        banking_tickers,
+        priority="supporting",
+    )
+    tasks = [item for item in contract.get("decomposed_tasks") or [] if isinstance(item, dict)]
+    tasks.append(task)
+    contract["decomposed_tasks"] = tasks[:PLANNER_MAX_DECOMPOSED_TASKS]
+
+
+def _banking_tickers_for_focus(focus_tickers: list[str], project_inventory: dict[str, Any]) -> list[str]:
+    focus = [str(ticker).upper() for ticker in focus_tickers if str(ticker).strip()]
+    focus_set = set(focus)
+    banking: set[str] = set()
+    for category in project_inventory.get("categories") or []:
+        category_name = str(category.get("category") or "").lower()
+        if "bank" not in category_name and "financial" not in category_name:
+            continue
+        banking.update(str(ticker).upper() for ticker in category.get("tickers") or [] if str(ticker).upper() in focus_set)
+    for company in project_inventory.get("companies") or []:
+        ticker = str(company.get("ticker") or "").upper()
+        if ticker not in focus_set:
+            continue
+        category_name = str(company.get("category") or "").lower()
+        if "bank" in category_name or "financial" in category_name:
+            banking.add(ticker)
+    return [ticker for ticker in focus if ticker in banking]
 
 
 def _repair_task(
@@ -5846,6 +5901,8 @@ def _banking_ledger_row_allowed(row: dict[str, Any], text: str, name_lower: str,
     family = str(row.get("metric_family") or "")
     if family not in BANKING_METRIC_FAMILIES:
         return True
+    if str(row.get("extraction_method") or "") != "banking_context_runtime_heuristic" and not str(row.get("column_label") or "").strip():
+        return False
     if _is_human_capital_ledger_topic(text):
         return False
     if any(term in text for term in ("income tax", "tax expense", "tax benefit", "provision for income taxes")):
@@ -5972,6 +6029,9 @@ def _ledger_row_allowed(
     if "by segment" in column_label_lower:
         return False
     if family in BANKING_METRIC_FAMILIES:
+        banking_scope = {str(item).upper() for item in rules.get("banking_metric_tickers") or [] if str(item).strip()}
+        if banking_scope and ticker not in banking_scope:
+            return False
         return _banking_ledger_row_allowed(row, row_text_lower, name_lower, source_signal_lower)
     if rules.get("drop_geographic_revenue_breakdowns") and family == "revenue":
         geographic_terms = {

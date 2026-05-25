@@ -669,6 +669,95 @@ def test_cross_industry_market_prompt_with_jpm_does_not_become_banking_only() ->
     assert "revenue" in contract["metric_families"]
     assert "net_interest_income" not in contract["metric_families"]
     assert all(not str(task.get("task_id", "")).startswith("bank_") for task in contract["decomposed_tasks"])
+    banking_tasks = [
+        task
+        for task in contract["decomposed_tasks"]
+        if set(task.get("required_metric_families") or []) & {"net_interest_income", "nonperforming_assets"}
+    ]
+    assert banking_tasks
+    assert all(task.get("required_tickers") == ["JPM"] for task in banking_tasks)
+    assert contract["ledger_rules"]["banking_metric_tickers"] == ["JPM"]
+
+
+def test_mixed_scope_banking_metrics_are_scoped_to_banking_tickers() -> None:
+    inventory = {
+        "inventory_digest": "inv-market-mixed-banking",
+        "companies": [
+            {"ticker": "GOOGL", "category": "search/ads/cloud", "filings": [{"year": 2026, "form_type": "10-Q"}]},
+            {"ticker": "AMZN", "category": "ecommerce/cloud", "filings": [{"year": 2026, "form_type": "10-Q"}]},
+            {"ticker": "JPM", "category": "banking/financial services", "filings": [{"year": 2026, "form_type": "10-Q"}]},
+        ],
+        "categories": [
+            {"category": "search/ads/cloud", "tickers": ["GOOGL"]},
+            {"category": "ecommerce/cloud", "tickers": ["AMZN"]},
+            {"category": "banking/financial services", "tickers": ["JPM"]},
+        ],
+    }
+    contract = {
+        "task_type": "open_analysis",
+        "search_scope_tickers": ["GOOGL", "AMZN", "JPM"],
+        "focus_tickers": ["GOOGL", "AMZN", "JPM"],
+        "years": [2026],
+        "filing_types": ["10-Q"],
+        "source_tiers": ["primary_sec_filing"],
+        "metric_families": ["revenue", "operating_income", "deposits", "net_interest_income"],
+        "ledger_rules": {
+            "allowed_metric_families": ["revenue", "operating_income", "deposits", "net_interest_income"],
+            "prefer_focus_tickers": True,
+        },
+        "decomposed_tasks": [
+            {
+                "task_id": "general_compare",
+                "question_zh": "比较三家公司基本面动能",
+                "priority": "primary",
+                "required_tickers": ["GOOGL", "AMZN", "JPM"],
+                "required_metric_families": ["revenue", "operating_income", "deposits"],
+            },
+            {
+                "task_id": "bank_jpm",
+                "question_zh": "提取JPM银行净利息和存款指标",
+                "priority": "supporting",
+                "required_tickers": ["JPM"],
+                "required_metric_families": ["deposits", "net_interest_income"],
+            },
+        ],
+    }
+
+    cleaned = validate_query_contract(
+        contract,
+        selected_tickers=["GOOGL", "AMZN", "JPM"],
+        selected_years=[2026],
+        project_inventory=inventory,
+    )["contract"]
+
+    assert "deposits" not in cleaned["metric_families"]
+    assert cleaned["ledger_rules"]["banking_metric_tickers"] == ["JPM"]
+    tasks = {task["task_id"]: task for task in cleaned["decomposed_tasks"]}
+    assert "deposits" not in tasks["general_compare"]["required_metric_families"]
+    assert tasks["bank_jpm"]["required_tickers"] == ["JPM"]
+    assert "deposits" in tasks["bank_jpm"]["required_metric_families"]
+
+    interactive = _load_interactive_module()
+    googl_deposit = {
+        "ticker": "GOOGL",
+        "metric_family": "deposits",
+        "metric_name": "Time deposits",
+        "row_label": "cash and time deposits",
+        "column_label": "2026",
+        "source_text": "cash and time deposits were 100",
+        "unit": "usd_millions",
+    }
+    jpm_deposit = {
+        "ticker": "JPM",
+        "metric_family": "deposits",
+        "metric_name": "Deposits",
+        "row_label": "Total deposits",
+        "column_label": "2026",
+        "source_text": "total deposits were 100",
+        "unit": "usd_millions",
+    }
+    assert interactive._ledger_row_allowed(googl_deposit, cleaned, None) is False
+    assert interactive._ledger_row_allowed(jpm_deposit, cleaned, None) is True
 
 
 def test_synthesis_normalizer_allows_cited_market_snapshot_values() -> None:

@@ -43,6 +43,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tickers", default=os.environ.get("TICKERS", interactive.DEFAULT_TICKER_SCOPE))
     parser.add_argument("--years", default=os.environ.get("YEARS", ""))
     parser.add_argument("--manifest-path", default="data/processed_private/manifests/sec_tech_10k_manifest.jsonl")
+    parser.add_argument("--source-gap-path", default=os.environ.get("SOURCE_GAP_PATH", ""))
     parser.add_argument("--bm25-index-dir", default="data/indexes/bm25/sec_tech_10k")
     parser.add_argument("--object-bm25-index-dir", default="data/indexes/bm25/sec_tech_10k_objects")
     parser.add_argument("--bge-model", default=os.environ.get("BGE_MODEL", "/root/autodl-tmp/modelscope_cache/BAAI/bge-reranker-v2-m3"))

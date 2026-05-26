@@ -76,12 +76,33 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=os.environ.get("SOURCE_GAP_PATH", ""),
         help="Optional JSONL with structured source coverage gaps to forward into graph runs.",
     )
+    parser.add_argument(
+        "--market-evidence-path",
+        default=os.environ.get("MARKET_EVIDENCE_PATH", ""),
+        help="Optional JSONL market snapshot evidence pack to forward into graph runs.",
+    )
+    parser.add_argument(
+        "--market-snapshot-id",
+        default=os.environ.get("MARKET_SNAPSHOT_ID", ""),
+        help="Optional market snapshot id to stamp into graph Query Contracts.",
+    )
+    parser.add_argument(
+        "--market-as-of-date",
+        default=os.environ.get("MARKET_AS_OF_DATE", ""),
+        help="Optional market snapshot as-of date to stamp into graph Query Contracts.",
+    )
     parser.add_argument("--bm25-index-dir", default=os.environ.get("BM25_INDEX_DIR", "data/indexes/bm25/sec_tech_10k"))
     parser.add_argument(
         "--object-bm25-index-dir",
         default=os.environ.get("OBJECT_BM25_INDEX_DIR", "data/indexes/bm25/sec_tech_10k_objects"),
     )
     parser.add_argument("--source-policy", default=os.environ.get("SEC_AGENT_SOURCE_POLICY", "SEC_ONLY_10K"))
+    parser.add_argument(
+        "--graph-execution",
+        default=os.environ.get("SEC_AGENT_GRAPH_EXECUTION", "in_process"),
+        choices=("in_process", "subprocess"),
+        help="Run the SEC DAG in this session process for warm caches, or isolate it in a subprocess.",
+    )
     parser.add_argument("--graph-verbose", action="store_true", help="Do not pass --quiet to the graph runner.")
     return parser.parse_args(argv)
 
@@ -176,7 +197,12 @@ def _build_handler(
             max_candidate_sessions=5,
         ),
     )
-    harness = SecAgentToolHarness(session_root=session_root, python=args.python, repo_root=REPO_ROOT)
+    harness = SecAgentToolHarness(
+        session_root=session_root,
+        python=args.python,
+        repo_root=REPO_ROOT,
+        graph_execution=args.graph_execution,
+    )
     controller = DeepSeekToolController(
         harness=harness,
         config=ControllerConfig(
@@ -260,6 +286,12 @@ def _graph_args(args: argparse.Namespace) -> list[str]:
     ]
     if args.source_gap_path:
         result.extend(["--source-gap-path", args.source_gap_path])
+    if args.market_evidence_path:
+        result.extend(["--market-evidence-path", args.market_evidence_path])
+    if args.market_snapshot_id:
+        result.extend(["--market-snapshot-id", args.market_snapshot_id])
+    if args.market_as_of_date:
+        result.extend(["--market-as-of-date", args.market_as_of_date])
     if args.api_key_env:
         result.extend(["--api-key-env", args.api_key_env])
     if not args.graph_verbose:
@@ -553,12 +585,27 @@ def _print_start_banner(*, args: argparse.Namespace, state: dict[str, str], sess
     print(f"controller: {args.controller_backend} model: {args.model}")
     print(
         f"execute_dag: {bool(args.execute)} bge_device: {args.bge_device} "
-        f"query_planner: {args.query_planner} synthesis_max_tokens: {args.graph_max_tokens}"
+        f"query_planner: {args.query_planner} synthesis_max_tokens: {args.graph_max_tokens} "
+        f"graph_execution: {args.graph_execution}"
     )
     print(f"session_root: {session_root.resolve()}")
     print(f"context_root: {context_root.resolve()}")
     if args.source_gap_path:
         print(f"source_gap_path: {args.source_gap_path}")
+    if args.market_evidence_path:
+        print(f"market_evidence_path: {args.market_evidence_path}")
+    if args.market_snapshot_id or args.market_as_of_date:
+        print(
+            "market_snapshot: "
+            + json.dumps(
+                {
+                    "snapshot_id": args.market_snapshot_id,
+                    "as_of_date": args.market_as_of_date,
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+        )
     print(f"turn_log: {state['turn_log']}")
 
 

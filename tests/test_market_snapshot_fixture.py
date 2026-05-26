@@ -255,6 +255,49 @@ def test_market_snapshot_fixture_rejects_duplicate_ticker_date(tmp_path: Path) -
         )
 
 
+def test_market_evidence_pack_records_missing_valuation_fields(tmp_path: Path) -> None:
+    fixture_path = tmp_path / "price_only_fixture.csv"
+    start = date(2026, 2, 25)
+    with fixture_path.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=["ticker", "date", "close", "adjusted_close", "volume"])
+        writer.writeheader()
+        for offset in range(70):
+            row_date = start + timedelta(days=offset)
+            writer.writerow({"ticker": "NVDA", "date": row_date.isoformat(), "close": 100 + offset, "adjusted_close": 100 + offset, "volume": 1000})
+            writer.writerow({"ticker": "SPY", "date": row_date.isoformat(), "close": 500 + offset, "adjusted_close": 500 + offset, "volume": 2000})
+
+    output_root = tmp_path / "processed_market"
+    snapshot_id = "market_missing_valuation_unit_v1"
+    normalize_market_snapshot_fixture(
+        input_path=fixture_path,
+        output_root=output_root,
+        snapshot_id=snapshot_id,
+        as_of_date="2026-05-05",
+        tickers=["NVDA"],
+        benchmark_tickers=["SPY"],
+    )
+    analytics_path = output_root / "analytics" / f"{snapshot_id}_3m_analytics.jsonl"
+    compute_market_analytics(
+        bars_path=output_root / "bars" / f"{snapshot_id}_daily_bars.jsonl",
+        snapshot_path=output_root / "snapshots" / f"{snapshot_id}_snapshot.jsonl",
+        output_path=analytics_path,
+        tickers=["NVDA"],
+        benchmark_ticker="SPY",
+    )
+    evidence_path = output_root / "evidence_packs" / f"{snapshot_id}_3m_market_evidence.jsonl"
+    build_market_evidence_pack(
+        analytics_path=analytics_path,
+        snapshot_path=output_root / "snapshots" / f"{snapshot_id}_snapshot.jsonl",
+        output_path=evidence_path,
+        tickers=["NVDA"],
+    )
+
+    row = _jsonl_rows(evidence_path)[0]
+    assert row["field_status"]["pe_ttm"] == "missing_not_provided"
+    assert "pe_ttm" in row["missing_fields"]
+    assert "missing_valuation_fields=market_cap,enterprise_value,pe_ttm,ev_sales_ttm,ev_ebitda_ttm" in row["text"]
+
+
 def test_fmp_valuation_enrichment_maps_fields_to_latest_rows() -> None:
     module = _load_market_script("07_enrich_market_snapshot_valuation_fmp.py")
     valuations = {
@@ -292,6 +335,44 @@ def test_fmp_valuation_enrichment_maps_fields_to_latest_rows() -> None:
     assert rows[1]["ev_sales_ttm"] == 11.8
     assert rows[1]["ev_ebitda_ttm"] == 22.4
     assert rows[2]["market_cap"] == ""
+
+
+def test_fmp_historical_snapshot_normalizes_and_redacts_url() -> None:
+    module = _load_market_script("09_download_fmp_historical_snapshot.py")
+    rows = [
+        {
+            "symbol": "MSFT",
+            "date": "2026-05-22",
+            "open": "420.5",
+            "high": "425.0",
+            "low": "418.0",
+            "close": "423.25",
+            "volume": "12345678",
+        },
+        {
+            "symbol": "MSFT",
+            "date": "2026-05-21",
+            "open": "417.1",
+            "high": "421.0",
+            "low": "415.8",
+            "close": "419.5",
+            "adjClose": "419.1",
+            "volume": "9876543",
+        },
+    ]
+    source_url = module._redact_url(
+        "https://financialmodelingprep.com/stable/historical-price-eod/full?symbol=MSFT&apikey=secret"
+    )
+    normalized = [module._normalize_fmp_bar("MSFT", row, source_url=source_url) for row in rows]
+
+    assert "secret" not in source_url
+    assert "apikey=REDACTED" in source_url
+    assert normalized[0]["provider"] == module.PROVIDER
+    assert normalized[0]["close"] == 423.25
+    assert normalized[0]["adjusted_close"] == 423.25
+    assert normalized[1]["adjusted_close"] == 419.1
+    assert normalized[1]["volume"] == 9876543.0
+    assert normalized[0]["market_cap"] is None
 
 
 def test_market_events_from_sec_manifest_selects_latest_event(tmp_path: Path) -> None:
@@ -528,6 +609,74 @@ def test_coverage_matrix_tracks_market_snapshot_fields_and_refs() -> None:
     assert task["covered_source_tiers"] == ["market_snapshot", "primary_sec_filing"]
     assert task["covered_market_tools"] == ["return_summary", "peer_relative_return", "valuation_peer_rank"]
     assert task["sample_market_field_refs"] == ["MARKET::market_pilot_2026-05-25_unit_v1::NVDA::return_3m::2026-05-25"]
+
+
+def test_coverage_matrix_does_not_mark_market_snapshot_missing_for_sec_only_task() -> None:
+    contract = {
+        "case_id": "market_sec_task_unit",
+        "task_type": "open_analysis",
+        "focus_tickers": ["NVDA"],
+        "search_scope_tickers": ["NVDA"],
+        "years": [2026],
+        "filing_types": ["10-Q"],
+        "source_tiers": ["primary_sec_filing", "market_snapshot"],
+        "metric_families": ["operating_cash_flow"],
+        "decomposed_tasks": [
+            {
+                "task_id": "fundamental_cash_flow",
+                "question_zh": "提取NVDA最新10-Q经营现金流变化。",
+                "priority": "primary",
+                "required_tickers": ["NVDA"],
+                "required_metric_families": ["operating_cash_flow"],
+            }
+        ],
+        "market_snapshot": {
+            "required": True,
+            "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            "as_of_date": "2026-05-25",
+            "window": "3M",
+            "fields": ["return_3m"],
+            "analysis_tools": ["return_summary"],
+        },
+    }
+    ledger_rows = [
+        {
+            "metric_id": "metric_nvda_2026_ocf",
+            "ticker": "NVDA",
+            "fiscal_year": 2026,
+            "metric_family": "operating_cash_flow",
+            "form_type": "10-Q",
+            "source_tier": "primary_sec_filing",
+            "source_evidence_id": "NVDA_2026_10Q_ITEM1",
+        }
+    ]
+    context_rows = [
+        {
+            "evidence_id": "MARKET_SNAPSHOT::market_pilot_2026-05-25_unit_v1::NVDA::3M::2026-05-25",
+            "source_type": "market_snapshot",
+            "source_tier": "market_snapshot",
+            "ticker": "NVDA",
+            "snapshot_id": "market_pilot_2026-05-25_unit_v1",
+            "as_of_date": "2026-05-25",
+            "window": "3M",
+            "field_refs": [{"field_name": "return_3m", "value": 0.18}],
+        }
+    ]
+
+    matrix = build_coverage_matrix(
+        case={"case_id": "market_sec_task_unit"},
+        query_contract=contract,
+        context_rows=context_rows,
+        ledger_rows=ledger_rows,
+        run_id="market_sec_task_unit",
+    )
+
+    task = matrix["tasks"][0]
+    assert task["required_market_fields"] == []
+    assert task["missing_source_tiers"] == []
+    assert "market_snapshot" not in task["must_caveat"]
+    assert matrix["summary"]["market_snapshot_support_complete"] is True
+    assert matrix["summary"]["missing_source_tiers"] == []
 
 
 def test_interactive_market_context_loader_and_renderer_boundary(tmp_path: Path) -> None:

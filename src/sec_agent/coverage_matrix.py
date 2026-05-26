@@ -296,7 +296,10 @@ def _task_coverage_row(
     )
     missing_years = sorted(set(years) - set(covered_years))
     missing_filing_types = sorted(set(filing_types) - set(covered_filing_types))
-    missing_source_tiers = sorted(set(source_tiers) - set(covered_source_tiers))
+    required_source_tiers = [
+        tier for tier in source_tiers if task_requires_market or tier != MARKET_SOURCE_TIER
+    ]
+    missing_source_tiers = sorted(set(required_source_tiers) - set(covered_source_tiers))
     missing_market_fields = sorted(set(required_market_fields) - set(covered_market_fields))
     missing_market_tools = sorted(set(required_market_tools) - set(covered_market_tools))
     support_level = _support_level(

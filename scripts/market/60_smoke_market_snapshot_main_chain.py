@@ -94,21 +94,22 @@ def _summary(
     market_rows = [row for row in context_rows if str(row.get("source_tier") or "") == "market_snapshot"]
     coverage_summary = coverage_matrix.get("summary") or {}
     market_coverage = coverage_matrix.get("market_snapshot_coverage") or {}
+    market_requested = _contract_requests_market_snapshot(query_contract)
+    common_ok = not query_contract.get("source_coverage_gaps") and not query_contract.get("market_source_gaps")
+    market_ok = (
+        len(market_rows) > 0 and bool(market_coverage.get("market_snapshot_support_complete"))
+        if market_requested
+        else len(market_rows) == 0
+    )
     return {
         "schema_version": "sec_agent_market_snapshot_main_chain_smoke_v0.1",
-        "status": "pass"
-        if (
-            not query_contract.get("source_coverage_gaps")
-            and not query_contract.get("market_source_gaps")
-            and len(market_rows) > 0
-            and bool(market_coverage.get("market_snapshot_support_complete"))
-        )
-        else "fail",
+        "status": "pass" if common_ok and market_ok else "fail",
         "run_root": str(run_root),
         "elapsed_sec": round(elapsed_sec, 4),
         "source_policy": query_contract.get("source_policy"),
         "source_coverage_gaps": query_contract.get("source_coverage_gaps") or [],
         "market_source_gaps": query_contract.get("market_source_gaps") or [],
+        "market_requested": market_requested,
         "context_row_count": len(context_rows),
         "market_context_row_count": len(market_rows),
         "ledger_row_count": len(ledger_rows),
@@ -120,6 +121,16 @@ def _summary(
         "market_snapshot_as_of_dates": market_coverage.get("market_snapshot_as_of_dates") or [],
         "judgment_plan_present": bool(judgment_plan),
     }
+
+
+def _contract_requests_market_snapshot(query_contract: dict[str, Any]) -> bool:
+    source_tiers = {str(item) for item in (query_contract.get("source_tiers") or [])}
+    if "market_snapshot" in source_tiers:
+        return True
+    if str(query_contract.get("source_policy") or "") == "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT":
+        return True
+    market = query_contract.get("market_snapshot")
+    return isinstance(market, dict) and bool(market.get("required"))
 
 
 def main() -> int:
@@ -164,6 +175,12 @@ def main() -> int:
         object_top_k=args.object_top_k,
         max_context_rows=args.max_context_rows,
         ledger_max_rows=args.ledger_max_rows,
+        context_runner="subprocess",
+        reranker_top_k=0,
+        reranker_candidate_limit=0,
+        reranker_batch_size=8,
+        reranker_max_length=2048,
+        reranker_doc_max_chars=6000,
         llm_backend="smoke_no_synthesis",
         model="none",
         base_url="",

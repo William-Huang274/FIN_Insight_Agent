@@ -9,7 +9,7 @@ from typing import Any
 
 from sec_agent.context_store import JsonContextStore
 from sec_agent.graph_nodes import state_resume_report
-from sec_agent.graph_state import ARTIFACT_KEYS, SecAgentState
+from sec_agent.graph_state import ARTIFACT_KEYS, OPTIONAL_ARTIFACT_KEYS, SecAgentState
 from sec_agent.tool_harness import DEFAULT_SESSION_ROOT
 
 
@@ -434,6 +434,8 @@ def _artifact_state_from_analysis(analysis: dict[str, Any], resume_report: dict[
             status = "missing"
         elif key in refs:
             status = "complete"
+        elif key in OPTIONAL_ARTIFACT_KEYS:
+            status = "not_required"
         else:
             status = "missing"
         ref = refs.get(key) if isinstance(refs.get(key), dict) else {}
@@ -445,6 +447,7 @@ def _artifact_state_from_analysis(analysis: dict[str, Any], resume_report: dict[
     return {
         "complete_artifacts": [key for key, value in by_key.items() if value["status"] == "complete"],
         "missing_artifacts": [key for key, value in by_key.items() if value["status"] == "missing"],
+        "optional_artifacts": [key for key, value in by_key.items() if value["status"] == "not_required"],
         "invalidated_artifacts": sorted(invalidated),
         "digest_mismatch_artifacts": sorted(digest_mismatch),
         "by_key": by_key,

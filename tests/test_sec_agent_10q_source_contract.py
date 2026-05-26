@@ -48,6 +48,15 @@ def _load_ledger_missing_gate_module():
     return module
 
 
+def _load_semantic_contract_gate_module():
+    path = REPO_ROOT / "scripts" / "validate_sec_benchmark_v2_semantic_contracts.py"
+    spec = importlib.util.spec_from_file_location("semantic_contract_gate_under_test", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_query_contract_records_10q_inventory_gap_for_selected_ticker() -> None:
     inventory = {
         "inventory_digest": "inv-test",
@@ -207,6 +216,40 @@ def test_manifest_prefers_document_fiscal_period_focus_over_calendar_quarter(tmp
     assert record.fiscal_year_source == "document_fiscal_year_focus"
     assert record.metadata["fiscal_period"] == "Q3"
     assert record.metadata["fiscal_period_source"] == "document_fiscal_period_focus"
+
+
+def test_manifest_preserves_10k_metadata_year_when_parsed_focus_conflicts(tmp_path: Path) -> None:
+    html_path = tmp_path / "10-K.html"
+    metadata_path = tmp_path / "10-K.metadata.json"
+    html_path.write_text(
+        '<ix:nonNumeric name="dei:DocumentFiscalYearFocus" contextRef="ctx">2024</ix:nonNumeric>'
+        '<ix:nonNumeric name="dei:DocumentFiscalPeriodFocus" contextRef="ctx">FY</ix:nonNumeric>',
+        encoding="utf-8",
+    )
+    metadata = {
+        "ticker": "CRWD",
+        "company": "CrowdStrike Holdings, Inc.",
+        "cik": "0001535527",
+        "form_type": "10-K",
+        "source_tier": "primary_sec_filing",
+        "fiscal_year": 2025,
+        "filing_date": "2025-03-10",
+        "report_date": "2025-01-31",
+        "period_end": "2025-01-31",
+        "period_type": "annual",
+        "duration_months": 12,
+        "fiscal_period": "FY",
+        "accession_number": "0001535527-25-000009",
+        "primary_document": "crwd-20250131.htm",
+    }
+
+    record = _build_record(2025, "cybersecurity", "CRWD", "10-K", html_path, metadata_path, metadata)
+
+    assert record.fiscal_year == 2025
+    assert record.fiscal_year_source == "metadata_fiscal_year_conflict_with_document_focus"
+    assert record.document_fiscal_year_focus == 2024
+    assert record.fiscal_period == "FY"
+    assert record.period_type == "annual"
 
 
 def test_manifest_filters_by_document_fiscal_year_not_cache_directory(tmp_path: Path) -> None:
@@ -916,6 +959,135 @@ def test_interactive_period_compare_is_not_peer_case_for_broad_search_scope() ->
 
     assert case["task_type"] == "single_or_multi_company_interactive"
     assert "entity_bleed_between_peers" not in case["failure_types"]
+
+
+def test_broad_full30_peer_compare_does_not_require_every_company_mention() -> None:
+    interactive = _load_interactive_module()
+    gate = _load_semantic_contract_gate_module()
+    tickers = [
+        "AAPL",
+        "MSFT",
+        "NVDA",
+        "AMD",
+        "AVGO",
+        "AMAT",
+        "MU",
+        "INTC",
+        "QCOM",
+        "GOOGL",
+        "AMZN",
+        "META",
+        "ADBE",
+        "SNOW",
+        "CRM",
+        "ORCL",
+        "JPM",
+        "BAC",
+        "GS",
+        "MS",
+        "LLY",
+        "PFE",
+        "JNJ",
+        "CVX",
+        "XOM",
+        "WMT",
+        "PG",
+        "CAT",
+        "GE",
+        "TXN",
+    ]
+    query_contract = {
+        "task_type": "general_sec_financial_question",
+        "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT",
+        "focus_tickers": tickers,
+        "search_scope_tickers": tickers,
+        "years": [2025, 2026],
+        "filing_types": ["10-K", "10-Q", "8-K"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+        ],
+        "decomposed_tasks": [
+            {
+                "task_id": "peer_market_fundamental_divergence",
+                "question_zh": "比较当前full30公司中哪些公司的市场反应与基本面最一致。",
+                "priority": "primary",
+                "required_tickers": tickers[:8],
+                "peer_tickers": tickers[8:16],
+                "required_metric_families": ["revenue", "operating_income"],
+            }
+        ],
+    }
+
+    case = interactive._build_case(
+        "比较当前full30公司中哪些公司的市场反应与已披露基本面最一致，哪些可能存在分歧。",
+        tickers,
+        [2025, 2026],
+        "full30_peer_scan",
+        query_contract,
+    )
+
+    assert case["semantic_gate"]["company_coverage"] == "selected_companies"
+    assert case["semantic_gate"]["require_company_coverage"] is False
+    assert "entity_bleed_between_peers" in case["failure_types"]
+
+    result = gate._validate_agent_row(
+        {
+            "case_id": case["case_id"],
+            "mode": "pipeline_context",
+            "status": "answered",
+            "answer_status": "answered_api_model",
+            "answer": {
+                "direct_answer": "NVDA and MSFT show stronger market-fundamental confirmation; AMD shows a weaker setup.",
+                "decision_drivers": [],
+                "key_points": [],
+                "source_limitations": [],
+            },
+        },
+        case,
+        [],
+    )
+
+    assert result["status"] == "pass"
+    assert not result["failures"]
+    assert any(
+        warning.get("type") == "selected_company_coverage_not_all_focus_tickers"
+        for warning in result["warnings"]
+    )
+
+
+def test_small_peer_compare_still_requires_all_focus_mentions() -> None:
+    interactive = _load_interactive_module()
+    tickers = ["NVDA", "AMD", "MSFT"]
+    case = interactive._build_case(
+        "请具体比较NVDA、AMD和MSFT的AI业务表现。",
+        tickers,
+        [2025, 2026],
+        "small_peer_compare",
+        {
+            "task_type": "general_sec_financial_question",
+            "source_policy": "SEC_PRIMARY_MIXED_RECENT",
+            "focus_tickers": tickers,
+            "search_scope_tickers": tickers,
+            "years": [2025, 2026],
+            "filing_types": ["10-K", "10-Q"],
+            "source_tiers": ["primary_sec_filing"],
+            "decomposed_tasks": [
+                {
+                    "task_id": "peer_comparison",
+                    "question_zh": "比较NVDA、AMD和MSFT的AI业务表现。",
+                    "priority": "primary",
+                    "required_tickers": tickers,
+                    "peer_tickers": ["AMD", "MSFT"],
+                    "required_metric_families": ["revenue"],
+                }
+            ],
+        },
+    )
+
+    assert case["semantic_gate"]["company_coverage"] == "all_focus"
+    assert case["semantic_gate"]["require_company_coverage"] is True
 
 
 def test_coverage_matrix_does_not_count_10k_rows_for_10q_scope() -> None:

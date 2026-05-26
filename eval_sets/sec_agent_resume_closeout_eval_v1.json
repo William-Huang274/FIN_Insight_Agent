@@ -1,0 +1,269 @@
+{
+  "schema_version": "sec_agent_resume_closeout_eval_v1",
+  "purpose": "第一版投简历前的全链路收口评测标准，覆盖 Query Contract、检索、ledger、Evidence Coverage Matrix、Judgment Plan、DeepSeek synthesis、post-gates、renderer、session/context/resume。",
+  "acceptance_dimensions": [
+    {
+      "dimension_id": "source_inventory",
+      "critical": true,
+      "acceptance": [
+        "full-source 环境能够提供 10-K、latest 10-Q、8-K earnings release、market_snapshot 四类证据。",
+        "market_snapshot 必须带 snapshot_id、as_of_date，并覆盖价格、收益、回撤、波动、估值和 latest 10-Q 事件窗口字段。",
+        "缺少私有数据或索引时必须显式标记 skipped/warn/fail，不能当作通过。"
+      ]
+    },
+    {
+      "dimension_id": "planner_contract",
+      "critical": true,
+      "acceptance": [
+        "Planner 能从用户问题选择 source_tiers、filing_types、market_snapshot 和 market_analysis_tools。",
+        "Planner 输出必须是可解析 JSON，任务数量和字段长度受控。",
+        "禁止把 market_snapshot 当 SEC filing，禁止把 8-K 当 audited ledger fact。"
+      ]
+    },
+    {
+      "dimension_id": "retrieval_coverage_judgment",
+      "critical": true,
+      "acceptance": [
+        "检索能按 Query Contract 拉到 SEC/8-K/market_snapshot 对应上下文。",
+        "Exact-Value Ledger 保持 10-K/10-Q period_role，不混 QTD/YTD/TTM/annual。",
+        "Evidence Coverage Matrix 能列明 source tier 覆盖和缺口，Judgment Plan 只使用覆盖内证据。"
+      ]
+    },
+    {
+      "dimension_id": "model_synthesis_post_gates",
+      "critical": true,
+      "acceptance": [
+        "模型输出为投研 memo，而不是裸 JSON。",
+        "回答显式区分 SEC 10-K/10-Q、8-K 未审计管理层材料、market_snapshot 非实时快照。",
+        "所有 deterministic post-gates 通过，且没有 contract fallback/ledger repair 被当作正常模型输出。"
+      ]
+    },
+    {
+      "dimension_id": "session_context",
+      "critical": true,
+      "acceptance": [
+        "同一 user/tenant 的 active session 和 active answer 可跨进程恢复。",
+        "多 session 切换不泄漏上一个 session 的 tickers/artifacts。",
+        "partial run 能暴露 next_ready_node，恢复后 artifact_state 与 ContextManager 一致。"
+      ]
+    },
+    {
+      "dimension_id": "request_api_context",
+      "critical": true,
+      "acceptance": [
+        "无 active session 的模糊继续请求需要 clarification，而不是猜测。",
+        "显式 session 请求会设置 active session。",
+        "跨 user 访问被拒绝，且不暴露 active artifact payload。"
+      ]
+    },
+    {
+      "dimension_id": "tool_call_dispatch_context_update",
+      "critical": true,
+      "acceptance": [
+        "Controller 从 ContextManager snapshot 选择正确 tool。",
+        "Harness dispatch 后 ContextManager 应用 tool_result，last references 和 invalidated artifacts 更新正确。",
+        "inspect/explain/reformat/resume 不应在不需要时重跑完整 SEC DAG。"
+      ]
+    },
+    {
+      "dimension_id": "tool_harness_artifact_access",
+      "critical": true,
+      "acceptance": [
+        "inspect_coverage 和 explain_evidence 能读取真实 artifact refs。",
+        "reformat_answer 只 invalidates rendered_answer。",
+        "get_session_state 遵守 user boundary。"
+      ]
+    },
+    {
+      "dimension_id": "source_contracts",
+      "critical": true,
+      "acceptance": [
+        "10-Q/source tier/period_role/renderer/source-boundary 单元测试通过。",
+        "market_snapshot fixture、analytics、validation 和 source-boundary 单元测试通过。",
+        "mixed latest 10-Q manifest 构建逻辑通过。"
+      ]
+    },
+    {
+      "dimension_id": "p0_performance_resource",
+      "critical": false,
+      "acceptance": [
+        "提交前报告 BM25/ObjectBM25 初始化、检索、candidate generation、ledger cache、coverage 的阶段耗时。",
+        "普通问题和宽范围 full-source 问题分别有明确 SLA 解释，超预算时标 warn/fail 而不是忽略。",
+        "重复 JSON records 解析和 ledger 加载应通过缓存或索引复用体现收益。"
+      ]
+    },
+    {
+      "dimension_id": "p0_stage_timing_observability",
+      "critical": false,
+      "acceptance": [
+        "真实 full-source run 保存 planner/retrieval/rerank/ledger/coverage/synthesis/gates/renderer 的 stage-level timing。",
+        "报告能定位每阶段耗时，并保留 run_data_fingerprint、run_performance 或等价 telemetry。",
+        "没有真实 saved run 时必须标 skipped/warn，不能宣称生产级可观测性通过。"
+      ]
+    },
+    {
+      "dimension_id": "p0_data_index_versioning",
+      "critical": false,
+      "acceptance": [
+        "10-K、latest 10-Q、8-K、market snapshot、DuckDB、BM25/ObjectBM25 index 有可检查版本或 manifest 摘要。",
+        "回答能追溯本次使用的 filing、index 和 market snapshot as_of_date。",
+        "本地/云端 artifact 不一致时 readiness 报告显式提示。"
+      ]
+    },
+    {
+      "dimension_id": "p0_state_consistency",
+      "critical": false,
+      "acceptance": [
+        "ContextManager 支持短期 recent turns 与长期 artifact refs 的边界化保存。",
+        "小压测下 request-level handler 不发生跨 session/user 泄漏。",
+        "当前 JSON store 只声明 single-process 能力，不夸大为多进程生产并发。"
+      ]
+    },
+    {
+      "dimension_id": "p0_failure_recovery",
+      "critical": false,
+      "acceptance": [
+        "partial state 能暴露 next_ready_node，并保持已完成 artifacts。",
+        "resume 从 retrieval、ledger、synthesis 或 gates 附近恢复时不简单重跑整个 DAG。",
+        "真实分阶段恢复尚未验证时必须作为 remaining risk。"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "closeout_full_source_ai_market_001",
+      "category": "full_source_investment_memo",
+      "query": "结合SEC 10-K、最新10-Q、8-K earnings release 和最近三个月 market snapshot，比较 NVDA、AMD、MSFT、AMZN、GOOGL 的 AI 基本面、管理层解释、市场反应和估值分歧。",
+      "expected_tickers": ["NVDA", "AMD", "MSFT", "AMZN", "GOOGL"],
+      "expected_filing_types": ["10-K", "10-Q", "8-K"],
+      "expected_source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+      "expected_market_fields": ["return_3m", "relative_return_vs_benchmark_3m", "max_drawdown_3m", "pe_ttm", "ev_sales_ttm", "latest_10q_filing_return_5d"],
+      "acceptance": [
+        "输出包含基本面、管理层解释、市场反应、估值语境、分歧判断、反证与证据边界。",
+        "8-K 用于解释业绩/管理层叙事，不进入 audited ledger。",
+        "market_snapshot 声明 as_of_date，不能声称实时行情。"
+      ]
+    },
+    {
+      "case_id": "closeout_full30_broad_scan_002",
+      "category": "broad_universe_scan",
+      "query": "从当前30家公司里，找出 AI 基本面改善和最近三个月市场反应最一致、以及最背离的几家公司，并说明证据边界。",
+      "expected_source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+      "acceptance": [
+        "Planner 不要求逐一展开30家公司，但要把 broad scan 的 coverage 和抽样/排序逻辑说明清楚。",
+        "Coverage Matrix 记录市场快照和 SEC evidence 的覆盖范围。",
+        "Renderer 明确未覆盖或证据不足的公司。"
+      ]
+    },
+    {
+      "case_id": "closeout_sec_only_cloud_003",
+      "category": "source_boundary_negative_control",
+      "query": "只看SEC 10-K和最新10-Q，不要用市场数据，比较 MSFT、AMZN、GOOGL 的云业务商业化质量。",
+      "expected_tickers": ["MSFT", "AMZN", "GOOGL"],
+      "expected_filing_types": ["10-K", "10-Q"],
+      "forbidden_source_tiers": ["market_snapshot"],
+      "acceptance": [
+        "Planner 不请求 market_snapshot。",
+        "回答不出现股价、估值、市场反应判断。",
+        "10-Q 证据标注未经审计季度材料。"
+      ]
+    },
+    {
+      "case_id": "closeout_8k_management_explanation_004",
+      "category": "management_commentary",
+      "query": "结合8-K earnings release，解释 MSFT 和 AMZN 最新季度云业务变化背后的管理层说法，但不要把8-K数值当审计财务事实。",
+      "expected_tickers": ["MSFT", "AMZN"],
+      "expected_filing_types": ["10-Q", "8-K"],
+      "expected_source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+      "acceptance": [
+        "8-K 引用必须标注 company-authored unaudited。",
+        "精确财务数值仍来自 10-K/10-Q ledger。",
+        "如果 8-K 缺失，Coverage Matrix 显式给出 source gap。"
+      ]
+    },
+    {
+      "case_id": "closeout_market_valuation_peer_005",
+      "category": "market_snapshot_peer_analysis",
+      "query": "比较 NVDA、AMD、AVGO 最近三个月股价反应和估值位置，看看市场是否已经提前反映AI基本面改善。",
+      "expected_tickers": ["NVDA", "AMD", "AVGO"],
+      "expected_source_tiers": ["primary_sec_filing", "market_snapshot"],
+      "expected_market_fields": ["return_3m", "relative_return_vs_benchmark_3m", "max_drawdown_3m", "pe_ttm", "ev_sales_ttm", "peer_ev_sales_rank"],
+      "acceptance": [
+        "工具给出收益/相对收益/回撤/估值 rank，模型负责解释是否 priced in。",
+        "SEC 基本面强但市场弱时写成 fundamental-market divergence。",
+        "不得给投资建议或目标价。"
+      ]
+    },
+    {
+      "case_id": "closeout_followup_context_006",
+      "category": "multiturn_context",
+      "turns": [
+        "先按 full-source 分析 AI 相关公司整体表现。",
+        "你再具体讲 NVDA 和 AMD 的差异，引用刚才证据，不要重新跑全链路。",
+        "把回答改成 PM 5 bullets，保留引用。"
+      ],
+      "acceptance": [
+        "第二轮继承 active session/answer，而不是新建无关 session。",
+        "explain/reformat 类请求优先使用 artifact inspection 和 render invalidation。",
+        "ContextManager recent turns 有界，lossless artifact refs 不丢失。"
+      ]
+    },
+    {
+      "case_id": "closeout_resume_partial_007",
+      "category": "resume_state",
+      "query": "模拟在 build_coverage_matrix 或 synthesize_memo 前中断，然后恢复同一个 session。",
+      "acceptance": [
+        "resume_report 给出 next_ready_node 和完整/missing artifacts。",
+        "恢复后下游 artifacts 重新生成，已完成的 retrieval/ledger 不被误删。",
+        "post-gates 和 session artifact_state 对恢复结果一致。"
+      ]
+    },
+    {
+      "case_id": "closeout_cross_industry_full_source_008",
+      "category": "full_source_investment_memo",
+      "query": "结合 SEC 10-K、最新10-Q、8-K earnings release 和 market snapshot，比较 GE、PG、JPM、CVX、LLY、WMT、TXN 在最近财年和最新季度的基本面、管理层解释、市场反应和估值分歧。",
+      "expected_tickers": ["GE", "PG", "JPM", "CVX", "LLY", "WMT", "TXN"],
+      "expected_filing_types": ["10-K", "10-Q", "8-K"],
+      "expected_source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+      "acceptance": [
+        "测试 AI 主题以外的跨行业 full-source 稳定性。",
+        "市场快照只能作为非实时 market/valuation context。",
+        "SEC ledger 与 8-K 管理层叙事边界必须保留。"
+      ]
+    },
+    {
+      "case_id": "closeout_context_short_long_memory_009",
+      "category": "multiturn_context",
+      "turns": [
+        "先做 full-source 跨行业比较，保留完整证据边界。",
+        "只保留上轮结论里最重要的两个分歧，并解释证据从哪里来。",
+        "把这两个分歧改写成面试 demo 口径，仍然保留 source tier 和 as_of_date。"
+      ],
+      "acceptance": [
+        "短期 recent turns 保存用户改写意图。",
+        "长期 artifact refs 保存上轮 evidence/ledger/coverage。",
+        "第三轮 reformat 不重新跑 retrieval/ledger/synthesis。"
+      ]
+    },
+    {
+      "case_id": "closeout_small_pressure_010",
+      "category": "request_context_pressure",
+      "query": "对 ContextManager API 做 40 请求 / 4 并发的小压测，覆盖 inspect、explain、reformat、cross-user denied。",
+      "acceptance": [
+        "所有请求满足 expected tool/status。",
+        "报告 p50/p95/p99 latency、throughput 和失败样本。",
+        "报告明确这是 single-process JSON store 压测，不代表多进程生产并发。"
+      ]
+    },
+    {
+      "case_id": "closeout_release_public_scope_011",
+      "category": "release_documentation",
+      "query": "提交前选定公开范围、demo 入口、技术文档和不公开的私有数据/密钥边界。",
+      "acceptance": [
+        "公开仓库只包含代码、测试、eval contract、文档和小型非敏感 fixtures。",
+        "不公开 data/raw_private、data/processed_private、data/indexes、reports/quality、API key、SSH 密码。",
+        "README 或 docs/demo 给出本地 smoke、云端 full-source、交互 session 的入口命令。"
+      ]
+    }
+  ]
+}

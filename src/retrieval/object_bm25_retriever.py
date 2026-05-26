@@ -9,6 +9,17 @@ from typing import Any
 from evidence.structured_text import structured_object_preview
 from retrieval.text import tokenize
 
+INDEXED_FILTER_FIELDS = {
+    "filing_type",
+    "fiscal_year",
+    "form_type",
+    "object_type",
+    "section",
+    "source_tier",
+    "source_type",
+    "ticker",
+}
+
 
 class ObjectBM25Retriever:
     def __init__(self, index_dir: str | Path) -> None:
@@ -21,6 +32,7 @@ class ObjectBM25Retriever:
             if line.strip()
         ]
         self._filter_cache: dict[str, list[int]] = {}
+        self._filter_index = _build_filter_index(self.records)
 
     def search(
         self,
@@ -39,6 +51,8 @@ class ObjectBM25Retriever:
             )[:top_k]
         else:
             candidate_indices = list(candidate_indices)
+            if not candidate_indices:
+                return []
             scores = self.bm25.get_batch_scores(tokenize(query), candidate_indices)
             ranked = sorted(
                 (
@@ -71,6 +85,10 @@ class ObjectBM25Retriever:
         cache_key = json.dumps(filters, sort_keys=True, ensure_ascii=False)
         if cache_key in self._filter_cache:
             return self._filter_cache[cache_key]
+        indexed = _indexed_filter_indices(self._filter_index, filters)
+        if indexed is not None:
+            self._filter_cache[cache_key] = indexed
+            return indexed
         indices = []
         for idx, record in enumerate(self.records):
             if _record_matches(record, filters):
@@ -93,6 +111,37 @@ class ObjectBM25Retriever:
             "preview": structured_object_preview(record),
             "record": record,
         }
+
+
+def _build_filter_index(records: list[dict[str, Any]]) -> dict[str, dict[Any, tuple[int, ...]]]:
+    mutable: dict[str, dict[Any, list[int]]] = {field: {} for field in INDEXED_FILTER_FIELDS}
+    for idx, record in enumerate(records):
+        metadata = record.get("metadata", {})
+        for field in INDEXED_FILTER_FIELDS:
+            value = _normalize_filter_value(field, _record_filter_value(record, metadata, field))
+            mutable[field].setdefault(value, []).append(idx)
+    return {
+        field: {value: tuple(indices) for value, indices in values.items()}
+        for field, values in mutable.items()
+    }
+
+
+def _indexed_filter_indices(
+    filter_index: dict[str, dict[Any, tuple[int, ...]]],
+    filters: dict[str, Any],
+) -> list[int] | None:
+    if any(key not in filter_index for key in filters):
+        return None
+    matched: set[int] | None = None
+    for key, expected in filters.items():
+        values = expected if isinstance(expected, (list, tuple, set)) else [expected]
+        key_matches: set[int] = set()
+        for value in values:
+            key_matches.update(filter_index[key].get(_normalize_filter_value(key, value), ()))
+        matched = key_matches if matched is None else matched & key_matches
+        if not matched:
+            return []
+    return sorted(matched or set())
 
 
 def _record_matches(record: dict[str, Any], filters: dict[str, Any]) -> bool:
@@ -122,6 +171,13 @@ def _record_filter_value(record: dict[str, Any], metadata: dict[str, Any], key: 
 def _normalize_filter_value(key: str, value: Any) -> Any:
     if key in {"form_type", "source_type", "filing_type"}:
         return str(value or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
+    if key == "ticker":
+        return str(value or "").upper().strip()
+    if key == "fiscal_year":
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return value
     return value
 
 

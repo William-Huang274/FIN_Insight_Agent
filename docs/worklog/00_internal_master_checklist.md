@@ -25,7 +25,7 @@
 - [x] Add seed gold evidence query set.
 - [x] Add retrieval evaluation script.
 - [x] Add precision and nDCG metrics to retrieval evaluation.
-- [ ] Add an in-process retrieval runner/API to avoid reloading the dense model
+- [x] Add an in-process retrieval runner/API to avoid reloading the dense model
       for every query.
 - [ ] Test weighted RRF or dense-first retrieval with BM25 fallback.
 - [ ] Promote seed gold set to reviewed gold set with human-checked labels.
@@ -276,6 +276,14 @@
 - [x] Fix `close_price` market snapshot field status and validate 30/30 provided on the real Yahoo snapshot.
 - [x] Add latest SEC filing-date market event builder and recompute full30 latest-10Q event-window analytics.
 - [x] Add FMP free-key valuation enrichment script that reads `FMP_API_KEY` from environment and fail-closes when no key is set.
+- [x] Add resume-closeout aggregate self-check/eval entry covering planner, source inventory, retrieval/coverage/Judgment Plan, saved full-source synthesis/post-gates, renderer, session/context, request API, and tool dispatch.
+- [x] Add local P0 latency/observability smoke with BM25 filtered batch scoring/cache, run data fingerprints, run performance reports, and same-process ledger records cache.
+- [ ] Cloud-run the resume-closeout readiness entry with a saved full-source DeepSeek run dir and `--require-full-source-artifacts`.
+- [x] Cloud-run the P0 full-source path and verify `run_data_fingerprint.json`, `run_performance.json`, and stage `elapsed_ms` on a real DeepSeek run.
+- [x] Replace subprocess-based retrieval with a resident retrieval worker or in-process cached retrieval path so BM25/ObjectBM25/BGE instances can be reused across session turns.
+- [x] Cloud-run a two-turn full-source session and confirm second-turn retrieval metadata reports `context_cache_hit=true`.
+- [x] Cloud-run a two-turn SEC/8-K + FMP/Yahoo market snapshot session and verify market context, strict gates, follow-up routing, and second-turn `context_cache_hit=true`.
+- [x] Add closeout regression suite coverage for multi-case main-chain smoke, short/long memory context checks, small request pressure, latency profile, and public/demo documentation.
 - [ ] Add provider capability registry and renderer/gate wording for price-only vs valuation-capable market snapshots.
 - [ ] Run full30 FMP valuation enrichment after a free key is available, then rerun normalize/analytics/evidence/validation/main-chain smoke.
 - [ ] Improve bank table parser column/header binding so JPM bank metrics do not rely only on runtime ledger filters.

@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
@@ -241,9 +242,15 @@ def _prepare_trace(
         }
         trace["context_rows"] = rows
         return trace
+    timing_ms: dict[str, int] = {}
+    stage_start = time.perf_counter()
     rows = _pipeline_context_rows(case, bm25, object_bm25, evidence_top_k, object_top_k)
+    timing_ms["candidate_generation"] = int(round((time.perf_counter() - stage_start) * 1000))
+    candidate_row_count = len(rows)
     if context_reranker is not None:
+        stage_start = time.perf_counter()
         rows = _rerank_context_rows(case, rows, context_reranker, args)
+        timing_ms["context_rerank"] = int(round((time.perf_counter() - stage_start) * 1000))
         final_selector = "bge-reranker-v2-m3"
     else:
         final_selector = "bm25_order_explicit_ablation"
@@ -255,6 +262,8 @@ def _prepare_trace(
         "context_reranker": args.context_reranker,
         "context_reranker_model": args.context_reranker_model if context_reranker is not None else None,
         "bm25_only_allowed": bool(args.allow_bm25_only_pipeline),
+        "candidate_row_count_pre_rerank": candidate_row_count,
+        "timing_ms": timing_ms,
     }
     trace["context_rows"] = rows
     return trace

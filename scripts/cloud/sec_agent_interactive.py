@@ -9,8 +9,9 @@ import subprocess
 import sys
 import time
 import urllib.request
-from collections import Counter
-from datetime import datetime
+from collections import Counter, defaultdict
+from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -24,6 +25,7 @@ for path in (SCRIPTS_ROOT, SRC_ROOT):
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
 
+import run_sec_benchmark_eval as benchmark_context  # noqa: E402
 import run_sec_benchmark_vllm_synthesis_from_traces as vllm_runner  # noqa: E402
 import run_sec_eval_synthesis_qwen9b_backend as qwen_adapter  # noqa: E402
 from sec_agent.claim_verifier import verify_answer_claims  # noqa: E402
@@ -94,6 +96,9 @@ PLANNER_TASK_QUESTION_MAX_CHARS = 80
 PLANNER_MAX_SHORT_LIST_ITEMS = 6
 PLANNER_MAX_CAVEAT_CHARS = 120
 VALID_UNITS = {"usd_millions", "usd_billions", "usd_thousands", "percent"}
+CONTEXT_RUNNERS = ("auto", "in_process", "subprocess")
+_CONTEXT_RUNTIME_CACHE: dict[tuple[Any, ...], dict[str, Any]] = {}
+_MANIFEST_INDEX_CACHE: dict[tuple[Any, ...], dict[tuple[str, int, str], dict[str, Any]]] = {}
 AI_FOCUS_TICKERS = (
     "NVDA",
     "AMD",
@@ -178,6 +183,49 @@ BANKING_INTENT_TERMS = (
     "贷款",
     "资本充足",
 )
+LEDGER_SUPPLEMENT_FAMILY_TERMS = {
+    "advertising_revenue": ("advertising", "ads"),
+    "allowance_for_credit_losses": ("allowance for credit losses", "allowance for loan losses", "expected credit losses"),
+    "arr_or_recurring_proxy": ("annual recurring revenue", "arr", "recurring revenue", "remaining performance obligation", "rpo"),
+    "asset_quality": ("asset quality", "nonperforming", "non-performing", "charge-off", "charge off"),
+    "capital_expenditure_proxy": (
+        "capital expenditure",
+        "capital expenditures",
+        "capex",
+        "property and equipment",
+        "additions to property",
+        "purchases of property",
+    ),
+    "capital_ratio": ("cet1", "common equity tier", "tier 1 capital", "capital ratio"),
+    "cloud_revenue": ("cloud", "aws", "azure", "intelligent cloud", "server products and cloud services"),
+    "credit_quality": ("credit quality", "credit losses", "nonperforming", "net charge-off", "net charge off"),
+    "credit_risk": ("credit risk", "credit losses", "allowance for credit losses", "delinquencies"),
+    "data_center_revenue": ("data center", "compute & networking", "compute and networking"),
+    "deferred_revenue": ("deferred revenue", "unearned revenue", "contract liabilities"),
+    "deposits": ("deposits", "average deposits", "deposit balances"),
+    "free_cash_flow_proxy": ("free cash flow", "operating cash", "property and equipment", "capital expenditure"),
+    "gross_margin": ("gross margin", "gross profit"),
+    "infrastructure_software": ("infrastructure software", "security software", "platform revenue"),
+    "loans": ("loans", "average loans", "loan portfolio"),
+    "net_charge_offs": ("net charge-offs", "net charge offs", "charge-offs", "charge offs"),
+    "net_interest_income": ("net interest income", "taxable-equivalent net interest income"),
+    "net_interest_margin": ("net interest margin", "net yield on interest-earning assets"),
+    "nonperforming_assets": ("nonperforming assets", "non-performing assets", "nonaccrual assets"),
+    "nonperforming_loans": ("nonperforming loans", "non-performing loans", "nonaccrual loans"),
+    "operating_cash_flow": ("operating cash", "cash provided by operating", "net cash provided by operating"),
+    "operating_income": ("operating income", "income from operations", "operating profit"),
+    "product_revenue": ("product revenue", "product net sales"),
+    "provision_for_credit_losses": ("provision for credit losses", "credit loss provision", "provision for loan losses"),
+    "research_and_development": ("research and development", "r&d"),
+    "revenue": ("revenue", "net sales"),
+    "rpo": ("remaining performance obligation", "remaining performance obligations", "rpo"),
+    "semiconductor_solutions": ("semiconductor solutions",),
+    "semiconductor_systems": ("semiconductor systems",),
+    "services_revenue": ("services revenue", "service revenue", "services net sales"),
+    "subscription_revenue": ("subscription and support", "subscription revenue", "subscription"),
+    "total_assets": ("total assets", "consolidated assets"),
+    "total_revenue": ("total revenue", "net sales", "total net sales"),
+}
 RESUME_NODE_ORDER = (
     "retrieve_context",
     "attach_market_snapshot_context",
@@ -189,6 +237,9 @@ RESUME_NODE_ORDER = (
     "render_answer",
 )
 SUPPORTED_RESUME_NODES = set(RESUME_NODE_ORDER)
+_LEDGER_SCOPE_RECORDS_CACHE: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+_LEDGER_FAMILY_PREFILTER_CACHE: dict[tuple[str, tuple[str, ...]], bool] = {}
+_LEDGER_PREFILTER_TEXT_CACHE: dict[str, str] = {}
 PEER_INTENT_TERMS = (
     "competitor",
     "competitors",
@@ -296,6 +347,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--object-top-k", type=int, default=int(os.environ.get("OBJECT_TOP_K", "4")))
     parser.add_argument("--max-context-rows", type=int, default=int(os.environ.get("MAX_CONTEXT_ROWS", "120")))
     parser.add_argument("--reranker-top-k", type=int, default=int(os.environ.get("RERANKER_TOP_K", "120")))
+    parser.add_argument("--reranker-candidate-limit", type=int, default=int(os.environ.get("RERANKER_CANDIDATE_LIMIT", "0")))
+    parser.add_argument("--reranker-batch-size", type=int, default=int(os.environ.get("RERANKER_BATCH_SIZE", "8")))
+    parser.add_argument("--reranker-max-length", type=int, default=int(os.environ.get("RERANKER_MAX_LENGTH", "2048")))
+    parser.add_argument("--reranker-doc-max-chars", type=int, default=int(os.environ.get("RERANKER_DOC_MAX_CHARS", "6000")))
     parser.add_argument("--ledger-max-rows", type=int, default=int(os.environ.get("LEDGER_MAX_ROWS", "80")))
     parser.add_argument("--max-tokens", type=int, default=int(os.environ.get("MAX_TOKENS", "4000")))
     parser.add_argument("--temperature", type=float, default=float(os.environ.get("TEMPERATURE", "0.0")))
@@ -313,6 +368,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--plan-only", action="store_true")
     parser.add_argument("--auto-start-qwen", action="store_true", default=_env_bool("AUTO_START_QWEN"))
     parser.add_argument("--bge-first", action="store_true", default=_env_bool("BGE_FIRST"))
+    parser.add_argument(
+        "--context-runner",
+        choices=CONTEXT_RUNNERS,
+        default=os.environ.get("CONTEXT_RUNNER", os.environ.get("SEC_AGENT_CONTEXT_RUNNER", "auto")),
+        help="Context retrieval runtime. auto keeps DeepSeek/API sessions in-process and preserves subprocess isolation for local Qwen+BGE-first.",
+    )
     parser.add_argument("--quiet", "--user-output", dest="quiet", action="store_true", default=_env_bool("USER_OUTPUT") or _env_bool("QUIET"))
     args = parser.parse_args()
     if args.llm_backend == "deepseek" and not args.api_key_env:
@@ -408,6 +469,8 @@ def run_one(args: argparse.Namespace, prompt: str) -> Path:
             print(user_message, flush=True)
 
     progress("[0/5] building inventory-aware Query Contract ...", user_message="[0/5] planning query scope ...")
+    planning_started_at = _utc_now_iso()
+    planning_started = time.perf_counter()
     manifest_rows = _read_jsonl(REPO_ROOT / args.manifest_path)
     available = _available_scope(manifest_rows)
     tickers = _resolve_tickers(args.tickers, prompt, available)
@@ -417,6 +480,8 @@ def run_one(args: argparse.Namespace, prompt: str) -> Path:
         raise RuntimeError("No available SEC filings matched inferred scope. Use /scope TICKERS YEARS.")
     project_inventory = _project_inventory(args, manifest_rows)
     query_contract = _build_query_contract(args, prompt, tickers, years, project_inventory)
+    planning_elapsed_ms = int(round((time.perf_counter() - planning_started) * 1000))
+    planning_finished_at = _utc_now_iso()
     planner_trace = _detach_planner_trace(query_contract)
     if query_contract.get("task_type") == "ai_industry_financial_trend":
         args.reranker_top_k = max(args.reranker_top_k, int(os.environ.get("AI_RERANKER_TOP_K", "360")))
@@ -450,6 +515,7 @@ def run_one(args: argparse.Namespace, prompt: str) -> Path:
     if planner_trace:
         _write_json(run_root / "planner_trace.json", planner_trace)
     _write_json(run_root / "project_inventory.json", project_inventory)
+    _write_run_data_fingerprint(args, run_root, project_inventory, query_contract)
     _add_state_artifact(
         state,
         "query_contract",
@@ -464,13 +530,30 @@ def run_one(args: argparse.Namespace, prompt: str) -> Path:
     state.mark_stage(
         "plan_query",
         "completed",
+        started_at=planning_started_at,
+        finished_at=planning_finished_at,
+        elapsed_ms=planning_elapsed_ms,
         metadata={
             "focus_tickers": query_contract.get("focus_tickers") or [],
             "metric_families": query_contract.get("metric_families") or [],
             "task_count": len([task for task in query_contract.get("decomposed_tasks") or [] if isinstance(task, dict)]),
         },
     )
-    state.mark_stage("validate_query_contract", "completed", metadata={"validation": query_contract.get("validation")})
+    state.mark_stage(
+        "validate_query_contract",
+        "completed",
+        started_at=planning_started_at,
+        finished_at=planning_finished_at,
+        elapsed_ms=planning_elapsed_ms,
+        metadata={
+            "validation": query_contract.get("validation"),
+            "timing_scope": "query_contract_build_includes_validation",
+        },
+    )
+    stage_timing_ms = dict(state.metadata.get("stage_timing_ms") or {})
+    stage_timing_ms["plan_query"] = planning_elapsed_ms
+    stage_timing_ms["validate_query_contract"] = planning_elapsed_ms
+    state.metadata["stage_timing_ms"] = stage_timing_ms
     _write_sec_agent_state(state)
 
     if not args.quiet:
@@ -552,6 +635,8 @@ def _run_from_resume_node(
     years = state.selected_years
     query_contract = case.get("query_contract") or _read_json(Path(state.artifacts["query_contract"].path))
     paths = _interactive_paths(run_root)
+    fingerprint_path = _write_run_data_fingerprint(args, run_root, {}, query_contract)
+    state.metadata["run_data_fingerprint_path"] = str(fingerprint_path.resolve())
     start_index = _resume_node_index(start_node)
 
     def progress(message: str, *, user_message: str | None = None) -> None:
@@ -573,66 +658,108 @@ def _run_from_resume_node(
     qwen_result: dict[str, Any] | None = None
 
     if _resume_should_run(start_index, "retrieve_context"):
-        trace, context_rows = _stage_retrieve_context(args, state, paths, progress)
+        trace, context_rows = _timed_stage_call(
+            state,
+            run_root,
+            ("retrieve_context", "rerank_context"),
+            lambda: _stage_retrieve_context(args, state, paths, progress),
+        )
     else:
         trace, context_rows = _load_trace_context(paths)
 
     if _resume_should_run(start_index, "attach_market_snapshot_context"):
-        trace, context_rows = _stage_attach_market_snapshot_context(
-            args,
+        trace, context_rows = _timed_stage_call(
             state,
-            case,
-            paths,
-            trace,
-            context_rows,
-            progress,
+            run_root,
+            ("attach_market_snapshot_context",),
+            lambda: _stage_attach_market_snapshot_context(
+                args,
+                state,
+                case,
+                paths,
+                trace,
+                context_rows,
+                progress,
+            ),
         )
 
     if _resume_should_run(start_index, "build_runtime_ledger"):
-        ledger_rows = _stage_build_runtime_ledger(args, state, case, paths, context_rows, progress)
+        ledger_rows = _timed_stage_call(
+            state,
+            run_root,
+            ("build_runtime_ledger",),
+            lambda: _stage_build_runtime_ledger(args, state, case, paths, context_rows, progress),
+        )
     else:
         ledger_rows = _load_ledger_rows(paths)
 
     if _resume_should_run(start_index, "build_coverage_matrix"):
-        coverage_matrix = _stage_build_coverage_matrix(state, case, query_contract, paths, context_rows, ledger_rows, progress)
+        coverage_matrix = _timed_stage_call(
+            state,
+            run_root,
+            ("build_coverage_matrix",),
+            lambda: _stage_build_coverage_matrix(state, case, query_contract, paths, context_rows, ledger_rows, progress),
+        )
     else:
         coverage_matrix = _read_json(paths["coverage_matrix_path"])
 
     if _resume_should_run(start_index, "build_judgment_plan"):
-        judgment_plan = _stage_build_judgment_plan(state, case, paths, ledger_rows, coverage_matrix, progress)
+        judgment_plan = _timed_stage_call(
+            state,
+            run_root,
+            ("build_judgment_plan",),
+            lambda: _stage_build_judgment_plan(state, case, paths, ledger_rows, coverage_matrix, progress),
+        )
     else:
         judgment_plan = _load_judgment_plan(case, paths["plan_path"])
 
     if _resume_should_run(start_index, "synthesize_memo"):
-        qwen_result = _stage_synthesize_memo(
-            args,
+        qwen_result = _timed_stage_call(
             state,
-            case,
-            paths,
-            trace,
-            context_rows,
-            ledger_rows,
-            coverage_matrix,
-            judgment_plan,
-            progress,
-            started,
+            run_root,
+            ("synthesize_memo", "verify_claims"),
+            lambda: _stage_synthesize_memo(
+                args,
+                state,
+                case,
+                paths,
+                trace,
+                context_rows,
+                ledger_rows,
+                coverage_matrix,
+                judgment_plan,
+                progress,
+                started,
+            ),
         )
     else:
         qwen_result = _load_qwen_result(paths["qwen_dir"])
 
     post_gate_ok = True
     if _resume_should_run(start_index, "run_deterministic_gates"):
-        post_gate_ok = _stage_run_deterministic_gates(state, case, paths, judgment_plan, progress)
+        post_gate_ok = _timed_stage_call(
+            state,
+            run_root,
+            ("run_deterministic_gates",),
+            lambda: _stage_run_deterministic_gates(state, case, paths, judgment_plan, progress),
+        )
     elif paths["gate_summary_path"].exists():
         gate_summary = _read_json(paths["gate_summary_path"])
         fail_keys = [key for key, value in gate_summary.items() if key.endswith("_gate_pass") and value is False]
         post_gate_ok = not fail_keys
 
     if _resume_should_run(start_index, "render_answer"):
-        _stage_render_answer(state, paths)
+        _timed_stage_call(
+            state,
+            run_root,
+            ("render_answer",),
+            lambda: _stage_render_answer(state, paths),
+        )
 
     state.status = "completed" if post_gate_ok else "completed_with_gate_failures"
     state.metadata["total_elapsed_sec"] = round(time.time() - started, 4)
+    performance_path = _write_run_performance_report(state, run_root, started, paths, qwen_result, post_gate_ok)
+    state.metadata["run_performance_path"] = str(performance_path.resolve())
     _write_sec_agent_state(state)
     _write_text(run_root / "console_events.log", "\n".join(console_events) + ("\n" if console_events else ""))
     _print_answer(qwen_result, ledger_rows, context_rows, coverage_matrix, paths["gate_dir"], run_root, post_gate_ok, started)
@@ -655,6 +782,8 @@ def _interactive_paths(run_root: Path) -> dict[str, Path]:
         "plan_report_path": run_root / "runtime_judgment_plan_report.json",
         "gate_summary_path": gate_dir / "sec_benchmark_post_gates_summary.json",
         "rendered_path": qwen_dir / "rendered_answer.md",
+        "run_data_fingerprint_path": run_root / "run_data_fingerprint.json",
+        "run_performance_path": run_root / "run_performance.json",
     }
 
 
@@ -666,6 +795,67 @@ def _resume_node_index(node: str) -> int:
 
 def _resume_should_run(start_index: int, node: str) -> bool:
     return RESUME_NODE_ORDER.index(node) >= start_index
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _timed_stage_call(
+    state: SecAgentState,
+    run_root: Path,
+    stage_names: tuple[str, ...],
+    fn: Any,
+) -> Any:
+    started_at = _utc_now_iso()
+    start_index = len(state.stages)
+    start = time.perf_counter()
+    result = fn()
+    elapsed_ms = int(round((time.perf_counter() - start) * 1000))
+    finished_at = _utc_now_iso()
+    _stamp_stage_records(
+        state,
+        start_index=start_index,
+        stage_names=set(stage_names),
+        started_at=started_at,
+        finished_at=finished_at,
+        elapsed_ms=elapsed_ms,
+    )
+    _write_sec_agent_state(state)
+    return result
+
+
+def _stamp_stage_records(
+    state: SecAgentState,
+    *,
+    start_index: int,
+    stage_names: set[str],
+    started_at: str,
+    finished_at: str,
+    elapsed_ms: int,
+) -> None:
+    stage_timing_ms = dict(state.metadata.get("stage_timing_ms") or {})
+    for stage in state.stages[start_index:]:
+        if stage.name not in stage_names:
+            continue
+        if not stage.started_at:
+            stage.started_at = started_at
+        if not stage.finished_at:
+            stage.finished_at = finished_at
+        if stage.elapsed_ms is None:
+            stage.elapsed_ms = elapsed_ms
+        stage_timing_ms[stage.name] = stage.elapsed_ms
+    if stage_timing_ms:
+        state.metadata["stage_timing_ms"] = stage_timing_ms
+
+
+def _context_runner_mode(args: argparse.Namespace) -> str:
+    requested = str(getattr(args, "context_runner", "auto") or "auto")
+    if requested != "auto":
+        return requested
+    if bool(getattr(args, "bge_first", False)) and _uses_local_qwen(args):
+        return "subprocess"
+    return "in_process"
 
 
 def _stage_retrieve_context(
@@ -680,13 +870,15 @@ def _stage_retrieve_context(
             user_message="[setup] freeing GPU memory for BGE rerank ...",
         )
         _qwen_control(args, "stop", quiet=True)
+    context_runner = _context_runner_mode(args)
     progress(
-        f"[1/5] retrieving SEC context with BM25 + BGE-M3 rerank on {args.bge_device} ...",
+        f"[1/5] retrieving SEC context with BM25 + BGE-M3 rerank on {args.bge_device} ({context_runner}) ...",
         user_message=f"[1/5] retrieving and reranking SEC evidence on {args.bge_device} ...",
     )
-    _run_context(args, paths["cases_path"], paths["trace_dir"])
+    context_run = _run_context(args, paths["cases_path"], paths["trace_dir"])
     progress("[1/5] retrieval complete.", user_message="[1/5] retrieval complete.")
     trace, context_rows = _load_trace_context(paths)
+    context_runtime = context_run.get("context_runtime") if isinstance(context_run, dict) else {}
     _add_state_artifact(
         state,
         "retrieved_context",
@@ -697,17 +889,29 @@ def _stage_retrieve_context(
             "bge_device": args.bge_device,
             "context_row_count": len(context_rows),
             "reranker_top_k": args.reranker_top_k,
+            "context_runner": context_runner,
+            **(context_runtime if isinstance(context_runtime, dict) else {}),
         },
     )
     state.mark_stage(
         "retrieve_context",
         "completed",
-        metadata={"context_row_count": len(context_rows), "trace_dir": str(paths["trace_dir"].resolve())},
+        metadata={
+            "context_row_count": len(context_rows),
+            "trace_dir": str(paths["trace_dir"].resolve()),
+            "context_runner": context_runner,
+            **(context_runtime if isinstance(context_runtime, dict) else {}),
+        },
     )
     state.mark_stage(
         "rerank_context",
         "completed",
-        metadata={"bge_device": args.bge_device, "reranker_top_k": args.reranker_top_k},
+        metadata={
+            "bge_device": args.bge_device,
+            "reranker_top_k": args.reranker_top_k,
+            "context_runner": context_runner,
+            **(context_runtime if isinstance(context_runtime, dict) else {}),
+        },
     )
     _write_sec_agent_state(state)
     return trace, context_rows
@@ -1204,6 +1408,151 @@ def _is_market_snapshot_context_row(row: dict[str, Any]) -> bool:
     return "MARKET_SNAPSHOT::" in evidence_id
 
 
+def _write_run_data_fingerprint(
+    args: argparse.Namespace,
+    run_root: Path,
+    project_inventory: dict[str, Any],
+    query_contract: dict[str, Any],
+) -> Path:
+    output_path = run_root / "run_data_fingerprint.json"
+    payload = {
+        "schema_version": "sec_agent_run_data_fingerprint_v0.1",
+        "created_at": _utc_now_iso(),
+        "run_root": str(run_root.resolve()),
+        "inventory_digest": str(
+            project_inventory.get("inventory_digest")
+            or query_contract.get("project_inventory_digest")
+            or ""
+        ),
+        "selected_scope": {
+            "tickers": query_contract.get("focus_tickers") or query_contract.get("search_scope_tickers") or [],
+            "years": query_contract.get("years") or [],
+            "filing_types": query_contract.get("filing_types") or [],
+            "source_tiers": query_contract.get("source_tiers") or [],
+            "source_policy": query_contract.get("source_policy"),
+        },
+        "inputs": {
+            "manifest": _path_fingerprint(_repo_path(args.manifest_path), kind="jsonl"),
+            "source_gap": _path_fingerprint(_repo_path(args.source_gap_path), kind="jsonl") if args.source_gap_path else None,
+            "bm25_index": _index_dir_fingerprint(_repo_path(args.bm25_index_dir)),
+            "object_bm25_index": _index_dir_fingerprint(_repo_path(args.object_bm25_index_dir)),
+            "market_evidence": _path_fingerprint(_repo_path(args.market_evidence_path), kind="jsonl") if args.market_evidence_path else None,
+        },
+        "runtime_knobs": {
+            "context_runner": getattr(args, "context_runner", "auto"),
+            "effective_context_runner": _context_runner_mode(args),
+            "evidence_top_k": args.evidence_top_k,
+            "object_top_k": args.object_top_k,
+            "max_context_rows": args.max_context_rows,
+            "reranker_top_k": getattr(args, "reranker_top_k", None),
+            "reranker_candidate_limit": getattr(args, "reranker_candidate_limit", None),
+            "reranker_batch_size": getattr(args, "reranker_batch_size", None),
+            "reranker_max_length": getattr(args, "reranker_max_length", None),
+            "reranker_doc_max_chars": getattr(args, "reranker_doc_max_chars", None),
+            "ledger_max_rows": args.ledger_max_rows,
+        },
+    }
+    _write_json(output_path, payload)
+    return output_path
+
+
+def _path_fingerprint(path: Path, *, kind: str = "file") -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "path": str(path),
+        "exists": path.exists(),
+        "kind": kind,
+    }
+    if not path.exists() or not path.is_file():
+        return payload
+    stat = path.stat()
+    payload.update(
+        {
+            "size_bytes": stat.st_size,
+            "modified_at": datetime.fromtimestamp(stat.st_mtime).isoformat(timespec="seconds"),
+        }
+    )
+    if kind == "jsonl":
+        payload["row_count"] = _count_lines(path)
+    elif kind == "large_file":
+        payload["digest"] = ""
+    else:
+        payload["digest"] = _file_digest(path)
+    return payload
+
+
+def _index_dir_fingerprint(path: Path) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "path": str(path),
+        "exists": path.exists() and path.is_dir(),
+        "kind": "bm25_index_dir",
+    }
+    if not payload["exists"]:
+        return payload
+    metadata_path = path / "metadata.json"
+    records_path = path / "records.jsonl"
+    bm25_path = path / "bm25.pkl"
+    payload["metadata"] = _read_json(metadata_path) if metadata_path.exists() else {}
+    payload["files"] = {
+        "metadata": _path_fingerprint(metadata_path),
+        "records": _path_fingerprint(records_path, kind="large_file"),
+        "bm25": _path_fingerprint(bm25_path, kind="large_file"),
+    }
+    return payload
+
+
+def _count_lines(path: Path) -> int:
+    count = 0
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if line.strip():
+                count += 1
+    return count
+
+
+def _file_digest(path: Path) -> str:
+    if not path.exists() or not path.is_file():
+        return ""
+    hasher = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()[:16]
+
+
+def _write_run_performance_report(
+    state: SecAgentState,
+    run_root: Path,
+    started: float,
+    paths: dict[str, Path],
+    qwen_result: dict[str, Any] | None,
+    post_gate_ok: bool,
+) -> Path:
+    output_path = paths.get("run_performance_path") or (run_root / "run_performance.json")
+    stages = [stage.to_dict() for stage in state.stages]
+    stage_timing_ms = dict(state.metadata.get("stage_timing_ms") or {})
+    for stage in state.stages:
+        if stage.elapsed_ms is not None:
+            stage_timing_ms[stage.name] = stage.elapsed_ms
+    payload = {
+        "schema_version": "sec_agent_run_performance_v0.1",
+        "created_at": _utc_now_iso(),
+        "run_id": state.run_id,
+        "status": state.status,
+        "post_gate_ok": bool(post_gate_ok),
+        "total_elapsed_sec": round(time.time() - started, 4),
+        "stage_timing_ms": stage_timing_ms,
+        "stages": stages,
+        "artifact_rows": {
+            key: ref.row_count
+            for key, ref in state.artifacts.items()
+            if ref.row_count is not None
+        },
+        "llm_gateway": _gateway_debug(((qwen_result or {}).get("debug") or {}).get("llm_gateway") or {}),
+    }
+    _write_json(output_path, payload)
+    return output_path
+
+
 def _create_sec_agent_state(
     *,
     args: argparse.Namespace,
@@ -1238,8 +1587,15 @@ def _create_sec_agent_state(
             "query_planner": args.query_planner,
             "bge_device": args.bge_device,
             "bge_first": bool(args.bge_first),
+            "context_runner": args.context_runner,
+            "effective_context_runner": _context_runner_mode(args),
             "market_evidence_path": args.market_evidence_path or "",
             "max_context_rows": args.max_context_rows,
+            "reranker_top_k": getattr(args, "reranker_top_k", None),
+            "reranker_candidate_limit": getattr(args, "reranker_candidate_limit", None),
+            "reranker_batch_size": getattr(args, "reranker_batch_size", None),
+            "reranker_max_length": getattr(args, "reranker_max_length", None),
+            "reranker_doc_max_chars": getattr(args, "reranker_doc_max_chars", None),
             "ledger_max_rows": args.ledger_max_rows,
             "output_root": args.output_root,
         },
@@ -1311,7 +1667,13 @@ def _write_sec_agent_state(state: SecAgentState) -> None:
     state.write_json(Path(state.output_dir) / "sec_agent_state.json")
 
 
-def _run_context(args: argparse.Namespace, cases_path: Path, trace_dir: Path) -> None:
+def _run_context(args: argparse.Namespace, cases_path: Path, trace_dir: Path) -> dict[str, Any]:
+    if _context_runner_mode(args) == "in_process":
+        return _run_context_in_process(args, cases_path, trace_dir)
+    return _run_context_subprocess(args, cases_path, trace_dir)
+
+
+def _run_context_subprocess(args: argparse.Namespace, cases_path: Path, trace_dir: Path) -> dict[str, Any]:
     _run(
         [
             sys.executable,
@@ -1343,14 +1705,228 @@ def _run_context(args: argparse.Namespace, cases_path: Path, trace_dir: Path) ->
             "--context-reranker-top-k",
             str(args.reranker_top_k),
             "--context-reranker-batch-size",
-            "8",
+            str(args.reranker_batch_size),
             "--context-reranker-max-length",
-            "2048",
+            str(args.reranker_max_length),
             "--context-reranker-doc-max-chars",
-            "6000",
+            str(args.reranker_doc_max_chars),
+            "--context-reranker-candidate-limit",
+            str(args.reranker_candidate_limit),
         ],
         stream=not args.quiet,
     )
+    return {"context_runtime": {"context_runner": "subprocess"}}
+
+
+def _run_context_in_process(args: argparse.Namespace, cases_path: Path, trace_dir: Path) -> dict[str, Any]:
+    started = time.perf_counter()
+    trace_dir.mkdir(parents=True, exist_ok=True)
+    bench_args = _benchmark_context_args(args, cases_path, trace_dir)
+    cases = _read_jsonl(cases_path)
+    requested_modes = ["pipeline_context"]
+    benchmark_context._enforce_pipeline_context_policy(bench_args, cases, requested_modes)
+    manifest_index = _load_manifest_index_cached(_repo_path(args.manifest_path))
+    resources, resource_runtime = _get_context_runtime_resources(args, bench_args)
+    bm25 = resources["bm25"]
+    object_bm25 = resources["object_bm25"]
+    context_reranker = resources["context_reranker"]
+
+    agent_outputs: list[dict[str, Any]] = []
+    claim_verification: list[dict[str, Any]] = []
+    scores: list[dict[str, Any]] = []
+    trace_logs: list[dict[str, Any]] = []
+    bad_cases: list[dict[str, Any]] = []
+    context_runtime = {
+        "context_runner": "in_process",
+        **resource_runtime,
+    }
+    for case in cases:
+        for mode in requested_modes:
+            if mode not in set(case.get("evaluation_modes") or []):
+                trace = benchmark_context._base_trace(case, mode, status="skipped_mode_not_supported")
+                _stamp_trace_context_runtime(trace, context_runtime)
+                trace_logs.append(trace)
+                continue
+            trace = benchmark_context._prepare_trace(
+                case=case,
+                mode=mode,
+                manifest_index=manifest_index,
+                gold_context_dir=REPO_ROOT / "eval" / "sec_cases" / "gold_context",
+                bm25=bm25,
+                object_bm25=object_bm25,
+                context_reranker=context_reranker,
+                args=bench_args,
+                evidence_top_k=args.evidence_top_k,
+                object_top_k=args.object_top_k,
+                max_context_rows=args.max_context_rows,
+            )
+            _stamp_trace_context_runtime(trace, context_runtime)
+            trace_logs.append(trace)
+            context_rows = trace.get("context_rows") or []
+            synthesis_result = benchmark_context._run_synthesis_backend(
+                args=bench_args,
+                case=case,
+                mode=mode,
+                trace=trace,
+                context_rows=context_rows,
+            )
+            agent_outputs.append(
+                {
+                    "schema_version": "sec_benchmark_agent_output_v0.1",
+                    "case_id": case.get("case_id"),
+                    "mode": mode,
+                    "status": synthesis_result["agent_status"],
+                    "answer_status": synthesis_result["answer_status"],
+                    "answer": synthesis_result["answer"],
+                    "limitations": synthesis_result["limitations"],
+                    "context_row_count": trace.get("context_summary", {}).get("context_row_count", 0),
+                }
+            )
+            claim_verification.append(
+                {
+                    "schema_version": "sec_benchmark_claim_verification_v0.1",
+                    "case_id": case.get("case_id"),
+                    "mode": mode,
+                    "status": synthesis_result["claim_status"],
+                    "claims": synthesis_result["claims"],
+                    "unsupported_claim_count": synthesis_result["unsupported_claim_count"],
+                }
+            )
+            scores.append(
+                {
+                    "schema_version": "sec_benchmark_score_v0.1",
+                    "case_id": case.get("case_id"),
+                    "mode": mode,
+                    "status": synthesis_result["score_status"],
+                    "score_total": synthesis_result["score_total"],
+                    "scores": synthesis_result["scores"],
+                    "failure_types": synthesis_result["failure_types"],
+                    "notes": synthesis_result["score_notes"],
+                }
+            )
+            if trace.get("status") != "context_prepared":
+                bad_cases.append(trace)
+
+    _write_jsonl(trace_dir / "agent_outputs.jsonl", agent_outputs)
+    _write_jsonl(trace_dir / "claim_verification.jsonl", claim_verification)
+    _write_jsonl(trace_dir / "scores.jsonl", scores)
+    _write_jsonl(trace_dir / "trace_logs.jsonl", trace_logs)
+    benchmark_context._write_bad_cases(trace_dir / "bad_cases.md", bad_cases)
+    context_runtime["elapsed_ms"] = int(round((time.perf_counter() - started) * 1000))
+    summary = benchmark_context._summary(bench_args, trace_dir, trace_logs, agent_outputs)
+    summary["context_runtime"] = context_runtime
+    _write_json(trace_dir / "run_summary.json", summary)
+    return {"context_runtime": context_runtime}
+
+
+def _benchmark_context_args(args: argparse.Namespace, cases_path: Path, trace_dir: Path) -> argparse.Namespace:
+    return argparse.Namespace(
+        cases_path=str(cases_path),
+        manifest_path=args.manifest_path,
+        gold_context_dir="eval/sec_cases/gold_context",
+        output_dir=str(trace_dir),
+        case_id=[],
+        mode="pipeline_context",
+        bm25_index_dir=args.bm25_index_dir,
+        object_bm25_index_dir=args.object_bm25_index_dir,
+        evidence_top_k=args.evidence_top_k,
+        object_top_k=args.object_top_k,
+        max_context_rows=args.max_context_rows,
+        context_reranker="bge",
+        context_reranker_model=args.bge_model,
+        context_reranker_device=args.bge_device,
+        context_reranker_batch_size=args.reranker_batch_size,
+        context_reranker_max_length=args.reranker_max_length,
+        context_reranker_doc_max_chars=args.reranker_doc_max_chars,
+        context_reranker_candidate_limit=args.reranker_candidate_limit,
+        context_reranker_top_k=args.reranker_top_k,
+        allow_bm25_only_pipeline=False,
+        synthesis_backend="context_only",
+        synthesis_command="",
+    )
+
+
+def _get_context_runtime_resources(
+    args: argparse.Namespace,
+    bench_args: argparse.Namespace,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    from retrieval.bm25_retriever import BM25Retriever
+    from retrieval.object_bm25_retriever import ObjectBM25Retriever
+
+    key = _context_runtime_cache_key(args)
+    cached = _CONTEXT_RUNTIME_CACHE.get(key)
+    if cached is not None:
+        return cached, {
+            "context_cache_hit": True,
+            "context_cache_key": _short_digest(json.dumps(key, sort_keys=True, default=str)),
+        }
+    load_started = time.perf_counter()
+    resources = {
+        "bm25": BM25Retriever(_repo_path(args.bm25_index_dir)),
+        "object_bm25": ObjectBM25Retriever(_repo_path(args.object_bm25_index_dir)),
+        "context_reranker": benchmark_context._load_context_reranker(bench_args),
+    }
+    _CONTEXT_RUNTIME_CACHE.clear()
+    _CONTEXT_RUNTIME_CACHE[key] = resources
+    return resources, {
+        "context_cache_hit": False,
+        "context_cache_key": _short_digest(json.dumps(key, sort_keys=True, default=str)),
+        "context_resource_load_ms": int(round((time.perf_counter() - load_started) * 1000)),
+    }
+
+
+def _context_runtime_cache_key(args: argparse.Namespace) -> tuple[Any, ...]:
+    return (
+        _index_cache_token(_repo_path(args.bm25_index_dir)),
+        _index_cache_token(_repo_path(args.object_bm25_index_dir)),
+        str(args.bge_model),
+        str(args.bge_device),
+        int(args.reranker_max_length),
+    )
+
+
+def _load_manifest_index_cached(path: Path) -> dict[tuple[str, int, str], dict[str, Any]]:
+    key = _file_cache_token(path)
+    cached = _MANIFEST_INDEX_CACHE.get(key)
+    if cached is not None:
+        return cached
+    rows = _read_jsonl(path)
+    manifest_index = {
+        (str(row.get("ticker")).upper(), int(row.get("fiscal_year")), str(row.get("form_type")).upper()): row
+        for row in rows
+        if row.get("ticker") and row.get("fiscal_year") and row.get("form_type")
+    }
+    _MANIFEST_INDEX_CACHE.clear()
+    _MANIFEST_INDEX_CACHE[key] = manifest_index
+    return manifest_index
+
+
+def _stamp_trace_context_runtime(trace: dict[str, Any], runtime: dict[str, Any]) -> None:
+    policy = trace.get("context_policy")
+    if not isinstance(policy, dict):
+        policy = {}
+        trace["context_policy"] = policy
+    policy["context_runtime"] = dict(runtime)
+
+
+def _index_cache_token(path: Path) -> tuple[Any, ...]:
+    return (
+        str(path.resolve()),
+        _file_cache_token(path / "metadata.json"),
+        _file_cache_token(path / "records.jsonl"),
+        _file_cache_token(path / "bm25.pkl"),
+    )
+
+
+def _file_cache_token(path: Path) -> tuple[Any, ...]:
+    if not path.exists() or not path.is_file():
+        return (str(path.resolve()), False, 0, 0)
+    stat = path.stat()
+    return (str(path.resolve()), True, stat.st_size, stat.st_mtime_ns)
+
+
+def _short_digest(text: str) -> str:
+    return hashlib.sha1(text.encode("utf-8", errors="ignore")).hexdigest()[:12]
 
 
 def _ask_llm_server(
@@ -2055,6 +2631,7 @@ def _build_runtime_ledger(
     ]
     records = _load_object_records(REPO_ROOT / args.object_bm25_index_dir)
     query_contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    scoped_records = _ledger_supplement_scope_records(case, records, query_contract)
     context_by_object_id = {
         str(row.get("object_id") or ""): row
         for row in context_rows
@@ -2084,8 +2661,8 @@ def _build_runtime_ledger(
                 if key not in seen:
                     rows.append(row)
                     seen.add(key)
-    _supplement_ai_focus_ledger(case, records, rows, seen, query_contract)
-    _supplement_contract_metric_family_ledger(case, records, rows, seen, query_contract)
+    _supplement_ai_focus_ledger(case, scoped_records, rows, seen, query_contract)
+    _supplement_contract_metric_family_ledger(case, scoped_records, rows, seen, query_contract)
     _supplement_banking_context_ledger(case, context_rows, rows, seen, query_contract)
     _supplement_free_cash_flow_proxy(case, rows, seen, query_contract)
     rows.sort(key=lambda row: _ledger_row_rank(row, query_contract, context_by_object_id.get(str(row.get("object_id") or ""))), reverse=True)
@@ -2493,7 +3070,108 @@ def _ledger_rows_from_table(case_id: str, record: dict[str, Any], years: set[int
                 "row_index": cell.get("row_index"),
             }
         )
+    rows.extend(_ledger_change_rate_rows_from_table(case_id, record, years))
     return rows
+
+
+def _ledger_change_rate_rows_from_table(case_id: str, record: dict[str, Any], years: set[int]) -> list[dict[str, Any]]:
+    ticker = str(record.get("ticker") or "").upper()
+    if not ticker or record.get("object_type") != "table":
+        return []
+    cells_by_row: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for cell in record.get("cells") or []:
+        row_index = _int_or_none(cell.get("row_index"))
+        if row_index is None:
+            continue
+        cells_by_row[row_index].append(cell)
+    rows: list[dict[str, Any]] = []
+    for row_index, cells in cells_by_row.items():
+        period_cells = [
+            cell
+            for cell in cells
+            if _year_from_value(cell.get("period")) is not None and isinstance(cell.get("value"), (int, float))
+        ]
+        if len(period_cells) < 2:
+            continue
+        period_cells.sort(key=lambda cell: int(_year_from_value(cell.get("period")) or 0), reverse=True)
+        current, prior = period_cells[0], period_cells[1]
+        current_year = _year_from_value(current.get("period"))
+        if current_year is None or (years and current_year not in years):
+            continue
+        current_value = float(current.get("value"))
+        prior_value = float(prior.get("value"))
+        if prior_value == 0:
+            continue
+        expected = (current_value - prior_value) / abs(prior_value) * 100.0
+        for change_cell in cells:
+            if _year_from_value(change_cell.get("period")) is not None:
+                continue
+            raw = str(change_cell.get("raw_value") or "").strip()
+            change_value = _numeric_raw_to_float(raw)
+            if change_value is None or abs(change_value) > 500:
+                continue
+            if abs(change_value - expected) > 1.5 and round(change_value) != round(expected):
+                continue
+            metric_name = " ".join(
+                str(part)
+                for part in (change_cell.get("active_group"), change_cell.get("row_label"))
+                if part
+            ) or str(record.get("title") or "table_metric")
+            family = _metric_family(metric_name, str(record.get("title") or ""))
+            period_role = _ledger_period_role(record, current)
+            rows.append(
+                {
+                    "metric_id": _ledger_metric_id(
+                        case_id,
+                        ticker,
+                        current_year,
+                        family,
+                        "percentage_rate",
+                        period_role=period_role,
+                        suffix=_slug(str(change_cell.get("row_label") or "change_rate")),
+                    ),
+                    "case_id": case_id,
+                    "ticker": ticker,
+                    "fiscal_year": current_year,
+                    "source_fiscal_year": _year_from_value(record.get("fiscal_year")),
+                    "period": str(current.get("period") or current_year),
+                    "period_role": period_role,
+                    **_ledger_source_fields(record),
+                    "metric_family": family,
+                    "metric_role": "percentage_rate",
+                    "metric_name": f"{metric_name} change rate",
+                    "raw_value_text": f"{change_value:g}%",
+                    "display_value_zh": f"{change_value:g}%",
+                    "value": change_value,
+                    "unit": "percent",
+                    "object_id": record.get("object_id"),
+                    "source_evidence_id": record.get("source_evidence_id"),
+                    "section": record.get("section"),
+                    "row_label": change_cell.get("row_label"),
+                    "column_label": "Change",
+                    "table_title": record.get("title"),
+                    "active_group": change_cell.get("active_group"),
+                    "cell_kind": "period_change_rate",
+                    "row_index": row_index,
+                }
+            )
+            break
+    return rows
+
+
+def _numeric_raw_to_float(raw: str) -> float | None:
+    text = str(raw or "").strip()
+    if not text:
+        return None
+    negative = text.startswith("(") and text.endswith(")")
+    cleaned = re.sub(r"[^0-9.\-]", "", text)
+    if cleaned in {"", "-", ".", "-."}:
+        return None
+    try:
+        value = float(cleaned)
+    except ValueError:
+        return None
+    return -abs(value) if negative else value
 
 
 def _normalized_ledger_value(value: Any, raw: str, family: str) -> Any:
@@ -2505,9 +3183,124 @@ def _normalized_ledger_value(value: Any, raw: str, family: str) -> Any:
     return value
 
 
-def _supplement_ai_focus_ledger(
+def _ledger_supplement_scope_records(
     case: dict[str, Any],
     records: dict[str, dict[str, Any]],
+    query_contract: dict[str, Any],
+) -> list[dict[str, Any]]:
+    family_tickers = _contract_required_family_tickers(query_contract)
+    focus = set().union(*family_tickers.values()) if family_tickers else set()
+    if not focus:
+        focus = {str(item).upper() for item in query_contract.get("focus_tickers") or [] if str(item)}
+    years = {int(year) for year in case.get("years") or [] if _int_or_none(year) is not None}
+    filing_types = {
+        _normalize_form_type(item)
+        for item in (case.get("filing_types") or query_contract.get("filing_types") or [])
+        if _normalize_form_type(item)
+    }
+    source_tiers = {
+        str(item)
+        for item in (case.get("source_tiers") or query_contract.get("source_tiers") or [])
+        if str(item)
+    }
+    cache_key = (
+        id(records),
+        tuple(sorted(focus)),
+        tuple(sorted(years)),
+        tuple(sorted(filing_types)),
+        tuple(sorted(source_tiers)),
+    )
+    cached = _LEDGER_SCOPE_RECORDS_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    scoped: list[dict[str, Any]] = []
+    for record in records.values():
+        ticker = str(record.get("ticker") or "").upper()
+        if focus and ticker not in focus:
+            continue
+        source_fields = _ledger_source_fields(record)
+        if filing_types and _normalize_form_type(source_fields.get("form_type")) not in filing_types:
+            continue
+        if source_tiers and str(source_fields.get("source_tier") or "") not in source_tiers:
+            continue
+        if years and not _record_overlaps_years(record, years):
+            continue
+        scoped.append(record)
+    if len(_LEDGER_SCOPE_RECORDS_CACHE) > 16:
+        _LEDGER_SCOPE_RECORDS_CACHE.clear()
+    _LEDGER_SCOPE_RECORDS_CACHE[cache_key] = scoped
+    return scoped
+
+
+def _record_overlaps_years(record: dict[str, Any], years: set[int]) -> bool:
+    record_year = _year_from_value(record.get("fiscal_year")) or _year_from_value(record.get("period"))
+    if record_year in years:
+        return True
+    if record.get("object_type") == "table":
+        for cell in record.get("cells") or []:
+            cell_year = _year_from_value(cell.get("period")) or _year_from_value(cell.get("column_label"))
+            if cell_year in years:
+                return True
+    return record_year is None
+
+
+def _record_may_match_metric_families(record: dict[str, Any], desired_families: set[str]) -> bool:
+    if not desired_families:
+        return True
+    family_key = tuple(sorted(str(item) for item in desired_families))
+    cache_id = str(record.get("object_id") or id(record))
+    cache_key = (cache_id, family_key)
+    cached = _LEDGER_FAMILY_PREFILTER_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    text = _ledger_supplement_prefilter_text(record)
+    if not text:
+        return True
+    checked_any = False
+    matched = False
+    for family in desired_families:
+        terms = LEDGER_SUPPLEMENT_FAMILY_TERMS.get(family)
+        if not terms:
+            continue
+        checked_any = True
+        if any(term in text for term in terms):
+            matched = True
+            break
+    result = matched or not checked_any
+    if len(_LEDGER_FAMILY_PREFILTER_CACHE) > 500000:
+        _LEDGER_FAMILY_PREFILTER_CACHE.clear()
+    _LEDGER_FAMILY_PREFILTER_CACHE[cache_key] = result
+    return result
+
+
+def _ledger_supplement_prefilter_text(record: dict[str, Any]) -> str:
+    cache_id = str(record.get("object_id") or "")
+    if cache_id and cache_id in _LEDGER_PREFILTER_TEXT_CACHE:
+        return _LEDGER_PREFILTER_TEXT_CACHE[cache_id]
+    parts = [
+        record.get("object_type"),
+        record.get("metric_name"),
+        record.get("row_label"),
+        record.get("column_label"),
+        record.get("title"),
+        record.get("section"),
+        record.get("subsection"),
+        record.get("context"),
+    ]
+    if record.get("object_type") == "table":
+        for cell in record.get("cells") or []:
+            parts.extend((cell.get("active_group"), cell.get("row_label"), cell.get("column_label")))
+    text = " ".join(str(part or "") for part in parts).lower()
+    if cache_id:
+        if len(_LEDGER_PREFILTER_TEXT_CACHE) > 500000:
+            _LEDGER_PREFILTER_TEXT_CACHE.clear()
+        _LEDGER_PREFILTER_TEXT_CACHE[cache_id] = text
+    return text
+
+
+def _supplement_ai_focus_ledger(
+    case: dict[str, Any],
+    records: Iterable[dict[str, Any]],
     rows: list[dict[str, Any]],
     seen: set[tuple[str, str, str, str]],
     query_contract: dict[str, Any],
@@ -2517,7 +3310,7 @@ def _supplement_ai_focus_ledger(
     focus = {str(item).upper() for item in query_contract.get("focus_tickers") or []}
     years = {int(year) for year in case.get("years") or [] if _int_or_none(year) is not None}
     target_labels = ("compute & networking", "data center")
-    for record in records.values():
+    for record in records:
         if record.get("object_type") != "table":
             continue
         ticker = str(record.get("ticker") or "").upper()
@@ -2556,14 +3349,17 @@ def _supplement_ai_focus_ledger(
 
 def _supplement_contract_metric_family_ledger(
     case: dict[str, Any],
-    records: dict[str, dict[str, Any]],
+    records: Iterable[dict[str, Any]],
     rows: list[dict[str, Any]],
     seen: set[tuple[str, str, str, str]],
     query_contract: dict[str, Any],
 ) -> None:
-    focus = {str(item).upper() for item in query_contract.get("focus_tickers") or []}
+    family_tickers = _contract_required_family_tickers(query_contract)
+    focus = set().union(*family_tickers.values()) if family_tickers else set()
+    if not focus:
+        focus = {str(item).upper() for item in query_contract.get("focus_tickers") or []}
     years = {int(year) for year in case.get("years") or [] if _int_or_none(year) is not None}
-    desired_families = _contract_required_metric_families(query_contract)
+    desired_families = set(family_tickers) or _contract_required_metric_families(query_contract)
     if not focus or not desired_families:
         return
     family_ticker_periods: set[tuple[str, str, str, str, str]] = set(
@@ -2578,9 +3374,11 @@ def _supplement_contract_metric_family_ledger(
     )
     supplement_limit = int(os.environ.get("AI_LEDGER_SUPPLEMENT_SCAN_LIMIT", "400"))
     added = 0
-    for record in records.values():
+    for record in records:
         ticker = str(record.get("ticker") or "").upper()
         if ticker not in focus:
+            continue
+        if not _record_may_match_metric_families(record, desired_families):
             continue
         candidate_rows: list[dict[str, Any]]
         if record.get("object_type") == "metric":
@@ -2595,6 +3393,9 @@ def _supplement_contract_metric_family_ledger(
                 continue
             family = str(row.get("metric_family") or "")
             if family not in desired_families:
+                continue
+            allowed_tickers = family_tickers.get(family)
+            if allowed_tickers and ticker not in allowed_tickers:
                 continue
             force_segment_add = _is_high_value_segment_metric(row)
             row_year = str(row.get("fiscal_year") or "")
@@ -2648,9 +3449,17 @@ def _supplement_banking_context_ledger(
 ) -> None:
     if not _contract_has_banking_intent(query_contract):
         return
-    focus = {str(item).upper() for item in query_contract.get("focus_tickers") or []}
+    family_tickers = _contract_required_family_tickers(query_contract)
+    banking_family_tickers = {
+        family: tickers
+        for family, tickers in family_tickers.items()
+        if family in BANKING_METRIC_FAMILIES
+    }
+    focus = set().union(*banking_family_tickers.values()) if banking_family_tickers else set()
+    if not focus:
+        focus = {str(item).upper() for item in query_contract.get("focus_tickers") or []}
     years = {int(year) for year in case.get("years") or [] if _int_or_none(year) is not None}
-    desired_families = _contract_required_metric_families(query_contract) & BANKING_METRIC_FAMILIES
+    desired_families = (set(banking_family_tickers) or _contract_required_metric_families(query_contract)) & BANKING_METRIC_FAMILIES
     if not focus or not desired_families:
         return
     existing_family_ticker_years = {
@@ -2970,6 +3779,28 @@ def _contract_required_metric_families(query_contract: dict[str, Any]) -> set[st
     return families
 
 
+def _contract_required_family_tickers(query_contract: dict[str, Any]) -> dict[str, set[str]]:
+    task_map: dict[str, set[str]] = {}
+    default_focus = {str(item).upper() for item in query_contract.get("focus_tickers") or [] if str(item)}
+    for task in query_contract.get("decomposed_tasks") or []:
+        if not isinstance(task, dict):
+            continue
+        families = [str(item) for item in task.get("required_metric_families") or [] if str(item)]
+        tickers = {str(item).upper() for item in task.get("required_tickers") or [] if str(item)}
+        if not families:
+            continue
+        if not tickers:
+            tickers = set(default_focus)
+        for family in families:
+            task_map.setdefault(family, set()).update(tickers)
+    if task_map:
+        return task_map
+    return {
+        family: set(default_focus)
+        for family in _contract_required_metric_families(query_contract)
+    }
+
+
 def _contract_has_peer_scope(query_contract: dict[str, Any]) -> bool:
     peer_terms = (
         "peer",
@@ -3131,7 +3962,7 @@ def _semantic_gate_policy_for_prompt(
     elif asks_competitor_discovery and len(focus) > 2:
         gate["company_coverage"] = "selected_companies"
         gate["require_company_coverage"] = False
-    elif is_peer and asks_direct_compare:
+    elif is_peer and asks_direct_compare and len(focus) <= 8:
         gate["company_coverage"] = "all_focus"
         gate["require_company_coverage"] = True
     else:
@@ -3918,7 +4749,10 @@ def _repair_query_contract_from_prompt(
     filing_types = _clamp_form_types(repaired.get("filing_types"), allowed_filing_types)
     repaired["filing_types"] = _source_policy_filing_types(filing_types or allowed_filing_types, allowed_filing_types)
     allowed_source_tiers = _selected_source_tiers(project_inventory, tickers, years, repaired["filing_types"])
-    market_requested = _has_market_snapshot_intent(prompt_text) or _market_snapshot_requested_from_planner(repaired)
+    market_blocked = _prompt_excludes_market_snapshot(prompt_text)
+    market_requested = False if market_blocked else (
+        _has_market_snapshot_intent(prompt_text) or _market_snapshot_requested_from_planner(repaired)
+    )
     allowed_source_tiers_for_contract = list(allowed_source_tiers)
     if market_requested and MARKET_SOURCE_TIER not in allowed_source_tiers_for_contract:
         allowed_source_tiers_for_contract.append(MARKET_SOURCE_TIER)
@@ -3931,7 +4765,9 @@ def _repair_query_contract_from_prompt(
         repaired["source_tiers"].append(MARKET_SOURCE_TIER)
     repaired["source_policy"] = _source_policy_for_scope(repaired["filing_types"], repaired["source_tiers"])
     repaired["scope"] = _contract_scope(tickers, focus, years, repaired["filing_types"], repaired["source_tiers"])
-    if market_requested:
+    if market_blocked:
+        _remove_market_snapshot_contract(repaired)
+    elif market_requested:
         _apply_market_snapshot_repairs(repaired, prompt_text)
 
     _append_contract_task(repaired, _user_question_anchor_task(prompt_text, focus, repaired))
@@ -4048,6 +4884,68 @@ def _has_market_snapshot_intent(prompt: str) -> bool:
             "估值语境",
         ),
     )
+
+
+def _prompt_excludes_market_snapshot(prompt: str) -> bool:
+    text = str(prompt or "").lower()
+    negated = _contains_any(
+        text,
+        (
+            "不要引入",
+            "不引入",
+            "不能引入",
+            "不得引入",
+            "不要使用",
+            "不使用",
+            "不能使用",
+            "不得使用",
+            "do not use",
+            "don't use",
+            "without",
+            "exclude",
+            "no external",
+        ),
+    )
+    market_terms = _contains_any(
+        text,
+        (
+            "市场数据",
+            "市场快照",
+            "当前市场",
+            "实时行情",
+            "行情",
+            "股价",
+            "估值",
+            "market data",
+            "market snapshot",
+            "current market",
+            "stock price",
+            "share price",
+            "valuation",
+        ),
+    )
+    return bool(negated and market_terms)
+
+
+def _remove_market_snapshot_contract(contract: dict[str, Any]) -> None:
+    contract.pop("market_snapshot", None)
+    source_tiers = [
+        str(tier)
+        for tier in contract.get("source_tiers") or []
+        if str(tier) and str(tier) != MARKET_SOURCE_TIER
+    ]
+    contract["source_tiers"] = source_tiers
+    for task in contract.get("decomposed_tasks") or []:
+        if not isinstance(task, dict):
+            continue
+        task.pop("required_market_fields", None)
+        task.pop("required_market_tools", None)
+    filing_types = [
+        str(form or "").upper().strip()
+        for form in contract.get("filing_types") or []
+        if str(form or "").strip()
+    ]
+    contract["source_policy"] = _source_policy_for_scope(filing_types, source_tiers)
 
 
 def _market_snapshot_requested_from_planner(contract: dict[str, Any]) -> bool:
@@ -5665,7 +6563,12 @@ def _filter_available(tickers: list[str], years: list[int], available: set[tuple
 
 
 def _load_object_records(index_dir: Path) -> dict[str, dict[str, Any]]:
-    path = index_dir / "records.jsonl"
+    return _load_object_records_cached(str(index_dir.resolve()))
+
+
+@lru_cache(maxsize=4)
+def _load_object_records_cached(index_dir: str) -> dict[str, dict[str, Any]]:
+    path = Path(index_dir) / "records.jsonl"
     return {
         str(row.get("object_id") or ""): row
         for row in _read_jsonl(path)
@@ -6024,7 +6927,7 @@ def _ledger_row_allowed(
         return False
     if any(term in column_label_lower for term in (" over ", " vs ", " versus ")):
         return False
-    if re.search(r"(^|[\s$%])change($|\s)", column_label_lower):
+    if re.search(r"(^|[\s$%])change($|\s)", column_label_lower) and row.get("cell_kind") != "period_change_rate":
         return False
     if "by segment" in column_label_lower:
         return False
@@ -6097,9 +7000,12 @@ def _ledger_row_allowed(
         "total_revenue",
     }
     if family in revenue_like_families and row.get("unit") == "percent":
-        is_growth_rate = str(row.get("metric_role") or "") == "percentage_rate" and _contains_any(
-            row_text_lower,
-            ("increase", "increased", "decrease", "decreased", "grew", "growth", "declined"),
+        is_growth_rate = str(row.get("metric_role") or "") == "percentage_rate" and (
+            row.get("cell_kind") == "period_change_rate"
+            or _contains_any(
+                row_text_lower,
+                ("increase", "increased", "decrease", "decreased", "grew", "growth", "declined"),
+            )
         )
         if not is_growth_rate:
             return False
@@ -6612,6 +7518,8 @@ def _config_summary(args: argparse.Namespace) -> dict[str, Any]:
         "bge_device": args.bge_device,
         "bge_first": args.bge_first,
         "auto_start_qwen": args.auto_start_qwen,
+        "context_runner": args.context_runner,
+        "effective_context_runner": _context_runner_mode(args),
         "evidence_top_k": args.evidence_top_k,
         "object_top_k": args.object_top_k,
         "max_context_rows": args.max_context_rows,

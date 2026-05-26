@@ -240,7 +240,11 @@ class DeepSeekToolController:
         runtime_context: dict[str, Any],
         route_only: bool,
     ) -> dict[str, Any]:
-        name = _guarded_tool_name(str(call.get("name") or ""), user_message=user_message, runtime_context=runtime_context)
+        name = _guarded_tool_name(
+            str(call.get("name") or "").strip(),
+            user_message=user_message,
+            runtime_context=runtime_context,
+        )
         args = dict(call.get("arguments") or {})
         if name in self._allowed_args:
             args = {key: value for key, value in args.items() if key in self._allowed_args[name]}
@@ -389,7 +393,7 @@ def _normalize_tool_calls(llm_result: dict[str, Any]) -> list[dict[str, Any]]:
         if not isinstance(raw, dict):
             continue
         fn = raw.get("function") if isinstance(raw.get("function"), dict) else {}
-        name = str(fn.get("name") or raw.get("name") or "")
+        name = str(fn.get("name") or raw.get("name") or "").strip()
         if not name:
             continue
         arguments = _parse_arguments(fn.get("arguments") if "arguments" in fn else raw.get("arguments"))
@@ -452,6 +456,11 @@ def _guarded_tool_name(name: str, *, user_message: str, runtime_context: dict[st
     heuristic_name = _heuristic_tool_name(user_message)
     if heuristic_name == "get_session_state":
         return "get_session_state"
+    if name == "get_session_state" and _looks_like_substantive_analysis_request(user_message, runtime_context):
+        return "start_memo_analysis"
+    if name == "explain_evidence" and not _looks_like_specific_evidence_request(user_message):
+        if _looks_like_substantive_analysis_request(user_message, runtime_context):
+            return "start_memo_analysis"
     if name == "revise_memo_scope" and not _looks_like_scope_revision_request(user_message, runtime_context):
         if heuristic_name in {"inspect_coverage", "explain_evidence", "reformat_answer", "get_session_state"}:
             return heuristic_name
@@ -638,18 +647,74 @@ def _heuristic_tool_name(text: str) -> str:
     normalized = text.lower()
     if _looks_like_state_check(text, normalized):
         return "get_session_state"
-    if _contains_any(normalized, ("resume", "unfinished")) or _contains_any(text, ("继续", "没跑完", "恢复")):
-        if not _contains_any(text, ("恢复后", "确认一下", "当前状态", "有哪些 artifacts")):
-            return "resume_analysis"
+    if _looks_like_resume_intent(text, normalized):
+        return "resume_analysis"
     if _looks_like_coverage_or_boundary(text, normalized):
         return "inspect_coverage"
     if _looks_like_scope_revision(text, normalized):
         return "revise_memo_scope"
     if _looks_like_reformat(text, normalized):
         return "reformat_answer"
-    if _looks_like_evidence_question(text, normalized):
+    if _looks_like_evidence_question(text, normalized) and _looks_like_specific_evidence_request(text):
         return "explain_evidence"
     return "start_memo_analysis"
+
+
+def _looks_like_resume_intent(text: str, normalized: str) -> bool:
+    stripped = str(text or "").strip().lower()
+    if stripped in {"continue", "resume", "继续", "继续。", "继续一下", "继续吧"}:
+        return True
+    if _contains_any(text, ("恢复后", "确认一下", "当前状态", "有哪些 artifacts")):
+        return False
+    if _looks_like_substantive_followup_text(text, normalized):
+        return False
+    return _contains_any(normalized, ("resume", "unfinished")) or _contains_any(
+        text,
+        ("继续跑", "继续执行", "续跑", "没跑完", "未完成", "恢复", "中断", "失败"),
+    )
+
+
+def _looks_like_substantive_followup_text(text: str, normalized: str) -> bool:
+    if _contains_any(
+        normalized,
+        (
+            "compare",
+            "analyze",
+            "analysis",
+            "explain",
+            "investment",
+            "thesis",
+            "valuation",
+            "market reaction",
+            "priced in",
+            "risk",
+            "consistent",
+            "divergence",
+        ),
+    ):
+        return True
+    return _contains_any(
+        text,
+        (
+            "比较",
+            "分析",
+            "说明",
+            "解释",
+            "判断",
+            "怎么看",
+            "是否",
+            "影响",
+            "投资判断",
+            "基本面",
+            "市场反应",
+            "估值",
+            "定价",
+            "一致",
+            "分歧",
+            "风险",
+            "结论",
+        ),
+    )
 
 
 def _heuristic_arguments(name: str, text: str, context: dict[str, Any]) -> dict[str, Any]:
@@ -854,6 +919,10 @@ def _looks_like_stage_resume_request(text: str) -> bool:
         "中断",
         "失败",
         "缺失",
+        "没跑完",
+        "未完成",
+        "不要从头",
+        "别从头",
         "artifact",
         "state",
     )
@@ -884,6 +953,55 @@ def _looks_like_evidence_question(text: str, normalized: str) -> bool:
     if _contains_any(text, ("证据", "来源", "从哪", "片段", "毛利率改善")):
         return True
     return False
+
+
+def _looks_like_specific_evidence_request(text: str) -> bool:
+    normalized = str(text or "").lower()
+    if _extract_ordinal_index(text) or _extract_evidence_id(text):
+        return True
+    specific_terms = (
+        "evidence id",
+        "metric id",
+        "citation",
+        "cite",
+        "source of",
+        "where did",
+        "which filing",
+        "10-k snippet",
+        "10-q snippet",
+        "8-k snippet",
+    )
+    if _contains_any(normalized, specific_terms):
+        return True
+    return _contains_any(
+        text,
+        (
+            "证据ID",
+            "证据 id",
+            "引用",
+            "出处",
+            "从哪",
+            "哪份文件",
+            "哪一份",
+            "哪个文件",
+            "哪个表",
+            "证据从哪",
+            "证据来源",
+            "片段",
+            "原文",
+            "支持哪",
+            "第几条",
+            "这条",
+            "那条",
+        ),
+    )
+
+
+def _looks_like_substantive_analysis_request(text: str, runtime_context: dict[str, Any]) -> bool:
+    if not str((runtime_context or {}).get("active_answer_id") or ""):
+        return False
+    normalized = str(text or "").lower()
+    return _contains_any(text, ("继续", "进一步")) or _looks_like_substantive_followup_text(text, normalized)
 
 
 def _looks_like_scope_revision(text: str, normalized: str) -> bool:

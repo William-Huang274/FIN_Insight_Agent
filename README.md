@@ -15,6 +15,16 @@ This repository currently contains the Phase 1 skeleton, the
 `EvidenceObject` schema, a SEC EDGAR connector, section/table-aware SEC
 chunking, and first BM25/dense retrieval smoke baselines.
 
+The current resume-facing SEC agent path extends that foundation with:
+
+- SEC 10-K/latest 10-Q/8-K evidence retrieval and exact-value ledger checks.
+- Offline market snapshot evidence with `snapshot_id` and `as_of_date`.
+- ContextManager-backed multi-turn sessions, artifact inspection, reformat, and resume checks.
+- Closeout readiness evaluation in `scripts/evaluate_sec_agent_resume_closeout_readiness.py`.
+
+Demo and release-scope entrypoints are documented in
+`docs/demo/sec_agent_demo_entrypoints_v1.md`.
+
 ## Setup
 
 ```powershell

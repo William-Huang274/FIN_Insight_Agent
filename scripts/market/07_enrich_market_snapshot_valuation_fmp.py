@@ -75,6 +75,21 @@ def _url(base_url: str, endpoint: str, *, apikey: str, **params: str) -> str:
     return f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}?{urllib.parse.urlencode(query)}"
 
 
+def _redact_url(url: str) -> str:
+    parsed = urllib.parse.urlsplit(url)
+    query = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+    redacted = [(key, "REDACTED" if key.lower() == "apikey" else value) for key, value in query]
+    return urllib.parse.urlunsplit(
+        (
+            parsed.scheme,
+            parsed.netloc,
+            parsed.path,
+            urllib.parse.urlencode(redacted),
+            parsed.fragment,
+        )
+    )
+
+
 def _read_json_url(url: str, timeout: int) -> Any:
     request = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "FIN_Insight_Agent market snapshot valuation"})
     with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -90,11 +105,32 @@ def _raise_provider_error(payload: Any) -> None:
                 raise RuntimeError(str(payload[field]))
 
 
-def _fetch_fmp_quote_batch(*, base_url: str, apikey: str, tickers: list[str], timeout: int) -> tuple[dict[str, dict[str, Any]], str]:
-    url = _url(base_url, "batch-quote", apikey=apikey, symbols=",".join(tickers))
-    payload = _read_json_url(url, timeout)
-    rows = payload if isinstance(payload, list) else []
-    return {str(row.get("symbol") or "").upper(): row for row in rows if isinstance(row, dict)}, url
+def _fetch_fmp_quotes(
+    *,
+    base_url: str,
+    apikey: str,
+    tickers: list[str],
+    timeout: int,
+    sleep: float,
+) -> tuple[dict[str, dict[str, Any]], list[str], list[dict[str, str]]]:
+    rows: dict[str, dict[str, Any]] = {}
+    urls: list[str] = []
+    failures: list[dict[str, str]] = []
+    for ticker in tickers:
+        url = _url(base_url, "quote", apikey=apikey, symbol=ticker)
+        urls.append(url)
+        try:
+            payload = _read_json_url(url, timeout)
+            quote_rows = payload if isinstance(payload, list) else []
+            for row in quote_rows:
+                if isinstance(row, dict) and str(row.get("symbol") or "").upper() == ticker:
+                    rows[ticker] = row
+                    break
+        except Exception as exc:
+            failures.append({"ticker": ticker, "stage": "quote", "error": str(exc)})
+        if sleep > 0:
+            time.sleep(sleep)
+    return rows, urls, failures
 
 
 def _fetch_fmp_key_metrics_ttm(*, base_url: str, apikey: str, ticker: str, timeout: int) -> tuple[dict[str, Any], str]:
@@ -107,27 +143,46 @@ def _fetch_fmp_key_metrics_ttm(*, base_url: str, apikey: str, ticker: str, timeo
     return {}, url
 
 
-def _extract_fmp_valuation(ticker: str, quote_row: dict[str, Any] | None, metrics_row: dict[str, Any] | None) -> dict[str, Any]:
+def _fetch_fmp_ratios_ttm(*, base_url: str, apikey: str, ticker: str, timeout: int) -> tuple[dict[str, Any], str]:
+    url = _url(base_url, "ratios-ttm", apikey=apikey, symbol=ticker)
+    payload = _read_json_url(url, timeout)
+    if isinstance(payload, list) and payload and isinstance(payload[0], dict):
+        return payload[0], url
+    if isinstance(payload, dict):
+        return payload, url
+    return {}, url
+
+
+def _extract_fmp_valuation(
+    ticker: str,
+    quote_row: dict[str, Any] | None,
+    metrics_row: dict[str, Any] | None,
+    ratios_row: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     quote = quote_row or {}
     metrics = metrics_row or {}
+    ratios = ratios_row or {}
     values = {
         "ticker": ticker,
-        "market_cap": _first_number(quote, metrics, names=("marketCap", "market_cap", "marketCapTTM")),
-        "enterprise_value": _first_number(metrics, quote, names=("enterpriseValueTTM", "enterpriseValue", "enterprise_value")),
-        "pe_ttm": _first_number(quote, metrics, names=("pe", "peRatio", "peRatioTTM", "priceEarningsRatioTTM")),
+        "market_cap": _first_number(quote, metrics, ratios, names=("marketCap", "market_cap", "marketCapTTM")),
+        "enterprise_value": _first_number(metrics, ratios, quote, names=("enterpriseValueTTM", "enterpriseValue", "enterprise_value")),
+        "pe_ttm": _first_number(quote, ratios, metrics, names=("pe", "peRatio", "peRatioTTM", "priceEarningsRatioTTM", "priceToEarningsRatioTTM")),
         "ev_sales_ttm": _first_number(
             metrics,
+            ratios,
             quote,
             names=("evToSalesTTM", "enterpriseValueOverRevenueTTM", "enterpriseValueToRevenueTTM", "evToSales", "enterpriseValueOverRevenue"),
         ),
         "ev_ebitda_ttm": _first_number(
             metrics,
+            ratios,
             quote,
             names=("enterpriseValueOverEBITDATTM", "evToEBITDATTM", "evToEBITDA", "enterpriseValueOverEBITDA"),
         ),
         "source_fields": {
             "quote": sorted(k for k, v in quote.items() if v not in (None, "")),
             "key_metrics_ttm": sorted(k for k, v in metrics.items() if v not in (None, "")),
+            "ratios_ttm": sorted(k for k, v in ratios.items() if v not in (None, "")),
         },
     }
     return values
@@ -248,15 +303,23 @@ def main() -> int:
         if field not in fieldnames:
             fieldnames.append(field)
 
-    quote_rows, quote_url = _fetch_fmp_quote_batch(base_url=args.base_url, apikey=api_key, tickers=target_tickers, timeout=args.timeout)
+    quote_rows, quote_urls, quote_failures = _fetch_fmp_quotes(
+        base_url=args.base_url,
+        apikey=api_key,
+        tickers=target_tickers,
+        timeout=args.timeout,
+        sleep=args.sleep,
+    )
     valuations: dict[str, dict[str, Any]] = {}
-    failures = []
-    source_urls = [quote_url]
+    failures = list(quote_failures)
+    source_urls = [_redact_url(url) for url in quote_urls]
     for ticker in target_tickers:
         try:
             metrics, metrics_url = _fetch_fmp_key_metrics_ttm(base_url=args.base_url, apikey=api_key, ticker=ticker, timeout=args.timeout)
-            source_urls.append(metrics_url)
-            valuations[ticker] = _extract_fmp_valuation(ticker, quote_rows.get(ticker), metrics)
+            source_urls.append(_redact_url(metrics_url))
+            ratios, ratios_url = _fetch_fmp_ratios_ttm(base_url=args.base_url, apikey=api_key, ticker=ticker, timeout=args.timeout)
+            source_urls.append(_redact_url(ratios_url))
+            valuations[ticker] = _extract_fmp_valuation(ticker, quote_rows.get(ticker), metrics, ratios)
         except Exception as exc:
             failures.append({"ticker": ticker, "error": str(exc)})
         if args.sleep > 0:

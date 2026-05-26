@@ -163,14 +163,34 @@ def _build_record(
     metadata: dict[str, Any],
 ) -> SecFilingManifestRecord:
     document_year, document_period = _document_fiscal_focus(html_path)
-    document_year = metadata.get("document_fiscal_year_focus") or document_year
+    metadata_document_year = metadata.get("document_fiscal_year_focus")
+    document_year = metadata_document_year or document_year
     document_period = metadata.get("document_fiscal_period_focus") or document_period
+    normalized_form = str(metadata.get("form_type") or form_type).upper().strip()
+    metadata_fiscal_year = _normalize_document_fiscal_year_focus(metadata.get("fiscal_year"))
+    ignored_document_year = None
+    if (
+        normalized_form == "10-K"
+        and metadata_document_year is None
+        and metadata_fiscal_year is not None
+        and document_year is not None
+        and document_year != metadata_fiscal_year
+    ):
+        ignored_document_year = document_year
+        document_year = None
     period = _filing_period_metadata(
-        form_type=str(metadata.get("form_type") or form_type),
+        form_type=normalized_form,
         report_date=metadata.get("report_date"),
         fiscal_period_focus=document_period,
         fiscal_year_focus=document_year,
     )
+    if ignored_document_year is not None:
+        period = {
+            **period,
+            "fiscal_year_source": metadata.get("fiscal_year_source")
+            or "metadata_fiscal_year_conflict_with_document_focus",
+            "document_fiscal_year_focus": ignored_document_year,
+        }
     merged_metadata = {**metadata, **period}
     return SecFilingManifestRecord(
         ticker=ticker,

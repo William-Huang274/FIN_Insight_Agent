@@ -28,6 +28,13 @@ SNAPSHOT_NUMERIC_FIELDS = (
     "ev_sales_ttm",
     "ev_ebitda_ttm",
 )
+VALUATION_SNAPSHOT_FIELDS = (
+    "market_cap",
+    "enterprise_value",
+    "pe_ttm",
+    "ev_sales_ttm",
+    "ev_ebitda_ttm",
+)
 
 
 def normalize_market_snapshot_fixture(
@@ -330,7 +337,9 @@ def build_market_evidence_pack(
             continue
         snapshot = snapshots.get(ticker, {})
         field_refs = _market_field_refs(item, snapshot)
-        text = _market_evidence_text(item, field_refs)
+        field_status = snapshot.get("field_status") if isinstance(snapshot.get("field_status"), dict) else {}
+        missing_fields = _missing_snapshot_fields(field_status)
+        text = _market_evidence_text(item, field_refs, missing_fields=missing_fields)
         object_id = f"MARKET_SNAPSHOT::{item.get('snapshot_id')}::{ticker}::{item.get('window')}::{item.get('as_of_date')}"
         rows.append(
             {
@@ -352,6 +361,8 @@ def build_market_evidence_pack(
                 "event_window_gaps": item.get("event_window_gaps") or [],
                 "derived_signals": item.get("derived_signals") or [],
                 "field_refs": field_refs,
+                "field_status": field_status,
+                "missing_fields": missing_fields,
                 "source_boundary": item.get("source_boundary"),
             }
         )
@@ -770,7 +781,21 @@ def _market_field_refs(analytics: dict[str, Any], snapshot: dict[str, Any]) -> l
     return refs
 
 
-def _market_evidence_text(analytics: dict[str, Any], field_refs: list[dict[str, Any]]) -> str:
+def _missing_snapshot_fields(field_status: dict[str, Any]) -> list[str]:
+    missing = []
+    for field in SNAPSHOT_NUMERIC_FIELDS:
+        status = str(field_status.get(field) or "").strip().lower()
+        if status.startswith("missing"):
+            missing.append(field)
+    return missing
+
+
+def _market_evidence_text(
+    analytics: dict[str, Any],
+    field_refs: list[dict[str, Any]],
+    *,
+    missing_fields: list[str] | None = None,
+) -> str:
     ticker = str(analytics.get("ticker") or "")
     as_of_date = str(analytics.get("as_of_date") or "")
     values = {ref["field_name"]: ref["value"] for ref in field_refs}
@@ -786,6 +811,9 @@ def _market_evidence_text(analytics: dict[str, Any], field_refs: list[dict[str, 
     signals = analytics.get("derived_signals") or []
     if signals:
         fragments.append("signals=" + ",".join(str(item) for item in signals[:4]))
+    missing_valuation_fields = [field for field in (missing_fields or []) if field in VALUATION_SNAPSHOT_FIELDS]
+    if missing_valuation_fields:
+        fragments.append("missing_valuation_fields=" + ",".join(missing_valuation_fields))
     return "; ".join(fragments) + "."
 
 

@@ -57,6 +57,8 @@ Common overrides:
   DEEPSEEK_API_KEY=... bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
   DEEPSEEK_API_KEY=... YEARS=2023,2024,2025,2026 bash scripts/cloud/sec_agent_interactive.sh session-mixed-deepseek
   SOURCE_GAP_PATH=data/processed_private/source_gaps/sec_tech_8k_earnings_full30_source_gaps_merged_2026_2027.jsonl bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
+  MARKET_EVIDENCE_PATH=data/processed_private/market/snapshots/.../evidence_packs/...jsonl MARKET_SNAPSHOT_ID=... MARKET_AS_OF_DATE=... bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
+  SEC_AGENT_GRAPH_EXECUTION=subprocess bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
 
 Notes:
   Default scope is TICKERS=ALL, which resolves to all companies in the SEC 10-K manifest.
@@ -65,6 +67,7 @@ Notes:
   DeepSeek mode reads the key from DEEPSEEK_API_KEY; do not store API keys in files.
   Mixed mode uses accepted 2023-2025 10-K plus 2026 10-Q BM25/object-BM25 artifacts.
   Mixed 8-K mode adds full30 SEC 8-K earnings-release evidence and optional source gap reasons.
+  Session mode defaults to in-process graph execution so retrieval indexes and BGE can stay warm across turns; set SEC_AGENT_GRAPH_EXECUTION=subprocess for isolation.
   The exact-value ledger is built at runtime from retrieved structured SEC objects; it is gate-checked but not human-reviewed gold.
 EOF
 }
@@ -121,6 +124,15 @@ agent_flags() {
   flags+=(--manifest-path "${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_10k_manifest.jsonl}")
   if [[ -n "${SOURCE_GAP_PATH:-}" ]]; then
     flags+=(--source-gap-path "$SOURCE_GAP_PATH")
+  fi
+  if [[ -n "${MARKET_EVIDENCE_PATH:-}" ]]; then
+    flags+=(--market-evidence-path "$MARKET_EVIDENCE_PATH")
+  fi
+  if [[ -n "${MARKET_SNAPSHOT_ID:-}" ]]; then
+    flags+=(--market-snapshot-id "$MARKET_SNAPSHOT_ID")
+  fi
+  if [[ -n "${MARKET_AS_OF_DATE:-}" ]]; then
+    flags+=(--market-as-of-date "$MARKET_AS_OF_DATE")
   fi
   flags+=(--bm25-index-dir "${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k}")
   flags+=(--object-bm25-index-dir "${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k_objects}")
@@ -225,6 +237,15 @@ run_context_session() {
   session_flags+=(--manifest-path "${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_10k_manifest.jsonl}")
   if [[ -n "${SOURCE_GAP_PATH:-}" ]]; then
     session_flags+=(--source-gap-path "$SOURCE_GAP_PATH")
+  fi
+  if [[ -n "${MARKET_EVIDENCE_PATH:-}" ]]; then
+    session_flags+=(--market-evidence-path "$MARKET_EVIDENCE_PATH")
+  fi
+  if [[ -n "${MARKET_SNAPSHOT_ID:-}" ]]; then
+    session_flags+=(--market-snapshot-id "$MARKET_SNAPSHOT_ID")
+  fi
+  if [[ -n "${MARKET_AS_OF_DATE:-}" ]]; then
+    session_flags+=(--market-as-of-date "$MARKET_AS_OF_DATE")
   fi
   session_flags+=(--bm25-index-dir "${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k}")
   session_flags+=(--object-bm25-index-dir "${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_10k_objects}")

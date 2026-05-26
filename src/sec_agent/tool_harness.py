@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
 import subprocess
 import sys
 import time
+import traceback
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,6 +23,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SESSION_ROOT = REPO_ROOT / "eval" / "sec_cases" / "session_harness"
 SESSION_SCHEMA_VERSION = "sec_agent_session_state_v0.1"
 TOOL_RESULT_SCHEMA_VERSION = "sec_agent_tool_result_v0.1"
+GRAPH_EXECUTION_MODES = {"in_process", "subprocess"}
+_INTERACTIVE_MODULE_CACHE: dict[str, Any] = {}
 SUPPORTED_SOURCE_POLICIES = {
     "SEC_ONLY_10K",
     "SEC_PRIMARY_MIXED_RECENT",
@@ -113,10 +117,12 @@ class SecAgentToolHarness:
         session_root: str | Path = DEFAULT_SESSION_ROOT,
         python: str = sys.executable,
         repo_root: str | Path = REPO_ROOT,
+        graph_execution: str | None = None,
     ) -> None:
         self.repo_root = Path(repo_root)
         self.session_root = Path(session_root)
         self.python = str(python)
+        self.graph_execution = _normalize_graph_execution(graph_execution or os.environ.get("SEC_AGENT_GRAPH_EXECUTION", "in_process"))
         self.session_root.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
@@ -266,8 +272,9 @@ class SecAgentToolHarness:
         session["preferences"]["preferred_output"] = preferred_output
         session["active_query"] = query
         selected_years = [int(item) for item in (years or _default_years_for_source_policy(source_policy))]
+        selected_tickers = _infer_tickers_from_query(query)
         session["active_scope"] = {
-            "selected_tickers": _infer_tickers_from_query(query),
+            "selected_tickers": selected_tickers,
             "selected_years": selected_years,
             "source_policy": source_policy,
         }
@@ -285,7 +292,13 @@ class SecAgentToolHarness:
         }
 
         if execute:
-            execution = self._run_graph_analysis(query, answer_id=answer_id, graph_args=graph_args or [], years=selected_years)
+            execution = self._run_graph_analysis(
+                query,
+                answer_id=answer_id,
+                graph_args=graph_args or [],
+                years=selected_years,
+                tickers=selected_tickers,
+            )
             analysis.update(execution)
             session["active_answer_id"] = answer_id
             session["active_scope"].update(execution.get("scope") or {})
@@ -528,8 +541,11 @@ class SecAgentToolHarness:
     ) -> ToolResult:
         session = self._load_session_required(session_id)
         analysis = self._analysis_for(session, answer_id)
-        resolved_state_path = Path(state_path or analysis.get("state_path") or "")
-        if not resolved_state_path.exists():
+        state_path_value = str(state_path or analysis.get("state_path") or "").strip()
+        if not state_path_value:
+            return ToolResult("resume_analysis", "error", {}, "sec_agent_state.json not found")
+        resolved_state_path = Path(state_path_value)
+        if not resolved_state_path.exists() or not resolved_state_path.is_file():
             return ToolResult("resume_analysis", "error", {}, "sec_agent_state.json not found")
         state = SecAgentState.read_json(resolved_state_path)
         report = state_resume_report(state)
@@ -562,11 +578,29 @@ class SecAgentToolHarness:
             return ToolResult("get_session_state", "error", {}, "user_id does not match session owner")
         return ToolResult("get_session_state", "completed", _compact_session(session))
 
-    def _run_graph_analysis(self, query: str, *, answer_id: str, graph_args: list[str], years: list[int]) -> dict[str, Any]:
+    def _run_graph_analysis(
+        self,
+        query: str,
+        *,
+        answer_id: str,
+        graph_args: list[str],
+        years: list[int],
+        tickers: list[str] | None = None,
+    ) -> dict[str, Any]:
         started = time.time()
         graph_args = list(graph_args or [])
         if years and "--years" not in graph_args:
             graph_args.extend(["--years", ",".join(str(int(year)) for year in years)])
+        scoped_tickers = _upper_list(tickers or [])
+        if scoped_tickers and "--tickers" not in graph_args:
+            graph_args.extend(["--tickers", ",".join(scoped_tickers)])
+        if self.graph_execution == "in_process":
+            return self._run_graph_analysis_in_process(
+                query,
+                answer_id=answer_id,
+                graph_args=graph_args,
+                started=started,
+            )
         command = [
             self.python,
             "scripts/cloud/sec_agent_graph_runner.py",
@@ -603,6 +637,86 @@ class SecAgentToolHarness:
                 "elapsed_sec": round(time.time() - started, 4),
                 "stdout_tail": proc.stdout[-4000:],
                 "stderr_tail": proc.stderr[-4000:],
+            },
+        }
+
+    def _run_graph_analysis_in_process(
+        self,
+        query: str,
+        *,
+        answer_id: str,
+        graph_args: list[str],
+        started: float,
+    ) -> dict[str, Any]:
+        command = [
+            self.python,
+            "scripts/cloud/sec_agent_interactive.py",
+            *graph_args,
+            "--prompt",
+            query,
+        ]
+        if "--prompt" in graph_args:
+            return self._graph_execution_error(
+                command=command,
+                started=started,
+                message="do not pass --prompt through graph_args",
+            )
+        try:
+            module = _load_interactive_module(self.repo_root)
+            old_argv = sys.argv[:]
+            try:
+                sys.argv = ["sec_agent_interactive.py", *graph_args, "--prompt", query]
+                interactive_args = module.parse_args()
+            finally:
+                sys.argv = old_argv
+            run_root = Path(module.run_one(interactive_args, interactive_args.prompt))
+        except Exception:
+            return self._graph_execution_error(
+                command=command,
+                started=started,
+                message=traceback.format_exc()[-4000:],
+            )
+        state_path = run_root / "sec_agent_state.json"
+        has_state = run_root.exists() and state_path.exists()
+        artifacts = _artifact_refs_from_state(state_path) if has_state else {}
+        scope = _scope_from_query_contract(run_root) if has_state else {}
+        if has_state and not scope:
+            state = SecAgentState.read_json(state_path)
+            scope = {"selected_tickers": state.selected_tickers, "selected_years": state.selected_years}
+        return {
+            "status": "completed" if has_state else "failed",
+            "updated_at": _utc_now(),
+            "run_root": str(run_root.resolve()) if has_state else "",
+            "state_path": str(state_path.resolve()) if has_state else "",
+            "artifact_refs": artifacts,
+            "scope": scope,
+            "execution": {
+                "execute": True,
+                "graph_execution": "in_process",
+                "command": _redacted_command(command),
+                "returncode": 0 if has_state else 1,
+                "elapsed_sec": round(time.time() - started, 4),
+                "stdout_tail": "",
+                "stderr_tail": "" if has_state else "sec_agent_state.json not found after in-process run",
+            },
+        }
+
+    def _graph_execution_error(self, *, command: list[str], started: float, message: str) -> dict[str, Any]:
+        return {
+            "status": "failed",
+            "updated_at": _utc_now(),
+            "run_root": "",
+            "state_path": "",
+            "artifact_refs": {},
+            "scope": {},
+            "execution": {
+                "execute": True,
+                "graph_execution": "in_process",
+                "command": _redacted_command(command),
+                "returncode": 1,
+                "elapsed_sec": round(time.time() - started, 4),
+                "stdout_tail": "",
+                "stderr_tail": message[-4000:],
             },
         }
 
@@ -701,6 +815,26 @@ def _default_source_policy() -> str:
     if value in SUPPORTED_SOURCE_POLICIES:
         return value
     return "SEC_ONLY_10K"
+
+
+def _normalize_graph_execution(value: str) -> str:
+    mode = str(value or "in_process").strip()
+    return mode if mode in GRAPH_EXECUTION_MODES else "in_process"
+
+
+def _load_interactive_module(repo_root: Path) -> Any:
+    path = Path(repo_root) / "scripts" / "cloud" / "sec_agent_interactive.py"
+    key = str(path.resolve())
+    cached = _INTERACTIVE_MODULE_CACHE.get(key)
+    if cached is not None:
+        return cached
+    spec = importlib.util.spec_from_file_location("sec_agent_interactive_in_process_session", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot import sec_agent_interactive.py from {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    _INTERACTIVE_MODULE_CACHE[key] = module
+    return module
 
 
 def _default_years_for_source_policy(source_policy: str) -> list[int]:

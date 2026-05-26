@@ -29,7 +29,7 @@
 
 - [x] README 和 demo entrypoints：
   - Root README 已说明第一版受约束 agent 链路、closeout readiness 命令、cloud full-source demo、session demo 和非密钥凭据处理方式。
-  - 中文主文档：`README.zh-CN.md`。
+  - 中文主文档：`README.md`。
   - 详细 demo 入口：`docs/demo/sec_agent_demo_entrypoints_v1.md` 和 `docs/demo/sec_agent_demo_entrypoints_v1.zh-CN.md`。
 
 - [x] 云端部署和 index rebuild runbook：

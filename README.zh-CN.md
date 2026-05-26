@@ -1,6 +1,6 @@
 # FinSight-Agent
 
-[English version](README.md)
+[中文主入口](README.md) | [English version](README.en.md)
 
 FinSight-Agent 是一个面向投研流程的证据约束型金融研究 Agent。它的目标不是只支持某几类固定材料，而是把开放式研究问题转成一条可执行、可检查、可扩展的分析流程：先界定研究范围，再检索相关材料，抽取和校验关键数值，组织判断框架，调用大模型生成投研备忘录，最后用规则校验答案中的来源边界和数值引用。
 

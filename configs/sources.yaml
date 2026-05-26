@@ -1,0 +1,10 @@
+sec:
+  company_tickers_url: "https://www.sec.gov/files/company_tickers.json"
+  submissions_url_template: "https://data.sec.gov/submissions/CIK{cik}.json"
+  archives_base_url: "https://www.sec.gov/Archives/edgar/data"
+  default_form_type: "10-K"
+  default_form_types:
+    - "10-K"
+  default_tickers:
+    - JPM
+  request_rate_limit_per_second: 2.0

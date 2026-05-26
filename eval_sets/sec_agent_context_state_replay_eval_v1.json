@@ -1,0 +1,72 @@
+[
+  {
+    "case_id": "state_replay_reload_active_answer_001",
+    "category": "session_reload",
+    "purpose": "After process restart, an ambiguous 'continue the previous one' request resolves through the persisted active session and active answer.",
+    "acceptance": [
+      "Reloaded ContextManager reads persisted user active_session_id.",
+      "Snapshot status is ready.",
+      "Lossless fields include tenant_id, user_id, session_id, active_answer_id, active_scope, artifact_state, resume, and source_policy."
+    ]
+  },
+  {
+    "case_id": "state_replay_explicit_session_switch_no_leakage_001",
+    "category": "session_isolation",
+    "purpose": "User A explicitly switches from NVDA to AMZN/META; the active snapshot must not leak previous-session active answer or artifacts.",
+    "acceptance": [
+      "Active scope contains AMZN/META only.",
+      "Active session candidates are not exposed for an explicit switch.",
+      "No NVDA active answer appears in the active session snapshot."
+    ]
+  },
+  {
+    "case_id": "state_replay_user_boundary_denied_001",
+    "category": "user_isolation",
+    "purpose": "User B attempts to access User A's session and must be denied before controller routing.",
+    "acceptance": [
+      "Snapshot status is access_denied.",
+      "No active session payload is exposed."
+    ]
+  },
+  {
+    "case_id": "state_replay_partial_resume_artifact_state_001",
+    "category": "resume_state",
+    "purpose": "A partial run exposes next_ready_node before resume and a complete artifact state after simulated resume completion.",
+    "acceptance": [
+      "Before resume, next_ready_node is build_coverage_matrix.",
+      "Before resume, retrieval and runtime ledger are complete.",
+      "After resume, next_ready_node is null and missing_artifacts is empty."
+    ]
+  },
+  {
+    "case_id": "state_replay_reformat_invalidates_rendered_only_001",
+    "category": "reformat_state",
+    "purpose": "A reformat request invalidates only rendered_answer and must not break evidence explanation.",
+    "acceptance": [
+      "Context artifact_state marks rendered_answer invalidated.",
+      "No evidence, ledger, coverage, or Judgment Plan artifact is invalidated.",
+      "Post-reformat explain_evidence returns AMZN advertising metric/evidence IDs without rerun."
+    ]
+  },
+  {
+    "case_id": "state_replay_ambiguous_without_active_returns_candidates_001",
+    "category": "clarification",
+    "purpose": "When no active session exists and multiple candidates are available, an ambiguous reference returns clarification with bounded session candidates.",
+    "acceptance": [
+      "Snapshot status is clarification_required.",
+      "Candidate count is bounded by max_candidate_sessions.",
+      "No active answer is guessed."
+    ]
+  },
+  {
+    "case_id": "state_replay_compression_budget_guard_001",
+    "category": "context_compression",
+    "purpose": "The controller snapshot keeps recent turns and candidates bounded, while preserving lossless state fields.",
+    "acceptance": [
+      "estimated_tokens stays within the target controller budget.",
+      "recent_turn_count is bounded by max_recent_turns.",
+      "candidate_session_count is bounded by max_candidate_sessions.",
+      "validate_snapshot returns no errors for a ready snapshot."
+    ]
+  }
+]

@@ -1,0 +1,22 @@
+form_type: "10-Q"
+form_types:
+  - "10-Q"
+years:
+  - 2026
+
+companies:
+  - ticker: NVDA
+    category: "AI/GPU semiconductor"
+    category_slug: "ai_gpu_semiconductor"
+  - ticker: AMD
+    category: "semiconductor challenger"
+    category_slug: "semiconductor_challenger"
+  - ticker: MSFT
+    category: "mega-cap software/cloud"
+    category_slug: "mega-cap_software_cloud"
+  - ticker: AMZN
+    category: "ecommerce/cloud"
+    category_slug: "ecommerce_cloud"
+  - ticker: GOOGL
+    category: "search/ads/cloud"
+    category_slug: "search_ads_cloud"

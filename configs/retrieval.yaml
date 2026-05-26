@@ -1,0 +1,9 @@
+chunking:
+  target_tokens: 1000
+  overlap_tokens: 150
+
+retrieval:
+  bm25_top_k: 30
+  dense_top_k: 30
+  final_top_k: 10
+  rrf_k: 60

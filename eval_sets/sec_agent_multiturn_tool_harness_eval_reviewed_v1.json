@@ -1,0 +1,1096 @@
+[
+  {
+    "scenario_id": "multiturn_tool_scope_revision_001",
+    "category": "continuous_scope_revision",
+    "purpose": "Test starting a new SEC-only memo, revising ticker/year/peer scope, invalidating stale artifacts, then inspecting coverage and explaining evidence without unnecessary reruns.",
+    "initial_state": {
+      "session_id": "s_tool_001",
+      "user_id": "u_research_001",
+      "tenant_id": "tenant_demo",
+      "precondition": "new_session",
+      "active_answer_id": "",
+      "available_artifacts": [],
+      "missing_artifacts": []
+    },
+    "turns": [
+      {
+        "turn_id": "t1",
+        "user_message": "帮我做一个 NVDA 和 AMD 的 2024-2025 SEC-only 10-K 投资备忘录，重点看 AI 相关增长、毛利率变化和主要风险。",
+        "expected_intent": "new_analysis",
+        "expected_tool": "start_memo_analysis",
+        "expected_arguments": {
+          "query": "帮我做一个 NVDA 和 AMD 的 2024-2025 SEC-only 10-K 投资备忘录，重点看 AI 相关增长、毛利率变化和主要风险。",
+          "user_id": "u_research_001",
+          "tenant_id": "tenant_demo",
+          "session_id": "s_tool_001",
+          "years": [
+            2024,
+            2025
+          ],
+          "source_policy": "SEC_ONLY_10K",
+          "preferred_output": "investment_memo",
+          "execute": true
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": true,
+          "should_rerun_ledger": true,
+          "should_rerun_coverage": true,
+          "should_rerun_judgment_plan": true,
+          "should_rerun_synthesis": true,
+          "should_run_gates": true
+        },
+        "expected_preserved_artifacts": [],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller chooses start_memo_analysis, not a direct final answer.",
+          "Tool arguments include only allowed tickers NVDA and AMD, years 2024 and 2025, and source_policy SEC_ONLY_10K.",
+          "Harness executes the fixed memo DAG and records artifact refs in session state.",
+          "DeepSeek does not bypass retrieval, ledger, Judgment Plan, claim verification, or deterministic gates."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_001",
+          "user_id": "u_research_001",
+          "tickers": [
+            "NVDA",
+            "AMD"
+          ],
+          "years": [
+            2024,
+            2025
+          ],
+          "source_policy": "SEC_ONLY_10K",
+          "execute": true
+        },
+        "expected_context": {
+          "tickers": [
+            "NVDA",
+            "AMD"
+          ],
+          "source_policy": "SEC_ONLY_10K"
+        }
+      },
+      {
+        "turn_id": "t2",
+        "user_message": "先把 AMD 拿掉，只看 NVDA，而且只看 2024，不要同行对比。",
+        "expected_intent": "revise_scope",
+        "expected_tool": "revise_memo_scope",
+        "expected_arguments": {
+          "session_id": "s_tool_001",
+          "user_id": "u_research_001",
+          "remove_tickers": [
+            "AMD"
+          ],
+          "years": [
+            2024
+          ],
+          "preserve_output_style": true,
+          "execute": true
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": true,
+          "should_rerun_ledger": true,
+          "should_rerun_coverage": true,
+          "should_rerun_judgment_plan": true,
+          "should_rerun_synthesis": true,
+          "should_run_gates": true
+        },
+        "expected_preserved_artifacts": [
+          "session_id",
+          "user_id",
+          "tenant_id",
+          "prior_user_turns"
+        ],
+        "expected_invalidated_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger",
+          "evidence_coverage_matrix",
+          "judgment_plan",
+          "evidence_pack",
+          "memo_answer",
+          "claim_verification",
+          "deterministic_gates",
+          "rendered_answer"
+        ],
+        "success_criteria": [
+          "Controller recognizes this as a scope revision, not a new unrelated memo.",
+          "Harness invalidates all stale analysis artifacts from the prior NVDA+AMD 2024-2025 scope.",
+          "New run is constrained to NVDA 2024 and SEC_ONLY_10K.",
+          "No AMD or peer-analysis evidence remains in the active memo after revision."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_001",
+          "remove_tickers": [
+            "AMD"
+          ],
+          "tickers": [
+            "NVDA"
+          ],
+          "years": [
+            2024
+          ],
+          "peer_scope": false,
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "target_tickers": [
+            "NVDA"
+          ],
+          "peer_scope": false,
+          "tickers": [
+            "NVDA"
+          ],
+          "source_policy": "SEC_ONLY_10K"
+        }
+      },
+      {
+        "turn_id": "t3",
+        "user_message": "刚才这个覆盖全吗？有没有缺年份、指标或者风险部分？",
+        "expected_intent": "inspect_coverage",
+        "expected_tool": "inspect_coverage",
+        "expected_arguments": {
+          "session_id": "s_tool_001"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger",
+          "evidence_coverage_matrix",
+          "judgment_plan",
+          "evidence_pack",
+          "memo_answer",
+          "claim_verification",
+          "deterministic_gates",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller uses inspect_coverage instead of rerunning start_memo_analysis.",
+          "Harness reads the existing Evidence Coverage Matrix for the revised NVDA 2024 scope.",
+          "Response reports covered and missing metric families, risks, years, and source limitations.",
+          "No retrieval, ledger, Judgment Plan, synthesis, or gates are rerun."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_001",
+          "active_scope": {
+            "tickers": [
+              "NVDA"
+            ],
+            "years": [
+              2024
+            ],
+            "source_policy": "SEC_ONLY_10K"
+          }
+        },
+        "expected_context": {
+          "active_scope": {
+            "tickers": [
+              "NVDA"
+            ],
+            "years": [
+              2024
+            ],
+            "source_policy": "SEC_ONLY_10K"
+          }
+        }
+      },
+      {
+        "turn_id": "t4",
+        "user_message": "那第二条增长驱动的证据从哪来的？把 evidence id 和来源讲清楚。",
+        "expected_intent": "explain_evidence",
+        "expected_tool": "explain_evidence",
+        "expected_arguments": {
+          "session_id": "s_tool_001"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "memo_answer",
+          "runtime_exact_value_ledger",
+          "judgment_plan",
+          "evidence_pack",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller resolves '第二条增长驱动' against the current active NVDA 2024 memo.",
+          "Harness reads prior memo_answer, Runtime Exact-Value Ledger, Judgment Plan, and evidence_pack.",
+          "Response returns compact evidence/source explanation with metric or evidence IDs.",
+          "No graph rerun occurs."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_001",
+          "claim_reference": "second_growth_driver",
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "claim_reference": "second_growth_driver",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      }
+    ],
+    "scenario_success_criteria": [
+      "The scenario starts with a new memo, then correctly revises scope without treating it as an unrelated task.",
+      "Scope revision invalidates all stale memo artifacts and reruns the fixed DAG under SEC_ONLY_10K.",
+      "Coverage and evidence follow-ups reuse existing artifacts and do not rerun graph stages.",
+      "All responses remain within allowed tickers, years, and SEC_ONLY_10K policy."
+    ],
+    "failure_modes_to_catch": [
+      "Controller starts a new memo instead of using revise_memo_scope.",
+      "Stale AMD or 2025 artifacts leak into the revised NVDA 2024 answer.",
+      "Coverage inspection reruns retrieval or synthesis.",
+      "Evidence explanation invents sources instead of reading evidence_pack or ledger.",
+      "DeepSeek writes unsupported final prose without going through harness tools."
+    ],
+    "schema_version": "sec_agent_multiturn_tool_harness_eval_v0.1",
+    "source_candidate_path": "D:\\downloads\\sec_agent_multiturn_tool_harness_eval_candidate_v1.json"
+  },
+  {
+    "scenario_id": "multiturn_tool_no_rerun_inspection_001",
+    "category": "no_rerun_artifact_inspection",
+    "purpose": "Test that an already-completed memo supports session-state recovery, evidence explanation, coverage inspection, and source-boundary handling without rerunning the memo DAG.",
+    "initial_state": {
+      "session_id": "s_tool_002",
+      "user_id": "u_research_002",
+      "tenant_id": "tenant_demo",
+      "precondition": "completed_analysis",
+      "active_answer_id": "ans_tool_002_msft_aapl_2023_2025",
+      "available_artifacts": [
+        "query_contract",
+        "retrieved_context",
+        "runtime_exact_value_ledger",
+        "evidence_coverage_matrix",
+        "judgment_plan",
+        "evidence_pack",
+        "memo_answer",
+        "claim_verification",
+        "deterministic_gates",
+        "rendered_answer"
+      ],
+      "missing_artifacts": []
+    },
+    "turns": [
+      {
+        "turn_id": "t1",
+        "user_message": "刚才那个 MSFT 和 AAPL 2023-2025 的 memo 还在吗？我想接着看第二条证据。",
+        "expected_intent": "explain_evidence",
+        "expected_tool": "get_session_state",
+        "expected_arguments": {
+          "session_id": "s_tool_002",
+          "user_id": "u_research_002"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger",
+          "evidence_coverage_matrix",
+          "judgment_plan",
+          "evidence_pack",
+          "memo_answer",
+          "claim_verification",
+          "deterministic_gates",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller calls get_session_state because the user references '刚才那个' and '第二条证据'.",
+          "Harness returns compact state including active_answer_id, tickers, years, and artifact availability.",
+          "No graph stage is rerun."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_002",
+          "user_id": "u_research_002"
+        },
+        "expected_context": {}
+      },
+      {
+        "turn_id": "t2",
+        "user_message": "对，就解释刚才 memo 里的第二条证据，特别是和 MSFT 云业务增长相关的那条。",
+        "expected_intent": "explain_evidence",
+        "expected_tool": "explain_evidence",
+        "expected_arguments": {
+          "session_id": "s_tool_002",
+          "answer_id": "ans_tool_002_msft_aapl_2023_2025"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "memo_answer",
+          "runtime_exact_value_ledger",
+          "judgment_plan",
+          "evidence_pack",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller chooses explain_evidence, not start_memo_analysis.",
+          "Harness reads prior evidence artifacts and identifies the relevant MSFT 10-K source snippet or metric ID.",
+          "Response is compact and source-grounded.",
+          "No retrieval, ledger, coverage, Judgment Plan, synthesis, or gates are rerun."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_002",
+          "active_answer_id": "ans_tool_002_msft_aapl_2023_2025",
+          "claim_reference": "second_evidence_msft_cloud_growth",
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "claim_reference": "second_evidence_msft_cloud_growth",
+          "active_answer_id": "ans_tool_002_msft_aapl_2023_2025",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      },
+      {
+        "turn_id": "t3",
+        "user_message": "那这个 memo 的证据覆盖完整吗？AAPL 那边有没有年份或者利润率指标缺口？",
+        "expected_intent": "inspect_coverage",
+        "expected_tool": "inspect_coverage",
+        "expected_arguments": {
+          "session_id": "s_tool_002",
+          "answer_id": "ans_tool_002_msft_aapl_2023_2025"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "evidence_coverage_matrix",
+          "query_contract",
+          "memo_answer",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller chooses inspect_coverage.",
+          "Harness reads the existing Evidence Coverage Matrix.",
+          "Response reports covered and missing AAPL years or margin/profitability metric families.",
+          "No graph stage is rerun."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_002",
+          "active_answer_id": "ans_tool_002_msft_aapl_2023_2025",
+          "focus_tickers": [
+            "AAPL"
+          ],
+          "focus_metric_families": [
+            "profitability",
+            "margin"
+          ],
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "focus_tickers": [
+            "AAPL"
+          ],
+          "focus_metric_families": [
+            "profitability",
+            "margin"
+          ],
+          "active_answer_id": "ans_tool_002_msft_aapl_2023_2025",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      },
+      {
+        "turn_id": "t4",
+        "user_message": "顺便说下 MSFT 最新 AI 需求怎么样？现在是不是值得买？",
+        "expected_intent": "source_boundary",
+        "expected_tool": "inspect_coverage",
+        "expected_arguments": {
+          "session_id": "s_tool_002",
+          "answer_id": "ans_tool_002_msft_aapl_2023_2025"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "evidence_coverage_matrix",
+          "memo_answer",
+          "evidence_pack",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller does not call external news, stock price, analyst consensus, or market-data tools.",
+          "Harness keeps the response inside SEC_ONLY_10K boundaries.",
+          "Response states that latest demand and current buy/sell decisions require disallowed current or market data, while optionally summarizing conservative SEC-only evidence already available.",
+          "No new retrieval or memo synthesis is performed."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_002",
+          "active_answer_id": "ans_tool_002_msft_aapl_2023_2025",
+          "requested_topics": [
+            "latest_ai_demand",
+            "current_buy_decision"
+          ],
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "requested_topics": [
+            "latest_ai_demand",
+            "current_buy_decision"
+          ],
+          "active_answer_id": "ans_tool_002_msft_aapl_2023_2025",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      }
+    ],
+    "scenario_success_criteria": [
+      "The controller uses get_session_state to resolve ambiguous references before artifact inspection.",
+      "explain_evidence and inspect_coverage reuse prior completed artifacts only.",
+      "The source-boundary turn does not trigger external retrieval or unsupported investment advice.",
+      "The active answer remains MSFT/AAPL 2023-2025 throughout the scenario."
+    ],
+    "failure_modes_to_catch": [
+      "Controller starts a new memo for '刚才那个'.",
+      "Evidence explanation reruns retrieval or synthesizes new claims.",
+      "Coverage inspection ignores the Evidence Coverage Matrix.",
+      "Controller answers latest AI demand or buy/sell suitability using unsupported external or current-market facts.",
+      "DeepSeek self-certifies evidence or gates without harness execution."
+    ],
+    "schema_version": "sec_agent_multiturn_tool_harness_eval_v0.1",
+    "source_candidate_path": "D:\\downloads\\sec_agent_multiturn_tool_harness_eval_candidate_v1.json"
+  },
+  {
+    "scenario_id": "multiturn_tool_reformat_only_001",
+    "category": "reformat_only",
+    "purpose": "Test that style-only output requests reuse an existing completed memo and only invalidate the rendered answer, without rerunning retrieval, ledger, coverage, or Judgment Plan.",
+    "initial_state": {
+      "session_id": "s_tool_003",
+      "user_id": "u_pm_003",
+      "tenant_id": "tenant_demo",
+      "precondition": "completed_analysis",
+      "active_answer_id": "ans_tool_003_panw_crwd_snow_2024",
+      "available_artifacts": [
+        "query_contract",
+        "retrieved_context",
+        "runtime_exact_value_ledger",
+        "evidence_coverage_matrix",
+        "judgment_plan",
+        "evidence_pack",
+        "memo_answer",
+        "claim_verification",
+        "deterministic_gates",
+        "rendered_answer"
+      ],
+      "missing_artifacts": []
+    },
+    "turns": [
+      {
+        "turn_id": "t1",
+        "user_message": "刚才那个 PANW、CRWD、SNOW 的 2024 memo 是哪个？我想改成 PM 能看的版本。",
+        "expected_intent": "reformat",
+        "expected_tool": "get_session_state",
+        "expected_arguments": {
+          "session_id": "s_tool_003",
+          "user_id": "u_pm_003"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger",
+          "evidence_coverage_matrix",
+          "judgment_plan",
+          "evidence_pack",
+          "memo_answer",
+          "claim_verification",
+          "deterministic_gates",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller calls get_session_state because the user references '刚才那个'.",
+          "Harness returns active_answer_id and artifact refs for the completed PANW/CRWD/SNOW 2024 memo.",
+          "No graph stage is rerun."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_003",
+          "user_id": "u_pm_003"
+        },
+        "expected_context": {}
+      },
+      {
+        "turn_id": "t2",
+        "user_message": "就用这个 memo，改成给 PM 的 5 个 bullet，每条都保留证据 id，语气更保守。",
+        "expected_intent": "reformat",
+        "expected_tool": "reformat_answer",
+        "expected_arguments": {
+          "session_id": "s_tool_003",
+          "answer_id": "ans_tool_003_panw_crwd_snow_2024",
+          "format": "pm_5_bullets",
+          "preserve_citations": true,
+          "execute": false
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": true,
+          "should_run_gates": true
+        },
+        "expected_preserved_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger",
+          "evidence_coverage_matrix",
+          "judgment_plan",
+          "evidence_pack",
+          "memo_answer",
+          "claim_verification",
+          "deterministic_gates"
+        ],
+        "expected_invalidated_artifacts": [
+          "rendered_answer"
+        ],
+        "success_criteria": [
+          "Controller chooses reformat_answer, not start_memo_analysis.",
+          "Harness does not rerun retrieval, ledger, coverage, or Judgment Plan.",
+          "Only rendered_answer is invalidated or regenerated.",
+          "If v0 only records a planned reformat request, the request must preserve the intended rerun policy and artifact preservation behavior."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_003",
+          "active_answer_id": "ans_tool_003_panw_crwd_snow_2024",
+          "format": "pm_5_bullets",
+          "preserve_evidence_ids": true,
+          "tone": "conservative",
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "tone": "conservative",
+          "preserve_evidence_ids": true,
+          "active_answer_id": "ans_tool_003_panw_crwd_snow_2024",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      },
+      {
+        "turn_id": "t3",
+        "user_message": "再压缩成投资委员会 IC memo 格式：结论、关键证据、主要风险三段，不要改任何结论。",
+        "expected_intent": "reformat",
+        "expected_tool": "reformat_answer",
+        "expected_arguments": {
+          "session_id": "s_tool_003",
+          "answer_id": "ans_tool_003_panw_crwd_snow_2024",
+          "format": "investment_committee_three_sections",
+          "preserve_citations": true,
+          "execute": false
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": true,
+          "should_run_gates": true
+        },
+        "expected_preserved_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger",
+          "evidence_coverage_matrix",
+          "judgment_plan",
+          "evidence_pack",
+          "memo_answer",
+          "claim_verification",
+          "deterministic_gates"
+        ],
+        "expected_invalidated_artifacts": [
+          "rendered_answer"
+        ],
+        "success_criteria": [
+          "Controller keeps the same active memo and uses reformat_answer again.",
+          "No retrieval, ledger, coverage, or Judgment Plan rerun occurs.",
+          "Reformatted answer does not introduce new claims or unsupported facts.",
+          "Evidence IDs and source boundaries remain intact."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_003",
+          "active_answer_id": "ans_tool_003_panw_crwd_snow_2024",
+          "format": "investment_committee_three_sections",
+          "preserve_conclusions": true,
+          "sections": [
+            "conclusion",
+            "key_evidence",
+            "main_risks"
+          ],
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "sections": [
+            "conclusion",
+            "key_evidence",
+            "main_risks"
+          ],
+          "preserve_conclusions": true,
+          "active_answer_id": "ans_tool_003_panw_crwd_snow_2024",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      }
+    ],
+    "scenario_success_criteria": [
+      "All turns operate on the completed PANW/CRWD/SNOW 2024 memo in the same session.",
+      "Reformat-only requests do not invalidate evidence, ledger, coverage, Judgment Plan, claim verification, or deterministic gates.",
+      "Only rendered output changes; source-grounded conclusions remain unchanged.",
+      "No external or current data is introduced during style transformation."
+    ],
+    "failure_modes_to_catch": [
+      "Controller treats reformatting as a new memo analysis.",
+      "Harness reruns retrieval, ledger, coverage, or Judgment Plan for a style-only change.",
+      "Reformatted answer drops evidence IDs despite user request.",
+      "DeepSeek adds new cybersecurity/news facts not present in SEC_ONLY_10K artifacts.",
+      "Rendered answer changes the underlying investment conclusion instead of just changing format."
+    ],
+    "schema_version": "sec_agent_multiturn_tool_harness_eval_v0.1",
+    "source_candidate_path": "D:\\downloads\\sec_agent_multiturn_tool_harness_eval_candidate_v1.json"
+  },
+  {
+    "scenario_id": "multiturn_tool_session_isolation_001",
+    "category": "session_isolation",
+    "purpose": "Test non-contiguous session behavior across two sessions/users and ensure that prior context, active answers, and artifacts do not leak between sessions.",
+    "initial_state": {
+      "session_id": "s_tool_004_a",
+      "user_id": "u_research_004_a",
+      "tenant_id": "tenant_demo",
+      "precondition": "two_sessions",
+      "active_answer_id": "ans_tool_004a_nvda_2024",
+      "available_artifacts": [
+        "query_contract",
+        "retrieved_context",
+        "runtime_exact_value_ledger",
+        "evidence_coverage_matrix",
+        "judgment_plan",
+        "evidence_pack",
+        "memo_answer",
+        "claim_verification",
+        "deterministic_gates",
+        "rendered_answer"
+      ],
+      "missing_artifacts": []
+    },
+    "turns": [
+      {
+        "turn_id": "t1",
+        "user_message": "我回到上次那个 NVDA 2024 的 session 了，先确认一下当前 active memo 是哪个。",
+        "expected_intent": "inspect_coverage",
+        "expected_tool": "get_session_state",
+        "expected_arguments": {
+          "session_id": "s_tool_004_a",
+          "user_id": "u_research_004_a"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger",
+          "evidence_coverage_matrix",
+          "judgment_plan",
+          "evidence_pack",
+          "memo_answer",
+          "claim_verification",
+          "deterministic_gates",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller calls get_session_state for s_tool_004_a.",
+          "Harness returns only NVDA 2024 active_answer_id and artifacts for user u_research_004_a.",
+          "No AMZN/META or other-session artifacts appear.",
+          "No graph stage is rerun."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_004_a",
+          "user_id": "u_research_004_a"
+        },
+        "expected_context": {}
+      },
+      {
+        "turn_id": "t2",
+        "user_message": "解释一下这个 NVDA memo 里毛利率改善那条证据，不要重新跑。",
+        "expected_intent": "explain_evidence",
+        "expected_tool": "explain_evidence",
+        "expected_arguments": {
+          "session_id": "s_tool_004_a",
+          "answer_id": "ans_tool_004a_nvda_2024"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "memo_answer",
+          "runtime_exact_value_ledger",
+          "judgment_plan",
+          "evidence_pack",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller chooses explain_evidence against ans_tool_004a_nvda_2024.",
+          "Harness reads only s_tool_004_a artifacts.",
+          "Response explains the NVDA gross margin evidence using SEC_ONLY_10K artifacts.",
+          "No graph rerun occurs."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_004_a",
+          "user_id": "u_research_004_a",
+          "active_answer_id": "ans_tool_004a_nvda_2024",
+          "claim_reference": "gross_margin_improvement",
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "claim_reference": "gross_margin_improvement",
+          "user_id": "u_research_004_a",
+          "active_answer_id": "ans_tool_004a_nvda_2024",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      },
+      {
+        "turn_id": "t3",
+        "user_message": "现在我切到另一个用户刚做的 AMZN 和 META 2025 session，别用刚才 NVDA 的东西，先看当前状态。",
+        "expected_intent": "inspect_coverage",
+        "expected_tool": "get_session_state",
+        "expected_arguments": {
+          "session_id": "s_tool_004_b",
+          "user_id": "u_research_004_b"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger",
+          "evidence_coverage_matrix",
+          "judgment_plan",
+          "evidence_pack",
+          "memo_answer",
+          "claim_verification",
+          "deterministic_gates",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller calls get_session_state for s_tool_004_b and user u_research_004_b.",
+          "Harness returns only the AMZN/META 2025 active state for the second session.",
+          "No NVDA artifacts, claims, or evidence IDs are exposed.",
+          "No graph stage is rerun."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_004_b",
+          "user_id": "u_research_004_b"
+        },
+        "expected_context": {}
+      },
+      {
+        "turn_id": "t4",
+        "user_message": "在这个 AMZN/META session 里检查覆盖：广告、云业务和利润率有没有缺口？",
+        "expected_intent": "inspect_coverage",
+        "expected_tool": "inspect_coverage",
+        "expected_arguments": {
+          "session_id": "s_tool_004_b",
+          "answer_id": "ans_tool_004b_amzn_meta_2025"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "evidence_coverage_matrix",
+          "query_contract",
+          "memo_answer",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller uses inspect_coverage on the AMZN/META 2025 session only.",
+          "Harness reads s_tool_004_b Evidence Coverage Matrix.",
+          "Response reports coverage gaps for AMZN/META advertising, cloud, profitability, and margin only.",
+          "No NVDA evidence or claims appear."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_004_b",
+          "user_id": "u_research_004_b",
+          "active_answer_id": "ans_tool_004b_amzn_meta_2025",
+          "focus_tickers": [
+            "AMZN",
+            "META"
+          ],
+          "focus_metric_families": [
+            "advertising",
+            "cloud",
+            "profitability",
+            "margin"
+          ],
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "focus_tickers": [
+            "AMZN",
+            "META"
+          ],
+          "focus_metric_families": [
+            "advertising",
+            "cloud",
+            "profitability",
+            "margin"
+          ],
+          "user_id": "u_research_004_b",
+          "active_answer_id": "ans_tool_004b_amzn_meta_2025",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      }
+    ],
+    "scenario_success_criteria": [
+      "The controller and harness correctly distinguish s_tool_004_a from s_tool_004_b.",
+      "User and session identifiers are respected on every turn.",
+      "No artifact, claim, evidence ID, or active_answer_id leaks across sessions.",
+      "All inspection and evidence turns are no-rerun artifact reads."
+    ],
+    "failure_modes_to_catch": [
+      "Controller uses the most recent global session instead of the requested session_id.",
+      "NVDA evidence leaks into the AMZN/META coverage inspection.",
+      "Second user's active_answer_id is exposed in the first user's state or vice versa.",
+      "Harness reruns graph stages instead of reading existing artifacts.",
+      "DeepSeek resolves pronouns using conversation text only and ignores session state."
+    ],
+    "schema_version": "sec_agent_multiturn_tool_harness_eval_v0.1",
+    "source_candidate_path": "D:\\downloads\\sec_agent_multiturn_tool_harness_eval_candidate_v1.json"
+  },
+  {
+    "scenario_id": "multiturn_tool_interrupted_resume_001",
+    "category": "interrupted_resume",
+    "purpose": "Test that an interrupted partial run resumes from the first missing artifact, preserves completed retrieval and ledger artifacts, and supports no-rerun evidence inspection after recovery.",
+    "initial_state": {
+      "session_id": "s_tool_005",
+      "user_id": "u_research_005",
+      "tenant_id": "tenant_demo",
+      "precondition": "partial_analysis",
+      "active_answer_id": "ans_tool_005_amzn_meta_2024_2025_partial",
+      "available_artifacts": [
+        "query_contract",
+        "retrieved_context",
+        "runtime_exact_value_ledger"
+      ],
+      "missing_artifacts": [
+        "evidence_coverage_matrix",
+        "judgment_plan",
+        "evidence_pack",
+        "memo_answer",
+        "claim_verification",
+        "deterministic_gates",
+        "rendered_answer"
+      ]
+    },
+    "turns": [
+      {
+        "turn_id": "t1",
+        "user_message": "继续刚才没跑完的 AMZN/META 2024-2025 memo，不要从头重新查 SEC。",
+        "expected_intent": "resume",
+        "expected_tool": "resume_analysis",
+        "expected_arguments": {
+          "session_id": "s_tool_005",
+          "answer_id": "ans_tool_005_amzn_meta_2024_2025_partial",
+          "execute": true
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": true,
+          "should_rerun_judgment_plan": true,
+          "should_rerun_synthesis": true,
+          "should_run_gates": true
+        },
+        "expected_preserved_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller chooses resume_analysis, not start_memo_analysis.",
+          "Harness inspects sec_agent_state.json or equivalent session state.",
+          "Harness identifies next_ready_node as build_coverage_matrix because coverage and downstream artifacts are missing.",
+          "Retrieval and Runtime Exact-Value Ledger are preserved and not rerun.",
+          "Harness resumes from build_coverage_matrix, then continues Judgment Plan, synthesis, verification, gates, and rendering."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_005",
+          "user_id": "u_research_005",
+          "active_answer_id": "ans_tool_005_amzn_meta_2024_2025_partial",
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "user_id": "u_research_005",
+          "active_answer_id": "ans_tool_005_amzn_meta_2024_2025_partial",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      },
+      {
+        "turn_id": "t2",
+        "user_message": "恢复后告诉我现在 session 里有哪些 artifacts，确认一下是不是没有重跑 retrieval。",
+        "expected_intent": "resume",
+        "expected_tool": "get_session_state",
+        "expected_arguments": {
+          "session_id": "s_tool_005",
+          "user_id": "u_research_005"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "query_contract",
+          "retrieved_context",
+          "runtime_exact_value_ledger",
+          "evidence_coverage_matrix",
+          "judgment_plan",
+          "evidence_pack",
+          "memo_answer",
+          "claim_verification",
+          "deterministic_gates",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller calls get_session_state.",
+          "Harness returns compact artifact status after resume.",
+          "State indicates retrieval and ledger artifacts were reused, not regenerated.",
+          "No graph stage is rerun for this status question."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_005",
+          "user_id": "u_research_005"
+        },
+        "expected_context": {}
+      },
+      {
+        "turn_id": "t3",
+        "user_message": "那解释一下 memo 里关于 AMZN 广告业务增长那条证据，从哪个 10-K 片段来的？",
+        "expected_intent": "explain_evidence",
+        "expected_tool": "explain_evidence",
+        "expected_arguments": {
+          "session_id": "s_tool_005",
+          "answer_id": "ans_tool_005_amzn_meta_2024_2025_partial"
+        },
+        "expected_rerun_policy": {
+          "should_rerun_retrieval": false,
+          "should_rerun_ledger": false,
+          "should_rerun_coverage": false,
+          "should_rerun_judgment_plan": false,
+          "should_rerun_synthesis": false,
+          "should_run_gates": false
+        },
+        "expected_preserved_artifacts": [
+          "memo_answer",
+          "runtime_exact_value_ledger",
+          "judgment_plan",
+          "evidence_pack",
+          "rendered_answer"
+        ],
+        "expected_invalidated_artifacts": [],
+        "success_criteria": [
+          "Controller chooses explain_evidence after the resumed analysis has completed downstream artifacts.",
+          "Harness reads evidence_pack and ledger instead of rerunning retrieval.",
+          "Response identifies the supporting SEC_ONLY_10K evidence, metric/evidence ID, and source context.",
+          "No graph stage is rerun."
+        ],
+        "expected_arguments_raw": {
+          "session_id": "s_tool_005",
+          "active_answer_id": "ans_tool_005_amzn_meta_2024_2025_partial",
+          "claim_reference": "amzn_advertising_growth",
+          "source_policy": "SEC_ONLY_10K"
+        },
+        "expected_context": {
+          "claim_reference": "amzn_advertising_growth",
+          "active_answer_id": "ans_tool_005_amzn_meta_2024_2025_partial",
+          "source_policy": "SEC_ONLY_10K"
+        }
+      }
+    ],
+    "scenario_success_criteria": [
+      "Interrupted run resumes from build_coverage_matrix, the first missing artifact node.",
+      "Completed query_contract, retrieved_context, and runtime_exact_value_ledger are preserved.",
+      "Downstream artifacts are generated after resume and visible in session state.",
+      "Post-resume evidence explanation uses existing artifacts only.",
+      "No unsupported external sources are introduced."
+    ],
+    "failure_modes_to_catch": [
+      "Controller starts a new analysis instead of resume_analysis.",
+      "Harness reruns retrieval or ledger despite those artifacts being present.",
+      "Harness resumes from the wrong node, such as synthesize_memo before coverage and Judgment Plan exist.",
+      "State after resume does not record artifact refs or provider/model route.",
+      "Evidence explanation after resume invents source support instead of reading evidence_pack."
+    ],
+    "schema_version": "sec_agent_multiturn_tool_harness_eval_v0.1",
+    "source_candidate_path": "D:\\downloads\\sec_agent_multiturn_tool_harness_eval_candidate_v1.json"
+  }
+]

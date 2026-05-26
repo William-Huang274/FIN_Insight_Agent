@@ -1,0 +1,312 @@
+# Internal Master Checklist
+
+## Repository Foundation
+
+- [x] Initialize local Git repository with `main`.
+- [x] Create feature branch without a `codex` prefix.
+- [x] Add private data and generated artifact ignore rules.
+- [x] Add Git hygiene rules and checkpoint current SEC agent development state.
+- [x] Add Phase 1 project skeleton.
+- [x] Add EvidenceObject schema and JSONL helpers.
+- [x] Add SEC EDGAR connector with recent and historical submission lookup.
+- [x] Add SEC smoke test script.
+- [x] Add first Nasdaq tech universe config.
+- [x] Add batch SEC filing download script.
+- [x] Download first tech universe 10-K HTML cache.
+- [x] Add SEC filing manifest scanner and JSONL builder.
+- [x] Add section-aware SEC filing parser.
+- [x] Add SEC filing chunk builder script.
+- [x] Upgrade SEC chunking to semantic block-aware chunks with part labels.
+- [x] Add table-aware chunking to preserve HTML table boundaries.
+- [x] Add SEC chunk to EvidenceObject conversion.
+- [x] Add BM25 index and retriever.
+- [x] Add dense index and retriever.
+- [x] Add hybrid RRF retriever.
+- [x] Add seed gold evidence query set.
+- [x] Add retrieval evaluation script.
+- [x] Add precision and nDCG metrics to retrieval evaluation.
+- [x] Add an in-process retrieval runner/API to avoid reloading the dense model
+      for every query.
+- [ ] Test weighted RRF or dense-first retrieval with BM25 fallback.
+- [ ] Promote seed gold set to reviewed gold set with human-checked labels.
+
+## Phase 1 Smoke Tests
+
+- [x] SEC 10-K download smoke test for JPM 2024.
+- [x] Add SEC 10-Q five-company primary-filing pilot.
+- [x] Build mixed 10-K/10-Q manifest with filing-level period metadata.
+- [x] Parse 10-Q filings without reusing incorrect 10-K section labels.
+- [x] Run real DeepSeek API smoke on the 2026 10-Q pilot and render a placeholder-free answer.
+- [x] Add 10-Q runtime-ledger safeguards for AWS operating income, MSFT cloud growth percentages, and false operating-income/gross-margin rows.
+- [x] Add 10-Q source-scope regression tests covering Query Contract gaps, retrieval filters, Coverage Matrix filing/source matching, and runtime ledger metadata.
+- [x] Add source-tier/form-type coverage and inventory gap reporting to Evidence Coverage Matrix.
+- [x] Filter retrieval candidates by requested filing/source scope for mixed 10-K/10-Q runs.
+- [x] Cloud-rerun the 2026 10-Q pilot after source-scope filtering changes.
+- [x] Fix 10-Q ledger role issues exposed by real DeepSeek output: false no-number caveats, MSFT gross-margin percentage-change rows, and MSFT operating-income growth amounts.
+- [ ] Gate mixed-source answers with explicit audited annual vs unaudited quarterly evidence boundaries.
+- [x] Rebuild/version the 10-Q object index after multi-row table-header alignment changes.
+- [x] Count clean API model answers in the post-gate model-answer usage check while keeping repaired/truncated outputs visible.
+- [x] Cloud-rerun the patched 10-Q DeepSeek API prompt with a compact evidence pack and require clean `answered_api_model` output.
+- [x] Expand 2026 10-Q ingestion/index artifacts to the current 30-company universe and rebuild mixed 10-K/10-Q artifacts.
+- [x] Propagate `period_role` into structured extraction, runtime ledger metric IDs, and rendered metric references for QTD/YTD/annual separation.
+- [x] Fix ContextManager mixed-session bootstrap so `SEC_PRIMARY_MIXED_RECENT` cannot be overwritten by stale controller defaults.
+- [x] Add SEC 8-K earnings-release pilot source-gap merge/session wiring and fix mixed 10-Q/8-K retrieval, graph-state source policy, and substantive follow-up routing on the RTX 5090 cloud node.
+- [x] Improve mixed 10-Q/8-K synthesis so retrieved 8-K earnings-release rows are used as routine qualitative support for earnings explanation, guidance, demand, capex/investment cadence, and management commentary when relevant, while keeping 8-K numbers out of the audited Exact-Value Ledger.
+- [ ] Fix rendered-answer metric-label alignment so percentage/rate ledger support is not displayed as a misleading cloud-revenue value in narrative sections.
+- [ ] Cloud-run a real `session-mixed-deepseek` full DAG prompt on the mixed 10-K/10-Q artifacts after syncing the latest source changes.
+- [x] EvidenceObject JSONL read/write smoke test.
+- [x] SEC tech EvidenceObject build smoke test.
+- [x] BM25 retrieval smoke test on MSFT/NVDA queries.
+- [x] Dense retrieval smoke test on cloud GPU using MiniLM embeddings.
+- [x] Seed retrieval evaluation for BM25, dense, and hybrid RRF.
+- [x] ModelScope Qwen3-Embedding-0.6B dense retrieval evaluation.
+- [x] Qwen seq8192 batch-size probe on cloud RTX 4090.
+- [x] Complex finance query top5 retrieval probe.
+- [x] Complex multi-facet retrieval qrels and facet-aware evaluation.
+- [x] Diagnose Qwen3.5 27B GPTQ serving speed on cloud RTX 4090.
+- [ ] Human-review and expand complex multi-facet qrels.
+- [x] Add automatic query decomposition demo for complex finance questions.
+- [x] Select and benchmark a text-only resident planner/summarizer model.
+- [x] Run Qwen3.5-9B resident planner-to-synthesis demo on cloud RTX 4090.
+- [x] Harden planner/verifier structured output with guided JSON or stricter repair.
+- [x] Add adaptive retrieval/verification depth for tasks missing direct evidence.
+- [x] Add task query variants and original-query-priority variant fusion.
+- [x] Test optional table-rescue verification for missing direct evidence.
+- [ ] Test dense-first retrieval with controlled BM25 fallback or reranking.
+- [x] Build a model-authored reviewed-style evidence-pack eval set for planner/retrieval/verifier outputs.
+- [ ] Add a precision-oriented semantic reranker or verifier gate before synthesis.
+- [x] Add MetricObject/TableObject/ClaimObject extraction before final synthesis.
+- [ ] Add task-aware verifier snippets around target terms and table spans.
+- [ ] Add automated planner/evidence/synthesis scoring for the agent reasoning eval set.
+
+## Phase 2 Structured Evidence
+
+- [x] Define Phase 2 structured evidence and agent-role execution plan.
+- [x] Add TableObject, MetricObject, and ClaimObject schemas.
+- [x] Add first-pass structured object extractor from EvidenceObject JSONL.
+- [x] Run structured object build on current SEC tech 10-K evidence store.
+- [x] Validate Apple Services table/metrics, Snowflake RPO/consumption claims, and NVIDIA risk claims.
+- [x] Add structured object anchor validation script.
+- [x] Add object-level gold draft builder.
+- [x] Add object-level retrieval/evaluation hooks.
+- [x] Add object-level BM25 candidate retrieval baseline.
+- [x] Export retriever predictions as facet-level candidate object IDs.
+- [x] Add lexical selected@N baseline for object retrieval.
+- [x] Export object-level review candidates with auto direct/partial/false suggestions.
+- [x] Add deterministic rule verifier baseline for structured objects.
+- [x] Export verifier predictions as selected/cited object IDs.
+- [x] Add Codex-assisted first-pass object labels in `human_label`.
+- [x] Add review-label evaluation for retriever/verifier predictions.
+- [x] Benchmark BGE and Qwen3 object reranker baselines on cloud RTX 4090.
+- [x] Add BGE topK evidence pool builder.
+- [x] Add small Qwen-style verifier and verifier evaluation scripts.
+- [x] Run Qwen3.5-4B verifier smoke on cloud RTX 4090.
+- [x] Build a strict Qwen3.5 verifier fast path with self-compiled causal-conv1d for torch 2.11/cu13/sm89.
+- [x] Run Qwen3.5-2B and Qwen3.5-4B strict-fast-path verifier smoke on cloud RTX 4090.
+- [x] Gate verifier explanations behind an explicit debug flag and make compact classification output the default.
+- [x] Run full 230-row Qwen3.5-4B strict-fast-path compact verifier evaluation.
+- [x] Add aspect-level evidence pool expansion and verifier evaluation.
+- [x] Run full 730-row aspect-level Qwen3.5-4B strict-fast-path compact verifier evaluation.
+- [x] Add financial evidence label protocol for aspect-level manual review.
+- [x] Build Codex-reviewed aspect-level human gold subset for top-direct policy calibration.
+- [x] Evaluate highest-confidence versus rerank-first aspect citation selection policies.
+- [ ] Human-review object-level gold target refs and label direct/partial/false.
+- [x] Human-review aspect-level gold subset before treating aspect verifier precision as final.
+- [ ] Replace rule verifier with reranker plus 0.8B/1.5B small semantic verifier.
+- [ ] Align verifier label protocol with aspect-level evidence semantics before promoting small-verifier metrics.
+- [ ] Calibrate BGE reranker score plus Qwen verifier label/confidence as a two-stage evidence-pool policy.
+- [x] Implement calibrated evidence pool exporter with citation/background/reject roles and missing-aspect reporting.
+- [x] Run synthesis against calibrated grouped evidence pool and require explicit missing-aspect reporting.
+- [x] Add expanded multi-company/multi-year query set for complex insight and metric/table stability.
+- [x] Run v0.2 expanded query set through retrieval, reranker, verifier, and Qwen3.5-9B synthesis.
+- [x] Implement diagnostic answer-quality scorer profiles for insight and metric/table outputs.
+- [x] Implement diagnostic citation validator with object-id, role, source-trace, missing-aspect, and numeric-support checks.
+- [x] Export a Chinese query/task/verifier/synthesis trace report for the expanded v0.2 run.
+- [x] Add cell-level TableObject cells and MetricObject cell metadata for table-derived metrics.
+- [x] Split expanded v0.2 retrieval tasks into company/year/metric cell-level aspects.
+- [x] Add strict teacher-readiness quality gate and mark current synthesis outputs `teacher_ready=false`.
+- [x] Add strict cell-level JSON output contract for metric/table tasks.
+- [x] Add deterministic post-synthesis citation repair for object-id copy errors.
+- [ ] Add post-synthesis repair for invalid JSON and background-only citations.
+- [x] Add numeric validator against structured MetricObject/TableObject values.
+- [x] Add scale-aware metric/table validator handling for SEC `usd_thousands` values.
+- [x] Re-run BGE/Qwen verifier on the 698 cell-level expanded tasks and compare against the old 168-aspect pool.
+- [x] Add vLLM batched verifier path for the 6,980-row cell-level evidence pool.
+- [x] Add final-prompt token preflight and facet-balanced aspect cap for 16k synthesis packing.
+- [x] Redesign evidence memory so final synthesis does not omit large numbers of cell/aspect tasks under 16k context.
+- [x] Add long-context synthesis packing profiles for full facet memory and raw citation-only calibrated evidence.
+- [x] Run 128k Qwen3.5-9B complex-insight baselines before prioritizing EvidenceBriefObject.
+- [x] Add long-context complex-insight final synthesis contract with facet findings, comparability caveats, and missing-by-facet output.
+- [x] Add stricter numeric/unit phrasing rules for long-context complex-insight outputs.
+- [x] Add Qwen3.5-9B Query Contract planner for the 6 complex-insight queries.
+- [x] Normalize and hard-validate 6-query Query Contracts with deterministic scope clamps.
+- [x] Add deterministic Evidence Object Contract and Exact-Value Ledger builders.
+- [x] Replay prior v3 numeric claims against Exact-Value Ledger to quantify blocked numeric risk.
+- [x] Add Decision Driver Evidence Pack candidate builder, 9B pack planner, and pack validator.
+- [x] Add driver-pack input mode to final synthesis and extend validators for `driver_id` / `metric_id`.
+- [x] Run the 6-query Query Contract + Driver Pack diagnostic before expanding samples.
+- [x] Add metric-family/table-context conflict validator before promoting Exact-Value Ledger rows.
+- [x] Add prose numeric relation validator for trend direction claims such as `from X grew to Y`.
+- [x] Formalize SEC benchmark `test_cases_v1.jsonl` from the external eval/gold plan.
+- [x] Add SEC benchmark v1 readiness validator and run first-step source/evidence/BM25 smoke.
+- [x] Add seed Gold Context / Gold Facts artifacts for the first SEC benchmark slice.
+- [x] Add Gold Context vs Pipeline Context context-only runner scaffold.
+- [x] Human-review seed Gold Context / Gold Facts and gate whether they can enter mainline.
+- [x] Add executable SEC gold gate to block seed gold from scored mainline runs.
+- [x] Build first reviewed numeric Gold Context / Gold Facts for GOOGL and AMZN metric-role regressions.
+- [x] Build reviewed/trimmed Gold Context for SNOW/NVDA/MSFT text-heavy SEC summary cases.
+- [x] Run true-Qwen gold-context synthesis smoke for SNOW/NVDA/MSFT reviewed text-heavy cases.
+- [x] Add no-ledger text-summary numeric ban and named-evidence citation repair to the SEC Qwen backend.
+- [ ] Build reviewed/trimmed Gold Context and deterministic Gold Facts after manual-review rejection of noisy seed gold.
+- [x] Add Gold Context vs Pipeline Context synthesis + scoring runner to separate model failures from retrieval/parsing failures.
+- [x] Run reviewed7 pipeline-context true-Qwen test and combined reviewed7 non-trap plus trap gate bundle.
+- [x] Add a standalone named-fact citation gate beyond the current lightweight backend repair.
+- [x] Convert SEC benchmark v1 reviewed pipeline model outputs into scored `agent_outputs.jsonl`, `claim_verification.jsonl`, `scores.jsonl`, and `bad_cases.md`.
+- [x] Expand reviewed SEC gold to the Cloud L4 diagnostic case with Microsoft proxy/caveat scoping.
+- [x] Add deterministic Chinese abstract-judgment rubric gate and wire it into SEC benchmark post-gates.
+- [x] Run reviewed8 Cloud pipeline-context true-Qwen synthesis and pass reviewed8 plus trap post-gates with no ledger repairs.
+- [x] Add explicit ledger/not_found consistency report gate outside backend sanitizer.
+- [x] Review BGE/Qwen reranker plus verifier-filtered evidence-pack results before Answer Plan promotion.
+- [x] Add deterministic Judgment Plan seed builder and plan validator for the Cloud/Platform complex reviewed cases.
+- [x] Add optional Judgment Plan prompt injection to HF and resident-vLLM SEC Qwen synthesis backends.
+- [x] Add final answer-vs-Judgment-Plan validator and optional post-gate integration.
+- [x] Run true-Qwen synthesis with `--judgment-plan-path` on the two complex reviewed cases and compare against the rubric-only answers.
+- [x] Integrate Judgment Plan path into a reviewed9 + 2 trap bundle run.
+- [x] Convert SEC benchmark v1 non-trap gold set to reviewed10 by rebuilding the metric-table stability case with cell-level facts.
+- [x] Run the reviewed10 table case through pipeline-context true-Qwen synthesis and deterministic post-gates.
+- [x] Scaffold v1.1 reviewed-gold expansion seed cases and run source/index readiness smoke.
+- [x] Add a 10-company cross-industry SEC reviewed slice and pass cloud BGE-M3 + Judgment Plan + RTX 5090 Qwen9B post-gates.
+- [x] Merge new20 mixed plus cross-industry10 into combined40 and pass cloud BGE-M3 + Judgment Plan + RTX 5090 Qwen9B deterministic gates after company-alias sanitizer replay.
+- [x] Draft model-gateway and four-intermediate-artifact framework for free-query SEC agent vNext.
+- [x] Add manifest-derived Project Source Inventory injection for Query Contract planner prompts.
+- [x] Implement provider-neutral LLM Gateway for Qwen vLLM, DeepSeek, and OpenAI-compatible APIs.
+- [x] Add standalone validated Query Contract planner path with deterministic scope/form/year/ontology clamps.
+- [x] Cloud-test DeepSeek Query Contract planner as the main `api_quality` route instead of relying on heuristic fallback.
+- [x] Record the free-query A/B user query and rendered model outputs in a model-run appendix.
+- [x] For every future model inference run, record the exact user query/prompt and final rendered model output alongside metrics and artifact paths.
+- [x] Add first claim-first verification layer before user-facing rendering.
+- [ ] Add provider profiles so strict JSON planner/synthesis routes default to DeepSeek no-thinking mode and keep high-thinking only for future free-form analysis experiments.
+- [x] Align free-query semantic gates with `focus_tickers` / `decomposed_tasks` instead of requiring all manifest companies to appear.
+- [x] Widen Evidence Pack / runtime ledger selection for broad industry prompts to support richer multi-driver insights.
+- [x] Create `codex/api-model-call-architecture` branch and separate API model-call routing from local model deployment metadata.
+- [x] Add `planner_eval_v1` 30-case free-query planner eval set plus saved-contract evaluator.
+- [x] Run heuristic and DeepSeek planner baselines; mark DeepSeek baseline diagnostic because `task_type_accuracy=0.7` misses the Step 1 target.
+- [x] Add deterministic Evidence Coverage Matrix builder and wire it into interactive SEC agent runs.
+- [x] Inject Evidence Coverage Matrix into synthesis prompts and deterministic answer normalization.
+- [ ] Refine planner ontology/evaluator semantics so single-company queries are not misclassified as comparison tasks.
+- [x] Run NVDA growth + competitor representative prompt through the cloud chain and inspect coverage-aware output quality.
+- [x] Separate free-query `selected_companies` coverage semantics from retrieval `focus_tickers` scope.
+- [x] Strip inline `metric_id` strings from user-facing answer prose while preserving sibling metric arrays for audit gates.
+- [x] Filter percentage-basis and change-column rows out of runtime Exact-Value Ledger period values.
+- [x] Add API `api_insight_v2` synthesis profile so API models can write a thesis, causal read, "so what" analysis, and caveats while still staying inside ledger/evidence constraints.
+- [x] Add a free-query quality scorer for summary thesis, driver depth, evidence binding, peer-role coverage, caveat quality, and terminal polish.
+- [x] Patch user-facing key-point rendering to drop unresolved exact-value placeholders after claim/ledger filtering.
+- [x] Add `sec_free_query_memo_quality_eval_v1` five-case memo eval set plus scorer.
+- [x] Score latest NVDA DeepSeek output against memo-quality rubric and identify gaps in counterarguments, watch items, and explicit memo structure.
+- [x] Add internal graph-style `SecAgentState` with artifact refs and stage records before adopting LangGraph runtime.
+- [x] Add graph node order/dependency contract for planner, retrieval, ledger, coverage, memo synthesis, claim verification, gates, and rendering.
+- [x] Teach interactive runs to write `sec_agent_state.json` using the new graph-state contract.
+- [x] Add minimal LangGraph one-shot ask runner that wraps the current interactive pipeline and loads the saved state.
+- [x] Rerun the official DeepSeek API representative prompt after the post-run display-cleanup patch.
+- [x] Convert API synthesis output schema to memo roles: direct answer, thesis, what changed, why it matters, peer readthrough, counterarguments, watch items, source limitations.
+- [x] Keep legacy `summary` / `decision_drivers` / `key_points` compatibility for deterministic gates under `api_memo_v1`.
+- [x] Extend exact-value ledger and named-fact gates to inspect memo fields.
+- [x] Rerun the NVDA prompt against memo-quality eval v1 after memo-schema prompt changes.
+- [x] Run the full 5-case `sec_free_query_memo_quality_eval_v1` set under `api_memo_v1` and compare planner/evidence coverage failures before adding more rules.
+- [x] Add planner-specific JSON extraction and per-run `planner_trace.json` so Query Contract planner failures are auditable without confusing planner JSON with final-answer JSON.
+- [x] Preserve peer-aware `required_tickers` / `peer_tickers` through Query Contract normalization and Evidence Coverage Matrix compilation.
+- [x] Reserve peer structured-object candidates after BGE rerank for competitor prompts so the runtime ledger can contain peer financial rows.
+- [x] Add bank-specific metric ontology, iXBRL structured extraction, and runtime ledger selection for JPM banking-quality prompts.
+- [x] Fix `api_memo_v1` 5-case named-fact failures by improving evidence-id propagation and Evidence Coverage Matrix-driven prompt context selection, not by adding broad allowlists.
+- [x] Fix `api_memo_v1` 5-case `answer_vs_judgment_plan_gate_pass` failures by aligning answer evidence IDs with matched Judgment Plan driver/support IDs.
+- [x] Preserve or explicitly override the original synthesis provider/model route during `graph-resume-state`.
+- [x] Rerun patched cloud DeepSeek `api_memo_v1` 5-case eval and reach at least `4/5` all-gates green; final run reached `5/5`.
+- [x] Add session-aware tool harness v0 with DeepSeek-compatible high-level tool specs, dispatch, scope invalidation, and no-rerun artifact inspection tools.
+- [x] Add a DeepSeek/OpenAI-compatible tool-call controller loop on top of the harness tool specs.
+- [x] Add a route-only controller eval over the reviewed 5-scenario/18-turn multi-turn harness cases; local heuristic run passed `18/18` tool and argument checks.
+- [x] Run DeepSeek API route-only tool-call eval with the API key injected via environment variable only; final guarded cloud run passed `18/18` tool and argument checks.
+- [x] Add fixture-backed dispatch tests for completed and partial sessions so no-rerun evidence/coverage/resume tools are execution-tested against real artifact refs.
+- [x] Replay harness dispatch tests against one actual completed `api_memo_v1` run and one actual partial/resume state.
+- [x] Run one real multi-turn full-chain scenario covering start analysis, scope revision, coverage inspection, and evidence explanation with tool/dispatch/scope checks passing `4/4`.
+- [x] Record the multi-source expansion direction as deferred until multi-turn follow-up reliability passes.
+- [x] Fix `explain_evidence` so ordinal references can resolve against memo sections beyond `decision_drivers`.
+- [x] Run 3-5 non-contiguous follow-up scenarios after the `explain_evidence` fix.
+- [x] Add JSON-backed `ContextManager` v1 for user/session active-state, bounded controller snapshots, and lossless artifact/resume context fields.
+- [x] Add a deterministic state replay suite covering reload, session isolation, cross-user denial, partial resume artifact-state changes, reformat invalidation, ambiguous-reference clarification, and compression budget guards.
+- [x] Cloud-run the ContextManager state replay suite when the next cloud node is available.
+- [x] Wire `ContextManager.build_controller_context()` into the controller evaluator instead of hand-built eval `runtime_context`.
+- [x] Run DeepSeek route-only over the context-managed controller evaluator.
+- [x] Add context-managed dispatch replay that routes from ContextManager snapshots, calls harness tools, and applies tool results back into context.
+- [x] Run DeepSeek over the context-managed dispatch replay without executing the real SEC DAG.
+- [x] Add an API/request-level ContextManager smoke covering no-active-session clarification and normal route/dispatch/update flow.
+- [x] Add a small single-process ContextManager API load smoke over JSON store and fixture harness dispatch.
+- [x] Add a real ContextManager-backed manual session CLI for free-form cloud prompts and follow-up context inspection.
+- [x] Cloud-run one manual `session-deepseek` prompt plus at least one follow-up turn and record run/context paths.
+- [x] Interpret SEC downloader/manifest `years` as fiscal years using `DocumentFiscalYearFocus`, not calendar `reportDate` alone.
+- [x] Render 10-Q comparative columns with both value fiscal year and source filing fiscal year so prior-year columns are not mislabeled as separate filings.
+- [x] Build the next mixed-source artifact with a fiscal-year-aware interim policy: latest available 10-Q after each company's latest accepted audited 10-K.
+- [x] Fix mixed retrieval context so sparse latest-10-Q source policy does not collapse to `context rows=0`.
+- [x] Fix focused mixed-period prompts so generic comparison does not trigger peer-readthrough.
+- [x] Add MSFT 10-Q cash-flow/capex period-role repair and derived FCF proxy rows for mixed answer support.
+- [x] Record the new information-source expansion governance stage before adding 8-K, IR, market snapshot, consensus, or news sources.
+- [x] Draft the first source-specific plan for SEC 8-K earnings release / Exhibit 99.1 before implementation.
+- [x] Implement the 8-K earnings-release pilot only after source contract, parser schema, retrieval/coverage, renderer/gate, and rollback criteria are documented.
+- [x] Extend source contracts for `SEC_PRIMARY_MIXED_WITH_8K_EARNINGS` and `company_authored_unaudited_sec_filing`.
+- [x] Add SEC 8-K earnings-release discovery and Ex-99.1 exhibit selection for the 5-company pilot.
+- [x] Add 8-K earnings-release downloader/manifest builder for the 5-company pilot.
+- [x] Add 8-K earnings-release parser/chunker and runtime source-boundary gate tests before cloud pilot.
+- [x] Run cloud 8-K earnings pilot build plus mixed 10-Q/8-K DeepSeek smoke for MSFT/AMZN.
+- [x] Add rendered-answer source-boundary display check after first 8-K evidence artifacts exist.
+- [x] Add structured 8-K earnings-release source-gap reason records before broadening coverage.
+- [x] Add 8-K source-gap merge and session wrapper propagation for mixed-with-8K cloud testing.
+- [x] Draft the offline `market_snapshot` fixture source plan before implementation.
+- [x] Add market snapshot schema validation for local CSV/JSON fixture inputs.
+- [x] Add DuckDB/parquet market snapshot storage and catalog builder under private data paths.
+- [x] Add deterministic market analytics tools for returns, relative returns, drawdown, volatility, valuation rank, and compact evidence-pack rows.
+- [x] Run a synthetic local CLI/unit smoke for market snapshot normalization, analytics, evidence pack, validation, and DuckDB catalog.
+- [x] Add event-window return analytics for 8-K earnings release and latest 10-Q filing dates.
+- [x] Extend Query Contract validator/source-policy handling for `market_snapshot`, `market_window`, `market_fields`, and `market_analysis_tools`.
+- [x] Extend interactive planner prompt/normalizer for `market_snapshot`, `market_window`, `market_fields`, and `market_analysis_tools`.
+- [ ] Add fundamental-market divergence analytics after SEC/8-K driver outputs are available.
+- [x] Extend Evidence Coverage Matrix, Judgment Plan, synthesis, deterministic gates, renderer, and ContextManager artifact refs for market snapshot source boundaries.
+- [x] Run a local stage-level market snapshot main-chain smoke covering context injection, graph artifact refs, validation, synthesis normalizer, and renderer boundary.
+- [x] Run a 7-company local fixture smoke before any real-time/provider API integration.
+- [x] Run one real DeepSeek API full-chain synthesis with the 7-company market snapshot evidence pack.
+- [x] Probe free/no-key real market snapshot providers and save the first full30 Yahoo chart 3M price/volume snapshot under private data paths.
+- [x] Fix `close_price` market snapshot field status and validate 30/30 provided on the real Yahoo snapshot.
+- [x] Add latest SEC filing-date market event builder and recompute full30 latest-10Q event-window analytics.
+- [x] Add FMP free-key valuation enrichment script that reads `FMP_API_KEY` from environment and fail-closes when no key is set.
+- [x] Add resume-closeout aggregate self-check/eval entry covering planner, source inventory, retrieval/coverage/Judgment Plan, saved full-source synthesis/post-gates, renderer, session/context, request API, and tool dispatch.
+- [x] Add local P0 latency/observability smoke with BM25 filtered batch scoring/cache, run data fingerprints, run performance reports, and same-process ledger records cache.
+- [x] Cloud-run the resume-closeout readiness entry with a saved full-source DeepSeek run dir and `--require-full-source-artifacts`.
+- [x] Cloud-run the P0 full-source path and verify `run_data_fingerprint.json`, `run_performance.json`, and stage `elapsed_ms` on a real DeepSeek run.
+- [x] Replace subprocess-based retrieval with a resident retrieval worker or in-process cached retrieval path so BM25/ObjectBM25/BGE instances can be reused across session turns.
+- [x] Cloud-run a two-turn full-source session and confirm second-turn retrieval metadata reports `context_cache_hit=true`.
+- [x] Cloud-run a two-turn SEC/8-K + FMP/Yahoo market snapshot session and verify market context, strict gates, follow-up routing, and second-turn `context_cache_hit=true`.
+- [x] Add closeout regression suite coverage for multi-case main-chain smoke, short/long memory context checks, small request pressure, latency profile, and public/demo documentation.
+- [ ] Add provider capability registry and renderer/gate wording for price-only vs valuation-capable market snapshots.
+- [ ] Run full30 FMP valuation enrichment after a free key is available, then rerun normalize/analytics/evidence/validation/main-chain smoke.
+- [ ] Improve bank table parser column/header binding so JPM bank metrics do not rely only on runtime ledger filters.
+- [ ] Replace JSON-store request locking with DB/Redis/file-lock backed transactions before any production concurrency claim.
+- [ ] Revisit transcript / investor-presentation source expansion only after non-contiguous follow-up validation passes.
+- [ ] Validate earlier-node resume from a real partial replay, especially `build_coverage_matrix` or `build_judgment_plan`.
+- [ ] Add a multi-turn harness demo covering start analysis, revise scope, inspect coverage, explain evidence, and reformat answer.
+- [ ] Add deterministic named-entity verification/sanitization for memo fields before final rendering.
+- [ ] Promote peer-comparison metrics into Judgment Plan as first-class drivers so peer evidence does not conflict with focus-company driver matching.
+- [ ] Split the LangGraph wrapper into true stage-level nodes after cloud state artifacts are validated.
+- [ ] Build a minimal LangGraph orchestration POC only after `api_memo_v1` passes the 5-case memo eval.
+- [ ] Polish free-query renderer for negative proxy values and derived ratio language such as `增长近7倍`.
+- [ ] Build a 3-5 prompt free-query quality eval set for planner correctness, evidence coverage, and insight depth.
+- [ ] Split synthesis into explicit claim-candidate generation and final renderer calls after A/B evidence confirms the verifier contract.
+- [ ] Expand reviewed SEC gold set beyond combined40 to test Judgment Plan plus pipeline-gate generalization before full benchmark promotion.
+- [ ] Implement batched vLLM synthesis for SEC benchmark runs and profile 3-case, 10-case, and combined40 wall time.
+- [ ] Add semiconductor durability reviewed case covering NVDA vs AMD revenue/risk comparability.
+- [ ] Add capex/FCF table reviewed case covering OCF, PP&E purchases/capex, and derived FCF proxy.
+- [ ] Add SaaS/security subscription visibility reviewed case covering Adobe, Snowflake, and Palo Alto metric-definition caveats.
+- [ ] Add ads/AI infrastructure growth-quality reviewed case covering Alphabet vs Meta.
+- [ ] Tune small-verifier prompt/decoder to force short JSON and reduce 2B/4B over-direct or invalid-output cases.
+- [ ] Calibrate verifier metrics on human-reviewed object labels.
+- [x] Add separate RTX 5090 32GB vLLM hardware profile while preserving the historical RTX 4090 24GB profile.
+- [x] Add Blackwell/vLLM environment checker and verify remote RTX 5090 torch/vLLM compatibility before running inference.
+- [ ] Run one reviewed-case resident vLLM smoke on RTX 5090 with `--hardware-profile rtx5090_32gb` after data migration completes.
+- [ ] Re-test 27B 4bit text-only feasibility on RTX 5090 at 4k/8k/32k with no CPU offload before using it in gold-set runs.

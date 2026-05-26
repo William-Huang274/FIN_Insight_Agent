@@ -1,26 +1,28 @@
-# SEC Agent Demo Entrypoints v1
+# FinSight-Agent Demo Entrypoints
 
 [中文版本](sec_agent_demo_entrypoints_v1.zh-CN.md)
 
-## Public Repo Scope
+This page collects the public demo paths for FinSight-Agent. The commands are intentionally short: data paths and model routes should live in an ignored profile file, not in copy-pasted terminal blocks.
 
-Keep public:
+## Public Repository Boundary
 
-- Source code: `src/`, `scripts/`, `configs/`.
-- Small test/eval contracts: `tests/`, `eval_sets/`, `docs/eval/`.
-- Durable engineering logs and run ledgers that contain paths and summaries only: `docs/worklog/`, `reports/model_runs/`.
-- Small synthetic fixtures that contain no private filings, no raw provider output, and no credentials.
+Public:
 
-Keep private or ignored:
+- source code under `src/`, `scripts/`, and `configs/`;
+- tests, small evaluation contracts, and public documentation;
+- durable work logs or run ledgers that contain summaries and paths only;
+- small synthetic fixtures with no private filings, raw provider output, or credentials.
 
-- SEC/raw/provider data: `data/raw_private/`, `data/processed_private/`.
-- Search indexes and model caches: `data/indexes/`, `data/models_private/`.
-- Runtime outputs: `eval/`, `reports/quality/`, `reports/demo/`, `reports/logs/`.
-- API keys, SSH passwords, provider tokens, `.env`, cloud scratch files.
+Private or ignored:
 
-## Local Closeout Smoke
+- SEC source files and provider datasets under `data/raw_private/` and `data/processed_private/`;
+- generated search indexes and model caches under `data/indexes/` and `data/models_private/`;
+- runtime outputs under `eval/`, `reports/quality/`, `reports/demo/`, and `reports/logs/`;
+- API keys, SSH passwords, provider tokens, `.env`, and temporary run files.
 
-This is the default pre-commit readiness entry. It uses local fixtures, deterministic contracts, and non-LLM main-chain checks. It should run without API keys.
+## Local Structural Check
+
+Run this after cloning the repository or before changing the agent pipeline. It does not require an API key or private source data.
 
 ```powershell
 python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
@@ -35,61 +37,68 @@ python scripts/evaluate_sec_agent_resume_closeout_readiness.py `
   --skip-latency-profile
 ```
 
-Outputs are written under `reports/quality/resume_closeout/` and are intentionally ignored by Git.
+Outputs are written under `reports/quality/resume_closeout/`, which is ignored by Git.
 
-## Cloud Full-Source DeepSeek Check
+## Configure A Full-Source Demo
 
-Use this when cloud private SEC/8-K/market artifacts and a model API key are available. Inject keys through environment variables only.
+Start from the profile template:
 
 ```bash
+cp configs/sec_agent_full_source_demo.env.example .env
+```
+
+Then update `.env` with your local artifact paths:
+
+```bash
+MANIFEST_PATH=data/processed_private/manifests/<your_manifest>.jsonl
+BM25_INDEX_DIR=data/indexes/bm25/<your_text_index>
+OBJECT_BM25_INDEX_DIR=data/indexes/bm25/<your_object_index>
+MARKET_EVIDENCE_PATH=data/processed_private/market/evidence_packs/<your_market_evidence>.jsonl
+MARKET_SNAPSHOT_ID=<your_snapshot_id>
+MARKET_AS_OF_DATE=<YYYY-MM-DD>
+```
+
+Configure a model route in the shell. DeepSeek is one tested provider; any compatible route can be used if the gateway variables are set.
+
+```bash
+export LLM_BACKEND=deepseek
+export MODEL_NAME=deepseek-v4-pro
+export API_KEY_ENV=DEEPSEEK_API_KEY
 export DEEPSEEK_API_KEY="<set-in-shell-only>"
-cd /root/autodl-tmp/FIN_Insight_Agent
-
-PY=/root/autodl-tmp/envs/sec-agent-cu128/bin/python \
-BGE_DEVICE=cuda \
-QUERY_PLANNER=llm \
-SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT \
-MANIFEST_PATH=data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl \
-BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027 \
-OBJECT_BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects \
-MARKET_EVIDENCE_PATH=data/processed_private/market/evidence_packs/20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1_3m_market_evidence.jsonl \
-MARKET_SNAPSHOT_ID=20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1 \
-MARKET_AS_OF_DATE=2026-05-22 \
-bash scripts/cloud/sec_agent_interactive.sh ask-deepseek \
-"结合SEC 10-K、最新10-Q、8-K earnings release 和最近三个月 market snapshot，比较 NVDA、AMD、MSFT、AMZN、GOOGL 的 AI 基本面、管理层解释、市场反应和估值分歧。"
 ```
 
-After the run completes, attach its saved run directory to the readiness aggregator:
+For another OpenAI-compatible provider:
 
 ```bash
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py \
-  --saved-full-source-run-dir /root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/<run>/<case> \
-  --require-full-source-artifacts \
-  --timeout-s 900
+export LLM_BACKEND=openai_compatible
+export BASE_URL="<provider-base-url>"
+export MODEL_NAME="<model-name>"
+export API_KEY_ENV=PROVIDER_API_KEY
+export PROVIDER_API_KEY="<set-in-shell-only>"
 ```
 
-## Real Session Demo
-
-Use this for the two-turn context-management demo. It runs a ContextManager-backed session; follow-up prompts reuse the same active session and artifact refs.
+Check that the profile is readable:
 
 ```bash
-export DEEPSEEK_API_KEY="<set-in-shell-only>"
-cd /root/autodl-tmp/FIN_Insight_Agent
-
-PY=/root/autodl-tmp/envs/sec-agent-cu128/bin/python \
-BGE_DEVICE=cuda \
-QUERY_PLANNER=llm \
-SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT \
-MANIFEST_PATH=data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl \
-BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027 \
-OBJECT_BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects \
-MARKET_EVIDENCE_PATH=data/processed_private/market/evidence_packs/20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1_3m_market_evidence.jsonl \
-MARKET_SNAPSHOT_ID=20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1 \
-MARKET_AS_OF_DATE=2026-05-22 \
-bash scripts/cloud/sec_agent_interactive.sh session-deepseek
+SEC_AGENT_PROFILE_ENV=.env bash scripts/cloud/sec_agent_interactive.sh config-full-source-api
 ```
 
-Useful commands inside the session:
+## One-Shot Memo Demo
+
+```bash
+SEC_AGENT_PROFILE_ENV=.env bash scripts/cloud/sec_agent_interactive.sh ask-full-source-api \
+"Using SEC 10-K, latest 10-Q, 8-K earnings releases, and the last three months of market snapshots, compare NVDA, AMD, MSFT, AMZN, and GOOGL across AI fundamentals, management commentary, market reaction, and valuation divergence."
+```
+
+This path uses the same evidence pipeline as the session demo, but it is driven as a single fixed DAG: query planning, retrieval, exact-value ledger, coverage, judgment plan, synthesis, gates, and rendering.
+
+## Multi-Turn Session Demo
+
+```bash
+SEC_AGENT_PROFILE_ENV=.env bash scripts/cloud/sec_agent_interactive.sh session-full-source-api
+```
+
+Useful session commands:
 
 ```text
 /state
@@ -98,19 +107,36 @@ Useful commands inside the session:
 /exit
 ```
 
-## Demo Narrative
+The session path adds the tool/function-call controller. The API model chooses high-level actions; the Python harness executes them, updates session state, applies artifact invalidation rules, and decides whether a follow-up can reuse prior evidence or needs a rerun.
 
-The first public demo should show these boundaries clearly:
+## Saved-Run Inspection
 
-- Query starts as free-form Chinese investment research.
-- Planner selects SEC 10-K/latest 10-Q/8-K/market snapshot source tiers.
-- Tools perform retrieval, exact-value ledger construction, market snapshot attachment, coverage, Judgment Plan, synthesis, gates, and rendering.
-- Follow-up turn reuses ContextManager active answer instead of starting an unrelated run.
-- Renderer labels SEC audited/unaudited boundaries, company-authored 8-K boundaries, and market snapshot `as_of_date`.
+After a full-source run completes, the readiness aggregator can inspect the saved run directory:
 
-## Current Non-Production Boundaries
+```bash
+python scripts/evaluate_sec_agent_resume_closeout_readiness.py \
+  --saved-full-source-run-dir eval/sec_cases/outputs/<run>/<case> \
+  --require-full-source-artifacts \
+  --timeout-s 900
+```
 
-- JSON-backed session state is acceptable for local and single-process demo, not multi-process serving.
-- Private data and indexes are required for full-source quality but are not part of the public repo.
-- DeepSeek output speed is controlled by the provider and model route; local P0 work focuses on non-LLM retrieval, ledger, coverage, and session overhead.
-- Market snapshot is non-real-time and must be shown with `snapshot_id` and `as_of_date`.
+This check is useful when you want to verify that a run produced the expected query contract, retrieved context, ledger, coverage matrix, judgment plan, synthesis, gates, rendered answer, and session artifacts.
+
+## Demo Story
+
+A strong demo should make these boundaries visible:
+
+- the user asks a free-form investment-research question;
+- the query planner returns a bounded contract, not unstructured prose;
+- in sessions, the API model chooses high-level tools through OpenAI-compatible tool/function calls;
+- the harness owns actual execution, state changes, scope invalidation, and artifact references;
+- retrieval and ledgers provide SEC, 8-K, and market-snapshot evidence separately;
+- the final memo labels source tiers, period roles, market `as_of_date`, and coverage gaps;
+- follow-up turns reuse the active answer and evidence references instead of starting unrelated runs.
+
+## Current Non-Production Boundary
+
+- JSON-backed session state is suitable for local demos and single-process evaluation, not multi-user serving.
+- Full-source quality depends on private source data and generated indexes, which are not included in the public repository.
+- API model latency is provider-dependent; local optimization focuses on retrieval, ledger, coverage, and session overhead.
+- Market snapshots are non-real-time and must carry `snapshot_id` and `as_of_date`.

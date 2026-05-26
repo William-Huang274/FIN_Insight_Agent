@@ -1,7 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "${FIN_REPO_ROOT:-/root/autodl-tmp/FIN_Insight_Agent}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEFAULT_REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "${FIN_REPO_ROOT:-$DEFAULT_REPO_ROOT}"
+
+load_profile_env() {
+  local env_file="${SEC_AGENT_PROFILE_ENV:-}"
+  if [[ -z "$env_file" ]]; then
+    return 0
+  fi
+  if [[ ! -f "$env_file" ]]; then
+    echo "SEC_AGENT_PROFILE_ENV points to a missing file: $env_file" >&2
+    exit 2
+  fi
+  set -a
+  # shellcheck disable=SC1090
+  source "$env_file"
+  set +a
+}
+
+load_profile_env
 
 PY="${PY:-/root/miniconda3/bin/python}"
 LLM_BACKEND="${LLM_BACKEND:-qwen_vllm}"
@@ -24,6 +43,15 @@ fi
 usage() {
   cat <<'EOF'
 Usage:
+  bash scripts/cloud/sec_agent_interactive.sh ask-full-source-api "your free-form prompt"
+  bash scripts/cloud/sec_agent_interactive.sh session-full-source-api
+  bash scripts/cloud/sec_agent_interactive.sh config-full-source-api
+  bash scripts/cloud/sec_agent_interactive.sh config
+  bash scripts/cloud/sec_agent_interactive.sh plan "your free-form prompt"
+  bash scripts/cloud/sec_agent_interactive.sh graph-inspect-state /path/to/sec_agent_state.json
+  bash scripts/cloud/sec_agent_interactive.sh graph-resume-state /path/to/sec_agent_state.json
+
+Legacy / narrower aliases:
   bash scripts/cloud/sec_agent_interactive.sh chat
   bash scripts/cloud/sec_agent_interactive.sh chat-bge-first
   bash scripts/cloud/sec_agent_interactive.sh ask "your free-form prompt"
@@ -38,10 +66,6 @@ Usage:
   bash scripts/cloud/sec_agent_interactive.sh session-deepseek
   bash scripts/cloud/sec_agent_interactive.sh session-mixed-deepseek
   bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
-  bash scripts/cloud/sec_agent_interactive.sh graph-inspect-state /path/to/sec_agent_state.json
-  bash scripts/cloud/sec_agent_interactive.sh graph-resume-state /path/to/sec_agent_state.json
-  bash scripts/cloud/sec_agent_interactive.sh plan "your free-form prompt"
-  bash scripts/cloud/sec_agent_interactive.sh config
 
 This is the constrained SEC agent, not bare model chat:
   free prompt -> SEC BM25/ObjectBM25 -> BGE-M3 rerank -> runtime exact-value ledger
@@ -54,17 +78,17 @@ Common overrides:
   BGE_FIRST=1 bash scripts/cloud/sec_agent_interactive.sh chat
   USER_OUTPUT=1 bash scripts/cloud/sec_agent_interactive.sh ask-deepseek "..."
   QUERY_PLANNER=llm DEEPSEEK_API_KEY=... bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
-  DEEPSEEK_API_KEY=... bash scripts/cloud/sec_agent_interactive.sh chat-deepseek
-  DEEPSEEK_API_KEY=... YEARS=2023,2024,2025,2026 bash scripts/cloud/sec_agent_interactive.sh session-mixed-deepseek
   SOURCE_GAP_PATH=data/processed_private/source_gaps/sec_tech_8k_earnings_full30_source_gaps_merged_2026_2027.jsonl bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
   MARKET_EVIDENCE_PATH=data/processed_private/market/snapshots/.../evidence_packs/...jsonl MARKET_SNAPSHOT_ID=... MARKET_AS_OF_DATE=... bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
+  SEC_AGENT_PROFILE_ENV=.env bash scripts/cloud/sec_agent_interactive.sh ask-full-source-api "..."
+  LLM_BACKEND=openai_compatible BASE_URL=... MODEL_NAME=... API_KEY_ENV=... bash scripts/cloud/sec_agent_interactive.sh session-full-source-api
   SEC_AGENT_GRAPH_EXECUTION=subprocess bash scripts/cloud/sec_agent_interactive.sh session-mixed-8k-deepseek
 
 Notes:
   Default scope is TICKERS=ALL, which resolves to all companies in the SEC 10-K manifest.
   BGE-first mode stops Qwen before retrieval, runs BGE-M3 on CUDA by default, then starts Qwen for synthesis.
   Query planner system prompts are injected with a manifest-derived project source inventory.
-  DeepSeek mode reads the key from DEEPSEEK_API_KEY; do not store API keys in files.
+  API-model mode reads keys from the env var named by API_KEY_ENV; do not store API keys in files.
   Mixed mode uses accepted 2023-2025 10-K plus 2026 10-Q BM25/object-BM25 artifacts.
   Mixed 8-K mode adds full30 SEC 8-K earnings-release evidence and optional source gap reasons.
   Session mode defaults to in-process graph execution so retrieval indexes and BGE can stay warm across turns; set SEC_AGENT_GRAPH_EXECUTION=subprocess for isolation.
@@ -113,9 +137,59 @@ use_mixed_10k_10q_sources() {
 use_mixed_10k_10q_8k_sources() {
   export MANIFEST_PATH="${MANIFEST_PATH:-data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl}"
   export BM25_INDEX_DIR="${BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027}"
-  export OBJECT_BM25_INDEX_DIR="${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_10k_latest_10q_fy2023_2027_objects}"
+  export OBJECT_BM25_INDEX_DIR="${OBJECT_BM25_INDEX_DIR:-data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects}"
   export SOURCE_GAP_PATH="${SOURCE_GAP_PATH:-data/processed_private/source_gaps/sec_tech_8k_earnings_full30_source_gaps_merged_2026_2027.jsonl}"
   export SEC_AGENT_SOURCE_POLICY="${SEC_AGENT_SOURCE_POLICY:-SEC_PRIMARY_MIXED_WITH_8K_EARNINGS}"
+}
+
+use_full_source_demo_sources() {
+  local requested_policy="${SEC_AGENT_SOURCE_POLICY:-}"
+  use_mixed_10k_10q_8k_sources
+  export SEC_AGENT_SOURCE_POLICY="${requested_policy:-SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT}"
+  export MARKET_EVIDENCE_PATH="${MARKET_EVIDENCE_PATH:-data/processed_private/market/evidence_packs/20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1_3m_market_evidence.jsonl}"
+  export MARKET_SNAPSHOT_ID="${MARKET_SNAPSHOT_ID:-20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1}"
+  export MARKET_AS_OF_DATE="${MARKET_AS_OF_DATE:-2026-05-22}"
+}
+
+use_api_model_backend() {
+  if [[ -z "${LLM_BACKEND:-}" || "${LLM_BACKEND:-}" == "qwen_vllm" ]]; then
+    export LLM_BACKEND=deepseek
+  fi
+
+  case "$LLM_BACKEND" in
+    deepseek)
+      if [[ "${BASE_URL:-}" == "http://127.0.0.1:8000" || -z "${BASE_URL:-}" ]]; then
+        export BASE_URL="https://api.deepseek.com"
+      fi
+      if [[ "${CHAT_COMPLETIONS_PATH:-}" == "/v1/chat/completions" || -z "${CHAT_COMPLETIONS_PATH:-}" ]]; then
+        export CHAT_COMPLETIONS_PATH="/chat/completions"
+      fi
+      if [[ "${MODEL_NAME:-}" == "qwen9b" || -z "${MODEL_NAME:-}" ]]; then
+        export MODEL_NAME="deepseek-v4-pro"
+      fi
+      export API_KEY_ENV="${API_KEY_ENV:-DEEPSEEK_API_KEY}"
+      ;;
+    openai_compatible)
+      if [[ -z "${BASE_URL:-}" || "${BASE_URL:-}" == "http://127.0.0.1:8000" ]]; then
+        echo "Set BASE_URL for LLM_BACKEND=openai_compatible." >&2
+        exit 2
+      fi
+      export CHAT_COMPLETIONS_PATH="${CHAT_COMPLETIONS_PATH:-/v1/chat/completions}"
+      if [[ -z "${MODEL_NAME:-}" || "${MODEL_NAME:-}" == "qwen9b" ]]; then
+        echo "Set MODEL_NAME for LLM_BACKEND=openai_compatible." >&2
+        exit 2
+      fi
+      export API_KEY_ENV="${API_KEY_ENV:-OPENAI_API_KEY}"
+      ;;
+    *)
+      echo "API commands support LLM_BACKEND=deepseek or openai_compatible; got '$LLM_BACKEND'." >&2
+      exit 2
+      ;;
+  esac
+
+  export REASONING_EFFORT="${REASONING_EFFORT:-}"
+  export ENABLE_THINKING="${ENABLE_THINKING:-0}"
+  export QUERY_PLANNER="${QUERY_PLANNER:-llm}"
 }
 
 agent_flags() {
@@ -410,6 +484,15 @@ case "$cmd" in
   shift || true
   run_ask "$@"
   ;;
+  ask-full-source-api|ask-full-source-deepseek)
+    use_full_source_demo_sources
+    use_api_model_backend
+    export BGE_FIRST="${BGE_FIRST:-1}"
+    export MAX_TOKENS="${MAX_TOKENS:-8000}"
+    ensure_min_int_env MAX_TOKENS 8000
+    shift || true
+    run_ask "$@"
+    ;;
   graph-ask)
     shift || true
     run_graph_ask "$@"
@@ -494,6 +577,15 @@ case "$cmd" in
   shift || true
   run_context_session "$@"
   ;;
+  session-full-source-api|session-full-source-deepseek)
+    use_full_source_demo_sources
+    use_api_model_backend
+    export BGE_DEVICE="${BGE_DEVICE:-cuda}"
+    export SYNTHESIS_MAX_TOKENS="${SYNTHESIS_MAX_TOKENS:-8000}"
+    ensure_min_int_env SYNTHESIS_MAX_TOKENS 8000
+    shift || true
+    run_context_session "$@"
+    ;;
   graph-inspect-state)
     shift || true
     run_graph_inspect_state "$@"
@@ -507,6 +599,13 @@ case "$cmd" in
     run_plan "$@"
     ;;
   config)
+    flags=()
+    mapfile -t flags < <(agent_flags)
+    exec "$PY" scripts/cloud/sec_agent_interactive.py "${flags[@]}" --print-config
+    ;;
+  config-full-source-api|config-full-source-deepseek)
+    use_full_source_demo_sources
+    use_api_model_backend
     flags=()
     mapfile -t flags < <(agent_flags)
     exec "$PY" scripts/cloud/sec_agent_interactive.py "${flags[@]}" --print-config

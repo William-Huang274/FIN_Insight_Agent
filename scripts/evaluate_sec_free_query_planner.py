@@ -390,11 +390,12 @@ def _metric_family_hits(expected: set[str], actual: set[str]) -> set[str]:
 def _required_task_hits(contract: dict[str, Any], expected: dict[str, Any]) -> tuple[int, list[list[str]]]:
     tasks = contract.get("decomposed_tasks") or []
     task_texts = [_task_text(task).lower() for task in tasks if isinstance(task, dict)]
+    boundary_texts = _contract_boundary_texts(contract)
     missing: list[list[str]] = []
     hits = 0
     for terms in expected.get("required_task_terms") or []:
         term_list = [str(term) for term in terms]
-        if any(_contains_term(text, term) for text in task_texts for term in term_list):
+        if any(_contains_term(text, term) for text in [*task_texts, *boundary_texts] for term in term_list):
             hits += 1
         else:
             missing.append(term_list)
@@ -454,6 +455,16 @@ def _contract_request_texts(contract: dict[str, Any]) -> list[str]:
         if isinstance(task, dict):
             values.append(_task_text(task))
     return [value for value in values if value.strip()]
+
+
+def _contract_boundary_texts(contract: dict[str, Any]) -> list[str]:
+    values: list[str] = []
+    for key in ("required_caveats", "forbidden_claims"):
+        values.extend(str(item).lower() for item in contract.get(key) or [] if str(item).strip())
+    market = contract.get("market_snapshot")
+    if isinstance(market, dict):
+        values.append(json.dumps(market, ensure_ascii=False).lower())
+    return values
 
 
 def _task_text(task: dict[str, Any]) -> str:

@@ -1,29 +1,40 @@
 # FinSight-Agent
 
-Evidence-grounded financial research agent foundation.
+Evidence-grounded financial research agent for SEC filing analysis, company-authored earnings-release context, offline market snapshots, and multi-turn investment-research sessions.
 
-Phase 1 focuses on retrieval quality before building a full agent:
+The current first-version demo path is a constrained agent, not bare model chat:
 
-1. Download and cache SEC filings.
-2. Parse filings into section-aware evidence objects.
-3. Build sparse, dense, and hybrid retrieval baselines.
-4. Evaluate retrieval with gold evidence queries.
+```text
+User prompt
+  -> Query Contract planner
+  -> SEC / 8-K / market-snapshot source selection
+  -> BM25/ObjectBM25/BGE retrieval
+  -> Runtime Exact-Value Ledger
+  -> Evidence Coverage Matrix
+  -> Judgment Plan
+  -> DeepSeek synthesis
+  -> deterministic gates
+  -> rendered answer + ContextManager session state
+```
 
 ## Current Scope
 
-This repository currently contains the Phase 1 skeleton, the
-`EvidenceObject` schema, a SEC EDGAR connector, section/table-aware SEC
-chunking, and first BM25/dense retrieval smoke baselines.
+The public repository contains code, tests, small eval contracts, and durable run documentation. Private SEC/provider data, indexes, cloud run outputs, and API credentials are intentionally excluded from Git.
 
-The current resume-facing SEC agent path extends that foundation with:
+The resume-facing SEC agent path supports:
 
-- SEC 10-K/latest 10-Q/8-K evidence retrieval and exact-value ledger checks.
-- Offline market snapshot evidence with `snapshot_id` and `as_of_date`.
+- SEC 10-K/latest 10-Q/8-K evidence retrieval and Exact-Value Ledger checks.
+- Offline market snapshot evidence with `snapshot_id`, `as_of_date`, returns, event windows, and FMP-enriched valuation fields when available.
 - ContextManager-backed multi-turn sessions, artifact inspection, reformat, and resume checks.
 - Closeout readiness evaluation in `scripts/evaluate_sec_agent_resume_closeout_readiness.py`.
 
 Demo and release-scope entrypoints are documented in
 `docs/demo/sec_agent_demo_entrypoints_v1.md`.
+
+Release checklist and cloud deployment notes:
+
+- `docs/release/sec_agent_v0_1_pre_release_checklist.md`
+- `docs/deployment/sec_agent_cloud_full_source_runbook_v1.md`
 
 ## Setup
 
@@ -33,8 +44,69 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Copy `.env.example` to `.env` and set a real SEC User-Agent contact before
-larger runs.
+Copy `.env.example` to `.env` and set a real SEC User-Agent contact before larger SEC collection runs. Never commit `.env`, API keys, cloud passwords, private data, or generated indexes.
+
+## Closeout Readiness
+
+Local deterministic readiness, no API key required:
+
+```powershell
+python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+```
+
+Cloud full-source readiness after a real DeepSeek run exists:
+
+```bash
+python scripts/evaluate_sec_agent_resume_closeout_readiness.py \
+  --saved-full-source-run-dir /root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/<run>/<case> \
+  --require-full-source-artifacts \
+  --timeout-s 900
+```
+
+The first release scope is FY2023-FY2025 annual 10-K plus latest available FY2026 10-Q/8-K evidence in the current full30 artifact set. Do not claim FY2027 coverage unless the manifest itself contains FY2027 filings for the selected companies.
+
+## Demo Entrypoints
+
+Cloud one-shot full-source DeepSeek demo:
+
+```bash
+export DEEPSEEK_API_KEY="<set-in-shell-only>"
+cd /root/autodl-tmp/FIN_Insight_Agent
+
+PY=/root/autodl-tmp/envs/sec-agent-cu128/bin/python \
+BGE_DEVICE=cuda \
+QUERY_PLANNER=llm \
+SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT \
+MANIFEST_PATH=data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl \
+BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027 \
+OBJECT_BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects \
+MARKET_EVIDENCE_PATH=data/processed_private/market/evidence_packs/20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1_3m_market_evidence.jsonl \
+MARKET_SNAPSHOT_ID=20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1 \
+MARKET_AS_OF_DATE=2026-05-22 \
+bash scripts/cloud/sec_agent_interactive.sh ask-deepseek \
+"结合SEC 10-K、最新10-Q、8-K earnings release 和最近三个月 market snapshot，比较 NVDA、AMD、MSFT、AMZN、GOOGL 的 AI 基本面、管理层解释、市场反应和估值分歧。"
+```
+
+Cloud two-turn session demo:
+
+```bash
+export DEEPSEEK_API_KEY="<set-in-shell-only>"
+cd /root/autodl-tmp/FIN_Insight_Agent
+
+PY=/root/autodl-tmp/envs/sec-agent-cu128/bin/python \
+BGE_DEVICE=cuda \
+QUERY_PLANNER=llm \
+SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT \
+MANIFEST_PATH=data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl \
+BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027 \
+OBJECT_BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects \
+MARKET_EVIDENCE_PATH=data/processed_private/market/evidence_packs/20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1_3m_market_evidence.jsonl \
+MARKET_SNAPSHOT_ID=20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1 \
+MARKET_AS_OF_DATE=2026-05-22 \
+bash scripts/cloud/sec_agent_interactive.sh session-deepseek
+```
+
+Inside the session, use `/state`, `/context`, `/answer`, and `/exit`.
 
 ## SEC Smoke Test
 

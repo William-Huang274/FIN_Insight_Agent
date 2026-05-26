@@ -4780,6 +4780,7 @@ def _repair_query_contract_from_prompt(
         remaining_offscope_terms = _offscope_terms_after_source_policy(offscope_terms, repaired)
         if remaining_offscope_terms:
             _apply_offscope_repairs(repaired, remaining_offscope_terms)
+    _strip_unrequested_external_source_tasks(repaired, prompt_text)
 
     repaired["metric_families"] = _dedupe_metric_families(
         [
@@ -5303,6 +5304,37 @@ def _ensure_peer_mapping_task(
     )
     task["peer_tickers"] = peer_tickers[:8]
     _append_contract_task(contract, task)
+
+
+def _strip_unrequested_external_source_tasks(contract: dict[str, Any], prompt: str) -> None:
+    prompt_text = str(prompt or "").lower()
+    external_groups = {
+        "analyst_consensus": ("分析师", "一致预期", "市场预期", "analyst", "consensus"),
+        "macro": ("宏观", "美联储", "降息", "fed", "federal reserve", "macro"),
+        "geopolitical": ("地缘", "geopolitical"),
+    }
+    blocked_terms = []
+    for terms in external_groups.values():
+        if not _contains_any(prompt_text, terms):
+            blocked_terms.extend(terms)
+    if not blocked_terms:
+        return
+
+    def blocked(value: Any) -> bool:
+        text = str(value or "").lower()
+        return _contains_any(text, blocked_terms)
+
+    contract["decomposed_tasks"] = [
+        task
+        for task in contract.get("decomposed_tasks") or []
+        if not (isinstance(task, dict) and blocked(_task_text_for_repair(task)))
+    ]
+    for key in ("metric_queries", "qualitative_queries", "facets", "analysis_axes"):
+        contract[key] = [item for item in contract.get(key) or [] if not blocked(item)]
+
+
+def _task_text_for_repair(task: dict[str, Any]) -> str:
+    return " ".join(str(task.get(key) or "") for key in ("task_id", "question_zh", "question", "description"))
 
 
 def _ensure_mixed_banking_task(

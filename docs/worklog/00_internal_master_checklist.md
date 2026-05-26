@@ -278,7 +278,7 @@
 - [x] Add FMP free-key valuation enrichment script that reads `FMP_API_KEY` from environment and fail-closes when no key is set.
 - [x] Add resume-closeout aggregate self-check/eval entry covering planner, source inventory, retrieval/coverage/Judgment Plan, saved full-source synthesis/post-gates, renderer, session/context, request API, and tool dispatch.
 - [x] Add local P0 latency/observability smoke with BM25 filtered batch scoring/cache, run data fingerprints, run performance reports, and same-process ledger records cache.
-- [ ] Cloud-run the resume-closeout readiness entry with a saved full-source DeepSeek run dir and `--require-full-source-artifacts`.
+- [x] Cloud-run the resume-closeout readiness entry with a saved full-source DeepSeek run dir and `--require-full-source-artifacts`.
 - [x] Cloud-run the P0 full-source path and verify `run_data_fingerprint.json`, `run_performance.json`, and stage `elapsed_ms` on a real DeepSeek run.
 - [x] Replace subprocess-based retrieval with a resident retrieval worker or in-process cached retrieval path so BM25/ObjectBM25/BGE instances can be reused across session turns.
 - [x] Cloud-run a two-turn full-source session and confirm second-turn retrieval metadata reports `context_cache_hit=true`.

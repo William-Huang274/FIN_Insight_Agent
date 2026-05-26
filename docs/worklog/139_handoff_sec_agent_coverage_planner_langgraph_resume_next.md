@@ -4,7 +4,7 @@
 - Branch: `codex/api-model-call-architecture`.
 - Local repo: `D:\FIN_Insight_Agent`.
 - Cloud repo path: `/root/autodl-tmp/FIN_Insight_Agent`.
-- Cloud endpoint used this turn: `connect.westd.seetacloud.com:33109`.
+- Cloud endpoint used this turn: transient SSH endpoint, intentionally omitted from durable public docs.
 - Credentials were used only at runtime. Do not write passwords or API keys into repo files.
 - No 5-case memo eval is currently running. Remote `ps` showed only system notebook/tensorboard processes, and `nvidia-smi` showed `0 MiB / 32607 MiB`.
 

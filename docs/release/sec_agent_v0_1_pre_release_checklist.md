@@ -1,5 +1,7 @@
 # SEC Agent v0.1 Pre-Release Checklist
 
+[中文版本](sec_agent_v0_1_pre_release_checklist.zh-CN.md)
+
 Date: 2026-05-26
 
 ## Release Scope
@@ -41,8 +43,8 @@ First resume-facing release for the constrained SEC investment-research agent:
   - Real DeepSeek planner gate passed after root-cause fixes.
 
 - [x] Version commit, tag, and main merge:
-  - Release changes are committed on `codex/api-model-call-architecture`.
-  - Release tag target: `v0.1.0-resume-demo`.
+  - Main commit: `ac692bc Release SEC agent v0.1 resume demo`.
+  - Release tag: `v0.1.0-resume-demo`.
   - Merge target: local `main`.
 
 ## Remaining Non-Blocking Follow-Ups

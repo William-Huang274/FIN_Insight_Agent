@@ -1,16 +1,16 @@
-# SEC Agent Cloud Full-Source Runbook v1
+# SEC Agent 云端 Full-Source Runbook v1
 
-[中文版本](sec_agent_cloud_full_source_runbook_v1.zh-CN.md)
+[English version](sec_agent_cloud_full_source_runbook_v1.md)
 
-Date: 2026-05-26
+日期：2026-05-26
 
-## Purpose
+## 目的
 
-This runbook records the reproducible cloud setup for the first resume-facing SEC agent release. It covers the private full-source artifact contract, ObjectBM25 rebuild, planner/readiness gates, and demo entrypoints without storing credentials.
+本文档记录第一版面向简历展示的 SEC Agent 云端可复现配置。范围包括私有 full-source artifact contract、ObjectBM25 重建、planner/readiness gates 和 demo entrypoints。文档不保存任何凭据。
 
-## Private Artifact Contract
+## 私有 Artifact Contract
 
-Required cloud paths:
+云端必须存在这些路径：
 
 - Manifest: `data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl`
 - BM25 index: `data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027`
@@ -18,7 +18,7 @@ Required cloud paths:
 - Evidence objects: `data/processed_private/evidence_objects/sec_tech_primary_mixed_with_8k_earnings_full30_evidence_fy2023_2027.jsonl`
 - Market evidence: `data/processed_private/market/evidence_packs/20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1_3m_market_evidence.jsonl`
 
-Current manifest content verified on cloud:
+当前云端已验证的 manifest 覆盖：
 
 - FY2023 10-K: 30 companies
 - FY2024 10-K: 30 companies
@@ -26,11 +26,11 @@ Current manifest content verified on cloud:
 - FY2026 latest 10-Q: 30 companies
 - FY2026 earnings-release 8-K: 30 companies
 
-Do not claim FY2027 coverage unless the manifest rows actually contain `fiscal_year=2027`.
+除非 manifest rows 实际包含 `fiscal_year=2027`，否则不要声称 FY2027 覆盖。
 
-## Rebuild Full30 ObjectBM25 Index
+## 重建 Full30 ObjectBM25 Index
 
-Use this when the full-source manifest/evidence exists but the ObjectBM25 index is missing:
+当 full-source manifest/evidence 已存在但 ObjectBM25 index 缺失时使用：
 
 ```bash
 cd /root/autodl-tmp/FIN_Insight_Agent
@@ -48,16 +48,16 @@ OUT=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027
   --output-dir "$OUT"
 ```
 
-The 2026-05-26 cloud rebuild produced:
+2026-05-26 云端重建结果：
 
 - object records: `347015`
 - metrics: `257458`
 - claims: `77745`
 - tables: `11812`
 
-## Real DeepSeek Planner-Contract Gate
+## 真实 DeepSeek Planner-Contract Gate
 
-Inject the API key through the shell environment only.
+API key 只通过 shell 环境变量注入。
 
 ```bash
 cd /root/autodl-tmp/FIN_Insight_Agent
@@ -97,7 +97,7 @@ PLANNER_TIMEOUT_S=240 \
   --fail-on-threshold
 ```
 
-Latest accepted result:
+最新验收结果：
 
 - report: `reports/query_contracts/planner_eval_v1/release_closeout_deepseek_eval_20260526_r3.json`
 - `case_count=5`
@@ -112,7 +112,7 @@ Latest accepted result:
 
 ## Full-Source Readiness Gate
 
-Attach a saved full-source DeepSeek run directory:
+传入一个已保存的 full-source DeepSeek run 目录：
 
 ```bash
 cd /root/autodl-tmp/FIN_Insight_Agent
@@ -125,7 +125,7 @@ PY=/root/autodl-tmp/envs/sec-agent-cu128/bin/python
   --timeout-s 900
 ```
 
-Latest accepted full30 readiness result:
+最新 full30 readiness 验收结果：
 
 - report: `reports/quality/resume_closeout/20260526_202136_resume_closeout_readiness_local_v1.json`
 - blocker failures: `0`
@@ -135,9 +135,9 @@ Latest accepted full30 readiness result:
 - saved full30 run gate failures: `0`
 - fallback answers: `0`
 
-## Non-Production Boundaries
+## 非生产边界
 
-- JSON-backed session state is validated for single-process demo and small pressure smoke, not multi-worker serving.
-- Private data and indexes are required for full-source answer quality but remain outside the public repository.
-- Market snapshot is non-real-time and must show `snapshot_id` and `as_of_date`.
-- DeepSeek provider latency is outside local optimization control; local P0 timing covers retrieval, ledger, coverage, gates, and context/session overhead.
+- JSON-backed session state 已验证可用于单进程 demo 和小压测，但不能声称支持 multi-worker serving。
+- full-source 答案质量依赖私有数据和索引，但这些不进入公开仓库。
+- Market snapshot 是非实时数据，必须展示 `snapshot_id` 和 `as_of_date`。
+- DeepSeek provider latency 不在本地优化控制范围内；本地 P0 timing 覆盖 retrieval、ledger、coverage、gates 和 context/session overhead。

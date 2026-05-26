@@ -1,5 +1,7 @@
 # SEC Agent Demo Entrypoints v1
 
+[中文版本](sec_agent_demo_entrypoints_v1.zh-CN.md)
+
 ## Public Repo Scope
 
 Keep public:
@@ -46,7 +48,7 @@ cd /root/autodl-tmp/FIN_Insight_Agent
 PY=/root/autodl-tmp/envs/sec-agent-cu128/bin/python \
 BGE_DEVICE=cuda \
 QUERY_PLANNER=llm \
-SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_EARNINGS \
+SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT \
 MANIFEST_PATH=data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl \
 BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027 \
 OBJECT_BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects \
@@ -77,7 +79,7 @@ cd /root/autodl-tmp/FIN_Insight_Agent
 PY=/root/autodl-tmp/envs/sec-agent-cu128/bin/python \
 BGE_DEVICE=cuda \
 QUERY_PLANNER=llm \
-SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_EARNINGS \
+SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT \
 MANIFEST_PATH=data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl \
 BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027 \
 OBJECT_BM25_INDEX_DIR=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects \

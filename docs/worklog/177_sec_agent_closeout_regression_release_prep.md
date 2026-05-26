@@ -51,20 +51,37 @@ Warn/skipped causes:
 
 Optional cloud validation still pending:
 
-- Run the readiness entry with `--saved-full-source-run-dir` and `--require-full-source-artifacts` against a current cloud full-source DeepSeek output directory.
+- Completed on cloud after syncing the two missing request-level context API check scripts and rebuilding the full30 ObjectBM25 index from the existing full-source evidence object store.
+- Cloud readiness command profile:
+  - `scripts/evaluate_sec_agent_resume_closeout_readiness.py`
+  - `--require-full-source-artifacts`
+  - `--latency-profile-case-path eval/sec_cases/outputs/interactive_sec_agent/20260526_182016_e9ca76fb2b/case.jsonl`
+- Latest interactive full-source saved run:
+  - Saved run: `eval/sec_cases/outputs/interactive_sec_agent/20260526_182016_e9ca76fb2b`
+  - Readiness report: `reports/quality/resume_closeout/20260526_201655_resume_closeout_readiness_local_v1.json`
+  - Overall: `warn`; blocker failures: `0`; status counts: `pass=11`, `warn=1`, `skipped=0`; P0 readiness: `pass=6/6`
+  - Saved DeepSeek run: completed all stages, passed all saved-run gates, attached 2 market snapshot rows, and had no fallback answers.
+- Full30 benchmark saved run:
+  - Saved run: `eval/sec_cases/outputs/full_source_deepseek_yahoo_fmp_latest_coverage_fix_benchmark/20260526_024807_3fbff2951a`
+  - Readiness report: `reports/quality/resume_closeout/20260526_202136_resume_closeout_readiness_local_v1.json`
+  - Overall: `warn`; blocker failures: `0`; status counts: `pass=11`, `warn=1`, `skipped=0`; P0 readiness: `pass=6/6`
+  - Saved DeepSeek run: completed all stages, attached 30 market snapshot rows, passed all saved-run gates, had `coverage_complete=true`, `primary_task_support_complete=true`, and had no fallback answers.
+- Remaining warning:
+  - `planner_contract_eval_local` is the heuristic local diagnostic, not the production DeepSeek planner. It remains useful for schema/source-boundary smoke, but should not be interpreted as the true LLM planner acceptance result.
 
 ## P0 Interpretation
 
 Current P0 status should be read as:
 
-- Performance/resource: local non-LLM latency profile is tracked and budgeted; DeepSeek output speed is outside this project layer.
-- Observability: real cloud runs now produce timing/fingerprint artifacts, but readiness only promotes that when a saved run is attached.
-- Data/index versioning: source inventory and market snapshot summaries are checked; full digest parity requires the saved run fingerprint.
-- State consistency: JSON store supports fixture and small single-process load smoke only.
-- Failure recovery: fixture partial-resume checks exist; true stage-level resume from an earlier production run remains a follow-up before production serving claims.
+- Performance/resource: cloud non-LLM latency profile is tracked and passed with explicit BM25/ObjectBM25 init/search, ledger cache, market attach, and coverage timing.
+- Observability: saved full-source DeepSeek runs now prove completed stage statuses, elapsed time, market snapshot coverage, and post-gate outcomes through readiness.
+- Data/index versioning: full-source 10-K/latest 10-Q/8-K/market artifact presence is checked, including the rebuilt full30 ObjectBM25 index and market evidence fields.
+- State consistency: request-level context API smoke and small pressure smoke passed on cloud; this remains single-process JSON-store validation, not a multi-worker database-backed serving claim.
+- Failure recovery: fixture partial-resume checks pass; true stage-level resume from an earlier production partial run remains a separate follow-up before production serving claims.
 
 ## Follow-Up
 
 - Run the local readiness entry after code changes.
-- If cloud is available, run the aggregator with `--saved-full-source-run-dir` and `--require-full-source-artifacts`.
+- Keep the cloud full-source ObjectBM25 index generation reproducible in deployment notes; the index was rebuilt from existing private evidence objects rather than faked.
+- Add a real LLM planner-contract cloud eval if this readiness report needs to move from `warn` to `pass`.
 - Do not stage generated `reports/quality/` outputs unless a specific report is promoted into `reports/model_runs/`.

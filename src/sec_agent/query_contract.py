@@ -15,6 +15,8 @@ QUERY_TASK_TYPES = {
     "general_sec_financial_question",
 }
 
+SCOPE_MODES = {"full_universe", "sector_representative", "focused_peer"}
+
 METRIC_FAMILY_ONTOLOGY = sorted(
     {
         "advertising_revenue",
@@ -68,6 +70,7 @@ DEFAULT_FORBIDDEN_CLAIMS = (
 )
 
 MARKET_SOURCE_TIER = "market_snapshot"
+INDUSTRY_SOURCE_TIER = "industry_snapshot"
 MARKET_SOURCE_POLICY = "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT"
 MARKET_WINDOWS = {"3M", "6M", "YTD", "1Y"}
 MARKET_FIELDS = {
@@ -103,6 +106,14 @@ MARKET_FORBIDDEN_CLAIMS = (
     "Do not make unstamped current/latest market claims without market_snapshot as_of_date.",
     "Do not use market data to overwrite SEC reported financial facts.",
     "Do not infer unavailable market or valuation fields from model memory.",
+)
+INDUSTRY_REQUIRED_CAVEATS = (
+    "Industry snapshot evidence is non-company-filed context and must carry source_family, provider, dataset_id, and as_of_date.",
+    "Industry snapshot evidence can explain macro or sector context only; it cannot replace company-filed financial facts.",
+)
+INDUSTRY_FORBIDDEN_CLAIMS = (
+    "Do not use industry snapshot values as company-reported revenue, margin, cash flow, balance-sheet, or segment facts.",
+    "Do not treat industry snapshot observations as real-time market prices, news, analyst estimates, or company guidance.",
 )
 
 BANKING_METRIC_FAMILIES = {
@@ -196,9 +207,12 @@ def validate_query_contract(
 
     raw_source_tiers = clean.get("source_tiers") or (clean.get("scope") or {}).get("source_tiers")
     market_requested = _market_snapshot_requested(clean, raw_source_tiers)
+    industry_requested = _industry_snapshot_requested(clean, raw_source_tiers)
     allowed_source_tiers_for_contract = list(allowed_source_tiers)
     if market_requested and MARKET_SOURCE_TIER not in allowed_source_tiers_for_contract:
         allowed_source_tiers_for_contract.append(MARKET_SOURCE_TIER)
+    if industry_requested and INDUSTRY_SOURCE_TIER not in allowed_source_tiers_for_contract:
+        allowed_source_tiers_for_contract.append(INDUSTRY_SOURCE_TIER)
     source_tiers = _clamp_source_tiers(raw_source_tiers, allowed_source_tiers_for_contract)
     if not source_tiers:
         source_tiers = allowed_source_tiers
@@ -209,17 +223,27 @@ def validate_query_contract(
     if market_requested and MARKET_SOURCE_TIER not in source_tiers:
         source_tiers.append(MARKET_SOURCE_TIER)
         normalizations.append({"field": "source_tiers", "action": "added_market_snapshot_tier"})
+    if industry_requested and INDUSTRY_SOURCE_TIER not in source_tiers:
+        source_tiers.append(INDUSTRY_SOURCE_TIER)
+        normalizations.append({"field": "source_tiers", "action": "added_industry_snapshot_tier"})
     clean["source_tiers"] = source_tiers
     clean["source_policy"] = _source_policy_for_scope(filing_types, source_tiers)
 
+    scope_mode = _scope_mode(clean, scope_tickers, focus_tickers)
+    clean["scope_mode"] = scope_mode
     clean["scope"] = {
+        "scope_mode": scope_mode,
         "universe_tickers": scope_tickers,
         "focus_tickers": focus_tickers,
+        "universe_count": len(scope_tickers),
+        "focus_count": len(focus_tickers),
         "years": years,
         "filing_types": filing_types,
         "source_tiers": source_tiers,
         "sec_sections": list(sections),
     }
+    if scope_mode == "sector_representative":
+        clean["scope"]["representative_tickers"] = focus_tickers
 
     if market_requested:
         clean["market_snapshot"] = _normalize_market_snapshot_contract(
@@ -243,7 +267,7 @@ def validate_query_contract(
         _string_list(clean.get("required_caveats"), max_items=12, max_chars=260),
         normalizations,
     )
-    if MARKET_SOURCE_TIER in set(source_tiers):
+    if MARKET_SOURCE_TIER in set(source_tiers) or INDUSTRY_SOURCE_TIER in set(source_tiers):
         required_caveats = [caveat for caveat in required_caveats if caveat != "SEC-only evidence boundary."]
     clean["required_caveats"] = _ensure_required_items(
         required_caveats,
@@ -252,7 +276,7 @@ def validate_query_contract(
         normalizations,
     )
     forbidden_claims = _string_list(clean.get("forbidden_claims"), max_items=12, max_chars=260)
-    if MARKET_SOURCE_TIER in set(source_tiers):
+    if MARKET_SOURCE_TIER in set(source_tiers) or INDUSTRY_SOURCE_TIER in set(source_tiers):
         forbidden_claims = [claim for claim in forbidden_claims if claim != DEFAULT_FORBIDDEN_CLAIMS[0]]
     clean["forbidden_claims"] = _ensure_required_items(
         forbidden_claims,
@@ -440,8 +464,14 @@ def _source_policy_caveats(filing_types: list[str], source_tiers: list[str]) -> 
     forms = {str(form).upper() for form in filing_types if str(form)}
     tiers = {str(tier) for tier in source_tiers if str(tier)}
     caveats = []
-    if MARKET_SOURCE_TIER in tiers:
+    if MARKET_SOURCE_TIER in tiers and INDUSTRY_SOURCE_TIER in tiers:
+        caveats.append("Project evidence boundary includes SEC filings, non-real-time market snapshot, and industry snapshot only.")
+    elif MARKET_SOURCE_TIER in tiers:
         caveats.append("Project evidence boundary includes SEC filings and non-real-time market snapshot only.")
+    elif INDUSTRY_SOURCE_TIER in tiers and "company_authored_unaudited_sec_filing" in tiers:
+        caveats.append("Project evidence boundary includes SEC filings, company-authored 8-K material, and industry snapshot only.")
+    elif INDUSTRY_SOURCE_TIER in tiers:
+        caveats.append("Project evidence boundary includes SEC filings and industry snapshot only.")
     elif "company_authored_unaudited_sec_filing" in tiers:
         caveats.append("Project evidence boundary includes SEC filings and company-authored 8-K material only.")
     else:
@@ -458,18 +488,25 @@ def _source_policy_caveats(filing_types: list[str], source_tiers: list[str]) -> 
         )
     if MARKET_SOURCE_TIER in tiers:
         caveats.extend(MARKET_REQUIRED_CAVEATS)
+    if INDUSTRY_SOURCE_TIER in tiers:
+        caveats.extend(INDUSTRY_REQUIRED_CAVEATS)
     return tuple(caveats)
 
 
 def _forbidden_claims_for_scope(source_tiers: list[str]) -> tuple[str, ...]:
     tiers = {str(tier) for tier in source_tiers if str(tier)}
-    if MARKET_SOURCE_TIER not in tiers:
+    if MARKET_SOURCE_TIER not in tiers and INDUSTRY_SOURCE_TIER not in tiers:
         return DEFAULT_FORBIDDEN_CLAIMS
-    return (
+    claims = [
         "Do not use news, earnings calls, or macro data outside the project inventory.",
         "Do not make a risk or industry claim without retrieved evidence.",
-        *MARKET_FORBIDDEN_CLAIMS,
-    )
+    ]
+    if INDUSTRY_SOURCE_TIER in tiers:
+        claims[0] = "Do not use news, earnings calls, or macro data outside retrieved project evidence."
+        claims.extend(INDUSTRY_FORBIDDEN_CLAIMS)
+    if MARKET_SOURCE_TIER in tiers:
+        claims.extend(MARKET_FORBIDDEN_CLAIMS)
+    return tuple(claims)
 
 
 def _market_snapshot_requested(contract: dict[str, Any], raw_source_tiers: Any) -> bool:
@@ -479,6 +516,25 @@ def _market_snapshot_requested(contract: dict[str, Any], raw_source_tiers: Any) 
         return True
     if isinstance(market, dict):
         return bool(market.get("required") or market.get("snapshot_id") or market.get("as_of_date"))
+    return False
+
+
+def _industry_snapshot_requested(contract: dict[str, Any], raw_source_tiers: Any) -> bool:
+    tiers = {str(tier or "").strip() for tier in _list_like(raw_source_tiers) if str(tier or "").strip()}
+    if INDUSTRY_SOURCE_TIER in tiers:
+        return True
+    industry = contract.get("industry_snapshot")
+    if isinstance(industry, dict):
+        return bool(industry.get("required") or industry.get("source_families") or industry.get("snapshot_id"))
+    requirements = contract.get("evidence_requirements") or []
+    if isinstance(requirements, list):
+        for requirement in requirements:
+            if not isinstance(requirement, dict):
+                continue
+            req_tiers = {str(tier or "").strip() for tier in _list_like(requirement.get("source_tiers")) if str(tier or "").strip()}
+            req_routes = {str(route or "").strip() for route in _list_like(requirement.get("evidence_routes")) if str(route or "").strip()}
+            if INDUSTRY_SOURCE_TIER in req_tiers or INDUSTRY_SOURCE_TIER in req_routes:
+                return True
     return False
 
 
@@ -998,6 +1054,24 @@ def _is_broad_task(contract: dict[str, Any]) -> bool:
     focus_count = len(contract.get("focus_tickers") or [])
     years_count = len(contract.get("years") or [])
     return task_type in {"ai_industry_financial_trend", "open_analysis"} or focus_count >= 5 or years_count >= 3
+
+
+def _scope_mode(contract: dict[str, Any], scope_tickers: list[str], focus_tickers: list[str]) -> str:
+    explicit = str(
+        contract.get("scope_mode")
+        or (contract.get("scope") if isinstance(contract.get("scope"), dict) else {}).get("scope_mode")
+        or ""
+    ).strip()
+    if explicit in SCOPE_MODES:
+        if explicit == "full_universe" and scope_tickers and focus_tickers and set(focus_tickers) < set(scope_tickers):
+            return "sector_representative"
+        return explicit
+    if scope_tickers and focus_tickers and set(focus_tickers) < set(scope_tickers):
+        return "sector_representative"
+    task_type = str(contract.get("task_type") or "")
+    if task_type in {"ai_industry_financial_trend", "open_analysis"} or len(scope_tickers) >= 5:
+        return "full_universe"
+    return "focused_peer"
 
 
 def _clamp_tickers(value: Any, allowed: list[str]) -> list[str]:

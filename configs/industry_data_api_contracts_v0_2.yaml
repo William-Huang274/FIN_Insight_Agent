@@ -1,0 +1,326 @@
+version: "v0.2"
+purpose: "Concrete API route and series contracts for sector-depth industry-data snapshots."
+snapshot_policy:
+  batch_id: "industry_sector_depth_v0_2"
+  default_as_of_date: "2026-05-29"
+  output_contract:
+    observations_table: "industry_observations"
+    evidence_rows_table: "industry_evidence_rows"
+    required_columns:
+      - "source_family"
+      - "provider"
+      - "dataset_id"
+      - "series_id"
+      - "observation_date"
+      - "as_of_date"
+      - "frequency"
+      - "value"
+      - "unit"
+      - "revision_status"
+      - "fetched_at"
+  notes:
+    - "FRED CSV routes require no key and are used as the first normalized snapshot path."
+    - "FDA/CMS public JSON routes are metadata/event-context canaries and do not replace company-filed financial facts."
+    - "EIA v2 routes require EIA_API_KEY at runtime; API URLs written to artifacts must redact the key."
+
+source_families:
+  - source_family: "industry_macro_rates_credit"
+    provider: "FRED"
+    route_type: "fred_csv"
+    base_url: "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    default_frequency: "daily_or_monthly_by_series"
+    allowed_claim_types: ["rate_cycle_context", "credit_condition_context", "funding_cost_context"]
+    series:
+      - series_id: "FEDFUNDS"
+        dataset_id: "fred/FEDFUNDS"
+        frequency: "monthly"
+        unit: "Percent"
+        facet: {"rate": "effective_federal_funds_rate"}
+      - series_id: "DGS10"
+        dataset_id: "fred/DGS10"
+        frequency: "daily"
+        unit: "Percent"
+        facet: {"maturity": "10y_treasury"}
+      - series_id: "DGS2"
+        dataset_id: "fred/DGS2"
+        frequency: "daily"
+        unit: "Percent"
+        facet: {"maturity": "2y_treasury"}
+      - series_id: "MORTGAGE30US"
+        dataset_id: "fred/MORTGAGE30US"
+        frequency: "weekly"
+        unit: "Percent"
+        facet: {"rate": "30y_fixed_mortgage"}
+      - series_id: "BAA10Y"
+        dataset_id: "fred/BAA10Y"
+        frequency: "daily"
+        unit: "Percent"
+        facet: {"spread": "baa_corporate_minus_10y_treasury"}
+      - series_id: "DRTSCILM"
+        dataset_id: "fred/DRTSCILM"
+        frequency: "quarterly"
+        unit: "Net percent"
+        facet: {"survey": "domestic_banks_tightening_c_and_i_large_medium"}
+
+  - source_family: "industry_consumer_macro"
+    provider: "FRED"
+    route_type: "fred_csv"
+    base_url: "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    default_frequency: "monthly"
+    allowed_claim_types: ["consumer_demand_context", "inflation_context", "employment_income_context"]
+    series:
+      - series_id: "CPIAUCSL"
+        dataset_id: "fred/CPIAUCSL"
+        frequency: "monthly"
+        unit: "Index 1982-1984=100"
+        facet: {"measure": "cpi_all_urban_consumers"}
+      - series_id: "PCE"
+        dataset_id: "fred/PCE"
+        frequency: "monthly"
+        unit: "Billions of dollars"
+        facet: {"measure": "personal_consumption_expenditures"}
+      - series_id: "RSAFS"
+        dataset_id: "fred/RSAFS"
+        frequency: "monthly"
+        unit: "Millions of dollars"
+        facet: {"measure": "advance_retail_and_food_services_sales"}
+      - series_id: "UMCSENT"
+        dataset_id: "fred/UMCSENT"
+        frequency: "monthly"
+        unit: "Index 1966:Q1=100"
+        facet: {"measure": "university_of_michigan_consumer_sentiment"}
+      - series_id: "PAYEMS"
+        dataset_id: "fred/PAYEMS"
+        frequency: "monthly"
+        unit: "Thousands of persons"
+        facet: {"measure": "nonfarm_payrolls"}
+      - series_id: "UNRATE"
+        dataset_id: "fred/UNRATE"
+        frequency: "monthly"
+        unit: "Percent"
+        facet: {"measure": "unemployment_rate"}
+
+  - source_family: "industry_energy_commodities"
+    provider: "FRED"
+    route_type: "fred_csv"
+    base_url: "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    default_frequency: "daily"
+    allowed_claim_types: ["commodity_price_context", "inventory_supply_context", "energy_demand_context"]
+    series:
+      - series_id: "DCOILWTICO"
+        dataset_id: "fred/DCOILWTICO"
+        frequency: "daily"
+        unit: "Dollars per barrel"
+        facet: {"commodity": "wti_crude_oil"}
+      - series_id: "DCOILBRENTEU"
+        dataset_id: "fred/DCOILBRENTEU"
+        frequency: "daily"
+        unit: "Dollars per barrel"
+        facet: {"commodity": "brent_crude_oil"}
+      - series_id: "DHHNGSP"
+        dataset_id: "fred/DHHNGSP"
+        frequency: "daily"
+        unit: "Dollars per million BTU"
+        facet: {"commodity": "henry_hub_natural_gas"}
+
+  - source_family: "industry_energy_commodities"
+    provider: "EIA"
+    route_type: "eia_v2_json"
+    endpoint: "https://api.eia.gov/v2/total-energy/data/"
+    api_key_env_var: "EIA_API_KEY"
+    default_frequency: "monthly"
+    allowed_claim_types: ["commodity_price_context", "inventory_supply_context", "energy_demand_context", "energy_mix_context"]
+    params:
+      frequency: "monthly"
+      "data[0]": "value"
+      "sort[0][column]": "period"
+      "sort[0][direction]": "desc"
+      offset: 0
+      length: 5000
+    dataset:
+      dataset_id: "eia/total-energy/monthly"
+      unit: "mixed"
+      facet: {"domain": "monthly_energy_statistics", "source": "monthly_energy_review"}
+
+  - source_family: "industry_materials_commodities"
+    provider: "FRED"
+    route_type: "fred_csv"
+    base_url: "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    default_frequency: "monthly"
+    allowed_claim_types: ["input_cost_context", "metals_price_context", "chemicals_price_context", "commodity_cycle_context"]
+    series:
+      - series_id: "PPIACO"
+        dataset_id: "fred/PPIACO"
+        frequency: "monthly"
+        unit: "Index 1982=100"
+        facet: {"measure": "producer_price_index_all_commodities"}
+      - series_id: "WPU10"
+        dataset_id: "fred/WPU10"
+        frequency: "monthly"
+        unit: "Index 1982=100"
+        facet: {"measure": "metals_and_metal_products"}
+      - series_id: "WPU101"
+        dataset_id: "fred/WPU101"
+        frequency: "monthly"
+        unit: "Index 1982=100"
+        facet: {"measure": "iron_and_steel"}
+      - series_id: "WPU102"
+        dataset_id: "fred/WPU102"
+        frequency: "monthly"
+        unit: "Index 1982=100"
+        facet: {"measure": "nonferrous_metals"}
+      - series_id: "WPU061"
+        dataset_id: "fred/WPU061"
+        frequency: "monthly"
+        unit: "Index 1982=100"
+        facet: {"measure": "industrial_chemicals"}
+      - series_id: "PCU325325"
+        dataset_id: "fred/PCU325325"
+        frequency: "monthly"
+        unit: "Index Dec 1984=100"
+        facet: {"measure": "chemical_manufacturing_ppi"}
+      - series_id: "PCU331331"
+        dataset_id: "fred/PCU331331"
+        frequency: "monthly"
+        unit: "Index Dec 2003=100"
+        facet: {"measure": "primary_metal_manufacturing_ppi"}
+      - series_id: "PCU212212"
+        dataset_id: "fred/PCU212212"
+        frequency: "monthly"
+        unit: "Index Dec 1984=100"
+        facet: {"measure": "mining_except_oil_and_gas_ppi"}
+
+  - source_family: "industry_housing_real_estate_power"
+    provider: "FRED"
+    route_type: "fred_csv"
+    base_url: "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    default_frequency: "monthly"
+    allowed_claim_types: ["housing_cycle_context", "power_load_context", "financing_cost_context"]
+    series:
+      - series_id: "HOUST"
+        dataset_id: "fred/HOUST"
+        frequency: "monthly"
+        unit: "Thousands of units"
+        facet: {"measure": "housing_starts"}
+      - series_id: "PERMIT"
+        dataset_id: "fred/PERMIT"
+        frequency: "monthly"
+        unit: "Thousands of units"
+        facet: {"measure": "building_permits"}
+      - series_id: "CSUSHPINSA"
+        dataset_id: "fred/CSUSHPINSA"
+        frequency: "monthly"
+        unit: "Index Jan 2000=100"
+        facet: {"measure": "case_shiller_us_home_price_index"}
+      - series_id: "MORTGAGE30US"
+        dataset_id: "fred/MORTGAGE30US"
+        frequency: "weekly"
+        unit: "Percent"
+        facet: {"rate": "30y_fixed_mortgage"}
+
+  - source_family: "industry_utilities_power_demand"
+    provider: "EIA"
+    route_type: "eia_v2_json"
+    endpoint: "https://api.eia.gov/v2/electricity/retail-sales/data/"
+    api_key_env_var: "EIA_API_KEY"
+    default_frequency: "monthly"
+    allowed_claim_types: ["power_demand_context", "retail_electricity_price_context", "utility_revenue_context", "customer_count_context"]
+    params:
+      frequency: "monthly"
+      "data[0]": "sales"
+      "data[1]": "revenue"
+      "data[2]": "price"
+      "data[3]": "customers"
+      "facets[stateid][]": ["US"]
+      "facets[sectorid][]": ["ALL", "RES", "COM", "IND", "TRA", "OTH"]
+      "sort[0][column]": "period"
+      "sort[0][direction]": "desc"
+      offset: 0
+      length: 5000
+    dataset:
+      dataset_id: "eia/electricity/retail-sales"
+      unit: "mixed"
+      data_fields: ["sales", "revenue", "price", "customers"]
+      series_id_template: "EIA_RETAIL_SALES::{stateid}::{sectorid}::{metric}"
+      field_descriptions:
+        sales: "Megawatt-hours sold to ultimate customers"
+        revenue: "Revenue from sales to ultimate customers"
+        price: "Average price of electricity to ultimate customers"
+        customers: "Number of ultimate customers"
+      field_units:
+        sales: "million kilowatt hours"
+        revenue: "million dollars"
+        price: "cents per kilowatt-hour"
+        customers: "number of customers"
+      facet: {"domain": "electricity_retail_sales", "source": "forms_eia_826_861_861m"}
+
+  - source_family: "industry_industrial_macro"
+    provider: "FRED"
+    route_type: "fred_csv"
+    base_url: "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    default_frequency: "monthly"
+    allowed_claim_types: ["industrial_cycle_context", "orders_inventory_context", "manufacturing_activity_context"]
+    series:
+      - series_id: "INDPRO"
+        dataset_id: "fred/INDPRO"
+        frequency: "monthly"
+        unit: "Index 2017=100"
+        facet: {"measure": "industrial_production"}
+      - series_id: "IPMAN"
+        dataset_id: "fred/IPMAN"
+        frequency: "monthly"
+        unit: "Index 2017=100"
+        facet: {"measure": "manufacturing_production"}
+      - series_id: "DGORDER"
+        dataset_id: "fred/DGORDER"
+        frequency: "monthly"
+        unit: "Millions of dollars"
+        facet: {"measure": "durable_goods_new_orders"}
+      - series_id: "AMTMNO"
+        dataset_id: "fred/AMTMNO"
+        frequency: "monthly"
+        unit: "Millions of dollars"
+        facet: {"measure": "manufacturers_new_orders"}
+      - series_id: "BUSINV"
+        dataset_id: "fred/BUSINV"
+        frequency: "monthly"
+        unit: "Millions of dollars"
+        facet: {"measure": "business_inventories"}
+
+  - source_family: "industry_healthcare_regulatory"
+    provider: "FDA"
+    route_type: "public_json"
+    endpoint: "https://api.fda.gov/drug/drugsfda.json"
+    params:
+      limit: 100
+    default_frequency: "event"
+    allowed_claim_types: ["regulatory_event_context", "payer_policy_context", "procedure_or_utilization_context"]
+    dataset:
+      dataset_id: "fda/drug/drugsfda"
+      unit: "event"
+      facet: {"domain": "drug_approvals"}
+
+  - source_family: "industry_healthcare_regulatory"
+    provider: "CMS"
+    route_type: "public_json"
+    endpoint: "https://data.cms.gov/data.json"
+    params: {}
+    default_frequency: "catalog"
+    allowed_claim_types: ["payer_policy_context", "procedure_or_utilization_context"]
+    dataset:
+      dataset_id: "cms/data_catalog"
+      unit: "dataset_metadata"
+      facet: {"domain": "cms_public_catalog"}
+
+deferred_provider_contracts:
+  - provider: "EIA"
+    status: "mapped_but_not_yet_normalized"
+    env_var: "EIA_API_KEY"
+    source_families:
+      - "industry_utilities_power_demand"
+    concrete_routes:
+      - route_id: "eia_rto_region_data_demand"
+        endpoint: "https://api.eia.gov/v2/electricity/rto/region-data/data/"
+        frequency: "hourly"
+        data: ["value"]
+        status: "candidate_for_hourly_load_after_monthly_retail_sales"

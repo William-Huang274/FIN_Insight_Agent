@@ -428,6 +428,78 @@ def test_connector_rejects_filing_date_match_when_document_fiscal_year_differs(m
         raise AssertionError("Expected fiscal-year mismatch to be rejected")
 
 
+def test_connector_uses_10k_report_date_when_document_fiscal_year_is_stale(
+    monkeypatch, tmp_path: Path
+) -> None:
+    connector = SecEdgarConnector(user_agent="FinSight-Agent/0.1 test@example.com", cache_dir=tmp_path)
+    submissions = {
+        "name": "Freeport-McMoRan Inc.",
+        "filings": {
+            "recent": {
+                "form": ["10-K"],
+                "accessionNumber": ["0000831259-25-000006"],
+                "primaryDocument": ["fcx-20241231.htm"],
+                "filingDate": ["2025-02-14"],
+                "reportDate": ["2024-12-31"],
+                "acceptanceDateTime": ["2025-02-14T22:00:48.000Z"],
+                "primaryDocDescription": ["10-K"],
+            }
+        },
+    }
+
+    monkeypatch.setattr(connector, "get_company_submissions", lambda cik: submissions)
+    monkeypatch.setattr(
+        connector,
+        "_request_text",
+        lambda url: (
+            '<ix:nonNumeric name="dei:DocumentFiscalYearFocus" contextRef="ctx">2023</ix:nonNumeric>'
+            '<ix:nonNumeric name="dei:DocumentFiscalPeriodFocus" contextRef="ctx">FY</ix:nonNumeric>'
+        ),
+    )
+
+    filing = connector.find_filing("831259", "10-K", 2024)
+
+    assert filing["fiscal_year"] == 2024
+    assert filing["fiscal_year_source"] == "annual_report_date_over_document_fiscal_year_focus"
+    assert filing["document_fiscal_year_focus"] == 2023
+
+
+def test_connector_preserves_retail_10k_prior_fiscal_year_for_january_report_date(
+    monkeypatch, tmp_path: Path
+) -> None:
+    connector = SecEdgarConnector(user_agent="FinSight-Agent/0.1 test@example.com", cache_dir=tmp_path)
+    submissions = {
+        "name": "Home Depot, Inc.",
+        "filings": {
+            "recent": {
+                "form": ["10-K"],
+                "accessionNumber": ["0000354950-24-000062"],
+                "primaryDocument": ["hd-20240202.htm"],
+                "filingDate": ["2024-03-15"],
+                "reportDate": ["2024-02-02"],
+                "acceptanceDateTime": ["2024-03-15T12:00:00.000Z"],
+                "primaryDocDescription": ["10-K"],
+            }
+        },
+    }
+
+    monkeypatch.setattr(connector, "get_company_submissions", lambda cik: submissions)
+    monkeypatch.setattr(
+        connector,
+        "_request_text",
+        lambda url: (
+            '<ix:nonNumeric name="dei:DocumentFiscalYearFocus" contextRef="ctx">2023</ix:nonNumeric>'
+            '<ix:nonNumeric name="dei:DocumentFiscalPeriodFocus" contextRef="ctx">FY</ix:nonNumeric>'
+        ),
+    )
+
+    filing = connector.find_filing("354950", "10-K", 2023)
+
+    assert filing["fiscal_year"] == 2023
+    assert filing["fiscal_year_source"] == "document_fiscal_year_focus"
+    assert filing["report_date"] == "2024-02-02"
+
+
 def test_api_memo_normalization_drops_unsupported_optional_claims() -> None:
     module = _load_synthesis_module()
     answer = {
@@ -605,6 +677,49 @@ def test_interactive_ledger_recognizes_10q_cash_flow_and_capex_rows() -> None:
     assert capex["value"] == -80146.0
     assert capex["display_value_zh"] == "(80,146)（百万美元）"
     assert interactive._ledger_row_allowed(capex, contract, None)
+
+
+def test_generic_runtime_ledger_cap_balances_decomposed_task_metric_families() -> None:
+    interactive = _load_interactive_module()
+    contract = {
+        "task_type": "general_sec_financial_question",
+        "decomposed_tasks": [
+            {"required_metric_families": ["cloud_revenue", "data_center_revenue"]},
+            {"required_metric_families": ["capital_expenditure_proxy", "operating_cash_flow", "research_and_development"]},
+        ],
+    }
+    rows = []
+    for idx in range(8):
+        rows.append(
+            {
+                "ticker": "MSFT",
+                "fiscal_year": 2026,
+                "metric_family": "cloud_revenue",
+                "metric_role": "total_value",
+                "period_role": "qtd",
+                "raw_value_text": str(idx),
+                "object_id": f"cloud_{idx}",
+            }
+        )
+    for idx, family in enumerate(["capital_expenditure_proxy", "operating_cash_flow", "research_and_development"]):
+        rows.append(
+            {
+                "ticker": "MSFT",
+                "fiscal_year": 2026,
+                "metric_family": family,
+                "metric_role": "total_value",
+                "period_role": "qtd",
+                "raw_value_text": str(idx),
+                "object_id": f"investment_{idx}",
+            }
+        )
+
+    capped = interactive._cap_ledger_rows(rows, contract, 4)
+    families = {row["metric_family"] for row in capped}
+
+    assert len(capped) == 4
+    assert "cloud_revenue" in families
+    assert {"capital_expenditure_proxy", "operating_cash_flow", "research_and_development"} & families
 
 
 def test_interactive_ledger_defaults_10q_sentence_metrics_to_qtd() -> None:

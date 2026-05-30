@@ -1,0 +1,126 @@
+version: "v0.2"
+purpose: "Foreign issuer source-family canary for 20-F, 6-K, and 40-F parsing before main-chain promotion."
+promotion_policy:
+  status: "canary_only"
+  promote_to_main_chain_only_if:
+    - "form_specific_manifest_passes"
+    - "section_splitter_passes"
+    - "source_family_is_preserved_in_evidence_rows"
+    - "currency_and_accounting_standard_are_recorded"
+    - "ledger_mapping_is_reviewed_for_primary_metric_families"
+    - "renderer_and_gates_show_foreign_source_boundary"
+  prohibited:
+    - "Do not treat 20-F as 10-K."
+    - "Do not treat 6-K as 10-Q."
+    - "Do not mix IFRS and US GAAP metrics without explicit comparability caveats."
+
+source_families:
+  - source_family: "foreign_primary_annual"
+    forms: ["20-F"]
+    allowed_claim_types:
+      - "annual_business_description"
+      - "annual_risk"
+      - "annual_financial_fact"
+      - "annual_management_discussion"
+    required_metadata:
+      - "ticker"
+      - "cik"
+      - "form_type"
+      - "filing_date"
+      - "period_end"
+      - "currency"
+      - "accounting_standard"
+      - "source_family"
+      - "source_tier"
+
+  - source_family: "foreign_company_authored_interim"
+    forms: ["6-K"]
+    allowed_claim_types:
+      - "interim_result"
+      - "management_commentary"
+      - "company_authored_press_release"
+      - "guidance_or_business_update"
+    required_metadata:
+      - "ticker"
+      - "cik"
+      - "form_type"
+      - "filing_date"
+      - "document_title"
+      - "period_end"
+      - "currency"
+      - "source_family"
+      - "source_tier"
+
+  - source_family: "canadian_primary_annual"
+    forms: ["40-F"]
+    allowed_claim_types:
+      - "annual_business_description"
+      - "annual_financial_fact"
+      - "annual_risk"
+    required_metadata:
+      - "ticker"
+      - "cik"
+      - "form_type"
+      - "filing_date"
+      - "period_end"
+      - "currency"
+      - "accounting_standard"
+      - "source_family"
+      - "source_tier"
+
+canary_companies:
+  - ticker: "TSM"
+    company_name: "Taiwan Semiconductor Manufacturing Company"
+    industry_group: "semiconductors"
+    target_forms: ["20-F", "6-K"]
+    canary_reason: "Foundry capacity and advanced-node supply-chain validation."
+    source_gap_policy: "hypothesis_only_until_parser_passes"
+
+  - ticker: "ASML"
+    company_name: "ASML Holding"
+    industry_group: "semiconductor_equipment"
+    target_forms: ["20-F", "6-K"]
+    canary_reason: "Lithography equipment bottleneck and semiconductor capex signal."
+    source_gap_policy: "hypothesis_only_until_parser_passes"
+
+  - ticker: "ARM"
+    company_name: "Arm Holdings"
+    industry_group: "semiconductors_ip"
+    target_forms: ["20-F", "6-K"]
+    canary_reason: "CPU/IP licensing and AI edge/server architecture exposure."
+    source_gap_policy: "hypothesis_only_until_parser_passes"
+
+  - ticker: "SAP"
+    company_name: "SAP"
+    industry_group: "enterprise_software"
+    target_forms: ["20-F", "6-K"]
+    canary_reason: "Non-US enterprise software and cloud transition comparison."
+    source_gap_policy: "hypothesis_only_until_parser_passes"
+
+  - ticker: "NVO"
+    company_name: "Novo Nordisk"
+    industry_group: "pharmaceuticals"
+    target_forms: ["20-F", "6-K"]
+    canary_reason: "Global obesity/diabetes drug cycle and foreign issuer healthcare comparison."
+    source_gap_policy: "hypothesis_only_until_parser_passes"
+
+  - ticker: "TM"
+    company_name: "Toyota Motor"
+    industry_group: "autos"
+    target_forms: ["20-F", "6-K"]
+    canary_reason: "Global auto cycle, currency exposure, and EV/hybrid strategy comparison."
+    source_gap_policy: "hypothesis_only_until_parser_passes"
+
+  - ticker: "SONY"
+    company_name: "Sony Group"
+    industry_group: "consumer_electronics_media_gaming"
+    target_forms: ["20-F", "6-K"]
+    canary_reason: "Cross-listed media, gaming, electronics, and entertainment comparison."
+    source_gap_policy: "hypothesis_only_until_parser_passes"
+
+  - ticker: "SHOP"
+    company_name: "Shopify"
+    industry_group: "commerce_software"
+    target_forms: ["40-F", "6-K"]
+    canary_reason: "Canadian annual filing and commerce software growth/profitability comparison."
+    source_gap_policy: "hypothesis_only_until_parser_passes"

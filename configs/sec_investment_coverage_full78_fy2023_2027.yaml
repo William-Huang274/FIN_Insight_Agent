@@ -1,0 +1,246 @@
+form_type: "10-K"
+form_types:
+  - "10-K"
+  - "10-Q"
+years:
+  - 2023
+  - 2024
+  - 2025
+  - 2026
+  - 2027
+
+companies:
+  - ticker: MSFT
+    category: "mega-cap software/cloud"
+    category_slug: "mega-cap_software_cloud"
+  - ticker: AAPL
+    category: "hardware/ecosystem"
+    category_slug: "hardware_ecosystem"
+  - ticker: NVDA
+    category: "AI/GPU semiconductor"
+    category_slug: "ai_gpu_semiconductor"
+  - ticker: GOOGL
+    category: "search/ads/cloud"
+    category_slug: "search_ads_cloud"
+  - ticker: META
+    category: "social/ads/AI infra"
+    category_slug: "social_ads_ai_infra"
+  - ticker: AMZN
+    category: "ecommerce/cloud"
+    category_slug: "ecommerce_cloud"
+  - ticker: AVGO
+    category: "semiconductor/networking"
+    category_slug: "semiconductor_networking"
+  - ticker: CSCO
+    category: "networking/security"
+    category_slug: "networking_security"
+  - ticker: INTC
+    category: "semiconductor IDM"
+    category_slug: "semiconductor_idm"
+  - ticker: AMD
+    category: "semiconductor challenger"
+    category_slug: "semiconductor_challenger"
+  - ticker: QCOM
+    category: "mobile/semiconductor"
+    category_slug: "mobile_semiconductor"
+  - ticker: TXN
+    category: "analog semiconductor"
+    category_slug: "analog_semiconductor"
+  - ticker: AMAT
+    category: "semiconductor equipment"
+    category_slug: "semiconductor_equipment"
+  - ticker: MU
+    category: "memory semiconductor"
+    category_slug: "memory_semiconductor"
+  - ticker: INTU
+    category: "financial software"
+    category_slug: "financial_software"
+  - ticker: ADP
+    category: "payroll/HCM software"
+    category_slug: "payroll_hcm_software"
+  - ticker: ADBE
+    category: "creative/software SaaS"
+    category_slug: "creative_software_saas"
+  - ticker: PANW
+    category: "cybersecurity"
+    category_slug: "cybersecurity"
+  - ticker: CRWD
+    category: "cybersecurity"
+    category_slug: "cybersecurity"
+  - ticker: SNOW
+    category: "data/cloud software"
+    category_slug: "data_cloud_software"
+  - ticker: JPM
+    category: "banking/financial services"
+    category_slug: "banking_financial_services"
+  - ticker: V
+    category: "payments network/financial services"
+    category_slug: "payments_financial_services"
+  - ticker: JNJ
+    category: "healthcare/pharma/devices"
+    category_slug: "healthcare_pharma_devices"
+  - ticker: LLY
+    category: "pharmaceuticals/obesity diabetes"
+    category_slug: "pharmaceutical_obesity_diabetes"
+  - ticker: CAT
+    category: "industrial machinery"
+    category_slug: "industrial_machinery"
+  - ticker: GE
+    category: "aerospace/industrial"
+    category_slug: "aerospace_industrial"
+  - ticker: WMT
+    category: "consumer retail"
+    category_slug: "consumer_retail"
+  - ticker: PG
+    category: "consumer staples"
+    category_slug: "consumer_staples"
+  - ticker: XOM
+    category: "energy/integrated oil gas"
+    category_slug: "energy_integrated_oil_gas"
+  - ticker: CVX
+    category: "energy/integrated oil gas"
+    category_slug: "energy_integrated_oil_gas"
+  - ticker: NFLX
+    category: "streaming/media"
+    category_slug: "streaming_media"
+  - ticker: DIS
+    category: "media/parks"
+    category_slug: "media_parks"
+  - ticker: TMUS
+    category: "telecom/wireless"
+    category_slug: "telecom_wireless"
+  - ticker: TSLA
+    category: "electric vehicles/energy"
+    category_slug: "electric_vehicles_energy"
+  - ticker: HD
+    category: "home improvement retail"
+    category_slug: "home_improvement_retail"
+  - ticker: LOW
+    category: "home improvement retail"
+    category_slug: "home_improvement_retail"
+  - ticker: MCD
+    category: "restaurants/franchise"
+    category_slug: "restaurants_franchise"
+  - ticker: BKNG
+    category: "online travel"
+    category_slug: "online_travel"
+  - ticker: COST
+    category: "warehouse retail"
+    category_slug: "warehouse_retail"
+  - ticker: KO
+    category: "beverages"
+    category_slug: "beverages"
+  - ticker: PEP
+    category: "beverages/snacks"
+    category_slug: "beverages_snacks"
+  - ticker: PM
+    category: "tobacco/nicotine"
+    category_slug: "tobacco_nicotine"
+  - ticker: COP
+    category: "energy/exploration production"
+    category_slug: "energy_exploration_production"
+  - ticker: SLB
+    category: "oilfield services"
+    category_slug: "oilfield_services"
+  - ticker: EOG
+    category: "shale exploration production"
+    category_slug: "shale_exploration_production"
+  - ticker: BAC
+    category: "banking/financial services"
+    category_slug: "banking_financial_services"
+  - ticker: MS
+    category: "capital markets/investment bank"
+    category_slug: "capital_markets_investment_bank"
+  - ticker: BLK
+    category: "asset management"
+    category_slug: "asset_management"
+  - ticker: SPGI
+    category: "financial data/ratings"
+    category_slug: "financial_data_ratings"
+  - ticker: PGR
+    category: "property casualty insurance"
+    category_slug: "property_casualty_insurance"
+  - ticker: AXP
+    category: "payments/consumer finance"
+    category_slug: "payments_consumer_finance"
+  - ticker: UNH
+    category: "managed care"
+    category_slug: "managed_care"
+  - ticker: MRK
+    category: "pharmaceuticals"
+    category_slug: "pharmaceuticals"
+  - ticker: ABBV
+    category: "pharmaceuticals"
+    category_slug: "pharmaceuticals"
+  - ticker: TMO
+    category: "life sciences tools"
+    category_slug: "life_sciences_tools"
+  - ticker: ISRG
+    category: "medical devices/robotics"
+    category_slug: "medical_devices_robotics"
+  - ticker: HON
+    category: "industrial automation/aerospace"
+    category_slug: "industrial_automation_aerospace"
+  - ticker: RTX
+    category: "aerospace/defense"
+    category_slug: "aerospace_defense"
+  - ticker: UPS
+    category: "logistics"
+    category_slug: "logistics"
+  - ticker: UNP
+    category: "railroad"
+    category_slug: "railroad"
+  - ticker: DE
+    category: "agriculture equipment"
+    category_slug: "agriculture_equipment"
+  - ticker: LIN
+    category: "industrial gases"
+    category_slug: "industrial_gases"
+  - ticker: SHW
+    category: "coatings"
+    category_slug: "coatings"
+  - ticker: FCX
+    category: "copper/mining"
+    category_slug: "copper_mining"
+  - ticker: NEM
+    category: "gold mining"
+    category_slug: "gold_mining"
+  - ticker: APD
+    category: "industrial gases"
+    category_slug: "industrial_gases"
+  - ticker: PLD
+    category: "industrial REIT/logistics"
+    category_slug: "industrial_reit_logistics"
+  - ticker: AMT
+    category: "tower REIT"
+    category_slug: "tower_reit"
+  - ticker: EQIX
+    category: "data center REIT"
+    category_slug: "data_center_reit"
+  - ticker: WELL
+    category: "healthcare REIT"
+    category_slug: "healthcare_reit"
+  - ticker: SPG
+    category: "retail REIT"
+    category_slug: "retail_reit"
+  - ticker: NEE
+    category: "utility/renewables"
+    category_slug: "utility_renewables"
+  - ticker: SO
+    category: "regulated utility"
+    category_slug: "regulated_utility"
+  - ticker: DUK
+    category: "regulated utility"
+    category_slug: "regulated_utility"
+  - ticker: AEP
+    category: "regulated utility"
+    category_slug: "regulated_utility"
+  - ticker: CEG
+    category: "power/nuclear"
+    category_slug: "power_nuclear"
+  - ticker: ORCL
+    category: "enterprise software/cloud"
+    category_slug: "enterprise_software_cloud"
+  - ticker: CRM
+    category: "enterprise SaaS"
+    category_slug: "enterprise_saas"

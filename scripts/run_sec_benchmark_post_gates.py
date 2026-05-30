@@ -684,10 +684,11 @@ def _qwen_usage(run_dir: Path, case_task_types: dict[str, str]) -> dict:
     api_model_repaired = sum(_is_api_model_repair(row) for row in eligible)
     model_answered = qwen_answered + api_model_answered
     model_repaired = qwen_ledger_repaired + api_model_repaired
+    model_supported_answered = model_answered + model_repaired
     fallback_answered = sum(_is_contract_fallback(row) for row in eligible)
     failed_eligible_outputs = sum(str(row.get("status")) != "answered" for row in eligible)
     qwen_ratio = (qwen_answered / len(eligible)) if eligible else None
-    model_ratio = (model_answered / len(eligible)) if eligible else None
+    model_ratio = (model_supported_answered / len(eligible)) if eligible else None
     return {
         "total_outputs": len(rows),
         "total_answered": total_answered,
@@ -699,6 +700,7 @@ def _qwen_usage(run_dir: Path, case_task_types: dict[str, str]) -> dict:
         "api_model_repaired": api_model_repaired,
         "model_answered": model_answered,
         "model_repaired": model_repaired,
+        "model_supported_answered": model_supported_answered,
         "fallback_answered": fallback_answered,
         "failed_eligible_outputs": failed_eligible_outputs,
         "trap_outputs_excluded": len(trap_rows),

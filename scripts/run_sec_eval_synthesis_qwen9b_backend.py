@@ -257,6 +257,30 @@ def _is_market_snapshot_context_row(row: dict[str, Any]) -> bool:
     return "MARKET_SNAPSHOT::" in evidence_id
 
 
+def _has_industry_snapshot_context(case: dict[str, Any], context_rows: list[dict[str, Any]]) -> bool:
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    source_tiers = {str(tier or "") for tier in (contract.get("source_tiers") or case.get("source_tiers") or [])}
+    industry = contract.get("industry_snapshot") if isinstance(contract.get("industry_snapshot"), dict) else {}
+    if "industry_snapshot" not in source_tiers and not industry:
+        return False
+    return any(_is_industry_snapshot_context_row(row) for row in context_rows)
+
+
+def _is_industry_snapshot_context_row(row: dict[str, Any]) -> bool:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    values = {
+        str(row.get("source_tier") or "").strip(),
+        str(row.get("source_type") or "").strip(),
+        str(row.get("source_kind") or "").strip(),
+        str(metadata.get("source_tier") or "").strip(),
+        str(metadata.get("source_type") or "").strip(),
+    }
+    if "industry_snapshot" in values:
+        return True
+    evidence_id = " ".join(str(row.get(key) or "") for key in ("evidence_id", "source_evidence_id", "object_id"))
+    return "INDUSTRY::" in evidence_id
+
+
 def _market_fields_for_prompt(row: dict[str, Any]) -> list[dict[str, Any]]:
     fields = []
     for ref in row.get("field_refs") or []:
@@ -311,6 +335,23 @@ def _market_snapshot_usage_rule(has_market_context: bool, api_memo_mode: bool) -
     )
 
 
+def _industry_snapshot_usage_rule(has_industry_context: bool, api_memo_mode: bool) -> str:
+    if not has_industry_context:
+        return ""
+    target_fields = (
+        "why_it_matters、counterarguments、watch_items 或 source_limitations"
+        if api_memo_mode
+        else "decision_drivers、key_points、caveat 或 limitations"
+    )
+    return (
+        "Industry Snapshot Usage Rule: Evidence Text 中已有 industry_snapshot 时，"
+        "它只能支持宏观、行业周期、监管、利率、商品价格、需求环境等背景解释。"
+        f"所有行业背景判断必须在 {target_fields} 绑定对应 industry_snapshot evidence_ids，"
+        "并明确 as_of_date/source_family/source boundary。"
+        "industry_snapshot 不得覆盖 SEC Exact-Value Ledger 中的公司财报事实，不得当作公司管理层口径、新闻、实时市场数据或分析师预期。\n"
+    )
+
+
 def _build_prompt(
     case: dict[str, Any],
     context_rows: list[dict[str, Any]],
@@ -321,6 +362,7 @@ def _build_prompt(
     prompt = str(case.get("prompt") or "")
     has_8k_context = _has_company_authored_8k_context(case, context_rows)
     has_market_context = _has_market_snapshot_context(case, context_rows)
+    has_industry_context = _has_industry_snapshot_context(case, context_rows)
     compact_ledger = []
     for row in ledger_rows:
         metric_contract = _metric_contract(row)
@@ -371,8 +413,13 @@ def _build_prompt(
                 or (row.get("metadata") or {}).get("source_boundary")
                 or row.get("source_tier"),
                 "snapshot_id": row.get("snapshot_id") if _is_market_snapshot_context_row(row) else None,
-                "as_of_date": row.get("as_of_date") if _is_market_snapshot_context_row(row) else None,
+                "as_of_date": row.get("as_of_date") if (_is_market_snapshot_context_row(row) or _is_industry_snapshot_context_row(row)) else None,
                 "market_fields": _market_fields_for_prompt(row) if _is_market_snapshot_context_row(row) else [],
+                "source_family": row.get("source_family") if _is_industry_snapshot_context_row(row) else None,
+                "provider": row.get("provider") if _is_industry_snapshot_context_row(row) else None,
+                "dataset_id": row.get("dataset_id") if _is_industry_snapshot_context_row(row) else None,
+                "series_id": row.get("series_id") if _is_industry_snapshot_context_row(row) else None,
+                "allowed_claim_types": row.get("allowed_claim_types") if _is_industry_snapshot_context_row(row) else [],
                 "section": row.get("section"),
                 "object_id": row.get("object_id"),
                 "evidence_id": row.get("evidence_id"),
@@ -395,14 +442,28 @@ def _build_prompt(
                     if has_market_context
                     else "\n"
                 )
+                + (
+                    "如果有 industry_snapshot 证据，direct_answer/investment_thesis 可以定性概括行业或宏观背景，但不能把行业数据写成公司财务事实。\n"
+                    if has_industry_context
+                    else ""
+                )
             )
             summary_hint = (
                 "system-derived legacy summary；do not emit in api_memo_v1"
             )
         elif api_insight_mode:
+            source_scope_parts = []
+            if has_market_context:
+                source_scope_parts.append(
+                    "summary 可以定性概括 market_snapshot 支持的市场反应或估值语境，但不得写精确市场数值，且后续 drivers/key_points 必须绑定 market evidence_ids。"
+                )
+            if has_industry_context:
+                source_scope_parts.append(
+                    "summary 可以定性概括 industry_snapshot 支持的行业/宏观背景，但不能把它写成公司财报事实，且后续 drivers/key_points 必须绑定 industry evidence_ids。"
+                )
             source_scope_sentence = (
-                "summary 可以定性概括 market_snapshot 支持的市场反应或估值语境，但不得写精确市场数值，且后续 drivers/key_points 必须绑定 market evidence_ids。"
-                if has_market_context
+                "".join(source_scope_parts)
+                if source_scope_parts
                 else "summary 可以做证据约束下的解释和二阶判断，但不能写股价、投资建议、新闻、行业市场规模或 SEC 证据外事实。"
             )
             summary_rule = (
@@ -424,6 +485,12 @@ def _build_prompt(
             if has_market_context
             else ""
         )
+        industry_value_rule = (
+            "Industry snapshot 只能作为 industry_snapshot evidence_ids 支撑的宏观/行业背景证据引用；"
+            "必须保留 as_of_date/source_family/source boundary，不能覆盖 SEC ledger 财报事实，也不能补充新闻、公司管理层口径或模型记忆。\n"
+            if has_industry_context
+            else ""
+        )
         if has_8k_context:
             numeric_rule = (
                 f"{summary_rule}"
@@ -435,6 +502,7 @@ def _build_prompt(
                 "7. 非 8-K company-authored earnings-release 的 Evidence Text 只能用于解释口径、业务含义和 caveat，不能从中自由抄新数字。\n"
                 "8. 如果 ledger 缺少某个必须财报指标，写入 not_found，并降级结论；不要用 8-K 数字填补 audited/quarterly filing ledger 缺口。\n"
                 f"{market_value_rule}"
+                f"{industry_value_rule}"
             )
         else:
             numeric_rule = (
@@ -446,6 +514,7 @@ def _build_prompt(
                 "6. 如果 Evidence Text 里有 ledger 没列出的对比期数字，不能写出该数字；包括 2023/2024 对比期、百分比、近似数、四舍五入数和单位换算数。只能定性说明来源文本包含对比期信息。\n"
                 "7. 如果 ledger 缺少某个必须指标，写入 not_found，并降级结论。\n"
                 f"{market_value_rule}"
+                f"{industry_value_rule}"
             )
     else:
         numeric_rule = (
@@ -530,6 +599,7 @@ def _build_prompt(
     coverage_rule = _coverage_rule_for_prompt(coverage_matrix)
     eight_k_usage_rule = _eight_k_usage_rule(has_8k_context, api_memo_mode)
     market_usage_rule = _market_snapshot_usage_rule(has_market_context, api_memo_mode)
+    industry_usage_rule = _industry_snapshot_usage_rule(has_industry_context, api_memo_mode)
     return (
         "你是SEC财务分析助手。输出中文，严禁编造。\n"
         "不要输出 Thinking Process、思考过程、分析过程或草稿。\n"
@@ -538,6 +608,7 @@ def _build_prompt(
         f"{numeric_rule}"
         f"{eight_k_usage_rule}"
         f"{market_usage_rule}"
+        f"{industry_usage_rule}"
         "8. 必须按 Metric Naming Rules 命名指标，不能使用 disallowed_claim_terms_zh。\n"
         "9. RPO 只能称为“剩余履约义务（RPO）”，不能称为预测经常性收入或预测数据。\n"
         "10. Billings 只能称为“Billings/账单额/开票额”，不能称为收入；必须说明它不同于确认收入。\n"
@@ -669,6 +740,9 @@ def _coverage_matrix_for_prompt(case: dict[str, Any]) -> dict[str, Any]:
                 "missing_market_fields": task.get("missing_market_fields") or [],
                 "required_market_tools": task.get("required_market_tools") or [],
                 "covered_market_tools": task.get("covered_market_tools") or [],
+                "required_industry_source_families": task.get("required_industry_source_families") or [],
+                "covered_industry_source_families": task.get("covered_industry_source_families") or [],
+                "missing_industry_source_families": task.get("missing_industry_source_families") or [],
                 "missing_tickers": task.get("missing_tickers") or [],
                 "missing_peer_tickers": task.get("missing_peer_tickers") or [],
                 "missing_metric_families": task.get("missing_metric_families") or [],
@@ -679,6 +753,7 @@ def _coverage_matrix_for_prompt(case: dict[str, Any]) -> dict[str, Any]:
                 "sample_metric_ids": task.get("sample_metric_ids") or [],
                 "sample_evidence_ids": task.get("sample_evidence_ids") or [],
                 "sample_market_field_refs": task.get("sample_market_field_refs") or [],
+                "sample_industry_evidence_ids": task.get("sample_industry_evidence_ids") or [],
             }
         )
     return {
@@ -688,6 +763,8 @@ def _coverage_matrix_for_prompt(case: dict[str, Any]) -> dict[str, Any]:
         "source_tiers": value.get("source_tiers") or [],
         "source_coverage_gaps": (value.get("source_coverage_gaps") or [])[:10],
         "market_snapshot_coverage": value.get("market_snapshot_coverage") or {},
+        "industry_snapshot_coverage": value.get("industry_snapshot_coverage") or {},
+        "second_pass_retrieval": value.get("second_pass_retrieval") or {},
         "summary": value.get("summary") or {},
         "tasks": compact_tasks,
     }
@@ -703,6 +780,8 @@ def _coverage_rule_for_prompt(coverage_matrix: dict[str, Any]) -> str:
         "24. decision_drivers/key_points 应优先使用 coverage matrix 的 sample_metric_ids/sample_evidence_ids；不要为 coverage matrix 标为缺失的任务新增强结论。\n"
         "25. 如果 source_coverage_gaps 显示某 ticker/year/form_type 不在 inventory，必须把它写成来源缺口，不能用模型记忆或其他 form_type 补上。\n"
         "26. 如果 market_snapshot_coverage 显示 requested=true，市场/估值/收益率判断必须绑定 market evidence_ids；missing_market_fields 不能用模型记忆补齐。\n"
+        "27. 如果 industry_snapshot_coverage 显示 requested=true，宏观/行业/监管/商品价格背景判断必须绑定 industry evidence_ids；missing_industry_source_families 不能用模型记忆补齐。\n"
+        "28. 如果 second_pass_retrieval.triggered=true，最终答案可以自然说明证据已按覆盖检查追加检索，但不要单独输出二次检索章节，也不要暴露内部日志。\n"
     )
 
 
@@ -885,6 +964,25 @@ def _select_prompt_context_rows(
     if add_required_market_snapshot_rows():
         return selected
 
+    def add_required_industry_snapshot_rows() -> bool:
+        if not _coverage_requires_industry_snapshot_context(coverage_matrix or {}):
+            return False
+        candidates = [
+            (idx, row)
+            for idx, row in enumerate(context_rows)
+            if idx not in seen and _is_industry_snapshot_context_row(row)
+        ]
+        max_required_rows = min(8, len(candidates), max_rows - len(selected))
+        for added, (idx, row) in enumerate(candidates, start=1):
+            if append_row(idx, row):
+                return True
+            if added >= max_required_rows:
+                return False
+        return False
+
+    if add_required_industry_snapshot_rows():
+        return selected
+
     if coverage_ids:
         coverage_id_set = set(coverage_ids)
         for evidence_id in coverage_ids:
@@ -974,6 +1072,7 @@ def _coverage_priority_evidence_ids(coverage_matrix: dict[str, Any], ledger_rows
         for metric_id in task.get("sample_metric_ids") or []:
             ids.extend(ledger_ids_by_metric_id.get(str(metric_id), []))
         ids.extend(str(item) for item in task.get("sample_evidence_ids") or [] if str(item))
+        ids.extend(str(item) for item in task.get("sample_industry_evidence_ids") or [] if str(item))
     out: list[str] = []
     for item in ids:
         if item and item not in out:
@@ -1024,6 +1123,21 @@ def _coverage_requires_market_snapshot_context(coverage_matrix: dict[str, Any]) 
         or "market_snapshot" in source_tiers
         or bool(market_coverage.get("market_snapshot_requested"))
     )
+
+
+def _coverage_requires_industry_snapshot_context(coverage_matrix: dict[str, Any]) -> bool:
+    if not coverage_matrix:
+        return False
+    summary = coverage_matrix.get("summary") if isinstance(coverage_matrix.get("summary"), dict) else {}
+    source_tiers = {
+        str(item or "")
+        for item in [
+            *(coverage_matrix.get("source_tiers") or []),
+            *(summary.get("covered_source_tiers") or []),
+        ]
+    }
+    industry_coverage = coverage_matrix.get("industry_snapshot_coverage") if isinstance(coverage_matrix.get("industry_snapshot_coverage"), dict) else {}
+    return "industry_snapshot" in source_tiers or bool(industry_coverage.get("industry_snapshot_requested"))
 
 
 def _context_row_ids(row: dict[str, Any]) -> set[str]:

@@ -1,0 +1,829 @@
+{
+  "schema_version": "sec_agent_mcp_tool_contracts_v0.1",
+  "contract_boundary": "These are MCP-facing tool contracts. They standardize inputs, outputs, source boundaries, and handler ownership, but do not expose secrets or private data.",
+  "tools": [
+    {
+      "name": "sec_search_filings",
+      "namespace": "sec",
+      "title": "Search SEC filing evidence",
+      "description": "Retrieve SEC filing text and structured object evidence within an explicit ticker/year/form/source scope. Text routes may use BM25/ObjectBM25/BGE, but financial facts remain downstream ledger-grounded.",
+      "status": "contract",
+      "agent_roles": [
+        "evidence_operator"
+      ],
+      "source_tiers": [
+        "primary_sec_filing",
+        "company_authored_unaudited_sec_filing"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Uppercase ticker symbols."
+          },
+          "years": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Fiscal years to query."
+          },
+          "filing_types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "10-K",
+                "10-Q",
+                "8-K",
+                "20-F",
+                "40-F",
+                "6-K"
+              ]
+            }
+          },
+          "source_tiers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "primary_sec_filing",
+                "company_authored_unaudited_sec_filing"
+              ]
+            }
+          },
+          "evidence_requirement_id": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metric_families": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "period_roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ANNUAL",
+                "QTD",
+                "YTD",
+                "TTM",
+                "INSTANT"
+              ]
+            }
+          },
+          "retrieval_route": {
+            "type": "string",
+            "enum": [
+              "filing_text",
+              "8k_commentary",
+              "risk_text"
+            ],
+            "description": "Physical retrieval route."
+          },
+          "candidate_budget": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "rerank_budget": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "partial",
+              "error"
+            ]
+          },
+          "context_rows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "row_count": {
+            "type": "integer"
+          },
+          "query_contract": {
+            "type": "object"
+          },
+          "selected_tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "selected_years": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "retrieval_trace": {
+            "type": "object"
+          },
+          "context_runtime": {
+            "type": "object"
+          },
+          "candidate_counts": {
+            "type": "object"
+          },
+          "artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "artifact_id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "digest": {
+                  "type": "string"
+                },
+                "row_count": {
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "source_gaps": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "source_boundaries": {
+        "allowed_claim_types": [
+          "company_disclosed_business_description",
+          "company_disclosed_management_discussion",
+          "company_authored_unaudited_commentary",
+          "risk_factor"
+        ],
+        "prohibited_claims": [
+          "Do not use filing text as a source for exact financial values when ledger rows are available.",
+          "Do not treat 8-K earnings release text as audited 10-K/10-Q facts."
+        ]
+      },
+      "handler": {
+        "module": "scripts.cloud.sec_agent_interactive",
+        "name": "retrieve_context_for_graph"
+      }
+    },
+    {
+      "name": "sec_query_exact_value_ledger",
+      "namespace": "sec",
+      "title": "Query Exact-Value Ledger",
+      "description": "Query normalized reported financial facts by ticker, fiscal year, filing type, metric family, period role, and source tier. This is the authority for exact values.",
+      "status": "contract",
+      "agent_roles": [
+        "evidence_operator",
+        "verifier"
+      ],
+      "source_tiers": [
+        "primary_sec_filing"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Uppercase ticker symbols."
+          },
+          "years": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Fiscal years to query."
+          },
+          "filing_types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "10-K",
+                "10-Q",
+                "8-K",
+                "20-F",
+                "40-F",
+                "6-K"
+              ]
+            }
+          },
+          "source_tiers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "primary_sec_filing",
+                "company_authored_unaudited_sec_filing",
+                "market_snapshot",
+                "industry_snapshot"
+              ]
+            }
+          },
+          "evidence_requirement_id": {
+            "type": "string"
+          },
+          "metric_families": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "period_roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ANNUAL",
+                "QTD",
+                "YTD",
+                "TTM",
+                "INSTANT"
+              ]
+            }
+          },
+          "object_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ledger_store_path": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "partial",
+              "error"
+            ]
+          },
+          "ledger_rows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "row_count": {
+            "type": "integer"
+          },
+          "missing_dimensions": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "artifact_id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "digest": {
+                  "type": "string"
+                },
+                "row_count": {
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "source_boundaries": {
+        "allowed_claim_types": [
+          "reported_financial_fact",
+          "period_role_comparison",
+          "metric_family_comparison"
+        ],
+        "prohibited_claims": [
+          "Do not infer missing values from adjacent table text or model memory.",
+          "Do not compare ANNUAL, QTD, YTD, TTM, and INSTANT values without explicit period_role handling."
+        ]
+      },
+      "handler": {
+        "module": "sec_agent.ledger_store",
+        "name": "query_ledger_facts"
+      }
+    },
+    {
+      "name": "market_get_snapshot",
+      "namespace": "market",
+      "title": "Get market snapshot evidence",
+      "description": "Fetch non-real-time market snapshot evidence such as price, return, relative return, drawdown, valuation fields, and event-window analytics.",
+      "status": "contract",
+      "agent_roles": [
+        "evidence_operator",
+        "coverage_reflector"
+      ],
+      "source_tiers": [
+        "market_snapshot"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "snapshot_id": {
+            "type": "string"
+          },
+          "as_of_date": {
+            "type": "string"
+          },
+          "window": {
+            "type": "string",
+            "enum": [
+              "3M",
+              "6M",
+              "YTD",
+              "1Y"
+            ]
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "analysis_tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "market_evidence_path": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "required": [
+          "tickers"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "partial",
+              "error"
+            ]
+          },
+          "market_rows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "snapshot_id": {
+            "type": "string"
+          },
+          "as_of_date": {
+            "type": "string"
+          },
+          "field_gaps": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "artifact_id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "digest": {
+                  "type": "string"
+                },
+                "row_count": {
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "source_boundaries": {
+        "allowed_claim_types": [
+          "non_real_time_market_reaction",
+          "relative_return_context",
+          "valuation_context",
+          "event_window_context"
+        ],
+        "prohibited_claims": [
+          "Do not present market_snapshot values as real-time market data.",
+          "Do not use market_snapshot values to overwrite SEC reported financial facts.",
+          "Do not infer unavailable valuation fields from model memory."
+        ]
+      },
+      "handler": {
+        "module": "scripts.cloud.sec_agent_interactive",
+        "name": "attach_market_snapshot_for_graph"
+      }
+    },
+    {
+      "name": "industry_get_snapshot",
+      "namespace": "industry",
+      "title": "Get industry snapshot evidence",
+      "description": "Fetch industry source-family evidence and observations for macro, sector, commodity, housing, healthcare, energy, utility, or regulatory context.",
+      "status": "contract",
+      "agent_roles": [
+        "evidence_operator",
+        "coverage_reflector"
+      ],
+      "source_tiers": [
+        "industry_snapshot"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_families": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "datasets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "facets": {
+            "type": "object"
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "latest_only": {
+            "type": "boolean"
+          },
+          "industry_evidence_path": {
+            "type": "string"
+          },
+          "industry_snapshot_db_path": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "source_families"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "partial",
+              "error"
+            ]
+          },
+          "industry_rows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "observations": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "source_family_gaps": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "artifact_id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "digest": {
+                  "type": "string"
+                },
+                "row_count": {
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "source_boundaries": {
+        "allowed_claim_types": [
+          "industry_context",
+          "macro_context",
+          "commodity_context",
+          "power_demand_context",
+          "regulatory_context"
+        ],
+        "prohibited_claims": [
+          "Do not use industry_snapshot observations as company-reported revenue, margin, cash flow, or guidance.",
+          "Do not treat industry_snapshot observations as real-time prices, news, or analyst estimates."
+        ]
+      },
+      "handler": {
+        "module": "sec_agent.industry_snapshot",
+        "name": "query_industry_snapshot"
+      }
+    },
+    {
+      "name": "run_inspect_artifacts",
+      "namespace": "run_artifact",
+      "title": "Inspect run artifacts",
+      "description": "Inspect a saved agent run directory and summarize graph state, query contract, coverage matrix, ledger, judgment plan, gates, checkpoints, rendered answer, and performance telemetry.",
+      "status": "contract",
+      "agent_roles": [
+        "coverage_reflector",
+        "verifier"
+      ],
+      "source_tiers": [
+        "run_artifact"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "run_dir": {
+            "type": "string"
+          },
+          "artifact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "include_preview": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "run_dir"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "warn",
+              "fail"
+            ]
+          },
+          "run_dir": {
+            "type": "string"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "missing_required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "state_summary": {
+            "type": "object"
+          },
+          "gate_summary": {
+            "type": "object"
+          },
+          "performance_summary": {
+            "type": "object"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "source_boundaries": {
+        "allowed_claim_types": [
+          "run_state",
+          "artifact_completeness",
+          "gate_status",
+          "performance_observation"
+        ],
+        "prohibited_claims": [
+          "Do not infer investment conclusions from run metadata alone.",
+          "Do not expose private paths or secret-containing artifact content to untrusted clients."
+        ]
+      },
+      "handler": {
+        "module": "sec_agent.workbench.artifacts",
+        "name": "inspect_run_artifacts"
+      }
+    },
+    {
+      "name": "run_read_artifact",
+      "namespace": "run_artifact",
+      "title": "Read bounded run artifact",
+      "description": "Read a bounded saved artifact by id or relative path. Intended for audit, resume, and UI inspection, not for bypassing source-tier gates.",
+      "status": "contract",
+      "agent_roles": [
+        "coverage_reflector",
+        "verifier",
+        "memo_writer"
+      ],
+      "source_tiers": [
+        "run_artifact"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "run_dir": {
+            "type": "string"
+          },
+          "artifact_id": {
+            "type": "string"
+          },
+          "rel_path": {
+            "type": "string"
+          },
+          "max_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000000
+          },
+          "parse_json": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "run_dir"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "truncated",
+              "error"
+            ]
+          },
+          "artifact_id": {
+            "type": "string"
+          },
+          "rel_path": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "json": {
+            "type": "object"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "source_boundaries": {
+        "allowed_claim_types": [
+          "artifact_content",
+          "resume_boundary",
+          "debug_observation"
+        ],
+        "prohibited_claims": [
+          "Do not treat artifact text as a new source tier unless it is mapped back to its source artifact.",
+          "Do not return unbounded large artifacts through MCP."
+        ]
+      },
+      "handler": {
+        "module": "sec_agent.mcp_runtime",
+        "name": "read_bounded_artifact"
+      }
+    }
+  ]
+}

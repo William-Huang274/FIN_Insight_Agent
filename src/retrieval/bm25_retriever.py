@@ -24,11 +24,7 @@ class BM25Retriever:
         path = Path(index_dir)
         with (path / "bm25.pkl").open("rb") as f:
             self.bm25 = pickle.load(f)
-        self.records = [
-            json.loads(line)
-            for line in (path / "records.jsonl").read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        ]
+        self.records = _read_jsonl(path / "records.jsonl")
         self._filter_cache: dict[str, list[int]] = {}
         self._filter_index = _build_filter_index(self.records)
 
@@ -104,6 +100,20 @@ def _build_filter_index(records: list[dict[str, Any]]) -> dict[str, dict[Any, tu
         field: {value: tuple(indices) for value, indices in values.items()}
         for field, values in mutable.items()
     }
+
+
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            try:
+                records.append(json.loads(stripped))
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"Invalid JSONL at {path}:{line_number}") from exc
+    return records
 
 
 def _indexed_filter_indices(

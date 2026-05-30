@@ -1,0 +1,185 @@
+form_type: "8-K"
+form_types:
+  - "8-K"
+years:
+  - 2026
+  - 2027
+source_policy: "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS"
+source_tier: "company_authored_unaudited_sec_filing"
+scope:
+  base_config: "configs/sec_investment_coverage_8k_earnings_full78_2026_2027.yaml"
+  target_universe: "full128_us"
+  role: "additions_only"
+  notes:
+    - "Merge with full78 8-K config after availability probe; do not treat this file alone as full128."
+selection:
+  item_codes:
+    - "2.02"
+    - "9.01"
+  exhibit_types:
+    - "EX-99.1"
+    - "EX-99.01"
+    - "EX-99"
+  include_terms:
+    - "earnings"
+    - "financial results"
+    - "quarterly results"
+    - "press release"
+    - "reports results"
+    - "announces results"
+  exclude_terms:
+    - "investor presentation"
+    - "presentation"
+    - "slides"
+    - "transcript"
+companies:
+  - ticker: DELL
+    category: "AI servers/enterprise hardware"
+    category_slug: "ai_servers_enterprise_hardware"
+  - ticker: HPE
+    category: "enterprise hardware/networking"
+    category_slug: "enterprise_hardware_networking"
+  - ticker: SMCI
+    category: "AI servers"
+    category_slug: "ai_servers"
+  - ticker: ANET
+    category: "cloud networking"
+    category_slug: "cloud_networking"
+  - ticker: MRVL
+    category: "semiconductor/networking"
+    category_slug: "semiconductor_networking"
+  - ticker: LRCX
+    category: "semiconductor equipment"
+    category_slug: "semiconductor_equipment"
+  - ticker: KLAC
+    category: "semiconductor process control"
+    category_slug: "semiconductor_process_control"
+  - ticker: SNPS
+    category: "EDA/software"
+    category_slug: "eda_software"
+  - ticker: CDNS
+    category: "EDA/software"
+    category_slug: "eda_software"
+  - ticker: NOW
+    category: "enterprise workflow software"
+    category_slug: "enterprise_workflow_software"
+  - ticker: IBM
+    category: "IT services/software"
+    category_slug: "it_services_software"
+  - ticker: CMCSA
+    category: "cable/media"
+    category_slug: "cable_media"
+  - ticker: "T"
+    category: "telecom/wireless"
+    category_slug: "telecom_wireless"
+  - ticker: VZ
+    category: "telecom/wireless"
+    category_slug: "telecom_wireless"
+  - ticker: EA
+    category: "gaming"
+    category_slug: "gaming"
+  - ticker: TTWO
+    category: "gaming"
+    category_slug: "gaming"
+  - ticker: NKE
+    category: "apparel/brand consumer"
+    category_slug: "apparel_brand_consumer"
+  - ticker: SBUX
+    category: "restaurants/coffee"
+    category_slug: "restaurants_coffee"
+  - ticker: TJX
+    category: "off-price retail"
+    category_slug: "off_price_retail"
+  - ticker: GM
+    category: "automobiles"
+    category_slug: "automobiles"
+  - ticker: "F"
+    category: "automobiles"
+    category_slug: "automobiles"
+  - ticker: MAR
+    category: "hotels/lodging"
+    category_slug: "hotels_lodging"
+  - ticker: AZO
+    category: "auto parts retail"
+    category_slug: "auto_parts_retail"
+  - ticker: MDLZ
+    category: "packaged food/snacks"
+    category_slug: "packaged_food_snacks"
+  - ticker: CL
+    category: "household/personal care"
+    category_slug: "household_personal_care"
+  - ticker: KMB
+    category: "household/personal care"
+    category_slug: "household_personal_care"
+  - ticker: KR
+    category: "food retail"
+    category_slug: "food_retail"
+  - ticker: TGT
+    category: "general merchandise retail"
+    category_slug: "general_merchandise_retail"
+  - ticker: OXY
+    category: "energy/exploration production"
+    category_slug: "energy_exploration_production"
+  - ticker: HAL
+    category: "oilfield services"
+    category_slug: "oilfield_services"
+  - ticker: LNG
+    category: "LNG infrastructure"
+    category_slug: "lng_infrastructure"
+  - ticker: WMB
+    category: "energy/midstream"
+    category_slug: "energy_midstream"
+  - ticker: KMI
+    category: "energy/midstream"
+    category_slug: "energy_midstream"
+  - ticker: PSX
+    category: "refining/energy"
+    category_slug: "refining_energy"
+  - ticker: "C"
+    category: "banking/financial services"
+    category_slug: "banking_financial_services"
+  - ticker: WFC
+    category: "banking/financial services"
+    category_slug: "banking_financial_services"
+  - ticker: GS
+    category: "capital markets/investment bank"
+    category_slug: "capital_markets_investment_bank"
+  - ticker: SCHW
+    category: "brokerage/wealth management"
+    category_slug: "brokerage_wealth_management"
+  - ticker: COF
+    category: "consumer finance"
+    category_slug: "consumer_finance"
+  - ticker: CB
+    category: "property casualty insurance"
+    category_slug: "property_casualty_insurance"
+  - ticker: ABT
+    category: "healthcare/devices/diagnostics"
+    category_slug: "healthcare_devices_diagnostics"
+  - ticker: MDT
+    category: "medical devices"
+    category_slug: "medical_devices"
+  - ticker: DHR
+    category: "life sciences tools"
+    category_slug: "life_sciences_tools"
+  - ticker: PFE
+    category: "pharmaceuticals"
+    category_slug: "pharmaceuticals"
+  - ticker: BMY
+    category: "pharmaceuticals"
+    category_slug: "pharmaceuticals"
+  - ticker: AMGN
+    category: "biotechnology/pharmaceuticals"
+    category_slug: "biotechnology_pharmaceuticals"
+  - ticker: GILD
+    category: "biotechnology/pharmaceuticals"
+    category_slug: "biotechnology_pharmaceuticals"
+  - ticker: HCA
+    category: "hospitals/healthcare services"
+    category_slug: "hospitals_healthcare_services"
+  - ticker: SYK
+    category: "medical devices/orthopedics"
+    category_slug: "medical_devices_orthopedics"
+  - ticker: BA
+    category: "aerospace manufacturing"
+    category_slug: "aerospace_manufacturing"

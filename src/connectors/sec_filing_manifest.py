@@ -260,6 +260,7 @@ def _filing_period_metadata(
     period_end = str(report_date or "").strip() or None
     document_period = _normalize_document_fiscal_period_focus(fiscal_period_focus)
     document_year = _normalize_document_fiscal_year_focus(fiscal_year_focus)
+    report_year = _date_year(report_date)
     fiscal_year_fields: dict[str, Any] = {}
     if document_year is not None:
         fiscal_year_fields = {
@@ -268,6 +269,12 @@ def _filing_period_metadata(
             "document_fiscal_year_focus": document_year,
         }
     if normalized_form == "10-K":
+        if _annual_document_year_conflicts_with_report_date(document_year, report_date):
+            fiscal_year_fields = {
+                "fiscal_year": report_year,
+                "fiscal_year_source": "annual_report_date_over_document_fiscal_year_focus",
+                "document_fiscal_year_focus": document_year,
+            }
         return {
             **fiscal_year_fields,
             "period_end": period_end,
@@ -328,6 +335,42 @@ def _normalize_document_fiscal_year_focus(value: int | str | None) -> int | None
     if not match:
         return None
     return int(match.group(1))
+
+
+def _annual_document_year_conflicts_with_report_date(
+    document_year: int | None,
+    report_date: str | None,
+) -> bool:
+    report_year = _date_year(report_date)
+    report_month = _date_month(report_date)
+    if document_year is None or report_year is None:
+        return False
+    if document_year == report_year:
+        return False
+    if report_month in {1, 2} and document_year == report_year - 1:
+        return False
+    return True
+
+
+def _date_year(value: str | None) -> int | None:
+    text = str(value or "")
+    if len(text) < 4:
+        return None
+    try:
+        return int(text[:4])
+    except ValueError:
+        return None
+
+
+def _date_month(value: str | None) -> int | None:
+    text = str(value or "")
+    if len(text) < 7:
+        return None
+    try:
+        month = int(text[5:7])
+    except ValueError:
+        return None
+    return month if 1 <= month <= 12 else None
 
 
 def _calendar_quarter(period_end: str | None) -> str | None:

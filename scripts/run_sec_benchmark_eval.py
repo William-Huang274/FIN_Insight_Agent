@@ -4,6 +4,7 @@ import argparse
 import inspect
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -22,6 +23,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 from evidence.structured_text import structured_object_search_text  # noqa: E402
+from sec_agent.ledger_store import query_ledger_facts  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -44,6 +46,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--bm25-index-dir", default="data/indexes/bm25/sec_tech_10k")
     parser.add_argument("--object-bm25-index-dir", default="data/indexes/bm25/sec_tech_10k_objects")
+    parser.add_argument("--ledger-store-path", default=os.environ.get("LEDGER_STORE_PATH", ""))
     parser.add_argument("--evidence-top-k", type=int, default=4)
     parser.add_argument("--object-top-k", type=int, default=3)
     parser.add_argument("--max-context-rows", type=int, default=80)
@@ -62,10 +65,15 @@ def parse_args() -> argparse.Namespace:
         default=os.environ.get("FIN_SEC_CONTEXT_RERANKER_MODEL", "BAAI/bge-reranker-v2-m3"),
     )
     parser.add_argument("--context-reranker-device", default="")
-    parser.add_argument("--context-reranker-batch-size", type=int, default=8)
-    parser.add_argument("--context-reranker-max-length", type=int, default=2048)
-    parser.add_argument("--context-reranker-doc-max-chars", type=int, default=6000)
-    parser.add_argument("--context-reranker-candidate-limit", type=int, default=0)
+    parser.add_argument("--context-reranker-batch-size", type=int, default=16)
+    parser.add_argument("--context-reranker-max-length", type=int, default=1024)
+    parser.add_argument("--context-reranker-doc-max-chars", type=int, default=3000)
+    parser.add_argument(
+        "--context-reranker-candidate-limit",
+        type=int,
+        default=800,
+        help="Number of BM25/ObjectBM25 candidate rows to rerank with BGE; use 0 to rerank every candidate row.",
+    )
     parser.add_argument("--context-reranker-top-k", type=int, default=120)
     parser.add_argument(
         "--allow-bm25-only-pipeline",
@@ -244,9 +252,30 @@ def _prepare_trace(
         return trace
     timing_ms: dict[str, int] = {}
     stage_start = time.perf_counter()
-    rows = _pipeline_context_rows(case, bm25, object_bm25, evidence_top_k, object_top_k)
+    retrieval_plan = _case_retrieval_plan(case)
+    route_policy: dict[str, Any] = {}
+    if retrieval_plan:
+        rows, route_policy = _pipeline_context_rows_from_retrieval_plan(
+            case,
+            retrieval_plan,
+            bm25,
+            object_bm25,
+            evidence_top_k,
+            object_top_k,
+            ledger_store_path=REPO_ROOT / args.ledger_store_path if args.ledger_store_path else None,
+        )
+    else:
+        rows = _pipeline_context_rows(case, bm25, object_bm25, evidence_top_k, object_top_k)
     timing_ms["candidate_generation"] = int(round((time.perf_counter() - stage_start) * 1000))
     candidate_row_count = len(rows)
+    candidate_sent_to_bge = 0
+    if context_reranker is not None:
+        eligible_count = sum(1 for row in rows if row.get("rerank_eligible", True))
+        limit = args.context_reranker_candidate_limit or eligible_count
+        if retrieval_plan:
+            candidate_sent_to_bge = len(_select_route_scoped_rerank_candidates(rows, limit))
+        else:
+            candidate_sent_to_bge = min(eligible_count, limit)
     if context_reranker is not None:
         stage_start = time.perf_counter()
         rows = _rerank_context_rows(case, rows, context_reranker, args)
@@ -263,10 +292,626 @@ def _prepare_trace(
         "context_reranker_model": args.context_reranker_model if context_reranker is not None else None,
         "bm25_only_allowed": bool(args.allow_bm25_only_pipeline),
         "candidate_row_count_pre_rerank": candidate_row_count,
+        "candidate_sent_to_bge": candidate_sent_to_bge,
         "timing_ms": timing_ms,
+        **route_policy,
     }
     trace["context_rows"] = rows
     return trace
+
+
+def _case_retrieval_plan(case: dict[str, Any]) -> dict[str, Any]:
+    plan = case.get("retrieval_plan") if isinstance(case.get("retrieval_plan"), dict) else {}
+    routes = [route for route in plan.get("routes") or [] if isinstance(route, dict)]
+    validation = plan.get("retrieval_plan_validation") if isinstance(plan.get("retrieval_plan_validation"), dict) else {}
+    if not routes or validation.get("status") == "fail":
+        return {}
+    return plan
+
+
+def _pipeline_context_rows_from_retrieval_plan(
+    case: dict[str, Any],
+    retrieval_plan: dict[str, Any],
+    bm25: Any,
+    object_bm25: Any,
+    evidence_top_k: int,
+    object_top_k: int,
+    ledger_store_path: Path | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    seen: dict[tuple[str, Any], dict[str, Any]] = {}
+    route_specs: list[dict[str, Any]] = []
+    search_ops: list[dict[str, Any]] = []
+    task_by_id = {
+        str(task.get("task_id") or ""): task
+        for task in retrieval_plan.get("tasks") or []
+        if isinstance(task, dict)
+    }
+    ledger_store = Path(ledger_store_path) if ledger_store_path and Path(ledger_store_path).exists() else None
+    for route in retrieval_plan.get("routes") or []:
+        if not isinstance(route, dict):
+            continue
+        route_name = str(route.get("retrieval_route") or "")
+        route_id = str(route.get("route_id") or route_name)
+        route_specs.append(
+            {
+                "route_id": route_id,
+                "retrieval_route": route_name,
+                "candidate_budget": route.get("candidate_budget"),
+                "rerank_budget": route.get("rerank_budget"),
+            }
+        )
+        if route_name == "market_snapshot":
+            route_specs[-1]["note"] = "market_snapshot_attached_after_sec_retrieval"
+            continue
+        if route_name == "ledger_first":
+            if ledger_store is not None:
+                _extend_route_ledger_store_rows(
+                    rows,
+                    seen,
+                    case,
+                    route,
+                    ledger_store,
+                )
+                route_specs[-1]["ledger_store_enabled"] = True
+                continue
+            _compile_route_structured_search_ops(
+                search_ops,
+                route,
+                task_by_id.get(str(route.get("task_id") or ""), {}),
+                object_top_k,
+            )
+        else:
+            _compile_route_text_search_ops(
+                search_ops,
+                case,
+                route,
+                task_by_id.get(str(route.get("task_id") or ""), {}),
+                evidence_top_k,
+            )
+    search_policy = _execute_compiled_route_search_ops(
+        rows,
+        seen,
+        search_ops,
+        bm25,
+        object_bm25,
+    )
+    route_stats: list[dict[str, Any]] = []
+    for spec in route_specs:
+        route_id = str(spec.get("route_id") or "")
+        added = [row for row in rows if _row_has_route_id(row, route_id)]
+        route_stats.append(
+            {
+                **spec,
+                "candidate_count": len(added),
+                "rerank_eligible_count": sum(1 for row in added if row.get("rerank_eligible", True)),
+            }
+        )
+    rows, reservation_policy = _apply_route_coverage_reservations(rows, retrieval_plan)
+    return rows, {
+        "retrieval_plan_enabled": True,
+        "retrieval_plan_schema_version": retrieval_plan.get("schema_version"),
+        "retrieval_plan_summary": retrieval_plan.get("summary") or {},
+        "route_candidate_stats": route_stats,
+        "route_search_cache_entries": search_policy["physical_search_ops"],
+        "route_search_merge": search_policy,
+        "ledger_store_path": str(ledger_store) if ledger_store is not None else None,
+        "coverage_reservation": reservation_policy,
+    }
+
+
+def _compile_route_structured_search_ops(
+    search_ops: list[dict[str, Any]],
+    route: dict[str, Any],
+    task: dict[str, Any],
+    object_top_k: int,
+) -> None:
+    route_id = str(route.get("route_id") or "")
+    budget = int(route.get("candidate_budget") or 0) or 120
+    queries = _route_object_queries(route, task)
+    tickers = [str(item).upper() for item in route.get("tickers") or [] if str(item)]
+    years = [int(item) for item in route.get("years") or [] if str(item).strip()]
+    source_filters = _route_source_filters(route)
+    for ticker in tickers:
+        for year in years:
+            for query in queries:
+                search_ops.append(
+                    {
+                        "namespace": "object_bm25",
+                        "route": route,
+                        "route_id": route_id,
+                        "route_budget": budget,
+                        "query": query,
+                        "top_k": max(1, min(object_top_k, budget)),
+                        "filters": {
+                            "ticker": [ticker],
+                            "fiscal_year": year,
+                            "object_type": ["metric", "table"],
+                            **source_filters,
+                        },
+                    }
+                )
+
+
+def _compile_route_text_search_ops(
+    search_ops: list[dict[str, Any]],
+    case: dict[str, Any],
+    route: dict[str, Any],
+    task: dict[str, Any],
+    evidence_top_k: int,
+) -> None:
+    route_name = str(route.get("retrieval_route") or "")
+    route_id = str(route.get("route_id") or route_name)
+    budget = int(route.get("candidate_budget") or 0) or 120
+    queries = _route_text_queries(case, route, task)
+    tickers = [str(item).upper() for item in route.get("tickers") or [] if str(item)]
+    years = [int(item) for item in route.get("years") or [] if str(item).strip()]
+    source_filters = _route_source_filters(route)
+    per_query_top_k = max(1, min(max(evidence_top_k, 4), budget))
+    for ticker in tickers:
+        for year in years:
+            for query in queries:
+                search_ops.append(
+                    {
+                        "namespace": "bm25",
+                        "route": route,
+                        "route_id": route_id,
+                        "route_budget": budget,
+                        "query": query,
+                        "top_k": per_query_top_k,
+                        "filters": {"ticker": ticker, "fiscal_year": year, **source_filters},
+                    }
+                )
+
+
+def _execute_compiled_route_search_ops(
+    rows: list[dict[str, Any]],
+    seen: dict[tuple[str, Any], dict[str, Any]],
+    search_ops: list[dict[str, Any]],
+    bm25: Any,
+    object_bm25: Any,
+) -> dict[str, Any]:
+    merged: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for op in search_ops:
+        key = _route_search_op_key(str(op.get("namespace") or ""), op.get("query"), op.get("filters") or {})
+        if key not in merged:
+            merged[key] = {
+                "namespace": op.get("namespace"),
+                "query": op.get("query"),
+                "filters": op.get("filters") or {},
+                "top_k": int(op.get("top_k") or 1),
+            }
+        else:
+            merged[key]["top_k"] = max(int(merged[key].get("top_k") or 1), int(op.get("top_k") or 1))
+
+    search_cache: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+    for key, op in merged.items():
+        searcher = object_bm25 if op.get("namespace") == "object_bm25" else bm25
+        search_cache[key] = [
+            dict(hit)
+            for hit in searcher.search(
+                str(op.get("query") or ""),
+                top_k=int(op.get("top_k") or 1),
+                filters=op.get("filters") or {},
+            )
+        ]
+
+    route_counts: Counter[str] = Counter()
+    for row in rows:
+        for route_id in _row_selection_route_ids(row):
+            route_counts[route_id] += 1
+    shared_route_attributions = 0
+    for op in search_ops:
+        route = op.get("route") or {}
+        route_id = str(op.get("route_id") or "")
+        route_budget = int(op.get("route_budget") or 0) or 120
+        if route_counts[route_id] >= route_budget:
+            continue
+        key = _route_search_op_key(str(op.get("namespace") or ""), op.get("query"), op.get("filters") or {})
+        for hit in search_cache.get(key, [])[: int(op.get("top_k") or 1)]:
+            if route_counts[route_id] >= route_budget:
+                break
+            append_status = (
+                _append_route_object_hit(rows, seen, route, hit, str(op.get("query") or ""))
+                if op.get("namespace") == "object_bm25"
+                else _append_route_text_hit(rows, seen, route, hit, str(op.get("query") or ""))
+            )
+            if append_status in {"new", "shared"}:
+                route_counts[route_id] += 1
+            if append_status == "shared":
+                shared_route_attributions += 1
+
+    return {
+        "logical_search_ops": len(search_ops),
+        "physical_search_ops": len(merged),
+        "merged_duplicate_ops": max(0, len(search_ops) - len(merged)),
+        "shared_route_attributions": shared_route_attributions,
+    }
+
+
+def _extend_route_ledger_store_rows(
+    rows: list[dict[str, Any]],
+    seen: dict[tuple[str, Any], dict[str, Any]],
+    case: dict[str, Any],
+    route: dict[str, Any],
+    ledger_store_path: Path,
+) -> None:
+    route_id = str(route.get("route_id") or "")
+    budget = int(route.get("candidate_budget") or 0) or 120
+    facts = query_ledger_facts(
+        ledger_store_path,
+        case_id=str(case.get("case_id") or ""),
+        tickers=[str(item).upper() for item in route.get("tickers") or [] if str(item)],
+        years=[int(item) for item in route.get("years") or [] if str(item).strip()],
+        filing_types=[_normalize_form_type(item) for item in route.get("filing_types") or [] if _normalize_form_type(item)],
+        source_tiers=[str(item) for item in route.get("source_tiers") or [] if str(item)],
+        metric_families=[str(item) for item in route.get("metric_families") or [] if str(item)],
+        period_roles=[str(item).lower() for item in route.get("period_roles") or [] if str(item)],
+        limit=budget,
+    )
+    for fact in facts:
+        if _route_added_count(rows, route_id) >= budget:
+            return
+        key = ("ledger_fact", fact.get("object_id") or fact.get("metric_id"))
+        if key in seen:
+            _attach_route_attribution(seen[key], route, "route_ledger_first_ledger_store", "")
+            continue
+        row = _with_route_attribution(
+            {
+                "source_kind": "structured_object",
+                "selection_method": "route_ledger_first_ledger_store",
+                "selection_route_id": route_id,
+                "selection_task_id": route.get("task_id"),
+                "selection_rerank_budget": 0,
+                "selection_metric_families": route.get("metric_families") or [],
+                "retrieval_route": "ledger_first",
+                "rerank_eligible": False,
+                "rank": len(rows) + 1,
+                "score": None,
+                "object_id": fact.get("object_id"),
+                "object_type": fact.get("object_type") or "metric",
+                "source_evidence_id": fact.get("source_evidence_id"),
+                "ticker": fact.get("ticker"),
+                "fiscal_year": fact.get("fiscal_year"),
+                "section": fact.get("section"),
+                "metric_id": fact.get("metric_id"),
+                "metric_family": fact.get("metric_family"),
+                "metric_role": fact.get("metric_role"),
+                "period": fact.get("period"),
+                "period_role": fact.get("period_role"),
+                "value": fact.get("value"),
+                "unit": fact.get("unit"),
+                **_context_source_fields(fact),
+                "preview": fact.get("display_value_zh") or fact.get("source_text") or fact.get("raw_value_text"),
+                "text": structured_object_search_text(fact) or fact.get("source_text") or fact.get("display_value_zh"),
+            },
+            route,
+            "route_ledger_first_ledger_store",
+            "",
+        )
+        seen[key] = row
+        rows.append(row)
+
+
+def _append_route_object_hit(
+    rows: list[dict[str, Any]],
+    seen: dict[tuple[str, Any], dict[str, Any]],
+    route: dict[str, Any],
+    hit: dict[str, Any],
+    query: str,
+) -> str:
+    key = ("object", hit.get("object_id"))
+    if key in seen:
+        return "shared" if _attach_route_attribution(seen[key], route, "route_ledger_first_object_bm25", query) else "skip"
+    route_id = str(route.get("route_id") or "")
+    record = hit.get("record") or {}
+    object_text = structured_object_search_text(record) if record else hit.get("preview")
+    row = _with_route_attribution(
+        {
+            "source_kind": "structured_object",
+            "selection_method": "route_ledger_first_object_bm25",
+            "selection_query": query,
+            "selection_route_id": route_id,
+            "selection_task_id": route.get("task_id"),
+            "selection_rerank_budget": 0,
+            "selection_metric_families": route.get("metric_families") or [],
+            "retrieval_route": "ledger_first",
+            "rerank_eligible": False,
+            "rank": hit.get("rank"),
+            "score": hit.get("score"),
+            "object_id": hit.get("object_id"),
+            "object_type": hit.get("object_type"),
+            "source_evidence_id": hit.get("source_evidence_id"),
+            "ticker": hit.get("ticker"),
+            "fiscal_year": hit.get("fiscal_year"),
+            "section": hit.get("section"),
+            **_context_source_fields(record),
+            "preview": hit.get("preview"),
+            "text": object_text,
+        },
+        route,
+        "route_ledger_first_object_bm25",
+        query,
+    )
+    seen[key] = row
+    rows.append(row)
+    return "new"
+
+
+def _append_route_text_hit(
+    rows: list[dict[str, Any]],
+    seen: dict[tuple[str, Any], dict[str, Any]],
+    route: dict[str, Any],
+    hit: dict[str, Any],
+    query: str,
+) -> str:
+    key = ("evidence", hit.get("evidence_id"))
+    if key in seen:
+        method = f"route_{str(route.get('retrieval_route') or '')}_bm25"
+        return "shared" if _attach_route_attribution(seen[key], route, method, query) else "skip"
+    route_name = str(route.get("retrieval_route") or "")
+    route_id = str(route.get("route_id") or route_name)
+    record = hit.get("record") or {}
+    row = _with_route_attribution(
+        {
+            "source_kind": "evidence_object",
+            "selection_method": f"route_{route_name}_bm25",
+            "selection_query": query,
+            "selection_route_id": route_id,
+            "selection_task_id": route.get("task_id"),
+            "selection_rerank_budget": route.get("rerank_budget"),
+            "selection_metric_families": route.get("metric_families") or [],
+            "retrieval_route": route_name,
+            "rerank_eligible": True,
+            "rank": hit.get("rank"),
+            "score": hit.get("score"),
+            "evidence_id": hit.get("evidence_id"),
+            "ticker": hit.get("ticker"),
+            "fiscal_year": hit.get("fiscal_year"),
+            "section": hit.get("section"),
+            **_context_source_fields(record),
+            "preview": hit.get("text_preview") or hit.get("preview"),
+            "text": record.get("text") or hit.get("text_preview") or hit.get("preview"),
+        },
+        route,
+        f"route_{route_name}_bm25",
+        query,
+    )
+    seen[key] = row
+    rows.append(row)
+    return "new"
+
+
+def _with_route_attribution(
+    row: dict[str, Any],
+    route: dict[str, Any],
+    method: str,
+    query: str,
+) -> dict[str, Any]:
+    _attach_route_attribution(row, route, method, query)
+    return row
+
+
+def _attach_route_attribution(
+    row: dict[str, Any],
+    route: dict[str, Any],
+    method: str,
+    query: str,
+) -> bool:
+    route_id = str(route.get("route_id") or route.get("retrieval_route") or "")
+    if not route_id:
+        return False
+    existing_route_ids = set(str(item) for item in row.get("selection_route_ids") or [] if str(item))
+    if route_id in existing_route_ids:
+        return False
+
+    route_name = str(route.get("retrieval_route") or "")
+    task_id = str(route.get("task_id") or "")
+    ref = {
+        "route_id": route_id,
+        "task_id": task_id,
+        "retrieval_route": route_name,
+        "selection_method": method,
+        "selection_query": query,
+        "rerank_budget": route.get("rerank_budget"),
+        "metric_families": list(route.get("metric_families") or []),
+    }
+    row.setdefault("selection_routes", []).append(ref)
+    _append_unique(row, "selection_route_ids", route_id)
+    _append_unique(row, "retrieval_routes", route_name)
+    if task_id:
+        _append_unique(row, "selection_task_ids", task_id)
+    if method:
+        _append_unique(row, "selection_methods", method)
+    if query:
+        _append_unique(row, "selection_queries", query)
+    for family in route.get("metric_families") or []:
+        if str(family):
+            _append_unique(row, "selection_metric_families", str(family))
+    return True
+
+
+def _append_unique(row: dict[str, Any], key: str, value: Any) -> None:
+    if value is None or value == "":
+        return
+    values = row.setdefault(key, [])
+    if not isinstance(values, list):
+        values = [values]
+        row[key] = values
+    if value not in values:
+        values.append(value)
+
+
+def _route_search_op_key(namespace: str, query: Any, filters: dict[str, Any]) -> tuple[Any, ...]:
+    return (namespace, _cacheable_text(query), _cacheable_filters(filters))
+
+
+def _apply_route_coverage_reservations(
+    rows: list[dict[str, Any]],
+    retrieval_plan: dict[str, Any],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    if not rows:
+        return rows, {"enabled": False, "reserved_count": 0}
+    reserved: list[dict[str, Any]] = []
+    remaining: list[dict[str, Any]] = []
+    seen_rows: set[tuple[str, str]] = set()
+    seen_slots: set[tuple[str, str, str]] = set()
+    route_scope = _retrieval_plan_route_scope(retrieval_plan)
+
+    def reserve(row: dict[str, Any], slot: tuple[str, str, str], reason: str) -> bool:
+        row_key = _context_row_key(row)
+        if row_key in seen_rows or slot in seen_slots:
+            return False
+        copy = dict(row)
+        copy["coverage_reservation_reason"] = reason
+        reserved.append(copy)
+        seen_rows.add(row_key)
+        seen_slots.add(slot)
+        return True
+
+    for row in rows:
+        ticker = str(row.get("ticker") or "").upper()
+        tier = str(row.get("source_tier") or "")
+        for ref in _row_route_refs(row):
+            task_id = str(ref.get("task_id") or "")
+            route = str(ref.get("retrieval_route") or "")
+            if task_id and route:
+                reserve(row, ("task_route", task_id, route), "task_route_minimum")
+            if route and ticker and ticker in route_scope.get(route, set()):
+                reserve(row, ("route_ticker", route, ticker), "route_ticker_minimum")
+            if route and tier:
+                reserve(row, ("route_source_tier", route, tier), "route_source_tier_minimum")
+            for family in ref.get("metric_families") or row.get("selection_metric_families") or []:
+                family_text = str(family or "")
+                if route and family_text:
+                    reserve(row, ("route_metric_family", route, family_text), "route_metric_family_minimum")
+
+    for row in rows:
+        if _context_row_key(row) not in seen_rows:
+            remaining.append(row)
+    merged = reserved + remaining
+    return merged, {
+        "enabled": True,
+        "reserved_count": len(reserved),
+        "remaining_count": len(remaining),
+        "slot_count": len(seen_slots),
+    }
+
+
+def _retrieval_plan_route_scope(retrieval_plan: dict[str, Any]) -> dict[str, set[str]]:
+    scope: dict[str, set[str]] = {}
+    for route in retrieval_plan.get("routes") or []:
+        if not isinstance(route, dict):
+            continue
+        route_name = str(route.get("retrieval_route") or "")
+        scope.setdefault(route_name, set()).update(str(ticker).upper() for ticker in route.get("tickers") or [] if str(ticker))
+    return scope
+
+
+def _row_route_refs(row: dict[str, Any]) -> list[dict[str, Any]]:
+    refs = [ref for ref in row.get("selection_routes") or [] if isinstance(ref, dict)]
+    if refs:
+        return refs
+    route_id = str(row.get("selection_route_id") or "")
+    route_name = str(row.get("retrieval_route") or "")
+    if not route_id and not route_name:
+        return []
+    return [
+        {
+            "route_id": route_id or route_name,
+            "task_id": row.get("selection_task_id"),
+            "retrieval_route": route_name,
+            "selection_method": row.get("selection_method"),
+            "selection_query": row.get("selection_query"),
+            "rerank_budget": row.get("selection_rerank_budget"),
+            "metric_families": row.get("selection_metric_families") or [],
+        }
+    ]
+
+
+def _row_selection_route_ids(row: dict[str, Any]) -> list[str]:
+    route_ids = [str(item) for item in row.get("selection_route_ids") or [] if str(item)]
+    if route_ids:
+        return route_ids
+    route_id = str(row.get("selection_route_id") or "")
+    return [route_id] if route_id else []
+
+
+def _row_has_route_id(row: dict[str, Any], route_id: str) -> bool:
+    if not route_id:
+        return False
+    return route_id in set(_row_selection_route_ids(row))
+
+
+def _cacheable_text(value: Any) -> str:
+    return re.sub(r"\s+", " ", str(value or "").strip()).lower()
+
+
+def _cacheable_filters(filters: dict[str, Any]) -> tuple[tuple[str, Any], ...]:
+    items = []
+    for key, value in sorted((filters or {}).items()):
+        if isinstance(value, list):
+            normalized = tuple(str(item) for item in value)
+        elif isinstance(value, tuple):
+            normalized = tuple(str(item) for item in value)
+        else:
+            normalized = value
+        items.append((str(key), normalized))
+    return tuple(items)
+
+
+def _route_added_count(rows: list[dict[str, Any]], route_id: str) -> int:
+    return sum(1 for row in rows if _row_has_route_id(row, route_id))
+
+
+def _route_source_filters(route: dict[str, Any]) -> dict[str, Any]:
+    filters: dict[str, Any] = {}
+    forms = [_normalize_form_type(item) for item in route.get("filing_types") or [] if _normalize_form_type(item)]
+    tiers = [str(item) for item in route.get("source_tiers") or [] if str(item)]
+    if forms:
+        filters["form_type"] = forms
+    if tiers:
+        filters["source_tier"] = tiers
+    return filters
+
+
+def _route_object_queries(route: dict[str, Any], task: dict[str, Any]) -> list[str]:
+    queries: list[str] = []
+    for family in route.get("metric_families") or []:
+        queries.extend(_numeric_check_object_queries({"metric": family, "metric_families": [family]}))
+    task_text = str(task.get("question_zh") or task.get("question") or "").strip()
+    if task_text:
+        queries.append(task_text)
+    return _dedupe_queries(queries)
+
+
+def _route_text_queries(case: dict[str, Any], route: dict[str, Any], task: dict[str, Any]) -> list[str]:
+    route_name = str(route.get("retrieval_route") or "")
+    parts = [
+        str(task.get("question_zh") or task.get("question") or ""),
+        " ".join(str(item).replace("_", " ") for item in route.get("metric_families") or []),
+        " ".join(str(item).replace("_", " ") for item in route.get("section_hints") or []),
+    ]
+    if route_name == "8k_commentary":
+        parts.append("earnings release management commentary guidance demand orders backlog margin capex investment")
+    elif route_name == "risk_text":
+        parts.append("risk factors uncertainty customer concentration regulatory supply chain cyclicality")
+    elif route_name == "filing_text":
+        parts.append(str(case.get("prompt") or ""))
+    return _dedupe_queries([" ".join(part for part in parts if part).strip()])
+
+
+def _dedupe_queries(queries: list[str]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for query in queries:
+        text = re.sub(r"\s+", " ", str(query or "").strip())
+        key = text.lower()
+        if len(text) < 4 or key in seen:
+            continue
+        seen.add(key)
+        out.append(text)
+    return out or ["financial results management discussion"]
 
 
 def _pipeline_context_rows(
@@ -522,8 +1167,15 @@ def _rerank_context_rows(
 ) -> list[dict[str, Any]]:
     if not rows:
         return rows
-    candidate_limit = args.context_reranker_candidate_limit or len(rows)
-    candidates = rows[:candidate_limit]
+    route_scoped = any("retrieval_route" in row for row in rows)
+    pinned = [row for row in rows if not row.get("rerank_eligible", True)] if route_scoped else []
+    eligible = [row for row in rows if row.get("rerank_eligible", True)] if route_scoped else rows
+    if not eligible:
+        for rank, row in enumerate(pinned, start=1):
+            row["context_rank_after_reservation"] = rank
+        return pinned
+    candidate_limit = args.context_reranker_candidate_limit or len(eligible)
+    candidates = _select_route_scoped_rerank_candidates(rows, candidate_limit) if route_scoped else eligible[:candidate_limit]
     query = _context_rerank_query(case)
     pairs = [
         (query, _context_row_rerank_text(row)[: args.context_reranker_doc_max_chars])
@@ -548,8 +1200,69 @@ def _rerank_context_rows(
     scored.sort(key=lambda item: float(item.get("rerank_score") or 0.0), reverse=True)
     for rank, row in enumerate(scored, start=1):
         row["rerank_rank"] = rank
+    selected = _apply_context_reservations(case, scored, args.context_reranker_top_k)
+    if route_scoped:
+        return _merge_route_scoped_context_rows(pinned, selected, args.context_reranker_top_k)
     tail = rows[candidate_limit:]
-    return _apply_context_reservations(case, scored, args.context_reranker_top_k) + tail
+    return selected + tail
+
+
+def _select_route_scoped_rerank_candidates(rows: list[dict[str, Any]], candidate_limit: int) -> list[dict[str, Any]]:
+    eligible = [row for row in rows if row.get("rerank_eligible", True)]
+    if not eligible:
+        return []
+    limit = candidate_limit if candidate_limit > 0 else len(eligible)
+    selected: list[dict[str, Any]] = []
+    route_counts: dict[str, int] = {}
+    for row in eligible:
+        route_id, route_budget = _row_rerank_route_budget(row)
+        if route_budget is not None and route_counts.get(route_id, 0) >= route_budget:
+            continue
+        selected.append(row)
+        route_counts[route_id] = route_counts.get(route_id, 0) + 1
+        if len(selected) >= limit:
+            break
+    return selected
+
+
+def _positive_int(value: Any) -> int | None:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed > 0 else None
+
+
+def _row_rerank_route_budget(row: dict[str, Any]) -> tuple[str, int | None]:
+    refs = _row_route_refs(row)
+    for ref in refs:
+        route_id = str(ref.get("route_id") or ref.get("retrieval_route") or "")
+        budget = _positive_int(ref.get("rerank_budget"))
+        if route_id:
+            return route_id, budget
+    route_id = str(row.get("selection_route_id") or row.get("retrieval_route") or "")
+    return route_id, _positive_int(row.get("selection_rerank_budget"))
+
+
+def _merge_route_scoped_context_rows(
+    pinned: list[dict[str, Any]],
+    selected: list[dict[str, Any]],
+    top_k: int,
+) -> list[dict[str, Any]]:
+    budget = len(pinned) + max(0, top_k)
+    merged: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for row in [*pinned, *selected]:
+        key = _context_row_key(row)
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(row)
+        if len(merged) >= budget:
+            break
+    for rank, row in enumerate(merged, start=1):
+        row["context_rank_after_reservation"] = rank
+    return merged
 
 
 def _apply_context_reservations(case: dict[str, Any], scored: list[dict[str, Any]], top_k: int) -> list[dict[str, Any]]:
@@ -687,6 +1400,8 @@ def _context_row_rerank_text(row: dict[str, Any]) -> str:
         row.get("section"),
         row.get("source_kind"),
         row.get("selection_query"),
+        " ".join(str(item) for item in row.get("selection_queries") or []),
+        " ".join(str(item) for item in row.get("selection_route_ids") or []),
         row.get("object_type"),
         row.get("evidence_id"),
         row.get("source_evidence_id"),
@@ -856,24 +1571,35 @@ def _deterministic_plan(case: dict[str, Any]) -> dict[str, Any]:
 def _source_resolver(case: dict[str, Any], manifest_index: dict[tuple[str, int, str], dict[str, Any]]) -> dict[str, Any]:
     available = []
     missing = []
-    for ticker in [str(item).upper() for item in case.get("companies") or []]:
-        for year in [int(item) for item in case.get("years") or []]:
-            for filing_type in [str(item).upper() for item in case.get("filing_types") or []]:
-                row = manifest_index.get((ticker, year, filing_type))
-                if row:
-                    available.append(
-                        {
-                            "ticker": ticker,
-                            "year": year,
-                            "filing_type": filing_type,
-                            "filing_date": row.get("filing_date"),
-                            "report_date": row.get("report_date"),
-                            "accession_number": row.get("accession_number"),
-                            "filing_url": row.get("filing_url"),
-                        }
-                    )
-                else:
-                    missing.append({"ticker": ticker, "year": year, "filing_type": filing_type})
+    for request in _source_resolver_requests(case):
+        ticker = str(request.get("ticker") or "").upper()
+        year = int(request.get("year") or 0)
+        filing_type = _normalize_form_type(request.get("filing_type"))
+        row = manifest_index.get((ticker, year, filing_type))
+        if row:
+            available.append(
+                {
+                    "ticker": ticker,
+                    "year": year,
+                    "filing_type": filing_type,
+                    "route_id": request.get("route_id") or "",
+                    "retrieval_route": request.get("retrieval_route") or "",
+                    "filing_date": row.get("filing_date"),
+                    "report_date": row.get("report_date"),
+                    "accession_number": row.get("accession_number"),
+                    "filing_url": row.get("filing_url"),
+                }
+            )
+        else:
+            missing.append(
+                {
+                    "ticker": ticker,
+                    "year": year,
+                    "filing_type": filing_type,
+                    "route_id": request.get("route_id") or "",
+                    "retrieval_route": request.get("retrieval_route") or "",
+                }
+            )
     if not available:
         status = "missing_all"
     elif missing:
@@ -887,6 +1613,53 @@ def _source_resolver(case: dict[str, Any], manifest_index: dict[tuple[str, int, 
         "available_count": len(available),
         "missing_count": len(missing),
     }
+
+
+def _source_resolver_requests(case: dict[str, Any]) -> list[dict[str, Any]]:
+    retrieval_plan = _case_retrieval_plan(case)
+    if retrieval_plan:
+        route_requests: list[dict[str, Any]] = []
+        seen_routes: set[tuple[str, int, str, str]] = set()
+        for route in retrieval_plan.get("routes") or []:
+            if not isinstance(route, dict):
+                continue
+            route_name = str(route.get("retrieval_route") or "")
+            if route_name in {"market_snapshot", "industry_snapshot"}:
+                continue
+            route_id = str(route.get("route_id") or route_name)
+            tickers = [str(item).upper() for item in route.get("tickers") or [] if str(item)]
+            years = [int(item) for item in route.get("years") or [] if str(item).strip()]
+            forms = [_normalize_form_type(item) for item in route.get("filing_types") or [] if _normalize_form_type(item)]
+            for ticker in tickers:
+                for year in years:
+                    for filing_type in forms:
+                        key = (ticker, year, filing_type, route_id)
+                        if key in seen_routes:
+                            continue
+                        seen_routes.add(key)
+                        route_requests.append(
+                            {
+                                "ticker": ticker,
+                                "year": year,
+                                "filing_type": filing_type,
+                                "route_id": route_id,
+                                "retrieval_route": route_name,
+                            }
+                        )
+        if route_requests:
+            return route_requests
+
+    requests: list[dict[str, Any]] = []
+    seen: set[tuple[str, int, str]] = set()
+    for ticker in [str(item).upper() for item in case.get("companies") or []]:
+        for year in [int(item) for item in case.get("years") or []]:
+            for filing_type in [_normalize_form_type(item) for item in case.get("filing_types") or [] if _normalize_form_type(item)]:
+                key = (ticker, year, filing_type)
+                if key in seen:
+                    continue
+                seen.add(key)
+                requests.append({"ticker": ticker, "year": year, "filing_type": filing_type})
+    return requests
 
 
 def _source_missing_is_fatal(case: dict[str, Any], resolver_output: dict[str, Any]) -> bool:

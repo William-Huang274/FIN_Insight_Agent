@@ -584,6 +584,8 @@ def execute_evidence_operator_plan(
             market_rows.extend(rows)
         elif tool_name == "industry_get_snapshot":
             industry_rows.extend(rows)
+        elif tool_name == "relationship_graph_lookup":
+            context_rows.extend(rows)
         source_gaps.extend(gaps)
         artifact_refs.extend(refs)
 
@@ -607,6 +609,13 @@ def validate_operator_tool_call(*, agent_id: str, tool_name: str) -> dict[str, A
     entry = registry.get(agent_id)
     if not entry:
         return {"status": "fail", "error": f"unknown_agent:{agent_id}"}
+    if agent_id == "universe_relationship" and tool_name == "relationship_graph_lookup":
+        allowed = set(entry.get("allowed_tools") or [])
+        if tool_name not in allowed:
+            return {"status": "fail", "error": f"tool_not_allowed_for_agent:{agent_id}:{tool_name}"}
+        if "relationship_graph" not in set(entry.get("source_families") or []):
+            return {"status": "fail", "error": f"source_family_not_allowed_for_agent:{agent_id}:relationship_graph"}
+        return {"status": "pass", "permission_boundary": "bounded_relationship_lookup"}
     if str(entry.get("tool_permission") or "") != "bounded_execute":
         return {"status": "fail", "error": f"agent_not_bounded_execute:{agent_id}"}
     allowed = set(entry.get("allowed_tools") or [])
@@ -1029,6 +1038,54 @@ def reflection_report_from_coverage(
     )
 
 
+def reflection_report_from_tool_observations(
+    retrieval_plan: Mapping[str, Any] | None,
+    *,
+    evidence_requirement_plan: Mapping[str, Any] | None = None,
+    tool_observations: list[Mapping[str, Any]] | None = None,
+    source_gaps: list[Mapping[str, Any]] | None = None,
+    tool_ledger_summary: Mapping[str, Any] | None = None,
+    available_source_families: set[str] | list[str] | tuple[str, ...] | None = None,
+) -> dict[str, Any]:
+    """Derive a conservative coverage reflection when no explicit coverage matrix exists."""
+    plan = evidence_requirement_plan if isinstance(evidence_requirement_plan, Mapping) else {}
+    routes = [dict(item) for item in (retrieval_plan or {}).get("routes") or [] if isinstance(item, Mapping)]
+    observations = [dict(item) for item in tool_observations or [] if isinstance(item, Mapping)]
+    if not routes and not (plan.get("requirements") if isinstance(plan, Mapping) else []):
+        return normalize_reflection_report(
+            {
+                "sufficiency_level": "sufficient",
+                "source_available": True,
+                "tool_ledger_summary": dict(tool_ledger_summary or {}),
+                "trigger": "coverage_reflection_tool_observations",
+            }
+        )
+
+    tasks = _coverage_tasks_from_tool_observations(routes, observations, plan)
+    coverage_complete = len(tasks) == 0
+    coverage_matrix = {
+        "summary": {
+            "coverage_complete": coverage_complete,
+            "primary_task_support_complete": not any(str(task.get("priority") or "") in {"primary", "critical"} for task in tasks),
+        },
+        "tasks": tasks,
+        "source_coverage_gaps": [
+            *[dict(item) for item in source_gaps or [] if isinstance(item, Mapping)],
+            *_source_gaps_from_blocked_observations(routes, observations),
+        ],
+    }
+    report = reflection_report_from_coverage(
+        coverage_matrix,
+        source_available=True,
+        evidence_requirement_plan=plan,
+        source_gaps=coverage_matrix["source_coverage_gaps"],
+        tool_ledger_summary=tool_ledger_summary,
+        available_source_families=available_source_families,
+    )
+    report["trigger"] = "coverage_reflection_tool_observations"
+    return report
+
+
 def should_execute_second_pass(report: Mapping[str, Any], ledger: ToolCallLedger) -> dict[str, Any]:
     normalized = normalize_reflection_report(report)
     if normalized["sufficiency_level"] == "sufficient":
@@ -1348,6 +1405,257 @@ def _relationship_evidence_expected_without_claim_ref(
         if "relationship_graph" in sources and refs:
             return False
     return True
+
+
+def _coverage_tasks_from_tool_observations(
+    routes: list[dict[str, Any]],
+    observations: list[dict[str, Any]],
+    plan: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    tasks: list[dict[str, Any]] = []
+    for requirement in _requirements_for_observation_coverage(routes, plan):
+        req_routes = _routes_for_requirement(routes, requirement)
+        expected_routes = _expected_routes_for_requirement(requirement, req_routes)
+        source_families = _source_families_for_routes(expected_routes) or _string_list(
+            requirement.get("source_families") or requirement.get("source_tiers")
+        )
+        missing_families: list[str] = []
+        route_reasons: list[str] = []
+        for family in source_families:
+            family_routes = [route for route in expected_routes if ROUTE_SOURCE_FAMILY.get(route) == family]
+            if not family_routes:
+                family_routes = _routes_for_source_families([family])
+            family_success = any(
+                _route_has_successful_observation(route_name, req_routes, observations)
+                for route_name in family_routes
+            )
+            if not family_success:
+                missing_families.append(family)
+                route_reasons.extend(_route_gap_reasons(family_routes, req_routes, observations))
+        if missing_families:
+            tasks.append(_coverage_task_from_requirement_gap(requirement, missing_families, route_reasons))
+    return tasks
+
+
+def _requirements_for_observation_coverage(routes: list[dict[str, Any]], plan: Mapping[str, Any]) -> list[dict[str, Any]]:
+    requirements: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for requirement in plan.get("requirements") or []:
+        if not isinstance(requirement, Mapping):
+            continue
+        enriched = _enrich_evidence_requirement(requirement)
+        key = _requirement_key(enriched)
+        if key and key not in seen:
+            seen.add(key)
+        requirements.append(enriched)
+    for route in routes:
+        key = _route_requirement_key(route) or str(route.get("route_id") or "")
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        requirements.append(_requirement_from_route(route))
+    return requirements
+
+
+def _requirement_from_route(route: Mapping[str, Any]) -> dict[str, Any]:
+    coverage = route.get("coverage_requirements") if isinstance(route.get("coverage_requirements"), Mapping) else {}
+    route_name = str(route.get("retrieval_route") or "")
+    source_family = ROUTE_SOURCE_FAMILY.get(route_name, "")
+    requirement = {
+        "requirement_id": _route_requirement_key(route) or str(route.get("route_id") or route_name),
+        "task_id": str(route.get("task_id") or route.get("route_id") or route_name),
+        "question_zh": str(route.get("query") or route.get("task_id") or route_name),
+        "priority": str(route.get("priority") or "supporting"),
+        "analysis_intent": str(route.get("analysis_intent") or route_name),
+        "tickers": _string_list(route.get("tickers") or coverage.get("tickers")),
+        "years": _int_list(route.get("years") or coverage.get("years")),
+        "filing_types": _string_list(route.get("filing_types") or coverage.get("filing_types")),
+        "source_tiers": _string_list(route.get("source_tiers") or coverage.get("source_tiers")),
+        "metric_families": _string_list(route.get("metric_families") or coverage.get("metric_families")),
+        "period_roles": _string_list(route.get("period_roles") or coverage.get("period_roles")),
+        "evidence_routes": [route_name] if route_name else [],
+        "source_families": [source_family] if source_family else [],
+    }
+    return _enrich_evidence_requirement(requirement)
+
+
+def _routes_for_requirement(routes: list[dict[str, Any]], requirement: Mapping[str, Any]) -> list[dict[str, Any]]:
+    keys = _requirement_keys(requirement)
+    if not keys:
+        return []
+    matched = []
+    for route in routes:
+        route_keys = _requirement_keys(route)
+        if keys & route_keys:
+            matched.append(route)
+    return matched
+
+
+def _expected_routes_for_requirement(requirement: Mapping[str, Any], routes: list[dict[str, Any]]) -> list[str]:
+    expected = _string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes"))
+    expected.extend(str(route.get("retrieval_route") or "") for route in routes)
+    if not expected:
+        expected.extend(_routes_for_source_families(_string_list(requirement.get("source_families") or requirement.get("source_tiers"))))
+    return _dedupe(expected)
+
+
+def _route_has_successful_observation(route_name: str, routes: list[dict[str, Any]], observations: list[dict[str, Any]]) -> bool:
+    return any(_observation_has_rows(observation) for observation in _observations_for_named_route(route_name, routes, observations))
+
+
+def _observations_for_named_route(
+    route_name: str,
+    routes: list[dict[str, Any]],
+    observations: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    route_ids = {str(route.get("route_id") or "") for route in routes if str(route.get("retrieval_route") or "") == route_name}
+    route_ids.discard("")
+    matched = []
+    for observation in observations:
+        if route_ids and str(observation.get("route_id") or "") in route_ids:
+            matched.append(observation)
+        elif not route_ids and str(observation.get("retrieval_route") or "") == route_name:
+            matched.append(observation)
+    return matched
+
+
+def _observation_has_rows(observation: Mapping[str, Any]) -> bool:
+    status = str(observation.get("status") or "").lower()
+    if status in {"blocked", "skipped", "fail", "failed", "error"}:
+        return False
+    try:
+        return int(observation.get("row_count") or 0) > 0
+    except (TypeError, ValueError):
+        return False
+
+
+def _route_gap_reasons(
+    route_names: list[str],
+    routes: list[dict[str, Any]],
+    observations: list[dict[str, Any]],
+) -> list[str]:
+    reasons: list[str] = []
+    for route_name in route_names:
+        route_observations = _observations_for_named_route(route_name, routes, observations)
+        if not route_observations:
+            reasons.append(f"{route_name}:route_not_observed")
+            continue
+        for observation in route_observations:
+            status = str(observation.get("status") or "")
+            error = str(observation.get("error") or "")
+            try:
+                row_count = int(observation.get("row_count") or 0)
+            except (TypeError, ValueError):
+                row_count = 0
+            if status.lower() in {"blocked", "skipped", "fail", "failed", "error"}:
+                reasons.append(f"{route_name}:{error or status}")
+            elif row_count <= 0:
+                reasons.append(f"{route_name}:no_rows")
+    return _dedupe(reasons)
+
+
+def _coverage_task_from_requirement_gap(
+    requirement: Mapping[str, Any],
+    missing_families: list[str],
+    route_reasons: list[str],
+) -> dict[str, Any]:
+    sec_families = [family for family in missing_families if family in SEC_SEARCH_SOURCE_TIERS]
+    industry_families = [
+        family
+        for family in missing_families
+        if family not in SEC_SEARCH_SOURCE_TIERS and family != "market_snapshot"
+    ]
+    return {
+        "task_id": str(requirement.get("task_id") or requirement.get("requirement_id") or ""),
+        "question_zh": str(requirement.get("question_zh") or requirement.get("question") or ""),
+        "priority": str(requirement.get("priority") or "supporting"),
+        "support_level": "insufficient",
+        "missing_tickers": _string_list(requirement.get("tickers")),
+        "missing_years": _int_list(requirement.get("years")),
+        "missing_filing_types": _string_list(requirement.get("filing_types")),
+        "missing_source_tiers": sec_families,
+        "missing_metric_families": _string_list(requirement.get("metric_families")),
+        "missing_market_fields": _string_list(requirement.get("market_fields")) if "market_snapshot" in missing_families else [],
+        "missing_market_tools": _string_list(requirement.get("market_analysis_tools")) if "market_snapshot" in missing_families else [],
+        "missing_industry_source_families": industry_families,
+        "period_roles": _string_list(requirement.get("period_roles")),
+        "must_caveat": ";".join(route_reasons[:6]) or "tool_observation_gap",
+    }
+
+
+def _source_gaps_from_blocked_observations(
+    routes: list[dict[str, Any]],
+    observations: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    route_index = {str(route.get("route_id") or ""): route for route in routes if str(route.get("route_id") or "")}
+    gaps = []
+    for observation in observations:
+        status = str(observation.get("status") or "").lower()
+        if status not in {"blocked", "skipped", "fail", "failed", "error"}:
+            continue
+        route = route_index.get(str(observation.get("route_id") or "")) or observation
+        route_name = str(route.get("retrieval_route") or observation.get("retrieval_route") or "")
+        source_family = ROUTE_SOURCE_FAMILY.get(route_name, "")
+        if not source_family:
+            continue
+        error = str(observation.get("error") or status)
+        gaps.append(
+            {
+                "source_family": source_family,
+                "reason_code": error,
+                "reason": error,
+                "source_available": not _observation_error_is_non_retriable(error),
+                "route_id": str(observation.get("route_id") or ""),
+                "requirement_id": _route_requirement_key(route),
+                "task_id": str(route.get("task_id") or ""),
+            }
+        )
+    return gaps
+
+
+def _observation_error_is_non_retriable(error: str) -> bool:
+    text = str(error or "").lower()
+    return any(
+        marker in text
+        for marker in (
+            "agent_not_bounded_execute",
+            "tool_not_allowed",
+            "unsupported_retrieval_route",
+            "ledger_store_path_unavailable",
+            "duplicate_tool_call",
+            "max_tool_calls",
+            "budget",
+        )
+    )
+
+
+def _requirement_key(value: Mapping[str, Any]) -> str:
+    for key in ("requirement_id", "evidence_requirement_id", "parent_requirement_id", "task_id"):
+        text = str(value.get(key) or "").strip()
+        if text:
+            return text
+    return ""
+
+
+def _route_requirement_key(route: Mapping[str, Any]) -> str:
+    for key in ("evidence_requirement_id", "requirement_id", "parent_requirement_id", "task_id"):
+        text = str(route.get(key) or "").strip()
+        if text:
+            return text
+    return ""
+
+
+def _requirement_keys(value: Mapping[str, Any]) -> set[str]:
+    return {
+        text
+        for text in (
+            str(value.get("requirement_id") or "").strip(),
+            str(value.get("evidence_requirement_id") or "").strip(),
+            str(value.get("parent_requirement_id") or "").strip(),
+            str(value.get("task_id") or "").strip(),
+        )
+        if text
+    }
 
 
 def _evidence_requirements_by_task(plan: Mapping[str, Any] | None) -> dict[str, dict[str, Any]]:

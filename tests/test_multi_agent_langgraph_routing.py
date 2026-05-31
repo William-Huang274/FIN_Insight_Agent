@@ -32,6 +32,8 @@ def test_multi_agent_graph_runs_focused_path_and_writes_summary(tmp_path: Path) 
     assert "research_lead_plan" in nodes
     assert "memo_writer" in nodes
     assert summary["execution_mode"] == "focused_answer"
+    assert summary["evidence_rows"]["tool_observation_count"] >= 1
+    assert summary["evidence_rows"]["retrieval_route_count"] >= 1
     assert summary["payload_policy"]["raw_evidence"] == "not_included"
 
 

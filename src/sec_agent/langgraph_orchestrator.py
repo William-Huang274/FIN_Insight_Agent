@@ -47,8 +47,10 @@ from sec_agent.multi_agent_runtime import (
     quality_reflection_report_from_judgment,
     record_second_pass_outcome,
     reflection_report_from_coverage,
+    reflection_report_from_tool_observations,
     should_execute_second_pass,
     specialist_activation_decisions,
+    validate_operator_tool_call,
 )
 from sec_agent.relationship_graph import relationship_plan_from_lookup
 from sec_agent.tool_call_ledger import LoopBudget, ToolCallLedger
@@ -837,11 +839,16 @@ def _node_universe_relationship_expand(
         "max_expanded_tickers": 12,
         "include_sector_depth": True,
     }
-    decision = ledger.can_call_tool(
-        turn_id=str(state.get("run_id") or "multi_agent_turn"),
-        agent_id="universe_relationship",
-        tool_name="relationship_graph_lookup",
-        arguments=lookup_args,
+    permission = validate_operator_tool_call(agent_id="universe_relationship", tool_name="relationship_graph_lookup")
+    decision = (
+        ledger.can_call_tool(
+            turn_id=str(state.get("run_id") or "multi_agent_turn"),
+            agent_id="universe_relationship",
+            tool_name="relationship_graph_lookup",
+            arguments=lookup_args,
+        )
+        if permission["status"] == "pass"
+        else {"allowed": False, "reason": permission["error"], "status": "blocked"}
     )
     if decision["allowed"]:
         lookup = invoke_mcp_tool("relationship_graph_lookup", lookup_args)
@@ -1059,15 +1066,13 @@ def _node_coverage_reflection(
             tool_ledger_summary=_tool_ledger_summary_for_reflection(state, ledger),
         )
     else:
-        mode = str((state.get("agent_activation_plan") or {}).get("execution_mode") or "")
-        report = normalize_reflection_report(
-            {
-                "sufficiency_level": "sufficient",
-                "source_available": False,
-                "second_pass_requests": [],
-                "tool_ledger_summary": _tool_ledger_summary_for_reflection(state, ledger),
-                "bounded_answer_allowed": mode == "deterministic_lookup",
-            }
+        report = reflection_report_from_tool_observations(
+            state.get("retrieval_plan") or {},
+            evidence_requirement_plan=state.get("evidence_requirement_plan") or {},
+            tool_observations=state.get("tool_observations") or [],
+            source_gaps=state.get("source_gaps") or [],
+            tool_ledger_summary=_tool_ledger_summary_for_reflection(state, ledger),
+            available_source_families=(state.get("agent_activation_plan") or {}).get("allowed_source_families") or None,
         )
     decision = should_execute_second_pass(report, ledger)
     next_state: SecAgentGraphRuntimeState = {
@@ -2151,6 +2156,20 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
         "evidence_requirements": {
             "requirement_count": len(evidence_plan.get("requirements") or []) if isinstance(evidence_plan, dict) else 0,
             "validation_status": evidence_validation.get("status") if isinstance(evidence_validation, dict) else "",
+        },
+        "evidence_rows": {
+            "context_row_count": len(state.get("context_rows") or []),
+            "runtime_ledger_row_count": len(state.get("runtime_ledger_rows") or []),
+            "market_snapshot_row_count": len(state.get("market_snapshot_rows") or []),
+            "industry_snapshot_row_count": len(state.get("industry_snapshot_rows") or []),
+            "source_gap_count": len(state.get("source_gaps") or []),
+            "tool_observation_count": len(state.get("tool_observations") or []),
+            "retrieval_route_count": len((state.get("retrieval_plan") or {}).get("routes") or [])
+            if isinstance(state.get("retrieval_plan"), dict)
+            else 0,
+            "reflection_sufficiency_level": (state.get("multi_agent_reflection_report") or {}).get("sufficiency_level")
+            if isinstance(state.get("multi_agent_reflection_report"), dict)
+            else "",
         },
         "tool_calls": [
             {

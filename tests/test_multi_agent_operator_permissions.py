@@ -19,6 +19,16 @@ def test_operator_permission_bridge_blocks_cross_source_tool() -> None:
     assert blocked["error"] == "tool_not_allowed_for_agent:sec_operator:market_get_snapshot"
 
 
+def test_relationship_graph_lookup_has_bounded_permission_boundary() -> None:
+    permission = validate_operator_tool_call(
+        agent_id="universe_relationship",
+        tool_name="relationship_graph_lookup",
+    )
+
+    assert permission["status"] == "pass"
+    assert permission["permission_boundary"] == "bounded_relationship_lookup"
+
+
 def test_sec_search_arguments_filter_context_only_source_tiers() -> None:
     filing_args = tool_arguments_from_route(
         {
@@ -94,6 +104,49 @@ def test_evidence_operator_plan_executes_mcp_shaped_calls_and_records_ledger() -
     assert result["market_snapshot_rows"][0]["ticker"] == "MSFT"
     assert len(result["tool_call_ledger"]["records"]) == 2
     assert result["tool_observations"][1]["boundary"]["status"] == "pass"
+
+
+def test_relationship_graph_route_executes_and_returns_bounded_context_rows() -> None:
+    retrieval_plan = {
+        "routes": [
+            {
+                "route_id": "relationship_scope::relationship_graph",
+                "task_id": "relationship_scope",
+                "retrieval_route": "relationship_graph",
+                "evidence_requirement_id": "req_relationship_scope",
+                "tickers": ["NVDA", "MSFT"],
+            }
+        ]
+    }
+    calls: list[tuple[str, dict]] = []
+
+    def fake_executor(tool_name: str, args: dict) -> dict:
+        calls.append((tool_name, args))
+        return {
+            "status": "ok",
+            "relationship_rows": [
+                {
+                    "evidence_ref": "rel_nvda_msft",
+                    "source_family": "relationship_graph",
+                    "focus_ticker": "NVDA",
+                    "related_ticker": "MSFT",
+                }
+            ],
+            "artifact_refs": [],
+        }
+
+    result = execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_relationship",
+        ledger=ToolCallLedger(),
+        state_context={"user_query": "NVDA Microsoft AI infrastructure relationship"},
+        tool_executor=fake_executor,
+    )
+
+    assert [call[0] for call in calls] == ["relationship_graph_lookup"]
+    assert result["tool_observations"][0]["status"] == "ok"
+    assert result["context_rows"][0]["source_family"] == "relationship_graph"
+    assert result["tool_call_ledger"]["records"][0]["agent_id"] == "universe_relationship"
 
 
 def test_evidence_operator_duplicate_call_is_blocked() -> None:

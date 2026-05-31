@@ -6,6 +6,7 @@ from sec_agent.multi_agent_runtime import (
     quality_reflection_report_from_judgment,
     record_second_pass_outcome,
     reflection_report_from_coverage,
+    reflection_report_from_tool_observations,
     second_pass_evidence_requirement_plan_from_reflection,
     should_execute_second_pass,
 )
@@ -63,6 +64,79 @@ def test_reflection_binds_gap_to_evidence_requirement_source_and_operator() -> N
     assert request["evidence_routes"] == ["ledger_first", "filing_text"]
     assert request["compile_policy"] == "deterministic_compiler_required"
     assert report["tool_ledger_summary"]["tool_call_count"] == 2
+
+
+def test_tool_observation_reflection_triggers_second_pass_without_coverage_matrix() -> None:
+    report = reflection_report_from_tool_observations(
+        {
+            "routes": [
+                {
+                    "route_id": "route_req_amd_capex_filing",
+                    "retrieval_route": "filing_text",
+                    "evidence_requirement_id": "req_amd_capex",
+                    "task_id": "amd_capex",
+                }
+            ]
+        },
+        evidence_requirement_plan=_evidence_requirement_plan(),
+        tool_observations=[
+            {
+                "route_id": "route_req_amd_capex_filing",
+                "retrieval_route": "filing_text",
+                "status": "ok",
+                "row_count": 0,
+            }
+        ],
+        tool_ledger_summary={"tool_call_count": 1, "second_pass_rounds": 0},
+    )
+    decision = should_execute_second_pass(report, ToolCallLedger())
+
+    assert report["trigger"] == "coverage_reflection_tool_observations"
+    assert report["sufficiency_level"] == "partial"
+    assert report["missing_requirements"][0]["requirement_id"] == "req_amd_capex"
+    assert report["second_pass_requests"][0]["evidence_routes"] == ["ledger_first", "filing_text"]
+    assert decision["allowed"] is True
+
+
+def test_tool_observation_reflection_marks_permission_block_as_not_retriable() -> None:
+    report = reflection_report_from_tool_observations(
+        {
+            "routes": [
+                {
+                    "route_id": "route_rel",
+                    "retrieval_route": "relationship_graph",
+                    "evidence_requirement_id": "req_rel",
+                    "task_id": "relationship_scope",
+                }
+            ]
+        },
+        evidence_requirement_plan={
+            "requirements": [
+                {
+                    "requirement_id": "req_rel",
+                    "task_id": "relationship_scope",
+                    "priority": "supporting",
+                    "source_families": ["relationship_graph"],
+                    "evidence_routes": ["relationship_graph"],
+                }
+            ]
+        },
+        tool_observations=[
+            {
+                "route_id": "route_rel",
+                "retrieval_route": "relationship_graph",
+                "status": "blocked",
+                "error": "agent_not_bounded_execute:universe_relationship",
+                "row_count": 0,
+            }
+        ],
+    )
+    decision = should_execute_second_pass(report, ToolCallLedger())
+
+    assert report["sufficiency_level"] == "insufficient"
+    assert report["source_available"] is False
+    assert report["second_pass_requests"] == []
+    assert decision["reason"] == "source_not_available"
 
 
 def test_second_pass_requests_compile_through_deterministic_retrieval_plan() -> None:

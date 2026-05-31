@@ -14,11 +14,28 @@ from sec_agent.industry_snapshot import query_industry_snapshot
 from sec_agent.ledger_store import query_ledger_facts
 from sec_agent.mcp_contracts import get_mcp_tool_contract, list_mcp_tool_contracts
 from sec_agent.mcp_runtime import read_bounded_artifact
+from sec_agent.relationship_graph import query_relationship_graph
 from sec_agent.workbench.artifacts import inspect_run_artifacts
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _INTERACTIVE_MODULE: ModuleType | None = None
+_BANKING_MCP_METRIC_FAMILIES = {
+    "allowance_for_credit_losses",
+    "asset_quality",
+    "capital_ratio",
+    "credit_quality",
+    "credit_risk",
+    "deposits",
+    "loans",
+    "net_charge_offs",
+    "net_interest_income",
+    "net_interest_margin",
+    "nonperforming_assets",
+    "nonperforming_loans",
+    "provision_for_credit_losses",
+    "total_assets",
+}
 
 
 def list_registered_tools() -> list[dict[str, Any]]:
@@ -98,18 +115,41 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
     result = interactive.retrieve_context_for_graph(runtime_args, graph_state)
     rows = [row for row in result.get("context_rows") or [] if isinstance(row, dict)]
     trace = result.get("retrieval_trace") if isinstance(result.get("retrieval_trace"), dict) else {}
+    ledger_rows: list[dict[str, Any]] = []
+    ledger_artifact_refs: list[dict[str, Any]] = []
+    if _bool_arg(args.get("build_runtime_ledger"), default=False) and rows:
+        build_runtime_ledger = getattr(interactive, "build_runtime_ledger_for_graph", None)
+        if callable(build_runtime_ledger):
+            ledger_result = build_runtime_ledger(
+                runtime_args,
+                {
+                    **graph_state,
+                    "context_rows": rows,
+                    "retrieval_trace": trace,
+                },
+            )
+            ledger_rows = [row for row in ledger_result.get("runtime_ledger_rows") or [] if isinstance(row, dict)]
+            ledger_artifact_refs = _artifact_refs_from_mapping(
+                ledger_result.get("artifact_refs"),
+                row_count=len(ledger_rows),
+            )
     candidate_counts = _candidate_counts_from_trace(trace, rows)
     return {
         "status": "ok" if rows else "partial",
         "context_rows": rows,
+        "runtime_ledger_rows": ledger_rows,
         "row_count": len(rows),
+        "runtime_ledger_row_count": len(ledger_rows),
         "query_contract": query_contract,
         "selected_tickers": graph_state["selected_tickers"],
         "selected_years": graph_state["selected_years"],
         "retrieval_trace": trace,
         "context_runtime": result.get("context_runtime") if isinstance(result.get("context_runtime"), dict) else {},
         "candidate_counts": candidate_counts,
-        "artifact_refs": _artifact_refs_from_mapping(result.get("artifact_refs"), row_count=len(rows)),
+        "artifact_refs": [
+            *_artifact_refs_from_mapping(result.get("artifact_refs"), row_count=len(rows)),
+            *ledger_artifact_refs,
+        ],
         "source_gaps": _sec_search_source_gaps(query_contract, rows),
     }
 
@@ -166,6 +206,20 @@ def _invoke_industry(args: dict[str, Any]) -> dict[str, Any]:
         industry_evidence_path=str(args.get("industry_evidence_path") or ""),
         industry_snapshot_db_path=str(args.get("industry_snapshot_db_path") or ""),
         limit=int(args.get("limit") or 500),
+    )
+
+
+def _invoke_relationship_graph(args: dict[str, Any]) -> dict[str, Any]:
+    return query_relationship_graph(
+        focus_tickers=_list_arg(args.get("focus_tickers")),
+        search_scope_tickers=_list_arg(args.get("search_scope_tickers")),
+        user_query=str(args.get("user_query") or ""),
+        relationship_graph_path=args.get("relationship_graph_path") or os.environ.get("RELATIONSHIP_GRAPH_PATH") or "",
+        sector_depth_pack_path=args.get("sector_depth_pack_path") or os.environ.get("SECTOR_DEPTH_PACK_PATH") or "",
+        expected_pack_ids=_list_arg(args.get("expected_pack_ids") or args.get("expected_relationship_pack_ids")),
+        max_relationships=int(args.get("max_relationships") or 24),
+        max_expanded_tickers=int(args.get("max_expanded_tickers") or 12),
+        include_sector_depth=_bool_arg(args.get("include_sector_depth"), default=True),
     )
 
 
@@ -259,6 +313,10 @@ def _overlay_sec_search_contract(contract: dict[str, Any], args: dict[str, Any],
         clean["source_tiers"] = source_tiers
     if metric_families:
         clean["metric_families"] = metric_families
+        if tickers and set(metric_families) & _BANKING_MCP_METRIC_FAMILIES:
+            rules = dict(clean.get("ledger_rules") or {})
+            rules["banking_metric_tickers"] = tickers
+            clean["ledger_rules"] = rules
     if period_roles:
         clean["period_roles"] = period_roles
 
@@ -582,6 +640,7 @@ _HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
     "sec_query_exact_value_ledger": _invoke_ledger,
     "market_get_snapshot": _invoke_market,
     "industry_get_snapshot": _invoke_industry,
+    "relationship_graph_lookup": _invoke_relationship_graph,
     "run_inspect_artifacts": _invoke_run_inspect,
     "run_read_artifact": _invoke_run_read,
 }

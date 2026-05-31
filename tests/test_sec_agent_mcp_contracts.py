@@ -17,6 +17,7 @@ def test_mcp_tool_contracts_are_valid_and_cover_core_sources() -> None:
         "sec_query_exact_value_ledger",
         "market_get_snapshot",
         "industry_get_snapshot",
+        "relationship_graph_lookup",
         "run_inspect_artifacts",
         "run_read_artifact",
     } <= names

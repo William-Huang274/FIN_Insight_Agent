@@ -4,19 +4,47 @@ from functools import lru_cache
 from pathlib import Path
 
 
-SKILL_SCHEMA_VERSION = "sec_agent_research_skills_v0.1"
+SKILL_SCHEMA_VERSION = "sec_agent_research_skills_v0.2"
 
 PROMPT_ROOT = Path(__file__).resolve().parent / "prompts" / "skills"
 
 SKILL_FILES: dict[str, str] = {
     "investment_research_workflow": "investment_research_workflow_skill_v0_1.md",
     "evidence_requirement_and_sufficiency": "evidence_requirement_and_sufficiency_skill_v0_1.md",
+    "shared_evidence_boundary": "shared_evidence_boundary_skill_v0_1.md",
+    "research_lead_planning": "research_lead_planning_skill_v0_1.md",
+    "coverage_reflection": "coverage_reflection_skill_v0_1.md",
+    "memo_writer": "memo_writer_skill_v0_1.md",
+    "verification": "verification_skill_v0_1.md",
+    "fundamental_analysis": "fundamental_analysis_skill_v0_2.md",
+    "industry_supply_chain_analysis": "industry_supply_chain_analysis_skill_v0_2.md",
+    "market_valuation_analysis": "market_valuation_analysis_skill_v0_2.md",
+    "risk_counterevidence": "risk_counterevidence_skill_v0_2.md",
+    "relationship_universe": "relationship_universe_skill_v0_1.md",
+    "evidence_operator_tool_use": "evidence_operator_tool_use_skill_v0_1.md",
+    "judgment_plan_aggregation": "judgment_plan_aggregation_skill_v0_1.md",
+    "renderer": "renderer_skill_v0_1.md",
 }
 
 ROLE_SKILLS: dict[str, tuple[str, ...]] = {
     "planner": ("evidence_requirement_and_sufficiency", "investment_research_workflow"),
     "reflection": ("evidence_requirement_and_sufficiency",),
     "synthesis": ("investment_research_workflow",),
+    "research_lead": ("shared_evidence_boundary", "research_lead_planning"),
+    "coverage_reflection": ("shared_evidence_boundary", "coverage_reflection"),
+    "memo_writer": ("shared_evidence_boundary", "memo_writer"),
+    "verifier": ("shared_evidence_boundary", "verification"),
+    "universe_relationship": ("shared_evidence_boundary", "relationship_universe"),
+    "sec_operator": ("shared_evidence_boundary", "evidence_operator_tool_use"),
+    "eight_k_operator": ("shared_evidence_boundary", "evidence_operator_tool_use"),
+    "market_operator": ("shared_evidence_boundary", "evidence_operator_tool_use"),
+    "industry_operator": ("shared_evidence_boundary", "evidence_operator_tool_use"),
+    "fundamental_analyst": ("shared_evidence_boundary", "fundamental_analysis"),
+    "industry_supply_chain_analyst": ("shared_evidence_boundary", "industry_supply_chain_analysis"),
+    "market_valuation_analyst": ("shared_evidence_boundary", "market_valuation_analysis"),
+    "risk_counterevidence_analyst": ("shared_evidence_boundary", "risk_counterevidence"),
+    "judgment_plan_aggregator": ("shared_evidence_boundary", "judgment_plan_aggregation"),
+    "renderer": ("shared_evidence_boundary", "renderer"),
 }
 
 

@@ -19,6 +19,7 @@ SOURCE_COMPANY_AUTHORED = "company_authored_unaudited_sec_filing"
 SOURCE_MARKET = "market_snapshot"
 SOURCE_INDUSTRY = "industry_snapshot"
 SOURCE_RUN_ARTIFACT = "run_artifact"
+SOURCE_RELATIONSHIP = "relationship_graph"
 
 
 def list_mcp_tool_contracts() -> list[dict[str, Any]]:
@@ -366,6 +367,56 @@ _TOOL_CONTRACTS: list[dict[str, Any]] = [
         ],
         handler_module="sec_agent.industry_snapshot",
         handler_name="query_industry_snapshot",
+    ),
+    _tool(
+        name="relationship_graph_lookup",
+        namespace="relationship",
+        title="Lookup relationship graph scope evidence",
+        description=(
+            "Lookup bounded company relationship graph and sector-depth metadata rows for "
+            "peer, customer, supplier, sector, and macro-sensitive research-scope expansion. "
+            "The output supports hypotheses and evidence requirements only."
+        ),
+        roles=[ROLE_RESEARCH_PLANNER],
+        source_tiers=[SOURCE_RELATIONSHIP],
+        input_schema=_object_schema(
+            {
+                "focus_tickers": _array({"type": "string"}),
+                "search_scope_tickers": _array({"type": "string"}),
+                "user_query": {"type": "string"},
+                "relationship_graph_path": {"type": "string"},
+                "sector_depth_pack_path": {"type": "string"},
+                "max_relationships": {"type": "integer", "minimum": 1, "maximum": 100},
+                "max_expanded_tickers": {"type": "integer", "minimum": 1, "maximum": 50},
+                "include_sector_depth": {"type": "boolean"},
+            },
+            required=["focus_tickers"],
+        ),
+        output_schema=_object_schema(
+            {
+                "status": {"type": "string", "enum": ["ok", "partial", "error"]},
+                "relationships": _array({"type": "object"}),
+                "relationship_rows": _array({"type": "object"}),
+                "focus_tickers": _array({"type": "string"}),
+                "expanded_tickers": _array({"type": "string"}),
+                "included_tickers": _array({"type": "string"}),
+                "source_gaps": _array({"type": "object"}),
+                "summary": {"type": "object"},
+                "artifact_refs": _array(_artifact_ref_schema()),
+            }
+        ),
+        allowed_claim_types=[
+            "research_scope_hypothesis",
+            "peer_relationship_hypothesis",
+            "customer_supplier_hypothesis",
+            "sector_readthrough_hypothesis",
+        ],
+        prohibited_claims=[
+            "Do not use relationship graph rows as reported revenue, margin, cash flow, capex, or balance-sheet facts.",
+            "Do not expand to unbounded full-market scope without relationship evidence and budget guard.",
+        ],
+        handler_module="sec_agent.relationship_graph",
+        handler_name="query_relationship_graph",
     ),
     _tool(
         name="run_inspect_artifacts",

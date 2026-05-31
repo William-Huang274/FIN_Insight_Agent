@@ -133,6 +133,13 @@ KNOWN_ARTIFACTS: tuple[dict[str, Any], ...] = (
         "kind": "json",
         "required": False,
     },
+    {
+        "artifact_id": "multi_agent_summary",
+        "label": "Multi-agent summary",
+        "rel_path": "multi_agent_summary.json",
+        "kind": "json",
+        "required": False,
+    },
 )
 
 
@@ -172,6 +179,10 @@ def inspect_run_artifacts(run_dir: str | Path) -> RunArtifactIndex:
     native_summary = _find_artifact(artifacts, "native_summary")
     gates = _find_artifact(artifacts, "post_gates")
     performance = _find_artifact(artifacts, "performance")
+    multi_agent = _find_artifact(artifacts, "multi_agent_summary")
+    state_summary = state.summary if state and state.exists else native_summary.summary if native_summary and native_summary.exists else {}
+    if multi_agent and multi_agent.exists:
+        state_summary = {**state_summary, "multi_agent": multi_agent.summary}
     return RunArtifactIndex(
         run_dir=str(root),
         status=status,
@@ -180,7 +191,7 @@ def inspect_run_artifacts(run_dir: str | Path) -> RunArtifactIndex:
         warnings=warnings,
         errors=errors,
         answer_preview=rendered.preview if rendered else "",
-        state_summary=state.summary if state and state.exists else native_summary.summary if native_summary and native_summary.exists else {},
+        state_summary=state_summary,
         gate_summary=gates.summary if gates else {},
         performance_summary=performance.summary if performance else {},
     )
@@ -310,6 +321,20 @@ def _json_summary(payload: Any, artifact_id: str) -> dict[str, Any]:
                 "status": payload.get("status"),
                 "node_count": len(payload.get("node_checkpoints") or []),
                 "latest_completed_node": state_summary.get("latest_completed_node") or payload.get("latest_completed_node"),
+            }
+        )
+    elif artifact_id == "multi_agent_summary":
+        summary.update(
+            {
+                "run_id": payload.get("run_id"),
+                "status": payload.get("status"),
+                "execution_mode": payload.get("execution_mode"),
+                "activated_agent_count": len(payload.get("activated_agents") or []),
+                "skipped_agent_count": len(payload.get("skipped_agents") or []),
+                "tool_call_count": payload.get("tool_call_count"),
+                "loop_break_reason": payload.get("loop_break_reason"),
+                "bounded_answer_allowed": payload.get("bounded_answer_allowed"),
+                "second_pass_attempts": (payload.get("second_pass") or {}).get("attempts") if isinstance(payload.get("second_pass"), dict) else None,
             }
         )
     elif artifact_id == "post_gates":

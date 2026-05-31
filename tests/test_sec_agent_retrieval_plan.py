@@ -126,6 +126,31 @@ def test_planner_evidence_requirements_drive_physical_routes() -> None:
     assert plan["evidence_requirement_plan"]["source"] == "planner_output_evidence_requirements"
 
 
+def test_run_artifact_evidence_requirement_allows_empty_company_scope() -> None:
+    contract = {
+        "source_tiers": ["run_artifact"],
+        "evidence_requirements": [
+            {
+                "requirement_id": "req_run_artifacts",
+                "task_id": "inspect_run",
+                "question_zh": "Inspect existing run coverage and graph state.",
+                "source_tiers": ["primary_sec_filing"],
+                "evidence_routes": ["run_artifact"],
+            }
+        ],
+    }
+
+    erp = build_evidence_requirement_plan(contract)
+    plan = build_retrieval_plan(contract)
+
+    assert erp["evidence_requirement_validation"]["status"] == "pass"
+    assert erp["requirements"][0]["source_tiers"] == ["run_artifact"]
+    assert erp["requirements"][0]["tickers"] == []
+    assert erp["requirements"][0]["years"] == []
+    assert plan["routes"][0]["retrieval_route"] == "run_artifact"
+    assert plan["routes"][0]["source_tiers"] == ["run_artifact"]
+
+
 def test_retrieval_plan_scopes_route_values_to_query_contract() -> None:
     plan = {
         "schema_version": "bad",

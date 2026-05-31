@@ -15,10 +15,12 @@ ALLOWED_RETRIEVAL_ROUTES = {
     "market_snapshot",
     "industry_snapshot",
     "risk_text",
+    "run_artifact",
 }
 
 MARKET_SOURCE_TIER = "market_snapshot"
 INDUSTRY_SOURCE_TIER = "industry_snapshot"
+RUN_ARTIFACT_SOURCE_TIER = "run_artifact"
 PRIMARY_SEC_SOURCE_TIER = "primary_sec_filing"
 COMPANY_AUTHORED_SOURCE_TIER = "company_authored_unaudited_sec_filing"
 
@@ -481,6 +483,7 @@ def _normalize_evidence_requirements(
         task_id = _slug_text(req.get("task_id") or requirement_id.replace("req_", "task_"))[:80] or f"task_{index}"
         routes = _unique_strings(req.get("evidence_routes") or req.get("retrieval_routes") or req.get("retrieval_route") or [])
         routes = [route for route in routes if route in ALLOWED_RETRIEVAL_ROUTES]
+        is_run_artifact = "run_artifact" in routes
         if not routes:
             fallback_task = _requirement_as_task({**req, "task_id": task_id, "requirement_id": requirement_id})
             routes = _routes_for_task(
@@ -491,10 +494,11 @@ def _normalize_evidence_requirements(
                 source_tiers=_clamp_strings(req.get("source_tiers"), allowed_source_tiers) or source_tiers,
             )
             normalizations.append({"field": "evidence_routes", "action": "derived_from_requirement_text", "requirement_id": requirement_id})
+            is_run_artifact = "run_artifact" in routes
         tickers = _clamp_upper(req.get("tickers") or req.get("required_tickers"), allowed_tickers) or focus_tickers or search_scope_tickers
         years_scoped = _clamp_ints(req.get("years"), allowed_years) or years
         forms_scoped = _clamp_forms(req.get("filing_types"), allowed_forms) or filing_types
-        tiers_scoped = _clamp_strings(req.get("source_tiers"), allowed_source_tiers) or source_tiers
+        tiers_scoped = [RUN_ARTIFACT_SOURCE_TIER] if is_run_artifact else _clamp_strings(req.get("source_tiers"), allowed_source_tiers) or source_tiers
         metric_families = _unique_strings(req.get("metric_families") or req.get("required_metric_families") or [])
         if not metric_families:
             metric_families = _unique_strings(contract.get("metric_families") or [])[:8]
@@ -520,9 +524,9 @@ def _normalize_evidence_requirements(
             "rerank_budget": _clamp_int(req.get("rerank_budget"), 0, 1000, 0),
             "second_pass_policy": _normalize_second_pass_policy(req.get("second_pass_policy")),
         }
-        if not requirement["tickers"]:
+        if not requirement["tickers"] and not is_run_artifact:
             errors.append({"type": "empty_requirement_tickers", "requirement_id": requirement_id})
-        if not requirement["years"]:
+        if not requirement["years"] and not is_run_artifact:
             errors.append({"type": "empty_requirement_years", "requirement_id": requirement_id})
         requirements.append(requirement)
     if not requirements:
@@ -589,6 +593,8 @@ def _routes_for_task(
     routes: list[str] = []
     form_set = set(filing_types)
     tier_set = set(source_tiers)
+    if RUN_ARTIFACT_SOURCE_TIER in tier_set:
+        return ["run_artifact"]
     if metric_families and (PRIMARY_SEC_SOURCE_TIER in tier_set or "10-K" in form_set or "10-Q" in form_set):
         routes.append("ledger_first")
     if MARKET_SOURCE_TIER in tier_set or _task_requests_market(task, task_text):
@@ -624,6 +630,8 @@ def _route_budgets(route_name: str, *, ticker_count: int, family_count: int) -> 
 
 
 def _route_filing_types(route_name: str, filing_types: list[str]) -> list[str]:
+    if route_name == "run_artifact":
+        return []
     if route_name == "8k_commentary":
         return ["8-K"] if "8-K" in set(filing_types) else filing_types
     if route_name == "industry_snapshot":
@@ -635,19 +643,23 @@ def _route_filing_types(route_name: str, filing_types: list[str]) -> list[str]:
 
 
 def _route_source_tiers(route_name: str, source_tiers: list[str]) -> list[str]:
+    if route_name == "run_artifact":
+        return [RUN_ARTIFACT_SOURCE_TIER]
     if route_name == "market_snapshot":
         return [MARKET_SOURCE_TIER] if MARKET_SOURCE_TIER in set(source_tiers) else []
     if route_name == "industry_snapshot":
         return [INDUSTRY_SOURCE_TIER] if INDUSTRY_SOURCE_TIER in set(source_tiers) else []
     if route_name == "8k_commentary":
-        return [COMPANY_AUTHORED_SOURCE_TIER] if COMPANY_AUTHORED_SOURCE_TIER in set(source_tiers) else source_tiers
+        return [COMPANY_AUTHORED_SOURCE_TIER] if COMPANY_AUTHORED_SOURCE_TIER in set(source_tiers) else []
     if route_name in {"ledger_first", "filing_text", "risk_text"}:
-        scoped = [tier for tier in source_tiers if tier not in {MARKET_SOURCE_TIER, INDUSTRY_SOURCE_TIER}]
-        return scoped or source_tiers
+        scoped = [tier for tier in source_tiers if tier in {PRIMARY_SEC_SOURCE_TIER, COMPANY_AUTHORED_SOURCE_TIER}]
+        return scoped
     return source_tiers
 
 
 def _section_hints(route_name: str) -> list[str]:
+    if route_name == "run_artifact":
+        return ["artifact_index", "graph_state", "coverage_summary"]
     if route_name == "ledger_first":
         return ["financial_statements", "segment_tables", "cash_flow_tables"]
     if route_name == "8k_commentary":

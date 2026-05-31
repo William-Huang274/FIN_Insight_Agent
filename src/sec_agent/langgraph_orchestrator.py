@@ -5,7 +5,7 @@ import json
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, TypedDict
+from typing import Any, Callable, Mapping, TypedDict
 
 try:
     from langgraph.checkpoint.base import BaseCheckpointSaver
@@ -22,6 +22,36 @@ else:
     LANGGRAPH_IMPORT_ERROR = None
 
 from sec_agent.retrieval_plan import build_retrieval_plan
+from sec_agent.agent_contracts import validate_agent_activation_plan
+from sec_agent.agent_registry import agent_registry_by_id, allowed_source_families
+from sec_agent.mcp_tool_registry import invoke_mcp_tool
+from sec_agent.multi_agent_contracts import (
+    aggregate_specialist_judgment_plan,
+    build_multi_agent_memo_draft,
+    build_stub_specialist_memolets,
+    normalize_universe_relationship_plan,
+    repair_multi_agent_memo_draft,
+    validate_universe_relationship_plan,
+    verify_multi_agent_memo_draft,
+    verify_specialist_outputs_for_memo,
+)
+from sec_agent.multi_agent_router import route_multi_agent_activation
+from sec_agent.multi_agent_runtime import (
+    active_specialists_for_state,
+    build_multi_agent_evidence_requirement_plan,
+    compile_second_pass_retrieval_plan,
+    compile_multi_agent_retrieval_plan,
+    execute_evidence_operator_plan,
+    merge_universe_relationship_evidence_requirements,
+    normalize_reflection_report,
+    quality_reflection_report_from_judgment,
+    record_second_pass_outcome,
+    reflection_report_from_coverage,
+    should_execute_second_pass,
+    specialist_activation_decisions,
+)
+from sec_agent.relationship_graph import relationship_plan_from_lookup
+from sec_agent.tool_call_ledger import LoopBudget, ToolCallLedger
 
 
 NATIVE_NODE_ORDER = (
@@ -45,6 +75,24 @@ NATIVE_NODE_ORDER = (
 
 NATIVE_OPTIONAL_NODE_ORDER = ("execute_second_pass_retrieval",)
 
+MULTI_AGENT_NODE_ORDER = (
+    "load_session_state",
+    "research_lead_plan",
+    "validate_activation_plan",
+    "universe_relationship_expand",
+    "route_by_execution_mode",
+    "compile_evidence_requirements",
+    "execute_evidence_operators",
+    "coverage_reflection",
+    "optional_second_pass",
+    "optional_specialist_subgraph",
+    "aggregate_judgment_plan",
+    "memo_writer",
+    "verifier",
+    "renderer",
+    "persist_session_state",
+)
+
 SCOPE_MODES = {"full_universe", "sector_representative", "focused_peer"}
 NODE_CHECKPOINT_SCHEMA_VERSION = "sec_agent_langgraph_node_checkpoint_v0.1"
 NODE_CHECKPOINT_ARTIFACT_SCHEMA_VERSION = "sec_agent_langgraph_node_checkpoint_artifact_v0.1"
@@ -52,19 +100,43 @@ NODE_CHECKPOINT_RESUME_INSPECTION_SCHEMA_VERSION = "sec_agent_langgraph_checkpoi
 NATIVE_STATE_HYDRATION_SCHEMA_VERSION = "sec_agent_langgraph_native_state_hydration_v0.1"
 CHECKPOINT_STATE_KEYS = (
     "query_contract",
+    "multi_agent_context",
     "retrieval_plan",
     "context_rows",
     "market_snapshot_rows",
     "industry_snapshot_rows",
     "runtime_ledger_rows",
     "coverage_matrix",
+    "source_gaps",
     "evidence_sufficiency_report",
     "second_pass_result",
+    "second_pass_evidence_requirement_plan",
+    "second_pass_retrieval_plan",
     "judgment_plan",
+    "verified_judgment_plan",
     "memo_answer",
     "claim_verification",
     "deterministic_gates",
     "rendered_answer",
+    "agent_activation_plan",
+    "agent_registry_snapshot",
+    "evidence_requirement_plan",
+    "tool_call_ledger",
+    "loop_budget_state",
+    "agent_trace",
+    "multi_agent_reflection_report",
+    "multi_agent_second_pass_decision",
+    "relationship_graph_observation",
+    "universe_relationship_plan",
+    "universe_relationship_validation",
+    "specialist_outputs",
+    "specialist_verification",
+    "research_lead_model_diagnostics",
+    "universe_relationship_model_diagnostics",
+    "universe_relationship_routing_trace",
+    "specialist_route_results",
+    "memo_route_result",
+    "multi_agent_summary",
 )
 CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "context_rows",
@@ -103,6 +175,7 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     run_id: str
     output_dir: str
     query_contract: dict[str, Any]
+    multi_agent_context: dict[str, Any]
     planner_trace: dict[str, Any]
     project_inventory: dict[str, Any]
     selected_tickers: list[str]
@@ -113,12 +186,17 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     industry_snapshot_rows: list[dict[str, Any]]
     runtime_ledger_rows: list[dict[str, Any]]
     coverage_matrix: dict[str, Any]
+    source_gaps: list[dict[str, Any]]
     retrieval_trace: dict[str, Any]
     context_runtime: dict[str, Any]
+    evidence_requirement_plan: dict[str, Any]
     evidence_sufficiency_report: dict[str, Any]
     second_pass_attempts: int
     second_pass_result: dict[str, Any]
+    second_pass_evidence_requirement_plan: dict[str, Any]
+    second_pass_retrieval_plan: dict[str, Any]
     judgment_plan: dict[str, Any]
+    verified_judgment_plan: dict[str, Any]
     memo_answer: dict[str, Any]
     claim_verification: dict[str, Any]
     deterministic_gates: dict[str, Any]
@@ -130,6 +208,32 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     checkpoint_db_path: str
     native_stop_after_node: str
     status: str
+    agent_activation_plan: dict[str, Any]
+    agent_activation_validation: dict[str, Any]
+    multi_agent_routing_trace: dict[str, Any]
+    agent_registry_snapshot: dict[str, Any]
+    tool_call_ledger: dict[str, Any]
+    loop_budget_state: dict[str, Any]
+    agent_trace: list[dict[str, Any]]
+    tool_observations: list[dict[str, Any]]
+    multi_agent_reflection_report: dict[str, Any]
+    multi_agent_second_pass_decision: dict[str, Any]
+    quality_second_pass_report: dict[str, Any]
+    quality_second_pass_decision: dict[str, Any]
+    quality_second_pass_attempted: bool
+    specialist_outputs: list[dict[str, Any]]
+    specialist_verification: dict[str, Any]
+    relationship_graph_observation: dict[str, Any]
+    universe_relationship_plan: dict[str, Any]
+    universe_relationship_validation: dict[str, Any]
+    research_lead_model_diagnostics: dict[str, Any]
+    universe_relationship_model_diagnostics: dict[str, Any]
+    universe_relationship_routing_trace: dict[str, Any]
+    specialist_route_results: list[dict[str, Any]]
+    memo_route_result: dict[str, Any]
+    multi_agent_summary: dict[str, Any]
+    loop_break_reason: str
+    bounded_answer_allowed: bool
 
 
 NodeFunc = Callable[[SecAgentGraphRuntimeState], SecAgentGraphRuntimeState]
@@ -145,6 +249,8 @@ SynthesizeAnswerFunc = Callable[[SecAgentGraphRuntimeState], dict[str, Any]]
 VerifyClaimsFunc = Callable[[SecAgentGraphRuntimeState], dict[str, Any]]
 RunDeterministicGatesFunc = Callable[[SecAgentGraphRuntimeState], dict[str, Any]]
 RenderAnswerFunc = Callable[[SecAgentGraphRuntimeState], dict[str, Any]]
+MultiAgentPlanFunc = Callable[[SecAgentGraphRuntimeState], dict[str, Any]]
+MultiAgentNodeFunc = Callable[[SecAgentGraphRuntimeState], dict[str, Any]]
 
 
 class SlimmingCheckpointSaver(BaseCheckpointSaver):  # type: ignore[misc]
@@ -204,6 +310,144 @@ def wrap_checkpoint_saver_for_sec_agent_state(delegate: Any | None) -> Any | Non
 
 def native_node_order() -> tuple[str, ...]:
     return NATIVE_NODE_ORDER
+
+
+def multi_agent_node_order() -> tuple[str, ...]:
+    return MULTI_AGENT_NODE_ORDER
+
+
+def build_multi_agent_orchestration_graph(
+    *,
+    use_checkpointer: bool = True,
+    route_activation: MultiAgentPlanFunc | None = None,
+    execute_evidence_operators: MultiAgentNodeFunc | None = None,
+    coverage_reflection: MultiAgentNodeFunc | None = None,
+    execute_second_pass_retrieval: MultiAgentNodeFunc | None = None,
+    expand_universe_relationship: MultiAgentNodeFunc | None = None,
+    run_specialist_analysts: MultiAgentNodeFunc | None = None,
+    aggregate_judgment_plan: MultiAgentNodeFunc | None = None,
+    memo_writer: MultiAgentNodeFunc | None = None,
+    verifier: MultiAgentNodeFunc | None = None,
+    renderer: MultiAgentNodeFunc | None = None,
+    checkpointer: Any | None = None,
+    entry_node: str | None = None,
+    stop_after_node: str | None = None,
+):
+    if StateGraph is None:
+        raise RuntimeError(f"LangGraph is not installed: {LANGGRAPH_IMPORT_ERROR}")
+    start_node = entry_node or MULTI_AGENT_NODE_ORDER[0]
+    if start_node not in MULTI_AGENT_NODE_ORDER:
+        raise ValueError(f"Unsupported multi-agent graph entry node: {start_node}")
+    stop_node = str(stop_after_node or "").strip()
+    if stop_node and stop_node not in MULTI_AGENT_NODE_ORDER:
+        raise ValueError(f"Unsupported multi-agent graph stop node: {stop_node}")
+    builder = StateGraph(SecAgentGraphRuntimeState)
+    nodes: dict[str, NodeFunc] = {
+        "load_session_state": _node_load_session_state,
+        "research_lead_plan": lambda state: _node_research_lead_plan(state, route_activation=route_activation),
+        "validate_activation_plan": _node_validate_activation_plan,
+        "universe_relationship_expand": lambda state: _node_universe_relationship_expand(
+            state,
+            expand_universe_relationship=expand_universe_relationship,
+        ),
+        "route_by_execution_mode": _node_route_by_execution_mode,
+        "compile_evidence_requirements": _node_compile_evidence_requirements,
+        "execute_evidence_operators": lambda state: _node_execute_evidence_operators(
+            state,
+            execute_evidence_operators=execute_evidence_operators,
+        ),
+        "coverage_reflection": lambda state: _node_coverage_reflection(
+            state,
+            coverage_reflection=coverage_reflection,
+        ),
+        "optional_second_pass": lambda state: _node_optional_second_pass(
+            state,
+            execute_second_pass_retrieval=execute_second_pass_retrieval,
+        ),
+        "optional_specialist_subgraph": lambda state: _node_optional_specialist_subgraph(
+            state,
+            run_specialist_analysts=run_specialist_analysts,
+        ),
+        "aggregate_judgment_plan": lambda state: _node_multi_agent_aggregate_judgment_plan(
+            state,
+            aggregate_judgment_plan=aggregate_judgment_plan,
+        ),
+        "memo_writer": lambda state: _node_multi_agent_memo_writer(state, memo_writer=memo_writer),
+        "verifier": lambda state: _node_multi_agent_verifier(state, verifier=verifier),
+        "renderer": lambda state: _node_multi_agent_renderer(state, renderer=renderer),
+        "persist_session_state": _node_multi_agent_persist_session_state,
+    }
+    for name in MULTI_AGENT_NODE_ORDER:
+        builder.add_node(name, _wrap_native_node(name, nodes[name], stop_after_node=stop_node))
+    builder.add_edge(START, start_node)
+    _add_stop_aware_edge(builder, "load_session_state", "research_lead_plan")
+    _add_stop_aware_edge(builder, "research_lead_plan", "validate_activation_plan")
+    _add_stop_aware_edge(builder, "validate_activation_plan", "universe_relationship_expand")
+    _add_stop_aware_edge(builder, "universe_relationship_expand", "route_by_execution_mode")
+    _add_stop_aware_edge(builder, "route_by_execution_mode", "compile_evidence_requirements")
+    _add_stop_aware_edge(builder, "compile_evidence_requirements", "execute_evidence_operators")
+    _add_stop_aware_edge(builder, "execute_evidence_operators", "coverage_reflection")
+    builder.add_conditional_edges(
+        "coverage_reflection",
+        _route_after_multi_agent_reflection,
+        {
+            "stop": END,
+            "second_pass": "optional_second_pass",
+            "specialists": "optional_specialist_subgraph",
+            "aggregate": "aggregate_judgment_plan",
+            "renderer": "renderer",
+        },
+    )
+    builder.add_conditional_edges(
+        "optional_second_pass",
+        _route_after_multi_agent_second_pass,
+        {
+            "specialists": "optional_specialist_subgraph",
+            "aggregate": "aggregate_judgment_plan",
+            "renderer": "renderer",
+        },
+    )
+    _add_stop_aware_edge(builder, "optional_specialist_subgraph", "aggregate_judgment_plan")
+    builder.add_conditional_edges(
+        "aggregate_judgment_plan",
+        _route_after_multi_agent_aggregate,
+        {
+            "second_pass": "optional_second_pass",
+            "memo": "memo_writer",
+        },
+    )
+    _add_stop_aware_edge(builder, "memo_writer", "verifier")
+    _add_stop_aware_edge(builder, "verifier", "renderer")
+    _add_stop_aware_edge(builder, "renderer", "persist_session_state")
+    builder.add_edge("persist_session_state", END)
+    effective_checkpointer = checkpointer if checkpointer is not None else (InMemorySaver() if use_checkpointer and InMemorySaver is not None else None)
+    return builder.compile(checkpointer=effective_checkpointer)
+
+
+def build_multi_agent_orchestration_graph_from_env(
+    *,
+    env: Mapping[str, str] | None = None,
+    use_checkpointer: bool = True,
+    checkpointer: Any | None = None,
+    entry_node: str | None = None,
+    stop_after_node: str | None = None,
+):
+    from sec_agent.memo_llm import memo_writer_from_env, verifier_from_env
+    from sec_agent.research_lead_llm import route_activation_from_env
+    from sec_agent.universe_relationship_llm import route_universe_relationship_from_env
+    from sec_agent.specialist_llm import route_specialists_from_env
+
+    return build_multi_agent_orchestration_graph(
+        use_checkpointer=use_checkpointer,
+        route_activation=route_activation_from_env(env),
+        expand_universe_relationship=route_universe_relationship_from_env(env),
+        run_specialist_analysts=route_specialists_from_env(env),
+        memo_writer=memo_writer_from_env(env),
+        verifier=verifier_from_env(env),
+        checkpointer=checkpointer,
+        entry_node=entry_node,
+        stop_after_node=stop_after_node,
+    )
 
 
 def build_native_orchestration_graph(
@@ -378,6 +622,28 @@ def make_native_smoke_state(
     }
 
 
+def make_multi_agent_smoke_state(
+    *,
+    user_query: str,
+    output_dir: str | Path,
+    query_contract: dict[str, Any] | None = None,
+    focus_tickers: list[str] | None = None,
+    search_scope_tickers: list[str] | None = None,
+) -> SecAgentGraphRuntimeState:
+    state = make_native_smoke_state(user_query=user_query, output_dir=output_dir, query_contract=query_contract)
+    if focus_tickers is not None:
+        state["selected_tickers"] = [str(item).upper() for item in focus_tickers]
+    if search_scope_tickers is not None:
+        contract = dict(state.get("query_contract") or {})
+        contract["focus_tickers"] = [str(item).upper() for item in (focus_tickers or [])]
+        contract["search_scope_tickers"] = [str(item).upper() for item in search_scope_tickers]
+        state["query_contract"] = annotate_scope_contract(contract)
+    state["agent_trace"] = []
+    state["tool_call_ledger"] = ToolCallLedger().to_dict()
+    state["loop_budget_state"] = LoopBudget().to_dict()
+    return state
+
+
 def infer_scope_mode(query_contract: dict[str, Any]) -> str:
     explicit = str(
         query_contract.get("scope_mode")
@@ -455,9 +721,13 @@ def _wrap_native_node(
 def _add_stop_aware_edge(builder: Any, source: str, target: str) -> None:
     builder.add_conditional_edges(
         source,
-        lambda state: "stop" if _is_stopped_after_node(state) else "continue",
+        lambda state: "stop" if _is_terminal_graph_state(state) else "continue",
         {"stop": END, "continue": target},
     )
+
+
+def _is_terminal_graph_state(state: SecAgentGraphRuntimeState) -> bool:
+    return _is_stopped_after_node(state) or str(state.get("status") or "") == "failed"
 
 
 def _is_stopped_after_node(state: SecAgentGraphRuntimeState) -> bool:
@@ -478,6 +748,819 @@ def _mark_stopped_after_node(state: SecAgentGraphRuntimeState, node_name: str) -
 
 def _node_load_session_state(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
     return _record_node({**state, "status": "running"}, "load_session_state")
+
+
+def _node_research_lead_plan(
+    state: SecAgentGraphRuntimeState,
+    *,
+    route_activation: MultiAgentPlanFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    if route_activation is None:
+        contract = state.get("query_contract") or {}
+        result = route_multi_agent_activation(
+            {
+                "user_query": state.get("user_query") or "",
+                "focus_tickers": contract.get("focus_tickers") or state.get("selected_tickers") or [],
+                "search_scope_tickers": contract.get("search_scope_tickers") or state.get("selected_tickers") or [],
+                "source_inventory": state.get("project_inventory") or {},
+                "context": {**dict(state.get("multi_agent_context") or {}), "query_contract": dict(contract)},
+            }
+        )
+    else:
+        result = route_activation(state)
+    plan = result.get("activation_plan") if isinstance(result.get("activation_plan"), dict) else result
+    next_state: SecAgentGraphRuntimeState = {
+        **state,
+        "agent_activation_plan": dict(plan or {}),
+        "agent_registry_snapshot": {"agents": agent_registry_by_id()},
+        "loop_budget_state": dict(result.get("loop_budget") or state.get("loop_budget_state") or LoopBudget().to_dict()),
+        "tool_call_ledger": dict(state.get("tool_call_ledger") or ToolCallLedger().to_dict()),
+        "agent_trace": [
+            *(state.get("agent_trace") or []),
+            {
+                "node": "research_lead_plan",
+                "agent_id": "research_lead",
+                "execution_mode": (plan or {}).get("execution_mode") if isinstance(plan, dict) else "",
+                "source": result.get("source") or "injected",
+            },
+        ],
+    }
+    if isinstance(result.get("evidence_requirement_plan"), dict) and result.get("evidence_requirement_plan"):
+        next_state["evidence_requirement_plan"] = result["evidence_requirement_plan"]  # type: ignore[literal-required]
+    if isinstance(result.get("routing_trace"), dict):
+        next_state["multi_agent_routing_trace"] = result["routing_trace"]  # type: ignore[literal-required]
+    if isinstance(result.get("model_diagnostics"), dict):
+        next_state["research_lead_model_diagnostics"] = result["model_diagnostics"]  # type: ignore[literal-required]
+    return _record_node(next_state, "research_lead_plan", metadata={"mode": "injected" if route_activation else "deterministic_mock"})
+
+
+def _node_validate_activation_plan(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    validation = validate_agent_activation_plan(
+        state.get("agent_activation_plan") or {},
+        known_agent_ids=set(agent_registry_by_id()),
+        allowed_source_families=allowed_source_families(),
+        agent_registry=agent_registry_by_id(),
+        global_limits=state.get("loop_budget_state") or {},
+    )
+    next_state: SecAgentGraphRuntimeState = {
+        **state,
+        "agent_activation_validation": validation,
+        "agent_activation_plan": dict(validation.get("plan") or state.get("agent_activation_plan") or {}),
+    }
+    if validation["status"] != "pass":
+        next_state["status"] = "failed"
+        next_state["loop_break_reason"] = "invalid_agent_activation_plan"
+    return _record_node(next_state, "validate_activation_plan", metadata={"status": validation["status"]})
+
+
+def _node_universe_relationship_expand(
+    state: SecAgentGraphRuntimeState,
+    *,
+    expand_universe_relationship: MultiAgentNodeFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), dict) else {}
+    active = set(activation.get("activate_agents") or [])
+    if "universe_relationship" not in active:
+        return _record_node(state, "universe_relationship_expand", metadata={"mode": "skipped"})
+
+    ledger = ToolCallLedger.from_dict(state.get("tool_call_ledger") or {"budget": state.get("loop_budget_state") or {}})
+    contract = state.get("query_contract") if isinstance(state.get("query_contract"), dict) else {}
+    context = state.get("multi_agent_context") if isinstance(state.get("multi_agent_context"), dict) else {}
+    lookup_args = {
+        "focus_tickers": activation.get("focus_tickers") or contract.get("focus_tickers") or state.get("selected_tickers") or [],
+        "search_scope_tickers": activation.get("search_scope_tickers") or contract.get("search_scope_tickers") or state.get("selected_tickers") or [],
+        "user_query": state.get("user_query") or "",
+        "relationship_graph_path": context.get("relationship_graph_path") or "",
+        "sector_depth_pack_path": context.get("sector_depth_pack_path") or "",
+        "expected_relationship_pack_ids": list(context.get("expected_relationship_pack_ids") or []),
+        "max_relationships": 24,
+        "max_expanded_tickers": 12,
+        "include_sector_depth": True,
+    }
+    decision = ledger.can_call_tool(
+        turn_id=str(state.get("run_id") or "multi_agent_turn"),
+        agent_id="universe_relationship",
+        tool_name="relationship_graph_lookup",
+        arguments=lookup_args,
+    )
+    if decision["allowed"]:
+        lookup = invoke_mcp_tool("relationship_graph_lookup", lookup_args)
+        rows = list(lookup.get("relationship_rows") or [])
+        gaps = list(lookup.get("source_gaps") or [])
+        refs = [dict(item) for item in lookup.get("artifact_refs") or [] if isinstance(item, dict)]
+        ledger.record_tool_call(
+            turn_id=str(state.get("run_id") or "multi_agent_turn"),
+            agent_id="universe_relationship",
+            tool_name="relationship_graph_lookup",
+            arguments=lookup_args,
+            output_artifact_digest=_first_artifact_digest(refs),
+            row_count=len(rows),
+            source_gap_count=len(gaps),
+            coverage_delta={"closed_gaps": 0},
+            status=str(lookup.get("status") or "ok"),
+            metadata={"boundary": "relationship_hypothesis_only"},
+        )
+    else:
+        lookup = {
+            "status": "blocked",
+            "relationships": [],
+            "relationship_rows": [],
+            "source_gaps": [{"source_family": "relationship_graph", "reason": decision["reason"], "source_available": False}],
+        }
+
+    sanitized_lookup = _sanitize_relationship_lookup_for_state(lookup)
+    state_with_lookup: SecAgentGraphRuntimeState = {
+        **state,
+        "relationship_graph_observation": sanitized_lookup,
+        "source_gaps": [*(state.get("source_gaps") or []), *[dict(item) for item in lookup.get("source_gaps") or [] if isinstance(item, dict)]],
+        "tool_call_ledger": ledger.to_dict(),
+        "loop_break_reason": ledger.loop_break_reason or str(state.get("loop_break_reason") or ""),
+        "agent_trace": [
+            *(state.get("agent_trace") or []),
+            {
+                "node": "universe_relationship_expand",
+                "agent_id": "universe_relationship",
+                "lookup_status": lookup.get("status") or "",
+                "relationship_count": len(lookup.get("relationships") or []),
+            },
+        ],
+    }
+
+    if expand_universe_relationship is not None:
+        result = expand_universe_relationship(state_with_lookup)
+        plan = result.get("universe_relationship_plan") if isinstance(result.get("universe_relationship_plan"), dict) else result.get("plan")
+        validation = result.get("universe_relationship_validation") if isinstance(result.get("universe_relationship_validation"), dict) else {}
+        source = result.get("source") or "injected"
+        model_diagnostics = result.get("model_diagnostics") if isinstance(result.get("model_diagnostics"), dict) else {}
+        routing_trace = result.get("routing_trace") if isinstance(result.get("routing_trace"), dict) else {}
+    else:
+        plan = relationship_plan_from_lookup(
+            sanitized_lookup,
+            scope_mode=str(activation.get("scope_mode") or contract.get("scope_mode") or "focused_peer"),
+            focus_tickers=lookup_args["focus_tickers"],
+            relationship_scope_rationale=str(activation.get("relationship_scope_rationale") or ""),
+        )
+        validation = {}
+        source = "relationship_graph_lookup"
+        model_diagnostics = {}
+        routing_trace = {}
+
+    normalized_plan = normalize_universe_relationship_plan(plan if isinstance(plan, dict) else {})
+    if not validation:
+        validation = validate_universe_relationship_plan(
+            normalized_plan,
+            known_evidence_refs=_relationship_lookup_refs(sanitized_lookup),
+            source_inventory=state.get("project_inventory") if isinstance(state.get("project_inventory"), dict) else {},
+        )
+    accepted_plan = dict(validation.get("plan") or normalized_plan)
+    next_state: SecAgentGraphRuntimeState = {
+        **state_with_lookup,
+        "universe_relationship_plan": accepted_plan,
+        "universe_relationship_validation": dict(validation),
+        "universe_relationship_model_diagnostics": dict(model_diagnostics),
+        "universe_relationship_routing_trace": dict(routing_trace),
+    }
+    if validation.get("status") != "pass":
+        next_state["bounded_answer_allowed"] = True
+        next_state["loop_break_reason"] = "invalid_universe_relationship_plan"
+    return _record_node(
+        next_state,
+        "universe_relationship_expand",
+        metadata={"mode": source, "validation_status": validation.get("status"), "relationship_count": len(accepted_plan.get("relationships") or [])},
+    )
+
+
+def _node_route_by_execution_mode(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    plan = state.get("agent_activation_plan") or {}
+    mode = str(plan.get("execution_mode") or "")
+    trace = [
+        *(state.get("agent_trace") or []),
+        {
+            "node": "route_by_execution_mode",
+            "execution_mode": mode,
+            "activated_agents": list(plan.get("activate_agents") or []),
+            "skipped_agent_count": len(plan.get("skip_agents") or []),
+        },
+    ]
+    return _record_node({**state, "agent_trace": trace}, "route_by_execution_mode", metadata={"execution_mode": mode})
+
+
+def _node_compile_evidence_requirements(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    if state.get("retrieval_plan"):
+        return _record_node(state, "compile_evidence_requirements", metadata={"mode": "existing_retrieval_plan"})
+    plan = state.get("agent_activation_plan") or {}
+    if plan.get("allowed_source_families") == ["run_artifact"]:
+        return _record_node(state, "compile_evidence_requirements", metadata={"mode": "run_artifact_only"})
+    contract = _query_contract_with_activation_source_families(state.get("query_contract") or {}, plan)
+    if not contract:
+        return _record_node(state, "compile_evidence_requirements", metadata={"mode": "no_query_contract"})
+    case = {
+        "case_id": state.get("run_id") or "multi_agent",
+        "prompt": state.get("user_query") or "",
+        "companies": contract.get("search_scope_tickers") or contract.get("focus_tickers") or [],
+        "years": contract.get("years") or [],
+        "query_contract": contract,
+    }
+    evidence_plan = state.get("evidence_requirement_plan") or build_multi_agent_evidence_requirement_plan(
+        contract,
+        activation_plan=state.get("agent_activation_plan") or {},
+        case=case,
+    )
+    evidence_plan = merge_universe_relationship_evidence_requirements(
+        evidence_plan,
+        state.get("universe_relationship_plan") or {},
+        activation_plan=state.get("agent_activation_plan") or {},
+    )
+    retrieval_plan = compile_multi_agent_retrieval_plan(
+        evidence_plan,
+        query_contract=contract,
+        case=case,
+        activation_plan=state.get("agent_activation_plan") or {},
+    )
+    return _record_node(
+        {**state, "evidence_requirement_plan": evidence_plan, "retrieval_plan": retrieval_plan},
+        "compile_evidence_requirements",
+        metadata={
+            "mode": "compiled",
+            "requirement_count": len(evidence_plan.get("requirements") or []),
+            "validation_status": (evidence_plan.get("multi_agent_evidence_requirement_validation") or {}).get("status"),
+        },
+    )
+
+
+def _node_execute_evidence_operators(
+    state: SecAgentGraphRuntimeState,
+    *,
+    execute_evidence_operators: MultiAgentNodeFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    dry_run = False
+    if execute_evidence_operators is not None:
+        result = execute_evidence_operators(state)
+    elif state.get("retrieval_plan"):
+        ledger = ToolCallLedger.from_dict(state.get("tool_call_ledger") or {"budget": state.get("loop_budget_state") or {}})
+        context = state.get("multi_agent_context") if isinstance(state.get("multi_agent_context"), dict) else {}
+        evidence_operator_mode = str(context.get("evidence_operator_mode") or "dry_run").strip().lower()
+        dry_run = evidence_operator_mode not in {"real", "mcp", "interactive"}
+        result = execute_evidence_operator_plan(
+            state.get("retrieval_plan") or {},
+            turn_id=str(state.get("run_id") or "multi_agent_turn"),
+            ledger=ledger,
+            state_context={
+                **(state.get("query_contract") or {}),
+                **context,
+                "user_query": state.get("user_query") or "",
+                "run_id": state.get("run_id") or "",
+                "output_dir": state.get("output_dir") or "",
+            },
+            dry_run=dry_run,
+        )
+    else:
+        result = {
+            "tool_observations": [],
+            "tool_call_ledger": state.get("tool_call_ledger") or ToolCallLedger().to_dict(),
+        }
+    next_state: SecAgentGraphRuntimeState = {
+        **state,
+        "tool_observations": [*(state.get("tool_observations") or []), *(result.get("tool_observations") or [])],
+        "tool_call_ledger": dict(result.get("tool_call_ledger") or state.get("tool_call_ledger") or {}),
+        "context_rows": [*(state.get("context_rows") or []), *(result.get("context_rows") or [])],
+        "runtime_ledger_rows": [*(state.get("runtime_ledger_rows") or []), *(result.get("runtime_ledger_rows") or [])],
+        "market_snapshot_rows": [*(state.get("market_snapshot_rows") or []), *(result.get("market_snapshot_rows") or [])],
+        "industry_snapshot_rows": [*(state.get("industry_snapshot_rows") or []), *(result.get("industry_snapshot_rows") or [])],
+        "source_gaps": [*(state.get("source_gaps") or []), *(result.get("source_gaps") or [])],
+        "loop_break_reason": str(result.get("loop_break_reason") or state.get("loop_break_reason") or ""),
+        "bounded_answer_allowed": bool(result.get("bounded_answer_allowed") or state.get("bounded_answer_allowed") or False),
+    }
+    return _record_node(
+        next_state,
+        "execute_evidence_operators",
+        metadata={
+            "tool_observation_count": len(result.get("tool_observations") or []),
+            "evidence_operator_mode": "dry_run" if dry_run else "real",
+        },
+    )
+
+
+def _node_coverage_reflection(
+    state: SecAgentGraphRuntimeState,
+    *,
+    coverage_reflection: MultiAgentNodeFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    ledger = ToolCallLedger.from_dict(state.get("tool_call_ledger") or {"budget": state.get("loop_budget_state") or {}})
+    if coverage_reflection is not None:
+        result = coverage_reflection(state)
+        report = normalize_reflection_report(result.get("multi_agent_reflection_report") or result)
+    elif state.get("coverage_matrix"):
+        report = reflection_report_from_coverage(
+            state.get("coverage_matrix"),
+            source_available=True,
+            evidence_requirement_plan=state.get("evidence_requirement_plan") or {},
+            source_gaps=state.get("source_gaps") or [],
+            tool_ledger_summary=_tool_ledger_summary_for_reflection(state, ledger),
+        )
+    else:
+        mode = str((state.get("agent_activation_plan") or {}).get("execution_mode") or "")
+        report = normalize_reflection_report(
+            {
+                "sufficiency_level": "sufficient",
+                "source_available": False,
+                "second_pass_requests": [],
+                "tool_ledger_summary": _tool_ledger_summary_for_reflection(state, ledger),
+                "bounded_answer_allowed": mode == "deterministic_lookup",
+            }
+        )
+    decision = should_execute_second_pass(report, ledger)
+    next_state: SecAgentGraphRuntimeState = {
+        **state,
+        "multi_agent_reflection_report": report,
+        "evidence_sufficiency_report": report,
+        "multi_agent_second_pass_decision": decision,
+        "tool_call_ledger": ledger.to_dict(),
+        "loop_break_reason": ledger.loop_break_reason or str(state.get("loop_break_reason") or ""),
+        "bounded_answer_allowed": bool(ledger.bounded_answer_allowed or report.get("bounded_answer_allowed") or state.get("bounded_answer_allowed") or False),
+    }
+    return _record_node(next_state, "coverage_reflection", metadata={"sufficiency_level": report.get("sufficiency_level"), "second_pass_allowed": decision.get("allowed")})
+
+
+def _node_optional_second_pass(
+    state: SecAgentGraphRuntimeState,
+    *,
+    execute_second_pass_retrieval: MultiAgentNodeFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    compiled_state = _state_with_second_pass_compilation(state)
+    quality_triggered = str((compiled_state.get("multi_agent_reflection_report") or {}).get("trigger") or "") == "quality_second_pass"
+    if execute_second_pass_retrieval is not None:
+        result = execute_second_pass_retrieval(compiled_state)
+        next_state = {
+            **compiled_state,
+            **result,
+            "quality_second_pass_attempted": bool(compiled_state.get("quality_second_pass_attempted") or quality_triggered),
+        }
+        return _record_node(next_state, "optional_second_pass", metadata={"mode": "injected"})
+
+    if compiled_state.get("second_pass_retrieval_plan"):
+        ledger = ToolCallLedger.from_dict(compiled_state.get("tool_call_ledger") or {"budget": compiled_state.get("loop_budget_state") or {}})
+        context = compiled_state.get("multi_agent_context") if isinstance(compiled_state.get("multi_agent_context"), dict) else {}
+        evidence_operator_mode = str(context.get("evidence_operator_mode") or "dry_run").strip().lower()
+        dry_run = evidence_operator_mode not in {"real", "mcp", "interactive"}
+        before_counts = _second_pass_row_counts(compiled_state)
+        result = execute_evidence_operator_plan(
+            compiled_state.get("second_pass_retrieval_plan") or {},
+            turn_id=f"{compiled_state.get('run_id') or 'multi_agent_turn'}:second_pass:{int(compiled_state.get('second_pass_attempts') or 0) + 1}",
+            ledger=ledger,
+            state_context={
+                **(compiled_state.get("query_contract") or {}),
+                **context,
+                "user_query": compiled_state.get("user_query") or "",
+                "run_id": compiled_state.get("run_id") or "",
+                "output_dir": compiled_state.get("output_dir") or "",
+            },
+            dry_run=dry_run,
+        )
+        added_row_count = (
+            len(result.get("context_rows") or [])
+            + len(result.get("runtime_ledger_rows") or [])
+            + len(result.get("market_snapshot_rows") or [])
+            + len(result.get("industry_snapshot_rows") or [])
+        )
+        outcome = record_second_pass_outcome(
+            ledger,
+            added_row_count=added_row_count,
+            coverage_delta={"closed_gaps": 1 if added_row_count else 0},
+            source_gap_delta=max(0, len(compiled_state.get("source_gaps") or []) - len(result.get("source_gaps") or [])),
+        )
+        next_state: SecAgentGraphRuntimeState = {
+            **compiled_state,
+            "tool_observations": [*(compiled_state.get("tool_observations") or []), *(result.get("tool_observations") or [])],
+            "tool_call_ledger": ledger.to_dict(),
+            "context_rows": [*(compiled_state.get("context_rows") or []), *(result.get("context_rows") or [])],
+            "runtime_ledger_rows": [*(compiled_state.get("runtime_ledger_rows") or []), *(result.get("runtime_ledger_rows") or [])],
+            "market_snapshot_rows": [*(compiled_state.get("market_snapshot_rows") or []), *(result.get("market_snapshot_rows") or [])],
+            "industry_snapshot_rows": [*(compiled_state.get("industry_snapshot_rows") or []), *(result.get("industry_snapshot_rows") or [])],
+            "source_gaps": [*(compiled_state.get("source_gaps") or []), *(result.get("source_gaps") or [])],
+            "second_pass_attempts": int(compiled_state.get("second_pass_attempts") or 0) + 1,
+            "second_pass_result": {
+                **outcome,
+                "trigger": (compiled_state.get("multi_agent_reflection_report") or {}).get("trigger") or "coverage_reflection",
+                "retrieval_row_delta": _second_pass_row_delta(before_counts, result),
+            },
+            "loop_break_reason": ledger.loop_break_reason,
+            "bounded_answer_allowed": bool(ledger.bounded_answer_allowed or compiled_state.get("bounded_answer_allowed") or False),
+            "quality_second_pass_attempted": bool(compiled_state.get("quality_second_pass_attempted") or quality_triggered),
+        }
+        return _record_node(
+            next_state,
+            "optional_second_pass",
+            metadata={
+                "mode": "dry_run" if dry_run else "real",
+                "trigger": next_state["second_pass_result"].get("trigger"),
+                "added_row_count": added_row_count,
+                "loop_break_reason": ledger.loop_break_reason,
+            },
+        )
+
+    ledger = ToolCallLedger.from_dict(compiled_state.get("tool_call_ledger") or {"budget": compiled_state.get("loop_budget_state") or {}})
+    outcome = record_second_pass_outcome(
+        ledger,
+        added_row_count=int(compiled_state.get("mock_second_pass_added_row_count") or 0),
+        coverage_delta=compiled_state.get("mock_second_pass_coverage_delta") or {"closed_gaps": 0},
+    )
+    next_state: SecAgentGraphRuntimeState = {
+        **compiled_state,
+        "tool_call_ledger": ledger.to_dict(),
+        "second_pass_attempts": int(compiled_state.get("second_pass_attempts") or 0) + 1,
+        "second_pass_result": outcome,
+        "loop_break_reason": ledger.loop_break_reason,
+        "bounded_answer_allowed": bool(ledger.bounded_answer_allowed or compiled_state.get("bounded_answer_allowed") or False),
+        "quality_second_pass_attempted": bool(compiled_state.get("quality_second_pass_attempted") or quality_triggered),
+    }
+    return _record_node(next_state, "optional_second_pass", metadata={"loop_break_reason": ledger.loop_break_reason})
+
+
+def _second_pass_row_counts(state: Mapping[str, Any]) -> dict[str, int]:
+    return {
+        "context_rows": len(state.get("context_rows") or []),
+        "runtime_ledger_rows": len(state.get("runtime_ledger_rows") or []),
+        "market_snapshot_rows": len(state.get("market_snapshot_rows") or []),
+        "industry_snapshot_rows": len(state.get("industry_snapshot_rows") or []),
+    }
+
+
+def _second_pass_row_delta(before: Mapping[str, int], result: Mapping[str, Any]) -> dict[str, int]:
+    return {
+        "context_rows": len(result.get("context_rows") or []),
+        "runtime_ledger_rows": len(result.get("runtime_ledger_rows") or []),
+        "market_snapshot_rows": len(result.get("market_snapshot_rows") or []),
+        "industry_snapshot_rows": len(result.get("industry_snapshot_rows") or []),
+        "previous_context_rows": int(before.get("context_rows") or 0),
+        "previous_runtime_ledger_rows": int(before.get("runtime_ledger_rows") or 0),
+        "previous_market_snapshot_rows": int(before.get("market_snapshot_rows") or 0),
+        "previous_industry_snapshot_rows": int(before.get("industry_snapshot_rows") or 0),
+    }
+
+
+def _state_with_second_pass_compilation(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    report = state.get("multi_agent_reflection_report") if isinstance(state.get("multi_agent_reflection_report"), dict) else {}
+    if not report.get("second_pass_requests"):
+        return state
+    retrieval_plan = compile_second_pass_retrieval_plan(
+        report,
+        state.get("evidence_requirement_plan") or {},
+        query_contract=state.get("query_contract") or {},
+        case={
+            "case_id": state.get("run_id") or "multi_agent_second_pass",
+            "prompt": state.get("user_query") or "",
+            "companies": (state.get("query_contract") or {}).get("search_scope_tickers") or (state.get("query_contract") or {}).get("focus_tickers") or [],
+            "years": (state.get("query_contract") or {}).get("years") or [],
+        },
+        activation_plan=state.get("agent_activation_plan") or {},
+    )
+    return {
+        **state,
+        "second_pass_evidence_requirement_plan": retrieval_plan.get("second_pass_evidence_requirement_plan") or {},
+        "second_pass_retrieval_plan": retrieval_plan,
+    }
+
+
+def _tool_ledger_summary_for_reflection(state: SecAgentGraphRuntimeState, ledger: ToolCallLedger) -> dict[str, Any]:
+    return {
+        "tool_call_count": len([record for record in ledger.records if record.status != "blocked"]),
+        "blocked_tool_call_count": len([record for record in ledger.records if record.status == "blocked"]),
+        "second_pass_rounds": int(ledger.second_pass_rounds),
+        "max_second_pass_rounds": int(ledger.budget.max_second_pass_rounds),
+        "loop_break_reason": ledger.loop_break_reason or str(state.get("loop_break_reason") or ""),
+    }
+
+
+def _sanitize_relationship_lookup_for_state(lookup: Mapping[str, Any]) -> dict[str, Any]:
+    clean = dict(lookup or {})
+    clean["artifact_refs"] = [
+        {
+            "artifact_id": ref.get("artifact_id") or "",
+            "digest": ref.get("digest") or "",
+            "row_count": ref.get("row_count"),
+            "path_boundary": "path_not_exposed_in_agent_state",
+        }
+        for ref in clean.get("artifact_refs") or []
+        if isinstance(ref, dict)
+    ]
+    return clean
+
+
+def _relationship_lookup_refs(lookup: Mapping[str, Any]) -> set[str]:
+    refs: set[str] = set()
+    for relationship in lookup.get("relationships") or []:
+        if not isinstance(relationship, Mapping):
+            continue
+        refs.update(str(item) for item in relationship.get("evidence_refs") or [] if str(item))
+    return refs
+
+
+def _first_artifact_digest(refs: list[dict[str, Any]]) -> str:
+    for ref in refs:
+        digest = str(ref.get("digest") or "")
+        if digest:
+            return digest
+    return ""
+
+
+def _node_optional_specialist_subgraph(
+    state: SecAgentGraphRuntimeState,
+    *,
+    run_specialist_analysts: MultiAgentNodeFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    if run_specialist_analysts is not None:
+        result = run_specialist_analysts(state)
+        next_state = {**state, **result}
+        return _record_node(next_state, "optional_specialist_subgraph", metadata={"mode": "injected"})
+    decisions = specialist_activation_decisions(state)
+    specialists = active_specialists_for_state(state)
+    outputs = build_stub_specialist_memolets(specialists)
+    route_results = [
+        {
+            "agent_id": row.get("agent_id") or "",
+            "status": row.get("decision") or "",
+            "priority": row.get("priority") or "",
+            "failure_reason": "" if row.get("decision") == "run" else str(row.get("reason") or "")[:500],
+            "activation_policy": row.get("policy") or "",
+            "signal_count": row.get("signal_count"),
+        }
+        for row in decisions
+    ]
+    return _record_node(
+        {
+            **state,
+            "specialist_outputs": outputs,
+            "specialist_activation_decisions": decisions,
+            "specialist_route_results": route_results,
+        },
+        "optional_specialist_subgraph",
+        metadata={"specialist_count": len(outputs), "activation_policy": "cost_aware_specialist_activation_v0_1"},
+    )
+
+
+def _node_multi_agent_aggregate_judgment_plan(
+    state: SecAgentGraphRuntimeState,
+    *,
+    aggregate_judgment_plan: MultiAgentNodeFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    judgment = aggregate_specialist_judgment_plan(
+        state.get("specialist_outputs") or [],
+        reflection_report=state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {},
+        evidence_requirement_plan=state.get("evidence_requirement_plan") or {},
+        source_gaps=state.get("source_gaps") or [],
+        tool_ledger_summary=((state.get("multi_agent_reflection_report") or {}).get("tool_ledger_summary") if isinstance(state.get("multi_agent_reflection_report"), dict) else {}),
+        verifier_constraints=state.get("claim_verification") or {},
+    )
+    specialist_verification = verify_specialist_outputs_for_memo(state.get("specialist_outputs") or [], judgment_plan=judgment)
+    result = aggregate_judgment_plan(state) if aggregate_judgment_plan is not None else {
+        "judgment_plan": judgment,
+        "specialist_verification": specialist_verification,
+        "verified_judgment_plan": specialist_verification.get("verified_judgment_plan") or judgment,
+    }
+    if "specialist_verification" not in result:
+        result = {**result, "specialist_verification": specialist_verification}
+    if "judgment_plan" not in result:
+        result = {**result, "judgment_plan": judgment}
+    if "verified_judgment_plan" not in result:
+        result = {**result, "verified_judgment_plan": (result.get("specialist_verification") or {}).get("verified_judgment_plan") or result.get("judgment_plan") or judgment}
+    next_state: SecAgentGraphRuntimeState = {**state, **result}
+    quality_report = quality_reflection_report_from_judgment(
+        next_state.get("verified_judgment_plan") or next_state.get("judgment_plan") or {},
+        state=next_state,
+        evidence_requirement_plan=next_state.get("evidence_requirement_plan") or {},
+        source_gaps=next_state.get("source_gaps") or [],
+    )
+    quality_ledger = ToolCallLedger.from_dict(next_state.get("tool_call_ledger") or {"budget": next_state.get("loop_budget_state") or {}})
+    if bool(next_state.get("quality_second_pass_attempted")):
+        quality_decision = {"allowed": False, "reason": "quality_second_pass_already_attempted", "trigger": "quality_second_pass"}
+    else:
+        quality_decision = should_execute_second_pass(quality_report, quality_ledger)
+    if quality_decision.get("allowed"):
+        next_state["multi_agent_reflection_report"] = quality_report
+        next_state["evidence_sufficiency_report"] = quality_report
+        next_state["multi_agent_second_pass_decision"] = quality_decision
+        next_state["tool_call_ledger"] = quality_ledger.to_dict()
+    next_state["quality_second_pass_report"] = quality_report
+    next_state["quality_second_pass_decision"] = quality_decision
+    return _record_node(
+        next_state,
+        "aggregate_judgment_plan",
+        metadata={
+            "mode": "injected" if aggregate_judgment_plan else "stub",
+            "quality_second_pass_allowed": bool(quality_decision.get("allowed")),
+            "quality_gap_count": len(quality_report.get("quality_gaps") or []),
+        },
+    )
+
+
+def _node_multi_agent_memo_writer(
+    state: SecAgentGraphRuntimeState,
+    *,
+    memo_writer: MultiAgentNodeFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    specialist_verification = state.get("specialist_verification") or {}
+    result = memo_writer(state) if memo_writer is not None else {
+        "memo_answer": build_multi_agent_memo_draft(
+            state.get("verified_judgment_plan") or state.get("judgment_plan") or {},
+            specialist_verification=specialist_verification,
+        )
+    }
+    mode = "injected" if memo_writer else str((result.get("memo_answer") or {}).get("answer_status") or "deterministic")
+    return _record_node({**state, **result}, "memo_writer", metadata={"mode": "injected" if memo_writer else "stub"})
+
+
+def _node_multi_agent_verifier(
+    state: SecAgentGraphRuntimeState,
+    *,
+    verifier: MultiAgentNodeFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    verification = state.get("specialist_verification") or verify_specialist_outputs_for_memo(state.get("specialist_outputs") or [])
+    judgment = state.get("verified_judgment_plan") or state.get("judgment_plan") or {}
+    memo = state.get("memo_answer") or {}
+    memo_verification = verify_multi_agent_memo_draft(
+        memo,
+        judgment,
+    )
+    repaired_memo = None
+    repair_outcome: dict[str, Any] = {}
+    if memo_verification.get("status") == "fail":
+        ledger = ToolCallLedger.from_dict(state.get("tool_call_ledger") or {"budget": state.get("loop_budget_state") or {}})
+        previous_failure_count = len(memo_verification.get("errors") or [])
+        candidate = repair_multi_agent_memo_draft(memo, memo_verification, judgment)
+        repaired_verification = verify_multi_agent_memo_draft(candidate, judgment)
+        repair_outcome = ledger.record_repair_result(
+            previous_failure_count=previous_failure_count,
+            new_failure_count=len(repaired_verification.get("errors") or []),
+        )
+        if repaired_verification.get("status") == "pass":
+            repaired_memo = candidate
+            memo_verification = {
+                **repaired_verification,
+                "repair": {
+                    "status": "pass",
+                    "attempt_count": int(repair_outcome.get("repair_rounds") or 1),
+                    "previous_failure_count": previous_failure_count,
+                    "new_failure_count": 0,
+                    "previous_errors": [dict(item) for item in memo_verification.get("errors") or [] if isinstance(item, dict)],
+                },
+            }
+        else:
+            memo_verification = {
+                **repaired_verification,
+                "repair": {
+                    "status": "fail",
+                    "attempt_count": int(repair_outcome.get("repair_rounds") or 1),
+                    "previous_failure_count": previous_failure_count,
+                    "new_failure_count": len(repaired_verification.get("errors") or []),
+                    "previous_errors": [dict(item) for item in memo_verification.get("errors") or [] if isinstance(item, dict)],
+                    "loop_break_reason": repair_outcome.get("loop_break_reason") or ledger.loop_break_reason,
+                },
+            }
+        state = {
+            **state,
+            "tool_call_ledger": ledger.to_dict(),
+            "loop_break_reason": ledger.loop_break_reason or str(state.get("loop_break_reason") or ""),
+        }
+        if repaired_memo is not None:
+            state = {**state, "memo_answer": repaired_memo}
+    elif verifier is None:
+        memo_verification = verify_multi_agent_memo_draft(
+            memo,
+            judgment,
+        )
+    if verifier is not None:
+        result = verifier(state)
+        state, result = _repair_injected_verifier_failure_once(
+            state,
+            result,
+            judgment=judgment if isinstance(judgment, Mapping) else {},
+            verifier=verifier,
+        )
+    else:
+        result = {
+            "claim_verification": memo_verification,
+            "specialist_verification": verification,
+        }
+    if repaired_memo is not None:
+        result = {**result, "memo_answer": repaired_memo}
+    next_state = {
+        **state,
+        **result,
+        "bounded_answer_allowed": bool(
+            (result.get("claim_verification") or {}).get("bounded_answer_allowed")
+            or (result.get("memo_answer") or state.get("memo_answer") or {}).get("bounded_answer_allowed")
+            or state.get("bounded_answer_allowed")
+            or False
+        ),
+    }
+    return _record_node(next_state, "verifier", metadata={"mode": "injected" if verifier else "stub"})
+
+
+def _repair_injected_verifier_failure_once(
+    state: SecAgentGraphRuntimeState,
+    result: Mapping[str, Any],
+    *,
+    judgment: Mapping[str, Any],
+    verifier: MultiAgentNodeFunc,
+) -> tuple[SecAgentGraphRuntimeState, dict[str, Any]]:
+    claim = result.get("claim_verification") if isinstance(result.get("claim_verification"), Mapping) else {}
+    if claim.get("status") != "fail":
+        return state, dict(result)
+    previous_errors = [dict(item) for item in claim.get("errors") or [] if isinstance(item, Mapping)]
+    ledger = ToolCallLedger.from_dict(state.get("tool_call_ledger") or {"budget": state.get("loop_budget_state") or {}})
+    decision = ledger.can_run_repair()
+    if not decision.get("allowed"):
+        repaired_claim = {
+            **dict(claim),
+            "repair": {
+                "status": "fail",
+                "attempt_count": int(ledger.repair_rounds),
+                "previous_failure_count": len(previous_errors),
+                "new_failure_count": len(previous_errors),
+                "previous_errors": previous_errors,
+                "loop_break_reason": decision.get("reason") or ledger.loop_break_reason,
+            },
+            "bounded_answer_allowed": True,
+        }
+        return {
+            **state,
+            "tool_call_ledger": ledger.to_dict(),
+            "loop_break_reason": ledger.loop_break_reason or str(state.get("loop_break_reason") or ""),
+        }, {**dict(result), "claim_verification": repaired_claim}
+
+    memo = result.get("memo_answer") if isinstance(result.get("memo_answer"), Mapping) else state.get("memo_answer") or {}
+    candidate = repair_multi_agent_memo_draft(memo, claim, judgment)
+    retry_state: SecAgentGraphRuntimeState = {**state, **dict(result), "memo_answer": candidate}
+    retry_result = verifier(retry_state)
+    retry_claim = retry_result.get("claim_verification") if isinstance(retry_result.get("claim_verification"), Mapping) else {}
+    new_failure_count = len(retry_claim.get("errors") or []) if retry_claim.get("status") == "fail" else 0
+    repair_outcome = ledger.record_repair_result(
+        previous_failure_count=len(previous_errors),
+        new_failure_count=new_failure_count,
+    )
+    repaired_claim = {
+        **dict(retry_claim or claim),
+        "repair": {
+            "status": "pass" if retry_claim.get("status") == "pass" else "fail",
+            "attempt_count": int(repair_outcome.get("repair_rounds") or ledger.repair_rounds),
+            "previous_failure_count": len(previous_errors),
+            "new_failure_count": new_failure_count,
+            "previous_errors": previous_errors,
+            "loop_break_reason": repair_outcome.get("loop_break_reason") or ledger.loop_break_reason,
+        },
+    }
+    next_state: SecAgentGraphRuntimeState = {
+        **state,
+        "memo_answer": candidate,
+        "tool_call_ledger": ledger.to_dict(),
+        "loop_break_reason": ledger.loop_break_reason or str(state.get("loop_break_reason") or ""),
+    }
+    return next_state, {**dict(retry_result), "memo_answer": candidate, "claim_verification": repaired_claim}
+
+
+def _node_multi_agent_renderer(
+    state: SecAgentGraphRuntimeState,
+    *,
+    renderer: MultiAgentNodeFunc | None = None,
+) -> SecAgentGraphRuntimeState:
+    if renderer is not None:
+        result = renderer(state)
+    else:
+        verification = state.get("claim_verification") if isinstance(state.get("claim_verification"), dict) else {}
+        memo = state.get("memo_answer") if isinstance(state.get("memo_answer"), dict) else {}
+        bounded = bool(
+            state.get("bounded_answer_allowed")
+            or memo.get("bounded_answer_allowed")
+            or str(memo.get("answer_status") or "").startswith("blocked_")
+        )
+        if verification.get("status") == "fail":
+            result = {"rendered_answer": "Bounded answer only: memo verification failed under current evidence constraints."}
+        elif bounded:
+            result = {
+                "rendered_answer": "Bounded answer only: "
+                + str(memo.get("direct_answer") or "current evidence constraints block full memo generation.")
+            }
+        else:
+            result = {
+                "rendered_answer": "\n\n".join(
+                    item
+                    for item in (
+                        str(memo.get("direct_answer") or "No deterministic memo text was generated."),
+                        f"Source boundary: {memo.get('source_boundary') or 'verified judgment plan only'}",
+                    )
+                    if item
+                )
+            }
+    return _record_node({**state, **result}, "renderer", metadata={"mode": "injected" if renderer else "stub"})
+
+
+def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    state_with_refs = _with_multi_agent_artifact_refs(_with_native_artifact_refs({**state, "status": "completed"}))
+    final_state = _record_node(state_with_refs, "persist_session_state")
+    _write_native_state_artifacts(final_state)
+    _write_multi_agent_summary_artifact(final_state)
+    return final_state
 
 
 def _node_plan_query(
@@ -735,6 +1818,51 @@ def _route_after_evidence_sufficiency(
     return "continue"
 
 
+def _route_after_multi_agent_reflection(state: SecAgentGraphRuntimeState) -> str:
+    if _is_stopped_after_node(state):
+        return "stop"
+    decision = state.get("multi_agent_second_pass_decision") or {}
+    if decision.get("allowed"):
+        return "second_pass"
+    mode = str((state.get("agent_activation_plan") or {}).get("execution_mode") or "")
+    if mode == "deterministic_lookup":
+        return "renderer"
+    if _multi_agent_specialists_active(state):
+        return "specialists"
+    return "aggregate"
+
+
+def _route_after_multi_agent_second_pass(state: SecAgentGraphRuntimeState) -> str:
+    mode = str((state.get("agent_activation_plan") or {}).get("execution_mode") or "")
+    if mode == "deterministic_lookup":
+        return "renderer"
+    if _multi_agent_specialists_active(state):
+        return "specialists"
+    return "aggregate"
+
+
+def _route_after_multi_agent_aggregate(state: SecAgentGraphRuntimeState) -> str:
+    if _is_stopped_after_node(state):
+        return "memo"
+    decision = state.get("quality_second_pass_decision") if isinstance(state.get("quality_second_pass_decision"), dict) else {}
+    if decision.get("allowed") and not bool(state.get("quality_second_pass_attempted")):
+        return "second_pass"
+    return "memo"
+
+
+def _multi_agent_specialists_active(state: SecAgentGraphRuntimeState) -> bool:
+    active = set((state.get("agent_activation_plan") or {}).get("activate_agents") or [])
+    return bool(
+        active
+        & {
+            "fundamental_analyst",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst",
+            "risk_counterevidence_analyst",
+        }
+    )
+
+
 def _node_execute_second_pass_retrieval(
     state: SecAgentGraphRuntimeState,
     *,
@@ -957,6 +2085,16 @@ def _with_native_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgentGrap
     return state
 
 
+def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    output_dir = Path(str(state.get("output_dir") or ""))
+    if output_dir:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        refs = dict(state.get("artifact_refs") or {})
+        refs["multi_agent_summary"] = str((output_dir / "multi_agent_summary.json").resolve())
+        return {**state, "artifact_refs": refs}
+    return state
+
+
 def _write_native_state_artifacts(state: SecAgentGraphRuntimeState) -> None:
     output_dir = Path(str(state.get("output_dir") or ""))
     if not output_dir:
@@ -972,6 +2110,214 @@ def _write_native_state_artifacts(state: SecAgentGraphRuntimeState) -> None:
         json.dumps(build_native_summary_artifact_payload(state), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+
+
+def _write_multi_agent_summary_artifact(state: SecAgentGraphRuntimeState) -> None:
+    output_dir = Path(str(state.get("output_dir") or ""))
+    if not output_dir:
+        return
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / "multi_agent_summary.json"
+    payload = build_multi_agent_summary_artifact_payload(state)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState) -> dict[str, Any]:
+    plan = state.get("agent_activation_plan") or {}
+    evidence_plan = state.get("evidence_requirement_plan") or {}
+    evidence_validation = (
+        evidence_plan.get("multi_agent_evidence_requirement_validation")
+        if isinstance(evidence_plan, dict)
+        else {}
+    )
+    ledger = state.get("tool_call_ledger") or {}
+    records = [dict(item) for item in ledger.get("records") or [] if isinstance(item, dict)] if isinstance(ledger, dict) else []
+    second_pass = state.get("second_pass_result") or {}
+    specialist_verification = state.get("specialist_verification") or {}
+    memo = state.get("memo_answer") if isinstance(state.get("memo_answer"), dict) else {}
+    claim_verification = state.get("claim_verification") if isinstance(state.get("claim_verification"), dict) else {}
+    relationship_lookup = state.get("relationship_graph_observation") if isinstance(state.get("relationship_graph_observation"), dict) else {}
+    universe_validation = state.get("universe_relationship_validation") if isinstance(state.get("universe_relationship_validation"), dict) else {}
+    return {
+        "schema_version": "sec_agent_multi_agent_summary_v0.1",
+        "run_id": state.get("run_id") or "",
+        "status": state.get("status") or "",
+        "execution_mode": plan.get("execution_mode") or "",
+        "activated_agents": list(plan.get("activate_agents") or []),
+        "agent_priorities": dict(plan.get("agent_priorities") or {}),
+        "activation_metadata": dict(plan.get("metadata") or {}) if isinstance(plan.get("metadata"), dict) else {},
+        "skipped_agents": [dict(item) for item in plan.get("skip_agents") or [] if isinstance(item, dict)],
+        "allowed_source_families": list(plan.get("allowed_source_families") or []),
+        "evidence_requirements": {
+            "requirement_count": len(evidence_plan.get("requirements") or []) if isinstance(evidence_plan, dict) else 0,
+            "validation_status": evidence_validation.get("status") if isinstance(evidence_validation, dict) else "",
+        },
+        "tool_calls": [
+            {
+                "agent_id": record.get("agent_id") or "",
+                "tool_name": record.get("tool_name") or "",
+                "status": record.get("status") or "",
+                "row_count": record.get("row_count") or 0,
+                "source_gap_count": record.get("source_gap_count") or 0,
+                "elapsed_ms": record.get("elapsed_ms") or 0,
+                "coverage_delta": record.get("coverage_delta") or {},
+            }
+            for record in records
+        ],
+        "tool_call_count": len(records),
+        "second_pass": {
+            "attempts": int(state.get("second_pass_attempts") or 0),
+            "result": second_pass if isinstance(second_pass, dict) else {},
+            "quality_attempted": bool(state.get("quality_second_pass_attempted")),
+            "quality_decision": dict(state.get("quality_second_pass_decision") or {}),
+            "quality_gap_count": len((state.get("quality_second_pass_report") or {}).get("quality_gaps") or [])
+            if isinstance(state.get("quality_second_pass_report"), dict)
+            else 0,
+        },
+        "specialists": {
+            "output_count": len(state.get("specialist_outputs") or []),
+            "activation_decisions": [
+                dict(item)
+                for item in state.get("specialist_activation_decisions") or []
+                if isinstance(item, dict)
+            ],
+            "verification_status": specialist_verification.get("status") if isinstance(specialist_verification, dict) else "",
+            "memo_writer_allowed": bool(specialist_verification.get("memo_writer_allowed")) if isinstance(specialist_verification, dict) else False,
+            "unsupported_claim_count": specialist_verification.get("unsupported_claim_count", 0) if isinstance(specialist_verification, dict) else 0,
+            "route_results": [
+                _specialist_route_summary(item)
+                for item in state.get("specialist_route_results") or []
+                if isinstance(item, dict)
+            ],
+        },
+        "judgment_plan": _judgment_plan_quality_summary(state.get("judgment_plan")),
+        "verified_judgment_plan": _judgment_plan_quality_summary(state.get("verified_judgment_plan")),
+        "relationship_graph": {
+            "lookup_status": relationship_lookup.get("status") or "",
+            "relationship_count": len(relationship_lookup.get("relationships") or []),
+            "source_gap_count": len(relationship_lookup.get("source_gaps") or []),
+            "validation_status": universe_validation.get("status") if isinstance(universe_validation, dict) else "",
+            "claim_scope": ((relationship_lookup.get("summary") or {}).get("claim_scope") if isinstance(relationship_lookup.get("summary"), dict) else ""),
+        },
+        "llm_routes": {
+            "research_lead": {
+                "validation_status": (state.get("agent_activation_validation") or {}).get("status")
+                if isinstance(state.get("agent_activation_validation"), dict)
+                else "",
+                "diagnostics": _model_diagnostics_summary(state.get("research_lead_model_diagnostics")),
+            },
+            "universe_relationship": {
+                "validation_status": universe_validation.get("status") if isinstance(universe_validation, dict) else "",
+                "routing_trace": dict(state.get("universe_relationship_routing_trace") or {}),
+                "diagnostics": _model_diagnostics_summary(state.get("universe_relationship_model_diagnostics")),
+            },
+            "memo_writer": {
+                "route_result": dict(state.get("memo_route_result") or {}),
+                "diagnostics": _model_diagnostics_summary(memo.get("model_diagnostics")),
+            },
+            "verifier": {
+                "verification_status": claim_verification.get("status") if isinstance(claim_verification, dict) else "",
+                "diagnostics": _model_diagnostics_summary(claim_verification.get("model_diagnostics")),
+            },
+        },
+        "loop_break_reason": state.get("loop_break_reason") or (ledger.get("loop_break_reason") if isinstance(ledger, dict) else ""),
+        "bounded_answer_allowed": bool(state.get("bounded_answer_allowed") or (ledger.get("bounded_answer_allowed") if isinstance(ledger, dict) else False)),
+        "agent_trace": [dict(item) for item in state.get("agent_trace") or [] if isinstance(item, dict)],
+        "payload_policy": {
+            "state_payload": "summary_only",
+            "raw_evidence": "not_included",
+            "internal_reasoning": "not_included",
+        },
+    }
+
+
+def _specialist_route_summary(result: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "agent_id": result.get("agent_id") or "",
+        "status": result.get("status") or "",
+        "priority": result.get("priority") or "",
+        "activation_policy": result.get("activation_policy") or "",
+        "failure_reason": str(result.get("failure_reason") or "")[:500],
+        "attempt_count": result.get("attempt_count"),
+        "repair_attempts": result.get("repair_attempts"),
+        "latency_ms": result.get("latency_ms"),
+        "input_tokens": result.get("input_tokens"),
+        "output_tokens": result.get("output_tokens"),
+        "total_tokens": result.get("total_tokens"),
+        "finish_reasons": list(result.get("finish_reasons") or []),
+    }
+
+
+def _judgment_plan_quality_summary(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    stats = value.get("claim_card_stats") if isinstance(value.get("claim_card_stats"), Mapping) else {}
+    outline = [row for row in value.get("memo_outline") or [] if isinstance(row, Mapping)]
+    return {
+        "claim_card_stats": {
+            "supported_claim_count": int(stats.get("supported_claim_count") or 0),
+            "high_materiality_claim_count": int(stats.get("high_materiality_claim_count") or 0),
+            "memo_slot_count": int(stats.get("memo_slot_count") or len(outline)),
+            "supported_memo_slot_count": int(stats.get("supported_memo_slot_count") or 0),
+            "synthesized_thesis_claim_count": int(stats.get("synthesized_thesis_claim_count") or 0),
+        },
+        "supported_claim_count": len(value.get("supported_claims") or []),
+        "unsupported_claim_count": len(value.get("unsupported_claims") or []),
+        "conflict_count": len(value.get("conflicts") or []),
+        "thesis_synthesis": dict(value.get("thesis_synthesis") or {}) if isinstance(value.get("thesis_synthesis"), Mapping) else {},
+        "unsupported_claim_policy": dict(value.get("unsupported_claim_policy") or {}) if isinstance(value.get("unsupported_claim_policy"), Mapping) else {},
+        "memo_outline": [
+            {
+                "memo_slot": str(row.get("memo_slot") or ""),
+                "status": str(row.get("status") or ""),
+                "supported_claim_count": int(row.get("supported_claim_count") or 0),
+                "missing_reason": str(row.get("missing_reason") or "")[:200],
+            }
+            for row in outline[:12]
+        ],
+    }
+
+
+def _model_diagnostics_summary(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {
+            "call_count": 0,
+            "provider": "",
+            "model": "",
+            "latency_ms": None,
+            "total_tokens": None,
+            "finish_reasons": [],
+            "all_calls_ok": False,
+            "direct_tool_call_count": 0,
+            "raw_response_saved": False,
+        }
+    calls = [dict(item) for item in value.get("calls") or [] if isinstance(item, Mapping)]
+    provider = value.get("provider") or next((call.get("provider") for call in calls if call.get("provider")), "")
+    model = value.get("model") or next((call.get("model") for call in calls if call.get("model")), "")
+    return {
+        "call_count": int(value.get("call_count") or len(calls)),
+        "provider": provider,
+        "model": model,
+        "latency_ms": value.get("latency_ms") if value.get("latency_ms") is not None else _sum_optional_int(calls, "latency_ms"),
+        "total_tokens": value.get("total_tokens") if value.get("total_tokens") is not None else _sum_optional_int(calls, "total_tokens"),
+        "call_statuses": [str(call.get("status") or "") for call in calls],
+        "finish_reasons": list(value.get("finish_reasons") or [call.get("finish_reason") for call in calls]),
+        "all_calls_ok": bool(calls) and all(str(call.get("status") or "") == "ok" for call in calls),
+        "direct_tool_call_count": sum(int(call.get("tool_call_count") or 0) for call in calls),
+        "failure_reasons": [
+            str(call.get("failure_reason") or "")[:500]
+            for call in calls
+            if str(call.get("failure_reason") or "")
+        ],
+        "raw_response_saved": bool(value.get("raw_response_saved")),
+    }
+
+
+def _sum_optional_int(rows: list[dict[str, Any]], key: str) -> int | None:
+    values = [row.get(key) for row in rows if row.get(key) is not None]
+    if not values:
+        return None
+    return sum(int(value) for value in values)
 
 
 def build_native_summary_artifact_payload(state: SecAgentGraphRuntimeState) -> dict[str, Any]:
@@ -1500,10 +2846,24 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     memo = state.get("memo_answer") or {}
     claim = state.get("claim_verification") or {}
     gates = state.get("deterministic_gates") or {}
+    activation = state.get("agent_activation_plan") or {}
+    evidence_plan = state.get("evidence_requirement_plan") or {}
+    second_pass_plan = state.get("second_pass_evidence_requirement_plan") or {}
+    second_pass_retrieval_plan = state.get("second_pass_retrieval_plan") or {}
+    tool_ledger = state.get("tool_call_ledger") or {}
+    tool_records = tool_ledger.get("records") if isinstance(tool_ledger, dict) else []
     return {
         "status": state.get("status") or "",
         "state_keys": [key for key in CHECKPOINT_STATE_KEYS if key in state],
         "artifact_keys": sorted((state.get("artifact_refs") or {}).keys()),
+        "execution_mode": activation.get("execution_mode") if isinstance(activation, dict) else "",
+        "activated_agent_count": len(activation.get("activate_agents") or []) if isinstance(activation, dict) else 0,
+        "evidence_requirement_count": len(evidence_plan.get("requirements") or []) if isinstance(evidence_plan, dict) else 0,
+        "second_pass_requirement_count": len(second_pass_plan.get("requirements") or []) if isinstance(second_pass_plan, dict) else 0,
+        "second_pass_route_count": len(second_pass_retrieval_plan.get("routes") or []) if isinstance(second_pass_retrieval_plan, dict) else 0,
+        "tool_call_count": len(tool_records or []),
+        "loop_break_reason": state.get("loop_break_reason") or (tool_ledger.get("loop_break_reason") if isinstance(tool_ledger, dict) else ""),
+        "bounded_answer_allowed": bool(state.get("bounded_answer_allowed") or (tool_ledger.get("bounded_answer_allowed") if isinstance(tool_ledger, dict) else False)),
         "context_row_count": len(state.get("context_rows") or []),
         "market_context_row_count": len(state.get("market_snapshot_rows") or []),
         "ledger_row_count": len(state.get("runtime_ledger_rows") or []),
@@ -1616,6 +2976,25 @@ def _minimal_query_contract() -> dict[str, Any]:
         "metric_families": [],
         "decomposed_tasks": [],
     }
+
+
+def _query_contract_with_activation_source_families(query_contract: Mapping[str, Any], activation_plan: Mapping[str, Any]) -> dict[str, Any]:
+    contract = dict(query_contract or {})
+    activation_sources = _unique_strings(
+        [
+            source
+            for source in activation_plan.get("allowed_source_families") or []
+            if source != "relationship_graph"
+        ]
+    )
+    if activation_sources:
+        contract_sources = _unique_strings(contract.get("source_tiers") or [])
+        contract["source_tiers"] = _unique_strings([*contract_sources, *activation_sources])
+        scope = dict(contract.get("scope") or {})
+        scope_sources = _unique_strings(scope.get("source_tiers") or [])
+        scope["source_tiers"] = _unique_strings([*scope_sources, *activation_sources])
+        contract["scope"] = scope
+    return contract
 
 
 def _run_id(seed: str) -> str:

@@ -23,6 +23,7 @@ def chat_completion(
     tools: list[dict[str, Any]] | None = None,
     tool_choice: str | dict[str, Any] | None = None,
     parallel_tool_calls: bool | None = None,
+    response_format: dict[str, Any] | None = None,
     api_key_env: str = "",
     temperature: float = 0.0,
     max_tokens: int = 1024,
@@ -48,6 +49,8 @@ def chat_completion(
         payload["tool_choice"] = tool_choice
     if parallel_tool_calls is not None:
         payload["parallel_tool_calls"] = bool(parallel_tool_calls)
+    if response_format is not None:
+        payload["response_format"] = response_format
     headers = {"Content-Type": "application/json"}
     backend = str(llm_backend or "").strip()
 
@@ -75,17 +78,71 @@ def chat_completion(
             payload["reasoning_effort"] = reasoning_effort
 
     request_body = json.dumps(_clean_json_value(payload), ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
-        _chat_completions_url(base_url, chat_completions_path),
-        data=request_body,
-        headers=headers,
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=timeout_s) as resp:
-            response_text = resp.read().decode("utf-8")
-            parsed = json.loads(response_text)
-    except urllib.error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="replace")
+    url = _chat_completions_url(base_url, chat_completions_path)
+    transport_failures: list[dict[str, Any]] = []
+    max_transport_retries = max(0, _int_env(os.environ.get("LLM_GATEWAY_TRANSPORT_RETRIES"), default=1))
+    max_attempts = max_transport_retries + 1
+    parsed: dict[str, Any] | None = None
+    transport_attempt_count = 0
+    for attempt_index in range(max_attempts):
+        transport_attempt_count = attempt_index + 1
+        try:
+            req = urllib.request.Request(url, data=request_body, headers=headers)
+            with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+                response_text = resp.read().decode("utf-8")
+                parsed = json.loads(response_text)
+            break
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="replace")
+            failure_reason = f"HTTP {exc.code}: {body[:1000]}"
+            if _should_retry_http_status(exc.code) and attempt_index < max_attempts - 1:
+                transport_failures.append(
+                    {
+                        "attempt": transport_attempt_count,
+                        "status": "provider_error",
+                        "reason": failure_reason[:500],
+                    }
+                )
+                _sleep_before_retry(attempt_index)
+                continue
+            return _error_result(
+                started=started,
+                status="provider_error",
+                backend=backend,
+                model=model,
+                role=role,
+                profile=profile,
+                trace_tags=trace_tags,
+                failure_reason=failure_reason,
+                transport_attempt_count=transport_attempt_count,
+                transport_failures=transport_failures,
+            )
+        except Exception as exc:
+            failure_reason = f"{type(exc).__name__}: {str(exc)[:1000]}"
+            status = "timeout" if "timed out" in str(exc).lower() else "provider_error"
+            if _should_retry_transport_exception(exc) and attempt_index < max_attempts - 1:
+                transport_failures.append(
+                    {
+                        "attempt": transport_attempt_count,
+                        "status": status,
+                        "reason": failure_reason[:500],
+                    }
+                )
+                _sleep_before_retry(attempt_index)
+                continue
+            return _error_result(
+                started=started,
+                status=status,
+                backend=backend,
+                model=model,
+                role=role,
+                profile=profile,
+                trace_tags=trace_tags,
+                failure_reason=failure_reason,
+                transport_attempt_count=transport_attempt_count,
+                transport_failures=transport_failures,
+            )
+    if parsed is None:
         return _error_result(
             started=started,
             status="provider_error",
@@ -94,18 +151,9 @@ def chat_completion(
             role=role,
             profile=profile,
             trace_tags=trace_tags,
-            failure_reason=f"HTTP {exc.code}: {body[:1000]}",
-        )
-    except Exception as exc:
-        return _error_result(
-            started=started,
-            status="timeout" if "timed out" in str(exc).lower() else "provider_error",
-            backend=backend,
-            model=model,
-            role=role,
-            profile=profile,
-            trace_tags=trace_tags,
-            failure_reason=f"{type(exc).__name__}: {str(exc)[:1000]}",
+            failure_reason="LLM transport returned no response.",
+            transport_attempt_count=transport_attempt_count,
+            transport_failures=transport_failures,
         )
 
     choices = parsed.get("choices") or []
@@ -142,6 +190,8 @@ def chat_completion(
         "cost_estimate": None,
         "failure_reason": "",
         "trace_tags": trace_tags or {},
+        "transport_attempt_count": transport_attempt_count,
+        "transport_failures": transport_failures,
         "raw_response": parsed,
     }
 
@@ -181,6 +231,8 @@ def _error_result(
     trace_tags: dict[str, Any] | None,
     failure_reason: str,
     raw_response: dict[str, Any] | None = None,
+    transport_attempt_count: int = 1,
+    transport_failures: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     return {
         "status": status,
@@ -199,6 +251,8 @@ def _error_result(
         "cost_estimate": None,
         "failure_reason": failure_reason,
         "trace_tags": trace_tags or {},
+        "transport_attempt_count": transport_attempt_count,
+        "transport_failures": transport_failures or [],
         "raw_response": raw_response or {},
     }
 
@@ -211,3 +265,35 @@ def _clean_json_value(value: Any) -> Any:
     if isinstance(value, dict):
         return {str(key): _clean_json_value(item) for key, item in value.items()}
     return value
+
+
+def _int_env(value: str | None, *, default: int) -> int:
+    try:
+        return int(value) if value not in {None, ""} else default
+    except (TypeError, ValueError):
+        return default
+
+
+def _float_env(value: str | None, *, default: float) -> float:
+    try:
+        return float(value) if value not in {None, ""} else default
+    except (TypeError, ValueError):
+        return default
+
+
+def _should_retry_http_status(status_code: int) -> bool:
+    return int(status_code) in {408, 409, 425, 429, 500, 502, 503, 504}
+
+
+def _should_retry_transport_exception(exc: Exception) -> bool:
+    if isinstance(exc, ValueError) and "unknown url type" in str(exc).lower():
+        return False
+    return True
+
+
+def _sleep_before_retry(attempt_index: int) -> None:
+    base = max(0.0, _float_env(os.environ.get("LLM_GATEWAY_TRANSPORT_RETRY_BACKOFF_S"), default=2.0))
+    cap = max(base, _float_env(os.environ.get("LLM_GATEWAY_TRANSPORT_RETRY_MAX_BACKOFF_S"), default=12.0))
+    delay = min(cap, base * (2 ** max(0, attempt_index)))
+    if delay > 0:
+        time.sleep(delay)

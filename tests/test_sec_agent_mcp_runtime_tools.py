@@ -377,6 +377,62 @@ def test_mcp_registry_compiles_mixed_sec_scope_to_available_route_requirements(t
     assert result["source_gaps"] == result["query_contract"]["source_coverage_gaps"]
 
 
+def test_mcp_sec_search_overlay_refreshes_explicit_banking_metric_scope(tmp_path: Path, monkeypatch) -> None:
+    def fake_build_query_plan_for_graph(runtime_args, query):
+        return {
+            "query_contract": {
+                "task_type": "risk_summary",
+                "search_scope_tickers": ["JPM", "C", "GS"],
+                "focus_tickers": ["JPM"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["net_interest_income"],
+                "ledger_rules": {
+                    "allowed_metric_families": ["net_interest_income"],
+                    "banking_metric_tickers": ["JPM"],
+                },
+            },
+            "selected_tickers": ["JPM", "C", "GS"],
+            "selected_years": [2026],
+        }
+
+    def fake_retrieve_context_for_graph(runtime_args, graph_state):
+        assert graph_state["query_contract"]["ledger_rules"]["banking_metric_tickers"] == ["JPM", "C", "GS"]
+        return {
+            "context_rows": [{"evidence_id": "C_2026_10Q_NII", "ticker": "C"}],
+            "retrieval_trace": {
+                "context_summary": {"context_row_count": 1},
+                "context_policy": {"candidate_row_count_pre_rerank": 1, "candidate_sent_to_bge": 1},
+            },
+            "context_runtime": {"context_runner": "fake"},
+            "artifact_refs": {"retrieved_context": str(tmp_path / "trace.jsonl")},
+        }
+
+    fake_interactive = SimpleNamespace(
+        build_query_plan_for_graph=fake_build_query_plan_for_graph,
+        retrieve_context_for_graph=fake_retrieve_context_for_graph,
+    )
+    monkeypatch.setattr("sec_agent.mcp_tool_registry._load_interactive_module", lambda: fake_interactive)
+
+    result = invoke_mcp_tool(
+        "sec_search_filings",
+        {
+            "query": "Compare banking net interest income across JPM C GS",
+            "tickers": ["JPM", "C", "GS"],
+            "years": [2026],
+            "filing_types": ["10-Q"],
+            "source_tiers": ["primary_sec_filing"],
+            "metric_families": ["net_interest_income"],
+            "retrieval_route": "filing_text",
+            "output_dir": str(tmp_path),
+        },
+    )
+
+    assert result["status"] == "ok"
+    assert result["query_contract"]["ledger_rules"]["banking_metric_tickers"] == ["JPM", "C", "GS"]
+
+
 def test_mcp_registry_rejects_non_sec_source_tier_for_sec_search() -> None:
     result = invoke_mcp_tool(
         "sec_search_filings",

@@ -29,6 +29,11 @@ def test_profile_from_env_file_maps_public_runtime_values_without_secret(tmp_pat
                 "WORKBENCH_EXECUTION_SHELL=wsl",
                 "WORKBENCH_WSL_DISTRO=Ubuntu-22.04",
                 "WORKBENCH_WSL_REPO_ROOT=/mnt/d/FIN_Insight_Agent",
+                "SEC_AGENT_MULTI_AGENT_GRAPH=enabled",
+                "SEC_AGENT_MULTI_AGENT_LEAD_ROUTER=llm",
+                "SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER=llm",
+                "SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER=llm",
+                "SEC_AGENT_MULTI_AGENT_MEMO_ROUTER=llm",
             ]
         ),
         encoding="utf-8",
@@ -47,7 +52,16 @@ def test_profile_from_env_file_maps_public_runtime_values_without_secret(tmp_pat
     assert profile.runtime.execution_shell == "wsl"
     assert profile.runtime.wsl_distro == "Ubuntu-22.04"
     assert profile.runtime.wsl_repo_root == "/mnt/d/FIN_Insight_Agent"
+    assert profile.runtime.multi_agent_graph == "enabled"
+    assert profile.runtime.multi_agent_lead_router == "llm"
+    assert profile.runtime.multi_agent_specialist_router == "llm"
+    assert profile.runtime.multi_agent_universe_router == "llm"
+    assert profile.runtime.multi_agent_memo_router == "llm"
     assert runtime_env["API_KEY_ENV"] == "DEMO_API_KEY"
+    assert runtime_env["SEC_AGENT_MULTI_AGENT_LEAD_ROUTER"] == "llm"
+    assert runtime_env["SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER"] == "llm"
+    assert runtime_env["SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER"] == "llm"
+    assert runtime_env["SEC_AGENT_MULTI_AGENT_MEMO_ROUTER"] == "llm"
     assert runtime_env["BGE_MODEL"] == "/models/bge-reranker-v2-m3"
     assert "DEMO_API_KEY" not in runtime_env
     assert "redacted-do-not-copy" not in json.dumps(profile.model_dump(), ensure_ascii=False)

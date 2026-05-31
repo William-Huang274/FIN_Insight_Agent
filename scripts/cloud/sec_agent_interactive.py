@@ -28,6 +28,8 @@ if hasattr(sys.stdout, "reconfigure"):
 import run_sec_benchmark_eval as benchmark_context  # noqa: E402
 import run_sec_benchmark_vllm_synthesis_from_traces as vllm_runner  # noqa: E402
 import run_sec_eval_synthesis_qwen9b_backend as qwen_adapter  # noqa: E402
+from evidence.schema import EvidenceObject  # noqa: E402
+from evidence.structured_extractor import extract_structured_objects  # noqa: E402
 from sec_agent.claim_verifier import verify_answer_claims  # noqa: E402
 from sec_agent.coverage_matrix import build_coverage_matrix  # noqa: E402
 from sec_agent.graph_nodes import state_resume_report  # noqa: E402
@@ -3072,7 +3074,9 @@ def _write_run_data_fingerprint(
             if getattr(args, "ledger_store_path", "")
             else None,
             "market_evidence": _path_fingerprint(_repo_path(args.market_evidence_path), kind="jsonl") if args.market_evidence_path else None,
-            "industry_evidence": _path_fingerprint(_repo_path(args.industry_evidence_path), kind="jsonl") if args.industry_evidence_path else None,
+            "industry_evidence": _path_fingerprint(_repo_path(getattr(args, "industry_evidence_path", "")), kind="jsonl")
+            if getattr(args, "industry_evidence_path", "")
+            else None,
         },
         "runtime_knobs": {
             "context_runner": getattr(args, "context_runner", "auto"),
@@ -3375,6 +3379,14 @@ def _run_context_in_process(args: argparse.Namespace, cases_path: Path, trace_di
     bad_cases: list[dict[str, Any]] = []
     context_runtime = {
         "context_runner": "in_process",
+        "bge_device": str(args.bge_device or ""),
+        "bge_model_ref": _model_ref(args.bge_model),
+        "cuda_available": _cuda_available() if str(args.bge_device or "").lower().startswith("cuda") else None,
+        "reranker_batch_size": int(args.reranker_batch_size),
+        "reranker_max_length": int(args.reranker_max_length),
+        "reranker_doc_max_chars": int(args.reranker_doc_max_chars),
+        "reranker_candidate_limit": int(args.reranker_candidate_limit),
+        "reranker_top_k": int(args.reranker_top_k),
         **resource_runtime,
     }
     for case in cases:
@@ -3524,6 +3536,24 @@ def _context_runtime_cache_key(args: argparse.Namespace) -> tuple[Any, ...]:
         str(args.bge_device),
         int(args.reranker_max_length),
     )
+
+
+def _model_ref(value: Any) -> str:
+    text = str(value or "").strip().replace("\\", "/")
+    if not text:
+        return ""
+    if "/" in text and ":" in text[:4]:
+        return text.rstrip("/").split("/")[-1]
+    return text
+
+
+def _cuda_available() -> bool:
+    try:
+        import torch
+
+        return bool(torch.cuda.is_available())
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def _load_manifest_index_cached(path: Path) -> dict[tuple[str, int, str], dict[str, Any]]:
@@ -4309,6 +4339,7 @@ def _build_runtime_ledger(
                     seen.add(key)
     _supplement_ai_focus_ledger(case, scoped_records, rows, seen, query_contract)
     _supplement_contract_metric_family_ledger(case, scoped_records, rows, seen, query_contract)
+    _supplement_context_evidence_object_ledger(case, context_rows, rows, seen, query_contract)
     _supplement_banking_context_ledger(case, context_rows, rows, seen, query_contract)
     _supplement_free_cash_flow_proxy(case, rows, seen, query_contract)
     rows.sort(key=lambda row: _ledger_row_rank(row, query_contract, context_by_object_id.get(str(row.get("object_id") or ""))), reverse=True)
@@ -5151,6 +5182,100 @@ def _supplement_contract_metric_family_ledger(
                 return
 
 
+def _supplement_context_evidence_object_ledger(
+    case: dict[str, Any],
+    context_rows: list[dict[str, Any]],
+    rows: list[dict[str, Any]],
+    seen: set[tuple[str, str, str, str]],
+    query_contract: dict[str, Any],
+) -> None:
+    desired_families = _contract_required_metric_families(query_contract)
+    years = {int(year) for year in case.get("years") or [] if _int_or_none(year) is not None}
+    scan_limit = int(os.environ.get("CONTEXT_EVIDENCE_LEDGER_EXTRACTION_SCAN_LIMIT", "80"))
+    added = 0
+    for context_row in context_rows[: max(1, scan_limit)]:
+        evidence = _context_row_to_evidence_object(context_row)
+        if evidence is None:
+            continue
+        try:
+            extraction = extract_structured_objects(evidence)
+        except Exception:  # noqa: BLE001
+            continue
+        for metric in extraction.metrics:
+            record = metric.model_dump(mode="json")
+            base_row = _ledger_row_from_metric(str(case.get("case_id") or ""), record)
+            if not base_row:
+                continue
+            candidates = [base_row, *_ledger_growth_rate_rows_from_metric(str(case.get("case_id") or ""), record, base_row)]
+            for row in candidates:
+                row_year = _int_or_none(row.get("fiscal_year"))
+                if years and row_year not in years:
+                    continue
+                family = str(row.get("metric_family") or "")
+                if desired_families and family not in desired_families:
+                    continue
+                if not _ledger_row_allowed(row, query_contract, context_row):
+                    continue
+                key = _ledger_dedupe_key(row)
+                if key in seen:
+                    continue
+                row["ledger_extraction_source"] = "context_evidence_object_structured_extractor"
+                rows.append(row)
+                seen.add(key)
+                added += 1
+                if added >= int(getattr(case, "ledger_max_rows", 0) or os.environ.get("CONTEXT_EVIDENCE_LEDGER_EXTRACTION_ROW_LIMIT", "160")):
+                    return
+
+
+def _context_row_to_evidence_object(row: dict[str, Any]) -> EvidenceObject | None:
+    text = str(row.get("text") or row.get("summary") or row.get("preview") or "").strip()
+    if not text or ("[TABLE_START" not in text and not re.search(r"\d", text)):
+        return None
+    source_type = _normalize_form_type(row.get("source_type") or row.get("form_type") or "")
+    if source_type not in {"10-K", "10-Q", "8-K"}:
+        source_type = "8-K" if str(row.get("source_tier") or "") == "company_authored_unaudited_sec_filing" else "10-Q"
+    source_tier = str(row.get("source_tier") or row.get("source_family") or "").strip()
+    if source_tier not in {"primary_filing", "primary_sec_filing", "company_authored_unaudited_sec_filing"}:
+        source_tier = "company_authored_unaudited_sec_filing" if source_type == "8-K" else "primary_sec_filing"
+    evidence_id = str(row.get("evidence_id") or row.get("evidence_ref") or row.get("id") or "").strip()
+    if not evidence_id:
+        digest = hashlib.sha1(text[:2000].encode("utf-8")).hexdigest()[:12]
+        evidence_id = f"context_evidence::{digest}"
+    try:
+        fiscal_year = int(row.get("fiscal_year") or row.get("year")) if row.get("fiscal_year") or row.get("year") else None
+    except (TypeError, ValueError):
+        fiscal_year = None
+    return EvidenceObject(
+        evidence_id=evidence_id,
+        source_type=source_type,  # type: ignore[arg-type]
+        source_tier=source_tier,  # type: ignore[arg-type]
+        ticker=str(row.get("ticker") or "").upper(),
+        company=str(row.get("company") or "") or None,
+        fiscal_year=fiscal_year,
+        period_end=str(row.get("period_end") or "") or None,
+        period_type=str(row.get("period_type") or "") or None,
+        duration_months=_int_or_none(row.get("duration_months")),
+        fiscal_period=str(row.get("fiscal_period") or "") or None,
+        publication_date=str(row.get("publication_date") or row.get("filing_date") or "") or None,
+        section=str(row.get("section") or "") or None,
+        subsection=str(row.get("subsection") or "") or None,
+        evidence_type=str(row.get("evidence_type") or row.get("source_kind") or "filing_text"),
+        text=text,
+        source_url=str(row.get("source_url") or row.get("filing_url") or "") or None,
+        local_path=None,
+        metadata={
+            "form_type": source_type,
+            "source_tier": source_tier,
+            "period_end": str(row.get("period_end") or "") or None,
+            "period_type": str(row.get("period_type") or "") or None,
+            "duration_months": _int_or_none(row.get("duration_months")),
+            "fiscal_period": str(row.get("fiscal_period") or "") or None,
+            "block_id": row.get("block_id"),
+            "context_evidence_ref": evidence_id,
+        },
+    )
+
+
 def _is_high_value_segment_metric(row: dict[str, Any]) -> bool:
     family = str(row.get("metric_family") or "")
     if family not in {"cloud_revenue", "data_center_revenue", "operating_income"}:
@@ -5185,9 +5310,13 @@ def _supplement_banking_context_ledger(
         for family, tickers in family_tickers.items()
         if family in BANKING_METRIC_FAMILIES
     }
+    effective_banking_tickers = _contract_banking_metric_tickers(query_contract)
+    if effective_banking_tickers:
+        for family in (_contract_required_metric_families(query_contract) & BANKING_METRIC_FAMILIES):
+            banking_family_tickers.setdefault(family, set()).update(effective_banking_tickers)
     focus = set().union(*banking_family_tickers.values()) if banking_family_tickers else set()
     if not focus:
-        focus = {str(item).upper() for item in query_contract.get("focus_tickers") or []}
+        focus = effective_banking_tickers or {str(item).upper() for item in query_contract.get("focus_tickers") or []}
     years = {int(year) for year in case.get("years") or [] if _int_or_none(year) is not None}
     desired_families = (set(banking_family_tickers) or _contract_required_metric_families(query_contract)) & BANKING_METRIC_FAMILIES
     if not focus or not desired_families:
@@ -5212,6 +5341,9 @@ def _supplement_banking_context_ledger(
         if not text:
             continue
         for row in _banking_ledger_rows_from_context(case, context_row, text, desired_families):
+            row_year_int = _int_or_none(row.get("fiscal_year"))
+            if years and row_year_int not in years:
+                continue
             row_year = str(row.get("fiscal_year") or "")
             family = str(row.get("metric_family") or "")
             key_by_family_ticker_year = (family, ticker, row_year)
@@ -5395,14 +5527,27 @@ def _banking_ledger_rows_from_context(
 
 
 def _numeric_tokens_for_banking_line(line: str, family: str) -> list[str]:
-    tokens = []
-    for match in re.finditer(r"[$(]?\s*-?\d[\d,]*(?:\.\d+)?\s*(?:%|million|billion)?\)?", line, re.I):
+    token_spans: list[tuple[str, int]] = []
+    for match in re.finditer(r"(?<![A-Za-z])[$(]?\s*-?\d[\d,]*(?:\.\d+)?\s*(?:%|million|billion)?\)?", line, re.I):
         raw = match.group(0).strip()
         if _is_standalone_year_text(raw):
             continue
-        tokens.append(raw)
+        token_spans.append((raw, match.start()))
+    tokens = [raw for raw, _start in token_spans]
     if family in {"net_interest_margin", "capital_ratio"}:
-        return [token for token in tokens if "%" in token or re.search(r"\b\d+(?:\.\d+)?\b", token)]
+        first_pipe = str(line).find("|")
+        filtered = []
+        for token, start in token_spans:
+            if "%" in token:
+                filtered.append(token)
+                continue
+            if first_pipe >= 0 and start < first_pipe:
+                continue
+            if re.fullmatch(r"\d", re.sub(r"[,%()$]", "", token).strip()):
+                continue
+            if re.search(r"\b\d+(?:\.\d+)?\b", token):
+                filtered.append(token)
+        return filtered
     return tokens
 
 
@@ -5506,7 +5651,25 @@ def _contract_required_metric_families(query_contract: dict[str, Any]) -> set[st
         families.update(str(item) for item in task.get("required_metric_families") or [] if str(item))
     rules = query_contract.get("ledger_rules") or {}
     families.update(str(item) for item in rules.get("allowed_metric_families") or [] if str(item))
-    return families
+    return _expand_metric_family_aliases(families)
+
+
+def _expand_metric_family_aliases(families: Iterable[str]) -> set[str]:
+    aliases = {
+        "capex": {"capex", "capital_expenditure_proxy"},
+        "margin": {"gross_margin", "operating_income"},
+        "operating_margin": {"operating_income"},
+        "segment_revenue": {"segment_revenue", "revenue", "total_revenue", "product_revenue", "data_center_revenue"},
+        "orders_backlog": {"orders_backlog", "rpo", "deferred_revenue", "arr_or_recurring_proxy"},
+        "rpo_deferred_revenue": {"rpo_deferred_revenue", "rpo", "deferred_revenue", "arr_or_recurring_proxy"},
+    }
+    expanded: set[str] = set()
+    for family in families:
+        text = str(family or "").strip()
+        if not text:
+            continue
+        expanded.update(aliases.get(text, {text}))
+    return expanded
 
 
 def _contract_required_family_tickers(query_contract: dict[str, Any]) -> dict[str, set[str]]:
@@ -5529,6 +5692,42 @@ def _contract_required_family_tickers(query_contract: dict[str, Any]) -> dict[st
         family: set(default_focus)
         for family in _contract_required_metric_families(query_contract)
     }
+
+
+def _contract_banking_metric_tickers(query_contract: dict[str, Any]) -> set[str]:
+    rules = query_contract.get("ledger_rules") if isinstance(query_contract.get("ledger_rules"), dict) else {}
+    configured = {str(item).upper() for item in rules.get("banking_metric_tickers") or [] if str(item).strip()}
+    candidate_tickers = {
+        str(item).upper()
+        for item in [
+            *(query_contract.get("search_scope_tickers") or []),
+            *(query_contract.get("focus_tickers") or []),
+        ]
+        if str(item).strip()
+    }
+    evidence_banking_tickers: set[str] = set()
+    for requirement in query_contract.get("evidence_requirements") or []:
+        if not isinstance(requirement, dict):
+            continue
+        families = {str(item) for item in requirement.get("metric_families") or [] if str(item)}
+        if not (families & BANKING_METRIC_FAMILIES):
+            continue
+        tickers = {str(item).upper() for item in requirement.get("tickers") or [] if str(item).strip()}
+        evidence_banking_tickers.update(tickers)
+        candidate_tickers.update(tickers)
+
+    if not candidate_tickers:
+        return configured
+
+    project_inventory = query_contract.get("project_inventory") if isinstance(query_contract.get("project_inventory"), dict) else {}
+    inventory_banking = set(_banking_tickers_for_focus(sorted(candidate_tickers), project_inventory)) if project_inventory else set()
+    explicit_banking_scope = inventory_banking or evidence_banking_tickers
+    if explicit_banking_scope:
+        if not configured:
+            return explicit_banking_scope
+        if evidence_banking_tickers and not evidence_banking_tickers <= configured:
+            return configured | explicit_banking_scope
+    return configured
 
 
 def _contract_has_peer_scope(query_contract: dict[str, Any]) -> bool:
@@ -8912,7 +9111,7 @@ def _is_human_capital_ledger_topic(text: str) -> bool:
         "operating committee",
         "board of directors",
     )
-    return any(term in normalized for term in human_terms)
+    return any(re.search(rf"(?<![a-z]){re.escape(term)}(?![a-z])", normalized) for term in human_terms)
 
 
 def _banking_ledger_row_allowed(row: dict[str, Any], text: str, name_lower: str, source_signal_lower: str) -> bool:
@@ -8923,7 +9122,8 @@ def _banking_ledger_row_allowed(row: dict[str, Any], text: str, name_lower: str,
         return False
     if _is_human_capital_ledger_topic(text):
         return False
-    if any(term in text for term in ("income tax", "tax expense", "tax benefit", "provision for income taxes")):
+    metric_scope_text = f"{name_lower} {source_signal_lower}"
+    if any(term in metric_scope_text for term in ("income tax", "tax expense", "tax benefit", "provision for income taxes")):
         return False
     required_terms = {
         "allowance_for_credit_losses": ("allowance for credit losses", "allowance for loan losses", "allowance for expected credit losses"),
@@ -9047,7 +9247,7 @@ def _ledger_row_allowed(
     if "by segment" in column_label_lower:
         return False
     if family in BANKING_METRIC_FAMILIES:
-        banking_scope = {str(item).upper() for item in rules.get("banking_metric_tickers") or [] if str(item).strip()}
+        banking_scope = _contract_banking_metric_tickers(query_contract)
         if banking_scope and ticker not in banking_scope:
             return False
         return _banking_ledger_row_allowed(row, row_text_lower, name_lower, source_signal_lower)

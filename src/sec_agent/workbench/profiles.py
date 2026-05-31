@@ -45,6 +45,11 @@ class RuntimeProfile(BaseModel):
     execution_shell: str = "auto"
     wsl_distro: str | None = None
     wsl_repo_root: str | None = None
+    multi_agent_graph: str | None = None
+    multi_agent_lead_router: str | None = None
+    multi_agent_specialist_router: str | None = None
+    multi_agent_universe_router: str | None = None
+    multi_agent_memo_router: str | None = None
 
 
 class WorkbenchProfile(BaseModel):
@@ -81,6 +86,11 @@ class WorkbenchProfile(BaseModel):
             "MARKET_EVIDENCE_PATH": self.sources.market_evidence_path,
             "MARKET_SNAPSHOT_ID": self.sources.market_snapshot_id,
             "MARKET_AS_OF_DATE": self.sources.market_as_of_date,
+            "SEC_AGENT_MULTI_AGENT_GRAPH": self.runtime.multi_agent_graph,
+            "SEC_AGENT_MULTI_AGENT_LEAD_ROUTER": self.runtime.multi_agent_lead_router,
+            "SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER": self.runtime.multi_agent_specialist_router,
+            "SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER": self.runtime.multi_agent_universe_router,
+            "SEC_AGENT_MULTI_AGENT_MEMO_ROUTER": self.runtime.multi_agent_memo_router,
         }
         for key, value in optional_values.items():
             if value is not None and str(value) != "":
@@ -128,6 +138,11 @@ def profile_from_env_file(
             execution_shell=values.get("WORKBENCH_EXECUTION_SHELL", "auto"),
             wsl_distro=_none_if_blank(values.get("WORKBENCH_WSL_DISTRO")),
             wsl_repo_root=_none_if_blank(values.get("WORKBENCH_WSL_REPO_ROOT")),
+            multi_agent_graph=_none_if_blank(values.get("SEC_AGENT_MULTI_AGENT_GRAPH")),
+            multi_agent_lead_router=_none_if_blank(values.get("SEC_AGENT_MULTI_AGENT_LEAD_ROUTER")),
+            multi_agent_specialist_router=_none_if_blank(values.get("SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER")),
+            multi_agent_universe_router=_none_if_blank(values.get("SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER")),
+            multi_agent_memo_router=_none_if_blank(values.get("SEC_AGENT_MULTI_AGENT_MEMO_ROUTER")),
         ),
     )
 

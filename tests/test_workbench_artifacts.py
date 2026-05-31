@@ -63,6 +63,37 @@ def test_inspect_run_artifacts_accepts_native_checkpoint_without_legacy_state(tm
     assert index.state_summary["node_count"] == 2
 
 
+def test_inspect_run_artifacts_summarizes_multi_agent_trace(tmp_path: Path) -> None:
+    run_dir = _write_saved_run_fixture(tmp_path)
+    _write_json(
+        run_dir / "multi_agent_summary.json",
+        {
+            "schema_version": "sec_agent_multi_agent_summary_v0.1",
+            "run_id": "fixture_run",
+            "status": "completed",
+            "execution_mode": "standard_memo",
+            "activated_agents": ["research_lead", "sec_operator", "memo_writer", "verifier", "renderer"],
+            "skipped_agents": [{"agent_id": "universe_relationship", "reason": "Not needed."}],
+            "tool_call_count": 2,
+            "tool_calls": [
+                {"agent_id": "sec_operator", "tool_name": "sec_search_filings", "row_count": 3, "source_gap_count": 0}
+            ],
+            "second_pass": {"attempts": 1, "result": {"added_row_count": 0}},
+            "loop_break_reason": "no_incremental_evidence",
+            "bounded_answer_allowed": True,
+        },
+    )
+
+    index = inspect_run_artifacts(run_dir)
+    by_id = {artifact.artifact_id: artifact for artifact in index.artifacts}
+
+    assert by_id["multi_agent_summary"].exists is True
+    assert by_id["multi_agent_summary"].summary["execution_mode"] == "standard_memo"
+    assert by_id["multi_agent_summary"].summary["tool_call_count"] == 2
+    assert by_id["multi_agent_summary"].summary["second_pass_attempts"] == 1
+    assert index.state_summary["multi_agent"]["loop_break_reason"] == "no_incremental_evidence"
+
+
 def test_run_job_records_artifact_status(tmp_path: Path) -> None:
     index = inspect_run_artifacts(_write_saved_run_fixture(tmp_path))
 

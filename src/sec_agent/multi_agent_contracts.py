@@ -11,6 +11,7 @@ SPECIALIST_VERIFICATION_SCHEMA_VERSION = "sec_agent_specialist_verification_v0.1
 MEMO_DRAFT_SCHEMA_VERSION = "sec_agent_multi_agent_memo_draft_v0.1"
 MEMO_VERIFICATION_SCHEMA_VERSION = "sec_agent_multi_agent_memo_verification_v0.1"
 RELATIONSHIP_EDGE_SCHEMA_VERSION = "sec_agent_relationship_edge_v0.2"
+MEMO_THESIS_PACK_SCHEMA_VERSION = "sec_agent_memo_thesis_pack_v0.1"
 
 SPECIALIST_AGENT_IDS = {
     "fundamental_analyst",
@@ -344,6 +345,14 @@ def aggregate_specialist_judgment_plan(
         unsupported_claims=unsupported_claims,
         source_boundary_notes=source_boundary_notes,
     )
+    memo_thesis_pack = _memo_thesis_pack_from_claims(
+        supported_claims=supported_claims,
+        memo_outline=memo_outline,
+        memo_thesis_plan=memo_thesis_plan,
+        conflicts=conflicts,
+        unsupported_claims=unsupported_claims,
+        source_boundary_notes=source_boundary_notes,
+    )
     memo_constraints = _memo_constraints(
         validation_errors=errors,
         supported_claims=supported_claims,
@@ -369,6 +378,7 @@ def aggregate_specialist_judgment_plan(
         "source_boundary_notes": source_boundary_notes,
         "memo_outline": memo_outline,
         "memo_thesis_plan": memo_thesis_plan,
+        "memo_thesis_pack": memo_thesis_pack,
         "claim_card_stats": _claim_card_stats(supported_claims, memo_outline),
         "thesis_synthesis": thesis_synthesis,
         "unsupported_claim_policy": {
@@ -844,6 +854,135 @@ def _primary_thesis_claim(claims: list[dict[str, Any]]) -> dict[str, Any] | None
     return claims[0] if claims else None
 
 
+def _memo_thesis_pack_from_claims(
+    *,
+    supported_claims: list[dict[str, Any]],
+    memo_outline: list[dict[str, Any]],
+    memo_thesis_plan: Mapping[str, Any],
+    conflicts: list[dict[str, Any]],
+    unsupported_claims: list[dict[str, Any]],
+    source_boundary_notes: list[dict[str, Any]],
+) -> dict[str, Any]:
+    thesis_claim = _primary_thesis_claim(supported_claims) or {}
+    supporting_drivers = []
+    for slot in ("fundamentals", "industry_relationship", "market_valuation", "risk_counterevidence"):
+        slot_claims = [claim for claim in supported_claims if _normalize_memo_slot(claim.get("memo_slot")) == slot]
+        if not slot_claims:
+            continue
+        supporting_drivers.append(
+            {
+                "memo_slot": slot,
+                "section_title": _memo_slot_title(slot),
+                "driver": _memo_pack_claim(slot_claims[0]),
+                "supporting_claim_count": len(slot_claims),
+            }
+        )
+    counterarguments = [
+        _memo_pack_claim(claim)
+        for claim in supported_claims
+        if _normalize_memo_slot(claim.get("memo_slot")) == "risk_counterevidence"
+    ][:3]
+    counterarguments.extend(
+        {
+            "claim_id": "",
+            "memo_slot": "risk_counterevidence",
+            "claim": str(item.get("claim") or ""),
+            "reason": str(item.get("reason") or ""),
+            "evidence_refs": _unique_strings(item.get("evidence_refs"))[:4],
+            "source_families": _unique_strings(item.get("source_families"))[:4],
+        }
+        for item in conflicts[:2]
+    )
+    source_claim_refs = _unique_strings(
+        [
+            ref
+            for claim in [thesis_claim, *[row.get("driver") or {} for row in supporting_drivers], *counterarguments]
+            if isinstance(claim, Mapping)
+            for ref in _unique_strings(claim.get("evidence_refs"))
+        ]
+    )
+    supported_slots = [
+        str(row.get("memo_slot") or "")
+        for row in memo_outline
+        if isinstance(row, Mapping) and str(row.get("status") or "") == "supported"
+    ]
+    source_family_counts: dict[str, int] = {}
+    for claim in supported_claims:
+        for family in _unique_strings(claim.get("source_families")):
+            source_family_counts[family] = source_family_counts.get(family, 0) + 1
+    return {
+        "schema_version": MEMO_THESIS_PACK_SCHEMA_VERSION,
+        "status": str(memo_thesis_plan.get("status") or ("ready" if thesis_claim else "blocked")),
+        "core_thesis": _memo_pack_claim(thesis_claim),
+        "supporting_drivers": supporting_drivers[:4],
+        "counterarguments": counterarguments[:4],
+        "watch_items": _memo_thesis_pack_watch_items(
+            supported_claims=supported_claims,
+            unsupported_claims=unsupported_claims,
+            source_boundary_notes=source_boundary_notes,
+        ),
+        "evidence_strength_map": {
+            "supported_claim_count": len(supported_claims),
+            "supported_memo_slots": supported_slots,
+            "source_family_counts": source_family_counts,
+            "source_boundary_note_count": len(source_boundary_notes),
+        },
+        "source_boundary": "verified ClaimCards only; relationship and industry rows are scope/context evidence, not reported financial facts",
+        "source_claim_refs": source_claim_refs[:12],
+        "pack_policy": "deterministic_thesis_pack_from_verified_claim_cards_v0_1",
+    }
+
+
+def _memo_pack_claim(claim: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "claim_id": str(claim.get("claim_id") or ""),
+        "memo_slot": _normalize_memo_slot(claim.get("memo_slot")),
+        "claim": str(claim.get("claim") or ""),
+        "claim_type": str(claim.get("claim_type") or ""),
+        "direction": _normalize_direction(claim.get("direction")),
+        "materiality": _normalize_materiality(claim.get("materiality")),
+        "ticker_scope": _unique_upper(claim.get("ticker_scope"))[:6],
+        "metric_scope": _unique_strings(claim.get("metric_scope"))[:6],
+        "evidence_refs": _unique_strings(claim.get("evidence_refs"))[:6],
+        "source_families": _unique_strings(claim.get("source_families"))[:5],
+        "caveats": _unique_strings(claim.get("caveats"))[:3],
+        "missing_confirmations": _unique_strings(claim.get("missing_confirmations"))[:3],
+        "claim_rank_score": _bounded_int(claim.get("claim_rank_score"), default=0, minimum=0, maximum=100),
+        "claim_rank_bucket": str(claim.get("claim_rank_bucket") or ""),
+    }
+
+
+def _memo_thesis_pack_watch_items(
+    *,
+    supported_claims: list[dict[str, Any]],
+    unsupported_claims: list[dict[str, Any]],
+    source_boundary_notes: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    seen: set[str] = set()
+
+    def add(kind: str, text: str, *, claim_id: str = "", agent_id: str = "") -> None:
+        clean = str(text or "").strip()
+        key = f"{kind}:{claim_id}:{clean}".lower()
+        if not clean or key in seen or len(items) >= 8:
+            return
+        seen.add(key)
+        items.append({"type": kind, "claim_id": claim_id, "agent_id": agent_id, "text": clean})
+
+    for claim in supported_claims:
+        for item in _unique_strings(claim.get("missing_confirmations"))[:2]:
+            add("missing_confirmation", item, claim_id=str(claim.get("claim_id") or ""), agent_id=str(claim.get("agent_id") or ""))
+    for item in unsupported_claims[:3]:
+        add("unsupported_excluded", str(item.get("reason") or item.get("claim") or ""), agent_id=str(item.get("agent_id") or ""))
+    for note in source_boundary_notes[:3]:
+        add(
+            "source_boundary",
+            str(note.get("reason") or note.get("note") or note.get("source_family") or ""),
+            agent_id=str(note.get("agent_id") or ""),
+        )
+    return items
+
+
 def _memo_slot_objective(slot: str) -> str:
     return {
         "thesis": "State the bounded investment thesis using verified ClaimCards only.",
@@ -962,6 +1101,7 @@ def build_multi_agent_memo_draft(
         "memo_constraints": dict(constraints),
         "memo_outline": [dict(item) for item in judgment.get("memo_outline") or [] if isinstance(item, Mapping)],
         "memo_thesis_plan": dict(judgment.get("memo_thesis_plan") or {}) if isinstance(judgment.get("memo_thesis_plan"), Mapping) else {},
+        "memo_thesis_pack": dict(judgment.get("memo_thesis_pack") or {}) if isinstance(judgment.get("memo_thesis_pack"), Mapping) else {},
         "claim_card_stats": dict(judgment.get("claim_card_stats") or {}),
     }
     if not allowed:

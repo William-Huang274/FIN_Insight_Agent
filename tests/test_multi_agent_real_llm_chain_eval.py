@@ -22,6 +22,8 @@ def test_multi_agent_real_llm_chain_fixture_schema() -> None:
     assert sum(1 for row in rows if row.get("require_real_retrieval_pass")) == 4
     sector_cases = [row for row in rows if row["category"] == "sector_depth"]
     assert all(row.get("expected_relationship_pack_ids") for row in sector_cases)
+    assert all(row.get("require_rendered_memo_claims") for row in sector_cases)
+    assert all(row.get("require_rendered_evidence_refs") for row in sector_cases)
 
 
 def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
@@ -69,6 +71,106 @@ def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
     assert score["gate_status"] == "pass"
     assert all(score["checks"].values())
     assert score["agent_audit"]["research_lead"]["validation_status"] == "pass"
+
+
+def test_multi_agent_real_llm_chain_scoring_rejects_memo_fallback_from_summary() -> None:
+    module = _load_script_module()
+    case = _read_jsonl(FIXTURE_PATH)[0]
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "focused_answer",
+            "activate_agents": [
+                "research_lead",
+                "sec_operator",
+                "eight_k_operator",
+                "coverage_reflection",
+                "memo_writer",
+                "verifier",
+                "renderer",
+            ],
+            "focus_tickers": ["AMZN"],
+            "search_scope_tickers": ["AMZN"],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "tool_call_ledger": {
+            "records": [
+                {"agent_id": "sec_operator", "tool_name": "sec_search_filings", "status": "dry_run", "row_count": 1},
+                {"agent_id": "eight_k_operator", "tool_name": "sec_search_filings", "status": "dry_run", "row_count": 1},
+            ]
+        },
+        "memo_answer": {"answer_status": "draft", "bounded_answer_allowed": False},
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": "fallback rendered answer",
+    }
+    summary = {
+        "payload_policy": {"raw_evidence": "not_included"},
+        "llm_routes": {
+            "research_lead": {"diagnostics": _ok_diag()},
+            "memo_writer": {"route_result": {"status": "fallback"}, "diagnostics": _ok_diag()},
+            "verifier": {"diagnostics": _ok_diag()},
+        },
+    }
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=12)
+
+    assert score["gate_status"] == "fail"
+    assert score["checks"]["memo_verifier.memo_llm_pass"] is False
+
+
+def test_multi_agent_real_llm_chain_scoring_requires_rendered_claim_refs_when_configured() -> None:
+    module = _load_script_module()
+    case = {
+        **_read_jsonl(FIXTURE_PATH)[0],
+        "require_rendered_memo_claims": True,
+        "require_rendered_evidence_refs": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "focused_answer",
+            "activate_agents": [
+                "research_lead",
+                "sec_operator",
+                "eight_k_operator",
+                "coverage_reflection",
+                "memo_writer",
+                "verifier",
+                "renderer",
+            ],
+            "focus_tickers": ["AMZN"],
+            "search_scope_tickers": ["AMZN"],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "tool_call_ledger": {
+            "records": [
+                {"agent_id": "sec_operator", "tool_name": "sec_search_filings", "status": "dry_run", "row_count": 1},
+                {"agent_id": "eight_k_operator", "tool_name": "sec_search_filings", "status": "dry_run", "row_count": 1},
+            ]
+        },
+        "memo_answer": {
+            "answer_status": "draft",
+            "bounded_answer_allowed": False,
+            "memo_claims": [{"claim": "Supported claim.", "evidence_refs": ["ref_1"]}],
+        },
+        "memo_route_result": {"status": "pass", "attempt_count": 1},
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": "Supported claim without rendered refs.",
+    }
+    summary = {
+        "payload_policy": {"raw_evidence": "not_included"},
+        "llm_routes": {
+            "research_lead": {"diagnostics": _ok_diag()},
+            "memo_writer": {"diagnostics": _ok_diag()},
+            "verifier": {"diagnostics": _ok_diag()},
+        },
+    }
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=12)
+
+    assert score["gate_status"] == "fail"
+    assert score["checks"]["memo_verifier.rendered_answer_has_memo_claims"] is False
+    assert score["checks"]["memo_verifier.rendered_answer_has_evidence_refs"] is False
 
 
 def test_real_llm_chain_specialist_quality_requires_industry_relationship_ref_for_sector_depth() -> None:

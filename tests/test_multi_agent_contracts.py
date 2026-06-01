@@ -225,6 +225,8 @@ def test_judgment_plan_synthesizes_thesis_from_supported_business_slots() -> Non
 
     thesis = judgment["supported_claims"][0]
     thesis_plan = judgment["memo_thesis_plan"]
+    thesis_pack = judgment["memo_thesis_pack"]
+    known_refs = {ref for claim in judgment["supported_claims"] for ref in claim.get("evidence_refs", [])}
     assert judgment["thesis_synthesis"]["status"] == "synthesized"
     assert thesis["claim_id"] == "judgment_plan_aggregator_thesis_1"
     assert thesis["memo_slot"] == "thesis"
@@ -238,7 +240,16 @@ def test_judgment_plan_synthesizes_thesis_from_supported_business_slots() -> Non
     assert thesis_plan["status"] == "ready"
     assert thesis_plan["primary_thesis_claim_id"] == "judgment_plan_aggregator_thesis_1"
     assert thesis_plan["risk_or_counter_claim_ids"] == ["risk_counterevidence_analyst_claim_3"]
+    assert thesis_pack["schema_version"] == "sec_agent_memo_thesis_pack_v0.1"
+    assert thesis_pack["core_thesis"]["claim_id"] == "judgment_plan_aggregator_thesis_1"
+    assert {row["memo_slot"] for row in thesis_pack["supporting_drivers"]} == {
+        "fundamentals",
+        "industry_relationship",
+        "risk_counterevidence",
+    }
+    assert set(thesis_pack["source_claim_refs"]) <= known_refs
     assert memo["memo_thesis_plan"]["primary_thesis_claim_id"] == "judgment_plan_aggregator_thesis_1"
+    assert memo["memo_thesis_pack"]["core_thesis"]["claim_id"] == "judgment_plan_aggregator_thesis_1"
     assert memo["memo_generation_policy"] == "thesis_led_claim_cards_v0_1"
     assert memo["direct_answer"].startswith("Bank net interest income has bounded filing support.")
     assert outline["thesis"]["status"] == "supported"

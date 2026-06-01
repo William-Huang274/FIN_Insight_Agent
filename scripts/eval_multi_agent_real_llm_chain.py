@@ -220,6 +220,10 @@ def score_case(
     max_tool_calls = int(case.get("max_tool_calls_total_lte") or 999)
     activated_scope = set(_string_list(activation.get("focus_tickers")) + _string_list(activation.get("search_scope_tickers")))
     forbidden_scope_hits = sorted(activated_scope & set(_string_list(case.get("forbidden_scope_tickers"))))
+    rendered_answer = str(result.get("rendered_answer") or "")
+    memo_claim_count = len([row for row in memo.get("memo_claims") or [] if isinstance(row, Mapping)])
+    rendered_has_claim_section = "Key memo claims:" in rendered_answer
+    rendered_has_evidence_refs = "refs=" in rendered_answer
 
     layer_checks = {
         "research_lead": {
@@ -266,6 +270,8 @@ def score_case(
                 else True
             ),
             "rendered_answer_not_empty": bool(str(result.get("rendered_answer") or "").strip()),
+            "rendered_answer_has_memo_claims": rendered_has_claim_section if case.get("require_rendered_memo_claims") else True,
+            "rendered_answer_has_evidence_refs": rendered_has_evidence_refs if case.get("require_rendered_evidence_refs") else True,
         },
         "payload_safety": {
             "raw_payload_not_in_summary": (summary.get("payload_policy") or {}).get("raw_evidence") == "not_included",
@@ -295,6 +301,10 @@ def score_case(
         "tool_call_count": len(tool_calls),
         "loop_break_reason": result.get("loop_break_reason") or "",
         "memo_status": memo_status,
+        "memo_claim_count": memo_claim_count,
+        "rendered_answer_chars": len(rendered_answer),
+        "rendered_answer_has_claim_section": rendered_has_claim_section,
+        "rendered_answer_has_evidence_refs": rendered_has_evidence_refs,
         "claim_verification": claim_verification.get("status") or "",
         "specialist_verification": specialist_verification.get("status") or "",
         "universe_validation": universe_validation.get("status") or ("skipped" if "universe_relationship" not in active_agents else ""),
@@ -308,7 +318,7 @@ def score_case(
         "node_trace": [row.get("node") for row in result.get("node_trace") or [] if isinstance(row, Mapping)],
         "summary_artifact_present": bool(summary),
         "native_summary_artifact_present": bool(native),
-        "rendered_answer_preview": str(result.get("rendered_answer") or "")[:320],
+        "rendered_answer_preview": rendered_answer[:640],
     }
 
 
@@ -797,6 +807,9 @@ def _memo_llm_pass(result: Mapping[str, Any], summary: Mapping[str, Any]) -> boo
     if memo_route:
         return str(memo_route.get("status") or "") == "pass"
     route = _route(summary.get("llm_routes") if isinstance(summary.get("llm_routes"), Mapping) else {}, "memo_writer")
+    route_result = route.get("route_result") if isinstance(route.get("route_result"), Mapping) else {}
+    if route_result:
+        return str(route_result.get("status") or "") == "pass"
     return _diag_call_count(route) >= 1 and _diag_calls_ok(route)
 
 

@@ -70,6 +70,10 @@ def audit_case(case: Mapping[str, Any], *, artifact_root: Path | None = None) ->
         "specialist_stats": specialists,
         "second_pass_attempts": second_pass_attempts,
         "rendered_preview_chars": len(preview),
+        "rendered_answer_chars": int(case.get("rendered_answer_chars") or len(preview)),
+        "memo_claim_count": int(case.get("memo_claim_count") or 0),
+        "rendered_answer_has_claim_section": bool(case.get("rendered_answer_has_claim_section")),
+        "rendered_answer_has_evidence_refs": bool(case.get("rendered_answer_has_evidence_refs")),
         "rendered_preview_gap_language": _has_gap_language(preview),
         "quality_flags": quality_flags,
         "quality_risk_level": _risk_level(quality_flags),
@@ -256,6 +260,11 @@ def _quality_flags(
         flags.append("memo_outline_under_supported")
     if _has_gap_language(preview):
         flags.append("memo_surface_says_evidence_thin")
+    rendered_chars = int(case.get("rendered_answer_chars") or len(preview))
+    if mode == "deep_research" and str(case.get("memo_status") or "") == "draft" and rendered_chars < 900:
+        flags.append("rendered_memo_too_short")
+    if mode == "deep_research" and int(case.get("memo_claim_count") or 0) > 0 and not bool(case.get("rendered_answer_has_evidence_refs")):
+        flags.append("rendered_memo_missing_evidence_refs")
     if (
         str(case.get("execution_mode") or "") == "deep_research"
         and int(specialists.get("route_count") or 0) >= 4
@@ -286,6 +295,8 @@ def _run_hypotheses(cases: list[Mapping[str, Any]]) -> list[str]:
     hypotheses: list[str] = []
     if any("specialist_inputs_tightly_capped" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Specialist data views are safe but too narrow for sector-depth multi-company synthesis; increase budget by execution mode and source quota, not globally.")
+    if any("high_total_token_cost" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("Total token cost remains high; inspect specialist activation breadth and repeated downstream verification before adding more evidence.")
     if any("many_unsupported_specialist_claims" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Specialist outputs are still gap-heavy observations instead of memo-ready claim cards; the downstream memo receives too few supported investment claims.")
     if any("claim_card_density_low" in case.get("quality_flags", []) for case in cases):
@@ -298,6 +309,10 @@ def _run_hypotheses(cases: list[Mapping[str, Any]]) -> list[str]:
         hypotheses.append("Coverage / Reflection is not converting source gaps into useful second-pass retrieval before memo generation.")
     if any("memo_writer_high_token_cost" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Memo Writer spends many tokens on a large compressed judgment payload, but the contract does not force a dense structured memo.")
+    if any("rendered_memo_too_short" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("Renderer is not converting verified memo claims into a sufficiently useful final memo surface.")
+    if any("rendered_memo_missing_evidence_refs" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("Final memo rendering is hiding evidence refs, making a supported memo look like an unsupported summary.")
     if any("verifier_high_token_cost" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Verifier is acting as an expensive safety door; it does not add memo depth and should be paired with separate quality gates.")
     if not hypotheses:

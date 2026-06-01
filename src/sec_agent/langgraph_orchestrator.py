@@ -1526,6 +1526,65 @@ def _repair_injected_verifier_failure_once(
     return next_state, {**dict(retry_result), "memo_answer": candidate, "claim_verification": repaired_claim}
 
 
+def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
+    parts: list[str] = []
+    direct = str(memo.get("direct_answer") or "No deterministic memo text was generated.").strip()
+    if direct:
+        parts.append(direct)
+
+    claim_lines = _render_memo_claim_lines(memo.get("memo_claims") or memo.get("supported_claims") or [])
+    if claim_lines:
+        parts.append("Key memo claims:\n" + "\n".join(claim_lines))
+
+    caveats = _render_loose_memo_items(memo.get("caveats") or [], max_items=3)
+    if caveats:
+        parts.append("Caveats:\n" + "\n".join(f"- {item}" for item in caveats))
+
+    excluded = _render_loose_memo_items(memo.get("unsupported_claims_excluded") or [], max_items=2)
+    if excluded:
+        parts.append("Unsupported claims excluded:\n" + "\n".join(f"- {item}" for item in excluded))
+
+    boundary = str(memo.get("source_boundary") or "verified judgment plan only").strip()
+    if boundary:
+        parts.append(f"Source boundary: {boundary}")
+
+    if bounded and str(memo.get("answer_status") or "") == "draft" and claim_lines:
+        parts.append("Bounded evidence note: verifier accepted the thesis-led memo claims under the current source boundary.")
+    return "\n\n".join(part for part in parts if part)
+
+
+def _render_memo_claim_lines(value: Any) -> list[str]:
+    lines: list[str] = []
+    for index, claim in enumerate(value if isinstance(value, list) else [], start=1):
+        if not isinstance(claim, Mapping):
+            continue
+        text = str(claim.get("claim") or claim.get("text") or "").strip()
+        if not text:
+            continue
+        claim_id = str(claim.get("claim_id") or "").strip()
+        refs = [str(ref) for ref in claim.get("evidence_refs") or claim.get("refs") or [] if str(ref or "").strip()]
+        id_text = f" [{claim_id}]" if claim_id else ""
+        ref_text = f" refs={', '.join(refs[:4])}" if refs else ""
+        lines.append(f"{index}. {text}{id_text}{ref_text}")
+        if len(lines) >= 5:
+            break
+    return lines
+
+
+def _render_loose_memo_items(value: Any, *, max_items: int) -> list[str]:
+    items: list[str] = []
+    for item in value if isinstance(value, list) else []:
+        if isinstance(item, Mapping):
+            text = str(item.get("text") or item.get("claim") or item.get("reason") or item.get("type") or "").strip()
+        else:
+            text = str(item or "").strip()
+        if text:
+            items.append(text)
+        if len(items) >= max_items:
+            break
+    return items
+
+
 def _node_multi_agent_renderer(
     state: SecAgentGraphRuntimeState,
     *,
@@ -1545,33 +1604,14 @@ def _node_multi_agent_renderer(
             result = {"rendered_answer": "Bounded answer only: memo verification failed under current evidence constraints."}
         elif bounded:
             if str(memo.get("answer_status") or "") == "draft" and memo.get("memo_claims"):
-                result = {
-                    "rendered_answer": "\n\n".join(
-                        item
-                        for item in (
-                            str(memo.get("direct_answer") or "No deterministic memo text was generated."),
-                            f"Source boundary: {memo.get('source_boundary') or 'verified judgment plan only'}",
-                            "Bounded evidence note: current source gaps constrain confidence, but verifier accepted the thesis-led memo claims.",
-                        )
-                        if item
-                    )
-                }
+                result = {"rendered_answer": _render_memo_answer(memo, bounded=True)}
             else:
                 result = {
                     "rendered_answer": "Bounded answer only: "
                     + str(memo.get("direct_answer") or "current evidence constraints block full memo generation.")
                 }
         else:
-            result = {
-                "rendered_answer": "\n\n".join(
-                    item
-                    for item in (
-                        str(memo.get("direct_answer") or "No deterministic memo text was generated."),
-                        f"Source boundary: {memo.get('source_boundary') or 'verified judgment plan only'}",
-                    )
-                    if item
-                )
-            }
+            result = {"rendered_answer": _render_memo_answer(memo, bounded=False)}
     return _record_node({**state, **result}, "renderer", metadata={"mode": "injected" if renderer else "stub"})
 
 
@@ -2293,6 +2333,7 @@ def _judgment_plan_quality_summary(value: Any) -> dict[str, Any]:
         return {}
     stats = value.get("claim_card_stats") if isinstance(value.get("claim_card_stats"), Mapping) else {}
     outline = [row for row in value.get("memo_outline") or [] if isinstance(row, Mapping)]
+    thesis_pack = value.get("memo_thesis_pack") if isinstance(value.get("memo_thesis_pack"), Mapping) else {}
     return {
         "claim_card_stats": {
             "supported_claim_count": int(stats.get("supported_claim_count") or 0),
@@ -2305,6 +2346,14 @@ def _judgment_plan_quality_summary(value: Any) -> dict[str, Any]:
         "unsupported_claim_count": len(value.get("unsupported_claims") or []),
         "conflict_count": len(value.get("conflicts") or []),
         "thesis_synthesis": dict(value.get("thesis_synthesis") or {}) if isinstance(value.get("thesis_synthesis"), Mapping) else {},
+        "memo_thesis_pack": {
+            "present": bool(thesis_pack),
+            "status": str(thesis_pack.get("status") or ""),
+            "supporting_driver_count": len(thesis_pack.get("supporting_drivers") or []),
+            "counterargument_count": len(thesis_pack.get("counterarguments") or []),
+            "watch_item_count": len(thesis_pack.get("watch_items") or []),
+            "source_claim_ref_count": len(thesis_pack.get("source_claim_refs") or []),
+        },
         "unsupported_claim_policy": dict(value.get("unsupported_claim_policy") or {}) if isinstance(value.get("unsupported_claim_policy"), Mapping) else {},
         "memo_outline": [
             {

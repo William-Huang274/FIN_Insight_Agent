@@ -137,16 +137,16 @@ def route_memo_writer_llm(
         if llm_result.get("tool_calls"):
             last_failure = {"type": "direct_tool_call_forbidden", "detail": "Memo Writer may not call tools."}
             continue
-        if str(llm_result.get("finish_reason") or "").lower() == "length":
-            last_failure = {
-                "type": "model_output_truncated",
-                "detail": "The model hit max_tokens before closing JSON.",
-                "finish_reason": llm_result.get("finish_reason"),
-                "output_tokens": llm_result.get("output_tokens"),
-            }
-            continue
         parsed = extract_json_object(previous_content)
         if parsed is None:
+            if str(llm_result.get("finish_reason") or "").lower() == "length":
+                last_failure = {
+                    "type": "model_output_truncated",
+                    "detail": "The model hit max_tokens before closing JSON.",
+                    "finish_reason": llm_result.get("finish_reason"),
+                    "output_tokens": llm_result.get("output_tokens"),
+                }
+                continue
             last_failure = {"type": "json_parse_failed", "detail": "No MemoDraft JSON object was found."}
             continue
         memo = _normalize_memo_llm_output(parsed, judgment)
@@ -278,6 +278,10 @@ def extract_json_object(text: str) -> dict[str, Any] | None:
     return None
 
 
+def _json_for_prompt(value: Any, *, sort_keys: bool = False) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=sort_keys, separators=(",", ":"))
+
+
 def _normalize_memo_llm_output(payload: Mapping[str, Any], judgment: Any) -> dict[str, Any]:
     memo = dict(payload or {})
     nested = memo.get("memo_draft")
@@ -310,6 +314,7 @@ def _normalize_memo_llm_output(payload: Mapping[str, Any], judgment: Any) -> dic
     memo.setdefault("memo_constraints", base.get("memo_constraints") or {})
     memo.setdefault("memo_outline", base.get("memo_outline") or [])
     memo.setdefault("memo_thesis_plan", base.get("memo_thesis_plan") or {})
+    memo.setdefault("memo_thesis_pack", base.get("memo_thesis_pack") or {})
     memo.setdefault("claim_card_stats", base.get("claim_card_stats") or {})
     memo.setdefault("bounded_answer_allowed", False)
     memo.setdefault("memo_generation_policy", "thesis_led_claim_cards_v0_1")
@@ -373,7 +378,8 @@ def _memo_messages(
     }
     user = (
         "Write one MemoDraft JSON object from the compact verified judgment plan only. "
-        "Use memo_thesis_plan as the lead structure: start direct_answer from primary_thesis when present, then follow section_sequence. "
+        "Use memo_thesis_pack as the primary writing brief and memo_thesis_plan as the lead structure: "
+        "start direct_answer from core_thesis or primary_thesis when present, then follow section_sequence. "
         "Use memo_outline only as a fallback section inventory and convert supported ClaimCard observations into memo_claims. "
         "Prefer claim_rank_bucket=memo_ready and higher claim_rank_score when choosing scarce memo_claim slots. "
         "Preserve materiality, direction, ticker_scope, metric_scope, evidence_refs, caveats, and missing_confirmations where provided. "
@@ -384,7 +390,7 @@ def _memo_messages(
         "Emit only the allowed top-level fields listed in memo_output_contract; do not emit analysis traces, copied judgment_plan, source tables, or full supported_claims. "
         "Do not narrate every source row; synthesize only the strongest supported investment claims and boundaries. "
         "Return JSON only; no markdown, no explanatory preface.\n\n"
-        f"Input JSON:\n{json.dumps(user_payload, ensure_ascii=False, indent=2)}"
+        f"Input JSON:\n{_json_for_prompt(user_payload)}"
     )
     if prior_failure:
         cleaned_failure = _clean_for_prompt(prior_failure)
@@ -392,8 +398,8 @@ def _memo_messages(
         if str(prior_failure.get("type") or "") in {"json_parse_failed", "model_output_truncated"}:
             user = (
                 "Repair the previous MemoDraft response. The prior output was not a complete valid compact JSON object.\n"
-                f"Diagnostic:\n{json.dumps(cleaned_failure, ensure_ascii=False, sort_keys=True)}\n\n"
-                f"Use this compact input JSON only:\n{json.dumps(repair_payload, ensure_ascii=False, indent=2)}\n\n"
+                f"Diagnostic:\n{_json_for_prompt(cleaned_failure, sort_keys=True)}\n\n"
+                f"Use this compact input JSON only:\n{_json_for_prompt(repair_payload)}\n\n"
                 "Return exactly one minimal MemoDraft JSON object. "
                 "direct_answer <= 360 characters, memo_claims <= 4, caveats <= 3, unsupported_claims_excluded <= 2, source_boundary_notes <= 3. "
                 "Do not emit supported_claims. No markdown, no prose, no row-by-row recap."
@@ -401,8 +407,8 @@ def _memo_messages(
         else:
             user = (
                 "Repair the previous MemoDraft response using the compact verified judgment only.\n"
-                f"Diagnostic:\n{json.dumps(cleaned_failure, ensure_ascii=False, sort_keys=True)}\n\n"
-                f"Use this compact input JSON only:\n{json.dumps(repair_payload, ensure_ascii=False, indent=2)}\n\n"
+                f"Diagnostic:\n{_json_for_prompt(cleaned_failure, sort_keys=True)}\n\n"
+                f"Use this compact input JSON only:\n{_json_for_prompt(repair_payload)}\n\n"
                 f"Previous output excerpt:\n{_truncate(prior_content, 500)}\n\n"
                 "Return one shorter corrected MemoDraft JSON object only."
             )
@@ -416,6 +422,9 @@ def _compact_judgment_for_memo(value: Any) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {}
     supported = [_compact_claim_card(item) for item in value.get("supported_claims") or [] if isinstance(item, Mapping)]
+    thesis_pack = _compact_memo_thesis_pack(value.get("memo_thesis_pack") or {})
+    supported_claim_cap = 0 if thesis_pack else MEMO_SUPPORTED_CLAIM_CAP
+    memo_outline_cap = 4 if thesis_pack else 8
     unsupported = [
         {
             "agent_id": str(item.get("agent_id") or ""),
@@ -440,13 +449,14 @@ def _compact_judgment_for_memo(value: Any) -> dict[str, Any]:
         "supported_claims": _select_memo_supported_claims(
             supported,
             value.get("memo_outline") or [],
-            max_claims=MEMO_SUPPORTED_CLAIM_CAP,
+            max_claims=supported_claim_cap,
         ),
         "unsupported_claims": unsupported[:MEMO_UNSUPPORTED_CLAIM_CAP],
         "conflicts": conflicts[:MEMO_CONFLICT_CAP],
         "source_boundary_notes": _compact_source_boundary_notes(value.get("source_boundary_notes") or []),
-        "memo_outline": [dict(item) for item in value.get("memo_outline") or [] if isinstance(item, Mapping)][:8],
+        "memo_outline": [dict(item) for item in value.get("memo_outline") or [] if isinstance(item, Mapping)][:memo_outline_cap],
         "memo_thesis_plan": _compact_memo_thesis_plan(value.get("memo_thesis_plan") or {}),
+        "memo_thesis_pack": thesis_pack,
         "claim_card_stats": dict(value.get("claim_card_stats") or {}),
         "memo_constraints": _compact_memo_constraints(value.get("memo_constraints") or {}),
         "memo_writer_allowed": bool(value.get("memo_writer_allowed", True)),
@@ -457,16 +467,18 @@ def _compact_judgment_for_memo(value: Any) -> dict[str, Any]:
 def _compact_memo_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, Any]:
     judgment = payload.get("verified_judgment_plan") if isinstance(payload.get("verified_judgment_plan"), Mapping) else {}
     compact_judgment = dict(judgment)
+    thesis_pack = _compact_memo_thesis_pack(judgment.get("memo_thesis_pack") or {})
     compact_judgment["supported_claims"] = _select_memo_supported_claims(
         [dict(item) for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)],
         judgment.get("memo_outline") or [],
-        max_claims=5,
+        max_claims=0 if thesis_pack else 5,
     )
     compact_judgment["unsupported_claims"] = [
         dict(item) for item in judgment.get("unsupported_claims") or [] if isinstance(item, Mapping)
     ][:MEMO_UNSUPPORTED_CLAIM_CAP]
     compact_judgment["conflicts"] = [dict(item) for item in judgment.get("conflicts") or [] if isinstance(item, Mapping)][:MEMO_CONFLICT_CAP]
     compact_judgment["source_boundary_notes"] = [dict(item) for item in judgment.get("source_boundary_notes") or [] if isinstance(item, Mapping)][:4]
+    compact_judgment["memo_thesis_pack"] = thesis_pack
     return {
         "user_query": _truncate(str(payload.get("user_query") or ""), 240),
         "verified_judgment_plan": compact_judgment,
@@ -536,6 +548,69 @@ def _compact_memo_thesis_plan(value: Any) -> dict[str, Any]:
         "risk_or_counter_claim_ids": _string_list(value.get("risk_or_counter_claim_ids"))[:4],
         "section_sequence": sections,
         "plan_policy": str(value.get("plan_policy") or ""),
+    }
+
+
+def _compact_memo_thesis_pack(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or not value:
+        return {}
+    drivers = []
+    for row in value.get("supporting_drivers") or []:
+        if not isinstance(row, Mapping):
+            continue
+        driver = row.get("driver") if isinstance(row.get("driver"), Mapping) else {}
+        drivers.append(
+            {
+                "memo_slot": str(row.get("memo_slot") or ""),
+                "section_title": _truncate(str(row.get("section_title") or ""), 80),
+                "driver": _compact_pack_claim(driver),
+                "supporting_claim_count": int(row.get("supporting_claim_count") or 0),
+            }
+        )
+        if len(drivers) >= 3:
+            break
+    return {
+        "schema_version": str(value.get("schema_version") or ""),
+        "status": str(value.get("status") or ""),
+        "core_thesis": _compact_pack_claim(value.get("core_thesis") if isinstance(value.get("core_thesis"), Mapping) else {}),
+        "supporting_drivers": drivers,
+        "counterarguments": [
+            _compact_pack_claim(item)
+            for item in value.get("counterarguments") or []
+            if isinstance(item, Mapping)
+        ][:2],
+        "watch_items": [
+            {
+                "type": str(item.get("type") or ""),
+                "claim_id": str(item.get("claim_id") or ""),
+                "text": _truncate(str(item.get("text") or item.get("reason") or ""), 120),
+            }
+            for item in value.get("watch_items") or []
+            if isinstance(item, Mapping)
+        ][:4],
+        "evidence_strength_map": dict(value.get("evidence_strength_map") or {}) if isinstance(value.get("evidence_strength_map"), Mapping) else {},
+        "source_boundary": _truncate(str(value.get("source_boundary") or ""), 160),
+        "source_claim_refs": _string_list(value.get("source_claim_refs"))[:8],
+        "pack_policy": str(value.get("pack_policy") or ""),
+    }
+
+
+def _compact_pack_claim(value: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "claim_id": str(value.get("claim_id") or ""),
+        "memo_slot": str(value.get("memo_slot") or ""),
+        "claim": _truncate(str(value.get("claim") or ""), 180),
+        "claim_type": str(value.get("claim_type") or ""),
+        "direction": str(value.get("direction") or ""),
+        "materiality": str(value.get("materiality") or ""),
+        "ticker_scope": _string_list(value.get("ticker_scope"))[:6],
+        "metric_scope": _string_list(value.get("metric_scope"))[:6],
+        "evidence_refs": _string_list(value.get("evidence_refs"))[:4],
+        "source_families": _string_list(value.get("source_families"))[:4],
+        "caveats": [_truncate(str(part), 90) for part in _string_list(value.get("caveats"))[:1]],
+        "missing_confirmations": [
+            _truncate(str(part), 90) for part in _string_list(value.get("missing_confirmations"))[:1]
+        ],
     }
 
 
@@ -807,7 +882,7 @@ def _memo_system_prompt() -> str:
     return "\n\n".join(
         [
             "You are the Memo Writer Agent for a SEC investment research multi-agent graph.",
-            research_skill_prompt("memo_writer", max_chars=3200),
+            research_skill_prompt("memo_writer", max_chars=1800),
             "Return exactly one JSON object. Do not wrap it in prose. Do not call tools.",
             "Only consume the compact verified_judgment_plan and specialist_verification. Do not include raw rows or retrieval requests.",
             "Follow memo_outline when present; make unsupported and missing evidence visible as limitations instead of filling gaps.",

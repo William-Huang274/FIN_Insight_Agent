@@ -92,6 +92,62 @@ def test_graph_verifier_repairs_once_then_reverifies(tmp_path) -> None:
     assert result["memo_answer"]["tool_calls_requested"] == []
 
 
+def test_graph_renderer_surfaces_memo_claims_and_evidence_refs(tmp_path) -> None:
+    def injected_specialists(_state: dict) -> dict:
+        return {
+            "specialist_outputs": [
+                {
+                    "agent_id": "fundamental_analyst",
+                    "observations": [
+                        {
+                            "claim": "Supported capex claim.",
+                            "evidence_refs": ["capex_ref"],
+                            "source_families": ["primary_sec_filing"],
+                        }
+                    ],
+                }
+            ]
+        }
+
+    def memo_writer(_state: dict) -> dict:
+        return {
+            "memo_answer": {
+                "answer_status": "draft",
+                "direct_answer": "Supported capex claim.",
+                "raw_rows_consumed": False,
+                "tool_calls_requested": [],
+                "memo_claims": [
+                    {
+                        "claim_id": "claim_capex",
+                        "claim": "Supported capex claim.",
+                        "evidence_refs": ["capex_ref"],
+                        "source_families": ["primary_sec_filing"],
+                    }
+                ],
+                "caveats": [{"text": "Scope is bounded to verified claim cards."}],
+                "source_boundary": "verified ClaimCards only",
+            }
+        }
+
+    graph = build_multi_agent_orchestration_graph(run_specialist_analysts=injected_specialists, memo_writer=memo_writer)
+    result = graph.invoke(
+        make_multi_agent_smoke_state(
+            user_query="写一段投研 memo，比较 NVDA 和 AMD 的基本面。",
+            output_dir=tmp_path,
+            query_contract=_query_contract(["NVDA", "AMD"]),
+            focus_tickers=["NVDA", "AMD"],
+            search_scope_tickers=["NVDA", "AMD"],
+        ),
+        config={"configurable": {"thread_id": "unit-renderer-claims"}},
+    )
+
+    rendered = result["rendered_answer"]
+    assert "Key memo claims:" in rendered
+    assert "refs=capex_ref" in rendered
+    assert "Caveats:" in rendered
+    assert "Source boundary: verified ClaimCards only" in rendered
+
+
 def test_memo_writer_llm_accepts_valid_memo_json() -> None:
     fake = _FakeChat([json.dumps(_memo())])
 
@@ -110,6 +166,7 @@ def test_memo_writer_llm_accepts_valid_memo_json() -> None:
     assert "ClaimCard" in fake.calls[0]["messages"][1]["content"]
     assert "memo_outline" in fake.calls[0]["messages"][1]["content"]
     assert "memo_thesis_plan" in fake.calls[0]["messages"][1]["content"]
+    assert "memo_thesis_pack" in fake.calls[0]["messages"][1]["content"]
     assert "memo_writer_data_view" not in fake.calls[0]["messages"][1]["content"]
     assert "memo_writer_v0_4_thesis_led_claim_cards_no_duplicate_data_view" in fake.calls[0]["messages"][1]["content"]
     assert "do_not_emit_supported_claims" in fake.calls[0]["messages"][1]["content"]
@@ -165,6 +222,28 @@ def test_memo_writer_llm_uses_compact_repair_prompt_after_length() -> None:
     assert "memo_writer_data_view" not in repair_prompt
     assert "direct_answer <= 360 characters" in repair_prompt
     assert "unsupported_claims_excluded <= 2" in repair_prompt
+
+
+def test_memo_writer_llm_accepts_complete_json_even_when_finish_reason_length() -> None:
+    fake = _FakeChat(
+        [
+            {
+                "content": json.dumps(_memo()),
+                "finish_reason": "length",
+                "output_tokens": 2600,
+            }
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        _state(),
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["memo_route_result"]["status"] == "pass"
+    assert result["memo_route_result"]["attempt_count"] == 1
+    assert result["memo_route_result"]["finish_reasons"] == ["length"]
 
 
 def test_memo_writer_prompt_uses_slot_balanced_v0_3_caps() -> None:
@@ -239,6 +318,74 @@ def test_memo_writer_prompt_uses_slot_balanced_v0_3_caps() -> None:
     assert len(compact["conflicts"]) == 2
     assert "memo_thesis_plan" in compact
     assert payload["memo_output_contract"]["memo_claims_max"] == 5
+
+
+def test_memo_writer_prompt_uses_thesis_pack_as_projection_not_extra_payload() -> None:
+    claims = [
+        {
+            "claim_id": f"claim_{index}",
+            "agent_id": "fundamental_analyst",
+            "claim": f"Supported claim {index}.",
+            "claim_type": "company_reported_financial_fact",
+            "memo_slot": "fundamentals",
+            "evidence_refs": [f"ref_{index}"],
+            "source_families": ["primary_sec_filing"],
+            "materiality": "high",
+            "claim_rank_score": 80 - index,
+            "claim_rank_bucket": "memo_ready",
+        }
+        for index in range(6)
+    ]
+    judgment = {
+        "schema_version": "sec_agent_specialist_judgment_plan_v0.1",
+        "status": "pass",
+        "supported_claims": claims,
+        "memo_outline": [{"memo_slot": "fundamentals", "status": "supported"}],
+        "memo_thesis_plan": {"schema_version": "sec_agent_memo_thesis_plan_v0.1", "status": "ready"},
+        "memo_thesis_pack": {
+            "schema_version": "sec_agent_memo_thesis_pack_v0.1",
+            "status": "ready",
+            "core_thesis": claims[0],
+            "supporting_drivers": [{"memo_slot": "fundamentals", "driver": claims[1], "supporting_claim_count": 6}],
+            "source_claim_refs": ["ref_0", "ref_1"],
+        },
+        "memo_writer_allowed": True,
+    }
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "answer_status": "draft",
+                    "direct_answer": "Supported claim 0.",
+                    "memo_claims": [
+                        {
+                            "claim": "Supported claim 0.",
+                            "evidence_refs": ["ref_0"],
+                            "source_families": ["primary_sec_filing"],
+                        }
+                    ],
+                    "memo_thesis_plan": judgment["memo_thesis_plan"],
+                    "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+                }
+            )
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "Write a memo.",
+            "verified_judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    payload = extract_json_object(fake.calls[0]["messages"][1]["content"]) or {}
+    compact = payload["verified_judgment_plan"]
+    assert result["memo_route_result"]["status"] == "pass"
+    assert compact["memo_thesis_pack"]["schema_version"] == "sec_agent_memo_thesis_pack_v0.1"
+    assert len(compact["supported_claims"]) == 0
 
 
 def test_memo_env_router_returns_none_for_mock_mode() -> None:

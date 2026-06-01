@@ -77,6 +77,7 @@ def test_multi_agent_graph_standard_path_runs_specialists(tmp_path: Path) -> Non
     summary = json.loads((tmp_path / "multi_agent_summary.json").read_text(encoding="utf-8"))
     assert "claim_card_stats" in summary["judgment_plan"]
     assert "claim_card_stats" in summary["verified_judgment_plan"]
+    assert summary["judgment_plan"]["memo_thesis_pack"]["present"] is True
 
 
 def test_multi_agent_graph_blocks_unsupported_specialist_claims_before_memo_writer(tmp_path: Path) -> None:

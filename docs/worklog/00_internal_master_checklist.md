@@ -381,5 +381,6 @@
 - [x] Add Memo Writer non-contract answer-status normalization and renderer behavior that preserves verified draft memos with bounded evidence notes.
 - [ ] Debug AI infra, banking, healthcare, and energy/utilities one case at a time with changed-variable, expected improvement, token impact, and rollback notes.
 - [ ] Add numeric runtime-ledger row requirements for Step17 cases that make numeric metric claims, while allowing text-heavy relationship cases to pass on real context rows plus cited relationship evidence.
-- [ ] Introduce a P6 thesis-pack / memo-depth-tier contract to reduce Memo Writer token cost while improving final memo density.
+- [x] Introduce a P6 thesis-pack projection contract to reduce Memo Writer payload ambiguity while improving final memo density.
+- [x] Add rendered memo-claim / evidence-ref gates for sector-depth Step17 real-chain cases.
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.

@@ -209,3 +209,45 @@ Decision:
 - Keep P7.2. Verifier token cost dropped by `2,639` tokens while claim verification, Specialist real-evidence quality, rendered memo claims, and evidence refs stayed green.
 - P7.2 does not reduce total cost by itself because Memo Writer still used `2` attempts and spent more tokens in this run. Total agent tokens were effectively flat (`79,688` -> `79,711`).
 - Next step should be P7.4 cost-quality metrics and then a Memo Writer retry/length root-cause pass, not another Verifier prompt change.
+
+## 8. P7.4 Cost-quality Metrics Result
+
+Implemented:
+
+- Extended `scripts/audit_multi_agent_output_quality.py` with `cost_quality_stats`:
+  - total tokens per supported ClaimCard
+  - Specialist tokens per supported ClaimCard
+  - total tokens per rendered memo claim
+  - memo chars per total token
+  - Memo Writer and Verifier token share
+  - Memo Writer attempt / repair-attempt ratio
+  - Memo Writer repair-token ratio when per-call token diagnostics are available
+- Markdown audit table now shows `Cost/claim` and `Chars/token`.
+- Added flags and hypotheses for:
+  - `low_rendered_claim_token_efficiency`
+  - `low_claim_card_token_efficiency`
+  - `low_memo_chars_per_token`
+  - `memo_writer_retry_cost_present`
+
+Deterministic gate:
+
+- `python -m pytest tests/test_multi_agent_output_quality_audit.py -q` -> `7 passed`.
+
+Offline audit on P7.2 real smoke:
+
+- Command: `python scripts\audit_multi_agent_output_quality.py eval\sec_cases\outputs\multi_agent_real_llm_chain_eval\20260601_sector_depth_p7_verifier_projection_smoke_deepseek_v0_1\real_chain_eval_summary.json --artifact-root eval\sec_cases\outputs\multi_agent_real_llm_chain_eval\20260601_sector_depth_p7_verifier_projection_smoke_deepseek_v0_1`
+- Total tokens: `79,711`
+- Supported ClaimCards: `16`
+- Rendered memo claims: `4`
+- Tokens per supported ClaimCard: `4,981.94`
+- Tokens per rendered memo claim: `19,927.75`
+- Memo chars per total token: `0.04792`
+- Memo Writer token share: `0.24088`
+- Verifier token share: `0.06541`
+- Memo Writer attempts: `2`, repair-attempt ratio `0.5`
+- New quality flags: `low_rendered_claim_token_efficiency`, `low_memo_chars_per_token`, `memo_writer_retry_cost_present`
+
+Decision:
+
+- Keep P7.4. It does not change chain behavior, but it makes cost/quality trade-offs visible from saved artifacts.
+- The next engineering target should be Memo Writer retry/length reduction and rendered memo density, because Verifier is no longer the dominant downstream cost after P7.2.

@@ -232,6 +232,67 @@ def test_output_quality_audit_does_not_flag_unsearchable_source_gaps_as_second_p
     assert "source_gaps_without_second_pass" not in audit["cases"][0]["quality_flags"]
 
 
+def test_output_quality_audit_reports_cost_quality_metrics(tmp_path) -> None:
+    module = _load_script()
+    case_dir = tmp_path / "case_cost_quality"
+    case_dir.mkdir()
+    (case_dir / "multi_agent_summary.json").write_text(
+        """{
+  "verified_judgment_plan": {
+    "claim_card_stats": {
+      "supported_claim_count": 5,
+      "memo_slot_count": 4,
+      "supported_memo_slot_count": 4
+    }
+  }
+}""",
+        encoding="utf-8",
+    )
+    summary = {
+        "run_id": "unit_run",
+        "output_dir": str(tmp_path),
+        "cases": [
+            {
+                "case_id": "case_cost_quality",
+                "category": "sector_depth",
+                "gate_status": "pass",
+                "execution_mode": "deep_research",
+                "memo_status": "draft",
+                "memo_claim_count": 2,
+                "rendered_answer_chars": 500,
+                "agent_audit": {
+                    "research_lead": {"diagnostics": {"total_tokens": 3000}},
+                    "memo_writer": {
+                        "route_result": {"attempt_count": 2, "repair_attempts": 1},
+                        "diagnostics": {
+                            "total_tokens": 4000,
+                            "calls": [{"total_tokens": 1000}, {"total_tokens": 3000}],
+                        },
+                    },
+                    "verifier": {"diagnostics": {"total_tokens": 3000}},
+                    "specialists": {
+                        "route_results": [
+                            {"agent_id": "fundamental_analyst", "status": "pass", "total_tokens": 50000}
+                        ]
+                    },
+                },
+            }
+        ],
+    }
+
+    audit = module.audit_summary(summary, artifact_root=tmp_path)
+    case = audit["cases"][0]
+    stats = case["cost_quality_stats"]
+
+    assert stats["tokens_per_supported_claim_card"] == 12000
+    assert stats["tokens_per_rendered_memo_claim"] == 30000
+    assert stats["memo_writer_repair_token_ratio"] == 0.75
+    assert "low_rendered_claim_token_efficiency" in case["quality_flags"]
+    assert "low_claim_card_token_efficiency" in case["quality_flags"]
+    assert "low_memo_chars_per_token" in case["quality_flags"]
+    assert "memo_writer_retry_cost_present" in case["quality_flags"]
+
+
 def _load_script():
     spec = importlib.util.spec_from_file_location("multi_agent_output_quality_audit_under_test", SCRIPT_PATH)
     assert spec and spec.loader

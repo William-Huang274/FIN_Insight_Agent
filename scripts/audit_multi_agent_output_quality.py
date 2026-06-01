@@ -44,6 +44,7 @@ def audit_case(case: Mapping[str, Any], *, artifact_root: Path | None = None) ->
     tools = _tool_stats(agent_audit)
     tokens = _token_stats(agent_audit)
     specialists = _specialist_stats(agent_audit, sidecar)
+    cost_quality = _cost_quality_stats(case, agent_audit=agent_audit, tokens=tokens, specialists=specialists)
     preview = str(case.get("rendered_answer_preview") or "")
     second_pass_attempts = _nested_int(sidecar, ("second_pass", "attempts"), default=0)
     second_pass_quality_gap_count = _nested_int(sidecar, ("second_pass", "quality_gap_count"), default=-1)
@@ -53,6 +54,7 @@ def audit_case(case: Mapping[str, Any], *, artifact_root: Path | None = None) ->
         tools=tools,
         tokens=tokens,
         specialists=specialists,
+        cost_quality=cost_quality,
         second_pass_attempts=second_pass_attempts,
         second_pass_quality_gap_count=second_pass_quality_gap_count,
     )
@@ -66,6 +68,7 @@ def audit_case(case: Mapping[str, Any], *, artifact_root: Path | None = None) ->
         "specialist_verification": str(case.get("specialist_verification") or ""),
         "elapsed_ms": int(case.get("elapsed_ms") or 0),
         "token_stats": tokens,
+        "cost_quality_stats": cost_quality,
         "tool_stats": tools,
         "specialist_stats": specialists,
         "second_pass_attempts": second_pass_attempts,
@@ -88,8 +91,8 @@ def render_markdown(audit: Mapping[str, Any]) -> str:
         "",
         "## Case Summary",
         "",
-        "| Case | Risk | Gate | Tokens | Tool rows | Source gaps | Second pass | Specialist rows | Claim cards | Flags |",
-        "| --- | --- | --- | ---: | ---: | ---: | ---: | --- | ---: | --- |",
+        "| Case | Risk | Gate | Tokens | Cost/claim | Chars/token | Tool rows | Source gaps | Second pass | Specialist rows | Claim cards | Flags |",
+        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | --- |",
     ]
     for case in audit.get("cases") or []:
         if not isinstance(case, Mapping):
@@ -97,16 +100,19 @@ def render_markdown(audit: Mapping[str, Any]) -> str:
         tools = case.get("tool_stats") if isinstance(case.get("tool_stats"), Mapping) else {}
         tokens = case.get("token_stats") if isinstance(case.get("token_stats"), Mapping) else {}
         specs = case.get("specialist_stats") if isinstance(case.get("specialist_stats"), Mapping) else {}
+        cost = case.get("cost_quality_stats") if isinstance(case.get("cost_quality_stats"), Mapping) else {}
         rows = specs.get("input_rows_by_agent") if isinstance(specs.get("input_rows_by_agent"), Mapping) else {}
         rows_text = ", ".join(f"{_short_agent(agent)}={count}" for agent, count in rows.items()) or "n/a"
         claim_card_stats = specs.get("claim_card_stats") if isinstance(specs.get("claim_card_stats"), Mapping) else {}
         flags = ", ".join(case.get("quality_flags") or []) or "none"
         lines.append(
-            "| {case_id} | {risk} | {gate} | {tokens} | {rows_total} | {gaps} | {second} | {spec_rows} | {claim_cards} | {flags} |".format(
+            "| {case_id} | {risk} | {gate} | {tokens} | {cost_claim} | {chars_token} | {rows_total} | {gaps} | {second} | {spec_rows} | {claim_cards} | {flags} |".format(
                 case_id=case.get("case_id") or "",
                 risk=case.get("quality_risk_level") or "",
                 gate=case.get("gate_status") or "",
                 tokens=tokens.get("total_tokens") or 0,
+                cost_claim=_fmt_metric(cost.get("tokens_per_rendered_memo_claim")),
+                chars_token=_fmt_metric(cost.get("memo_chars_per_total_token")),
                 rows_total=tools.get("row_count_total") or 0,
                 gaps=tools.get("source_gap_count_total") or 0,
                 second=case.get("second_pass_attempts") or 0,
@@ -163,6 +169,7 @@ def _token_stats(agent_audit: Mapping[str, Any]) -> dict[str, Any]:
         if value:
             tokens_by_agent[agent] = value
     specialists = agent_audit.get("specialists") if isinstance(agent_audit.get("specialists"), Mapping) else {}
+    specialist_tokens = 0
     for row in specialists.get("route_results") or []:
         if not isinstance(row, Mapping):
             continue
@@ -170,11 +177,50 @@ def _token_stats(agent_audit: Mapping[str, Any]) -> dict[str, Any]:
         value = int(row.get("total_tokens") or 0)
         if agent_id and value:
             tokens_by_agent[agent_id] = value
+            specialist_tokens += value
     return {
         "total_tokens": sum(tokens_by_agent.values()),
         "tokens_by_agent": dict(sorted(tokens_by_agent.items())),
+        "research_lead_tokens": tokens_by_agent.get("research_lead", 0),
+        "universe_relationship_tokens": tokens_by_agent.get("universe_relationship", 0),
+        "specialist_tokens": specialist_tokens,
         "memo_writer_tokens": tokens_by_agent.get("memo_writer", 0),
         "verifier_tokens": tokens_by_agent.get("verifier", 0),
+    }
+
+
+def _cost_quality_stats(
+    case: Mapping[str, Any],
+    *,
+    agent_audit: Mapping[str, Any],
+    tokens: Mapping[str, Any],
+    specialists: Mapping[str, Any],
+) -> dict[str, Any]:
+    total_tokens = int(tokens.get("total_tokens") or 0)
+    memo_tokens = int(tokens.get("memo_writer_tokens") or 0)
+    verifier_tokens = int(tokens.get("verifier_tokens") or 0)
+    specialist_tokens = int(tokens.get("specialist_tokens") or 0)
+    claim_card_stats = specialists.get("claim_card_stats") if isinstance(specialists.get("claim_card_stats"), Mapping) else {}
+    supported_claims = int(claim_card_stats.get("supported_claim_count") or 0)
+    memo_claims = int(case.get("memo_claim_count") or 0)
+    rendered_chars = int(case.get("rendered_answer_chars") or len(str(case.get("rendered_answer_preview") or "")))
+    memo_writer = agent_audit.get("memo_writer") if isinstance(agent_audit.get("memo_writer"), Mapping) else {}
+    route_result = memo_writer.get("route_result") if isinstance(memo_writer.get("route_result"), Mapping) else {}
+    diagnostics = memo_writer.get("diagnostics") if isinstance(memo_writer.get("diagnostics"), Mapping) else {}
+    attempt_count = int(route_result.get("attempt_count") or diagnostics.get("call_count") or 0)
+    repair_attempts = int(route_result.get("repair_attempts") or max(0, attempt_count - 1))
+    repair_tokens = _repair_tokens_from_diagnostics(diagnostics)
+    return {
+        "tokens_per_supported_claim_card": _safe_ratio(total_tokens, supported_claims),
+        "specialist_tokens_per_supported_claim_card": _safe_ratio(specialist_tokens, supported_claims),
+        "tokens_per_rendered_memo_claim": _safe_ratio(total_tokens, memo_claims),
+        "memo_chars_per_total_token": _safe_ratio(rendered_chars, total_tokens, precision=5),
+        "memo_writer_token_share": _safe_ratio(memo_tokens, total_tokens, precision=5),
+        "verifier_token_share": _safe_ratio(verifier_tokens, total_tokens, precision=5),
+        "memo_writer_attempt_count": attempt_count,
+        "memo_writer_repair_attempts": repair_attempts,
+        "memo_writer_repair_attempt_ratio": _safe_ratio(repair_attempts, attempt_count, precision=5),
+        "memo_writer_repair_token_ratio": _safe_ratio(repair_tokens, memo_tokens, precision=5) if repair_tokens is not None else None,
     }
 
 
@@ -219,6 +265,7 @@ def _quality_flags(
     tools: Mapping[str, Any],
     tokens: Mapping[str, Any],
     specialists: Mapping[str, Any],
+    cost_quality: Mapping[str, Any],
     second_pass_attempts: int,
     second_pass_quality_gap_count: int = -1,
 ) -> list[str]:
@@ -229,6 +276,16 @@ def _quality_flags(
         flags.append("memo_writer_high_token_cost")
     if int(tokens.get("verifier_tokens") or 0) >= 12000:
         flags.append("verifier_high_token_cost")
+    if _numeric(cost_quality.get("tokens_per_rendered_memo_claim")) >= 18000:
+        flags.append("low_rendered_claim_token_efficiency")
+    if _numeric(cost_quality.get("tokens_per_supported_claim_card")) >= 6000:
+        flags.append("low_claim_card_token_efficiency")
+    if _numeric(cost_quality.get("memo_chars_per_total_token")) > 0 and _numeric(cost_quality.get("memo_chars_per_total_token")) < 0.05:
+        flags.append("low_memo_chars_per_token")
+    repair_token_ratio = _numeric(cost_quality.get("memo_writer_repair_token_ratio"))
+    repair_attempt_ratio = _numeric(cost_quality.get("memo_writer_repair_attempt_ratio"))
+    if repair_token_ratio >= 0.25 or repair_attempt_ratio >= 0.5:
+        flags.append("memo_writer_retry_cost_present")
     if (
         int(tools.get("source_gap_count_total") or 0) > 0
         and second_pass_attempts == 0
@@ -309,6 +366,14 @@ def _run_hypotheses(cases: list[Mapping[str, Any]]) -> list[str]:
         hypotheses.append("Coverage / Reflection is not converting source gaps into useful second-pass retrieval before memo generation.")
     if any("memo_writer_high_token_cost" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Memo Writer spends many tokens on a large compressed judgment payload, but the contract does not force a dense structured memo.")
+    if any("low_rendered_claim_token_efficiency" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("The chain spends many tokens per rendered memo claim; inspect Memo Writer retries, Specialist breadth, and claim projection before adding more evidence.")
+    if any("low_claim_card_token_efficiency" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("Token spend is not converting efficiently into supported ClaimCards; inspect Specialist role prompts and row selectors before increasing caps.")
+    if any("low_memo_chars_per_token" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("Final memo surface area is low relative to token spend; improve thesis-led rendering or reduce upstream payloads.")
+    if any("memo_writer_retry_cost_present" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("Memo Writer retries are a material cost driver; inspect max-token truncation, output schema compactness, and repair prompts.")
     if any("rendered_memo_too_short" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Renderer is not converting verified memo claims into a sufficiently useful final memo surface.")
     if any("rendered_memo_missing_evidence_refs" in case.get("quality_flags", []) for case in cases):
@@ -349,6 +414,35 @@ def _nested_int(payload: Mapping[str, Any], path: tuple[str, ...], *, default: i
         return int(value)
     except (TypeError, ValueError):
         return default
+
+
+def _repair_tokens_from_diagnostics(diagnostics: Mapping[str, Any]) -> int | None:
+    calls = [row for row in diagnostics.get("calls") or [] if isinstance(row, Mapping)]
+    if not calls:
+        return None
+    values = [int(row.get("total_tokens") or 0) for row in calls[1:]]
+    return sum(values) if values else 0
+
+
+def _safe_ratio(numerator: int, denominator: int, *, precision: int = 2) -> float | None:
+    if denominator <= 0:
+        return None
+    return round(float(numerator) / float(denominator), precision)
+
+
+def _numeric(value: Any) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _fmt_metric(value: Any) -> str:
+    if value is None:
+        return "n/a"
+    if isinstance(value, float):
+        return f"{value:.5f}".rstrip("0").rstrip(".")
+    return str(value)
 
 
 def _claim_card_stats_from_sidecar(sidecar: Mapping[str, Any]) -> dict[str, Any]:

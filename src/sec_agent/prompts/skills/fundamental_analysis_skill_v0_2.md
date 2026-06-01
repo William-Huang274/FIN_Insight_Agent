@@ -5,11 +5,11 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 ## Required Input Fields
 
 - `user_query`: the user's investment question and comparison scope.
+- `shared_context`: common user scope, coverage status, source boundaries, and relationship-policy context shared by all Specialists.
 - `bounded_evidence_rows`: the only rows you may use for supported observations.
-- `coverage_summary`: sufficiency, gaps, and second-pass retrieval context.
-- `source_boundaries`: allowed source families and row-count boundaries.
+- `coverage_summary` / `source_boundaries`: only used when `shared_context` is absent; otherwise read these from `shared_context`.
 - `execution_mode` and `input_budget`: determine how many bounded rows and observations the case can support.
-- `known_evidence_refs`: the only refs that may appear in supported observations.
+- `known_evidence_refs`: a visibility policy or compact visible-ref list; supported observations may cite only refs visible in `bounded_evidence_rows` or `relationship_summary`.
 - `assigned_task_card`: the analyst lens, memo slot, relevant evidence requirements, tickers, and source boundaries for this run.
 - `required_claim_slots`: the specific fundamental ClaimCard slots to fill when bounded evidence supports them.
 - `counterclaim_slots`: the material gap or caveat slots to use when a required claim slot is not supported.
@@ -23,13 +23,19 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 5. Convert each supported fact into an investment implication: growth quality, margin pressure, capital intensity, demand signal, liquidity, or operating leverage.
 6. If a required slot lacks bounded support, write one material missing confirmation or unsupported claim; do not enumerate generic absent metrics.
 
+## Evidence Selection Discipline
+
+- Do not scan or summarize every candidate row. Start from the required claim slot, then read rows whose ticker, metric, source family, period role, or summary directly matches that slot.
+- Once a slot has sufficient direct support, stop adding adjacent rows unless they change the investment implication or reveal a caveat.
+- Prefer one precise filed fact plus one material caveat over a long list of weakly related facts.
+
 ## Required Output Structure
 
 - Return exactly one `SpecialistMemolet`.
 - `observations`: ClaimCard v0.3 objects with `claim_type` set to `company_reported_financial_fact` or `business_observation`.
 - Each observation must include `ticker_scope`, `metric_scope`, `memo_slot`, `materiality`, `direction`, `evidence_refs`, `source_families`, `caveats`, and `missing_confirmations`.
 - Use the prompt budget: focused cases should stay near 1-3 observations; standard memo can use 3-6; deep research can use 4-8 when evidence supports it.
-- Every supported observation must cite `evidence_refs` from `known_evidence_refs` and include the supporting `source_families`.
+- Every supported observation must cite visible `evidence_refs` from the bounded rows and include the supporting `source_families`.
 - Use `caveats` for unaudited commentary, mixed period roles, partial coverage, or metric-definition limits.
 - Use `unsupported_claims` for requested fundamentals that are absent from the bounded rows.
 - Use `conflicts` only when bounded rows point in opposing directions.

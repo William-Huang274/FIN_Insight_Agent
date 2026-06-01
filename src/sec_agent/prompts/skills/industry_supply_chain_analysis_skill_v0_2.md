@@ -5,12 +5,12 @@ Use this skill only for the Industry / Supply Chain Analyst. Produce bounded obs
 ## Required Input Fields
 
 - `user_query`: the sector, supply-chain, readthrough, or relationship question.
+- `shared_context`: common user scope, coverage status, source boundaries, and relationship-policy context shared by all Specialists.
 - `bounded_evidence_rows`: industry snapshot rows, relationship graph rows, and any bounded company rows explicitly provided for context.
 - `relationship_summary`: bounded relationship graph summary. Treat it as hypothesis or research-scope evidence only.
-- `coverage_summary`: sufficiency, source gaps, and missing sector-depth coverage.
-- `source_boundaries`: allowed source families and row-count boundaries.
+- `coverage_summary` / `source_boundaries`: only used when `shared_context` is absent; otherwise read these from `shared_context`.
 - `execution_mode` and `input_budget`: determine how many bounded rows and observations the case can support.
-- `known_evidence_refs`: the only refs that may appear in supported observations.
+- `known_evidence_refs`: a visibility policy or compact visible-ref list; supported observations may cite only refs visible in `bounded_evidence_rows` or `relationship_summary`.
 - `assigned_task_card`: the analyst lens, relationship/sector task scope, relevant requirements, tickers, and source boundaries.
 - `required_claim_slots`: the specific industry or relationship ClaimCard slots to fill when bounded evidence supports them.
 - `counterclaim_slots`: the material relationship gap, caveat, or missing confirmation slots to use when support is incomplete.
@@ -25,13 +25,19 @@ Use this skill only for the Industry / Supply Chain Analyst. Produce bounded obs
 6. Separate context from proof. Industry and relationship evidence can support scope, context, and hypotheses, not reported revenue, margin, cash flow, capex, or balance-sheet values.
 7. Convert the chain map into an investment implication: who benefits, who is pressured, what metric should confirm it, and what evidence is still missing.
 
+## Evidence Selection Discipline
+
+- Start with `relationship_summary.relationships` and `relationship_graph` rows when a relationship or sector-depth slot exists, then add only the industry rows that explain the transmission mechanism.
+- Do not consume broad sector rows just because they are present. Keep rows that name the relevant ticker, related ticker, mechanism, constraint, or end-market.
+- If the bounded graph supports only a hypothesis, write a hypothesis-grade ClaimCard and name the missing company-confirming evidence instead of expanding with generic industry commentary.
+
 ## Required Output Structure
 
 - Return exactly one `SpecialistMemolet`.
 - `observations`: ClaimCard v0.3 objects with `claim_type` set to `relationship_hypothesis`, `scope_hypothesis`, or `industry_context_only` when using relationship or industry rows.
 - Each observation must include `ticker_scope`, `metric_scope`, `memo_slot`, `materiality`, `direction`, `evidence_refs`, `source_families`, `caveats`, and `missing_confirmations`.
 - Use the prompt budget: focused cases should stay near 1-3 observations; standard memo can use 3-6; deep research can use 4-8 when evidence supports it.
-- Every supported observation must cite `evidence_refs` from `known_evidence_refs` and include `source_families`.
+- Every supported observation must cite visible `evidence_refs` from bounded rows or relationship summary and include `source_families`.
 - At least one observation must cite a `relationship_graph` ref when relationship rows are available and relevant to the user query.
 - Use `caveats` to mark hypothesis-only status, missing company confirmation, and context-only industry data.
 - Use `unsupported_claims` for named customer/supplier/revenue/market-share claims not present in bounded rows.

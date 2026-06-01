@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import hashlib
 from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
@@ -15,6 +16,7 @@ from sec_agent.research_skills import research_skill_prompt
 ROUTE_SCHEMA_VERSION = "sec_agent_specialist_llm_route_v0.1"
 ROUTE_SOURCE = "specialist_llm_v0.1"
 SPECIALIST_ROUTER_ENV = "SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER"
+SHARED_SPECIALIST_CONTEXT_SCHEMA_VERSION = "sec_agent_shared_specialist_context_v0.1"
 
 ChatCompletionFunc = Callable[..., dict[str, Any]]
 
@@ -62,6 +64,7 @@ def route_specialists_from_env(
     def _route(state: Mapping[str, Any]) -> dict[str, Any]:
         decisions = specialist_activation_decisions(state)
         specialists = active_specialists_for_state(state)
+        shared_context = build_shared_specialist_context(state)
         outputs: list[dict[str, Any]] = []
         route_results: list[dict[str, Any]] = [
             _skipped_route_result_summary(row)
@@ -70,7 +73,7 @@ def route_specialists_from_env(
         ]
         decision_by_agent = {str(row.get("agent_id") or ""): row for row in decisions}
         for agent_id in specialists:
-            request = build_specialist_request_from_state(agent_id, state)
+            request = build_specialist_request_from_state(agent_id, state, shared_context=shared_context)
             result = route_specialist_memolet_llm(
                 agent_id,
                 request,
@@ -89,6 +92,7 @@ def route_specialists_from_env(
             else:
                 outputs.append(_blocked_memolet(agent_id, result))
         return {
+            "shared_specialist_context": shared_context,
             "specialist_outputs": outputs,
             "specialist_route_results": route_results,
         }
@@ -96,29 +100,80 @@ def route_specialists_from_env(
     return _route
 
 
-def build_specialist_request_from_state(agent_id: str, state: Mapping[str, Any]) -> dict[str, Any]:
+def build_shared_specialist_context(state: Mapping[str, Any]) -> dict[str, Any]:
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    reflection = state.get("multi_agent_reflection_report") if isinstance(state.get("multi_agent_reflection_report"), Mapping) else {}
+    sufficiency = state.get("evidence_sufficiency_report") if isinstance(state.get("evidence_sufficiency_report"), Mapping) else {}
+    relationship_plan = state.get("universe_relationship_plan") if isinstance(state.get("universe_relationship_plan"), Mapping) else {}
+    context = {
+        "schema_version": SHARED_SPECIALIST_CONTEXT_SCHEMA_VERSION,
+        "user_query": _truncate(str(state.get("user_query") or ""), 480),
+        "execution_mode": str(activation.get("execution_mode") or state.get("execution_mode") or ""),
+        "focus_tickers": _string_list(activation.get("focus_tickers") or query_contract.get("focus_tickers"))[:12],
+        "search_scope_tickers": _string_list(activation.get("search_scope_tickers") or query_contract.get("search_scope_tickers"))[:24],
+        "coverage": {
+            "sufficiency_level": str(reflection.get("sufficiency_level") or sufficiency.get("sufficiency_level") or ""),
+            "missing_requirement_count": len(reflection.get("missing_requirements") or sufficiency.get("missing_requirements") or []),
+            "bounded_answer_allowed": bool(reflection.get("bounded_answer_allowed") or sufficiency.get("bounded_answer_allowed")),
+            "second_pass_reason": str((state.get("multi_agent_second_pass_decision") or {}).get("reason") or "")
+            if isinstance(state.get("multi_agent_second_pass_decision"), Mapping)
+            else "",
+        },
+        "source_boundaries": _source_boundaries_from_state(state),
+        "relationship_context": {
+            "available": bool(relationship_plan.get("relationships")),
+            "relationship_count": len(relationship_plan.get("relationships") or []),
+            "financial_fact_policy": "relationship_graph_hypothesis_only" if relationship_plan else "",
+            "scope_mode": str(relationship_plan.get("scope_mode") or ""),
+        },
+        "prompt_policy": {
+            "shared_context_policy": "common_task_coverage_and_boundary_context_v0_1",
+            "role_payload_policy": "specialist_receives_only_role_task_and_selected_visible_rows",
+            "evidence_ref_policy": "cite evidence_ref values visible in bounded_evidence_rows or relationship_summary; full validator refs are not repeated in prompt",
+        },
+    }
+    context["context_digest"] = _payload_digest(context)
+    return context
+
+
+def build_specialist_request_from_state(
+    agent_id: str,
+    state: Mapping[str, Any],
+    *,
+    shared_context: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     data_view = build_agent_data_view(agent_id, state)
     execution_mode = _execution_mode_from_state(state, data_view)
     priority = _specialist_priority_from_data_view(data_view)
+    task_card = data_view.get("assigned_task_card") if isinstance(data_view.get("assigned_task_card"), Mapping) else {}
+    required_claim_slots = data_view.get("required_claim_slots") or []
+    counterclaim_slots = data_view.get("counterclaim_slots") or []
     rows = _compact_bounded_rows_for_prompt(
         agent_id,
         list(data_view.get("bounded_evidence_rows") or _bounded_rows_for_agent(agent_id, state)),
         execution_mode=execution_mode,
         priority=priority,
+        task_card=task_card,
+        required_claim_slots=required_claim_slots,
+        counterclaim_slots=counterclaim_slots,
     )
     relationship_summary = _compact_relationship_summary_for_prompt(
         data_view.get("relationship_summary"),
         execution_mode=execution_mode,
+        required_claim_slots=required_claim_slots,
     )
     refs = _known_evidence_refs_from_request({"bounded_evidence_rows": rows, "relationship_summary": relationship_summary})
     input_budget = _specialist_input_budget(agent_id, execution_mode, data_view, priority=priority)
+    context = dict(shared_context or build_shared_specialist_context(state))
     return {
         "agent_id": agent_id,
         "execution_mode": execution_mode,
         "user_query": state.get("user_query") or "",
-        "assigned_task_card": data_view.get("assigned_task_card") or {},
-        "required_claim_slots": data_view.get("required_claim_slots") or [],
-        "counterclaim_slots": data_view.get("counterclaim_slots") or [],
+        "shared_context": context,
+        "assigned_task_card": task_card,
+        "required_claim_slots": required_claim_slots,
+        "counterclaim_slots": counterclaim_slots,
         "bounded_evidence_rows": rows,
         "relationship_summary": relationship_summary,
         "coverage_summary": data_view.get("coverage_summary") or state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {},
@@ -306,7 +361,9 @@ def _build_messages(
     prior_content: str,
 ) -> list[dict[str, str]]:
     system = _system_prompt(agent_id)
+    shared_context = request.get("shared_context") if isinstance(request.get("shared_context"), Mapping) else {}
     user_payload = {
+        "shared_context": shared_context,
         "agent_id": agent_id,
         "execution_mode": request.get("execution_mode") or "",
         "user_query": request.get("user_query") or request.get("prompt") or "",
@@ -315,11 +372,14 @@ def _build_messages(
         "counterclaim_slots": request.get("counterclaim_slots") or [],
         "bounded_evidence_rows": request.get("bounded_evidence_rows") or request.get("evidence_rows") or [],
         "relationship_summary": request.get("relationship_summary") or {},
-        "coverage_summary": request.get("coverage_summary") or {},
-        "source_boundaries": request.get("source_boundaries") or {},
+        "coverage_summary": {} if shared_context else request.get("coverage_summary") or {},
+        "source_boundaries": {} if shared_context else request.get("source_boundaries") or {},
         "input_budget": request.get("input_budget") or {},
         "output_contract": request.get("output_contract") or _specialist_output_contract(agent_id, str(request.get("execution_mode") or "")),
-        "known_evidence_refs": sorted(known_evidence_refs),
+        "known_evidence_refs": {
+            "count": len(known_evidence_refs),
+            "policy": "cite only evidence_ref values visible in bounded_evidence_rows or relationship_summary",
+        },
     }
     observation_budget = _observation_budget_text(
         agent_id,
@@ -329,7 +389,9 @@ def _build_messages(
     user = (
         "Write one SpecialistMemolet JSON object from the bounded evidence only. "
         "Do not add facts from memory. Supported observations require evidence_refs. "
-        "Use assigned_task_card as your only task brief; use required_claim_slots and counterclaim_slots to decide what to write. "
+        "Use shared_context for common scope, coverage, and source-boundary context; do not restate it unless it changes a claim. "
+        "Use assigned_task_card as your only role task brief; use required_claim_slots and counterclaim_slots to decide what to write. "
+        "Inspect bounded_evidence_rows selectively: start with rows whose ticker, metric, source_family, or summary match a required_claim_slot; ignore irrelevant rows even if present. "
         "Treat each observation as a ClaimCard v0.3: include ticker_scope, metric_scope, memo_slot, materiality, direction, evidence_refs, source_families, caveats, and missing_confirmations. "
         "Prefer memo-ready investment implications over row summaries; downstream will rank ClaimCards by evidence support, role fit, and memo readiness. "
         "Each observation must state the role-specific investment implication, not just restate the row. "
@@ -437,11 +499,19 @@ def _compact_bounded_rows_for_prompt(
     *,
     execution_mode: str = "",
     priority: str = "",
+    task_card: Mapping[str, Any] | None = None,
+    required_claim_slots: list[Any] | None = None,
+    counterclaim_slots: list[Any] | None = None,
 ) -> list[dict[str, Any]]:
-    max_rows = _specialist_input_max_rows(execution_mode, priority=priority)
-    selected = rows[:max(1, max_rows)]
-    if agent_id in {"risk_counterevidence_analyst", "industry_supply_chain_analyst"}:
-        selected = _balanced_rows_by_source_for_prompt(rows, max_rows=max(1, max_rows))
+    max_rows = _specialist_input_max_rows(execution_mode, priority=priority, agent_id=agent_id)
+    selected = _select_prompt_rows(
+        agent_id,
+        rows,
+        max_rows=max(1, max_rows),
+        task_card=task_card or {},
+        required_claim_slots=required_claim_slots or [],
+        counterclaim_slots=counterclaim_slots or [],
+    )
     compact: list[dict[str, Any]] = []
     for row in selected:
         clean = dict(row)
@@ -451,20 +521,29 @@ def _compact_bounded_rows_for_prompt(
     return compact
 
 
-def _compact_relationship_summary_for_prompt(value: Any, *, execution_mode: str = "") -> dict[str, Any]:
+def _compact_relationship_summary_for_prompt(
+    value: Any,
+    *,
+    execution_mode: str = "",
+    required_claim_slots: list[Any] | None = None,
+) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {}
     max_rows = _relationship_summary_max_rows_for_prompt(execution_mode)
+    relationship_rows = [dict(row) for row in value.get("relationships") or [] if isinstance(row, Mapping)]
+    selected_rows = _rank_rows_for_prompt(
+        relationship_rows,
+        _selection_terms({}, required_claim_slots or [], [], agent_id="industry_supply_chain_analyst"),
+        agent_id="industry_supply_chain_analyst",
+    )[: max(1, max_rows)]
     relationships = []
-    for row in value.get("relationships") or []:
+    for row in selected_rows:
         if not isinstance(row, Mapping):
             continue
         clean = dict(row)
         summary_chars = _relationship_summary_chars(execution_mode)
         clean["summary"] = _truncate(str(clean.get("summary") or ""), summary_chars)
         relationships.append(clean)
-        if len(relationships) >= max(1, max_rows):
-            break
     return {
         "scope_mode": str(value.get("scope_mode") or ""),
         "focus_tickers": _string_list(value.get("focus_tickers")),
@@ -482,6 +561,7 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
     relationships = [dict(row) for row in relationship_summary.get("relationships") or [] if isinstance(row, Mapping)]
     compact_relationship_summary["relationships"] = relationships[:4]
     return {
+        "shared_context": payload.get("shared_context") or {},
         "agent_id": payload.get("agent_id") or "",
         "execution_mode": payload.get("execution_mode") or "",
         "user_query": payload.get("user_query") or "",
@@ -490,10 +570,11 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
         "counterclaim_slots": [dict(item) for item in payload.get("counterclaim_slots") or [] if isinstance(item, Mapping)][:3],
         "bounded_evidence_rows": rows[:8],
         "relationship_summary": compact_relationship_summary,
-        "coverage_summary": payload.get("coverage_summary") or {},
-        "source_boundaries": payload.get("source_boundaries") or {},
         "output_contract": payload.get("output_contract") or _specialist_output_contract(str(payload.get("agent_id") or ""), str(payload.get("execution_mode") or "")),
-        "known_evidence_refs": _string_list(payload.get("known_evidence_refs"))[:32],
+        "known_evidence_refs": {
+            "visible_refs": _repair_known_refs(payload)[:24],
+            "policy": "cite only visible refs from bounded_evidence_rows or relationship_summary",
+        },
         "required_shape": {
             "schema_version": "sec_agent_specialist_memolet_v0.1",
             "agent_id": payload.get("agent_id") or "",
@@ -506,6 +587,165 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
             "confidence": "low | medium | high",
         },
     }
+
+
+def _select_prompt_rows(
+    agent_id: str,
+    rows: list[dict[str, Any]],
+    *,
+    max_rows: int,
+    task_card: Mapping[str, Any],
+    required_claim_slots: list[Any],
+    counterclaim_slots: list[Any],
+) -> list[dict[str, Any]]:
+    if not rows:
+        return []
+    terms = _selection_terms(task_card, required_claim_slots, counterclaim_slots, agent_id=agent_id)
+    ranked = _rank_rows_for_prompt(rows, terms, agent_id=agent_id)
+    if agent_id == "industry_supply_chain_analyst":
+        return _relationship_preserving_selection(ranked, max_rows=max_rows)
+    if agent_id == "risk_counterevidence_analyst":
+        return _balanced_rows_by_source_for_prompt(ranked, max_rows=max_rows)
+    return ranked[:max_rows]
+
+
+def _relationship_preserving_selection(rows: list[dict[str, Any]], *, max_rows: int) -> list[dict[str, Any]]:
+    relationship_rows = [row for row in rows if str(row.get("source_family") or "") == "relationship_graph"]
+    min_relationship_rows = min(len(relationship_rows), max(2, min(6, max_rows // 3)))
+    selected: list[dict[str, Any]] = []
+    selected_ids: set[int] = set()
+    for row in relationship_rows[:min_relationship_rows]:
+        selected.append(row)
+        selected_ids.add(id(row))
+    for row in rows:
+        if len(selected) >= max_rows:
+            break
+        if id(row) in selected_ids:
+            continue
+        selected.append(row)
+        selected_ids.add(id(row))
+    return selected
+
+
+def _rank_rows_for_prompt(rows: list[dict[str, Any]], terms: set[str], *, agent_id: str) -> list[dict[str, Any]]:
+    indexed = list(enumerate(rows))
+    return [
+        row
+        for _, row in sorted(
+            indexed,
+            key=lambda item: (
+                -_row_selection_score(item[1], terms=terms, agent_id=agent_id),
+                item[0],
+            ),
+        )
+    ]
+
+
+def _row_selection_score(row: Mapping[str, Any], *, terms: set[str], agent_id: str) -> int:
+    family = str(row.get("source_family") or "")
+    text = " ".join(
+        str(row.get(key) or "").lower()
+        for key in (
+            "ticker",
+            "related_ticker",
+            "metric",
+            "metric_name",
+            "summary",
+            "period_role",
+            "source_family",
+            "relationship_type",
+            "direction",
+        )
+    )
+    score = 0
+    for term in terms:
+        if term and term in text:
+            score += 3 if len(term) > 2 else 1
+    if agent_id == "fundamental_analyst" and family in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}:
+        score += 4
+    elif agent_id == "market_valuation_analyst" and family == "market_snapshot":
+        score += 6
+    elif agent_id == "industry_supply_chain_analyst" and family == "relationship_graph":
+        score += 6
+    elif agent_id == "industry_supply_chain_analyst" and family == "industry_snapshot":
+        score += 4
+    elif agent_id == "risk_counterevidence_analyst":
+        risk_terms = ("risk", "decline", "pressure", "gap", "missing", "weak", "uncertain", "constraint", "caveat", "lawsuit")
+        if any(term in text for term in risk_terms):
+            score += 5
+        if family in {"primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot", "industry_snapshot"}:
+            score += 2
+    if str(row.get("evidence_ref") or "").strip():
+        score += 1
+    if str(row.get("value") or "").strip():
+        score += 1
+    return score
+
+
+def _selection_terms(
+    task_card: Mapping[str, Any],
+    required_claim_slots: list[Any],
+    counterclaim_slots: list[Any],
+    *,
+    agent_id: str,
+) -> set[str]:
+    terms: set[str] = set()
+    payloads: list[Any] = [
+        task_card.get("assigned_memo_slot"),
+        task_card.get("tickers"),
+        task_card.get("source_families"),
+        task_card.get("relevant_requirements"),
+        required_claim_slots,
+        counterclaim_slots,
+    ]
+    role_terms = {
+        "fundamental_analyst": ["revenue", "margin", "capex", "cash", "backlog", "deposit", "credit", "asset", "income"],
+        "market_valuation_analyst": ["return", "valuation", "market", "price", "volume", "multiple", "snapshot"],
+        "industry_supply_chain_analyst": ["relationship", "supplier", "customer", "chain", "industry", "sector", "capex", "demand"],
+        "risk_counterevidence_analyst": ["risk", "gap", "conflict", "decline", "pressure", "constraint", "missing", "caveat"],
+    }
+    payloads.extend(role_terms.get(agent_id, []))
+    for payload in payloads:
+        for term in _terms_from_value(payload):
+            if len(term) >= 2:
+                terms.add(term)
+    return terms
+
+
+def _terms_from_value(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, Mapping):
+        terms: list[str] = []
+        for item in value.values():
+            terms.extend(_terms_from_value(item))
+        return terms
+    if isinstance(value, (list, tuple, set)):
+        terms = []
+        for item in value:
+            terms.extend(_terms_from_value(item))
+        return terms
+    text = str(value or "").lower()
+    return [term for term in re.findall(r"[a-z0-9_]{2,}|[\u4e00-\u9fff]{2,}", text) if term not in _STOP_TERMS]
+
+
+_STOP_TERMS = {
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "that",
+    "this",
+    "when",
+    "what",
+    "which",
+    "evidence",
+    "claim",
+    "slot",
+    "primary",
+    "supporting",
+}
 
 
 def _balanced_rows_by_source_for_prompt(rows: list[dict[str, Any]], *, max_rows: int) -> list[dict[str, Any]]:
@@ -729,6 +969,8 @@ def _route_result_summary(result: Mapping[str, Any]) -> dict[str, Any]:
 
 def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
     task_card = request.get("assigned_task_card") if isinstance(request.get("assigned_task_card"), Mapping) else {}
+    shared_context = request.get("shared_context") if isinstance(request.get("shared_context"), Mapping) else {}
+    relationship_summary = request.get("relationship_summary") if isinstance(request.get("relationship_summary"), Mapping) else {}
     return {
         "task_card_schema_version": str(task_card.get("schema_version") or ""),
         "assigned_memo_slot": str(task_card.get("assigned_memo_slot") or ""),
@@ -736,6 +978,9 @@ def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
         "required_claim_slot_count": len(request.get("required_claim_slots") or []),
         "counterclaim_slot_count": len(request.get("counterclaim_slots") or []),
         "available_source_families": _string_list(task_card.get("available_source_families"))[:8],
+        "shared_context_digest": str(shared_context.get("context_digest") or ""),
+        "prompt_bounded_evidence_row_count": len(request.get("bounded_evidence_rows") or []),
+        "prompt_relationship_summary_row_count": len(relationship_summary.get("relationships") or []),
     }
 
 
@@ -760,6 +1005,9 @@ def _skipped_route_result_summary(decision: Mapping[str, Any]) -> dict[str, Any]
         "required_claim_slot_count": 0,
         "counterclaim_slot_count": 0,
         "available_source_families": [],
+        "shared_context_digest": "",
+        "prompt_bounded_evidence_row_count": 0,
+        "prompt_relationship_summary_row_count": 0,
     }
 
 
@@ -776,7 +1024,7 @@ def _int_env(value: str | None, *, default: int) -> int:
         return default
 
 
-def _specialist_input_max_rows(execution_mode: str, *, priority: str = "") -> int:
+def _specialist_input_max_rows(execution_mode: str, *, priority: str = "", agent_id: str = "") -> int:
     generic = os.environ.get("SPECIALIST_INPUT_MAX_ROWS")
     mode = str(execution_mode or "").strip()
     normalized_priority = _normalize_specialist_priority(priority)
@@ -785,37 +1033,38 @@ def _specialist_input_max_rows(execution_mode: str, *, priority: str = "") -> in
             os.environ.get("SPECIALIST_DEEP_RESEARCH_SUPPORTING_INPUT_MAX_ROWS")
             or os.environ.get("SPECIALIST_SUPPORTING_INPUT_MAX_ROWS")
             or generic,
-            default=16,
+            default=12,
         )
     elif mode == "deep_research" and normalized_priority in {"conditional", "low"}:
         value = _int_env(
             os.environ.get("SPECIALIST_DEEP_RESEARCH_CONDITIONAL_INPUT_MAX_ROWS")
             or os.environ.get("SPECIALIST_CONDITIONAL_INPUT_MAX_ROWS")
             or generic,
-            default=10,
+            default=8,
         )
     elif mode == "deep_research":
-        value = _int_env(os.environ.get("SPECIALIST_DEEP_RESEARCH_INPUT_MAX_ROWS") or generic, default=24)
+        default = 18 if agent_id == "industry_supply_chain_analyst" else 16
+        value = _int_env(os.environ.get("SPECIALIST_DEEP_RESEARCH_INPUT_MAX_ROWS") or generic, default=default)
     elif mode == "standard_memo" and normalized_priority == "supporting":
         value = _int_env(
             os.environ.get("SPECIALIST_STANDARD_MEMO_SUPPORTING_INPUT_MAX_ROWS")
             or os.environ.get("SPECIALIST_SUPPORTING_INPUT_MAX_ROWS")
             or generic,
-            default=12,
+            default=8,
         )
     elif mode == "standard_memo":
-        value = _int_env(os.environ.get("SPECIALIST_STANDARD_MEMO_INPUT_MAX_ROWS") or generic, default=16)
+        value = _int_env(os.environ.get("SPECIALIST_STANDARD_MEMO_INPUT_MAX_ROWS") or generic, default=12)
     else:
-        value = _int_env(generic, default=12)
+        value = _int_env(generic, default=10)
     return max(1, value)
 
 
 def _relationship_summary_max_rows_for_prompt(execution_mode: str) -> int:
     generic = os.environ.get("SPECIALIST_RELATIONSHIP_SUMMARY_MAX_ROWS")
     if str(execution_mode or "").strip() == "deep_research":
-        value = _int_env(os.environ.get("SPECIALIST_DEEP_RESEARCH_RELATIONSHIP_SUMMARY_MAX_ROWS") or generic, default=12)
+        value = _int_env(os.environ.get("SPECIALIST_DEEP_RESEARCH_RELATIONSHIP_SUMMARY_MAX_ROWS") or generic, default=8)
     else:
-        value = _int_env(generic, default=8)
+        value = _int_env(generic, default=6)
     return max(1, value)
 
 
@@ -832,11 +1081,16 @@ def _specialist_input_budget(
     payload = {
         "execution_mode": execution_mode,
         "agent_priority": effective_priority,
-        "prompt_bounded_evidence_row_budget": _specialist_input_max_rows(execution_mode, priority=effective_priority),
+        "prompt_bounded_evidence_row_budget": _specialist_input_max_rows(
+            execution_mode,
+            priority=effective_priority,
+            agent_id=agent_id,
+        ),
         "prompt_relationship_summary_row_budget": _relationship_summary_max_rows_for_prompt(execution_mode),
-        "prompt_summary_char_policy": "source_family_tiered_v0_1",
+        "prompt_summary_char_policy": "source_family_tiered_v0_2_compact",
         "data_view_bounded_evidence_row_budget": int(data_view_budget.get("bounded_evidence_row_budget") or 0),
-        "budget_policy": "execution_mode_and_priority_tiered_specialist_prompt_rows_only",
+        "budget_policy": "shared_context_slot_aware_specialist_prompt_rows_v0_1",
+        "selection_policy": "rank_by_required_claim_slots_preserve_relationship_and_risk_source_balance",
         "supported_observation_target": output_contract["supported_observation_target"],
         "unsupported_claim_cap": output_contract["unsupported_claim_cap"],
         "conflict_cap": output_contract["conflict_cap"],
@@ -960,24 +1214,24 @@ def _specialist_summary_chars_for_row(agent_id: str, row: Mapping[str, Any], *, 
     family = str(row.get("source_family") or "").strip()
     mode = str(execution_mode or "").strip()
     if family in {"primary_sec_filing", "company_authored_unaudited_sec_filing", ""}:
-        default = 320 if mode == "deep_research" else 420
+        default = 240 if mode == "deep_research" else 320
         if agent_id == "fundamental_analyst":
-            default = 300 if mode == "deep_research" else 380
+            default = 220 if mode == "deep_research" else 300
         return _int_env(os.environ.get("SPECIALIST_SEC_SUMMARY_CHARS"), default=default)
     if family == "market_snapshot":
-        return _int_env(os.environ.get("SPECIALIST_MARKET_SUMMARY_CHARS"), default=300)
+        return _int_env(os.environ.get("SPECIALIST_MARKET_SUMMARY_CHARS"), default=220)
     if family == "industry_snapshot":
-        return _int_env(os.environ.get("SPECIALIST_INDUSTRY_SUMMARY_CHARS"), default=340)
+        return _int_env(os.environ.get("SPECIALIST_INDUSTRY_SUMMARY_CHARS"), default=240)
     if family == "relationship_graph":
         return _relationship_summary_chars(execution_mode)
-    return _int_env(os.environ.get("SPECIALIST_OTHER_SUMMARY_CHARS"), default=320 if mode == "deep_research" else 420)
+    return _int_env(os.environ.get("SPECIALIST_OTHER_SUMMARY_CHARS"), default=240 if mode == "deep_research" else 320)
 
 
 def _relationship_summary_chars(execution_mode: str = "") -> int:
     generic = os.environ.get("SPECIALIST_INPUT_SUMMARY_CHARS")
     if generic not in {None, ""}:
         return _int_env(generic, default=520)
-    default = 420 if str(execution_mode or "").strip() == "deep_research" else 480
+    default = 280 if str(execution_mode or "").strip() == "deep_research" else 360
     return _int_env(os.environ.get("SPECIALIST_RELATIONSHIP_SUMMARY_CHARS"), default=default)
 
 
@@ -1116,6 +1370,22 @@ def _format_failure_reason(failure: Mapping[str, Any]) -> str:
 
 def _clean_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
     return json.loads(json.dumps(value, ensure_ascii=False, default=str))
+
+
+def _payload_digest(value: Mapping[str, Any]) -> str:
+    text = json.dumps(_clean_for_prompt(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+def _repair_known_refs(payload: Mapping[str, Any]) -> list[str]:
+    refs: set[str] = set()
+    explicit = payload.get("known_evidence_refs")
+    if isinstance(explicit, Mapping):
+        refs.update(_string_list(explicit.get("visible_refs")))
+    else:
+        refs.update(_string_list(explicit))
+    refs.update(_known_evidence_refs_from_request(payload))
+    return sorted(refs)
 
 
 def _truncate(text: str, max_chars: int) -> str:

@@ -5,11 +5,11 @@ Use this skill only for the Risk / Counterevidence Analyst. Identify risks, sour
 ## Required Input Fields
 
 - `user_query`: the thesis, claim, or comparison that needs stress testing.
+- `shared_context`: common user scope, coverage status, source boundaries, and relationship-policy context shared by all Specialists.
 - `bounded_evidence_rows`: the only evidence rows that may support risks, conflicts, or gaps.
-- `coverage_summary`: sufficiency, missing metrics, missing periods, and second-pass status.
-- `source_boundaries`: allowed source families and row-count boundaries.
+- `coverage_summary` / `source_boundaries`: only used when `shared_context` is absent; otherwise read these from `shared_context`.
 - `execution_mode` and `input_budget`: determine how many bounded rows and observations the case can support.
-- `known_evidence_refs`: the only refs that may appear in supported observations or conflicts.
+- `known_evidence_refs`: a visibility policy or compact visible-ref list; supported observations may cite only refs visible in `bounded_evidence_rows` or `relationship_summary`.
 - `assigned_task_card`: the stress-test lens, relevant evidence requirements, tickers, and source boundaries.
 - `required_claim_slots`: the direct risk or counterevidence slots to fill when bounded evidence supports them.
 - `counterclaim_slots`: the unsupported thesis component and direct-conflict slots to use when support is missing or contradictory.
@@ -23,6 +23,12 @@ Use this skill only for the Risk / Counterevidence Analyst. Identify risks, sour
 5. Separate three outputs: supported risk observations, unsupported thesis components, and direct conflicts.
 6. Convert each risk into an investment implication: downside driver, evidence weakness, confirmation needed, or memo constraint.
 
+## Evidence Selection Discipline
+
+- Start from `counterclaim_slots` and rows that contain adverse movement, risk factors, missing periods, weak source families, conflicting metrics, or source-boundary problems.
+- Do not list every missing metric. Select the top material gaps that would change the final memo or constrain a thesis.
+- If no direct counterevidence exists, state that bounded evidence did not contain direct counterevidence and identify the highest-value missing test.
+
 ## Required Output Structure
 
 - Return exactly one `SpecialistMemolet`.
@@ -31,7 +37,7 @@ Use this skill only for the Risk / Counterevidence Analyst. Identify risks, sour
 - Use the prompt budget: focused cases should stay near 0-2 observations; standard memo and deep research should use 2-3 supported risk ClaimCards when evidence supports them.
 - `unsupported_claims`: required for named thesis components not supported by bounded refs, but include only the top 2 material gaps.
 - `conflicts`: required when bounded rows directly oppose a thesis or another bounded observation, but include only the top 2 direct conflicts.
-- Every supported risk or conflict must cite `evidence_refs` from `known_evidence_refs`.
+- Every supported risk or conflict must cite visible `evidence_refs` from bounded rows.
 - Use `caveats` for partial coverage, weak source family, mixed periods, or context-only evidence.
 
 ## Failure / Evidence Gap Handling

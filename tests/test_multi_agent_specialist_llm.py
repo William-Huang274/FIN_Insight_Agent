@@ -7,6 +7,7 @@ from sec_agent.specialist_llm import (
     ROUTE_SOURCE,
     SPECIALIST_ROUTER_ENV,
     SpecialistLLMConfig,
+    build_shared_specialist_context,
     build_specialist_request_from_state,
     extract_specialist_memolet_json,
     route_specialist_memolet_llm,
@@ -334,10 +335,14 @@ def test_specialist_env_router_runs_active_specialists_with_bounded_state() -> N
 
     assert [row["agent_id"] for row in result["specialist_outputs"]] == ["fundamental_analyst", "market_valuation_analyst"]
     assert all(row["status"] == "pass" for row in result["specialist_outputs"])
+    assert result["shared_specialist_context"]["schema_version"] == "sec_agent_shared_specialist_context_v0.1"
+    assert result["shared_specialist_context"]["context_digest"].startswith("sha256:")
     assert len(result["specialist_route_results"]) == 2
     assert result["specialist_route_results"][0]["task_card_schema_version"] == "sec_agent_specialist_task_card_v0.1"
     assert result["specialist_route_results"][0]["assigned_memo_slot"] == "fundamentals"
     assert result["specialist_route_results"][0]["required_claim_slot_count"] >= 1
+    assert result["specialist_route_results"][0]["shared_context_digest"].startswith("sha256:")
+    assert result["specialist_route_results"][0]["prompt_bounded_evidence_row_count"] == 1
     assert "raw_response" not in json.dumps(result)
 
 
@@ -526,11 +531,11 @@ def test_build_specialist_request_from_state_uses_deep_research_prompt_budget() 
     )
 
     assert request["execution_mode"] == "deep_research"
-    assert len(request["bounded_evidence_rows"]) == 24
-    assert request["input_budget"]["prompt_bounded_evidence_row_budget"] == 24
+    assert len(request["bounded_evidence_rows"]) == 16
+    assert request["input_budget"]["prompt_bounded_evidence_row_budget"] == 16
     assert request["input_budget"]["data_view_bounded_evidence_row_budget"] == 32
-    assert request["input_budget"]["prompt_summary_char_policy"] == "source_family_tiered_v0_1"
-    assert "ledger_ref_24" in request["known_evidence_refs"]
+    assert request["input_budget"]["prompt_summary_char_policy"] == "source_family_tiered_v0_2_compact"
+    assert "ledger_ref_16" in request["known_evidence_refs"]
 
 
 def test_build_specialist_request_from_state_uses_supporting_priority_prompt_budget() -> None:
@@ -568,8 +573,8 @@ def test_build_specialist_request_from_state_uses_supporting_priority_prompt_bud
 
     assert request["input_budget"]["agent_priority"] == "supporting"
     assert request["input_budget"]["data_view_bounded_evidence_row_budget"] == 20
-    assert request["input_budget"]["prompt_bounded_evidence_row_budget"] == 16
-    assert len(request["bounded_evidence_rows"]) == 16
+    assert request["input_budget"]["prompt_bounded_evidence_row_budget"] == 12
+    assert len(request["bounded_evidence_rows"]) == 12
     assert {row["source_family"] for row in request["bounded_evidence_rows"]} == {"primary_sec_filing", "market_snapshot"}
 
 
@@ -601,9 +606,9 @@ def test_specialist_prompt_uses_source_family_summary_budgets() -> None:
 
     by_family = {row["source_family"]: row for row in request["bounded_evidence_rows"]}
 
-    assert len(by_family["primary_sec_filing"]["summary"]) <= 334
-    assert len(by_family["market_snapshot"]["summary"]) <= 314
-    assert len(by_family["industry_snapshot"]["summary"]) <= 354
+    assert len(by_family["primary_sec_filing"]["summary"]) <= 254
+    assert len(by_family["market_snapshot"]["summary"]) <= 234
+    assert len(by_family["industry_snapshot"]["summary"]) <= 254
 
     industry_request = build_specialist_request_from_state(
         "industry_supply_chain_analyst",
@@ -624,7 +629,7 @@ def test_specialist_prompt_uses_source_family_summary_budgets() -> None:
         },
     )
     industry_by_family = {row["source_family"]: row for row in industry_request["bounded_evidence_rows"]}
-    assert len(industry_by_family["relationship_graph"]["summary"]) <= 434
+    assert len(industry_by_family["relationship_graph"]["summary"]) <= 294
 
 
 def test_risk_specialist_prompt_uses_compact_v0_3_output_contract() -> None:
@@ -765,6 +770,75 @@ def test_specialist_prompt_passes_task_card_and_slots() -> None:
     assert "required_claim_slots" in user_prompt
     assert "fundamentals_reported_fact" in user_prompt
     assert "Each supported observation should satisfy one required_claim_slot" in user_prompt
+    assert '"known_evidence_refs": {' in user_prompt
+    assert "cite only evidence_ref values visible" in user_prompt
+
+
+def test_shared_specialist_context_compacts_common_scope() -> None:
+    context = build_shared_specialist_context(
+        {
+            "user_query": "Compare AI infrastructure exposure.",
+            "query_contract": {"focus_tickers": ["NVDA"], "search_scope_tickers": ["NVDA", "AMD", "MSFT"]},
+            "agent_activation_plan": {"execution_mode": "deep_research", "allowed_source_families": ["primary_sec_filing"]},
+            "runtime_ledger_rows": [{"metric_id": "ledger_ref_1"}],
+            "multi_agent_reflection_report": {
+                "sufficiency_level": "bounded_enough",
+                "missing_requirements": [{"requirement_id": "req_1"}],
+                "bounded_answer_allowed": True,
+            },
+        }
+    )
+
+    assert context["execution_mode"] == "deep_research"
+    assert context["focus_tickers"] == ["NVDA"]
+    assert context["coverage"]["missing_requirement_count"] == 1
+    assert context["source_boundaries"]["ledger_row_count"] == 1
+    assert context["context_digest"].startswith("sha256:")
+
+
+def test_build_specialist_request_rank_selects_slot_relevant_rows_over_prefix_rows() -> None:
+    request = build_specialist_request_from_state(
+        "fundamental_analyst",
+        {
+            "user_query": "Analyze gross margin quality.",
+            "agent_activation_plan": {"execution_mode": "deep_research"},
+            "evidence_requirement_plan": {
+                "requirements": [
+                    {
+                        "requirement_id": "req_margin",
+                        "task_id": "fundamental_margin",
+                        "question_zh": "Need gross margin evidence.",
+                        "priority": "primary",
+                        "tickers": ["NVDA"],
+                        "source_families": ["primary_sec_filing"],
+                        "metric_families": ["gross_margin"],
+                    }
+                ]
+            },
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"ledger_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "revenue",
+                    "summary": f"Revenue evidence row {index}.",
+                }
+                for index in range(1, 29)
+            ]
+            + [
+                {
+                    "metric_id": "ledger_ref_margin",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "gross_margin",
+                    "summary": "Gross margin expanded on data-center mix and operating leverage.",
+                }
+            ],
+        },
+    )
+
+    selected_refs = {row["evidence_ref"] for row in request["bounded_evidence_rows"]}
+    assert "ledger_ref_margin" in selected_refs
 
 
 def test_specialist_output_contract_caps_gap_payload_before_aggregation() -> None:

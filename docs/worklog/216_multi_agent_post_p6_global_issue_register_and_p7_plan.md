@@ -251,3 +251,22 @@ Decision:
 
 - Keep P7.4. It does not change chain behavior, but it makes cost/quality trade-offs visible from saved artifacts.
 - The next engineering target should be Memo Writer retry/length reduction and rendered memo density, because Verifier is no longer the dominant downstream cost after P7.2.
+
+## 9. Memo Writer Max-token Diagnostic
+
+Diagnostic change tested but not kept:
+
+- Hypothesis: raising the Step17 / Memo Writer output budget to `3400` tokens could let DeepSeek close the first MemoDraft JSON and avoid the `length -> repair` cycle.
+- Test run: `20260601_sector_depth_p7_memo_writer_3400_smoke_deepseek_v0_1`
+- Gate: pass
+- Tool calls: `11`
+- Memo Writer: still `2` attempts, `length,stop`
+- Memo Writer tokens: `20,043` versus P7.2 baseline `19,201`
+- Verifier tokens: `4,616` versus P7.2 baseline `5,214`
+- Total agent tokens: `79,986` versus P7.2 baseline `79,711`
+- Rendered chars: `3,565` versus P7.2 baseline `3,820`
+
+Decision:
+
+- Do not keep the `3400` max-token bump. It did not remove the retry and increased Memo Writer / total token cost.
+- The retry root cause is not only output budget. Next fix should make the first Memo Writer output schema smaller and more deterministic, likely by emitting a minimal structured memo skeleton first and moving optional prose expansion/rendering to a separate bounded renderer step.

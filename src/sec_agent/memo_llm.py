@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import hashlib
 from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
@@ -14,6 +15,7 @@ from sec_agent.research_skills import research_skill_prompt
 MEMO_ROUTE_SCHEMA_VERSION = "sec_agent_memo_llm_route_v0.1"
 VERIFIER_ROUTE_SCHEMA_VERSION = "sec_agent_verifier_llm_route_v0.1"
 VERIFIER_PROJECTION_SCHEMA_VERSION = "sec_agent_verifier_minimal_projection_v0.1"
+SHARED_MEMO_CONTEXT_SCHEMA_VERSION = "sec_agent_shared_memo_context_v0.1"
 MEMO_ROUTE_SOURCE = "memo_writer_llm_v0.1"
 VERIFIER_ROUTE_SOURCE = "verifier_llm_v0.1"
 MEMO_ROUTER_ENV = "SEC_AGENT_MULTI_AGENT_MEMO_ROUTER"
@@ -323,11 +325,16 @@ def _normalize_memo_llm_output(payload: Mapping[str, Any], judgment: Any) -> dic
     memo.setdefault("unsupported_claims_excluded", base.get("unsupported_claims_excluded") or [])
     memo.setdefault("memo_constraints", base.get("memo_constraints") or {})
     memo.setdefault("memo_outline", base.get("memo_outline") or [])
-    memo.setdefault("memo_thesis_plan", base.get("memo_thesis_plan") or {})
+    memo["memo_thesis_plan"] = _normalize_output_memo_thesis_plan(
+        memo.get("memo_thesis_plan") if isinstance(memo.get("memo_thesis_plan"), Mapping) else base.get("memo_thesis_plan") or {}
+    )
     memo.setdefault("memo_thesis_pack", base.get("memo_thesis_pack") or {})
     memo.setdefault("claim_card_stats", base.get("claim_card_stats") or {})
     memo.setdefault("bounded_answer_allowed", False)
-    memo.setdefault("memo_generation_policy", "thesis_led_claim_cards_v0_1")
+    if str(memo.get("answer_status") or "draft") == "draft":
+        memo["memo_generation_policy"] = "thesis_led_claim_cards_v0_1"
+    else:
+        memo.setdefault("memo_generation_policy", "thesis_led_claim_cards_v0_1")
     allowed_statuses = {
         "draft",
         "blocked_by_specialist_verification",
@@ -341,7 +348,205 @@ def _normalize_memo_llm_output(payload: Mapping[str, Any], judgment: Any) -> dic
         if isinstance(diagnostics, dict):
             diagnostics["normalized_answer_status_from"] = answer_status
         memo["answer_status"] = "draft" if memo.get("memo_claims") else "blocked_by_judgment_plan"
+        if memo["answer_status"] == "draft":
+            memo["memo_generation_policy"] = "thesis_led_claim_cards_v0_1"
+    memo["memo_claims"] = _normalize_output_memo_claims(memo.get("memo_claims"), judgment if isinstance(judgment, Mapping) else {})
+    memo = _normalize_direct_answer_numeric_fidelity(memo, judgment if isinstance(judgment, Mapping) else {}, base)
     return memo
+
+
+def _normalize_output_memo_thesis_plan(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    return {
+        "schema_version": str(value.get("schema_version") or ""),
+        "status": str(value.get("status") or ""),
+        "primary_thesis_claim_id": str(value.get("primary_thesis_claim_id") or ""),
+        "primary_thesis": _truncate(str(value.get("primary_thesis") or ""), 260),
+        "thesis_direction": str(value.get("thesis_direction") or ""),
+    }
+
+
+def _normalize_output_memo_claims(value: Any, judgment: Mapping[str, Any]) -> list[dict[str, Any]]:
+    supported_by_id = {
+        str(item.get("claim_id") or ""): dict(item)
+        for item in judgment.get("supported_claims") or []
+        if isinstance(item, Mapping) and str(item.get("claim_id") or "")
+    }
+    claims = [dict(item) for item in value or [] if isinstance(item, Mapping)]
+    normalized: list[dict[str, Any]] = []
+    for claim in claims[:5]:
+        row = dict(claim)
+        source = supported_by_id.get(str(row.get("claim_id") or ""))
+        if source:
+            for key in (
+                "claim_type",
+                "ticker_scope",
+                "metric_scope",
+                "memo_slot",
+                "materiality",
+                "direction",
+                "evidence_refs",
+                "source_families",
+                "confidence",
+                "caveats",
+                "missing_confirmations",
+                "as_of_date",
+                "snapshot_id",
+                "period_role",
+            ):
+                if not row.get(key) and source.get(key):
+                    row[key] = source.get(key)
+            unknown_numeric_tokens = _unknown_numeric_tokens(str(row.get("claim") or ""), _claim_scope_text(source))
+            if unknown_numeric_tokens:
+                row["claim"] = str(source.get("claim") or row.get("claim") or "")
+                row["numeric_fidelity_normalized"] = True
+        normalized.append(row)
+    return normalized
+
+
+def _normalize_direct_answer_numeric_fidelity(
+    memo: dict[str, Any],
+    judgment: Mapping[str, Any],
+    base_memo: Mapping[str, Any],
+) -> dict[str, Any]:
+    supported_scope = " ".join(
+        _claim_scope_text(item)
+        for item in judgment.get("supported_claims") or []
+        if isinstance(item, Mapping)
+    )
+    if not supported_scope:
+        return memo
+    unknown_tokens = _unknown_numeric_tokens(str(memo.get("direct_answer") or ""), supported_scope)
+    hard_unknown_tokens = [token for token in unknown_tokens if _is_material_numeric_token(token)]
+    if not hard_unknown_tokens:
+        return memo
+    safe_direct_answer = _safe_direct_answer_from_claims(memo.get("memo_claims") or [], str(base_memo.get("direct_answer") or ""))
+    next_memo = dict(memo)
+    next_memo["direct_answer"] = safe_direct_answer
+    next_memo["direct_answer_numeric_fidelity_normalized"] = True
+    next_memo["direct_answer_numeric_fidelity_removed_tokens"] = hard_unknown_tokens[:8]
+    return next_memo
+
+
+def _safe_direct_answer_from_claims(claims: list[dict[str, Any]], fallback: str) -> str:
+    texts = [str(item.get("claim") or "").strip() for item in claims if isinstance(item, Mapping) and str(item.get("claim") or "").strip()]
+    if texts:
+        return _truncate(" | ".join(texts[:3]), 420)
+    return _truncate(str(fallback or ""), 420)
+
+
+def _claim_scope_text(claim: Mapping[str, Any]) -> str:
+    return " ".join(
+        [
+            str(claim.get("claim") or ""),
+            " ".join(_string_list(claim.get("caveats"))),
+            " ".join(_string_list(claim.get("missing_confirmations"))),
+        ]
+    )
+
+
+def _unknown_numeric_tokens(candidate_text: str, source_text: str) -> set[str]:
+    source_tokens = _numeric_token_details(source_text)
+    source_strings = {item[0] for item in source_tokens}
+    unknown: set[str] = set()
+    for token, value, unit in _numeric_token_details(candidate_text):
+        if token in source_strings:
+            continue
+        if any(_numeric_values_close(value, unit, source_value, source_unit) for _, source_value, source_unit in source_tokens):
+            continue
+        unknown.add(token)
+    return unknown
+
+
+def _numeric_token_details(text: str) -> list[tuple[str, float, str]]:
+    tokens: list[tuple[str, float, str]] = []
+    for match in re.finditer(
+        r"(?<![A-Za-z0-9])[-+]?\$?\d+(?:,\d{3})*(?:\.\d+)?\s*(?:%|x|X|M|B|K|bn|mn|million|billion)?",
+        str(text or ""),
+    ):
+        token = match.group(0).strip().lower().replace("$", "").replace(",", "")
+        token = re.sub(r"\s+", "", token)
+        parsed = re.match(r"([-+]?\d+(?:\.\d+)?)(.*)", token)
+        if token and parsed:
+            tokens.append((token, float(parsed.group(1)), str(parsed.group(2) or "")))
+    return tokens
+
+
+def _numeric_values_close(left_value: float, left_unit: str, right_value: float, right_unit: str) -> bool:
+    if left_unit != right_unit:
+        return False
+    diff = abs(left_value - right_value)
+    return diff <= max(0.5, abs(right_value) * 0.005)
+
+
+def _is_material_numeric_token(token: str) -> bool:
+    parsed = re.match(r"([-+]?\d+(?:\.\d+)?)(.*)", str(token or "").strip().lower())
+    if not parsed:
+        return False
+    value = abs(float(parsed.group(1)))
+    unit = str(parsed.group(2) or "")
+    if unit in {"%", "x", "b", "k", "bn", "mn", "million", "billion"}:
+        return True
+    if unit == "m":
+        return value > 12
+    return False
+
+
+def build_shared_memo_context(state: Mapping[str, Any]) -> dict[str, Any]:
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    reflection = state.get("multi_agent_reflection_report") if isinstance(state.get("multi_agent_reflection_report"), Mapping) else {}
+    sufficiency = state.get("evidence_sufficiency_report") if isinstance(state.get("evidence_sufficiency_report"), Mapping) else {}
+    judgment = state.get("verified_judgment_plan") or state.get("judgment_plan") or {}
+    claim_stats = judgment.get("claim_card_stats") if isinstance(judgment, Mapping) and isinstance(judgment.get("claim_card_stats"), Mapping) else {}
+    route_results = [row for row in state.get("specialist_route_results") or [] if isinstance(row, Mapping)]
+    relationship_plan = state.get("universe_relationship_plan") if isinstance(state.get("universe_relationship_plan"), Mapping) else {}
+    context = {
+        "schema_version": SHARED_MEMO_CONTEXT_SCHEMA_VERSION,
+        "user_query": _truncate(str(state.get("user_query") or ""), 420),
+        "execution_mode": str(activation.get("execution_mode") or state.get("execution_mode") or ""),
+        "focus_tickers": _string_list(activation.get("focus_tickers") or query_contract.get("focus_tickers"))[:12],
+        "search_scope_tickers": _string_list(activation.get("search_scope_tickers") or query_contract.get("search_scope_tickers"))[:24],
+        "coverage": {
+            "sufficiency_level": str(reflection.get("sufficiency_level") or sufficiency.get("sufficiency_level") or ""),
+            "missing_requirement_count": len(reflection.get("missing_requirements") or sufficiency.get("missing_requirements") or []),
+            "bounded_answer_allowed": bool(reflection.get("bounded_answer_allowed") or sufficiency.get("bounded_answer_allowed") or state.get("bounded_answer_allowed")),
+        },
+        "source_boundaries": {
+            "allowed_source_families": _string_list(activation.get("allowed_source_families"))[:12],
+            "context_row_count": len(state.get("context_rows") or []),
+            "ledger_row_count": len(state.get("runtime_ledger_rows") or []),
+            "market_row_count": len(state.get("market_snapshot_rows") or []),
+            "industry_row_count": len(state.get("industry_snapshot_rows") or []),
+            "relationship_row_count": len(relationship_plan.get("relationships") or []),
+        },
+        "specialist_routes": {
+            "route_count": len(route_results),
+            "passed_agents": [
+                str(row.get("agent_id") or "")
+                for row in route_results
+                if str(row.get("status") or "") == "pass" and str(row.get("agent_id") or "")
+            ],
+            "failed_agents": [
+                str(row.get("agent_id") or "")
+                for row in route_results
+                if str(row.get("status") or "") not in {"pass", "skipped"} and str(row.get("agent_id") or "")
+            ],
+        },
+        "claim_card_stats": {
+            "supported_claim_count": int(claim_stats.get("supported_claim_count") or 0),
+            "memo_ready_claim_count": int(claim_stats.get("memo_ready_claim_count") or 0),
+            "usable_with_caveat_claim_count": int(claim_stats.get("usable_with_caveat_claim_count") or 0),
+            "memo_slot_supported_count": int(claim_stats.get("memo_slot_supported_count") or 0),
+        },
+        "prompt_policy": {
+            "shared_context_policy": "scope_coverage_boundary_only_no_raw_rows_v0_1",
+            "memo_payload_policy": "write_from_verified_judgment_plan_and_thesis_pack_only",
+        },
+    }
+    context["context_digest"] = _payload_digest(context)
+    return context
 
 
 def _memo_messages(
@@ -350,25 +555,38 @@ def _memo_messages(
     prior_failure: Mapping[str, Any] | None,
     prior_content: str,
 ) -> list[dict[str, str]]:
+    shared_context = build_shared_memo_context(state)
     judgment = _compact_judgment_for_memo(state.get("verified_judgment_plan") or state.get("judgment_plan") or {})
     user_payload = {
+        "shared_memo_context": shared_context,
         "user_query": state.get("user_query") or "",
         "verified_judgment_plan": judgment,
         "specialist_verification": _compact_specialist_verification(state.get("specialist_verification") or {}),
         "memo_input_contract": {
-            "allowed_views": ["verified_judgment_plan", "specialist_verification"],
+            "allowed_views": ["shared_memo_context", "verified_judgment_plan", "specialist_verification"],
             "raw_rows_consumed": False,
             "tool_calls_allowed": False,
-            "projection_policy": "memo_writer_v0_4_thesis_led_claim_cards_no_duplicate_data_view",
+            "projection_policy": "memo_writer_v0_5_shared_context_thesis_led_claim_cards",
         },
         "memo_output_contract": {
             "direct_answer_max_chars": 420,
+            "memo_claims_min_when_thesis_ready": 3,
             "memo_claims_max": 5,
             "memo_claim_max_chars": 220,
             "caveats_max": 3,
             "unsupported_claims_excluded_max": 2,
             "source_boundary_notes_max": 3,
+            "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+            "memo_thesis_plan_shape": [
+                "schema_version",
+                "status",
+                "primary_thesis_claim_id",
+                "primary_thesis",
+                "thesis_direction",
+            ],
             "do_not_emit_supported_claims": True,
+            "do_not_emit_memo_thesis_pack": True,
+            "do_not_emit_memo_outline": True,
             "must_copy_claim_id_and_evidence_refs_from_input": True,
             "allowed_top_level_fields": [
                 "schema_version",
@@ -388,16 +606,23 @@ def _memo_messages(
     }
     user = (
         "Write one MemoDraft JSON object from the compact verified judgment plan only. "
+        "Use shared_memo_context only for scope, coverage, Specialist route status, and source-boundary framing; do not copy row counts as evidence. "
         "Use memo_thesis_pack as the primary writing brief and memo_thesis_plan as the lead structure: "
         "start direct_answer from core_thesis or primary_thesis when present, then follow section_sequence. "
         "Use memo_outline only as a fallback section inventory and convert supported ClaimCard observations into memo_claims. "
         "Prefer claim_rank_bucket=memo_ready and higher claim_rank_score when choosing scarce memo_claim slots. "
+        "If memo_thesis_pack.status is ready or memo_thesis_plan.status is ready, answer_status must be draft and memo_claims must be non-empty. "
+        "Use blocked_by_judgment_plan only when no verified memo-ready thesis or driver claims exist. "
         "Preserve materiality, direction, ticker_scope, metric_scope, evidence_refs, caveats, and missing_confirmations where provided. "
+        "Preserve numeric values exactly as written in ClaimCards; do not recalculate, invent, or change units. If you need to shorten a sentence, omit a number rather than altering it. "
         "Do not request tools or use raw rows. Do not add facts beyond the verified claim cards.\n\n"
         "Keep output compact: direct_answer <= 420 characters, memo_claims <= 5, each memo_claim.claim <= 220 characters, "
         "caveats <= 3, unsupported_claims_excluded <= 2, and source_boundary_notes <= 3. "
+        "When the thesis pack is ready and at least three ClaimCards are available, emit 3-5 memo_claims covering thesis, drivers, and counterevidence. "
+        "Set memo_generation_policy exactly to thesis_led_claim_cards_v0_1. "
+        "Emit a compact memo_thesis_plan with only schema_version, status, primary_thesis_claim_id, primary_thesis, and thesis_direction. "
         "Do not emit supported_claims; only emit memo_claims copied from or synthesized from input ClaimCards with claim_id and evidence_refs. "
-        "Emit only the allowed top-level fields listed in memo_output_contract; do not emit analysis traces, copied judgment_plan, source tables, or full supported_claims. "
+        "Emit only the allowed top-level fields listed in memo_output_contract; do not emit memo_thesis_pack, memo_outline, analysis traces, copied judgment_plan, source tables, or full supported_claims. "
         "Do not narrate every source row; synthesize only the strongest supported investment claims and boundaries. "
         "Return JSON only; no markdown, no explanatory preface.\n\n"
         f"Input JSON:\n{_json_for_prompt(user_payload)}"
@@ -411,8 +636,10 @@ def _memo_messages(
                 f"Diagnostic:\n{_json_for_prompt(cleaned_failure, sort_keys=True)}\n\n"
                 f"Use this compact input JSON only:\n{_json_for_prompt(repair_payload)}\n\n"
                 "Return exactly one minimal MemoDraft JSON object. "
-                "direct_answer <= 360 characters, memo_claims <= 4, caveats <= 3, unsupported_claims_excluded <= 2, source_boundary_notes <= 3. "
-                "Do not emit supported_claims. No markdown, no prose, no row-by-row recap."
+                "direct_answer <= 360 characters, memo_claims 3-4 when available, caveats <= 3, unsupported_claims_excluded <= 2, source_boundary_notes <= 3. "
+                "Set memo_generation_policy exactly to thesis_led_claim_cards_v0_1. "
+                "Preserve numeric values exactly from ClaimCards; do not round or change units. "
+                "Do not emit supported_claims, memo_thesis_pack, or memo_outline. No markdown, no prose, no row-by-row recap."
             )
         else:
             user = (
@@ -420,7 +647,8 @@ def _memo_messages(
                 f"Diagnostic:\n{_json_for_prompt(cleaned_failure, sort_keys=True)}\n\n"
                 f"Use this compact input JSON only:\n{_json_for_prompt(repair_payload)}\n\n"
                 f"Previous output excerpt:\n{_truncate(prior_content, 500)}\n\n"
-                "Return one shorter corrected MemoDraft JSON object only."
+                "Return one shorter corrected MemoDraft JSON object only. "
+                "Set memo_generation_policy exactly to thesis_led_claim_cards_v0_1, preserve numeric values exactly, and do not emit memo_thesis_pack or memo_outline."
             )
     return [
         {"role": "system", "content": _memo_system_prompt()},
@@ -503,8 +731,16 @@ def _compact_memo_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
             "caveats": [],
             "unsupported_claims_excluded": [],
             "source_boundary_notes": [],
+            "memo_thesis_plan": {
+                "schema_version": "",
+                "status": "",
+                "primary_thesis_claim_id": "",
+                "primary_thesis": "",
+                "thesis_direction": "",
+            },
             "raw_rows_consumed": False,
             "tool_calls_requested": [],
+            "memo_generation_policy": "thesis_led_claim_cards_v0_1",
         },
     }
 
@@ -1012,7 +1248,7 @@ def _memo_system_prompt() -> str:
             "You are the Memo Writer Agent for a SEC investment research multi-agent graph.",
             research_skill_prompt("memo_writer", max_chars=1800),
             "Return exactly one JSON object. Do not wrap it in prose. Do not call tools.",
-            "Only consume the compact verified_judgment_plan and specialist_verification. Do not include raw rows or retrieval requests.",
+            "Only consume shared_memo_context, compact verified_judgment_plan, and specialist_verification. Do not include raw rows or retrieval requests.",
             "Follow memo_outline when present; make unsupported and missing evidence visible as limitations instead of filling gaps.",
         ]
     )
@@ -1165,6 +1401,11 @@ def _filter_soft_verifier_errors(
 
 def _clean_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
     return json.loads(json.dumps(value, ensure_ascii=False, default=str))
+
+
+def _payload_digest(value: Mapping[str, Any]) -> str:
+    text = json.dumps(_clean_for_prompt(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
 
 def _string_list(value: Any) -> list[str]:

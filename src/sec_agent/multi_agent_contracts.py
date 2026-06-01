@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from typing import Any, Mapping
 
 
@@ -1350,6 +1351,19 @@ def verify_multi_agent_memo_draft(
             errors.append({"type": "unsupported_claim_entered_memo", "claim": claim})
 
     known_refs = _known_judgment_evidence_refs(judgment)
+    supported_by_id = {
+        str(claim.get("claim_id") or ""): claim
+        for claim in judgment.get("supported_claims") or []
+        if isinstance(claim, Mapping) and str(claim.get("claim_id") or "")
+    }
+    supported_numeric_scope = " ".join(_claim_scope_text(claim) for claim in supported_by_id.values())
+    unknown_direct_tokens = sorted(_unknown_numeric_tokens(str(memo.get("direct_answer") or ""), supported_numeric_scope)) if supported_numeric_scope else []
+    hard_unknown_direct_tokens = [token for token in unknown_direct_tokens if _is_material_numeric_token(token)]
+    soft_unknown_direct_tokens = [token for token in unknown_direct_tokens if token not in hard_unknown_direct_tokens]
+    if hard_unknown_direct_tokens:
+        errors.append({"type": "memo_direct_answer_numeric_token_not_in_source_claims", "numeric_tokens": hard_unknown_direct_tokens[:8]})
+    if soft_unknown_direct_tokens:
+        warnings.append({"type": "memo_direct_answer_numeric_token_not_in_source_claims", "numeric_tokens": soft_unknown_direct_tokens[:8]})
     for index, claim in enumerate(_memo_claims(memo), start=1):
         refs = _unique_strings(claim.get("evidence_refs") or claim.get("refs"))
         if not refs and str(memo.get("answer_status") or "") != "blocked_by_specialist_verification":
@@ -1357,6 +1371,19 @@ def verify_multi_agent_memo_draft(
         unknown = sorted(set(refs) - known_refs) if known_refs else []
         if unknown:
             errors.append({"type": "memo_claim_unknown_evidence_refs", "index": index, "evidence_refs": unknown})
+        claim_id = str(claim.get("claim_id") or "")
+        source_claim = supported_by_id.get(claim_id)
+        if source_claim:
+            unknown_numeric_tokens = sorted(_unknown_numeric_tokens(str(claim.get("claim") or ""), _claim_scope_text(source_claim)))
+            if unknown_numeric_tokens:
+                errors.append(
+                    {
+                        "type": "memo_claim_numeric_token_not_in_source_claim",
+                        "index": index,
+                        "claim_id": claim_id,
+                        "numeric_tokens": unknown_numeric_tokens[:8],
+                    }
+                )
         source_families = set(_unique_strings(claim.get("source_families") or claim.get("source_family")))
         claim_type = str(claim.get("claim_type") or "").strip()
         if claim_type in {"reported_financial_fact", "company_reported_financial_fact"} and source_families & CONTEXT_ONLY_SOURCE_FAMILIES:
@@ -1367,7 +1394,7 @@ def verify_multi_agent_memo_draft(
                     "source_families": sorted(source_families & CONTEXT_ONLY_SOURCE_FAMILIES),
                 }
             )
-        if "market_snapshot" in source_families and not str(claim.get("as_of_date") or ""):
+        if "market_snapshot" in source_families and not str(claim.get("as_of_date") or "") and not _refs_contain_iso_date(refs):
             errors.append({"type": "market_claim_missing_as_of_date", "index": index})
         if "relationship_graph" in source_families and claim_type not in RELATIONSHIP_GRAPH_ALLOWED_CLAIM_TYPES:
             errors.append({"type": "relationship_graph_used_beyond_hypothesis", "index": index, "claim_type": claim_type})
@@ -1424,6 +1451,16 @@ def _memo_quality_gate_findings(
     memo_ready_count = int(stats.get("memo_ready_claim_count") or 0)
     if answer_status == "draft" and memo_ready_count == 0:
         warnings.append({"type": "memo_verified_but_no_memo_ready_claim_cards"})
+    minimum_claim_count = 3 if len(supported_claims) >= 3 else 1
+    actual_claim_count = len(_memo_claims(memo))
+    if answer_status == "draft" and minimum_claim_count > 1 and actual_claim_count < minimum_claim_count:
+        errors.append(
+            {
+                "type": "memo_too_few_claims_for_ready_thesis_pack",
+                "minimum_claim_count": minimum_claim_count,
+                "actual_claim_count": actual_claim_count,
+            }
+        )
 
     high_rank_claims = [
         claim
@@ -1450,6 +1487,71 @@ def _memo_quality_gate_findings(
                 }
             )
     return errors, warnings
+
+
+def _claim_scope_text(claim: Mapping[str, Any]) -> str:
+    return " ".join(
+        [
+            str(claim.get("claim") or ""),
+            " ".join(_unique_strings(claim.get("caveats"))),
+            " ".join(_unique_strings(claim.get("missing_confirmations"))),
+        ]
+    )
+
+
+def _unknown_numeric_tokens(candidate_text: str, source_text: str) -> set[str]:
+    source_tokens = _numeric_token_details(source_text)
+    source_strings = {item[0] for item in source_tokens}
+    unknown: set[str] = set()
+    for token, value, unit in _numeric_token_details(candidate_text):
+        if token in source_strings:
+            continue
+        if any(_numeric_values_close(value, unit, source_value, source_unit) for _, source_value, source_unit in source_tokens):
+            continue
+        unknown.add(token)
+    return unknown
+
+
+def _numeric_tokens(text: str) -> set[str]:
+    return {token for token, _, _ in _numeric_token_details(text)}
+
+
+def _numeric_token_details(text: str) -> list[tuple[str, float, str]]:
+    tokens: list[tuple[str, float, str]] = []
+    for match in re.finditer(
+        r"(?<![A-Za-z0-9])[-+]?\$?\d+(?:,\d{3})*(?:\.\d+)?\s*(?:%|x|X|M|B|K|bn|mn|million|billion)?",
+        str(text or ""),
+    ):
+        token = match.group(0).strip().lower().replace("$", "").replace(",", "")
+        token = re.sub(r"\s+", "", token)
+        parsed = re.match(r"([-+]?\d+(?:\.\d+)?)(.*)", token)
+        if token and parsed:
+            tokens.append((token, float(parsed.group(1)), str(parsed.group(2) or "")))
+    return tokens
+
+
+def _numeric_values_close(left_value: float, left_unit: str, right_value: float, right_unit: str) -> bool:
+    if left_unit != right_unit:
+        return False
+    diff = abs(left_value - right_value)
+    return diff <= max(0.5, abs(right_value) * 0.005)
+
+
+def _is_material_numeric_token(token: str) -> bool:
+    parsed = re.match(r"([-+]?\d+(?:\.\d+)?)(.*)", str(token or "").strip().lower())
+    if not parsed:
+        return False
+    value = abs(float(parsed.group(1)))
+    unit = str(parsed.group(2) or "")
+    if unit in {"%", "x", "b", "k", "bn", "mn", "million", "billion"}:
+        return True
+    if unit == "m":
+        return value > 12
+    return False
+
+
+def _refs_contain_iso_date(refs: list[str]) -> bool:
+    return any(re.search(r"\b20\d{2}-\d{2}-\d{2}\b", str(ref or "")) for ref in refs)
 
 
 def repair_multi_agent_memo_draft(
@@ -1499,7 +1601,7 @@ def repair_multi_agent_memo_draft(
             remove_reason = "unsupported_claim_text"
         elif claim_type in {"reported_financial_fact", "company_reported_financial_fact"} and source_families & CONTEXT_ONLY_SOURCE_FAMILIES:
             remove_reason = "context_source_used_as_financial_fact"
-        elif "market_snapshot" in source_families and not str(claim.get("as_of_date") or ""):
+        elif "market_snapshot" in source_families and not str(claim.get("as_of_date") or "") and not _refs_contain_iso_date(refs):
             remove_reason = "market_claim_missing_as_of_date"
 
         if remove_reason:

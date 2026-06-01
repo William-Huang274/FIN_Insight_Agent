@@ -396,6 +396,7 @@
 - [x] Rerun S3 from the accepted S2 relationship-inference artifact and keep real retrieval / rerank / ledger gates green.
 - [x] Add and run S4 Coverage / Reflection gate with bounded second-pass request compilation, stop-after-node routing, stale-requirement override, source-gap boundary, and no-incremental-evidence loop break.
 - [x] Add and run S5 Specialist layer gate by reusing passed S1-S4 artifacts, with route success separated from real-evidence quality.
-- [ ] Proceed through S6-S9 by reusing passed upstream artifacts before the next full-chain run.
-- [ ] Reduce Memo Writer retry/length cost after P7.4 showed high tokens per rendered memo claim and low memo chars per token.
+- [x] Add and run S6/S7/S8 Judgment / Memo / Verifier gate by reusing passed S5 artifacts, with thesis pack, memo-claim density, numeric-fidelity, fallback, and verifier checks separated.
+- [ ] Proceed to S9 full-chain replay after S6/S7/S8 artifact-reuse gate.
+- [ ] Reduce residual Memo Writer repair cost after S6/S7/S8 v0.7 still needs one repair on NVDA/AMD.
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.

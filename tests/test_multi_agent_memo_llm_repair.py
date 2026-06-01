@@ -8,6 +8,7 @@ from sec_agent.memo_llm import (
     MEMO_ROUTE_SOURCE,
     MEMO_ROUTER_ENV,
     MemoLLMConfig,
+    build_shared_memo_context,
     extract_json_object,
     memo_writer_from_env,
     route_memo_writer_llm,
@@ -168,7 +169,8 @@ def test_memo_writer_llm_accepts_valid_memo_json() -> None:
     assert "memo_thesis_plan" in fake.calls[0]["messages"][1]["content"]
     assert "memo_thesis_pack" in fake.calls[0]["messages"][1]["content"]
     assert "memo_writer_data_view" not in fake.calls[0]["messages"][1]["content"]
-    assert "memo_writer_v0_4_thesis_led_claim_cards_no_duplicate_data_view" in fake.calls[0]["messages"][1]["content"]
+    assert "shared_memo_context" in fake.calls[0]["messages"][1]["content"]
+    assert "memo_writer_v0_5_shared_context_thesis_led_claim_cards" in fake.calls[0]["messages"][1]["content"]
     assert "do_not_emit_supported_claims" in fake.calls[0]["messages"][1]["content"]
 
 
@@ -199,6 +201,138 @@ def test_memo_writer_llm_normalizes_non_contract_status_with_claims() -> None:
     assert result["memo_route_result"]["status"] == "pass"
     assert result["memo_answer"]["answer_status"] == "draft"
     assert result["memo_answer"]["memo_writer_diagnostics"]["normalized_answer_status_from"] == "partial"
+
+
+def test_memo_writer_llm_normalizes_internal_policy_and_compact_plan() -> None:
+    memo = {
+        **_memo(),
+        "memo_generation_policy": "model_custom_policy",
+        "memo_thesis_plan": {
+            "schema_version": "sec_agent_memo_thesis_plan_v0.1",
+            "status": "ready",
+            "primary_thesis_claim_id": "fundamental_analyst_claim_1",
+            "primary_thesis": "Supported capex claim.",
+            "thesis_direction": "positive",
+            "section_sequence": [{"memo_slot": "fundamentals", "claim_ids": ["fundamental_analyst_claim_1"]}],
+        },
+    }
+    fake = _FakeChat([json.dumps(memo)])
+
+    result = route_memo_writer_llm(
+        _state(),
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["memo_route_result"]["status"] == "pass"
+    assert result["memo_answer"]["memo_generation_policy"] == "thesis_led_claim_cards_v0_1"
+    assert "section_sequence" not in result["memo_answer"]["memo_thesis_plan"]
+
+
+def test_verifier_rejects_numeric_drift_from_source_claim() -> None:
+    judgment = _market_judgment()
+    memo = {
+        "answer_status": "draft",
+        "direct_answer": "AMD valuation risk is elevated.",
+        "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+        "memo_thesis_plan": judgment["memo_thesis_plan"],
+        "raw_rows_consumed": False,
+        "tool_calls_requested": [],
+        "memo_claims": [
+            {
+                "claim_id": "market_valuation_analyst_claim_1",
+                "claim": "AMD EV/Sales is 2.8x, indicating valuation risk.",
+                "evidence_refs": ["MARKET::AMD::2026-05-29"],
+                "source_families": ["market_snapshot"],
+            }
+        ],
+    }
+
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+
+    assert verification["status"] == "fail"
+    assert any(error["type"] == "memo_claim_numeric_token_not_in_source_claim" for error in verification["errors"])
+
+
+def test_memo_writer_normalizes_numeric_drift_to_source_claim() -> None:
+    judgment = _market_judgment()
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "answer_status": "draft",
+                    "direct_answer": "AMD valuation risk is elevated.",
+                    "memo_generation_policy": "model_custom_policy",
+                    "memo_thesis_plan": judgment["memo_thesis_plan"],
+                    "raw_rows_consumed": False,
+                    "tool_calls_requested": [],
+                    "memo_claims": [
+                        {
+                            "claim_id": "market_valuation_analyst_claim_1",
+                            "claim": "AMD EV/Sales is 2.8x, indicating valuation risk.",
+                            "evidence_refs": ["MARKET::AMD::2026-05-29"],
+                        }
+                    ],
+                }
+            )
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "Write a memo.",
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["memo_route_result"]["status"] == "pass"
+    claim = result["memo_answer"]["memo_claims"][0]
+    assert "22.1x" in claim["claim"]
+    assert claim["numeric_fidelity_normalized"] is True
+
+
+def test_memo_writer_normalizes_direct_answer_numeric_drift() -> None:
+    judgment = _market_judgment()
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "answer_status": "draft",
+                    "direct_answer": "AMD EV/Sales is 2.8x.",
+                    "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+                    "memo_thesis_plan": judgment["memo_thesis_plan"],
+                    "raw_rows_consumed": False,
+                    "tool_calls_requested": [],
+                    "memo_claims": [
+                        {
+                            "claim_id": "market_valuation_analyst_claim_1",
+                            "claim": "AMD EV/Sales is 22.1x, indicating valuation risk.",
+                            "evidence_refs": ["MARKET::AMD::2026-05-29"],
+                        }
+                    ],
+                }
+            )
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "Write a memo.",
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["memo_route_result"]["status"] == "pass"
+    assert "2.8x" not in result["memo_answer"]["direct_answer"]
+    assert result["memo_answer"]["direct_answer_numeric_fidelity_normalized"] is True
 
 
 def test_memo_writer_llm_uses_compact_repair_prompt_after_length() -> None:
@@ -285,17 +419,29 @@ def test_memo_writer_prompt_uses_slot_balanced_v0_3_caps() -> None:
                 {
                     "answer_status": "draft",
                     "direct_answer": "Supported claim 0.",
-                    "memo_claims": [
-                        {
-                            "claim_id": "claim_0",
-                            "claim": "Supported claim 0.",
-                            "claim_type": "investment_thesis_synthesis",
-                            "evidence_refs": ["ref_0"],
-                            "source_families": ["primary_sec_filing"],
-                        }
-                    ],
-                }
-            )
+                        "memo_claims": [
+                            {
+                                "claim_id": "claim_0",
+                                "claim": "Supported claim 0.",
+                                "claim_type": "investment_thesis_synthesis",
+                                "evidence_refs": ["ref_0"],
+                                "source_families": ["primary_sec_filing"],
+                            },
+                            {
+                                "claim_id": "claim_1",
+                                "claim": "Supported claim 1.",
+                                "evidence_refs": ["ref_1"],
+                                "source_families": ["primary_sec_filing"],
+                            },
+                            {
+                                "claim_id": "claim_2",
+                                "claim": "Supported claim 2.",
+                                "evidence_refs": ["ref_2"],
+                                "source_families": ["primary_sec_filing"],
+                            },
+                        ],
+                    }
+                )
         ]
     )
 
@@ -318,6 +464,8 @@ def test_memo_writer_prompt_uses_slot_balanced_v0_3_caps() -> None:
     assert len(compact["conflicts"]) == 2
     assert "memo_thesis_plan" in compact
     assert payload["memo_output_contract"]["memo_claims_max"] == 5
+    assert payload["shared_memo_context"]["schema_version"] == "sec_agent_shared_memo_context_v0.1"
+    assert payload["shared_memo_context"]["context_digest"].startswith("sha256:")
 
 
 def test_memo_writer_prompt_uses_thesis_pack_as_projection_not_extra_payload() -> None:
@@ -357,13 +505,26 @@ def test_memo_writer_prompt_uses_thesis_pack_as_projection_not_extra_payload() -
                 {
                     "answer_status": "draft",
                     "direct_answer": "Supported claim 0.",
-                    "memo_claims": [
-                        {
-                            "claim": "Supported claim 0.",
-                            "evidence_refs": ["ref_0"],
-                            "source_families": ["primary_sec_filing"],
-                        }
-                    ],
+                        "memo_claims": [
+                            {
+                                "claim_id": "claim_0",
+                                "claim": "Supported claim 0.",
+                                "evidence_refs": ["ref_0"],
+                                "source_families": ["primary_sec_filing"],
+                            },
+                            {
+                                "claim_id": "claim_1",
+                                "claim": "Supported claim 1.",
+                                "evidence_refs": ["ref_1"],
+                                "source_families": ["primary_sec_filing"],
+                            },
+                            {
+                                "claim_id": "claim_2",
+                                "claim": "Supported claim 2.",
+                                "evidence_refs": ["ref_2"],
+                                "source_families": ["primary_sec_filing"],
+                            },
+                        ],
                     "memo_thesis_plan": judgment["memo_thesis_plan"],
                     "memo_generation_policy": "thesis_led_claim_cards_v0_1",
                 }
@@ -386,6 +547,36 @@ def test_memo_writer_prompt_uses_thesis_pack_as_projection_not_extra_payload() -
     assert result["memo_route_result"]["status"] == "pass"
     assert compact["memo_thesis_pack"]["schema_version"] == "sec_agent_memo_thesis_pack_v0.1"
     assert len(compact["supported_claims"]) == 0
+
+
+def test_shared_memo_context_carries_scope_without_raw_rows() -> None:
+    context = build_shared_memo_context(
+        {
+            "user_query": "Write an AI capex memo.",
+            "query_contract": {"focus_tickers": ["NVDA"], "search_scope_tickers": ["NVDA", "AMD"]},
+            "agent_activation_plan": {"execution_mode": "deep_research", "allowed_source_families": ["primary_sec_filing"]},
+            "runtime_ledger_rows": [{"metric_id": "ledger_ref_1"}],
+            "context_rows": [{"evidence_ref": "context_ref_1"}],
+            "specialist_route_results": [
+                {"agent_id": "fundamental_analyst", "status": "pass"},
+                {"agent_id": "risk_counterevidence_analyst", "status": "fail"},
+            ],
+            "verified_judgment_plan": {
+                "claim_card_stats": {
+                    "supported_claim_count": 3,
+                    "memo_ready_claim_count": 2,
+                    "memo_slot_supported_count": 2,
+                }
+            },
+        }
+    )
+
+    assert context["execution_mode"] == "deep_research"
+    assert context["source_boundaries"]["ledger_row_count"] == 1
+    assert context["specialist_routes"]["passed_agents"] == ["fundamental_analyst"]
+    assert context["specialist_routes"]["failed_agents"] == ["risk_counterevidence_analyst"]
+    assert context["claim_card_stats"]["memo_ready_claim_count"] == 2
+    assert context["context_digest"].startswith("sha256:")
 
 
 def test_memo_env_router_returns_none_for_mock_mode() -> None:
@@ -631,6 +822,26 @@ def _judgment_without_unsupported() -> dict[str, Any]:
                         "claim": "Supported capex claim.",
                         "evidence_refs": ["capex_ref"],
                         "source_families": ["primary_sec_filing"],
+                    }
+                ],
+            }
+        ]
+    )
+
+
+def _market_judgment() -> dict[str, Any]:
+    return aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "market_valuation_analyst",
+                "observations": [
+                    {
+                        "claim": "AMD EV/Sales is 22.1x, indicating valuation risk.",
+                        "claim_type": "market_context",
+                        "evidence_refs": ["MARKET::AMD::2026-05-29"],
+                        "source_families": ["market_snapshot"],
+                        "memo_slot": "market_valuation",
+                        "materiality": "high",
                     }
                 ],
             }

@@ -46,6 +46,28 @@ def test_universe_relationship_llm_repairs_invalid_json_then_passes() -> None:
     assert "Repair the previous output" in fake.calls[1]["messages"][1]["content"]
 
 
+def test_universe_relationship_llm_can_require_economic_link_map() -> None:
+    fake = _FakeChat([json.dumps(_plan_with_economic_link_map())])
+
+    result = route_universe_relationship_llm(
+        _request(),
+        config=UniverseRelationshipLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            max_repair_attempts=0,
+            require_economic_link_map=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["universe_relationship_plan"]["economic_link_map"]["links"][0]["link_type"] == "demand_driver"
+    assert "economic_link_map" in fake.calls[0]["messages"][0]["content"]
+
+
 def test_universe_relationship_llm_falls_back_when_model_drops_lookup_relationships() -> None:
     empty_plan = _plan()
     empty_plan["relationships"] = []
@@ -271,3 +293,68 @@ def _plan() -> dict[str, Any]:
         ],
         "source_family": "relationship_graph",
     }
+
+
+def _plan_with_economic_link_map() -> dict[str, Any]:
+    plan = _plan()
+    plan["economic_link_map"] = {
+        "schema_version": "sec_agent_economic_link_map_v0.1",
+        "map_scope": "relationship_hypothesis",
+        "focus_tickers": ["NVDA"],
+        "entities": [
+            {
+                "ticker": "NVDA",
+                "role": "direct AI compute beneficiary",
+                "evidence_refs": ["rel_nvda_msft"],
+                "confidence": "medium",
+                "materiality": "high",
+                "missing_confirmations": ["No customer-level order data in relationship graph."],
+            },
+            {
+                "ticker": "MSFT",
+                "role": "cloud capex demand proxy",
+                "evidence_refs": ["rel_nvda_msft"],
+                "confidence": "medium",
+                "materiality": "medium",
+                "missing_confirmations": ["No confirmed direct purchase edge."],
+            },
+        ],
+        "links": [
+            {
+                "source": "MSFT",
+                "target": "NVDA",
+                "link_type": "demand_driver",
+                "mechanism": "Cloud capex can support AI accelerator demand, but the relationship row is hypothesis-only.",
+                "direction": "positive",
+                "materiality": "high",
+                "confidence": "medium",
+                "metric_implications": ["cloud_capex", "data_center_revenue"],
+                "evidence_refs": ["rel_nvda_msft"],
+                "claim_scope": "economic_mechanism_hypothesis_only",
+                "missing_confirmations": ["No direct supplier/customer filing confirmation."],
+            }
+        ],
+        "mechanisms": [
+            {
+                "driver": "cloud capex",
+                "affected_entities": ["NVDA", "MSFT"],
+                "metric_implications": ["cloud_capex", "data_center_revenue"],
+                "confirming_indicators": ["capex growth", "data center revenue"],
+                "disconfirming_indicators": ["capex slowdown"],
+                "evidence_refs": ["rel_nvda_msft"],
+                "confidence": "medium",
+            }
+        ],
+        "investment_implications": [
+            {
+                "claim": "NVDA/MSFT belongs in the AI capex transmission research scope.",
+                "so_what": "Specialists should verify capex and data center revenue before any stronger memo claim.",
+                "entity_scope": ["NVDA", "MSFT"],
+                "confidence": "medium",
+                "supporting_refs": ["rel_nvda_msft"],
+                "missing_confirmations": ["No direct edge confirmation."],
+            }
+        ],
+        "source_boundary": "relationship_graph_hypothesis_only",
+    }
+    return plan

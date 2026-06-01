@@ -7,7 +7,11 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
 from sec_agent.llm_gateway import chat_completion
-from sec_agent.multi_agent_contracts import normalize_universe_relationship_plan, validate_universe_relationship_plan
+from sec_agent.multi_agent_contracts import (
+    validate_economic_link_map,
+    normalize_universe_relationship_plan,
+    validate_universe_relationship_plan,
+)
 from sec_agent.relationship_graph import relationship_plan_from_lookup
 from sec_agent.research_skills import research_skill_prompt
 
@@ -31,6 +35,7 @@ class UniverseRelationshipLLMConfig:
     timeout_s: int = 180
     max_repair_attempts: int = 2
     input_max_relationships: int = 8
+    require_economic_link_map: bool = False
 
 
 def universe_relationship_llm_config_from_env(env: Mapping[str, str] | None = None) -> UniverseRelationshipLLMConfig:
@@ -46,6 +51,7 @@ def universe_relationship_llm_config_from_env(env: Mapping[str, str] | None = No
         timeout_s=_int_env(values.get("UNIVERSE_TIMEOUT_S"), default=180),
         max_repair_attempts=_int_env(values.get("UNIVERSE_MAX_REPAIR_ATTEMPTS"), default=2),
         input_max_relationships=_int_env(values.get("UNIVERSE_INPUT_MAX_RELATIONSHIPS"), default=8),
+        require_economic_link_map=str(values.get("UNIVERSE_REQUIRE_ECONOMIC_LINK_MAP") or "").lower() in {"1", "true", "yes"},
     )
 
 
@@ -153,6 +159,19 @@ def route_universe_relationship_llm(
                     "detail": "Relationship lookup returned bounded relationship rows, but the model plan omitted all relationships.",
                 }
                 continue
+            if route_config.require_economic_link_map:
+                link_validation = validate_economic_link_map(
+                    (validation.get("plan") or {}).get("economic_link_map") if isinstance(validation.get("plan"), Mapping) else {},
+                    known_evidence_refs=known_refs,
+                    allowed_tickers=set(_string_list((validation.get("plan") or {}).get("included_tickers") if isinstance(validation.get("plan"), Mapping) else [])),
+                )
+                if link_validation["status"] != "pass":
+                    last_failure = {
+                        "type": "economic_link_map_validation_failed",
+                        "errors": link_validation["errors"],
+                        "warnings": link_validation["warnings"],
+                    }
+                    continue
             return {
                 "schema_version": ROUTE_SCHEMA_VERSION,
                 "source": ROUTE_SOURCE,
@@ -236,7 +255,9 @@ def _build_messages(
         "Return one UniverseRelationshipPlan JSON object from the bounded relationship lookup only. "
         "Do not add named companies or relationships from memory. "
         "included_tickers may contain only focus_tickers and tickers that have relationship evidence_refs in the input. "
-        "Search-scope tickers without input relationship rows must be excluded or listed as unsupported_relationships.\n\n"
+        "Search-scope tickers without input relationship rows must be excluded or listed as unsupported_relationships. "
+        "Keep the JSON compact: at most 4 relationships, 6 entities, 4 economic links, 2 mechanisms, and 2 investment_implications. "
+        "Use short strings; do not narrate evidence rows.\n\n"
         f"Input JSON:\n{json.dumps(user_payload, ensure_ascii=False, indent=2)}"
     )
     if prior_failure:
@@ -274,6 +295,58 @@ def _system_prompt() -> str:
                 "claim_scope": "scope_or_hypothesis_only",
             }
         ],
+        "economic_link_map": {
+            "schema_version": "sec_agent_economic_link_map_v0.1",
+            "map_scope": "relationship_hypothesis",
+            "focus_tickers": ["TICKER"],
+            "entities": [
+                {
+                    "ticker": "TICKER",
+                    "role": "direct_beneficiary | peer | second_order_beneficiary | risk_exposure",
+                    "evidence_refs": ["relationship evidence ref"],
+                    "confidence": "low | medium | high",
+                    "materiality": "low | medium | high",
+                    "missing_confirmations": ["missing confirmation"],
+                }
+            ],
+            "links": [
+                {
+                    "source": "TICKER or economic driver",
+                    "target": "TICKER",
+                    "link_type": "peer | demand_driver | second_order_beneficiary | substitution | macro_regulatory | sector_hypothesis | unknown",
+                    "mechanism": "economic transmission mechanism",
+                    "direction": "positive | negative | mixed | neutral | unknown",
+                    "materiality": "low | medium | high",
+                    "confidence": "low | medium | high",
+                    "metric_implications": ["metric"],
+                    "evidence_refs": ["relationship evidence ref"],
+                    "claim_scope": "economic_mechanism_hypothesis_only",
+                    "missing_confirmations": ["missing confirmation"],
+                }
+            ],
+            "mechanisms": [
+                {
+                    "driver": "economic driver",
+                    "affected_entities": ["TICKER"],
+                    "metric_implications": ["metric"],
+                    "confirming_indicators": ["indicator"],
+                    "disconfirming_indicators": ["indicator"],
+                    "evidence_refs": ["relationship evidence ref"],
+                    "confidence": "low | medium | high",
+                }
+            ],
+            "investment_implications": [
+                {
+                    "claim": "bounded implication",
+                    "so_what": "why this matters for the research memo",
+                    "entity_scope": ["TICKER"],
+                    "confidence": "low | medium | high",
+                    "supporting_refs": ["relationship evidence ref"],
+                    "missing_confirmations": ["missing confirmation"],
+                }
+            ],
+            "source_boundary": "relationship_graph_hypothesis_only",
+        },
         "unsupported_relationships": [],
         "source_family": "relationship_graph",
     }
@@ -283,6 +356,7 @@ def _system_prompt() -> str:
             research_skill_prompt("universe_relationship", max_chars=4200),
             "Return exactly one JSON object. Do not wrap it in prose. Do not call tools.",
             "Relationship evidence can support scope and hypotheses only, never company financial facts.",
+            "Fill economic_link_map from the same bounded relationship refs. It must explain entity roles, economic links, mechanisms, metrics to verify, missing confirmations, and bounded investment implications.",
             f"UniverseRelationshipPlan schema hint:\n{json.dumps(schema_hint, ensure_ascii=False, indent=2)}",
         ]
     )

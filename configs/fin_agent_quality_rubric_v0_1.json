@@ -1,0 +1,225 @@
+{
+  "schema_version": "fin_agent_quality_rubric_v0.1",
+  "score_scale": {
+    "min": 0,
+    "max": 4,
+    "deliverable_min_weighted_score": 3.0,
+    "diagnostic_min_weighted_score": 2.4
+  },
+  "dimensions": [
+    {
+      "id": "mandate_fit",
+      "label": "Question understanding and task authorization",
+      "weight": 0.1,
+      "hard_gate_examples": [
+        "execution_mode_mismatch_changes_downstream_path",
+        "required_agent_missing",
+        "forbidden_agent_activated",
+        "forbidden_scope_reintroduced"
+      ]
+    },
+    {
+      "id": "evidence_boundary",
+      "label": "Evidence sufficiency and source boundary",
+      "weight": 0.16,
+      "hard_gate_examples": [
+        "unsupported_final_claim",
+        "wrong_source_family_for_claim",
+        "relationship_graph_used_as_financial_fact"
+      ]
+    },
+    {
+      "id": "financial_metric_reasoning",
+      "label": "Financial and metric reasoning",
+      "weight": 0.12,
+      "hard_gate_examples": [
+        "exact_value_without_ledger_or_filing_ref",
+        "sector_specific_metric_misused"
+      ]
+    },
+    {
+      "id": "economic_relationship_reasoning",
+      "label": "Economic relationship and industry transmission",
+      "weight": 0.12,
+      "hard_gate_examples": [
+        "sector_depth_relationship_evidence_not_consumed",
+        "indirect_link_written_as_confirmed_direct_edge"
+      ]
+    },
+    {
+      "id": "investment_thesis_quality",
+      "label": "Investment judgment and thesis quality",
+      "weight": 0.16,
+      "hard_gate_examples": [
+        "unsupported_recommendation_or_price_target",
+        "memo_contradicts_verified_claim_cards"
+      ]
+    },
+    {
+      "id": "risk_counterevidence_balance",
+      "label": "Risk, counterevidence, and scenario balance",
+      "weight": 0.1,
+      "hard_gate_examples": [
+        "material_counterevidence_omitted",
+        "benefits_presented_without_material_risks"
+      ]
+    },
+    {
+      "id": "answer_usability",
+      "label": "Output structure and user usefulness",
+      "weight": 0.1,
+      "hard_gate_examples": [
+        "no_substantive_answer",
+        "latest_user_constraint_violated"
+      ]
+    },
+    {
+      "id": "cost_quality_efficiency",
+      "label": "Process efficiency and cost quality",
+      "weight": 0.08,
+      "hard_gate_examples": [
+        "tool_budget_exhausted",
+        "duplicate_tool_call_not_blocked",
+        "no_gain_second_pass_continues"
+      ]
+    },
+    {
+      "id": "permissions_and_auditability",
+      "label": "Permissions, safety, and auditability",
+      "weight": 0.06,
+      "hard_gate_examples": [
+        "agent_tool_permission_violation",
+        "raw_private_path_or_secret_in_output"
+      ]
+    }
+  ],
+  "stage_gates": {
+    "research_lead": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "llm_route_pass",
+        "validation_pass",
+        "mode_match",
+        "required_agents_present",
+        "forbidden_agents_absent",
+        "evidence_requirement_validation_pass"
+      ]
+    },
+    "universe_relationship": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "validation_pass",
+        "relationship_lookup_boundary_valid",
+        "relationship_refs_present_when_required"
+      ]
+    },
+    "evidence_operators": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "expected_operator_agents_called",
+        "expected_tool_names_called",
+        "tool_ownership_valid",
+        "tool_budget_lte",
+        "no_budget_loop_break",
+        "no_duplicate_loop_break",
+        "real_retrieval_mode_required",
+        "sec_search_not_dry_run",
+        "sec_search_errors_absent",
+        "sec_search_context_rows_present",
+        "sec_search_bm25_candidates_present",
+        "sec_search_bge_rerank_present",
+        "bge_cuda_when_auto_and_available",
+        "exact_value_ledger_rows_present",
+        "market_rows_present",
+        "industry_rows_present",
+        "relationship_rows_available",
+        "row_payload_usable"
+      ]
+    },
+    "coverage_reflection": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "searchable_gaps_classified",
+        "second_pass_gain_or_bounded_reason"
+      ]
+    },
+    "specialists": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "expected_routes_present",
+        "expected_routes_valid",
+        "route_success_distinct_from_real_evidence_quality",
+        "real_evidence_quality_pass",
+        "verification_status_valid"
+      ]
+    },
+    "judgment_aggregator": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "supported_claim_cards_present",
+        "memo_slots_supported",
+        "unsupported_excluded_from_memo"
+      ]
+    },
+    "memo_writer": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "memo_llm_pass",
+        "memo_status_allowed",
+        "rendered_answer_has_memo_claims",
+        "rendered_answer_has_evidence_refs"
+      ]
+    },
+    "verifier": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "claim_verification_pass",
+        "verifier_llm_pass",
+        "verifier_projection_present"
+      ]
+    },
+    "renderer": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "rendered_answer_present",
+        "rendered_answer_has_evidence_refs",
+        "no_internal_trace_leak"
+      ]
+    },
+    "full_chain": {
+      "required_case_pass_rate": 1.0,
+      "max_high_risk_quality_cases": 0
+    }
+  },
+  "cost_quality_thresholds": {
+    "warn_total_tokens_gte": 70000,
+    "warn_memo_writer_tokens_gte": 18000,
+    "warn_verifier_tokens_gte": 10000,
+    "warn_tokens_per_rendered_memo_claim_gte": 18000,
+    "warn_tokens_per_supported_claim_card_gte": 6000,
+    "warn_memo_chars_per_total_token_lt": 0.05,
+    "warn_memo_writer_repair_attempt_ratio_gt": 0.0
+  },
+  "case_overrides": {
+    "exact_lookup": {
+      "dimension_focus": [
+        "mandate_fit",
+        "evidence_boundary",
+        "financial_metric_reasoning",
+        "permissions_and_auditability"
+      ],
+      "memo_not_required": true
+    },
+    "sector_depth": {
+      "min_dimension_scores": {
+        "economic_relationship_reasoning": 3.0,
+        "investment_thesis_quality": 3.0
+      },
+      "require_relationship_evidence_consumed": true
+    },
+    "multi_turn": {
+      "require_latest_user_scope_authority": true,
+      "forbid_stale_ticker_carryover": true
+    }
+  }
+}

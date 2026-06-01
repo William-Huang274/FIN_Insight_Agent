@@ -44,6 +44,69 @@ def test_ledger_store_rehydrates_case_scoped_metric_ids(tmp_path: Path) -> None:
     assert rows[0]["value"] == 12000.0
 
 
+def test_ledger_store_expands_common_metric_family_aliases(tmp_path: Path) -> None:
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                metric_family="capital_expenditure_proxy",
+                metric_id="store_case::NVDA::2026::capital_expenditure_proxy::total_value::qtd",
+            )
+        ],
+        store_path,
+    )
+
+    rows = query_ledger_facts(
+        store_path,
+        case_id="case_live",
+        tickers=["NVDA"],
+        years=[2026],
+        filing_types=["10-Q"],
+        metric_families=["capex"],
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["metric_family"] == "capital_expenditure_proxy"
+
+
+def test_mcp_ledger_query_relaxes_filing_type_when_metric_row_exists(tmp_path: Path) -> None:
+    from sec_agent.mcp_tool_registry import invoke_mcp_tool
+
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                metric_family="capital_expenditure_proxy",
+                metric_id="store_case::MSFT::2026::capital_expenditure_proxy::total_value::qtd",
+                ticker="MSFT",
+                form_type="10-Q",
+            )
+        ],
+        store_path,
+    )
+
+    result = invoke_mcp_tool(
+        "sec_query_exact_value_ledger",
+        {
+            "ledger_store_path": str(store_path),
+            "tickers": ["MSFT"],
+            "years": [2026],
+            "filing_types": ["10-K"],
+            "source_tiers": ["primary_sec_filing"],
+            "metric_families": ["capex"],
+            "period_roles": ["ANNUAL"],
+            "limit": 10,
+        },
+    )
+
+    assert result["status"] == "ok"
+    assert result["row_count"] == 1
+    assert result["fallback_trace"][0]["type"] == "relaxed_filing_type"
+    assert result["fallback_trace"][-1]["type"] == "relaxed_filing_type_and_period_role"
+
+
 def test_runtime_ledger_uses_duckdb_store_without_object_records(tmp_path: Path) -> None:
     interactive = _load_interactive_module()
     store_path = tmp_path / "ledger.duckdb"
@@ -307,8 +370,8 @@ def _banking_context_row(ticker: str, evidence_id: str, body: str) -> dict:
     }
 
 
-def _fact_row(*, case_id: str) -> dict:
-    return {
+def _fact_row(*, case_id: str, **overrides) -> dict:
+    row = {
         "metric_id": f"{case_id}::NVDA::2026::revenue::total_value::qtd",
         "case_id": case_id,
         "ticker": "NVDA",
@@ -331,3 +394,5 @@ def _fact_row(*, case_id: str) -> dict:
         "section": "Item 2",
         "source_text": "Revenue was $12,000 million.",
     }
+    row.update(overrides)
+    return row

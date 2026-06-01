@@ -66,25 +66,70 @@ def _invoke_ledger(args: dict[str, Any]) -> dict[str, Any]:
     db_path = args.get("ledger_store_path") or args.get("db_path") or ""
     if not str(db_path).strip():
         return {"status": "error", "error": "ledger_store_path_required"}
-    rows = query_ledger_facts(
+    filing_types = _list_arg(args.get("filing_types"))
+    period_roles = _list_arg(args.get("period_roles"))
+    rows = _query_ledger_with_args(args, db_path=db_path, filing_types=filing_types, period_roles=period_roles)
+    fallback_trace: list[dict[str, Any]] = []
+    if not rows and filing_types:
+        rows = _query_ledger_with_args(args, db_path=db_path, filing_types=[], period_roles=period_roles)
+        fallback_trace.append(
+            {
+                "type": "relaxed_filing_type",
+                "requested_filing_types": filing_types,
+                "row_count": len(rows),
+                "reason": "requested exact-value form type had no ledger rows; retained ticker/year/source/metric filters",
+            }
+        )
+    if not rows and period_roles:
+        rows = _query_ledger_with_args(args, db_path=db_path, filing_types=filing_types, period_roles=[])
+        fallback_trace.append(
+            {
+                "type": "relaxed_period_role",
+                "requested_period_roles": period_roles,
+                "row_count": len(rows),
+                "reason": "requested exact-value period role had no ledger rows; retained ticker/year/source/metric filters",
+            }
+        )
+    if not rows and filing_types and period_roles:
+        rows = _query_ledger_with_args(args, db_path=db_path, filing_types=[], period_roles=[])
+        fallback_trace.append(
+            {
+                "type": "relaxed_filing_type_and_period_role",
+                "requested_filing_types": filing_types,
+                "requested_period_roles": period_roles,
+                "row_count": len(rows),
+                "reason": "requested exact-value form and period role had no ledger rows; retained ticker/year/source/metric filters",
+            }
+        )
+    return {
+        "status": "ok" if rows else "partial",
+        "ledger_rows": rows,
+        "row_count": len(rows),
+        "fallback_trace": fallback_trace,
+        "missing_dimensions": [],
+        "artifact_refs": [{"artifact_id": "ledger_store", "path": str(Path(db_path).resolve()), "digest": "", "row_count": len(rows)}],
+    }
+
+
+def _query_ledger_with_args(
+    args: dict[str, Any],
+    *,
+    db_path: Any,
+    filing_types: list[str],
+    period_roles: list[str],
+) -> list[dict[str, Any]]:
+    return query_ledger_facts(
         db_path,
         case_id=str(args.get("case_id") or "__mcp__"),
         object_ids=_list_arg(args.get("object_ids")),
         tickers=_list_arg(args.get("tickers")),
         years=[int(year) for year in _list_arg(args.get("years")) if str(year).isdigit()],
-        filing_types=_list_arg(args.get("filing_types")),
+        filing_types=filing_types,
         source_tiers=_list_arg(args.get("source_tiers")),
         metric_families=_list_arg(args.get("metric_families")),
-        period_roles=_list_arg(args.get("period_roles")),
+        period_roles=period_roles,
         limit=int(args.get("limit") or 5000),
     )
-    return {
-        "status": "ok",
-        "ledger_rows": rows,
-        "row_count": len(rows),
-        "missing_dimensions": [],
-        "artifact_refs": [{"artifact_id": "ledger_store", "path": str(Path(db_path).resolve()), "digest": "", "row_count": len(rows)}],
-    }
 
 
 def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:

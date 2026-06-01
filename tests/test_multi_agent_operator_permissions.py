@@ -94,6 +94,18 @@ def test_sec_search_runtime_policy_auto_uses_cuda_when_available(monkeypatch) ->
     assert policy["bge_device_policy"] == "auto_cuda_available"
 
 
+def test_sec_search_runtime_policy_auto_uses_cuda_for_focused_answer_when_available(monkeypatch) -> None:
+    monkeypatch.setattr(runtime, "_cuda_available", lambda: True)
+
+    policy = derive_sec_search_runtime_policy(
+        {"execution_mode": "focused_answer", "bge_device": "auto"},
+        {"retrieval_route": "filing_text", "tickers": ["AMZN"]},
+    )
+
+    assert policy["bge_device"] == "cuda"
+    assert policy["bge_device_policy"] == "auto_cuda_available"
+
+
 def test_zero_runtime_context_values_do_not_override_policy_defaults() -> None:
     args = tool_arguments_from_route(
         {

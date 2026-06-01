@@ -386,5 +386,12 @@
 - [x] Add P7.1 priority-aware Specialist data-view and prompt budgets so supporting agents consume narrower payloads while primary deep-research specialists keep full context.
 - [x] Add P7.2 Verifier minimal projection so verifier consumes final memo claims / refs instead of a broad judgment inventory.
 - [x] Add P7.4 cost-quality eval metrics for tokens per ClaimCard, rendered memo claim, memo char, and repair-token ratio.
+- [x] Add a standalone Fin Agent investment-research quality framework outside worklogs, with machine-readable rubric and layered artifact-only audit script.
+- [x] Add a staged S1-S10 execution plan that requires each agent/node gate to pass before downstream or full-chain evaluation.
+- [x] Run the new S1 Research Lead quality gate and audit it with `scripts/audit_fin_agent_layer_quality.py`.
+- [x] Add and run the S2 Universe / Relationship quality gate from the passed S1 artifact, including relationship-pack relevance repair.
+- [x] Deepen S2 into `EconomicLinkMap` with bounded entities, links, mechanisms, investment implications, and relationship-hypothesis source boundary.
+- [x] Add and run the S3 Evidence Operators quality gate from passed S1/S2 artifacts, including real SEC BM25/ObjectBM25/BGE rerank, exact-value ledger, market/industry rows, relationship rows, and BGE CUDA auto policy.
+- [ ] Proceed through S4-S9 by reusing passed upstream artifacts before the next full-chain run.
 - [ ] Reduce Memo Writer retry/length cost after P7.4 showed high tokens per rendered memo claim and low memo chars per token.
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.

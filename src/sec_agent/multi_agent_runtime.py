@@ -1312,7 +1312,7 @@ def _resolve_bge_device(context: Mapping[str, Any], *, execution_mode: str) -> s
     requested = str(context.get("bge_device") or os.environ.get("BGE_DEVICE") or "").strip().lower()
     if requested and requested not in {"auto", "default"}:
         return requested
-    if execution_mode in {"standard_memo", "deep_research"} and _cuda_available():
+    if _cuda_available():
         return "cuda"
     return "cpu"
 

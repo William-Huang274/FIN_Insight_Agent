@@ -12,6 +12,7 @@ MEMO_DRAFT_SCHEMA_VERSION = "sec_agent_multi_agent_memo_draft_v0.1"
 MEMO_VERIFICATION_SCHEMA_VERSION = "sec_agent_multi_agent_memo_verification_v0.1"
 RELATIONSHIP_EDGE_SCHEMA_VERSION = "sec_agent_relationship_edge_v0.2"
 MEMO_THESIS_PACK_SCHEMA_VERSION = "sec_agent_memo_thesis_pack_v0.1"
+ECONOMIC_LINK_MAP_SCHEMA_VERSION = "sec_agent_economic_link_map_v0.1"
 
 SPECIALIST_AGENT_IDS = {
     "fundamental_analyst",
@@ -23,6 +24,17 @@ SPECIALIST_AGENT_IDS = {
 SPECIALIST_STATUSES = {"pass", "partial", "blocked", "stubbed"}
 CONFIDENCE_LEVELS = {"unknown", "low", "medium", "high"}
 RELATIONSHIP_TYPES = {"peer", "competitor", "customer", "supplier", "sector", "macro_sensitive", "other"}
+ECONOMIC_LINK_TYPES = {
+    "direct_customer_supplier",
+    "peer",
+    "demand_driver",
+    "second_order_beneficiary",
+    "substitution",
+    "macro_regulatory",
+    "sector_hypothesis",
+    "unknown",
+}
+ECONOMIC_DIRECTIONS = {"positive", "negative", "mixed", "neutral", "unknown"}
 RELATIONSHIP_EVIDENCE_SOURCES = {
     "primary_sec_filing",
     "company_authored_unaudited_sec_filing",
@@ -155,6 +167,11 @@ def normalize_universe_relationship_plan(payload: Mapping[str, Any] | None = Non
         "scope_guard": _relationship_scope_guard(raw.get("scope_guard") if isinstance(raw.get("scope_guard"), Mapping) else {}, budget),
         "budget": budget,
         "relationships": relationships,
+        "economic_link_map": normalize_economic_link_map(
+            raw.get("economic_link_map") if isinstance(raw.get("economic_link_map"), Mapping) else {},
+            relationships=relationships,
+            focus_tickers=focus_tickers,
+        ),
         "unsupported_relationships": unsupported,
         "evidence_requirements": evidence_requirements_from_universe_relationship_plan({"relationships": relationships, "focus_tickers": focus_tickers}),
         "source_family": str(raw.get("source_family") or "relationship_graph").strip(),
@@ -245,10 +262,180 @@ def validate_universe_relationship_plan(
                 errors.append({"type": "unknown_relationship_evidence_ref", "index": index, "evidence_refs": unknown})
         if not relationship["metrics_to_check"]:
             warnings.append({"type": "relationship_metrics_to_check_missing", "index": index})
+    if _economic_link_map_has_content(plan.get("economic_link_map")):
+        link_validation = validate_economic_link_map(
+            plan["economic_link_map"],
+            known_evidence_refs=refs,
+            allowed_tickers=set(plan["included_tickers"]) | set(plan["focus_tickers"]),
+        )
+        if link_validation["status"] != "pass":
+            for error in link_validation["errors"]:
+                errors.append({"type": "economic_link_map_invalid", **error})
+        warnings.extend({"type": "economic_link_map_warning", **warning} for warning in link_validation["warnings"])
     return {
         "status": "fail" if errors else "pass",
         "schema_version": UNIVERSE_RELATIONSHIP_PLAN_SCHEMA_VERSION,
         "plan": plan,
+        "errors": errors,
+        "warnings": warnings,
+    }
+
+
+def _economic_link_map_has_content(value: Any) -> bool:
+    if not isinstance(value, Mapping):
+        return False
+    return any(value.get(key) for key in ("entities", "links", "mechanisms", "investment_implications"))
+
+
+def normalize_economic_link_map(
+    payload: Mapping[str, Any] | None = None,
+    *,
+    relationships: list[Mapping[str, Any]] | None = None,
+    focus_tickers: list[str] | None = None,
+) -> dict[str, Any]:
+    raw = dict(payload or {})
+    entities = [
+        _normalize_economic_entity(item)
+        for item in raw.get("entities") or []
+        if isinstance(item, Mapping)
+    ]
+    links = [
+        _normalize_economic_link(item)
+        for item in raw.get("links") or []
+        if isinstance(item, Mapping)
+    ]
+    mechanisms = [
+        _normalize_economic_mechanism(item)
+        for item in raw.get("mechanisms") or []
+        if isinstance(item, Mapping)
+    ]
+    implications = [
+        _normalize_investment_implication(item)
+        for item in raw.get("investment_implications") or []
+        if isinstance(item, Mapping)
+    ]
+    return {
+        "schema_version": ECONOMIC_LINK_MAP_SCHEMA_VERSION,
+        "map_scope": str(raw.get("map_scope") or "relationship_hypothesis").strip(),
+        "focus_tickers": _unique_upper(raw.get("focus_tickers") or focus_tickers),
+        "entities": entities,
+        "links": links,
+        "mechanisms": mechanisms,
+        "investment_implications": implications,
+        "boundary_notes": [
+            _normalize_boundary_note(item)
+            for item in raw.get("boundary_notes") or []
+            if isinstance(item, Mapping)
+        ],
+        "source_boundary": str(raw.get("source_boundary") or "relationship_graph_hypothesis_only").strip(),
+        "map_policy": str(raw.get("map_policy") or "universe_relationship_economic_link_map_v0_1").strip(),
+        "metadata": {
+            **(dict(raw.get("metadata") or {}) if isinstance(raw.get("metadata"), Mapping) else {}),
+            "relationship_count": len(relationships or []),
+        },
+    }
+
+
+def validate_economic_link_map(
+    payload: Mapping[str, Any] | None = None,
+    *,
+    known_evidence_refs: set[str] | None = None,
+    allowed_tickers: set[str] | None = None,
+) -> dict[str, Any]:
+    link_map = normalize_economic_link_map(payload)
+    errors: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+    known_refs = set(known_evidence_refs or set())
+    allowed = {str(item).upper().strip() for item in allowed_tickers or set() if str(item).strip()}
+
+    if link_map["source_boundary"] != "relationship_graph_hypothesis_only":
+        errors.append({"type": "economic_link_map_source_boundary_invalid", "value": link_map["source_boundary"]})
+    if not link_map["entities"]:
+        errors.append({"type": "economic_link_map_entities_required"})
+    if not link_map["links"]:
+        errors.append({"type": "economic_link_map_links_required"})
+    if not link_map["mechanisms"]:
+        errors.append({"type": "economic_link_map_mechanisms_required"})
+    if not link_map["investment_implications"]:
+        errors.append({"type": "economic_link_map_investment_implications_required"})
+
+    for index, entity in enumerate(link_map["entities"]):
+        ticker = entity["ticker"]
+        if not ticker:
+            errors.append({"type": "economic_entity_ticker_required", "index": index})
+        if ticker and allowed and ticker not in allowed:
+            errors.append({"type": "economic_entity_ticker_not_allowed", "index": index, "ticker": ticker})
+        if not entity["role"]:
+            errors.append({"type": "economic_entity_role_required", "index": index, "ticker": ticker})
+        _validate_refs(
+            entity["evidence_refs"],
+            known_refs=known_refs,
+            errors=errors,
+            error_type="economic_entity_unknown_evidence_ref",
+            index=index,
+        )
+
+    for index, link in enumerate(link_map["links"]):
+        if not link["source"] or not link["target"]:
+            errors.append({"type": "economic_link_endpoints_required", "index": index})
+        if link["link_type"] not in ECONOMIC_LINK_TYPES:
+            errors.append({"type": "economic_link_type_invalid", "index": index, "value": link["link_type"]})
+        if link["direction"] not in ECONOMIC_DIRECTIONS:
+            errors.append({"type": "economic_link_direction_invalid", "index": index, "value": link["direction"]})
+        if not link["mechanism"]:
+            errors.append({"type": "economic_link_mechanism_required", "index": index})
+        if not link["evidence_refs"]:
+            errors.append({"type": "economic_link_evidence_refs_required", "index": index})
+        if link["claim_scope"] != "economic_mechanism_hypothesis_only":
+            errors.append({"type": "economic_link_claim_scope_invalid", "index": index, "value": link["claim_scope"]})
+        for endpoint_key in ("source", "target"):
+            endpoint = str(link.get(endpoint_key) or "").upper().strip()
+            if _looks_like_ticker(endpoint) and allowed and endpoint not in allowed:
+                errors.append({"type": "economic_link_endpoint_not_allowed", "index": index, "endpoint": endpoint})
+        _validate_refs(
+            link["evidence_refs"],
+            known_refs=known_refs,
+            errors=errors,
+            error_type="economic_link_unknown_evidence_ref",
+            index=index,
+        )
+        if link["link_type"] == "direct_customer_supplier" and not link["missing_confirmations"]:
+            warnings.append({"type": "direct_link_without_missing_confirmation_note", "index": index})
+
+    for index, mechanism in enumerate(link_map["mechanisms"]):
+        if not mechanism["driver"]:
+            errors.append({"type": "economic_mechanism_driver_required", "index": index})
+        if not mechanism["affected_entities"]:
+            errors.append({"type": "economic_mechanism_affected_entities_required", "index": index})
+        if not mechanism["metric_implications"]:
+            errors.append({"type": "economic_mechanism_metric_implications_required", "index": index})
+        _validate_refs(
+            mechanism["evidence_refs"],
+            known_refs=known_refs,
+            errors=errors,
+            error_type="economic_mechanism_unknown_evidence_ref",
+            index=index,
+        )
+
+    for index, implication in enumerate(link_map["investment_implications"]):
+        if not implication["claim"]:
+            errors.append({"type": "investment_implication_claim_required", "index": index})
+        if not implication["so_what"]:
+            errors.append({"type": "investment_implication_so_what_required", "index": index})
+        if not implication["supporting_refs"]:
+            errors.append({"type": "investment_implication_supporting_refs_required", "index": index})
+        _validate_refs(
+            implication["supporting_refs"],
+            known_refs=known_refs,
+            errors=errors,
+            error_type="investment_implication_unknown_supporting_ref",
+            index=index,
+        )
+
+    return {
+        "schema_version": ECONOMIC_LINK_MAP_SCHEMA_VERSION,
+        "status": "fail" if errors else "pass",
+        "economic_link_map": link_map,
         "errors": errors,
         "warnings": warnings,
     }
@@ -1634,6 +1821,105 @@ def _normalize_relationship(payload: Mapping[str, Any]) -> dict[str, Any]:
         "claim_scope": str(payload.get("claim_scope") or "scope_or_hypothesis_only").strip(),
         "notes": str(payload.get("notes") or "").strip(),
     }
+
+
+def _normalize_economic_entity(payload: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "ticker": str(payload.get("ticker") or payload.get("entity") or "").upper().strip(),
+        "role": str(payload.get("role") or "").strip(),
+        "evidence_refs": _unique_strings(payload.get("evidence_refs") or payload.get("refs")),
+        "source_families": _unique_strings(payload.get("source_families") or payload.get("source_family")),
+        "confidence": _normalize_confidence(payload.get("confidence")),
+        "materiality": _normalize_materiality(payload.get("materiality")),
+        "missing_confirmations": _unique_strings(payload.get("missing_confirmations")),
+        "notes": str(payload.get("notes") or "").strip(),
+    }
+
+
+def _normalize_economic_link(payload: Mapping[str, Any]) -> dict[str, Any]:
+    source = str(payload.get("source") or payload.get("source_entity") or payload.get("from") or "").strip()
+    target = str(payload.get("target") or payload.get("target_entity") or payload.get("to") or "").strip()
+    link_type = str(payload.get("link_type") or payload.get("type") or "unknown").strip()
+    if link_type == "sector":
+        link_type = "sector_hypothesis"
+    return {
+        "link_id": str(payload.get("link_id") or _economic_link_id(source, target, link_type, payload.get("evidence_refs"))).strip(),
+        "source": source.upper() if _looks_like_ticker(source) else source,
+        "target": target.upper() if _looks_like_ticker(target) else target,
+        "link_type": link_type,
+        "mechanism": str(payload.get("mechanism") or "").strip(),
+        "direction": _normalize_economic_direction(payload.get("direction")),
+        "materiality": _normalize_materiality(payload.get("materiality")),
+        "confidence": _normalize_confidence(payload.get("confidence")),
+        "metric_implications": _unique_strings(payload.get("metric_implications") or payload.get("metrics_to_check")),
+        "evidence_refs": _unique_strings(payload.get("evidence_refs") or payload.get("refs")),
+        "source_families": _unique_strings(payload.get("source_families") or payload.get("source_family")),
+        "claim_scope": str(payload.get("claim_scope") or "economic_mechanism_hypothesis_only").strip(),
+        "missing_confirmations": _unique_strings(payload.get("missing_confirmations")),
+    }
+
+
+def _normalize_economic_mechanism(payload: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "driver": str(payload.get("driver") or "").strip(),
+        "affected_entities": _unique_upper(payload.get("affected_entities") or payload.get("entities")),
+        "metric_implications": _unique_strings(payload.get("metric_implications") or payload.get("metrics_to_check")),
+        "confirming_indicators": _unique_strings(payload.get("confirming_indicators")),
+        "disconfirming_indicators": _unique_strings(payload.get("disconfirming_indicators")),
+        "evidence_refs": _unique_strings(payload.get("evidence_refs") or payload.get("refs")),
+        "confidence": _normalize_confidence(payload.get("confidence")),
+    }
+
+
+def _normalize_investment_implication(payload: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "claim": str(payload.get("claim") or "").strip(),
+        "so_what": str(payload.get("so_what") or payload.get("investment_use") or "").strip(),
+        "entity_scope": _unique_upper(payload.get("entity_scope") or payload.get("tickers")),
+        "confidence": _normalize_confidence(payload.get("confidence")),
+        "supporting_refs": _unique_strings(payload.get("supporting_refs") or payload.get("evidence_refs") or payload.get("refs")),
+        "limiting_refs": _unique_strings(payload.get("limiting_refs")),
+        "missing_confirmations": _unique_strings(payload.get("missing_confirmations")),
+    }
+
+
+def _normalize_boundary_note(payload: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "type": str(payload.get("type") or "source_boundary").strip(),
+        "severity": str(payload.get("severity") or "confidence_caveat").strip(),
+        "note": str(payload.get("note") or payload.get("text") or "").strip(),
+        "evidence_refs": _unique_strings(payload.get("evidence_refs") or payload.get("refs")),
+    }
+
+
+def _normalize_economic_direction(value: Any) -> str:
+    direction = str(value or "unknown").strip().lower()
+    return direction if direction in ECONOMIC_DIRECTIONS else "unknown"
+
+
+def _economic_link_id(source: str, target: str, link_type: str, evidence_refs: Any) -> str:
+    seed = "|".join([str(source or ""), str(target or ""), str(link_type or ""), ",".join(_unique_strings(evidence_refs))])
+    return "econ_link_" + hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16]
+
+
+def _validate_refs(
+    refs: list[str],
+    *,
+    known_refs: set[str],
+    errors: list[dict[str, Any]],
+    error_type: str,
+    index: int,
+) -> None:
+    if not known_refs:
+        return
+    unknown = sorted(set(refs) - known_refs)
+    if unknown:
+        errors.append({"type": error_type, "index": index, "evidence_refs": unknown})
+
+
+def _looks_like_ticker(value: Any) -> bool:
+    text = str(value or "").strip()
+    return text.isascii() and 1 <= len(text) <= 8 and text.replace(".", "").isalpha()
 
 
 def _relationship_edge_id(

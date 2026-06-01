@@ -8,6 +8,14 @@ from typing import Any
 
 SCHEMA_VERSION = "sec_agent_lightweight_ledger_store_v0.1"
 LEDGER_STORE_CASE_ID = "__ledger_store__"
+METRIC_FAMILY_ALIASES = {
+    "capex": ["capital_expenditure_proxy", "capital_expenditures", "capital_expenditure"],
+    "capital_expenditure": ["capex", "capital_expenditure_proxy", "capital_expenditures"],
+    "capital_expenditures": ["capex", "capital_expenditure_proxy", "capital_expenditure"],
+    "gross_margin": ["margin"],
+    "operating_margin": ["margin"],
+    "revenue": ["revenues", "net_revenue", "net_sales", "sales_revenue"],
+}
 LEDGER_FACT_COLUMNS = [
     "metric_id_tail",
     "object_id",
@@ -170,7 +178,7 @@ def query_ledger_facts(
     _add_in_filter(where, params, "fiscal_year", years)
     _add_in_filter(where, params, "form_type", _form_list(filing_types))
     _add_in_filter(where, params, "source_tier", source_tiers)
-    _add_in_filter(where, params, "metric_family", metric_families)
+    _add_in_filter(where, params, "metric_family", _metric_family_list(metric_families))
     _add_in_filter(where, params, "period_role", _lower_list(period_roles))
     sql = "SELECT * FROM ledger_facts"
     if where:
@@ -320,6 +328,22 @@ def _form_list(values: list[str] | None) -> list[str]:
 
 def _lower_list(values: list[str] | None) -> list[str]:
     return [str(value).lower().strip() for value in values or [] if str(value).strip()]
+
+
+def _metric_family_list(values: list[str] | None) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for value in values or []:
+        text = str(value).strip()
+        if not text:
+            continue
+        aliases = [text, *METRIC_FAMILY_ALIASES.get(text.lower(), [])]
+        for item in aliases:
+            clean = str(item).strip()
+            if clean and clean not in seen:
+                seen.add(clean)
+                out.append(clean)
+    return out
 
 
 def _normalize_form_type(value: Any) -> str | None:

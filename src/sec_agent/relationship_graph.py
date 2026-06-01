@@ -298,7 +298,7 @@ def _pack_match_reason(pack: Mapping[str, Any], *, focus: list[str], scope: list
     if not query_text:
         return False
     query_terms = {
-        "ai": ("ai", "gpu", "cloud", "capex", "data center", "数据中心", "云", "算力"),
+        "ai": ("ai", "gpu", "cloud", "data center", "数据中心", "云", "算力"),
         "power": ("power", "electricity", "utility", "能源", "电力"),
         "financial": ("bank", "credit", "rate", "金融", "利率", "信用"),
         "healthcare": ("health", "drug", "hospital", "医疗", "药"),
@@ -347,7 +347,7 @@ def _query_allows_cross_sector_depth(query_text: str) -> bool:
     has_ai_signal = any(_contains_alias(text, term) for term in ai_terms)
     has_power_signal = any(_contains_alias(text, term) for term in power_terms)
     has_transmission_signal = any(_contains_alias(text, term) for term in transmission_terms)
-    return has_ai_signal and (has_power_signal or has_transmission_signal)
+    return has_ai_signal and has_power_signal and has_transmission_signal
 
 
 def _contains_alias(text: str, alias: str) -> bool:

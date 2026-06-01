@@ -224,6 +224,37 @@ def test_evidence_operator_audit_passes_clean_summary() -> None:
     assert audit["stages"][0]["stage_id"] == "evidence_operators"
 
 
+def test_coverage_reflection_audit_passes_clean_summary() -> None:
+    module = _load_script()
+    rubric = module._read_json(RUBRIC_PATH)
+    summary = {
+        "schema_version": "sec_agent_coverage_reflection_diagnostic_v0.1",
+        "run_id": "unit_coverage_reflection",
+        "gate_status": "pass",
+        "cases": [
+            {
+                "case_id": "case_a",
+                "status": "pass",
+                "checks": {
+                    "coverage_report_present": True,
+                    "searchable_gaps_classified": True,
+                    "second_pass_decision_present": True,
+                    "source_gap_boundary_valid": True,
+                    "second_pass_gain_or_bounded_reason": True,
+                    "no_duplicate_or_budget_loop_break": True,
+                    "s3_rows_available_for_reflection": True,
+                },
+            }
+        ],
+    }
+
+    audit = module.audit_summary(summary, rubric=rubric)
+
+    assert audit["gate_status"] == "pass"
+    assert audit["source_type"] == "coverage_reflection"
+    assert audit["stages"][0]["stage_id"] == "coverage_reflection"
+
+
 def test_unknown_schema_fails() -> None:
     module = _load_script()
     rubric = module._read_json(RUBRIC_PATH)

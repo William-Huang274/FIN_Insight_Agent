@@ -391,6 +391,7 @@ def compile_second_pass_retrieval_plan(
         activation_plan=activation_plan,
     )
     contract = _query_contract_with_plan_scope(query_contract or {}, base_evidence_requirement_plan or {})
+    contract["evidence_requirements"] = list(second_pass_plan.get("requirements") or [])
     retrieval_plan = compile_multi_agent_retrieval_plan(second_pass_plan, query_contract=contract, case=case)
     retrieval_plan["second_pass_evidence_requirement_plan"] = second_pass_plan
     return retrieval_plan

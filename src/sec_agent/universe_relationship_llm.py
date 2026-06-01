@@ -102,10 +102,11 @@ def route_universe_relationship_llm(
         max_relationships=route_config.input_max_relationships,
         priority_tickers=_string_list(activation.get("search_scope_tickers") or activation.get("focus_tickers")),
     )
+    prompt_lookup = _relationship_lookup_prompt_view(lookup)
     focus = _string_list(activation.get("focus_tickers") or lookup.get("focus_tickers"))
     known_refs = _known_relationship_refs(lookup)
     max_repair_attempts = max(0, int(route_config.max_repair_attempts))
-    prompt_request = {**dict(request), "relationship_lookup": lookup}
+    prompt_request = {**dict(request), "relationship_lookup": prompt_lookup}
 
     model_calls: list[dict[str, Any]] = []
     previous_content = ""
@@ -150,7 +151,14 @@ def route_universe_relationship_llm(
         if parsed is None:
             last_failure = {"type": "json_parse_failed", "detail": "No UniverseRelationshipPlan JSON object was found."}
             continue
-        validation = validate_universe_relationship_plan(parsed, known_evidence_refs=known_refs, source_inventory=source_inventory)
+        completed = _complete_plan_from_lookup(
+            parsed,
+            lookup=lookup,
+            scope_mode=str(activation.get("scope_mode") or "focused_peer"),
+            focus_tickers=focus,
+            relationship_scope_rationale=str(activation.get("relationship_scope_rationale") or ""),
+        )
+        validation = validate_universe_relationship_plan(completed, known_evidence_refs=known_refs, source_inventory=source_inventory)
         last_validation = validation
         if validation["status"] == "pass":
             if _lookup_relationships_present(lookup) and not _plan_relationships_present(validation.get("plan")):
@@ -256,8 +264,11 @@ def _build_messages(
         "Do not add named companies or relationships from memory. "
         "included_tickers may contain only focus_tickers and tickers that have relationship evidence_refs in the input. "
         "Search-scope tickers without input relationship rows must be excluded or listed as unsupported_relationships. "
-        "Keep the JSON compact: at most 4 relationships, 6 entities, 4 economic links, 2 mechanisms, and 2 investment_implications. "
-        "Use short strings; do not narrate evidence rows.\n\n"
+        "Do not copy the input relationship rows into the output. "
+        "Set relationships to [] unless you need at most 3 priority examples; the runtime will deterministically preserve every bounded lookup relationship in the final plan. "
+        "Keep economic_link_map compact: at most 8 entities, 6 economic links, 4 mechanisms, and 4 investment_implications. "
+        "Use short strings; do not narrate evidence rows; keep the whole JSON concise. "
+        "Every sector_inferred relationship is not a confirmed direct commercial edge and must carry missing_confirmations.\n\n"
         f"Input JSON:\n{json.dumps(user_payload, ensure_ascii=False, indent=2)}"
     )
     if prior_failure:
@@ -290,10 +301,15 @@ def _system_prompt() -> str:
                 "metrics_to_check": ["metric"],
                 "evidence_source_needed": ["primary_sec_filing | market_snapshot | industry_snapshot | relationship_graph"],
                 "evidence_refs": ["relationship evidence ref"],
-                "confidence": "low | medium | high",
-                "inclusion_rationale": "why included for research scope",
-                "claim_scope": "scope_or_hypothesis_only",
-            }
+                    "confidence": "low | medium | high",
+                    "inference_level": "confirmed_direct | disclosed_indirect | curated_input_unverified | sector_inferred | category_inferred | unknown",
+                    "confirmation_status": "confirmed_direct_edge | no_confirmed_direct_edge | input_edge_unverified",
+                    "evidence_basis": ["basis"],
+                    "missing_confirmations": ["missing confirmation"],
+                    "source_limitations": ["source limitation"],
+                    "inclusion_rationale": "why included for research scope",
+                    "claim_scope": "scope_or_hypothesis_only",
+                }
         ],
         "economic_link_map": {
             "schema_version": "sec_agent_economic_link_map_v0.1",
@@ -370,6 +386,104 @@ def _known_relationship_refs(lookup: Mapping[str, Any]) -> set[str]:
     return refs
 
 
+def _complete_plan_from_lookup(
+    parsed: Mapping[str, Any],
+    *,
+    lookup: Mapping[str, Any],
+    scope_mode: str,
+    focus_tickers: list[str],
+    relationship_scope_rationale: str,
+) -> dict[str, Any]:
+    """Preserve every bounded lookup edge even when the LLM summarizes relationships.
+
+    The LLM is useful for economic mechanisms; the deterministic lookup is the
+    source of truth for edge coverage.
+    """
+    raw = dict(parsed or {})
+    lookup_relationships = [
+        dict(item)
+        for item in lookup.get("relationships") or []
+        if isinstance(item, Mapping)
+    ]
+    model_relationships = [
+        dict(item)
+        for item in raw.get("relationships") or []
+        if isinstance(item, Mapping)
+    ]
+    seen = {_relationship_completion_key(item) for item in model_relationships}
+    completed = list(model_relationships)
+    added = 0
+    for relationship in lookup_relationships:
+        key = _relationship_completion_key(relationship)
+        if key in seen:
+            continue
+        completed.append(dict(relationship))
+        seen.add(key)
+        added += 1
+
+    included = _unique_upper(
+        [
+            *focus_tickers,
+            *(raw.get("included_tickers") or []),
+            *(lookup.get("included_tickers") or []),
+            *[
+                ticker
+                for relationship in completed
+                for ticker in (relationship.get("ticker"), relationship.get("related_ticker"))
+                if ticker
+            ],
+        ]
+    )
+    expanded = _unique_upper(
+        [
+            *(raw.get("expanded_tickers") or []),
+            *(lookup.get("expanded_tickers") or []),
+            *[ticker for ticker in included if ticker not in set(_unique_upper(focus_tickers))],
+        ]
+    )
+    budget = dict(raw.get("budget") or {}) if isinstance(raw.get("budget"), Mapping) else {}
+    budget["max_relationships"] = max(int(budget.get("max_relationships") or 0), len(completed), 1)
+    budget["max_evidence_requirements"] = max(int(budget.get("max_evidence_requirements") or 0), len(completed), 1)
+    budget["max_expanded_tickers"] = max(int(budget.get("max_expanded_tickers") or 0), len(expanded), 1)
+    metadata = dict(raw.get("metadata") or {}) if isinstance(raw.get("metadata"), Mapping) else {}
+    metadata.update(
+        {
+            "relationship_completion_policy": "deterministic_lookup_edge_completion_v0_1",
+            "lookup_relationship_count": len(lookup_relationships),
+            "model_relationship_count": len(model_relationships),
+            "deterministic_completed_relationship_count": added,
+            "direct_commercial_edge_boundary": "sector-depth relationship rows remain inference-only unless source evidence marks confirmed_direct.",
+        }
+    )
+    raw.update(
+        {
+            "scope_mode": raw.get("scope_mode") or scope_mode,
+            "focus_tickers": _unique_upper(raw.get("focus_tickers") or focus_tickers),
+            "expanded_tickers": expanded,
+            "included_tickers": included,
+            "relationship_scope_rationale": raw.get("relationship_scope_rationale")
+            or relationship_scope_rationale
+            or "Relationship lookup rows are preserved as bounded research-scope hypotheses.",
+            "budget": budget,
+            "relationships": completed,
+            "metadata": metadata,
+            "source_family": raw.get("source_family") or "relationship_graph",
+        }
+    )
+    return raw
+
+
+def _relationship_completion_key(relationship: Mapping[str, Any]) -> tuple[str, str, str, str, str]:
+    refs = _string_list(relationship.get("evidence_refs") or relationship.get("refs"))
+    return (
+        str(relationship.get("ticker") or relationship.get("from_ticker") or "").upper().strip(),
+        str(relationship.get("related_ticker") or relationship.get("to_ticker") or "").upper().strip(),
+        str(relationship.get("relationship_type") or relationship.get("type") or "").strip(),
+        str(relationship.get("direction") or relationship.get("edge_direction") or "").strip(),
+        ",".join(refs),
+    )
+
+
 def _compact_relationship_lookup(
     lookup: Mapping[str, Any],
     *,
@@ -415,6 +529,11 @@ def _compact_relationship_lookup(
             "evidence_source_needed": _string_list(relationship.get("evidence_source_needed"))[:5],
             "evidence_refs": _string_list(relationship.get("evidence_refs"))[:4],
             "confidence": str(relationship.get("confidence") or "medium"),
+            "inference_level": str(relationship.get("inference_level") or "unknown"),
+            "confirmation_status": str(relationship.get("confirmation_status") or ""),
+            "evidence_basis": _string_list(relationship.get("evidence_basis"))[:4],
+            "missing_confirmations": _string_list(relationship.get("missing_confirmations"))[:4],
+            "source_limitations": _string_list(relationship.get("source_limitations"))[:3],
             "inclusion_rationale": _truncate(str(relationship.get("inclusion_rationale") or relationship.get("notes") or ""), 260),
             "claim_scope": "scope_or_hypothesis_only",
         }
@@ -443,6 +562,45 @@ def _compact_relationship_lookup(
         "focus_tickers": _unique_upper(lookup.get("focus_tickers")),
         "expanded_tickers": expanded,
         "included_tickers": included,
+    }
+
+
+def _relationship_lookup_prompt_view(lookup: Mapping[str, Any]) -> dict[str, Any]:
+    """Build a compact relationship view for the LLM prompt.
+
+    The full compact lookup remains the source for deterministic completion.
+    This view keeps all refs visible but prevents the model from spending its
+    response budget reproducing full edge rows.
+    """
+    relationships = [dict(item) for item in lookup.get("relationships") or [] if isinstance(item, Mapping)]
+    prompt_rows: list[dict[str, Any]] = []
+    for relationship in relationships:
+        prompt_rows.append(
+            {
+                "ticker": relationship.get("ticker") or "",
+                "related_ticker": relationship.get("related_ticker") or "",
+                "relationship_type": relationship.get("relationship_type") or "",
+                "direction": relationship.get("direction") or "",
+                "evidence_refs": _string_list(relationship.get("evidence_refs"))[:2],
+                "metrics_to_check": _string_list(relationship.get("metrics_to_check"))[:4],
+                "inference_level": relationship.get("inference_level") or "",
+                "confirmation_status": relationship.get("confirmation_status") or "",
+                "missing_confirmations": _string_list(relationship.get("missing_confirmations"))[:2],
+            }
+        )
+    return {
+        "status": lookup.get("status") or "",
+        "focus_tickers": lookup.get("focus_tickers") or [],
+        "expanded_tickers": lookup.get("expanded_tickers") or [],
+        "included_tickers": lookup.get("included_tickers") or [],
+        "relationships": prompt_rows,
+        "relationship_refs": sorted({ref for row in prompt_rows for ref in _string_list(row.get("evidence_refs"))}),
+        "source_gaps": lookup.get("source_gaps") or [],
+        "summary": {
+            **dict(lookup.get("summary") or {}),
+            "prompt_view_policy": "compact_relationship_refs_only_full_edges_completed_deterministically",
+            "relationship_output_instruction": "do_not_copy_relationship_rows_use_relationships_empty_or_top_3_examples",
+        },
     }
 
 

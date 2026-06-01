@@ -404,6 +404,7 @@ def build_multi_agent_orchestration_graph(
         "optional_second_pass",
         _route_after_multi_agent_second_pass,
         {
+            "stop": END,
             "specialists": "optional_specialist_subgraph",
             "aggregate": "aggregate_judgment_plan",
             "renderer": "renderer",
@@ -1893,6 +1894,8 @@ def _route_after_multi_agent_reflection(state: SecAgentGraphRuntimeState) -> str
 
 
 def _route_after_multi_agent_second_pass(state: SecAgentGraphRuntimeState) -> str:
+    if _is_stopped_after_node(state):
+        return "stop"
     mode = str((state.get("agent_activation_plan") or {}).get("execution_mode") or "")
     if mode == "deterministic_lookup":
         return "renderer"

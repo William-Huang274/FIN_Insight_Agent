@@ -204,3 +204,74 @@ S3 v0.4 结果：
 下一步：
 
 - 进入 S4 Coverage / Reflection gate。只有 S4 通过后再复用 S3 rows 进入 Specialist，不直接重跑 full chain。
+
+## 11. S2 Relationship Inference Schema v0.3 复跑
+
+原因：
+
+- 旧 S2 economic-link-map gate 可以表达经济传导假设，但 relationship rows 仍主要依赖模型选择，不能保证 bounded lookup rows 全部进入下游。
+- 用户要求“从已有数据中把能推断的关系都找出来”，因此 S2 需要区分可推断关系和已确认 direct customer/supplier 关系。
+
+新增：
+
+- relationship edge schema v0.3：`inference_level`、`confirmation_status`、`evidence_basis`、`missing_confirmations`、`source_limitations`。
+- deterministic lookup-edge completion：LLM 只负责经济图谱，runtime 把 bounded lookup rows 全量补入 relationship plan。
+- S2 gate 新增 `relationship_plan_covers_lookup`、`relationship_inference_levels_present`、`inferred_relationships_not_confirmed_direct`、`external_confirmation_gaps_recorded`。
+
+真实 DeepSeek 结果：
+
+| Run ID | Gate | Key metrics |
+| --- | --- | --- |
+| `20260601_fin_agent_s2_relationship_inference_coverage_gate_deepseek_v0_2` | pass | case `1/1`，lookup relationships `42`，plan relationships `42`，deterministic completed `42`，fallback `0`，tokens `36,646`，latency `102,207 ms`，audit `pass` |
+
+边界：
+
+- 全部 42 条关系都是 `sector_inferred` + `no_confirmed_direct_edge`。
+- 这些 rows 可以支持研究范围、产业传导假设和 Specialist context，但不能证明“谁是谁的真实客户/供应商”。
+- 要证明完整商业关系图谱，需要外源或新抽取数据：合同/订单、客户/供应商披露、客户集中度、收入 exposure、vendor/customer graph。
+
+## 12. S3 After S2 Relationship Inference 复跑
+
+使用新版 S2 artifact 复跑 S3：
+
+| Run ID | Gate | Key metrics |
+| --- | --- | --- |
+| `20260601_fin_agent_s3_after_s2_relationship_inference_v0_2` | pass | cases `4/4`，tool calls `14`，context rows `300`，runtime ledger rows `349`，market rows `7`，industry rows `10`，SEC candidates `360`，BGE candidates `300`，BGE CUDA gate `4/4`，audit `pass` |
+
+结论：
+
+- SEC BM25/ObjectBM25/BGE rerank、exact-value ledger、market / industry / relationship rows 都已真实执行。
+- 该层仍只证明 evidence rows 可用，不证明 Specialist/Memo 质量。
+
+## 13. S4 Coverage / Reflection 真实门控结果
+
+新增：
+
+- `scripts/eval_multi_agent_coverage_reflection_gate.py`。
+- `audit_fin_agent_layer_quality.py` 支持 `coverage_reflection` source type。
+- `optional_second_pass` stop-after-node 路由修复。
+- `compile_second_pass_retrieval_plan` 修复 stale requirements：second pass 必须使用 reflection 生成的 requirements。
+
+真实结果：
+
+| Run ID | Gate | Key metrics |
+| --- | --- | --- |
+| `20260601_fin_agent_s4_coverage_reflection_gate_after_s3_v0_1` | pass | cases `4/4`，second-pass allowed `3`，ran `3`，added rows `0`，missing requirements `3`，audit score `2.844` |
+
+case 观察：
+
+| Case | 结果 |
+| --- | --- |
+| `ma_msft_capex_lookup` | 无 missing requirement，不触发 second pass。 |
+| `ma_amzn_margin_focused` | `8k_commentary:no_rows`，second pass 执行但无新增 rows，bounded 中止。 |
+| `ma_nvda_amd_market_standard` | `8k_commentary:no_rows`，second pass 执行但无新增 rows，bounded 中止。 |
+| `ma_ai_capex_supply_chain_deep` | `8k_commentary:no_rows`，second pass 执行但无新增 rows，bounded 中止。 |
+
+解释：
+
+- S4 已能判断 source gap、发起 bounded second pass、识别无增益并停止。
+- 这不是 evidence quality 改善证明；当前 second pass 没有新增 rows，后续 S5 必须把这些 gap 当作 source-boundary 传给 Specialist。
+
+下一步：
+
+- 进入 S5 Specialist gate，复用 S3/S4 rows，不重跑 S1-S4。

@@ -56,7 +56,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--max-tokens", type=int, default=int(os.environ.get("UNIVERSE_MAX_TOKENS", "4200")))
     parser.add_argument("--timeout-s", type=int, default=int(os.environ.get("UNIVERSE_TIMEOUT_S", "180")))
     parser.add_argument("--max-repair-attempts", type=int, default=int(os.environ.get("UNIVERSE_MAX_REPAIR_ATTEMPTS", "2")))
-    parser.add_argument("--input-max-relationships", type=int, default=int(os.environ.get("UNIVERSE_INPUT_MAX_RELATIONSHIPS", "8")))
+    parser.add_argument("--input-max-relationships", type=int, default=int(os.environ.get("UNIVERSE_INPUT_MAX_RELATIONSHIPS", "48")))
+    parser.add_argument("--max-relationships", type=int, default=int(os.environ.get("UNIVERSE_LOOKUP_MAX_RELATIONSHIPS", "48")))
+    parser.add_argument("--max-expanded-tickers", type=int, default=int(os.environ.get("UNIVERSE_LOOKUP_MAX_EXPANDED_TICKERS", "32")))
     parser.add_argument("--strict", action="store_true")
     return parser.parse_args(argv)
 
@@ -95,6 +97,8 @@ def main(argv: list[str] | None = None) -> int:
             relationship_graph_path=args.relationship_graph_path,
             sector_depth_pack_path=args.sector_depth_pack_path,
             expected_pack_ids=_string_list(case.get("expected_relationship_pack_ids")),
+            max_relationships=args.max_relationships,
+            max_expanded_tickers=args.max_expanded_tickers,
         )
         route = route_universe_relationship_llm(
             {
@@ -187,6 +191,19 @@ def _score_case(
         "economic_links_present": bool(economic_link_map.get("links")),
         "economic_mechanisms_present": bool(economic_link_map.get("mechanisms")),
         "investment_implications_present": bool(economic_link_map.get("investment_implications")),
+        "relationship_plan_covers_lookup": len(relationships) >= len(lookup_relationships),
+        "relationship_inference_levels_present": bool(relationships)
+        and all(str(row.get("inference_level") or "") for row in relationships),
+        "inferred_relationships_not_confirmed_direct": all(
+            str(row.get("confirmation_status") or "") == "no_confirmed_direct_edge"
+            for row in relationships
+            if str(row.get("inference_level") or "") in {"sector_inferred", "category_inferred"}
+        ),
+        "external_confirmation_gaps_recorded": all(
+            bool(row.get("missing_confirmations") or row.get("source_limitations"))
+            for row in relationships
+            if str(row.get("inference_level") or "") in {"sector_inferred", "category_inferred"}
+        ),
     }
     return {
         "case_id": case.get("case_id"),
@@ -206,6 +223,14 @@ def _score_case(
             "link_count": len([row for row in economic_link_map.get("links") or [] if isinstance(row, Mapping)]),
             "mechanism_count": len([row for row in economic_link_map.get("mechanisms") or [] if isinstance(row, Mapping)]),
             "investment_implication_count": len([row for row in economic_link_map.get("investment_implications") or [] if isinstance(row, Mapping)]),
+        },
+        "relationship_inference_stats": {
+            "lookup_relationship_count": len(lookup_relationships),
+            "plan_relationship_count": len(relationships),
+            "inference_level_counts": _count_by_key(relationships, "inference_level"),
+            "confirmation_status_counts": _count_by_key(relationships, "confirmation_status"),
+            "deterministic_completed_relationship_count": int(((plan.get("metadata") or {}) if isinstance(plan.get("metadata"), Mapping) else {}).get("deterministic_completed_relationship_count") or 0),
+            "direct_commercial_edge_source_gap": str(((lookup.get("summary") or {}) if isinstance(lookup.get("summary"), Mapping) else {}).get("direct_commercial_edge_source_gap") or ""),
         },
         "economic_link_map_validation": economic_link_validation,
         "source_gaps": lookup.get("source_gaps") or [],
@@ -268,6 +293,10 @@ def _aggregate(
             "fallback_count": sum(1 for score in scores if not ((score.get("checks") or {}).get("fallback_not_used"))),
             "lookup_relationship_count": sum(int(score.get("lookup_relationship_count") or 0) for score in scores),
             "plan_relationship_count": sum(int(score.get("plan_relationship_count") or 0) for score in scores),
+            "deterministic_completed_relationship_count": sum(
+                int((score.get("relationship_inference_stats") or {}).get("deterministic_completed_relationship_count") or 0)
+                for score in scores
+            ),
         },
         "cases": [dict(score) for score in scores],
     }
@@ -311,6 +340,14 @@ def _unique_strings(values: list[str]) -> list[str]:
 def _looks_like_ticker(value: Any) -> bool:
     text = str(value or "")
     return text.isascii() and 1 <= len(text) <= 8 and text.replace(".", "").isalpha()
+
+
+def _count_by_key(rows: list[Mapping[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = str(row.get(key) or "unknown").strip() or "unknown"
+        counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def _default_run_id() -> str:

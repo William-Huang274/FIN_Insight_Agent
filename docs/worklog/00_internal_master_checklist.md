@@ -392,6 +392,9 @@
 - [x] Add and run the S2 Universe / Relationship quality gate from the passed S1 artifact, including relationship-pack relevance repair.
 - [x] Deepen S2 into `EconomicLinkMap` with bounded entities, links, mechanisms, investment implications, and relationship-hypothesis source boundary.
 - [x] Add and run the S3 Evidence Operators quality gate from passed S1/S2 artifacts, including real SEC BM25/ObjectBM25/BGE rerank, exact-value ledger, market/industry rows, relationship rows, and BGE CUDA auto policy.
-- [ ] Proceed through S4-S9 by reusing passed upstream artifacts before the next full-chain run.
+- [x] Upgrade S2 relationship edge schema to v0.3 and preserve all bounded lookup relationships as `sector_inferred` / `no_confirmed_direct_edge` rows.
+- [x] Rerun S3 from the accepted S2 relationship-inference artifact and keep real retrieval / rerank / ledger gates green.
+- [x] Add and run S4 Coverage / Reflection gate with bounded second-pass request compilation, stop-after-node routing, stale-requirement override, source-gap boundary, and no-incremental-evidence loop break.
+- [ ] Proceed through S5-S9 by reusing passed upstream artifacts before the next full-chain run.
 - [ ] Reduce Memo Writer retry/length cost after P7.4 showed high tokens per rendered memo claim and low memo chars per token.
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.

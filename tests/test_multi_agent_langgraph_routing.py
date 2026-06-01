@@ -227,6 +227,37 @@ def test_multi_agent_graph_stop_after_node_keeps_new_state_summary(tmp_path: Pat
     assert checkpoint["state_summary"]["activated_agent_count"] >= 1
 
 
+def test_multi_agent_graph_stop_after_optional_second_pass_is_terminal(tmp_path: Path) -> None:
+    graph = build_multi_agent_orchestration_graph(
+        entry_node="optional_second_pass",
+        stop_after_node="optional_second_pass",
+    )
+    state = make_multi_agent_smoke_state(
+        user_query="second pass only",
+        output_dir=tmp_path,
+        query_contract=_query_contract(["AMD"]),
+        focus_tickers=["AMD"],
+        search_scope_tickers=["AMD"],
+    )
+    state["agent_activation_plan"] = {
+        "execution_mode": "deep_research",
+        "activate_agents": ["research_lead", "fundamental_analyst", "memo_writer"],
+        "allowed_source_families": ["primary_sec_filing"],
+    }
+    state["multi_agent_reflection_report"] = {
+        "sufficiency_level": "partial",
+        "source_available": True,
+        "second_pass_requests": [],
+    }
+
+    result = graph.invoke(state, config={"configurable": {"thread_id": "unit-stop-after-second-pass"}})
+    nodes = [row["node"] for row in result["node_trace"]]
+
+    assert nodes == ["optional_second_pass"]
+    assert result["status"] == "stopped_after_node"
+    assert result["native_stop_after_node"] == "optional_second_pass"
+
+
 def test_multi_agent_graph_from_env_defaults_to_deterministic_router(tmp_path: Path) -> None:
     graph = build_multi_agent_orchestration_graph_from_env(
         env={"SEC_AGENT_MULTI_AGENT_LEAD_ROUTER": "deterministic"},

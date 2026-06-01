@@ -54,7 +54,7 @@ def test_universe_relationship_plan_records_included_excluded_scope_guard_and_ev
     assert plan["excluded_tickers"] == ["INTC"]
     assert plan["scope_guard"]["financial_fact_policy"] == "relationship_graph_hypothesis_only"
     assert plan["relationships"][0]["claim_scope"] == "scope_or_hypothesis_only"
-    assert plan["relationships"][0]["edge_schema_version"] == "sec_agent_relationship_edge_v0.2"
+    assert plan["relationships"][0]["edge_schema_version"] == "sec_agent_relationship_edge_v0.3"
     assert plan["relationships"][0]["edge_id"].startswith("rel_edge_")
     assert plan["relationships"][0]["from_ticker"] == "NVDA"
     assert plan["relationships"][0]["to_ticker"] == "AMD"

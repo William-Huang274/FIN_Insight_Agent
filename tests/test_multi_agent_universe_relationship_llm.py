@@ -68,7 +68,7 @@ def test_universe_relationship_llm_can_require_economic_link_map() -> None:
     assert "economic_link_map" in fake.calls[0]["messages"][0]["content"]
 
 
-def test_universe_relationship_llm_falls_back_when_model_drops_lookup_relationships() -> None:
+def test_universe_relationship_llm_completes_all_lookup_relationships_when_model_drops_them() -> None:
     empty_plan = _plan()
     empty_plan["relationships"] = []
     fake = _FakeChat([json.dumps(empty_plan)])
@@ -79,10 +79,41 @@ def test_universe_relationship_llm_falls_back_when_model_drops_lookup_relationsh
         call_chat_completion=fake,
     )
 
-    assert result["status"] == "fallback"
+    assert result["status"] == "pass"
     assert result["universe_relationship_validation"]["status"] == "pass"
     assert result["universe_relationship_plan"]["relationships"][0]["evidence_refs"] == ["rel_nvda_msft"]
-    assert result["routing_trace"]["fallback_used"] is True
+    assert result["universe_relationship_plan"]["metadata"]["deterministic_completed_relationship_count"] == 1
+
+
+def test_universe_relationship_llm_completes_omitted_lookup_edges() -> None:
+    request = _request()
+    request["source_inventory"] = {"available_tickers": ["NVDA", "MSFT", "AMZN"]}
+    request["relationship_lookup"]["relationships"].append(
+        {
+            "ticker": "NVDA",
+            "related_ticker": "AMZN",
+            "relationship_type": "sector",
+            "direction": "cloud_capex_readthrough",
+            "metrics_to_check": ["capex"],
+            "evidence_source_needed": ["primary_sec_filing"],
+            "evidence_refs": ["rel_nvda_amzn"],
+            "inclusion_rationale": "AMZN is included by bounded relationship evidence.",
+            "claim_scope": "scope_or_hypothesis_only",
+        }
+    )
+    fake = _FakeChat([json.dumps(_plan())])
+
+    result = route_universe_relationship_llm(
+        request,
+        config=_config(max_repair_attempts=0),
+        call_chat_completion=fake,
+    )
+
+    plan = result["universe_relationship_plan"]
+    refs = {ref for row in plan["relationships"] for ref in row["evidence_refs"]}
+    assert result["status"] == "pass"
+    assert refs == {"rel_nvda_msft", "rel_nvda_amzn"}
+    assert plan["metadata"]["deterministic_completed_relationship_count"] == 1
 
 
 def test_universe_relationship_env_router_returns_none_for_mock() -> None:

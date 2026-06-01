@@ -91,8 +91,11 @@ python scripts\eval_multi_agent_research_lead_activation.py `
 $env:DEEPSEEK_API_KEY='<use shell env only>'
 python scripts\eval_multi_agent_universe_relationship_gate.py `
   --activation-summary eval\sec_cases\outputs\multi_agent_activation_diagnostic\<s1_run_id>\activation_diagnostic.json `
-  --run-id 20260601_fin_agent_s2_economic_link_map_quality_gate_deepseek_v0_2 `
-  --input-max-relationships 4 `
+  --run-id 20260601_fin_agent_s2_relationship_inference_coverage_gate_deepseek_v0_2 `
+  --input-max-relationships 48 `
+  --max-relationships 48 `
+  --max-expanded-tickers 32 `
+  --max-tokens 4200 `
   --strict
 ```
 
@@ -115,12 +118,14 @@ python scripts\audit_fin_agent_layer_quality.py `
 - Pack relevance gate 必须防止 `capex` 这类通用词把 AI infrastructure case 误扩到 energy pack；跨 sector 只在用户显式提到 AI/data-center power/load/electricity 传导时放行。
 - `economic_link_map` 必须存在，并至少包含 bounded entities、economic links、transmission mechanisms、investment implications。
 - `economic_link_map` 的 `claim_scope` 必须维持为 `economic_mechanism_hypothesis_only` / relationship-hypothesis 边界，不得写成确认商业供应链事实。
+- relationship plan 必须覆盖 bounded lookup rows；如果模型只输出经济图谱，runtime 必须用 deterministic completion 补回 lookup relationships。
+- `sector_inferred` / `category_inferred` 关系必须标记为 `no_confirmed_direct_edge`，并保留 direct customer/supplier、contract/order、revenue exposure 等 missing confirmations。
 
 当前接受结果：
 
 | Run ID | Gate | Case | Key metrics |
 | --- | --- | --- | --- |
-| `20260601_fin_agent_s2_economic_link_map_quality_gate_deepseek_v0_2` | pass | `ma_ai_capex_supply_chain_deep` | lookup rows `24`，plan relationships `4`，economic entities `6`，economic links `4`，mechanisms `2`，investment implications `2`，tokens `11,465`，artifact audit `pass` |
+| `20260601_fin_agent_s2_relationship_inference_coverage_gate_deepseek_v0_2` | pass | `ma_ai_capex_supply_chain_deep` | lookup relationships `42`，plan relationships `42`，deterministic completed `42`，economic links `4`，mechanisms `2`，investment implications `2`，tokens `36,646`，artifact audit `pass` |
 
 失败处理：
 
@@ -194,6 +199,24 @@ S3 默认覆盖集：
 - S3 通过的 tool observations / ledger / context rows。
 - EvidenceRequirementPlan。
 
+执行：
+
+```powershell
+python scripts\eval_multi_agent_coverage_reflection_gate.py `
+  --relationship-summary eval\sec_cases\outputs\multi_agent_universe_relationship_diagnostic\20260601_fin_agent_s2_relationship_inference_coverage_gate_deepseek_v0_2\universe_relationship_diagnostic.json `
+  --evidence-summary eval\sec_cases\outputs\multi_agent_evidence_operator_diagnostic\20260601_fin_agent_s3_after_s2_relationship_inference_v0_2\evidence_operator_diagnostic.json `
+  --run-id 20260601_fin_agent_s4_coverage_reflection_gate_after_s3_v0_1 `
+  --strict
+```
+
+审计：
+
+```powershell
+python scripts\audit_fin_agent_layer_quality.py `
+  --summary eval\sec_cases\outputs\multi_agent_coverage_reflection_diagnostic\20260601_fin_agent_s4_coverage_reflection_gate_after_s3_v0_1\coverage_reflection_diagnostic.json `
+  --strict
+```
+
 通过门控：
 
 - source gap 分为 searchable / unsearchable / product-boundary。
@@ -201,6 +224,17 @@ S3 默认覆盖集：
 - second pass 之后 rows / ledger / coverage 至少一项有增益。
 - 无增益或重复调用时中止，并给 bounded answer boundary。
 - 不把缺证都压成最终 memo 的“证据很薄”。
+
+当前接受结果：
+
+| Run ID | Gate | Cases | Key metrics |
+| --- | --- | --- | --- |
+| `20260601_fin_agent_s4_coverage_reflection_gate_after_s3_v0_1` | pass | `4/4` | second-pass allowed `3`，ran `3`，added rows `0`，missing requirements `3`，audit score `2.844` |
+
+解释：
+
+- S4 已能识别无缺口 case、searchable gap 和二次检索无增益 case。
+- 这轮三个 second-pass 都是 `8k_commentary:no_rows`，并以 `no_incremental_evidence` bounded 中止；这说明 loop control 有效，但还没证明 second pass 能提升 evidence quality。
 
 失败处理：
 
@@ -380,7 +414,7 @@ python scripts\audit_fin_agent_layer_quality.py `
 2. [x] S1：重测 Research Lead，确认 cost-aware activation 和 primary/supporting/conditional 区分。
 3. [x] S2：把 Universe / Relationship 输出升级为 `EconomicLinkMap` / relationship mechanism frame。
 4. [x] S3：修 exact-value ledger alias/relaxed fallback，并验证 real SEC retrieval、BM25/ObjectBM25/BGE rerank、market/industry/relationship rows。
-5. [ ] S4：Coverage / Reflection second-pass gate。
+5. [x] S4：Coverage / Reflection second-pass gate。
 6. [ ] S5：把 Specialist v0.3 升级到 v0.4 ClaimCard，强化 `so_what` 和 `investment_use`。
 7. [ ] S6：把 Aggregator 从 `memo_thesis_pack` 升级为 `InvestmentThesisPlan`。
 8. [ ] S7：Memo Writer 改为 thesis-plan-driven natural-language writer，减少 retry 和 evidence-summary 风格。

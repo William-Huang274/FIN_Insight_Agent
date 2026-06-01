@@ -37,6 +37,8 @@ def test_relationship_graph_jsonl_lookup_returns_hypothesis_rows(tmp_path: Path)
     assert result["relationship_rows"][0]["source_family"] == "relationship_graph"
     assert result["relationships"][0]["claim_scope"] == "scope_or_hypothesis_only"
     assert result["relationships"][0]["evidence_refs"] == ["rel_nvda_msft"]
+    assert result["relationships"][0]["edge_schema_version"] == "sec_agent_relationship_edge_v0.3"
+    assert result["relationships"][0]["inference_level"] == "curated_input_unverified"
     assert result["artifact_refs"][0]["digest"].startswith("sha256:")
     assert plan["relationships"][0]["related_ticker"] == "MSFT"
     assert plan["expanded_tickers"] == ["MSFT"]
@@ -76,6 +78,9 @@ packs:
     assert result["status"] == "ok"
     assert result["summary"]["sector_depth_rows"] == 2
     assert {row["related_ticker"] for row in result["relationship_rows"]} == {"DELL", "ANET"}
+    assert result["summary"]["inference_level_counts"] == {"sector_inferred": 2}
+    assert result["relationships"][0]["confirmation_status"] == "no_confirmed_direct_edge"
+    assert result["relationships"][0]["missing_confirmations"]
     assert set(result["relationships"][0]["evidence_source_needed"]) == {
         "primary_sec_filing",
         "market_snapshot",

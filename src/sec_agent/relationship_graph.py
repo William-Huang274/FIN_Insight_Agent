@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 
 RELATIONSHIP_GRAPH_SCHEMA_VERSION = "sec_agent_relationship_graph_lookup_v0.1"
-RELATIONSHIP_EDGE_SCHEMA_VERSION = "sec_agent_relationship_edge_v0.2"
+RELATIONSHIP_EDGE_SCHEMA_VERSION = "sec_agent_relationship_edge_v0.3"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -53,6 +53,8 @@ def query_relationship_graph(
     relationships = _dedupe_relationships([*graph_relationships, *sector_relationships])[:max_rels]
     expanded = _expanded_tickers(focus, relationships)[:max_tickers]
     relationship_rows = [_relationship_row(item, index) for index, item in enumerate(relationships, start=1)]
+    inference_counts = _count_by_key(relationships, "inference_level")
+    confirmation_counts = _count_by_key(relationships, "confirmation_status")
 
     source_gaps: list[dict[str, Any]] = []
     if not graph_relationships and not sector_relationships:
@@ -80,6 +82,11 @@ def query_relationship_graph(
             "sector_depth_rows": len(sector_relationships),
             "claim_scope": "scope_or_hypothesis_only",
             "financial_fact_policy": "relationship_graph_hypothesis_only",
+            "edge_schema_version": RELATIONSHIP_EDGE_SCHEMA_VERSION,
+            "inference_level_counts": inference_counts,
+            "confirmation_status_counts": confirmation_counts,
+            "direct_commercial_edge_source_available": bool(graph_path),
+            "direct_commercial_edge_source_gap": "" if graph_path else "No explicit customer/supplier relationship graph artifact was configured; sector-depth rows are inference-only.",
         },
         "artifact_refs": _artifact_refs(graph_path=graph_path, sector_path=sector_path, row_count=len(relationships)),
     }
@@ -372,6 +379,26 @@ def _normalize_relationship_row(payload: Mapping[str, Any], *, source: str) -> d
     source_pack_id = str(payload.get("source_pack_id") or payload.get("pack_id") or _source_pack_id_from_refs(refs) or "").strip()
     edge_id = str(payload.get("edge_id") or _relationship_edge_id(source, ticker, related, relationship_type, direction, refs)).strip()
     mechanism = str(payload.get("mechanism") or payload.get("financial_link_type") or relationship_type or "").strip()
+    inference_level = _normalize_inference_level(payload.get("inference_level"), source=source)
+    confirmation_status = str(
+        payload.get("confirmation_status")
+        or ("no_confirmed_direct_edge" if inference_level in {"sector_inferred", "category_inferred"} else "input_edge_unverified")
+    ).strip()
+    missing_confirmations = _string_list(payload.get("missing_confirmations"))
+    if inference_level in {"sector_inferred", "category_inferred"} and not missing_confirmations:
+        missing_confirmations = [
+            "direct customer/supplier filing confirmation",
+            "contract/order/revenue exposure evidence",
+        ]
+    evidence_basis = _string_list(payload.get("evidence_basis"))
+    if not evidence_basis:
+        evidence_basis = ["sector_depth_pack_membership"] if source == "sector_depth_pack" else ["relationship_graph_input"]
+    source_limitations = _string_list(payload.get("source_limitations"))
+    if source == "sector_depth_pack" and not source_limitations:
+        source_limitations = [
+            "Sector-depth pack membership supports research-scope inference only.",
+            "It does not prove a direct commercial customer/supplier edge.",
+        ]
     return {
         "edge_schema_version": RELATIONSHIP_EDGE_SCHEMA_VERSION,
         "edge_id": edge_id,
@@ -391,6 +418,11 @@ def _normalize_relationship_row(payload: Mapping[str, Any], *, source: str) -> d
         "source_record_ref": refs[0] if refs else "",
         "source_pack_id": source_pack_id,
         "confidence": str(payload.get("confidence") or "medium").strip(),
+        "inference_level": inference_level,
+        "confirmation_status": confirmation_status,
+        "evidence_basis": evidence_basis,
+        "missing_confirmations": missing_confirmations,
+        "source_limitations": source_limitations,
         "inclusion_rationale": str(payload.get("inclusion_rationale") or payload.get("rationale") or "").strip(),
         "claim_scope": "scope_or_hypothesis_only",
         "notes": str(payload.get("notes") or payload.get("summary") or "").strip(),
@@ -419,6 +451,11 @@ def _relationship_row(relationship: Mapping[str, Any], index: int) -> dict[str, 
         "source_record_ref": relationship.get("source_record_ref") or (refs[0] if refs else ""),
         "summary": relationship.get("inclusion_rationale") or relationship.get("notes") or "",
         "claim_scope": "scope_or_hypothesis_only",
+        "inference_level": relationship.get("inference_level") or "unknown",
+        "confirmation_status": relationship.get("confirmation_status") or "",
+        "evidence_basis": _string_list(relationship.get("evidence_basis")),
+        "missing_confirmations": _string_list(relationship.get("missing_confirmations")),
+        "source_limitations": _string_list(relationship.get("source_limitations")),
     }
 
 
@@ -455,6 +492,34 @@ def _normalize_required_source_families(values: list[str]) -> list[str]:
         elif text.startswith("industry_"):
             result.append("industry_snapshot")
     return _dedupe_strings(result) or ["primary_sec_filing"]
+
+
+def _normalize_inference_level(value: Any, *, source: str) -> str:
+    text = str(value or "").strip().lower()
+    allowed = {
+        "confirmed_direct",
+        "disclosed_indirect",
+        "curated_input_unverified",
+        "sector_inferred",
+        "category_inferred",
+        "user_scope_unverified",
+        "unknown",
+    }
+    if text in allowed:
+        return text
+    if source == "sector_depth_pack":
+        return "sector_inferred"
+    if source == "relationship_graph":
+        return "curated_input_unverified"
+    return "unknown"
+
+
+def _count_by_key(rows: list[Mapping[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = str(row.get(key) or "unknown").strip() or "unknown"
+        counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def _expanded_tickers(focus: list[str], relationships: list[Mapping[str, Any]]) -> list[str]:

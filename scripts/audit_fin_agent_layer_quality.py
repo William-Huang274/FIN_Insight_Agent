@@ -59,6 +59,8 @@ def audit_summary(
         return _audit_universe_relationship(summary, rubric=rubric, summary_path=summary_path)
     if source_schema == "sec_agent_evidence_operator_diagnostic_v0.1":
         return _audit_evidence_operator(summary, rubric=rubric, summary_path=summary_path)
+    if source_schema == "sec_agent_coverage_reflection_diagnostic_v0.1":
+        return _audit_coverage_reflection(summary, rubric=rubric, summary_path=summary_path)
     if "cases" in summary and ("real_chain" in source_schema or "multi_agent" in source_schema or summary.get("output_quality_audit")):
         return _audit_real_chain(summary, rubric=rubric, summary_path=summary_path, artifact_root=artifact_root)
     return _audit_unknown(summary, rubric=rubric, summary_path=summary_path)
@@ -205,6 +207,7 @@ def _audit_universe_relationship(
         "universe_relationship",
         cases,
         required_checks=[
+            *(_required_checks(rubric, "universe_relationship")),
             "relationship_lookup_has_rows",
             "llm_route_pass",
             "fallback_not_used",
@@ -218,6 +221,10 @@ def _audit_universe_relationship(
             "economic_links_present",
             "economic_mechanisms_present",
             "investment_implications_present",
+            "relationship_plan_covers_lookup",
+            "relationship_inference_levels_present",
+            "inferred_relationships_not_confirmed_direct",
+            "external_confirmation_gaps_recorded",
         ],
         case_check_getter=lambda case: case.get("checks") if isinstance(case.get("checks"), Mapping) else {},
         case_pass_getter=lambda case: str(case.get("status") or "") == "pass",
@@ -289,6 +296,48 @@ def _audit_evidence_operator(
         extra={
             "retrieval_metrics": dict(summary.get("metrics") or {}),
         },
+    )
+
+
+def _audit_coverage_reflection(
+    summary: Mapping[str, Any],
+    *,
+    rubric: Mapping[str, Any],
+    summary_path: Path | None,
+) -> dict[str, Any]:
+    cases = [case for case in summary.get("cases") or [] if isinstance(case, Mapping)]
+    required = [
+        *(_required_checks(rubric, "coverage_reflection")),
+        "coverage_report_present",
+        "second_pass_decision_present",
+        "source_gap_boundary_valid",
+        "no_duplicate_or_budget_loop_break",
+        "s3_rows_available_for_reflection",
+    ]
+    stage = _stage_from_case_checks(
+        "coverage_reflection",
+        cases,
+        required_checks=required,
+        case_check_getter=lambda case: case.get("checks") if isinstance(case.get("checks"), Mapping) else {},
+        case_pass_getter=lambda case: str(case.get("status") or "") == "pass",
+    )
+    stage_gate = stage["gate_status"] == "pass" and str(summary.get("gate_status") or "") == "pass"
+    dimensions = _dimension_scores_for_coverage_reflection(stage, rubric)
+    flags = []
+    if not stage_gate:
+        flags.append("coverage_reflection_stage_gate_failed")
+    audit_gate = "pass" if stage_gate else "fail"
+    return _base_audit(
+        summary=summary,
+        rubric=rubric,
+        source_type="coverage_reflection",
+        summary_path=summary_path,
+        stages=[stage],
+        dimensions=dimensions,
+        quality_flags=flags,
+        gate_status=audit_gate,
+        next_actions=_next_actions(stage_gate=audit_gate == "pass", source_type="coverage_reflection"),
+        extra={"coverage_metrics": dict(summary.get("metrics") or {})},
     )
 
 
@@ -476,6 +525,24 @@ def _dimension_scores_for_evidence_operator(stage: Mapping[str, Any], rubric: Ma
         elif dim_id == "cost_quality_efficiency":
             score = 3.0 if stage_ok else 1.0
             basis = "tool budget, duplicate, and rerank execution checks"
+        else:
+            score = 2.4 if stage_ok else 0.5
+            basis = "not fully evaluated until specialist/memo stages"
+        scores.append(_dimension_result(dim, score, basis))
+    return scores
+
+
+def _dimension_scores_for_coverage_reflection(stage: Mapping[str, Any], rubric: Mapping[str, Any]) -> list[dict[str, Any]]:
+    stage_ok = stage.get("gate_status") == "pass"
+    scores = []
+    for dim in _dimensions(rubric):
+        dim_id = str(dim.get("id") or "")
+        if dim_id in {"evidence_boundary", "cost_quality_efficiency", "permissions_and_auditability"}:
+            score = 3.2 if stage_ok else 1.0
+            basis = "coverage gap classification and bounded second-pass policy"
+        elif dim_id in {"mandate_fit", "economic_relationship_reasoning", "financial_metric_reasoning"}:
+            score = 3.0 if stage_ok else 1.0
+            basis = "reflection over passed evidence-operator artifacts"
         else:
             score = 2.4 if stage_ok else 0.5
             basis = "not fully evaluated until specialist/memo stages"

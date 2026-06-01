@@ -110,7 +110,11 @@
       "required_checks": [
         "validation_pass",
         "relationship_lookup_boundary_valid",
-        "relationship_refs_present_when_required"
+        "relationship_refs_present_when_required",
+        "relationship_plan_covers_lookup",
+        "relationship_inference_levels_present",
+        "inferred_relationships_not_confirmed_direct",
+        "external_confirmation_gaps_recorded"
       ]
     },
     "evidence_operators": {
@@ -139,8 +143,12 @@
     "coverage_reflection": {
       "required_case_pass_rate": 1.0,
       "required_checks": [
+        "coverage_report_present",
         "searchable_gaps_classified",
-        "second_pass_gain_or_bounded_reason"
+        "second_pass_decision_present",
+        "source_gap_boundary_valid",
+        "second_pass_gain_or_bounded_reason",
+        "no_duplicate_or_budget_loop_break"
       ]
     },
     "specialists": {

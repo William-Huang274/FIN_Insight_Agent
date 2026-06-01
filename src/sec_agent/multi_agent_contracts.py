@@ -10,7 +10,7 @@ JUDGMENT_PLAN_SCHEMA_VERSION = "sec_agent_multi_agent_judgment_plan_v0.1"
 SPECIALIST_VERIFICATION_SCHEMA_VERSION = "sec_agent_specialist_verification_v0.1"
 MEMO_DRAFT_SCHEMA_VERSION = "sec_agent_multi_agent_memo_draft_v0.1"
 MEMO_VERIFICATION_SCHEMA_VERSION = "sec_agent_multi_agent_memo_verification_v0.1"
-RELATIONSHIP_EDGE_SCHEMA_VERSION = "sec_agent_relationship_edge_v0.2"
+RELATIONSHIP_EDGE_SCHEMA_VERSION = "sec_agent_relationship_edge_v0.3"
 MEMO_THESIS_PACK_SCHEMA_VERSION = "sec_agent_memo_thesis_pack_v0.1"
 ECONOMIC_LINK_MAP_SCHEMA_VERSION = "sec_agent_economic_link_map_v0.1"
 
@@ -253,6 +253,17 @@ def validate_universe_relationship_plan(
             errors.append({"type": "relationship_inclusion_rationale_required", "index": index})
         if relationship["claim_scope"] != "scope_or_hypothesis_only":
             errors.append({"type": "relationship_claim_scope_must_be_hypothesis_only", "index": index, "value": relationship["claim_scope"]})
+        if relationship["inference_level"] in {"sector_inferred", "category_inferred"}:
+            if relationship["confirmation_status"] != "no_confirmed_direct_edge":
+                errors.append(
+                    {
+                        "type": "inferred_relationship_must_not_be_confirmed_direct",
+                        "index": index,
+                        "confirmation_status": relationship["confirmation_status"],
+                    }
+                )
+            if not relationship["missing_confirmations"]:
+                errors.append({"type": "inferred_relationship_missing_confirmation_gaps", "index": index})
         invalid_sources = sorted(set(relationship["evidence_source_needed"]) - RELATIONSHIP_EVIDENCE_SOURCES)
         if invalid_sources:
             errors.append({"type": "invalid_relationship_evidence_source_needed", "index": index, "source_families": invalid_sources})
@@ -1817,6 +1828,11 @@ def _normalize_relationship(payload: Mapping[str, Any]) -> dict[str, Any]:
         "source_record_ref": str(payload.get("source_record_ref") or (evidence_refs[0] if evidence_refs else "")).strip(),
         "source_pack_id": str(payload.get("source_pack_id") or "").strip(),
         "confidence": _normalize_confidence(payload.get("confidence")),
+        "inference_level": _normalize_relationship_inference_level(payload.get("inference_level")),
+        "confirmation_status": str(payload.get("confirmation_status") or "no_confirmed_direct_edge").strip(),
+        "evidence_basis": _unique_strings(payload.get("evidence_basis")),
+        "missing_confirmations": _unique_strings(payload.get("missing_confirmations")),
+        "source_limitations": _unique_strings(payload.get("source_limitations")),
         "inclusion_rationale": str(payload.get("inclusion_rationale") or payload.get("rationale") or "").strip(),
         "claim_scope": str(payload.get("claim_scope") or "scope_or_hypothesis_only").strip(),
         "notes": str(payload.get("notes") or "").strip(),
@@ -1895,6 +1911,20 @@ def _normalize_boundary_note(payload: Mapping[str, Any]) -> dict[str, Any]:
 def _normalize_economic_direction(value: Any) -> str:
     direction = str(value or "unknown").strip().lower()
     return direction if direction in ECONOMIC_DIRECTIONS else "unknown"
+
+
+def _normalize_relationship_inference_level(value: Any) -> str:
+    text = str(value or "curated_input_unverified").strip().lower()
+    allowed = {
+        "confirmed_direct",
+        "disclosed_indirect",
+        "curated_input_unverified",
+        "sector_inferred",
+        "category_inferred",
+        "user_scope_unverified",
+        "unknown",
+    }
+    return text if text in allowed else "unknown"
 
 
 def _economic_link_id(source: str, target: str, link_type: str, evidence_refs: Any) -> str:

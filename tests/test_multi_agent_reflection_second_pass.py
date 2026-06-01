@@ -164,6 +164,38 @@ def test_second_pass_requests_compile_through_deterministic_retrieval_plan() -> 
     assert retrieval_plan["second_pass_evidence_requirement_plan"]["source"] == "reflection_second_pass_requests"
 
 
+def test_second_pass_compiler_overrides_stale_query_contract_requirements() -> None:
+    report = reflection_report_from_coverage(
+        _coverage_gap(),
+        source_available=True,
+        evidence_requirement_plan=_evidence_requirement_plan(),
+    )
+    stale_contract = {
+        **_query_contract(),
+        "evidence_requirements": [
+            {
+                "requirement_id": "stale_market_req",
+                "task_id": "stale_market",
+                "tickers": ["AMD"],
+                "source_families": ["market_snapshot"],
+                "evidence_routes": ["market_snapshot"],
+            }
+        ],
+    }
+
+    retrieval_plan = compile_second_pass_retrieval_plan(
+        report,
+        _evidence_requirement_plan(),
+        query_contract=stale_contract,
+        case={"case_id": "unit_second_pass", "prompt": "AMD capex?", "companies": ["AMD"], "years": [2026]},
+    )
+
+    route_names = {route["retrieval_route"] for route in retrieval_plan["routes"]}
+    requirement_ids = {route["evidence_requirement_id"] for route in retrieval_plan["routes"]}
+    assert route_names == {"ledger_first", "filing_text"}
+    assert requirement_ids == {"req_amd_capex_second_pass_1"}
+
+
 def test_unavailable_source_family_blocks_second_pass_before_compiler() -> None:
     ledger = ToolCallLedger()
     report = reflection_report_from_coverage(

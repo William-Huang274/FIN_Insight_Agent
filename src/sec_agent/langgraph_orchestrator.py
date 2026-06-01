@@ -2297,6 +2297,9 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
             },
             "verifier": {
                 "verification_status": claim_verification.get("status") if isinstance(claim_verification, dict) else "",
+                "input_projection": dict(claim_verification.get("verifier_input_projection") or {})
+                if isinstance(claim_verification, dict)
+                else {},
                 "diagnostics": _model_diagnostics_summary(claim_verification.get("model_diagnostics")),
             },
         },

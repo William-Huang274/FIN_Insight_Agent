@@ -880,6 +880,9 @@ def _agent_audit(
             "claim_verification": (result.get("claim_verification") or {}).get("status")
             if isinstance(result.get("claim_verification"), Mapping)
             else "",
+            "input_projection": (result.get("claim_verification") or {}).get("verifier_input_projection")
+            if isinstance(result.get("claim_verification"), Mapping)
+            else {},
             "diagnostics": _route(llm_routes, "verifier").get("diagnostics") or {},
         },
     }

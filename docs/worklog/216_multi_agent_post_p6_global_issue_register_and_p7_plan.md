@@ -175,3 +175,37 @@ Decision:
 - Keep P7.1. It is directionally positive and preserves all safety / real-evidence / rendered-ref gates.
 - Do not rely on P7.1 alone for cost control. Total token cost remains high, and the audit still flags `high_total_token_cost`.
 - Next highest-leverage step is P7.2 Verifier minimal projection, followed by P7.4 cost-quality metrics.
+
+## 7. P7.2 Implementation Result
+
+Implemented:
+
+- Added `sec_agent_verifier_minimal_projection_v0.1`.
+- Verifier LLM now receives `verifier_projection` instead of the broad `verified_judgment_inventory`.
+- The projection contains only:
+  - compact final `memo_answer`
+  - memo-claim referenced ClaimCards
+  - allowed evidence refs
+  - final memo unsupported-excluded items
+  - source-boundary notes relevant to memo source families or blocking notes
+  - deterministic verification summary
+- Deterministic `verify_multi_agent_memo_draft` remains the hard safety gate before Verifier LLM; the LLM verifier still cannot override deterministic failures.
+- LangGraph summary and Step17 `agent_audit.verifier.input_projection` now expose projection stats for later cost-quality audits.
+
+Deterministic gates:
+
+- `python -m pytest tests/test_multi_agent_memo_llm_repair.py -q` -> `17 passed`.
+- `python -m pytest tests/test_multi_agent_memo_llm_repair.py tests/test_multi_agent_real_llm_chain_eval.py tests/test_multi_agent_langgraph_routing.py -q` -> `33 passed`.
+
+Real DeepSeek smoke:
+
+| Run | Gate | Tool calls | Context rows | Ledger rows | Specialist tokens | Memo tokens | Verifier tokens | Total agent tokens | Rendered chars | Memo claims |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| P7.1 `20260601_sector_depth_p7_priority_budget_smoke_deepseek_v0_1` | pass | 11 | 192 | 69 | 43,139 | 16,768 | 7,853 | 79,688 | 3,293 | 4 |
+| P7.2 `20260601_sector_depth_p7_verifier_projection_smoke_deepseek_v0_1` | pass | 10 | 192 | 69 | 43,405 | 19,201 | 5,214 | 79,711 | 3,820 | 4 |
+
+Decision:
+
+- Keep P7.2. Verifier token cost dropped by `2,639` tokens while claim verification, Specialist real-evidence quality, rendered memo claims, and evidence refs stayed green.
+- P7.2 does not reduce total cost by itself because Memo Writer still used `2` attempts and spent more tokens in this run. Total agent tokens were effectively flat (`79,688` -> `79,711`).
+- Next step should be P7.4 cost-quality metrics and then a Memo Writer retry/length root-cause pass, not another Verifier prompt change.

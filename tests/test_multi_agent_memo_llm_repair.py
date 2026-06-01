@@ -446,9 +446,49 @@ def test_verifier_llm_downgrades_soft_failure_after_deterministic_pass() -> None
         for item in result["claim_verification"]["warnings"]
     )
     user_prompt = fake.calls[0]["messages"][1]["content"]
-    assert "verified_judgment_inventory" in user_prompt
+    assert "verifier_projection" in user_prompt
+    assert "verified_judgment_inventory" not in user_prompt
     assert "verifier_data_view" not in user_prompt
-    assert "supported_evidence_refs" in user_prompt
+    assert "allowed_evidence_refs" in user_prompt
+
+
+def test_verifier_llm_uses_minimal_memo_claim_projection() -> None:
+    judgment = _judgment_without_unsupported()
+    judgment["supported_claims"].append(
+        {
+            "claim_id": "extra_claim_not_in_memo",
+            "agent_id": "market_valuation_analyst",
+            "claim": "Extra market claim outside the final memo.",
+            "evidence_refs": ["extra_ref_not_in_memo"],
+            "source_families": ["market_snapshot"],
+        }
+    )
+    memo = _memo()
+    memo["memo_thesis_plan"] = judgment["memo_thesis_plan"]
+    memo["memo_generation_policy"] = "thesis_led_claim_cards_v0_1"
+    fake = _FakeChat([json.dumps({"status": "pass", "errors": []})])
+
+    result = route_verifier_llm(
+        {
+            "user_query": "Write a memo.",
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+            "memo_answer": memo,
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    payload = extract_json_object(fake.calls[0]["messages"][1]["content"]) or {}
+    projection = payload["verifier_projection"]
+    projection_json = json.dumps(projection)
+    stats = result["claim_verification"]["verifier_input_projection"]
+    assert result["claim_verification"]["status"] == "pass"
+    assert stats["projection_policy"] == "final_memo_claims_and_referenced_evidence_only"
+    assert stats["input_supported_claim_count"] > stats["projected_claim_count"] == 1
+    assert projection["allowed_evidence_refs"] == ["capex_ref"]
+    assert "extra_ref_not_in_memo" not in projection_json
 
 
 def test_graph_repairs_injected_verifier_failure_once(tmp_path) -> None:

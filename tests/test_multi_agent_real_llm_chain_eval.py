@@ -54,7 +54,13 @@ def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
         },
         "memo_answer": {"answer_status": "draft", "bounded_answer_allowed": False},
         "memo_route_result": {"status": "pass", "attempt_count": 1},
-        "claim_verification": {"status": "pass"},
+        "claim_verification": {
+            "status": "pass",
+            "verifier_input_projection": {
+                "projection_policy": "final_memo_claims_and_referenced_evidence_only",
+                "projected_claim_count": 2,
+            },
+        },
         "rendered_answer": "bounded rendered answer",
     }
     summary = {
@@ -71,6 +77,7 @@ def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
     assert score["gate_status"] == "pass"
     assert all(score["checks"].values())
     assert score["agent_audit"]["research_lead"]["validation_status"] == "pass"
+    assert score["agent_audit"]["verifier"]["input_projection"]["projected_claim_count"] == 2
 
 
 def test_multi_agent_real_llm_chain_scoring_rejects_memo_fallback_from_summary() -> None:

@@ -13,6 +13,7 @@ from sec_agent.research_skills import research_skill_prompt
 
 MEMO_ROUTE_SCHEMA_VERSION = "sec_agent_memo_llm_route_v0.1"
 VERIFIER_ROUTE_SCHEMA_VERSION = "sec_agent_verifier_llm_route_v0.1"
+VERIFIER_PROJECTION_SCHEMA_VERSION = "sec_agent_verifier_minimal_projection_v0.1"
 MEMO_ROUTE_SOURCE = "memo_writer_llm_v0.1"
 VERIFIER_ROUTE_SOURCE = "verifier_llm_v0.1"
 MEMO_ROUTER_ENV = "SEC_AGENT_MULTI_AGENT_MEMO_ROUTER"
@@ -198,7 +199,9 @@ def route_verifier_llm(
         deterministic["llm_verifier_skipped"] = "deterministic_gate_failed"
         return {"claim_verification": deterministic, "specialist_verification": state.get("specialist_verification") or {}}
 
-    messages = _verifier_messages(state, deterministic=deterministic)
+    verifier_projection = _verifier_minimal_projection(state, deterministic=deterministic)
+    projection_stats = verifier_projection.get("projection_stats") if isinstance(verifier_projection.get("projection_stats"), Mapping) else {}
+    messages = _verifier_messages(state, projection=verifier_projection)
     llm_result = call_chat_completion(
         llm_backend=route_config.llm_backend,
         base_url=route_config.base_url,
@@ -214,7 +217,12 @@ def route_verifier_llm(
         enable_thinking=False,
         role="verifier",
         profile="strong",
-        trace_tags={"route_source": VERIFIER_ROUTE_SOURCE},
+        trace_tags={
+            "route_source": VERIFIER_ROUTE_SOURCE,
+            "projection_schema": VERIFIER_PROJECTION_SCHEMA_VERSION,
+            "projected_claim_count": projection_stats.get("projected_claim_count"),
+            "projected_evidence_ref_count": projection_stats.get("projected_evidence_ref_count"),
+        },
     )
     summary = _model_call_summary(llm_result)
     if llm_result.get("status") != "ok" or llm_result.get("tool_calls"):
@@ -226,6 +234,7 @@ def route_verifier_llm(
                 {"type": "llm_verifier_failed", "reason": str(llm_result.get("failure_reason") or "tool_call_forbidden")},
             ],
             "bounded_answer_allowed": True,
+            "verifier_input_projection": projection_stats,
             "model_diagnostics": {"calls": [summary], "raw_response_saved": False},
         }
         return {"claim_verification": merged, "specialist_verification": state.get("specialist_verification") or {}}
@@ -261,7 +270,8 @@ def route_verifier_llm(
         ],
         "repair_instruction": str(parsed.get("repair_instruction") or deterministic.get("repair_instruction") or ""),
         "bounded_answer_allowed": bool(parsed.get("bounded_answer_allowed") or llm_errors),
-        "llm_verifier_policy": "cannot_override_deterministic_gate",
+        "llm_verifier_policy": "minimal_projection_cannot_override_deterministic_gate",
+        "verifier_input_projection": projection_stats,
         "model_diagnostics": {"calls": [summary], "raw_response_saved": False},
     }
     return {"claim_verification": merged, "specialist_verification": state.get("specialist_verification") or {}}
@@ -808,6 +818,126 @@ def _compact_memo_claim_for_verifier(item: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _verifier_minimal_projection(
+    state: Mapping[str, Any],
+    *,
+    deterministic: Mapping[str, Any],
+) -> dict[str, Any]:
+    raw_judgment = state.get("verified_judgment_plan") or state.get("judgment_plan") or {}
+    judgment = raw_judgment if isinstance(raw_judgment, Mapping) else {}
+    raw_memo = state.get("memo_answer") or {}
+    memo = raw_memo if isinstance(raw_memo, Mapping) else {}
+    compact_memo = _compact_memo_for_verifier(memo)
+    memo_claims = [item for item in compact_memo.get("memo_claims") or [] if isinstance(item, Mapping)]
+    memo_claim_ids = {str(item.get("claim_id") or "") for item in memo_claims if str(item.get("claim_id") or "")}
+    memo_refs = {
+        ref
+        for item in memo_claims
+        for ref in _string_list(item.get("evidence_refs") or item.get("refs"))
+        if ref
+    }
+    memo_source_families = {
+        family
+        for item in memo_claims
+        for family in _string_list(item.get("source_families") or item.get("source_family"))
+        if family
+    }
+    supported_claims = [item for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)]
+    projected_claims = _project_claims_for_verifier(supported_claims, memo_claim_ids=memo_claim_ids, memo_refs=memo_refs)
+    projected_refs = {
+        ref
+        for item in projected_claims
+        for ref in _string_list(item.get("evidence_refs") or item.get("refs"))
+        if ref
+    }
+    allowed_refs = sorted(memo_refs | projected_refs)
+    projected_source_families = {
+        family
+        for item in projected_claims
+        for family in _string_list(item.get("source_families") or item.get("source_family"))
+        if family
+    }
+    source_boundary_families = memo_source_families | projected_source_families
+    source_boundary_notes = _project_source_boundary_notes_for_verifier(
+        judgment.get("source_boundary_notes") or memo.get("source_boundary_notes") or [],
+        source_families=source_boundary_families,
+    )
+    projection_stats = {
+        "schema_version": VERIFIER_PROJECTION_SCHEMA_VERSION,
+        "projection_policy": "final_memo_claims_and_referenced_evidence_only",
+        "input_supported_claim_count": len(supported_claims),
+        "memo_claim_count": len(memo_claims),
+        "projected_claim_count": len(projected_claims),
+        "projected_evidence_ref_count": len(allowed_refs),
+        "source_boundary_note_count": len(source_boundary_notes),
+    }
+    return {
+        "schema_version": VERIFIER_PROJECTION_SCHEMA_VERSION,
+        "projection_policy": "final_memo_claims_and_referenced_evidence_only",
+        "memo_answer": compact_memo,
+        "memo_claim_ref_inventory": projected_claims,
+        "allowed_evidence_refs": allowed_refs[:80],
+        "unsupported_claims_excluded": compact_memo.get("unsupported_claims_excluded") or [],
+        "source_boundary_notes": source_boundary_notes,
+        "memo_constraints": _compact_memo_constraints(judgment.get("memo_constraints") or {}),
+        "deterministic_verification": _compact_deterministic_verification(deterministic),
+        "projection_stats": projection_stats,
+    }
+
+
+def _project_claims_for_verifier(
+    claims: list[Mapping[str, Any]],
+    *,
+    memo_claim_ids: set[str],
+    memo_refs: set[str],
+) -> list[dict[str, Any]]:
+    projected: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in claims:
+        refs = set(_string_list(item.get("evidence_refs") or item.get("refs")))
+        claim_id = str(item.get("claim_id") or "")
+        if memo_claim_ids and claim_id in memo_claim_ids:
+            should_keep = True
+        else:
+            should_keep = bool(memo_refs and refs & memo_refs)
+        if not should_keep:
+            continue
+        key = claim_id or "|".join(sorted(refs)) or str(len(projected))
+        if key in seen:
+            continue
+        projected.append(_compact_claim_card_for_verifier(item))
+        seen.add(key)
+        if len(projected) >= 8:
+            break
+    return projected
+
+
+def _project_source_boundary_notes_for_verifier(value: Any, *, source_families: set[str]) -> list[dict[str, Any]]:
+    notes: list[dict[str, Any]] = []
+    for item in value if isinstance(value, list) else []:
+        if not isinstance(item, Mapping):
+            continue
+        family = str(item.get("source_family") or "")
+        note_type = str(item.get("type") or "")
+        severity = str(item.get("severity") or "")
+        if source_families and family and family not in source_families and severity != "blocking":
+            continue
+        if not source_families and family and severity != "blocking":
+            continue
+        notes.append(
+            {
+                "type": note_type,
+                "severity": severity,
+                "agent_id": str(item.get("agent_id") or ""),
+                "source_family": family,
+                "reason": _truncate(str(item.get("reason") or item.get("note") or ""), 180),
+            }
+        )
+        if len(notes) >= 4:
+            break
+    return notes
+
+
 def _compact_loose_items_for_verifier(value: Any, *, max_items: int) -> list[Any]:
     rows = []
     for item in value if isinstance(value, list) else []:
@@ -851,16 +981,14 @@ def _compact_deterministic_verification(value: Mapping[str, Any]) -> dict[str, A
 def _verifier_messages(
     state: Mapping[str, Any],
     *,
-    deterministic: Mapping[str, Any],
+    projection: Mapping[str, Any],
 ) -> list[dict[str, str]]:
-    judgment = _compact_judgment_for_verifier(state.get("verified_judgment_plan") or state.get("judgment_plan") or {})
     user_payload = {
         "user_query": state.get("user_query") or "",
-        "memo_answer": _compact_memo_for_verifier(state.get("memo_answer") or {}),
-        "verified_judgment_inventory": judgment,
-        "deterministic_verification": _compact_deterministic_verification(deterministic),
+        "verifier_projection": dict(projection),
         "bounded_block_policy": (
-            "If memo_answer.answer_status starts with blocked_ and deterministic_verification.status is pass, "
+            "If verifier_projection.memo_answer.answer_status starts with blocked_ and "
+            "verifier_projection.deterministic_verification.status is pass, "
             "return pass unless the blocked answer itself introduces unsupported new facts, raw rows, tool calls, "
             "or source-boundary misuse. Do not fail only because a full memo was not produced."
         ),
@@ -870,7 +998,7 @@ def _verifier_messages(
         {
             "role": "user",
             "content": (
-                "Verify the memo against the compact verified judgment inventory and return one JSON object with "
+                "Verify the memo against the minimal memo-claim evidence projection and return one JSON object with "
                 "status, errors, warnings, repair_instruction, and bounded_answer_allowed. Do not add new facts.\n\n"
                 f"Input JSON:\n{json.dumps(user_payload, ensure_ascii=False, indent=2)}"
             ),

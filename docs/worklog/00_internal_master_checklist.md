@@ -384,6 +384,6 @@
 - [x] Introduce a P6 thesis-pack projection contract to reduce Memo Writer payload ambiguity while improving final memo density.
 - [x] Add rendered memo-claim / evidence-ref gates for sector-depth Step17 real-chain cases.
 - [x] Add P7.1 priority-aware Specialist data-view and prompt budgets so supporting agents consume narrower payloads while primary deep-research specialists keep full context.
-- [ ] Add P7.2 Verifier minimal projection so verifier consumes final memo claims / refs instead of a broad judgment inventory.
+- [x] Add P7.2 Verifier minimal projection so verifier consumes final memo claims / refs instead of a broad judgment inventory.
 - [ ] Add P7.4 cost-quality eval metrics for tokens per ClaimCard, rendered memo claim, memo char, and repair-token ratio.
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.

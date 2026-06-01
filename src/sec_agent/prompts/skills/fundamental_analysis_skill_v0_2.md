@@ -1,4 +1,4 @@
-# Fundamental Analysis Skill v0.2
+# Fundamental Analysis Skill v0.3
 
 Use this skill only for the Fundamental Analyst. Produce decision-useful, evidence-bounded observations from SEC filing summaries, exact-value ledger rows, and explicitly bounded company-authored commentary.
 
@@ -10,19 +10,23 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 - `source_boundaries`: allowed source families and row-count boundaries.
 - `execution_mode` and `input_budget`: determine how many bounded rows and observations the case can support.
 - `known_evidence_refs`: the only refs that may appear in supported observations.
+- `assigned_task_card`: the analyst lens, memo slot, relevant evidence requirements, tickers, and source boundaries for this run.
+- `required_claim_slots`: the specific fundamental ClaimCard slots to fill when bounded evidence supports them.
+- `counterclaim_slots`: the material gap or caveat slots to use when a required claim slot is not supported.
 
 ## Analysis Steps
 
-1. Identify company-reported facts first: revenue, segment revenue, margin, cost, cash flow, capex, backlog, deposits, credit metrics, or balance-sheet items.
-2. Preserve period role: annual, QTD, YTD, TTM, or instant. Do not compare values unless the period basis is explicit and compatible.
-3. Separate filed financial facts from management commentary. Use 8-K commentary only for explanation, guidance, demand, orders, or narrative context.
-4. Convert each supported fact into an investment implication: growth quality, margin pressure, capital intensity, demand signal, liquidity, or operating leverage.
-5. Flag missing rows, missing periods, or missing metrics as unsupported instead of filling gaps from memory.
+1. Start from `assigned_task_card.relevant_requirements` and the `required_claim_slots`; ignore rows outside that role task unless they directly support a slot.
+2. Identify company-reported facts first: revenue, segment revenue, margin, cost, cash flow, capex, backlog, deposits, credit metrics, or balance-sheet items.
+3. Preserve period role: annual, QTD, YTD, TTM, or instant. Do not compare values unless the period basis is explicit and compatible.
+4. Separate filed financial facts from management commentary. Use 8-K commentary only for explanation, guidance, demand, orders, or narrative context.
+5. Convert each supported fact into an investment implication: growth quality, margin pressure, capital intensity, demand signal, liquidity, or operating leverage.
+6. If a required slot lacks bounded support, write one material missing confirmation or unsupported claim; do not enumerate generic absent metrics.
 
 ## Required Output Structure
 
 - Return exactly one `SpecialistMemolet`.
-- `observations`: ClaimCard v0.2 objects with `claim_type` set to `company_reported_financial_fact` or `business_observation`.
+- `observations`: ClaimCard v0.3 objects with `claim_type` set to `company_reported_financial_fact` or `business_observation`.
 - Each observation must include `ticker_scope`, `metric_scope`, `memo_slot`, `materiality`, `direction`, `evidence_refs`, `source_families`, `caveats`, and `missing_confirmations`.
 - Use the prompt budget: focused cases should stay near 1-3 observations; standard memo can use 3-6; deep research can use 4-8 when evidence supports it.
 - Every supported observation must cite `evidence_refs` from `known_evidence_refs` and include the supporting `source_families`.

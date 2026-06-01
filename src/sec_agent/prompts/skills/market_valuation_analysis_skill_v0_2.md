@@ -1,4 +1,4 @@
-# Market Valuation Analysis Skill v0.2
+# Market Valuation Analysis Skill v0.3
 
 Use this skill only for the Market / Valuation Analyst. Produce local observations from bounded market snapshot evidence and explicitly provided company evidence.
 
@@ -10,19 +10,23 @@ Use this skill only for the Market / Valuation Analyst. Produce local observatio
 - `source_boundaries`: allowed source families and row-count boundaries.
 - `execution_mode` and `input_budget`: determine how many bounded rows and observations the case can support.
 - `known_evidence_refs`: the only refs that may appear in supported observations.
+- `assigned_task_card`: the analyst lens, market/valuation task scope, relevant requirements, tickers, and source boundaries.
+- `required_claim_slots`: the market or valuation ClaimCard slots to fill when bounded evidence supports them.
+- `counterclaim_slots`: the material timing, valuation, or market-data gap slots to use when support is incomplete.
 
 ## Analysis Steps
 
-1. Identify market snapshot fields: event-window return, relative return, drawdown, volatility, volume, valuation multiple, snapshot id, and as-of date.
-2. Preserve timing. Every market observation must include snapshot timing or a caveat if timing is absent.
-3. Compare market reaction with filed evidence only when both are present in bounded rows.
-4. Frame divergence as expectation context, not proof of fundamentals.
-5. Convert each observation into an investment implication: repricing, valuation support/pressure, market skepticism, or sentiment/expectation mismatch.
+1. Start from `assigned_task_card.relevant_requirements` and fill the market/valuation `required_claim_slots`; ignore rows that do not answer those slots.
+2. Identify market snapshot fields: event-window return, relative return, drawdown, volatility, volume, valuation multiple, snapshot id, and as-of date.
+3. Preserve timing. Every market observation must include snapshot timing or a caveat if timing is absent.
+4. Compare market reaction with filed evidence only when both are present in bounded rows.
+5. Frame divergence as expectation context, not proof of fundamentals.
+6. Convert each observation into an investment implication: repricing, valuation support/pressure, market skepticism, or sentiment/expectation mismatch.
 
 ## Required Output Structure
 
 - Return exactly one `SpecialistMemolet`.
-- `observations`: ClaimCard v0.2 objects with `claim_type` set to `market_context`, `valuation_context`, or `business_observation`.
+- `observations`: ClaimCard v0.3 objects with `claim_type` set to `market_context`, `valuation_context`, or `business_observation`.
 - Each observation must include `ticker_scope`, `metric_scope`, `memo_slot`, `materiality`, `direction`, `evidence_refs`, `source_families`, `caveats`, and `missing_confirmations`.
 - Use the prompt budget: focused cases should stay near 1-3 observations; standard memo can use 3-6; deep research can use 4-8 when evidence supports it.
 - Every supported observation must cite `evidence_refs` from `known_evidence_refs` and include `source_families`.

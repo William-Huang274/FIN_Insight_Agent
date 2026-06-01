@@ -31,7 +31,7 @@ class MemoLLMConfig:
     model: str = "deepseek-v4-pro"
     api_key_env: str = "DEEPSEEK_API_KEY"
     temperature: float = 0.0
-    memo_max_tokens: int = 1800
+    memo_max_tokens: int = 2600
     verifier_max_tokens: int = 1000
     timeout_s: int = 180
     max_repair_attempts: int = 2
@@ -46,7 +46,7 @@ def memo_llm_config_from_env(env: Mapping[str, str] | None = None) -> MemoLLMCon
         model=values.get("MODEL_NAME", "deepseek-v4-pro"),
         api_key_env=values.get("API_KEY_ENV", "DEEPSEEK_API_KEY"),
         temperature=_float_env(values.get("MEMO_TEMPERATURE"), default=0.0),
-        memo_max_tokens=_int_env(values.get("MEMO_MAX_TOKENS"), default=1800),
+        memo_max_tokens=_int_env(values.get("MEMO_MAX_TOKENS"), default=2600),
         verifier_max_tokens=_int_env(values.get("VERIFIER_MAX_TOKENS"), default=1000),
         timeout_s=_int_env(values.get("MEMO_TIMEOUT_S"), default=180),
         max_repair_attempts=_int_env(values.get("MEMO_MAX_REPAIR_ATTEMPTS"), default=2),
@@ -284,6 +284,16 @@ def _normalize_memo_llm_output(payload: Mapping[str, Any], judgment: Any) -> dic
     if isinstance(nested, Mapping):
         wrapper_fields = {key: value for key, value in memo.items() if key != "memo_draft"}
         memo = {**dict(nested), **wrapper_fields}
+    for forbidden_key in (
+        "verified_judgment_plan",
+        "judgment_plan",
+        "supported_claims",
+        "bounded_evidence_rows",
+        "context_rows",
+        "analysis_trace",
+        "reasoning",
+    ):
+        memo.pop(forbidden_key, None)
     base = build_multi_agent_memo_draft(judgment if isinstance(judgment, Mapping) else {})
     memo.setdefault("schema_version", base.get("schema_version"))
     memo.setdefault("answer_status", "draft")
@@ -303,6 +313,19 @@ def _normalize_memo_llm_output(payload: Mapping[str, Any], judgment: Any) -> dic
     memo.setdefault("claim_card_stats", base.get("claim_card_stats") or {})
     memo.setdefault("bounded_answer_allowed", False)
     memo.setdefault("memo_generation_policy", "thesis_led_claim_cards_v0_1")
+    allowed_statuses = {
+        "draft",
+        "blocked_by_specialist_verification",
+        "blocked_by_judgment_plan",
+        "blocked_by_verifier_repair",
+    }
+    answer_status = str(memo.get("answer_status") or "draft")
+    if answer_status not in allowed_statuses:
+        memo.setdefault("memo_writer_diagnostics", {})
+        diagnostics = memo["memo_writer_diagnostics"]
+        if isinstance(diagnostics, dict):
+            diagnostics["normalized_answer_status_from"] = answer_status
+        memo["answer_status"] = "draft" if memo.get("memo_claims") else "blocked_by_judgment_plan"
     return memo
 
 
@@ -332,6 +355,20 @@ def _memo_messages(
             "source_boundary_notes_max": 3,
             "do_not_emit_supported_claims": True,
             "must_copy_claim_id_and_evidence_refs_from_input": True,
+            "allowed_top_level_fields": [
+                "schema_version",
+                "answer_status",
+                "direct_answer",
+                "memo_claims",
+                "caveats",
+                "unsupported_claims_excluded",
+                "source_boundary_notes",
+                "memo_thesis_plan",
+                "source_boundary",
+                "raw_rows_consumed",
+                "tool_calls_requested",
+                "memo_generation_policy",
+            ],
         },
     }
     user = (
@@ -344,6 +381,7 @@ def _memo_messages(
         "Keep output compact: direct_answer <= 420 characters, memo_claims <= 5, each memo_claim.claim <= 220 characters, "
         "caveats <= 3, unsupported_claims_excluded <= 2, and source_boundary_notes <= 3. "
         "Do not emit supported_claims; only emit memo_claims copied from or synthesized from input ClaimCards with claim_id and evidence_refs. "
+        "Emit only the allowed top-level fields listed in memo_output_contract; do not emit analysis traces, copied judgment_plan, source tables, or full supported_claims. "
         "Do not narrate every source row; synthesize only the strongest supported investment claims and boundaries. "
         "Return JSON only; no markdown, no explanatory preface.\n\n"
         f"Input JSON:\n{json.dumps(user_payload, ensure_ascii=False, indent=2)}"

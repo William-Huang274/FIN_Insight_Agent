@@ -6,7 +6,7 @@ from sec_agent.multi_agent_contracts import (
     verify_multi_agent_memo_draft,
     verify_specialist_outputs_for_memo,
 )
-from sec_agent.langgraph_orchestrator import build_multi_agent_orchestration_graph, make_multi_agent_smoke_state
+from sec_agent.langgraph_orchestrator import _node_multi_agent_renderer, build_multi_agent_orchestration_graph, make_multi_agent_smoke_state
 
 
 def test_judgment_plan_carries_boundaries_and_excludes_unsupported_claims() -> None:
@@ -288,6 +288,25 @@ def test_verifier_blocks_draft_that_drops_thesis_led_contract() -> None:
     assert result["status"] == "fail"
     assert "memo_writer_did_not_carry_memo_thesis_plan" in error_types
     assert "memo_generation_policy_not_thesis_led" in error_types
+
+
+def test_renderer_keeps_verified_draft_memo_surface_when_bounded() -> None:
+    result = _node_multi_agent_renderer(
+        {
+            "bounded_answer_allowed": True,
+            "claim_verification": {"status": "pass"},
+            "memo_answer": {
+                "answer_status": "draft",
+                "direct_answer": "Thesis-led memo answer.",
+                "memo_claims": [{"claim": "Supported claim.", "evidence_refs": ["ref_1"]}],
+                "source_boundary": "verified judgment plan only",
+            },
+        }
+    )
+
+    assert result["rendered_answer"].startswith("Thesis-led memo answer.")
+    assert "Bounded evidence note" in result["rendered_answer"]
+    assert not result["rendered_answer"].startswith("Bounded answer only")
 
 
 def test_graph_step13_keeps_verified_plan_and_verifier_constraints(tmp_path) -> None:

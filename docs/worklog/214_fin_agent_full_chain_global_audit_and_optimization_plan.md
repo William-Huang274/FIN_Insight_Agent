@@ -264,6 +264,15 @@ Gate:
 - Specialist input rows 与 required claim slots 可解释。
 - sector-depth / relationship case 下，Industry 和 Risk 都能引用 relationship evidence when expected。
 
+Status:
+
+- 已落地 Agent Data View v0.2 / P4 第一切片：Specialist request 增加 `assigned_task_card`、`required_claim_slots`、`counterclaim_slots`，并在 route summary 中记录 task-card schema、memo slot、task-relevant requirement 数、claim slot 数和 source-family 可用性。
+- Industry / relationship selector 保持 balanced rows，sector-depth relationship gate 继续要求 Industry Specialist 看到并引用 `relationship_graph` evidence。
+- Specialist 输出合同增加 unsupported/conflict cap 与 overflow 元数据，避免 Memo Writer 被大量缺证提示淹没。
+- 真实 DeepSeek + real retrieval smoke `20260601_sector_depth_p4_task_card_smoke_deepseek_v0_4`：AI infra sector-depth `1/1` pass，`tool_call_count=10`，SEC search / 8-K / risk search 均走 BGE CUDA，`context_rows=156`、`runtime_ledger_rows=54`、relationship rows 传入 Industry，supported ClaimCards `16`，Specialist real evidence quality pass。
+- 仍存在问题：Memo Writer v0.4 虽能通过 verifier，但 `attempt_count=2`、首轮 `finish_reason=length`、`total_tokens=18,986`，说明输出合同仍偏重，后续 P6 需要把 memo 输出深度和 token 预算一起重构。
+- 反证实验 `20260601_sector_depth_p4_task_card_smoke_deepseek_v0_5`：尝试禁止 LLM 输出 `memo_thesis_plan` 后 gate 仍 pass，但 Memo Writer 退回 deterministic fallback 且 token 更高；该改动已回滚，不纳入主线。
+
 ### P5: Role-specific Skill v0.3
 
 Goal: 所有核心 agent 都有明确输入字段、执行步骤、失败处理、输出结构和质量 rubric。
@@ -282,6 +291,11 @@ Gate:
 
 - 每个 agent prompt request 都能映射到 skill 的 required input fields。
 - Eval 检查 agent 输出是否满足该 role 的 required output structure。
+
+Status:
+
+- 已先把四个 Specialist skill 从 v0.2 扩展为 role-specific skill v0.3 内容：明确 required input fields、task-card / claim-slot 执行步骤、ClaimCard v0.3 输出结构、缺证处理和质量 rubric。
+- 当前只覆盖 Fundamental、Industry/Supply-chain、Market/Valuation、Risk/Counterevidence。Research Lead、Universe、Coverage、Aggregator、Memo Writer、Verifier 的完整 v0.3 skill 仍在 P5 后续切片。
 
 ### P6: Aggregator and Memo Output Depth Tiers
 
@@ -383,3 +397,25 @@ Implemented immediately after baseline commit:
   - sector-depth retrieval policy cap expansion and BGE auto CUDA selection.
 
 Next slice should rerun real DeepSeek full-chain on the 4 sector-depth cases, then use the new telemetry to decide P4 data-view v0.3 selector changes.
+
+## 8. P4/P5 Partial Implementation Notes
+
+Implemented after P3 retrieval runtime policy commit:
+
+- `build_agent_data_view` now emits Specialist task cards and claim slots, so Specialist prompts receive explicit memo slot, relevant requirements, required source families, focus tickers, available source families, required supported-claim slots, and counterclaim slots.
+- `build_specialist_request_from_state` carries those fields into the LLM request and repair prompt; route diagnostics now expose whether a Specialist was given enough task structure to justify its token cost.
+- Role-specific Specialist skills now describe required fields, analysis order, output structure, missing-evidence handling, and quality rubric. This fixes the previous “一个 agent 修一个 prompt” problem by moving the convention into shared role-specific skill v0.3.
+- Specialist output normalization caps non-risk unsupported claims to one visible item and risk to two visible items, while preserving overflow counts in metadata.
+- Memo Writer normalization now drops copied upstream plans/raw rows if the model emits them, and normalizes non-contract `answer_status` such as `partial` back to `draft` when supported `memo_claims` are present. This keeps strict eval from failing on provider wording drift without relaxing evidence verification.
+- Renderer no longer downgrades a verified draft memo to `Bounded answer only` solely because coverage had bounded-answer notes; it keeps the draft answer visible and appends a bounded evidence note.
+
+Verification:
+
+- Targeted deterministic tests: `python -m pytest tests/test_multi_agent_specialist_llm.py tests/test_multi_agent_evidence_requirements.py tests/test_multi_agent_judgment_memo_verifier.py tests/test_multi_agent_memo_llm_repair.py tests/test_multi_agent_contracts.py -q` -> `71 passed`.
+- Syntax check: `python -m compileall src\sec_agent scripts\eval_multi_agent_real_llm_chain.py tests` -> pass.
+- Real DeepSeek smoke: `20260601_sector_depth_p4_task_card_smoke_deepseek_v0_4` -> gate pass, route success distinct from real evidence quality, BGE CUDA recorded, Specialist real evidence quality pass, verifier pass.
+
+Decision:
+
+- P4/P5 partial is accepted as a stable checkpoint, but not a final quality solution. It improves agent task understanding and relationship evidence use; it does not yet solve Memo Writer cost or deep memo density.
+- Next work should not keep prompt-tweaking Memo Writer in isolation. P6 should introduce a `thesis_pack` / depth-tier contract so Memo Writer receives a smaller, richer object instead of another compressed judgment inventory.

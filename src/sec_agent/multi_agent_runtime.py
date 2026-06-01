@@ -11,7 +11,9 @@ from sec_agent.tool_call_ledger import ToolCallLedger
 
 
 RUNTIME_SCHEMA_VERSION = "sec_agent_multi_agent_runtime_v0.1"
-AGENT_DATA_VIEW_SCHEMA_VERSION = "sec_agent_agent_data_view_v0.1"
+AGENT_DATA_VIEW_SCHEMA_VERSION = "sec_agent_agent_data_view_v0.2"
+SPECIALIST_TASK_CARD_SCHEMA_VERSION = "sec_agent_specialist_task_card_v0.1"
+SPECIALIST_CLAIM_SLOT_SCHEMA_VERSION = "sec_agent_specialist_claim_slot_v0.1"
 AGENT_DATA_VIEW_MAX_ROWS = 16
 AGENT_DATA_VIEW_STANDARD_MEMO_MAX_ROWS = 24
 AGENT_DATA_VIEW_DEEP_RESEARCH_MAX_ROWS = 32
@@ -434,8 +436,382 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
         view["verified_summary"] = _verified_summary_view(state)
     if "database_query" in allowed:
         view["database_query_boundary"] = "available_only_inside_bounded_operator_tool"
+    if entry["agent_id"] in SPECIALIST_EXECUTION_ORDER:
+        task_card = _assigned_task_card_for_specialist(entry["agent_id"], state)
+        view["assigned_task_card"] = task_card
+        view["required_claim_slots"] = _required_claim_slots_for_specialist(
+            entry["agent_id"],
+            state,
+            task_card=task_card,
+        )
+        view["counterclaim_slots"] = _counterclaim_slots_for_specialist(
+            entry["agent_id"],
+            state,
+            task_card=task_card,
+        )
 
     return _sanitize_payload(view)
+
+
+def _assigned_task_card_for_specialist(agent_id: str, state: Mapping[str, Any]) -> dict[str, Any]:
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    requirements = _requirements_for_specialist(agent_id, state)
+    compact_requirements = [_compact_task_card_requirement(item, index) for index, item in enumerate(requirements[:8], start=1)]
+    execution_mode = _execution_mode_from_state(state)
+    focus_tickers = _focus_tickers_from_state(state)
+    search_scope_tickers = _search_scope_tickers_from_state(state, focus_tickers=focus_tickers)
+    priority = str(dict(activation.get("agent_priorities") or {}).get(agent_id) or "primary")
+    required_source_families = _specialist_required_source_families(agent_id)
+    available_source_families = _available_source_families_for_specialist(agent_id, state)
+    return {
+        "schema_version": SPECIALIST_TASK_CARD_SCHEMA_VERSION,
+        "agent_id": agent_id,
+        "execution_mode": execution_mode,
+        "priority": priority,
+        "analyst_lens": _specialist_lens(agent_id),
+        "assigned_memo_slot": _specialist_memo_slot(agent_id),
+        "user_query": str(state.get("user_query") or query_contract.get("user_query") or "")[:500],
+        "focus_tickers": focus_tickers,
+        "search_scope_tickers": search_scope_tickers,
+        "required_source_families": required_source_families,
+        "available_source_families": available_source_families,
+        "relevant_requirements": compact_requirements,
+        "relevant_requirement_count": len(requirements),
+        "task_policy": "role_specific_task_card_v0_1_use_slots_not_row_summaries",
+        "failure_policy": "if_slot_not_supported_add_missing_confirmation_or_top_material_unsupported_claim_only",
+    }
+
+
+def _required_claim_slots_for_specialist(
+    agent_id: str,
+    state: Mapping[str, Any],
+    *,
+    task_card: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    mode = str(task_card.get("execution_mode") or _execution_mode_from_state(state))
+    target = "2-4" if mode == "deep_research" else "1-3"
+    if agent_id == "fundamental_analyst":
+        return [
+            _claim_slot(
+                agent_id,
+                slot_id="fundamentals_reported_fact",
+                memo_slot="fundamentals",
+                target_claim_count=target,
+                claim_type_allowlist=["company_reported_financial_fact", "reported_financial_fact", "business_observation"],
+                required_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                instruction="Select the most decision-useful filed metric or company-authored commentary and state the investment implication, preserving period role.",
+            ),
+            _claim_slot(
+                agent_id,
+                slot_id="fundamentals_quality_or_pressure",
+                memo_slot="fundamentals",
+                target_claim_count="0-2",
+                claim_type_allowlist=["business_observation"],
+                required_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                instruction="Explain whether the bounded facts imply growth quality, margin pressure, capital intensity, liquidity, or demand strength.",
+            ),
+        ]
+    if agent_id == "industry_supply_chain_analyst":
+        relationship_required = bool(_relationship_rows_from_state(state))
+        slots = [
+            _claim_slot(
+                agent_id,
+                slot_id="industry_transmission_mechanism",
+                memo_slot="industry_relationship",
+                target_claim_count=target,
+                claim_type_allowlist=["industry_context_only", "relationship_hypothesis", "scope_hypothesis"],
+                required_source_families=["industry_snapshot", "relationship_graph"],
+                instruction="Convert bounded sector or relationship evidence into a transmission mechanism and the company metric that should confirm it.",
+            )
+        ]
+        if relationship_required:
+            slots.append(
+                _claim_slot(
+                    agent_id,
+                    slot_id="relationship_graph_hypothesis",
+                    memo_slot="industry_relationship",
+                    target_claim_count="1-2",
+                    claim_type_allowlist=["relationship_hypothesis", "scope_hypothesis"],
+                    required_source_families=["relationship_graph"],
+                    instruction="Use at least one relationship_graph ref as hypothesis/scope evidence only; do not treat it as confirmed revenue, customer, or supplier fact.",
+                )
+            )
+        return slots
+    if agent_id == "market_valuation_analyst":
+        return [
+            _claim_slot(
+                agent_id,
+                slot_id="market_reaction_or_valuation_context",
+                memo_slot="market_valuation",
+                target_claim_count=target,
+                claim_type_allowlist=["market_context", "valuation_context", "market_or_valuation_context", "business_observation"],
+                required_source_families=["market_snapshot"],
+                instruction="State the timestamped market reaction, valuation context, or expectation mismatch without treating it as proof of fundamentals.",
+            )
+        ]
+    if agent_id == "risk_counterevidence_analyst":
+        return [
+            _claim_slot(
+                agent_id,
+                slot_id="direct_risk_or_counterevidence",
+                memo_slot="risk_counterevidence",
+                target_claim_count="2-3" if mode in {"standard_memo", "deep_research"} else "0-2",
+                claim_type_allowlist=["risk_or_counterevidence", "source_gap", "business_observation"],
+                required_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot", "industry_snapshot", "run_artifact"],
+                instruction="Stress-test the strongest supported thesis components with bounded risks, gaps, or conflicts; do not make a generic risk list.",
+            )
+        ]
+    return []
+
+
+def _counterclaim_slots_for_specialist(
+    agent_id: str,
+    state: Mapping[str, Any],
+    *,
+    task_card: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    mode = str(task_card.get("execution_mode") or _execution_mode_from_state(state))
+    common_cap = "0-1" if mode == "focused_answer" else "0-2"
+    if agent_id == "risk_counterevidence_analyst":
+        return [
+            _claim_slot(
+                agent_id,
+                slot_id="unsupported_thesis_component",
+                memo_slot="risk_counterevidence",
+                target_claim_count=common_cap,
+                claim_type_allowlist=["unsupported_claim", "source_gap"],
+                required_source_families=["run_artifact", "primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                instruction="Name only the top material thesis component that bounded evidence fails to support.",
+                slot_kind="counterclaim_or_gap",
+            ),
+            _claim_slot(
+                agent_id,
+                slot_id="direct_conflict",
+                memo_slot="risk_counterevidence",
+                target_claim_count=common_cap,
+                claim_type_allowlist=["risk_or_counterevidence", "business_observation"],
+                required_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot", "industry_snapshot"],
+                instruction="Use conflicts only when bounded evidence directly opposes the thesis or another bounded ClaimCard.",
+                slot_kind="counterclaim_or_gap",
+            ),
+        ]
+    return [
+        _claim_slot(
+            agent_id,
+            slot_id=f"{_specialist_memo_slot(agent_id)}_material_gap",
+            memo_slot=_specialist_memo_slot(agent_id),
+            target_claim_count=common_cap,
+            claim_type_allowlist=["source_gap", "business_observation"],
+            required_source_families=_specialist_required_source_families(agent_id),
+            instruction="If a required slot is not supported, state one material missing confirmation; do not enumerate non-material gaps.",
+            slot_kind="counterclaim_or_gap",
+        )
+    ]
+
+
+def _claim_slot(
+    agent_id: str,
+    *,
+    slot_id: str,
+    memo_slot: str,
+    target_claim_count: str,
+    claim_type_allowlist: list[str],
+    required_source_families: list[str],
+    instruction: str,
+    slot_kind: str = "required_claim",
+) -> dict[str, Any]:
+    return {
+        "schema_version": SPECIALIST_CLAIM_SLOT_SCHEMA_VERSION,
+        "agent_id": agent_id,
+        "slot_id": slot_id,
+        "slot_kind": slot_kind,
+        "memo_slot": memo_slot,
+        "target_claim_count": target_claim_count,
+        "claim_type_allowlist": claim_type_allowlist,
+        "required_source_families": required_source_families,
+        "evidence_ref_policy": "supported_claims_must_cite_known_evidence_refs",
+        "instruction": instruction,
+    }
+
+
+def _requirements_for_specialist(agent_id: str, state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    requirements = _state_evidence_requirements(state)
+    matched = [req for req in requirements if _requirement_matches_specialist(agent_id, req)]
+    if agent_id == "risk_counterevidence_analyst" and not matched:
+        matched = [
+            req
+            for req in requirements
+            if str(req.get("priority") or "supporting") in {"primary", "supporting"}
+        ][:6]
+    return _dedupe_requirements(matched or requirements[:4])
+
+
+def _state_evidence_requirements(state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    candidates: list[dict[str, Any]] = []
+    plans = []
+    if isinstance(state.get("evidence_requirement_plan"), Mapping):
+        plans.append(state.get("evidence_requirement_plan"))
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    if isinstance(query_contract.get("evidence_requirement_plan"), Mapping):
+        plans.append(query_contract.get("evidence_requirement_plan"))
+    if isinstance(query_contract.get("evidence_requirements"), list):
+        plans.append({"requirements": query_contract.get("evidence_requirements")})
+    for plan in plans:
+        candidates.extend(dict(item) for item in (plan or {}).get("requirements") or [] if isinstance(item, Mapping))
+    for task in query_contract.get("decomposed_tasks") or []:
+        if isinstance(task, Mapping):
+            candidates.append(_requirement_from_decomposed_task(task, query_contract))
+    return _dedupe_requirements(candidates)
+
+
+def _requirement_from_decomposed_task(task: Mapping[str, Any], query_contract: Mapping[str, Any]) -> dict[str, Any]:
+    source_tiers = _string_list(task.get("required_source_tiers") or task.get("source_tiers") or query_contract.get("source_tiers"))
+    metric_families = _string_list(task.get("required_metric_families") or task.get("metric_families") or query_contract.get("metric_families"))
+    tickers = _unique_upper(task.get("required_tickers") or task.get("tickers") or query_contract.get("focus_tickers"))
+    return {
+        "requirement_id": str(task.get("requirement_id") or task.get("task_id") or "decomposed_task"),
+        "task_id": str(task.get("task_id") or task.get("requirement_id") or "decomposed_task"),
+        "question_zh": str(task.get("question_zh") or task.get("question") or ""),
+        "priority": str(task.get("priority") or "supporting"),
+        "tickers": tickers,
+        "source_tiers": source_tiers,
+        "source_families": source_tiers,
+        "metric_families": metric_families,
+        "evidence_routes": _routes_for_source_families(source_tiers),
+        "analysis_intent": str(task.get("analysis_intent") or ""),
+    }
+
+
+def _compact_task_card_requirement(requirement: Mapping[str, Any], index: int) -> dict[str, Any]:
+    evidence_routes = _string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes"))
+    source_families = _requirement_source_families(requirement)
+    claim_families = _string_list(requirement.get("claim_families")) or _claim_families_for_requirement({"evidence_routes": evidence_routes})
+    return {
+        "requirement_id": str(requirement.get("requirement_id") or requirement.get("evidence_requirement_id") or f"req_{index}"),
+        "task_id": str(requirement.get("task_id") or f"task_{index}"),
+        "priority": str(requirement.get("priority") or "supporting"),
+        "question_zh": str(requirement.get("question_zh") or requirement.get("question") or "")[:300],
+        "analysis_intent": str(requirement.get("analysis_intent") or "")[:120],
+        "tickers": _unique_upper(requirement.get("tickers") or requirement.get("required_tickers"))[:12],
+        "peer_tickers": _unique_upper(requirement.get("peer_tickers"))[:12],
+        "years": _int_list(requirement.get("years"))[:6],
+        "filing_types": _string_list(requirement.get("filing_types"))[:8],
+        "source_families": source_families[:8],
+        "evidence_routes": evidence_routes[:8],
+        "metric_families": _string_list(requirement.get("metric_families") or requirement.get("required_metric_families"))[:12],
+        "claim_families": claim_families[:8],
+    }
+
+
+def _requirement_matches_specialist(agent_id: str, requirement: Mapping[str, Any]) -> bool:
+    routes = set(_string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes")))
+    families = set(_requirement_source_families(requirement))
+    owners = set(_string_list(requirement.get("operator_owners") or requirement.get("operator_owner")))
+    text = " ".join(
+        str(requirement.get(key) or "").lower()
+        for key in ("analysis_intent", "question_zh", "question", "task_id", "requirement_id")
+    )
+    if agent_id == "fundamental_analyst":
+        return bool(families & {"primary_sec_filing", "company_authored_unaudited_sec_filing"} or routes & {"ledger_first", "filing_text", "8k_commentary"} or owners & {"sec_operator", "eight_k_operator"})
+    if agent_id == "industry_supply_chain_analyst":
+        return bool(families & {"industry_snapshot", "relationship_graph"} or routes & {"industry_snapshot", "relationship_graph"} or any(term in text for term in ("industry", "supply", "relationship", "sector", "chain", "readthrough")))
+    if agent_id == "market_valuation_analyst":
+        return bool("market_snapshot" in families or "market_snapshot" in routes or any(term in text for term in ("market", "valuation", "multiple", "return", "price", "reaction")))
+    if agent_id == "risk_counterevidence_analyst":
+        return bool("run_artifact" in families or "risk_text" in routes or any(term in text for term in ("risk", "counter", "gap", "unsupported", "conflict", "caveat", "downside")))
+    return False
+
+
+def _requirement_source_families(requirement: Mapping[str, Any]) -> list[str]:
+    families = _string_list(
+        requirement.get("source_families")
+        or requirement.get("source_family")
+        or requirement.get("planner_source_families")
+        or requirement.get("source_tiers")
+    )
+    route_families = _source_families_for_routes(_string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes")))
+    return _dedupe([*families, *route_families])
+
+
+def _dedupe_requirements(requirements: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: set[tuple[str, str]] = set()
+    out: list[dict[str, Any]] = []
+    for index, req in enumerate(requirements, start=1):
+        key = (
+            str(req.get("requirement_id") or req.get("evidence_requirement_id") or f"req_{index}"),
+            str(req.get("task_id") or f"task_{index}"),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(req)
+    return out
+
+
+def _specialist_lens(agent_id: str) -> str:
+    return {
+        "fundamental_analyst": "company_reported_fundamentals_and_management_commentary",
+        "industry_supply_chain_analyst": "industry_supply_chain_relationship_hypotheses_and_transmission",
+        "market_valuation_analyst": "timestamped_market_reaction_and_valuation_context",
+        "risk_counterevidence_analyst": "risks_counterevidence_source_gaps_and_boundary_misuse",
+    }.get(agent_id, "bounded_specialist_analysis")
+
+
+def _specialist_memo_slot(agent_id: str) -> str:
+    return {
+        "fundamental_analyst": "fundamentals",
+        "industry_supply_chain_analyst": "industry_relationship",
+        "market_valuation_analyst": "market_valuation",
+        "risk_counterevidence_analyst": "risk_counterevidence",
+    }.get(agent_id, "thesis")
+
+
+def _specialist_required_source_families(agent_id: str) -> list[str]:
+    return {
+        "fundamental_analyst": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+        "industry_supply_chain_analyst": ["industry_snapshot", "relationship_graph"],
+        "market_valuation_analyst": ["market_snapshot"],
+        "risk_counterevidence_analyst": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+            "run_artifact",
+        ],
+    }.get(agent_id, [])
+
+
+def _available_source_families_for_specialist(agent_id: str, state: Mapping[str, Any]) -> list[str]:
+    families: list[str] = []
+    for key in ("runtime_ledger_rows", "context_rows", "market_snapshot_rows", "industry_snapshot_rows"):
+        families.extend(_row_source_family(row) for row in _row_dicts(state.get(key)))
+    if _relationship_rows_from_state(state):
+        families.append("relationship_graph")
+    required = set(_specialist_required_source_families(agent_id))
+    return [family for family in _dedupe(families) if not required or family in required]
+
+
+def _focus_tickers_from_state(state: Mapping[str, Any]) -> list[str]:
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    scope = query_contract.get("scope") if isinstance(query_contract.get("scope"), Mapping) else {}
+    return _unique_upper(
+        state.get("focus_tickers")
+        or query_contract.get("focus_tickers")
+        or scope.get("focus_tickers")
+    )
+
+
+def _search_scope_tickers_from_state(state: Mapping[str, Any], *, focus_tickers: list[str]) -> list[str]:
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    scope = query_contract.get("scope") if isinstance(query_contract.get("scope"), Mapping) else {}
+    return _unique_upper(
+        state.get("search_scope_tickers")
+        or query_contract.get("search_scope_tickers")
+        or scope.get("search_scope_tickers")
+        or scope.get("universe_tickers")
+        or focus_tickers
+    )
 
 
 def active_specialists_for_state(state: Mapping[str, Any]) -> list[str]:

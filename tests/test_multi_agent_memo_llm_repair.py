@@ -129,6 +129,21 @@ def test_memo_writer_llm_flattens_nested_memo_draft_json() -> None:
     assert "memo_draft" not in result["memo_answer"]
 
 
+def test_memo_writer_llm_normalizes_non_contract_status_with_claims() -> None:
+    memo = {**_memo(), "answer_status": "partial"}
+    fake = _FakeChat([json.dumps(memo)])
+
+    result = route_memo_writer_llm(
+        _state(),
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["memo_route_result"]["status"] == "pass"
+    assert result["memo_answer"]["answer_status"] == "draft"
+    assert result["memo_answer"]["memo_writer_diagnostics"]["normalized_answer_status_from"] == "partial"
+
+
 def test_memo_writer_llm_uses_compact_repair_prompt_after_length() -> None:
     fake = _FakeChat(
         [

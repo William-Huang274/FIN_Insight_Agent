@@ -369,11 +369,17 @@
 - [x] Document the multi-agent output-quality root-cause hypotheses and per-case debug plan before further prompt/cap/gate changes.
 - [x] Add a diagnostic-only artifact audit script for saved Step17 full-chain output quality, token efficiency, source gaps, Specialist row budgets, and second-pass behavior.
 - [x] Add claim-card density and memo-outline support diagnostics to the Step17 output-quality audit.
+- [x] Lock the full-chain global audit / mature Fin Agent optimization plan with P1-P8 issues, root-cause clusters, execution gates, and rollback notes.
 - [ ] Split Step17 full-chain eval into safety pass, real-evidence pass, claim-card quality pass, memo-quality pass, and cost-quality diagnostics.
 - [x] Upgrade Specialist outputs from compact observations to execution-mode-aware claim cards.
 - [x] Upgrade Judgment Aggregator to rank verified claim cards into a memo outline before Memo Writer.
 - [x] Upgrade Memo Writer prompt/contract to consume verified claim cards, memo outline, and compact evidence table.
 - [x] Add quality-triggered second-pass retrieval before Memo Writer for source gaps, missing required ticker cards, missing ledger rows, and relationship-pack failures.
+- [x] Add route-level coverage fallback from real tool observations, relationship bounded permission unification, SEC search runtime policy, and BGE auto CUDA audit telemetry.
+- [x] Add Specialist task cards / required claim slots / counterclaim slots to data views and LLM request diagnostics.
+- [x] Upgrade Fundamental, Industry/Supply-Chain, Market-Valuation, and Risk role-specific skills to v0.3 task-card / ClaimCard conventions.
+- [x] Add Memo Writer non-contract answer-status normalization and renderer behavior that preserves verified draft memos with bounded evidence notes.
 - [ ] Debug AI infra, banking, healthcare, and energy/utilities one case at a time with changed-variable, expected improvement, token impact, and rollback notes.
 - [ ] Add numeric runtime-ledger row requirements for Step17 cases that make numeric metric claims, while allowing text-heavy relationship cases to pass on real context rows plus cited relationship evidence.
+- [ ] Introduce a P6 thesis-pack / memo-depth-tier contract to reduce Memo Writer token cost while improving final memo density.
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.

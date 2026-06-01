@@ -1,4 +1,4 @@
-# Industry Supply Chain Analysis Skill v0.2
+# Industry Supply Chain Analysis Skill v0.3
 
 Use this skill only for the Industry / Supply Chain Analyst. Produce bounded observations about industry context, upstream and downstream transmission, customers, suppliers, constraints, and relationship hypotheses.
 
@@ -11,20 +11,24 @@ Use this skill only for the Industry / Supply Chain Analyst. Produce bounded obs
 - `source_boundaries`: allowed source families and row-count boundaries.
 - `execution_mode` and `input_budget`: determine how many bounded rows and observations the case can support.
 - `known_evidence_refs`: the only refs that may appear in supported observations.
+- `assigned_task_card`: the analyst lens, relationship/sector task scope, relevant requirements, tickers, and source boundaries.
+- `required_claim_slots`: the specific industry or relationship ClaimCard slots to fill when bounded evidence supports them.
+- `counterclaim_slots`: the material relationship gap, caveat, or missing confirmation slots to use when support is incomplete.
 
 ## Analysis Steps
 
-1. Build a compact chain map from the bounded rows: upstream input, focal company, downstream customer/end-market, peer/competitor, and constraint/regulatory layer.
-2. If `relationship_summary.relationships` or `relationship_graph` rows are present, use at least one relationship evidence ref in a supported observation, unless the rows are internally unusable.
-3. Classify each relationship as supplier, customer, peer, competitor, sector exposure, infrastructure dependency, or macro/regulatory linkage.
-4. State the transmission mechanism: demand pull, capex cycle, backlog/order flow, input cost, capacity/power constraint, credit/rate channel, regulatory/reimbursement channel, or commodity sensitivity.
-5. Separate context from proof. Industry and relationship evidence can support scope, context, and hypotheses, not reported revenue, margin, cash flow, capex, or balance-sheet values.
-6. Convert the chain map into an investment implication: who benefits, who is pressured, what metric should confirm it, and what evidence is still missing.
+1. Start from `assigned_task_card.relevant_requirements` and fill the relationship or industry `required_claim_slots`; ignore generic sector commentary that does not support a slot.
+2. Build a compact chain map from the bounded rows: upstream input, focal company, downstream customer/end-market, peer/competitor, and constraint/regulatory layer.
+3. If `relationship_summary.relationships` or `relationship_graph` rows are present, use at least one relationship evidence ref in a supported observation, unless the rows are internally unusable.
+4. Classify each relationship as supplier, customer, peer, competitor, sector exposure, infrastructure dependency, or macro/regulatory linkage.
+5. State the transmission mechanism: demand pull, capex cycle, backlog/order flow, input cost, capacity/power constraint, credit/rate channel, regulatory/reimbursement channel, or commodity sensitivity.
+6. Separate context from proof. Industry and relationship evidence can support scope, context, and hypotheses, not reported revenue, margin, cash flow, capex, or balance-sheet values.
+7. Convert the chain map into an investment implication: who benefits, who is pressured, what metric should confirm it, and what evidence is still missing.
 
 ## Required Output Structure
 
 - Return exactly one `SpecialistMemolet`.
-- `observations`: ClaimCard v0.2 objects with `claim_type` set to `relationship_hypothesis`, `scope_hypothesis`, or `industry_context_only` when using relationship or industry rows.
+- `observations`: ClaimCard v0.3 objects with `claim_type` set to `relationship_hypothesis`, `scope_hypothesis`, or `industry_context_only` when using relationship or industry rows.
 - Each observation must include `ticker_scope`, `metric_scope`, `memo_slot`, `materiality`, `direction`, `evidence_refs`, `source_families`, `caveats`, and `missing_confirmations`.
 - Use the prompt budget: focused cases should stay near 1-3 observations; standard memo can use 3-6; deep research can use 4-8 when evidence supports it.
 - Every supported observation must cite `evidence_refs` from `known_evidence_refs` and include `source_families`.

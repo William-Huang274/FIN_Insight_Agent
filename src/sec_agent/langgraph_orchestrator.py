@@ -1544,10 +1544,23 @@ def _node_multi_agent_renderer(
         if verification.get("status") == "fail":
             result = {"rendered_answer": "Bounded answer only: memo verification failed under current evidence constraints."}
         elif bounded:
-            result = {
-                "rendered_answer": "Bounded answer only: "
-                + str(memo.get("direct_answer") or "current evidence constraints block full memo generation.")
-            }
+            if str(memo.get("answer_status") or "") == "draft" and memo.get("memo_claims"):
+                result = {
+                    "rendered_answer": "\n\n".join(
+                        item
+                        for item in (
+                            str(memo.get("direct_answer") or "No deterministic memo text was generated."),
+                            f"Source boundary: {memo.get('source_boundary') or 'verified judgment plan only'}",
+                            "Bounded evidence note: current source gaps constrain confidence, but verifier accepted the thesis-led memo claims.",
+                        )
+                        if item
+                    )
+                }
+            else:
+                result = {
+                    "rendered_answer": "Bounded answer only: "
+                    + str(memo.get("direct_answer") or "current evidence constraints block full memo generation.")
+                }
         else:
             result = {
                 "rendered_answer": "\n\n".join(

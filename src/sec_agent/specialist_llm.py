@@ -79,6 +79,7 @@ def route_specialists_from_env(
                 call_chat_completion=call_chat_completion,
             )
             summary = _route_result_summary(result)
+            summary.update(_request_route_summary(request))
             decision = decision_by_agent.get(agent_id) or {}
             summary["priority"] = decision.get("priority") or ""
             summary["activation_policy"] = decision.get("policy") or ""
@@ -113,6 +114,9 @@ def build_specialist_request_from_state(agent_id: str, state: Mapping[str, Any])
         "agent_id": agent_id,
         "execution_mode": execution_mode,
         "user_query": state.get("user_query") or "",
+        "assigned_task_card": data_view.get("assigned_task_card") or {},
+        "required_claim_slots": data_view.get("required_claim_slots") or [],
+        "counterclaim_slots": data_view.get("counterclaim_slots") or [],
         "bounded_evidence_rows": rows,
         "relationship_summary": relationship_summary,
         "coverage_summary": data_view.get("coverage_summary") or state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {},
@@ -226,13 +230,19 @@ def route_specialist_memolet_llm(
         last_validation = validation
         salvaged_validation = _salvage_supported_claim_ref_errors(validation, known_evidence_refs=evidence_refs)
         if salvaged_validation is not None:
+            capped_memolet = _apply_specialist_output_contract_caps(salvaged_validation["memolet"], request)
+            capped_validation = validate_specialist_memolet(capped_memolet, known_evidence_refs=evidence_refs)
+            capped_validation["warnings"] = [
+                *list(salvaged_validation.get("warnings") or []),
+                *list(capped_validation.get("warnings") or []),
+            ]
             return {
                 "schema_version": ROUTE_SCHEMA_VERSION,
                 "source": ROUTE_SOURCE,
                 "status": "pass",
                 "agent_id": resolved_agent_id,
-                "memolet": salvaged_validation["memolet"],
-                "validation": salvaged_validation,
+                "memolet": capped_validation["memolet"],
+                "validation": capped_validation,
                 "routing_trace": {
                     "attempt_count": len(model_calls),
                     "repair_attempts": attempt_index,
@@ -243,13 +253,15 @@ def route_specialist_memolet_llm(
                 "failure_reason": "",
             }
         if validation["status"] == "pass":
+            capped_memolet = _apply_specialist_output_contract_caps(validation["memolet"], request)
+            capped_validation = validate_specialist_memolet(capped_memolet, known_evidence_refs=evidence_refs)
             return {
                 "schema_version": ROUTE_SCHEMA_VERSION,
                 "source": ROUTE_SOURCE,
                 "status": "pass",
                 "agent_id": resolved_agent_id,
-                "memolet": validation["memolet"],
-                "validation": validation,
+                "memolet": capped_validation["memolet"],
+                "validation": capped_validation,
                 "routing_trace": {
                     "attempt_count": len(model_calls),
                     "repair_attempts": attempt_index,
@@ -296,6 +308,9 @@ def _build_messages(
         "agent_id": agent_id,
         "execution_mode": request.get("execution_mode") or "",
         "user_query": request.get("user_query") or request.get("prompt") or "",
+        "assigned_task_card": request.get("assigned_task_card") or {},
+        "required_claim_slots": request.get("required_claim_slots") or [],
+        "counterclaim_slots": request.get("counterclaim_slots") or [],
         "bounded_evidence_rows": request.get("bounded_evidence_rows") or request.get("evidence_rows") or [],
         "relationship_summary": request.get("relationship_summary") or {},
         "coverage_summary": request.get("coverage_summary") or {},
@@ -312,9 +327,11 @@ def _build_messages(
     user = (
         "Write one SpecialistMemolet JSON object from the bounded evidence only. "
         "Do not add facts from memory. Supported observations require evidence_refs. "
+        "Use assigned_task_card as your only task brief; use required_claim_slots and counterclaim_slots to decide what to write. "
         "Treat each observation as a ClaimCard v0.3: include ticker_scope, metric_scope, memo_slot, materiality, direction, evidence_refs, source_families, caveats, and missing_confirmations. "
         "Prefer memo-ready investment implications over row summaries; downstream will rank ClaimCards by evidence support, role fit, and memo readiness. "
         "Each observation must state the role-specific investment implication, not just restate the row. "
+        "Each supported observation should satisfy one required_claim_slot; if a slot is unsupported, add one material missing_confirmation or top unsupported_claim instead of a generic gap list. "
         "If relationship_summary is present, treat it as bounded hypothesis context only and cite its evidence_refs. "
         "If the bounded rows do not support your role-specific lens, put the gap in unsupported_claims. "
         "Do not copy raw tables, long snippets, or row-by-row evidence summaries into the output. "
@@ -465,6 +482,9 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
         "agent_id": payload.get("agent_id") or "",
         "execution_mode": payload.get("execution_mode") or "",
         "user_query": payload.get("user_query") or "",
+        "assigned_task_card": payload.get("assigned_task_card") or {},
+        "required_claim_slots": [dict(item) for item in payload.get("required_claim_slots") or [] if isinstance(item, Mapping)][:4],
+        "counterclaim_slots": [dict(item) for item in payload.get("counterclaim_slots") or [] if isinstance(item, Mapping)][:3],
         "bounded_evidence_rows": rows[:8],
         "relationship_summary": compact_relationship_summary,
         "coverage_summary": payload.get("coverage_summary") or {},
@@ -704,6 +724,18 @@ def _route_result_summary(result: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
+    task_card = request.get("assigned_task_card") if isinstance(request.get("assigned_task_card"), Mapping) else {}
+    return {
+        "task_card_schema_version": str(task_card.get("schema_version") or ""),
+        "assigned_memo_slot": str(task_card.get("assigned_memo_slot") or ""),
+        "task_relevant_requirement_count": int(task_card.get("relevant_requirement_count") or 0),
+        "required_claim_slot_count": len(request.get("required_claim_slots") or []),
+        "counterclaim_slot_count": len(request.get("counterclaim_slots") or []),
+        "available_source_families": _string_list(task_card.get("available_source_families"))[:8],
+    }
+
+
 def _skipped_route_result_summary(decision: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "agent_id": decision.get("agent_id") or "",
@@ -719,6 +751,12 @@ def _skipped_route_result_summary(decision: Mapping[str, Any]) -> dict[str, Any]
         "finish_reasons": [],
         "priority": decision.get("priority") or "",
         "activation_policy": decision.get("policy") or "",
+        "task_card_schema_version": "",
+        "assigned_memo_slot": "",
+        "task_relevant_requirement_count": 0,
+        "required_claim_slot_count": 0,
+        "counterclaim_slot_count": 0,
+        "available_source_families": [],
     }
 
 
@@ -818,17 +856,57 @@ def _specialist_output_contract(agent_id: str, execution_mode: str) -> dict[str,
         return {
             "policy": "fundamental_compact_claim_cards_v0_3",
             "supported_observation_target": "2-4",
-            "unsupported_claim_cap": 3,
-            "conflict_cap": 3,
+            "unsupported_claim_cap": 1,
+            "conflict_cap": 2,
             "memo_ready_requirement": "prioritize investment implications over row summaries",
         }
     return {
         "policy": "role_specific_claim_cards_v0_3",
         "supported_observation_target": "3-5" if mode == "deep_research" else "0-3" if mode not in {"standard_memo"} else "3-6",
-        "unsupported_claim_cap": 3,
-        "conflict_cap": 3,
+        "unsupported_claim_cap": 1,
+        "conflict_cap": 2,
         "memo_ready_requirement": "write only material observations that can support a memo section",
     }
+
+
+def _apply_specialist_output_contract_caps(
+    memolet: Mapping[str, Any],
+    request: Mapping[str, Any],
+) -> dict[str, Any]:
+    capped = dict(memolet or {})
+    contract = request.get("output_contract") if isinstance(request.get("output_contract"), Mapping) else {}
+    unsupported_cap = max(0, _int_env(str(contract.get("unsupported_claim_cap") or ""), default=3))
+    conflict_cap = max(0, _int_env(str(contract.get("conflict_cap") or ""), default=3))
+    observations = [dict(item) for item in capped.get("observations") or [] if isinstance(item, Mapping)]
+    supported_observations = [item for item in observations if not bool(item.get("unsupported"))]
+    unsupported_from_observations = [
+        {
+            "claim": _truncate(str(item.get("claim") or "Unsupported specialist observation."), 240),
+            "reason": "marked_unsupported_observation_moved_to_unsupported_claims",
+            "evidence_refs": _string_list(item.get("evidence_refs")),
+        }
+        for item in observations
+        if bool(item.get("unsupported"))
+    ]
+    unsupported = [
+        *[dict(item) for item in capped.get("unsupported_claims") or [] if isinstance(item, Mapping)],
+        *unsupported_from_observations,
+    ]
+    conflicts = [dict(item) for item in capped.get("conflicts") or [] if isinstance(item, Mapping)]
+    overflow = {
+        "unsupported_claim_overflow_count": max(0, len(unsupported) - unsupported_cap),
+        "conflict_overflow_count": max(0, len(conflicts) - conflict_cap),
+        "unsupported_observation_moved_count": len(unsupported_from_observations),
+    }
+    capped["observations"] = supported_observations
+    capped["unsupported_claims"] = unsupported[:unsupported_cap]
+    capped["conflicts"] = conflicts[:conflict_cap]
+    if any(overflow.values()):
+        metadata = dict(capped.get("metadata") or {})
+        metadata["output_contract_cap_policy"] = "cap_specialist_gap_payload_preserve_overflow_counts_v0_1"
+        metadata["output_contract_overflow"] = overflow
+        capped["metadata"] = metadata
+    return capped
 
 
 def _specialist_summary_chars_for_row(agent_id: str, row: Mapping[str, Any], *, execution_mode: str = "") -> int:

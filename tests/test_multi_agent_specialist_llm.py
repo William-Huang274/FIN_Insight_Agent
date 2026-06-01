@@ -66,7 +66,7 @@ def test_specialist_llm_supports_industry_supply_chain_skill() -> None:
     assert result["status"] == "pass"
     assert result["memolet"]["agent_id"] == "industry_supply_chain_analyst"
     assert "Industry Supply Chain Analysis Skill" in fake.calls[0]["messages"][0]["content"]
-    assert "Skill v0.2" in fake.calls[0]["messages"][0]["content"]
+    assert "Skill v0.3" in fake.calls[0]["messages"][0]["content"]
 
 
 def test_specialist_llm_passes_relationship_summary_as_bounded_prompt_input() -> None:
@@ -335,6 +335,9 @@ def test_specialist_env_router_runs_active_specialists_with_bounded_state() -> N
     assert [row["agent_id"] for row in result["specialist_outputs"]] == ["fundamental_analyst", "market_valuation_analyst"]
     assert all(row["status"] == "pass" for row in result["specialist_outputs"])
     assert len(result["specialist_route_results"]) == 2
+    assert result["specialist_route_results"][0]["task_card_schema_version"] == "sec_agent_specialist_task_card_v0.1"
+    assert result["specialist_route_results"][0]["assigned_memo_slot"] == "fundamentals"
+    assert result["specialist_route_results"][0]["required_claim_slot_count"] >= 1
     assert "raw_response" not in json.dumps(result)
 
 
@@ -618,6 +621,147 @@ def test_build_specialist_request_includes_output_contract_caps() -> None:
     assert request["output_contract"]["policy"] == "risk_compact_schema_v0_3"
     assert request["input_budget"]["unsupported_claim_cap"] == 2
     assert request["input_budget"]["conflict_cap"] == 2
+
+
+def test_build_specialist_request_from_state_includes_task_card_and_claim_slots() -> None:
+    request = build_specialist_request_from_state(
+        "fundamental_analyst",
+        {
+            "user_query": "Compare NVDA fundamentals.",
+            "query_contract": {
+                "focus_tickers": ["NVDA"],
+                "search_scope_tickers": ["NVDA", "AMD"],
+            },
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "agent_priorities": {"fundamental_analyst": "primary"},
+            },
+            "evidence_requirement_plan": {
+                "requirements": [
+                    {
+                        "requirement_id": "req_revenue",
+                        "task_id": "fundamental_revenue",
+                        "question_zh": "Need reported revenue and margin.",
+                        "priority": "primary",
+                        "tickers": ["NVDA"],
+                        "source_families": ["primary_sec_filing"],
+                        "evidence_routes": ["ledger_first", "filing_text"],
+                        "metric_families": ["revenue", "gross_margin"],
+                    }
+                ]
+            },
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": "ledger_ref_1",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "revenue",
+                    "summary": "NVDA revenue evidence.",
+                }
+            ],
+        },
+    )
+
+    task_card = request["assigned_task_card"]
+    assert task_card["schema_version"] == "sec_agent_specialist_task_card_v0.1"
+    assert task_card["assigned_memo_slot"] == "fundamentals"
+    assert task_card["relevant_requirements"][0]["requirement_id"] == "req_revenue"
+    assert request["required_claim_slots"][0]["slot_id"] == "fundamentals_reported_fact"
+    assert request["counterclaim_slots"][0]["slot_kind"] == "counterclaim_or_gap"
+
+
+def test_industry_task_card_requires_relationship_claim_slot_when_relationship_rows_exist() -> None:
+    request = build_specialist_request_from_state(
+        "industry_supply_chain_analyst",
+        {
+            "agent_activation_plan": {"execution_mode": "deep_research"},
+            "evidence_requirement_plan": {
+                "requirements": [
+                    {
+                        "requirement_id": "req_relationship",
+                        "task_id": "relationship_scope",
+                        "question_zh": "Need relationship graph context.",
+                        "source_families": ["relationship_graph"],
+                        "evidence_routes": ["relationship_graph"],
+                    }
+                ]
+            },
+            "universe_relationship_plan": {
+                "relationships": [
+                    {
+                        "ticker": "NVDA",
+                        "related_ticker": "MSFT",
+                        "relationship_type": "customer",
+                        "evidence_refs": ["rel_ref_1"],
+                        "notes": "MSFT cloud capex readthrough hypothesis.",
+                    }
+                ]
+            },
+        },
+    )
+
+    slot_ids = {slot["slot_id"] for slot in request["required_claim_slots"]}
+    assert "relationship_graph_hypothesis" in slot_ids
+    assert request["assigned_task_card"]["relevant_requirements"][0]["source_families"] == ["relationship_graph"]
+
+
+def test_specialist_prompt_passes_task_card_and_slots() -> None:
+    fake = _FakeChat([json.dumps(_memolet("fundamental_analyst"))])
+    request = _request()
+    request["assigned_task_card"] = {"agent_id": "fundamental_analyst", "assigned_memo_slot": "fundamentals"}
+    request["required_claim_slots"] = [{"slot_id": "fundamentals_reported_fact", "memo_slot": "fundamentals"}]
+    request["counterclaim_slots"] = [{"slot_id": "fundamentals_material_gap", "slot_kind": "counterclaim_or_gap"}]
+
+    result = route_specialist_memolet_llm(
+        "fundamental_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    user_prompt = fake.calls[0]["messages"][1]["content"]
+    assert result["status"] == "pass"
+    assert "assigned_task_card" in user_prompt
+    assert "required_claim_slots" in user_prompt
+    assert "fundamentals_reported_fact" in user_prompt
+    assert "Each supported observation should satisfy one required_claim_slot" in user_prompt
+
+
+def test_specialist_output_contract_caps_gap_payload_before_aggregation() -> None:
+    memolet = _memolet("fundamental_analyst")
+    memolet["observations"].append(
+        {
+            "claim": "Unsupported observation should move out of supported observations.",
+            "unsupported": True,
+            "evidence_refs": [],
+            "source_families": ["primary_sec_filing"],
+        }
+    )
+    memolet["unsupported_claims"] = [
+        {"claim": f"Unsupported gap {index}", "reason": "not in bounded evidence"}
+        for index in range(1, 4)
+    ]
+    fake = _FakeChat([json.dumps(memolet)])
+    request = _request()
+    request["execution_mode"] = "deep_research"
+    request["output_contract"] = {
+        "policy": "fundamental_compact_claim_cards_v0_3",
+        "supported_observation_target": "2-4",
+        "unsupported_claim_cap": 1,
+        "conflict_cap": 2,
+    }
+
+    result = route_specialist_memolet_llm(
+        "fundamental_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert len(result["memolet"]["observations"]) == 1
+    assert len(result["memolet"]["unsupported_claims"]) == 1
+    assert result["memolet"]["metadata"]["output_contract_overflow"]["unsupported_claim_overflow_count"] == 3
 
 
 class _FakeChat:

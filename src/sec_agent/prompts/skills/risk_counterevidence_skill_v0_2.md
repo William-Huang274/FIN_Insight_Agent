@@ -1,4 +1,4 @@
-# Risk Counterevidence Skill v0.2
+# Risk Counterevidence Skill v0.3
 
 Use this skill only for the Risk / Counterevidence Analyst. Identify risks, source gaps, conflicts, unsupported claims, and boundary violations from bounded evidence.
 
@@ -10,19 +10,23 @@ Use this skill only for the Risk / Counterevidence Analyst. Identify risks, sour
 - `source_boundaries`: allowed source families and row-count boundaries.
 - `execution_mode` and `input_budget`: determine how many bounded rows and observations the case can support.
 - `known_evidence_refs`: the only refs that may appear in supported observations or conflicts.
+- `assigned_task_card`: the stress-test lens, relevant evidence requirements, tickers, and source boundaries.
+- `required_claim_slots`: the direct risk or counterevidence slots to fill when bounded evidence supports them.
+- `counterclaim_slots`: the unsupported thesis component and direct-conflict slots to use when support is missing or contradictory.
 
 ## Analysis Steps
 
-1. Extract the thesis implied by the user query and prior bounded rows.
-2. Identify direct counterevidence: risk factors, adverse trends, weak metrics, missing periods, source gaps, or contradictory management commentary.
-3. Identify boundary misuse: market, industry, or relationship rows being used as if they prove company-reported facts.
-4. Separate three outputs: supported risk observations, unsupported thesis components, and direct conflicts.
-5. Convert each risk into an investment implication: downside driver, evidence weakness, confirmation needed, or memo constraint.
+1. Start from `assigned_task_card.relevant_requirements` and the `required_claim_slots`; stress-test the strongest actual thesis components, not every possible missing metric.
+2. Extract the thesis implied by the user query and prior bounded rows.
+3. Identify direct counterevidence: risk factors, adverse trends, weak metrics, missing periods, source gaps, or contradictory management commentary.
+4. Identify boundary misuse: market, industry, or relationship rows being used as if they prove company-reported facts.
+5. Separate three outputs: supported risk observations, unsupported thesis components, and direct conflicts.
+6. Convert each risk into an investment implication: downside driver, evidence weakness, confirmation needed, or memo constraint.
 
 ## Required Output Structure
 
 - Return exactly one `SpecialistMemolet`.
-- `observations`: ClaimCard v0.2 supported risks with `claim_type` set to `risk_or_counterevidence`, `source_gap`, or `business_observation`.
+- `observations`: ClaimCard v0.3 supported risks with `claim_type` set to `risk_or_counterevidence`, `source_gap`, or `business_observation`.
 - Each observation must include `ticker_scope`, `metric_scope`, `memo_slot`, `materiality`, `direction`, `evidence_refs`, `source_families`, `caveats`, and `missing_confirmations`.
 - Use the prompt budget: focused cases should stay near 0-2 observations; standard memo and deep research should use 2-3 supported risk ClaimCards when evidence supports them.
 - `unsupported_claims`: required for named thesis components not supported by bounded refs, but include only the top 2 material gaps.

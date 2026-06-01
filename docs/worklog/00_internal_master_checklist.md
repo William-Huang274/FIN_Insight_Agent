@@ -395,6 +395,7 @@
 - [x] Upgrade S2 relationship edge schema to v0.3 and preserve all bounded lookup relationships as `sector_inferred` / `no_confirmed_direct_edge` rows.
 - [x] Rerun S3 from the accepted S2 relationship-inference artifact and keep real retrieval / rerank / ledger gates green.
 - [x] Add and run S4 Coverage / Reflection gate with bounded second-pass request compilation, stop-after-node routing, stale-requirement override, source-gap boundary, and no-incremental-evidence loop break.
-- [ ] Proceed through S5-S9 by reusing passed upstream artifacts before the next full-chain run.
+- [x] Add and run S5 Specialist layer gate by reusing passed S1-S4 artifacts, with route success separated from real-evidence quality.
+- [ ] Proceed through S6-S9 by reusing passed upstream artifacts before the next full-chain run.
 - [ ] Reduce Memo Writer retry/length cost after P7.4 showed high tokens per rendered memo claim and low memo chars per token.
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.

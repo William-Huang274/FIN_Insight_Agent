@@ -1677,6 +1677,8 @@ def _source_missing_is_fatal(case: dict[str, Any], resolver_output: dict[str, An
     }
     if source_policy == "SEC_PRIMARY_MIXED_RECENT" or "10-Q" in filing_types:
         return False
+    if source_policy == "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS" or "8-K" in filing_types:
+        return False
     return False if (case.get("source_coverage_gaps") or contract.get("source_coverage_gaps")) else True
 
 

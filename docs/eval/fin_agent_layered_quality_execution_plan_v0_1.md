@@ -230,11 +230,13 @@ python scripts\audit_fin_agent_layer_quality.py `
 | Run ID | Gate | Cases | Key metrics |
 | --- | --- | --- | --- |
 | `20260601_fin_agent_s4_coverage_reflection_gate_after_s3_v0_1` | pass | `4/4` | second-pass allowed `3`，ran `3`，added rows `0`，missing requirements `3`，audit score `2.844` |
+| `20260601_fin_agent_s4_after_8k_second_pass_routefix_v0_1` | pass | `4/4` | missing requirements `0`，second-pass allowed `0`，S3 rows available `4/4`，说明 8-K 缺口已由 S3 routefix 上游解决 |
 
 解释：
 
 - S4 已能识别无缺口 case、searchable gap 和二次检索无增益 case。
 - 这轮三个 second-pass 都是 `8k_commentary:no_rows`，并以 `no_incremental_evidence` bounded 中止；这说明 loop control 有效，但还没证明 second pass 能提升 evidence quality。
+- 后续 routefix 运行显示该 8-K 缺口不是 S4 必须 retry 的真实缺口，而是 S3 route/source-scope 编译问题；`20260601_fin_agent_s4_after_8k_second_pass_routefix_v0_1` 已作为当前 S4 artifact。
 
 失败处理：
 
@@ -266,6 +268,12 @@ python scripts\audit_fin_agent_layer_quality.py `
 
 - 复用 S3/S4 rows。
 - 针对失败 agent 单独重跑，不重跑 Research Lead / retrieval。
+
+当前接受结果：
+
+| Run ID | Gate | Cases | Key metrics |
+| --- | --- | --- | --- |
+| `20260601_fin_agent_s5_specialist_layer_gate_after_s4_v0_1` | pass | `2/2` | specialist routes `7`，real-evidence quality `2/2`，repair `0`，tokens `65,251`，AI capex Industry Specialist cited relationship refs `14` |
 
 ## 8. 阶段 S6：Judgment Aggregator
 
@@ -415,7 +423,7 @@ python scripts\audit_fin_agent_layer_quality.py `
 3. [x] S2：把 Universe / Relationship 输出升级为 `EconomicLinkMap` / relationship mechanism frame。
 4. [x] S3：修 exact-value ledger alias/relaxed fallback，并验证 real SEC retrieval、BM25/ObjectBM25/BGE rerank、market/industry/relationship rows。
 5. [x] S4：Coverage / Reflection second-pass gate。
-6. [ ] S5：把 Specialist v0.3 升级到 v0.4 ClaimCard，强化 `so_what` 和 `investment_use`。
+6. [x] S5：新增 artifact-reuse Specialist layer gate，复用 S1-S4 outputs，真实 DeepSeek 跑过 `2/2` specialist cases、`7` specialist routes、real-evidence quality `2/2`、`0` repair。
 7. [ ] S6：把 Aggregator 从 `memo_thesis_pack` 升级为 `InvestmentThesisPlan`。
 8. [ ] S7：Memo Writer 改为 thesis-plan-driven natural-language writer，减少 retry 和 evidence-summary 风格。
 9. [ ] S10：扩展 full-chain + multi-turn eval，再考虑 LLM judge。

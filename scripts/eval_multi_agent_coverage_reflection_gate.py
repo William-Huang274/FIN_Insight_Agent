@@ -190,10 +190,10 @@ def _inject_s3_artifacts(state: dict[str, Any], evidence_artifact_root: Path, ca
         "tool_observations": [dict(row) for row in result.get("tool_observations") or [] if isinstance(row, Mapping)],
         "tool_call_ledger": dict(result.get("tool_call_ledger") or state.get("tool_call_ledger") or {}),
         "source_gaps": [dict(row) for row in result.get("source_gaps") or [] if isinstance(row, Mapping)],
-        "context_rows": [dict(row) for row in result.get("context_row_sample") or [] if isinstance(row, Mapping)],
-        "runtime_ledger_rows": [dict(row) for row in result.get("runtime_ledger_row_sample") or [] if isinstance(row, Mapping)],
-        "market_snapshot_rows": [dict(row) for row in result.get("market_row_sample") or [] if isinstance(row, Mapping)],
-        "industry_snapshot_rows": [dict(row) for row in result.get("industry_row_sample") or [] if isinstance(row, Mapping)],
+        "context_rows": [dict(row) for row in (result.get("context_rows") or result.get("context_row_sample") or []) if isinstance(row, Mapping)],
+        "runtime_ledger_rows": [dict(row) for row in (result.get("runtime_ledger_rows") or result.get("runtime_ledger_row_sample") or []) if isinstance(row, Mapping)],
+        "market_snapshot_rows": [dict(row) for row in (result.get("market_rows") or result.get("market_row_sample") or []) if isinstance(row, Mapping)],
+        "industry_snapshot_rows": [dict(row) for row in (result.get("industry_rows") or result.get("industry_row_sample") or []) if isinstance(row, Mapping)],
     }
 
 

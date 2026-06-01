@@ -489,6 +489,11 @@ def _result_summary(result: Mapping[str, Any]) -> dict[str, Any]:
             "market_snapshot_rows": len(result.get("market_snapshot_rows") or []),
             "industry_snapshot_rows": len(result.get("industry_snapshot_rows") or []),
         },
+        "source_gaps": [_sanitize_gap(gap) for gap in result.get("source_gaps") or [] if isinstance(gap, Mapping)][:24],
+        "context_rows": [_row_sample(row) for row in result.get("context_rows") or [] if isinstance(row, Mapping)][:240],
+        "runtime_ledger_rows": [_row_sample(row) for row in result.get("runtime_ledger_rows") or [] if isinstance(row, Mapping)][:240],
+        "market_rows": [_row_sample(row) for row in result.get("market_snapshot_rows") or [] if isinstance(row, Mapping)][:80],
+        "industry_rows": [_row_sample(row) for row in result.get("industry_snapshot_rows") or [] if isinstance(row, Mapping)][:80],
         "context_row_sample": [_row_sample(row) for row in result.get("context_rows") or [] if isinstance(row, Mapping)][:5],
         "runtime_ledger_row_sample": [_row_sample(row) for row in result.get("runtime_ledger_rows") or [] if isinstance(row, Mapping)][:5],
         "market_row_sample": [_row_sample(row) for row in result.get("market_snapshot_rows") or [] if isinstance(row, Mapping)][:5],
@@ -589,9 +594,26 @@ def _row_sample(row: Mapping[str, Any]) -> dict[str, Any]:
         "as_of_date",
         "series_id",
         "summary",
+        "preview",
+        "text",
+        "snippet",
+        "description",
         "text_preview",
+        "display_value",
+        "display_value_zh",
+        "source_text",
+        "period_role",
     )
-    return {key: row.get(key) for key in allowed if key in row and row.get(key) not in (None, "")}
+    out = {key: row.get(key) for key in allowed if key in row and row.get(key) not in (None, "")}
+    for key in ("summary", "preview", "text", "snippet", "description", "text_preview", "source_text"):
+        if key in out:
+            out[key] = _truncate(str(out[key]), 1200)
+    return out
+
+
+def _truncate(text: str, max_chars: int) -> str:
+    clean = str(text or "")
+    return clean if len(clean) <= max_chars else clean[: max(0, max_chars - 1)] + "…"
 
 
 def _sanitize_gap(gap: Mapping[str, Any]) -> dict[str, Any]:

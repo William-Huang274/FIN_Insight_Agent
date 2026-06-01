@@ -421,7 +421,7 @@ def _compile_available_sec_requirements(
     explicit_route = str(args.get("retrieval_route") or "").strip()
     requested_forms = [_normalize_form_type(item) for item in contract.get("filing_types") or [] if _normalize_form_type(item)]
     requested_tiers = [str(item) for item in contract.get("source_tiers") or [] if str(item)]
-    if explicit_route or len(set(requested_forms)) <= 1:
+    if len(set(requested_forms)) <= 1 and not explicit_route:
         return None
     manifest_rows = _read_manifest_rows(args.get("manifest_path"))
     if not manifest_rows:
@@ -448,7 +448,7 @@ def _compile_available_sec_requirements(
             continue
         if requested_tier_set and tier not in requested_tier_set:
             continue
-        route = _default_route_for_form(form)
+        route = explicit_route or _default_route_for_form(form)
         if not route:
             continue
         available_groups.setdefault((year, form, tier, route), set()).add(ticker)

@@ -158,6 +158,8 @@ def route_universe_relationship_llm(
             focus_tickers=focus,
             relationship_scope_rationale=str(activation.get("relationship_scope_rationale") or ""),
         )
+        if route_config.require_economic_link_map:
+            completed = _complete_economic_link_map_from_lookup(completed, lookup=lookup, focus_tickers=focus)
         validation = validate_universe_relationship_plan(completed, known_evidence_refs=known_refs, source_inventory=source_inventory)
         last_validation = validation
         if validation["status"] == "pass":
@@ -198,8 +200,11 @@ def route_universe_relationship_llm(
         focus_tickers=focus,
         relationship_scope_rationale=str(activation.get("relationship_scope_rationale") or ""),
     )
+    fallback_plan = normalize_universe_relationship_plan(fallback)
+    if route_config.require_economic_link_map:
+        fallback_plan = _complete_economic_link_map_from_lookup(fallback_plan, lookup=lookup, focus_tickers=focus)
     fallback_validation = validate_universe_relationship_plan(
-        normalize_universe_relationship_plan(fallback),
+        fallback_plan,
         known_evidence_refs=known_refs,
         source_inventory=source_inventory,
     )
@@ -421,10 +426,23 @@ def _complete_plan_from_lookup(
         seen.add(key)
         added += 1
 
+    relationship_tickers = set(
+        _unique_upper(
+            [
+                *focus_tickers,
+                *(lookup.get("included_tickers") or []),
+                *[
+                    ticker
+                    for relationship in completed
+                    for ticker in (relationship.get("ticker"), relationship.get("related_ticker"))
+                    if ticker
+                ],
+            ]
+        )
+    )
     included = _unique_upper(
         [
             *focus_tickers,
-            *(raw.get("included_tickers") or []),
             *(lookup.get("included_tickers") or []),
             *[
                 ticker
@@ -432,13 +450,14 @@ def _complete_plan_from_lookup(
                 for ticker in (relationship.get("ticker"), relationship.get("related_ticker"))
                 if ticker
             ],
+            *[ticker for ticker in _string_list(raw.get("included_tickers")) if str(ticker).upper().strip() in relationship_tickers],
         ]
     )
     expanded = _unique_upper(
         [
-            *(raw.get("expanded_tickers") or []),
             *(lookup.get("expanded_tickers") or []),
             *[ticker for ticker in included if ticker not in set(_unique_upper(focus_tickers))],
+            *[ticker for ticker in _string_list(raw.get("expanded_tickers")) if str(ticker).upper().strip() in relationship_tickers],
         ]
     )
     budget = dict(raw.get("budget") or {}) if isinstance(raw.get("budget"), Mapping) else {}
@@ -471,6 +490,332 @@ def _complete_plan_from_lookup(
         }
     )
     return raw
+
+
+def _complete_economic_link_map_from_lookup(
+    parsed: Mapping[str, Any],
+    *,
+    lookup: Mapping[str, Any],
+    focus_tickers: list[str],
+) -> dict[str, Any]:
+    """Fill mechanical economic-map requirements from bounded lookup rows.
+
+    The model should spend tokens on economic interpretation, not remembering
+    source-boundary boilerplate. This completion keeps model-authored map rows
+    when present and supplies missing sections from lookup evidence.
+    """
+    raw = dict(parsed or {})
+    relationships = [dict(item) for item in raw.get("relationships") or lookup.get("relationships") or [] if isinstance(item, Mapping)]
+    existing = raw.get("economic_link_map") if isinstance(raw.get("economic_link_map"), Mapping) else {}
+    completed = dict(existing or {})
+    completed["schema_version"] = "sec_agent_economic_link_map_v0.1"
+    completed["map_scope"] = "relationship_hypothesis"
+    completed["source_boundary"] = "relationship_graph_hypothesis_only"
+    completed["focus_tickers"] = _unique_upper(completed.get("focus_tickers") or focus_tickers or lookup.get("focus_tickers"))
+
+    top_relationships = _priority_economic_relationships(relationships, focus_tickers=completed["focus_tickers"])
+    allowed_tickers = set(
+        _unique_upper(
+            [
+                *completed["focus_tickers"],
+                *(lookup.get("included_tickers") or []),
+                *[ticker for row in top_relationships for ticker in (row.get("ticker"), row.get("related_ticker")) if ticker],
+            ]
+        )
+    )
+    existing_entities = [
+        dict(row)
+        for row in completed.get("entities") or []
+        if isinstance(row, Mapping) and _economic_entity_allowed(row, allowed_tickers)
+    ]
+    if not existing_entities:
+        completed["entities"] = _economic_entities_from_relationships(top_relationships, focus_tickers=completed["focus_tickers"])
+    else:
+        completed["entities"] = [_complete_economic_entity_defaults(row, top_relationships) for row in existing_entities]
+    existing_links = [
+        dict(row)
+        for row in completed.get("links") or []
+        if isinstance(row, Mapping) and _economic_link_allowed(row, allowed_tickers)
+    ]
+    if not existing_links:
+        completed["links"] = _economic_links_from_relationships(top_relationships)
+    else:
+        completed["links"] = [_complete_economic_link_defaults(row, top_relationships) for row in existing_links]
+    if not completed.get("mechanisms"):
+        completed["mechanisms"] = _economic_mechanisms_from_relationships(top_relationships, focus_tickers=completed["focus_tickers"])
+    else:
+        completed["mechanisms"] = [
+            _complete_economic_mechanism_defaults(row, top_relationships, allowed_tickers=allowed_tickers)
+            for row in completed.get("mechanisms") or []
+            if isinstance(row, Mapping)
+        ]
+    if not completed.get("investment_implications"):
+        completed["investment_implications"] = _investment_implications_from_relationships(top_relationships, focus_tickers=completed["focus_tickers"])
+    else:
+        completed["investment_implications"] = [
+            _complete_investment_implication_defaults(row, top_relationships, allowed_tickers=allowed_tickers)
+            for row in completed.get("investment_implications") or []
+            if isinstance(row, Mapping)
+        ]
+    completed["boundary_notes"] = [
+        *[dict(item) for item in completed.get("boundary_notes") or [] if isinstance(item, Mapping)],
+        {
+            "type": "source_boundary",
+            "severity": "required",
+            "note": "Relationship rows are bounded sector/category inferences unless separately confirmed by direct customer/supplier, contract, order, or revenue exposure evidence.",
+            "evidence_refs": _economic_refs(top_relationships)[:6],
+        },
+    ]
+    metadata = dict(completed.get("metadata") or {}) if isinstance(completed.get("metadata"), Mapping) else {}
+    metadata.update(
+        {
+            "completion_policy": "deterministic_economic_link_map_completion_v0_1",
+            "relationship_count": len(relationships),
+            "completed_from_lookup_relationship_count": len(top_relationships),
+        }
+    )
+    completed["metadata"] = metadata
+    raw["economic_link_map"] = completed
+    return raw
+
+
+def _economic_entity_allowed(entity: Mapping[str, Any], allowed_tickers: set[str]) -> bool:
+    ticker = str(entity.get("ticker") or "").upper().strip()
+    return bool(ticker and (not allowed_tickers or ticker in allowed_tickers))
+
+
+def _economic_link_allowed(link: Mapping[str, Any], allowed_tickers: set[str]) -> bool:
+    source = str(link.get("source") or "").strip()
+    target = str(link.get("target") or "").strip()
+    if not source or not target:
+        return False
+    return _economic_endpoint_allowed(source, allowed_tickers) and _economic_endpoint_allowed(target, allowed_tickers)
+
+
+def _economic_endpoint_allowed(value: Any, allowed_tickers: set[str]) -> bool:
+    text = str(value or "").upper().strip()
+    if not text:
+        return False
+    if text in allowed_tickers:
+        return True
+    return not _looks_like_ticker_token(text)
+
+
+def _looks_like_ticker_token(value: Any) -> bool:
+    text = str(value or "").upper().strip()
+    return bool(re.fullmatch(r"[A-Z][A-Z0-9]{0,5}(?:[.-][A-Z])?", text))
+
+
+def _priority_economic_relationships(relationships: list[dict[str, Any]], *, focus_tickers: list[str]) -> list[dict[str, Any]]:
+    focus = set(_unique_upper(focus_tickers))
+
+    def key(row: Mapping[str, Any]) -> tuple[int, int, str]:
+        ticker = str(row.get("ticker") or "").upper().strip()
+        related = str(row.get("related_ticker") or "").upper().strip()
+        has_focus = int(ticker in focus or related in focus)
+        has_refs = int(bool(_string_list(row.get("evidence_refs") or row.get("refs"))))
+        return (-has_focus, -has_refs, f"{ticker}:{related}")
+
+    return sorted([dict(row) for row in relationships if isinstance(row, Mapping)], key=key)[:6]
+
+
+def _economic_entities_from_relationships(relationships: list[dict[str, Any]], *, focus_tickers: list[str]) -> list[dict[str, Any]]:
+    refs_by_ticker: dict[str, list[str]] = {}
+    for row in relationships:
+        refs = _string_list(row.get("evidence_refs") or row.get("refs"))
+        for ticker in (row.get("ticker"), row.get("related_ticker")):
+            ticker_text = str(ticker or "").upper().strip()
+            if ticker_text:
+                refs_by_ticker.setdefault(ticker_text, []).extend(refs)
+    focus = set(_unique_upper(focus_tickers))
+    entities = []
+    for ticker, refs in refs_by_ticker.items():
+        entities.append(
+            {
+                "ticker": ticker,
+                "role": "focus_company" if ticker in focus else "relationship_scope_entity",
+                "evidence_refs": _dedupe(refs)[:4],
+                "confidence": "medium",
+                "materiality": "medium" if ticker not in focus else "high",
+                "missing_confirmations": [
+                    "direct customer/supplier filing confirmation",
+                    "contract/order/revenue exposure evidence",
+                ],
+            }
+        )
+        if len(entities) >= 8:
+            break
+    return entities
+
+
+def _economic_links_from_relationships(relationships: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    links = []
+    for row in relationships[:6]:
+        ticker = str(row.get("ticker") or "").upper().strip()
+        related = str(row.get("related_ticker") or "").upper().strip()
+        if not ticker or not related:
+            continue
+        link_type = _economic_link_type_from_relationship(row)
+        refs = _string_list(row.get("evidence_refs") or row.get("refs"))[:4]
+        metrics = _string_list(row.get("metrics_to_check") or row.get("metric_links"))[:5]
+        mechanism = str(row.get("financial_link_type") or row.get("direction") or row.get("relationship_type") or "sector relationship hypothesis")
+        links.append(
+            {
+                "source": ticker,
+                "target": related,
+                "link_type": link_type,
+                "mechanism": f"{ticker} to {related}: {mechanism}",
+                "direction": "mixed" if link_type in {"peer", "substitution"} else "positive",
+                "materiality": "medium",
+                "confidence": str(row.get("confidence") or "medium"),
+                "metric_implications": metrics or ["revenue", "margin"],
+                "evidence_refs": refs,
+                "claim_scope": "economic_mechanism_hypothesis_only",
+                "missing_confirmations": _string_list(row.get("missing_confirmations"))
+                or ["direct customer/supplier filing confirmation", "contract/order/revenue exposure evidence"],
+            }
+        )
+    return links
+
+
+def _complete_economic_entity_defaults(entity: Mapping[str, Any], relationships: list[dict[str, Any]]) -> dict[str, Any]:
+    clean = dict(entity)
+    clean["evidence_refs"] = _valid_or_fallback_refs(clean.get("evidence_refs") or clean.get("refs"), relationships)
+    clean["missing_confirmations"] = _string_list(clean.get("missing_confirmations")) or [
+        "direct customer/supplier filing confirmation",
+        "contract/order/revenue exposure evidence",
+    ]
+    if not str(clean.get("role") or "").strip():
+        clean["role"] = "relationship_scope_entity"
+    return clean
+
+
+def _complete_economic_link_defaults(link: Mapping[str, Any], relationships: list[dict[str, Any]]) -> dict[str, Any]:
+    clean = dict(link)
+    clean["evidence_refs"] = _valid_or_fallback_refs(clean.get("evidence_refs") or clean.get("refs"), relationships)
+    clean["claim_scope"] = "economic_mechanism_hypothesis_only"
+    clean["missing_confirmations"] = _string_list(clean.get("missing_confirmations")) or [
+        "direct customer/supplier filing confirmation",
+        "contract/order/revenue exposure evidence",
+    ]
+    if not str(clean.get("mechanism") or "").strip():
+        clean["mechanism"] = "Bounded relationship evidence supports an economic transmission hypothesis only."
+    if not _string_list(clean.get("metric_implications")):
+        clean["metric_implications"] = ["revenue", "margin"]
+    return clean
+
+
+def _complete_economic_mechanism_defaults(
+    mechanism: Mapping[str, Any],
+    relationships: list[dict[str, Any]],
+    *,
+    allowed_tickers: set[str],
+) -> dict[str, Any]:
+    clean = dict(mechanism)
+    clean["evidence_refs"] = _valid_or_fallback_refs(clean.get("evidence_refs") or clean.get("refs"), relationships)
+    if not _string_list(clean.get("metric_implications")):
+        clean["metric_implications"] = ["revenue", "margin", "capex"]
+    affected_entities = [
+        item
+        for item in _string_list(clean.get("affected_entities"))
+        if str(item).upper().strip() in allowed_tickers or not _looks_like_ticker_token(item)
+    ]
+    if affected_entities:
+        clean["affected_entities"] = affected_entities
+    else:
+        clean["affected_entities"] = _unique_upper([ticker for row in relationships for ticker in (row.get("ticker"), row.get("related_ticker")) if ticker])[:8]
+    if not str(clean.get("driver") or "").strip():
+        clean["driver"] = "sector relationship read-through"
+    return clean
+
+
+def _complete_investment_implication_defaults(
+    implication: Mapping[str, Any],
+    relationships: list[dict[str, Any]],
+    *,
+    allowed_tickers: set[str],
+) -> dict[str, Any]:
+    clean = dict(implication)
+    clean["supporting_refs"] = _valid_or_fallback_refs(clean.get("supporting_refs") or clean.get("evidence_refs") or clean.get("refs"), relationships)
+    entity_scope = [
+        item
+        for item in _string_list(clean.get("entity_scope"))
+        if str(item).upper().strip() in allowed_tickers or not _looks_like_ticker_token(item)
+    ]
+    if entity_scope:
+        clean["entity_scope"] = entity_scope
+    clean["missing_confirmations"] = _string_list(clean.get("missing_confirmations")) or [
+        "direct commercial edge confirmation",
+        "contract/order/revenue exposure evidence",
+    ]
+    if not str(clean.get("so_what") or "").strip():
+        clean["so_what"] = "Use as a bounded research hypothesis until company filings and exact evidence verify it."
+    return clean
+
+
+def _valid_or_fallback_refs(value: Any, relationships: list[dict[str, Any]]) -> list[str]:
+    known = set(_economic_refs(relationships))
+    refs = [ref for ref in _string_list(value) if not known or ref in known]
+    return refs or _economic_refs(relationships)[:2]
+
+
+def _economic_mechanisms_from_relationships(relationships: list[dict[str, Any]], *, focus_tickers: list[str]) -> list[dict[str, Any]]:
+    refs = _economic_refs(relationships)[:6]
+    affected = _unique_upper(
+        [
+            *focus_tickers,
+            *[ticker for row in relationships for ticker in (row.get("ticker"), row.get("related_ticker")) if ticker],
+        ]
+    )[:8]
+    metrics = _dedupe([metric for row in relationships for metric in _string_list(row.get("metrics_to_check") or row.get("metric_links"))])[:6]
+    return [
+        {
+            "driver": "sector relationship read-through",
+            "affected_entities": affected,
+            "metric_implications": metrics or ["revenue", "margin", "capex"],
+            "confirming_indicators": ["company-reported revenue or capex movement", "management commentary aligned with the relationship hypothesis"],
+            "disconfirming_indicators": ["no matching company disclosure", "margin or demand signal moves against the hypothesis"],
+            "evidence_refs": refs,
+            "confidence": "medium",
+        }
+    ] if refs else []
+
+
+def _investment_implications_from_relationships(relationships: list[dict[str, Any]], *, focus_tickers: list[str]) -> list[dict[str, Any]]:
+    refs = _economic_refs(relationships)[:6]
+    scope = _unique_upper(
+        [
+            *focus_tickers,
+            *[ticker for row in relationships for ticker in (row.get("ticker"), row.get("related_ticker")) if ticker],
+        ]
+    )[:8]
+    return [
+        {
+            "claim": "The relationship map identifies a bounded research scope and economic transmission hypothesis.",
+            "so_what": "Specialists should verify the hypothesis with company filings, exact-value ledger rows, market data, and source-gap caveats before memo claims are upgraded.",
+            "entity_scope": scope,
+            "confidence": "medium",
+            "supporting_refs": refs,
+            "missing_confirmations": ["direct commercial edge confirmation", "contract/order/revenue exposure evidence"],
+        }
+    ] if refs else []
+
+
+def _economic_link_type_from_relationship(row: Mapping[str, Any]) -> str:
+    text = " ".join(str(row.get(key) or "").lower() for key in ("relationship_type", "direction", "financial_link_type"))
+    if "compet" in text or "substitut" in text:
+        return "substitution"
+    if "peer" in text:
+        return "peer"
+    if "customer" in text or "supplier" in text:
+        return "demand_driver"
+    if "macro" in text or "regulat" in text:
+        return "macro_regulatory"
+    return "sector_hypothesis"
+
+
+def _economic_refs(relationships: list[dict[str, Any]]) -> list[str]:
+    return _dedupe([ref for row in relationships for ref in _string_list(row.get("evidence_refs") or row.get("refs"))])
 
 
 def _relationship_completion_key(relationship: Mapping[str, Any]) -> tuple[str, str, str, str, str]:
@@ -650,6 +995,18 @@ def _unique_upper(value: Any) -> list[str]:
     seen: set[str] = set()
     for item in _string_list(value):
         text = item.upper().strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        result.append(text)
+    return result
+
+
+def _dedupe(value: list[str]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for item in value:
+        text = str(item or "").strip()
         if not text or text in seen:
             continue
         seen.add(text)

@@ -240,6 +240,13 @@ Gate:
 - AI infra、banking、healthcare、energy、utilities sector-depth packs 的 retrieval rows 通过真实 evidence quality gate。
 - 每个 case 至少有 primary requirement coverage explanation。
 
+Status:
+
+- 已执行首个 P3 切片：新增 SEC search runtime policy v0.1，按 `execution_mode`、sector-depth 信号和 ticker count 调整 `evidence_top_k`、`object_top_k`、reranker candidate/top-k/doc chars。
+- `reranker_candidate_limit` / `reranker_top_k` 现在会从 `multi_agent_context` 转发到 MCP `sec_search_filings`，不再只停留在 eval runner context。
+- `bge_device` 默认从 eval 的 `cpu` 改成 `auto`，runtime policy 会在 CUDA 可用且 standard/deep run 时自动选择 `cuda`，否则显式记录 CPU fallback。
+- Summary tool call payload 现在带 `argument_summary` 和 `runtime_summary`，可直接审计检索策略、BGE device、candidate/rerank budgets 和 row counts。
+
 ### P4: Agent Data View v0.3
 
 Goal: Specialists 看到的 rows 更像 analyst 工作台，而不是 first-N 摘要。
@@ -366,10 +373,13 @@ Implemented immediately after baseline commit:
 - Summary artifact now includes `evidence_rows` telemetry.
 - `relationship_graph_lookup` permission split-brain fixed with `bounded_relationship_lookup`.
 - Relationship graph route rows now propagate as bounded relationship context rows.
+- SEC search runtime policy v0.1 added for mode-aware retrieval caps and explicit BGE auto device selection.
+- `reranker_candidate_limit` / `reranker_top_k` forwarding and tool-call summary telemetry added.
 - Unit tests added for:
   - zero-row route triggers second-pass without coverage matrix.
   - permission-blocked route is treated as non-retriable source gap.
   - summary artifact contains evidence row telemetry.
   - relationship graph route permission and bounded row propagation.
+  - sector-depth retrieval policy cap expansion and BGE auto CUDA selection.
 
-Next slice should start from P3 retrieval/BGE/cap policy calibration, then rerun real DeepSeek full-chain on the 4 sector-depth cases.
+Next slice should rerun real DeepSeek full-chain on the 4 sector-depth cases, then use the new telemetry to decide P4 data-view v0.3 selector changes.

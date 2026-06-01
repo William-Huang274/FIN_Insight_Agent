@@ -1015,6 +1015,7 @@ def _node_execute_evidence_operators(
             state_context={
                 **(state.get("query_contract") or {}),
                 **context,
+                "execution_mode": (state.get("agent_activation_plan") or {}).get("execution_mode") or "",
                 "user_query": state.get("user_query") or "",
                 "run_id": state.get("run_id") or "",
                 "output_dir": state.get("output_dir") or "",
@@ -1116,6 +1117,7 @@ def _node_optional_second_pass(
             state_context={
                 **(compiled_state.get("query_contract") or {}),
                 **context,
+                "execution_mode": (compiled_state.get("agent_activation_plan") or {}).get("execution_mode") or "",
                 "user_query": compiled_state.get("user_query") or "",
                 "run_id": compiled_state.get("run_id") or "",
                 "output_dir": compiled_state.get("output_dir") or "",
@@ -2180,6 +2182,12 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
                 "source_gap_count": record.get("source_gap_count") or 0,
                 "elapsed_ms": record.get("elapsed_ms") or 0,
                 "coverage_delta": record.get("coverage_delta") or {},
+                "argument_summary": dict((record.get("metadata") or {}).get("argument_summary") or {})
+                if isinstance(record.get("metadata"), dict)
+                else {},
+                "runtime_summary": dict((record.get("metadata") or {}).get("runtime_summary") or {})
+                if isinstance(record.get("metadata"), dict)
+                else {},
             }
             for record in records
         ],

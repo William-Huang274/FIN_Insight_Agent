@@ -20,6 +20,7 @@ INDUSTRY_RELATIONSHIP_STANDARD_MIN_ROWS = 4
 INDUSTRY_RELATIONSHIP_DEEP_MIN_ROWS = 6
 RELATIONSHIP_SUMMARY_MAX_ROWS = 16
 RELATIONSHIP_SUMMARY_DEEP_RESEARCH_MAX_ROWS = 24
+SEC_SEARCH_RUNTIME_POLICY_SCHEMA_VERSION = "sec_agent_sec_search_runtime_policy_v0.1"
 
 ROUTE_OPERATOR_TOOL: dict[str, tuple[str, str]] = {
     "ledger_first": ("sec_operator", "sec_query_exact_value_ledger"),
@@ -760,7 +761,6 @@ def _sec_search_runtime_args(context: Mapping[str, Any], route: Mapping[str, Any
         "bm25_index_dir",
         "object_bm25_index_dir",
         "bge_model",
-        "bge_device",
         "context_runner",
         "ledger_store_path",
         "llm_backend",
@@ -772,25 +772,187 @@ def _sec_search_runtime_args(context: Mapping[str, Any], route: Mapping[str, Any
         value = context.get(key)
         if value not in (None, ""):
             args[key] = value
+
+    runtime_policy = derive_sec_search_runtime_policy(context, route)
     for key in (
+        "candidate_budget",
+        "rerank_budget",
         "evidence_top_k",
         "object_top_k",
+        "reranker_candidate_limit",
+        "reranker_top_k",
         "reranker_batch_size",
         "reranker_max_length",
         "reranker_doc_max_chars",
     ):
-        value = context.get(key)
-        if value not in (None, ""):
-            args[key] = int(value)
+        if runtime_policy.get(key) not in (None, ""):
+            args[key] = int(runtime_policy[key])
+    args["bge_device"] = str(runtime_policy.get("bge_device") or "cpu")
+    args["bge_first"] = bool(runtime_policy.get("bge_first"))
+    args["retrieval_runtime_policy"] = {
+        "schema_version": SEC_SEARCH_RUNTIME_POLICY_SCHEMA_VERSION,
+        "policy_name": runtime_policy.get("policy_name") or "",
+        "execution_mode": runtime_policy.get("execution_mode") or "",
+        "retrieval_route": runtime_policy.get("retrieval_route") or "",
+        "sector_depth_expected": bool(runtime_policy.get("sector_depth_expected")),
+        "bge_device_policy": runtime_policy.get("bge_device_policy") or "",
+        "cuda_available": runtime_policy.get("cuda_available"),
+    }
     if context.get("build_runtime_ledger") is not None:
         args["build_runtime_ledger"] = _bool_value(context.get("build_runtime_ledger"))
-    if context.get("bge_first") is not None:
-        args["bge_first"] = _bool_value(context.get("bge_first"))
     if context.get("output_dir"):
         args["output_dir"] = _route_output_dir(str(context.get("output_dir") or ""), str(route.get("route_id") or "route"))
     if context.get("run_id"):
         args["run_id"] = f"{context.get('run_id')}_{_slug(route.get('route_id') or route.get('retrieval_route') or 'route')}"
     return args
+
+
+def derive_sec_search_runtime_policy(context: Mapping[str, Any], route: Mapping[str, Any]) -> dict[str, Any]:
+    route_name = str(route.get("retrieval_route") or "")
+    execution_mode = str(context.get("execution_mode") or context.get("multi_agent_execution_mode") or "").strip() or "focused_answer"
+    coverage = route.get("coverage_requirements") if isinstance(route.get("coverage_requirements"), Mapping) else {}
+    tickers = _unique_upper(route.get("tickers") or coverage.get("tickers") or context.get("search_scope_tickers"))
+    source_families = set(_string_list(route.get("source_families") or route.get("source_tiers") or context.get("source_tiers")))
+    sector_depth_expected = bool(
+        source_families & {"industry_snapshot", "relationship_graph"}
+        or context.get("sector_depth_pack_path")
+        or context.get("expected_relationship_pack_ids")
+        or len(tickers) >= 4
+    )
+    profile = _retrieval_policy_profile(execution_mode, route_name=route_name, sector_depth_expected=sector_depth_expected, ticker_count=len(tickers))
+    policy = {
+        "policy_name": profile["policy_name"],
+        "execution_mode": execution_mode,
+        "retrieval_route": route_name,
+        "sector_depth_expected": sector_depth_expected,
+        "candidate_budget": max(_positive_int(route.get("candidate_budget")), profile["candidate_budget"]),
+        "rerank_budget": max(_positive_int(route.get("rerank_budget")), profile["rerank_budget"]),
+        "evidence_top_k": profile["evidence_top_k"],
+        "object_top_k": profile["object_top_k"],
+        "reranker_candidate_limit": profile["reranker_candidate_limit"],
+        "reranker_top_k": profile["reranker_top_k"],
+        "reranker_batch_size": profile["reranker_batch_size"],
+        "reranker_max_length": profile["reranker_max_length"],
+        "reranker_doc_max_chars": profile["reranker_doc_max_chars"],
+        "bge_device": _resolve_bge_device(context, execution_mode=execution_mode),
+        "bge_first": _bool_value(context.get("bge_first")) if context.get("bge_first") is not None else True,
+    }
+    policy["bge_device_policy"] = _bge_device_policy_label(context, str(policy["bge_device"]))
+    policy["cuda_available"] = _cuda_available() if str(policy["bge_device"]).lower().startswith("cuda") else None
+    for key in (
+        "evidence_top_k",
+        "object_top_k",
+        "reranker_candidate_limit",
+        "reranker_top_k",
+        "reranker_batch_size",
+        "reranker_max_length",
+        "reranker_doc_max_chars",
+    ):
+        override_value = _positive_int(context.get(key))
+        if override_value > 0:
+            policy[key] = override_value
+    if context.get("candidate_budget") not in (None, ""):
+        override_value = _positive_int(context.get("candidate_budget"))
+        if override_value > 0:
+            policy["candidate_budget"] = override_value
+    if context.get("rerank_budget") not in (None, ""):
+        override_value = _positive_int(context.get("rerank_budget"))
+        if override_value > 0:
+            policy["rerank_budget"] = override_value
+    return policy
+
+
+def _retrieval_policy_profile(
+    execution_mode: str,
+    *,
+    route_name: str,
+    sector_depth_expected: bool,
+    ticker_count: int,
+) -> dict[str, Any]:
+    if execution_mode == "deep_research":
+        profile = {
+            "policy_name": "deep_research_sector_depth" if sector_depth_expected else "deep_research",
+            "candidate_budget": 360,
+            "rerank_budget": 96,
+            "evidence_top_k": 8,
+            "object_top_k": 8,
+            "reranker_candidate_limit": 360,
+            "reranker_top_k": 96,
+            "reranker_batch_size": 8,
+            "reranker_max_length": 512,
+            "reranker_doc_max_chars": 2400,
+        }
+    elif execution_mode == "standard_memo":
+        profile = {
+            "policy_name": "standard_memo_balanced",
+            "candidate_budget": 240,
+            "rerank_budget": 64,
+            "evidence_top_k": 6,
+            "object_top_k": 6,
+            "reranker_candidate_limit": 240,
+            "reranker_top_k": 64,
+            "reranker_batch_size": 8,
+            "reranker_max_length": 512,
+            "reranker_doc_max_chars": 2200,
+        }
+    else:
+        profile = {
+            "policy_name": "focused_answer_compact",
+            "candidate_budget": 160,
+            "rerank_budget": 40,
+            "evidence_top_k": 4,
+            "object_top_k": 4,
+            "reranker_candidate_limit": 160,
+            "reranker_top_k": 40,
+            "reranker_batch_size": 8,
+            "reranker_max_length": 512,
+            "reranker_doc_max_chars": 1800,
+        }
+    if sector_depth_expected or ticker_count >= 4:
+        profile["candidate_budget"] = max(int(profile["candidate_budget"]), 480)
+        profile["rerank_budget"] = max(int(profile["rerank_budget"]), 120)
+        profile["evidence_top_k"] = max(int(profile["evidence_top_k"]), 10)
+        profile["object_top_k"] = max(int(profile["object_top_k"]), 8)
+        profile["reranker_candidate_limit"] = max(int(profile["reranker_candidate_limit"]), 480)
+        profile["reranker_top_k"] = max(int(profile["reranker_top_k"]), 120)
+        profile["reranker_doc_max_chars"] = max(int(profile["reranker_doc_max_chars"]), 2400)
+        if execution_mode != "deep_research":
+            profile["policy_name"] = f"{profile['policy_name']}_sector_depth"
+    if route_name == "risk_text":
+        profile["policy_name"] = f"{profile['policy_name']}_risk"
+        profile["evidence_top_k"] = max(int(profile["evidence_top_k"]), 8)
+        profile["reranker_top_k"] = max(int(profile["reranker_top_k"]), 80)
+    if route_name == "8k_commentary":
+        profile["policy_name"] = f"{profile['policy_name']}_8k"
+        profile["evidence_top_k"] = max(int(profile["evidence_top_k"]), 6)
+    return profile
+
+
+def _resolve_bge_device(context: Mapping[str, Any], *, execution_mode: str) -> str:
+    requested = str(context.get("bge_device") or os.environ.get("BGE_DEVICE") or "").strip().lower()
+    if requested and requested not in {"auto", "default"}:
+        return requested
+    if execution_mode in {"standard_memo", "deep_research"} and _cuda_available():
+        return "cuda"
+    return "cpu"
+
+
+def _bge_device_policy_label(context: Mapping[str, Any], resolved_device: str) -> str:
+    requested = str(context.get("bge_device") or os.environ.get("BGE_DEVICE") or "").strip().lower()
+    if requested and requested not in {"auto", "default"}:
+        return "explicit"
+    if resolved_device == "cuda":
+        return "auto_cuda_available"
+    return "auto_cpu_fallback"
+
+
+def _cuda_available() -> bool:
+    try:
+        import torch
+
+        return bool(torch.cuda.is_available())
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def _route_output_dir(base_output_dir: str, route_id: str) -> str:
@@ -845,14 +1007,22 @@ def _tool_argument_summary(arguments: Mapping[str, Any]) -> dict[str, Any]:
         "period_roles",
         "candidate_budget",
         "rerank_budget",
+        "evidence_top_k",
+        "object_top_k",
+        "reranker_candidate_limit",
+        "reranker_top_k",
+        "reranker_batch_size",
+        "reranker_doc_max_chars",
         "source_families",
         "providers",
         "datasets",
         "fields",
         "limit",
         "bge_device",
+        "bge_first",
         "context_runner",
         "build_runtime_ledger",
+        "retrieval_runtime_policy",
     }
     return {key: arguments.get(key) for key in allowed if key in arguments}
 
@@ -2569,6 +2739,14 @@ def _bounded_positive_int(value: Any, *, default: int) -> int:
     except (TypeError, ValueError):
         return default
     return number if number >= 0 else default
+
+
+def _positive_int(value: Any) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return 0
+    return number if number > 0 else 0
 
 
 def _dedupe(values: list[str]) -> list[str]:

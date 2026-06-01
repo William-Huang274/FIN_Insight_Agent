@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from sec_agent.multi_agent_runtime import (
     compile_multi_agent_retrieval_plan,
+    derive_sec_search_runtime_policy,
     execute_evidence_operator_plan,
     tool_arguments_from_route,
     validate_operator_tool_call,
     validate_tool_observation_boundary,
 )
+import sec_agent.multi_agent_runtime as runtime
 from sec_agent.tool_call_ledger import ToolCallLedger
 
 
@@ -51,6 +53,71 @@ def test_sec_search_arguments_filter_context_only_source_tiers() -> None:
 
     assert filing_args["source_tiers"] == ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
     assert eight_k_args["source_tiers"] == ["company_authored_unaudited_sec_filing"]
+
+
+def test_sec_search_runtime_policy_expands_sector_depth_retrieval_caps() -> None:
+    args = tool_arguments_from_route(
+        {
+            "retrieval_route": "filing_text",
+            "tickers": ["NVDA", "DELL", "ANET", "VRT"],
+            "years": [2026],
+            "candidate_budget": 120,
+            "rerank_budget": 64,
+        },
+        user_query="AI infrastructure sector depth",
+        state_context={
+            "execution_mode": "deep_research",
+            "bge_device": "cpu",
+            "expected_relationship_pack_ids": ["ai_infra_power_transmission_v0_2"],
+        },
+    )
+
+    assert args["candidate_budget"] == 480
+    assert args["rerank_budget"] == 120
+    assert args["evidence_top_k"] == 10
+    assert args["object_top_k"] == 8
+    assert args["reranker_candidate_limit"] == 480
+    assert args["reranker_top_k"] == 120
+    assert args["bge_device"] == "cpu"
+    assert args["retrieval_runtime_policy"]["policy_name"] == "deep_research_sector_depth"
+
+
+def test_sec_search_runtime_policy_auto_uses_cuda_when_available(monkeypatch) -> None:
+    monkeypatch.setattr(runtime, "_cuda_available", lambda: True)
+
+    policy = derive_sec_search_runtime_policy(
+        {"execution_mode": "deep_research", "bge_device": "auto"},
+        {"retrieval_route": "filing_text", "tickers": ["NVDA"]},
+    )
+
+    assert policy["bge_device"] == "cuda"
+    assert policy["bge_device_policy"] == "auto_cuda_available"
+
+
+def test_zero_runtime_context_values_do_not_override_policy_defaults() -> None:
+    args = tool_arguments_from_route(
+        {
+            "retrieval_route": "filing_text",
+            "tickers": ["NVDA", "DELL", "ANET", "VRT"],
+            "years": [2026],
+        },
+        user_query="AI infrastructure sector depth",
+        state_context={
+            "execution_mode": "deep_research",
+            "bge_device": "cpu",
+            "evidence_top_k": 0,
+            "object_top_k": 0,
+            "reranker_candidate_limit": 0,
+            "reranker_top_k": 0,
+            "reranker_doc_max_chars": 0,
+        },
+    )
+
+    assert args["evidence_top_k"] == 10
+    assert args["object_top_k"] == 8
+    assert args["reranker_candidate_limit"] == 480
+    assert args["reranker_top_k"] == 120
+    assert args["reranker_doc_max_chars"] == 2400
 
 
 def test_evidence_operator_plan_executes_mcp_shaped_calls_and_records_ledger() -> None:

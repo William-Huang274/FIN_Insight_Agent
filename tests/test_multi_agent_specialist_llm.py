@@ -533,6 +533,46 @@ def test_build_specialist_request_from_state_uses_deep_research_prompt_budget() 
     assert "ledger_ref_24" in request["known_evidence_refs"]
 
 
+def test_build_specialist_request_from_state_uses_supporting_priority_prompt_budget() -> None:
+    request = build_specialist_request_from_state(
+        "risk_counterevidence_analyst",
+        {
+            "user_query": "Deep research risk lens.",
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["risk_counterevidence_analyst"],
+                "agent_priorities": {"risk_counterevidence_analyst": "supporting"},
+            },
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"ledger_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "revenue",
+                    "value": str(index),
+                    "summary": f"Revenue evidence row {index}.",
+                }
+                for index in range(1, 31)
+            ],
+            "market_snapshot_rows": [
+                {
+                    "evidence_ref": f"market_ref_{index}",
+                    "source_family": "market_snapshot",
+                    "ticker": "NVDA",
+                    "summary": f"Market evidence row {index}.",
+                }
+                for index in range(1, 11)
+            ],
+        },
+    )
+
+    assert request["input_budget"]["agent_priority"] == "supporting"
+    assert request["input_budget"]["data_view_bounded_evidence_row_budget"] == 20
+    assert request["input_budget"]["prompt_bounded_evidence_row_budget"] == 16
+    assert len(request["bounded_evidence_rows"]) == 16
+    assert {row["source_family"] for row in request["bounded_evidence_rows"]} == {"primary_sec_filing", "market_snapshot"}
+
+
 def test_specialist_prompt_uses_source_family_summary_budgets() -> None:
     request = build_specialist_request_from_state(
         "risk_counterevidence_analyst",

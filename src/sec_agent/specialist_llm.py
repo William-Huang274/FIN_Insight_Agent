@@ -99,17 +99,19 @@ def route_specialists_from_env(
 def build_specialist_request_from_state(agent_id: str, state: Mapping[str, Any]) -> dict[str, Any]:
     data_view = build_agent_data_view(agent_id, state)
     execution_mode = _execution_mode_from_state(state, data_view)
+    priority = _specialist_priority_from_data_view(data_view)
     rows = _compact_bounded_rows_for_prompt(
         agent_id,
         list(data_view.get("bounded_evidence_rows") or _bounded_rows_for_agent(agent_id, state)),
         execution_mode=execution_mode,
+        priority=priority,
     )
     relationship_summary = _compact_relationship_summary_for_prompt(
         data_view.get("relationship_summary"),
         execution_mode=execution_mode,
     )
     refs = _known_evidence_refs_from_request({"bounded_evidence_rows": rows, "relationship_summary": relationship_summary})
-    input_budget = _specialist_input_budget(agent_id, execution_mode, data_view)
+    input_budget = _specialist_input_budget(agent_id, execution_mode, data_view, priority=priority)
     return {
         "agent_id": agent_id,
         "execution_mode": execution_mode,
@@ -434,8 +436,9 @@ def _compact_bounded_rows_for_prompt(
     rows: list[dict[str, Any]],
     *,
     execution_mode: str = "",
+    priority: str = "",
 ) -> list[dict[str, Any]]:
-    max_rows = _specialist_input_max_rows(execution_mode)
+    max_rows = _specialist_input_max_rows(execution_mode, priority=priority)
     selected = rows[:max(1, max_rows)]
     if agent_id in {"risk_counterevidence_analyst", "industry_supply_chain_analyst"}:
         selected = _balanced_rows_by_source_for_prompt(rows, max_rows=max(1, max_rows))
@@ -773,11 +776,33 @@ def _int_env(value: str | None, *, default: int) -> int:
         return default
 
 
-def _specialist_input_max_rows(execution_mode: str) -> int:
+def _specialist_input_max_rows(execution_mode: str, *, priority: str = "") -> int:
     generic = os.environ.get("SPECIALIST_INPUT_MAX_ROWS")
     mode = str(execution_mode or "").strip()
-    if mode == "deep_research":
+    normalized_priority = _normalize_specialist_priority(priority)
+    if mode == "deep_research" and normalized_priority == "supporting":
+        value = _int_env(
+            os.environ.get("SPECIALIST_DEEP_RESEARCH_SUPPORTING_INPUT_MAX_ROWS")
+            or os.environ.get("SPECIALIST_SUPPORTING_INPUT_MAX_ROWS")
+            or generic,
+            default=16,
+        )
+    elif mode == "deep_research" and normalized_priority in {"conditional", "low"}:
+        value = _int_env(
+            os.environ.get("SPECIALIST_DEEP_RESEARCH_CONDITIONAL_INPUT_MAX_ROWS")
+            or os.environ.get("SPECIALIST_CONDITIONAL_INPUT_MAX_ROWS")
+            or generic,
+            default=10,
+        )
+    elif mode == "deep_research":
         value = _int_env(os.environ.get("SPECIALIST_DEEP_RESEARCH_INPUT_MAX_ROWS") or generic, default=24)
+    elif mode == "standard_memo" and normalized_priority == "supporting":
+        value = _int_env(
+            os.environ.get("SPECIALIST_STANDARD_MEMO_SUPPORTING_INPUT_MAX_ROWS")
+            or os.environ.get("SPECIALIST_SUPPORTING_INPUT_MAX_ROWS")
+            or generic,
+            default=12,
+        )
     elif mode == "standard_memo":
         value = _int_env(os.environ.get("SPECIALIST_STANDARD_MEMO_INPUT_MAX_ROWS") or generic, default=16)
     else:
@@ -794,16 +819,24 @@ def _relationship_summary_max_rows_for_prompt(execution_mode: str) -> int:
     return max(1, value)
 
 
-def _specialist_input_budget(agent_id: str, execution_mode: str, data_view: Mapping[str, Any]) -> dict[str, Any]:
+def _specialist_input_budget(
+    agent_id: str,
+    execution_mode: str,
+    data_view: Mapping[str, Any],
+    *,
+    priority: str = "",
+) -> dict[str, Any]:
     data_view_budget = data_view.get("input_budget") if isinstance(data_view.get("input_budget"), Mapping) else {}
     output_contract = _specialist_output_contract(agent_id, execution_mode)
+    effective_priority = _normalize_specialist_priority(priority or str(data_view_budget.get("agent_priority") or ""))
     payload = {
         "execution_mode": execution_mode,
-        "prompt_bounded_evidence_row_budget": _specialist_input_max_rows(execution_mode),
+        "agent_priority": effective_priority,
+        "prompt_bounded_evidence_row_budget": _specialist_input_max_rows(execution_mode, priority=effective_priority),
         "prompt_relationship_summary_row_budget": _relationship_summary_max_rows_for_prompt(execution_mode),
         "prompt_summary_char_policy": "source_family_tiered_v0_1",
         "data_view_bounded_evidence_row_budget": int(data_view_budget.get("bounded_evidence_row_budget") or 0),
-        "budget_policy": "execution_mode_tiered_specialist_prompt_rows_only",
+        "budget_policy": "execution_mode_and_priority_tiered_specialist_prompt_rows_only",
         "supported_observation_target": output_contract["supported_observation_target"],
         "unsupported_claim_cap": output_contract["unsupported_claim_cap"],
         "conflict_cap": output_contract["conflict_cap"],
@@ -812,6 +845,17 @@ def _specialist_input_budget(agent_id: str, execution_mode: str, data_view: Mapp
     if agent_id == "industry_supply_chain_analyst":
         payload["data_view_min_relationship_rows"] = int(data_view_budget.get("min_relationship_rows") or 0)
     return payload
+
+
+def _specialist_priority_from_data_view(data_view: Mapping[str, Any]) -> str:
+    card = data_view.get("assigned_task_card") if isinstance(data_view.get("assigned_task_card"), Mapping) else {}
+    budget = data_view.get("input_budget") if isinstance(data_view.get("input_budget"), Mapping) else {}
+    return _normalize_specialist_priority(card.get("priority") or budget.get("agent_priority"))
+
+
+def _normalize_specialist_priority(value: Any) -> str:
+    priority = str(value or "primary").strip().lower()
+    return priority if priority in {"primary", "supporting", "conditional", "low"} else "primary"
 
 
 def _execution_mode_from_state(state: Mapping[str, Any], data_view: Mapping[str, Any]) -> str:

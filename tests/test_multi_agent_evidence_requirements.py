@@ -248,6 +248,31 @@ def test_industry_supply_chain_data_view_uses_bounded_industry_and_relationship_
     assert "data/raw_private" not in payload
 
 
+def test_supporting_specialist_data_view_uses_priority_budget() -> None:
+    view = build_agent_data_view(
+        "risk_counterevidence_analyst",
+        {
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["risk_counterevidence_analyst"],
+                "agent_priorities": {"risk_counterevidence_analyst": "supporting"},
+            },
+            "context_rows": [
+                {
+                    "evidence_ref": f"risk_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "summary": f"Risk evidence row {index}.",
+                }
+                for index in range(40)
+            ],
+        },
+    )
+
+    assert view["input_budget"]["agent_priority"] == "supporting"
+    assert view["input_budget"]["bounded_evidence_row_budget"] == 20
+    assert len(view["bounded_evidence_rows"]) == 20
+
+
 def test_memo_writer_data_view_only_contains_verified_summary() -> None:
     view = build_agent_data_view(
         "memo_writer",

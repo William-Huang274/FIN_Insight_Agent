@@ -17,6 +17,10 @@ SPECIALIST_CLAIM_SLOT_SCHEMA_VERSION = "sec_agent_specialist_claim_slot_v0.1"
 AGENT_DATA_VIEW_MAX_ROWS = 16
 AGENT_DATA_VIEW_STANDARD_MEMO_MAX_ROWS = 24
 AGENT_DATA_VIEW_DEEP_RESEARCH_MAX_ROWS = 32
+AGENT_DATA_VIEW_SUPPORTING_DEEP_RESEARCH_MAX_ROWS = 20
+AGENT_DATA_VIEW_SUPPORTING_STANDARD_MEMO_MAX_ROWS = 16
+AGENT_DATA_VIEW_CONDITIONAL_MAX_ROWS = 12
+AGENT_DATA_VIEW_LOW_MAX_ROWS = 8
 INDUSTRY_RELATIONSHIP_MIN_ROWS = 3
 INDUSTRY_RELATIONSHIP_STANDARD_MIN_ROWS = 4
 INDUSTRY_RELATIONSHIP_DEEP_MIN_ROWS = 6
@@ -2920,11 +2924,13 @@ def _relationship_summary_view(state: Mapping[str, Any]) -> dict[str, Any]:
 
 def _data_view_input_budget(agent_id: str, state: Mapping[str, Any]) -> dict[str, Any]:
     max_rows = _data_view_max_rows_for_agent(agent_id, state)
+    priority = _agent_priority_from_state(agent_id, state)
     payload = {
         "execution_mode": _execution_mode_from_state(state),
+        "agent_priority": priority,
         "bounded_evidence_row_budget": max_rows,
         "relationship_summary_row_budget": _relationship_summary_max_rows(state),
-        "budget_policy": "execution_mode_tiered_bounded_rows_only",
+        "budget_policy": "execution_mode_and_priority_tiered_bounded_rows_only",
     }
     if agent_id == "industry_supply_chain_analyst":
         payload["min_relationship_rows"] = _industry_relationship_min_rows(state, max_rows=max_rows)
@@ -2938,10 +2944,48 @@ def _data_view_input_budget(agent_id: str, state: Mapping[str, Any]) -> dict[str
 def _data_view_max_rows_for_agent(agent_id: str, state: Mapping[str, Any]) -> int:
     mode = _execution_mode_from_state(state)
     default = _data_view_max_rows_for_mode(mode)
+    priority = _agent_priority_from_state(agent_id, state)
+    if priority == "supporting":
+        if mode == "deep_research":
+            default = min(
+                default,
+                _positive_int_env(
+                    "AGENT_DATA_VIEW_SUPPORTING_DEEP_RESEARCH_MAX_ROWS",
+                    default=AGENT_DATA_VIEW_SUPPORTING_DEEP_RESEARCH_MAX_ROWS,
+                ),
+            )
+        elif mode == "standard_memo":
+            default = min(
+                default,
+                _positive_int_env(
+                    "AGENT_DATA_VIEW_SUPPORTING_STANDARD_MEMO_MAX_ROWS",
+                    default=AGENT_DATA_VIEW_SUPPORTING_STANDARD_MEMO_MAX_ROWS,
+                ),
+            )
+    elif priority == "conditional":
+        default = min(
+            default,
+            _positive_int_env(
+                "AGENT_DATA_VIEW_CONDITIONAL_MAX_ROWS",
+                default=AGENT_DATA_VIEW_CONDITIONAL_MAX_ROWS,
+            ),
+        )
+    elif priority == "low":
+        default = min(
+            default,
+            _positive_int_env("AGENT_DATA_VIEW_LOW_MAX_ROWS", default=AGENT_DATA_VIEW_LOW_MAX_ROWS),
+        )
     if agent_id == "market_valuation_analyst":
         market_default = min(default, 16)
         return _positive_int_env("AGENT_DATA_VIEW_MARKET_MAX_ROWS", default=market_default)
     return default
+
+
+def _agent_priority_from_state(agent_id: str, state: Mapping[str, Any]) -> str:
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    priorities = activation.get("agent_priorities") if isinstance(activation.get("agent_priorities"), Mapping) else {}
+    priority = str(priorities.get(agent_id) or "primary").strip().lower()
+    return priority if priority in {"primary", "supporting", "conditional", "low"} else "primary"
 
 
 def _data_view_max_rows_for_mode(mode: str) -> int:

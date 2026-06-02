@@ -4,8 +4,8 @@ Archived note: this document records the original v1 benchmark design. The
 one-off seed builders and early gold-gate scripts that appeared in the first
 prototype have been removed from the main script surface. Current runnable
 entrypoints are listed in `scripts/README.md`; release checks should start from
-`scripts/evaluate_sec_agent_resume_closeout_readiness.py` and the current
-`scripts/run_sec_benchmark_post_gates.py` validator bundle.
+`scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py` and the current
+`scripts/eval_sec_benchmark/run_sec_benchmark_post_gates.py` validator bundle.
 
 This benchmark turns the external SEC evaluation plan into the project-native
 evaluation contract for the current Fin Insight Agent pipeline.
@@ -130,7 +130,7 @@ agent script surface, context flow, source policy, market smoke, and structural
 contracts are executable:
 
 ```powershell
-python scripts\evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+python scripts\eval_context\evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
 ```
 
 Older prototype commands for v1 schema-only validation were retired with the
@@ -148,7 +148,7 @@ regenerating old v1 seed packs.
 Before invoking a synthesis model, prepare both modes with:
 
 ```powershell
-python scripts\run_sec_benchmark_eval.py `
+python scripts\eval_sec_benchmark\run_sec_benchmark_eval.py `
   --mode all `
   --output-dir eval\sec_cases\outputs\run_20260518_context_only_smoke
 ```
@@ -164,7 +164,7 @@ Seed Gold Context / Gold Facts are review candidates, not scored benchmark
 labels. Current scored runs should use the active post-gate bundle:
 
 ```powershell
-python scripts\run_sec_benchmark_post_gates.py `
+python scripts\eval_sec_benchmark\run_sec_benchmark_post_gates.py `
   --gold-run-dir eval\sec_cases\outputs\<gold_run> `
   --pipeline-run-dir eval\sec_cases\outputs\<pipeline_run>
 ```

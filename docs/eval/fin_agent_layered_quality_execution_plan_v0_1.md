@@ -6,7 +6,7 @@
 
 机器可读配置：`configs/fin_agent_quality_rubric_v0_1.json`
 
-辅助审计脚本：`scripts/audit_fin_agent_layer_quality.py`
+辅助审计脚本：`scripts/eval_multi_agent/audit_fin_agent_layer_quality.py`
 
 S1-S8 v0.2 case matrix：`docs/eval/fin_agent_s1_s8_agent_quality_case_matrix_v0_2.md`
 
@@ -56,7 +56,7 @@ S1-S8 v0.2 case matrix：`docs/eval/fin_agent_s1_s8_agent_quality_case_matrix_v0
 
 ```powershell
 $env:DEEPSEEK_API_KEY='<use shell env only>'
-python scripts\eval_multi_agent_research_lead_activation.py `
+python scripts\eval_multi_agent\eval_multi_agent_research_lead_activation.py `
   --run-id 20260601_fin_agent_s1_research_lead_quality_gate_deepseek_v0_1 `
   --require-evidence-requirements `
   --strict
@@ -91,7 +91,7 @@ python scripts\eval_multi_agent_research_lead_activation.py `
 
 ```powershell
 $env:DEEPSEEK_API_KEY='<use shell env only>'
-python scripts\eval_multi_agent_universe_relationship_gate.py `
+python scripts\eval_multi_agent\eval_multi_agent_universe_relationship_gate.py `
   --activation-summary eval\sec_cases\outputs\multi_agent_activation_diagnostic\<s1_run_id>\activation_diagnostic.json `
   --run-id 20260601_fin_agent_s2_relationship_inference_coverage_gate_deepseek_v0_2 `
   --input-max-relationships 48 `
@@ -104,7 +104,7 @@ python scripts\eval_multi_agent_universe_relationship_gate.py `
 审计：
 
 ```powershell
-python scripts\audit_fin_agent_layer_quality.py `
+python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
   --summary eval\sec_cases\outputs\multi_agent_universe_relationship_diagnostic\<s2_run_id>\universe_relationship_diagnostic.json `
   --strict
 ```
@@ -147,7 +147,7 @@ python scripts\audit_fin_agent_layer_quality.py `
 执行：
 
 ```powershell
-python scripts\eval_multi_agent_evidence_operator_gate.py `
+python scripts\eval_multi_agent\eval_multi_agent_evidence_operator_gate.py `
   --run-id 20260601_fin_agent_s3_evidence_operator_gate_v0_4 `
   --strict
 ```
@@ -155,7 +155,7 @@ python scripts\eval_multi_agent_evidence_operator_gate.py `
 审计：
 
 ```powershell
-python scripts\audit_fin_agent_layer_quality.py `
+python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
   --summary eval\sec_cases\outputs\multi_agent_evidence_operator_diagnostic\20260601_fin_agent_s3_evidence_operator_gate_v0_4\evidence_operator_diagnostic.json `
   --strict
 ```
@@ -204,7 +204,7 @@ S3 默认覆盖集：
 执行：
 
 ```powershell
-python scripts\eval_multi_agent_coverage_reflection_gate.py `
+python scripts\eval_multi_agent\eval_multi_agent_coverage_reflection_gate.py `
   --relationship-summary eval\sec_cases\outputs\multi_agent_universe_relationship_diagnostic\20260601_fin_agent_s2_relationship_inference_coverage_gate_deepseek_v0_2\universe_relationship_diagnostic.json `
   --evidence-summary eval\sec_cases\outputs\multi_agent_evidence_operator_diagnostic\20260601_fin_agent_s3_after_s2_relationship_inference_v0_2\evidence_operator_diagnostic.json `
   --run-id 20260601_fin_agent_s4_coverage_reflection_gate_after_s3_v0_1 `
@@ -214,7 +214,7 @@ python scripts\eval_multi_agent_coverage_reflection_gate.py `
 审计：
 
 ```powershell
-python scripts\audit_fin_agent_layer_quality.py `
+python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
   --summary eval\sec_cases\outputs\multi_agent_coverage_reflection_diagnostic\20260601_fin_agent_s4_coverage_reflection_gate_after_s3_v0_1\coverage_reflection_diagnostic.json `
   --strict
 ```
@@ -385,7 +385,7 @@ python scripts\audit_fin_agent_layer_quality.py `
 
 ```powershell
 $env:DEEPSEEK_API_KEY='<use shell env only>'
-python scripts\eval_multi_agent_real_llm_chain.py `
+python scripts\eval_multi_agent\eval_multi_agent_real_llm_chain.py `
   --run-id 20260601_fin_agent_s10_full_chain_quality_gate_deepseek_v0_1 `
   --real-evidence-operators `
   --strict
@@ -405,7 +405,7 @@ python scripts\eval_multi_agent_real_llm_chain.py `
 Research Lead artifact：
 
 ```powershell
-python scripts\audit_fin_agent_layer_quality.py `
+python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
   --summary eval\sec_cases\outputs\multi_agent_activation_diagnostic\<run_id>\activation_diagnostic.json `
   --json-out eval\sec_cases\outputs\multi_agent_activation_diagnostic\<run_id>\fin_agent_layer_quality_audit.json `
   --md-out eval\sec_cases\outputs\multi_agent_activation_diagnostic\<run_id>\fin_agent_layer_quality_audit.md `
@@ -415,7 +415,7 @@ python scripts\audit_fin_agent_layer_quality.py `
 Full-chain artifact：
 
 ```powershell
-python scripts\audit_fin_agent_layer_quality.py `
+python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
   --summary eval\sec_cases\outputs\multi_agent_real_llm_chain_eval\<run_id>\real_chain_eval_summary.json `
   --artifact-root eval\sec_cases\outputs\multi_agent_real_llm_chain_eval\<run_id> `
   --json-out eval\sec_cases\outputs\multi_agent_real_llm_chain_eval\<run_id>\fin_agent_layer_quality_audit.json `

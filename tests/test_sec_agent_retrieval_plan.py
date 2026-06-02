@@ -16,7 +16,7 @@ from sec_agent.ledger_store import write_ledger_store  # noqa: E402
 
 
 def _load_benchmark_module():
-    path = REPO_ROOT / "scripts" / "run_sec_benchmark_eval.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "run_sec_benchmark_eval.py"
     spec = importlib.util.spec_from_file_location("run_sec_benchmark_eval_under_test", path)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader

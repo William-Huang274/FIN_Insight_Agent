@@ -107,7 +107,7 @@ Multi-turn case：
 ## 6. 命令模板
 
 ```powershell
-python scripts\eval_multi_agent_real_llm_chain.py `
+python scripts\eval_multi_agent\eval_multi_agent_real_llm_chain.py `
   --cases-path tests\fixtures\fin_agent_full_chain_multiturn_cases_v0_1.jsonl `
   --output-dir eval\sec_cases\outputs\multi_agent_real_llm_chain_eval `
   --run-id 20260601_fin_agent_full_chain_multiturn_smoke_v0_1 `

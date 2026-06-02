@@ -15,7 +15,7 @@ pip install -r requirements.txt
 先跑不需要 API key 的结构检查：
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
 ```
 
 如果要跑完整生成链路，需要设置 API 模型路由。DeepSeek 是已验证路线之一，也可以换成其他 OpenAI-compatible 接口。
@@ -89,7 +89,7 @@ SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT
 下载或更新 SEC 10-K / 10-Q：
 
 ```bash
-python scripts/download_sec_filings.py \
+python scripts/data_sec/download_sec_filings.py \
   --config configs/<your_universe>.yaml \
   --form-types 10-K,10-Q \
   --allow-missing
@@ -98,13 +98,13 @@ python scripts/download_sec_filings.py \
 构建年报和季报清单：
 
 ```bash
-python scripts/build_sec_manifest.py \
+python scripts/data_sec/build_sec_manifest.py \
   --config configs/<your_universe>.yaml \
   --form-types 10-K \
   --years 2023,2024,2025 \
   --output data/processed_private/manifests/<your_10k_manifest>.jsonl
 
-python scripts/build_sec_manifest.py \
+python scripts/data_sec/build_sec_manifest.py \
   --config configs/<your_universe>.yaml \
   --form-types 10-Q \
   --years 2026,2027 \
@@ -114,7 +114,7 @@ python scripts/build_sec_manifest.py \
 把多年 10-K 和最新可用 10-Q 合成混合清单：
 
 ```bash
-python scripts/build_sec_mixed_latest_manifest.py \
+python scripts/data_sec/build_sec_mixed_latest_manifest.py \
   --annual-manifest data/processed_private/manifests/<your_10k_manifest>.jsonl \
   --interim-manifest data/processed_private/manifests/<your_10q_manifest>.jsonl \
   --annual-years 2023,2024,2025 \
@@ -124,23 +124,23 @@ python scripts/build_sec_mixed_latest_manifest.py \
 解析文本、构建证据对象和索引：
 
 ```bash
-python scripts/build_sec_chunks.py \
+python scripts/data_sec/build_sec_chunks.py \
   --manifest data/processed_private/manifests/<your_mixed_manifest>.jsonl \
   --output data/processed_private/chunks/<your_mixed_chunks>.jsonl
 
-python scripts/build_evidence_store.py \
+python scripts/data_retrieval/build_evidence_store.py \
   --chunks data/processed_private/chunks/<your_mixed_chunks>.jsonl \
   --output data/processed_private/evidence_objects/<your_mixed_evidence>.jsonl
 
-python scripts/build_structured_objects.py \
+python scripts/data_retrieval/build_structured_objects.py \
   --evidence-path data/processed_private/evidence_objects/<your_mixed_evidence>.jsonl \
   --prefix <your_prefix>
 
-python scripts/build_bm25_index.py \
+python scripts/data_retrieval/build_bm25_index.py \
   --evidence data/processed_private/evidence_objects/<your_mixed_evidence>.jsonl \
   --output-dir data/indexes/bm25/<your_text_index>
 
-python scripts/build_object_bm25_index.py \
+python scripts/data_retrieval/build_object_bm25_index.py \
   --structured-dir data/processed_private/structured_objects \
   --prefix <your_prefix> \
   --output-dir data/indexes/bm25/<your_object_index>
@@ -151,16 +151,16 @@ python scripts/build_object_bm25_index.py \
 如果希望模型引用管理层解释，需要单独准备 8-K 业绩材料。它的用途是补充公司管理层口径，不能替代 10-K / 10-Q 里的财务事实。
 
 ```bash
-python scripts/download_sec_8k_earnings.py \
+python scripts/data_sec/download_sec_8k_earnings.py \
   --config configs/<your_8k_universe>.yaml \
   --allow-missing
 
-python scripts/build_sec_8k_earnings_manifest.py \
+python scripts/data_sec/build_sec_8k_earnings_manifest.py \
   --config configs/<your_8k_universe>.yaml \
   --output data/processed_private/manifests/<your_8k_manifest>.jsonl \
   --gap-output data/processed_private/source_gaps/<your_8k_gaps>.jsonl
 
-python scripts/build_sec_8k_earnings_chunks.py \
+python scripts/data_sec/build_sec_8k_earnings_chunks.py \
   --manifest data/processed_private/manifests/<your_8k_manifest>.jsonl \
   --output data/processed_private/chunks/<your_8k_chunks>.jsonl
 ```
@@ -221,7 +221,7 @@ python scripts/market/40_build_market_evidence_pack.py \
 1. 跑本地结构检查：
 
 ```bash
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
 ```
 
 2. 检查 `.env` 配置：
@@ -237,7 +237,7 @@ SEC_AGENT_PROFILE_ENV=.env bash scripts/cloud/sec_agent_interactive.sh config-fu
 5. 把生成的运行结果目录交给就绪检查器：
 
 ```bash
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py \
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py \
   --saved-full-source-run-dir eval/sec_cases/outputs/<run>/<case> \
   --require-full-source-artifacts \
   --timeout-s 900

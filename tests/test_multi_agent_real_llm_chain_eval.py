@@ -8,7 +8,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "multi_agent_real_llm_chain_cases_v0_1.jsonl"
 FULL_CHAIN_MULTITURN_FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_full_chain_multiturn_cases_v0_1.jsonl"
-SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent_real_llm_chain.py"
+SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent" / "eval_multi_agent_real_llm_chain.py"
 
 
 def test_multi_agent_real_llm_chain_fixture_schema() -> None:

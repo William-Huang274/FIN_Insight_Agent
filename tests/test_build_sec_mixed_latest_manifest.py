@@ -10,7 +10,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_builder_module():
-    path = REPO_ROOT / "scripts" / "build_sec_mixed_latest_manifest.py"
+    path = REPO_ROOT / "scripts" / "data_sec" / "build_sec_mixed_latest_manifest.py"
     spec = importlib.util.spec_from_file_location("build_sec_mixed_latest_manifest_under_test", path)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader
@@ -19,7 +19,7 @@ def _load_builder_module():
 
 
 def _load_manifest_module():
-    path = REPO_ROOT / "scripts" / "build_sec_manifest.py"
+    path = REPO_ROOT / "scripts" / "data_sec" / "build_sec_manifest.py"
     spec = importlib.util.spec_from_file_location("build_sec_manifest_under_test", path)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader

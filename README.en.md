@@ -111,14 +111,14 @@ pip install -r requirements.txt
 Run local structural checks. These do not require an API key or private data:
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
 python -m pytest tests/test_resume_closeout_readiness.py tests/test_sec_agent_context_source_policy.py tests/test_market_snapshot_fixture.py
 ```
 
 Faster local contract check:
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py `
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py `
   --skip-main-chain-case-suite `
   --skip-context-load-smoke `
   --skip-latency-profile
@@ -192,9 +192,16 @@ src/
 scripts/
   README.md        current mainline script surface
   cloud/           interactive agent, session CLI, and graph runner
+  data_sec/        SEC / 8-K download, manifests, chunking, and source-gap handling
+  data_retrieval/  evidence objects, structured objects, BM25, ObjectBM25, and ledgers
+  eval_context/    context, tool controller, latency, and release-readiness checks
+  eval_multi_agent/ layered multi-agent gates and full-chain evaluations
+  eval_sec_benchmark/ SEC benchmark runtime support and post gates
+  eval_query_planner/ free-query planner evaluation
   market/          market snapshot download, normalization, analytics, and evidence packs
   mcp/             MCP contracts, server, and smoke checks
   workbench/       local Workbench startup and environment helpers
+  archive/         versioned historical script archive
 
 docs/
   README.md        documentation map and reader paths

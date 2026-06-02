@@ -224,7 +224,7 @@ _DATA_BUILD_STEPS = {
         "SEC",
         "下载 SEC 10-K/10-Q",
         "按配置下载 SEC 公司披露原文到本地私有缓存。",
-        "scripts/download_sec_filings.py",
+        "scripts/data_sec/download_sec_filings.py",
         [
             _param("config", "--config", "配置 YAML", default="configs/sec_tech_universe.yaml"),
             _param("cache_dir", "--cache-dir", "SEC 缓存目录", default="data/raw_private/sec_filings"),
@@ -243,7 +243,7 @@ _DATA_BUILD_STEPS = {
         "SEC",
         "生成 SEC 清单",
         "从 SEC 原文缓存和元数据生成 manifest JSONL。",
-        "scripts/build_sec_manifest.py",
+        "scripts/data_sec/build_sec_manifest.py",
         [
             _param("config", "--config", "配置 YAML", default="configs/sec_tech_universe.yaml"),
             _param("root", "--root", "SEC 缓存目录", default="data/raw_private/sec_filings"),
@@ -261,7 +261,7 @@ _DATA_BUILD_STEPS = {
         "SEC",
         "切分 SEC 文本",
         "把 SEC HTML 披露按章节切成可检索片段。",
-        "scripts/build_sec_chunks.py",
+        "scripts/data_sec/build_sec_chunks.py",
         [
             _param("manifest", "--manifest", "输入清单", required=True),
             _param("output", "--output", "输出 chunks", required=True),
@@ -282,7 +282,7 @@ _DATA_BUILD_STEPS = {
         "SEC",
         "生成 EvidenceObject",
         "把 SEC chunks 转成统一证据 JSONL。",
-        "scripts/build_evidence_store.py",
+        "scripts/data_retrieval/build_evidence_store.py",
         [
             _param("chunks", "--chunks", "输入 chunks", required=True),
             _param("output", "--output", "输出证据库", required=True),
@@ -294,7 +294,7 @@ _DATA_BUILD_STEPS = {
         "SEC",
         "构建 BM25 索引",
         "从 EvidenceObject JSONL 构建 BM25 文本索引。",
-        "scripts/build_bm25_index.py",
+        "scripts/data_retrieval/build_bm25_index.py",
         [
             _param("evidence", "--evidence", "输入证据库", required=True),
             _param("output_dir", "--output-dir", "输出索引目录", required=True),
@@ -311,7 +311,7 @@ _DATA_BUILD_STEPS = {
         "SEC",
         "构建 ObjectBM25 索引",
         "从结构化对象目录构建 ObjectBM25 索引。",
-        "scripts/build_object_bm25_index.py",
+        "scripts/data_retrieval/build_object_bm25_index.py",
         [
             _param("structured_dir", "--structured-dir", "结构化对象目录", required=True),
             _param("prefix", "--prefix", "文件前缀"),
@@ -330,7 +330,7 @@ _DATA_BUILD_STEPS = {
         "8-K",
         "下载 8-K 业绩稿",
         "下载公司 8-K 业绩新闻稿附件，并可输出缺口记录。",
-        "scripts/download_sec_8k_earnings.py",
+        "scripts/data_sec/download_sec_8k_earnings.py",
         [
             _param("config", "--config", "配置 YAML", default="configs/sec_8k_earnings_pilot.yaml"),
             _param("cache_dir", "--cache-dir", "8-K 缓存目录", default="data/raw_private/sec_8k_earnings"),
@@ -351,7 +351,7 @@ _DATA_BUILD_STEPS = {
         "8-K",
         "生成 8-K 清单",
         "从 8-K 业绩稿缓存生成 manifest 和缺口记录。",
-        "scripts/build_sec_8k_earnings_manifest.py",
+        "scripts/data_sec/build_sec_8k_earnings_manifest.py",
         [
             _param("config", "--config", "配置 YAML", default="configs/sec_8k_earnings_pilot.yaml"),
             _param("root", "--root", "8-K 缓存目录", default="data/raw_private/sec_8k_earnings"),
@@ -369,7 +369,7 @@ _DATA_BUILD_STEPS = {
         "8-K",
         "合并来源缺口",
         "合并下载阶段和 manifest 阶段的结构化缺口记录。",
-        "scripts/merge_sec_source_gaps.py",
+        "scripts/data_sec/merge_sec_source_gaps.py",
         [
             _param("input", "--input", "输入缺口文件", required=True, multiple=True),
             _param("output", "--output", "输出缺口文件", required=True),

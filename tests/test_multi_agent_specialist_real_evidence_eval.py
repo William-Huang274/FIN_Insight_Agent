@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent_specialist_real_evidence_quality.py"
+SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent" / "eval_multi_agent_specialist_real_evidence_quality.py"
 SPEC = importlib.util.spec_from_file_location("eval_multi_agent_specialist_real_evidence_quality", SCRIPT_PATH)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)

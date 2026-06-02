@@ -43,7 +43,7 @@ def _repo_path(value: str) -> Path:
 def _run_context_bm25_only(args: argparse.Namespace, cases_path: Path, trace_dir: Path) -> None:
     cmd = [
         sys.executable,
-        "scripts/run_sec_benchmark_eval.py",
+        "scripts/eval_sec_benchmark/run_sec_benchmark_eval.py",
         "--cases-path",
         str(cases_path),
         "--mode",

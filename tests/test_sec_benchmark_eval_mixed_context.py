@@ -8,7 +8,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_eval_module():
-    path = REPO_ROOT / "scripts" / "run_sec_benchmark_eval.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "run_sec_benchmark_eval.py"
     spec = importlib.util.spec_from_file_location("run_sec_benchmark_eval_under_test", path)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader

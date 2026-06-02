@@ -39,11 +39,11 @@ PREFIX=data/processed_private/evidence_objects/sec_tech_primary_mixed_with_8k_ea
 EVID=${PREFIX}_evidence_fy2023_2027.jsonl
 OUT=data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects
 
-"$PY" scripts/build_structured_objects.py \
+"$PY" scripts/data_retrieval/build_structured_objects.py \
   --evidence-path "$EVID" \
   --prefix "$PREFIX"
 
-"$PY" scripts/build_object_bm25_index.py \
+"$PY" scripts/data_retrieval/build_object_bm25_index.py \
   --prefix "$PREFIX" \
   --output-dir "$OUT"
 ```
@@ -74,7 +74,7 @@ ENABLE_THINKING=0 \
 DISABLE_THINKING=1 \
 PLANNER_MAX_TOKENS=4000 \
 PLANNER_TIMEOUT_S=240 \
-"$PY" scripts/run_sec_free_query_planner_eval.py \
+"$PY" scripts/eval_query_planner/run_sec_free_query_planner_eval.py \
   --eval-path eval_sets/sec_agent_resume_closeout_planner_eval_v1.jsonl \
   --output-path "$CONTRACTS" \
   --query-planner llm \
@@ -90,7 +90,7 @@ PLANNER_TIMEOUT_S=240 \
   --bm25-index-dir data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027 \
   --object-bm25-index-dir data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects
 
-"$PY" scripts/evaluate_sec_free_query_planner.py \
+"$PY" scripts/eval_query_planner/evaluate_sec_free_query_planner.py \
   --eval-path eval_sets/sec_agent_resume_closeout_planner_eval_v1.jsonl \
   --contracts-path "$CONTRACTS" \
   --output-path "$REPORT" \
@@ -118,7 +118,7 @@ Attach a saved full-source DeepSeek run directory:
 cd /root/autodl-tmp/FIN_Insight_Agent
 PY=/root/autodl-tmp/envs/sec-agent-cu128/bin/python
 
-"$PY" scripts/evaluate_sec_agent_resume_closeout_readiness.py \
+"$PY" scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py \
   --saved-full-source-run-dir eval/sec_cases/outputs/full_source_deepseek_yahoo_fmp_latest_coverage_fix_benchmark/20260526_024807_3fbff2951a \
   --require-full-source-artifacts \
   --latency-profile-case-path eval/sec_cases/outputs/interactive_sec_agent/20260526_182016_e9ca76fb2b/case.jsonl \

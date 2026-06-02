@@ -28,7 +28,7 @@ def _load_interactive_module():
 
 
 def _load_synthesis_module():
-    path = REPO_ROOT / "scripts" / "run_sec_eval_synthesis_qwen9b_backend.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "run_sec_eval_synthesis_qwen9b_backend.py"
     scripts_root = str(REPO_ROOT / "scripts")
     if scripts_root not in sys.path:
         sys.path.insert(0, scripts_root)
@@ -40,7 +40,7 @@ def _load_synthesis_module():
 
 
 def _load_ledger_missing_gate_module():
-    path = REPO_ROOT / "scripts" / "validate_sec_benchmark_ledger_missing_consistency.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "validate_sec_benchmark_ledger_missing_consistency.py"
     spec = importlib.util.spec_from_file_location("ledger_missing_gate_under_test", path)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader
@@ -49,7 +49,7 @@ def _load_ledger_missing_gate_module():
 
 
 def _load_semantic_contract_gate_module():
-    path = REPO_ROOT / "scripts" / "validate_sec_benchmark_v2_semantic_contracts.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "validate_sec_benchmark_v2_semantic_contracts.py"
     spec = importlib.util.spec_from_file_location("semantic_contract_gate_under_test", path)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader

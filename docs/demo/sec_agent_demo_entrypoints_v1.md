@@ -25,13 +25,13 @@ Private or ignored content includes:
 Run this first after cloning the repository. It requires no API key and no private SEC or market data.
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
 ```
 
 For a faster local contract check, skip the main-chain suite, pressure check, and latency profile:
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py `
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py `
   --skip-main-chain-case-suite `
   --skip-context-load-smoke `
   --skip-latency-profile
@@ -110,7 +110,7 @@ Suggested flow:
 If a full-chain run directory already exists, pass it to the readiness checker.
 
 ```bash
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py \
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py \
   --saved-full-source-run-dir eval/sec_cases/outputs/<run>/<case> \
   --require-full-source-artifacts \
   --timeout-s 900

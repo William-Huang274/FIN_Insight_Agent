@@ -23,7 +23,7 @@ from sec_agent.context_api import _default_source_policy  # noqa: E402
 
 
 def _load_8k_manifest_module():
-    path = REPO_ROOT / "scripts" / "build_sec_8k_earnings_manifest.py"
+    path = REPO_ROOT / "scripts" / "data_sec" / "build_sec_8k_earnings_manifest.py"
     spec = importlib.util.spec_from_file_location("build_sec_8k_earnings_manifest_under_test", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -32,7 +32,7 @@ def _load_8k_manifest_module():
 
 
 def _load_8k_downloader_module():
-    path = REPO_ROOT / "scripts" / "download_sec_8k_earnings.py"
+    path = REPO_ROOT / "scripts" / "data_sec" / "download_sec_8k_earnings.py"
     spec = importlib.util.spec_from_file_location("download_sec_8k_earnings_under_test", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -41,7 +41,7 @@ def _load_8k_downloader_module():
 
 
 def _load_source_gap_merge_module():
-    path = REPO_ROOT / "scripts" / "merge_sec_source_gaps.py"
+    path = REPO_ROOT / "scripts" / "data_sec" / "merge_sec_source_gaps.py"
     spec = importlib.util.spec_from_file_location("merge_sec_source_gaps_under_test", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -50,7 +50,7 @@ def _load_source_gap_merge_module():
 
 
 def _load_benchmark_eval_module():
-    path = REPO_ROOT / "scripts" / "run_sec_benchmark_eval.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "run_sec_benchmark_eval.py"
     spec = importlib.util.spec_from_file_location("run_sec_benchmark_eval_8k_under_test", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -77,7 +77,7 @@ def _load_interactive_module():
 
 
 def _load_synthesis_module():
-    path = REPO_ROOT / "scripts" / "run_sec_eval_synthesis_qwen9b_backend.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "run_sec_eval_synthesis_qwen9b_backend.py"
     scripts_root = str(REPO_ROOT / "scripts")
     if scripts_root not in sys.path:
         sys.path.insert(0, scripts_root)
@@ -89,7 +89,7 @@ def _load_synthesis_module():
 
 
 def _load_answer_ledger_validator_module():
-    path = REPO_ROOT / "scripts" / "validate_sec_benchmark_answer_ledger.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "validate_sec_benchmark_answer_ledger.py"
     spec = importlib.util.spec_from_file_location("answer_ledger_validator_8k_under_test", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

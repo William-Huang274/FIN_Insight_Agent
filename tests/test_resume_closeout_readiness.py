@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_module():
-    path = REPO_ROOT / "scripts" / "evaluate_sec_agent_resume_closeout_readiness.py"
+    path = REPO_ROOT / "scripts" / "eval_context" / "evaluate_sec_agent_resume_closeout_readiness.py"
     spec = importlib.util.spec_from_file_location("resume_closeout_readiness_under_test", path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None

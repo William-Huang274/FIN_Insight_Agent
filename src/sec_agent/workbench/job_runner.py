@@ -137,7 +137,7 @@ def build_eval_command(
         args = [
             sys.executable,
             "-u",
-            "scripts/evaluate_sec_agent_context_api_smoke.py",
+            "scripts/eval_context/evaluate_sec_agent_context_api_smoke.py",
             "--controller-backend",
             "heuristic",
             "--clean-fixtures",
@@ -148,7 +148,7 @@ def build_eval_command(
         args = [
             sys.executable,
             "-u",
-            "scripts/benchmark_sec_agent_context_api.py",
+            "scripts/eval_context/benchmark_sec_agent_context_api.py",
             "--controller-backend",
             "heuristic",
             "--requests",
@@ -165,7 +165,7 @@ def build_eval_command(
         args = [
             sys.executable,
             "-u",
-            "scripts/evaluate_sec_agent_resume_closeout_readiness.py",
+            "scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py",
             "--output-path",
             str(output_path),
             "--timeout-s",

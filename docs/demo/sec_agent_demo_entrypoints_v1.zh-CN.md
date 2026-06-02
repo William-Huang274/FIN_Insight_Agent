@@ -25,13 +25,13 @@
 这是克隆仓库后最先跑的检查。不需要 API key，也不需要私有 SEC 或市场数据。
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
 ```
 
 如果只想快速检查本地合同，可以跳过主链路、压力检查和耗时分析：
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py `
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py `
   --skip-main-chain-case-suite `
   --skip-context-load-smoke `
   --skip-latency-profile
@@ -110,7 +110,7 @@ SEC_AGENT_PROFILE_ENV=.env bash scripts/cloud/sec_agent_interactive.sh session-f
 如果已经有完整链路运行目录，可以把它交给就绪检查器，检查产物是否齐全。
 
 ```bash
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py \
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py \
   --saved-full-source-run-dir eval/sec_cases/outputs/<run>/<case> \
   --require-full-source-artifacts \
   --timeout-s 900

@@ -19,8 +19,9 @@ from typing import Any, Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
+SEC_BENCHMARK_SCRIPTS = SCRIPTS_ROOT / "eval_sec_benchmark"
 SRC_ROOT = REPO_ROOT / "src"
-for path in (SCRIPTS_ROOT, SRC_ROOT):
+for path in (SEC_BENCHMARK_SCRIPTS, SCRIPTS_ROOT, SRC_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 if hasattr(sys.stdout, "reconfigure"):
@@ -793,7 +794,7 @@ def build_judgment_plan_for_graph(args: argparse.Namespace, graph_state: dict[st
         _run(
             [
                 sys.executable,
-                "scripts/build_sec_benchmark_judgment_plan.py",
+                "scripts/eval_sec_benchmark/build_sec_benchmark_judgment_plan.py",
                 "--cases-path",
                 str(cases_path),
                 "--ledger-path",
@@ -2609,7 +2610,7 @@ def _stage_build_judgment_plan(
         _run(
             [
                 sys.executable,
-                "scripts/build_sec_benchmark_judgment_plan.py",
+                "scripts/eval_sec_benchmark/build_sec_benchmark_judgment_plan.py",
                 "--cases-path",
                 str(paths["cases_path"]),
                 "--ledger-path",
@@ -3317,7 +3318,7 @@ def _run_context(args: argparse.Namespace, cases_path: Path, trace_dir: Path) ->
 def _run_context_subprocess(args: argparse.Namespace, cases_path: Path, trace_dir: Path) -> dict[str, Any]:
     cmd = [
         sys.executable,
-        "scripts/run_sec_benchmark_eval.py",
+        "scripts/eval_sec_benchmark/run_sec_benchmark_eval.py",
         "--cases-path",
         str(cases_path),
         "--mode",
@@ -4269,7 +4270,7 @@ def _run_post_gates(
 ) -> None:
     cmd = [
         sys.executable,
-        "scripts/run_sec_benchmark_post_gates.py",
+        "scripts/eval_sec_benchmark/run_sec_benchmark_post_gates.py",
         "--gold-run-dir",
         str(qwen_dir),
         "--pipeline-run-dir",

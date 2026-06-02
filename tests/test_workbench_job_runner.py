@@ -262,7 +262,7 @@ def test_data_build_catalog_and_command_preview_are_whitelisted(tmp_path: Path) 
     )
 
     assert "sec_build_manifest" in step_ids
-    assert spec.args[:3] == [sys.executable, "-u", "scripts/build_sec_manifest.py"]
+    assert spec.args[:3] == [sys.executable, "-u", "scripts/data_sec/build_sec_manifest.py"]
     assert "--output" in preview.args
     assert "data/processed_private/manifests/demo.jsonl" in preview.args
     assert "--tickers" in preview.args

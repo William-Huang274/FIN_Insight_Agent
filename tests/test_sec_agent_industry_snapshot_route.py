@@ -26,7 +26,7 @@ def _load_synthesis_module():
     scripts_root = str(REPO_ROOT / "scripts")
     if scripts_root not in sys.path:
         sys.path.insert(0, scripts_root)
-    path = REPO_ROOT / "scripts" / "run_sec_eval_synthesis_qwen9b_backend.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "run_sec_eval_synthesis_qwen9b_backend.py"
     spec = importlib.util.spec_from_file_location("sec_agent_synthesis_under_test", path)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader

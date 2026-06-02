@@ -8,26 +8,31 @@
 - `cloud/sec_agent_interactive.py`：SEC / 8-K / 市场快照完整链路运行时。
 - `cloud/sec_agent_graph_runner.py`：图运行器，供 CLI、工具执行层和 Workbench 使用。
 - `cloud/sec_agent_context_session_cli.py`：多轮会话上下文运行入口。
-- `evaluate_sec_agent_resume_closeout_readiness.py`：本地发布就绪检查，覆盖上下文、来源策略、市场快照、耗时和结构性门控。
+- `eval_context/evaluate_sec_agent_resume_closeout_readiness.py`：本地发布就绪检查，覆盖上下文、来源策略、市场快照、耗时和结构性门控。
 
 ## 数据准备
 
-- SEC 披露和清单：`download_sec_filings.py`、`build_sec_manifest.py`、`build_sec_mixed_latest_manifest.py`、`build_sec_chunks.py`。
-- 8-K 业绩材料：`download_sec_8k_earnings.py`、`build_sec_8k_earnings_manifest.py`、`build_sec_8k_earnings_chunks.py`、`merge_sec_source_gaps.py`。
-- 证据对象和索引：`build_evidence_store.py`、`build_structured_objects.py`、`build_bm25_index.py`、`build_object_bm25_index.py`、`build_object_sqlite_fts_index.py`、`indexing/`、`ledger/`。
+- `data_sec/`：SEC 10-K / 10-Q、8-K 业绩材料、混合清单、文本切分、来源缺口合并、行业深度 universe 配置生成和覆盖探测。
+- `data_retrieval/`：证据对象、结构化对象、BM25、ObjectBM25、SQLite FTS、精确数值台账和覆盖矩阵。
 - 市场快照：`market/06_*` 到 `market/60_*`。
-- 行业和关系覆盖：`industry/`、`build_sector_depth_expansion_configs.py`、`probe_sector_depth_source_availability.py`。
+- 行业来源：`industry/10_download_industry_source_snapshot.py`。
+- 辅助索引和台账：`indexing/`、`ledger/`。
 
 ## 评测和门控
 
-- 多智能体分层门控：`eval_multi_agent_*.py` 和 `audit_multi_agent_*.py`。
-- 上下文和控制器检查：`evaluate_sec_agent_context_*.py`、`evaluate_sec_agent_tool_*.py`、`benchmark_sec_agent_context_api.py`、`evaluate_sec_agent_latency_profile.py`。
-- 基准评测运行和后置门控：`run_sec_benchmark_eval.py`、`run_sec_benchmark_post_gates.py`、`run_sec_benchmark_vllm_synthesis_from_traces.py`、`run_sec_eval_synthesis_qwen9b_backend.py`、`run_sec_eval_synthesis_contract_backend.py`、`score_sec_benchmark_outputs.py`，以及后置门控会调用的 `validate_sec_benchmark_*` 脚本。
+- `eval_multi_agent/`：多智能体分层门控、全链路真实模型评测和质量审计。
+- `eval_context/`：上下文状态、请求 API、工具控制器、工具执行层、延迟和发布就绪检查。
+- `eval_query_planner/`：自由问题解析和查询合同评测。
+- `eval_sec_benchmark/`：SEC benchmark 运行、旧 benchmark 运行时支撑、Qwen/contract synthesis 适配、后置门控和相关 validator。虽然目录名保留 benchmark，但其中部分脚本仍被当前完整链路复用，不能归档。
 
 ## 服务和本地工作台
 
 - `mcp/`：MCP 工具合同导出、服务端、调用器和冒烟检查。
 - `workbench/`：本地 Workbench 启动和环境辅助脚本，包括一键启动脚本、后端启动脚本和前端构建辅助。
+
+## 归档脚本
+
+- `archive/`：不再作为当前公开入口的历史脚本。目录名带版本号，例如 `v0_1_free_query/`、`v0_1_vllm_diagnostics/`。归档脚本只用于查历史实现，不保证随主链路持续维护。
 
 ## 维护原则
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT_PATH = REPO_ROOT / "scripts" / "audit_multi_agent_output_quality.py"
+SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent" / "audit_multi_agent_output_quality.py"
 
 
 def test_output_quality_audit_flags_high_cost_and_gap_without_second_pass() -> None:

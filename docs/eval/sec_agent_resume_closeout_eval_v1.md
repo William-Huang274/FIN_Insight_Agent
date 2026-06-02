@@ -15,7 +15,7 @@
 本地聚合入口：
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py
 ```
 
 默认输出到：
@@ -41,7 +41,7 @@ reports/quality/resume_closeout/<timestamp>_resume_closeout_readiness_local_v1.j
 云端 full-source DeepSeek 跑完后，用下面形式把产物接入同一份评测：
 
 ```bash
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py \
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py \
   --saved-full-source-run-dir /root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/<full_source_run>/<run_id> \
   --require-full-source-artifacts
 ```
@@ -123,19 +123,19 @@ fixture 已覆盖 partial artifact state 和 no-rerun follow-up；真实 stage-l
 本地不依赖 API key 的收口检查：
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
 ```
 
 只跑较快的 contract/fixture 检查：
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py --skip-main-chain-case-suite --skip-context-load-smoke --skip-latency-profile
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py --skip-main-chain-case-suite --skip-context-load-smoke --skip-latency-profile
 ```
 
 接入云端真实 full-source DeepSeek 产物：
 
 ```bash
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py \
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py \
   --saved-full-source-run-dir /root/autodl-tmp/FIN_Insight_Agent/eval/sec_cases/outputs/<run>/<case> \
   --require-full-source-artifacts \
   --timeout-s 900

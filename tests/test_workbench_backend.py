@@ -393,7 +393,7 @@ def test_workbench_backend_lists_and_starts_controlled_eval_runner(
     assert payload["job"]["metadata"]["eval_id"] == "context_api_smoke"
     assert payload["job"]["metadata"]["output_path"].endswith("eval_fixture_context_api_smoke.json")
     spec = captured["spec"]
-    assert "scripts/evaluate_sec_agent_context_api_smoke.py" in spec.args
+    assert "scripts/eval_context/evaluate_sec_agent_context_api_smoke.py" in spec.args
     assert "--output-path" in spec.args
 
 
@@ -469,7 +469,7 @@ def test_workbench_backend_lists_previews_and_starts_data_build_job(
     assert payload["job"]["metadata"]["bundle_id"] == "bundle_a"
     assert payload["job"]["metadata"]["bundle_artifact_updates"] == {"manifest_path": "data/processed_private/manifests/demo.jsonl"}
     spec = captured["spec"]
-    assert "scripts/build_sec_manifest.py" in spec.args
+    assert "scripts/data_sec/build_sec_manifest.py" in spec.args
     assert "--output" in spec.args
 
 

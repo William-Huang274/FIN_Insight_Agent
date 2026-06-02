@@ -251,11 +251,11 @@ Required v2 validator coverage:
 
 Status after the 2026-05-19 validator-first step:
 
-- `scripts/validate_sec_benchmark_v2_semantic_contracts.py` now covers peer
+- `scripts/eval_sec_benchmark/validate_sec_benchmark_v2_semantic_contracts.py` now covers peer
   entity separation, source-policy/wrong-attribution traps, proxy/direct use,
   non-comparable metric caveats, `period_change_amount` target-value misuse,
   and percentage-role-as-amount misuse.
-- The gate is wired into `scripts/run_sec_benchmark_post_gates.py` and can be
+- The gate is wired into `scripts/eval_sec_benchmark/run_sec_benchmark_post_gates.py` and can be
   skipped with `--skip-v2-semantic-contract-gate`.
 - The six-case v2 pilot passes the expanded post-gates:
   `reports/quality/local_v2_pilot_pipeline_bge_m3_judgment_plan_qwen9b_5090_contractfix4_post_gates_v2semantic/sec_benchmark_post_gates_summary.json`.

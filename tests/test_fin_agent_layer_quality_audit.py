@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT_PATH = REPO_ROOT / "scripts" / "audit_fin_agent_layer_quality.py"
+SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent" / "audit_fin_agent_layer_quality.py"
 RUBRIC_PATH = REPO_ROOT / "configs" / "fin_agent_quality_rubric_v0_1.json"
 
 

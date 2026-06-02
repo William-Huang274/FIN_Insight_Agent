@@ -114,14 +114,14 @@ pip install -r requirements.txt
 公开仓库可以直接跑结构检查，不需要 API key 或私有数据：
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
 python -m pytest tests/test_resume_closeout_readiness.py tests/test_sec_agent_context_source_policy.py tests/test_market_snapshot_fixture.py
 ```
 
 更快的本地合同检查：
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py `
+python scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py `
   --skip-main-chain-case-suite `
   --skip-context-load-smoke `
   --skip-latency-profile
@@ -195,9 +195,16 @@ src/
 scripts/
   README.md        当前主线脚本入口和保留范围
   cloud/           交互式智能体、会话 CLI、图运行器
+  data_sec/        SEC / 8-K 下载、清单、切分和来源缺口处理
+  data_retrieval/  证据对象、结构化对象、BM25、ObjectBM25 和数值台账
+  eval_context/    上下文、工具控制器、延迟和发布就绪检查
+  eval_multi_agent/ 多智能体分层门控和全链路评测
+  eval_sec_benchmark/ SEC benchmark 运行时支撑和后置门控
+  eval_query_planner/ 自由问题解析评测
   market/          市场快照下载、标准化、分析视图和证据包
   mcp/             MCP 工具合同、服务端和冒烟检查
   workbench/       本地 Workbench 启动和环境辅助脚本
+  archive/         带版本号的历史脚本归档
 
 docs/
   README.md        文档地图和读者路径

@@ -39,7 +39,7 @@ def _load_interactive_module():
 
 
 def _load_qwen_adapter_module():
-    path = REPO_ROOT / "scripts" / "run_sec_eval_synthesis_qwen9b_backend.py"
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "run_sec_eval_synthesis_qwen9b_backend.py"
     spec = importlib.util.spec_from_file_location("qwen_adapter_market_test", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

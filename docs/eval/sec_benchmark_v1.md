@@ -1,5 +1,12 @@
 # SEC Benchmark v1
 
+Archived note: this document records the original v1 benchmark design. The
+one-off seed builders and early gold-gate scripts that appeared in the first
+prototype have been removed from the main script surface. Current runnable
+entrypoints are listed in `scripts/README.md`; release checks should start from
+`scripts/evaluate_sec_agent_resume_closeout_readiness.py` and the current
+`scripts/run_sec_benchmark_post_gates.py` validator bundle.
+
 This benchmark turns the external SEC evaluation plan into the project-native
 evaluation contract for the current Fin Insight Agent pipeline.
 
@@ -118,33 +125,23 @@ These validators are mandatory before promoting a run:
 
 ## First-Step Readiness Test
 
-The first local test is not a model run. It validates that the benchmark itself
-is executable:
+The current local readiness check is not a model run. It validates that the
+agent script surface, context flow, source policy, market smoke, and structural
+contracts are executable:
 
 ```powershell
-python scripts\validate_sec_benchmark.py `
-  --cases-path eval\sec_cases\test_cases_v1.jsonl `
-  --output-path reports\quality\sec_benchmark_v1_step1_readiness.json `
-  --run-bm25-smoke
+python scripts\evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
 ```
 
-This checks schema validity, filing availability, section/evidence coverage,
-structured object availability, and a small BM25 smoke for pipeline-context
-readiness. Gold-context files are allowed to be missing in this first step, but
-the report must warn on them.
+Older prototype commands for v1 schema-only validation were retired with the
+historical script cleanup.
 
 ## Seed Gold Context
 
-Seed Gold Context files can be generated with:
-
-```powershell
-python scripts\build_sec_gold_context_seed.py --overwrite
-```
-
-These files are not final human gold. They are reproducible review candidates
-selected from filtered BM25 over `EvidenceObject` plus object-BM25 over
-structured metric/table objects. Every row carries `review_status:
-seed_needs_review`.
+Seed Gold Context files in this document are historical review candidates, not
+current public entrypoints. Current promotion should use checked-in eval cases,
+current retrieval traces, and the post-gate validator bundle instead of
+regenerating old v1 seed packs.
 
 ## Context-Only Runner
 
@@ -164,40 +161,14 @@ backend and claim verifier are connected.
 ## Gold Review Gate
 
 Seed Gold Context / Gold Facts are review candidates, not scored benchmark
-labels. Before any scored Gold-vs-Pipeline run, enforce the gold gate:
+labels. Current scored runs should use the active post-gate bundle:
 
 ```powershell
-python scripts\validate_sec_gold_gate.py `
-  --gate mainline_scored `
-  --output-path reports\quality\sec_benchmark_v1_gold_gate_mainline.json
+python scripts\run_sec_benchmark_post_gates.py `
+  --gold-run-dir eval\sec_cases\outputs\<gold_run> `
+  --pipeline-run-dir eval\sec_cases\outputs\<pipeline_run>
 ```
 
-Current manual review status blocks mainline scoring. Allowed gates are:
-
-```powershell
-python scripts\validate_sec_gold_gate.py --gate context_smoke
-python scripts\validate_sec_gold_gate.py --gate trap_smoke
-```
-
-The mainline gate requires a manual-review overall status of
-`approved_for_mainline_scored_benchmark`, per-case approved decisions, and no
-`seed_needs_review` rows in the active gold context or fact files.
-
-The first reviewed artifacts are case-filtered numeric regression packs:
-
-```powershell
-python scripts\validate_sec_gold_gate.py `
-  --gate mainline_scored `
-  --case-id AMZN_AWS_NUMERIC_2023_2025_001 `
-  --case-id GOOGL_CLOUD_CONTEXT_ROLE_2025_001 `
-  --gold-context-dir eval\sec_cases\reviewed_gold_context `
-  --gold-facts-dir eval\sec_cases\reviewed_gold_facts `
-  --manual-review-path reports\quality\sec_benchmark_v1_reviewed_gold_partial_approval.json `
-  --output-path reports\quality\sec_benchmark_v1_gold_gate_reviewed_numeric_cases.json
-```
-
-This is a case-filtered partial approval only. It does not unblock the full
-benchmark. For numeric cases, the gate also checks that each declared
-`numeric_checks` company-year-metric has exactly one reviewed target fact with
-matching ticker, fiscal year, period, metric family, metric role, `object_id`,
-and `source_evidence_id`.
+The active bundle includes answer-ledger, table-cell, named-fact,
+ledger-missing, semantic-contract, metric-source-grounding, trap, and
+gold-vs-pipeline checks where applicable.

@@ -12,6 +12,7 @@ SCHEMA_VERSION = "sec_agent_graph_state_v0.1"
 
 ARTIFACT_KEYS = (
     "query_contract",
+    "retrieval_plan",
     "retrieved_context",
     "market_snapshot_context",
     "runtime_exact_value_ledger",
@@ -22,10 +23,13 @@ ARTIFACT_KEYS = (
     "claim_verification",
     "deterministic_gates",
     "rendered_answer",
+    "multi_agent_summary",
 )
 
 OPTIONAL_ARTIFACT_KEYS = (
+    "retrieval_plan",
     "market_snapshot_context",
+    "multi_agent_summary",
 )
 
 

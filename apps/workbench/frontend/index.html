@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FinSight Workbench</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <aside class="sidebar" aria-label="Workbench navigation">
+        <div class="brand">
+          <div class="brand-mark">F</div>
+          <div>
+            <div class="brand-title">FinSight</div>
+            <div class="brand-subtitle">Workbench</div>
+          </div>
+        </div>
+        <nav class="nav-list">
+          <a class="nav-item active" href="#profile" aria-current="page">数据源配置</a>
+          <a class="nav-item" href="#readiness">数据源检查</a>
+          <a class="nav-item" href="#agent">Agent 会话</a>
+          <a class="nav-item muted" href="#artifacts">运行产物</a>
+          <a class="nav-item muted" href="#eval">评测入口</a>
+        </nav>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <h1>FinSight Workbench</h1>
+            <p>配置研究数据源，检查证据产物，并为后续 Agent 会话准备可复用 profile。</p>
+          </div>
+          <div id="healthBadge" class="status-pill neutral">连接中</div>
+        </header>
+
+        <section id="profile" class="panel">
+          <div class="section-heading">
+            <div>
+              <h2>Profile 导入</h2>
+              <p>导入现有 `.env` profile。Workbench 只保存环境变量名，不保存真实 API key。</p>
+            </div>
+          </div>
+
+          <form id="profileForm" class="profile-form">
+            <label>
+              <span>Profile 文件</span>
+              <input id="envPath" name="envPath" value="configs/sec_agent_full_source_demo.env.example" autocomplete="off" />
+            </label>
+            <label>
+              <span>Profile ID</span>
+              <input id="profileId" name="profileId" value="full_source_demo" autocomplete="off" />
+            </label>
+            <label>
+              <span>显示名称</span>
+              <input id="displayName" name="displayName" value="Full-source demo" autocomplete="off" />
+            </label>
+            <label>
+              <span>仓库根目录</span>
+              <input id="repoRoot" name="repoRoot" value="." autocomplete="off" />
+            </label>
+            <div class="form-actions">
+              <button id="importButton" type="button">导入 Profile</button>
+              <button id="saveButton" type="button" class="secondary">保存 Profile</button>
+              <button id="validateButton" type="button" class="secondary">检查数据源</button>
+            </div>
+          </form>
+
+          <div id="savedProfiles" class="saved-profiles empty-state">
+            <h3>已保存 Profile</h3>
+            <p>保存后会出现在这里，便于下一次直接加载。</p>
+          </div>
+
+          <div id="profileSummary" class="summary-grid empty-state">
+            <div>
+              <h3>等待导入</h3>
+              <p>导入后这里会展示模型路由、source policy、数据路径和密钥环境变量名。</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="readiness" class="panel">
+          <div class="section-heading">
+            <div>
+              <h2>Source Readiness</h2>
+              <p>检查 manifest、BM25 / ObjectBM25、8-K source gap 和 market evidence 是否足以支撑当前 profile。</p>
+            </div>
+          <div id="readinessStatus" class="status-pill neutral">未检查</div>
+          </div>
+
+          <div id="readinessSummary" class="readiness-layout empty-state">
+            <div>
+              <h3>没有 readiness 报告</h3>
+              <p>点击“检查数据源”后，Workbench 会把缺失项、覆盖范围和市场快照字段列出来。</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="agent" class="panel">
+          <div class="section-heading">
+            <div>
+              <h2>Agent 会话</h2>
+              <p>先用受控后台任务跑轻量 smoke；完整单轮任务会复用当前 Profile，并通过日志面板显示执行进度。</p>
+            </div>
+            <div id="jobStatus" class="status-pill neutral">未启动</div>
+          </div>
+
+          <div class="agent-grid">
+            <label class="prompt-field">
+              <span>单轮问题</span>
+              <textarea id="agentPrompt">结合 SEC 10-K、最新 10-Q、8-K 业绩新闻稿和最近三个月市场快照，比较 NVDA、AMD、MSFT、AMZN、GOOGL 的 AI 基本面、管理层解释、市场反应和估值分歧。</textarea>
+            </label>
+            <label>
+              <span>运行模式</span>
+              <select id="commandMode">
+                <option value="ask-full-source-api">完整数据源 API 模式</option>
+                <option value="ask-mixed-8k-api">SEC + 8-K API 模式</option>
+                <option value="ask-mixed-api">SEC 10-K/10-Q API 模式</option>
+                <option value="ask-api">基础 API 模式</option>
+                <option value="plan">仅规划查询合约</option>
+              </select>
+            </label>
+            <div class="form-actions">
+              <button id="smokeButton" type="button" class="secondary">运行本地 Smoke</button>
+              <button id="agentAskButton" type="button">启动单轮 Agent</button>
+            </div>
+          </div>
+
+          <div class="job-console">
+            <div class="job-console-header">
+              <h3>运行日志</h3>
+              <span id="jobMeta" class="mono">尚未启动</span>
+            </div>
+            <pre id="jobLog">运行本地 smoke 或单轮 Agent 后，这里会显示 stdout/system 事件。</pre>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

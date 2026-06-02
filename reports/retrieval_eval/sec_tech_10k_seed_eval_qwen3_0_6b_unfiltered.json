@@ -1,0 +1,3485 @@
+{
+  "gold_set": "eval_sets/sec_tech_10k_seed.jsonl",
+  "query_count": 30,
+  "filter_mode": "none",
+  "k_values": [
+    1,
+    3,
+    5,
+    10
+  ],
+  "retrievers": {
+    "dense": {
+      "summary": {
+        "query_count": 30,
+        "mrr": 0.6338888888888888,
+        "hit_rate@1": 0.5,
+        "mean_recall@1": 0.45,
+        "hit_rate@3": 0.7,
+        "mean_recall@3": 0.6333333333333333,
+        "hit_rate@5": 0.8333333333333334,
+        "mean_recall@5": 0.7666666666666667,
+        "hit_rate@10": 0.9,
+        "mean_recall@10": 0.8666666666666667
+      },
+      "misses_at_max_k": [
+        "seed_008_nvda_2025_supply_manufacturing_risk",
+        "seed_012_googl_2024_ad_revenue_components",
+        "seed_030_snow_2025_rpo"
+      ],
+      "per_query": [
+        {
+          "query_id": "seed_001_msft_2024_cloud_revenue",
+          "query": "What drove Microsoft Cloud revenue growth in fiscal 2024?",
+          "ticker": "MSFT",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "cloud",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_02",
+            "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_01_OF_02",
+            "MSFT_2023_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "MSFT_2024_10K_ITEM7_BLOCK_0005_PART_01_OF_02",
+            "MSFT_2024_10K_ITEM8_BLOCK_0022_PART_02_OF_04",
+            "MSFT_2024_10K_ITEM7_BLOCK_0005_PART_02_OF_02",
+            "MSFT_2025_10K_ITEM8_BLOCK_0022_PART_02_OF_04",
+            "MSFT_2023_10K_ITEM7_BLOCK_0005_PART_01_OF_03"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "score": 0.7666647434234619,
+            "ticker": "MSFT",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Highlights from fiscal year 2024 compared with fiscal year 2023 included",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Highlights from fiscal year 2024 compared with fiscal year 2023 included: • Microsoft Cloud revenue increased 23% to $137.4 billion. • Office Commercial products and cloud services revenue increased 14% driven by Office 365 Commercial growth of 16%. • Office Consumer products and..."
+          }
+        },
+        {
+          "query_id": "seed_002_msft_2025_azure_description",
+          "query": "How does Microsoft describe Azure and its cloud services in fiscal 2025?",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "cloud",
+            "azure"
+          ],
+          "relevant_evidence_ids": [
+            "MSFT_2025_10K_ITEM1_BLOCK_0006_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "MSFT_2023_10K_ITEM1_BLOCK_0014_CHUNK_0001",
+            "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "MSFT_2023_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+            "MSFT_2024_10K_ITEM1_BLOCK_0012_CHUNK_0001",
+            "MSFT_2025_10K_ITEM1_BLOCK_0006_CHUNK_0001",
+            "MSFT_2025_10K_ITEM8_BLOCK_0022_PART_02_OF_04",
+            "MSFT_2023_10K_ITEM1_BLOCK_0008_CHUNK_0001",
+            "MSFT_2024_10K_ITEM1_BLOCK_0006_CHUNK_0001",
+            "MSFT_2024_10K_ITEM1_BLOCK_0001_PART_02_OF_04",
+            "MSFT_2025_10K_ITEM1_BLOCK_0005_CHUNK_0001"
+          ],
+          "best_rank": 5,
+          "reciprocal_rank": 0.2,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "MSFT_2025_10K_ITEM1_BLOCK_0006_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "MSFT_2025_10K_ITEM1_BLOCK_0006_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "MSFT_2023_10K_ITEM1_BLOCK_0014_CHUNK_0001",
+            "score": 0.6617350578308105,
+            "ticker": "MSFT",
+            "fiscal_year": 2023,
+            "section": "Item 1. Business",
+            "subsection": "Cloud and AI",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Cloud and AI – focuses on making IT professionals, developers, partners, independent software vendors, and their systems more productive and efficient through development of Azure AI platform and cloud infrastructure, server, database, CRM, ERP, software development tools and ser..."
+          }
+        },
+        {
+          "query_id": "seed_003_msft_2025_ai_risk",
+          "query": "What risks does Microsoft disclose around developing and deploying AI in 2025?",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "ai"
+          ],
+          "relevant_evidence_ids": [
+            "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001",
+            "MSFT_2024_10K_ITEM1A_BLOCK_0017_CHUNK_0001",
+            "MSFT_2023_10K_ITEM1A_BLOCK_0018_CHUNK_0001",
+            "MSFT_2024_10K_ITEM1_BLOCK_0012_CHUNK_0001",
+            "MSFT_2023_10K_ITEM1A_BLOCK_0006_CHUNK_0001",
+            "MSFT_2023_10K_ITEM1_BLOCK_0014_CHUNK_0001",
+            "MSFT_2024_10K_ITEM1_BLOCK_0001_PART_02_OF_04",
+            "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "MSFT_2023_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+            "MSFT_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_03"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001",
+            "score": 0.69521164894104,
+            "ticker": "MSFT",
+            "fiscal_year": 2025,
+            "section": "Item 1A. Risk Factors",
+            "subsection": "Issues in the development, deployment, and use of AI may result in reputational or competitive harm or liability",
+            "evidence_type": "risk_disclosure",
+            "contains_table": false,
+            "text_preview": "Issues in the development, deployment, and use of AI may result in reputational or competitive harm or liability . We are building AI into many of our offerings, including our productivity services, and we are also making AI available for our customers to use in solutions that th..."
+          }
+        },
+        {
+          "query_id": "seed_004_aapl_2025_services_growth",
+          "query": "Why did Apple's Services net sales increase in fiscal 2025?",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "services",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_02_OF_02",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+            "AAPL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "AAPL_2025_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "AAPL_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001",
+            "AAPL_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "AAPL_2023_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "AAPL_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_03",
+            "AAPL_2023_10K_ITEM7_BLOCK_0001_CHUNK_0001"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "score": 0.732231855392456,
+            "ticker": "AAPL",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Services",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Services Services net sales increased during 2025 compared to 2024 primarily due to higher net sales from advertising, the App Store and cloud services. Apple Inc. | 2025 Form 10-K | 23 Gross Margin Products and Services gross margin and gross margin percentage for 2025, 2024 and..."
+          }
+        },
+        {
+          "query_id": "seed_005_aapl_2024_iphone_sales",
+          "query": "What happened to Apple's iPhone net sales in fiscal 2024?",
+          "ticker": "AAPL",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "iphone",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_02_OF_02",
+            "AAPL_2023_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+            "AAPL_2023_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "AAPL_2024_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "AAPL_2024_10K_ITEM8_BLOCK_0003_PART_02_OF_02",
+            "AAPL_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "AAPL_2024_10K_ITEM8_BLOCK_0001_PART_01_OF_03",
+            "AAPL_2023_10K_ITEM7_BLOCK_0003_PART_02_OF_02"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+            "score": 0.7978527545928955,
+            "ticker": "AAPL",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Fourth Quarter 2024",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Fourth Quarter 2024: • iPhone 16, iPhone 16 Plus, iPhone 16 Pro and iPhone 16 Pro Max; • Apple Watch Series 10; and • AirPods 4. Fiscal Period The Company’s fiscal year is the 52- or 53-week period that ends on the last Saturday of September. An additional week is included in the..."
+          }
+        },
+        {
+          "query_id": "seed_006_aapl_2025_supply_concentration",
+          "query": "Where does Apple discuss supply concentrations and purchase commitments in fiscal 2025?",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "tags": [
+            "financial_note",
+            "supply",
+            "commitments"
+          ],
+          "relevant_evidence_ids": [
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "AAPL_2024_10K_ITEM8_BLOCK_0013_CHUNK_0001",
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001",
+            "AAPL_2023_10K_ITEM8_BLOCK_0013_CHUNK_0001",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+            "AAPL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "AAPL_2025_10K_ITEM8_BLOCK_0002_CHUNK_0001",
+            "AAPL_2025_10K_ITEM8_BLOCK_0014_PART_01_OF_03",
+            "AAPL_2025_10K_ITEM1A_BLOCK_0004_CHUNK_0001",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_02_OF_02",
+            "AAPL_2025_10K_ITEM7_BLOCK_0007_PART_01_OF_02"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "AAPL_2024_10K_ITEM8_BLOCK_0013_CHUNK_0001",
+            "score": 0.6781156063079834,
+            "ticker": "AAPL",
+            "fiscal_year": 2024,
+            "section": "Item 8. Financial Statements and Supplementary Data",
+            "subsection": "Note 12 –",
+            "evidence_type": "financial_statement_or_note",
+            "contains_table": true,
+            "text_preview": "Note 12 – Commitments, Contingencies and Supply Concentrations Unconditional Purchase Obligations The Company has entered into certain off–balance sheet commitments that require the future purchase of goods or services (“unconditional purchase obligations”). The Company’s uncondi..."
+          }
+        },
+        {
+          "query_id": "seed_007_nvda_2025_customer_concentration",
+          "query": "What does NVIDIA disclose about customer concentration in fiscal 2025 revenue?",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "customer_concentration",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+            "NVDA_2025_10K_ITEM7_BLOCK_0008_CHUNK_0001",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0012_PART_02_OF_02",
+            "NVDA_2023_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+            "NVDA_2025_10K_ITEM1_BLOCK_0005_PART_03_OF_03",
+            "NVDA_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04",
+            "NVDA_2023_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_03_OF_04"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+            "score": 0.6711259484291077,
+            "ticker": "NVDA",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Concentration of Revenue",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Concentration of Revenue We refer to customers who purchase products directly from NVIDIA as direct customers, such as AIBs, distributors, ODMs, OEMs, and system integrators. We have certain customers that may purchase products directly from NVIDIA and may use either internal res..."
+          }
+        },
+        {
+          "query_id": "seed_008_nvda_2025_supply_manufacturing_risk",
+          "query": "What supply and manufacturing risks does NVIDIA describe in fiscal 2025?",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "supply_chain",
+            "manufacturing"
+          ],
+          "relevant_evidence_ids": [
+            "NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_01_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_03_OF_03"
+          ],
+          "top_evidence_ids": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+            "NVDA_2023_10K_ITEM1A_BLOCK_0001_CHUNK_0001",
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04",
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_01_OF_04",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0012_PART_02_OF_02",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0004_PART_03_OF_04",
+            "NVDA_2023_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "NVDA_2025_10K_ITEM1_BLOCK_0005_PART_02_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0001_CHUNK_0001",
+            "NVDA_2024_10K_ITEM1_BLOCK_0005_PART_02_OF_03"
+          ],
+          "best_rank": null,
+          "reciprocal_rank": 0.0,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": false,
+          "recall@10": 0.0,
+          "matched@10": [],
+          "top_hit": {
+            "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+            "score": 0.7194557189941406,
+            "ticker": "NVDA",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Item 7. Management's Discussion and Analysis",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Item 7. Management's Discussion and Analysis of Financial Condition and Results of Operations The following discussion and analysis of our financial condition and results of operations should be read in conjunction with “Item 1A. Risk Factors,” our Consolidated Financial Statemen..."
+          }
+        },
+        {
+          "query_id": "seed_009_nvda_2025_export_controls",
+          "query": "How could export controls and China licensing restrictions affect NVIDIA in fiscal 2025?",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "export_controls",
+            "china"
+          ],
+          "relevant_evidence_ids": [
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_03_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_01_OF_03"
+          ],
+          "top_evidence_ids": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_02_OF_04",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0011_PART_03_OF_03",
+            "NVDA_2023_10K_ITEM1A_BLOCK_0010_PART_02_OF_02",
+            "NVDA_2025_10K_ITEM1_BLOCK_0005_PART_02_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_03_OF_03",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0012_PART_01_OF_02",
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_02_OF_04",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_02_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_02_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_01_OF_03"
+          ],
+          "best_rank": 5,
+          "reciprocal_rank": 0.2,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": true,
+          "recall@5": 0.5,
+          "matched@5": [
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_03_OF_03"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_03_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_01_OF_03"
+          ],
+          "top_hit": {
+            "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_02_OF_04",
+            "score": 0.7857320308685303,
+            "ticker": "NVDA",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Item 7. Management's Discussion and Analysis",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "In October 2023, the USG announced new and updated licensing requirements that became effective in our fourth quarter of fiscal year 2024 for exports to China and Country Groups D1, D4, and D5 (including but not limited to Saudi Arabia, the United Arab Emirates, and Vietnam, but ..."
+          }
+        },
+        {
+          "query_id": "seed_010_nvda_2024_compute_networking",
+          "query": "Why did NVIDIA Compute and Networking revenue increase in fiscal 2024?",
+          "ticker": "NVDA",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "data_center",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_03_OF_04",
+            "NVDA_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001",
+            "NVDA_2023_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+            "NVDA_2024_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+            "NVDA_2024_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "NVDA_2023_10K_ITEM7_BLOCK_0003_PART_02_OF_02",
+            "NVDA_2024_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+            "NVDA_2023_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "NVDA_2023_10K_ITEM7_BLOCK_0001_CHUNK_0001"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+            "score": 0.7785192728042603,
+            "ticker": "NVDA",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Compute & Networking revenue",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Compute & Networking revenue – The year-on-year increase was due to higher Data Center revenue. Compute grew 266% due to higher shipments of the NVIDIA Hopper GPU computing platform for the training and inference of LLMs, recommendation engines and generative AI applications. Net..."
+          }
+        },
+        {
+          "query_id": "seed_011_googl_2024_cloud_revenue_components",
+          "query": "What makes up Alphabet's Google Cloud revenues in fiscal 2024?",
+          "ticker": "GOOGL",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "cloud",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0012_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0014_PART_01_OF_02",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0018_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0010_CHUNK_0001",
+            "GOOGL_2023_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0002_PART_01_OF_06"
+          ],
+          "best_rank": 3,
+          "reciprocal_rank": 0.3333333333333333,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "GOOGL_2024_10K_ITEM7_BLOCK_0012_CHUNK_0001",
+            "score": 0.7256029844284058,
+            "ticker": "GOOGL",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Other Information",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Other Information: • Dividend payments to stockholders of Class A, Class B, and Class C shares, which were first paid in June 2024, were $3.5 billion, $519 million, and $3.3 billion, respectively, totaling $7.4 billion for the year ended December 31, 2024. For additional informat..."
+          }
+        },
+        {
+          "query_id": "seed_012_googl_2024_ad_revenue_components",
+          "query": "What are the components of Alphabet's Google advertising revenues in fiscal 2024?",
+          "ticker": "GOOGL",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "ads",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0012_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0002_PART_01_OF_06",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "GOOGL_2023_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0018_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0001_PART_05_OF_05",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0001_PART_03_OF_05",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0014_PART_01_OF_02",
+            "GOOGL_2023_10K_ITEM8_BLOCK_0002_PART_01_OF_06"
+          ],
+          "best_rank": null,
+          "reciprocal_rank": 0.0,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": false,
+          "recall@10": 0.0,
+          "matched@10": [],
+          "top_hit": {
+            "evidence_id": "GOOGL_2024_10K_ITEM7_BLOCK_0012_CHUNK_0001",
+            "score": 0.7269108295440674,
+            "ticker": "GOOGL",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Other Information",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Other Information: • Dividend payments to stockholders of Class A, Class B, and Class C shares, which were first paid in June 2024, were $3.5 billion, $519 million, and $3.3 billion, respectively, totaling $7.4 billion for the year ended December 31, 2024. For additional informat..."
+          }
+        },
+        {
+          "query_id": "seed_013_googl_2025_ai_capex",
+          "query": "How does Alphabet explain increased AI-related capital expenditures in fiscal 2025?",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "ai",
+            "capex"
+          ],
+          "relevant_evidence_ids": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0024_PART_01_OF_02"
+          ],
+          "top_evidence_ids": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_05",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2025_10K_ITEM7_BLOCK_0008_PART_02_OF_02",
+            "GOOGL_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "GOOGL_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM1_BLOCK_0007_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "MSFT_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "best_rank": 4,
+          "reciprocal_rank": 0.25,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": true,
+          "recall@5": 0.5,
+          "matched@5": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 0.5,
+          "matched@10": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "score": 0.6381115317344666,
+            "ticker": "GOOGL",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Item 7. Management's Discussion and Analysis",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS Please read the following discussion and analysis of our financial condition and results of operations together with “Note about Forward-Looking Statements,” Part I, Item 1 \"Business,\" P..."
+          }
+        },
+        {
+          "query_id": "seed_014_googl_2025_cloud_profitability",
+          "query": "Where does Alphabet report Google Cloud segment profitability in fiscal 2025?",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "financial_note",
+            "cloud",
+            "segment"
+          ],
+          "relevant_evidence_ids": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0014_PART_01_OF_02",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0018_CHUNK_0001",
+            "GOOGL_2023_10K_ITEM8_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_05",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_05",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0002_PART_02_OF_06"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 0.5,
+          "matched@1": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "score": 0.744519829750061,
+            "ticker": "GOOGL",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Segment Profitability",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Segment Profitability We report our segment results as Google Services, Google Cloud, and Other Bets. Additionally, certain costs are not allocated to our segments because they represent Alphabet-level activities. For further details on our segments, see Part I, Item 1 Business a..."
+          }
+        },
+        {
+          "query_id": "seed_015_meta_2024_reality_labs_products",
+          "query": "How does Meta describe its Reality Labs products in fiscal 2024?",
+          "ticker": "META",
+          "fiscal_year": 2024,
+          "tags": [
+            "business",
+            "reality_labs"
+          ],
+          "relevant_evidence_ids": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2025_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2023_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02",
+            "META_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "META_2025_10K_ITEM8_BLOCK_0002_PART_02_OF_07",
+            "META_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_07",
+            "META_2024_10K_ITEM8_BLOCK_0002_CHUNK_0001",
+            "META_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_03"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "score": 0.7344720959663391,
+            "ticker": "META",
+            "fiscal_year": 2024,
+            "section": "Item 1. Business",
+            "subsection": "Reality Labs Products",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Reality Labs Products Many of our Reality Labs investments are directed toward long-term, cutting edge research and development for products that are not on the market today and may only be fully realized in the next decade. This includes exploring new technologies such as neural..."
+          }
+        },
+        {
+          "query_id": "seed_016_meta_2024_reality_labs_risk",
+          "query": "What risk does Meta disclose about its Reality Labs strategy and investments in fiscal 2024?",
+          "ticker": "META",
+          "fiscal_year": 2024,
+          "tags": [
+            "risk",
+            "reality_labs"
+          ],
+          "relevant_evidence_ids": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "top_evidence_ids": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02",
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2025_10K_ITEM1A_BLOCK_0008_PART_01_OF_02",
+            "META_2025_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2023_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_02_OF_02",
+            "META_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "META_2024_10K_ITEM8_BLOCK_0002_CHUNK_0001"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02",
+            "score": 0.7039859294891357,
+            "ticker": "META",
+            "fiscal_year": 2024,
+            "section": "Item 1A. Risk Factors",
+            "subsection": "We may not be successful in our Reality Labs strategy and investments, which could adversely affect our business, reputation, or financial results.",
+            "evidence_type": "risk_disclosure",
+            "contains_table": false,
+            "text_preview": "We may not be successful in our Reality Labs strategy and investments, which could adversely affect our business, reputation, or financial results. Our Reality Labs efforts include our metaverse and wearables initiatives. We believe the metaverse, an embodied internet where peopl..."
+          }
+        },
+        {
+          "query_id": "seed_017_meta_2024_segment_results",
+          "query": "Where does Meta compare Family of Apps and Reality Labs segment results in fiscal 2024?",
+          "ticker": "META",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "segment",
+            "reality_labs"
+          ],
+          "relevant_evidence_ids": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2024_10K_ITEM8_BLOCK_0018_CHUNK_0001",
+            "META_2023_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2024_10K_ITEM7_BLOCK_0009_PART_01_OF_02",
+            "META_2025_10K_ITEM8_BLOCK_0016_CHUNK_0001",
+            "META_2024_10K_ITEM7_BLOCK_0008_PART_01_OF_02",
+            "META_2023_10K_ITEM8_BLOCK_0019_CHUNK_0001",
+            "META_2024_10K_ITEM8_BLOCK_0002_CHUNK_0001",
+            "META_2024_10K_ITEM8_BLOCK_0004_CHUNK_0001"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "score": 0.8261901140213013,
+            "ticker": "META",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Consolidated and Segment Results",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Consolidated and Segment Results We report our financial results for our two reportable segments: Family of Apps (FoA) and Reality Labs (RL). FoA includes Facebook, Instagram, Messenger, WhatsApp, and other services. RL includes our virtual, augmented, and mixed reality related c..."
+          }
+        },
+        {
+          "query_id": "seed_018_amzn_2025_aws_segment",
+          "query": "Where does Amazon report AWS segment sales and operating income in fiscal 2025?",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "tags": [
+            "financial_note",
+            "aws",
+            "segment"
+          ],
+          "relevant_evidence_ids": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "top_evidence_ids": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_02_OF_02",
+            "AMZN_2023_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+            "AMZN_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+            "AMZN_2024_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+            "AMZN_2023_10K_ITEM8_BLOCK_0011_PART_02_OF_02",
+            "AMZN_2023_10K_ITEM8_BLOCK_0002_PART_01_OF_09",
+            "AMZN_2024_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+            "AMZN_2023_10K_ITEM7_BLOCK_0005_PART_01_OF_03"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+            "score": 0.6941830515861511,
+            "ticker": "AMZN",
+            "fiscal_year": 2025,
+            "section": "Item 8. Financial Statements and Supplementary Data",
+            "subsection": "Note 10 —",
+            "evidence_type": "financial_statement_or_note",
+            "contains_table": true,
+            "text_preview": "Note 10 — SEGMENT INFORMATION We have organized our operations into three segments: North America, International, and AWS. We allocate to segment results the operating expenses “Fulfillment,” “Technology and infrastructure,” “Sales and marketing,” and “General and administrative”..."
+          }
+        },
+        {
+          "query_id": "seed_019_amzn_2025_advertising_services",
+          "query": "Where does Amazon discuss advertising services as part of its 2025 business and revenue model?",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "financial_note",
+            "advertising"
+          ],
+          "relevant_evidence_ids": [
+            "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10"
+          ],
+          "top_evidence_ids": [
+            "META_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+            "META_2025_10K_ITEM7_BLOCK_0008_PART_01_OF_02",
+            "AMZN_2025_10K_ITEM7_BLOCK_0005_PART_03_OF_03",
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_02_OF_02",
+            "GOOGL_2025_10K_ITEM1A_BLOCK_0002_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10"
+          ],
+          "hit@5": true,
+          "recall@5": 0.5,
+          "matched@5": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10"
+          ],
+          "top_hit": {
+            "evidence_id": "META_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "score": 0.6039778590202332,
+            "ticker": "META",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Executive Overview of Full Year 2025 Results",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Executive Overview of Full Year 2025 Results Our mission is to build the future of human connection and the technology that makes it possible. Our financial results and key Family metrics for 2025 are set forth below. Total revenue for 2025 was $200.97 billion, an increase of 22%..."
+          }
+        },
+        {
+          "query_id": "seed_020_amzn_2024_free_cash_flow",
+          "query": "Where does Amazon show free cash flow in fiscal 2024?",
+          "ticker": "AMZN",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "cash_flow",
+            "table"
+          ],
+          "relevant_evidence_ids": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "top_evidence_ids": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+            "AMZN_2023_10K_ITEM7_BLOCK_0006_PART_02_OF_02",
+            "AMZN_2024_10K_ITEM8_BLOCK_0001_PART_03_OF_04",
+            "AMZN_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_04",
+            "AMZN_2025_10K_ITEM7_BLOCK_0007_PART_01_OF_02",
+            "AMZN_2023_10K_ITEM8_BLOCK_0001_PART_03_OF_04",
+            "AMZN_2024_10K_ITEM8_BLOCK_0001_PART_04_OF_04",
+            "AMZN_2024_10K_ITEM8_BLOCK_0001_PART_01_OF_04",
+            "ADBE_2024_10K_ITEM7_BLOCK_0011_CHUNK_0001",
+            "AMZN_2025_10K_ITEM8_BLOCK_0001_PART_04_OF_04"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+            "score": 0.6963148713111877,
+            "ticker": "AMZN",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Income Taxes",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "[TABLE_START id=30 rows=11] Year Ended December 31, 2023 | 2024 Net cash provided by (used in) operating activities | $ | 84,946 | $ | 115,877 Purchases of property and equipment, net of proceeds from sales and incentives | (48,133) | (77,658) Free cash flow | 36,813 | 38,219 Equ..."
+          }
+        },
+        {
+          "query_id": "seed_021_amd_2025_data_center_revenue",
+          "query": "Where does AMD report Data Center net revenue in fiscal 2025?",
+          "ticker": "AMD",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "financial_note",
+            "data_center"
+          ],
+          "relevant_evidence_ids": [
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02"
+          ],
+          "top_evidence_ids": [
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02",
+            "AMD_2024_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM1_BLOCK_0003_PART_01_OF_04",
+            "AMD_2023_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "AMD_2024_10K_ITEM1_BLOCK_0003_PART_01_OF_03",
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_02",
+            "AMD_2023_10K_ITEM1_BLOCK_0003_CHUNK_0001"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 0.5,
+          "matched@1": [
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "score": 0.7503386735916138,
+            "ticker": "AMD",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Results of Operations",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Results of Operations Additional information on our reportable segments is contained in Note 4 – Segment Reporting of the Notes to Financial Statements (Part II, Item 8 of this Form 10-K). Our operating results tend to vary seasonally. Historically, our net revenue has been gener..."
+          }
+        },
+        {
+          "query_id": "seed_022_amd_2025_export_controls",
+          "query": "What export control and trade restriction risks does AMD disclose in fiscal 2025?",
+          "ticker": "AMD",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "export_controls"
+          ],
+          "relevant_evidence_ids": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03",
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_02_OF_03"
+          ],
+          "top_evidence_ids": [
+            "AMD_2024_10K_ITEM1A_BLOCK_0024_PART_01_OF_02",
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03",
+            "AMD_2023_10K_ITEM1A_BLOCK_0023_CHUNK_0001",
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_03_OF_03",
+            "AMD_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "AMD_2025_10K_ITEM1_BLOCK_0010_PART_02_OF_02",
+            "AMD_2024_10K_ITEM1A_BLOCK_0024_PART_02_OF_02",
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_02",
+            "AMD_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "AMD_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03"
+          ],
+          "hit@5": true,
+          "recall@5": 0.5,
+          "matched@5": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03"
+          ],
+          "hit@10": true,
+          "recall@10": 0.5,
+          "matched@10": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03"
+          ],
+          "top_hit": {
+            "evidence_id": "AMD_2024_10K_ITEM1A_BLOCK_0024_PART_01_OF_02",
+            "score": 0.7700246572494507,
+            "ticker": "AMD",
+            "fiscal_year": 2024,
+            "section": "Item 1A. Risk Factors",
+            "subsection": "Government actions and regulations such as export regulations, tariffs, and trade protection measures may limit our ability to export our products to certain customers.",
+            "evidence_type": "risk_disclosure",
+            "contains_table": false,
+            "text_preview": "Government actions and regulations such as export regulations, tariffs, and trade protection measures may limit our ability to export our products to certain customers. We have equity interests in two joint ventures (collectively, the THATIC JV) with Higon Information Technology ..."
+          }
+        },
+        {
+          "query_id": "seed_023_amd_2024_gross_margin",
+          "query": "Why did AMD gross margin increase in fiscal 2024?",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "gross_margin",
+            "data_center"
+          ],
+          "relevant_evidence_ids": [
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02"
+          ],
+          "top_evidence_ids": [
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "AMD_2024_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_02",
+            "AMD_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02",
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "ADBE_2024_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "AMD_2024_10K_ITEM1_BLOCK_0002_PART_02_OF_02",
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_03_OF_04"
+          ],
+          "best_rank": 5,
+          "reciprocal_rank": 0.2,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "score": 0.6896849870681763,
+            "ticker": "AMD",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Item 7. Management's Discussion and Analysis",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS The following discussion should be read in conjunction with the Consolidated Financial Statements as of December 28, 2024 and December 30, 2023 and for each of the three years in the per..."
+          }
+        },
+        {
+          "query_id": "seed_024_adbe_2025_digital_media_arr",
+          "query": "Where does Adobe report Digital Media ARR in fiscal 2025?",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "arr",
+            "digital_media"
+          ],
+          "relevant_evidence_ids": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03"
+          ],
+          "top_evidence_ids": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "ADBE_2025_10K_ITEM7_BLOCK_0006_PART_01_OF_02",
+            "ADBE_2024_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "ADBE_2025_10K_ITEM1_BLOCK_0009_CHUNK_0001",
+            "ADBE_2023_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "ADBE_2023_10K_ITEM7_BLOCK_0006_PART_01_OF_02",
+            "ADBE_2023_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+            "ADBE_2025_10K_ITEM8_BLOCK_0003_CHUNK_0001",
+            "ADBE_2024_10K_ITEM7_BLOCK_0006_PART_01_OF_02"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03"
+          ],
+          "top_hit": {
+            "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+            "score": 0.7569468021392822,
+            "ticker": "ADBE",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Overview of Fiscal 2025",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Overview of Fiscal 2025 For our fiscal 2025, we experienced strong demand across our Digital Media and Digital Experience offerings, driven by transformative and customer-focused product innovation. As we execute on our long-term growth initiatives, with emphasis on delivering va..."
+          }
+        },
+        {
+          "query_id": "seed_025_adbe_2025_firefly_models",
+          "query": "How does Adobe describe Firefly and partner AI models in fiscal 2025?",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "ai",
+            "firefly"
+          ],
+          "relevant_evidence_ids": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0007_PART_02_OF_02",
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001",
+            "ADBE_2024_10K_ITEM1_BLOCK_0009_CHUNK_0001",
+            "ADBE_2025_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+            "ADBE_2023_10K_ITEM1_BLOCK_0008_PART_02_OF_02",
+            "ADBE_2024_10K_ITEM1_BLOCK_0004_PART_02_OF_04",
+            "ADBE_2023_10K_ITEM1_BLOCK_0004_PART_02_OF_04",
+            "ADBE_2025_10K_ITEM1_BLOCK_0008_PART_01_OF_02",
+            "ADBE_2025_10K_ITEM1_BLOCK_0002_PART_02_OF_02",
+            "ADBE_2025_10K_ITEM1_BLOCK_0007_PART_01_OF_02"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "ADBE_2025_10K_ITEM1_BLOCK_0007_PART_02_OF_02",
+            "score": 0.7792620658874512,
+            "ticker": "ADBE",
+            "fiscal_year": 2025,
+            "section": "Item 1. Business",
+            "subsection": "Adobe Creative Cloud Pro",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Adobe Firefly App Adobe’s Firefly app is an AI-powered creative space for content ideation, creation and production. The Firefly app includes access to an expansive partner model ecosystem as well as all of Adobe’s AI Firefly models to allow users to generate images, video, vecto..."
+          }
+        },
+        {
+          "query_id": "seed_026_adbe_2025_rpo",
+          "query": "Where does Adobe discuss remaining performance obligations in fiscal 2025?",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "tags": [
+            "financial_note",
+            "rpo"
+          ],
+          "relevant_evidence_ids": [
+            "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_02_OF_02"
+          ],
+          "top_evidence_ids": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0010_PART_01_OF_02",
+            "ADBE_2025_10K_ITEM8_BLOCK_0021_PART_01_OF_02",
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "ADBE_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001",
+            "ADBE_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_06",
+            "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_02_OF_02",
+            "ADBE_2025_10K_ITEM8_BLOCK_0003_CHUNK_0001",
+            "ADBE_2025_10K_ITEM1_BLOCK_0009_CHUNK_0001",
+            "ADBE_2025_10K_ITEM8_BLOCK_0019_PART_02_OF_03",
+            "ADBE_2025_10K_ITEM7_BLOCK_0006_PART_01_OF_02"
+          ],
+          "best_rank": 6,
+          "reciprocal_rank": 0.16666666666666666,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_02_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0010_PART_01_OF_02",
+            "score": 0.6444976925849915,
+            "ticker": "ADBE",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Other Income (Expense), Net",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Other Income (Expense), Net Other income (expense), net consists primarily of interest earned on cash, cash equivalents and short-term fixed income investments. Other income (expense), net also includes realized gains and losses on fixed income investments and foreign exchange ga..."
+          }
+        },
+        {
+          "query_id": "seed_027_panw_2025_platformization",
+          "query": "How does Palo Alto Networks describe platformization in fiscal 2025?",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "mdna",
+            "platformization"
+          ],
+          "relevant_evidence_ids": [
+            "PANW_2025_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2025_10K_ITEM8_BLOCK_0001_PART_05_OF_21",
+            "PANW_2025_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+            "PANW_2025_10K_ITEM1_BLOCK_0016_CHUNK_0001",
+            "PANW_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+            "PANW_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "PANW_2025_10K_ITEM7_BLOCK_0003_PART_02_OF_02",
+            "PANW_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_21"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 0.5,
+          "matched@1": [
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2025_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2025_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "score": 0.7017998695373535,
+            "ticker": "PANW",
+            "fiscal_year": 2025,
+            "section": "Item 1. Business",
+            "subsection": "General",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Item 1. Business General Palo Alto Networks, Inc. is a global cybersecurity provider and our vision is a world where each day is safer and more secure than the one before. We were incorporated in 2005 and are headquartered in Santa Clara, California. Our mission is to be the cybe..."
+          }
+        },
+        {
+          "query_id": "seed_028_panw_2025_competition",
+          "query": "What competitive risks does Palo Alto Networks describe in cloud security in fiscal 2025?",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "competition",
+            "cybersecurity"
+          ],
+          "relevant_evidence_ids": [
+            "PANW_2025_10K_ITEM1A_BLOCK_0011_PART_01_OF_03"
+          ],
+          "top_evidence_ids": [
+            "PANW_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_21",
+            "PANW_2025_10K_ITEM8_BLOCK_0001_PART_05_OF_21",
+            "PANW_2025_10K_ITEM1A_BLOCK_0011_PART_01_OF_03",
+            "PANW_2025_10K_ITEM1_BLOCK_0012_CHUNK_0001",
+            "PANW_2024_10K_ITEM1A_BLOCK_0011_PART_01_OF_03",
+            "PANW_2025_10K_ITEM1_BLOCK_0016_CHUNK_0001",
+            "PANW_2024_10K_ITEM1A_BLOCK_0011_PART_02_OF_03"
+          ],
+          "best_rank": 6,
+          "reciprocal_rank": 0.16666666666666666,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "PANW_2025_10K_ITEM1A_BLOCK_0011_PART_01_OF_03"
+          ],
+          "top_hit": {
+            "evidence_id": "PANW_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "score": 0.6613920331001282,
+            "ticker": "PANW",
+            "fiscal_year": 2023,
+            "section": "Item 1. Business",
+            "subsection": "General",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Item 1. Business General Palo Alto Networks, Inc. is a global cybersecurity provider with a vision of a world where each day is safer and more secure than the one before. We were incorporated in 2005 and are headquartered in Santa Clara, California. We empower enterprises, organi..."
+          }
+        },
+        {
+          "query_id": "seed_029_snow_2025_customer_metrics",
+          "query": "Where does Snowflake disclose total customers and Forbes Global 2000 customers in fiscal 2025?",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "customers"
+          ],
+          "relevant_evidence_ids": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "top_evidence_ids": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02",
+            "SNOW_2025_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_12",
+            "SNOW_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_07_OF_12",
+            "SNOW_2025_10K_ITEM7_BLOCK_0013_PART_01_OF_07",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_06_OF_12",
+            "SNOW_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_03",
+            "SNOW_2023_10K_ITEM7_BLOCK_0002_PART_01_OF_03",
+            "SNOW_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02",
+            "score": 0.7545189261436462,
+            "ticker": "SNOW",
+            "fiscal_year": 2025,
+            "section": "Item 1. Business",
+            "subsection": "Item 1. Business",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Our platform is used globally by organizations of all sizes across a broad range of industries. As of January 31, 2025, we had 11,159 total customers, increasing from 9,384 customers as of January 31, 2024. As of January 31, 2025, our customers included 745 of the Forbes Global 2..."
+          }
+        },
+        {
+          "query_id": "seed_030_snow_2025_rpo",
+          "query": "Where does Snowflake discuss remaining performance obligations in fiscal 2025?",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "risk",
+            "rpo"
+          ],
+          "relevant_evidence_ids": [
+            "SNOW_2025_10K_ITEM7_BLOCK_0003_PART_02_OF_02",
+            "SNOW_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_12",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_07_OF_12",
+            "SNOW_2025_10K_ITEM7_BLOCK_0013_PART_01_OF_07",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_02_OF_12",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_06_OF_12",
+            "SNOW_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "SNOW_2025_10K_ITEM8_BLOCK_0002_PART_25_OF_26",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_04_OF_12",
+            "SNOW_2024_10K_ITEM8_BLOCK_0001_PART_32_OF_32",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_12"
+          ],
+          "best_rank": null,
+          "reciprocal_rank": 0.0,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": false,
+          "recall@10": 0.0,
+          "matched@10": [],
+          "top_hit": {
+            "evidence_id": "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_12",
+            "score": 0.6619746685028076,
+            "ticker": "SNOW",
+            "fiscal_year": 2025,
+            "section": "Item 8. Financial Statements and Supplementary Data",
+            "subsection": "Item 8. Financial Statements and Supplementary Data",
+            "evidence_type": "financial_statement_or_note",
+            "contains_table": true,
+            "text_preview": "[TABLE_START id=27 rows=21] Fiscal Year Ended January 31, 2025 | 2024 | 2023 Revenue | $ | 3,626,396 | $ | 2,806,489 | $ | 2,065,659 Cost of revenue | 1,214,673 | 898,558 | 717,540 Gross profit | 2,411,723 | 1,907,931 | 1,348,119 Operating expenses: Sales and marketing | 1,672,09..."
+          }
+        }
+      ]
+    },
+    "hybrid": {
+      "summary": {
+        "query_count": 30,
+        "mrr": 0.5187037037037037,
+        "hit_rate@1": 0.3333333333333333,
+        "mean_recall@1": 0.2833333333333333,
+        "hit_rate@3": 0.7333333333333333,
+        "mean_recall@3": 0.6333333333333333,
+        "hit_rate@5": 0.7666666666666667,
+        "mean_recall@5": 0.6833333333333333,
+        "hit_rate@10": 0.8666666666666667,
+        "mean_recall@10": 0.8333333333333334
+      },
+      "misses_at_max_k": [
+        "seed_002_msft_2025_azure_description",
+        "seed_008_nvda_2025_supply_manufacturing_risk",
+        "seed_028_panw_2025_competition",
+        "seed_030_snow_2025_rpo"
+      ],
+      "per_query": [
+        {
+          "query_id": "seed_001_msft_2024_cloud_revenue",
+          "query": "What drove Microsoft Cloud revenue growth in fiscal 2024?",
+          "ticker": "MSFT",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "cloud",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_01_OF_02",
+            "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_02",
+            "MSFT_2024_10K_ITEM7_BLOCK_0005_PART_01_OF_02",
+            "MSFT_2023_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "MSFT_2024_10K_ITEM7_BLOCK_0005_PART_02_OF_02",
+            "MSFT_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "MSFT_2023_10K_ITEM7_BLOCK_0005_PART_01_OF_03",
+            "MSFT_2025_10K_ITEM8_BLOCK_0022_PART_02_OF_04"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "score": 0.032266458495966696,
+            "ticker": "MSFT",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Highlights from fiscal year 2025 compared with fiscal year 2024 included",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Highlights from fiscal year 2025 compared with fiscal year 2024 included: • Microsoft Cloud revenue increased 23% to $168.9 billion. • Microsoft 365 Commercial products and cloud services revenue increased 14% driven by Microsoft 365 Commercial cloud revenue growth of 15%. • Micr..."
+          }
+        },
+        {
+          "query_id": "seed_002_msft_2025_azure_description",
+          "query": "How does Microsoft describe Azure and its cloud services in fiscal 2025?",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "cloud",
+            "azure"
+          ],
+          "relevant_evidence_ids": [
+            "MSFT_2025_10K_ITEM1_BLOCK_0006_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "MSFT_2023_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+            "MSFT_2024_10K_ITEM1_BLOCK_0001_PART_02_OF_04",
+            "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_02",
+            "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_01_OF_02",
+            "MSFT_2025_10K_ITEM8_BLOCK_0022_PART_02_OF_04",
+            "MSFT_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "MSFT_2023_10K_ITEM1_BLOCK_0014_CHUNK_0001",
+            "MSFT_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "MSFT_2023_10K_ITEM7_BLOCK_0003_PART_01_OF_02"
+          ],
+          "best_rank": null,
+          "reciprocal_rank": 0.0,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": false,
+          "recall@10": 0.0,
+          "matched@10": [],
+          "top_hit": {
+            "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "score": 0.03252247488101534,
+            "ticker": "MSFT",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Highlights from fiscal year 2025 compared with fiscal year 2024 included",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Highlights from fiscal year 2025 compared with fiscal year 2024 included: • Microsoft Cloud revenue increased 23% to $168.9 billion. • Microsoft 365 Commercial products and cloud services revenue increased 14% driven by Microsoft 365 Commercial cloud revenue growth of 15%. • Micr..."
+          }
+        },
+        {
+          "query_id": "seed_003_msft_2025_ai_risk",
+          "query": "What risks does Microsoft disclose around developing and deploying AI in 2025?",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "ai"
+          ],
+          "relevant_evidence_ids": [
+            "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "MSFT_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "MSFT_2024_10K_ITEM1_BLOCK_0001_PART_02_OF_04",
+            "META_2025_10K_ITEM1A_BLOCK_0006_PART_01_OF_02",
+            "MSFT_2023_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+            "MSFT_2024_10K_ITEM1_BLOCK_0001_PART_03_OF_04",
+            "MSFT_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_04",
+            "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001",
+            "MSFT_2025_10K_ITEM1_BLOCK_0007_CHUNK_0001"
+          ],
+          "best_rank": 9,
+          "reciprocal_rank": 0.1111111111111111,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "MSFT_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "score": 0.031099324975891997,
+            "ticker": "MSFT",
+            "fiscal_year": 2025,
+            "section": "Item 1. Business",
+            "subsection": "GENERAL",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "ITEM 1. B USINESS GENERAL Microsoft is a technology company committed to making digital technology and artificial intelligence (“AI”) available broadly and doing so responsibly. Our mission is to empower every person and every organization on the planet to achieve more. We develo..."
+          }
+        },
+        {
+          "query_id": "seed_004_aapl_2025_services_growth",
+          "query": "Why did Apple's Services net sales increase in fiscal 2025?",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "services",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "SNOW_2025_10K_ITEM7_BLOCK_0013_PART_03_OF_07",
+            "ADBE_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001",
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "PANW_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_02_OF_02",
+            "ADBE_2024_10K_ITEM8_BLOCK_0010_CHUNK_0001",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+            "SNOW_2024_10K_ITEM7A_BLOCK_0001_PART_01_OF_02",
+            "AAPL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "SNOW_2025_10K_ITEM7A_BLOCK_0001_PART_01_OF_02"
+          ],
+          "best_rank": 3,
+          "reciprocal_rank": 0.3333333333333333,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "SNOW_2025_10K_ITEM7_BLOCK_0013_PART_03_OF_07",
+            "score": 0.026470588235294117,
+            "ticker": "SNOW",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Net Income (Loss) Attributable to Noncontrolling Interest",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Cost of professional services and other revenue increased $25.2 million for the fiscal year ended January 31, 2025, compared to the prior fiscal year, primarily due to an increase of $12.9 million in personnel-related costs and allocated overhead costs as a result of increased he..."
+          }
+        },
+        {
+          "query_id": "seed_005_aapl_2024_iphone_sales",
+          "query": "What happened to Apple's iPhone net sales in fiscal 2024?",
+          "ticker": "AAPL",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "iphone",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_02_OF_02",
+            "AAPL_2023_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "AAPL_2023_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "AAPL_2024_10K_ITEM8_BLOCK_0003_PART_02_OF_02",
+            "AAPL_2024_10K_ITEM8_BLOCK_0003_PART_01_OF_02",
+            "AAPL_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "AAPL_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "AAPL_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "AAPL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+            "score": 0.03252247488101534,
+            "ticker": "AAPL",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Fourth Quarter 2024",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Fourth Quarter 2024: • iPhone 16, iPhone 16 Plus, iPhone 16 Pro and iPhone 16 Pro Max; • Apple Watch Series 10; and • AirPods 4. Fiscal Period The Company’s fiscal year is the 52- or 53-week period that ends on the last Saturday of September. An additional week is included in the..."
+          }
+        },
+        {
+          "query_id": "seed_006_aapl_2025_supply_concentration",
+          "query": "Where does Apple discuss supply concentrations and purchase commitments in fiscal 2025?",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "tags": [
+            "financial_note",
+            "supply",
+            "commitments"
+          ],
+          "relevant_evidence_ids": [
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "AAPL_2024_10K_ITEM8_BLOCK_0013_CHUNK_0001",
+            "AAPL_2023_10K_ITEM8_BLOCK_0013_CHUNK_0001",
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001",
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04",
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_01_OF_04",
+            "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+            "AAPL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_01_OF_03",
+            "AAPL_2025_10K_ITEM8_BLOCK_0002_CHUNK_0001",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0004_PART_01_OF_04"
+          ],
+          "best_rank": 3,
+          "reciprocal_rank": 0.3333333333333333,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AAPL_2025_10K_ITEM8_BLOCK_0013_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "AAPL_2024_10K_ITEM8_BLOCK_0013_CHUNK_0001",
+            "score": 0.03278688524590164,
+            "ticker": "AAPL",
+            "fiscal_year": 2024,
+            "section": "Item 8. Financial Statements and Supplementary Data",
+            "subsection": "Note 12 –",
+            "evidence_type": "financial_statement_or_note",
+            "contains_table": true,
+            "text_preview": "Note 12 – Commitments, Contingencies and Supply Concentrations Unconditional Purchase Obligations The Company has entered into certain off–balance sheet commitments that require the future purchase of goods or services (“unconditional purchase obligations”). The Company’s uncondi..."
+          }
+        },
+        {
+          "query_id": "seed_007_nvda_2025_customer_concentration",
+          "query": "What does NVIDIA disclose about customer concentration in fiscal 2025 revenue?",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "customer_concentration",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+            "NVDA_2023_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_03_OF_04",
+            "NVDA_2023_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "NVDA_2024_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+            "NVDA_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "NVDA_2023_10K_ITEM7_BLOCK_0003_PART_02_OF_02",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0004_PART_03_OF_04",
+            "NVDA_2023_10K_ITEM1_BLOCK_0005_PART_02_OF_02",
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_02_OF_04"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+            "score": 0.03252247488101534,
+            "ticker": "NVDA",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Concentration of Revenue",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Concentration of Revenue We refer to customers who purchase products directly from NVIDIA as direct customers, such as AIBs, distributors, ODMs, OEMs, and system integrators. We have certain customers that may purchase products directly from NVIDIA and may use either internal res..."
+          }
+        },
+        {
+          "query_id": "seed_008_nvda_2025_supply_manufacturing_risk",
+          "query": "What supply and manufacturing risks does NVIDIA describe in fiscal 2025?",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "supply_chain",
+            "manufacturing"
+          ],
+          "relevant_evidence_ids": [
+            "NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_01_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_03_OF_03"
+          ],
+          "top_evidence_ids": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_01_OF_04",
+            "NVDA_2025_10K_ITEM1_BLOCK_0005_PART_02_OF_03",
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+            "NVDA_2024_10K_ITEM1_BLOCK_0005_PART_02_OF_03",
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_02_OF_04",
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_02_OF_04",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0004_PART_01_OF_04",
+            "NVDA_2023_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "NVDA_2023_10K_ITEM1A_BLOCK_0001_CHUNK_0001",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0004_PART_03_OF_04"
+          ],
+          "best_rank": null,
+          "reciprocal_rank": 0.0,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": false,
+          "recall@10": 0.0,
+          "matched@10": [],
+          "top_hit": {
+            "evidence_id": "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_01_OF_04",
+            "score": 0.03149801587301587,
+            "ticker": "NVDA",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Recent Developments, Future Objectives and Challenges",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Recent Developments, Future Objectives and Challenges Demand and Supply, Product Transitions, and New Products and Business Models Demand for our data center systems and products surged in fiscal year 2024. Entering fiscal year 2025, we are gathering customer demand indications a..."
+          }
+        },
+        {
+          "query_id": "seed_009_nvda_2025_export_controls",
+          "query": "How could export controls and China licensing restrictions affect NVIDIA in fiscal 2025?",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "export_controls",
+            "china"
+          ],
+          "relevant_evidence_ids": [
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_03_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_01_OF_03"
+          ],
+          "top_evidence_ids": [
+            "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_02_OF_04",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0011_PART_03_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_02_OF_03",
+            "NVDA_2025_10K_ITEM1_BLOCK_0005_PART_02_OF_03",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0012_PART_01_OF_02",
+            "NVDA_2023_10K_ITEM1A_BLOCK_0010_PART_02_OF_02",
+            "NVDA_2024_10K_ITEM1A_BLOCK_0011_PART_02_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_03_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_02_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_01_OF_03"
+          ],
+          "best_rank": 8,
+          "reciprocal_rank": 0.125,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_03_OF_03",
+            "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_01_OF_03"
+          ],
+          "top_hit": {
+            "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_02_OF_04",
+            "score": 0.032266458495966696,
+            "ticker": "NVDA",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Item 7. Management's Discussion and Analysis",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "In October 2023, the USG announced new and updated licensing requirements that became effective in our fourth quarter of fiscal year 2024 for exports to China and Country Groups D1, D4, and D5 (including but not limited to Saudi Arabia, the United Arab Emirates, and Vietnam, but ..."
+          }
+        },
+        {
+          "query_id": "seed_010_nvda_2024_compute_networking",
+          "query": "Why did NVIDIA Compute and Networking revenue increase in fiscal 2024?",
+          "ticker": "NVDA",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "data_center",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+            "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_03_OF_04",
+            "NVDA_2024_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+            "NVDA_2023_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+            "NVDA_2024_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+            "NVDA_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+            "NVDA_2024_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "NVDA_2023_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+            "NVDA_2023_10K_ITEM7_BLOCK_0007_PART_01_OF_02",
+            "NVDA_2023_10K_ITEM7_BLOCK_0003_PART_01_OF_02"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "NVDA_2024_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+            "score": 0.03252247488101534,
+            "ticker": "NVDA",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Compute & Networking revenue",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Compute & Networking revenue – The year-on-year increase was due to higher Data Center revenue. Compute grew 266% due to higher shipments of the NVIDIA Hopper GPU computing platform for the training and inference of LLMs, recommendation engines and generative AI applications. Net..."
+          }
+        },
+        {
+          "query_id": "seed_011_googl_2024_cloud_revenue_components",
+          "query": "What makes up Alphabet's Google Cloud revenues in fiscal 2024?",
+          "ticker": "GOOGL",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "cloud",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0012_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0018_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0003_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0002_PART_01_OF_06",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0014_PART_01_OF_02",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "GOOGL_2024_10K_ITEM7_BLOCK_0012_CHUNK_0001",
+            "score": 0.03278688524590164,
+            "ticker": "GOOGL",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Other Information",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Other Information: • Dividend payments to stockholders of Class A, Class B, and Class C shares, which were first paid in June 2024, were $3.5 billion, $519 million, and $3.3 billion, respectively, totaling $7.4 billion for the year ended December 31, 2024. For additional informat..."
+          }
+        },
+        {
+          "query_id": "seed_012_googl_2024_ad_revenue_components",
+          "query": "What are the components of Alphabet's Google advertising revenues in fiscal 2024?",
+          "ticker": "GOOGL",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "ads",
+            "revenue"
+          ],
+          "relevant_evidence_ids": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0012_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0002_PART_01_OF_06",
+            "GOOGL_2023_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "GOOGL_2023_10K_ITEM8_BLOCK_0002_PART_01_OF_06",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0018_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_06",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0003_CHUNK_0001"
+          ],
+          "best_rank": 8,
+          "reciprocal_rank": 0.125,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "GOOGL_2024_10K_ITEM7_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "GOOGL_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "score": 0.03252247488101534,
+            "ticker": "GOOGL",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Item 7. Management's Discussion and Analysis",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS Please read the following discussion and analysis of our financial condition and results of operations together with “Note about Forward-Looking Statements,” Part I, Item 1 \"Business,\" P..."
+          }
+        },
+        {
+          "query_id": "seed_013_googl_2025_ai_capex",
+          "query": "How does Alphabet explain increased AI-related capital expenditures in fiscal 2025?",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "ai",
+            "capex"
+          ],
+          "relevant_evidence_ids": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0024_PART_01_OF_02"
+          ],
+          "top_evidence_ids": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2023_10K_ITEM7_BLOCK_0018_PART_01_OF_02",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0019_PART_01_OF_02",
+            "NVDA_2025_10K_ITEM7_BLOCK_0010_PART_03_OF_03",
+            "NVDA_2023_10K_ITEM7_BLOCK_0008_PART_02_OF_03",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_05",
+            "NVDA_2025_10K_ITEM7_BLOCK_0010_PART_02_OF_03"
+          ],
+          "best_rank": 3,
+          "reciprocal_rank": 0.3333333333333333,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 0.5,
+          "matched@5": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 0.5,
+          "matched@10": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+            "score": 0.03225806451612903,
+            "ticker": "GOOGL",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Other Information",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Other Information: 32. [TABLE_START id=45 rows=1] Table of Contents | Alphabet Inc. [TABLE_END] • In 2025, we entered into definitive agreements to acquire Wiz, a leading cloud security platform, for $32.0 billion, and Intersect, a provider of data center and energy infrastructur..."
+          }
+        },
+        {
+          "query_id": "seed_014_googl_2025_cloud_profitability",
+          "query": "Where does Alphabet report Google Cloud segment profitability in fiscal 2025?",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "financial_note",
+            "cloud",
+            "segment"
+          ],
+          "relevant_evidence_ids": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0014_PART_01_OF_02",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2024_10K_ITEM8_BLOCK_0018_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "GOOGL_2023_10K_ITEM8_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+            "GOOGL_2023_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "GOOGL_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "GOOGL_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 0.5,
+          "matched@1": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+            "score": 0.03278688524590164,
+            "ticker": "GOOGL",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Segment Profitability",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Segment Profitability We report our segment results as Google Services, Google Cloud, and Other Bets. Additionally, certain costs are not allocated to our segments because they represent Alphabet-level activities. For further details on our segments, see Part I, Item 1 Business a..."
+          }
+        },
+        {
+          "query_id": "seed_015_meta_2024_reality_labs_products",
+          "query": "How does Meta describe its Reality Labs products in fiscal 2024?",
+          "ticker": "META",
+          "fiscal_year": 2024,
+          "tags": [
+            "business",
+            "reality_labs"
+          ],
+          "relevant_evidence_ids": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "META_2025_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2023_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02",
+            "META_2024_10K_ITEM8_BLOCK_0002_CHUNK_0001",
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_07",
+            "META_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "META_2025_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "META_2025_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "score": 0.03252247488101534,
+            "ticker": "META",
+            "fiscal_year": 2025,
+            "section": "Item 1. Business",
+            "subsection": "Reality Labs Products",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Reality Labs Products Many of our Reality Labs investments are directed toward long-term, cutting edge research and development for products that are not on the market today and may only be fully realized in the next decade. This includes exploring innovations in AI and hardware ..."
+          }
+        },
+        {
+          "query_id": "seed_016_meta_2024_reality_labs_risk",
+          "query": "What risk does Meta disclose about its Reality Labs strategy and investments in fiscal 2024?",
+          "ticker": "META",
+          "fiscal_year": 2024,
+          "tags": [
+            "risk",
+            "reality_labs"
+          ],
+          "relevant_evidence_ids": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "top_evidence_ids": [
+            "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2025_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02",
+            "META_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "META_2023_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "META_2025_10K_ITEM1A_BLOCK_0008_PART_01_OF_02",
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_02_OF_02",
+            "META_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_07"
+          ],
+          "best_rank": 3,
+          "reciprocal_rank": 0.3333333333333333,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "META_2024_10K_ITEM1A_BLOCK_0008_PART_01_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "META_2024_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+            "score": 0.03225806451612903,
+            "ticker": "META",
+            "fiscal_year": 2024,
+            "section": "Item 1. Business",
+            "subsection": "Reality Labs Products",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Reality Labs Products Many of our Reality Labs investments are directed toward long-term, cutting edge research and development for products that are not on the market today and may only be fully realized in the next decade. This includes exploring new technologies such as neural..."
+          }
+        },
+        {
+          "query_id": "seed_017_meta_2024_segment_results",
+          "query": "Where does Meta compare Family of Apps and Reality Labs segment results in fiscal 2024?",
+          "ticker": "META",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "segment",
+            "reality_labs"
+          ],
+          "relevant_evidence_ids": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2025_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2024_10K_ITEM8_BLOCK_0018_CHUNK_0001",
+            "META_2023_10K_ITEM8_BLOCK_0019_CHUNK_0001",
+            "META_2023_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "META_2025_10K_ITEM8_BLOCK_0016_CHUNK_0001",
+            "META_2024_10K_ITEM8_BLOCK_0002_CHUNK_0001",
+            "META_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "META_2024_10K_ITEM7_BLOCK_0008_PART_01_OF_02",
+            "META_2024_10K_ITEM7_BLOCK_0009_PART_01_OF_02"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "META_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "score": 0.03278688524590164,
+            "ticker": "META",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Consolidated and Segment Results",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Consolidated and Segment Results We report our financial results for our two reportable segments: Family of Apps (FoA) and Reality Labs (RL). FoA includes Facebook, Instagram, Messenger, WhatsApp, and other services. RL includes our virtual, augmented, and mixed reality related c..."
+          }
+        },
+        {
+          "query_id": "seed_018_amzn_2025_aws_segment",
+          "query": "Where does Amazon report AWS segment sales and operating income in fiscal 2025?",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "tags": [
+            "financial_note",
+            "aws",
+            "segment"
+          ],
+          "relevant_evidence_ids": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "top_evidence_ids": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+            "AMZN_2023_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+            "AMZN_2024_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_02_OF_02",
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+            "AMZN_2023_10K_ITEM7_BLOCK_0005_PART_01_OF_03",
+            "AMZN_2023_10K_ITEM8_BLOCK_0011_PART_02_OF_02",
+            "AMZN_2024_10K_ITEM8_BLOCK_0011_PART_02_OF_02",
+            "AMZN_2024_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+            "AMZN_2025_10K_ITEM7_BLOCK_0005_PART_01_OF_03"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+            "score": 0.03278688524590164,
+            "ticker": "AMZN",
+            "fiscal_year": 2025,
+            "section": "Item 8. Financial Statements and Supplementary Data",
+            "subsection": "Note 10 —",
+            "evidence_type": "financial_statement_or_note",
+            "contains_table": true,
+            "text_preview": "Note 10 — SEGMENT INFORMATION We have organized our operations into three segments: North America, International, and AWS. We allocate to segment results the operating expenses “Fulfillment,” “Technology and infrastructure,” “Sales and marketing,” and “General and administrative”..."
+          }
+        },
+        {
+          "query_id": "seed_019_amzn_2025_advertising_services",
+          "query": "Where does Amazon discuss advertising services as part of its 2025 business and revenue model?",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "financial_note",
+            "advertising"
+          ],
+          "relevant_evidence_ids": [
+            "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10"
+          ],
+          "top_evidence_ids": [
+            "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "AMZN_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "AMZN_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "META_2025_10K_ITEM1A_BLOCK_0022_PART_03_OF_08",
+            "META_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "META_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+            "META_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "META_2025_10K_ITEM7_BLOCK_0008_PART_01_OF_02",
+            "META_2024_10K_ITEM1_BLOCK_0004_PART_03_OF_05"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 0.5,
+          "matched@1": [
+            "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03"
+          ],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03"
+          ],
+          "hit@5": true,
+          "recall@5": 0.5,
+          "matched@5": [
+            "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10"
+          ],
+          "top_hit": {
+            "evidence_id": "AMZN_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+            "score": 0.028370221327967807,
+            "ticker": "AMZN",
+            "fiscal_year": 2025,
+            "section": "Item 1. Business",
+            "subsection": "General",
+            "evidence_type": "business_description",
+            "contains_table": true,
+            "text_preview": "[TABLE_START id=10 rows=1] Item 1. | Business [TABLE_END] This Annual Report on Form 10-K and the documents incorporated herein by reference contain forward-looking statements based on expectations, estimates, and projections as of the date of this filing. Actual results and outc..."
+          }
+        },
+        {
+          "query_id": "seed_020_amzn_2024_free_cash_flow",
+          "query": "Where does Amazon show free cash flow in fiscal 2024?",
+          "ticker": "AMZN",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "cash_flow",
+            "table"
+          ],
+          "relevant_evidence_ids": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "top_evidence_ids": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+            "AMZN_2023_10K_ITEM7_BLOCK_0006_PART_02_OF_02",
+            "AMZN_2025_10K_ITEM7_BLOCK_0007_PART_01_OF_02",
+            "META_2024_10K_ITEM7_BLOCK_0010_CHUNK_0001",
+            "PANW_2024_10K_ITEM7_BLOCK_0006_PART_03_OF_03",
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_01_OF_02",
+            "SNOW_2024_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+            "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_02_OF_10",
+            "AMZN_2024_10K_ITEM8_BLOCK_0001_PART_03_OF_04",
+            "SNOW_2024_10K_ITEM7_BLOCK_0006_PART_01_OF_02"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+            "score": 0.03252247488101534,
+            "ticker": "AMZN",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Income Taxes",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "[TABLE_START id=30 rows=11] Year Ended December 31, 2023 | 2024 Net cash provided by (used in) operating activities | $ | 84,946 | $ | 115,877 Purchases of property and equipment, net of proceeds from sales and incentives | (48,133) | (77,658) Free cash flow | 36,813 | 38,219 Equ..."
+          }
+        },
+        {
+          "query_id": "seed_021_amd_2025_data_center_revenue",
+          "query": "Where does AMD report Data Center net revenue in fiscal 2025?",
+          "ticker": "AMD",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "financial_note",
+            "data_center"
+          ],
+          "relevant_evidence_ids": [
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02"
+          ],
+          "top_evidence_ids": [
+            "AMD_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02",
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2024_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2023_10K_ITEM7_BLOCK_0001_PART_02_OF_02",
+            "AMD_2023_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+            "AMD_2024_10K_ITEM1_BLOCK_0003_PART_01_OF_03",
+            "AMD_2025_10K_ITEM1_BLOCK_0003_PART_01_OF_04",
+            "AMD_2023_10K_ITEM7_BLOCK_0004_PART_01_OF_02"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0005_PART_01_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "AMD_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "score": 0.03252247488101534,
+            "ticker": "AMD",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Item 7. Management's Discussion and Analysis",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS The following discussion should be read in conjunction with the Consolidated Financial Statements as of December 27, 2025 and December 28, 2024 and for each of the three years in the per..."
+          }
+        },
+        {
+          "query_id": "seed_022_amd_2025_export_controls",
+          "query": "What export control and trade restriction risks does AMD disclose in fiscal 2025?",
+          "ticker": "AMD",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "export_controls"
+          ],
+          "relevant_evidence_ids": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03",
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_02_OF_03"
+          ],
+          "top_evidence_ids": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03",
+            "AMD_2024_10K_ITEM1A_BLOCK_0024_PART_01_OF_02",
+            "AMD_2023_10K_ITEM1A_BLOCK_0023_CHUNK_0001",
+            "AMD_2025_10K_ITEM1_BLOCK_0010_PART_02_OF_02",
+            "AMD_2025_10K_ITEM1_BLOCK_0010_PART_01_OF_02",
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_02_OF_03",
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_03_OF_03",
+            "AMD_2025_10K_ITEM8_BLOCK_0004_CHUNK_0001",
+            "AMD_2024_10K_ITEM1A_BLOCK_0024_PART_02_OF_02",
+            "AMD_2025_10K_ITEM1A_BLOCK_0014_PART_02_OF_02"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 0.5,
+          "matched@1": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03"
+          ],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03"
+          ],
+          "hit@5": true,
+          "recall@5": 0.5,
+          "matched@5": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03",
+            "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_02_OF_03"
+          ],
+          "top_hit": {
+            "evidence_id": "AMD_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03",
+            "score": 0.03252247488101534,
+            "ticker": "AMD",
+            "fiscal_year": 2025,
+            "section": "Item 1A. Risk Factors",
+            "subsection": "Government actions and regulations such as export regulations, import tariffs, and trade protection measures may limit our ability to export our products to certain customers.",
+            "evidence_type": "risk_disclosure",
+            "contains_table": false,
+            "text_preview": "Government actions and regulations such as export regulations, import tariffs, and trade protection measures may limit our ability to export our products to certain customers. We are subject to U.S. laws and regulations, including the Export Administration Regulations (EAR) admin..."
+          }
+        },
+        {
+          "query_id": "seed_023_amd_2024_gross_margin",
+          "query": "Why did AMD gross margin increase in fiscal 2024?",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "tags": [
+            "mdna",
+            "gross_margin",
+            "data_center"
+          ],
+          "relevant_evidence_ids": [
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02"
+          ],
+          "top_evidence_ids": [
+            "AMD_2024_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_02",
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02",
+            "AMD_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+            "NVDA_2024_10K_ITEM7_BLOCK_0008_PART_01_OF_02",
+            "AMD_2023_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "AAPL_2024_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+            "AAPL_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001"
+          ],
+          "best_rank": 5,
+          "reciprocal_rank": 0.2,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+            "score": 0.03252247488101534,
+            "ticker": "AMD",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Results of Operations",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Results of Operations Additional information on our reportable segments is contained in Note 4 – Segment Reporting of the Notes to Financial Statements (Part II, Item 8 of this Form 10-K). Our operating results tend to vary seasonally. Historically, our net revenue has been gener..."
+          }
+        },
+        {
+          "query_id": "seed_024_adbe_2025_digital_media_arr",
+          "query": "Where does Adobe report Digital Media ARR in fiscal 2025?",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "arr",
+            "digital_media"
+          ],
+          "relevant_evidence_ids": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03"
+          ],
+          "top_evidence_ids": [
+            "ADBE_2024_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "ADBE_2023_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+            "ADBE_2023_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "ADBE_2025_10K_ITEM1_BLOCK_0009_CHUNK_0001",
+            "ADBE_2024_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+            "ADBE_2025_10K_ITEM7_BLOCK_0006_PART_01_OF_02",
+            "ADBE_2025_10K_ITEM8_BLOCK_0003_CHUNK_0001",
+            "ADBE_2023_10K_ITEM8_BLOCK_0003_PART_01_OF_03"
+          ],
+          "best_rank": 3,
+          "reciprocal_rank": 0.3333333333333333,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03"
+          ],
+          "top_hit": {
+            "evidence_id": "ADBE_2024_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "score": 0.032018442622950824,
+            "ticker": "ADBE",
+            "fiscal_year": 2024,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Overview of 2024",
+            "evidence_type": "management_discussion",
+            "contains_table": false,
+            "text_preview": "Creative ARR exiting fiscal 2024 was $13.85 billion, up from $12.49 billion at the end of fiscal 2023. Document Cloud ARR exiting fiscal 2024 was $3.48 billion, up from $2.84 billion at the end of fiscal 2023. Total Digital Media ARR grew to $17.33 billion at the end of fiscal 20..."
+          }
+        },
+        {
+          "query_id": "seed_025_adbe_2025_firefly_models",
+          "query": "How does Adobe describe Firefly and partner AI models in fiscal 2025?",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "ai",
+            "firefly"
+          ],
+          "relevant_evidence_ids": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0007_PART_02_OF_02",
+            "ADBE_2024_10K_ITEM1_BLOCK_0009_CHUNK_0001",
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001",
+            "ADBE_2025_10K_ITEM1_BLOCK_0007_PART_01_OF_02",
+            "ADBE_2023_10K_ITEM1_BLOCK_0008_PART_02_OF_02",
+            "ADBE_2025_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+            "ADBE_2024_10K_ITEM1_BLOCK_0004_PART_02_OF_04",
+            "ADBE_2024_10K_ITEM1_BLOCK_0004_PART_01_OF_04",
+            "ADBE_2023_10K_ITEM1_BLOCK_0004_PART_02_OF_04",
+            "ADBE_2025_10K_ITEM1_BLOCK_0002_PART_02_OF_02"
+          ],
+          "best_rank": 3,
+          "reciprocal_rank": 0.3333333333333333,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 0.5,
+          "matched@5": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "ADBE_2025_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+            "ADBE_2025_10K_ITEM1_BLOCK_0004_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "ADBE_2025_10K_ITEM1_BLOCK_0007_PART_02_OF_02",
+            "score": 0.03278688524590164,
+            "ticker": "ADBE",
+            "fiscal_year": 2025,
+            "section": "Item 1. Business",
+            "subsection": "Adobe Creative Cloud Pro",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Adobe Firefly App Adobe’s Firefly app is an AI-powered creative space for content ideation, creation and production. The Firefly app includes access to an expansive partner model ecosystem as well as all of Adobe’s AI Firefly models to allow users to generate images, video, vecto..."
+          }
+        },
+        {
+          "query_id": "seed_026_adbe_2025_rpo",
+          "query": "Where does Adobe discuss remaining performance obligations in fiscal 2025?",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "tags": [
+            "financial_note",
+            "rpo"
+          ],
+          "relevant_evidence_ids": [
+            "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_02_OF_02"
+          ],
+          "top_evidence_ids": [
+            "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_02_OF_02",
+            "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_01_OF_02",
+            "ADBE_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_06",
+            "ADBE_2023_10K_ITEM8_BLOCK_0003_PART_02_OF_03",
+            "ADBE_2024_10K_ITEM8_BLOCK_0003_PART_02_OF_03",
+            "ADBE_2024_10K_ITEM8_BLOCK_0003_PART_03_OF_03",
+            "ADBE_2023_10K_ITEM8_BLOCK_0003_PART_03_OF_03",
+            "ADBE_2025_10K_ITEM8_BLOCK_0015_PART_02_OF_02",
+            "AMD_2025_10K_ITEM8_BLOCK_0004_CHUNK_0001"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_02_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_02_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_02_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+            "score": 0.03125763125763126,
+            "ticker": "ADBE",
+            "fiscal_year": 2025,
+            "section": "Item 7. Management's Discussion and Analysis",
+            "subsection": "Overview of Fiscal 2025",
+            "evidence_type": "management_discussion",
+            "contains_table": true,
+            "text_preview": "Due to the nature of certain offerings which contain cross-product integrations or benefits, revenue attributable to certain product entitlements may be recognized in either customer group. By viewing the business through this lens, we can more effectively execute our long-term g..."
+          }
+        },
+        {
+          "query_id": "seed_027_panw_2025_platformization",
+          "query": "How does Palo Alto Networks describe platformization in fiscal 2025?",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "mdna",
+            "platformization"
+          ],
+          "relevant_evidence_ids": [
+            "PANW_2025_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "PANW_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2023_10K_ITEM1_BLOCK_0014_CHUNK_0001",
+            "PANW_2024_10K_ITEM1_BLOCK_0016_CHUNK_0001",
+            "PANW_2025_10K_ITEM1_BLOCK_0007_CHUNK_0001",
+            "PANW_2023_10K_ITEM1_BLOCK_0021_PART_02_OF_02",
+            "PANW_2025_10K_ITEM1_BLOCK_0015_PART_02_OF_02",
+            "PANW_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_21",
+            "PANW_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_21"
+          ],
+          "best_rank": 2,
+          "reciprocal_rank": 0.5,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": true,
+          "recall@3": 0.5,
+          "matched@3": [
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "hit@5": true,
+          "recall@5": 0.5,
+          "matched@5": [
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "hit@10": true,
+          "recall@10": 0.5,
+          "matched@10": [
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001"
+          ],
+          "top_hit": {
+            "evidence_id": "PANW_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "score": 0.03252247488101534,
+            "ticker": "PANW",
+            "fiscal_year": 2024,
+            "section": "Item 1. Business",
+            "subsection": "General",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Item 1. Business General Palo Alto Networks, Inc. is a global cybersecurity provider with a vision of a world where each day is safer and more secure than the one before. We were incorporated in 2005 and are headquartered in Santa Clara, California. We empower enterprises, organi..."
+          }
+        },
+        {
+          "query_id": "seed_028_panw_2025_competition",
+          "query": "What competitive risks does Palo Alto Networks describe in cloud security in fiscal 2025?",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "tags": [
+            "risk",
+            "competition",
+            "cybersecurity"
+          ],
+          "relevant_evidence_ids": [
+            "PANW_2025_10K_ITEM1A_BLOCK_0011_PART_01_OF_03"
+          ],
+          "top_evidence_ids": [
+            "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "PANW_2024_10K_ITEM1_BLOCK_0013_CHUNK_0001",
+            "PANW_2025_10K_ITEM1_BLOCK_0007_CHUNK_0001",
+            "PANW_2023_10K_ITEM1_BLOCK_0014_CHUNK_0001",
+            "PANW_2024_10K_ITEM1_BLOCK_0016_CHUNK_0001",
+            "PANW_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_21",
+            "PANW_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_21",
+            "PANW_2023_10K_ITEM8_BLOCK_0001_PART_21_OF_21"
+          ],
+          "best_rank": null,
+          "reciprocal_rank": 0.0,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": false,
+          "recall@10": 0.0,
+          "matched@10": [],
+          "top_hit": {
+            "evidence_id": "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "score": 0.030798389007344232,
+            "ticker": "PANW",
+            "fiscal_year": 2025,
+            "section": "Item 1. Business",
+            "subsection": "General",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Item 1. Business General Palo Alto Networks, Inc. is a global cybersecurity provider and our vision is a world where each day is safer and more secure than the one before. We were incorporated in 2005 and are headquartered in Santa Clara, California. Our mission is to be the cybe..."
+          }
+        },
+        {
+          "query_id": "seed_029_snow_2025_customer_metrics",
+          "query": "Where does Snowflake disclose total customers and Forbes Global 2000 customers in fiscal 2025?",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "tags": [
+            "business",
+            "customers"
+          ],
+          "relevant_evidence_ids": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "top_evidence_ids": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02",
+            "SNOW_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "SNOW_2023_10K_ITEM7_BLOCK_0002_PART_01_OF_03",
+            "SNOW_2025_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "SNOW_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_03",
+            "SNOW_2024_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+            "SNOW_2024_10K_ITEM7_BLOCK_0002_PART_01_OF_03",
+            "SNOW_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_06_OF_12"
+          ],
+          "best_rank": 1,
+          "reciprocal_rank": 1.0,
+          "hit@1": true,
+          "recall@1": 1.0,
+          "matched@1": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "hit@3": true,
+          "recall@3": 1.0,
+          "matched@3": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "hit@5": true,
+          "recall@5": 1.0,
+          "matched@5": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "hit@10": true,
+          "recall@10": 1.0,
+          "matched@10": [
+            "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02"
+          ],
+          "top_hit": {
+            "evidence_id": "SNOW_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_02",
+            "score": 0.03131881575727918,
+            "ticker": "SNOW",
+            "fiscal_year": 2025,
+            "section": "Item 1. Business",
+            "subsection": "Item 1. Business",
+            "evidence_type": "business_description",
+            "contains_table": false,
+            "text_preview": "Our platform is used globally by organizations of all sizes across a broad range of industries. As of January 31, 2025, we had 11,159 total customers, increasing from 9,384 customers as of January 31, 2024. As of January 31, 2025, our customers included 745 of the Forbes Global 2..."
+          }
+        },
+        {
+          "query_id": "seed_030_snow_2025_rpo",
+          "query": "Where does Snowflake discuss remaining performance obligations in fiscal 2025?",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "tags": [
+            "mdna",
+            "risk",
+            "rpo"
+          ],
+          "relevant_evidence_ids": [
+            "SNOW_2025_10K_ITEM7_BLOCK_0003_PART_02_OF_02",
+            "SNOW_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001"
+          ],
+          "top_evidence_ids": [
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_07_OF_12",
+            "SNOW_2024_10K_ITEM8_BLOCK_0001_PART_06_OF_32",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_06_OF_12",
+            "SNOW_2025_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+            "SNOW_2023_10K_ITEM8_BLOCK_0001_PART_29_OF_30",
+            "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_11_OF_12",
+            "SNOW_2025_10K_ITEM8_BLOCK_0002_PART_25_OF_26",
+            "SNOW_2023_10K_ITEM8_BLOCK_0001_PART_06_OF_30",
+            "SNOW_2025_10K_ITEM8_BLOCK_0002_PART_04_OF_26",
+            "SNOW_2024_10K_ITEM8_BLOCK_0001_PART_32_OF_32"
+          ],
+          "best_rank": null,
+          "reciprocal_rank": 0.0,
+          "hit@1": false,
+          "recall@1": 0.0,
+          "matched@1": [],
+          "hit@3": false,
+          "recall@3": 0.0,
+          "matched@3": [],
+          "hit@5": false,
+          "recall@5": 0.0,
+          "matched@5": [],
+          "hit@10": false,
+          "recall@10": 0.0,
+          "matched@10": [],
+          "top_hit": {
+            "evidence_id": "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_07_OF_12",
+            "score": 0.03128054740957967,
+            "ticker": "SNOW",
+            "fiscal_year": 2025,
+            "section": "Item 8. Financial Statements and Supplementary Data",
+            "subsection": "Item 8. Financial Statements and Supplementary Data",
+            "evidence_type": "financial_statement_or_note",
+            "contains_table": true,
+            "text_preview": "________________ (1) For the fiscal years ended January 31, 2025, 2024, and 2023, respectively, approximately 65 %, 67 %, and 71 % of cost of product revenue represented third-party cloud infrastructure expenses incurred in connection with the customers’ use of the Snowflake plat..."
+          }
+        }
+      ]
+    }
+  }
+}

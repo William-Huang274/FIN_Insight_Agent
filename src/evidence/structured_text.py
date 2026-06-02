@@ -4,6 +4,8 @@ from typing import Any
 
 
 def structured_object_search_text(record: dict[str, Any]) -> str:
+    if record.get("search_text"):
+        return str(record.get("search_text") or "")
     object_type = record.get("object_type")
     common = [
         record.get("ticker"),
@@ -71,6 +73,9 @@ def structured_object_search_text(record: dict[str, Any]) -> str:
 
 
 def structured_object_preview(record: dict[str, Any], max_chars: int = 280) -> str:
+    if record.get("preview"):
+        text = " ".join(str(record.get("preview") or "").split())
+        return text[:max_chars] + ("..." if len(text) > max_chars else "")
     object_type = record.get("object_type")
     if object_type == "metric":
         parts = [

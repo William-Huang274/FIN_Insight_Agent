@@ -66,6 +66,57 @@ def test_10k_only_source_resolver_keeps_missing_filing_fatal() -> None:
     assert module._source_missing_is_fatal(case, resolver)
 
 
+def test_source_resolver_uses_retrieval_plan_route_scope_for_mixed_10k_8k() -> None:
+    module = _load_eval_module()
+    case = {
+        "companies": ["NVDA", "AMD"],
+        "years": [2025, 2026],
+        "filing_types": ["10-K", "8-K"],
+        "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+        "query_contract": {
+            "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+            "filing_types": ["10-K", "8-K"],
+            "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+        },
+        "retrieval_plan": {
+            "schema_version": "sec_agent_retrieval_plan_v0.1",
+            "retrieval_plan_validation": {"status": "pass"},
+            "routes": [
+                {
+                    "route_id": "fundamental::filing_text",
+                    "retrieval_route": "filing_text",
+                    "tickers": ["NVDA", "AMD"],
+                    "years": [2025],
+                    "filing_types": ["10-K"],
+                    "source_tiers": ["primary_sec_filing"],
+                },
+                {
+                    "route_id": "management::8k_commentary",
+                    "retrieval_route": "8k_commentary",
+                    "tickers": ["NVDA", "AMD"],
+                    "years": [2026],
+                    "filing_types": ["8-K"],
+                    "source_tiers": ["company_authored_unaudited_sec_filing"],
+                },
+            ],
+        },
+    }
+    manifest_index = {
+        ("NVDA", 2025, "10-K"): {"ticker": "NVDA", "fiscal_year": 2025, "form_type": "10-K"},
+        ("AMD", 2025, "10-K"): {"ticker": "AMD", "fiscal_year": 2025, "form_type": "10-K"},
+        ("NVDA", 2026, "8-K"): {"ticker": "NVDA", "fiscal_year": 2026, "form_type": "8-K"},
+        ("AMD", 2026, "8-K"): {"ticker": "AMD", "fiscal_year": 2026, "form_type": "8-K"},
+    }
+
+    resolver = module._source_resolver(case, manifest_index)
+
+    assert resolver["status"] == "complete"
+    assert resolver["available_count"] == 4
+    assert resolver["missing_count"] == 0
+    assert not module._source_missing_is_fatal(case, resolver)
+    assert {item["retrieval_route"] for item in resolver["available_filings"]} == {"filing_text", "8k_commentary"}
+
+
 def test_requirement_queries_prioritize_qualitative_evidence_over_policy_traps() -> None:
     module = _load_eval_module()
     case = {

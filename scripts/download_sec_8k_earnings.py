@@ -13,6 +13,10 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = REPO_ROOT / "src"
 sys.path.insert(0, str(SRC_ROOT))
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 from connectors import SecEdgarConnector, SecEdgarConnectorError  # noqa: E402
 
@@ -133,13 +137,27 @@ def main() -> None:
                 processed += 1
                 continue
             try:
-                result = connector.fetch_earnings_release_8k(
-                    ticker=ticker,
-                    year=year,
-                    after_date=args.after_date,
-                    category=category,
-                    category_slug=category_slug,
-                )
+                cik = str(company.get("cik") or "").strip()
+                if cik:
+                    filing_meta = connector.find_earnings_release_8k(
+                        cik=cik,
+                        year=year,
+                        after_date=args.after_date,
+                    )
+                    result = connector.download_earnings_release_8k(
+                        filing_meta,
+                        ticker=ticker,
+                        category=category,
+                        category_slug=category_slug,
+                    )
+                else:
+                    result = connector.fetch_earnings_release_8k(
+                        ticker=ticker,
+                        year=year,
+                        after_date=args.after_date,
+                        category=category,
+                        category_slug=category_slug,
+                    )
                 print(json.dumps(result, ensure_ascii=False))
             except SecEdgarConnectorError as exc:
                 failure = build_missing_record(planned, exc, after_date=args.after_date)

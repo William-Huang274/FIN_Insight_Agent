@@ -310,3 +310,103 @@
 - [x] Add Blackwell/vLLM environment checker and verify remote RTX 5090 torch/vLLM compatibility before running inference.
 - [ ] Run one reviewed-case resident vLLM smoke on RTX 5090 with `--hardware-profile rtx5090_32gb` after data migration completes.
 - [ ] Re-test 27B 4bit text-only feasibility on RTX 5090 at 4k/8k/32k with no CPU offload before using it in gold-set runs.
+
+## Multi-agent Architecture Execution
+
+- [x] Draft the multi-agent investment research framework in `185_multi_agent_investment_research_framework_draft.md`.
+- [x] Draft the multi-agent tool/data access matrix in `186_multi_agent_tool_data_access_matrix_draft.md`.
+- [x] Add the multi-agent implementation handoff in `187_handoff_multi_agent_framework_next.md`.
+- [x] Add the v0.2 multi-agent architecture execution plan in `188_multi_agent_architecture_execution_plan.md`.
+- [x] Backfill `188_multi_agent_architecture_execution_plan.md` with the 185/186 role-specific skill, agent permission matrix, and tool/data-source ownership landing maps.
+- [x] Implement `AgentActivationPlan` schema and validator.
+- [x] Implement static agent registry and permission validation.
+- [x] Implement tool-call ledger, loop budget, duplicate-call blocking, and no-gain second-pass break rules.
+- [x] Add deterministic routing fixtures for `deterministic_lookup`, `focused_answer`, `standard_memo`, `deep_research`, and run-artifact inspection.
+- [x] Add a feature-flagged multi-agent LangGraph builder without breaking the current native graph.
+- [x] Route Evidence Operators through MCP registry with agent permission checks.
+- [x] Add Reflection-controlled second-pass retrieval tests with coverage delta requirements.
+- [x] Split shared and role-specific research skills for Lead, Reflection, Memo Writer, and Verifier.
+- [x] Backfill role-specific research skills for Fundamental, Industry/Supply-Chain, Market-Valuation, Risk, Universe, Evidence Operator, Judgment Aggregator, and Renderer.
+- [x] Add Workbench inspection for activation plan, agent trace, tool-call ledger, and loop break summary.
+- [x] Run deterministic contract, routing, graph, MCP/operator, Reflection, Workbench, and existing regression gates before enabling real Lead LLM routing.
+- [x] Add real Research Lead LLM activation routing with JSON output, schema repair, registry validation, and fail-closed behavior.
+- [x] Run the real DeepSeek 5-case activation fixture gate with mode `5/5`, validation `5/5`, required agents `5/5`, budget `5/5`, and forbidden activation `0`.
+- [x] Run a real Lead LLM focused graph smoke through the mock multi-agent graph and preserve activation validation / routing trace in final state.
+- [x] Add explicit feature flag / profile wiring before making Lead LLM routing a default graph path.
+- [x] Define Specialist memolet, Universe relationship, Judgment Plan, and specialist-verification output schemas before Step 11 LLM integration.
+- [x] Move specialist verification before Memo Writer in the mock multi-agent graph so unsupported specialist claims cannot enter memo generation.
+- [x] Add fake-LLM parser and schema repair tests for Fundamental, Market-Valuation, and Risk specialist outputs.
+- [x] Wire Specialist Analyst real LLM diagnostic route, graph feature flag, and fail-closed blocked memolet behavior.
+- [x] Add bounded specialist memolet fixture set for Fundamental, Industry/Supply-Chain, Market-Valuation, and Risk diagnostic evaluation.
+- [x] Add multi-agent EvidenceRequirementPlan enrichment / validation and registry-based agent data-view builder.
+- [x] Extend Research Lead LLM route to accept `activation_plan + evidence_requirement_plan` output and validate evidence requirements through Step 9 gates.
+- [x] Run real Specialist Analyst LLM diagnostic on bounded evidence fixtures before enabling specialist graph integration.
+- [x] Run real Research Lead LLM diagnostic with `--require-evidence-requirements` after the model key is available in environment.
+- [x] Bind Coverage / Reflection second-pass requests directly to EvidenceRequirementPlan requirement ids and source-family gaps.
+- [x] Compile Reflection second-pass requests back through the deterministic retrieval-plan compiler before any operator execution.
+- [x] Connect Specialist Analysis subgraph outputs into Judgment Plan / Memo Writer / Verifier repair constraints for Step 13.
+- [x] Add deterministic Memo Writer / Verifier gates that block raw rows, tool calls, unsupported claim leakage, and context-source misuse.
+- [x] Design Step 14 Universe / Relationship graph expansion contract and industry/supply-chain handoff gate.
+- [x] Add UniverseRelationshipPlan scope guard, inclusion rationale, source inventory, budget, and relationship-hypothesis EvidenceRequirement tests.
+- [x] Wire Step 14 Universe / Relationship expansion into the graph behind `SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER`.
+- [x] Run real Universe Relationship, Memo Writer, and Verifier LLM smoke without persisting API key or raw model response.
+- [x] Run Step 15 Workbench / CLI trace productization gate for the full multi-agent graph.
+- [x] Run Step 16 small real multi-agent graph smoke while keeping the feature flags diagnostic-only.
+- [x] Add deterministic multi-agent chain performance eval cases for exact lookup, focused answer, standard memo, deep relationship, run artifact inspection, specialist blocking, and verifier repair.
+- [x] Add real LLM multi-agent layered chain eval covering detailed probes, single-turn, multi-turn, per-agent routing, tool ownership, bounded specialist blocks, memo/verifier, and payload safety.
+- [x] Run real DeepSeek layered chain gates: detailed probe `2/2`, single+multi `4/4`, final full6 `6/6`, deterministic chain `7/7`, and full regression `371 passed`.
+- [x] Harden Verifier bounded-block behavior and one-round repair after real LLM false-negative / soft-completeness failures.
+- [x] Add real evidence-backed Specialist quality cases and a materialization runner for Fundamental, Market-Valuation, Industry/Supply-Chain, and Risk.
+- [x] Validate Specialist real evidence materialization gate over existing artifacts: `4/4` cases and `28` bounded real rows.
+- [x] Run real DeepSeek Specialist quality gate over materialized real evidence cases: `4/4`, `28` rows, `0` direct tool calls, `16574` tokens.
+- [x] Wire real-evidence Specialist quality scoring into the Step17 full-chain eval summary.
+- [x] Run Step17 real full-chain sector-depth eval across AI infra, banking, healthcare, and energy/utilities with real MCP retrieval, SEC BM25/ObjectBM25/BGE rerank, CUDA BGE, runtime-ledger audit, and Specialist real-evidence quality gates.
+- [x] Harden Industry/Supply-Chain Specialist data view so relationship graph rows survive row caps and `relationship_summary` reaches Specialist prompts.
+- [x] Upgrade Fundamental, Industry/Supply-Chain, Market-Valuation, and Risk role-specific skills to v0.2 with required inputs, analysis steps, output structure, gap handling, and quality rubric.
+- [x] Add sector-depth / relationship eval gates requiring Industry Specialist to see and cite relationship evidence.
+- [x] Rerun Step17 real DeepSeek sector-depth full-chain after the relationship data-view and skill v0.2 patch.
+- [x] Add relationship-pack semantic relevance gates so sector-depth relationship evidence must match the queried sector or an explicit cross-sector transmission path.
+- [x] Document the multi-agent output-quality root-cause hypotheses and per-case debug plan before further prompt/cap/gate changes.
+- [x] Add a diagnostic-only artifact audit script for saved Step17 full-chain output quality, token efficiency, source gaps, Specialist row budgets, and second-pass behavior.
+- [x] Add claim-card density and memo-outline support diagnostics to the Step17 output-quality audit.
+- [x] Lock the full-chain global audit / mature Fin Agent optimization plan with P1-P8 issues, root-cause clusters, execution gates, and rollback notes.
+- [ ] Split Step17 full-chain eval into safety pass, real-evidence pass, claim-card quality pass, memo-quality pass, and cost-quality diagnostics.
+- [x] Upgrade Specialist outputs from compact observations to execution-mode-aware claim cards.
+- [x] Upgrade Judgment Aggregator to rank verified claim cards into a memo outline before Memo Writer.
+- [x] Upgrade Memo Writer prompt/contract to consume verified claim cards, memo outline, and compact evidence table.
+- [x] Add quality-triggered second-pass retrieval before Memo Writer for source gaps, missing required ticker cards, missing ledger rows, and relationship-pack failures.
+- [x] Add route-level coverage fallback from real tool observations, relationship bounded permission unification, SEC search runtime policy, and BGE auto CUDA audit telemetry.
+- [x] Add Specialist task cards / required claim slots / counterclaim slots to data views and LLM request diagnostics.
+- [x] Upgrade Fundamental, Industry/Supply-Chain, Market-Valuation, and Risk role-specific skills to v0.3 task-card / ClaimCard conventions.
+- [x] Add Memo Writer non-contract answer-status normalization and renderer behavior that preserves verified draft memos with bounded evidence notes.
+- [ ] Debug AI infra, banking, healthcare, and energy/utilities one case at a time with changed-variable, expected improvement, token impact, and rollback notes.
+- [ ] Add numeric runtime-ledger row requirements for Step17 cases that make numeric metric claims, while allowing text-heavy relationship cases to pass on real context rows plus cited relationship evidence.
+- [x] Introduce a P6 thesis-pack projection contract to reduce Memo Writer payload ambiguity while improving final memo density.
+- [x] Add rendered memo-claim / evidence-ref gates for sector-depth Step17 real-chain cases.
+- [x] Add P7.1 priority-aware Specialist data-view and prompt budgets so supporting agents consume narrower payloads while primary deep-research specialists keep full context.
+- [x] Add P7.2 Verifier minimal projection so verifier consumes final memo claims / refs instead of a broad judgment inventory.
+- [x] Add P7.4 cost-quality eval metrics for tokens per ClaimCard, rendered memo claim, memo char, and repair-token ratio.
+- [x] Upgrade Memo Writer to profile-driven v0.6 contract with `compact / standard / expanded / deep_research`, direct-answer surface gates, action fields, and profile-aware S6-S8 eval.
+- [x] Add a standalone Fin Agent investment-research quality framework outside worklogs, with machine-readable rubric and layered artifact-only audit script.
+- [x] Add a staged S1-S10 execution plan that requires each agent/node gate to pass before downstream or full-chain evaluation.
+- [x] Run the new S1 Research Lead quality gate and audit it with `scripts/audit_fin_agent_layer_quality.py`.
+- [x] Add and run the S2 Universe / Relationship quality gate from the passed S1 artifact, including relationship-pack relevance repair.
+- [x] Deepen S2 into `EconomicLinkMap` with bounded entities, links, mechanisms, investment implications, and relationship-hypothesis source boundary.
+- [x] Add and run the S3 Evidence Operators quality gate from passed S1/S2 artifacts, including real SEC BM25/ObjectBM25/BGE rerank, exact-value ledger, market/industry rows, relationship rows, and BGE CUDA auto policy.
+- [x] Upgrade S2 relationship edge schema to v0.3 and preserve all bounded lookup relationships as `sector_inferred` / `no_confirmed_direct_edge` rows.
+- [x] Rerun S3 from the accepted S2 relationship-inference artifact and keep real retrieval / rerank / ledger gates green.
+- [x] Add and run S4 Coverage / Reflection gate with bounded second-pass request compilation, stop-after-node routing, stale-requirement override, source-gap boundary, and no-incremental-evidence loop break.
+- [x] Add and run S5 Specialist layer gate by reusing passed S1-S4 artifacts, with route success separated from real-evidence quality.
+- [x] Add and run S6/S7/S8 Judgment / Memo / Verifier gate by reusing passed S5 artifacts, with thesis pack, memo-claim density, numeric-fidelity, fallback, and verifier checks separated.
+- [x] Add a v0.2 S1-S8 case matrix for industry / difficulty / agent capability gates before further full-chain replay.
+- [x] Add comparative focus-ticker balanced data-view and prompt-row selector for Fundamental / Risk specialists.
+- [x] Add metric/source diversity and market/industry floors for Specialist prompt row selection.
+- [x] Persist Specialist prompt row distribution in S5 route artifacts.
+- [x] Add S3 `ledger_missing_despite_context` source gap telemetry.
+- [x] Add S5 comparative ticker primary visibility gate and rerun NVDA/AMD targeted Specialist layer.
+- [x] Add S5 temporal-claim ref-depth gate and allow self-comparative single evidence rows.
+- [x] Add S6-S8 `judgment_memo_diagnostic` support to the layered audit script.
+- [ ] Proceed to S9 full-chain replay after S1-S8 matrix remains stable.
+- [x] Reduce residual Memo Writer repair cost after S6/S7/S8 selected layer runs; v0.7 Chinese response-language representative runs are `4/4` pass with `0` repairs.
+- [ ] Run S9 full-chain replay with `response_language` renderer checks after S6-S8 language gate stabilization.
+- [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.

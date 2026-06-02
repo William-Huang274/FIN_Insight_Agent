@@ -42,7 +42,8 @@ def test_api_model_clean_answers_count_for_model_usage_gate(tmp_path):
     assert usage["api_model_repaired"] == 1
     assert usage["model_answered"] == 1
     assert usage["model_repaired"] == 1
-    assert usage["model_ratio"] == 0.5
+    assert usage["model_supported_answered"] == 2
+    assert usage["model_ratio"] == 1.0
 
 
 def test_api_model_usage_excludes_trap_rows(tmp_path):

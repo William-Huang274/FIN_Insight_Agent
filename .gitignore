@@ -2,8 +2,10 @@
 /data/processed_private/
 /data/models_private/
 /data/indexes/
+/data/workbench_private/
 /data/logs/*.jsonl
 /data/logs/*.json
+/data/logs/*.log
 
 # Local diagnostics and sync scratch
 /.tmp_*
@@ -14,6 +16,7 @@
 # Runtime and evaluation outputs
 /eval/
 /reports/demo/
+/reports/eval/
 /reports/evidence_packs/
 /reports/evidence_pool/
 /reports/exact_value_ledgers/
@@ -30,6 +33,7 @@
 *.pdf
 *.html
 *.htm
+!/apps/workbench/frontend/index.html
 *.parquet
 *.sqlite
 .env
@@ -38,5 +42,7 @@ __pycache__/
 .ipynb_checkpoints/
 .venv/
 venv/
+node_modules/
+dist/
 *.pyc
 !/data/logs/.gitkeep

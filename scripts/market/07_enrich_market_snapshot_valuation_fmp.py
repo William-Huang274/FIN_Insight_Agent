@@ -42,6 +42,19 @@ def _split_csv(value: str | None) -> list[str]:
     return out
 
 
+def _endpoint_set(value: str | None) -> set[str]:
+    endpoints = {item.strip().lower().replace("-", "_") for item in (value or "").split(",") if item.strip()}
+    aliases = {"key_metrics": "key_metrics_ttm", "metrics": "key_metrics_ttm", "ratios": "ratios_ttm"}
+    normalized = {aliases.get(item, item) for item in endpoints}
+    allowed = {"quote", "key_metrics_ttm", "ratios_ttm"}
+    unknown = sorted(normalized - allowed)
+    if unknown:
+        raise ValueError(f"unknown valuation endpoints: {unknown}; allowed={sorted(allowed)}")
+    if not normalized:
+        raise ValueError("at least one valuation endpoint is required")
+    return normalized
+
+
 def _tickers_from_config(path: str | None) -> list[str]:
     if not path:
         return []
@@ -279,6 +292,14 @@ def main() -> int:
     parser.add_argument("--benchmark-tickers", default="SPY,QQQ")
     parser.add_argument("--api-key-env", default="FMP_API_KEY")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
+    parser.add_argument(
+        "--valuation-endpoints",
+        default="quote,key_metrics_ttm,ratios_ttm",
+        help=(
+            "Comma-separated FMP endpoints to call. Use key_metrics_ttm for large "
+            "universes when free-key limits make quote/ratios too expensive."
+        ),
+    )
     parser.add_argument("--timeout", type=int, default=30)
     parser.add_argument("--sleep", type=float, default=0.1)
     parser.add_argument("--fail-on-missing", action="store_true")
@@ -295,6 +316,7 @@ def main() -> int:
     output_path = Path(args.output) if args.output else _default_output(input_path, args.snapshot_id)
     target_tickers = _split_csv(",".join(_tickers_from_config(args.tickers_config) + _split_csv(args.tickers)))
     benchmark_tickers = _split_csv(args.benchmark_tickers)
+    endpoint_set = _endpoint_set(args.valuation_endpoints)
     if not target_tickers:
         parser.error("Provide --tickers or --tickers-config.")
 
@@ -303,22 +325,35 @@ def main() -> int:
         if field not in fieldnames:
             fieldnames.append(field)
 
-    quote_rows, quote_urls, quote_failures = _fetch_fmp_quotes(
-        base_url=args.base_url,
-        apikey=api_key,
-        tickers=target_tickers,
-        timeout=args.timeout,
-        sleep=args.sleep,
-    )
+    quote_rows: dict[str, dict[str, Any]] = {}
+    quote_urls: list[str] = []
+    quote_failures: list[dict[str, str]] = []
+    if "quote" in endpoint_set:
+        quote_rows, quote_urls, quote_failures = _fetch_fmp_quotes(
+            base_url=args.base_url,
+            apikey=api_key,
+            tickers=target_tickers,
+            timeout=args.timeout,
+            sleep=args.sleep,
+        )
     valuations: dict[str, dict[str, Any]] = {}
     failures = list(quote_failures)
     source_urls = [_redact_url(url) for url in quote_urls]
     for ticker in target_tickers:
         try:
-            metrics, metrics_url = _fetch_fmp_key_metrics_ttm(base_url=args.base_url, apikey=api_key, ticker=ticker, timeout=args.timeout)
-            source_urls.append(_redact_url(metrics_url))
-            ratios, ratios_url = _fetch_fmp_ratios_ttm(base_url=args.base_url, apikey=api_key, ticker=ticker, timeout=args.timeout)
-            source_urls.append(_redact_url(ratios_url))
+            metrics: dict[str, Any] = {}
+            ratios: dict[str, Any] = {}
+            if "key_metrics_ttm" in endpoint_set:
+                metrics, metrics_url = _fetch_fmp_key_metrics_ttm(
+                    base_url=args.base_url,
+                    apikey=api_key,
+                    ticker=ticker,
+                    timeout=args.timeout,
+                )
+                source_urls.append(_redact_url(metrics_url))
+            if "ratios_ttm" in endpoint_set:
+                ratios, ratios_url = _fetch_fmp_ratios_ttm(base_url=args.base_url, apikey=api_key, ticker=ticker, timeout=args.timeout)
+                source_urls.append(_redact_url(ratios_url))
             valuations[ticker] = _extract_fmp_valuation(ticker, quote_rows.get(ticker), metrics, ratios)
         except Exception as exc:
             failures.append({"ticker": ticker, "error": str(exc)})
@@ -342,6 +377,7 @@ def main() -> int:
         "output": str(output_path),
         "target_tickers": target_tickers,
         "benchmark_tickers": benchmark_tickers,
+        "valuation_endpoints": sorted(endpoint_set),
         "valuation_as_of_date": valuation_as_of_date,
         "failed_tickers": failures,
         "enrichment": enrichment,

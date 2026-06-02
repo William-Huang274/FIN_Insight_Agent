@@ -1,0 +1,3009 @@
+{
+  "run_id": "20260515_phase1_complex_query_probe",
+  "timestamp": "2026-05-15",
+  "retriever": "Qwen3-Embedding-0.6B seq8192 bs16 dense, plus equal-weight BM25+dense RRF",
+  "query_count": 12,
+  "elapsed_seconds": 19.209,
+  "records": [
+    {
+      "query_id": "common_msft_2025_cloud_ai_margin",
+      "category": "common_financial",
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "query": "For Microsoft fiscal 2025, what explains cloud revenue growth and what do margins or costs suggest about AI infrastructure investment?",
+      "expected_signal": "cloud revenue growth, Azure/cloud services, AI infrastructure or capital/cost pressure",
+      "filters": {
+        "ticker": "MSFT",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6954121589660645,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Highlights from fiscal year 2025 compared with fiscal year 2024 included",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Highlights from fiscal year 2025 compared with fiscal year 2024 included: • Microsoft Cloud revenue increased 23% to $168.9 billion. • Microsoft 365 Commercial products and cloud services revenue increased 14% driven by Microsoft 365 Commercial cloud revenue growth of 15%. • Micr..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6572677493095398,
+          "evidence_id": "MSFT_2025_10K_ITEM8_BLOCK_0022_PART_02_OF_04",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "NOTE 18",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=72 rows=22] (In millions) Year Ended June 30, | 2025 | 2024 | 2023 Productivity and Business Processes Revenue | $ | 120,810 | $ | 106,820 | $ | 94,151 Cost of revenue | 22,422 | 19,611 | 17,202 Operating expenses | 28,615 | 27,548 | 26,875 Operating Income | $ | ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6514787673950195,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_01_OF_02",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Productivity and Business Processes and Intelligent Cloud",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Productivity and Business Processes and Intelligent Cloud Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. [TAB..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6398975253105164,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_02",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Productivity and Business Processes and Intelligent Cloud",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Reportable Segments Fiscal Year 2025 Compared with Fiscal Year 2024 Productivity and Business Processes Revenue increased $14.0 billion or 13%. • Microsoft 365 Commercial products and cloud services revenue increased $10.8 billion or 14%. Microsoft 365 Commercial cloud revenue gr..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6249831914901733,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0010_CHUNK_0001",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Other Planned Uses of Capital",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Other Planned Uses of Capital We will continue to invest in sales, marketing, product support infrastructure, and existing and advanced areas of technology, as well as acquisitions that align with our business strategy. Additions to property and equipment will continue, including..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.03278688524590164,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Highlights from fiscal year 2025 compared with fiscal year 2024 included",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Highlights from fiscal year 2025 compared with fiscal year 2024 included: • Microsoft Cloud revenue increased 23% to $168.9 billion. • Microsoft 365 Commercial products and cloud services revenue increased 14% driven by Microsoft 365 Commercial cloud revenue growth of 15%. • Micr...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 35.22349564932581,
+            "dense_rank": 1,
+            "dense_score": 0.6954121589660645
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.031754032258064516,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_02",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Productivity and Business Processes and Intelligent Cloud",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Reportable Segments Fiscal Year 2025 Compared with Fiscal Year 2024 Productivity and Business Processes Revenue increased $14.0 billion or 13%. • Microsoft 365 Commercial products and cloud services revenue increased $10.8 billion or 14%. Microsoft 365 Commercial cloud revenue gr...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 28.076650093633603,
+            "dense_rank": 4,
+            "dense_score": 0.6398975253105164
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.03149801587301587,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_01_OF_02",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Productivity and Business Processes and Intelligent Cloud",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Productivity and Business Processes and Intelligent Cloud Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. [TAB...",
+          "fusion": {
+            "bm25_rank": 4,
+            "bm25_score": 25.897927355853696,
+            "dense_rank": 3,
+            "dense_score": 0.6514787673950195
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.0304147465437788,
+          "evidence_id": "MSFT_2025_10K_ITEM8_BLOCK_0022_PART_02_OF_04",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "NOTE 18",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=72 rows=22] (In millions) Year Ended June 30, | 2025 | 2024 | 2023 Productivity and Business Processes Revenue | $ | 120,810 | $ | 106,820 | $ | 94,151 Cost of revenue | 22,422 | 19,611 | 17,202 Operating expenses | 28,615 | 27,548 | 26,875 Operating Income | $ | ...",
+          "fusion": {
+            "bm25_rank": 10,
+            "bm25_score": 20.03849923943027,
+            "dense_rank": 2,
+            "dense_score": 0.6572677493095398
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.030158730158730156,
+          "evidence_id": "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "GENERAL",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "ITEM 1. B USINESS GENERAL Microsoft is a technology company committed to making digital technology and artificial intelligence (“AI”) available broadly and doing so responsibly. Our mission is to empower every person and every organization on the planet to achieve more. We develo...",
+          "fusion": {
+            "bm25_rank": 3,
+            "bm25_score": 27.82301546567437,
+            "dense_rank": 10,
+            "dense_score": 0.5686649084091187
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6954121589660645,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Highlights from fiscal year 2025 compared with fiscal year 2024 included",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Highlights from fiscal year 2025 compared with fiscal year 2024 included: • Microsoft Cloud revenue increased 23% to $168.9 billion. • Microsoft 365 Commercial products and cloud services revenue increased 14% driven by Microsoft 365 Commercial cloud revenue growth of 15%. • Micr..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6572677493095398,
+          "evidence_id": "MSFT_2025_10K_ITEM8_BLOCK_0022_PART_02_OF_04",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "NOTE 18",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=72 rows=22] (In millions) Year Ended June 30, | 2025 | 2024 | 2023 Productivity and Business Processes Revenue | $ | 120,810 | $ | 106,820 | $ | 94,151 Cost of revenue | 22,422 | 19,611 | 17,202 Operating expenses | 28,615 | 27,548 | 26,875 Operating Income | $ | ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6514787673950195,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_01_OF_02",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Productivity and Business Processes and Intelligent Cloud",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Productivity and Business Processes and Intelligent Cloud Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. [TAB..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6398975253105164,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_02",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Productivity and Business Processes and Intelligent Cloud",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Reportable Segments Fiscal Year 2025 Compared with Fiscal Year 2024 Productivity and Business Processes Revenue increased $14.0 billion or 13%. • Microsoft 365 Commercial products and cloud services revenue increased $10.8 billion or 14%. Microsoft 365 Commercial cloud revenue gr..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6249831914901733,
+          "evidence_id": "MSFT_2025_10K_ITEM7_BLOCK_0010_CHUNK_0001",
+          "ticker": "MSFT",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Other Planned Uses of Capital",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Other Planned Uses of Capital We will continue to invest in sales, marketing, product support infrastructure, and existing and advanced areas of technology, as well as acquisitions that align with our business strategy. Additions to property and equipment will continue, including..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 5,
+      "dense_filtered_sections": [
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Highlights from fiscal year 2025 compared with fiscal year 2024 included",
+        "MSFT 2025 Item 8. Financial Statements and Supplementary Data / NOTE 18",
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Productivity and Business Processes and Intelligent Cloud",
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Productivity and Business Processes and Intelligent Cloud",
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Other Planned Uses of Capital"
+      ],
+      "hybrid_filtered_sections": [
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Highlights from fiscal year 2025 compared with fiscal year 2024 included",
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Productivity and Business Processes and Intelligent Cloud",
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Productivity and Business Processes and Intelligent Cloud",
+        "MSFT 2025 Item 8. Financial Statements and Supplementary Data / NOTE 18",
+        "MSFT 2025 Item 1. Business / GENERAL"
+      ],
+      "dense_unfiltered_sections": [
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Highlights from fiscal year 2025 compared with fiscal year 2024 included",
+        "MSFT 2025 Item 8. Financial Statements and Supplementary Data / NOTE 18",
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Productivity and Business Processes and Intelligent Cloud",
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Productivity and Business Processes and Intelligent Cloud",
+        "MSFT 2025 Item 7. Management's Discussion and Analysis / Other Planned Uses of Capital"
+      ]
+    },
+    {
+      "query_id": "common_aapl_2025_iphone_services_margin",
+      "category": "common_financial",
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "query": "For Apple fiscal 2025, compare iPhone and Services net sales performance and explain the gross margin drivers.",
+      "expected_signal": "iPhone sales, Services sales, product/services gross margin discussion",
+      "filters": {
+        "ticker": "AAPL",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.7900518774986267,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Services",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Services Services net sales increased during 2025 compared to 2024 primarily due to higher net sales from advertising, the App Store and cloud services. Apple Inc. | 2025 Form 10-K | 23 Gross Margin Products and Services gross margin and gross margin percentage for 2025, 2024 and..."
+        },
+        {
+          "rank": 2,
+          "score": 0.7652150392532349,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_02_OF_02",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Fourth Quarter 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "(1) Services net sales include amortization of the deferred value of services bundled in the sales price of certain products. iPhone iPhone net sales increased during 2025 compared to 2024 due to higher net sales of Pro models. Mac Mac net sales increased during 2025 compared to ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7195683717727661,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Fourth Quarter 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Fourth Quarter 2025: • iPhone 17, iPhone Air, iPhone 17 Pro and iPhone 17 Pro Max • Apple Watch Series 11, Apple Watch SE 3 and Apple Watch Ultra 3 • AirPods Pro 3 Fiscal Period The Company’s fiscal year is the 52- or 53-week period that ends on the last Saturday of September. An..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6493257284164429,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Services Gross Margin",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Services Gross Margin Services gross margin increased during 2025 compared to 2024 primarily due to higher Services net sales and a different mix of services. Services gross margin percentage increased during 2025 compared to 2024 primarily due to a different mix of services, par..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6248689889907837,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations The following discussion should be read in conjunction with the consolidated financial statements and accompanying notes included in Part II, Item 8 of this Form 10-K. This Item generall..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.032266458495966696,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Fourth Quarter 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Fourth Quarter 2025: • iPhone 17, iPhone Air, iPhone 17 Pro and iPhone 17 Pro Max • Apple Watch Series 11, Apple Watch SE 3 and Apple Watch Ultra 3 • AirPods Pro 3 Fiscal Period The Company’s fiscal year is the 52- or 53-week period that ends on the last Saturday of September. An...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 39.93572190377105,
+            "dense_rank": 3,
+            "dense_score": 0.7195683717727661
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.032018442622950824,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Services",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Services Services net sales increased during 2025 compared to 2024 primarily due to higher net sales from advertising, the App Store and cloud services. Apple Inc. | 2025 Form 10-K | 23 Gross Margin Products and Services gross margin and gross margin percentage for 2025, 2024 and...",
+          "fusion": {
+            "bm25_rank": 4,
+            "bm25_score": 28.56206524217587,
+            "dense_rank": 1,
+            "dense_score": 0.7900518774986267
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.031009615384615385,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Services Gross Margin",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Services Gross Margin Services gross margin increased during 2025 compared to 2024 primarily due to higher Services net sales and a different mix of services. Services gross margin percentage increased during 2025 compared to 2024 primarily due to a different mix of services, par...",
+          "fusion": {
+            "bm25_rank": 5,
+            "bm25_score": 24.64847809860702,
+            "dense_rank": 4,
+            "dense_score": 0.6493257284164429
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.030834914611005692,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_02_OF_02",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Fourth Quarter 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "(1) Services net sales include amortization of the deferred value of services bundled in the sales price of certain products. iPhone iPhone net sales increased during 2025 compared to 2024 due to higher net sales of Pro models. Mac Mac net sales increased during 2025 compared to ...",
+          "fusion": {
+            "bm25_rank": 8,
+            "bm25_score": 22.854140631261235,
+            "dense_rank": 2,
+            "dense_score": 0.7652150392532349
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.0304147465437788,
+          "evidence_id": "AAPL_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "Item 1. Business",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "Item 1. Business Company Background The Company designs, manufactures and markets smartphones, personal computers, tablets, wearables and accessories, and sells a variety of related services. The Company’s fiscal year is the 52- or 53-week period that ends on the last Saturday of...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 32.124690808868735,
+            "dense_rank": 10,
+            "dense_score": 0.5509024858474731
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.7900518774986267,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Services",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Services Services net sales increased during 2025 compared to 2024 primarily due to higher net sales from advertising, the App Store and cloud services. Apple Inc. | 2025 Form 10-K | 23 Gross Margin Products and Services gross margin and gross margin percentage for 2025, 2024 and..."
+        },
+        {
+          "rank": 2,
+          "score": 0.7652150392532349,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_02_OF_02",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Fourth Quarter 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "(1) Services net sales include amortization of the deferred value of services bundled in the sales price of certain products. iPhone iPhone net sales increased during 2025 compared to 2024 due to higher net sales of Pro models. Mac Mac net sales increased during 2025 compared to ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7195683717727661,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Fourth Quarter 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Fourth Quarter 2025: • iPhone 17, iPhone Air, iPhone 17 Pro and iPhone 17 Pro Max • Apple Watch Series 11, Apple Watch SE 3 and Apple Watch Ultra 3 • AirPods Pro 3 Fiscal Period The Company’s fiscal year is the 52- or 53-week period that ends on the last Saturday of September. An..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6493257284164429,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Services Gross Margin",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Services Gross Margin Services gross margin increased during 2025 compared to 2024 primarily due to higher Services net sales and a different mix of services. Services gross margin percentage increased during 2025 compared to 2024 primarily due to a different mix of services, par..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6248689889907837,
+          "evidence_id": "AAPL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+          "ticker": "AAPL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations The following discussion should be read in conjunction with the consolidated financial statements and accompanying notes included in Part II, Item 8 of this Form 10-K. This Item generall..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 5,
+      "dense_filtered_sections": [
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Services",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Fourth Quarter 2025",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Fourth Quarter 2025",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Services Gross Margin",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis"
+      ],
+      "hybrid_filtered_sections": [
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Fourth Quarter 2025",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Services",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Services Gross Margin",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Fourth Quarter 2025",
+        "AAPL 2025 Item 1. Business / Item 1. Business"
+      ],
+      "dense_unfiltered_sections": [
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Services",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Fourth Quarter 2025",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Fourth Quarter 2025",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Services Gross Margin",
+        "AAPL 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis"
+      ]
+    },
+    {
+      "query_id": "common_nvda_2025_datacenter_customer_concentration",
+      "category": "common_financial",
+      "ticker": "NVDA",
+      "fiscal_year": 2025,
+      "query": "For NVIDIA fiscal 2025, how does data center revenue growth relate to customer concentration and demand from large cloud or service providers?",
+      "expected_signal": "data center revenue, customer concentration, large cloud/service providers",
+      "filters": {
+        "ticker": "NVDA",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6028846502304077,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Compute & Networking revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Compute & Networking revenue – The year over year increase was due to strong demand for our accelerated computing and AI solutions. Revenue from Data Center computing grew 162% driven primarily by demand for our Hopper computing platform used for large language models, recommenda..."
+        },
+        {
+          "rank": 2,
+          "score": 0.5904041528701782,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Macroeconomic Factors Macroeconomic factors, including inflation, interest rate changes, capital market volatility, global supply chain constraints, tariffs, and global economic and geopolitical developments, may have direct and indirect impacts on our results of operations, part..."
+        },
+        {
+          "rank": 3,
+          "score": 0.5876691341400146,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Item 7. Management's Discussion and Analysis of Financial Condition and Results of Operations The following discussion and analysis of our financial condition and results of operations should be read in conjunction with “Item 1A. Risk Factors,” our Consolidated Financial Statemen..."
+        },
+        {
+          "rank": 4,
+          "score": 0.5838674902915955,
+          "evidence_id": "NVDA_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "Item 1. Business",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "4 Table of Contents Researchers and developers use our computing solutions to accelerate a wide range of important applications, from simulating molecular dynamics to climate forecasting. With support for more than 4,400 applications, NVIDIA computing enables some of the most pro..."
+        },
+        {
+          "rank": 5,
+          "score": 0.5807411670684814,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Concentration of Revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Concentration of Revenue We refer to customers who purchase products directly from NVIDIA as direct customers, such as AIBs, distributors, ODMs, OEMs, and system integrators. We have certain customers that may purchase products directly from NVIDIA and may use either internal res..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.03225806451612903,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Macroeconomic Factors Macroeconomic factors, including inflation, interest rate changes, capital market volatility, global supply chain constraints, tariffs, and global economic and geopolitical developments, may have direct and indirect impacts on our results of operations, part...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 37.274269592331116,
+            "dense_rank": 2,
+            "dense_score": 0.5904041528701782
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.032018442622950824,
+          "evidence_id": "NVDA_2025_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "Item 1. Business",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "4 Table of Contents Researchers and developers use our computing solutions to accelerate a wide range of important applications, from simulating molecular dynamics to climate forecasting. With support for more than 4,400 applications, NVIDIA computing enables some of the most pro...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 37.503109492795225,
+            "dense_rank": 4,
+            "dense_score": 0.5838674902915955
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.03149801587301587,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Item 7. Management's Discussion and Analysis of Financial Condition and Results of Operations The following discussion and analysis of our financial condition and results of operations should be read in conjunction with “Item 1A. Risk Factors,” our Consolidated Financial Statemen...",
+          "fusion": {
+            "bm25_rank": 4,
+            "bm25_score": 34.3694656206065,
+            "dense_rank": 3,
+            "dense_score": 0.5876691341400146
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.029083245521601686,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Concentration of Revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Concentration of Revenue We refer to customers who purchase products directly from NVIDIA as direct customers, such as AIBs, distributors, ODMs, OEMs, and system integrators. We have certain customers that may purchase products directly from NVIDIA and may use either internal res...",
+          "fusion": {
+            "bm25_rank": 13,
+            "bm25_score": 27.545988039613214,
+            "dense_rank": 5,
+            "dense_score": 0.5807411670684814
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.029051670471052088,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Compute & Networking revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Compute & Networking revenue – The year over year increase was due to strong demand for our accelerated computing and AI solutions. Revenue from Data Center computing grew 162% driven primarily by demand for our Hopper computing platform used for large language models, recommenda...",
+          "fusion": {
+            "bm25_rank": 19,
+            "bm25_score": 25.533955595562148,
+            "dense_rank": 1,
+            "dense_score": 0.6028846502304077
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.62947678565979,
+          "evidence_id": "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_03_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Recent Developments, Future Objectives and Challenges",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Revenue for fiscal year 2024 was $60.9 billion, up 126% from a year ago. Data Center revenue for fiscal year 2024 was up 217%. Strong demand was driven by enterprise software and consumer internet applications, and multiple industry verticals including automotive, financial servi..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6252063512802124,
+          "evidence_id": "AMD_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Results of Operations",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Results of Operations Additional information on our reportable segments is contained in Note 4 – Segment Reporting of the Notes to Financial Statements (Part II, Item 8 of this Form 10-K). Our operating results tend to vary seasonally. Historically, our net revenue has been gener..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6046417951583862,
+          "evidence_id": "AMD_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS The following discussion should be read in conjunction with the Consolidated Financial Statements as of December 27, 2025 and December 28, 2024 and for each of the three years in the per..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6028846502304077,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Compute & Networking revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Compute & Networking revenue – The year over year increase was due to strong demand for our accelerated computing and AI solutions. Revenue from Data Center computing grew 162% driven primarily by demand for our Hopper computing platform used for large language models, recommenda..."
+        },
+        {
+          "rank": 5,
+          "score": 0.5989761352539062,
+          "evidence_id": "NVDA_2023_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+          "ticker": "NVDA",
+          "fiscal_year": 2023,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "41 Table of Contents Revenue Revenue by Reportable Segments [TABLE_START id=12 rows=6] Year Ended January 29, 2023 | January 30, 2022 | $ Change | % Change ($ in millions) Compute & Networking | $ | 15,068 | $ | 11,046 | $ | 4,022 | 36 | % Graphics | 11,906 | 15,868 | (3,962) | (..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 1,
+      "dense_filtered_sections": [
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Compute & Networking revenue",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "NVDA 2025 Item 1. Business / Item 1. Business",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Concentration of Revenue"
+      ],
+      "hybrid_filtered_sections": [
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "NVDA 2025 Item 1. Business / Item 1. Business",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Concentration of Revenue",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Compute & Networking revenue"
+      ],
+      "dense_unfiltered_sections": [
+        "NVDA 2024 Item 7. Management's Discussion and Analysis / Recent Developments, Future Objectives and Challenges",
+        "AMD 2025 Item 7. Management's Discussion and Analysis / Results of Operations",
+        "AMD 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Compute & Networking revenue",
+        "NVDA 2023 Item 7. Management's Discussion and Analysis / Income Taxes"
+      ]
+    },
+    {
+      "query_id": "common_amzn_2025_aws_margin_capex",
+      "category": "common_financial",
+      "ticker": "AMZN",
+      "fiscal_year": 2025,
+      "query": "For Amazon fiscal 2025, what does the filing say about AWS revenue, operating income or margin, and infrastructure capital spending pressure?",
+      "expected_signal": "AWS revenue and operating income, capital expenditures or infrastructure investment",
+      "filters": {
+        "ticker": "AMZN",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6149616241455078,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "General and Administrative",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "General and Administrative General and administrative costs in 2025 did not significantly change compared to the prior year. Other Operating Expense (Income), Net Other operating expense (income), net was $763 million and $4.6 billion during 2024 and 2025. The increase in 2025 wa..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6041820049285889,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_02_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 10 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "(3) Includes commissions and any related fulfillment and shipping fees, and other third-party seller services. (4) Includes sales of advertising services to sellers, vendors, publishers, authors, and others, through programs such as sponsored ads, display, and video advertising. ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6019381880760193,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 10 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 10 — SEGMENT INFORMATION We have organized our operations into three segments: North America, International, and AWS. We allocate to segment results the operating expenses “Fulfillment,” “Technology and infrastructure,” “Sales and marketing,” and “General and administrative”..."
+        },
+        {
+          "rank": 4,
+          "score": 0.5985414981842041,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 1 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 1 — DESCRIPTION OF BUSINESS, ACCOUNTING POLICIES, AND SUPPLEMENTAL DISCLOSURES Description of Business We seek to be Earth’s most customer-centric company. In each of our segments, we serve our primary customer sets, consisting of consumers, sellers, developers, enterprises,..."
+        },
+        {
+          "rank": 5,
+          "score": 0.5722967982292175,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_03",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Shipping costs were $95.8 billion and $102.7 billion in 2024 and 2025. Shipping costs to receive products from our suppliers are included in our inventory and recognized as cost of sales upon sale of products to our customers. We expect our cost of shipping to continue to increas..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.03200204813108039,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 10 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 10 — SEGMENT INFORMATION We have organized our operations into three segments: North America, International, and AWS. We allocate to segment results the operating expenses “Fulfillment,” “Technology and infrastructure,” “Sales and marketing,” and “General and administrative”...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 26.442983308155586,
+            "dense_rank": 3,
+            "dense_score": 0.6019381880760193
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.03177805800756621,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_03",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Shipping costs were $95.8 billion and $102.7 billion in 2024 and 2025. Shipping costs to receive products from our suppliers are included in our inventory and recognized as cost of sales upon sale of products to our customers. We expect our cost of shipping to continue to increas...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 30.719706602052412,
+            "dense_rank": 5,
+            "dense_score": 0.5722967982292175
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.03131881575727918,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "General and Administrative",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "General and Administrative General and administrative costs in 2025 did not significantly change compared to the prior year. Other Operating Expense (Income), Net Other operating expense (income), net was $763 million and $4.6 billion during 2024 and 2025. The increase in 2025 wa...",
+          "fusion": {
+            "bm25_rank": 7,
+            "bm25_score": 24.90643975981464,
+            "dense_rank": 1,
+            "dense_score": 0.6149616241455078
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.029827662395050816,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_02_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 10 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "(3) Includes commissions and any related fulfillment and shipping fees, and other third-party seller services. (4) Includes sales of advertising services to sellers, vendors, publishers, authors, and others, through programs such as sponsored ads, display, and video advertising. ...",
+          "fusion": {
+            "bm25_rank": 13,
+            "bm25_score": 23.01144866226888,
+            "dense_rank": 2,
+            "dense_score": 0.6041820049285889
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.02946912242686891,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0005_PART_01_OF_03",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Overview Macroeconomic factors, including changes in inflation and interest rates, resource and supply volatility, global economic and geopolitical developments, including unpredictable shifts in global tariff and trade policies, and the development and adoption of technologies a...",
+          "fusion": {
+            "bm25_rank": 5,
+            "bm25_score": 25.27754688145252,
+            "dense_rank": 11,
+            "dense_score": 0.5235923528671265
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6149616241455078,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "General and Administrative",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "General and Administrative General and administrative costs in 2025 did not significantly change compared to the prior year. Other Operating Expense (Income), Net Other operating expense (income), net was $763 million and $4.6 billion during 2024 and 2025. The increase in 2025 wa..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6041820049285889,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_02_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 10 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "(3) Includes commissions and any related fulfillment and shipping fees, and other third-party seller services. (4) Includes sales of advertising services to sellers, vendors, publishers, authors, and others, through programs such as sponsored ads, display, and video advertising. ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6019381880760193,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0011_PART_01_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 10 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 10 — SEGMENT INFORMATION We have organized our operations into three segments: North America, International, and AWS. We allocate to segment results the operating expenses “Fulfillment,” “Technology and infrastructure,” “Sales and marketing,” and “General and administrative”..."
+        },
+        {
+          "rank": 4,
+          "score": 0.5985414981842041,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 1 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 1 — DESCRIPTION OF BUSINESS, ACCOUNTING POLICIES, AND SUPPLEMENTAL DISCLOSURES Description of Business We seek to be Earth’s most customer-centric company. In each of our segments, we serve our primary customer sets, consisting of consumers, sellers, developers, enterprises,..."
+        },
+        {
+          "rank": 5,
+          "score": 0.5952639579772949,
+          "evidence_id": "AMZN_2023_10K_ITEM7_BLOCK_0005_PART_01_OF_03",
+          "ticker": "AMZN",
+          "fiscal_year": 2023,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Overview Macroeconomic factors, including inflation, increased interest rates, significant capital market and supply chain volatility, and global economic and geopolitical developments, have direct and indirect impacts on our results of operations that are difficult to isolate an..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 4,
+      "dense_filtered_sections": [
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / General and Administrative",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 10 —",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 10 —",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 1 —",
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / Overview"
+      ],
+      "hybrid_filtered_sections": [
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 10 —",
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / Overview",
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / General and Administrative",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 10 —",
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / Overview"
+      ],
+      "dense_unfiltered_sections": [
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / General and Administrative",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 10 —",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 10 —",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 1 —",
+        "AMZN 2023 Item 7. Management's Discussion and Analysis / Overview"
+      ]
+    },
+    {
+      "query_id": "common_meta_2025_ads_ai_capex",
+      "category": "common_financial",
+      "ticker": "META",
+      "fiscal_year": 2025,
+      "query": "For Meta fiscal 2025, how are advertising revenue growth and AI infrastructure capital expenditures connected in the 10-K?",
+      "expected_signal": "advertising revenue, AI infrastructure, capital expenditures",
+      "filters": {
+        "ticker": "META",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.7077268362045288,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Executive Overview of Full Year 2025 Results",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Executive Overview of Full Year 2025 Results Our mission is to build the future of human connection and the technology that makes it possible. Our financial results and key Family metrics for 2025 are set forth below. Total revenue for 2025 was $200.97 billion, an increase of 22%..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6591753959655762,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0008_PART_01_OF_02",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Revenue The following table sets forth our revenue by source and by segment: [TABLE_START id=12 rows=8] Year Ended December 31, 2025 | 2024 | 2023 | 2025 vs 2024 % change | 2024 vs 2023 % change (in millions, except percentages) Advertising | $ | 196,175 | $ | 160,633 | $ | 131,9..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6235461235046387,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0008_PART_02_OF_02",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "See Note 1 — Summary of Significant Accounting Policies in the notes to the consolidated financial statements included in Part II, Item 8, \"Financial Statements and Supplementary Data\" of this Annual Report on Form 10-K for additional information regarding changes in the estimate..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6230632662773132,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0007_PART_02_OF_03",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "We recognize revenue from the display of impression-based ads in the contracted period in which the impressions are delivered. Impressions are considered delivered when an ad is displayed to a user. We recognize revenue from the delivery of action-based ads in the period in which..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6224101781845093,
+          "evidence_id": "META_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_07",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 1.",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": false,
+          "text_preview": "Note 1. Summary of Significant Accounting Policies Organization and Description of Business We were incorporated in Delaware in July 2004. Our mission is to build the future of human connection and the technology that makes it possible. We report our financial results based on tw..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.03200204813108039,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0008_PART_01_OF_02",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Revenue The following table sets forth our revenue by source and by segment: [TABLE_START id=12 rows=8] Year Ended December 31, 2025 | 2024 | 2023 | 2025 vs 2024 % change | 2024 vs 2023 % change (in millions, except percentages) Advertising | $ | 196,175 | $ | 160,633 | $ | 131,9...",
+          "fusion": {
+            "bm25_rank": 3,
+            "bm25_score": 27.272249392965676,
+            "dense_rank": 2,
+            "dense_score": 0.6591753959655762
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.03131881575727918,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_03",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Developments in Advertising",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "In addition, competitive products and services have reduced some users' engagement with our products and services. We are investing in Reels and in AI initiatives across our products, including our AI-powered discovery engine to recommend relevant content, which we have already s...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 31.861403739070187,
+            "dense_rank": 7,
+            "dense_score": 0.5934617519378662
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.031009615384615385,
+          "evidence_id": "META_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_07",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 1.",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": false,
+          "text_preview": "Note 1. Summary of Significant Accounting Policies Organization and Description of Business We were incorporated in Delaware in July 2004. Our mission is to build the future of human connection and the technology that makes it possible. We report our financial results based on tw...",
+          "fusion": {
+            "bm25_rank": 4,
+            "bm25_score": 27.20361304128761,
+            "dense_rank": 5,
+            "dense_score": 0.6224101781845093
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.03021353930031804,
+          "evidence_id": "META_2025_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "Revenue and Investments",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "Revenue and Investments We report financial results for two segments: Family of Apps (FoA) and Reality Labs (RL). Currently, we generate substantially all of our revenue from selling advertising placements on our family of apps to marketers, which is reflected in FoA. Ads on our ...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 28.04480483682572,
+            "dense_rank": 11,
+            "dense_score": 0.5791481137275696
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.029910714285714284,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0007_PART_02_OF_03",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "We recognize revenue from the display of impression-based ads in the contracted period in which the impressions are delivered. Impressions are considered delivered when an ad is displayed to a user. We recognize revenue from the delivery of action-based ads in the period in which...",
+          "fusion": {
+            "bm25_rank": 10,
+            "bm25_score": 26.15261461725076,
+            "dense_rank": 4,
+            "dense_score": 0.6230632662773132
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.7077268362045288,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0003_CHUNK_0001",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Executive Overview of Full Year 2025 Results",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Executive Overview of Full Year 2025 Results Our mission is to build the future of human connection and the technology that makes it possible. Our financial results and key Family metrics for 2025 are set forth below. Total revenue for 2025 was $200.97 billion, an increase of 22%..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6591753959655762,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0008_PART_01_OF_02",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Revenue The following table sets forth our revenue by source and by segment: [TABLE_START id=12 rows=8] Year Ended December 31, 2025 | 2024 | 2023 | 2025 vs 2024 % change | 2024 vs 2023 % change (in millions, except percentages) Advertising | $ | 196,175 | $ | 160,633 | $ | 131,9..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6407065391540527,
+          "evidence_id": "META_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_02",
+          "ticker": "META",
+          "fiscal_year": 2024,
+          "section": "Item 1. Business",
+          "subsection": "Overview",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "Item 1. Business Overview Our mission is to build the future of human connection and the technology that makes it possible. We build technology that helps people connect and share, find and build communities, and grow businesses. Our products enable people to connect and share wi..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6235461235046387,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0008_PART_02_OF_02",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "See Note 1 — Summary of Significant Accounting Policies in the notes to the consolidated financial statements included in Part II, Item 8, \"Financial Statements and Supplementary Data\" of this Annual Report on Form 10-K for additional information regarding changes in the estimate..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6230632662773132,
+          "evidence_id": "META_2025_10K_ITEM7_BLOCK_0007_PART_02_OF_03",
+          "ticker": "META",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "We recognize revenue from the display of impression-based ads in the contracted period in which the impressions are delivered. Impressions are considered delivered when an ad is displayed to a user. We recognize revenue from the delivery of action-based ads in the period in which..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 4,
+      "dense_filtered_sections": [
+        "META 2025 Item 7. Management's Discussion and Analysis / Executive Overview of Full Year 2025 Results",
+        "META 2025 Item 7. Management's Discussion and Analysis / Revenue",
+        "META 2025 Item 7. Management's Discussion and Analysis / Revenue",
+        "META 2025 Item 7. Management's Discussion and Analysis / Income Taxes",
+        "META 2025 Item 8. Financial Statements and Supplementary Data / Note 1."
+      ],
+      "hybrid_filtered_sections": [
+        "META 2025 Item 7. Management's Discussion and Analysis / Revenue",
+        "META 2025 Item 7. Management's Discussion and Analysis / Developments in Advertising",
+        "META 2025 Item 8. Financial Statements and Supplementary Data / Note 1.",
+        "META 2025 Item 1. Business / Revenue and Investments",
+        "META 2025 Item 7. Management's Discussion and Analysis / Income Taxes"
+      ],
+      "dense_unfiltered_sections": [
+        "META 2025 Item 7. Management's Discussion and Analysis / Executive Overview of Full Year 2025 Results",
+        "META 2025 Item 7. Management's Discussion and Analysis / Revenue",
+        "META 2024 Item 1. Business / Overview",
+        "META 2025 Item 7. Management's Discussion and Analysis / Revenue",
+        "META 2025 Item 7. Management's Discussion and Analysis / Income Taxes"
+      ]
+    },
+    {
+      "query_id": "common_googl_2025_ads_cloud_capex",
+      "category": "common_financial",
+      "ticker": "GOOGL",
+      "fiscal_year": 2025,
+      "query": "For Alphabet fiscal 2025, compare Google advertising and Google Cloud growth with capital expenditure needs.",
+      "expected_signal": "Google advertising revenue, Google Cloud revenue, capex or technical infrastructure",
+      "filters": {
+        "ticker": "GOOGL",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.7146190404891968,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Other Information",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Other Information: 32. [TABLE_START id=45 rows=1] Table of Contents | Alphabet Inc. [TABLE_END] • In 2025, we entered into definitive agreements to acquire Wiz, a leading cloud security platform, for $32.0 billion, and Intersect, a provider of data center and energy infrastructur..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6833407878875732,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS Please read the following discussion and analysis of our financial condition and results of operations together with “Note about Forward-Looking Statements,” Part I, Item 1 \"Business,\" P..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6355985403060913,
+          "evidence_id": "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 15.",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 15. Information about Segments and Geographic Areas We report our segment results as Google Services, Google Cloud, and Other Bets: • Google Services includes products and services such as ads, Android, Chrome, devices, Google Maps, Google Play, Search, and YouTube. Google S..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6347724795341492,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Segment Profitability",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Segment Profitability We report our segment results as Google Services, Google Cloud, and Other Bets. Additionally, certain costs are not allocated to our segments because they represent Alphabet-level activities. For further details on our segments, see Part I, Item 1 Business a..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6201913356781006,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0021_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Cash Provided by Operating Activities",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Cash Provided by Operating Activities Our largest source of cash provided by operations are advertising revenues generated by Google Search & other properties, YouTube properties, and Google Network properties. In Google Services, we also generate cash through consumer subscripti..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.03252247488101534,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Other Information",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Other Information: 32. [TABLE_START id=45 rows=1] Table of Contents | Alphabet Inc. [TABLE_END] • In 2025, we entered into definitive agreements to acquire Wiz, a leading cloud security platform, for $32.0 billion, and Intersect, a provider of data center and energy infrastructur...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 34.43361502807685,
+            "dense_rank": 1,
+            "dense_score": 0.7146190404891968
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.0315136476426799,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS Please read the following discussion and analysis of our financial condition and results of operations together with “Note about Forward-Looking Statements,” Part I, Item 1 \"Business,\" P...",
+          "fusion": {
+            "bm25_rank": 5,
+            "bm25_score": 30.618742885431107,
+            "dense_rank": 2,
+            "dense_score": 0.6833407878875732
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.03149801587301587,
+          "evidence_id": "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 15.",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 15. Information about Segments and Geographic Areas We report our segment results as Google Services, Google Cloud, and Other Bets: • Google Services includes products and services such as ads, Android, Chrome, devices, Google Maps, Google Play, Search, and YouTube. Google S...",
+          "fusion": {
+            "bm25_rank": 4,
+            "bm25_score": 31.02366496459795,
+            "dense_rank": 3,
+            "dense_score": 0.6355985403060913
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.03009207275993712,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Traffic Acquisition Costs Growth and Rate Changes",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Traffic Acquisition Costs Growth and Rate Changes: We expect traffic acquisition costs (\"TAC\") paid to our distribution partners and Google Network partners to increase as our advertising revenues grow. Our overall TAC as a percentage of our advertising revenues (\"TAC rate\") has ...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 36.12784455891152,
+            "dense_rank": 13,
+            "dense_score": 0.5823887586593628
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.029877369007803793,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0021_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Cash Provided by Operating Activities",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Cash Provided by Operating Activities Our largest source of cash provided by operations are advertising revenues generated by Google Search & other properties, YouTube properties, and Google Network properties. In Google Services, we also generate cash through consumer subscripti...",
+          "fusion": {
+            "bm25_rank": 9,
+            "bm25_score": 28.107906065926525,
+            "dense_rank": 5,
+            "dense_score": 0.6201913356781006
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.7146190404891968,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0017_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Other Information",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Other Information: 32. [TABLE_START id=45 rows=1] Table of Contents | Alphabet Inc. [TABLE_END] • In 2025, we entered into definitive agreements to acquire Wiz, a leading cloud security platform, for $32.0 billion, and Intersect, a provider of data center and energy infrastructur..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6833407878875732,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS Please read the following discussion and analysis of our financial condition and results of operations together with “Note about Forward-Looking Statements,” Part I, Item 1 \"Business,\" P..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6355985403060913,
+          "evidence_id": "GOOGL_2025_10K_ITEM8_BLOCK_0017_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 15.",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 15. Information about Segments and Geographic Areas We report our segment results as Google Services, Google Cloud, and Other Bets: • Google Services includes products and services such as ads, Android, Chrome, devices, Google Maps, Google Play, Search, and YouTube. Google S..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6347724795341492,
+          "evidence_id": "GOOGL_2025_10K_ITEM7_BLOCK_0019_CHUNK_0001",
+          "ticker": "GOOGL",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Segment Profitability",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Segment Profitability We report our segment results as Google Services, Google Cloud, and Other Bets. Additionally, certain costs are not allocated to our segments because they represent Alphabet-level activities. For further details on our segments, see Part I, Item 1 Business a..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6231147050857544,
+          "evidence_id": "GOOGL_2023_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+          "ticker": "GOOGL",
+          "fiscal_year": 2023,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS Please read the following discussion and analysis of our financial condition and results of operations together with “Note about Forward-Looking Statements,” Part I, Item 1 \"Business,\" P..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 4,
+      "dense_filtered_sections": [
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Other Information",
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "GOOGL 2025 Item 8. Financial Statements and Supplementary Data / Note 15.",
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Segment Profitability",
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Cash Provided by Operating Activities"
+      ],
+      "hybrid_filtered_sections": [
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Other Information",
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "GOOGL 2025 Item 8. Financial Statements and Supplementary Data / Note 15.",
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Traffic Acquisition Costs Growth and Rate Changes",
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Cash Provided by Operating Activities"
+      ],
+      "dense_unfiltered_sections": [
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Other Information",
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "GOOGL 2025 Item 8. Financial Statements and Supplementary Data / Note 15.",
+        "GOOGL 2025 Item 7. Management's Discussion and Analysis / Segment Profitability",
+        "GOOGL 2023 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis"
+      ]
+    },
+    {
+      "query_id": "deep_adbe_2025_arr_rpo_revenue_quality",
+      "category": "deep_financial",
+      "ticker": "ADBE",
+      "fiscal_year": 2025,
+      "query": "For Adobe fiscal 2025, what do Digital Media ARR and remaining performance obligations imply about subscription revenue durability?",
+      "expected_signal": "Digital Media ARR, remaining performance obligations, subscription/revenue visibility",
+      "filters": {
+        "ticker": "ADBE",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.762462854385376,
+          "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview of Fiscal 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Due to the nature of certain offerings which contain cross-product integrations or benefits, revenue attributable to certain product entitlements may be recognized in either customer group. By viewing the business through this lens, we can more effectively execute our long-term g..."
+        },
+        {
+          "rank": 2,
+          "score": 0.7258422374725342,
+          "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview of Fiscal 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Overview of Fiscal 2025 For our fiscal 2025, we experienced strong demand across our Digital Media and Digital Experience offerings, driven by transformative and customer-focused product innovation. As we execute on our long-term growth initiatives, with emphasis on delivering va..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7146033048629761,
+          "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0006_PART_01_OF_02",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "In fiscal 2025, we categorized our products into the following reportable segments",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "In fiscal 2025, we categorized our products into the following reportable segments: • Digital Media —Our Digital Media segment provides products and services that enable individuals, teams, businesses, and enterprises to create, publish and promote their content anywhere and acce..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6411631107330322,
+          "evidence_id": "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_01_OF_02",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Consolidated Statements of Income",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Consolidated Statements of Income for a reconciliation of consolidated gross profit to consolidated income before income taxes. We generally categorize revenue by geographic area based on where the customer manages their utilization of our offerings. Revenue by geographic area fo..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6165500283241272,
+          "evidence_id": "ADBE_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_06",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "NOTE 1.",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": false,
+          "text_preview": "NOTE 1. BASIS OF PRESENTATION AND SIGNIFICANT ACCOUNTING POLICIES Operations Adobe’s mission is to empower everyone to create. We build innovative platforms and tools that unleash creativity, productivity and personalized customer experiences. For over four decades, our innovatio..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.03278688524590164,
+          "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview of Fiscal 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Due to the nature of certain offerings which contain cross-product integrations or benefits, revenue attributable to certain product entitlements may be recognized in either customer group. By viewing the business through this lens, we can more effectively execute our long-term g...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 41.314205587412616,
+            "dense_rank": 1,
+            "dense_score": 0.762462854385376
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.03225806451612903,
+          "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview of Fiscal 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Overview of Fiscal 2025 For our fiscal 2025, we experienced strong demand across our Digital Media and Digital Experience offerings, driven by transformative and customer-focused product innovation. As we execute on our long-term growth initiatives, with emphasis on delivering va...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 38.59519064062534,
+            "dense_rank": 2,
+            "dense_score": 0.7258422374725342
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.03149801587301587,
+          "evidence_id": "ADBE_2025_10K_ITEM8_BLOCK_0004_PART_01_OF_02",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Consolidated Statements of Income",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Consolidated Statements of Income for a reconciliation of consolidated gross profit to consolidated income before income taxes. We generally categorize revenue by geographic area based on where the customer manages their utilization of our offerings. Revenue by geographic area fo...",
+          "fusion": {
+            "bm25_rank": 3,
+            "bm25_score": 31.204195783558966,
+            "dense_rank": 4,
+            "dense_score": 0.6411631107330322
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.03149801587301587,
+          "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0006_PART_01_OF_02",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "In fiscal 2025, we categorized our products into the following reportable segments",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "In fiscal 2025, we categorized our products into the following reportable segments: • Digital Media —Our Digital Media segment provides products and services that enable individuals, teams, businesses, and enterprises to create, publish and promote their content anywhere and acce...",
+          "fusion": {
+            "bm25_rank": 4,
+            "bm25_score": 28.496607258751148,
+            "dense_rank": 3,
+            "dense_score": 0.7146033048629761
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.03076923076923077,
+          "evidence_id": "ADBE_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_06",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "NOTE 1.",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": false,
+          "text_preview": "NOTE 1. BASIS OF PRESENTATION AND SIGNIFICANT ACCOUNTING POLICIES Operations Adobe’s mission is to empower everyone to create. We build innovative platforms and tools that unleash creativity, productivity and personalized customer experiences. For over four decades, our innovatio...",
+          "fusion": {
+            "bm25_rank": 5,
+            "bm25_score": 26.471669382230445,
+            "dense_rank": 5,
+            "dense_score": 0.6165500283241272
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.762462854385376,
+          "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_03",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview of Fiscal 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Due to the nature of certain offerings which contain cross-product integrations or benefits, revenue attributable to certain product entitlements may be recognized in either customer group. By viewing the business through this lens, we can more effectively execute our long-term g..."
+        },
+        {
+          "rank": 2,
+          "score": 0.7258422374725342,
+          "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview of Fiscal 2025",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Overview of Fiscal 2025 For our fiscal 2025, we experienced strong demand across our Digital Media and Digital Experience offerings, driven by transformative and customer-focused product innovation. As we execute on our long-term growth initiatives, with emphasis on delivering va..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7146033048629761,
+          "evidence_id": "ADBE_2025_10K_ITEM7_BLOCK_0006_PART_01_OF_02",
+          "ticker": "ADBE",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "In fiscal 2025, we categorized our products into the following reportable segments",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "In fiscal 2025, we categorized our products into the following reportable segments: • Digital Media —Our Digital Media segment provides products and services that enable individuals, teams, businesses, and enterprises to create, publish and promote their content anywhere and acce..."
+        },
+        {
+          "rank": 4,
+          "score": 0.7114324569702148,
+          "evidence_id": "ADBE_2024_10K_ITEM7_BLOCK_0004_PART_03_OF_03",
+          "ticker": "ADBE",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview of 2024",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "While our revenue and earnings are relatively predictable as a result of our subscription-based business model, the broader implications of these macroeconomic events on our business, results of operations and overall financial position, particularly in the long term, remain unce..."
+        },
+        {
+          "rank": 5,
+          "score": 0.68137127161026,
+          "evidence_id": "ADBE_2023_10K_ITEM7_BLOCK_0004_PART_01_OF_03",
+          "ticker": "ADBE",
+          "fiscal_year": 2023,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview of 2023",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Overview of 2023 For our fiscal 2023, we experienced strong demand across our Digital Media and Digital Experience offerings, driven by our innovative product roadmap. As we execute on our long-term growth initiatives and deliver product innovation, we have continued to experienc..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 3,
+      "dense_filtered_sections": [
+        "ADBE 2025 Item 7. Management's Discussion and Analysis / Overview of Fiscal 2025",
+        "ADBE 2025 Item 7. Management's Discussion and Analysis / Overview of Fiscal 2025",
+        "ADBE 2025 Item 7. Management's Discussion and Analysis / In fiscal 2025, we categorized our products into the following reportable segments",
+        "ADBE 2025 Item 8. Financial Statements and Supplementary Data / Consolidated Statements of Income",
+        "ADBE 2025 Item 8. Financial Statements and Supplementary Data / NOTE 1."
+      ],
+      "hybrid_filtered_sections": [
+        "ADBE 2025 Item 7. Management's Discussion and Analysis / Overview of Fiscal 2025",
+        "ADBE 2025 Item 7. Management's Discussion and Analysis / Overview of Fiscal 2025",
+        "ADBE 2025 Item 8. Financial Statements and Supplementary Data / Consolidated Statements of Income",
+        "ADBE 2025 Item 7. Management's Discussion and Analysis / In fiscal 2025, we categorized our products into the following reportable segments",
+        "ADBE 2025 Item 8. Financial Statements and Supplementary Data / NOTE 1."
+      ],
+      "dense_unfiltered_sections": [
+        "ADBE 2025 Item 7. Management's Discussion and Analysis / Overview of Fiscal 2025",
+        "ADBE 2025 Item 7. Management's Discussion and Analysis / Overview of Fiscal 2025",
+        "ADBE 2025 Item 7. Management's Discussion and Analysis / In fiscal 2025, we categorized our products into the following reportable segments",
+        "ADBE 2024 Item 7. Management's Discussion and Analysis / Overview of 2024",
+        "ADBE 2023 Item 7. Management's Discussion and Analysis / Overview of 2023"
+      ]
+    },
+    {
+      "query_id": "deep_snow_2025_consumption_rpo_customer_metrics",
+      "category": "deep_financial",
+      "ticker": "SNOW",
+      "fiscal_year": 2025,
+      "query": "For Snowflake fiscal 2025, how do consumption revenue, remaining performance obligations, and customer count metrics support or weaken revenue visibility?",
+      "expected_signal": "consumption model, RPO, customer count metrics, revenue visibility",
+      "filters": {
+        "ticker": "SNOW",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6245025396347046,
+          "evidence_id": "SNOW_2025_10K_ITEM1A_BLOCK_0003_CHUNK_0001",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "We may not have visibility into our future financial position and results of operations.",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "We may not have visibility into our future financial position and results of operations. Customers generally consume our platform by using compute, storage, and/or data transfer resources. Unlike a subscription-based business model, in which revenue is recognized ratably over the..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6125287413597107,
+          "evidence_id": "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_07_OF_12",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "________________ (1) For the fiscal years ended January 31, 2025, 2024, and 2023, respectively, approximately 65 %, 67 %, and 71 % of cost of product revenue represented third-party cloud infrastructure expenses incurred in connection with the customers’ use of the Snowflake plat..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6106165051460266,
+          "evidence_id": "SNOW_2025_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Acquiring New Customers",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Acquiring New Customers We believe there is a substantial opportunity to further grow our customer base by continuing to make significant investments in sales and marketing and brand awareness. Our ability to attract new customers will depend on a number of factors, including the..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6099796295166016,
+          "evidence_id": "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_12",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=27 rows=21] Fiscal Year Ended January 31, 2025 | 2024 | 2023 Revenue | $ | 3,626,396 | $ | 2,806,489 | $ | 2,065,659 Cost of revenue | 1,214,673 | 898,558 | 717,540 Gross profit | 2,411,723 | 1,907,931 | 1,348,119 Operating expenses: Sales and marketing | 1,672,09..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6069622039794922,
+          "evidence_id": "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_02_OF_12",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Critical Audit Matters The critical audit matter communicated below is a matter arising from the current period audit of the consolidated financial statements that was communicated or required to be communicated to the audit committee and that (i) relates to accounts or disclosur..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.032266458495966696,
+          "evidence_id": "SNOW_2025_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Acquiring New Customers",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Acquiring New Customers We believe there is a substantial opportunity to further grow our customer base by continuing to make significant investments in sales and marketing and brand awareness. Our ability to attract new customers will depend on a number of factors, including the...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 37.35324648418534,
+            "dense_rank": 3,
+            "dense_score": 0.6106165051460266
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.031544957774465976,
+          "evidence_id": "SNOW_2025_10K_ITEM1A_BLOCK_0003_CHUNK_0001",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "We may not have visibility into our future financial position and results of operations.",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "We may not have visibility into our future financial position and results of operations. Customers generally consume our platform by using compute, storage, and/or data transfer resources. Unlike a subscription-based business model, in which revenue is recognized ratably over the...",
+          "fusion": {
+            "bm25_rank": 6,
+            "bm25_score": 26.742358805034044,
+            "dense_rank": 1,
+            "dense_score": 0.6245025396347046
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.030834914611005692,
+          "evidence_id": "SNOW_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_03",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Overview We believe that a cloud computing platform that puts data and artificial intelligence (AI) at its core will offer great benefits to organizations by allowing them to realize the value of the data that powers their businesses. By offering rich primitives for data and appl...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 35.40356938527153,
+            "dense_rank": 8,
+            "dense_score": 0.5948808789253235
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.030834914611005692,
+          "evidence_id": "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_07_OF_12",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "________________ (1) For the fiscal years ended January 31, 2025, 2024, and 2023, respectively, approximately 65 %, 67 %, and 71 % of cost of product revenue represented third-party cloud infrastructure expenses incurred in connection with the customers’ use of the Snowflake plat...",
+          "fusion": {
+            "bm25_rank": 8,
+            "bm25_score": 26.40310658637588,
+            "dense_rank": 2,
+            "dense_score": 0.6125287413597107
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.028814262023217248,
+          "evidence_id": "SNOW_2025_10K_ITEM1A_BLOCK_0015_CHUNK_0001",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "Seasonality may cause fluctuations in our remaining performance obligations or in customer consumption.",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "Seasonality may cause fluctuations in our remaining performance obligations or in customer consumption. Historically, we have received a higher volume of orders from new and existing customers in the fourth fiscal quarter of each year. As a result, we have historically seen highe...",
+          "fusion": {
+            "bm25_rank": 7,
+            "bm25_score": 26.601854121098707,
+            "dense_rank": 12,
+            "dense_score": 0.5665342211723328
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6245025396347046,
+          "evidence_id": "SNOW_2025_10K_ITEM1A_BLOCK_0003_CHUNK_0001",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "We may not have visibility into our future financial position and results of operations.",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "We may not have visibility into our future financial position and results of operations. Customers generally consume our platform by using compute, storage, and/or data transfer resources. Unlike a subscription-based business model, in which revenue is recognized ratably over the..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6125287413597107,
+          "evidence_id": "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_07_OF_12",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "________________ (1) For the fiscal years ended January 31, 2025, 2024, and 2023, respectively, approximately 65 %, 67 %, and 71 % of cost of product revenue represented third-party cloud infrastructure expenses incurred in connection with the customers’ use of the Snowflake plat..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6106165051460266,
+          "evidence_id": "SNOW_2025_10K_ITEM7_BLOCK_0003_PART_01_OF_02",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Acquiring New Customers",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Acquiring New Customers We believe there is a substantial opportunity to further grow our customer base by continuing to make significant investments in sales and marketing and brand awareness. Our ability to attract new customers will depend on a number of factors, including the..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6099796295166016,
+          "evidence_id": "SNOW_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_12",
+          "ticker": "SNOW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=27 rows=21] Fiscal Year Ended January 31, 2025 | 2024 | 2023 Revenue | $ | 3,626,396 | $ | 2,806,489 | $ | 2,065,659 Cost of revenue | 1,214,673 | 898,558 | 717,540 Gross profit | 2,411,723 | 1,907,931 | 1,348,119 Operating expenses: Sales and marketing | 1,672,09..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6086183786392212,
+          "evidence_id": "SNOW_2023_10K_ITEM7_BLOCK_0002_PART_01_OF_03",
+          "ticker": "SNOW",
+          "fiscal_year": 2023,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Overview",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Overview We believe in a data connected world where organizations have seamless access to explore, share, and unlock the value of data. To realize this vision, we deliver the Data Cloud, a network where Snowflake customers, partners, developers, data providers, and data consumers..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 4,
+      "dense_filtered_sections": [
+        "SNOW 2025 Item 1A. Risk Factors / We may not have visibility into our future financial position and results of operations.",
+        "SNOW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "SNOW 2025 Item 7. Management's Discussion and Analysis / Acquiring New Customers",
+        "SNOW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "SNOW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data"
+      ],
+      "hybrid_filtered_sections": [
+        "SNOW 2025 Item 7. Management's Discussion and Analysis / Acquiring New Customers",
+        "SNOW 2025 Item 1A. Risk Factors / We may not have visibility into our future financial position and results of operations.",
+        "SNOW 2025 Item 7. Management's Discussion and Analysis / Overview",
+        "SNOW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "SNOW 2025 Item 1A. Risk Factors / Seasonality may cause fluctuations in our remaining performance obligations or in customer consumption."
+      ],
+      "dense_unfiltered_sections": [
+        "SNOW 2025 Item 1A. Risk Factors / We may not have visibility into our future financial position and results of operations.",
+        "SNOW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "SNOW 2025 Item 7. Management's Discussion and Analysis / Acquiring New Customers",
+        "SNOW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "SNOW 2023 Item 7. Management's Discussion and Analysis / Overview"
+      ]
+    },
+    {
+      "query_id": "deep_panw_2025_platformization_billings_rpo",
+      "category": "deep_financial",
+      "ticker": "PANW",
+      "fiscal_year": 2025,
+      "query": "For Palo Alto Networks fiscal 2025, how does platformization affect billings, revenue visibility, or remaining performance obligations?",
+      "expected_signal": "platformization, billings or deferred/RPO/revenue visibility",
+      "filters": {
+        "ticker": "PANW",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6167606115341187,
+          "evidence_id": "PANW_2025_10K_ITEM8_BLOCK_0001_PART_05_OF_21",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=38 rows=50] CONSOLIDATED STATEMENTS OF CASH FLOWS (In millions) Year Ended July 31, 2025 | 2024 | 2023 Cash flows from operating activities Net income | $ | 1,133.9 | $ | 2,577.6 | $ | 439.7 Adjustments to reconcile net income to net cash provided by operating act..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6048111915588379,
+          "evidence_id": "PANW_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_21",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Item 8. Financial Statements and Supplementary Data [TABLE_START id=30 rows=0] [TABLE_END] Index To Consolidated Financial Statements [TABLE_START id=31 rows=8] Page Reports of Independent Registered Public Accounting Firm (PCAOB ID: 42 ) | 58 Consolidated Balance Sheets | 61 Con..."
+        },
+        {
+          "rank": 3,
+          "score": 0.5946860313415527,
+          "evidence_id": "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "General",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "Item 1. Business General Palo Alto Networks, Inc. is a global cybersecurity provider and our vision is a world where each day is safer and more secure than the one before. We were incorporated in 2005 and are headquartered in Santa Clara, California. Our mission is to be the cybe..."
+        },
+        {
+          "rank": 4,
+          "score": 0.5759594440460205,
+          "evidence_id": "PANW_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_21",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Because of its inherent limitations, internal control over financial reporting may not prevent or detect misstatements. Also, projections of any evaluation of effectiveness to future periods are subject to the risk that controls may become inadequate because of changes in conditi..."
+        },
+        {
+          "rank": 5,
+          "score": 0.5337958931922913,
+          "evidence_id": "PANW_2025_10K_ITEM1_BLOCK_0016_CHUNK_0001",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "CORPORATE RESPONSIBILITY",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "CORPORATE RESPONSIBILITY Our Corporate Responsibility (CR) strategy supports our company's purpose of a safe and secure world, and is informed through many inputs, including our business strategy and objectives, ongoing stakeholder engagement, investor and customer interests, ben..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.03225806451612903,
+          "evidence_id": "PANW_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_21",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Item 8. Financial Statements and Supplementary Data [TABLE_START id=30 rows=0] [TABLE_END] Index To Consolidated Financial Statements [TABLE_START id=31 rows=8] Page Reports of Independent Registered Public Accounting Firm (PCAOB ID: 42 ) | 58 Consolidated Balance Sheets | 61 Con...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 27.555539800774355,
+            "dense_rank": 2,
+            "dense_score": 0.6048111915588379
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.031746031746031744,
+          "evidence_id": "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "General",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "Item 1. Business General Palo Alto Networks, Inc. is a global cybersecurity provider and our vision is a world where each day is safer and more secure than the one before. We were incorporated in 2005 and are headquartered in Santa Clara, California. Our mission is to be the cybe...",
+          "fusion": {
+            "bm25_rank": 3,
+            "bm25_score": 27.31233754187202,
+            "dense_rank": 3,
+            "dense_score": 0.5946860313415527
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.031099324975891997,
+          "evidence_id": "PANW_2025_10K_ITEM1_BLOCK_0007_CHUNK_0001",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "THREAT INTELLIGENCE AND ADVISORY SERVICES",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "THREAT INTELLIGENCE AND ADVISORY SERVICES • Customer Support. Global customer support helps our customers achieve their security outcomes with services and support capabilities covering the customer's entire journey with Palo Alto Networks. This post-sales, global organization ad...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 29.969683076295933,
+            "dense_rank": 8,
+            "dense_score": 0.5102039575576782
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.030776515151515152,
+          "evidence_id": "PANW_2025_10K_ITEM1_BLOCK_0015_PART_02_OF_02",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "MANUFACTURING",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "Listen & Engage. We aim to foster engagement and help employees feel connected to our mission and values. Through our comprehensive approach, we use in-person and virtual channels to provide a regular flow of information to and between employees and leadership. These channels inc...",
+          "fusion": {
+            "bm25_rank": 4,
+            "bm25_score": 25.784294584759383,
+            "dense_rank": 6,
+            "dense_score": 0.5209952592849731
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.03055037313432836,
+          "evidence_id": "PANW_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_21",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Because of its inherent limitations, internal control over financial reporting may not prevent or detect misstatements. Also, projections of any evaluation of effectiveness to future periods are subject to the risk that controls may become inadequate because of changes in conditi...",
+          "fusion": {
+            "bm25_rank": 7,
+            "bm25_score": 22.79208529801942,
+            "dense_rank": 4,
+            "dense_score": 0.5759594440460205
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6167606115341187,
+          "evidence_id": "PANW_2025_10K_ITEM8_BLOCK_0001_PART_05_OF_21",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=38 rows=50] CONSOLIDATED STATEMENTS OF CASH FLOWS (In millions) Year Ended July 31, 2025 | 2024 | 2023 Cash flows from operating activities Net income | $ | 1,133.9 | $ | 2,577.6 | $ | 439.7 Adjustments to reconcile net income to net cash provided by operating act..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6049047708511353,
+          "evidence_id": "PANW_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "ticker": "PANW",
+          "fiscal_year": 2024,
+          "section": "Item 1. Business",
+          "subsection": "General",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "Item 1. Business General Palo Alto Networks, Inc. is a global cybersecurity provider with a vision of a world where each day is safer and more secure than the one before. We were incorporated in 2005 and are headquartered in Santa Clara, California. We empower enterprises, organi..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6048111915588379,
+          "evidence_id": "PANW_2025_10K_ITEM8_BLOCK_0001_PART_01_OF_21",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Item 8. Financial Statements and Supplementary Data [TABLE_START id=30 rows=0] [TABLE_END] Index To Consolidated Financial Statements [TABLE_START id=31 rows=8] Page Reports of Independent Registered Public Accounting Firm (PCAOB ID: 42 ) | 58 Consolidated Balance Sheets | 61 Con..."
+        },
+        {
+          "rank": 4,
+          "score": 0.5946860313415527,
+          "evidence_id": "PANW_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "ticker": "PANW",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "General",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "Item 1. Business General Palo Alto Networks, Inc. is a global cybersecurity provider and our vision is a world where each day is safer and more secure than the one before. We were incorporated in 2005 and are headquartered in Santa Clara, California. Our mission is to be the cybe..."
+        },
+        {
+          "rank": 5,
+          "score": 0.5884923934936523,
+          "evidence_id": "PANW_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "ticker": "PANW",
+          "fiscal_year": 2023,
+          "section": "Item 1. Business",
+          "subsection": "General",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "Item 1. Business General Palo Alto Networks, Inc. is a global cybersecurity provider with a vision of a world where each day is safer and more secure than the one before. We were incorporated in 2005 and are headquartered in Santa Clara, California. We empower enterprises, organi..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 3,
+      "dense_filtered_sections": [
+        "PANW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "PANW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "PANW 2025 Item 1. Business / General",
+        "PANW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "PANW 2025 Item 1. Business / CORPORATE RESPONSIBILITY"
+      ],
+      "hybrid_filtered_sections": [
+        "PANW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "PANW 2025 Item 1. Business / General",
+        "PANW 2025 Item 1. Business / THREAT INTELLIGENCE AND ADVISORY SERVICES",
+        "PANW 2025 Item 1. Business / MANUFACTURING",
+        "PANW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data"
+      ],
+      "dense_unfiltered_sections": [
+        "PANW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "PANW 2024 Item 1. Business / General",
+        "PANW 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "PANW 2025 Item 1. Business / General",
+        "PANW 2023 Item 1. Business / General"
+      ]
+    },
+    {
+      "query_id": "deep_amd_2024_segment_mix_margin_inventory",
+      "category": "deep_financial",
+      "ticker": "AMD",
+      "fiscal_year": 2024,
+      "query": "For AMD fiscal 2024, how did segment mix and gross margin change, and what inventory or supply-chain signals matter?",
+      "expected_signal": "segment revenue mix, gross margin, inventory or supply-chain signals",
+      "filters": {
+        "ticker": "AMD",
+        "fiscal_year": 2024
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6049453020095825,
+          "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Results of Operations",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Results of Operations Additional information on our reportable segments is contained in Note 4 – Segment Reporting of the Notes to Financial Statements (Part II, Item 8 of this Form 10-K). Our operating results tend to vary seasonally. Historically, our net revenue has been gener..."
+        },
+        {
+          "rank": 2,
+          "score": 0.5909677743911743,
+          "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS The following discussion should be read in conjunction with the Consolidated Financial Statements as of December 28, 2024 and December 30, 2023 and for each of the three years in the per..."
+        },
+        {
+          "rank": 3,
+          "score": 0.587103009223938,
+          "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Gross margin, as a percentage of net revenue, was 49% for 2024, compared to 46% in 2023. The increase in gross margin was primarily due to a favorable shift in revenue mix with higher Data Center and Client revenues, lower Gaming revenue, partially offset by the impact of lower E..."
+        },
+        {
+          "rank": 4,
+          "score": 0.571744978427887,
+          "evidence_id": "AMD_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 1. Business",
+          "subsection": "BUSINESS",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "ITEM 1. BUSINESS Cautionary Statement Regarding Forward-Looking Statements The statements in this report include forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. These forward-looking statements are based on current expectatio..."
+        },
+        {
+          "rank": 5,
+          "score": 0.5394659042358398,
+          "evidence_id": "AMD_2024_10K_ITEM8_BLOCK_0001_PART_03_OF_03",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=17 rows=45] Year Ended December 28, 2024 | December 30, 2023 | December 31, 2022 (In millions) Cash flows from operating activities: Net income | $ | 1,641 | $ | 854 | $ | 1,320 Adjustments to reconcile net income to net cash provided by operating activities: Depr..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.03252247488101534,
+          "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Results of Operations",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Results of Operations Additional information on our reportable segments is contained in Note 4 – Segment Reporting of the Notes to Financial Statements (Part II, Item 8 of this Form 10-K). Our operating results tend to vary seasonally. Historically, our net revenue has been gener...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 32.7224122889822,
+            "dense_rank": 1,
+            "dense_score": 0.6049453020095825
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.03200204813108039,
+          "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS The following discussion should be read in conjunction with the Consolidated Financial Statements as of December 28, 2024 and December 30, 2023 and for each of the three years in the per...",
+          "fusion": {
+            "bm25_rank": 3,
+            "bm25_score": 30.93142365215011,
+            "dense_rank": 2,
+            "dense_score": 0.5909677743911743
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.03149801587301587,
+          "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Gross margin, as a percentage of net revenue, was 49% for 2024, compared to 46% in 2023. The increase in gross margin was primarily due to a favorable shift in revenue mix with higher Data Center and Client revenues, lower Gaming revenue, partially offset by the impact of lower E...",
+          "fusion": {
+            "bm25_rank": 4,
+            "bm25_score": 30.07186085410972,
+            "dense_rank": 3,
+            "dense_score": 0.587103009223938
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.029437229437229435,
+          "evidence_id": "AMD_2024_10K_ITEM8_BLOCK_0019_PART_01_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "NOTE 18 –",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "NOTE 18 – Contingencies Litigation and Other Legal Matters As of December 28, 2024, there were no material legal proceedings. 85 Table of Contents The Company is a defendant or plaintiff in various actions that arose in the normal course of business. With respect to these matters...",
+          "fusion": {
+            "bm25_rank": 6,
+            "bm25_score": 27.948999341024177,
+            "dense_rank": 10,
+            "dense_score": 0.5090233683586121
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.0287391216352965,
+          "evidence_id": "AMD_2024_10K_ITEM1A_BLOCK_0015_CHUNK_0001",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "Uncertainties involving the ordering and shipment of our products could materially adversely affect us.",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "Uncertainties involving the ordering and shipment of our products could materially adversely affect us. We typically sell our products pursuant to individual purchase orders. We generally do not have long-term supply arrangements with our customers or minimum purchase requirement...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 33.64533023498365,
+            "dense_rank": 21,
+            "dense_score": 0.47451162338256836
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6049453020095825,
+          "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0004_PART_01_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Results of Operations",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Results of Operations Additional information on our reportable segments is contained in Note 4 – Segment Reporting of the Notes to Financial Statements (Part II, Item 8 of this Form 10-K). Our operating results tend to vary seasonally. Historically, our net revenue has been gener..."
+        },
+        {
+          "rank": 2,
+          "score": 0.5909677743911743,
+          "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0001_PART_01_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS The following discussion should be read in conjunction with the Consolidated Financial Statements as of December 28, 2024 and December 30, 2023 and for each of the three years in the per..."
+        },
+        {
+          "rank": 3,
+          "score": 0.5903280973434448,
+          "evidence_id": "AMD_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Results of Operations",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Gross Margin Gross margin of 50% increased by 1% compared to 49% in 2024, primarily due to product mix, partially offset by approximately $440 million of net inventory and related charges associated with the U.S. government export control on AMD Instinct™ MI308 Data Center GPU pr..."
+        },
+        {
+          "rank": 4,
+          "score": 0.587103009223938,
+          "evidence_id": "AMD_2024_10K_ITEM7_BLOCK_0001_PART_02_OF_02",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Gross margin, as a percentage of net revenue, was 49% for 2024, compared to 46% in 2023. The increase in gross margin was primarily due to a favorable shift in revenue mix with higher Data Center and Client revenues, lower Gaming revenue, partially offset by the impact of lower E..."
+        },
+        {
+          "rank": 5,
+          "score": 0.571744978427887,
+          "evidence_id": "AMD_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "ticker": "AMD",
+          "fiscal_year": 2024,
+          "section": "Item 1. Business",
+          "subsection": "BUSINESS",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "ITEM 1. BUSINESS Cautionary Statement Regarding Forward-Looking Statements The statements in this report include forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. These forward-looking statements are based on current expectatio..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 4,
+      "dense_filtered_sections": [
+        "AMD 2024 Item 7. Management's Discussion and Analysis / Results of Operations",
+        "AMD 2024 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "AMD 2024 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "AMD 2024 Item 1. Business / BUSINESS",
+        "AMD 2024 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data"
+      ],
+      "hybrid_filtered_sections": [
+        "AMD 2024 Item 7. Management's Discussion and Analysis / Results of Operations",
+        "AMD 2024 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "AMD 2024 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "AMD 2024 Item 8. Financial Statements and Supplementary Data / NOTE 18 –",
+        "AMD 2024 Item 1A. Risk Factors / Uncertainties involving the ordering and shipment of our products could materially adversely affect us."
+      ],
+      "dense_unfiltered_sections": [
+        "AMD 2024 Item 7. Management's Discussion and Analysis / Results of Operations",
+        "AMD 2024 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "AMD 2025 Item 7. Management's Discussion and Analysis / Results of Operations",
+        "AMD 2024 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "AMD 2024 Item 1. Business / BUSINESS"
+      ]
+    },
+    {
+      "query_id": "deep_nvda_2025_supply_chain_customer_risk",
+      "category": "deep_financial",
+      "ticker": "NVDA",
+      "fiscal_year": 2025,
+      "query": "For NVIDIA fiscal 2025, what are the supply-chain manufacturing concentration risks and how do they interact with customer concentration?",
+      "expected_signal": "supplier/manufacturing concentration risk and customer concentration",
+      "filters": {
+        "ticker": "NVDA",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.672234058380127,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Item 7. Management's Discussion and Analysis of Financial Condition and Results of Operations The following discussion and analysis of our financial condition and results of operations should be read in conjunction with “Item 1A. Risk Factors,” our Consolidated Financial Statemen..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6620147228240967,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Macroeconomic Factors Macroeconomic factors, including inflation, interest rate changes, capital market volatility, global supply chain constraints, tariffs, and global economic and geopolitical developments, may have direct and indirect impacts on our results of operations, part..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6311601400375366,
+          "evidence_id": "NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_02_OF_03",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "Risks Related to Demand, Supply, and Manufacturing",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "We continue to increase our supply and capacity purchases with existing and new suppliers to support our demand projections and increasing complexity of our data center products. With these additions, we have also entered and may continue to enter into prepaid manufacturing and c..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6185251474380493,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Concentration of Revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Concentration of Revenue We refer to customers who purchase products directly from NVIDIA as direct customers, such as AIBs, distributors, ODMs, OEMs, and system integrators. We have certain customers that may purchase products directly from NVIDIA and may use either internal res..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6068177223205566,
+          "evidence_id": "NVDA_2025_10K_ITEM1A_BLOCK_0001_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "Item 1A. Risk Factors",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "Item 1A. Risk Factors The following risk factors should be considered in addition to the other information in this Annual Report on Form 10-K. The following risks could harm our business, financial condition, results of operations or reputation, which could cause our stock 13 Tab..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.031544957774465976,
+          "evidence_id": "NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_03_OF_03",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "Risks Related to Demand, Supply, and Manufacturing",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "Dependency on third-party suppliers and their technology to manufacture, assemble, test, or package our products reduces our control over product quantity and quality, manufacturing yields, and product delivery schedules and could harm our business. We depend on foundries to manu...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 30.342146351447653,
+            "dense_rank": 6,
+            "dense_score": 0.6045520305633545
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.031009615384615385,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Concentration of Revenue",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Concentration of Revenue We refer to customers who purchase products directly from NVIDIA as direct customers, such as AIBs, distributors, ODMs, OEMs, and system integrators. We have certain customers that may purchase products directly from NVIDIA and may use either internal res...",
+          "fusion": {
+            "bm25_rank": 5,
+            "bm25_score": 28.226849460667133,
+            "dense_rank": 4,
+            "dense_score": 0.6185251474380493
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.030090497737556562,
+          "evidence_id": "NVDA_2025_10K_ITEM1A_BLOCK_0001_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "Item 1A. Risk Factors",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "Item 1A. Risk Factors The following risk factors should be considered in addition to the other information in this Annual Report on Form 10-K. The following risks could harm our business, financial condition, results of operations or reputation, which could cause our stock 13 Tab...",
+          "fusion": {
+            "bm25_rank": 8,
+            "bm25_score": 26.558053868468512,
+            "dense_rank": 5,
+            "dense_score": 0.6068177223205566
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.029850746268656716,
+          "evidence_id": "NVDA_2025_10K_ITEM1_BLOCK_0005_PART_02_OF_03",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 1. Business",
+          "subsection": "Our current competitors include",
+          "evidence_type": "business_description",
+          "contains_table": false,
+          "text_preview": "On January 15, 2025, the USG published the “AI Diffusion” IFR in the Federal Register. After a 120-day delayed compliance period, the IFR will, unless modified, impose a worldwide licensing requirement on all products classified under Export Control Classification Numbers, or ECC...",
+          "fusion": {
+            "bm25_rank": 7,
+            "bm25_score": 27.799531521711422,
+            "dense_rank": 7,
+            "dense_score": 0.5804113745689392
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.029726775956284153,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Item 7. Management's Discussion and Analysis of Financial Condition and Results of Operations The following discussion and analysis of our financial condition and results of operations should be read in conjunction with “Item 1A. Risk Factors,” our Consolidated Financial Statemen...",
+          "fusion": {
+            "bm25_rank": 15,
+            "bm25_score": 23.449443749430948,
+            "dense_rank": 1,
+            "dense_score": 0.672234058380127
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.672234058380127,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Item 7. Management's Discussion and Analysis of Financial Condition and Results of Operations The following discussion and analysis of our financial condition and results of operations should be read in conjunction with “Item 1A. Risk Factors,” our Consolidated Financial Statemen..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6620147228240967,
+          "evidence_id": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Item 7. Management's Discussion and Analysis",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Macroeconomic Factors Macroeconomic factors, including inflation, interest rate changes, capital market volatility, global supply chain constraints, tariffs, and global economic and geopolitical developments, may have direct and indirect impacts on our results of operations, part..."
+        },
+        {
+          "rank": 3,
+          "score": 0.649948239326477,
+          "evidence_id": "NVDA_2023_10K_ITEM1A_BLOCK_0001_CHUNK_0001",
+          "ticker": "NVDA",
+          "fiscal_year": 2023,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "Item 1A. Risk Factors",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "ITEM 1A. RISK FACTORS In evaluating NVIDIA, the following risk factors should be considered in addition to the other information in this Annual Report on Form 10-K. Purchasing or owning NVIDIA common stock involves investment risks including, but not limited to, the risks describ..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6445081233978271,
+          "evidence_id": "NVDA_2024_10K_ITEM1A_BLOCK_0012_PART_02_OF_02",
+          "ticker": "NVDA",
+          "fiscal_year": 2024,
+          "section": "Item 1A. Risk Factors",
+          "subsection": "disadvantage NVIDIA against certain of our competitors who sell products that are not subject to the new restrictions or may be able to acquire licenses for their products.",
+          "evidence_type": "risk_disclosure",
+          "contains_table": false,
+          "text_preview": "Finally, our business depends on our ability to receive consistent and reliable supply from our overseas partners, especially in Taiwan. Any new restrictions that negatively impact our ability to receive supply of components, parts, or services from Taiwan, would negatively impac..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6346229314804077,
+          "evidence_id": "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_01_OF_04",
+          "ticker": "NVDA",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Recent Developments, Future Objectives and Challenges",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Recent Developments, Future Objectives and Challenges Demand and Supply, Product Transitions, and New Products and Business Models Demand for our data center systems and products surged in fiscal year 2024. Entering fiscal year 2025, we are gathering customer demand indications a..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 2,
+      "dense_filtered_sections": [
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "NVDA 2025 Item 1A. Risk Factors / Risks Related to Demand, Supply, and Manufacturing",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Concentration of Revenue",
+        "NVDA 2025 Item 1A. Risk Factors / Item 1A. Risk Factors"
+      ],
+      "hybrid_filtered_sections": [
+        "NVDA 2025 Item 1A. Risk Factors / Risks Related to Demand, Supply, and Manufacturing",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Concentration of Revenue",
+        "NVDA 2025 Item 1A. Risk Factors / Item 1A. Risk Factors",
+        "NVDA 2025 Item 1. Business / Our current competitors include",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis"
+      ],
+      "dense_unfiltered_sections": [
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "NVDA 2025 Item 7. Management's Discussion and Analysis / Item 7. Management's Discussion and Analysis",
+        "NVDA 2023 Item 1A. Risk Factors / Item 1A. Risk Factors",
+        "NVDA 2024 Item 1A. Risk Factors / disadvantage NVIDIA against certain of our competitors who sell products that are not subject to the new restrictions or may be able to acquire licenses for their products.",
+        "NVDA 2024 Item 7. Management's Discussion and Analysis / Recent Developments, Future Objectives and Challenges"
+      ]
+    },
+    {
+      "query_id": "deep_amzn_2025_liquidity_leases_commitments",
+      "category": "deep_financial",
+      "ticker": "AMZN",
+      "fiscal_year": 2025,
+      "query": "For Amazon fiscal 2025, what liquidity, lease obligations, and purchase commitments could affect free cash flow?",
+      "expected_signal": "liquidity/cash flow, lease obligations, purchase commitments",
+      "filters": {
+        "ticker": "AMZN",
+        "fiscal_year": 2025
+      },
+      "dense_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6588729023933411,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0008_PART_01_OF_03",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 7 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 7 — COMMITMENTS AND CONTINGENCIES Commitments The following summarizes our principal contractual commitments, excluding open orders for purchases that support normal operations and are generally cancellable, as of December 31, 2025 (in millions): [TABLE_START id=59 rows=10] ..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6078546643257141,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_04",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=35 rows=36] Year Ended December 31, 2023 | 2024 | 2025 CASH, CASH EQUIVALENTS, AND RESTRICTED CASH, BEGINNING OF PERIOD | $ | 54,253 | $ | 73,890 | $ | 82,312 OPERATING ACTIVITIES: Net income | 30,425 | 59,248 | 77,670 Adjustments to reconcile net income to net ca..."
+        },
+        {
+          "rank": 3,
+          "score": 0.5904169678688049,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Cash provided by (used in) financing activities was $(11.8) billion and $9.7 billion in 2024 and 2025. Cash inflows from financing activities resulted from proceeds from short-term debt, and other and long-term-debt of $5.1 billion and $25.0 billion in 2024 and 2025. Cash outflow..."
+        },
+        {
+          "rank": 4,
+          "score": 0.5753758549690247,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 1 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 1 — DESCRIPTION OF BUSINESS, ACCOUNTING POLICIES, AND SUPPLEMENTAL DISCLOSURES Description of Business We seek to be Earth’s most customer-centric company. In each of our segments, we serve our primary customer sets, consisting of consumers, sellers, developers, enterprises,..."
+        },
+        {
+          "rank": 5,
+          "score": 0.5457684993743896,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "29 Table of Contents Guidance We provided guidance on February 5, 2026, in our earnings release furnished on Form 8-K as set forth below. These forward-looking statements reflect Amazon.com’s expectations as of February 5, 2026, and are subject to substantial uncertainty. Our res..."
+        }
+      ],
+      "hybrid_qwen_filtered_top5": [
+        {
+          "rank": 1,
+          "score": 0.03278688524590164,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0008_PART_01_OF_03",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 7 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 7 — COMMITMENTS AND CONTINGENCIES Commitments The following summarizes our principal contractual commitments, excluding open orders for purchases that support normal operations and are generally cancellable, as of December 31, 2025 (in millions): [TABLE_START id=59 rows=10] ...",
+          "fusion": {
+            "bm25_rank": 1,
+            "bm25_score": 24.227665313164508,
+            "dense_rank": 1,
+            "dense_score": 0.6588729023933411
+          }
+        },
+        {
+          "rank": 2,
+          "score": 0.03200204813108039,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0004_PART_02_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": false,
+          "text_preview": "Cash provided by (used in) financing activities was $(11.8) billion and $9.7 billion in 2024 and 2025. Cash inflows from financing activities resulted from proceeds from short-term debt, and other and long-term-debt of $5.1 billion and $25.0 billion in 2024 and 2025. Cash outflow...",
+          "fusion": {
+            "bm25_rank": 2,
+            "bm25_score": 21.340298652583765,
+            "dense_rank": 3,
+            "dense_score": 0.5904169678688049
+          }
+        },
+        {
+          "rank": 3,
+          "score": 0.030776515151515152,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_10",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 1 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 1 — DESCRIPTION OF BUSINESS, ACCOUNTING POLICIES, AND SUPPLEMENTAL DISCLOSURES Description of Business We seek to be Earth’s most customer-centric company. In each of our segments, we serve our primary customer sets, consisting of consumers, sellers, developers, enterprises,...",
+          "fusion": {
+            "bm25_rank": 6,
+            "bm25_score": 17.504136745106184,
+            "dense_rank": 4,
+            "dense_score": 0.5753758549690247
+          }
+        },
+        {
+          "rank": 4,
+          "score": 0.03036576949620428,
+          "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0007_PART_01_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "Income Taxes Our effective tax rate is subject to significant variation due to several factors, including variability in our pre-tax and taxable income and loss and the mix of jurisdictions to which they relate, intercompany transactions, the applicability of special tax regimes,...",
+          "fusion": {
+            "bm25_rank": 3,
+            "bm25_score": 21.035314989278294,
+            "dense_rank": 9,
+            "dense_score": 0.5355643630027771
+          }
+        },
+        {
+          "rank": 5,
+          "score": 0.02964254577157803,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_04",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=35 rows=36] Year Ended December 31, 2023 | 2024 | 2025 CASH, CASH EQUIVALENTS, AND RESTRICTED CASH, BEGINNING OF PERIOD | $ | 54,253 | $ | 73,890 | $ | 82,312 OPERATING ACTIVITIES: Net income | 30,425 | 59,248 | 77,670 Adjustments to reconcile net income to net ca...",
+          "fusion": {
+            "bm25_rank": 14,
+            "bm25_score": 14.368949750797382,
+            "dense_rank": 2,
+            "dense_score": 0.6078546643257141
+          }
+        }
+      ],
+      "dense_qwen_unfiltered_top5": [
+        {
+          "rank": 1,
+          "score": 0.6997409462928772,
+          "evidence_id": "AMZN_2024_10K_ITEM7_BLOCK_0007_PART_02_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2024,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=30 rows=11] Year Ended December 31, 2023 | 2024 Net cash provided by (used in) operating activities | $ | 84,946 | $ | 115,877 Purchases of property and equipment, net of proceeds from sales and incentives | (48,133) | (77,658) Free cash flow | 36,813 | 38,219 Equ..."
+        },
+        {
+          "rank": 2,
+          "score": 0.6588729023933411,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0008_PART_01_OF_03",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 7 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 7 — COMMITMENTS AND CONTINGENCIES Commitments The following summarizes our principal contractual commitments, excluding open orders for purchases that support normal operations and are generally cancellable, as of December 31, 2025 (in millions): [TABLE_START id=59 rows=10] ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.6338667273521423,
+          "evidence_id": "AMZN_2023_10K_ITEM7_BLOCK_0006_PART_02_OF_02",
+          "ticker": "AMZN",
+          "fiscal_year": 2023,
+          "section": "Item 7. Management's Discussion and Analysis",
+          "subsection": "Income Taxes",
+          "evidence_type": "management_discussion",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=30 rows=11] Year Ended December 31, 2022 | 2023 Net cash provided by (used in) operating activities | $ | 46,752 | $ | 84,946 Purchases of property and equipment, net of proceeds from sales and incentives | (58,321) | (48,133) Free cash flow | (11,569) | 36,813 Eq..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6136491298675537,
+          "evidence_id": "AMZN_2024_10K_ITEM8_BLOCK_0008_PART_01_OF_03",
+          "ticker": "AMZN",
+          "fiscal_year": 2024,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Note 7 —",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "Note 7 — COMMITMENTS AND CONTINGENCIES Commitments The following summarizes our principal contractual commitments, excluding open orders for purchases that support normal operations and are generally cancellable, as of December 31, 2024 (in millions): [TABLE_START id=60 rows=10] ..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6078546643257141,
+          "evidence_id": "AMZN_2025_10K_ITEM8_BLOCK_0001_PART_03_OF_04",
+          "ticker": "AMZN",
+          "fiscal_year": 2025,
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "subsection": "Item 8. Financial Statements and Supplementary Data",
+          "evidence_type": "financial_statement_or_note",
+          "contains_table": true,
+          "text_preview": "[TABLE_START id=35 rows=36] Year Ended December 31, 2023 | 2024 | 2025 CASH, CASH EQUIVALENTS, AND RESTRICTED CASH, BEGINNING OF PERIOD | $ | 54,253 | $ | 73,890 | $ | 82,312 OPERATING ACTIVITIES: Net income | 30,425 | 59,248 | 77,670 Adjustments to reconcile net income to net ca..."
+        }
+      ],
+      "dense_unfiltered_metadata_match_count": 2,
+      "dense_filtered_sections": [
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 7 —",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data",
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / Income Taxes",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 1 —",
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / Income Taxes"
+      ],
+      "hybrid_filtered_sections": [
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 7 —",
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / Income Taxes",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 1 —",
+        "AMZN 2025 Item 7. Management's Discussion and Analysis / Income Taxes",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data"
+      ],
+      "dense_unfiltered_sections": [
+        "AMZN 2024 Item 7. Management's Discussion and Analysis / Income Taxes",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Note 7 —",
+        "AMZN 2023 Item 7. Management's Discussion and Analysis / Income Taxes",
+        "AMZN 2024 Item 8. Financial Statements and Supplementary Data / Note 7 —",
+        "AMZN 2025 Item 8. Financial Statements and Supplementary Data / Item 8. Financial Statements and Supplementary Data"
+      ]
+    }
+  ]
+}

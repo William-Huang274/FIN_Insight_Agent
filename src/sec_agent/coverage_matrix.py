@@ -8,6 +8,7 @@ from typing import Any
 
 SCHEMA_VERSION = "sec_agent_evidence_coverage_matrix_v0.1"
 MARKET_SOURCE_TIER = "market_snapshot"
+INDUSTRY_SOURCE_TIER = "industry_snapshot"
 MARKET_TASK_TERMS = (
     "market",
     "price",
@@ -26,6 +27,34 @@ MARKET_TASK_TERMS = (
     "回撤",
     "反应",
     "相对",
+)
+INDUSTRY_TASK_TERMS = (
+    "industry",
+    "sector",
+    "macro",
+    "rate",
+    "credit cycle",
+    "commodity",
+    "oil",
+    "gas",
+    "consumer demand",
+    "housing",
+    "regulatory",
+    "manufacturing",
+    "orders",
+    "行业",
+    "板块",
+    "宏观",
+    "利率",
+    "信用周期",
+    "大宗商品",
+    "油价",
+    "天然气",
+    "消费需求",
+    "住房",
+    "监管",
+    "制造业",
+    "订单",
 )
 
 METRIC_FAMILY_ALIASES: dict[str, tuple[str, ...]] = {
@@ -118,7 +147,9 @@ def build_coverage_matrix(
         gap for gap in query_contract.get("source_coverage_gaps") or [] if isinstance(gap, dict)
     ]
     market_contract = query_contract.get("market_snapshot") if isinstance(query_contract.get("market_snapshot"), dict) else {}
+    industry_contract = query_contract.get("industry_snapshot") if isinstance(query_contract.get("industry_snapshot"), dict) else {}
     market_summary = _market_coverage_summary(market_contract, context_rows)
+    industry_summary = _industry_coverage_summary(industry_contract, context_rows)
     matrix_rows = [
         _task_coverage_row(
             task,
@@ -130,6 +161,7 @@ def build_coverage_matrix(
             filing_types,
             source_tiers,
             market_contract,
+            industry_contract,
             context_rows,
             ledger_rows,
         )
@@ -164,6 +196,7 @@ def build_coverage_matrix(
         "tasks": matrix_rows,
         "source_coverage_gaps": source_coverage_gaps,
         "market_snapshot_coverage": market_summary,
+        "industry_snapshot_coverage": industry_summary,
         "summary": {
             "task_count": len(matrix_rows),
             "primary_task_count": len(primary_rows),
@@ -186,6 +219,13 @@ def build_coverage_matrix(
             "market_snapshot_as_of_dates": market_summary.get("market_snapshot_as_of_dates") or [],
             "market_snapshot_ids": market_summary.get("market_snapshot_ids") or [],
             "market_context_row_count": market_summary.get("market_context_row_count"),
+            "industry_snapshot_requested": industry_summary.get("industry_snapshot_requested"),
+            "industry_snapshot_support_complete": industry_summary.get("industry_snapshot_support_complete"),
+            "required_industry_source_families": industry_summary.get("required_industry_source_families") or [],
+            "covered_industry_source_families": industry_summary.get("covered_industry_source_families") or [],
+            "missing_industry_source_families": industry_summary.get("missing_industry_source_families") or [],
+            "industry_snapshot_as_of_dates": industry_summary.get("industry_snapshot_as_of_dates") or [],
+            "industry_context_row_count": industry_summary.get("industry_context_row_count"),
             "source_coverage_gap_count": len(source_coverage_gaps),
             "ledger_row_count": len(ledger_rows),
             "context_row_count": len(context_rows),
@@ -203,6 +243,7 @@ def _task_coverage_row(
     filing_types: list[str],
     source_tiers: list[str],
     market_contract: dict[str, Any],
+    industry_contract: dict[str, Any],
     context_rows: list[dict[str, Any]],
     ledger_rows: list[dict[str, Any]],
 ) -> dict[str, Any]:
@@ -225,6 +266,7 @@ def _task_coverage_row(
     mentioned_tickers = [ticker for ticker in search_tickers if _ticker_mentioned(task_text, ticker)]
     is_peer_task = _contains_any(task_text, PEER_TASK_TERMS)
     task_requires_market = _task_requires_market(task, market_contract)
+    task_requires_industry = _task_requires_industry(task, industry_contract)
     if explicit_required_tickers:
         required_tickers = explicit_required_tickers
     elif mentioned_tickers:
@@ -251,6 +293,7 @@ def _task_coverage_row(
             filing_types,
             source_tiers,
             task_requires_market,
+            task_requires_industry,
             required_metric_families,
         )
     ]
@@ -265,6 +308,7 @@ def _task_coverage_row(
             filing_types,
             source_tiers,
             task_requires_market,
+            task_requires_industry,
             required_metric_families,
             task_text,
         )
@@ -286,6 +330,8 @@ def _task_coverage_row(
     required_market_tools = _market_contract_tools(market_contract) if task_requires_market else []
     covered_market_fields = sorted(_market_fields_from_rows(relevant_context))
     covered_market_tools = _covered_market_tools(required_market_tools, covered_market_fields)
+    required_industry_families = _industry_contract_source_families(industry_contract) if task_requires_industry else []
+    covered_industry_families = sorted(_industry_source_families_from_rows(relevant_context))
 
     missing_tickers = sorted(set(required_tickers) - set(covered_tickers))
     missing_peer_tickers = sorted(set(peer_tickers) - set(covered_peer_tickers))
@@ -296,12 +342,17 @@ def _task_coverage_row(
     )
     missing_years = sorted(set(years) - set(covered_years))
     missing_filing_types = sorted(set(filing_types) - set(covered_filing_types))
-    required_source_tiers = [
-        tier for tier in source_tiers if task_requires_market or tier != MARKET_SOURCE_TIER
-    ]
+    required_source_tiers = []
+    for tier in source_tiers:
+        if tier == MARKET_SOURCE_TIER and not task_requires_market:
+            continue
+        if tier == INDUSTRY_SOURCE_TIER and not task_requires_industry:
+            continue
+        required_source_tiers.append(tier)
     missing_source_tiers = sorted(set(required_source_tiers) - set(covered_source_tiers))
     missing_market_fields = sorted(set(required_market_fields) - set(covered_market_fields))
     missing_market_tools = sorted(set(required_market_tools) - set(covered_market_tools))
+    missing_industry_families = sorted(set(required_industry_families) - set(covered_industry_families))
     support_level = _support_level(
         priority=priority,
         required_tickers=required_tickers,
@@ -312,6 +363,8 @@ def _task_coverage_row(
         covered_metric_families=covered_metric_families,
         required_market_fields=required_market_fields,
         covered_market_fields=covered_market_fields,
+        required_industry_families=required_industry_families,
+        covered_industry_families=covered_industry_families,
         covered_years=covered_years,
         ledger_row_count=len(relevant_ledger),
         context_row_count=len(relevant_context),
@@ -337,6 +390,10 @@ def _task_coverage_row(
         "required_market_tools": required_market_tools,
         "covered_market_tools": covered_market_tools,
         "missing_market_tools": missing_market_tools,
+        "required_industry_source_families": required_industry_families,
+        "covered_industry_source_families": covered_industry_families,
+        "missing_industry_source_families": missing_industry_families,
+        "industry_snapshot_as_of_dates": sorted(_industry_as_of_dates(relevant_context)),
         "market_snapshot_ids": sorted(_market_snapshot_ids(relevant_context)),
         "market_snapshot_as_of_dates": sorted(_market_as_of_dates(relevant_context)),
         "missing_tickers": missing_tickers,
@@ -359,6 +416,7 @@ def _task_coverage_row(
             missing_source_tiers=missing_source_tiers,
             missing_market_fields=missing_market_fields,
             missing_market_tools=missing_market_tools,
+            missing_industry_source_families=missing_industry_families,
         ),
         "sample_metric_ids": _unique_strings([row.get("metric_id") for row in relevant_ledger])[:8],
         "sample_evidence_ids": _unique_strings(
@@ -366,6 +424,7 @@ def _task_coverage_row(
             + [row.get("evidence_id") or row.get("source_evidence_id") for row in relevant_context]
         )[:10],
         "sample_market_field_refs": _market_field_refs_from_rows(relevant_context)[:10],
+        "sample_industry_evidence_ids": _industry_evidence_ids(relevant_context)[:10],
     }
 
 
@@ -380,6 +439,8 @@ def _support_level(
     covered_metric_families: list[str],
     required_market_fields: list[str],
     covered_market_fields: list[str],
+    required_industry_families: list[str],
+    covered_industry_families: list[str],
     covered_years: list[int],
     ledger_row_count: int,
     context_row_count: int,
@@ -388,6 +449,9 @@ def _support_level(
         return "insufficient"
     market_ratio = _coverage_ratio(covered_market_fields, required_market_fields)
     if required_market_fields and market_ratio == 0:
+        return "partial"
+    industry_ratio = _coverage_ratio(covered_industry_families, required_industry_families)
+    if required_industry_families and industry_ratio == 0:
         return "partial"
     if priority == "primary" and required_metric_families and ledger_row_count == 0:
         return "partial"
@@ -399,10 +463,11 @@ def _support_level(
     two_years = len(set(covered_years)) >= 2
     one_year = bool(covered_years)
     market_ok = not required_market_fields or market_ratio >= 0.6
+    industry_ok = not required_industry_families or industry_ratio >= 0.5
 
-    if priority == "primary" and ticker_ratio >= 0.8 and family_ratio >= 0.7 and two_years and peer_ok and market_ok:
+    if priority == "primary" and ticker_ratio >= 0.8 and family_ratio >= 0.7 and two_years and peer_ok and market_ok and industry_ok:
         return "strong"
-    if ticker_ratio > 0 and family_ratio > 0 and one_year and (not peer_tickers or covered_peer_tickers) and market_ok:
+    if ticker_ratio > 0 and family_ratio > 0 and one_year and (not peer_tickers or covered_peer_tickers) and market_ok and industry_ok:
         return "medium"
     return "partial"
 
@@ -428,6 +493,7 @@ def _must_caveats(
     missing_source_tiers: list[str],
     missing_market_fields: list[str],
     missing_market_tools: list[str],
+    missing_industry_source_families: list[str],
 ) -> list[str]:
     caveats = []
     if support_level in {"partial", "insufficient"}:
@@ -448,6 +514,8 @@ def _must_caveats(
         caveats.append(f"Missing requested market snapshot fields: {', '.join(missing_market_fields)}.")
     if missing_market_tools:
         caveats.append(f"Missing requested market analysis tools: {', '.join(missing_market_tools)}.")
+    if missing_industry_source_families:
+        caveats.append(f"Missing requested industry source-family coverage: {', '.join(missing_industry_source_families)}.")
     return caveats[:6]
 
 
@@ -459,6 +527,7 @@ def _row_matches_task(
     filing_types: list[str],
     source_tiers: list[str],
     task_requires_market: bool,
+    task_requires_industry: bool,
     required_metric_families: list[str],
 ) -> bool:
     ticker = str(row.get("ticker") or "").upper()
@@ -473,6 +542,8 @@ def _row_matches_task(
         return False
     if is_market:
         return task_requires_market
+    if _is_industry_row(row):
+        return task_requires_industry
     family = str(row.get("metric_family") or "")
     return not required_metric_families or _family_matches_required(family, required_metric_families)
 
@@ -485,10 +556,16 @@ def _context_matches_task(
     filing_types: list[str],
     source_tiers: list[str],
     task_requires_market: bool,
+    task_requires_industry: bool,
     required_metric_families: list[str],
     task_text: str,
 ) -> bool:
     ticker = str(row.get("ticker") or "").upper()
+    is_industry = _is_industry_row(row)
+    if is_industry:
+        if not (task_requires_industry or _task_text_has_industry_intent(task_text)):
+            return False
+        return _row_matches_source_scope(row, [], source_tiers)
     if required_tickers or peer_tickers:
         if ticker not in set(required_tickers) | set(peer_tickers):
             return False
@@ -605,6 +682,8 @@ def _row_source_tiers(rows: list[dict[str, Any]]) -> set[str]:
 def _row_matches_source_scope(row: dict[str, Any], filing_types: list[str], source_tiers: list[str]) -> bool:
     if _is_market_row(row):
         return not source_tiers or MARKET_SOURCE_TIER in set(source_tiers)
+    if _is_industry_row(row):
+        return not source_tiers or INDUSTRY_SOURCE_TIER in set(source_tiers)
     if filing_types:
         form_type = _row_filing_type(row)
         if not form_type or form_type not in set(filing_types):
@@ -638,6 +717,8 @@ def _row_source_tier(row: dict[str, Any]) -> str:
     source_type = str(row.get("source_type") or row.get("source_kind") or metadata.get("source_type") or "").strip()
     if not source_tier and source_type == MARKET_SOURCE_TIER:
         return MARKET_SOURCE_TIER
+    if not source_tier and source_type == INDUSTRY_SOURCE_TIER:
+        return INDUSTRY_SOURCE_TIER
     return source_tier
 
 
@@ -663,6 +744,21 @@ def _is_market_row(row: dict[str, Any]) -> bool:
     return "MARKET_SNAPSHOT::" in evidence_id or evidence_id.startswith("MARKET::")
 
 
+def _is_industry_row(row: dict[str, Any]) -> bool:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    values = {
+        str(row.get("source_tier") or "").strip(),
+        str(row.get("source_type") or "").strip(),
+        str(row.get("source_kind") or "").strip(),
+        str(metadata.get("source_tier") or "").strip(),
+        str(metadata.get("source_type") or "").strip(),
+    }
+    if INDUSTRY_SOURCE_TIER in values:
+        return True
+    evidence_id = " ".join(str(row.get(key) or "") for key in ("evidence_id", "source_evidence_id", "object_id"))
+    return "INDUSTRY::" in evidence_id
+
+
 def _task_requires_market(task: dict[str, Any], market_contract: dict[str, Any]) -> bool:
     if not market_contract:
         return False
@@ -671,8 +767,20 @@ def _task_requires_market(task: dict[str, Any], market_contract: dict[str, Any])
     return _task_text_has_market_intent(_task_text(task))
 
 
+def _task_requires_industry(task: dict[str, Any], industry_contract: dict[str, Any]) -> bool:
+    if not industry_contract:
+        return False
+    if task.get("required_industry_source_families") or task.get("source_families"):
+        return True
+    return _task_text_has_industry_intent(_task_text(task))
+
+
 def _task_text_has_market_intent(text: str) -> bool:
     return _contains_any(text, MARKET_TASK_TERMS)
+
+
+def _task_text_has_industry_intent(text: str) -> bool:
+    return _contains_any(text, INDUSTRY_TASK_TERMS)
 
 
 def _market_contract_fields(market_contract: dict[str, Any]) -> list[str]:
@@ -707,6 +815,47 @@ def _market_coverage_summary(market_contract: dict[str, Any], context_rows: list
         )[:10],
         "sample_market_field_refs": _market_field_refs_from_rows(market_rows)[:20],
     }
+
+
+def _industry_coverage_summary(industry_contract: dict[str, Any], context_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    requested = bool(industry_contract)
+    industry_rows = [row for row in context_rows if isinstance(row, dict) and _is_industry_row(row)]
+    required_families = _industry_contract_source_families(industry_contract)
+    covered_families = sorted(_industry_source_families_from_rows(industry_rows))
+    return {
+        "industry_snapshot_requested": requested,
+        "industry_snapshot_support_complete": (not requested)
+        or (bool(industry_rows) and not (set(required_families) - set(covered_families))),
+        "required_industry_source_families": required_families,
+        "covered_industry_source_families": covered_families,
+        "missing_industry_source_families": sorted(set(required_families) - set(covered_families)),
+        "industry_snapshot_as_of_dates": sorted(_industry_as_of_dates(industry_rows)),
+        "industry_context_row_count": len(industry_rows),
+        "sample_evidence_ids": _industry_evidence_ids(industry_rows)[:10],
+    }
+
+
+def _industry_contract_source_families(industry_contract: dict[str, Any]) -> list[str]:
+    return _unique_strings(
+        industry_contract.get("source_families")
+        or industry_contract.get("required_source_families")
+        or industry_contract.get("industry_source_families")
+        or []
+    )
+
+
+def _industry_source_families_from_rows(rows: list[dict[str, Any]]) -> set[str]:
+    return {str(row.get("source_family") or "") for row in rows if row.get("source_family")}
+
+
+def _industry_as_of_dates(rows: list[dict[str, Any]]) -> set[str]:
+    return {str(row.get("as_of_date") or "") for row in rows if row.get("as_of_date")}
+
+
+def _industry_evidence_ids(rows: list[dict[str, Any]]) -> list[str]:
+    return _unique_strings(
+        [row.get("evidence_id") or row.get("object_id") or row.get("source_evidence_id") for row in rows]
+    )
 
 
 def _market_fields_from_rows(rows: list[dict[str, Any]]) -> set[str]:

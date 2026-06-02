@@ -1,0 +1,256 @@
+version: "v0.2"
+purpose: "Sector depth packs for cross-industry investment research coverage."
+selection_policy:
+  status: "candidate_until_availability_probe"
+  accepted_only_if:
+    - "fy2023_fy2025_10k_available_or_source_gap_recorded"
+    - "latest_10q_available_or_source_gap_recorded"
+    - "earnings_8k_available_or_source_gap_recorded"
+    - "market_snapshot_available_or_source_gap_recorded"
+    - "primary_metric_families_parseable_or_gap_recorded"
+  notes:
+    - "Packs are not automatically merged into the main universe."
+    - "Use full78 for baseline smoke, full128_us for broad US coverage, then activate selected sector packs."
+  accepted_ticker_adjustments:
+    - legacy_ticker: "HES"
+      accepted_ticker: "APA"
+      reason: "HES no longer has a current SEC/Yahoo ticker path in the 2026-05-29 probe; APA preserves upstream E&P sector depth without duplicating the current full128/sector universe."
+    - legacy_ticker: "IPG"
+      accepted_ticker: "TTD"
+      reason: "IPG no longer has a current SEC/Yahoo ticker path in the 2026-05-29 probe; TTD preserves advertising/media demand exposure."
+    - legacy_ticker: "MMC"
+      accepted_ticker: "MRSH"
+      reason: "SEC current ticker reference maps Marsh & McLennan to MRSH."
+    - legacy_ticker: "PARA"
+      accepted_ticker: "FOXA"
+      reason: "PARA no longer has a current SEC/Yahoo ticker path in the 2026-05-29 probe; FOXA preserves media/content exposure with current SEC/Yahoo coverage."
+  cik_overrides:
+    CTRA: "0000858470"
+
+packs:
+  - pack_id: "technology_ai_infrastructure_depth"
+    industry_group: "information_technology"
+    research_questions:
+      - "AI infrastructure demand transmission from chips to servers, networking, EDA, equipment, power, cooling, and software."
+      - "Whether cloud capex and enterprise software demand support valuation and margin assumptions."
+    candidate_tickers:
+      p0: ["DELL", "HPE", "SMCI", "ANET", "MRVL", "LRCX", "KLAC", "SNPS", "CDNS", "NOW", "IBM"]
+      p1: ["VRT", "ETN", "PWR", "VST", "COHR", "CIEN", "MPWR", "TER", "APH", "GLW"]
+    primary_metric_families:
+      - "revenue"
+      - "segment_revenue"
+      - "gross_margin"
+      - "operating_margin"
+      - "orders_backlog"
+      - "capex"
+      - "rpo_deferred_revenue"
+      - "inventory"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_housing_real_estate_power"
+      - "industry_utilities_power_demand"
+
+  - pack_id: "financial_services_depth"
+    industry_group: "financials"
+    research_questions:
+      - "Interest-rate cycle, deposit cost, credit quality, capital markets activity, insurance pricing, and asset-management flows."
+    candidate_tickers:
+      p0: ["C", "WFC", "GS", "SCHW", "COF", "CB"]
+      p1: ["ICE", "CME", "BK", "PNC", "USB", "MRSH", "AON", "TRV", "MCO", "BX"]
+    primary_metric_families:
+      - "net_interest_income"
+      - "net_interest_margin"
+      - "deposits"
+      - "provision_for_credit_losses"
+      - "net_charge_offs"
+      - "capital_ratio"
+      - "assets_under_management"
+      - "premiums_combined_ratio"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_macro_rates_credit"
+
+  - pack_id: "healthcare_life_sciences_depth"
+    industry_group: "healthcare"
+    research_questions:
+      - "Product cycle, procedure volume, drug commercialization, patent cliff, payer pressure, hospital demand, and R&D productivity."
+    candidate_tickers:
+      p0: ["ABT", "MDT", "DHR", "PFE", "BMY", "AMGN", "GILD", "HCA", "SYK"]
+      p1: ["ELV", "CI", "HUM", "REGN", "VRTX", "BSX", "EW", "ZTS", "BDX", "DXCM", "IDXX"]
+    primary_metric_families:
+      - "product_revenue"
+      - "segment_revenue"
+      - "gross_margin"
+      - "operating_margin"
+      - "rd_expense"
+      - "procedure_volume"
+      - "medical_loss_ratio"
+      - "pipeline_milestone"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_healthcare_regulatory"
+
+  - pack_id: "consumer_discretionary_depth"
+    industry_group: "consumer_discretionary"
+    research_questions:
+      - "Consumer demand, traffic, same-store sales, pricing, inventory, promotion, housing cycle, travel, and auto affordability."
+    candidate_tickers:
+      p0: ["NKE", "SBUX", "TJX", "GM", "F", "MAR", "AZO"]
+      p1: ["DHI", "LEN", "ABNB", "RCL", "ORLY", "ROST", "CMG", "LULU", "ULTA", "YUM"]
+    primary_metric_families:
+      - "revenue"
+      - "same_store_sales"
+      - "traffic_ticket"
+      - "gross_margin"
+      - "inventory"
+      - "unit_sales"
+      - "occupancy_or_room_nights"
+      - "consumer_financing"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_consumer_macro"
+
+  - pack_id: "consumer_staples_depth"
+    industry_group: "consumer_staples"
+    research_questions:
+      - "Volume versus price, private label pressure, input costs, retailer inventory, and brand resilience."
+    candidate_tickers:
+      p0: ["MDLZ", "CL", "KMB", "KR", "TGT"]
+      p1: ["EL", "HSY", "GIS", "CPB", "KHC", "TSN", "SYY", "MNST", "CHD", "DG"]
+    primary_metric_families:
+      - "organic_sales"
+      - "volume_price_mix"
+      - "gross_margin"
+      - "inventory"
+      - "working_capital"
+      - "retail_comparable_sales"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_consumer_macro"
+
+  - pack_id: "energy_infrastructure_depth"
+    industry_group: "energy"
+    research_questions:
+      - "Commodity price sensitivity, production, reserve quality, capex discipline, oilfield services orders, LNG, midstream volumes, and refining margins."
+    candidate_tickers:
+      p0: ["OXY", "HAL", "LNG", "WMB", "KMI", "PSX"]
+      p1: ["MPC", "BKR", "DVN", "FANG", "VLO", "OKE", "EQT", "CTRA", "TRGP", "APA"]
+    primary_metric_families:
+      - "production"
+      - "realized_price"
+      - "reserves"
+      - "capex"
+      - "free_cash_flow"
+      - "orders_backlog"
+      - "throughput"
+      - "refining_margin"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_energy_commodities"
+
+  - pack_id: "industrials_aerospace_logistics_depth"
+    industry_group: "industrials"
+    research_questions:
+      - "Orders, backlog, delivery cadence, supply-chain normalization, defense budgets, freight demand, automation, and construction cycle."
+    candidate_tickers:
+      p0: ["BA"]
+      p1: ["PH", "EMR", "ITW", "LMT", "NOC", "CARR", "OTIS", "MMM", "URI", "FDX", "JCI", "ROK"]
+    primary_metric_families:
+      - "orders_backlog"
+      - "book_to_bill"
+      - "segment_revenue"
+      - "operating_margin"
+      - "free_cash_flow"
+      - "delivery_volume"
+      - "freight_volume"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_industrial_macro"
+
+  - pack_id: "materials_depth"
+    industry_group: "materials"
+    research_questions:
+      - "Commodity/input-cost cycle, pricing, volume, construction exposure, agriculture inputs, metals, and specialty chemicals."
+    candidate_tickers:
+      p0: ["ECL", "PPG", "DD", "NUE", "STLD", "CF", "MOS"]
+      p1: ["ALB", "MLM", "VMC", "CTVA", "IFF", "CE", "BALL", "PKG"]
+    primary_metric_families:
+      - "volume_price_mix"
+      - "segment_revenue"
+      - "gross_margin"
+      - "operating_margin"
+      - "capacity_utilization"
+      - "commodity_price_exposure"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_materials_commodities"
+
+  - pack_id: "real_estate_utilities_depth"
+    industry_group: "real_estate_utilities"
+    research_questions:
+      - "Rates, occupancy, rent growth, financing cost, data-center demand, power load growth, regulated returns, and generation mix."
+    candidate_tickers:
+      p0: ["DLR", "O", "PSA", "EXR", "SRE", "XEL"]
+      p1: ["AVB", "EQR", "ARE", "VICI", "ED", "EXC", "D", "AES", "NRG", "PEG"]
+    primary_metric_families:
+      - "same_store_noi"
+      - "occupancy"
+      - "rent_growth"
+      - "ffo_affo"
+      - "debt_cost"
+      - "electric_load"
+      - "regulated_rate_base"
+      - "capex"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_housing_real_estate_power"
+
+  - pack_id: "communication_media_depth"
+    industry_group: "communication_services"
+    research_questions:
+      - "Wireless and broadband competition, subscriber trends, content spending, ads cycle, gaming bookings, sports/live events, and leverage."
+    candidate_tickers:
+      p0: ["CMCSA", "T", "VZ", "EA", "TTWO"]
+      p1: ["CHTR", "FOXA", "WBD", "LYV", "OMC", "TTD", "NFLX", "DIS", "TMUS"]
+    primary_metric_families:
+      - "subscribers"
+      - "arpu"
+      - "churn"
+      - "advertising_revenue"
+      - "content_spend"
+      - "bookings"
+      - "free_cash_flow"
+      - "net_debt"
+    required_source_families:
+      - "us_primary_annual_10k"
+      - "us_primary_interim_10q"
+      - "us_company_authored_8k_earnings"
+      - "market_snapshot"
+      - "industry_consumer_macro"

@@ -1,0 +1,207 @@
+version: "v0.2"
+purpose: "Industry data source-family plan for non-company-filed evidence used in investment research."
+global_policy:
+  status: "source_family_planning"
+  default_use: "context_or_explanation_only_until_normalized"
+  requirements:
+    - "Every dataset must carry provider, dataset_id, as_of_date or observation_date, fetched_at, unit, frequency, and allowed_claim_types."
+    - "Industry data can explain macro or sector context but cannot overwrite company-filed financial facts."
+    - "If industry data conflicts with SEC filing or ledger facts, preserve the conflict and trigger reflection rather than averaging."
+
+source_families:
+  - source_family: "industry_macro_rates_credit"
+    target_industries: ["financials", "real_estate", "utilities", "consumer_discretionary"]
+    providers:
+      - provider: "FRED"
+        access_mode: "free_api_or_csv"
+        candidate_series:
+          - "FEDFUNDS"
+          - "DGS10"
+          - "DGS2"
+          - "MORTGAGE30US"
+          - "BAA10Y"
+          - "DRTSCILM"
+    allowed_claim_types:
+      - "rate_cycle_context"
+      - "credit_condition_context"
+      - "funding_cost_context"
+    prohibited_claim_types:
+      - "company_reported_financial_fact"
+
+  - source_family: "industry_consumer_macro"
+    target_industries: ["consumer_discretionary", "consumer_staples", "communication_services"]
+    providers:
+      - provider: "FRED"
+        access_mode: "free_api_or_csv"
+        candidate_series:
+          - "CPIAUCSL"
+          - "PCE"
+          - "RSAFS"
+          - "UMCSENT"
+          - "PAYEMS"
+          - "UNRATE"
+    allowed_claim_types:
+      - "consumer_demand_context"
+      - "inflation_context"
+      - "employment_income_context"
+    prohibited_claim_types:
+      - "company_same_store_sales_fact"
+      - "company_inventory_fact"
+
+  - source_family: "industry_energy_commodities"
+    target_industries: ["energy", "materials", "industrials"]
+    providers:
+      - provider: "EIA"
+        access_mode: "free_api"
+        candidate_datasets:
+          - "crude_oil_price"
+          - "natural_gas_price"
+          - "crude_oil_inventories"
+          - "production"
+          - "refinery_utilization"
+          - "lng_exports"
+      - provider: "FRED"
+        access_mode: "free_api_or_csv"
+        candidate_series:
+          - "DCOILWTICO"
+          - "DCOILBRENTEU"
+          - "DHHNGSP"
+    allowed_claim_types:
+      - "commodity_price_context"
+      - "inventory_supply_context"
+      - "energy_demand_context"
+    prohibited_claim_types:
+      - "company_realized_price_fact_without_filing_support"
+
+  - source_family: "industry_materials_commodities"
+    target_industries: ["materials", "industrials", "consumer_staples"]
+    providers:
+      - provider: "FRED"
+        access_mode: "free_api_or_csv"
+        candidate_series:
+          - "PPIACO"
+          - "WPU10"
+          - "WPU101"
+          - "WPU102"
+          - "WPU061"
+          - "PCU325325"
+          - "PCU331331"
+          - "PCU212212"
+    allowed_claim_types:
+      - "input_cost_context"
+      - "metals_price_context"
+      - "chemicals_price_context"
+      - "commodity_cycle_context"
+    prohibited_claim_types:
+      - "company_pricing_fact_without_filing_support"
+      - "company_margin_fact_without_filing_support"
+
+  - source_family: "industry_healthcare_regulatory"
+    target_industries: ["healthcare"]
+    providers:
+      - provider: "FDA"
+        access_mode: "public_web_or_api"
+        candidate_datasets:
+          - "drug_approvals"
+          - "device_approvals"
+          - "safety_alerts"
+      - provider: "CMS"
+        access_mode: "public_dataset"
+        candidate_datasets:
+          - "medicare_enrollment"
+          - "national_health_expenditure"
+          - "hospital_quality_or_payment_context"
+    allowed_claim_types:
+      - "regulatory_event_context"
+      - "payer_policy_context"
+      - "procedure_or_utilization_context"
+    prohibited_claim_types:
+      - "company_product_revenue_fact_without_filing_support"
+
+  - source_family: "industry_housing_real_estate_power"
+    target_industries: ["real_estate", "utilities", "consumer_discretionary", "industrials"]
+    providers:
+      - provider: "FRED"
+        access_mode: "free_api_or_csv"
+        candidate_series:
+          - "HOUST"
+          - "PERMIT"
+          - "CSUSHPINSA"
+          - "MORTGAGE30US"
+      - provider: "EIA"
+        access_mode: "free_api"
+        candidate_datasets:
+          - "electricity_demand"
+          - "generation_mix"
+          - "retail_electricity_price"
+    allowed_claim_types:
+      - "housing_cycle_context"
+      - "power_load_context"
+      - "financing_cost_context"
+    prohibited_claim_types:
+      - "company_same_store_noi_fact"
+      - "company_rate_base_fact"
+
+  - source_family: "industry_utilities_power_demand"
+    target_industries: ["utilities", "real_estate", "industrials", "technology"]
+    providers:
+      - provider: "EIA"
+        access_mode: "free_api"
+        candidate_datasets:
+          - "electricity_retail_sales"
+          - "retail_electricity_price"
+          - "ultimate_customer_count"
+          - "utility_revenue"
+    allowed_claim_types:
+      - "power_demand_context"
+      - "retail_electricity_price_context"
+      - "utility_revenue_context"
+      - "customer_count_context"
+    prohibited_claim_types:
+      - "company_reported_revenue_fact"
+      - "company_load_growth_fact_without_filing_support"
+      - "hourly_power_load_claim"
+
+  - source_family: "industry_industrial_macro"
+    target_industries: ["industrials", "materials", "technology"]
+    providers:
+      - provider: "FRED"
+        access_mode: "free_api_or_csv"
+        candidate_series:
+          - "INDPRO"
+          - "IPMAN"
+          - "DGORDER"
+          - "AMTMNO"
+          - "BUSINV"
+    allowed_claim_types:
+      - "industrial_cycle_context"
+      - "orders_inventory_context"
+      - "manufacturing_activity_context"
+    prohibited_claim_types:
+      - "company_backlog_fact_without_filing_support"
+
+normalization_contract:
+  output_tables:
+    - table: "industry_observations"
+      required_columns:
+        - "source_family"
+        - "provider"
+        - "dataset_id"
+        - "series_id"
+        - "observation_date"
+        - "as_of_date"
+        - "frequency"
+        - "value"
+        - "unit"
+        - "revision_status"
+        - "fetched_at"
+    - table: "industry_evidence_rows"
+      required_columns:
+        - "evidence_id"
+        - "source_family"
+        - "provider"
+        - "dataset_id"
+        - "as_of_date"
+        - "allowed_claim_types"
+        - "summary"
+        - "caveats"

@@ -790,6 +790,11 @@ def _table_header_index(rows: list[list[str]]) -> int | None:
 
 def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) -> list[dict[str, Any]]:
     table_unit = _infer_table_unit(table)
+    table_unit_context = _table_unit_context(
+        rows=table.rows,
+        context_before=" ".join(value for value in [table.title, table.text_before] if value),
+        context_after=table.text_after,
+    )
     logical_values = _logical_value_cells(row)
     header_index = _table_header_index(table.rows)
     expanded_labels = _logical_column_labels_for_rows(
@@ -828,7 +833,7 @@ def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) ->
                     row_label=row[0] if row else "",
                     table=table,
                 ),
-                "unit": _infer_cell_unit(raw, column_label, table_unit),
+                "unit": _infer_cell_unit(raw, column_label, table_unit, row_label=row[0] if row else "", table_context=table_unit_context),
                 "cell_kind": _cell_kind(column_label),
             }
         )
@@ -854,6 +859,7 @@ def _table_cells(
     data_start = _table_data_start_index(rows, header_index)
     data_rows = rows[data_start:]
     table_unit = _infer_table_unit_from_values(rows=rows, context_before=context_before, context_after=context_after)
+    table_unit_context = _table_unit_context(rows=rows, context_before=context_before, context_after=context_after)
     cells = []
     active_group: str | None = None
     row_offset = data_start + 1
@@ -883,7 +889,7 @@ def _table_cells(
             period = _period_for_column_label(column_label)
             if period is None and not _is_change_column(column_label) and logical_index < len(candidate_periods):
                 period = candidate_periods[logical_index]
-            unit = _infer_cell_unit(raw, column_label, table_unit) or parsed_unit
+            unit = _infer_cell_unit(raw, column_label, table_unit, row_label=row_label, table_context=table_unit_context) or parsed_unit
             period_role = _period_role_for_table_cell_parts(
                 form_type=form_type,
                 period_type=period_type,
@@ -1150,8 +1156,7 @@ def _infer_table_unit_from_values(
     context_before: str | None,
     context_after: str | None,
 ) -> str | None:
-    row_text = " ".join(" ".join(row) for row in rows[:6])
-    context = " ".join(value for value in [context_before, row_text, context_after] if value).lower()
+    context = _table_unit_context(rows=rows, context_before=context_before, context_after=context_after)
     if "dollars in billions" in context or "in billions" in context:
         return "usd_billions"
     if "dollars in millions" in context or "in millions" in context:
@@ -1165,13 +1170,52 @@ def _infer_table_unit_from_values(
     return None
 
 
-def _infer_cell_unit(raw_value: str, column_label: str | None, table_unit: str | None) -> str | None:
+def _table_unit_context(
+    *,
+    rows: list[list[str]],
+    context_before: str | None,
+    context_after: str | None,
+) -> str:
+    row_text = " ".join(" ".join(row) for row in rows[:6])
+    return " ".join(value for value in [context_before, row_text, context_after] if value).lower()
+
+
+def _infer_cell_unit(
+    raw_value: str,
+    column_label: str | None,
+    table_unit: str | None,
+    *,
+    row_label: str | None = None,
+    table_context: str | None = None,
+) -> str | None:
     lower_label = (column_label or "").lower()
     if "%" in raw_value or "%" in lower_label or "percent" in lower_label:
         return "percent"
+    effective_table_unit = _mixed_bank_table_row_unit(row_label, table_unit, table_context)
     if "$" in raw_value:
-        return table_unit or "usd"
-    return table_unit
+        return effective_table_unit or "usd"
+    return effective_table_unit
+
+
+def _mixed_bank_table_row_unit(row_label: str | None, table_unit: str | None, table_context: str | None) -> str | None:
+    if table_unit != "usd_billions":
+        return table_unit
+    context = str(table_context or "").lower()
+    if not ("in millions" in context and "in billions" in context and "except" in context):
+        return table_unit
+    label = str(row_label or "").lower()
+    billion_exception_terms = (
+        "end-of-period assets",
+        "average loans",
+        "average deposits",
+        "total assets",
+        "total loans",
+        "total deposits",
+        "deposit balances",
+    )
+    if any(term in label for term in billion_exception_terms):
+        return "usd_billions"
+    return "usd_millions"
 
 
 def _nearest_period(header: list[str], col_index: int) -> str | None:

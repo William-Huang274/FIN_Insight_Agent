@@ -162,13 +162,28 @@ def main() -> None:
                     continue
 
                 try:
-                    result = connector.fetch_filing(
-                        ticker=ticker,
-                        form_type=form_type,
-                        year=year,
-                        category=category,
-                        category_slug=category_slug,
-                    )
+                    cik = str(company.get("cik") or "").strip()
+                    if cik:
+                        filing_meta = connector.find_filing(
+                            cik=cik,
+                            form_type=form_type,
+                            year=year,
+                        )
+                        result = connector.download_filing_html(
+                            filing_meta,
+                            ticker=ticker,
+                            year=year,
+                            category=category,
+                            category_slug=category_slug,
+                        )
+                    else:
+                        result = connector.fetch_filing(
+                            ticker=ticker,
+                            form_type=form_type,
+                            year=year,
+                            category=category,
+                            category_slug=category_slug,
+                        )
                     print(json.dumps(result, ensure_ascii=False))
                 except SecEdgarConnectorError as exc:
                     failure = {

@@ -46,3 +46,5 @@ node_modules/
 dist/
 *.pyc
 !/data/logs/.gitkeep
+
+docs/interview/

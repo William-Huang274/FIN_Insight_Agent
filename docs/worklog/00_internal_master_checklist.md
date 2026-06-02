@@ -386,6 +386,7 @@
 - [x] Add P7.1 priority-aware Specialist data-view and prompt budgets so supporting agents consume narrower payloads while primary deep-research specialists keep full context.
 - [x] Add P7.2 Verifier minimal projection so verifier consumes final memo claims / refs instead of a broad judgment inventory.
 - [x] Add P7.4 cost-quality eval metrics for tokens per ClaimCard, rendered memo claim, memo char, and repair-token ratio.
+- [x] Upgrade Memo Writer to profile-driven v0.6 contract with `compact / standard / expanded / deep_research`, direct-answer surface gates, action fields, and profile-aware S6-S8 eval.
 - [x] Add a standalone Fin Agent investment-research quality framework outside worklogs, with machine-readable rubric and layered artifact-only audit script.
 - [x] Add a staged S1-S10 execution plan that requires each agent/node gate to pass before downstream or full-chain evaluation.
 - [x] Run the new S1 Research Lead quality gate and audit it with `scripts/audit_fin_agent_layer_quality.py`.
@@ -397,6 +398,15 @@
 - [x] Add and run S4 Coverage / Reflection gate with bounded second-pass request compilation, stop-after-node routing, stale-requirement override, source-gap boundary, and no-incremental-evidence loop break.
 - [x] Add and run S5 Specialist layer gate by reusing passed S1-S4 artifacts, with route success separated from real-evidence quality.
 - [x] Add and run S6/S7/S8 Judgment / Memo / Verifier gate by reusing passed S5 artifacts, with thesis pack, memo-claim density, numeric-fidelity, fallback, and verifier checks separated.
-- [ ] Proceed to S9 full-chain replay after S6/S7/S8 artifact-reuse gate.
-- [ ] Reduce residual Memo Writer repair cost after S6/S7/S8 v0.7 still needs one repair on NVDA/AMD.
+- [x] Add a v0.2 S1-S8 case matrix for industry / difficulty / agent capability gates before further full-chain replay.
+- [x] Add comparative focus-ticker balanced data-view and prompt-row selector for Fundamental / Risk specialists.
+- [x] Add metric/source diversity and market/industry floors for Specialist prompt row selection.
+- [x] Persist Specialist prompt row distribution in S5 route artifacts.
+- [x] Add S3 `ledger_missing_despite_context` source gap telemetry.
+- [x] Add S5 comparative ticker primary visibility gate and rerun NVDA/AMD targeted Specialist layer.
+- [x] Add S5 temporal-claim ref-depth gate and allow self-comparative single evidence rows.
+- [x] Add S6-S8 `judgment_memo_diagnostic` support to the layered audit script.
+- [ ] Proceed to S9 full-chain replay after S1-S8 matrix remains stable.
+- [x] Reduce residual Memo Writer repair cost after S6/S7/S8 selected layer runs; v0.7 Chinese response-language representative runs are `4/4` pass with `0` repairs.
+- [ ] Run S9 full-chain replay with `response_language` renderer checks after S6-S8 language gate stabilization.
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.

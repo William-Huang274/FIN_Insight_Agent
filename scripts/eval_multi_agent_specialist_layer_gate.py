@@ -212,6 +212,8 @@ def _augment_case_for_quality(
     active = set(_string_list((state.get("agent_activation_plan") or {}).get("activate_agents") if isinstance(state.get("agent_activation_plan"), Mapping) else []))
     return {
         **dict(case),
+        "focus_tickers": _string_list((state.get("query_contract") or {}).get("focus_tickers") if isinstance(state.get("query_contract"), Mapping) else [])
+        or _string_list((state.get("agent_activation_plan") or {}).get("focus_tickers") if isinstance(state.get("agent_activation_plan"), Mapping) else []),
         "source_tiers": source_tiers,
         "expected_tool_names": tool_names,
         "category": "sector_depth" if "relationship_graph" in source_tiers else str(case.get("category") or ""),
@@ -309,6 +311,7 @@ def _data_view_summary(result: Mapping[str, Any], expected_specialists: set[str]
             "status": view.get("status") or "",
             "row_count": len(rows),
             "source_families": sorted({str(row.get("source_family") or "") for row in rows if row.get("source_family")}),
+            "row_distribution": view.get("bounded_row_distribution") if isinstance(view.get("bounded_row_distribution"), Mapping) else _row_distribution(rows),
             "relationship_summary_count": len((view.get("relationship_summary") or {}).get("relationships") or [])
             if isinstance(view.get("relationship_summary"), Mapping)
             else 0,
@@ -324,6 +327,42 @@ def _token_usage(route_results: list[dict[str, Any]]) -> dict[str, int]:
         "output_tokens": sum(int(row.get("output_tokens") or 0) for row in route_results),
         "total_tokens": sum(int(row.get("total_tokens") or 0) for row in route_results),
     }
+
+
+def _row_distribution(rows: list[Mapping[str, Any]]) -> dict[str, Any]:
+    return {
+        "schema_version": "sec_agent_prompt_data_view_row_distribution_v0.1",
+        "row_count": len(rows),
+        "by_ticker": _count_by_key(rows, "ticker"),
+        "by_source_family": _count_by_key(rows, "source_family"),
+        "by_ticker_source_family": _count_by_composite(rows, ("ticker", "source_family")),
+        "by_form_type": _count_by_key(rows, "form_type"),
+        "by_metric": _count_by_key(rows, "metric"),
+    }
+
+
+def _count_by_key(rows: list[Mapping[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = str(row.get(key) or "").strip() or "unknown"
+        if key == "ticker":
+            value = value.upper()
+        counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _count_by_composite(rows: list[Mapping[str, Any]], keys: tuple[str, ...]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        parts = []
+        for key in keys:
+            value = str(row.get(key) or "").strip() or "unknown"
+            if key == "ticker":
+                value = value.upper()
+            parts.append(value)
+        label = "|".join(parts)
+        counts[label] = counts.get(label, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def _aggregate(

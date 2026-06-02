@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from sec_agent.multi_agent_contracts import (
+    aggregate_focused_answer_judgment_plan,
     aggregate_specialist_judgment_plan,
     build_multi_agent_memo_draft,
     normalize_universe_relationship_plan,
@@ -37,6 +38,34 @@ def test_specialist_memolet_rejects_tool_calls_and_unknown_refs() -> None:
     assert result["status"] == "fail"
     assert "specialist_tool_calls_forbidden" in error_types
     assert "unknown_evidence_ref" in error_types
+
+
+def test_relationship_graph_business_observation_is_normalized_to_hypothesis() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "industry_supply_chain_analyst",
+                "observations": [
+                    {
+                        "claim": "Relationship graph supports an AI infrastructure readthrough path.",
+                        "claim_type": "business_observation",
+                        "evidence_refs": ["rel_ref_1"],
+                        "source_families": ["relationship_graph"],
+                        "memo_slot": "industry_relationship",
+                        "materiality": "medium",
+                        "confidence": "medium",
+                    }
+                ],
+            }
+        ]
+    )
+    memo = build_multi_agent_memo_draft(judgment)
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+
+    relationship_claim = next(claim for claim in judgment["supported_claims"] if claim["agent_id"] == "industry_supply_chain_analyst")
+    assert relationship_claim["claim_type"] == "relationship_hypothesis"
+    assert any(claim["claim_type"] == "relationship_hypothesis" for claim in memo["memo_claims"])
+    assert verification["status"] == "pass"
 
 
 def test_judgment_plan_preserves_conflicts_without_averaging() -> None:
@@ -255,6 +284,112 @@ def test_judgment_plan_synthesizes_thesis_from_supported_business_slots() -> Non
     assert outline["thesis"]["status"] == "supported"
     assert memo["memo_claims"][0]["claim_id"] == "judgment_plan_aggregator_thesis_1"
     assert verification["status"] == "pass"
+
+
+def test_focused_answer_judgment_plan_builds_claim_cards_from_bounded_rows() -> None:
+    judgment = aggregate_focused_answer_judgment_plan(
+        runtime_ledger_rows=[
+            {
+                "ticker": "AMZN",
+                "fiscal_year": 2026,
+                "period_role": "qtd",
+                "metric_family": "operating_income",
+                "metric_name": "operating income",
+                "display_value_zh": "347（百万美元）",
+                "source_tier": "primary_sec_filing",
+                "form_type": "10-Q",
+                "metric_id": "amzn_operating_income_qtd_ref",
+            },
+            {
+                "ticker": "AMZN",
+                "fiscal_year": 2026,
+                "period_role": "qtd",
+                "metric_family": "revenue",
+                "metric_name": "revenue",
+                "display_value_zh": "155,667（百万美元）",
+                "source_tier": "primary_sec_filing",
+                "form_type": "10-Q",
+                "metric_id": "amzn_revenue_qtd_ref",
+            },
+        ],
+        context_rows=[
+            {
+                "ticker": "AMZN",
+                "form_type": "8-K",
+                "source_evidence_id": "amzn_8k_margin_commentary_ref",
+                "summary": "Management discussed operating income and cost discipline.",
+            }
+        ],
+        evidence_requirement_plan={
+            "requirements": [
+                {"tickers": ["AMZN"], "metric_families": ["revenue", "margin", "cash_flow"]}
+            ]
+        },
+        reflection_report={"sufficiency_level": "sufficient"},
+        response_language="zh-CN",
+    )
+    memo = build_multi_agent_memo_draft(judgment)
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+
+    assert judgment["aggregation_policy"] == "focused_answer_claim_cards_from_bounded_rows_v0_1"
+    assert judgment["memo_thesis_pack"]["status"] == "ready"
+    assert judgment["memo_writer_allowed"] is True
+    assert len(judgment["supported_claims"]) >= 2
+    assert "限定在本轮检索到的" in judgment["memo_thesis_pack"]["core_thesis"]["claim"]
+    assert "营业利润" in judgment["memo_thesis_pack"]["core_thesis"]["claim"]
+    assert "operating_income" not in judgment["memo_thesis_pack"]["core_thesis"]["claim"]
+    assert {ref for claim in judgment["supported_claims"] for ref in claim["evidence_refs"]} >= {
+        "amzn_operating_income_qtd_ref",
+        "amzn_revenue_qtd_ref",
+    }
+    assert memo["answer_status"] == "draft"
+    assert memo["memo_claims"]
+    assert verification["status"] == "pass"
+
+
+def test_focused_answer_judgment_plan_filters_amount_metric_percentage_role_rows() -> None:
+    judgment = aggregate_focused_answer_judgment_plan(
+        runtime_ledger_rows=[
+            {
+                "ticker": "LLY",
+                "fiscal_year": 2026,
+                "period_role": "qtd",
+                "metric_family": "revenue",
+                "metric_name": "revenue",
+                "metric_role": "percentage_rate",
+                "raw_value_text": "$ 19,799",
+                "display_value_zh": "19,799%（百分比率）",
+                "source_tier": "primary_sec_filing",
+                "form_type": "10-Q",
+                "metric_id": "__mcp__::LLY::2026::revenue::percentage_rate::qtd",
+            },
+            {
+                "ticker": "LLY",
+                "fiscal_year": 2026,
+                "period_role": "qtd",
+                "metric_family": "revenue",
+                "metric_name": "revenue",
+                "metric_role": "total_value",
+                "raw_value_text": "$ 19,799",
+                "display_value_zh": "19,799（百万美元）",
+                "source_tier": "primary_sec_filing",
+                "form_type": "10-Q",
+                "metric_id": "__mcp__::LLY::2026::revenue::total_value::qtd",
+            },
+        ],
+        context_rows=[],
+        evidence_requirement_plan={"requirements": [{"tickers": ["LLY"], "metric_families": ["revenue"]}]},
+        response_language="zh-CN",
+    )
+    fundamentals = next(
+        claim for claim in judgment["supported_claims"] if claim["claim_id"] == "focused_answer_synthesizer_fundamentals_1"
+    )
+    joined_refs = " ".join(fundamentals["evidence_refs"])
+
+    assert "19,799（百万美元）" in fundamentals["claim"]
+    assert "百分比率" not in fundamentals["claim"]
+    assert "percentage_rate" not in joined_refs
+    assert "total_value" in joined_refs
 
 
 def test_judgment_plan_caps_unsupported_claims_per_specialist_with_overflow_guardrail() -> None:

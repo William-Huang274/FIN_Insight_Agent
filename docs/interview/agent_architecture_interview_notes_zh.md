@@ -8,7 +8,7 @@
 
 面试 30 秒版：
 
-> 我做的是一个 SEC 财报分析 Agent，不是普通聊天机器人。核心难点不是让模型写一段金融分析，而是把用户的开放式问题约束成可检索、可验证、可引用的证据链。系统先解析用户意图，生成 query contract 和 retrieval plan，然后用 BM25/ObjectBM25 召回文本和结构化证据，用 BGE cross-encoder 做 rerank，最后把压缩后的 evidence pack 交给 LLM 生成 memo，并通过 citation、numeric ledger、post-check 降低幻觉。
+> 我做的是一个 SEC 财报分析 Agent，不是普通聊天机器人。核心难点不是让模型写一段金融分析，而是把用户的开放式问题约束成可检索、可验证、可引用的证据链。系统先解析用户意图，生成 query contract 和 retrieval plan，然后用 BM25/ObjectBM25 召回文本和结构化证据，用 BGE cross-encoder 做重排，最后把压缩后的 evidence pack 交给 LLM 生成 memo，并通过 citation、numeric ledger、post-check 降低幻觉。
 
 面试 2 分钟版：
 

@@ -8,6 +8,8 @@
 
 辅助审计脚本：`scripts/audit_fin_agent_layer_quality.py`
 
+S1-S8 v0.2 case matrix：`docs/eval/fin_agent_s1_s8_agent_quality_case_matrix_v0_2.md`
+
 ## 1. 执行原则
 
 本阶段不再直接从 full chain 看最终 memo 好不好，而是按 LangGraph 控制边界逐层验收。
@@ -263,6 +265,9 @@ python scripts\audit_fin_agent_layer_quality.py `
 - Risk 输出风险严重度，不污染 supported claims。
 - Industry 在 sector-depth / relationship case 下必须看到并引用 relationship evidence。
 - supporting specialists 产出 1-3 个高价值 claims，不消耗 primary 等量预算。
+- 比较型 fundamental / risk case 下，每个 focus ticker 必须有可见 primary filing rows，或有 ticker-level source gap；不能只因总体存在 primary rows 就通过。
+- Specialist route artifact 必须持久化 prompt row distribution：`by_ticker`、`by_source_family`、`by_ticker_source_family`、`by_form_type`、`by_metric`。
+- 如果上游 S3 记录 `ledger_missing_despite_context`，Specialist 必须把它当 exact-value coverage gap，而不是说 filing evidence 完全不存在。
 
 失败处理：
 
@@ -313,16 +318,20 @@ python scripts\audit_fin_agent_layer_quality.py `
 
 - `memo_route_result.status=pass`。
 - 第一次输出尽量收敛，repair attempt 不超过 1。
-- memo 先给 bounded stance，再解释机制、证据、反证和观察项。
+- memo profile 必须与 case 深度和证据密度匹配：`compact | standard | expanded | deep_research`。
+- `standard / expanded / deep_research` 必须输出自然语言投研段落，而不是 internal ClaimCard label、schema recap、row summary 或 pipe-joined claims。
+- `expanded / deep_research` 必须有非空的 `investment_implications`、`what_would_change_view`、`monitoring_items`；有 source gaps 时应填 `evidence_gaps_but_actionable`。
+- memo 先给 thesis-led stance，再解释机制、证据、反证和观察项。
 - 不新增 facts、tickers、refs。
 - 不把 indirect / hypothesis 写成 confirmed direct relationship。
 - 不因普通 caveat 过度弱化 thesis。
-- `memo_claim_count` 达到 case 要求，sector-depth 至少 3 条有 refs 的 memo claims。
+- `memo_claim_count` 达到 profile / case 要求；sector-depth deep-research 至少 6 条有 refs 的 memo claims。
+- direct answer 长度使用 profile 上下限和容忍区间做质量门，不做机械字数优化；重点检查是否有重复句、内部标签和缺失 action fields。
 
 失败处理：
 
 - 复用 S6 thesis plan。
-- 优先修输入 projection、memo schema、writing skill；不要先提高 max tokens。
+- 优先修 profile selector、输入 projection、memo schema、writing skill；不要只提高 max tokens。
 
 ## 10. 阶段 S8：Verifier / Repair
 
@@ -427,6 +436,31 @@ python scripts\audit_fin_agent_layer_quality.py `
 7. [ ] S6：把 Aggregator 从 `memo_thesis_pack` 升级为 `InvestmentThesisPlan`。
 8. [ ] S7：Memo Writer 改为 thesis-plan-driven natural-language writer，减少 retry 和 evidence-summary 风格。
 9. [ ] S10：扩展 full-chain + multi-turn eval，再考虑 LLM judge。
+
+## 14.1 v0.2 分层测试补充
+
+本补充用于 2026-06-01 后续 S1-S8 agent 能力测试，执行前先阅读 `fin_agent_s1_s8_agent_quality_case_matrix_v0_2.md`。
+
+新增测试维度：
+
+- 行业：AI infra、banking、healthcare、energy、utilities。
+- 难度：exact lookup、focused answer、standard memo、sector-depth、run artifact inspect。
+- 能力：精准激活、工具调用准确性、上游输出解析、role-specific ClaimCard 输出、下游可消费性、token 成本。
+
+新增硬门控：
+
+- S1 不允许 focused / exact case 激活所有 Specialist。
+- S3 comparative case 必须输出 row distribution；context 有 primary filing 但 ledger 无 exact rows 时写 `ledger_missing_despite_context`。
+- S5 comparative fundamental/risk case 必须通过 `comparative_focus_ticker_primary_visible_or_gap`。
+- S5 route artifact 缺 `prompt_row_distribution` 时 fail。
+- S6-S8 只能复用已通过 S5 artifact，不能因为 memo 质量差重新从 S1 开始跑。
+- S7/S8 中文 query 必须传递 `response_language=zh-CN`；Memo Writer user-facing prose、Verifier gate、Renderer section titles 都必须按中文输出，tickers / metric ids / evidence refs / 数字单位保持原样。
+- S7/S8 中文 numeric fidelity 必须识别 `亿美元`、`百万美元`、`倍`、`个百分点` 和区间单位继承，不能因为中英文单位表达不同而删除或改写有效数值。
+
+知识库限制：
+
+- 如果本地 SEC/market/industry/relationship 数据无法证明真实客户/供应商、consensus、实时新闻、转录稿、监管/临床/商品价格事实，必须记录为 source/data limitation。
+- 数据缺口不算 prompt 失败；但未记录缺口而让下游 hallucinate，算 hard fail。
 
 ## 15. Stop / Proceed 规则
 

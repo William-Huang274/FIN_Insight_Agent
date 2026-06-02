@@ -4,11 +4,16 @@ import json
 from pathlib import Path
 
 from sec_agent.langgraph_orchestrator import (
+    _render_deterministic_lookup_answer,
+    _route_after_multi_agent_reflection,
+    build_multi_agent_summary_artifact_payload,
     build_multi_agent_orchestration_graph,
     build_multi_agent_orchestration_graph_from_env,
     make_multi_agent_smoke_state,
     multi_agent_node_order,
 )
+from sec_agent.multi_agent_runtime import compile_multi_agent_retrieval_plan, tool_arguments_from_route
+from sec_agent.tool_call_ledger import ToolCallLedger
 
 
 def test_multi_agent_graph_runs_focused_path_and_writes_summary(tmp_path: Path) -> None:
@@ -31,6 +36,10 @@ def test_multi_agent_graph_runs_focused_path_and_writes_summary(tmp_path: Path) 
     assert result["multi_agent_routing_trace"]["mode"] == "focused_answer"
     assert "research_lead_plan" in nodes
     assert "memo_writer" in nodes
+    assert "optional_specialist_subgraph" not in nodes
+    assert result["judgment_plan"]["aggregation_policy"] == "focused_answer_claim_cards_from_bounded_rows_v0_1"
+    assert result["judgment_plan"]["focused_answer_bridge"]["status"] == "used"
+    assert result["memo_answer"]["answer_status"] == "draft"
     assert summary["execution_mode"] == "focused_answer"
     assert summary["evidence_rows"]["tool_observation_count"] >= 1
     assert summary["evidence_rows"]["retrieval_route_count"] >= 1
@@ -78,6 +87,37 @@ def test_multi_agent_graph_standard_path_runs_specialists(tmp_path: Path) -> Non
     assert "claim_card_stats" in summary["judgment_plan"]
     assert "claim_card_stats" in summary["verified_judgment_plan"]
     assert summary["judgment_plan"]["memo_thesis_pack"]["present"] is True
+
+
+def test_multi_agent_summary_preserves_specialist_prompt_diagnostics() -> None:
+    payload = build_multi_agent_summary_artifact_payload(
+        {
+            "run_id": "unit-run",
+            "status": "completed",
+            "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": ["fundamental_analyst"]},
+            "specialist_route_results": [
+                {
+                    "agent_id": "fundamental_analyst",
+                    "status": "pass",
+                    "priority": "primary",
+                    "input_tokens": 123,
+                    "prompt_bounded_evidence_row_count": 12,
+                    "prompt_relationship_summary_row_count": 0,
+                    "prompt_row_distribution": {
+                        "schema_version": "sec_agent_prompt_row_distribution_v0.1",
+                        "row_count": 12,
+                        "by_source_family": {"primary_sec_filing": 12},
+                    },
+                    "input_coverage_summary": {"focus_ticker_primary_row_counts": {"NVDA": 6}},
+                }
+            ],
+        }
+    )
+
+    route = payload["specialists"]["route_results"][0]
+    assert route["prompt_bounded_evidence_row_count"] == 12
+    assert route["prompt_row_distribution"]["by_source_family"]["primary_sec_filing"] == 12
+    assert route["input_coverage_summary"]["focus_ticker_primary_row_counts"]["NVDA"] == 6
 
 
 def test_multi_agent_graph_blocks_unsupported_specialist_claims_before_memo_writer(tmp_path: Path) -> None:
@@ -154,6 +194,165 @@ def test_multi_agent_graph_quality_second_pass_runs_before_memo_when_claim_cards
     assert result["quality_second_pass_attempted"] is True
     assert result["second_pass_result"]["trigger"] == "quality_second_pass"
     assert len(calls) >= 2
+
+
+def test_quality_second_pass_suppresses_incremental_budget_block_at_top_level(tmp_path: Path) -> None:
+    ledger = ToolCallLedger()
+    for index in range(3):
+        ledger.record_tool_call(
+            turn_id="prior",
+            agent_id="sec_operator",
+            tool_name="sec_query_exact_value_ledger",
+            arguments={"route": f"prior_{index}"},
+            row_count=1,
+        )
+
+    graph = build_multi_agent_orchestration_graph(
+        entry_node="optional_second_pass",
+        stop_after_node="optional_second_pass",
+    )
+    state = make_multi_agent_smoke_state(
+        user_query="quality second pass only",
+        output_dir=tmp_path,
+        query_contract=_query_contract(["NVDA"]),
+        focus_tickers=["NVDA"],
+        search_scope_tickers=["NVDA"],
+    )
+    state["agent_activation_plan"] = {
+        "execution_mode": "deep_research",
+        "activate_agents": ["research_lead", "sec_operator", "fundamental_analyst", "memo_writer"],
+        "allowed_source_families": ["primary_sec_filing"],
+        "max_tool_calls_total": 12,
+        "max_tool_calls_per_agent": 4,
+    }
+    state["multi_agent_context"] = {"ledger_store_path": "unit-ledger.duckdb"}
+    state["tool_call_ledger"] = ledger.to_dict()
+    state["multi_agent_reflection_report"] = {
+        "sufficiency_level": "partial",
+        "source_available": True,
+        "trigger": "quality_second_pass",
+        "second_pass_requests": [
+            {
+                "request_id": "quality_req",
+                "tickers": ["NVDA"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "metric_families": ["revenue"],
+                "evidence_routes": ["ledger_first", "filing_text"],
+            }
+        ],
+    }
+
+    result = graph.invoke(state, config={"configurable": {"thread_id": "unit-quality-second-pass-budget-suppressed"}})
+
+    assert result["second_pass_result"]["trigger"] == "quality_second_pass"
+    assert result["second_pass_result"]["added_row_count"] >= 1
+    assert result["second_pass_result"]["suppressed_loop_break_reason"] == "agent_tool_budget_exhausted"
+    assert result["loop_break_reason"] == ""
+    assert result["tool_call_ledger"]["loop_break_reason"] == ""
+
+
+def test_market_snapshot_routes_coalesce_across_ticker_groups() -> None:
+    plan = compile_multi_agent_retrieval_plan(
+        {
+            "requirements": [
+                {
+                    "requirement_id": "req_power_market",
+                    "task_id": "req_power_market",
+                    "tickers": ["NEE", "DUK", "SO"],
+                    "years": [2026],
+                    "source_tiers": ["market_snapshot"],
+                    "evidence_routes": ["market_snapshot"],
+                    "market_fields": ["price_return", "valuation_multiple"],
+                },
+                {
+                    "requirement_id": "req_ai_market",
+                    "task_id": "req_ai_market",
+                    "tickers": ["NVDA", "MSFT", "AMZN"],
+                    "years": [2026],
+                    "source_tiers": ["market_snapshot"],
+                    "evidence_routes": ["market_snapshot"],
+                    "market_fields": ["price_return", "valuation_multiple"],
+                },
+            ]
+        },
+        query_contract={
+            "focus_tickers": ["NEE", "DUK", "SO"],
+            "search_scope_tickers": ["NEE", "DUK", "SO", "NVDA", "MSFT", "AMZN"],
+            "years": [2026],
+            "filing_types": ["10-Q"],
+            "source_tiers": ["market_snapshot"],
+        },
+        case={"case_id": "unit_market_coalesce", "prompt": "compare market reaction"},
+        activation_plan={"execution_mode": "deep_research", "max_tool_calls_total": 12},
+    )
+
+    market_routes = [route for route in plan["routes"] if route["retrieval_route"] == "market_snapshot"]
+
+    assert len(market_routes) == 1
+    assert set(market_routes[0]["tickers"]) == {"NEE", "DUK", "SO", "NVDA", "MSFT", "AMZN"}
+    assert plan["route_coalescing"]["coalesced_group_count"] == 1
+
+
+def test_deep_research_relationship_market_snapshot_uses_search_scope_tickers() -> None:
+    args = tool_arguments_from_route(
+        {
+            "retrieval_route": "market_snapshot",
+            "tickers": ["NEE", "DUK", "SO"],
+            "coverage_requirements": {"market_fields": ["price_return"]},
+        },
+        user_query="utilities AI data center power readthrough",
+        state_context={
+            "execution_mode": "deep_research",
+            "source_tiers": ["market_snapshot", "relationship_graph"],
+            "search_scope_tickers": ["NEE", "DUK", "SO", "NVDA", "MSFT", "AMZN"],
+        },
+    )
+
+    assert args["tickers"] == ["NEE", "DUK", "SO", "NVDA", "MSFT", "AMZN"]
+
+
+def test_standard_memo_defers_coverage_second_pass_by_default(tmp_path: Path) -> None:
+    def injected_coverage(state: dict) -> dict:
+        return {
+            "multi_agent_reflection_report": {
+                "schema_version": "sec_agent_reflection_report_v0.1",
+                "sufficiency_level": "partial",
+                "bounded_answer_allowed": True,
+                "source_available": True,
+                "missing_requirements": [{"requirement_id": "req_amd_margin"}],
+                "second_pass_requests": [
+                    {
+                        "request_id": "second_pass_1",
+                        "tickers": ["AMD"],
+                        "metric_families": ["operating_margin"],
+                        "evidence_routes": ["ledger_first", "filing_text"],
+                    }
+                ],
+            }
+        }
+
+    graph = build_multi_agent_orchestration_graph(
+        coverage_reflection=injected_coverage,
+        stop_after_node="coverage_reflection",
+    )
+    result = graph.invoke(
+        make_multi_agent_smoke_state(
+            user_query="写一段投研 memo，比较 NVDA 和 AMD 的基本面、管理层解释、市场反应和估值分歧。",
+            output_dir=tmp_path,
+            query_contract=_query_contract(["NVDA", "AMD"], source_tiers=["primary_sec_filing", "market_snapshot"]),
+            focus_tickers=["NVDA", "AMD"],
+            search_scope_tickers=["NVDA", "AMD"],
+        ),
+        config={"configurable": {"thread_id": "unit-standard-quality-second-pass-deferred"}},
+    )
+    nodes = [row["node"] for row in result["node_trace"]]
+
+    assert "optional_second_pass" not in nodes
+    assert nodes[-1] == "coverage_reflection"
+    assert result["multi_agent_second_pass_decision"]["allowed"] is False
+    assert result["multi_agent_second_pass_decision"]["blocked_by_execution_mode"] == "standard_memo"
+    assert result["multi_agent_second_pass_decision"]["original_allowed"] is True
 
 
 def test_universe_relationship_node_passes_expected_pack_ids_to_lookup(tmp_path: Path) -> None:
@@ -276,6 +475,167 @@ def test_multi_agent_graph_from_env_defaults_to_deterministic_router(tmp_path: P
 
     assert result["agent_activation_plan"]["execution_mode"] == "deterministic_lookup"
     assert result["multi_agent_routing_trace"]["mode"] == "deterministic_lookup"
+
+
+def test_deterministic_lookup_with_ledger_rows_skips_second_pass() -> None:
+    route = _route_after_multi_agent_reflection(
+        {
+            "agent_activation_plan": {"execution_mode": "deterministic_lookup"},
+            "runtime_ledger_rows": [{"ticker": "MSFT", "metric_family": "capex", "fiscal_year": 2026}],
+            "multi_agent_second_pass_decision": {"allowed": True, "reason": "missing_supporting_context"},
+        }
+    )
+
+    assert route == "renderer"
+
+
+def test_deterministic_lookup_renderer_uses_generic_single_metric_boundary() -> None:
+    rendered = _render_deterministic_lookup_answer(
+        {
+            "user_query": "JPM credit loss provision 是多少？",
+            "query_contract": {"focus_tickers": ["JPM"], "metric_families": ["provision_for_credit_losses"]},
+            "runtime_ledger_rows": [
+                {
+                    "ticker": "JPM",
+                    "metric_name": "Provision for credit losses",
+                    "raw_value_text": "2,507（百万美元）",
+                    "fiscal_year": 2026,
+                    "period_role": "QTD",
+                    "source_evidence_id": "JPM_2026_10Q_ITEM1A_BLOCK_0001",
+                }
+            ],
+        }
+    )
+
+    assert "Provision for credit losses" in rendered
+    assert "全年 capex" not in rendered
+    assert "单一全年口径" in rendered
+
+
+def test_deterministic_lookup_renderer_prefers_amount_value_over_percentage_role() -> None:
+    rendered = _render_deterministic_lookup_answer(
+        {
+            "user_query": "LLY 2026 revenue 是多少？",
+            "query_contract": {"focus_tickers": ["LLY"], "metric_families": ["revenue"]},
+            "runtime_ledger_rows": [
+                {
+                    "ticker": "LLY",
+                    "metric_family": "revenue",
+                    "metric_name": "revenue",
+                    "metric_role": "percentage_rate",
+                    "raw_value_text": "$ 19,799",
+                    "display_value_zh": "19,799%（百分比率）",
+                    "fiscal_year": 2026,
+                    "period_role": "QTD",
+                    "source_evidence_id": "__mcp__::LLY::2026::revenue::percentage_rate::qtd",
+                },
+                {
+                    "ticker": "LLY",
+                    "metric_family": "revenue",
+                    "metric_name": "revenue",
+                    "metric_role": "total_value",
+                    "raw_value_text": "$ 19,799",
+                    "display_value_zh": "19,799（百万美元）",
+                    "fiscal_year": 2026,
+                    "period_role": "QTD",
+                    "source_evidence_id": "__mcp__::LLY::2026::revenue::total_value::qtd",
+                },
+            ],
+        }
+    )
+
+    assert "19,799（百万美元）" in rendered
+    assert "百分比率" not in rendered
+    assert "percentage_rate" not in rendered
+
+
+def test_deterministic_lookup_renderer_prefers_capex_answer_over_balance_sheet_assets() -> None:
+    rendered = _render_deterministic_lookup_answer(
+        {
+            "user_query": "MSFT 2026 capex 是多少？",
+            "query_contract": {"focus_tickers": ["MSFT"], "metric_families": ["capex"]},
+            "runtime_ledger_rows": [
+                {
+                    "ticker": "MSFT",
+                    "metric_family": "capital_expenditure_proxy",
+                    "metric_name": "Property and equipment, net",
+                    "metric_role": "total_value",
+                    "raw_value_text": "$120,000",
+                    "display_value_zh": "120,000（百万美元）",
+                    "fiscal_year": 2026,
+                    "period_role": "QTD",
+                    "source_evidence_id": "MSFT_PPE_NET",
+                },
+                {
+                    "ticker": "MSFT",
+                    "metric_family": "capital_expenditure_proxy",
+                    "metric_name": "Capital expenditures",
+                    "metric_role": "total_value",
+                    "raw_value_text": "$24,242",
+                    "display_value_zh": "24,242（百万美元）",
+                    "fiscal_year": 2026,
+                    "period_role": "YTD",
+                    "source_evidence_id": "MSFT_CAPEX",
+                },
+            ],
+        }
+    )
+
+    first_metric_line = rendered.splitlines()[1]
+    assert "Capital expenditures" in first_metric_line
+    assert "24,242（百万美元）" in first_metric_line
+
+
+def test_deterministic_lookup_renderer_prefers_credit_provision_amount_over_rate_rows() -> None:
+    rendered = _render_deterministic_lookup_answer(
+        {
+            "user_query": "JPM 最近披露的 credit loss provision 是多少？",
+            "query_contract": {
+                "focus_tickers": ["JPM"],
+                "metric_families": ["provision_for_credit_losses", "net_charge_offs"],
+            },
+            "runtime_ledger_rows": [
+                {
+                    "ticker": "JPM",
+                    "metric_family": "provision_for_credit_losses",
+                    "metric_name": "Provision for credit losses",
+                    "metric_role": "percentage_rate",
+                    "raw_value_text": "-24%",
+                    "display_value_zh": "-24%（百分比率）",
+                    "fiscal_year": 2026,
+                    "period_role": "QTD",
+                    "source_evidence_id": "JPM_PROVISION_RATE",
+                },
+                {
+                    "ticker": "JPM",
+                    "metric_family": "net_charge_offs",
+                    "metric_name": "Net charge-offs",
+                    "metric_role": "total_value",
+                    "raw_value_text": "$2,100",
+                    "display_value_zh": "2,100（百万美元）",
+                    "fiscal_year": 2026,
+                    "period_role": "QTD",
+                    "source_evidence_id": "JPM_NCO",
+                },
+                {
+                    "ticker": "JPM",
+                    "metric_family": "provision_for_credit_losses",
+                    "metric_name": "Provision for credit losses",
+                    "metric_role": "total_value",
+                    "raw_value_text": "$2,507",
+                    "display_value_zh": "2,507（百万美元）",
+                    "fiscal_year": 2026,
+                    "period_role": "QTD",
+                    "source_evidence_id": "JPM_PROVISION_AMOUNT",
+                },
+            ],
+        }
+    )
+
+    first_metric_line = rendered.splitlines()[1]
+    assert "Provision for credit losses" in first_metric_line
+    assert "2,507（百万美元）" in first_metric_line
+    assert "百分比率" not in first_metric_line
 
 
 def test_multi_agent_graph_stops_on_invalid_activation_plan(tmp_path: Path) -> None:

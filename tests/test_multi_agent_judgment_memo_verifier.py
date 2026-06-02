@@ -290,6 +290,90 @@ def test_verifier_blocks_draft_that_drops_thesis_led_contract() -> None:
     assert "memo_generation_policy_not_thesis_led" in error_types
 
 
+def test_verifier_blocks_internal_claimcard_language_in_direct_answer() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": "NVDA revenue evidence supports the thesis.",
+                        "claim_type": "reported_financial_fact",
+                        "memo_slot": "fundamentals",
+                        "evidence_refs": ["nvda_revenue_ref"],
+                        "source_families": ["primary_sec_filing"],
+                    }
+                ],
+            }
+        ]
+    )
+    bad_memo = {
+        "answer_status": "draft",
+        "direct_answer": "Synthesized thesis from bounded ClaimCards: NVDA revenue evidence supports the thesis. | Extra joined claim. | Another joined claim.",
+        "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+        "memo_thesis_plan": judgment["memo_thesis_plan"],
+        "memo_claims": [
+            {
+                "claim_id": "fundamental_analyst_claim_1",
+                "claim": "NVDA revenue evidence supports the thesis.",
+                "claim_type": "reported_financial_fact",
+                "evidence_refs": ["nvda_revenue_ref"],
+                "source_families": ["primary_sec_filing"],
+            }
+        ],
+    }
+
+    result = verify_multi_agent_memo_draft(bad_memo, judgment)
+    error_types = {item["type"] for item in result["errors"]}
+
+    assert result["status"] == "fail"
+    assert "memo_direct_answer_contains_internal_claimcard_language" in error_types
+    assert "memo_direct_answer_pipe_joined_claims" in error_types
+
+
+def test_verifier_blocks_english_user_facing_memo_when_response_language_is_chinese() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": "NVDA revenue evidence supports the thesis.",
+                        "claim_type": "reported_financial_fact",
+                        "memo_slot": "fundamentals",
+                        "evidence_refs": ["nvda_revenue_ref"],
+                        "source_families": ["primary_sec_filing"],
+                    }
+                ],
+            }
+        ]
+    )
+    bad_memo = {
+        "answer_status": "draft",
+        "response_language": {"language": "zh-CN"},
+        "direct_answer": "NVDA revenue evidence supports the thesis, but the memo remains bounded to the verified plan.",
+        "source_boundary": "bounded verified judgment plan only",
+        "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+        "memo_thesis_plan": judgment["memo_thesis_plan"],
+        "memo_claims": [
+            {
+                "claim_id": "fundamental_analyst_claim_1",
+                "claim": "NVDA revenue evidence supports the thesis.",
+                "claim_type": "reported_financial_fact",
+                "evidence_refs": ["nvda_revenue_ref"],
+                "source_families": ["primary_sec_filing"],
+            }
+        ],
+    }
+
+    result = verify_multi_agent_memo_draft(bad_memo, judgment)
+    error_types = {item["type"] for item in result["errors"]}
+
+    assert result["status"] == "fail"
+    assert "memo_zh_response_field_not_chinese" in error_types
+    assert "Simplified Chinese" in result["repair_instruction"]
+
+
 def test_renderer_keeps_verified_draft_memo_surface_when_bounded() -> None:
     result = _node_multi_agent_renderer(
         {
@@ -307,6 +391,30 @@ def test_renderer_keeps_verified_draft_memo_surface_when_bounded() -> None:
     assert result["rendered_answer"].startswith("Thesis-led memo answer.")
     assert "Bounded evidence note" in result["rendered_answer"]
     assert not result["rendered_answer"].startswith("Bounded answer only")
+
+
+def test_renderer_uses_chinese_headings_for_chinese_memo() -> None:
+    result = _node_multi_agent_renderer(
+        {
+            "bounded_answer_allowed": True,
+            "claim_verification": {"status": "pass"},
+            "memo_answer": {
+                "answer_status": "draft",
+                "response_language": {"language": "zh-CN"},
+                "direct_answer": "这是一个有边界的中文投研结论。",
+                "memo_claims": [{"claim": "已验证证据支持该判断。", "evidence_refs": ["ref_1"]}],
+                "investment_implications": [{"text": "把该结论作为有证据边界的正向信号。"}],
+                "source_boundary": "仅限已验证 judgment plan；不包含原始检索行。",
+            },
+        }
+    )
+
+    rendered = result["rendered_answer"]
+    assert "关键论据:" in rendered
+    assert "证据=ref_1" in rendered
+    assert "投资含义:" in rendered
+    assert "证据边界:" in rendered
+    assert "边界说明" in rendered
 
 
 def test_graph_step13_keeps_verified_plan_and_verifier_constraints(tmp_path) -> None:

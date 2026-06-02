@@ -93,6 +93,27 @@ def test_research_lead_llm_repairs_invalid_evidence_requirement_owner() -> None:
     assert "evidence_requirement_plan_validation_failed" in fake.calls[1]["messages"][1]["content"]
 
 
+def test_research_lead_llm_uses_evidence_fallback_without_repair_when_optional() -> None:
+    request = _case("Analyze AMZN margins with management commentary.", "focused_answer", ["AMZN"], ["AMZN"])
+    request["context"]["query_contract"] = _query_contract(["AMZN"])
+    activation_plan = route_multi_agent_activation(request)["activation_plan"]
+    invalid_evidence = _evidence_plan(["AMZN"])
+    invalid_evidence["requirements"][0]["operator_owners"] = ["market_operator"]
+    fake = _FakeChat([json.dumps({"activation_plan": activation_plan, "evidence_requirement_plan": invalid_evidence})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["routing_trace"]["repair_attempts"] == 0
+    assert result["routing_trace"]["evidence_requirements_source"] == "deterministic_compiler_fallback"
+    assert result["validation"]["warnings"][0]["fallback"] == "deterministic_compiler_fallback"
+    assert len(fake.calls) == 1
+
+
 def test_research_lead_llm_parses_fenced_json() -> None:
     request = _case("MSFT capex only.", "deterministic_lookup", ["MSFT"], ["MSFT"])
     plan = route_multi_agent_activation(request)["activation_plan"]
@@ -117,6 +138,195 @@ def test_research_lead_llm_repairs_invalid_json_then_passes() -> None:
     assert len(fake.calls) == 2
     assert "Repair the previous output" in fake.calls[1]["messages"][1]["content"]
     assert result["activation_plan"]["execution_mode"] == "standard_memo"
+
+
+def test_research_lead_llm_prunes_risk_specialist_without_explicit_risk_intent() -> None:
+    request = _case(
+        "Compare NVDA and AMD reported revenue and gross margin disclosures only.",
+        "standard_memo",
+        ["NVDA", "AMD"],
+        ["NVDA", "AMD"],
+    )
+    plan = route_multi_agent_activation(
+        _case(
+            "Compare NVDA and AMD fundamentals, management commentary, market reaction, and downside risk.",
+            "standard_memo",
+            ["NVDA", "AMD"],
+            ["NVDA", "AMD"],
+        )
+    )["activation_plan"]
+    assert "risk_counterevidence_analyst" in plan["activate_agents"]
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert "risk_counterevidence_analyst" not in result["activation_plan"]["activate_agents"]
+    assert result["activation_plan"]["metadata"]["risk_counterevidence_pruned"] is True
+    assert any(item["agent_id"] == "risk_counterevidence_analyst" for item in result["activation_plan"]["skip_agents"])
+
+
+def test_research_lead_llm_prunes_risk_for_plain_market_reaction_memo() -> None:
+    request = _case(
+        "先比较 NVDA 和 AMD 的基本面、管理层解释和市场反应，给出一段中文投研 memo。",
+        "standard_memo",
+        ["NVDA", "AMD"],
+        ["NVDA", "AMD"],
+    )
+    request["context"]["query_contract"] = {
+        **_query_contract(["NVDA", "AMD"]),
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+    }
+    plan = route_multi_agent_activation(
+        _case(
+            "Compare NVDA and AMD fundamentals, management commentary, market reaction, and downside risk.",
+            "standard_memo",
+            ["NVDA", "AMD"],
+            ["NVDA", "AMD"],
+        )
+    )["activation_plan"]
+    assert "risk_counterevidence_analyst" in plan["activate_agents"]
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert "market_operator" in result["activation_plan"]["activate_agents"]
+    assert "market_valuation_analyst" in result["activation_plan"]["activate_agents"]
+    assert "risk_counterevidence_analyst" not in result["activation_plan"]["activate_agents"]
+    assert result["activation_plan"]["metadata"]["risk_counterevidence_pruned"] is True
+
+
+def test_research_lead_llm_keeps_risk_specialist_with_explicit_risk_intent() -> None:
+    request = _case(
+        "Compare NVDA and AMD fundamentals, market reaction, and downside risk.",
+        "standard_memo",
+        ["NVDA", "AMD"],
+        ["NVDA", "AMD"],
+    )
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    assert "risk_counterevidence_analyst" in plan["activate_agents"]
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert "risk_counterevidence_analyst" in result["activation_plan"]["activate_agents"]
+    assert not result["activation_plan"].get("metadata", {}).get("risk_counterevidence_pruned")
+
+
+def test_research_lead_llm_adds_risk_lens_for_pressure_and_evidence_gap_memo() -> None:
+    request = _case(
+        "Write an English investment memo comparing MSFT and GOOGL AI capex monetization, margin pressure, and evidence gaps.",
+        "standard_memo",
+        ["MSFT", "GOOGL"],
+        ["MSFT", "GOOGL"],
+    )
+    request["context"]["query_contract"] = _query_contract(["MSFT", "GOOGL"])
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["activate_agents"] = [agent for agent in plan["activate_agents"] if agent != "risk_counterevidence_analyst"]
+    plan["agent_priorities"].pop("risk_counterevidence_analyst", None)
+    plan["model_policy_hint"].pop("risk_counterevidence_analyst", None)
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert "risk_counterevidence_analyst" in result["activation_plan"]["activate_agents"]
+    assert result["activation_plan"]["agent_priorities"]["risk_counterevidence_analyst"] == "supporting"
+    assert result["activation_plan"]["metadata"]["risk_counterevidence_added"] is True
+
+
+def test_research_lead_llm_aligns_focused_followup_market_and_8k_sources() -> None:
+    request = _case(
+        "接上一轮，只看 BAC 的信用风险和资本缓冲，不要继续分析 JPM；如果证据不足，说明缺什么。",
+        "focused_answer",
+        ["BAC"],
+        ["BAC"],
+    )
+    request["context"]["previous_turn_summary"] = {
+        "previous_case_id": "fin_full_mt_banking_t1",
+        "previous_execution_mode": "standard_memo",
+        "previous_focus_tickers": ["JPM", "BAC"],
+        "previous_search_scope_tickers": ["JPM", "BAC"],
+    }
+    request["context"]["query_contract"] = {
+        **_query_contract(["BAC"]),
+        "focus_tickers": ["BAC"],
+        "search_scope_tickers": ["BAC"],
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+        "metric_families": ["provision_for_credit_losses", "net_charge_offs", "capital_ratio", "deposits"],
+    }
+    plan = route_multi_agent_activation(_case("BAC credit risk only.", "focused_answer", ["BAC"], ["BAC"]))["activation_plan"]
+    plan["activate_agents"] = [agent for agent in plan["activate_agents"] if agent not in {"eight_k_operator", "market_operator"}]
+    plan["allowed_source_families"] = ["primary_sec_filing"]
+    narrow_evidence_plan = {
+        "requirements": [
+            {
+                "requirement_id": "bac_credit_capital",
+                "task_id": "bac_credit_capital",
+                "question_zh": "BAC 2026年一季度信贷损失拨备、净核销、资本比率和存款数据",
+                "priority": "primary",
+                "tickers": ["BAC"],
+                "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                "source_families": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                "evidence_routes": ["ledger_first", "filing_text", "8k_commentary"],
+                "metric_families": ["provision_for_credit_losses", "net_charge_offs", "capital_ratio", "deposits"],
+            }
+        ]
+    }
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": narrow_evidence_plan})])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["execution_mode"] == "focused_answer"
+    assert result["activation_plan"]["focus_tickers"] == ["BAC"]
+    assert result["activation_plan"]["search_scope_tickers"] == ["BAC"]
+    assert "eight_k_operator" in result["activation_plan"]["activate_agents"]
+    assert "market_operator" in result["activation_plan"]["activate_agents"]
+    assert "market_snapshot" in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["max_tool_calls_total"] >= 8
+    requirements = result["evidence_requirement_plan"]["requirements"]
+    assert any("market_snapshot" in requirement.get("evidence_routes", []) for requirement in requirements)
+    assert any("market_operator" in requirement.get("operator_owners", []) for requirement in requirements)
+
+
+def test_research_lead_llm_demotes_default_sector_pack_path_without_relationship_intent() -> None:
+    request = _case(
+        "比较 XOM 和 CVX 的 capex、现金流、管理层对 commodity 环境的表述和市场反应，输出风险平衡的投研 memo。",
+        "standard_memo",
+        ["XOM", "CVX"],
+        ["XOM", "CVX"],
+    )
+    request["context"] = {
+        "sector_depth_pack_path": "configs/sector_depth_packs_v0_1.yaml",
+        "query_contract": {
+            **_query_contract(["XOM", "CVX"]),
+            "source_tiers": [
+                "primary_sec_filing",
+                "company_authored_unaudited_sec_filing",
+                "market_snapshot",
+                "industry_snapshot",
+            ],
+            "metric_families": ["capex", "free_cash_flow", "production", "realized_price"],
+        },
+    }
+    deep_plan = route_multi_agent_activation(
+        _case("Use sector-depth relationship evidence for NVDA supply-chain readthrough.", "deep_research", ["NVDA"], ["NVDA", "DELL"])
+    )["activation_plan"]
+    fake = _FakeChat([json.dumps(deep_plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["execution_mode"] == "standard_memo"
+    assert "universe_relationship" not in result["activation_plan"]["activate_agents"]
+    assert "relationship_graph" not in result["activation_plan"]["allowed_source_families"]
+    assert "industry_snapshot" in result["activation_plan"]["allowed_source_families"]
+    assert "industry_supply_chain_analyst" not in result["activation_plan"]["activate_agents"]
+    assert "risk_counterevidence_analyst" in result["activation_plan"]["activate_agents"]
+    assert result["activation_plan"]["metadata"]["relationship_overroute_pruned"] is True
 
 
 def test_research_lead_llm_promotes_relationship_source_to_deep_research() -> None:

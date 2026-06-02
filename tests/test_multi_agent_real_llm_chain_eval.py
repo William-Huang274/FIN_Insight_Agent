@@ -7,6 +7,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "multi_agent_real_llm_chain_cases_v0_1.jsonl"
+FULL_CHAIN_MULTITURN_FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_full_chain_multiturn_cases_v0_1.jsonl"
 SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent_real_llm_chain.py"
 
 
@@ -20,6 +21,22 @@ def test_multi_agent_real_llm_chain_fixture_schema() -> None:
     assert all(row["case_id"].startswith("ma_real_") for row in rows)
     assert any(row["expected_execution_mode"] == "deep_research" for row in rows)
     assert sum(1 for row in rows if row.get("require_real_retrieval_pass")) == 4
+    sector_cases = [row for row in rows if row["category"] == "sector_depth"]
+    assert all(row.get("expected_relationship_pack_ids") for row in sector_cases)
+    assert all(row.get("require_rendered_memo_claims") for row in sector_cases)
+    assert all(row.get("require_rendered_evidence_refs") for row in sector_cases)
+
+
+def test_fin_agent_full_chain_multiturn_fixture_schema() -> None:
+    rows = _read_jsonl(FULL_CHAIN_MULTITURN_FIXTURE_PATH)
+
+    assert 10 <= len(rows) <= 20
+    assert {row["category"] for row in rows} >= {"exact_lookup", "focused_answer", "standard_memo", "sector_depth", "multi_turn"}
+    assert any(row.get("response_language") == "en-US" for row in rows)
+    assert sum(1 for row in rows if row.get("conversation_id")) >= 4
+    assert sum(1 for row in rows if row.get("require_real_retrieval_pass")) >= 5
+    assert all(row["case_id"].startswith("fin_full_") for row in rows)
+    assert all(row.get("response_language") for row in rows)
     sector_cases = [row for row in rows if row["category"] == "sector_depth"]
     assert all(row.get("expected_relationship_pack_ids") for row in sector_cases)
     assert all(row.get("require_rendered_memo_claims") for row in sector_cases)
@@ -78,6 +95,62 @@ def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
     assert all(score["checks"].values())
     assert score["agent_audit"]["research_lead"]["validation_status"] == "pass"
     assert score["agent_audit"]["verifier"]["input_projection"]["projected_claim_count"] == 2
+
+
+def test_exact_lookup_real_retrieval_accepts_structured_ledger_first_without_bge_rerank() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_full_exact_unit",
+        "category": "exact_lookup",
+        "expected_execution_mode": "deterministic_lookup",
+        "required_agents": ["sec_operator", "renderer"],
+        "expected_operator_agents": ["sec_operator"],
+        "expected_tool_names": ["sec_search_filings", "sec_query_exact_value_ledger"],
+        "require_real_retrieval_pass": True,
+        "require_runtime_ledger_rows": True,
+        "max_tool_calls_total_lte": 2,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "deterministic_lookup",
+            "activate_agents": ["sec_operator", "renderer"],
+            "focus_tickers": ["MSFT"],
+            "search_scope_tickers": ["MSFT"],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "context_rows": [{"evidence_ref": "ctx_1"}],
+        "runtime_ledger_rows": [{"metric_id": "m1", "source_family": "primary_sec_filing"}],
+        "tool_call_ledger": {
+            "records": [
+                {
+                    "agent_id": "sec_operator",
+                    "tool_name": "sec_search_filings",
+                    "status": "ok",
+                    "row_count": 4,
+                    "metadata": {
+                        "runtime_summary": {
+                            "candidate_counts": {
+                                "candidate_row_count_pre_rerank": 4,
+                                "candidate_sent_to_bge": 0,
+                                "route_candidate_stats": [
+                                    {"retrieval_route": "ledger_first", "candidate_count": 4, "rerank_eligible_count": 0}
+                                ],
+                            }
+                        }
+                    },
+                }
+            ]
+        },
+        "rendered_answer": "单指标结果：MSFT capex。证据=ctx_1",
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "pass"
+    assert score["checks"]["evidence_operators.sec_search_bge_rerank_present"] is True
+    assert score["checks"]["evidence_operators.sec_search_runtime_ledger_rows_present"] is True
 
 
 def test_multi_agent_real_llm_chain_scoring_rejects_memo_fallback_from_summary() -> None:
@@ -178,6 +251,76 @@ def test_multi_agent_real_llm_chain_scoring_requires_rendered_claim_refs_when_co
     assert score["gate_status"] == "fail"
     assert score["checks"]["memo_verifier.rendered_answer_has_memo_claims"] is False
     assert score["checks"]["memo_verifier.rendered_answer_has_evidence_refs"] is False
+
+
+def test_real_llm_chain_scoring_accepts_chinese_rendered_claim_refs_and_language() -> None:
+    module = _load_script_module()
+    case = {
+        **_read_jsonl(FULL_CHAIN_MULTITURN_FIXTURE_PATH)[4],
+        "require_rendered_memo_claims": True,
+        "require_rendered_evidence_refs": True,
+        "require_response_language_match": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "standard_memo",
+            "activate_agents": [
+                "research_lead",
+                "sec_operator",
+                "eight_k_operator",
+                "market_operator",
+                "coverage_reflection",
+                "fundamental_analyst",
+                "market_valuation_analyst",
+                "risk_counterevidence_analyst",
+                "memo_writer",
+                "verifier",
+                "renderer",
+            ],
+            "focus_tickers": ["NVDA", "AMD"],
+            "search_scope_tickers": ["NVDA", "AMD"],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "tool_call_ledger": {
+            "records": [
+                {"agent_id": "sec_operator", "tool_name": "sec_search_filings", "status": "completed", "row_count": 2},
+                {"agent_id": "eight_k_operator", "tool_name": "sec_search_filings", "status": "completed", "row_count": 1},
+                {"agent_id": "market_operator", "tool_name": "market_get_snapshot", "status": "completed", "row_count": 1},
+            ]
+        },
+        "specialist_route_results": [
+            {"agent_id": "fundamental_analyst", "status": "pass"},
+            {"agent_id": "market_valuation_analyst", "status": "pass"},
+            {"agent_id": "risk_counterevidence_analyst", "status": "pass"},
+        ],
+        "specialist_verification": {"status": "pass"},
+        "memo_answer": {
+            "answer_status": "draft",
+            "response_language": {"language": "zh-CN"},
+            "memo_claims": [{"claim": "中文支持性论据。", "evidence_refs": ["ref_1"]}],
+        },
+        "memo_route_result": {"status": "pass", "attempt_count": 1},
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": "这是中文投研结论，包含足够中文正文用于语言门控，并说明基本面、市场反应、估值风险和证据边界都已经被综合。关键论据:\n1. 中文支持性论据。 证据=ref_1",
+    }
+    summary = {
+        "payload_policy": {"raw_evidence": "not_included"},
+        "llm_routes": {
+            "research_lead": {"diagnostics": _ok_diag()},
+            "specialist": {"diagnostics": _ok_diag()},
+            "memo_writer": {"diagnostics": _ok_diag()},
+            "verifier": {"diagnostics": _ok_diag()},
+        },
+    }
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=12)
+
+    assert score["gate_status"] == "pass"
+    assert score["checks"]["memo_verifier.rendered_answer_has_memo_claims"] is True
+    assert score["checks"]["memo_verifier.rendered_answer_has_evidence_refs"] is True
+    assert score["checks"]["memo_verifier.response_language_matches_query"] is True
+    assert score["checks"]["memo_verifier.rendered_user_language_ok"] is True
 
 
 def test_real_llm_chain_specialist_quality_requires_industry_relationship_ref_for_sector_depth() -> None:
@@ -307,6 +450,285 @@ def test_real_llm_chain_relationship_pack_gate_allows_explicit_ai_power_transmis
     assert detail["checks"]["relationship_cited_pack_relevance_when_required"] is True
 
 
+def test_real_llm_chain_specialist_quality_requires_comparative_primary_rows_or_gap() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "comparative_primary_gate",
+        "focus_tickers": ["NVDA", "AMD"],
+        "category": "standard_memo",
+    }
+    result = {
+        "specialist_route_results": [
+            {
+                "agent_id": "fundamental_analyst",
+                "status": "pass",
+                "prompt_row_distribution": {"by_ticker": {"AMD": 1}, "by_source_family": {"primary_sec_filing": 1}},
+            }
+        ],
+        "specialist_outputs": [
+            {
+                "agent_id": "fundamental_analyst",
+                "status": "pass",
+                "evidence_boundary": "bounded_rows_only",
+                "summary": "AMD-only output.",
+                "observations": [
+                    {
+                        "claim": "AMD has bounded revenue evidence.",
+                        "claim_type": "business_observation",
+                        "ticker_scope": ["AMD"],
+                        "metric_scope": ["revenue"],
+                        "memo_slot": "fundamentals",
+                        "evidence_refs": ["amd_ref"],
+                        "source_families": ["primary_sec_filing"],
+                        "confidence": "medium",
+                        "unsupported": False,
+                    }
+                ],
+                "unsupported_claims": [],
+                "conflicts": [],
+            }
+        ],
+        "runtime_ledger_rows": [
+            {"metric_id": "amd_ref", "source_family": "primary_sec_filing", "ticker": "AMD", "metric": "revenue"}
+        ],
+    }
+
+    quality = module._specialist_real_evidence_quality(case, result, {"fundamental_analyst"}, required=True)
+    detail = quality["details"]["fundamental_analyst"]
+
+    assert quality["quality_pass"] is False
+    assert detail["comparative_primary_gate_required"] is True
+    assert detail["focus_ticker_primary_missing"] == ["NVDA"]
+    assert detail["checks"]["comparative_focus_ticker_primary_visible_or_gap"] is False
+
+
+def test_real_llm_chain_specialist_quality_rejects_single_ref_temporal_inference() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "temporal_ref_depth_gate",
+        "focus_tickers": ["NVDA", "AMD"],
+        "category": "standard_memo",
+    }
+    result = {
+        "specialist_route_results": [
+            {
+                "agent_id": "risk_counterevidence_analyst",
+                "status": "pass",
+                "prompt_row_distribution": {
+                    "by_ticker": {"NVDA": 1, "AMD": 1},
+                    "by_source_family": {"primary_sec_filing": 2},
+                },
+            }
+        ],
+        "specialist_outputs": [
+            {
+                "agent_id": "risk_counterevidence_analyst",
+                "status": "pass",
+                "evidence_boundary": "bounded_rows_only",
+                "summary": "Risk output.",
+                "observations": [
+                    {
+                        "claim": "NVDA revenue implies a sequential decline from prior quarters.",
+                        "claim_type": "business_observation",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["revenue"],
+                        "memo_slot": "risk_counterevidence",
+                        "evidence_refs": ["nvda_ref"],
+                        "source_families": ["primary_sec_filing"],
+                        "confidence": "medium",
+                        "unsupported": False,
+                    }
+                ],
+                "unsupported_claims": [],
+                "conflicts": [],
+            }
+        ],
+        "runtime_ledger_rows": [
+            {"metric_id": "nvda_ref", "source_family": "primary_sec_filing", "ticker": "NVDA", "metric": "revenue"},
+            {"metric_id": "amd_ref", "source_family": "primary_sec_filing", "ticker": "AMD", "metric": "revenue"},
+        ],
+    }
+
+    quality = module._specialist_real_evidence_quality(case, result, {"risk_counterevidence_analyst"}, required=True)
+    detail = quality["details"]["risk_counterevidence_analyst"]
+
+    assert quality["quality_pass"] is False
+    assert detail["checks"]["temporal_claim_ref_depth_valid"] is False
+    assert detail["temporal_claim_ref_depth_failures"]
+
+
+def test_real_llm_chain_exact_lookup_accepts_runtime_ledger_as_real_retrieval() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "exact_lookup_ledger_gate",
+        "category": "exact_lookup",
+        "expected_execution_mode": "deterministic_lookup",
+        "expected_tool_names": ["sec_search_filings", "sec_query_exact_value_ledger"],
+        "require_real_retrieval_pass": True,
+        "require_runtime_ledger_rows": True,
+    }
+    result = {
+        "runtime_ledger_rows": [
+            {
+                "metric_id": "MSFT_CAPEX",
+                "source_family": "primary_sec_filing",
+                "ticker": "MSFT",
+                "metric_family": "capital_expenditure_proxy",
+            }
+        ],
+    }
+    tool_calls = [
+        {
+            "agent_id": "sec_operator",
+            "tool_name": "sec_query_exact_value_ledger",
+            "status": "completed",
+            "row_count": 1,
+        }
+    ]
+
+    checks = module._real_operator_checks(case, result, tool_calls, required=True)
+
+    assert checks["sec_search_not_dry_run"] is True
+    assert checks["sec_search_context_rows_present"] is True
+    assert checks["sec_search_bm25_candidates_present"] is True
+    assert checks["sec_search_bge_rerank_present"] is True
+    assert checks["sec_search_runtime_ledger_rows_present"] is True
+
+
+def test_real_llm_chain_specialist_quality_allows_single_ref_yoy_row_with_raw_value() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "temporal_single_row_yoy_gate",
+        "focus_tickers": ["JPM", "C"],
+        "category": "sector_depth",
+    }
+    result = {
+        "specialist_route_results": [
+            {
+                "agent_id": "fundamental_analyst",
+                "status": "pass",
+                "prompt_row_distribution": {
+                    "by_ticker": {"JPM": 1, "C": 1},
+                    "by_source_family": {"company_authored_unaudited_sec_filing": 2},
+                },
+            }
+        ],
+        "specialist_outputs": [
+            {
+                "agent_id": "fundamental_analyst",
+                "status": "pass",
+                "evidence_boundary": "bounded_rows_only",
+                "summary": "Fundamental output.",
+                "observations": [
+                    {
+                        "claim": "JPM reported 1Q26 net revenue of $23.4 billion, up 19% YoY.",
+                        "claim_type": "business_observation",
+                        "ticker_scope": ["JPM"],
+                        "metric_scope": ["revenue"],
+                        "memo_slot": "fundamentals",
+                        "evidence_refs": ["jpm_ref"],
+                        "source_families": ["primary_sec_filing"],
+                        "confidence": "medium",
+                        "unsupported": False,
+                    }
+                ],
+                "unsupported_claims": [],
+                "conflicts": [],
+            }
+        ],
+        "context_rows": [
+                {
+                    "evidence_ref": "jpm_ref",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "JPM",
+                    "metric": "net revenue",
+                    "raw_value_text": "$23.4 billion, up 19% YoY",
+                },
+                {
+                    "evidence_ref": "c_ref",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "C",
+                    "metric": "revenue",
+                },
+        ],
+    }
+
+    quality = module._specialist_real_evidence_quality(case, result, {"fundamental_analyst"}, required=True)
+    detail = quality["details"]["fundamental_analyst"]
+
+    assert detail["checks"]["temporal_claim_ref_depth_valid"] is True
+
+
+def test_real_llm_chain_specialist_quality_does_not_treat_growth_from_sector_as_temporal() -> None:
+    module = _load_script_module()
+
+    assert (
+        module._looks_like_temporal_inference(
+            "NEE storm cost recovery may mask underlying demand-driven growth from AI data centers."
+        )
+        is False
+    )
+
+
+def test_real_llm_chain_specialist_quality_allows_self_comparative_single_row() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "temporal_self_comparative_gate",
+        "focus_tickers": ["CVX", "XOM"],
+        "category": "standard_memo",
+    }
+    result = {
+        "specialist_route_results": [
+            {
+                "agent_id": "risk_counterevidence_analyst",
+                "status": "pass",
+                "prompt_row_distribution": {
+                    "by_ticker": {"CVX": 1, "XOM": 1},
+                    "by_source_family": {"primary_sec_filing": 2},
+                },
+            }
+        ],
+        "specialist_outputs": [
+            {
+                "agent_id": "risk_counterevidence_analyst",
+                "status": "pass",
+                "evidence_boundary": "bounded_rows_only",
+                "summary": "Risk output.",
+                "observations": [
+                    {
+                        "claim": "CVX capex rose 4% YoY to $16.4B.",
+                        "claim_type": "business_observation",
+                        "ticker_scope": ["CVX"],
+                        "metric_scope": ["capex"],
+                        "memo_slot": "risk_counterevidence",
+                        "evidence_refs": ["cvx_ref"],
+                        "source_families": ["primary_sec_filing"],
+                        "confidence": "medium",
+                        "unsupported": False,
+                    }
+                ],
+                "unsupported_claims": [],
+                "conflicts": [],
+            }
+        ],
+        "runtime_ledger_rows": [
+            {
+                "metric_id": "cvx_ref",
+                "source_family": "primary_sec_filing",
+                "ticker": "CVX",
+                "metric": "capex",
+                "summary": "Capex for 2024 was $16.4 billion, 4 percent higher than 2023.",
+            },
+            {"metric_id": "xom_ref", "source_family": "primary_sec_filing", "ticker": "XOM", "metric": "capex"},
+        ],
+    }
+
+    quality = module._specialist_real_evidence_quality(case, result, {"risk_counterevidence_analyst"}, required=True)
+    detail = quality["details"]["risk_counterevidence_analyst"]
+
+    assert detail["checks"]["temporal_claim_ref_depth_valid"] is True
+
+
 def _industry_relationship_result(
     evidence_ref: str,
     rationale: str,
@@ -335,7 +757,16 @@ def _industry_relationship_result(
             }
         )
     return {
-        "specialist_route_results": [{"agent_id": "industry_supply_chain_analyst", "status": "pass"}],
+        "specialist_route_results": [
+            {
+                "agent_id": "industry_supply_chain_analyst",
+                "status": "pass",
+                "prompt_row_distribution": {
+                    "by_ticker": {"SRE": 1},
+                    "by_source_family": {"relationship_graph": 1},
+                },
+            }
+        ],
         "specialist_outputs": [
             {
                 "agent_id": "industry_supply_chain_analyst",

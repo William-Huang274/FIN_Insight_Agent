@@ -305,7 +305,7 @@ class ToolCallLedger:
         }
 
     def _executed_tool_call_count(self, *, agent_id: str | None = None) -> int:
-        records = [record for record in self.records if record.status != "blocked"]
+        records = [record for record in self.records if record.status not in {"blocked", "cached"}]
         if agent_id is None:
             return len(records)
         return sum(1 for record in records if record.agent_id == agent_id)
@@ -321,7 +321,7 @@ class ToolCallLedger:
         return sum(
             1
             for record in self.records
-            if record.status != "blocked"
+            if record.status not in {"blocked", "cached"}
             and record.turn_id == turn_id
             and record.agent_id == agent_id
             and record.tool_name == tool_name

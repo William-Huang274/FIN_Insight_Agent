@@ -26,8 +26,10 @@ from sec_agent.agent_contracts import validate_agent_activation_plan
 from sec_agent.agent_registry import agent_registry_by_id, allowed_source_families
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
 from sec_agent.multi_agent_contracts import (
+    aggregate_focused_answer_judgment_plan,
     aggregate_specialist_judgment_plan,
     build_multi_agent_memo_draft,
+    ledger_metric_display_value,
     build_stub_specialist_memolets,
     normalize_universe_relationship_plan,
     repair_multi_agent_memo_draft,
@@ -53,7 +55,12 @@ from sec_agent.multi_agent_runtime import (
     validate_operator_tool_call,
 )
 from sec_agent.relationship_graph import relationship_plan_from_lookup
-from sec_agent.tool_call_ledger import LoopBudget, ToolCallLedger
+from sec_agent.tool_call_ledger import (
+    LOOP_BREAK_AGENT_TOOL_BUDGET_EXHAUSTED,
+    LOOP_BREAK_TOOL_BUDGET_EXHAUSTED,
+    LoopBudget,
+    ToolCallLedger,
+)
 
 
 NATIVE_NODE_ORDER = (
@@ -1076,7 +1083,7 @@ def _node_coverage_reflection(
             tool_ledger_summary=_tool_ledger_summary_for_reflection(state, ledger),
             available_source_families=(state.get("agent_activation_plan") or {}).get("allowed_source_families") or None,
         )
-    decision = should_execute_second_pass(report, ledger)
+    decision = _second_pass_decision_for_execution_mode(state, should_execute_second_pass(report, ledger))
     next_state: SecAgentGraphRuntimeState = {
         **state,
         "multi_agent_reflection_report": report,
@@ -1137,6 +1144,12 @@ def _node_optional_second_pass(
             coverage_delta={"closed_gaps": 1 if added_row_count else 0},
             source_gap_delta=max(0, len(compiled_state.get("source_gaps") or []) - len(result.get("source_gaps") or [])),
         )
+        suppressed_loop_break = _suppress_incremental_quality_second_pass_budget_loop(
+            ledger,
+            outcome=outcome,
+            trigger=(compiled_state.get("multi_agent_reflection_report") or {}).get("trigger") or "coverage_reflection",
+            added_row_count=added_row_count,
+        )
         next_state: SecAgentGraphRuntimeState = {
             **compiled_state,
             "tool_observations": [*(compiled_state.get("tool_observations") or []), *(result.get("tool_observations") or [])],
@@ -1151,6 +1164,7 @@ def _node_optional_second_pass(
                 **outcome,
                 "trigger": (compiled_state.get("multi_agent_reflection_report") or {}).get("trigger") or "coverage_reflection",
                 "retrieval_row_delta": _second_pass_row_delta(before_counts, result),
+                **({"suppressed_loop_break_reason": suppressed_loop_break} if suppressed_loop_break else {}),
             },
             "loop_break_reason": ledger.loop_break_reason,
             "bounded_answer_allowed": bool(ledger.bounded_answer_allowed or compiled_state.get("bounded_answer_allowed") or False),
@@ -1164,6 +1178,7 @@ def _node_optional_second_pass(
                 "trigger": next_state["second_pass_result"].get("trigger"),
                 "added_row_count": added_row_count,
                 "loop_break_reason": ledger.loop_break_reason,
+                "suppressed_loop_break_reason": suppressed_loop_break,
             },
         )
 
@@ -1183,6 +1198,25 @@ def _node_optional_second_pass(
         "quality_second_pass_attempted": bool(compiled_state.get("quality_second_pass_attempted") or quality_triggered),
     }
     return _record_node(next_state, "optional_second_pass", metadata={"loop_break_reason": ledger.loop_break_reason})
+
+
+def _suppress_incremental_quality_second_pass_budget_loop(
+    ledger: ToolCallLedger,
+    *,
+    outcome: Mapping[str, Any],
+    trigger: str,
+    added_row_count: int,
+) -> str:
+    reason = str(ledger.loop_break_reason or outcome.get("loop_break_reason") or "")
+    if str(trigger or "") != "quality_second_pass":
+        return ""
+    if added_row_count <= 0:
+        return ""
+    if reason not in {LOOP_BREAK_TOOL_BUDGET_EXHAUSTED, LOOP_BREAK_AGENT_TOOL_BUDGET_EXHAUSTED}:
+        return ""
+    ledger.loop_break_reason = ""
+    ledger.bounded_answer_allowed = bool(ledger.bounded_answer_allowed or outcome.get("bounded_answer_allowed"))
+    return reason
 
 
 def _second_pass_row_counts(state: Mapping[str, Any]) -> dict[str, int]:
@@ -1312,15 +1346,38 @@ def _node_multi_agent_aggregate_judgment_plan(
     *,
     aggregate_judgment_plan: MultiAgentNodeFunc | None = None,
 ) -> SecAgentGraphRuntimeState:
-    judgment = aggregate_specialist_judgment_plan(
-        state.get("specialist_outputs") or [],
-        reflection_report=state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {},
-        evidence_requirement_plan=state.get("evidence_requirement_plan") or {},
-        source_gaps=state.get("source_gaps") or [],
-        tool_ledger_summary=((state.get("multi_agent_reflection_report") or {}).get("tool_ledger_summary") if isinstance(state.get("multi_agent_reflection_report"), dict) else {}),
-        verifier_constraints=state.get("claim_verification") or {},
+    reflection_report = state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {}
+    evidence_requirement_plan = state.get("evidence_requirement_plan") or {}
+    source_gaps = state.get("source_gaps") or []
+    tool_ledger_summary = (
+        (state.get("multi_agent_reflection_report") or {}).get("tool_ledger_summary")
+        if isinstance(state.get("multi_agent_reflection_report"), dict)
+        else {}
     )
-    specialist_verification = verify_specialist_outputs_for_memo(state.get("specialist_outputs") or [], judgment_plan=judgment)
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    mode = str(activation.get("execution_mode") or state.get("execution_mode") or "").strip()
+    specialist_outputs = state.get("specialist_outputs") or []
+    if mode == "focused_answer" and not _multi_agent_specialists_active(state) and not specialist_outputs:
+        judgment = aggregate_focused_answer_judgment_plan(
+            context_rows=[row for row in state.get("context_rows") or [] if isinstance(row, Mapping)],
+            runtime_ledger_rows=[row for row in state.get("runtime_ledger_rows") or [] if isinstance(row, Mapping)],
+            reflection_report=reflection_report,
+            evidence_requirement_plan=evidence_requirement_plan,
+            source_gaps=source_gaps,
+            tool_ledger_summary=tool_ledger_summary,
+            verifier_constraints=state.get("claim_verification") or {},
+            response_language=_state_response_language(state),
+        )
+    else:
+        judgment = aggregate_specialist_judgment_plan(
+            specialist_outputs,
+            reflection_report=reflection_report,
+            evidence_requirement_plan=evidence_requirement_plan,
+            source_gaps=source_gaps,
+            tool_ledger_summary=tool_ledger_summary,
+            verifier_constraints=state.get("claim_verification") or {},
+        )
+    specialist_verification = verify_specialist_outputs_for_memo(specialist_outputs, judgment_plan=judgment)
     result = aggregate_judgment_plan(state) if aggregate_judgment_plan is not None else {
         "judgment_plan": judgment,
         "specialist_verification": specialist_verification,
@@ -1343,7 +1400,7 @@ def _node_multi_agent_aggregate_judgment_plan(
     if bool(next_state.get("quality_second_pass_attempted")):
         quality_decision = {"allowed": False, "reason": "quality_second_pass_already_attempted", "trigger": "quality_second_pass"}
     else:
-        quality_decision = should_execute_second_pass(quality_report, quality_ledger)
+        quality_decision = _second_pass_decision_for_execution_mode(next_state, should_execute_second_pass(quality_report, quality_ledger))
     if quality_decision.get("allowed"):
         next_state["multi_agent_reflection_report"] = quality_report
         next_state["evidence_sufficiency_report"] = quality_report
@@ -1358,6 +1415,7 @@ def _node_multi_agent_aggregate_judgment_plan(
             "mode": "injected" if aggregate_judgment_plan else "stub",
             "quality_second_pass_allowed": bool(quality_decision.get("allowed")),
             "quality_gap_count": len(quality_report.get("quality_gaps") or []),
+            "focused_answer_bridge": (judgment.get("focused_answer_bridge") or {}).get("status") if isinstance(judgment, Mapping) else "",
         },
     )
 
@@ -1530,31 +1588,88 @@ def _repair_injected_verifier_failure_once(
 def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
     parts: list[str] = []
     direct = str(memo.get("direct_answer") or "No deterministic memo text was generated.").strip()
+    profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
+    labels = _memo_render_labels(memo)
+    rendered_claim_max = int(profile.get("rendered_claim_max") or (5 if bounded else 8))
     if direct:
         parts.append(direct)
 
-    claim_lines = _render_memo_claim_lines(memo.get("memo_claims") or memo.get("supported_claims") or [])
+    claim_lines = _render_memo_claim_lines(
+        memo.get("memo_claims") or memo.get("supported_claims") or [],
+        max_items=rendered_claim_max,
+        ref_label=labels["refs"],
+    )
     if claim_lines:
-        parts.append("Key memo claims:\n" + "\n".join(claim_lines))
+        parts.append(f"{labels['claims']}:\n" + "\n".join(claim_lines))
+
+    implications = _render_loose_memo_items(memo.get("investment_implications") or [], max_items=5)
+    if implications:
+        parts.append(f"{labels['investment_implications']}:\n" + "\n".join(f"- {item}" for item in implications))
+
+    change_view = _render_loose_memo_items(memo.get("what_would_change_view") or [], max_items=4)
+    if change_view:
+        parts.append(f"{labels['what_would_change_view']}:\n" + "\n".join(f"- {item}" for item in change_view))
+
+    monitoring = _render_loose_memo_items(memo.get("monitoring_items") or [], max_items=5)
+    if monitoring:
+        parts.append(f"{labels['monitoring_items']}:\n" + "\n".join(f"- {item}" for item in monitoring))
+
+    evidence_gaps = _render_loose_memo_items(memo.get("evidence_gaps_but_actionable") or [], max_items=4)
+    if evidence_gaps:
+        parts.append(f"{labels['evidence_gaps']}:\n" + "\n".join(f"- {item}" for item in evidence_gaps))
 
     caveats = _render_loose_memo_items(memo.get("caveats") or [], max_items=3)
     if caveats:
-        parts.append("Caveats:\n" + "\n".join(f"- {item}" for item in caveats))
+        parts.append(f"{labels['caveats']}:\n" + "\n".join(f"- {item}" for item in caveats))
 
     excluded = _render_loose_memo_items(memo.get("unsupported_claims_excluded") or [], max_items=2)
     if excluded:
-        parts.append("Unsupported claims excluded:\n" + "\n".join(f"- {item}" for item in excluded))
+        parts.append(f"{labels['unsupported_claims_excluded']}:\n" + "\n".join(f"- {item}" for item in excluded))
 
     boundary = str(memo.get("source_boundary") or "verified judgment plan only").strip()
     if boundary:
-        parts.append(f"Source boundary: {boundary}")
+        parts.append(f"{labels['source_boundary']}: {boundary}")
 
     if bounded and str(memo.get("answer_status") or "") == "draft" and claim_lines:
-        parts.append("Bounded evidence note: verifier accepted the thesis-led memo claims under the current source boundary.")
+        parts.append(labels["bounded_note"])
     return "\n\n".join(part for part in parts if part)
 
 
-def _render_memo_claim_lines(value: Any) -> list[str]:
+def _memo_render_labels(memo: Mapping[str, Any]) -> dict[str, str]:
+    language = ""
+    response_language = memo.get("response_language")
+    if isinstance(response_language, Mapping):
+        language = str(response_language.get("language") or "")
+    elif response_language:
+        language = str(response_language)
+    if language.lower() in {"zh", "zh-cn", "zh_hans"}:
+        return {
+            "claims": "关键论据",
+            "investment_implications": "投资含义",
+            "what_would_change_view": "什么会改变判断",
+            "monitoring_items": "后续跟踪",
+            "evidence_gaps": "可行动的证据缺口",
+            "caveats": "限制与注意事项",
+            "unsupported_claims_excluded": "已排除的未证实说法",
+            "source_boundary": "证据边界",
+            "bounded_note": "边界说明：verifier 已在当前证据边界内接受该 thesis-led memo。",
+            "refs": "证据",
+        }
+    return {
+        "claims": "Key memo claims",
+        "investment_implications": "Investment implications",
+        "what_would_change_view": "What would change the view",
+        "monitoring_items": "Monitoring items",
+        "evidence_gaps": "Evidence gaps but actionable",
+        "caveats": "Caveats",
+        "unsupported_claims_excluded": "Unsupported claims excluded",
+        "source_boundary": "Source boundary",
+        "bounded_note": "Bounded evidence note: verifier accepted the thesis-led memo claims under the current source boundary.",
+        "refs": "refs",
+    }
+
+
+def _render_memo_claim_lines(value: Any, *, max_items: int = 5, ref_label: str = "refs") -> list[str]:
     lines: list[str] = []
     for index, claim in enumerate(value if isinstance(value, list) else [], start=1):
         if not isinstance(claim, Mapping):
@@ -1565,9 +1680,9 @@ def _render_memo_claim_lines(value: Any) -> list[str]:
         claim_id = str(claim.get("claim_id") or "").strip()
         refs = [str(ref) for ref in claim.get("evidence_refs") or claim.get("refs") or [] if str(ref or "").strip()]
         id_text = f" [{claim_id}]" if claim_id else ""
-        ref_text = f" refs={', '.join(refs[:4])}" if refs else ""
+        ref_text = f" {ref_label}={', '.join(refs[:4])}" if refs else ""
         lines.append(f"{index}. {text}{id_text}{ref_text}")
-        if len(lines) >= 5:
+        if len(lines) >= max(1, max_items):
             break
     return lines
 
@@ -1586,6 +1701,193 @@ def _render_loose_memo_items(value: Any, *, max_items: int) -> list[str]:
     return items
 
 
+def _render_deterministic_lookup_answer(state: Mapping[str, Any]) -> str:
+    rows = _dedupe_runtime_ledger_rows([dict(row) for row in state.get("runtime_ledger_rows") or [] if isinstance(row, Mapping)])
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    requested = {str(item) for item in query_contract.get("metric_families") or [] if str(item)}
+    if "capex" in requested:
+        requested.add("capital_expenditure_proxy")
+    if requested:
+        preferred = [row for row in rows if str(row.get("metric_family") or "") in requested]
+    else:
+        preferred = rows
+    preferred = _prefer_amount_compatible_ledger_rows(preferred)
+    preferred = _rank_deterministic_lookup_rows(
+        preferred,
+        requested_metric_families=list(query_contract.get("metric_families") or []),
+        user_query=str(state.get("user_query") or ""),
+    )
+    requested_years = {str(year) for year in query_contract.get("years") or [] if str(year or "").strip()}
+    if requested_years:
+        same_year = [row for row in preferred if str(row.get("fiscal_year") or "") in requested_years]
+        if same_year:
+            preferred = same_year
+    selected = preferred[:4] or rows[:4]
+    language = _state_response_language(state)
+    if language.startswith("zh"):
+        tickers = ", ".join(_unique_upper(query_contract.get("focus_tickers") or query_contract.get("search_scope_tickers") or []))
+        header = f"单指标结果：{tickers or '目标公司'} 的已检索结构化披露中，最直接的匹配如下："
+        lines = [header]
+        for index, row in enumerate(selected, start=1):
+            label = str(row.get("metric_name") or row.get("metric_family") or "metric").strip()
+            year = str(row.get("fiscal_year") or "").strip()
+            role = str(row.get("period_role") or "").upper().strip()
+            value = ledger_metric_display_value(row)
+            evidence = str(row.get("source_evidence_id") or row.get("object_id") or "").strip()
+            period = f"{year} {role}".strip()
+            lines.append(f"{index}. {label}: {value} ({period}) 证据={evidence}")
+        lines.append("证据边界：以上只来自本轮 SEC primary filing 的 runtime exact-value ledger；如果同一 10-Q 同时披露 QTD/YTD 或 MD&A 口径，我保留口径差异，不把其中一个数强行改写成单一全年口径。")
+        return "\n".join(lines)
+
+    tickers = ", ".join(_unique_upper(query_contract.get("focus_tickers") or query_contract.get("search_scope_tickers") or []))
+    lines = [f"Single-metric result: the closest structured filing matches for {tickers or 'the requested company'} are:"]
+    for index, row in enumerate(selected, start=1):
+        label = str(row.get("metric_name") or row.get("metric_family") or "metric").strip()
+        year = str(row.get("fiscal_year") or "").strip()
+        role = str(row.get("period_role") or "").upper().strip()
+        value = ledger_metric_display_value(row)
+        evidence = str(row.get("source_evidence_id") or row.get("object_id") or "").strip()
+        period = f"{year} {role}".strip()
+        lines.append(f"{index}. {label}: {value} ({period}) refs={evidence}")
+    lines.append("Source boundary: values come only from the runtime exact-value ledger for SEC primary filing rows; if QTD/YTD or MD&A wording differs, the answer preserves that scope instead of forcing a single annualized figure.")
+    return "\n".join(lines)
+
+
+def _prefer_amount_compatible_ledger_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    compatible = [row for row in rows if _ledger_row_amount_display_compatible(row)]
+    return compatible or rows
+
+
+def _rank_deterministic_lookup_rows(
+    rows: list[dict[str, Any]],
+    *,
+    requested_metric_families: list[Any],
+    user_query: str,
+) -> list[dict[str, Any]]:
+    if not rows:
+        return []
+    requested_order = {str(family): index for index, family in enumerate(requested_metric_families)}
+    indexed = list(enumerate(rows))
+    indexed.sort(
+        key=lambda item: (
+            -_deterministic_lookup_row_score(
+                item[1],
+                requested_order=requested_order,
+                user_query=user_query,
+            ),
+            item[0],
+        )
+    )
+    return [row for _, row in indexed]
+
+
+def _deterministic_lookup_row_score(
+    row: Mapping[str, Any],
+    *,
+    requested_order: Mapping[str, int],
+    user_query: str,
+) -> int:
+    family = str(row.get("metric_family") or "").strip()
+    role = str(row.get("metric_role") or "").strip().lower()
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in (
+            "metric_family",
+            "metric_name",
+            "metric",
+            "field",
+            "metric_id",
+            "source_evidence_id",
+            "raw_value_text",
+            "display_value_zh",
+            "source_statement",
+            "summary",
+        )
+    ).lower()
+    query = str(user_query or "").lower()
+    score = 0
+    if family in requested_order:
+        score += 220 - min(120, requested_order[family] * 30)
+    if role in {"total_value", "current_value", "amount"}:
+        score += 90
+    elif role == "period_change_amount":
+        score += 55
+    elif role in {"percentage_rate", "rate", "ratio", "margin", "growth_rate", "percentage"}:
+        score -= 180
+    if _deterministic_value_looks_rate(str(row.get("display_value_zh") or row.get("raw_value_text") or row.get("value") or "")):
+        score -= 140
+
+    if "capex" in requested_order or "capital_expenditure_proxy" in requested_order or "capex" in query:
+        if family in {"capex", "capital_expenditure_proxy"}:
+            score += 180
+        if any(term in text for term in ("capital expenditure", "capital expenditures", "capex", "additions to property")):
+            score += 120
+        if any(term in text for term in ("property and equipment, net", "property and equipment net", "land", "total assets")):
+            score -= 180
+        if "depreciation" in text or "amortization" in text:
+            score -= 80
+
+    provision_intent = any(term in query for term in ("provision", "credit loss", "信用", "拨备"))
+    if provision_intent:
+        if family == "provision_for_credit_losses":
+            score += 220
+        elif family == "net_charge_offs":
+            score -= 55
+        if any(term in text for term in ("provision for credit losses", "credit loss provision", "credit losses provision")):
+            score += 140
+        if any(term in text for term in ("change", "increase", "decrease", "同比", "环比")) and role not in {
+            "total_value",
+            "current_value",
+            "amount",
+        }:
+            score -= 110
+    return score
+
+
+def _deterministic_value_looks_rate(value_text: str) -> bool:
+    text = str(value_text or "").strip().lower()
+    return bool(text) and any(marker in text for marker in ("%", "percent", "percentage", "百分比", "百分率"))
+
+
+def _ledger_row_amount_display_compatible(row: Mapping[str, Any]) -> bool:
+    display = str(row.get("display_value_zh") or row.get("raw_value_text") or row.get("value") or "").strip()
+    rendered = ledger_metric_display_value(row)
+    return not display or rendered == display
+
+
+def _state_response_language(state: Mapping[str, Any]) -> str:
+    value = state.get("response_language")
+    if not value and isinstance(state.get("multi_agent_context"), Mapping):
+        value = (state.get("multi_agent_context") or {}).get("response_language")
+    text = str(value or "").strip().lower().replace("_", "-")
+    if text in {"zh", "zh-cn", "zh-hans", "chinese", "中文"}:
+        return "zh-CN"
+    if text in {"en", "en-us", "english"}:
+        return "en-US"
+    query = str(state.get("user_query") or "")
+    return "zh-CN" if any("\u4e00" <= ch <= "\u9fff" for ch in query) else "en-US"
+
+
+def _dedupe_runtime_ledger_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str, str, str, str]] = set()
+    for row in rows:
+        key = (
+            str(row.get("ticker") or ""),
+            str(row.get("fiscal_year") or ""),
+            str(row.get("metric_family") or ""),
+            str(row.get("metric_role") or ""),
+            str(row.get("period_role") or ""),
+            str(row.get("raw_value_text") or row.get("value") or ""),
+            str(row.get("display_value_zh") or ""),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(row)
+    return out
+
+
 def _node_multi_agent_renderer(
     state: SecAgentGraphRuntimeState,
     *,
@@ -1601,7 +1903,10 @@ def _node_multi_agent_renderer(
             or memo.get("bounded_answer_allowed")
             or str(memo.get("answer_status") or "").startswith("blocked_")
         )
-        if verification.get("status") == "fail":
+        mode = str((state.get("agent_activation_plan") or {}).get("execution_mode") or "")
+        if mode == "deterministic_lookup" and state.get("runtime_ledger_rows"):
+            result = {"rendered_answer": _render_deterministic_lookup_answer(state)}
+        elif verification.get("status") == "fail":
             result = {"rendered_answer": "Bounded answer only: memo verification failed under current evidence constraints."}
         elif bounded:
             if str(memo.get("answer_status") or "") == "draft" and memo.get("memo_claims"):
@@ -1882,15 +2187,37 @@ def _route_after_evidence_sufficiency(
 def _route_after_multi_agent_reflection(state: SecAgentGraphRuntimeState) -> str:
     if _is_stopped_after_node(state):
         return "stop"
+    mode = str((state.get("agent_activation_plan") or {}).get("execution_mode") or "")
+    if mode == "deterministic_lookup" and state.get("runtime_ledger_rows"):
+        return "renderer"
     decision = state.get("multi_agent_second_pass_decision") or {}
     if decision.get("allowed"):
         return "second_pass"
-    mode = str((state.get("agent_activation_plan") or {}).get("execution_mode") or "")
     if mode == "deterministic_lookup":
         return "renderer"
     if _multi_agent_specialists_active(state):
         return "specialists"
     return "aggregate"
+
+
+def _second_pass_decision_for_execution_mode(state: Mapping[str, Any], decision: Mapping[str, Any]) -> dict[str, Any]:
+    normalized = dict(decision or {})
+    if not normalized.get("allowed"):
+        return normalized
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    mode = str(activation.get("execution_mode") or state.get("execution_mode") or "").strip()
+    if mode == "deep_research":
+        return normalized
+    context = state.get("multi_agent_context") if isinstance(state.get("multi_agent_context"), Mapping) else {}
+    if bool(state.get("allow_standard_second_pass") or context.get("allow_standard_second_pass")):
+        return normalized
+    return {
+        **normalized,
+        "allowed": False,
+        "blocked_by_execution_mode": mode or "unspecified",
+        "original_allowed": True,
+        "reason": f"{normalized.get('reason') or 'second_pass'}_deferred_for_{mode or 'unspecified'}",
+    }
 
 
 def _route_after_multi_agent_second_pass(state: SecAgentGraphRuntimeState) -> str:
@@ -2318,7 +2645,7 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
 
 
 def _specialist_route_summary(result: Mapping[str, Any]) -> dict[str, Any]:
-    return {
+    summary = {
         "agent_id": result.get("agent_id") or "",
         "status": result.get("status") or "",
         "priority": result.get("priority") or "",
@@ -2332,6 +2659,22 @@ def _specialist_route_summary(result: Mapping[str, Any]) -> dict[str, Any]:
         "total_tokens": result.get("total_tokens"),
         "finish_reasons": list(result.get("finish_reasons") or []),
     }
+    for key in (
+        "task_card_schema_version",
+        "assigned_memo_slot",
+        "task_relevant_requirement_count",
+        "required_claim_slot_count",
+        "counterclaim_slot_count",
+        "available_source_families",
+        "shared_context_digest",
+        "prompt_bounded_evidence_row_count",
+        "prompt_relationship_summary_row_count",
+        "prompt_row_distribution",
+        "input_coverage_summary",
+    ):
+        if key in result:
+            summary[key] = result.get(key)
+    return summary
 
 
 def _judgment_plan_quality_summary(value: Any) -> dict[str, Any]:

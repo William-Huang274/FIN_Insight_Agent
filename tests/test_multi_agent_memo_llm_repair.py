@@ -11,15 +11,26 @@ from sec_agent.memo_llm import (
     build_shared_memo_context,
     extract_json_object,
     memo_writer_from_env,
+    _normalize_zh_punctuation,
     route_memo_writer_llm,
     route_verifier_llm,
     verifier_from_env,
 )
 from sec_agent.multi_agent_contracts import (
+    aggregate_focused_answer_judgment_plan,
     aggregate_specialist_judgment_plan,
     repair_multi_agent_memo_draft,
     verify_multi_agent_memo_draft,
 )
+
+
+def test_zh_punctuation_normalization_separates_concatenated_ticker_sentence() -> None:
+    text = "WMT季度收入同比增长显示稳健增长TGT 3个月相对基准跑输10个百分点。"
+
+    normalized = _normalize_zh_punctuation(text)
+
+    assert "增长TGT" not in normalized
+    assert "增长；TGT" in normalized
 
 
 def test_repair_multi_agent_memo_removes_raw_tool_and_bad_claims() -> None:
@@ -170,8 +181,89 @@ def test_memo_writer_llm_accepts_valid_memo_json() -> None:
     assert "memo_thesis_pack" in fake.calls[0]["messages"][1]["content"]
     assert "memo_writer_data_view" not in fake.calls[0]["messages"][1]["content"]
     assert "shared_memo_context" in fake.calls[0]["messages"][1]["content"]
-    assert "memo_writer_v0_5_shared_context_thesis_led_claim_cards" in fake.calls[0]["messages"][1]["content"]
+    assert "memo_writer_v0_6_profiled_thesis_led_claim_cards" in fake.calls[0]["messages"][1]["content"]
     assert "do_not_emit_supported_claims" in fake.calls[0]["messages"][1]["content"]
+
+
+def test_memo_writer_llm_infers_chinese_response_language_from_query() -> None:
+    judgment = _judgment_without_unsupported()
+    memo = {
+        "answer_status": "draft",
+        "direct_answer": "基于已验证的 capex 证据，当前 memo 只能给出有边界的正向判断，不能扩展到未验证客户或订单假设。",
+        "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+        "memo_thesis_plan": judgment["memo_thesis_plan"],
+        "raw_rows_consumed": False,
+        "tool_calls_requested": [],
+        "memo_claims": [
+            {
+                "claim_id": "fundamental_analyst_claim_1",
+                "claim": "已验证 capex 证据支持当前投资判断，但证据边界仍限于已验证 ClaimCard。",
+                "evidence_refs": ["capex_ref"],
+                "source_families": ["primary_sec_filing"],
+            }
+        ],
+        "source_boundary": "仅限已验证 judgment plan；不包含原始检索行。",
+    }
+    fake = _FakeChat([json.dumps(memo, ensure_ascii=False)])
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "请用中文写一段投研 memo。",
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    prompt = fake.calls[0]["messages"][1]["content"]
+    assert result["memo_route_result"]["status"] == "pass"
+    assert result["memo_answer"]["response_language"]["language"] == "zh-CN"
+    assert "response_language.language exactly to zh-CN" in prompt
+    assert "Simplified Chinese" in prompt
+
+
+def test_memo_writer_llm_wraps_english_claims_for_chinese_response_gate() -> None:
+    judgment = _judgment_without_unsupported()
+    memo = {
+        "answer_status": "draft",
+        "direct_answer": "Supported capex evidence constrains the current investment view.",
+        "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+        "memo_thesis_plan": judgment["memo_thesis_plan"],
+        "raw_rows_consumed": False,
+        "tool_calls_requested": [],
+        "memo_claims": [
+            {
+                "claim_id": "fundamental_analyst_claim_1",
+                "claim": "Supported capex evidence constrains the current investment view.",
+                "evidence_refs": ["capex_ref"],
+                "source_families": ["primary_sec_filing"],
+            }
+        ],
+    }
+    fake = _FakeChat([json.dumps(memo)])
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "请用中文写一段投研 memo。",
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    verification = verify_multi_agent_memo_draft(result["memo_answer"], judgment)
+    assert result["memo_route_result"]["status"] == "pass"
+    assert result["memo_answer"]["response_language"]["language"] == "zh-CN"
+    assert result["memo_answer"]["response_language_normalized_user_text"] is True
+    assert "原文" not in result["memo_answer"]["direct_answer"]
+    assert "原始表述" not in result["memo_answer"]["direct_answer"]
+    assert "原文" not in result["memo_answer"]["memo_claims"][0]["claim"]
+    assert "概括为" in result["memo_answer"]["memo_claims"][0]["claim"]
+    assert verification["status"] == "pass"
 
 
 def test_memo_writer_llm_flattens_nested_memo_draft_json() -> None:
@@ -254,6 +346,93 @@ def test_verifier_rejects_numeric_drift_from_source_claim() -> None:
     assert any(error["type"] == "memo_claim_numeric_token_not_in_source_claim" for error in verification["errors"])
 
 
+def test_verifier_warns_on_non_material_numeric_tokens_from_source_claim() -> None:
+    judgment = _market_judgment()
+    memo = {
+        "answer_status": "draft",
+        "direct_answer": "AMD valuation risk is elevated.",
+        "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+        "memo_thesis_plan": judgment["memo_thesis_plan"],
+        "raw_rows_consumed": False,
+        "tool_calls_requested": [],
+        "memo_claims": [
+            {
+                "claim_id": "market_valuation_analyst_claim_1",
+                "claim": "As of 2026, AMD EV/Sales is 22.1x; date fragments 29 and 5 do not change the valuation point.",
+                "evidence_refs": ["MARKET::AMD::2026-05-29"],
+                "source_families": ["market_snapshot"],
+            }
+        ],
+    }
+
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+
+    assert verification["status"] == "pass"
+    assert not any(error["type"] == "memo_claim_numeric_token_not_in_source_claim" for error in verification["errors"])
+    assert any(warning["type"] == "memo_claim_numeric_token_not_in_source_claim" for warning in verification["warnings"])
+
+
+def test_memo_writer_normalizes_relationship_graph_claim_type_to_hypothesis() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "industry_supply_chain_analyst",
+                "observations": [
+                    {
+                        "claim": "Relationship graph supports a sector readthrough hypothesis.",
+                        "claim_type": "relationship_hypothesis",
+                        "evidence_refs": ["rel_ref_1"],
+                        "source_families": ["relationship_graph"],
+                        "memo_slot": "industry_relationship",
+                        "materiality": "medium",
+                        "confidence": "medium",
+                    }
+                ],
+            }
+        ]
+    )
+    source_claim = next(claim for claim in judgment["supported_claims"] if claim["agent_id"] == "industry_supply_chain_analyst")
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "answer_status": "draft",
+                    "direct_answer": "Relationship graph supports a sector readthrough hypothesis.",
+                    "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+                    "memo_thesis_plan": judgment["memo_thesis_plan"],
+                    "raw_rows_consumed": False,
+                    "tool_calls_requested": [],
+                    "memo_claims": [
+                        {
+                            "claim_id": source_claim["claim_id"],
+                            "claim": "Relationship graph supports a sector readthrough hypothesis.",
+                            "claim_type": "business_observation",
+                            "evidence_refs": ["rel_ref_1"],
+                            "source_families": ["relationship_graph"],
+                        }
+                    ],
+                }
+            )
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "Write a memo.",
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    claim = result["memo_answer"]["memo_claims"][0]
+    assert result["memo_route_result"]["status"] == "pass"
+    assert claim["claim_type"] == "relationship_hypothesis"
+    assert claim["relationship_claim_type_normalized"] is True
+
+
 def test_memo_writer_normalizes_numeric_drift_to_source_claim() -> None:
     judgment = _market_judgment()
     fake = _FakeChat(
@@ -293,6 +472,51 @@ def test_memo_writer_normalizes_numeric_drift_to_source_claim() -> None:
     claim = result["memo_answer"]["memo_claims"][0]
     assert "22.1x" in claim["claim"]
     assert claim["numeric_fidelity_normalized"] is True
+
+
+def test_memo_writer_infers_market_as_of_boundary_when_ref_lacks_date() -> None:
+    judgment = _market_judgment()
+    for claim in judgment["supported_claims"]:
+        if claim.get("claim_id") == "market_valuation_analyst_claim_1":
+            claim["evidence_refs"] = ["MARKET::AMD::latest"]
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "answer_status": "draft",
+                    "direct_answer": "AMD valuation risk is elevated.",
+                    "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+                    "memo_thesis_plan": judgment["memo_thesis_plan"],
+                    "raw_rows_consumed": False,
+                    "tool_calls_requested": [],
+                    "memo_claims": [
+                        {
+                            "claim_id": "market_valuation_analyst_claim_1",
+                            "claim": "AMD EV/Sales is 22.1x, indicating valuation risk.",
+                            "evidence_refs": ["MARKET::AMD::latest"],
+                            "source_families": ["market_snapshot"],
+                        }
+                    ],
+                }
+            )
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "Write a memo.",
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    claim = result["memo_answer"]["memo_claims"][0]
+    assert result["memo_route_result"]["status"] == "pass"
+    assert claim["as_of_date"] == "latest_available_market_snapshot"
+    assert claim["market_as_of_date_inferred"] is True
 
 
 def test_memo_writer_normalizes_direct_answer_numeric_drift() -> None:
@@ -335,6 +559,155 @@ def test_memo_writer_normalizes_direct_answer_numeric_drift() -> None:
     assert result["memo_answer"]["direct_answer_numeric_fidelity_normalized"] is True
 
 
+def test_memo_writer_falls_back_to_safe_chinese_direct_answer_when_numeric_removal_damages_sentence() -> None:
+    judgment = aggregate_focused_answer_judgment_plan(
+        runtime_ledger_rows=[
+            {
+                "ticker": "AMZN",
+                "fiscal_year": 2026,
+                "period_role": "qtd",
+                "metric_family": "operating_income",
+                "metric_name": "营业利润",
+                "display_value_zh": "347（百万美元）",
+                "source_tier": "primary_sec_filing",
+                "form_type": "10-Q",
+                "metric_id": "amzn_operating_income_qtd_ref",
+            },
+            {
+                "ticker": "AMZN",
+                "fiscal_year": 2026,
+                "period_role": "qtd",
+                "metric_family": "revenue",
+                "metric_name": "营收",
+                "display_value_zh": "155,667（百万美元）",
+                "source_tier": "primary_sec_filing",
+                "form_type": "10-Q",
+                "metric_id": "amzn_revenue_qtd_ref",
+            },
+        ],
+        context_rows=[],
+        evidence_requirement_plan={"requirements": [{"tickers": ["AMZN"], "metric_families": ["revenue", "margin"]}]},
+        response_language="zh-CN",
+    )
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "answer_status": "draft",
+                    "direct_answer": "亚马逊2026年第一季度营业利润为3.47亿美元，营收为1556.67亿美元，管理层强调成本控制。",
+                    "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+                    "memo_thesis_plan": judgment["memo_thesis_plan"],
+                    "raw_rows_consumed": False,
+                    "tool_calls_requested": [],
+                    "memo_claims": [
+                        {
+                            "claim_id": "focused_answer_synthesizer_fundamentals_1",
+                            "claim": "本轮 primary SEC filing 证据为 AMZN 的利润率分析提供了关键数值锚点：营业利润=347（百万美元）；营收=155,667（百万美元）。",
+                            "evidence_refs": ["amzn_operating_income_qtd_ref", "amzn_revenue_qtd_ref"],
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            )
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "分析 AMZN 最近披露的利润率变化。",
+            "response_language": "zh-CN",
+            "multi_agent_context": {"response_language": "zh-CN"},
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    direct = result["memo_answer"]["direct_answer"]
+    assert result["memo_route_result"]["status"] == "pass"
+    assert result["memo_answer"]["direct_answer_numeric_fidelity_normalized"] is True
+    assert "营业利润为营收为" not in direct
+    assert "347（百万美元）" in direct
+    assert "155,667（百万美元）" in direct
+    assert "。." not in direct
+
+
+def test_memo_writer_falls_back_when_numeric_removal_leaves_zh_dangling_value_phrase() -> None:
+    judgment = aggregate_focused_answer_judgment_plan(
+        runtime_ledger_rows=[
+            {
+                "ticker": "LLY",
+                "fiscal_year": 2026,
+                "period_role": "qtd",
+                "metric_family": "gross_margin",
+                "metric_name": "毛利率",
+                "metric_role": "percentage_rate",
+                "display_value_zh": "54%",
+                "source_tier": "primary_sec_filing",
+                "form_type": "10-Q",
+                "metric_id": "lly_gross_margin_qtd_ref",
+            },
+            {
+                "ticker": "LLY",
+                "fiscal_year": 2026,
+                "period_role": "qtd",
+                "metric_family": "revenue",
+                "metric_name": "营收",
+                "metric_role": "total_value",
+                "display_value_zh": "19,799（百万美元）",
+                "source_tier": "primary_sec_filing",
+                "form_type": "10-Q",
+                "metric_id": "lly_revenue_qtd_ref",
+            },
+        ],
+        context_rows=[],
+        evidence_requirement_plan={"requirements": [{"tickers": ["LLY"], "metric_families": ["revenue", "gross_margin"]}]},
+        response_language="zh-CN",
+    )
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "answer_status": "draft",
+                    "direct_answer": "LLY 2026年QTD毛利率为54%，营收为197.99亿美元，这些数据来自公司申报文件。",
+                    "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+                    "memo_thesis_plan": judgment["memo_thesis_plan"],
+                    "raw_rows_consumed": False,
+                    "tool_calls_requested": [],
+                    "memo_claims": [
+                        {
+                            "claim_id": "focused_answer_synthesizer_fundamentals_1",
+                            "claim": "本轮主要 SEC 披露证据为 LLY 的利润率分析提供了关键数值锚点：毛利率=54%；营收=19,799（百万美元）。",
+                            "evidence_refs": ["lly_gross_margin_qtd_ref", "lly_revenue_qtd_ref"],
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            )
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "用本地披露证据分析 LLY 最近的研发投入和产品周期风险。",
+            "response_language": "zh-CN",
+            "multi_agent_context": {"response_language": "zh-CN"},
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    direct = result["memo_answer"]["direct_answer"]
+    assert result["memo_answer"]["direct_answer_numeric_fidelity_normalized"] is True
+    assert "营收为这些数据" not in direct
+    assert "19,799（百万美元）" in direct
+
+
 def test_memo_writer_llm_uses_compact_repair_prompt_after_length() -> None:
     fake = _FakeChat(
         [
@@ -354,7 +727,8 @@ def test_memo_writer_llm_uses_compact_repair_prompt_after_length() -> None:
     assert result["memo_route_result"]["repair_attempts"] == 1
     assert "Use this compact input JSON only" in repair_prompt
     assert "memo_writer_data_view" not in repair_prompt
-    assert "direct_answer <= 360 characters" in repair_prompt
+    assert "memo_profile must stay compact" in repair_prompt
+    assert "direct_answer <= 420 characters" in repair_prompt
     assert "unsupported_claims_excluded <= 2" in repair_prompt
 
 
@@ -378,6 +752,32 @@ def test_memo_writer_llm_accepts_complete_json_even_when_finish_reason_length() 
     assert result["memo_route_result"]["status"] == "pass"
     assert result["memo_route_result"]["attempt_count"] == 1
     assert result["memo_route_result"]["finish_reasons"] == ["length"]
+
+
+def test_memo_writer_salvages_repeated_length_failures_as_verifiable_memo() -> None:
+    fake = _FakeChat(
+        [
+            {"content": '{"answer_status": "draft", "memo_claims": [', "finish_reason": "length", "output_tokens": 3600},
+            {"content": '{"answer_status": "draft", "memo_claims": [', "finish_reason": "length", "output_tokens": 3600},
+            {"content": '{"answer_status": "draft", "memo_claims": [', "finish_reason": "length", "output_tokens": 3600},
+        ]
+    )
+
+    state = _state()
+    result = route_memo_writer_llm(
+        state,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    memo = result["memo_answer"]
+    verification = verify_multi_agent_memo_draft(memo, state["verified_judgment_plan"])
+    assert result["memo_route_result"]["status"] == "pass"
+    assert result["memo_route_result"]["deterministic_salvage_used"] is True
+    assert result["memo_route_result"]["deterministic_salvage_verification"] == "pass"
+    assert verification["status"] == "pass"
+    assert "supported_claims" not in memo
+    assert 1 <= len(memo["memo_claims"]) <= 5
 
 
 def test_memo_writer_prompt_uses_slot_balanced_v0_3_caps() -> None:
@@ -547,6 +947,115 @@ def test_memo_writer_prompt_uses_thesis_pack_as_projection_not_extra_payload() -
     assert result["memo_route_result"]["status"] == "pass"
     assert compact["memo_thesis_pack"]["schema_version"] == "sec_agent_memo_thesis_pack_v0.1"
     assert len(compact["supported_claims"]) == 0
+
+
+def test_memo_writer_uses_expanded_profile_for_standard_memo_with_dense_claims() -> None:
+    claims = [
+        {
+            "claim_id": f"claim_{index}",
+            "agent_id": "fundamental_analyst",
+            "claim": f"Supported investment claim {index}.",
+            "claim_type": "company_reported_financial_fact",
+            "memo_slot": ["thesis", "fundamentals", "market_valuation", "risk_counterevidence", "fundamentals"][index % 5],
+            "evidence_refs": [f"ref_{index}"],
+            "source_families": ["primary_sec_filing" if index % 2 else "market_snapshot"],
+            "materiality": "high",
+            "claim_rank_score": 80,
+            "claim_rank_bucket": "memo_ready",
+        }
+        for index in range(1, 7)
+    ]
+    claims[0]["claim_type"] = "investment_thesis_synthesis"
+    judgment = {
+        "schema_version": "sec_agent_specialist_judgment_plan_v0.1",
+        "status": "pass",
+        "supported_claims": claims,
+        "memo_outline": [{"memo_slot": "fundamentals", "status": "supported"}],
+        "claim_card_stats": {"supported_claim_count": 6, "memo_ready_claim_count": 5, "memo_slot_supported_count": 4},
+        "memo_thesis_plan": {"schema_version": "sec_agent_memo_thesis_plan_v0.1", "status": "ready"},
+        "memo_thesis_pack": {
+            "schema_version": "sec_agent_memo_thesis_pack_v0.1",
+            "status": "ready",
+            "core_thesis": claims[0],
+            "supporting_drivers": [{"memo_slot": "fundamentals", "driver": claims[1], "supporting_claim_count": 3}],
+            "source_claim_refs": ["ref_1", "ref_2"],
+        },
+        "memo_writer_allowed": True,
+    }
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "answer_status": "draft",
+                    "direct_answer": " ".join(["Supported profile answer."] * 25),
+                    "memo_claims": [
+                        {
+                            "claim_id": f"claim_{index}",
+                            "claim": f"Supported investment claim {index}.",
+                            "evidence_refs": [f"ref_{index}"],
+                            "source_families": ["primary_sec_filing"],
+                        }
+                        for index in range(1, 6)
+                    ],
+                    "investment_implications": [{"text": "Position sizing depends on supported claim density.", "evidence_refs": ["ref_1"]}],
+                    "what_would_change_view": [{"text": "Missing metric evidence would weaken the view."}],
+                    "monitoring_items": [{"text": "Track next filing metrics.", "evidence_refs": ["ref_2"]}],
+                    "evidence_gaps_but_actionable": [{"text": "Some peer metrics remain bounded by local evidence."}],
+                    "memo_thesis_plan": judgment["memo_thesis_plan"],
+                    "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+                }
+            )
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "Write a standard memo.",
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "verified_judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    payload = extract_json_object(fake.calls[0]["messages"][1]["content"]) or {}
+    compact = payload["verified_judgment_plan"]
+    assert result["memo_route_result"]["status"] == "pass"
+    assert result["memo_answer"]["memo_profile"]["profile"] == "expanded"
+    assert payload["memo_output_contract"]["direct_answer_max_chars"] == 1200
+    assert payload["memo_output_contract"]["memo_claims_max"] == 8
+    assert len(compact["supported_claims"]) == 5
+    assert result["memo_answer"]["investment_implications"]
+
+
+def test_shared_memo_context_selects_deep_research_profile_when_evidence_dense() -> None:
+    claims = [
+        {
+            "claim_id": f"claim_{index}",
+            "claim": f"Dense claim {index}.",
+            "claim_type": "business_observation",
+            "memo_slot": ["thesis", "fundamentals", "industry_relationship", "market_valuation", "risk_counterevidence"][index % 5],
+            "evidence_refs": [f"ref_{index}"],
+            "source_families": [["primary_sec_filing"], ["market_snapshot"], ["industry_snapshot"], ["relationship_graph"]][index % 4],
+            "claim_rank_bucket": "memo_ready",
+        }
+        for index in range(1, 8)
+    ]
+    context = build_shared_memo_context(
+        {
+            "agent_activation_plan": {"execution_mode": "deep_research"},
+            "verified_judgment_plan": {
+                "supported_claims": claims,
+                "claim_card_stats": {"supported_claim_count": 7, "memo_ready_claim_count": 6, "memo_slot_supported_count": 4},
+                "memo_thesis_plan": {"status": "ready"},
+                "memo_thesis_pack": {"status": "ready"},
+            },
+        }
+    )
+
+    assert context["memo_profile"]["profile"] == "deep_research"
+    assert context["memo_profile"]["memo_claims_max"] == 8
 
 
 def test_shared_memo_context_carries_scope_without_raw_rows() -> None:

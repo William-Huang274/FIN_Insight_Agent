@@ -120,7 +120,8 @@ def test_specialist_llm_prompt_uses_deep_research_observation_budget() -> None:
     assert result["status"] == "pass"
     assert "2-4 supported fundamental ClaimCards" in user_prompt
     assert "ClaimCard v0.3" in user_prompt
-    assert '"execution_mode": "deep_research"' in user_prompt
+    payload = json.loads(user_prompt.split("Input JSON:\n", 1)[1])
+    assert payload["execution_mode"] == "deep_research"
     assert "input_budget" in user_prompt
     assert "output_contract" in user_prompt
 
@@ -416,6 +417,31 @@ def test_build_specialist_request_from_state_sanitizes_rows() -> None:
     assert request["bounded_evidence_rows"][0]["evidence_ref"] == "ledger_ref_1"
     assert "private_path" not in request["bounded_evidence_rows"][0]
     assert len(request["bounded_evidence_rows"][0]["summary"]) <= 400
+    assert "snapshot_id" not in request["bounded_evidence_rows"][0]
+    assert "as_of_date" not in request["bounded_evidence_rows"][0]
+
+
+def test_specialist_prompt_uses_compact_json_payload() -> None:
+    fake = _FakeChat([json.dumps(_memolet("fundamental_analyst"))])
+    request = _request()
+    request["bounded_evidence_rows"][0]["snapshot_id"] = ""
+    request["bounded_evidence_rows"][0]["as_of_date"] = ""
+
+    result = route_specialist_memolet_llm(
+        "fundamental_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    user_prompt = fake.calls[0]["messages"][1]["content"]
+    payload = json.loads(user_prompt.split("Input JSON:\n", 1)[1])
+    row = payload["bounded_evidence_rows"][0]
+    assert result["status"] == "pass"
+    assert '\n  "bounded_evidence_rows"' not in user_prompt
+    assert "snapshot_id" not in row
+    assert "as_of_date" not in row
+    assert row["evidence_ref"] == "ref_1"
 
 
 def test_build_specialist_request_from_state_supports_industry_relationship_rows() -> None:
@@ -648,8 +674,9 @@ def test_risk_specialist_prompt_uses_compact_v0_3_output_contract() -> None:
     assert result["status"] == "pass"
     assert "2-3 supported risk ClaimCards" in user_prompt
     assert "risk_compact_schema_v0_3" in user_prompt
-    assert '"unsupported_claim_cap": 2' in user_prompt
-    assert '"conflict_cap": 2' in user_prompt
+    payload = json.loads(user_prompt.split("Input JSON:\n", 1)[1])
+    assert payload["output_contract"]["unsupported_claim_cap"] == 2
+    assert payload["output_contract"]["conflict_cap"] == 2
 
 
 def test_build_specialist_request_includes_output_contract_caps() -> None:
@@ -770,7 +797,8 @@ def test_specialist_prompt_passes_task_card_and_slots() -> None:
     assert "required_claim_slots" in user_prompt
     assert "fundamentals_reported_fact" in user_prompt
     assert "Each supported observation should satisfy one required_claim_slot" in user_prompt
-    assert '"known_evidence_refs": {' in user_prompt
+    payload = json.loads(user_prompt.split("Input JSON:\n", 1)[1])
+    assert payload["known_evidence_refs"]["count"] == 1
     assert "cite only evidence_ref values visible" in user_prompt
 
 
@@ -839,6 +867,218 @@ def test_build_specialist_request_rank_selects_slot_relevant_rows_over_prefix_ro
 
     selected_refs = {row["evidence_ref"] for row in request["bounded_evidence_rows"]}
     assert "ledger_ref_margin" in selected_refs
+
+
+def test_build_specialist_request_preserves_comparative_focus_ticker_prompt_rows() -> None:
+    request = build_specialist_request_from_state(
+        "fundamental_analyst",
+        {
+            "user_query": "Compare NVDA and AMD fundamentals.",
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "query_contract": {"focus_tickers": ["NVDA", "AMD"], "search_scope_tickers": ["NVDA", "AMD"]},
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"amd_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric": "revenue",
+                    "summary": f"AMD revenue evidence row {index}.",
+                }
+                for index in range(1, 30)
+            ]
+            + [
+                {
+                    "metric_id": "nvda_ref_1",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "gross_margin",
+                    "summary": "NVDA gross margin evidence row.",
+                }
+            ],
+        },
+    )
+
+    tickers = {row["ticker"] for row in request["bounded_evidence_rows"]}
+
+    assert {"NVDA", "AMD"} <= tickers
+    assert request["prompt_row_distribution"]["by_ticker"]["NVDA"] >= 1
+    assert request["input_coverage_summary"]["focus_ticker_primary_row_counts"]["NVDA"] >= 1
+
+
+def test_build_specialist_request_soft_balances_comparative_prompt_rows() -> None:
+    request = build_specialist_request_from_state(
+        "fundamental_analyst",
+        {
+            "user_query": "Compare NVDA and AMD fundamentals.",
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "query_contract": {"focus_tickers": ["NVDA", "AMD"], "search_scope_tickers": ["NVDA", "AMD"]},
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"amd_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric": "revenue",
+                    "summary": f"AMD revenue evidence row {index}.",
+                }
+                for index in range(1, 25)
+            ]
+            + [
+                {
+                    "metric_id": f"nvda_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "revenue",
+                    "summary": f"NVDA revenue evidence row {index}.",
+                }
+                for index in range(1, 25)
+            ],
+        },
+    )
+
+    distribution = request["prompt_row_distribution"]["by_ticker"]
+
+    assert distribution["NVDA"] >= 5
+    assert distribution["AMD"] >= 5
+
+
+def test_build_specialist_request_preserves_comparative_metric_diversity() -> None:
+    request = build_specialist_request_from_state(
+        "fundamental_analyst",
+        {
+            "user_query": "Compare NVDA and AMD revenue, margins, cash flow, and capex.",
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "query_contract": {"focus_tickers": ["NVDA", "AMD"], "search_scope_tickers": ["NVDA", "AMD"]},
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"amd_capex_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric": "capital_expenditure_proxy",
+                    "summary": f"AMD property and equipment row {index}.",
+                }
+                for index in range(1, 20)
+            ]
+            + [
+                {
+                    "metric_id": "amd_revenue_ref",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric": "revenue",
+                    "summary": "AMD revenue evidence row.",
+                },
+                {
+                    "metric_id": "nvda_revenue_ref",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "revenue",
+                    "summary": "NVDA revenue evidence row.",
+                },
+                {
+                    "metric_id": "nvda_margin_ref",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "gross_margin",
+                    "summary": "NVDA gross margin evidence row.",
+                },
+            ]
+            + [
+                {
+                    "metric_id": f"nvda_cash_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "operating_cash_flow",
+                    "summary": f"NVDA cash flow evidence row {index}.",
+                }
+                for index in range(1, 20)
+            ],
+        },
+    )
+
+    metrics = request["prompt_row_distribution"]["by_metric"]
+
+    assert metrics["revenue"] >= 2
+    assert metrics["gross_margin"] >= 1
+    assert metrics["capital_expenditure_proxy"] >= 1
+
+
+def test_build_risk_specialist_request_prioritizes_comparative_market_rows() -> None:
+    request = build_specialist_request_from_state(
+        "risk_counterevidence_analyst",
+        {
+            "user_query": "Compare NVDA and AMD fundamentals and market risks.",
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "query_contract": {"focus_tickers": ["NVDA", "AMD"], "search_scope_tickers": ["NVDA", "AMD"]},
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"amd_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric": "revenue",
+                    "summary": f"AMD revenue row {index}.",
+                }
+                for index in range(1, 20)
+            ]
+            + [
+                {
+                    "metric_id": f"nvda_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "revenue",
+                    "summary": f"NVDA revenue row {index}.",
+                }
+                for index in range(1, 20)
+            ],
+            "market_snapshot_rows": [
+                {"evidence_ref": "market_nvda", "source_family": "market_snapshot", "ticker": "NVDA", "summary": "NVDA market row."},
+                {"evidence_ref": "market_amd", "source_family": "market_snapshot", "ticker": "AMD", "summary": "AMD market row."},
+            ],
+        },
+    )
+
+    distribution = request["prompt_row_distribution"]
+
+    assert distribution["by_source_family"]["market_snapshot"] == 2
+    assert distribution["by_ticker_source_family"]["NVDA|market_snapshot"] == 1
+    assert distribution["by_ticker_source_family"]["AMD|market_snapshot"] == 1
+
+
+def test_build_risk_specialist_request_prioritizes_untickered_industry_rows() -> None:
+    request = build_specialist_request_from_state(
+        "risk_counterevidence_analyst",
+        {
+            "user_query": "Compare XOM and CVX fundamentals and commodity risks.",
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "query_contract": {"focus_tickers": ["XOM", "CVX"], "search_scope_tickers": ["XOM", "CVX"]},
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"xom_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "XOM",
+                    "metric": "cash_flow",
+                    "summary": f"XOM cash-flow row {index}.",
+                }
+                for index in range(1, 20)
+            ]
+            + [
+                {
+                    "metric_id": f"cvx_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "CVX",
+                    "metric": "cash_flow",
+                    "summary": f"CVX cash-flow row {index}.",
+                }
+                for index in range(1, 20)
+            ],
+            "industry_snapshot_rows": [
+                {"evidence_ref": "oil_ref", "source_family": "industry_snapshot", "summary": "Oil price context."},
+                {"evidence_ref": "gas_ref", "source_family": "industry_snapshot", "summary": "Gas price context."},
+            ],
+        },
+    )
+
+    distribution = request["prompt_row_distribution"]
+
+    assert distribution["by_source_family"]["industry_snapshot"] == 2
 
 
 def test_specialist_output_contract_caps_gap_payload_before_aggregation() -> None:

@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import re
+import sqlite3
 import subprocess
 import sys
 import time
@@ -4305,9 +4306,10 @@ def _build_runtime_ledger(
         for row in context_rows
         if row.get("source_kind") == "structured_object" and row.get("object_id")
     ]
-    records = _load_object_records(REPO_ROOT / args.object_bm25_index_dir)
+    object_index_dir = _repo_path(args.object_bm25_index_dir)
+    records = _load_object_records_for_ids(object_index_dir, object_ids)
     query_contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
-    scoped_records = _ledger_supplement_scope_records(case, records, query_contract)
+    scoped_records = _ledger_supplement_scope_records_from_index(object_index_dir, case, records, query_contract)
     context_by_object_id = {
         str(row.get("object_id") or ""): row
         for row in context_rows
@@ -8867,7 +8869,106 @@ def _load_object_records(index_dir: Path) -> dict[str, dict[str, Any]]:
     cached = _OBJECT_RECORDS_RUNTIME_CACHE.get(cache_key)
     if cached is not None:
         return cached
+    sqlite_path = index_dir / "records.sqlite"
+    if sqlite_path.exists():
+        return {}
     return _load_object_records_cached(str(index_dir.resolve()))
+
+
+def _load_object_records_for_ids(index_dir: Path, object_ids: Iterable[Any]) -> dict[str, dict[str, Any]]:
+    ids = [str(object_id) for object_id in object_ids if str(object_id or "").strip()]
+    if not ids:
+        return {}
+    sqlite_path = index_dir / "records.sqlite"
+    if not sqlite_path.exists():
+        records = _load_object_records(index_dir)
+        return {object_id: records[object_id] for object_id in ids if object_id in records}
+
+    unique_ids = list(dict.fromkeys(ids))
+    records: dict[str, dict[str, Any]] = {}
+    with sqlite3.connect(str(sqlite_path)) as con:
+        con.row_factory = sqlite3.Row
+        for start in range(0, len(unique_ids), 400):
+            chunk = unique_ids[start : start + 400]
+            placeholders = ", ".join("?" for _ in chunk)
+            rows = con.execute(
+                f"SELECT object_id, record_json FROM object_records WHERE object_id IN ({placeholders})",
+                chunk,
+            ).fetchall()
+            for row in rows:
+                try:
+                    record = json.loads(str(row["record_json"] or "{}"))
+                except json.JSONDecodeError:
+                    continue
+                object_id = str(row["object_id"] or record.get("object_id") or "")
+                if object_id:
+                    records[object_id] = record
+    return records
+
+
+def _ledger_supplement_scope_records_from_index(
+    index_dir: Path,
+    case: dict[str, Any],
+    context_records: dict[str, dict[str, Any]],
+    query_contract: dict[str, Any],
+) -> list[dict[str, Any]]:
+    sqlite_path = index_dir / "records.sqlite"
+    if not sqlite_path.exists():
+        records = _load_object_records(index_dir)
+        if context_records:
+            records = {**records, **context_records}
+        return _ledger_supplement_scope_records(case, records, query_contract)
+
+    family_tickers = _contract_required_family_tickers(query_contract)
+    focus = set().union(*family_tickers.values()) if family_tickers else set()
+    if not focus:
+        focus = {str(item).upper() for item in query_contract.get("focus_tickers") or [] if str(item)}
+    years = {int(year) for year in case.get("years") or [] if _int_or_none(year) is not None}
+    filing_types = {
+        _normalize_form_type(item)
+        for item in (case.get("filing_types") or query_contract.get("filing_types") or [])
+        if _normalize_form_type(item)
+    }
+    source_tiers = {
+        str(item)
+        for item in (case.get("source_tiers") or query_contract.get("source_tiers") or [])
+        if str(item)
+    }
+
+    where: list[str] = []
+    params: list[Any] = []
+    if focus:
+        placeholders = ", ".join("?" for _ in focus)
+        where.append(f"ticker IN ({placeholders})")
+        params.extend(sorted(focus))
+    if years:
+        placeholders = ", ".join("?" for _ in years)
+        where.append(f"fiscal_year IN ({placeholders})")
+        params.extend(sorted(years))
+    if filing_types:
+        placeholders = ", ".join("?" for _ in filing_types)
+        where.append(f"form_type IN ({placeholders})")
+        params.extend(sorted(filing_types))
+    if source_tiers:
+        placeholders = ", ".join("?" for _ in source_tiers)
+        where.append(f"source_tier IN ({placeholders})")
+        params.extend(sorted(source_tiers))
+    clauses = " AND ".join(where) if where else "1=1"
+
+    records: list[dict[str, Any]] = []
+    with sqlite3.connect(str(sqlite_path)) as con:
+        con.row_factory = sqlite3.Row
+        rows = con.execute(
+            f"SELECT record_json FROM object_records WHERE {clauses} ORDER BY idx LIMIT ?",
+            [*params, 50000],
+        ).fetchall()
+        for row in rows:
+            try:
+                record = json.loads(str(row["record_json"] or "{}"))
+            except json.JSONDecodeError:
+                continue
+            records.append(record)
+    return records
 
 
 def _register_object_records(index_dir: Path, records: Iterable[dict[str, Any]]) -> None:
@@ -9234,6 +9335,10 @@ def _ledger_row_allowed(
     if rules.get("prefer_focus_tickers") and focus and ticker not in focus:
         return False
     allowed_families = set(str(item) for item in rules.get("allowed_metric_families") or [])
+    if allowed_families:
+        allowed_families = _expand_metric_family_aliases(allowed_families)
+    else:
+        allowed_families = _contract_required_metric_families(query_contract)
     if allowed_families and family not in allowed_families:
         return False
     if rules.get("drop_human_capital_tables") and _is_human_capital_ledger_topic(row_text_lower):
@@ -9520,9 +9625,13 @@ def _cap_ledger_rows(rows: list[dict[str, Any]], query_contract: dict[str, Any],
         return _cap_ai_industry_ledger_rows(rows, query_contract, max_rows)
     if _contract_has_banking_intent(query_contract):
         return _cap_banking_ledger_rows(rows, query_contract, max_rows)
+    requested_metric_families = _expand_metric_family_aliases(query_contract.get("metric_families") or [])
+    focus = {str(item).upper() for item in query_contract.get("focus_tickers") or [] if str(item)}
+    if len(focus) <= 1 and requested_metric_families and requested_metric_families <= {"capex", "capital_expenditure_proxy"}:
+        return _cap_single_metric_ledger_rows(rows, max_rows)
     task_family_groups = _task_metric_family_groups(query_contract)
     if len(task_family_groups) >= 2:
-        return _cap_task_balanced_ledger_rows(rows, task_family_groups, max_rows)
+        return _cap_task_balanced_ledger_rows(rows, task_family_groups, query_contract, max_rows)
     per_ticker_limit = max_rows
     per_object_limit = max_rows
     ticker_counts: Counter[str] = Counter()
@@ -9544,6 +9653,20 @@ def _cap_ledger_rows(rows: list[dict[str, Any]], query_contract: dict[str, Any],
     return capped
 
 
+def _cap_single_metric_ledger_rows(rows: list[dict[str, Any]], max_rows: int) -> list[dict[str, Any]]:
+    capped: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str]] = set()
+    for row in rows:
+        key = _ledger_dedupe_key(row)
+        if key in seen:
+            continue
+        seen.add(key)
+        capped.append(row)
+        if len(capped) >= max_rows:
+            break
+    return capped
+
+
 def _task_metric_family_groups(query_contract: dict[str, Any]) -> list[list[str]]:
     groups: list[list[str]] = []
     for task in query_contract.get("decomposed_tasks") or []:
@@ -9558,12 +9681,16 @@ def _task_metric_family_groups(query_contract: dict[str, Any]) -> list[list[str]
 def _cap_task_balanced_ledger_rows(
     rows: list[dict[str, Any]],
     task_family_groups: list[list[str]],
+    query_contract: dict[str, Any],
     max_rows: int,
 ) -> list[dict[str, Any]]:
     selected: list[dict[str, Any]] = []
     selected_keys: set[tuple[str, str, str, str]] = set()
     family_ticker_year_counts: Counter[tuple[str, str, str]] = Counter()
-    per_family_ticker_year_limit = int(os.environ.get("LEDGER_PER_FAMILY_TICKER_YEAR_LIMIT", "1"))
+    focus = {str(item).upper() for item in query_contract.get("focus_tickers") or [] if str(item)}
+    required_families = _contract_required_metric_families(query_contract)
+    default_family_year_limit = 3 if len(focus) <= 1 and len(required_families) <= 2 else 1
+    per_family_ticker_year_limit = int(os.environ.get("LEDGER_PER_FAMILY_TICKER_YEAR_LIMIT", str(default_family_year_limit)))
 
     def add(row: dict[str, Any]) -> bool:
         if len(selected) >= max_rows:
@@ -9585,7 +9712,7 @@ def _cap_task_balanced_ledger_rows(
     target_per_task = max(2, max_rows // max(1, len(task_family_groups)))
     for families in task_family_groups:
         before = len(selected)
-        family_set = set(families)
+        family_set = _expand_metric_family_aliases(families)
         for row in rows:
             if str(row.get("metric_family") or "") in family_set:
                 add(row)

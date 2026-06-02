@@ -280,7 +280,12 @@ def _quality_flags(
         flags.append("low_rendered_claim_token_efficiency")
     if _numeric(cost_quality.get("tokens_per_supported_claim_card")) >= 6000:
         flags.append("low_claim_card_token_efficiency")
-    if _numeric(cost_quality.get("memo_chars_per_total_token")) > 0 and _numeric(cost_quality.get("memo_chars_per_total_token")) < 0.05:
+    mode = str(case.get("execution_mode") or "")
+    if (
+        mode != "deterministic_lookup"
+        and _numeric(cost_quality.get("memo_chars_per_total_token")) > 0
+        and _numeric(cost_quality.get("memo_chars_per_total_token")) < 0.05
+    ):
         flags.append("low_memo_chars_per_token")
     repair_token_ratio = _numeric(cost_quality.get("memo_writer_repair_token_ratio"))
     repair_attempt_ratio = _numeric(cost_quality.get("memo_writer_repair_attempt_ratio"))
@@ -304,7 +309,6 @@ def _quality_flags(
     claim_card_stats = specialists.get("claim_card_stats") if isinstance(specialists.get("claim_card_stats"), Mapping) else {}
     supported_claim_count = int(claim_card_stats.get("supported_claim_count") or 0)
     claim_card_stats_present = bool(claim_card_stats.get("present"))
-    mode = str(case.get("execution_mode") or "")
     if claim_card_stats_present and supported_claim_count == 0 and mode in {"deep_research", "standard_memo"}:
         flags.append("claim_card_density_zero")
     if claim_card_stats_present and mode == "deep_research" and supported_claim_count < 8:

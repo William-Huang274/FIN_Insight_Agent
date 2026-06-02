@@ -17,6 +17,12 @@ from typing import Any, Mapping
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RUBRIC = REPO_ROOT / "configs" / "fin_agent_quality_rubric_v0_1.json"
 QUALITY_SCHEMA_VERSION = "fin_agent_layer_quality_audit_v0.1"
+_SPECIALIST_AGENT_IDS = {
+    "fundamental_analyst",
+    "industry_supply_chain_analyst",
+    "market_valuation_analyst",
+    "risk_counterevidence_analyst",
+}
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -61,6 +67,10 @@ def audit_summary(
         return _audit_evidence_operator(summary, rubric=rubric, summary_path=summary_path)
     if source_schema == "sec_agent_coverage_reflection_diagnostic_v0.1":
         return _audit_coverage_reflection(summary, rubric=rubric, summary_path=summary_path)
+    if source_schema == "sec_agent_specialist_layer_diagnostic_v0.1":
+        return _audit_specialist_layer(summary, rubric=rubric, summary_path=summary_path)
+    if source_schema == "sec_agent_judgment_memo_diagnostic_v0.1":
+        return _audit_judgment_memo(summary, rubric=rubric, summary_path=summary_path)
     if "cases" in summary and ("real_chain" in source_schema or "multi_agent" in source_schema or summary.get("output_quality_audit")):
         return _audit_real_chain(summary, rubric=rubric, summary_path=summary_path, artifact_root=artifact_root)
     return _audit_unknown(summary, rubric=rubric, summary_path=summary_path)
@@ -341,6 +351,105 @@ def _audit_coverage_reflection(
     )
 
 
+def _audit_specialist_layer(
+    summary: Mapping[str, Any],
+    *,
+    rubric: Mapping[str, Any],
+    summary_path: Path | None,
+) -> dict[str, Any]:
+    cases = [case for case in summary.get("cases") or [] if isinstance(case, Mapping)]
+    required = [
+        "graph_stopped_after_specialists",
+        "expected_specialists_present",
+        "expected_routes_present",
+        "expected_routes_pass",
+        "specialist_outputs_present",
+        "route_success",
+        "real_evidence_quality_pass",
+    ]
+    stage = _stage_from_case_checks(
+        "specialists",
+        cases,
+        required_checks=required,
+        case_check_getter=lambda case: case.get("checks") if isinstance(case.get("checks"), Mapping) else {},
+        case_pass_getter=lambda case: str(case.get("status") or "") == "pass",
+    )
+    stage_gate = stage["gate_status"] == "pass" and str(summary.get("gate_status") or "") == "pass"
+    dimensions = _dimension_scores_for_specialist_layer(stage, rubric)
+    flags = []
+    if not stage_gate:
+        flags.append("specialist_layer_stage_gate_failed")
+    audit_gate = "pass" if stage_gate else "fail"
+    return _base_audit(
+        summary=summary,
+        rubric=rubric,
+        source_type="specialist_layer",
+        summary_path=summary_path,
+        stages=[stage],
+        dimensions=dimensions,
+        quality_flags=flags,
+        gate_status=audit_gate,
+        next_actions=_next_actions(stage_gate=audit_gate == "pass", source_type="specialist_layer"),
+        extra={"specialist_metrics": dict(summary.get("metrics") or {})},
+    )
+
+
+def _audit_judgment_memo(
+    summary: Mapping[str, Any],
+    *,
+    rubric: Mapping[str, Any],
+    summary_path: Path | None,
+) -> dict[str, Any]:
+    cases = [case for case in summary.get("cases") or [] if isinstance(case, Mapping)]
+    required = [
+        "graph_stopped_after_verifier",
+        "s5_specialist_case_passed",
+        "judgment_plan_present",
+        "s6_aggregate_supported_claims_present",
+        "memo_thesis_plan_present",
+        "memo_thesis_pack_present",
+        "memo_thesis_pack_ready",
+        "memo_writer_allowed",
+        "memo_route_pass",
+        "memo_not_fallback",
+        "memo_claims_present",
+        "memo_claim_count_min_when_ready",
+        "memo_thesis_plan_carried",
+        "memo_raw_rows_not_consumed",
+        "memo_tool_calls_not_requested",
+        "verifier_pass",
+    ]
+    stage = _stage_from_case_checks(
+        "judgment_memo_verifier",
+        cases,
+        required_checks=required,
+        case_check_getter=lambda case: case.get("checks") if isinstance(case.get("checks"), Mapping) else {},
+        case_pass_getter=lambda case: str(case.get("status") or "") == "pass",
+    )
+    stage_gate = stage["gate_status"] == "pass" and str(summary.get("gate_status") or "") == "pass"
+    dimensions = _dimension_scores_for_judgment_memo(stage, rubric, summary)
+    flags = []
+    metrics = summary.get("metrics") if isinstance(summary.get("metrics"), Mapping) else {}
+    repairs = int(metrics.get("memo_repair_attempts_total") or 0)
+    if repairs:
+        flags.append("memo_writer_retry_cost_present")
+    if not stage_gate:
+        flags.append("judgment_memo_stage_gate_failed")
+    audit_gate = "pass" if stage_gate else "fail"
+    return _base_audit(
+        summary=summary,
+        rubric=rubric,
+        source_type="judgment_memo",
+        summary_path=summary_path,
+        stages=[stage],
+        dimensions=dimensions,
+        quality_flags=flags,
+        gate_status=audit_gate,
+        next_actions=_next_actions(stage_gate=audit_gate == "pass", source_type="judgment_memo", flags=flags),
+        extra={"judgment_memo_metrics": dict(metrics)},
+    )
+
+
 def _audit_unknown(
     summary: Mapping[str, Any],
     *,
@@ -415,6 +524,8 @@ def _stage_from_memo_verifier_checks(stage_id: str, cases: list[Mapping[str, Any
     pass_count = 0
     failed: set[str] = set()
     for case in cases:
+        if _is_deterministic_lookup_without_memo(case):
+            continue
         layer_checks = case.get("layer_checks") if isinstance(case.get("layer_checks"), Mapping) else {}
         layer = layer_checks.get("memo_verifier") if isinstance(layer_checks.get("memo_verifier"), Mapping) else {}
         if not layer:
@@ -438,6 +549,14 @@ def _stage_from_memo_verifier_checks(stage_id: str, cases: list[Mapping[str, Any
     if not relevant:
         return _stage_result(stage_id, "skipped", 0, 0, [])
     return _stage_result(stage_id, "pass" if pass_count == len(relevant) else "fail", len(relevant), pass_count, sorted(failed))
+
+
+def _is_deterministic_lookup_without_memo(case: Mapping[str, Any]) -> bool:
+    return (
+        str(case.get("execution_mode") or "") == "deterministic_lookup"
+        and not str(case.get("memo_status") or "").strip()
+        and not str(case.get("claim_verification") or "").strip()
+    )
 
 
 def _stage_from_renderer_checks(cases: list[Mapping[str, Any]]) -> dict[str, Any]:
@@ -546,6 +665,60 @@ def _dimension_scores_for_coverage_reflection(stage: Mapping[str, Any], rubric: 
         else:
             score = 2.4 if stage_ok else 0.5
             basis = "not fully evaluated until specialist/memo stages"
+        scores.append(_dimension_result(dim, score, basis))
+    return scores
+
+
+def _dimension_scores_for_specialist_layer(stage: Mapping[str, Any], rubric: Mapping[str, Any]) -> list[dict[str, Any]]:
+    stage_ok = stage.get("gate_status") == "pass"
+    scores = []
+    for dim in _dimensions(rubric):
+        dim_id = str(dim.get("id") or "")
+        if dim_id in {"financial_metric_reasoning", "investment_thesis_quality", "risk_counterevidence_balance"}:
+            score = 3.2 if stage_ok else 1.0
+            basis = "Specialist ClaimCards and real-evidence quality checks"
+        elif dim_id == "economic_relationship_reasoning":
+            score = 3.0 if stage_ok else 1.0
+            basis = "Industry/relationship specialist evidence consumption where required"
+        elif dim_id in {"evidence_boundary", "permissions_and_auditability"}:
+            score = 3.2 if stage_ok else 1.0
+            basis = "bounded rows, known refs, source-family ownership, and no direct tools"
+        elif dim_id == "cost_quality_efficiency":
+            score = 3.0 if stage_ok else 1.0
+            basis = "Specialist token and repair summaries"
+        else:
+            score = 2.8 if stage_ok else 0.8
+            basis = "not fully evaluated until memo/verifier stages"
+        scores.append(_dimension_result(dim, score, basis))
+    return scores
+
+
+def _dimension_scores_for_judgment_memo(
+    stage: Mapping[str, Any],
+    rubric: Mapping[str, Any],
+    summary: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    stage_ok = stage.get("gate_status") == "pass"
+    metrics = summary.get("metrics") if isinstance(summary.get("metrics"), Mapping) else {}
+    repairs = int(metrics.get("memo_repair_attempts_total") or 0)
+    scores = []
+    for dim in _dimensions(rubric):
+        dim_id = str(dim.get("id") or "")
+        if dim_id in {"investment_thesis_quality", "financial_metric_reasoning", "risk_counterevidence_balance"}:
+            score = 3.4 if stage_ok else 1.0
+            basis = "Judgment thesis pack, memo claims, and verifier passed"
+        elif dim_id == "economic_relationship_reasoning":
+            score = 3.2 if stage_ok else 1.0
+            basis = "Memo uses passed specialist relationship/industry artifacts when present"
+        elif dim_id in {"evidence_boundary", "permissions_and_auditability"}:
+            score = 3.5 if stage_ok else 1.0
+            basis = "Memo consumed thesis artifacts only, did not consume raw rows, and did not request tools"
+        elif dim_id == "cost_quality_efficiency":
+            score = 2.8 if stage_ok and repairs else (3.2 if stage_ok else 1.0)
+            basis = "Memo/verifier token usage and repair attempts"
+        else:
+            score = 3.1 if stage_ok else 1.0
+            basis = "S6-S8 stage gate"
         scores.append(_dimension_result(dim, score, basis))
     return scores
 
@@ -738,11 +911,18 @@ def _high_risk_case_count(output_audit: Mapping[str, Any]) -> int:
 
 
 def _layer_not_required(stage_id: str, case: Mapping[str, Any], layer: Mapping[str, Any]) -> bool:
+    active = set(_string_list(case.get("activated_agents")))
     if stage_id == "universe_relationship":
-        required = bool(case.get("require_universe_llm_pass")) or "universe_relationship" in set(_string_list(case.get("required_agents")))
+        required = (
+            bool(case.get("require_universe_llm_pass"))
+            or "universe_relationship" in set(_string_list(case.get("required_agents")))
+            or "universe_relationship" in active
+        )
         return not required
     if stage_id == "specialists":
         required_agents = _string_list(case.get("expected_specialist_agents"))
+        if not required_agents:
+            required_agents = sorted(active & _SPECIALIST_AGENT_IDS)
         return not required_agents
     return False
 
@@ -790,6 +970,17 @@ def _next_actions(*, stage_gate: bool, source_type: str, flags: list[str] | None
         if stage_gate:
             return ["Proceed to S4 Coverage / Reflection using the passed retrieval rows, runtime ledger, and relationship artifacts."]
         return ["Fix retrieval policy, ledger/source inventory, row selector, or reranker runtime before running specialists."]
+    if source_type == "specialist_layer":
+        if stage_gate:
+            return ["Proceed to S6 Judgment Aggregator using the passed Specialist artifacts."]
+        return ["Fix Specialist data view, prompt row selector, role skill, or real-evidence gate before memo stages."]
+    if source_type == "judgment_memo":
+        if stage_gate:
+            actions = ["Proceed to broader S6-S8 sample or full-chain only after layer samples remain stable."]
+            if flags and "memo_writer_retry_cost_present" in flags:
+                actions.append("Inspect memo writer repair diagnostics to reduce avoidable token cost.")
+            return actions
+        return ["Fix Judgment thesis pack, memo writer thesis-led output, or verifier gate before full-chain runs."]
     if source_type == "real_llm_full_chain":
         actions = []
         if not stage_gate:

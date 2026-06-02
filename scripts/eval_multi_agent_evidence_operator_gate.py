@@ -347,6 +347,7 @@ def _score_case(
     candidate_counts = [_candidate_counts(call) for call in sec_calls]
     cuda_available = _cuda_available()
     bge_policy = _bge_policy(sec_calls)
+    row_distribution = _row_distribution(result)
     checks = {
         "graph_stopped_after_evidence_operators": result.get("status") == "stopped_after_node"
         and result.get("native_stop_after_node") == "execute_evidence_operators",
@@ -376,6 +377,8 @@ def _score_case(
         or bool((relationship_artifacts.get("lookup") or {}).get("relationships"))
         and bool((relationship_artifacts.get("plan") or {}).get("relationships")),
         "row_payload_usable": _row_payload_usable(result),
+        "row_distribution_present": bool(row_distribution.get("by_ticker") or row_distribution.get("by_source_family")),
+        "comparative_focus_ticker_primary_context_or_gap": _comparative_focus_ticker_primary_context_or_gap(case, result),
     }
     status = "pass" if all(checks.values()) else "fail"
     return {
@@ -401,6 +404,7 @@ def _score_case(
             "relationship_lookup_rows": len((relationship_artifacts.get("lookup") or {}).get("relationships") or []),
             "relationship_plan_rows": len((relationship_artifacts.get("plan") or {}).get("relationships") or []),
         },
+        "row_distribution": row_distribution,
         "retrieval_runtime": {
             "cuda_available": cuda_available,
             "bge_device_requested": args.bge_device,
@@ -489,6 +493,7 @@ def _result_summary(result: Mapping[str, Any]) -> dict[str, Any]:
             "market_snapshot_rows": len(result.get("market_snapshot_rows") or []),
             "industry_snapshot_rows": len(result.get("industry_snapshot_rows") or []),
         },
+        "row_distribution": _row_distribution(result),
         "source_gaps": [_sanitize_gap(gap) for gap in result.get("source_gaps") or [] if isinstance(gap, Mapping)][:24],
         "context_rows": [_row_sample(row) for row in result.get("context_rows") or [] if isinstance(row, Mapping)][:240],
         "runtime_ledger_rows": [_row_sample(row) for row in result.get("runtime_ledger_rows") or [] if isinstance(row, Mapping)][:240],
@@ -557,6 +562,92 @@ def _row_payload_usable(result: Mapping[str, Any]) -> bool:
         if row.get("evidence_ref") or row.get("evidence_id") or row.get("metric_id") or row.get("ticker") or row.get("series_id"):
             usable += 1
     return usable > 0
+
+
+def _comparative_focus_ticker_primary_context_or_gap(case: Mapping[str, Any], result: Mapping[str, Any]) -> bool:
+    activation = case.get("activation_plan") if isinstance(case.get("activation_plan"), Mapping) else {}
+    focus = _unique_upper(activation.get("focus_tickers") or case.get("focus_tickers"))
+    if len(focus) < 2:
+        return True
+    rows = [row for row in result.get("context_rows") or [] if isinstance(row, Mapping)]
+    primary_tickers = {
+        str(row.get("ticker") or "").upper()
+        for row in rows
+        if _row_source_family(row) in {"", "primary_sec_filing"}
+    }
+    gap_tickers = {
+        str(gap.get("ticker") or "").upper()
+        for gap in result.get("source_gaps") or []
+        if isinstance(gap, Mapping)
+        and str(gap.get("source_family") or "") == "primary_sec_filing"
+        and str(gap.get("reason_code") or "")
+    }
+    return set(focus) <= (primary_tickers | gap_tickers)
+
+
+def _row_distribution(result: Mapping[str, Any]) -> dict[str, Any]:
+    rows = [
+        *[dict(row) for row in result.get("context_rows") or [] if isinstance(row, Mapping)],
+        *[dict(row) for row in result.get("runtime_ledger_rows") or [] if isinstance(row, Mapping)],
+        *[dict(row) for row in result.get("market_snapshot_rows") or [] if isinstance(row, Mapping)],
+        *[dict(row) for row in result.get("industry_snapshot_rows") or [] if isinstance(row, Mapping)],
+    ]
+    return {
+        "schema_version": "sec_agent_evidence_operator_row_distribution_v0.1",
+        "row_count": len(rows),
+        "by_ticker": _count_by_key(rows, "ticker"),
+        "by_source_family": _count_by_source_family(rows),
+        "by_ticker_source_family": _count_by_composite(rows, ("ticker", "source_family")),
+        "by_form_type": _count_by_key(rows, "form_type"),
+        "by_metric": _count_by_metric(rows),
+    }
+
+
+def _row_source_family(row: Mapping[str, Any]) -> str:
+    return str(row.get("source_family") or row.get("source_tier") or "").strip()
+
+
+def _count_by_source_family(rows: list[Mapping[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        family = _row_source_family(row) or "unknown"
+        counts[family] = counts.get(family, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _count_by_metric(rows: list[Mapping[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        metric = str(row.get("metric_family") or row.get("metric") or row.get("metric_name") or "").strip() or "unknown"
+        counts[metric] = counts.get(metric, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _count_by_key(rows: list[Mapping[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = str(row.get(key) or "").strip() or "unknown"
+        if key == "ticker":
+            value = value.upper()
+        counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _count_by_composite(rows: list[Mapping[str, Any]], keys: tuple[str, ...]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        parts = []
+        for key in keys:
+            if key == "source_family":
+                value = _row_source_family(row) or "unknown"
+            else:
+                value = str(row.get(key) or "").strip() or "unknown"
+                if key == "ticker":
+                    value = value.upper()
+            parts.append(value)
+        label = "|".join(parts)
+        counts[label] = counts.get(label, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def _tool_call_summary(call: Mapping[str, Any]) -> dict[str, Any]:

@@ -150,15 +150,20 @@ def _focused_answer_plan(
     budget: LoopBudget,
 ) -> dict[str, Any]:
     active = ["research_lead", "sec_operator", "coverage_reflection", "memo_writer", "verifier", "renderer"]
-    if _management_commentary_intent(request):
+    if _management_commentary_intent(request) or _source_family_requested(request, "company_authored_unaudited_sec_filing"):
         active.insert(2, "eight_k_operator")
+    if _source_family_requested(request, "market_snapshot"):
+        active.insert(3 if "eight_k_operator" in active else 2, "market_operator")
+    allowed_sources = ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
+    if "market_operator" in active:
+        allowed_sources.append("market_snapshot")
     return _plan(
         execution_mode="focused_answer",
         activate_agents=active,
         skip_reason="Focused answer stays inside the requested company scope and does not need universe expansion or specialist map-reduce.",
-        allowed_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+        allowed_source_families=allowed_sources,
         model_policy_hint={"research_lead": "balanced", "memo_writer": "strong", "verifier": "strong", "renderer": "none"},
-        max_tool_calls_total=min(6, budget.max_tool_calls_total),
+        max_tool_calls_total=min(8 if "market_operator" in active else 6, budget.max_tool_calls_total),
         max_second_pass_rounds=min(1, budget.max_second_pass_rounds),
         max_repair_rounds=min(1, budget.max_repair_rounds),
         scope_mode="focused_peer",
@@ -509,11 +514,29 @@ def _risk_or_counterevidence_intent(request: MultiAgentRouteRequest) -> bool:
             "bear case",
             "uncertainty",
             "conflict",
+            "evidence gap",
+            "evidence gaps",
+            "gap",
+            "margin pressure",
+            "cash-flow pressure",
+            "cash flow pressure",
+            "pressure",
+            "headwind",
+            "stress",
+            "credit risk",
+            "risk-balanced",
+            "risk balanced",
             "风险",
+            "风险平衡",
             "反证",
             "下行",
             "不确定",
             "分歧",
+            "证据缺口",
+            "缺口",
+            "压力",
+            "逆风",
+            "信用风险",
         )
     )
 

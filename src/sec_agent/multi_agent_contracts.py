@@ -59,6 +59,47 @@ RELATIONSHIP_GRAPH_ALLOWED_CLAIM_TYPES = {
     "investment_thesis_synthesis",
 }
 UNSUPPORTED_CLAIM_CAP_PER_AGENT = 2
+FOCUSED_ANSWER_SYNTHESIZER_AGENT_ID = "focused_answer_synthesizer"
+AMOUNT_METRIC_TERMS = {
+    "revenue",
+    "sales",
+    "net sales",
+    "product_revenue",
+    "data_center_revenue",
+    "segment_revenue",
+    "operating_income",
+    "operating income",
+    "net_income",
+    "net income",
+    "gross_profit",
+    "gross profit",
+    "rd_expense",
+    "r&d",
+    "research_and_development",
+    "research and development",
+    "capex",
+    "capital_expenditure",
+    "capital expenditures",
+    "free_cash_flow",
+    "free cash flow",
+    "operating_cash_flow",
+    "operating cash flow",
+    "cash_flow",
+    "cash flow",
+}
+RATE_METRIC_TERMS = {
+    "margin",
+    "rate",
+    "ratio",
+    "percentage",
+    "growth",
+    "yield",
+    "ev/sales",
+    "gross_margin",
+    "operating_margin",
+}
+RATE_ROLE_TERMS = {"percentage_rate", "rate", "ratio", "margin", "growth_rate", "percentage"}
+AMOUNT_ROLE_TERMS = {"total_value", "amount", "period_change_amount", "current_value", "value"}
 
 
 def normalize_specialist_memolet(payload: Mapping[str, Any] | None = None, *, agent_id: str = "") -> dict[str, Any]:
@@ -594,6 +635,107 @@ def aggregate_specialist_judgment_plan(
     }
 
 
+def aggregate_focused_answer_judgment_plan(
+    *,
+    context_rows: list[Mapping[str, Any]] | None = None,
+    runtime_ledger_rows: list[Mapping[str, Any]] | None = None,
+    reflection_report: Mapping[str, Any] | None = None,
+    evidence_requirement_plan: Mapping[str, Any] | None = None,
+    source_gaps: list[Mapping[str, Any]] | None = None,
+    tool_ledger_summary: Mapping[str, Any] | None = None,
+    verifier_constraints: Mapping[str, Any] | None = None,
+    response_language: str = "en-US",
+) -> dict[str, Any]:
+    """Build a compact Judgment Plan for focused answers that deliberately skip specialists."""
+    supported_claims = _focused_answer_supported_claims(
+        context_rows=context_rows or [],
+        runtime_ledger_rows=runtime_ledger_rows or [],
+        evidence_requirement_plan=evidence_requirement_plan or {},
+        response_language=response_language,
+    )
+    errors: list[dict[str, Any]] = []
+    unsupported_claims: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    blocked_specialist_agents: list[str] = []
+    source_agent_ids = [FOCUSED_ANSWER_SYNTHESIZER_AGENT_ID] if supported_claims else []
+    memo_outline = _memo_outline_from_claims(
+        supported_claims,
+        source_agent_ids=source_agent_ids,
+        blocked_specialist_agents=blocked_specialist_agents,
+    )
+    source_boundary_notes = _source_boundary_notes(
+        evidence_requirement_plan=evidence_requirement_plan,
+        reflection_report=reflection_report,
+        source_gaps=source_gaps or [],
+        memolets=[],
+    )
+    memo_thesis_plan = _memo_thesis_plan_from_claims(
+        supported_claims=supported_claims,
+        memo_outline=memo_outline,
+        conflicts=conflicts,
+        unsupported_claims=unsupported_claims,
+        source_boundary_notes=source_boundary_notes,
+    )
+    memo_thesis_pack = _memo_thesis_pack_from_claims(
+        supported_claims=supported_claims,
+        memo_outline=memo_outline,
+        memo_thesis_plan=memo_thesis_plan,
+        conflicts=conflicts,
+        unsupported_claims=unsupported_claims,
+        source_boundary_notes=source_boundary_notes,
+    )
+    memo_constraints = _memo_constraints(
+        validation_errors=errors,
+        supported_claims=supported_claims,
+        unsupported_claims=unsupported_claims,
+        conflicts=conflicts,
+        blocked_specialist_agents=blocked_specialist_agents,
+        reflection_report=reflection_report,
+        source_boundary_notes=source_boundary_notes,
+        tool_ledger_summary=tool_ledger_summary,
+        verifier_constraints=verifier_constraints,
+        unsupported_claim_overflow={},
+        thesis_synthesis={"status": "focused_bridge", "policy": "focused_answer_claim_cards_from_bounded_rows_v0_1"},
+    )
+    return {
+        "schema_version": JUDGMENT_PLAN_SCHEMA_VERSION,
+        "status": "pass" if supported_claims else "partial",
+        "specialist_output_count": 0,
+        "source_agent_ids": source_agent_ids,
+        "supported_claims": supported_claims,
+        "unsupported_claims": unsupported_claims,
+        "conflicts": conflicts,
+        "blocked_specialist_agents": blocked_specialist_agents,
+        "source_boundary_notes": source_boundary_notes,
+        "memo_outline": memo_outline,
+        "memo_thesis_plan": memo_thesis_plan,
+        "memo_thesis_pack": memo_thesis_pack,
+        "claim_card_stats": _claim_card_stats(supported_claims, memo_outline),
+        "thesis_synthesis": {
+            "status": "focused_bridge",
+            "policy": "focused_answer_claim_cards_from_bounded_rows_v0_1",
+            "supported_claim_count": len(supported_claims),
+        },
+        "unsupported_claim_policy": {
+            "policy": "not_applicable_no_specialist_outputs",
+            "cap_per_agent": UNSUPPORTED_CLAIM_CAP_PER_AGENT,
+            "visible_unsupported_claim_count": 0,
+            "overflow_unsupported_claim_count": 0,
+            "overflow_by_agent": {},
+        },
+        "memo_constraints": memo_constraints,
+        "memo_writer_allowed": bool(memo_constraints.get("memo_writer_allowed")),
+        "aggregation_policy": "focused_answer_claim_cards_from_bounded_rows_v0_1",
+        "focused_answer_bridge": {
+            "status": "used" if supported_claims else "no_rows",
+            "runtime_ledger_row_count": len([row for row in runtime_ledger_rows or [] if isinstance(row, Mapping)]),
+            "context_row_count": len([row for row in context_rows or [] if isinstance(row, Mapping)]),
+            "policy": "no_specialist_llm_claim_synthesis_from_bounded_rows_only",
+        },
+        "validation_errors": errors,
+    }
+
+
 def verify_specialist_outputs_for_memo(
     memolets: list[Mapping[str, Any]],
     *,
@@ -621,6 +763,356 @@ def _rank_supported_claims(claims: list[dict[str, Any]]) -> list[dict[str, Any]]
     indexed = list(enumerate(claims))
     ranked = sorted(indexed, key=lambda item: _claim_rank_key(item[1], item[0]))
     return [claim for _, claim in ranked]
+
+
+def _focused_answer_supported_claims(
+    *,
+    context_rows: list[Mapping[str, Any]],
+    runtime_ledger_rows: list[Mapping[str, Any]],
+    evidence_requirement_plan: Mapping[str, Any],
+    response_language: str,
+) -> list[dict[str, Any]]:
+    ledger_rows = [dict(row) for row in runtime_ledger_rows if isinstance(row, Mapping)]
+    text_rows = [dict(row) for row in context_rows if isinstance(row, Mapping)]
+    selected_ledger = _focused_select_ledger_rows(ledger_rows, max_rows=3)
+    selected_text = _focused_select_context_rows(text_rows, max_rows=2)
+    all_selected = [*selected_ledger, *selected_text]
+    if not all_selected:
+        return []
+
+    tickers = _focused_tickers(all_selected, evidence_requirement_plan)
+    metrics = _unique_strings(
+        [
+            _focused_metric(row)
+            for row in all_selected
+            if _focused_metric(row)
+        ]
+    )
+    refs = _unique_strings([_focused_evidence_ref(row, index) for index, row in enumerate(all_selected, start=1)])
+    families = _unique_strings([_focused_source_family(row) for row in all_selected])
+    thesis = {
+        "claim": _focused_thesis_claim_text(tickers=tickers, metrics=metrics, row_count=len(all_selected), response_language=response_language),
+        "claim_type": "investment_thesis_synthesis",
+        "ticker_scope": tickers,
+        "metric_scope": metrics,
+        "memo_slot": "thesis",
+        "materiality": "high",
+        "direction": "mixed",
+        "evidence_refs": refs[:8],
+        "source_families": families,
+        "confidence": "medium",
+        "unsupported": False,
+        "caveats": [_focused_bridge_caveat(response_language)],
+        "missing_confirmations": [],
+        "agent_id": FOCUSED_ANSWER_SYNTHESIZER_AGENT_ID,
+        "claim_card_version": "v0.3",
+        "claim_id": "focused_answer_synthesizer_thesis_1",
+        "synthesis_policy": "focused_answer_claim_cards_from_bounded_rows_v0_1",
+    }
+    thesis.update(_claim_card_rank_annotation(thesis, -1))
+
+    claims = [thesis]
+    if selected_ledger:
+        claim = _focused_ledger_claim(selected_ledger, tickers=tickers, response_language=response_language)
+        claim.update(_claim_card_rank_annotation(claim, 0))
+        claims.append(claim)
+    if selected_text:
+        claim = _focused_context_claim(selected_text, tickers=tickers, response_language=response_language)
+        claim.update(_claim_card_rank_annotation(claim, 1))
+        claims.append(claim)
+    return _rank_supported_claims(claims)
+
+
+def _focused_select_ledger_rows(rows: list[dict[str, Any]], *, max_rows: int) -> list[dict[str, Any]]:
+    preferred_terms = (
+        "margin",
+        "operating_income",
+        "operating income",
+        "gross",
+        "revenue",
+        "sales",
+        "cash_flow",
+        "free_cash_flow",
+    )
+    scored: list[tuple[int, int, dict[str, Any]]] = []
+    seen_metrics: set[str] = set()
+    for index, row in enumerate(rows):
+        metric = _focused_metric(row).lower()
+        ref = _focused_evidence_ref(row, index + 1)
+        if not ref:
+            continue
+        score = 0
+        if _ledger_metric_value_is_mismatched(row):
+            score -= 200
+        for offset, term in enumerate(preferred_terms):
+            if term in metric:
+                score += 50 - offset
+        role = _ledger_metric_role(row)
+        if role in AMOUNT_ROLE_TERMS:
+            score += 20
+        if role in RATE_ROLE_TERMS and _ledger_metric_is_amount(row):
+            score -= 80
+        if str(row.get("period_role") or "").lower() in {"qtd", "ytd"}:
+            score += 5
+        if str(row.get("source_tier") or "") == "primary_sec_filing":
+            score += 5
+        scored.append((-score, index, row))
+    selected: list[dict[str, Any]] = []
+    has_compatible_amount_rows = any(not _ledger_metric_value_is_mismatched(row) for _, _, row in scored)
+    for _, _, row in sorted(scored):
+        if has_compatible_amount_rows and _ledger_metric_value_is_mismatched(row):
+            continue
+        metric = _focused_metric(row).lower()
+        metric_key = metric or _focused_evidence_ref(row, len(selected) + 1)
+        if metric_key in seen_metrics and len(selected) >= 1:
+            continue
+        selected.append(row)
+        seen_metrics.add(metric_key)
+        if len(selected) >= max_rows:
+            break
+    return selected
+
+
+def _focused_select_context_rows(rows: list[dict[str, Any]], *, max_rows: int) -> list[dict[str, Any]]:
+    preferred: list[tuple[int, int, dict[str, Any]]] = []
+    for index, row in enumerate(rows):
+        family = _focused_source_family(row)
+        text = " ".join(
+            str(row.get(key) or "")
+            for key in ("summary", "snippet", "text", "preview", "section", "source_type", "form_type")
+        ).lower()
+        score = 0
+        if family == "company_authored_unaudited_sec_filing":
+            score += 30
+        if family == "primary_sec_filing":
+            score += 15
+        if any(term in text for term in ("margin", "operating income", "profitability", "management", "explained", "cost")):
+            score += 20
+        if _focused_evidence_ref(row, index + 1):
+            score += 5
+        preferred.append((-score, index, row))
+    return [row for _, _, row in sorted(preferred)[:max_rows] if _focused_evidence_ref(row, 1)]
+
+
+def _focused_ledger_claim(rows: list[dict[str, Any]], *, tickers: list[str], response_language: str) -> dict[str, Any]:
+    fragments = []
+    for row in rows[:3]:
+        metric = _focused_metric_label(row, response_language=response_language) or "reported metric"
+        value = ledger_metric_display_value(row)
+        period = " ".join(str(row.get(key) or "").strip() for key in ("fiscal_year", "period_role") if str(row.get(key) or "").strip())
+        fragments.append(f"{metric}={value or 'disclosed'} ({period.strip() or 'current filing period'})")
+    ticker_text = ", ".join(tickers) or ("目标公司" if _focused_is_zh(response_language) else "The company")
+    if _focused_is_zh(response_language):
+        claim_text = f"本轮主要 SEC 披露证据为 {ticker_text} 的利润率分析提供了关键数值锚点：" + "；".join(fragments) + "。"
+        caveats = ["不要在没有相同期间和相同口径对比时，把这些数值外推为完整的利润率扩张或收缩结论。"]
+    else:
+        claim_text = f"Primary SEC filing evidence anchors {ticker_text}'s margin analysis with these reported values: " + "; ".join(fragments) + "."
+        caveats = ["Do not infer full margin expansion or compression without comparing the exact period and metric definitions."]
+    return {
+        "claim": claim_text,
+        "claim_type": "company_reported_financial_fact",
+        "ticker_scope": tickers,
+        "metric_scope": _unique_strings([_focused_metric(row) for row in rows]),
+        "memo_slot": "fundamentals",
+        "materiality": "high",
+        "direction": "mixed",
+        "evidence_refs": _unique_strings([_focused_evidence_ref(row, index) for index, row in enumerate(rows, start=1)])[:6],
+        "source_families": _unique_strings([_focused_source_family(row) for row in rows]),
+        "confidence": "high",
+        "unsupported": False,
+        "caveats": caveats,
+        "missing_confirmations": [],
+        "agent_id": FOCUSED_ANSWER_SYNTHESIZER_AGENT_ID,
+        "claim_card_version": "v0.3",
+        "claim_id": "focused_answer_synthesizer_fundamentals_1",
+    }
+
+
+def _focused_context_claim(rows: list[dict[str, Any]], *, tickers: list[str], response_language: str) -> dict[str, Any]:
+    refs = _unique_strings([_focused_evidence_ref(row, index) for index, row in enumerate(rows, start=1)])[:6]
+    families = _unique_strings([_focused_source_family(row) for row in rows])
+    forms = _unique_strings([row.get("form_type") or row.get("source_type") for row in rows])
+    ticker_text = ", ".join(tickers) or ("目标公司" if _focused_is_zh(response_language) else "The company")
+    if _focused_is_zh(response_language):
+        claim_text = f"本轮公司披露或管理层评论为 {ticker_text} 的利润率变化提供解释语境，但只能作为管理层表述使用，不能改写为新增审计财务事实。"
+        caveat_text = f"来源表单：{', '.join(forms)}。" if forms else "评论证据只限于本轮检索到的内容。"
+    else:
+        claim_text = f"{ticker_text} has bounded filing or company-authored commentary rows that can explain the margin movement, but those rows should be used as management context rather than as new audited financial facts."
+        caveat_text = f"Source forms: {', '.join(forms)}." if forms else "Commentary evidence is bounded to retrieved rows."
+    return {
+        "claim": claim_text,
+        "claim_type": "business_observation",
+        "ticker_scope": tickers,
+        "metric_scope": _unique_strings([_focused_metric(row) for row in rows if _focused_metric(row)] or ["margin"]),
+        "memo_slot": "fundamentals",
+        "materiality": "medium",
+        "direction": "mixed",
+        "evidence_refs": refs,
+        "source_families": families,
+        "confidence": "medium",
+        "unsupported": False,
+        "caveats": [caveat_text],
+        "missing_confirmations": [],
+        "agent_id": FOCUSED_ANSWER_SYNTHESIZER_AGENT_ID,
+        "claim_card_version": "v0.3",
+        "claim_id": "focused_answer_synthesizer_context_1",
+    }
+
+
+def _focused_thesis_claim_text(*, tickers: list[str], metrics: list[str], row_count: int, response_language: str) -> str:
+    if _focused_is_zh(response_language):
+        ticker_text = ", ".join(tickers) or "目标公司"
+        metric_text = ", ".join(_localized_metric_labels(metrics[:5], response_language=response_language)) or "请求指标"
+        return (
+            f"{ticker_text} 的回答应限定在本轮检索到的 {row_count} 条证据内：这些证据覆盖 {metric_text}；"
+            "足以支持初步判断，但不支持超出披露口径的趋势外推。"
+        )
+    ticker_text = ", ".join(tickers) or "The requested company"
+    metric_text = ", ".join(metrics[:5]) or "the requested metrics"
+    return (
+        f"{ticker_text} can receive a bounded focused answer because {row_count} retrieved evidence rows cover {metric_text}; "
+        "the conclusion should stay tied to those rows and preserve source-boundary caveats."
+    )
+
+
+def _focused_bridge_caveat(response_language: str) -> str:
+    if _focused_is_zh(response_language):
+        return "本次快速回答只使用本轮已检索的有界证据；由于按成本控制策略未激活专家分析，结论应保持来源和口径边界。"
+    return "Focused answer bridge uses bounded retrieved rows because specialist analysts were intentionally skipped."
+
+
+def _focused_is_zh(response_language: str) -> bool:
+    return str(response_language or "").strip().lower().replace("_", "-") in {"zh", "zh-cn", "zh-hans", "chinese", "中文", "简体中文"}
+
+
+def _focused_tickers(rows: list[dict[str, Any]], evidence_requirement_plan: Mapping[str, Any]) -> list[str]:
+    tickers = _unique_upper([row.get("ticker") or row.get("company") for row in rows])
+    if tickers:
+        return tickers
+    planned: list[Any] = []
+    for req in evidence_requirement_plan.get("requirements") or []:
+        if isinstance(req, Mapping):
+            planned.extend(req.get("tickers") or req.get("required_tickers") or [])
+    return _unique_upper(planned)
+
+
+def _focused_metric(row: Mapping[str, Any]) -> str:
+    return str(row.get("metric_family") or row.get("metric_name") or row.get("metric") or row.get("field") or "").strip()
+
+
+def ledger_metric_display_value(row: Mapping[str, Any]) -> str:
+    display = str(row.get("display_value_zh") or "").strip()
+    raw = str(row.get("raw_value_text") or "").strip()
+    value = str(row.get("value") or "").strip()
+    if _ledger_metric_is_amount(row) and _value_or_role_looks_rate(row, display):
+        if raw and not _looks_rate_value(raw):
+            return raw
+        if value and not _looks_rate_value(value):
+            return value
+    return str(display or raw or value).strip()
+
+
+def _ledger_metric_value_is_mismatched(row: Mapping[str, Any]) -> bool:
+    return _ledger_metric_is_amount(row) and _value_or_role_looks_rate(
+        row,
+        str(row.get("display_value_zh") or row.get("raw_value_text") or row.get("value") or ""),
+    )
+
+
+def _ledger_metric_is_amount(row: Mapping[str, Any]) -> bool:
+    metric_text = " ".join(
+        str(row.get(key) or "")
+        for key in ("metric_family", "metric_name", "metric", "field")
+    ).strip().lower()
+    if not metric_text:
+        return False
+    if any(term in metric_text for term in RATE_METRIC_TERMS):
+        return False
+    return any(term in metric_text for term in AMOUNT_METRIC_TERMS)
+
+
+def _ledger_metric_role(row: Mapping[str, Any]) -> str:
+    role = str(row.get("metric_role") or row.get("role") or "").strip().lower()
+    if role:
+        return role
+    ref = str(row.get("metric_id") or row.get("source_evidence_id") or row.get("evidence_ref") or "").lower()
+    for term in [*RATE_ROLE_TERMS, *AMOUNT_ROLE_TERMS]:
+        if f"::{term}::" in ref or ref.endswith(f"::{term}") or f":{term}:" in ref:
+            return term
+    return ""
+
+
+def _value_or_role_looks_rate(row: Mapping[str, Any], value_text: str) -> bool:
+    role = _ledger_metric_role(row)
+    return role in RATE_ROLE_TERMS or _looks_rate_value(value_text)
+
+
+def _looks_rate_value(value_text: str) -> bool:
+    text = str(value_text or "").strip().lower()
+    return bool(text) and any(marker in text for marker in ("%", "percent", "percentage", "百分比", "百分率"))
+
+
+def _focused_metric_label(row: Mapping[str, Any], *, response_language: str) -> str:
+    metric = str(row.get("metric_name") or row.get("metric_family") or row.get("metric") or row.get("field") or "").strip()
+    labels = _localized_metric_labels([metric], response_language=response_language)
+    return labels[0] if labels else metric
+
+
+def _localized_metric_labels(metrics: list[str], *, response_language: str) -> list[str]:
+    if not _focused_is_zh(response_language):
+        return metrics
+    mapping = {
+        "operating_income": "营业利润",
+        "operating income": "营业利润",
+        "revenue": "营收",
+        "net sales": "营收",
+        "sales": "营收",
+        "net_income": "净利润",
+        "net income": "净利润",
+        "gross_margin": "毛利率",
+        "gross margin": "毛利率",
+        "operating_margin": "营业利润率",
+        "operating margin": "营业利润率",
+        "capex": "资本开支",
+        "capital expenditures": "资本开支",
+        "free_cash_flow": "自由现金流",
+        "free cash flow": "自由现金流",
+    }
+    labels: list[str] = []
+    for metric in metrics:
+        raw = str(metric or "").strip()
+        if not raw:
+            continue
+        labels.append(mapping.get(raw.lower(), raw))
+    return labels
+
+
+def _focused_evidence_ref(row: Mapping[str, Any], index: int) -> str:
+    return str(
+        row.get("evidence_ref")
+        or row.get("evidence_id")
+        or row.get("metric_id")
+        or row.get("source_evidence_id")
+        or row.get("object_id")
+        or row.get("source_id")
+        or row.get("id")
+        or f"focused_evidence_row_{index}"
+    ).strip()
+
+
+def _focused_source_family(row: Mapping[str, Any]) -> str:
+    family = str(row.get("source_family") or "").strip()
+    if family:
+        return family
+    tier = str(row.get("source_tier") or "").strip()
+    if tier in SOURCE_FAMILY_CLAIM_SCOPE:
+        return tier
+    form = str(row.get("form_type") or row.get("source_type") or "").strip().upper()
+    if form in {"8-K", "6-K"}:
+        return "company_authored_unaudited_sec_filing"
+    if form in {"10-K", "10-Q", "20-F", "40-F"}:
+        return "primary_sec_filing"
+    return "primary_sec_filing"
 
 
 def _claim_card_rank_annotation(claim: Mapping[str, Any], index: int) -> dict[str, Any]:
@@ -731,6 +1223,7 @@ def _agent_expected_memo_slot(agent_id: str) -> str:
         "industry_supply_chain_analyst": "industry_relationship",
         "market_valuation_analyst": "market_valuation",
         "risk_counterevidence_analyst": "risk_counterevidence",
+        FOCUSED_ANSWER_SYNTHESIZER_AGENT_ID: "fundamentals",
     }.get(str(agent_id or ""), "")
 
 
@@ -925,8 +1418,8 @@ def _select_thesis_source_claims(claims: list[dict[str, Any]]) -> list[dict[str,
 def _synthesized_thesis_text(claims: list[dict[str, Any]]) -> str:
     parts = [str(item.get("claim") or "").strip() for item in claims if str(item.get("claim") or "").strip()]
     if not parts:
-        return "Synthesized thesis is supported only by the listed bounded ClaimCards."
-    return "Synthesized thesis from bounded ClaimCards: " + " | ".join(parts[:4])
+        return "The thesis is bounded by verified specialist claims and current source limitations."
+    return " ".join(part.rstrip(".") + "." for part in parts[:4])
 
 
 def _synthesized_direction(claims: list[dict[str, Any]]) -> str:
@@ -1201,6 +1694,7 @@ def _expected_memo_slots(agent_ids: list[str]) -> list[str]:
         "industry_supply_chain_analyst": "industry_relationship",
         "market_valuation_analyst": "market_valuation",
         "risk_counterevidence_analyst": "risk_counterevidence",
+        FOCUSED_ANSWER_SYNTHESIZER_AGENT_ID: "fundamentals",
     }
     for agent_id in agent_ids:
         slot = agent_slot.get(agent_id)
@@ -1248,6 +1742,14 @@ def _claim_card_stats(claims: list[Mapping[str, Any]], memo_outline: list[Mappin
             and _normalize_memo_slot(item.get("memo_slot")) == "thesis"
         ),
     }
+
+
+def _claim_type_for_source_scope(claim_type: Any, source_families: Any) -> str:
+    normalized = str(claim_type or "business_observation").strip()
+    families = set(_unique_strings(source_families))
+    if "relationship_graph" in families and normalized not in RELATIONSHIP_GRAPH_ALLOWED_CLAIM_TYPES:
+        return "relationship_hypothesis"
+    return normalized
 
 
 def _materiality_score(value: Any) -> int:
@@ -1375,13 +1877,24 @@ def verify_multi_agent_memo_draft(
         source_claim = supported_by_id.get(claim_id)
         if source_claim:
             unknown_numeric_tokens = sorted(_unknown_numeric_tokens(str(claim.get("claim") or ""), _claim_scope_text(source_claim)))
-            if unknown_numeric_tokens:
+            hard_unknown_tokens = [token for token in unknown_numeric_tokens if _is_material_numeric_token(token)]
+            soft_unknown_tokens = [token for token in unknown_numeric_tokens if token not in hard_unknown_tokens]
+            if hard_unknown_tokens:
                 errors.append(
                     {
                         "type": "memo_claim_numeric_token_not_in_source_claim",
                         "index": index,
                         "claim_id": claim_id,
-                        "numeric_tokens": unknown_numeric_tokens[:8],
+                        "numeric_tokens": hard_unknown_tokens[:8],
+                    }
+                )
+            if soft_unknown_tokens:
+                warnings.append(
+                    {
+                        "type": "memo_claim_numeric_token_not_in_source_claim",
+                        "index": index,
+                        "claim_id": claim_id,
+                        "numeric_tokens": soft_unknown_tokens[:8],
                     }
                 )
         source_families = set(_unique_strings(claim.get("source_families") or claim.get("source_family")))
@@ -1394,7 +1907,12 @@ def verify_multi_agent_memo_draft(
                     "source_families": sorted(source_families & CONTEXT_ONLY_SOURCE_FAMILIES),
                 }
             )
-        if "market_snapshot" in source_families and not str(claim.get("as_of_date") or "") and not _refs_contain_iso_date(refs):
+        if (
+            "market_snapshot" in source_families
+            and (claim_type in {"market_context", "valuation_context"} or source_families <= {"market_snapshot"})
+            and not str(claim.get("as_of_date") or "")
+            and not _refs_contain_iso_date(refs)
+        ):
             errors.append({"type": "market_claim_missing_as_of_date", "index": index})
         if "relationship_graph" in source_families and claim_type not in RELATIONSHIP_GRAPH_ALLOWED_CLAIM_TYPES:
             errors.append({"type": "relationship_graph_used_beyond_hypothesis", "index": index, "claim_type": claim_type})
@@ -1451,6 +1969,35 @@ def _memo_quality_gate_findings(
     memo_ready_count = int(stats.get("memo_ready_claim_count") or 0)
     if answer_status == "draft" and memo_ready_count == 0:
         warnings.append({"type": "memo_verified_but_no_memo_ready_claim_cards"})
+    direct_answer = str(memo.get("direct_answer") or "")
+    direct_answer_lower = direct_answer.lower()
+    if any(marker in direct_answer_lower for marker in ("synthesized thesis", "bounded claimcards", "claimcard")):
+        errors.append({"type": "memo_direct_answer_contains_internal_claimcard_language"})
+    if direct_answer.count(" | ") >= 2:
+        errors.append({"type": "memo_direct_answer_pipe_joined_claims"})
+    duplicate_sentences = _duplicate_direct_answer_sentences(direct_answer)
+    if duplicate_sentences:
+        errors.append({"type": "memo_direct_answer_repeats_sentences", "duplicate_count": len(duplicate_sentences)})
+    response_language = _memo_response_language(memo)
+    if response_language == "zh-CN":
+        offenders = _memo_non_chinese_user_facing_fields(memo)
+        if offenders:
+            errors.append(
+                {
+                    "type": "memo_zh_response_field_not_chinese",
+                    "response_language": response_language,
+                    "fields": offenders[:10],
+                }
+            )
+    memo_profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
+    profile = str(memo_profile.get("profile") or "compact")
+    if profile in {"standard", "expanded", "deep_research"}:
+        if not _memo_loose_items(memo.get("investment_implications")):
+            errors.append({"type": "memo_profile_missing_investment_implications", "profile": profile})
+        if not _memo_loose_items(memo.get("what_would_change_view")):
+            errors.append({"type": "memo_profile_missing_what_would_change_view", "profile": profile})
+        if not _memo_loose_items(memo.get("monitoring_items")):
+            errors.append({"type": "memo_profile_missing_monitoring_items", "profile": profile})
     minimum_claim_count = 3 if len(supported_claims) >= 3 else 1
     actual_claim_count = len(_memo_claims(memo))
     if answer_status == "draft" and minimum_claim_count > 1 and actual_claim_count < minimum_claim_count:
@@ -1489,6 +2036,92 @@ def _memo_quality_gate_findings(
     return errors, warnings
 
 
+def _duplicate_direct_answer_sentences(value: str) -> list[str]:
+    seen: set[str] = set()
+    duplicates: list[str] = []
+    for sentence in re.split(r"(?<=[.!?])\s+", str(value or "")):
+        normalized = re.sub(r"\s+", " ", sentence.strip().lower())
+        if len(normalized) < 40:
+            continue
+        if normalized in seen:
+            duplicates.append(sentence.strip())
+        seen.add(normalized)
+    return duplicates
+
+
+def _memo_loose_items(value: Any) -> list[str]:
+    items: list[str] = []
+    for item in value if isinstance(value, list) else []:
+        if isinstance(item, Mapping):
+            text = str(item.get("text") or item.get("claim") or item.get("reason") or "").strip()
+        else:
+            text = str(item or "").strip()
+        if text:
+            items.append(text)
+    return items
+
+
+def _memo_response_language(memo: Mapping[str, Any]) -> str:
+    value = memo.get("response_language")
+    if isinstance(value, Mapping):
+        return _normalize_response_language(value.get("language"))
+    return _normalize_response_language(value)
+
+
+def _normalize_response_language(value: Any) -> str:
+    raw = str(value or "").strip().lower().replace("_", "-")
+    if raw in {"zh", "zh-cn", "zh-hans", "chinese", "simplified-chinese", "simplified chinese", "中文", "简体中文"}:
+        return "zh-CN"
+    if raw in {"en", "en-us", "en-gb", "english", "英文"}:
+        return "en-US"
+    return ""
+
+
+def _memo_non_chinese_user_facing_fields(memo: Mapping[str, Any]) -> list[str]:
+    offenders: list[str] = []
+    fields: list[tuple[str, Any]] = [
+        ("direct_answer", memo.get("direct_answer")),
+        ("source_boundary", memo.get("source_boundary")),
+    ]
+    for index, claim in enumerate(_memo_claims(memo), start=1):
+        if isinstance(claim, Mapping):
+            fields.append((f"memo_claims[{index}].claim", claim.get("claim") or claim.get("text")))
+    for key in (
+        "investment_implications",
+        "what_would_change_view",
+        "monitoring_items",
+        "evidence_gaps_but_actionable",
+        "caveats",
+        "unsupported_claims_excluded",
+        "source_boundary_notes",
+    ):
+        for index, text in enumerate(_memo_loose_items(memo.get(key)), start=1):
+            fields.append((f"{key}[{index}]", text))
+    for field, text in fields:
+        if _requires_chinese_text(text) and not _looks_chinese_user_text(str(text or "")):
+            offenders.append(field)
+    return offenders
+
+
+def _requires_chinese_text(value: Any) -> bool:
+    text = str(value or "").strip()
+    if not text:
+        return False
+    stripped = re.sub(r"\[[^\]]+\]", " ", text)
+    stripped = re.sub(r"\b(?:[A-Z]{1,6}|10-[KQ]|8-K|GAAP|SEC|FY\d{2,4}|Q[1-4])\b", " ", stripped)
+    return len(stripped.strip()) >= 16
+
+
+def _looks_chinese_user_text(value: str) -> bool:
+    text = str(value or "")
+    cjk_count = len(re.findall(r"[\u4e00-\u9fff]", text))
+    if cjk_count >= 8:
+        return True
+    latin_text = re.sub(r"\b(?:[A-Z]{1,6}|10-[KQ]|8-K|GAAP|SEC|FY\d{2,4}|Q[1-4])\b", " ", text)
+    latin_words = len(re.findall(r"[A-Za-z]{3,}", latin_text))
+    return cjk_count >= 4 and cjk_count >= latin_words
+
+
 def _claim_scope_text(claim: Mapping[str, Any]) -> str:
     return " ".join(
         [
@@ -1518,16 +2151,56 @@ def _numeric_tokens(text: str) -> set[str]:
 
 def _numeric_token_details(text: str) -> list[tuple[str, float, str]]:
     tokens: list[tuple[str, float, str]] = []
+    expanded_text = _expand_numeric_ranges(str(text or ""))
     for match in re.finditer(
-        r"(?<![A-Za-z0-9])[-+]?\$?\d+(?:,\d{3})*(?:\.\d+)?\s*(?:%|x|X|M|B|K|bn|mn|million|billion)?",
-        str(text or ""),
+        r"(?<![A-Za-z0-9])[-+]?\$?\d+(?:,\d{3})*(?:\.\d+)?\s*(?:percentage\s+points?|个百分点|亿美元|百万美元|万美元|%|x|X|倍|M|B|K|bn|mn|million|billion|ppt)?",
+        expanded_text,
     ):
         token = match.group(0).strip().lower().replace("$", "").replace(",", "")
-        token = re.sub(r"\s+", "", token)
-        parsed = re.match(r"([-+]?\d+(?:\.\d+)?)(.*)", token)
+        token = re.sub(r"\s+", " ", token).strip()
+        parsed = re.match(r"([-+]?\d+(?:\.\d+)?)\s*(.*)", token)
         if token and parsed:
-            tokens.append((token, float(parsed.group(1)), str(parsed.group(2) or "")))
+            value, unit = _normalize_numeric_value_and_unit(float(parsed.group(1)), str(parsed.group(2) or ""))
+            tokens.append((token.replace(" ", ""), value, unit))
     return tokens
+
+
+def _expand_numeric_ranges(text: str) -> str:
+    unit_pattern = r"(percentage\s+points?|个百分点|亿美元|百万美元|万美元|%|x|X|倍|M|B|K|bn|mn|million|billion|ppt)"
+
+    def _replace(match: re.Match[str]) -> str:
+        left = match.group("left")
+        right = match.group("right")
+        unit = match.group("unit")
+        return f"{left}{unit} {right}{unit}"
+
+    return re.sub(
+        rf"(?P<left>\$?\d+(?:,\d{{3}})*(?:\.\d+)?)\s*[-–]\s*(?P<right>\$?\d+(?:,\d{{3}})*(?:\.\d+)?)\s*(?P<unit>{unit_pattern})",
+        _replace,
+        str(text or ""),
+        flags=re.IGNORECASE,
+    )
+
+
+def _normalize_numeric_value_and_unit(value: float, unit: str) -> tuple[float, str]:
+    normalized = str(unit or "").strip().lower().replace(" ", "")
+    if normalized in {"b", "bn", "billion"}:
+        return value, "b"
+    if normalized in {"m", "mn", "million"}:
+        return value / 1000.0, "b"
+    if normalized == "k":
+        return value / 1_000_000.0, "b"
+    if normalized == "亿美元":
+        return value / 10.0, "b"
+    if normalized == "百万美元":
+        return value / 1000.0, "b"
+    if normalized == "万美元":
+        return value / 100000.0, "b"
+    if normalized in {"x", "倍"}:
+        return value, "x"
+    if normalized in {"%", "percentagepoint", "percentagepoints", "ppt", "个百分点"}:
+        return value, "pp" if normalized != "%" else "%"
+    return value, normalized
 
 
 def _numeric_values_close(left_value: float, left_unit: str, right_value: float, right_unit: str) -> bool:
@@ -1538,15 +2211,13 @@ def _numeric_values_close(left_value: float, left_unit: str, right_value: float,
 
 
 def _is_material_numeric_token(token: str) -> bool:
-    parsed = re.match(r"([-+]?\d+(?:\.\d+)?)(.*)", str(token or "").strip().lower())
+    parsed = re.match(r"([-+]?\d+(?:\.\d+)?)\s*(.*)", str(token or "").strip().lower())
     if not parsed:
         return False
     value = abs(float(parsed.group(1)))
-    unit = str(parsed.group(2) or "")
-    if unit in {"%", "x", "b", "k", "bn", "mn", "million", "billion"}:
+    _, unit = _normalize_numeric_value_and_unit(value, str(parsed.group(2) or ""))
+    if unit in {"%", "pp", "x", "b"}:
         return True
-    if unit == "m":
-        return value > 12
     return False
 
 
@@ -1789,12 +2460,13 @@ def _required_caveats(judgment: Mapping[str, Any]) -> list[dict[str, Any]]:
 
 
 def _memo_claim_from_supported_claim(item: Mapping[str, Any]) -> dict[str, Any]:
+    source_families = _unique_strings(item.get("source_families") or item.get("source_family"))
     return {
         "claim_id": str(item.get("claim_id") or ""),
         "claim": str(item.get("claim") or ""),
-        "claim_type": str(item.get("claim_type") or "business_observation"),
+        "claim_type": _claim_type_for_source_scope(item.get("claim_type"), source_families),
         "evidence_refs": _unique_strings(item.get("evidence_refs") or item.get("refs")),
-        "source_families": _unique_strings(item.get("source_families") or item.get("source_family")),
+        "source_families": source_families,
         "confidence": _normalize_confidence(item.get("confidence")),
         "agent_id": str(item.get("agent_id") or ""),
         "ticker_scope": _unique_upper(item.get("ticker_scope") or item.get("tickers") or item.get("ticker")),
@@ -1827,7 +2499,8 @@ def _direct_answer_from_judgment(judgment: Mapping[str, Any], supported_claims: 
 
 
 def _clean_synthesized_thesis_prefix(value: str) -> str:
-    return str(value or "").replace("Synthesized thesis from bounded ClaimCards: ", "").strip()
+    cleaned = str(value or "").replace("Synthesized thesis from bounded ClaimCards: ", "").strip()
+    return cleaned.replace(" | ", " ")
 
 
 def _known_judgment_evidence_refs(judgment: Mapping[str, Any]) -> set[str]:
@@ -1879,15 +2552,28 @@ def _repair_instruction(errors: list[dict[str, Any]]) -> str:
         return "Regenerate memo from verified_judgment_plan only; do not include raw rows or tool calls."
     if types & {"memo_thesis_plan_missing_for_supported_claims", "memo_writer_did_not_carry_memo_thesis_plan", "memo_generation_policy_not_thesis_led"}:
         return "Regenerate memo as a thesis-led ClaimCard memo and carry memo_thesis_plan from the verified judgment plan."
+    if types & {"memo_direct_answer_contains_internal_claimcard_language", "memo_direct_answer_pipe_joined_claims"}:
+        return "Rewrite direct_answer as a natural user-facing investment paragraph; do not copy internal ClaimCard labels or pipe-joined claim text."
+    if "memo_direct_answer_repeats_sentences" in types:
+        return "Rewrite direct_answer once without repeated sentences; keep the same supported facts and evidence boundary."
+    if "memo_zh_response_field_not_chinese" in types:
+        return "Rewrite all user-facing memo prose in Simplified Chinese while preserving tickers, numbers, metric identifiers, form names, and evidence_refs."
+    if types & {
+        "memo_profile_missing_investment_implications",
+        "memo_profile_missing_what_would_change_view",
+        "memo_profile_missing_monitoring_items",
+    }:
+        return "Fill the required memo profile fields: investment_implications, what_would_change_view, and monitoring_items using only verified memo claims."
     return "Regenerate memo within verified judgment plan constraints."
 
 
 def _normalize_observation(payload: Mapping[str, Any]) -> dict[str, Any]:
+    source_families = _unique_strings(payload.get("source_families") or payload.get("source_family"))
     return {
         "claim": str(payload.get("claim") or "").strip(),
-        "claim_type": str(payload.get("claim_type") or "business_observation").strip(),
+        "claim_type": _claim_type_for_source_scope(payload.get("claim_type"), source_families),
         "evidence_refs": _unique_strings(payload.get("evidence_refs") or payload.get("refs")),
-        "source_families": _unique_strings(payload.get("source_families") or payload.get("source_family")),
+        "source_families": source_families,
         "confidence": _normalize_confidence(payload.get("confidence")),
         "unsupported": bool(payload.get("unsupported")),
         "caveats": _unique_strings(payload.get("caveats")),

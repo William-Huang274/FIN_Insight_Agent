@@ -49,9 +49,21 @@ DEFAULT_INDUSTRY_EVIDENCE = (
     / "industry_evidence_rows.jsonl"
 )
 DEFAULT_SECTOR_DEPTH_PACK = REPO_ROOT / "configs" / "sector_depth_packs_v0_2.yaml"
+DEFAULT_LEDGER_STORE = (
+    REPO_ROOT
+    / "data"
+    / "processed_private"
+    / "ledger"
+    / "sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027_core_ledger.duckdb"
+)
 DEFAULT_BGE_MODEL = Path("D:/hf_cache/hub/models--BAAI--bge-reranker-v2-m3/snapshots/953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e")
 DEFAULT_MARKET_SNAPSHOT_ID = "20260530_market_yahoo_chart_full238_6m_bars_3m_fmp_key_metrics_partial_v1"
 DEFAULT_MARKET_AS_OF_DATE = "2026-05-29"
+
+
+def _path_env_or_default(name: str, default: Path) -> Path:
+    value = os.environ.get(name)
+    return Path(value) if value else default
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -70,7 +82,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--research-lead-max-tokens", type=int, default=int(os.environ.get("RESEARCH_LEAD_MAX_TOKENS", "2400")))
     parser.add_argument("--specialist-max-tokens", type=int, default=int(os.environ.get("SPECIALIST_MAX_TOKENS", "2000")))
     parser.add_argument("--universe-max-tokens", type=int, default=int(os.environ.get("UNIVERSE_MAX_TOKENS", "3000")))
-    parser.add_argument("--memo-max-tokens", type=int, default=int(os.environ.get("MEMO_MAX_TOKENS", "1800")))
+    parser.add_argument("--memo-max-tokens", type=int, default=int(os.environ.get("MEMO_MAX_TOKENS", "3600")))
     parser.add_argument("--verifier-max-tokens", type=int, default=int(os.environ.get("VERIFIER_MAX_TOKENS", "1000")))
     parser.add_argument("--timeout-s", type=int, default=int(os.environ.get("MULTI_AGENT_REAL_CHAIN_TIMEOUT_S", "180")))
     parser.add_argument("--real-evidence-operators", action="store_true", help="Execute MCP/interactive retrieval instead of dry-run operator rows.")
@@ -80,6 +92,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--market-evidence-path", type=Path, default=Path(os.environ.get("MARKET_EVIDENCE_PATH", str(DEFAULT_MARKET_EVIDENCE))))
     parser.add_argument("--industry-evidence-path", type=Path, default=Path(os.environ.get("INDUSTRY_EVIDENCE_PATH", str(DEFAULT_INDUSTRY_EVIDENCE))))
     parser.add_argument("--sector-depth-pack-path", type=Path, default=Path(os.environ.get("SECTOR_DEPTH_PACK_PATH", str(DEFAULT_SECTOR_DEPTH_PACK))))
+    parser.add_argument("--ledger-store-path", type=Path, default=_path_env_or_default("LEDGER_STORE_PATH", DEFAULT_LEDGER_STORE))
     parser.add_argument("--market-snapshot-id", default=os.environ.get("MARKET_SNAPSHOT_ID", DEFAULT_MARKET_SNAPSHOT_ID))
     parser.add_argument("--market-as-of-date", default=os.environ.get("MARKET_AS_OF_DATE", DEFAULT_MARKET_AS_OF_DATE))
     parser.add_argument("--bge-model", type=Path, default=Path(os.environ.get("BGE_MODEL", str(DEFAULT_BGE_MODEL))))
@@ -222,8 +235,10 @@ def score_case(
     forbidden_scope_hits = sorted(activated_scope & set(_string_list(case.get("forbidden_scope_tickers"))))
     rendered_answer = str(result.get("rendered_answer") or "")
     memo_claim_count = len([row for row in memo.get("memo_claims") or [] if isinstance(row, Mapping)])
-    rendered_has_claim_section = "Key memo claims:" in rendered_answer
-    rendered_has_evidence_refs = "refs=" in rendered_answer
+    expected_response_language = _expected_response_language(case)
+    memo_response_language = _memo_response_language(memo)
+    rendered_has_claim_section = _rendered_has_claim_section(rendered_answer)
+    rendered_has_evidence_refs = _rendered_has_evidence_refs(rendered_answer)
 
     layer_checks = {
         "research_lead": {
@@ -272,6 +287,16 @@ def score_case(
             "rendered_answer_not_empty": bool(str(result.get("rendered_answer") or "").strip()),
             "rendered_answer_has_memo_claims": rendered_has_claim_section if case.get("require_rendered_memo_claims") else True,
             "rendered_answer_has_evidence_refs": rendered_has_evidence_refs if case.get("require_rendered_evidence_refs") else True,
+            "response_language_matches_query": (
+                memo_response_language == expected_response_language
+                if case.get("require_response_language_match")
+                else True
+            ),
+            "rendered_user_language_ok": (
+                _rendered_user_language_ok(rendered_answer, expected_response_language)
+                if case.get("require_response_language_match")
+                else True
+            ),
         },
         "payload_safety": {
             "raw_payload_not_in_summary": (summary.get("payload_policy") or {}).get("raw_evidence") == "not_included",
@@ -301,6 +326,8 @@ def score_case(
         "tool_call_count": len(tool_calls),
         "loop_break_reason": result.get("loop_break_reason") or "",
         "memo_status": memo_status,
+        "memo_response_language": memo_response_language,
+        "expected_response_language": expected_response_language,
         "memo_claim_count": memo_claim_count,
         "rendered_answer_chars": len(rendered_answer),
         "rendered_answer_has_claim_section": rendered_has_claim_section,
@@ -320,6 +347,49 @@ def score_case(
         "native_summary_artifact_present": bool(native),
         "rendered_answer_preview": rendered_answer[:640],
     }
+
+
+def _rendered_has_claim_section(rendered_answer: str) -> bool:
+    text = str(rendered_answer or "")
+    return "Key memo claims:" in text or "关键论据:" in text
+
+
+def _rendered_has_evidence_refs(rendered_answer: str) -> bool:
+    text = str(rendered_answer or "")
+    return "refs=" in text or "证据=" in text
+
+
+def _expected_response_language(case: Mapping[str, Any]) -> str:
+    explicit = str(case.get("response_language") or case.get("output_language") or "").strip().lower().replace("_", "-")
+    if explicit in {"zh", "zh-cn", "zh-hans", "chinese", "中文", "简体中文"}:
+        return "zh-CN"
+    if explicit in {"en", "en-us", "en-gb", "english", "英文"}:
+        return "en-US"
+    return "zh-CN" if re.search(r"[\u4e00-\u9fff]", str(case.get("prompt") or "")) else "en-US"
+
+
+def _memo_response_language(memo: Mapping[str, Any]) -> str:
+    value = memo.get("response_language")
+    if isinstance(value, Mapping):
+        value = value.get("language")
+    normalized = str(value or "").strip().lower().replace("_", "-")
+    if normalized in {"zh", "zh-cn", "zh-hans", "chinese", "中文", "简体中文"}:
+        return "zh-CN"
+    if normalized in {"en", "en-us", "en-gb", "english", "英文"}:
+        return "en-US"
+    return ""
+
+
+def _rendered_user_language_ok(rendered_answer: str, expected_language: str) -> bool:
+    if expected_language != "zh-CN":
+        return True
+    text = str(rendered_answer or "")
+    if not text.strip():
+        return False
+    cjk_count = len(re.findall(r"[\u4e00-\u9fff]", text))
+    latin_text = re.sub(r"\b(?:[A-Z]{1,8}|10-[KQ]|8-K|GAAP|SEC|FY\d{2,4}|Q[1-4])\b", " ", text)
+    latin_words = len(re.findall(r"[A-Za-z]{3,}", latin_text))
+    return cjk_count >= 40 and cjk_count >= latin_words
 
 
 def _selected_cases(rows: list[dict[str, Any]], args: argparse.Namespace) -> list[dict[str, Any]]:
@@ -356,6 +426,7 @@ def _graph_env(args: argparse.Namespace) -> dict[str, str]:
             "MARKET_EVIDENCE_PATH": str(args.market_evidence_path),
             "INDUSTRY_EVIDENCE_PATH": str(args.industry_evidence_path),
             "SECTOR_DEPTH_PACK_PATH": str(args.sector_depth_pack_path),
+            "LEDGER_STORE_PATH": str(args.ledger_store_path),
             "MARKET_SNAPSHOT_ID": args.market_snapshot_id,
             "MARKET_AS_OF_DATE": args.market_as_of_date,
             "BGE_MODEL": str(args.bge_model),
@@ -399,6 +470,9 @@ def _initial_state(
     if inventory_companies:
         project_inventory["companies"] = [{"ticker": ticker} for ticker in inventory_companies]
     state["project_inventory"] = project_inventory
+    response_language = str(case.get("response_language") or case.get("output_language") or "").strip()
+    if response_language:
+        state["response_language"] = response_language
     context = {
         "evidence_operator_mode": "real" if args.real_evidence_operators else "dry_run",
         "build_runtime_ledger": bool(args.real_evidence_operators),
@@ -408,6 +482,7 @@ def _initial_state(
         "market_evidence_path": str(args.market_evidence_path),
         "industry_evidence_path": str(args.industry_evidence_path),
         "sector_depth_pack_path": str(case.get("sector_depth_pack_path") or args.sector_depth_pack_path),
+        "ledger_store_path": str(args.ledger_store_path) if args.ledger_store_path else "",
         "market_snapshot": {"snapshot_id": args.market_snapshot_id, "as_of_date": args.market_as_of_date},
         "market_snapshot_id": args.market_snapshot_id,
         "market_as_of_date": args.market_as_of_date,
@@ -429,6 +504,8 @@ def _initial_state(
         "turn_index": int(case.get("turn_index") or 0),
         "previous_turn_summary": dict(previous_turn_summary or {}),
     }
+    if response_language:
+        context["response_language"] = response_language
     state["multi_agent_context"] = context
     return state
 
@@ -497,7 +574,10 @@ def _real_operator_checks(
     required: bool,
 ) -> dict[str, bool]:
     expected_tools = set(_string_list(case.get("expected_tool_names")))
-    sec_expected = "sec_search_filings" in expected_tools
+    exact_lookup_mode = str(case.get("expected_execution_mode") or "") == "deterministic_lookup"
+    runtime_ledger_required = bool(case.get("require_runtime_ledger_rows"))
+    exact_ledger_satisfies_sec = exact_lookup_mode and runtime_ledger_required and bool(result.get("runtime_ledger_rows"))
+    sec_expected = "sec_search_filings" in expected_tools and not exact_ledger_satisfies_sec
     market_expected = "market_get_snapshot" in expected_tools
     industry_expected = "industry_get_snapshot" in expected_tools
     relationship_expected = "relationship_graph_lookup" in expected_tools
@@ -505,6 +585,7 @@ def _real_operator_checks(
     sec_success_calls = [call for call in sec_calls if str(call.get("status") or "") not in {"dry_run", "error"}]
     sec_runtime = [_runtime_summary(call) for call in sec_calls]
     candidate_counts = [item.get("candidate_counts") or {} for item in sec_runtime if isinstance(item, Mapping)]
+    ledger_first_structured = _ledger_first_structured_route_present(candidate_counts)
     if not required:
         return {
             "real_retrieval_mode_required": True,
@@ -523,12 +604,25 @@ def _real_operator_checks(
         "sec_search_errors_absent": (not sec_expected) or all(str(call.get("status") or "") != "error" for call in sec_calls),
         "sec_search_context_rows_present": (not sec_expected) or bool(result.get("context_rows")),
         "sec_search_bm25_candidates_present": (not sec_expected) or any(_positive_count(counts.get("candidate_row_count_pre_rerank")) for counts in candidate_counts),
-        "sec_search_bge_rerank_present": (not sec_expected) or any(_positive_count(counts.get("candidate_sent_to_bge")) for counts in candidate_counts),
-        "sec_search_runtime_ledger_rows_present": (not bool(case.get("require_runtime_ledger_rows"))) or bool(result.get("runtime_ledger_rows")),
+        "sec_search_bge_rerank_present": (not sec_expected)
+        or any(_positive_count(counts.get("candidate_sent_to_bge")) for counts in candidate_counts)
+        or (runtime_ledger_required and ledger_first_structured and bool(result.get("runtime_ledger_rows")))
+        or exact_ledger_satisfies_sec,
+        "sec_search_runtime_ledger_rows_present": (not runtime_ledger_required) or bool(result.get("runtime_ledger_rows")),
         "market_rows_present": (not market_expected) or bool(result.get("market_snapshot_rows")),
         "industry_rows_present": (not industry_expected) or bool(result.get("industry_snapshot_rows")),
         "relationship_lookup_rows_present": (not relationship_expected) or bool((result.get("relationship_graph_observation") or {}).get("relationships")),
     }
+
+
+def _ledger_first_structured_route_present(candidate_counts: list[Mapping[str, Any]]) -> bool:
+    for counts in candidate_counts:
+        for stat in counts.get("route_candidate_stats") or []:
+            if not isinstance(stat, Mapping):
+                continue
+            if str(stat.get("retrieval_route") or "") == "ledger_first" and _positive_count(stat.get("candidate_count")):
+                return True
+    return False
 
 
 def _specialist_real_evidence_quality(
@@ -540,6 +634,11 @@ def _specialist_real_evidence_quality(
 ) -> dict[str, Any]:
     route_results = _specialist_route_results(result, {})
     route_status_by_agent = {str(row.get("agent_id") or ""): str(row.get("status") or "") for row in route_results}
+    route_by_agent = {
+        str(row.get("agent_id") or ""): dict(row)
+        for row in route_results
+        if isinstance(row, Mapping)
+    }
     memolets = {
         str(row.get("agent_id") or ""): dict(row)
         for row in result.get("specialist_outputs") or []
@@ -549,7 +648,8 @@ def _specialist_real_evidence_quality(
     for agent_id in sorted(required_specialists):
         data_view = build_agent_data_view(agent_id, result)
         rows = [dict(row) for row in data_view.get("bounded_evidence_rows") or [] if isinstance(row, Mapping)]
-        known_refs = {str(row.get("evidence_ref") or "") for row in rows if str(row.get("evidence_ref") or "").strip()}
+        known_refs = _known_row_refs(rows)
+        row_by_ref = _row_by_known_ref(rows)
         memolet = memolets.get(agent_id, {})
         validation = validate_specialist_memolet(memolet, known_evidence_refs=known_refs)
         observations = [dict(row) for row in memolet.get("observations") or [] if isinstance(row, Mapping)]
@@ -568,6 +668,9 @@ def _specialist_real_evidence_quality(
         }
         allowed_sources = _allowed_specialist_source_families(agent_id)
         row_source_families = {str(row.get("source_family") or "") for row in rows if str(row.get("source_family") or "").strip()}
+        route_row = route_by_agent.get(agent_id) or {}
+        comparative_primary_gate_required = _comparative_primary_gate_required(case, agent_id)
+        comparative_primary_gate = _comparative_primary_visibility_gate(case, rows, result)
         relationship_gate_required = _industry_relationship_gate_required(case, agent_id)
         relationship_refs = {
             str(row.get("evidence_ref") or "")
@@ -586,10 +689,14 @@ def _specialist_real_evidence_quality(
             "route_pass": route_status_by_agent.get(agent_id) == "pass",
             "validation_pass": validation.get("status") == "pass",
             "bounded_rows_present": bool(rows),
-            "bounded_rows_not_dry_run_placeholders": all(not str(row.get("evidence_ref") or "").startswith("bounded_row_") for row in rows),
+            "bounded_rows_not_dry_run_placeholders": _bounded_rows_not_dry_run_placeholders(rows),
             "bounded_row_source_family_owned": bool(row_source_families) and row_source_families <= allowed_sources,
             "observation_refs_known": observed_refs <= known_refs,
             "observation_source_family_owned": (not observed_sources) or observed_sources <= allowed_sources,
+            "temporal_claim_ref_depth_valid": _temporal_claim_ref_depth_valid(observations, row_by_ref=row_by_ref),
+            "prompt_row_distribution_present": _prompt_row_distribution_present(route_row),
+            "comparative_focus_ticker_primary_visible_or_gap": (not comparative_primary_gate_required)
+            or comparative_primary_gate["status"],
             "relationship_input_present_when_required": (not relationship_gate_required) or "relationship_graph" in row_source_families,
             "relationship_summary_present_when_required": (not relationship_gate_required)
             or bool(relationship_summary.get("relationships")),
@@ -606,7 +713,12 @@ def _specialist_real_evidence_quality(
             "input_source_families": sorted(row_source_families),
             "observed_source_families": sorted(observed_sources),
             "unknown_evidence_refs": sorted(observed_refs - known_refs),
+            "temporal_claim_ref_depth_failures": _temporal_claim_ref_depth_failures(observations, row_by_ref=row_by_ref),
             "relationship_gate_required": relationship_gate_required,
+            "comparative_primary_gate_required": comparative_primary_gate_required,
+            "focus_ticker_primary_visible": comparative_primary_gate["visible_tickers"],
+            "focus_ticker_primary_source_gaps": comparative_primary_gate["gap_tickers"],
+            "focus_ticker_primary_missing": comparative_primary_gate["missing_tickers"],
             "relationship_evidence_refs_available": sorted(relationship_refs),
             "relationship_evidence_refs_cited": sorted(cited_relationship_refs),
             **relationship_pack_gate["details"],
@@ -639,6 +751,255 @@ def _allowed_specialist_source_families(agent_id: str) -> set[str]:
             "run_artifact",
         }
     return {"primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot", "industry_snapshot", "relationship_graph"}
+
+
+def _known_row_refs(rows: list[Mapping[str, Any]]) -> set[str]:
+    return {ref for row in rows for ref in _row_ref_candidates(row)}
+
+
+def _row_by_known_ref(rows: list[Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]:
+    index: dict[str, Mapping[str, Any]] = {}
+    for row in rows:
+        for ref in _row_ref_candidates(row):
+            index.setdefault(ref, row)
+    return index
+
+
+def _row_ref_candidates(row: Mapping[str, Any]) -> list[str]:
+    refs: list[str] = []
+    for key in ("evidence_ref", "evidence_id", "ref_id", "id", "metric_id", "source_evidence_id", "object_id", "source_id"):
+        value = str(row.get(key) or "").strip()
+        if value and value not in refs:
+            refs.append(value)
+    return refs
+
+
+def _bounded_rows_not_dry_run_placeholders(rows: list[Mapping[str, Any]]) -> bool:
+    for row in rows:
+        ref = str(row.get("evidence_ref") or "").strip()
+        if not ref.startswith("bounded_row_"):
+            continue
+        if _bounded_row_has_real_evidence_fields(row):
+            continue
+        return False
+    return True
+
+
+def _bounded_row_has_real_evidence_fields(row: Mapping[str, Any]) -> bool:
+    source_family = str(row.get("source_family") or "").strip()
+    if source_family not in {
+        "primary_sec_filing",
+        "company_authored_unaudited_sec_filing",
+        "market_snapshot",
+        "industry_snapshot",
+        "relationship_graph",
+        "run_artifact",
+    }:
+        return False
+    return any(
+        str(row.get(key) or "").strip()
+        for key in (
+            "ticker",
+            "related_ticker",
+            "form_type",
+            "metric",
+            "summary",
+            "snapshot_id",
+            "as_of_date",
+            "edge_id",
+        )
+    )
+
+
+def _prompt_row_distribution_present(route_row: Mapping[str, Any]) -> bool:
+    distribution = route_row.get("prompt_row_distribution") if isinstance(route_row.get("prompt_row_distribution"), Mapping) else {}
+    if not distribution:
+        return False
+    return bool(distribution.get("by_ticker") or distribution.get("by_source_family"))
+
+
+def _temporal_claim_ref_depth_valid(
+    observations: list[Mapping[str, Any]],
+    *,
+    row_by_ref: Mapping[str, Mapping[str, Any]],
+) -> bool:
+    return not _temporal_claim_ref_depth_failures(observations, row_by_ref=row_by_ref)
+
+
+def _temporal_claim_ref_depth_failures(
+    observations: list[Mapping[str, Any]],
+    *,
+    row_by_ref: Mapping[str, Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    failures: list[dict[str, Any]] = []
+    for observation in observations:
+        if observation.get("unsupported"):
+            continue
+        claim = str(observation.get("claim") or "")
+        if not _looks_like_temporal_inference(claim):
+            continue
+        refs = [str(ref) for ref in observation.get("evidence_refs") or [] if str(ref or "").strip()]
+        if len(refs) >= 2:
+            continue
+        if _single_ref_temporal_claim_supported_by_row(refs, row_by_ref):
+            continue
+        failures.append(
+            {
+                "claim": claim[:240],
+                "evidence_ref_count": len(refs),
+                "reason": "temporal_or_trend_inference_requires_at_least_two_relevant_period_refs",
+            }
+        )
+    return failures
+
+
+def _single_ref_temporal_claim_supported_by_row(
+    refs: list[str],
+    row_by_ref: Mapping[str, Mapping[str, Any]],
+) -> bool:
+    if len(refs) != 1:
+        return False
+    row = row_by_ref.get(refs[0]) or {}
+    text = " ".join(
+        str(row.get(key) or "").lower()
+        for key in (
+            "summary",
+            "text",
+            "preview",
+            "metric",
+            "metric_name",
+            "metric_family",
+            "value",
+            "raw_value_text",
+            "display_value_zh",
+            "period_role",
+            "source_statement",
+        )
+    )
+    if not text:
+        return False
+    comparative_markers = (
+        "higher than",
+        "lower than",
+        "compared with",
+        "compared to",
+        "versus",
+        " vs ",
+        "year-over-year",
+        "year over year",
+        "yoy",
+        "quarter-over-quarter",
+        "quarter over quarter",
+        "qoq",
+        "increased",
+        "decreased",
+        "grew",
+        "declined",
+        "rose",
+        "fell",
+        "up ",
+        "down ",
+        "增加",
+        "增长",
+        "上升",
+        "下降",
+        "减少",
+        "同比",
+        "环比",
+        "较",
+        "高于",
+        "低于",
+    )
+    if not any(marker in text for marker in comparative_markers):
+        return False
+    return (
+        len(re.findall(r"\b20\d{2}\b", text)) >= 2
+        or "%" in text
+        or "percent" in text
+        or any(marker in text for marker in ("同比", "环比", "yoy", "qoq"))
+    )
+
+
+def _looks_like_temporal_inference(claim: str) -> bool:
+    text = claim.lower()
+    patterns = (
+        "sequential",
+        "prior quarter",
+        "prior period",
+        "previous quarter",
+        "previous period",
+        "year-over-year",
+        "year over year",
+        "quarter-over-quarter",
+        "quarter over quarter",
+        "yoy",
+        "qoq",
+        "grew from",
+        "declined from",
+        "increased from",
+        "decreased from",
+        "acceleration",
+        "deceleration",
+        "trajectory",
+    )
+    return any(pattern in text for pattern in patterns)
+
+
+def _comparative_primary_gate_required(case: Mapping[str, Any], agent_id: str) -> bool:
+    if agent_id not in {"fundamental_analyst", "risk_counterevidence_analyst"}:
+        return False
+    return len(_focus_tickers_from_case(case)) >= 2
+
+
+def _comparative_primary_visibility_gate(
+    case: Mapping[str, Any],
+    rows: list[Mapping[str, Any]],
+    result: Mapping[str, Any],
+) -> dict[str, Any]:
+    focus = set(_focus_tickers_from_case(case))
+    if len(focus) < 2:
+        return {"status": True, "visible_tickers": sorted(focus), "gap_tickers": [], "missing_tickers": []}
+    visible = {
+        str(row.get("ticker") or "").upper()
+        for row in rows
+        if str(row.get("source_family") or "") in {"", "primary_sec_filing", "company_authored_unaudited_sec_filing"}
+        and str(row.get("ticker") or "").strip()
+    }
+    gap_tickers = {
+        str(gap.get("ticker") or "").upper()
+        for gap in result.get("source_gaps") or []
+        if isinstance(gap, Mapping)
+        and str(gap.get("source_family") or "") == "primary_sec_filing"
+        and str(gap.get("reason_code") or gap.get("quality_gap_type") or "")
+    }
+    covered = visible | gap_tickers
+    missing = sorted(focus - covered)
+    return {
+        "status": not missing,
+        "visible_tickers": sorted(visible & focus),
+        "gap_tickers": sorted(gap_tickers & focus),
+        "missing_tickers": missing,
+    }
+
+
+def _focus_tickers_from_case(case: Mapping[str, Any]) -> list[str]:
+    activation = case.get("activation_plan") if isinstance(case.get("activation_plan"), Mapping) else {}
+    focus = case.get("focus_tickers") or activation.get("focus_tickers")
+    if not focus and isinstance(case.get("query_contract"), Mapping):
+        focus = case.get("query_contract", {}).get("focus_tickers")
+    return _unique_upper(focus)
+
+
+def _unique_upper(value: Any) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for item in _string_list(value):
+        ticker = str(item or "").upper().strip()
+        if not ticker or ticker in seen:
+            continue
+        seen.add(ticker)
+        result.append(ticker)
+    return result
 
 
 def _industry_relationship_gate_required(case: Mapping[str, Any], agent_id: str) -> bool:

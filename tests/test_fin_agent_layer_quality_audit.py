@@ -145,6 +145,139 @@ def test_real_chain_audit_uses_layer_checks_and_output_quality_flags() -> None:
     assert any(stage["stage_id"] == "memo_writer" and stage["gate_status"] == "pass" for stage in audit["stages"])
 
 
+def test_real_chain_audit_skips_memo_verifier_for_deterministic_lookup() -> None:
+    module = _load_script()
+    rubric = module._read_json(RUBRIC_PATH)
+    summary = {
+        "schema_version": "sec_agent_multi_agent_real_llm_chain_eval_v0.1",
+        "run_id": "unit_exact_lookup",
+        "gate_status": "pass",
+        "output_quality_audit": {"issue_counts": {}, "case_risk_levels": {"case_exact": "none"}},
+        "cases": [
+            {
+                "case_id": "case_exact",
+                "execution_mode": "deterministic_lookup",
+                "memo_status": "",
+                "claim_verification": "",
+                "required_agents": ["sec_operator", "renderer"],
+                "expected_specialist_agents": [],
+                "rendered_answer_chars": 200,
+                "rendered_answer_has_evidence_refs": True,
+                "rendered_answer_preview": "单指标结果 证据=ref_1",
+                "layer_checks": {
+                    "research_lead": {
+                        "llm_invoked": True,
+                        "llm_calls_ok": True,
+                        "validation_pass": True,
+                        "execution_mode_match": True,
+                        "required_agents_present": True,
+                        "forbidden_agents_absent": True,
+                        "forbidden_scope_absent": True,
+                    },
+                    "evidence_operators": {
+                        "expected_operator_agents_called": True,
+                        "expected_tool_names_called": True,
+                        "tool_ownership_valid": True,
+                        "tool_budget_lte": True,
+                        "no_budget_loop_break": True,
+                        "no_duplicate_loop_break": True,
+                    },
+                    "memo_verifier": {
+                        "memo_llm_pass": True,
+                        "memo_status_allowed": True,
+                        "rendered_answer_has_memo_claims": True,
+                        "rendered_answer_has_evidence_refs": True,
+                        "claim_verification_pass": True,
+                        "verifier_llm_pass": True,
+                    },
+                },
+            }
+        ],
+    }
+
+    audit = module.audit_summary(summary, rubric=rubric)
+    stages = {stage["stage_id"]: stage for stage in audit["stages"]}
+
+    assert stages["memo_writer"]["gate_status"] == "skipped"
+    assert stages["verifier"]["gate_status"] == "skipped"
+
+
+def test_real_chain_audit_infers_universe_and_specialists_from_activated_agents() -> None:
+    module = _load_script()
+    rubric = module._read_json(RUBRIC_PATH)
+    summary = {
+        "schema_version": "sec_agent_multi_agent_real_llm_chain_eval_v0.1",
+        "run_id": "unit_deep_research",
+        "gate_status": "pass",
+        "output_quality_audit": {"issue_counts": {}, "case_risk_levels": {"case_deep": "none"}},
+        "cases": [
+            {
+                "case_id": "case_deep",
+                "execution_mode": "deep_research",
+                "memo_status": "draft",
+                "claim_verification": "pass",
+                "activated_agents": [
+                    "research_lead",
+                    "universe_relationship",
+                    "fundamental_analyst",
+                    "industry_supply_chain_analyst",
+                    "memo_writer",
+                    "verifier",
+                    "renderer",
+                ],
+                "rendered_answer_chars": 500,
+                "rendered_answer_has_evidence_refs": True,
+                "rendered_answer_preview": "Key memo claims: claim refs=ref_1",
+                "agent_audit": {"verifier": {"input_projection": {"projected_claim_count": 1}}},
+                "layer_checks": {
+                    "research_lead": {
+                        "llm_invoked": True,
+                        "llm_calls_ok": True,
+                        "validation_pass": True,
+                        "execution_mode_match": True,
+                        "required_agents_present": True,
+                        "forbidden_agents_absent": True,
+                        "forbidden_scope_absent": True,
+                    },
+                    "universe_relationship": {
+                        "llm_invoked_when_expected": True,
+                        "llm_calls_ok": True,
+                        "validation_pass_when_expected": True,
+                    },
+                    "evidence_operators": {
+                        "expected_operator_agents_called": True,
+                        "expected_tool_names_called": True,
+                        "tool_ownership_valid": True,
+                        "tool_budget_lte": True,
+                        "no_budget_loop_break": True,
+                        "no_duplicate_loop_break": True,
+                    },
+                    "specialists": {
+                        "expected_routes_present": True,
+                        "expected_routes_valid": True,
+                        "real_evidence_quality_pass": True,
+                        "verification_status_valid": True,
+                    },
+                    "memo_verifier": {
+                        "memo_llm_pass": True,
+                        "memo_status_allowed": True,
+                        "rendered_answer_has_memo_claims": True,
+                        "rendered_answer_has_evidence_refs": True,
+                        "claim_verification_pass": True,
+                        "verifier_llm_pass": True,
+                    },
+                },
+            }
+        ],
+    }
+
+    audit = module.audit_summary(summary, rubric=rubric)
+    stages = {stage["stage_id"]: stage for stage in audit["stages"]}
+
+    assert stages["universe_relationship"]["gate_status"] == "pass"
+    assert stages["specialists"]["gate_status"] == "pass"
+
+
 def test_universe_relationship_audit_passes_clean_summary() -> None:
     module = _load_script()
     rubric = module._read_json(RUBRIC_PATH)
@@ -253,6 +386,42 @@ def test_coverage_reflection_audit_passes_clean_summary() -> None:
     assert audit["gate_status"] == "pass"
     assert audit["source_type"] == "coverage_reflection"
     assert audit["stages"][0]["stage_id"] == "coverage_reflection"
+
+
+def test_judgment_memo_audit_passes_clean_summary() -> None:
+    module = _load_script()
+    rubric = module._read_json(RUBRIC_PATH)
+    checks = {
+        "graph_stopped_after_verifier": True,
+        "s5_specialist_case_passed": True,
+        "judgment_plan_present": True,
+        "s6_aggregate_supported_claims_present": True,
+        "memo_thesis_plan_present": True,
+        "memo_thesis_pack_present": True,
+        "memo_thesis_pack_ready": True,
+        "memo_writer_allowed": True,
+        "memo_route_pass": True,
+        "memo_not_fallback": True,
+        "memo_claims_present": True,
+        "memo_claim_count_min_when_ready": True,
+        "memo_thesis_plan_carried": True,
+        "memo_raw_rows_not_consumed": True,
+        "memo_tool_calls_not_requested": True,
+        "verifier_pass": True,
+    }
+    summary = {
+        "schema_version": "sec_agent_judgment_memo_diagnostic_v0.1",
+        "run_id": "unit_judgment_memo",
+        "gate_status": "pass",
+        "metrics": {"memo_repair_attempts_total": 0},
+        "cases": [{"case_id": "case_a", "status": "pass", "checks": checks}],
+    }
+
+    audit = module.audit_summary(summary, rubric=rubric)
+
+    assert audit["gate_status"] == "pass"
+    assert audit["source_type"] == "judgment_memo"
+    assert audit["stages"][0]["stage_id"] == "judgment_memo_verifier"
 
 
 def test_unknown_schema_fails() -> None:

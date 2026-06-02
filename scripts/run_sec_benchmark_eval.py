@@ -877,12 +877,25 @@ def _route_source_filters(route: dict[str, Any]) -> dict[str, Any]:
 
 def _route_object_queries(route: dict[str, Any], task: dict[str, Any]) -> list[str]:
     queries: list[str] = []
-    for family in route.get("metric_families") or []:
-        queries.extend(_numeric_check_object_queries({"metric": family, "metric_families": [family]}))
+    families = [str(family) for family in route.get("metric_families") or [] if str(family)]
+    family_cap = _route_object_query_family_cap(route)
+    for family in families[:family_cap]:
+        queries.append(_metric_family_object_query(str(family)))
     task_text = str(task.get("question_zh") or task.get("question") or "").strip()
-    if task_text:
+    if task_text and len(families) <= 2:
         queries.append(task_text)
     return _dedupe_queries(queries)
+
+
+def _route_object_query_family_cap(route: dict[str, Any]) -> int:
+    return 4
+
+
+def _metric_family_object_query(family: str) -> str:
+    queries = _numeric_check_object_queries({"metric": family, "metric_families": [family]})
+    if len(queries) > 1:
+        return queries[-1]
+    return queries[0] if queries else family
 
 
 def _route_text_queries(case: dict[str, Any], route: dict[str, Any], task: dict[str, Any]) -> list[str]:

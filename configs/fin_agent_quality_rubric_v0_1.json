@@ -134,6 +134,8 @@
         "sec_search_bge_rerank_present",
         "bge_cuda_when_auto_and_available",
         "exact_value_ledger_rows_present",
+        "row_distribution_present",
+        "comparative_focus_ticker_primary_context_or_gap",
         "market_rows_present",
         "industry_rows_present",
         "relationship_rows_available",
@@ -173,6 +175,8 @@
       "required_case_pass_rate": 1.0,
       "required_checks": [
         "memo_llm_pass",
+        "memo_profile_matches_case_depth",
+        "memo_direct_answer_profile_length",
         "memo_status_allowed",
         "rendered_answer_has_memo_claims",
         "rendered_answer_has_evidence_refs"

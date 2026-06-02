@@ -192,6 +192,52 @@ def test_compiled_retrieval_routes_are_capped_by_agent_permission_matrix() -> No
     assert {route["retrieval_route"] for route in retrieval_plan["routes"]} == {"filing_text"}
 
 
+def test_standard_compiled_retrieval_routes_coalesce_same_scope_before_budget() -> None:
+    plan = {
+        "requirements": [
+            {
+                "requirement_id": "req_revenue",
+                "task_id": "fundamentals_revenue",
+                "question_zh": "Need filing text for revenue.",
+                "tickers": ["NVDA", "AMD"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["revenue"],
+                "evidence_routes": ["filing_text"],
+            },
+            {
+                "requirement_id": "req_margin",
+                "task_id": "fundamentals_margin",
+                "question_zh": "Need filing text for margins.",
+                "tickers": ["AMD", "NVDA"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["gross_margin"],
+                "evidence_routes": ["filing_text"],
+            },
+        ]
+    }
+
+    retrieval_plan = compile_multi_agent_retrieval_plan(
+        plan,
+        query_contract={
+            "focus_tickers": ["NVDA", "AMD"],
+            "search_scope_tickers": ["NVDA", "AMD"],
+            "years": [2026],
+            "filing_types": ["10-Q"],
+            "source_tiers": ["primary_sec_filing"],
+        },
+        activation_plan={"execution_mode": "standard_memo", "max_tool_calls_total": 12},
+    )
+
+    assert len(retrieval_plan["routes"]) == 1
+    assert retrieval_plan["routes"][0]["metric_families"] == ["revenue", "gross_margin"]
+    assert retrieval_plan["route_coalescing"]["original_route_count"] == 2
+    assert retrieval_plan["summary"]["route_count"] == 1
+
+
 def test_research_lead_data_view_is_summary_inventory_and_artifact_refs_only() -> None:
     view = build_agent_data_view(
         "research_lead",
@@ -271,6 +317,156 @@ def test_supporting_specialist_data_view_uses_priority_budget() -> None:
     assert view["input_budget"]["agent_priority"] == "supporting"
     assert view["input_budget"]["bounded_evidence_row_budget"] == 20
     assert len(view["bounded_evidence_rows"]) == 20
+
+
+def test_comparative_fundamental_data_view_preserves_focus_ticker_primary_rows() -> None:
+    view = build_agent_data_view(
+        "fundamental_analyst",
+        {
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "query_contract": {"focus_tickers": ["NVDA", "AMD"]},
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"amd_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric": "revenue",
+                    "summary": f"AMD revenue row {index}.",
+                }
+                for index in range(1, 40)
+            ]
+            + [
+                {
+                    "metric_id": f"nvda_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "revenue",
+                    "summary": f"NVDA revenue row {index}.",
+                }
+                for index in range(1, 4)
+            ],
+        },
+    )
+
+    rows = view["bounded_evidence_rows"]
+    tickers = {row["ticker"] for row in rows}
+
+    assert {"NVDA", "AMD"} <= tickers
+    assert view["bounded_row_distribution"]["by_ticker"]["NVDA"] >= 1
+    assert view["bounded_row_distribution"]["by_ticker_source_family"]["NVDA|primary_sec_filing"] >= 1
+
+
+def test_comparative_fundamental_data_view_soft_balances_focus_tickers() -> None:
+    view = build_agent_data_view(
+        "fundamental_analyst",
+        {
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "query_contract": {"focus_tickers": ["NVDA", "AMD"]},
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"amd_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric": "revenue",
+                    "summary": f"AMD revenue row {index}.",
+                }
+                for index in range(1, 40)
+            ]
+            + [
+                {
+                    "metric_id": f"nvda_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "revenue",
+                    "summary": f"NVDA revenue row {index}.",
+                }
+                for index in range(1, 40)
+            ],
+        },
+    )
+
+    distribution = view["bounded_row_distribution"]["by_ticker"]
+
+    assert distribution["NVDA"] >= 10
+    assert distribution["AMD"] >= 10
+
+
+def test_comparative_risk_data_view_preserves_market_snapshot_rows() -> None:
+    view = build_agent_data_view(
+        "risk_counterevidence_analyst",
+        {
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "query_contract": {"focus_tickers": ["NVDA", "AMD"]},
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"amd_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric": "revenue",
+                    "summary": f"AMD revenue row {index}.",
+                }
+                for index in range(1, 30)
+            ]
+            + [
+                {
+                    "metric_id": f"nvda_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "metric": "revenue",
+                    "summary": f"NVDA revenue row {index}.",
+                }
+                for index in range(1, 30)
+            ],
+            "market_snapshot_rows": [
+                {"evidence_ref": "market_nvda", "source_family": "market_snapshot", "ticker": "NVDA", "summary": "NVDA market row."},
+                {"evidence_ref": "market_amd", "source_family": "market_snapshot", "ticker": "AMD", "summary": "AMD market row."},
+            ],
+        },
+    )
+
+    distribution = view["bounded_row_distribution"]
+
+    assert distribution["by_source_family"]["market_snapshot"] == 2
+    assert distribution["by_ticker"]["NVDA"] >= 1
+    assert distribution["by_ticker"]["AMD"] >= 1
+
+
+def test_comparative_risk_data_view_preserves_untickered_industry_rows() -> None:
+    view = build_agent_data_view(
+        "risk_counterevidence_analyst",
+        {
+            "agent_activation_plan": {"execution_mode": "standard_memo"},
+            "query_contract": {"focus_tickers": ["XOM", "CVX"]},
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": f"xom_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "XOM",
+                    "metric": "cash_flow",
+                    "summary": f"XOM cash-flow row {index}.",
+                }
+                for index in range(1, 30)
+            ]
+            + [
+                {
+                    "metric_id": f"cvx_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "CVX",
+                    "metric": "cash_flow",
+                    "summary": f"CVX cash-flow row {index}.",
+                }
+                for index in range(1, 30)
+            ],
+            "industry_snapshot_rows": [
+                {"evidence_ref": "oil_ref", "source_family": "industry_snapshot", "summary": "Oil commodity context."},
+                {"evidence_ref": "gas_ref", "source_family": "industry_snapshot", "summary": "Gas commodity context."},
+            ],
+        },
+    )
+
+    distribution = view["bounded_row_distribution"]
+
+    assert distribution["by_source_family"]["industry_snapshot"] == 2
 
 
 def test_memo_writer_data_view_only_contains_verified_summary() -> None:

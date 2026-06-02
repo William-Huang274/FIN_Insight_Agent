@@ -16,6 +16,7 @@
 # Runtime and evaluation outputs
 /eval/
 /reports/demo/
+/reports/eval/
 /reports/evidence_packs/
 /reports/evidence_pool/
 /reports/exact_value_ledgers/

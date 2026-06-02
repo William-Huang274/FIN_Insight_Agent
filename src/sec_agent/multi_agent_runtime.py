@@ -27,6 +27,8 @@ INDUSTRY_RELATIONSHIP_DEEP_MIN_ROWS = 6
 RELATIONSHIP_SUMMARY_MAX_ROWS = 16
 RELATIONSHIP_SUMMARY_DEEP_RESEARCH_MAX_ROWS = 24
 SEC_SEARCH_RUNTIME_POLICY_SCHEMA_VERSION = "sec_agent_sec_search_runtime_policy_v0.1"
+SEC_SEARCH_TEXT_ROUTES = {"filing_text", "risk_text", "8k_commentary"}
+SEC_SEARCH_GROUP_ROUTES = {"ledger_first", *SEC_SEARCH_TEXT_ROUTES}
 
 ROUTE_OPERATOR_TOOL: dict[str, tuple[str, str]] = {
     "ledger_first": ("sec_operator", "sec_query_exact_value_ledger"),
@@ -70,7 +72,12 @@ def build_multi_agent_evidence_requirement_plan(
 ) -> dict[str, Any]:
     """Normalize business evidence needs and attach multi-agent ownership metadata."""
     plan = build_evidence_requirement_plan(dict(query_contract or {}), case=dict(case or {}))
-    enriched_requirements = [_enrich_evidence_requirement(req) for req in plan.get("requirements") or [] if isinstance(req, Mapping)]
+    reconciled_requirements = _reconcile_requirements_with_activation_sources(
+        [dict(req) for req in plan.get("requirements") or [] if isinstance(req, Mapping)],
+        query_contract,
+        activation_plan or {},
+    )
+    enriched_requirements = [_enrich_evidence_requirement(req) for req in reconciled_requirements]
     enriched = {
         **plan,
         "requirements": enriched_requirements,
@@ -84,6 +91,63 @@ def build_multi_agent_evidence_requirement_plan(
     validation = validate_multi_agent_evidence_requirement_plan(enriched, activation_plan=activation_plan)
     enriched["multi_agent_evidence_requirement_validation"] = validation
     return enriched
+
+
+def _reconcile_requirements_with_activation_sources(
+    requirements: list[dict[str, Any]],
+    query_contract: Mapping[str, Any],
+    activation_plan: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    if not requirements:
+        return requirements
+    active_agents = set(_string_list(activation_plan.get("activate_agents")))
+    allowed_sources = set(_string_list(activation_plan.get("allowed_source_families")))
+    contract_sources = set(
+        _string_list(query_contract.get("source_tiers"))
+        + _string_list(query_contract.get("source_families"))
+        + _string_list((query_contract.get("scope") or {}).get("source_tiers") if isinstance(query_contract.get("scope"), Mapping) else [])
+    )
+    source_scope = allowed_sources | contract_sources
+    required_routes: list[str] = []
+    if "market_operator" in active_agents and "market_snapshot" in source_scope:
+        required_routes.append("market_snapshot")
+    if "industry_operator" in active_agents and "industry_snapshot" in source_scope:
+        required_routes.append("industry_snapshot")
+    if "universe_relationship" in active_agents and "relationship_graph" in source_scope:
+        required_routes.append("relationship_graph")
+    if not required_routes:
+        return requirements
+
+    present_routes = {
+        route
+        for requirement in requirements
+        for route in _string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes"))
+    }
+    missing_routes = [route for route in required_routes if route not in present_routes]
+    if not missing_routes:
+        return requirements
+
+    reconciled = [dict(req) for req in requirements]
+    target_index = _primary_requirement_index(reconciled)
+    target = dict(reconciled[target_index])
+    routes = _dedupe([*_string_list(target.get("evidence_routes") or target.get("retrieval_routes")), *missing_routes])
+    source_families = _dedupe([*_string_list(target.get("source_families") or target.get("source_tiers")), *_source_families_for_routes(missing_routes)])
+    target["evidence_routes"] = routes
+    target["source_tiers"] = _dedupe([*_string_list(target.get("source_tiers")), *source_families])
+    target["source_families"] = source_families
+    metadata = dict(target.get("metadata") or {})
+    metadata["activation_source_reconciliation_added_routes"] = missing_routes
+    metadata["activation_source_reconciliation_policy"] = "active_operator_source_family_route_alignment_v0_1"
+    target["metadata"] = metadata
+    reconciled[target_index] = target
+    return reconciled
+
+
+def _primary_requirement_index(requirements: list[Mapping[str, Any]]) -> int:
+    for index, requirement in enumerate(requirements):
+        if str(requirement.get("priority") or "").strip().lower() in {"primary", "critical", ""}:
+            return index
+    return 0
 
 
 def validate_multi_agent_evidence_requirement_plan(
@@ -194,6 +258,7 @@ def compile_multi_agent_retrieval_plan(
     if "evidence_requirements" not in contract and evidence_requirement_plan.get("requirements"):
         contract["evidence_requirements"] = list(evidence_requirement_plan.get("requirements") or [])
     plan = build_retrieval_plan(contract, case=dict(case or {}))
+    plan = _coalesce_retrieval_plan_routes(plan, activation_plan or {})
     return _cap_retrieval_plan_routes(plan, activation_plan or {})
 
 
@@ -275,6 +340,143 @@ def _relationship_route_budget(
         base_route_count += len([route for route in _string_list(req.get("evidence_routes") or req.get("retrieval_routes")) if route != "relationship_graph"])
     relationship_lookup_reserve = 1 if "universe_relationship" in set(_string_list(activation_plan.get("activate_agents"))) else 0
     return max(0, max_total - base_route_count - relationship_lookup_reserve)
+
+
+def _coalesce_retrieval_plan_routes(plan: Mapping[str, Any], activation_plan: Mapping[str, Any]) -> dict[str, Any]:
+    """Merge equivalent compiled routes before budget pruning.
+
+    Research Lead can produce several business requirements that map to the
+    same physical SEC/market/industry scope. This keeps the business tasks but
+    avoids multiplying identical retrieval work.
+    """
+    merged_plan = dict(plan or {})
+    routes = [dict(route) for route in merged_plan.get("routes") or [] if isinstance(route, Mapping)]
+    if len(routes) <= 1 or not _route_coalescing_enabled(activation_plan):
+        return merged_plan
+
+    merged_by_key: dict[tuple[Any, ...], dict[str, Any]] = {}
+    merged_route_ids: dict[tuple[Any, ...], list[str]] = {}
+    order: list[tuple[Any, ...]] = []
+    for route in routes:
+        key = _route_coalescing_key(route)
+        if key not in merged_by_key:
+            merged_by_key[key] = dict(route)
+            merged_route_ids[key] = [str(route.get("route_id") or "")]
+            order.append(key)
+            continue
+        base = merged_by_key[key]
+        merged_route_ids[key].append(str(route.get("route_id") or ""))
+        base["tickers"] = _dedupe([*_string_list(base.get("tickers")), *_string_list(route.get("tickers"))])
+        base["years"] = sorted(set(_int_list(base.get("years")) + _int_list(route.get("years"))))
+        base["filing_types"] = _dedupe([*_string_list(base.get("filing_types")), *_string_list(route.get("filing_types"))])
+        base["source_tiers"] = _dedupe([*_string_list(base.get("source_tiers")), *_string_list(route.get("source_tiers"))])
+        base["metric_families"] = _dedupe([*_string_list(base.get("metric_families")), *_string_list(route.get("metric_families"))])
+        base["period_roles"] = _dedupe([*_string_list(base.get("period_roles")), *_string_list(route.get("period_roles"))])
+        base["section_hints"] = _dedupe([*_string_list(base.get("section_hints")), *_string_list(route.get("section_hints"))])
+        base["candidate_budget"] = max(_bounded_positive_int(base.get("candidate_budget"), default=0), _bounded_positive_int(route.get("candidate_budget"), default=0))
+        base["rerank_budget"] = max(_bounded_positive_int(base.get("rerank_budget"), default=0), _bounded_positive_int(route.get("rerank_budget"), default=0))
+        base["evidence_requirement_id"] = ",".join(
+            _dedupe([*_string_list(base.get("evidence_requirement_id")), *_string_list(route.get("evidence_requirement_id"))])
+        )
+        coverage = dict(base.get("coverage_requirements") or {})
+        other_coverage = route.get("coverage_requirements") if isinstance(route.get("coverage_requirements"), Mapping) else {}
+        for field in ("tickers", "years", "filing_types", "source_tiers", "metric_families", "period_roles", "market_fields", "market_analysis_tools"):
+            if field == "years":
+                coverage[field] = sorted(set(_int_list(coverage.get(field)) + _int_list(other_coverage.get(field))))
+            else:
+                coverage[field] = _dedupe([*_string_list(coverage.get(field)), *_string_list(other_coverage.get(field))])
+        base["coverage_requirements"] = {key: value for key, value in coverage.items() if value not in ([], {}, "", None)}
+
+    merged_routes = []
+    coalesced_groups = []
+    for index, key in enumerate(order, start=1):
+        route = dict(merged_by_key[key])
+        route = _promote_coverage_scope_to_route(route)
+        ids = [item for item in merged_route_ids[key] if item]
+        if len(ids) > 1:
+            route["route_id"] = f"{str(route.get('task_id') or 'coalesced')}::{route.get('retrieval_route')}::group_{index}"
+            route["coalesced_route_ids"] = ids
+            route["route_coalescing_policy"] = "same_route_scope_union_metric_families_v0_1"
+            coalesced_groups.append(
+                {
+                    "route_id": route["route_id"],
+                    "retrieval_route": route.get("retrieval_route") or "",
+                    "source_route_ids": ids,
+                }
+            )
+        merged_routes.append(route)
+
+    if len(merged_routes) == len(routes):
+        return merged_plan
+    merged_plan["routes"] = merged_routes
+    merged_plan["summary"] = _retrieval_plan_summary(merged_routes, task_count=len(merged_plan.get("tasks") or []))
+    merged_plan["route_coalescing"] = {
+        "policy": "execution_mode_route_scope_coalescing_v0_1",
+        "original_route_count": len(routes),
+        "coalesced_route_count": len(merged_routes),
+        "coalesced_group_count": len(coalesced_groups),
+        "groups": coalesced_groups,
+    }
+    return merged_plan
+
+
+def _promote_coverage_scope_to_route(route: Mapping[str, Any]) -> dict[str, Any]:
+    promoted = dict(route or {})
+    coverage = promoted.get("coverage_requirements") if isinstance(promoted.get("coverage_requirements"), Mapping) else {}
+    for field in ("tickers", "filing_types", "source_tiers", "metric_families", "period_roles", "section_hints", "market_fields", "market_analysis_tools"):
+        if not _string_list(promoted.get(field)) and _string_list(coverage.get(field)):
+            promoted[field] = _string_list(coverage.get(field))
+    if not _int_list(promoted.get("years")) and _int_list(coverage.get("years")):
+        promoted["years"] = _int_list(coverage.get("years"))
+    return promoted
+
+
+def _route_coalescing_enabled(activation_plan: Mapping[str, Any]) -> bool:
+    mode = str(activation_plan.get("execution_mode") or "").strip()
+    if mode in {"focused_answer", "standard_memo", "deep_research"}:
+        return True
+    return _bool_value(os.environ.get("SEC_AGENT_COALESCE_RETRIEVAL_ROUTES"))
+
+
+def _route_coalescing_key(route: Mapping[str, Any]) -> tuple[Any, ...]:
+    route_name = str(route.get("retrieval_route") or "")
+    coverage = route.get("coverage_requirements") if isinstance(route.get("coverage_requirements"), Mapping) else {}
+    if route_name == "market_snapshot":
+        return (
+            route_name,
+            tuple(sorted(set(_int_list(route.get("years") or coverage.get("years"))))),
+            tuple(sorted(_dedupe(_string_list(route.get("market_fields") or coverage.get("market_fields"))))),
+            tuple(sorted(_dedupe(_string_list(route.get("source_families") or coverage.get("source_families"))))),
+        )
+    return (
+        route_name,
+        tuple(sorted(_dedupe(_string_list(route.get("tickers") or coverage.get("tickers"))))),
+        tuple(sorted(set(_int_list(route.get("years") or coverage.get("years"))))),
+        tuple(sorted(_dedupe(_string_list(route.get("filing_types") or coverage.get("filing_types"))))),
+        tuple(sorted(_dedupe(_string_list(route.get("source_tiers") or coverage.get("source_tiers"))))),
+        tuple(sorted(_dedupe(_string_list(route.get("period_roles") or coverage.get("period_roles"))))),
+        tuple(sorted(_dedupe(_string_list(route.get("market_fields") or coverage.get("market_fields"))))),
+        tuple(sorted(_dedupe(_string_list(route.get("source_families") or coverage.get("source_families"))))),
+    )
+
+
+def _retrieval_plan_summary(routes: list[dict[str, Any]], *, task_count: int) -> dict[str, Any]:
+    counts: dict[str, int] = {}
+    candidate_budget = 0
+    rerank_budget = 0
+    for route in routes:
+        route_name = str(route.get("retrieval_route") or "")
+        counts[route_name] = counts.get(route_name, 0) + 1
+        candidate_budget += int(route.get("candidate_budget") or 0)
+        rerank_budget += int(route.get("rerank_budget") or 0)
+    return {
+        "task_count": int(task_count),
+        "route_count": len(routes),
+        "route_counts": dict(sorted(counts.items())),
+        "candidate_budget_total": candidate_budget,
+        "rerank_budget_total": rerank_budget,
+        "second_pass_enabled": any(((route.get("second_pass_policy") or {}).get("enabled")) for route in routes),
+    }
 
 
 def _cap_retrieval_plan_routes(plan: Mapping[str, Any], activation_plan: Mapping[str, Any]) -> dict[str, Any]:
@@ -430,7 +632,9 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
     if "artifact_ref" in allowed:
         view["artifact_refs"] = _artifact_ref_summary(state.get("artifact_refs") or {})
     if "bounded_rows" in allowed:
-        view["bounded_evidence_rows"] = _bounded_rows_for_agent_data_view(entry["agent_id"], state)
+        bounded_rows = _bounded_rows_for_agent_data_view(entry["agent_id"], state)
+        view["bounded_evidence_rows"] = bounded_rows
+        view["bounded_row_distribution"] = _bounded_row_distribution(bounded_rows)
     if "coverage_summary" in allowed:
         view["coverage_summary"] = _coverage_summary_view(state)
     if "tool_trace_summary" in allowed:
@@ -873,11 +1077,78 @@ def execute_evidence_operator_plan(
     industry_rows: list[dict[str, Any]] = []
     source_gaps: list[dict[str, Any]] = []
     artifact_refs: list[dict[str, Any]] = []
+    routes = [dict(route) for route in retrieval_plan.get("routes") or [] if isinstance(route, Mapping)]
+    sec_group = _sec_search_execution_group(routes, context=context, dry_run=dry_run)
+    sec_group_cache: dict[str, Any] = {}
 
-    for route in retrieval_plan.get("routes") or []:
-        if not isinstance(route, Mapping):
-            continue
+    for route in routes:
         route_name = str(route.get("retrieval_route") or "")
+        original_route = dict(route)
+        sec_group_member = _sec_group_member(sec_group, route)
+        if sec_group_member and sec_group_cache.get("result") is not None and not sec_group_member.get("is_first"):
+            agent_id, tool_name = _sec_search_agent_tool_for_route(original_route, context=context)
+            permission = validate_operator_tool_call(agent_id=agent_id, tool_name=tool_name)
+            if permission["status"] != "pass":
+                observations.append(_observation(original_route, agent_id, tool_name, "blocked", error=permission["error"]))
+                continue
+            arguments = tool_arguments_from_route(
+                _sec_search_member_execution_route(original_route, context=context),
+                user_query=str(context.get("user_query") or ""),
+                state_context=context,
+            )
+            cached_result = sec_group_cache["result"]
+            boundary = validate_tool_observation_boundary(tool_name, cached_result)
+            runtime_summary = {
+                **_tool_runtime_summary(tool_name, cached_result),
+                "cache_policy": "grouped_sec_search_route_reuse_v0_1",
+                "cached_from_route_id": sec_group_cache.get("executed_route_id") or "",
+                "grouped_route_count": len(sec_group.get("routes") or []),
+            }
+            rows_for_route = _sec_search_result_rows_for_route(cached_result, original_route)
+            gaps = _source_gaps_from_result(cached_result)
+            refs = [dict(item) for item in cached_result.get("artifact_refs") or [] if isinstance(item, Mapping)]
+            active_ledger.record_tool_call(
+                turn_id=turn_id,
+                agent_id=agent_id,
+                tool_name=tool_name,
+                arguments=arguments,
+                output_artifact_digest=_first_artifact_digest(refs),
+                row_count=len(rows_for_route),
+                source_gap_count=len(gaps),
+                elapsed_ms=0,
+                status="cached",
+                metadata={
+                    "route_id": original_route.get("route_id") or "",
+                    "retrieval_route": route_name,
+                    "boundary": boundary,
+                    "runtime_summary": runtime_summary,
+                    "argument_summary": _tool_argument_summary(arguments),
+                    "grouped_sec_search_cache_hit": True,
+                },
+            )
+            observations.append(
+                _observation(
+                    original_route,
+                    agent_id,
+                    tool_name,
+                    "cached",
+                    arguments=arguments,
+                    row_count=len(rows_for_route),
+                    source_gap_count=len(gaps),
+                    boundary=boundary,
+                    runtime_summary=runtime_summary,
+                )
+            )
+            continue
+
+        if sec_group_member and sec_group_member.get("is_first"):
+            route = _sec_search_group_execution_route(
+                original_route,
+                sec_group.get("routes") or [],
+                retrieval_plan=retrieval_plan,
+                context=context,
+            )
+            route_name = str(route.get("retrieval_route") or "")
         agent_id, tool_name = ROUTE_OPERATOR_TOOL.get(route_name, ("", ""))
         if not agent_id:
             observations.append(_observation(route, "", "", "blocked", error="unsupported_retrieval_route"))
@@ -888,27 +1159,37 @@ def execute_evidence_operator_plan(
             continue
         arguments = tool_arguments_from_route(route, user_query=str(context.get("user_query") or ""), state_context=context)
         if route_name == "ledger_first" and not str(arguments.get("ledger_store_path") or "").strip():
-            gap = {
-                "source_family": "primary_sec_filing",
-                "reason_code": "ledger_store_path_unavailable",
-                "reason": "ledger_first route skipped because no ledger_store_path was configured for this run.",
-                "source_available": False,
-                "route_id": str(route.get("route_id") or ""),
-            }
-            observations.append(
-                _observation(
-                    route,
-                    agent_id,
-                    tool_name,
-                    "skipped",
-                    error="ledger_store_path_unavailable",
-                    arguments=arguments,
-                    row_count=0,
-                    source_gap_count=1,
+            if _bool_value(context.get("build_runtime_ledger") or context.get("ledger_first_sec_search_fallback")):
+                route = _ledger_first_sec_search_fallback_route(route)
+                route_name = str(route.get("retrieval_route") or "")
+                agent_id, tool_name = ROUTE_OPERATOR_TOOL.get(route_name, ("", ""))
+                permission = validate_operator_tool_call(agent_id=agent_id, tool_name=tool_name)
+                if permission["status"] != "pass":
+                    observations.append(_observation(route, agent_id, tool_name, "blocked", error=permission["error"]))
+                    continue
+                arguments = tool_arguments_from_route(route, user_query=str(context.get("user_query") or ""), state_context=context)
+            else:
+                gap = {
+                    "source_family": "primary_sec_filing",
+                    "reason_code": "ledger_store_path_unavailable",
+                    "reason": "ledger_first route skipped because no ledger_store_path was configured for this run.",
+                    "source_available": False,
+                    "route_id": str(route.get("route_id") or ""),
+                }
+                observations.append(
+                    _observation(
+                        route,
+                        agent_id,
+                        tool_name,
+                        "skipped",
+                        error="ledger_store_path_unavailable",
+                        arguments=arguments,
+                        row_count=0,
+                        source_gap_count=1,
+                    )
                 )
-            )
-            source_gaps.append(gap)
-            continue
+                source_gaps.append(gap)
+                continue
         decision = active_ledger.can_call_tool(
             turn_id=turn_id,
             agent_id=agent_id,
@@ -942,6 +1223,7 @@ def execute_evidence_operator_plan(
                 "runtime_summary": runtime_summary,
                 "error": str(result.get("error") or result.get("failure_reason") or "")[:500],
                 "argument_summary": _tool_argument_summary(arguments),
+                "fallback_from_retrieval_route": route.get("fallback_from_retrieval_route") or "",
             },
         )
         observations.append(
@@ -970,6 +1252,18 @@ def execute_evidence_operator_plan(
             context_rows.extend(rows)
         source_gaps.extend(gaps)
         artifact_refs.extend(refs)
+        if sec_group_member and sec_group_member.get("is_first") and tool_name == "sec_search_filings":
+            sec_group_cache["result"] = result
+            sec_group_cache["executed_route_id"] = original_route.get("route_id") or route.get("route_id") or ""
+
+    source_gaps.extend(
+        _ledger_missing_despite_context_gaps(
+            retrieval_plan,
+            context_rows=context_rows,
+            ledger_rows=ledger_rows,
+            state_context=context,
+        )
+    )
 
     return {
         "schema_version": RUNTIME_SCHEMA_VERSION,
@@ -984,6 +1278,249 @@ def execute_evidence_operator_plan(
         "loop_break_reason": active_ledger.loop_break_reason,
         "bounded_answer_allowed": active_ledger.bounded_answer_allowed,
     }
+
+
+def _ledger_missing_despite_context_gaps(
+    retrieval_plan: Mapping[str, Any],
+    *,
+    context_rows: list[dict[str, Any]],
+    ledger_rows: list[dict[str, Any]],
+    state_context: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    routes = [route for route in retrieval_plan.get("routes") or [] if isinstance(route, Mapping)]
+    ledger_expected = any(str(route.get("retrieval_route") or "") == "ledger_first" for route in routes)
+    if not ledger_expected:
+        return []
+    focus_tickers = set(_unique_upper(state_context.get("focus_tickers") or state_context.get("tickers")))
+    ledger_keys = {
+        _row_ticker_year_form(row)
+        for row in ledger_rows
+        if _row_ticker(row) and _row_source_family(row) in {"", "primary_sec_filing", "company_authored_unaudited_sec_filing"}
+    }
+    context_keys: list[tuple[str, str, str]] = []
+    for row in context_rows:
+        if _row_source_family(row) not in {"", "primary_sec_filing"}:
+            continue
+        key = _row_ticker_year_form(row)
+        ticker = key[0]
+        if not ticker or (focus_tickers and ticker not in focus_tickers):
+            continue
+        if not key[1] and not key[2]:
+            continue
+        context_keys.append(key)
+    gaps: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for key in context_keys:
+        if key in seen or key in ledger_keys:
+            continue
+        seen.add(key)
+        ticker, fiscal_year, form_type = key
+        gaps.append(
+            {
+                "source_family": "primary_sec_filing",
+                "reason_code": "ledger_missing_despite_context",
+                "reason": "Primary filing context rows are available, but no exact-value runtime ledger rows were returned for the same ticker/year/form scope.",
+                "source_available": True,
+                "exact_value_available": False,
+                "ticker": ticker,
+                "fiscal_year": fiscal_year,
+                "form_type": form_type,
+                "quality_gap_type": "context_available_exact_value_missing",
+            }
+        )
+    return gaps[:24]
+
+
+def _row_ticker_year_form(row: Mapping[str, Any]) -> tuple[str, str, str]:
+    return (
+        _row_ticker(row),
+        str(row.get("fiscal_year") or row.get("source_fiscal_year") or row.get("year") or "").strip(),
+        str(row.get("form_type") or row.get("source_type") or "").strip(),
+    )
+
+
+def _ledger_first_sec_search_fallback_route(route: Mapping[str, Any]) -> dict[str, Any]:
+    """Use SEC text retrieval to build runtime ledger rows when no ledger store is configured."""
+    candidate_budget = max(_bounded_positive_int(route.get("candidate_budget"), default=0), 120)
+    rerank_budget = max(_bounded_positive_int(route.get("rerank_budget"), default=0), min(64, candidate_budget))
+    route_id = str(route.get("route_id") or route.get("task_id") or "ledger_first")
+    ledger_route = {
+        **dict(route),
+        "retrieval_route": "ledger_first",
+        "candidate_budget": candidate_budget,
+        "rerank_budget": min(64, candidate_budget),
+        "section_hints": _dedupe([*_string_list(route.get("section_hints")), "financial_statements", "cash_flow_tables"]),
+    }
+    task_id = str(route.get("task_id") or "runtime_ledger_search")
+    return {
+        **dict(route),
+        "route_id": f"{route_id}::runtime_ledger_search_fallback",
+        "retrieval_route": "filing_text",
+        "candidate_budget": candidate_budget,
+        "rerank_budget": rerank_budget,
+        "section_hints": _dedupe([*_string_list(route.get("section_hints")), "financial_statements", "management_discussion"]),
+        "runtime_retrieval_plan": {
+            "schema_version": "sec_agent_retrieval_plan_v0.1",
+            "source": "ledger_first_sec_search_fallback",
+            "tasks": [
+                {
+                    "task_id": task_id,
+                    "question_zh": str(route.get("question_zh") or route.get("query") or ""),
+                    "priority": "primary",
+                    "tickers": _string_list(route.get("tickers")),
+                    "years": _int_list(route.get("years")),
+                    "filing_types": _string_list(route.get("filing_types")),
+                    "source_tiers": _string_list(route.get("source_tiers")),
+                    "metric_families": _string_list(route.get("metric_families")),
+                    "retrieval_routes": ["ledger_first"],
+                    "evidence_requirement_id": str(route.get("evidence_requirement_id") or ""),
+                }
+            ],
+            "routes": [ledger_route],
+            "summary": {"route_count": 1, "route_counts": {"ledger_first": 1}},
+        },
+        "fallback_from_retrieval_route": "ledger_first",
+        "fallback_reason": "ledger_store_path_unavailable_build_runtime_ledger_from_sec_search",
+    }
+
+
+def _sec_search_execution_group(
+    routes: list[dict[str, Any]],
+    *,
+    context: Mapping[str, Any],
+    dry_run: bool,
+) -> dict[str, Any]:
+    if dry_run:
+        return {}
+    group_routes = [route for route in routes if _route_can_join_sec_search_group(route, context=context)]
+    if len(group_routes) <= 1:
+        return {}
+    first_id = _route_identity(group_routes[0])
+    return {
+        "schema_version": "sec_agent_grouped_sec_search_execution_v0.1",
+        "policy": "single_sec_search_filings_call_per_turn_for_groupable_sec_routes",
+        "first_route_id": first_id,
+        "routes": group_routes,
+        "route_ids": {_route_identity(route) for route in group_routes},
+    }
+
+
+def _route_can_join_sec_search_group(route: Mapping[str, Any], *, context: Mapping[str, Any]) -> bool:
+    route_name = str(route.get("retrieval_route") or "")
+    if route_name in SEC_SEARCH_TEXT_ROUTES:
+        return True
+    if route_name != "ledger_first":
+        return False
+    if str(context.get("ledger_store_path") or "").strip():
+        return False
+    return _bool_value(context.get("build_runtime_ledger") or context.get("ledger_first_sec_search_fallback"))
+
+
+def _sec_group_member(group: Mapping[str, Any], route: Mapping[str, Any]) -> dict[str, Any]:
+    if not group:
+        return {}
+    route_id = _route_identity(route)
+    if route_id not in set(group.get("route_ids") or set()):
+        return {}
+    return {"route_id": route_id, "is_first": route_id == str(group.get("first_route_id") or "")}
+
+
+def _sec_search_group_execution_route(
+    route: Mapping[str, Any],
+    group_routes: list[dict[str, Any]],
+    *,
+    retrieval_plan: Mapping[str, Any],
+    context: Mapping[str, Any],
+) -> dict[str, Any]:
+    execution_route = _sec_search_member_execution_route(route, context=context)
+    grouped_plan = _grouped_sec_search_retrieval_plan(retrieval_plan, group_routes)
+    return {
+        **execution_route,
+        "route_id": str(execution_route.get("route_id") or route.get("route_id") or "sec_search_group") + "::grouped_sec_search",
+        "tickers": _dedupe([ticker for item in group_routes for ticker in _string_list(item.get("tickers"))]),
+        "years": sorted(set(year for item in group_routes for year in _int_list(item.get("years")))),
+        "filing_types": _dedupe([form for item in group_routes for form in _string_list(item.get("filing_types"))]),
+        "source_tiers": _dedupe([tier for item in group_routes for tier in _string_list(item.get("source_tiers"))]),
+        "metric_families": _dedupe([family for item in group_routes for family in _string_list(item.get("metric_families"))]),
+        "period_roles": _dedupe([role for item in group_routes for role in _string_list(item.get("period_roles"))]),
+        "section_hints": _dedupe([hint for item in group_routes for hint in _string_list(item.get("section_hints"))]),
+        "candidate_budget": max([_bounded_positive_int(item.get("candidate_budget"), default=0) for item in group_routes] or [0]),
+        "rerank_budget": max([_bounded_positive_int(item.get("rerank_budget"), default=0) for item in group_routes] or [0]),
+        "runtime_retrieval_plan": grouped_plan,
+        "grouped_sec_search": {
+            "policy": "single_call_grouped_sec_search_v0_1",
+            "grouped_route_ids": [_route_identity(item) for item in group_routes],
+            "grouped_route_count": len(group_routes),
+        },
+    }
+
+
+def _sec_search_member_execution_route(route: Mapping[str, Any], *, context: Mapping[str, Any]) -> dict[str, Any]:
+    if str(route.get("retrieval_route") or "") == "ledger_first" and _route_can_join_sec_search_group(route, context=context):
+        return _ledger_first_sec_search_fallback_route(route)
+    return dict(route)
+
+
+def _grouped_sec_search_retrieval_plan(
+    retrieval_plan: Mapping[str, Any],
+    group_routes: list[dict[str, Any]],
+) -> dict[str, Any]:
+    group_route_ids = {_route_identity(route) for route in group_routes}
+    tasks = []
+    task_ids = {str(route.get("task_id") or "") for route in group_routes if str(route.get("task_id") or "")}
+    for task in retrieval_plan.get("tasks") or []:
+        if isinstance(task, Mapping) and str(task.get("task_id") or "") in task_ids:
+            tasks.append(dict(task))
+    routes = [dict(route) for route in group_routes]
+    return {
+        **dict(retrieval_plan or {}),
+        "source": str(retrieval_plan.get("source") or "query_contract_derived_retrieval_plan") + "+grouped_sec_search_execution",
+        "tasks": tasks or [dict(task) for task in retrieval_plan.get("tasks") or [] if isinstance(task, Mapping)],
+        "routes": routes,
+        "summary": _retrieval_plan_summary(routes, task_count=len(tasks or retrieval_plan.get("tasks") or [])),
+        "grouped_sec_search_execution": {
+            "policy": "single_sec_search_filings_call_per_turn_for_groupable_sec_routes",
+            "grouped_route_ids": sorted(group_route_ids),
+            "grouped_route_count": len(routes),
+        },
+    }
+
+
+def _sec_search_agent_tool_for_route(route: Mapping[str, Any], *, context: Mapping[str, Any]) -> tuple[str, str]:
+    route_name = str(route.get("retrieval_route") or "")
+    if route_name == "ledger_first" and _route_can_join_sec_search_group(route, context=context):
+        return ("sec_operator", "sec_search_filings")
+    return ROUTE_OPERATOR_TOOL.get(route_name, ("", ""))
+
+
+def _sec_search_result_rows_for_route(result: Mapping[str, Any], route: Mapping[str, Any]) -> list[dict[str, Any]]:
+    route_id = _route_identity(route)
+    route_name = str(route.get("retrieval_route") or "")
+    rows = [row for row in result.get("context_rows") or [] if isinstance(row, Mapping) and _result_row_matches_route(row, route_id)]
+    if route_name == "ledger_first":
+        rows.extend(dict(item) for item in result.get("runtime_ledger_rows") or [] if isinstance(item, Mapping))
+    return [dict(row) for row in rows]
+
+
+def _result_row_matches_route(row: Mapping[str, Any], route_id: str) -> bool:
+    if not route_id:
+        return False
+    route_ids = set(_string_list(row.get("selection_route_ids")))
+    route_ids.update(_string_list(row.get("route_ids")))
+    for key in ("selection_route_id", "route_id"):
+        value = str(row.get(key) or "")
+        if value:
+            route_ids.add(value)
+    for ref in row.get("selection_routes") or []:
+        if isinstance(ref, Mapping):
+            value = str(ref.get("route_id") or "")
+            if value:
+                route_ids.add(value)
+    return route_id in route_ids
+
+
+def _route_identity(route: Mapping[str, Any]) -> str:
+    return str(route.get("route_id") or f"{route.get('task_id') or 'task'}::{route.get('retrieval_route') or 'route'}")
 
 
 def validate_operator_tool_call(*, agent_id: str, tool_name: str) -> dict[str, Any]:
@@ -1041,9 +1578,12 @@ def tool_arguments_from_route(
             }
         )
         args.update(_sec_search_runtime_args(context, route))
+        if isinstance(route.get("runtime_retrieval_plan"), Mapping):
+            args["retrieval_plan"] = dict(route.get("runtime_retrieval_plan") or {})
         return args
     if route_name == "market_snapshot":
         market = context.get("market_snapshot") if isinstance(context.get("market_snapshot"), Mapping) else {}
+        args["tickers"] = _market_snapshot_tickers_for_route(args, context)
         args.update(
             {
                 "fields": list(coverage.get("market_fields") or route.get("market_fields") or []),
@@ -1084,6 +1624,17 @@ def tool_arguments_from_route(
         )
         return args
     return args
+
+
+def _market_snapshot_tickers_for_route(args: Mapping[str, Any], context: Mapping[str, Any]) -> list[str]:
+    base = _string_list(args.get("tickers"))
+    mode = str(context.get("execution_mode") or "").strip()
+    source_tiers = set(_string_list(context.get("source_tiers") or context.get("source_families")))
+    if mode == "deep_research" and "relationship_graph" in source_tiers:
+        expanded = _string_list(context.get("search_scope_tickers") or context.get("universe_tickers"))
+        if 0 < len(expanded) <= 12:
+            return _dedupe([*base, *expanded])
+    return base
 
 
 def _sec_search_source_tiers_for_route(route_name: str, source_tiers: list[str]) -> list[str]:
@@ -1196,7 +1747,6 @@ def derive_sec_search_runtime_policy(context: Mapping[str, Any], route: Mapping[
     source_families = set(_string_list(route.get("source_families") or route.get("source_tiers") or context.get("source_tiers")))
     sector_depth_expected = bool(
         source_families & {"industry_snapshot", "relationship_graph"}
-        or context.get("sector_depth_pack_path")
         or context.get("expected_relationship_pack_ids")
         or len(tickers) >= 4
     )
@@ -1266,12 +1816,12 @@ def _retrieval_policy_profile(
     elif execution_mode == "standard_memo":
         profile = {
             "policy_name": "standard_memo_balanced",
-            "candidate_budget": 240,
-            "rerank_budget": 64,
-            "evidence_top_k": 6,
-            "object_top_k": 6,
-            "reranker_candidate_limit": 240,
-            "reranker_top_k": 64,
+            "candidate_budget": 180,
+            "rerank_budget": 56,
+            "evidence_top_k": 5,
+            "object_top_k": 4,
+            "reranker_candidate_limit": 180,
+            "reranker_top_k": 56,
             "reranker_batch_size": 8,
             "reranker_max_length": 512,
             "reranker_doc_max_chars": 2200,
@@ -2588,6 +3138,7 @@ def _claim_families_for_requirement(requirement: Mapping[str, Any]) -> list[str]
 
 def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> list[dict[str, Any]]:
     max_rows = _data_view_max_rows_for_agent(agent_id, state)
+    focus_tickers = _focus_tickers_from_state(state)
     rows: list[dict[str, Any]] = []
     if agent_id == "fundamental_analyst":
         rows.extend(_row_dicts(state.get("runtime_ledger_rows")))
@@ -2595,6 +3146,13 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
             row
             for row in _row_dicts(state.get("context_rows"))
             if _row_source_family(row) in {"", "primary_sec_filing", "company_authored_unaudited_sec_filing"}
+        )
+        rows = _focus_ticker_balanced_rows(
+            rows,
+            focus_tickers=focus_tickers,
+            max_rows=max_rows,
+            source_families={"", "primary_sec_filing", "company_authored_unaudited_sec_filing"},
+            min_rows_per_ticker=_focus_ticker_min_rows(max_rows=max_rows, focus_ticker_count=len(focus_tickers)),
         )
     elif agent_id == "market_valuation_analyst":
         rows.extend(_row_dicts(state.get("market_snapshot_rows")))
@@ -2620,18 +3178,42 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
     else:
         rows.extend(_row_dicts(state.get("context_rows")))
     if agent_id == "risk_counterevidence_analyst":
-        rows = _balanced_rows_by_source(
-            rows,
-            source_order=[
-                "primary_sec_filing",
-                "company_authored_unaudited_sec_filing",
-                "market_snapshot",
-                "industry_snapshot",
-                "run_artifact",
-                "",
-            ],
-            max_rows=max_rows,
-        )
+        if len(focus_tickers) >= 2:
+            candidate_rows = rows
+            rows = _focus_ticker_balanced_rows(
+                rows,
+                focus_tickers=focus_tickers,
+                max_rows=max_rows,
+                source_families=None,
+                min_rows_per_ticker=_focus_ticker_min_rows(max_rows=max_rows, focus_ticker_count=len(focus_tickers), default=2),
+            )
+            rows = _ensure_min_source_family_rows(
+                rows,
+                candidate_rows,
+                source_family="market_snapshot",
+                min_rows=min(2, max(1, max_rows // 8)),
+                max_rows=max_rows,
+            )
+            rows = _ensure_min_source_family_rows(
+                rows,
+                candidate_rows,
+                source_family="industry_snapshot",
+                min_rows=min(2, max(1, max_rows // 8)),
+                max_rows=max_rows,
+            )
+        else:
+            rows = _balanced_rows_by_source(
+                rows,
+                source_order=[
+                    "primary_sec_filing",
+                    "company_authored_unaudited_sec_filing",
+                    "market_snapshot",
+                    "industry_snapshot",
+                    "run_artifact",
+                    "",
+                ],
+                max_rows=max_rows,
+            )
     return [_bounded_row(row, index) for index, row in enumerate(rows[:max_rows], start=1)]
 
 
@@ -2648,9 +3230,14 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
         "evidence_ref": str(evidence_ref),
         "source_family": _row_source_family(row),
         "ticker": str(row.get("ticker") or row.get("company") or ""),
+        "fiscal_year": _scalar_or_blank(row.get("fiscal_year") or row.get("source_fiscal_year") or row.get("year")),
+        "form_type": str(row.get("form_type") or row.get("source_type") or ""),
         "period_role": str(row.get("period_role") or row.get("period") or ""),
         "metric": str(row.get("metric") or row.get("metric_name") or row.get("field") or ""),
         "value": _scalar_or_blank(row.get("value") or row.get("numeric_value") or row.get("display_value")),
+        "raw_value_text": _truncate(str(row.get("raw_value_text") or ""), 300),
+        "display_value_zh": _truncate(str(row.get("display_value_zh") or row.get("display_value") or ""), 300),
+        "source_statement": _truncate(str(row.get("source_statement") or ""), 500),
         "summary": _truncate(str(row.get("summary") or row.get("text") or row.get("snippet") or row.get("description") or ""), 900),
         "snapshot_id": str(row.get("snapshot_id") or ""),
         "as_of_date": str(row.get("as_of_date") or ""),
@@ -2779,6 +3366,132 @@ def _balanced_rows_by_source(rows: list[dict[str, Any]], *, source_order: list[s
             continue
         selected.append(row)
         selected_ids.add(id(row))
+    return selected
+
+
+def _focus_ticker_balanced_rows(
+    rows: list[dict[str, Any]],
+    *,
+    focus_tickers: list[str],
+    max_rows: int,
+    source_families: set[str] | None = None,
+    min_rows_per_ticker: int = 2,
+) -> list[dict[str, Any]]:
+    focus = [ticker.upper() for ticker in focus_tickers if ticker]
+    if len(focus) < 2 or max_rows <= 0:
+        return rows
+    allowed_sources = source_families or set()
+    selected: list[dict[str, Any]] = []
+    selected_ids: set[int] = set()
+    per_ticker_floor = max(1, min_rows_per_ticker)
+    per_ticker_target = max(per_ticker_floor, max_rows // max(1, len(focus)))
+    per_ticker_target = min(max_rows, per_ticker_target)
+    for ticker in focus:
+        ticker_rows = [
+            row
+            for row in rows
+            if _row_ticker(row) == ticker and (not allowed_sources or _row_source_family(row) in allowed_sources)
+        ]
+        ticker_rows = _metric_and_source_diverse_rows(ticker_rows)
+        for row in ticker_rows[:per_ticker_target]:
+            if len(selected) >= max_rows:
+                break
+            selected.append(row)
+            selected_ids.add(id(row))
+    for row in rows:
+        if len(selected) >= max_rows:
+            break
+        if id(row) in selected_ids:
+            continue
+        selected.append(row)
+        selected_ids.add(id(row))
+    return selected
+
+
+def _metric_and_source_diverse_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    selected_ids: set[int] = set()
+    preferred_metric_terms = (
+        ("revenue",),
+        ("gross margin", "margin"),
+        ("operating income", "operating_income"),
+        ("cash flow", "cash", "net cash"),
+        ("capex", "capital expenditure", "property and equipment"),
+        ("segment", "backlog", "deposit", "credit"),
+    )
+    for terms in preferred_metric_terms:
+        for row in rows:
+            if id(row) in selected_ids:
+                continue
+            text = _row_metric_text(row)
+            if any(term in text for term in terms):
+                selected.append(row)
+                selected_ids.add(id(row))
+                break
+    for family in ("market_snapshot", "industry_snapshot", "company_authored_unaudited_sec_filing", "primary_sec_filing"):
+        for row in rows:
+            if id(row) in selected_ids:
+                continue
+            if _row_source_family(row) == family:
+                selected.append(row)
+                selected_ids.add(id(row))
+                break
+    for row in rows:
+        if id(row) in selected_ids:
+            continue
+        selected.append(row)
+        selected_ids.add(id(row))
+    return selected
+
+
+def _row_metric_text(row: Mapping[str, Any]) -> str:
+    return " ".join(
+        str(row.get(key) or "").lower()
+        for key in ("metric", "metric_name", "summary", "evidence_ref", "period_role")
+    )
+
+
+def _focus_ticker_min_rows(*, max_rows: int, focus_ticker_count: int, default: int = 3) -> int:
+    if focus_ticker_count <= 1:
+        return 0
+    return max(1, min(default, max_rows // max(1, focus_ticker_count * 3)))
+
+
+def _ensure_min_source_family_rows(
+    selected: list[dict[str, Any]],
+    candidates: list[dict[str, Any]],
+    *,
+    source_family: str,
+    min_rows: int,
+    max_rows: int,
+) -> list[dict[str, Any]]:
+    if min_rows <= 0 or max_rows <= 0:
+        return selected[:max_rows]
+    selected = selected[:max_rows]
+    current = sum(1 for row in selected if _row_source_family(row) == source_family)
+    if current >= min_rows:
+        return selected
+    selected_ids = {id(row) for row in selected}
+    replacement_indexes = [
+        index
+        for index in range(len(selected) - 1, -1, -1)
+        if _row_source_family(selected[index]) != source_family
+    ]
+    for candidate in candidates:
+        if current >= min_rows:
+            break
+        if _row_source_family(candidate) != source_family or id(candidate) in selected_ids:
+            continue
+        if len(selected) < max_rows:
+            selected.append(candidate)
+        elif replacement_indexes:
+            replacement_index = replacement_indexes.pop(0)
+            selected_ids.discard(id(selected[replacement_index]))
+            selected[replacement_index] = candidate
+        else:
+            break
+        selected_ids.add(id(candidate))
+        current += 1
     return selected
 
 
@@ -2938,7 +3651,7 @@ def _data_view_input_budget(agent_id: str, state: Mapping[str, Any]) -> dict[str
     if agent_id == "market_valuation_analyst":
         payload["market_snapshot_policy"] = "compact_rows_preserve_snapshot_id_and_as_of_date"
     if agent_id == "risk_counterevidence_analyst":
-        payload["selection_policy"] = "source_balanced_without_relationship_graph"
+        payload["selection_policy"] = "source_and_focus_ticker_balanced_without_relationship_graph"
     return payload
 
 
@@ -3057,6 +3770,39 @@ def _row_source_family(row: Mapping[str, Any]) -> str:
     if tier == "industry_snapshot" or family.startswith("industry_"):
         return "industry_snapshot"
     return family or tier
+
+
+def _row_ticker(row: Mapping[str, Any]) -> str:
+    return str(row.get("ticker") or row.get("company") or "").upper().strip()
+
+
+def _bounded_row_distribution(rows: list[Mapping[str, Any]]) -> dict[str, Any]:
+    return {
+        "schema_version": "sec_agent_bounded_row_distribution_v0.1",
+        "row_count": len(rows),
+        "by_ticker": _count_by_key(rows, "ticker"),
+        "by_source_family": _count_by_key(rows, "source_family"),
+        "by_ticker_source_family": _count_by_composite(rows, ("ticker", "source_family")),
+        "by_form_type": _count_by_key(rows, "form_type"),
+        "by_metric": _count_by_key(rows, "metric"),
+    }
+
+
+def _count_by_key(rows: list[Mapping[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = str(row.get(key) or "").strip() or "unknown"
+        counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _count_by_composite(rows: list[Mapping[str, Any]], keys: tuple[str, ...]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        parts = [str(row.get(key) or "").strip() or "unknown" for key in keys]
+        value = "|".join(parts)
+        counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def _sanitize_payload(value: Any) -> Any:

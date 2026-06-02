@@ -171,6 +171,15 @@ def _evaluate_case(
     }
     return {
         "case_id": row.get("case_id"),
+        "category": row.get("category") or "",
+        "industry": row.get("industry") or "",
+        "difficulty": row.get("difficulty") or "",
+        "question_layer": row.get("question_layer") or "",
+        "expected_relationship_pack_ids": row.get("expected_relationship_pack_ids") or [],
+        "allowed_cross_sector_relationship_pack_ids": row.get("allowed_cross_sector_relationship_pack_ids") or [],
+        "expected_tool_names": row.get("expected_tool_names") or [],
+        "require_runtime_ledger_rows": bool(row.get("require_runtime_ledger_rows")),
+        "require_universe_llm_pass": bool(row.get("require_universe_llm_pass")),
         "ordinal": ordinal,
         "total": total,
         "prompt": row.get("prompt"),

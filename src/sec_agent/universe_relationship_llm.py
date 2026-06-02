@@ -274,12 +274,12 @@ def _build_messages(
         "Keep economic_link_map compact: at most 8 entities, 6 economic links, 4 mechanisms, and 4 investment_implications. "
         "Use short strings; do not narrate evidence rows; keep the whole JSON concise. "
         "Every sector_inferred relationship is not a confirmed direct commercial edge and must carry missing_confirmations.\n\n"
-        f"Input JSON:\n{json.dumps(user_payload, ensure_ascii=False, indent=2)}"
+        f"Input JSON:\n{_json_for_prompt(user_payload)}"
     )
     if prior_failure:
         user = (
             f"{user}\n\nRepair the previous output. It failed this diagnostic:\n"
-            f"{json.dumps(_clean_for_prompt(prior_failure), ensure_ascii=False, sort_keys=True)}\n\n"
+            f"{_json_for_prompt(_clean_for_prompt(prior_failure), sort_keys=True)}\n\n"
             f"Previous output excerpt:\n{_truncate(prior_content, 1600)}\n\n"
             "Return one corrected UniverseRelationshipPlan JSON object only."
         )
@@ -378,7 +378,7 @@ def _system_prompt() -> str:
             "Return exactly one JSON object. Do not wrap it in prose. Do not call tools.",
             "Relationship evidence can support scope and hypotheses only, never company financial facts.",
             "Fill economic_link_map from the same bounded relationship refs. It must explain entity roles, economic links, mechanisms, metrics to verify, missing confirmations, and bounded investment implications.",
-            f"UniverseRelationshipPlan schema hint:\n{json.dumps(schema_hint, ensure_ascii=False, indent=2)}",
+            f"UniverseRelationshipPlan schema hint:\n{_json_for_prompt(schema_hint)}",
         ]
     )
 
@@ -1110,6 +1110,10 @@ def _format_failure_reason(failure: Mapping[str, Any]) -> str:
 
 def _clean_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
     return json.loads(json.dumps(value, ensure_ascii=False, default=str))
+
+
+def _json_for_prompt(value: Any, *, sort_keys: bool = False) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=sort_keys, separators=(",", ":"), default=str)
 
 
 def _truncate(text: str, max_chars: int) -> str:

@@ -157,6 +157,8 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
         "selected_years": query_contract.get("years") or plan.get("selected_years") or [],
         "query_contract": query_contract,
     }
+    if isinstance(args.get("retrieval_plan"), dict):
+        graph_state["retrieval_plan"] = dict(args.get("retrieval_plan") or {})
     result = interactive.retrieve_context_for_graph(runtime_args, graph_state)
     rows = [row for row in result.get("context_rows") or [] if isinstance(row, dict)]
     trace = result.get("retrieval_trace") if isinstance(result.get("retrieval_trace"), dict) else {}
@@ -358,10 +360,11 @@ def _overlay_sec_search_contract(contract: dict[str, Any], args: dict[str, Any],
         clean["source_tiers"] = source_tiers
     if metric_families:
         clean["metric_families"] = metric_families
+        rules = dict(clean.get("ledger_rules") or {})
+        rules["allowed_metric_families"] = metric_families
         if tickers and set(metric_families) & _BANKING_MCP_METRIC_FAMILIES:
-            rules = dict(clean.get("ledger_rules") or {})
             rules["banking_metric_tickers"] = tickers
-            clean["ledger_rules"] = rules
+        clean["ledger_rules"] = rules
     if period_roles:
         clean["period_roles"] = period_roles
 

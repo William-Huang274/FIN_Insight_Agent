@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -37,6 +38,7 @@ DEFAULT_SPECIALIST_SUMMARY = (
 )
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "eval" / "sec_cases" / "outputs" / "multi_agent_judgment_memo_diagnostic"
 SUMMARY_SCHEMA_VERSION = "sec_agent_judgment_memo_diagnostic_v0.1"
+MEMO_PROFILE_ORDER = {"compact": 0, "standard": 1, "expanded": 2, "deep_research": 3}
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -99,6 +101,7 @@ def main(argv: list[str] | None = None) -> int:
         case_dir.mkdir(parents=True, exist_ok=True)
         relationship_artifacts = s3._relationship_artifacts(case_id, relationship_artifact_root)
         state = s3._initial_state(case, relationship_artifacts, case_dir, run_id=run_id, args=s4._s3_args_from_summary(evidence_summary))
+        state = _ensure_case_execution_mode(state, case)
         state = s4._inject_s3_artifacts(state, evidence_artifact_root, case_id)
         state = s5._inject_s4_artifacts(state, coverage_artifact_root, case_id)
         state = _inject_s5_artifacts(state, specialist_artifact_root, case_id)
@@ -169,6 +172,16 @@ def _inject_s5_artifacts(state: dict[str, Any], specialist_artifact_root: Path, 
     }
 
 
+def _ensure_case_execution_mode(state: dict[str, Any], case: Mapping[str, Any]) -> dict[str, Any]:
+    expected_mode = str(case.get("expected_execution_mode") or case.get("execution_mode") or "")
+    if not expected_mode:
+        return state
+    activation = dict(state.get("agent_activation_plan") or {})
+    if not str(activation.get("execution_mode") or ""):
+        activation["execution_mode"] = expected_mode
+    return {**state, "execution_mode": str(state.get("execution_mode") or expected_mode), "agent_activation_plan": activation}
+
+
 def _inject_s6_aggregate(state: dict[str, Any]) -> dict[str, Any]:
     specialist_outputs = [dict(row) for row in state.get("specialist_outputs") or [] if isinstance(row, Mapping)]
     reflection = state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {}
@@ -217,10 +230,16 @@ def _score_case(
     claim_verification = result.get("claim_verification") if isinstance(result.get("claim_verification"), Mapping) else {}
     memo_route = result.get("memo_route_result") if isinstance(result.get("memo_route_result"), Mapping) else {}
     memo_claims = [row for row in memo.get("memo_claims") or [] if isinstance(row, Mapping)]
+    memo_profile = _memo_profile(memo, memo_route)
+    expected_profile = _expected_min_memo_profile(case, judgment, specialist_case_score)
+    profile_contract = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
     thesis_plan = memo.get("memo_thesis_plan") if isinstance(memo.get("memo_thesis_plan"), Mapping) else {}
     judgment_thesis_plan = judgment.get("memo_thesis_plan") if isinstance(judgment, Mapping) and isinstance(judgment.get("memo_thesis_plan"), Mapping) else {}
     supported_claim_count = len(judgment.get("supported_claims") or []) if isinstance(judgment, Mapping) else 0
-    minimum_memo_claim_count = 3 if supported_claim_count >= 3 else 1
+    minimum_memo_claim_count = _minimum_memo_claim_count(memo_profile, supported_claim_count)
+    direct_answer_chars = len(str(memo.get("direct_answer") or ""))
+    expected_response_language = _expected_response_language(case)
+    response_language = _memo_response_language(memo)
     checks = {
         "graph_stopped_after_verifier": result.get("status") == "stopped_after_node" and result.get("native_stop_after_node") == "verifier",
         "s5_specialist_case_passed": str(specialist_case_score.get("status") or "") == "pass",
@@ -234,11 +253,22 @@ def _score_case(
         "memo_writer_allowed": bool((judgment or {}).get("memo_writer_allowed", True)) if isinstance(judgment, Mapping) else False,
         "memo_route_pass": str(memo_route.get("status") or "") == "pass",
         "memo_not_fallback": str(memo.get("llm_route_source") or "").endswith("+deterministic_fallback") is False,
+        "memo_profile_present": memo_profile in MEMO_PROFILE_ORDER,
+        "memo_profile_matches_case_depth": MEMO_PROFILE_ORDER.get(memo_profile, -1) >= MEMO_PROFILE_ORDER.get(expected_profile, 0),
+        "memo_direct_answer_profile_length": _direct_answer_length_ok(
+            memo_profile,
+            direct_answer_chars,
+            profile_contract,
+            response_language=response_language,
+        ),
         "memo_claims_present": bool(memo_claims),
         "memo_claim_count_min_when_ready": len(memo_claims) >= minimum_memo_claim_count if minimum_memo_claim_count > 1 else bool(memo_claims),
         "memo_thesis_plan_carried": bool(thesis_plan) and str(thesis_plan.get("primary_thesis_claim_id") or "") == str(judgment_thesis_plan.get("primary_thesis_claim_id") or ""),
         "memo_raw_rows_not_consumed": memo.get("raw_rows_consumed") is False,
         "memo_tool_calls_not_requested": not memo.get("tool_calls_requested"),
+        "memo_response_language_present": response_language in {"zh-CN", "en-US"},
+        "memo_response_language_matches_query": response_language == expected_response_language,
+        "memo_user_facing_language_ok": _memo_user_facing_language_ok(memo, expected_response_language),
         "verifier_pass": str(claim_verification.get("status") or "") == "pass",
     }
     return {
@@ -251,6 +281,14 @@ def _score_case(
         "elapsed_sec": elapsed_sec,
         "judgment_metrics": _judgment_metrics(judgment),
         "memo_metrics": _memo_metrics(memo),
+        "memo_profile_gate": {
+            "memo_profile": memo_profile,
+            "expected_min_profile": expected_profile,
+            "minimum_memo_claim_count": minimum_memo_claim_count,
+            "direct_answer_chars": direct_answer_chars,
+            "expected_response_language": expected_response_language,
+            "response_language": response_language,
+        },
         "token_usage": _token_usage(result),
         "memo_route_result": {
             "status": memo_route.get("status") or "",
@@ -262,6 +300,161 @@ def _score_case(
         "claim_verification_status": claim_verification.get("status") or "",
         "claim_verification_error_count": len(claim_verification.get("errors") or []),
     }
+
+
+def _memo_profile(memo: Mapping[str, Any], memo_route: Mapping[str, Any]) -> str:
+    profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
+    return str(profile.get("profile") or memo_route.get("memo_profile") or "compact")
+
+
+def _expected_response_language(case: Mapping[str, Any]) -> str:
+    explicit = str(case.get("response_language") or case.get("output_language") or "").strip().lower()
+    if explicit in {"zh", "zh-cn", "zh_hans", "chinese", "中文", "简体中文"}:
+        return "zh-CN"
+    if explicit in {"en", "en-us", "english", "英文"}:
+        return "en-US"
+    return "zh-CN" if re.search(r"[\u4e00-\u9fff]", str(case.get("prompt") or "")) else "en-US"
+
+
+def _memo_response_language(memo: Mapping[str, Any]) -> str:
+    value = memo.get("response_language")
+    if isinstance(value, Mapping):
+        value = value.get("language")
+    normalized = str(value or "").strip().lower().replace("_", "-")
+    if normalized in {"zh", "zh-cn", "zh-hans", "chinese", "中文", "简体中文"}:
+        return "zh-CN"
+    if normalized in {"en", "en-us", "english", "英文"}:
+        return "en-US"
+    return ""
+
+
+def _memo_user_facing_language_ok(memo: Mapping[str, Any], expected_language: str) -> bool:
+    if expected_language != "zh-CN":
+        return True
+    offenders = []
+    for text in _memo_user_facing_texts(memo):
+        if _requires_chinese_text(text) and not _looks_chinese_text(text):
+            offenders.append(text)
+            if len(offenders) >= 2:
+                return False
+    return not offenders
+
+
+def _memo_user_facing_texts(memo: Mapping[str, Any]) -> list[str]:
+    texts = [str(memo.get("direct_answer") or ""), str(memo.get("source_boundary") or "")]
+    for claim in memo.get("memo_claims") or []:
+        if isinstance(claim, Mapping):
+            texts.append(str(claim.get("claim") or claim.get("text") or ""))
+    for key in (
+        "investment_implications",
+        "what_would_change_view",
+        "monitoring_items",
+        "evidence_gaps_but_actionable",
+        "caveats",
+        "unsupported_claims_excluded",
+        "source_boundary_notes",
+    ):
+        for item in memo.get(key) or []:
+            if isinstance(item, Mapping):
+                texts.append(str(item.get("text") or item.get("claim") or item.get("reason") or ""))
+            else:
+                texts.append(str(item or ""))
+    return [text for text in texts if text.strip()]
+
+
+def _requires_chinese_text(value: str) -> bool:
+    text = str(value or "").strip()
+    stripped = re.sub(r"\[[^\]]+\]", " ", text)
+    stripped = re.sub(r"\b(?:[A-Z]{1,6}|10-[KQ]|8-K|GAAP|SEC|FY\d{2,4}|Q[1-4])\b", " ", stripped)
+    return len(stripped.strip()) >= 16
+
+
+def _looks_chinese_text(value: str) -> bool:
+    text = str(value or "")
+    cjk_count = len(re.findall(r"[\u4e00-\u9fff]", text))
+    if cjk_count >= 8:
+        return True
+    latin_text = re.sub(r"\b(?:[A-Z]{1,6}|10-[KQ]|8-K|GAAP|SEC|FY\d{2,4}|Q[1-4])\b", " ", text)
+    latin_words = len(re.findall(r"[A-Za-z]{3,}", latin_text))
+    return cjk_count >= 4 and cjk_count >= latin_words
+
+
+def _expected_min_memo_profile(
+    case: Mapping[str, Any],
+    judgment: Any,
+    specialist_case_score: Mapping[str, Any],
+) -> str:
+    execution_mode = str(case.get("expected_execution_mode") or "")
+    category = str(case.get("category") or "")
+    if not isinstance(judgment, Mapping):
+        return "compact"
+    supported_claim_count = len(judgment.get("supported_claims") or [])
+    stats = judgment.get("claim_card_stats") if isinstance(judgment.get("claim_card_stats"), Mapping) else {}
+    memo_ready_count = int(stats.get("memo_ready_claim_count") or 0)
+    source_family_count = len(
+        {
+            str(family)
+            for claim in judgment.get("supported_claims") or []
+            if isinstance(claim, Mapping)
+            for family in _strings(claim.get("source_families") or claim.get("source_family"))
+            if str(family or "")
+        }
+    )
+    if execution_mode == "deep_research" or category == "sector_depth":
+        if supported_claim_count >= 6 and memo_ready_count >= 4 and source_family_count >= 2:
+            return "deep_research"
+        if supported_claim_count >= 4 and source_family_count >= 2:
+            return "expanded"
+        return "standard"
+    if execution_mode == "standard_memo" or category == "standard_memo":
+        if supported_claim_count >= 5 and memo_ready_count >= 3 and source_family_count >= 2:
+            return "expanded"
+        if supported_claim_count >= 3:
+            return "standard"
+    if str(specialist_case_score.get("status") or "") == "pass" and supported_claim_count >= 3:
+        return "standard"
+    return "compact"
+
+
+def _minimum_memo_claim_count(profile: str, supported_claim_count: int) -> int:
+    if supported_claim_count <= 0:
+        return 0
+    caps = {
+        "compact": 3,
+        "standard": 4,
+        "expanded": 5,
+        "deep_research": 6,
+    }
+    return min(max(1, supported_claim_count), caps.get(profile, 3))
+
+
+def _direct_answer_length_ok(
+    profile: str,
+    char_count: int,
+    profile_contract: Mapping[str, Any],
+    *,
+    response_language: str = "en-US",
+) -> bool:
+    if char_count <= 0:
+        return False
+    max_chars = int(profile_contract.get("direct_answer_max_chars") or 420)
+    max_tolerance = 300 if profile == "deep_research" else 80 if profile == "expanded" else 0
+    if char_count > max_chars + max_tolerance:
+        return False
+    min_chars = int(profile_contract.get("direct_answer_min_chars") or 0)
+    if profile == "compact":
+        return True
+    if response_language == "zh-CN":
+        return char_count >= max(140, int(min_chars * 0.35))
+    return char_count >= max(1, min_chars - 80)
+
+
+def _strings(value: Any) -> list[str]:
+    if isinstance(value, str):
+        return [value] if value else []
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item or "")]
+    return []
 
 
 def _judgment_metrics(judgment: Any) -> dict[str, Any]:
@@ -284,11 +477,18 @@ def _judgment_metrics(judgment: Any) -> dict[str, Any]:
 def _memo_metrics(memo: Mapping[str, Any]) -> dict[str, Any]:
     claims = [row for row in memo.get("memo_claims") or [] if isinstance(row, Mapping)]
     refs = sorted({str(ref) for row in claims for ref in row.get("evidence_refs") or [] if str(ref or "").strip()})
+    profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
     return {
         "answer_status": memo.get("answer_status") or "",
+        "memo_profile": profile.get("profile") or "",
+        "response_language": _memo_response_language(memo),
         "direct_answer_chars": len(str(memo.get("direct_answer") or "")),
         "memo_claim_count": len(claims),
         "memo_claim_evidence_ref_count": len(refs),
+        "investment_implication_count": len(memo.get("investment_implications") or []),
+        "what_would_change_view_count": len(memo.get("what_would_change_view") or []),
+        "monitoring_item_count": len(memo.get("monitoring_items") or []),
+        "evidence_gap_actionable_count": len(memo.get("evidence_gaps_but_actionable") or []),
         "caveat_count": len(memo.get("caveats") or []),
         "unsupported_claims_excluded_count": len(memo.get("unsupported_claims_excluded") or []),
         "source_boundary_note_count": len(memo.get("source_boundary_notes") or []),
@@ -333,8 +533,16 @@ def _result_summary(result: Mapping[str, Any], score: Mapping[str, Any]) -> dict
 def _compact_memo_for_summary(memo: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "answer_status": memo.get("answer_status") or "",
-        "direct_answer": str(memo.get("direct_answer") or "")[:1200],
-        "memo_claims": [dict(row) for row in memo.get("memo_claims") or [] if isinstance(row, Mapping)][:6],
+        "direct_answer": str(memo.get("direct_answer") or "")[:2400],
+        "response_language": dict(memo.get("response_language") or {}) if isinstance(memo.get("response_language"), Mapping) else {},
+        "memo_profile": dict(memo.get("memo_profile") or {}) if isinstance(memo.get("memo_profile"), Mapping) else {},
+        "memo_claims": [dict(row) for row in memo.get("memo_claims") or [] if isinstance(row, Mapping)][:10],
+        "investment_implications": [dict(row) if isinstance(row, Mapping) else row for row in memo.get("investment_implications") or []][:8],
+        "what_would_change_view": [dict(row) if isinstance(row, Mapping) else row for row in memo.get("what_would_change_view") or []][:6],
+        "monitoring_items": [dict(row) if isinstance(row, Mapping) else row for row in memo.get("monitoring_items") or []][:6],
+        "evidence_gaps_but_actionable": [
+            dict(row) if isinstance(row, Mapping) else row for row in memo.get("evidence_gaps_but_actionable") or []
+        ][:6],
         "caveats": [dict(row) if isinstance(row, Mapping) else row for row in memo.get("caveats") or []][:4],
         "unsupported_claims_excluded": [
             dict(row) if isinstance(row, Mapping) else row for row in memo.get("unsupported_claims_excluded") or []
@@ -421,6 +629,10 @@ def _aggregate(
             "verifier_pass_case_count": sum(1 for score in scores if (score.get("checks") or {}).get("verifier_pass")),
             "token_usage": token_usage,
             "memo_repair_attempts_total": sum(int((score.get("memo_route_result") or {}).get("repair_attempts") or 0) for score in scores),
+            "memo_profiles": _count_values(
+                str((score.get("memo_metrics") or {}).get("memo_profile") or "")
+                for score in scores
+            ),
         },
         "cases": scores,
         "failed_cases": [
@@ -439,6 +651,16 @@ def _stdout_summary(summary: Mapping[str, Any], path: Path) -> dict[str, Any]:
         "metrics": summary.get("metrics") or {},
         "failed_cases": summary.get("failed_cases") or [],
     }
+
+
+def _count_values(values: Any) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for value in values:
+        key = str(value or "")
+        if not key:
+            continue
+        counts[key] = counts.get(key, 0) + 1
+    return counts
 
 
 def _default_run_id() -> str:

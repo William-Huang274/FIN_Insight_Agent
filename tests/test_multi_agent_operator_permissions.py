@@ -185,6 +185,133 @@ def test_evidence_operator_plan_executes_mcp_shaped_calls_and_records_ledger() -
     assert result["tool_observations"][1]["boundary"]["status"] == "pass"
 
 
+def test_evidence_operator_records_ledger_missing_despite_primary_context() -> None:
+    retrieval_plan = {
+        "routes": [
+            {
+                "route_id": "task::ledger_first",
+                "task_id": "task",
+                "retrieval_route": "ledger_first",
+                "tickers": ["NVDA"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["revenue"],
+            },
+            {
+                "route_id": "task::filing_text",
+                "task_id": "task",
+                "retrieval_route": "filing_text",
+                "tickers": ["NVDA"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["revenue"],
+            },
+        ]
+    }
+
+    def fake_executor(tool_name: str, args: dict) -> dict:
+        if tool_name == "sec_query_exact_value_ledger":
+            return {"status": "ok", "rows": [], "artifact_refs": []}
+        return {
+            "status": "ok",
+            "context_rows": [
+                {
+                    "evidence_id": "nvda_10q_text",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "fiscal_year": 2026,
+                    "form_type": "10-Q",
+                    "summary": "NVDA primary filing text row.",
+                }
+            ],
+            "runtime_ledger_rows": [],
+            "artifact_refs": [],
+        }
+
+    result = execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_ledger_gap",
+        ledger=ToolCallLedger(),
+        state_context={"user_query": "NVDA revenue", "focus_tickers": ["NVDA"], "ledger_store_path": "ledger.duckdb"},
+        tool_executor=fake_executor,
+    )
+
+    gaps = [gap for gap in result["source_gaps"] if gap.get("reason_code") == "ledger_missing_despite_context"]
+    assert gaps
+    assert gaps[0]["ticker"] == "NVDA"
+    assert gaps[0]["source_available"] is True
+    assert gaps[0]["exact_value_available"] is False
+
+
+def test_ledger_first_without_store_falls_back_to_sec_search_runtime_ledger() -> None:
+    retrieval_plan = {
+        "routes": [
+            {
+                "route_id": "task::ledger_first",
+                "task_id": "task",
+                "retrieval_route": "ledger_first",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+                "candidate_budget": 24,
+                "rerank_budget": 0,
+            }
+        ]
+    }
+    calls: list[tuple[str, dict]] = []
+
+    def fake_executor(tool_name: str, args: dict) -> dict:
+        calls.append((tool_name, args))
+        return {
+            "status": "ok",
+            "context_rows": [
+                {
+                    "evidence_id": "msft_10q_capex_text",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "MSFT",
+                    "fiscal_year": 2026,
+                    "form_type": "10-Q",
+                }
+            ],
+            "runtime_ledger_rows": [
+                {
+                    "metric_id": "msft_capex_2026",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "MSFT",
+                    "fiscal_year": 2026,
+                    "form_type": "10-Q",
+                    "metric_family": "capex",
+                }
+            ],
+            "artifact_refs": [],
+            "candidate_counts": {"candidate_row_count_pre_rerank": 12, "candidate_sent_to_bge": 6},
+        }
+
+    result = execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_runtime_ledger_fallback",
+        ledger=ToolCallLedger(),
+        state_context={"user_query": "MSFT capex", "focus_tickers": ["MSFT"], "build_runtime_ledger": True},
+        tool_executor=fake_executor,
+    )
+
+    assert [call[0] for call in calls] == ["sec_search_filings"]
+    assert calls[0][1]["retrieval_route"] == "filing_text"
+    assert calls[0][1]["retrieval_plan"]["routes"][0]["retrieval_route"] == "ledger_first"
+    assert calls[0][1]["retrieval_plan"]["routes"][0]["rerank_budget"] > 0
+    assert calls[0][1]["candidate_budget"] >= 120
+    assert calls[0][1]["rerank_budget"] > 0
+    assert result["context_rows"][0]["ticker"] == "MSFT"
+    assert result["runtime_ledger_rows"][0]["metric_family"] == "capex"
+    assert result["tool_call_ledger"]["records"][0]["tool_name"] == "sec_search_filings"
+    assert result["tool_call_ledger"]["records"][0]["metadata"]["fallback_from_retrieval_route"] == "ledger_first"
+    assert not [gap for gap in result["source_gaps"] if gap.get("reason_code") == "ledger_store_path_unavailable"]
+
+
 def test_relationship_graph_route_executes_and_returns_bounded_context_rows() -> None:
     retrieval_plan = {
         "routes": [
@@ -241,6 +368,84 @@ def test_evidence_operator_duplicate_call_is_blocked() -> None:
     assert result["tool_observations"][0]["status"] == "dry_run"
     assert result["tool_observations"][1]["status"] == "blocked"
     assert result["tool_observations"][1]["error"] == "duplicate_tool_call_blocked"
+
+
+def test_evidence_operator_groups_sec_search_routes_for_single_real_execution() -> None:
+    retrieval_plan = {
+        "schema_version": "sec_agent_retrieval_plan_v0.1",
+        "tasks": [{"task_id": "task", "retrieval_routes": ["ledger_first", "filing_text", "8k_commentary"]}],
+        "routes": [
+            {
+                "route_id": "task::ledger_first",
+                "task_id": "task",
+                "retrieval_route": "ledger_first",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+            },
+            {
+                "route_id": "task::filing_text",
+                "task_id": "task",
+                "retrieval_route": "filing_text",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+            },
+            {
+                "route_id": "task::8k_commentary",
+                "task_id": "task",
+                "retrieval_route": "8k_commentary",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["8-K"],
+                "source_tiers": ["company_authored_unaudited_sec_filing"],
+                "metric_families": ["capex"],
+            },
+        ],
+    }
+    calls: list[tuple[str, dict]] = []
+
+    def fake_executor(tool_name: str, args: dict) -> dict:
+        calls.append((tool_name, args))
+        grouped_routes = args["retrieval_plan"]["routes"]
+        return {
+            "status": "ok",
+            "context_rows": [
+                {
+                    "evidence_ref": "msft_text",
+                    "selection_route_ids": [route["route_id"]],
+                    "retrieval_route": route["retrieval_route"],
+                }
+                for route in grouped_routes
+            ],
+            "runtime_ledger_rows": [{"metric_id": "msft_capex", "ticker": "MSFT"}],
+            "artifact_refs": [],
+            "candidate_counts": {"candidate_row_count_pre_rerank": 12, "candidate_sent_to_bge": 6},
+        }
+
+    result = execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_grouped_sec",
+        ledger=ToolCallLedger(),
+        state_context={"user_query": "MSFT capex", "focus_tickers": ["MSFT"], "build_runtime_ledger": True},
+        tool_executor=fake_executor,
+    )
+
+    assert [call[0] for call in calls] == ["sec_search_filings"]
+    assert [route["retrieval_route"] for route in calls[0][1]["retrieval_plan"]["routes"]] == [
+        "ledger_first",
+        "filing_text",
+        "8k_commentary",
+    ]
+    assert len(result["context_rows"]) == 3
+    assert [row["status"] for row in result["tool_observations"]] == ["ok", "cached", "cached"]
+    records = result["tool_call_ledger"]["records"]
+    assert [record["status"] for record in records] == ["ok", "cached", "cached"]
+    assert {record["agent_id"] for record in records} == {"sec_operator", "eight_k_operator"}
 
 
 def test_market_and_industry_boundary_checks_are_explicit() -> None:

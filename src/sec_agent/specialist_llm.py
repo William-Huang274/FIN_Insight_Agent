@@ -158,6 +158,7 @@ def build_specialist_request_from_state(
         required_claim_slots=required_claim_slots,
         counterclaim_slots=counterclaim_slots,
     )
+    prompt_row_distribution = _prompt_row_distribution(rows)
     relationship_summary = _compact_relationship_summary_for_prompt(
         data_view.get("relationship_summary"),
         execution_mode=execution_mode,
@@ -175,6 +176,8 @@ def build_specialist_request_from_state(
         "required_claim_slots": required_claim_slots,
         "counterclaim_slots": counterclaim_slots,
         "bounded_evidence_rows": rows,
+        "prompt_row_distribution": prompt_row_distribution,
+        "input_coverage_summary": _specialist_input_coverage_summary(agent_id, rows, state),
         "relationship_summary": relationship_summary,
         "coverage_summary": data_view.get("coverage_summary") or state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {},
         "source_boundaries": _source_boundaries_from_state(state),
@@ -362,20 +365,32 @@ def _build_messages(
 ) -> list[dict[str, str]]:
     system = _system_prompt(agent_id)
     shared_context = request.get("shared_context") if isinstance(request.get("shared_context"), Mapping) else {}
+    execution_mode = str(request.get("execution_mode") or "")
+    bounded_rows = _compact_rows_for_model_payload(
+        agent_id,
+        request.get("bounded_evidence_rows") or request.get("evidence_rows") or [],
+        execution_mode=execution_mode,
+    )
+    relationship_summary = _compact_relationship_summary_payload(
+        request.get("relationship_summary") if isinstance(request.get("relationship_summary"), Mapping) else {},
+        execution_mode=execution_mode,
+    )
     user_payload = {
         "shared_context": shared_context,
         "agent_id": agent_id,
-        "execution_mode": request.get("execution_mode") or "",
+        "execution_mode": execution_mode,
         "user_query": request.get("user_query") or request.get("prompt") or "",
         "assigned_task_card": request.get("assigned_task_card") or {},
         "required_claim_slots": request.get("required_claim_slots") or [],
         "counterclaim_slots": request.get("counterclaim_slots") or [],
-        "bounded_evidence_rows": request.get("bounded_evidence_rows") or request.get("evidence_rows") or [],
-        "relationship_summary": request.get("relationship_summary") or {},
+        "bounded_evidence_rows": bounded_rows,
+        "prompt_row_distribution": request.get("prompt_row_distribution") or _prompt_row_distribution(bounded_rows),
+        "input_coverage_summary": request.get("input_coverage_summary") or {},
+        "relationship_summary": relationship_summary,
         "coverage_summary": {} if shared_context else request.get("coverage_summary") or {},
         "source_boundaries": {} if shared_context else request.get("source_boundaries") or {},
         "input_budget": request.get("input_budget") or {},
-        "output_contract": request.get("output_contract") or _specialist_output_contract(agent_id, str(request.get("execution_mode") or "")),
+        "output_contract": request.get("output_contract") or _specialist_output_contract(agent_id, execution_mode),
         "known_evidence_refs": {
             "count": len(known_evidence_refs),
             "policy": "cite only evidence_ref values visible in bounded_evidence_rows or relationship_summary",
@@ -383,7 +398,7 @@ def _build_messages(
     }
     observation_budget = _observation_budget_text(
         agent_id,
-        str(request.get("execution_mode") or ""),
+        execution_mode,
         prior_failure=prior_failure,
     )
     user = (
@@ -396,13 +411,14 @@ def _build_messages(
         "Prefer memo-ready investment implications over row summaries; downstream will rank ClaimCards by evidence support, role fit, and memo readiness. "
         "Each observation must state the role-specific investment implication, not just restate the row. "
         "Each supported observation should satisfy one required_claim_slot; if a slot is unsupported, add one material missing_confirmation or top unsupported_claim instead of a generic gap list. "
+        "Do not infer sequential change, prior-period trend, YoY/QoQ growth, acceleration, deceleration, or trajectory unless the cited evidence_refs include at least two relevant period rows; otherwise write it as an unsupported_claim or caveat. "
         "If relationship_summary is present, treat it as bounded hypothesis context only and cite its evidence_refs. "
         "If the bounded rows do not support your role-specific lens, put the gap in unsupported_claims. "
         "Do not copy raw tables, long snippets, or row-by-row evidence summaries into the output. "
         "Respect output_contract caps exactly; do not fill every gap if it is not material to the memo. "
         f"Keep the JSON compact and follow this case budget: {observation_budget}. "
         "The first character of the response must be { and the last character must be }; no markdown or prose.\n\n"
-        f"Input JSON:\n{json.dumps(user_payload, ensure_ascii=False, indent=2)}"
+        f"Input JSON:\n{_json_for_prompt(user_payload)}"
     )
     if prior_failure:
         cleaned_failure = _clean_for_prompt(prior_failure)
@@ -410,8 +426,8 @@ def _build_messages(
             repair_payload = _compact_user_payload_for_repair(user_payload)
             user = (
                 "Repair the previous SpecialistMemolet response. The previous output was not parseable as one complete JSON object.\n"
-                f"Diagnostic:\n{json.dumps(cleaned_failure, ensure_ascii=False, sort_keys=True)}\n\n"
-                f"Use this compact input JSON only:\n{json.dumps(repair_payload, ensure_ascii=False, indent=2)}\n\n"
+                f"Diagnostic:\n{_json_for_prompt(cleaned_failure, sort_keys=True)}\n\n"
+                f"Use this compact input JSON only:\n{_json_for_prompt(repair_payload)}\n\n"
                 "Return exactly one minimal SpecialistMemolet JSON object. "
                 "Use at most 2 observations, at most 2 unsupported_claims, and at most 1 conflict. "
                 "Every supported observation must cite known evidence_refs. "
@@ -420,7 +436,7 @@ def _build_messages(
         else:
             user = (
                 f"{user}\n\nRepair the previous output. It failed this diagnostic:\n"
-                f"{json.dumps(cleaned_failure, ensure_ascii=False, sort_keys=True)}\n\n"
+                f"{_json_for_prompt(cleaned_failure, sort_keys=True)}\n\n"
                 f"Previous output excerpt:\n{_truncate(prior_content, 1600)}\n\n"
                 "Return one compact corrected SpecialistMemolet JSON object only. Start with { and end with }."
             )
@@ -464,7 +480,7 @@ def _system_prompt(agent_id: str) -> str:
             "You may only use bounded evidence rows and summaries in the input.",
             "Every supported observation must cite evidence_refs from known_evidence_refs.",
             "If a named fact, relationship, number, or causal claim is not supported by bounded evidence, put it in unsupported_claims.",
-            f"SpecialistMemolet schema hint:\n{json.dumps(schema_hint, ensure_ascii=False, indent=2)}",
+            f"SpecialistMemolet schema hint:\n{_json_for_prompt(schema_hint)}",
         ]
     )
 
@@ -517,7 +533,7 @@ def _compact_bounded_rows_for_prompt(
         clean = dict(row)
         summary_chars = _specialist_summary_chars_for_row(agent_id, clean, execution_mode=execution_mode)
         clean["summary"] = _truncate(str(clean.get("summary") or ""), summary_chars)
-        compact.append(clean)
+        compact.append(_compact_prompt_row(clean))
     return compact
 
 
@@ -543,7 +559,7 @@ def _compact_relationship_summary_for_prompt(
         clean = dict(row)
         summary_chars = _relationship_summary_chars(execution_mode)
         clean["summary"] = _truncate(str(clean.get("summary") or ""), summary_chars)
-        relationships.append(clean)
+        relationships.append(_compact_prompt_row(clean))
     return {
         "scope_mode": str(value.get("scope_mode") or ""),
         "focus_tickers": _string_list(value.get("focus_tickers")),
@@ -589,6 +605,64 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
     }
 
 
+def _compact_rows_for_model_payload(agent_id: str, rows: Any, *, execution_mode: str = "") -> list[dict[str, Any]]:
+    compact: list[dict[str, Any]] = []
+    for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, Mapping):
+            continue
+        clean = dict(row)
+        if "summary" in clean:
+            clean["summary"] = _truncate(
+                str(clean.get("summary") or ""),
+                _specialist_summary_chars_for_row(agent_id, clean, execution_mode=execution_mode),
+            )
+        compact.append(_compact_prompt_row(clean))
+    return compact
+
+
+def _compact_relationship_summary_payload(value: Mapping[str, Any], *, execution_mode: str = "") -> dict[str, Any]:
+    if not isinstance(value, Mapping) or not value:
+        return {}
+    clean = dict(value)
+    relationships: list[dict[str, Any]] = []
+    for row in clean.get("relationships") or []:
+        if not isinstance(row, Mapping):
+            continue
+        row_clean = dict(row)
+        if "summary" in row_clean:
+            row_clean["summary"] = _truncate(str(row_clean.get("summary") or ""), _relationship_summary_chars(execution_mode))
+        relationships.append(_compact_prompt_row(row_clean))
+    clean["relationships"] = relationships
+    if "relationship_scope_rationale" in clean:
+        clean["relationship_scope_rationale"] = _truncate(str(clean.get("relationship_scope_rationale") or ""), _relationship_summary_chars(execution_mode))
+    return {key: value for key, value in clean.items() if not _prompt_value_empty(value)}
+
+
+def _compact_prompt_row(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Drop empty row fields before JSON serialization without removing citation fields."""
+    preserve = {"evidence_ref", "source_family", "ticker", "related_ticker", "summary"}
+    clean: dict[str, Any] = {}
+    for key, value in row.items():
+        key_text = str(key)
+        if key_text in preserve:
+            clean[key_text] = value
+            continue
+        if _prompt_value_empty(value):
+            continue
+        clean[key_text] = value
+    return clean
+
+
+def _prompt_value_empty(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return not value.strip()
+    if isinstance(value, (list, tuple, set, dict)):
+        return len(value) == 0
+    return False
+
+
 def _select_prompt_rows(
     agent_id: str,
     rows: list[dict[str, Any]],
@@ -604,6 +678,26 @@ def _select_prompt_rows(
     ranked = _rank_rows_for_prompt(rows, terms, agent_id=agent_id)
     if agent_id == "industry_supply_chain_analyst":
         return _relationship_preserving_selection(ranked, max_rows=max_rows)
+    if agent_id in {"fundamental_analyst", "risk_counterevidence_analyst"}:
+        focus_tickers = _unique_upper(task_card.get("focus_tickers"))
+        if len(focus_tickers) >= 2:
+            source_families = {"", "primary_sec_filing", "company_authored_unaudited_sec_filing"}
+            if agent_id == "risk_counterevidence_analyst":
+                source_families = {
+                    "",
+                    "primary_sec_filing",
+                    "company_authored_unaudited_sec_filing",
+                    "market_snapshot",
+                    "industry_snapshot",
+                    "run_artifact",
+                }
+            return _focus_ticker_balanced_prompt_rows(
+                ranked,
+                focus_tickers=focus_tickers,
+                max_rows=max_rows,
+                source_families=source_families,
+                priority_source_families=("market_snapshot", "industry_snapshot") if agent_id == "risk_counterevidence_analyst" else (),
+            )
     if agent_id == "risk_counterevidence_analyst":
         return _balanced_rows_by_source_for_prompt(ranked, max_rows=max_rows)
     return ranked[:max_rows]
@@ -789,6 +883,105 @@ def _balanced_rows_by_source_for_prompt(rows: list[dict[str, Any]], *, max_rows:
     return selected
 
 
+def _focus_ticker_balanced_prompt_rows(
+    rows: list[dict[str, Any]],
+    *,
+    focus_tickers: list[str],
+    max_rows: int,
+    source_families: set[str],
+    priority_source_families: tuple[str, ...] = (),
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    selected_ids: set[int] = set()
+    for family in priority_source_families:
+        family_rows = [row for row in rows if str(row.get("source_family") or "") == family]
+        for row in family_rows[: max(1, min(2, max_rows // 4))]:
+            if len(selected) >= max_rows:
+                break
+            selected.append(row)
+            selected_ids.add(id(row))
+    per_ticker = max(1, max_rows // max(1, len(focus_tickers)))
+    for ticker in focus_tickers:
+        bucket = _metric_and_source_diverse_prompt_rows(
+            [
+                row
+                for row in rows
+                if _row_ticker(row) == ticker and (not source_families or str(row.get("source_family") or "") in source_families)
+            ],
+            priority_source_families=priority_source_families,
+        )
+        for row in bucket[:per_ticker]:
+            if len(selected) >= max_rows:
+                break
+            if id(row) in selected_ids:
+                continue
+            selected.append(row)
+            selected_ids.add(id(row))
+    for row in rows:
+        if len(selected) >= max_rows:
+            break
+        if id(row) in selected_ids:
+            continue
+        selected.append(row)
+        selected_ids.add(id(row))
+    return selected
+
+
+def _metric_and_source_diverse_prompt_rows(
+    rows: list[dict[str, Any]],
+    *,
+    priority_source_families: tuple[str, ...] = (),
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    selected_ids: set[int] = set()
+    for family in priority_source_families:
+        for row in rows:
+            if id(row) in selected_ids:
+                continue
+            if str(row.get("source_family") or "") == family:
+                selected.append(row)
+                selected_ids.add(id(row))
+                break
+    preferred_metric_terms = (
+        ("revenue",),
+        ("gross margin", "margin"),
+        ("operating income", "operating_income"),
+        ("cash flow", "cash", "net cash"),
+        ("capex", "capital expenditure", "property and equipment"),
+        ("segment", "backlog", "deposit", "credit"),
+    )
+    for terms in preferred_metric_terms:
+        for row in rows:
+            if id(row) in selected_ids:
+                continue
+            text = _row_metric_text(row)
+            if any(term in text for term in terms):
+                selected.append(row)
+                selected_ids.add(id(row))
+                break
+    for family in ("market_snapshot", "industry_snapshot", "company_authored_unaudited_sec_filing", "primary_sec_filing"):
+        for row in rows:
+            if id(row) in selected_ids:
+                continue
+            if str(row.get("source_family") or "") == family:
+                selected.append(row)
+                selected_ids.add(id(row))
+                break
+    for row in rows:
+        if id(row) in selected_ids:
+            continue
+        selected.append(row)
+        selected_ids.add(id(row))
+    return selected
+
+
+def _row_metric_text(row: Mapping[str, Any]) -> str:
+    return " ".join(
+        str(row.get(key) or "").lower()
+        for key in ("metric", "metric_name", "summary", "evidence_ref", "period_role")
+    )
+
+
 def _bounded_rows_for_agent(agent_id: str, state: Mapping[str, Any]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     if agent_id == "market_valuation_analyst":
@@ -971,6 +1164,7 @@ def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
     task_card = request.get("assigned_task_card") if isinstance(request.get("assigned_task_card"), Mapping) else {}
     shared_context = request.get("shared_context") if isinstance(request.get("shared_context"), Mapping) else {}
     relationship_summary = request.get("relationship_summary") if isinstance(request.get("relationship_summary"), Mapping) else {}
+    rows = [dict(row) for row in request.get("bounded_evidence_rows") or [] if isinstance(row, Mapping)]
     return {
         "task_card_schema_version": str(task_card.get("schema_version") or ""),
         "assigned_memo_slot": str(task_card.get("assigned_memo_slot") or ""),
@@ -981,6 +1175,8 @@ def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
         "shared_context_digest": str(shared_context.get("context_digest") or ""),
         "prompt_bounded_evidence_row_count": len(request.get("bounded_evidence_rows") or []),
         "prompt_relationship_summary_row_count": len(relationship_summary.get("relationships") or []),
+        "prompt_row_distribution": request.get("prompt_row_distribution") or _prompt_row_distribution(rows),
+        "input_coverage_summary": request.get("input_coverage_summary") or {},
     }
 
 
@@ -1008,6 +1204,8 @@ def _skipped_route_result_summary(decision: Mapping[str, Any]) -> dict[str, Any]
         "shared_context_digest": "",
         "prompt_bounded_evidence_row_count": 0,
         "prompt_relationship_summary_row_count": 0,
+        "prompt_row_distribution": _prompt_row_distribution([]),
+        "input_coverage_summary": {},
     }
 
 
@@ -1090,7 +1288,7 @@ def _specialist_input_budget(
         "prompt_summary_char_policy": "source_family_tiered_v0_2_compact",
         "data_view_bounded_evidence_row_budget": int(data_view_budget.get("bounded_evidence_row_budget") or 0),
         "budget_policy": "shared_context_slot_aware_specialist_prompt_rows_v0_1",
-        "selection_policy": "rank_by_required_claim_slots_preserve_relationship_and_risk_source_balance",
+        "selection_policy": "rank_by_required_claim_slots_preserve_relationship_source_balance_and_comparative_focus_ticker_coverage",
         "supported_observation_target": output_contract["supported_observation_target"],
         "unsupported_claim_cap": output_contract["unsupported_claim_cap"],
         "conflict_cap": output_contract["conflict_cap"],
@@ -1368,8 +1566,112 @@ def _format_failure_reason(failure: Mapping[str, Any]) -> str:
     return f"{failure_type}: {reason}".strip()
 
 
+def _specialist_input_coverage_summary(agent_id: str, rows: list[Mapping[str, Any]], state: Mapping[str, Any]) -> dict[str, Any]:
+    focus_tickers = _focus_tickers_from_state(state)
+    source_gaps = [dict(row) for row in state.get("source_gaps") or [] if isinstance(row, Mapping)]
+    primary_rows = [
+        row
+        for row in rows
+        if str(row.get("source_family") or "") in {"", "primary_sec_filing", "company_authored_unaudited_sec_filing"}
+    ]
+    primary_by_ticker = _count_by_key(primary_rows, "ticker")
+    ticker_gap_reasons: dict[str, list[str]] = {}
+    for gap in source_gaps:
+        ticker = str(gap.get("ticker") or "").upper().strip()
+        if not ticker:
+            continue
+        reason = str(gap.get("reason_code") or gap.get("quality_gap_type") or gap.get("reason") or "source_gap")[:120]
+        ticker_gap_reasons.setdefault(ticker, [])
+        if reason not in ticker_gap_reasons[ticker]:
+            ticker_gap_reasons[ticker].append(reason)
+    return {
+        "schema_version": "sec_agent_specialist_input_coverage_summary_v0.1",
+        "agent_id": agent_id,
+        "focus_tickers": focus_tickers,
+        "prompt_row_distribution": _prompt_row_distribution(rows),
+        "focus_ticker_primary_row_counts": {
+            ticker: int(primary_by_ticker.get(ticker, 0))
+            for ticker in focus_tickers
+        },
+        "focus_ticker_source_gap_reasons": {
+            ticker: ticker_gap_reasons.get(ticker, [])
+            for ticker in focus_tickers
+            if ticker_gap_reasons.get(ticker)
+        },
+        "coverage_policy": "comparative_focus_tickers_must_have_visible_primary_rows_or_ticker_source_gap",
+    }
+
+
+def _prompt_row_distribution(rows: list[Mapping[str, Any]]) -> dict[str, Any]:
+    return {
+        "schema_version": "sec_agent_prompt_row_distribution_v0.1",
+        "row_count": len(rows),
+        "by_ticker": _count_by_key(rows, "ticker"),
+        "by_source_family": _count_by_key(rows, "source_family"),
+        "by_ticker_source_family": _count_by_composite(rows, ("ticker", "source_family")),
+        "by_form_type": _count_by_key(rows, "form_type"),
+        "by_metric": _count_by_key(rows, "metric"),
+    }
+
+
+def _focus_tickers_from_state(state: Mapping[str, Any]) -> list[str]:
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    scope = query_contract.get("scope") if isinstance(query_contract.get("scope"), Mapping) else {}
+    return _unique_upper(
+        state.get("focus_tickers")
+        or activation.get("focus_tickers")
+        or query_contract.get("focus_tickers")
+        or scope.get("focus_tickers")
+    )
+
+
+def _row_ticker(row: Mapping[str, Any]) -> str:
+    return str(row.get("ticker") or row.get("company") or "").upper().strip()
+
+
+def _count_by_key(rows: list[Mapping[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = str(row.get(key) or "").strip() or "unknown"
+        if key == "ticker":
+            value = value.upper()
+        counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _count_by_composite(rows: list[Mapping[str, Any]], keys: tuple[str, ...]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        parts = []
+        for key in keys:
+            value = str(row.get(key) or "").strip() or "unknown"
+            if key == "ticker":
+                value = value.upper()
+            parts.append(value)
+        label = "|".join(parts)
+        counts[label] = counts.get(label, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _unique_upper(value: Any) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for item in _string_list(value):
+        ticker = str(item or "").upper().strip()
+        if not ticker or ticker in seen:
+            continue
+        seen.add(ticker)
+        result.append(ticker)
+    return result
+
+
 def _clean_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
     return json.loads(json.dumps(value, ensure_ascii=False, default=str))
+
+
+def _json_for_prompt(value: Any, *, sort_keys: bool = False) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=sort_keys, separators=(",", ":"), default=str)
 
 
 def _payload_digest(value: Mapping[str, Any]) -> str:

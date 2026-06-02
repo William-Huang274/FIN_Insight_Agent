@@ -5,6 +5,7 @@ from pathlib import Path
 
 from sec_agent.workbench import profile_from_env_file, validate_profile_sources
 from sec_agent.workbench.profiles import SourceArtifactsProfile, WorkbenchProfile, parse_env_file
+from sec_agent.workbench.source_bundles import profile_from_source_bundle, source_bundle_from_profile
 
 
 def test_profile_from_env_file_maps_public_runtime_values_without_secret(tmp_path: Path) -> None:
@@ -181,6 +182,70 @@ def test_source_readiness_fails_on_malformed_required_jsonl(tmp_path: Path) -> N
     assert report.status == "fail"
     assert report.manifest.parse_errors
     assert "manifest:" in report.errors[0]
+
+
+def test_source_bundle_from_profile_summarizes_readiness_without_secret(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.jsonl"
+    market = tmp_path / "market.jsonl"
+    bm25_dir = tmp_path / "bm25"
+    object_dir = tmp_path / "object_bm25"
+    bm25_dir.mkdir()
+    object_dir.mkdir()
+    _write_jsonl(
+        manifest,
+        [
+            {
+                "ticker": "NVDA",
+                "fiscal_year": 2025,
+                "form_type": "10-K",
+                "source_tier": "primary_sec_filing",
+            },
+            {
+                "ticker": "AMD",
+                "fiscal_year": 2026,
+                "form_type": "8-K",
+                "source_tier": "company_authored_unaudited_sec_filing",
+            },
+        ],
+    )
+    _write_jsonl(
+        market,
+        [
+            {
+                "ticker": "NVDA",
+                "as_of_date": "2026-05-22",
+                "field_refs": [{"field_name": "close_price", "value": 1.0}],
+            }
+        ],
+    )
+    profile = WorkbenchProfile(
+        profile_id="full_source_demo",
+        display_name="Full source demo",
+        sources=SourceArtifactsProfile(
+            source_policy="SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT",
+            manifest_path=str(manifest),
+            bm25_index_dir=str(bm25_dir),
+            object_bm25_index_dir=str(object_dir),
+            source_gap_path=str(tmp_path / "source_gap.jsonl"),
+            market_evidence_path=str(market),
+            market_as_of_date="2026-05-22",
+        ),
+    )
+
+    readiness = validate_profile_sources(profile, repo_root=tmp_path)
+    bundle = source_bundle_from_profile(profile, readiness=readiness, bundle_id="demo_bundle")
+    bundle_profile = profile_from_source_bundle(bundle)
+
+    assert bundle.bundle_id == "demo_bundle"
+    assert bundle.ticker_count == 2
+    assert bundle.tickers_sample == ["AMD", "NVDA"]
+    assert bundle.as_of_date == "2026-05-22"
+    assert "SEC 10-K/10-Q" in bundle.source_families
+    assert "8-K earnings release" in bundle.source_families
+    assert "market snapshot" in bundle.source_families
+    assert bundle.build.status == "warn"
+    assert bundle_profile.sources.manifest_path == str(manifest)
+    assert bundle_profile.sources.market_evidence_path == str(market)
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:

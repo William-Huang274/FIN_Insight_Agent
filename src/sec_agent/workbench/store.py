@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict
 
 from .jobs import RunJob, RunLogEvent
 from .profiles import WorkbenchProfile
+from .source_bundles import SourceBundle
 
 
 class StoredProfileSummary(BaseModel):
@@ -43,6 +44,19 @@ class StoredSessionSummary(BaseModel):
     turn_count: int
     latest_job_id: str
     latest_status: str
+    updated_at: str
+
+
+class StoredSourceBundleSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    bundle_id: str
+    display_name: str
+    market: str
+    coverage_theme: str
+    ticker_count: int
+    as_of_date: str | None = None
+    status: str
     updated_at: str
 
 
@@ -114,6 +128,83 @@ class WorkbenchStore:
             display_name=profile.display_name,
             source_policy=profile.sources.source_policy,
             model_name=profile.model_route.model_name,
+            updated_at=timestamp,
+        )
+
+    def list_source_bundles(self) -> list[StoredSourceBundleSummary]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                select bundle_id, display_name, market, coverage_theme, ticker_count, as_of_date, status, updated_at
+                from source_bundles
+                order by updated_at desc, bundle_id asc
+                """
+            ).fetchall()
+        return [
+            StoredSourceBundleSummary(
+                bundle_id=row["bundle_id"],
+                display_name=row["display_name"],
+                market=row["market"],
+                coverage_theme=row["coverage_theme"],
+                ticker_count=row["ticker_count"],
+                as_of_date=row["as_of_date"],
+                status=row["status"],
+                updated_at=row["updated_at"],
+            )
+            for row in rows
+        ]
+
+    def get_source_bundle(self, bundle_id: str) -> SourceBundle | None:
+        with self._connect() as conn:
+            row = conn.execute("select payload_json from source_bundles where bundle_id = ?", (bundle_id,)).fetchone()
+        if row is None:
+            return None
+        return SourceBundle.model_validate(json.loads(row["payload_json"]))
+
+    def upsert_source_bundle(self, bundle: SourceBundle) -> StoredSourceBundleSummary:
+        timestamp = datetime.now().isoformat(timespec="seconds")
+        payload_json = json.dumps(bundle.model_dump(mode="json"), ensure_ascii=False, sort_keys=True)
+        with self._connect() as conn:
+            existing = conn.execute("select created_at from source_bundles where bundle_id = ?", (bundle.bundle_id,)).fetchone()
+            created_at = existing["created_at"] if existing else timestamp
+            conn.execute(
+                """
+                insert into source_bundles (
+                    bundle_id, display_name, market, coverage_theme, ticker_count, as_of_date,
+                    status, payload_json, created_at, updated_at
+                )
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                on conflict(bundle_id) do update set
+                    display_name = excluded.display_name,
+                    market = excluded.market,
+                    coverage_theme = excluded.coverage_theme,
+                    ticker_count = excluded.ticker_count,
+                    as_of_date = excluded.as_of_date,
+                    status = excluded.status,
+                    payload_json = excluded.payload_json,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    bundle.bundle_id,
+                    bundle.display_name,
+                    bundle.market,
+                    bundle.coverage_theme,
+                    bundle.ticker_count,
+                    bundle.as_of_date,
+                    bundle.build.status,
+                    payload_json,
+                    created_at,
+                    timestamp,
+                ),
+            )
+        return StoredSourceBundleSummary(
+            bundle_id=bundle.bundle_id,
+            display_name=bundle.display_name,
+            market=bundle.market,
+            coverage_theme=bundle.coverage_theme,
+            ticker_count=bundle.ticker_count,
+            as_of_date=bundle.as_of_date,
+            status=bundle.build.status,
             updated_at=timestamp,
         )
 
@@ -319,6 +410,22 @@ class WorkbenchStore:
                     status text not null,
                     profile_id text,
                     run_dir text,
+                    payload_json text not null,
+                    created_at text not null,
+                    updated_at text not null
+                )
+                """
+            )
+            conn.execute(
+                """
+                create table if not exists source_bundles (
+                    bundle_id text primary key,
+                    display_name text not null,
+                    market text not null,
+                    coverage_theme text not null,
+                    ticker_count integer not null,
+                    as_of_date text,
+                    status text not null,
                     payload_json text not null,
                     created_at text not null,
                     updated_at text not null

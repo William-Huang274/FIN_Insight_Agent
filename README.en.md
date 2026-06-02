@@ -2,111 +2,105 @@
 
 [中文版本](README.md)
 
-FinSight-Agent is an evidence-grounded financial research agent for public-company analysis. It turns open-ended investment-research questions into a traceable workflow: define the research scope, retrieve source evidence, extract comparable financial values, build an analysis frame, call an API LLM for synthesis, and run deterministic checks before presenting the answer.
+FinSight-Agent is an auditable financial research system for public-company analysis. It does not simply retrieve a few passages and ask a model to summarize them. It turns a financial question into a sequence of inspectable research steps: classify the question, define the research scope, retrieve bounded evidence, build numeric ledgers and industry or relationship context, ask role-specific agents to produce verifiable claim cards, assemble an argument plan, write a research memo, and verify whether sources, numbers, and conclusions stay inside the evidence boundary.
 
-The first public demo focuses on SEC filings, company-authored earnings releases, and offline market snapshots. The same source model is designed to expand to additional research materials, such as earnings-call transcripts, industry news, analyst datasets, or internal research notes, without letting the model blur source boundaries.
-
-The output is not a live trading signal or a generic chatbot answer. It is a research memo with explicit source tiers, fiscal-period roles, filing boundaries, market-snapshot dates, and follow-up session context.
+The project is not a real-time market terminal, trading system, or personalized investment-advice engine. It focuses on a different problem: using language models for research reasoning and writing while keeping evidence boundaries, financial periods, tool calls, audit trails, and multi-turn context explicit.
 
 ## What It Is For
 
-FinSight-Agent is useful when the question needs more than one piece of text from one filing. Typical tasks include:
+FinSight-Agent is designed for questions such as:
 
-- comparing AI, cloud, semiconductor, and platform companies across revenue growth, capex, RPO, data-center demand, or segment momentum;
-- combining audited annual filings, latest quarterly filings, company-authored 8-K earnings-release commentary, and recent non-real-time market context;
-- asking follow-up questions about one company, one metric, one evidence gap, or one section of a prior memo;
-- checking whether a claim comes from audited filings, unaudited quarterly data, management commentary, or market-snapshot analytics.
+- comparing company fundamentals, management commentary, market reaction, and risk boundaries;
+- analyzing a company or metric in depth, such as margin, capex, cash flow, bank asset quality, or energy and utility operating metrics;
+- studying an industry theme or economic transmission path, such as AI infrastructure, cloud capex, data-center power demand, or semiconductor supply chains;
+- narrowing scope in a multi-turn session, asking about a specific evidence row, inspecting coverage gaps, or reusing artifacts from a prior run;
+- checking whether a claim comes from SEC filings, company-authored 8-K earnings material, an offline market snapshot, or an industry or relationship hypothesis.
 
-## Why This Is An Agent
+The public repository does not include private SEC source files, market data, generated indexes, run outputs, or API keys. Users can generate equivalent artifacts from their own public filings, market snapshots, and industry data, then connect them through the project profile contract.
 
-A single API call can write a fluent memo, but it cannot by itself prove which filings were used, whether QTD and annual figures were mixed, whether a market snapshot was stale, or whether a follow-up reused the right context.
+## Why Not Plain RAG
 
-FinSight-Agent separates responsibilities:
+Plain RAG often means "retrieve text, pass it to a model, generate an answer." FinSight-Agent makes the fragile parts of financial research explicit: source boundaries, numeric periods, economic relationships, multi-turn state, and final-answer validation.
 
-- the model understands the question, selects high-level actions, and writes the final memo;
-- the tool chain retrieves filings and structured objects, computes exact-value ledgers, tracks fiscal-period roles, checks evidence coverage, and validates final claims;
-- the session layer preserves the active answer, evidence references, and long-lived context for follow-up questions.
-
-That separation is the core design choice: let the model reason over evidence, but let testable code own evidence handling and constraints.
-
-## Core Flow
-
-```text
-User question
-  -> constrained query planning
-  -> optional tool/function-call routing for multi-turn sessions
-  -> evidence retrieval and structured-object lookup
-  -> runtime exact-value ledger
-  -> evidence coverage check
-  -> judgment plan
-  -> API LLM synthesis
-  -> deterministic gates
-  -> rendered memo and session memory
-```
-
-`QUERY_PLANNER=llm` uses an API model through the project gateway, such as DeepSeek or another OpenAI-compatible provider. The planner does not return free-form prose; it returns a bounded query contract that is validated for tickers, years, filing types, source tiers, metric families, market-snapshot requirements, and output size.
-
-Multi-turn sessions use OpenAI-compatible tool/function calls. The model selects high-level tools, such as starting an analysis, revising scope, inspecting coverage, explaining evidence, reformatting an answer, or resuming a partial run. The Python harness executes those tools and owns state changes, artifact references, and safety checks.
-
-## Agent Runtime
-
-| Layer | Responsibility |
+| Capability | How FinSight-Agent handles it |
 | --- | --- |
-| Query Contract Planner | Converts the user question into a bounded research contract: tickers, fiscal years, filing types, source tiers, metric families, and analysis intent |
-| Tool-call Controller | Lets an API model choose high-level actions in multi-turn sessions; the model returns tool names and arguments, not direct file-system operations |
-| Tool Harness | Executes the selected tools, manages session state, applies scope invalidation, and decides whether a graph stage must rerun |
-| Retrieval and Objects | Searches filing text, structured financial objects, 8-K evidence, and market-snapshot evidence using BM25, ObjectBM25, and BGE reranking |
-| Exact-Value Ledger | Extracts comparable financial values with ticker, fiscal year, filing type, period role, unit, and source object id |
-| Coverage and Judgment Plan | Records evidence support and gaps, then builds a constrained analysis frame before synthesis |
-| LLM Synthesis | Calls an API LLM to write the research memo inside the evidence and judgment-plan boundaries |
-| Deterministic Gates | Checks source boundaries, numeric citations, market `as_of_date`, claim support, and forbidden unsupported conclusions |
-| Context Manager | Stores session state, active answer ids, artifact references, and follow-up context |
+| Question understanding | A research lead converts the user request into a mode, company scope, evidence needs, and agent activation plan |
+| Tool execution | The tool harness calls registered MCP tools; the model cannot bypass permissions and read arbitrary data |
+| Retrieval and reranking | SEC BM25, ObjectBM25, BGE reranking, 8-K rows, market snapshots, industry data, and relationship rows enter context in separate layers |
+| Numeric evidence | The exact-value ledger records company, period, metric, unit, and source object instead of letting the model guess numbers from long text |
+| Specialist analysis | Specialist agents read bounded evidence only, produce verifiable claim cards, and do not retrieve or expand scope |
+| Research argument | The aggregator turns claim cards into an argument plan; the memo writer writes from the verified plan |
+| Multi-turn context | The context manager keeps scope, current answer, artifact references, coverage, and reusable evidence |
+| Quality gates | The verifier and deterministic gates check source boundaries, numeric citations, unsupported claims, permissions, and cost discipline |
 
-The graph runner uses LangGraph as a lightweight orchestration boundary around the existing deterministic stages. The current graph writes state and artifact references that can be inspected or resumed; retrieval, ledger construction, coverage, synthesis, and gates remain separate modules.
+## Data Sources And Boundaries
 
-## Example
-
-A user can ask:
-
-```text
-Using SEC 10-K, latest 10-Q, 8-K earnings releases, and the last three months
-of market snapshots, compare NVDA, AMD, MSFT, AMZN, and GOOGL across AI
-fundamentals, management commentary, market reaction, and valuation divergence.
-```
-
-FinSight-Agent does not hand that prompt directly to a model. In a session, the API model first chooses a high-level tool call, typically `start_memo_analysis`, with a bounded scope. The harness then runs the evidence pipeline: retrieve 10-K/10-Q passages, structured financial objects, 8-K commentary, and market-snapshot rows; build the exact-value ledger; mark missing evidence such as companies that do not disclose standalone AI revenue; ask the model to synthesize only within that frame; and gate the final memo for source mixing, missing snapshot dates, and unsupported claims.
-
-If the user then asks, "focus only on NVDA versus AMD," the session can reuse the prior scope, answer, and evidence references instead of starting from an unrelated prompt.
-
-## Evidence Model
-
-| Source tier | What it supports | Boundary |
+| Source type | What it can support | Boundary |
 | --- | --- | --- |
-| `primary_sec_filing` | 10-K / 10-Q financial facts, business descriptions, risks, and MD&A | Annual and quarterly filings have different audit status; QTD, YTD, TTM, and annual values must not be merged |
-| `company_authored_unaudited_sec_filing` | 8-K earnings-release commentary, management explanations, guidance, and operating narrative | Company-authored commentary cannot replace structured 10-K / 10-Q financial facts |
-| `market_snapshot` | Non-real-time price performance, relative returns, event windows, and valuation context | Must carry `snapshot_id` and `as_of_date`; it is not a live quote |
+| `primary_sec_filing` | Financial facts, business descriptions, risks, and MD&A from 10-K / 10-Q filings | Annual, quarterly, QTD, YTD, TTM, and full-year figures must not be mixed |
+| `company_authored_unaudited_sec_filing` | Management commentary, business momentum, and operating narrative from 8-K earnings material | Company-authored commentary cannot replace SEC financial facts |
+| `market_snapshot` | Offline price, return, event-window, and valuation context | Must carry `snapshot_id` and `as_of_date`; it is not a live quote |
+| `industry_snapshot` | Industry themes, supply and demand, regulation, and market-structure background | Supports research context and hypotheses, not company filing facts |
+| `relationship_graph` | Economic relationships, industry transmission, potential beneficiaries, and risk exposure | Supports scope and mechanism hypotheses; it must not be written as confirmed customer, supplier, or contract evidence |
 
-## Repository Layout
+## Multi-Agent Flow
 
-```text
-src/
-  connectors/      SEC connectors and filing manifests
-  ingestion/       SEC / 8-K parsers and section splitters
-  retrieval/       BM25, ObjectBM25, dense retrieval, hybrid retrieval
-  evidence/        evidence objects and structured financial data
-  sec_agent/       query contracts, harness, context, gates, market snapshots
-
-scripts/
-  cloud/           interactive agent and session CLI entrypoints
-  market/          snapshot download, normalization, analytics, evidence packs
-  evaluate_*.py    planner, context, readiness, latency, and smoke checks
-  build_*.py       manifests, chunks, ledgers, indexes, and structured objects
-
-tests/
-  source policy, 10-Q / 8-K contracts, market snapshots, context, observability
+```mermaid
+flowchart LR
+  A["User question"] --> B["Research lead"]
+  B --> C["Universe and relationship analysis"]
+  B --> D["Evidence operators"]
+  C --> D
+  D --> E["Coverage and reflection"]
+  E --> F["Role-specific specialists"]
+  F --> G["Judgment aggregator"]
+  G --> H["Memo writer"]
+  H --> I["Verification and repair"]
+  I --> J["Rendered answer and session state"]
 ```
 
-## Setup
+Core rules:
+
+- The research lead does not retrieve evidence. It understands the question, sets the research scope, lists evidence needs, and decides which agents should run.
+- Evidence operators perform real tool calls: SEC search, ObjectBM25, BGE reranking, market / industry / relationship lookup, and runtime ledger construction.
+- Specialist agents have no retrieval permission. They consume bounded evidence, numeric ledger rows, relationship summaries, and task cards.
+- The judgment aggregator does not add facts. It turns specialist claim cards into a memo-ready argument plan.
+- The memo writer does not read raw rows. It writes from the verified argument plan.
+- The verifier is a safety layer. It checks unsupported conclusions, boundary violations, and repair convergence; it does not add analytical depth.
+
+## Agent Activation Strategy
+
+FinSight-Agent does not activate every specialist for every question. The research lead first classifies the request, then decides which agents are primary, supporting, conditional, or not relevant.
+
+| Question type | Primary agents | Conditional agents | Usually inactive |
+| --- | --- | --- | --- |
+| Exact lookup | Evidence operator, renderer | Verifier | Full specialist layer |
+| Focused company analysis | Fundamental specialist, risk specialist | Market specialist, industry specialist | Unrelated sector specialists |
+| Standard research memo | Fundamental, market, and risk specialists | Industry specialist, relationship analysis | Unrelated specialists |
+| Sector-depth research | Relationship analysis, industry specialist, fundamental specialist, risk specialist | Market specialist | Exact-only rendering path |
+| Market reaction analysis | Market specialist, fundamental specialist | Risk specialist, relationship analysis | Relationship-only expansion |
+| Multi-turn follow-up | Controller, context manager | Depends on scope changes | Unnecessary full-chain reruns |
+| Saved-run inspection | Run-artifact reader, renderer | Coverage check | New retrieval and new memo writing |
+
+The goal is to balance quality and cost: relevant agents must run, but irrelevant agents should not spend tokens or pollute context.
+
+## Multi-Turn Context
+
+Multi-turn support is not just appending the prior answer to a prompt. The system saves auditable state:
+
+- session state: current user goal, research scope, active answer, source policy, and artifact references;
+- graph state: each node's input, output, status, errors, and resume point;
+- context rows: bounded evidence rows passed downstream;
+- ledger rows: exact numeric values tied to source objects;
+- relationship summary: economic relationship and transmission hypotheses;
+- specialist claim cards: verifiable intermediate conclusions;
+- memo argument pack: structured input for memo writing.
+
+When a user changes companies, years, source types, or output format in a later turn, the tool harness decides which artifacts can be reused and which must be invalidated. For example, if the user says "keep only NVDA," the system should reuse existing NVDA evidence and invalidate AMD-related memo sections instead of starting an unrelated run.
+
+## Quick Start
+
+Install dependencies:
 
 ```powershell
 python -m venv .venv
@@ -114,9 +108,25 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-For large SEC collection runs, set a real SEC User-Agent contact in your environment. Keep `.env`, API keys, provider tokens, private filings, provider data, generated indexes, and run outputs out of Git.
+Run local structural checks. These do not require an API key or private data:
 
-Configure an API model route:
+```powershell
+python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
+python -m pytest tests/test_resume_closeout_readiness.py tests/test_sec_agent_context_source_policy.py tests/test_market_snapshot_fixture.py
+```
+
+Faster local contract check:
+
+```powershell
+python scripts/evaluate_sec_agent_resume_closeout_readiness.py `
+  --skip-main-chain-case-suite `
+  --skip-context-load-smoke `
+  --skip-latency-profile
+```
+
+## Full-Chain Demo
+
+The full chain requires local data artifacts, retrieval indexes, and an API model route. API keys should be injected through shell environment variables only.
 
 ```bash
 export LLM_BACKEND=deepseek
@@ -125,26 +135,20 @@ export API_KEY_ENV=DEEPSEEK_API_KEY
 export DEEPSEEK_API_KEY="<set-in-shell-only>"
 ```
 
-For another OpenAI-compatible provider:
+Copy the profile template into an ignored `.env`, then replace the paths with local artifact paths:
 
 ```bash
-export LLM_BACKEND=openai_compatible
-export BASE_URL="<provider-base-url>"
-export MODEL_NAME="<model-name>"
-export API_KEY_ENV=PROVIDER_API_KEY
-export PROVIDER_API_KEY="<set-in-shell-only>"
+cp configs/sec_agent_full_source_demo.env.example .env
 ```
 
-## Demo
-
-Full-source one-shot demo, assuming the data profile points to your local artifacts:
+One-shot full-source demo:
 
 ```bash
 SEC_AGENT_PROFILE_ENV=.env bash scripts/cloud/sec_agent_interactive.sh ask-full-source-api \
 "Using SEC 10-K, latest 10-Q, 8-K earnings releases, and the last three months of market snapshots, compare NVDA, AMD, MSFT, AMZN, and GOOGL across AI fundamentals, management commentary, market reaction, and valuation divergence."
 ```
 
-Multi-turn session:
+Multi-turn session demo:
 
 ```bash
 SEC_AGENT_PROFILE_ENV=.env bash scripts/cloud/sec_agent_interactive.sh session-full-source-api
@@ -159,41 +163,88 @@ Useful session commands:
 /exit
 ```
 
-Start from `configs/sec_agent_full_source_demo.env.example` when wiring your own artifact paths:
+## Workbench
 
-```bash
-cp configs/sec_agent_full_source_demo.env.example .env
-```
-
-Then update manifest, index, market-evidence, snapshot id, and model-route variables in `.env`.
-
-More entrypoints:
-
-- [Demo entrypoints](docs/demo/sec_agent_demo_entrypoints_v1.md)
-- [中文自有数据快速接入](docs/deployment/local_custom_data_quickstart.zh-CN.md)
-
-## Checks
-
-Local structural readiness, no model key required:
+Workbench is the local product-style entrypoint. It now covers more than agent runs: it can import runtime profiles, create and validate named source bundles, preview whitelisted data-build commands, run SEC / 8-K / market / industry processing steps as background jobs, backfill newly generated artifact paths into the selected source bundle, launch one-shot or multi-turn agent runs, inspect artifacts and node ledgers, and run smoke evaluations.
 
 ```powershell
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py --timeout-s 600
-python -m pytest tests/test_resume_closeout_readiness.py tests/test_sec_agent_context_source_policy.py tests/test_market_snapshot_fixture.py
+.\scripts\workbench\run_workbench.ps1
 ```
 
-With a completed full-source run, pass the saved run directory into the readiness aggregator:
+For backend-only startup:
 
-```bash
-python scripts/evaluate_sec_agent_resume_closeout_readiness.py \
-  --saved-full-source-run-dir eval/sec_cases/outputs/<run>/<case> \
-  --require-full-source-artifacts \
-  --timeout-s 900
+```powershell
+python scripts/workbench/start_workbench.py
 ```
 
-## Current Reproducibility Boundary
+See [Workbench quickstart](docs/workbench/workbench_quickstart.zh-CN.md).
 
-The first demo data product targets a `full30` technology / AI / cloud / semiconductor universe with FY2023-FY2025 10-K filings and the latest available FY2026 10-Q / 8-K evidence in the prepared artifact set. Market snapshots are offline and must display `as_of_date`.
+## Repository Layout
 
-The public repository does not include SEC source documents, provider outputs, generated indexes, API keys, or runtime artifacts. Use your own data to generate equivalent artifacts, then point `SEC_AGENT_PROFILE_ENV` to your local profile. If a company, period, filing type, or market field is missing from the manifest, the system should report a coverage gap instead of claiming coverage.
+```text
+src/
+  connectors/      SEC connectors and filing manifests
+  ingestion/       SEC / 8-K parsers and section splitters
+  retrieval/       BM25, ObjectBM25, dense retrieval, and hybrid retrieval
+  evidence/        evidence objects, structured data, and text evidence
+  sec_agent/       query contracts, tool harness, context, gates, market snapshots, Workbench
 
-The current JSON-backed session store is suitable for demos and single-process evaluation. Multi-user serving should move session state to a database, Redis, or a locked state store.
+scripts/
+  README.md        current mainline script surface
+  cloud/           interactive agent, session CLI, and graph runner
+  market/          market snapshot download, normalization, analytics, and evidence packs
+  mcp/             MCP contracts, server, and smoke checks
+  workbench/       local Workbench startup and environment helpers
+
+docs/
+  README.md        documentation map and reader paths
+  deployment/      custom data and deployment guides
+  demo/            CLI demo entrypoints
+  architecture/    architecture documentation entrypoint
+  eval/            research quality framework and layered gates
+  workbench/       Workbench usage
+  worklog/         implementation history and handoff notes
+
+tests/
+  source policy, 10-Q / 8-K contracts, market snapshots, context, multi-agent gates, Workbench
+```
+
+## Quality And Gates
+
+The project does not only check whether the final memo reads fluently. It checks whether each agent and node understood the task, activated correctly, called real tools, consumed legal evidence, produced verifiable intermediate output, and stayed within tool and token budgets.
+
+The quality framework covers:
+
+- question understanding and task authorization;
+- evidence sufficiency and source boundaries;
+- financial and metric analysis;
+- economic relationships and industry transmission;
+- investment thesis, risks, counterevidence, and watch items;
+- output structure and user usefulness;
+- process efficiency, permissions, and auditability.
+
+Layered gating follows one rule: pass each layer before running the full chain. S1-S8 cover the research lead, universe and relationship analysis, evidence operators, coverage and reflection, specialists, judgment aggregator, memo writer, and verifier. Full-chain and multi-turn evaluation run only after the key layers pass.
+
+Main entries:
+
+- [Investment research quality framework](docs/eval/fin_agent_investment_research_quality_framework_v0_1.md)
+- [Layered quality gate plan](docs/eval/fin_agent_layered_quality_execution_plan_v0_1.md)
+- [Full-chain / multi-turn evaluation plan](docs/eval/fin_agent_full_chain_multiturn_eval_plan_v0_1.md)
+
+## Documentation Map
+
+- [Documentation map](docs/README.md)
+- [Architecture docs entrypoint](docs/architecture/README.md)
+- [Demo entrypoints](docs/demo/sec_agent_demo_entrypoints_v1.md)
+- [Local custom data quickstart](docs/deployment/local_custom_data_quickstart.zh-CN.md)
+- [Workbench quickstart](docs/workbench/workbench_quickstart.zh-CN.md)
+- [Script surface](scripts/README.md)
+- [Model-run index](reports/model_runs/model_run_index.md)
+
+## Current Boundaries
+
+- The public repository does not include private data, generated indexes, run outputs, model caches, or API keys.
+- Market snapshots are offline data, not live quotes.
+- Industry and relationship data support research scope, economic mechanisms, and hypotheses; they are not confirmed commercial contracts.
+- The current session store is suitable for demos, development, and single-process evaluation. Multi-user service should use a database, Redis, or another locked state store.
+- The verifier can block boundary violations and unsupported claims, but research depth still depends on upstream evidence coverage, specialist claim density, and memo-writer input quality.

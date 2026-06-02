@@ -27,6 +27,11 @@ type ModelRoute = {
 
 type SourceProfile = {
   source_policy?: string;
+  manifest_path?: string | null;
+  bm25_index_dir?: string | null;
+  object_bm25_index_dir?: string | null;
+  source_gap_path?: string | null;
+  market_evidence_path?: string | null;
   market_snapshot_id?: string | null;
   market_as_of_date?: string | null;
 };
@@ -55,6 +60,77 @@ type StoredProfile = {
   source_policy: string;
   model_name?: string | null;
   updated_at: string;
+};
+
+type SourceBundleArtifacts = {
+  manifest_path?: string | null;
+  bm25_index_dir?: string | null;
+  object_bm25_index_dir?: string | null;
+  source_gap_path?: string | null;
+  market_evidence_path?: string | null;
+};
+
+type SourceBundleBuild = {
+  created_at: string;
+  scripts?: string[];
+  status: string;
+};
+
+type SourceBundle = {
+  schema_version: string;
+  bundle_id: string;
+  display_name: string;
+  market: string;
+  coverage_theme: string;
+  ticker_count: number;
+  tickers_sample: string[];
+  source_families: string[];
+  as_of_date?: string | null;
+  artifacts: SourceBundleArtifacts;
+  build: SourceBundleBuild;
+};
+
+type StoredSourceBundle = {
+  bundle_id: string;
+  display_name: string;
+  market: string;
+  coverage_theme: string;
+  ticker_count: number;
+  as_of_date?: string | null;
+  status: string;
+  updated_at: string;
+};
+
+type DataBuildParameter = {
+  name: string;
+  flag: string;
+  label: string;
+  required: boolean;
+  kind: string;
+  default?: string | null;
+  multiple: boolean;
+  description?: string;
+};
+
+type DataBuildStep = {
+  step_id: string;
+  family: string;
+  label: string;
+  description: string;
+  script: string;
+  parameters: DataBuildParameter[];
+  output_parameters: string[];
+  timeout_hint_s: number;
+};
+
+type DataBuildPreview = {
+  step_id: string;
+  label: string;
+  args: string[];
+  cwd: string;
+  missing_required: string[];
+  bundle_artifact_updates: Record<string, string>;
+  bundle_field_updates: Record<string, string>;
 };
 
 type PathStatus = {
@@ -194,6 +270,9 @@ function App() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [profile, setProfile] = useState<WorkbenchProfile | null>(null);
   const [profiles, setProfiles] = useState<StoredProfile[]>([]);
+  const [sourceBundles, setSourceBundles] = useState<StoredSourceBundle[]>([]);
+  const [sourceBundle, setSourceBundle] = useState<SourceBundle | null>(null);
+  const [sourceBundleReadiness, setSourceBundleReadiness] = useState<ReadinessReport | null>(null);
   const [readiness, setReadiness] = useState<ReadinessReport | null>(null);
   const [runDir, setRunDir] = useState("reports/quality/<saved-run-dir>");
   const [runs, setRuns] = useState<RunJob[]>([]);
@@ -202,6 +281,13 @@ function App() {
   const [sessions, setSessions] = useState<StoredSession[]>([]);
   const [sessionTurns, setSessionTurns] = useState<RunJob[]>([]);
   const [evals, setEvals] = useState<EvalRunner[]>([]);
+  const [dataBuildSteps, setDataBuildSteps] = useState<DataBuildStep[]>([]);
+  const [dataBuildStepId, setDataBuildStepId] = useState("");
+  const [dataBuildValues, setDataBuildValues] = useState<Record<string, string | boolean>>({});
+  const [dataBuildDryRun, setDataBuildDryRun] = useState(true);
+  const [dataBuildUpdateBundle, setDataBuildUpdateBundle] = useState(false);
+  const [dataBuildBundleId, setDataBuildBundleId] = useState("");
+  const [dataBuildPreview, setDataBuildPreview] = useState<DataBuildPreview | null>(null);
   const [prompt, setPrompt] = useState(
     "结合 SEC 10-K、最新 10-Q、8-K 业绩新闻稿和最近三个月市场快照，比较 NVDA、AMD、MSFT、AMZN、GOOGL 的 AI 基本面、管理层解释、市场反应和估值分歧。",
   );
@@ -220,9 +306,11 @@ function App() {
   useEffect(() => {
     void checkHealth();
     void loadSavedProfiles();
+    void loadSourceBundles();
     void loadRuns();
     void loadSessions();
     void loadEvals();
+    void loadDataBuildSteps();
   }, []);
 
   useEffect(() => {
@@ -237,6 +325,7 @@ function App() {
   const route = profile?.model_route ?? {};
   const sources = profile?.sources ?? {};
   const runtime = profile?.runtime ?? {};
+  const selectedDataBuildStep = dataBuildSteps.find((step) => step.step_id === dataBuildStepId) ?? dataBuildSteps[0] ?? null;
 
   async function checkHealth() {
     try {
@@ -293,6 +382,60 @@ function App() {
     setProfiles(payload.profiles ?? []);
   }
 
+  async function loadSourceBundles() {
+    const payload = await requestJson<{ bundles: StoredSourceBundle[] }>("/api/source-bundles");
+    setSourceBundles(payload.bundles ?? []);
+  }
+
+  async function importSourceBundleFromProfile() {
+    await runBusy("source_bundle_import", async () => {
+      const current =
+        profile ??
+        (await requestJson<WorkbenchProfile>("/api/profiles/import-env", {
+          method: "POST",
+          body: JSON.stringify(importPayload(form)),
+        }));
+      setProfile(current);
+      const payload = await requestJson<{ bundle: SourceBundle; readiness: ReadinessReport }>("/api/source-bundles/import-profile", {
+        method: "POST",
+        body: JSON.stringify({
+          profile: current,
+          bundle_id: suggestedBundleId(current),
+          repo_root: form.repoRoot || ".",
+        }),
+      });
+      setSourceBundle(payload.bundle);
+      setDataBuildBundleId(payload.bundle.bundle_id);
+      setSourceBundleReadiness(payload.readiness);
+      setReadiness(payload.readiness);
+      await loadSourceBundles();
+    });
+  }
+
+  async function loadSourceBundle(bundleId: string) {
+    await runBusy(`source_bundle:${bundleId}`, async () => {
+      const loaded = await requestJson<SourceBundle>(`/api/source-bundles/${encodeURIComponent(bundleId)}`);
+      setSourceBundle(loaded);
+      setDataBuildBundleId(loaded.bundle_id);
+      await validateSourceBundle(loaded);
+    });
+  }
+
+  async function validateSourceBundle(targetBundle = sourceBundle) {
+    if (!targetBundle) return;
+    await runBusy("source_bundle_validate", async () => {
+      const payload = await requestJson<{ bundle: SourceBundle; readiness: ReadinessReport }>("/api/source-bundles/validate", {
+        method: "POST",
+        body: JSON.stringify({
+          bundle: targetBundle,
+          repo_root: form.repoRoot || ".",
+        }),
+      });
+      setSourceBundle(payload.bundle);
+      setSourceBundleReadiness(payload.readiness);
+    });
+  }
+
   async function loadRuns() {
     const payload = await requestJson<{ runs: RunJob[] }>("/api/runs");
     setRuns(payload.runs ?? []);
@@ -306,6 +449,51 @@ function App() {
   async function loadEvals() {
     const payload = await requestJson<{ evals: EvalRunner[] }>("/api/evals");
     setEvals(payload.evals ?? []);
+  }
+
+  async function loadDataBuildSteps() {
+    const payload = await requestJson<{ steps: DataBuildStep[] }>("/api/data-build/steps");
+    const steps = payload.steps ?? [];
+    setDataBuildSteps(steps);
+    setDataBuildStepId((current) => current || steps[0]?.step_id || "");
+  }
+
+  async function previewDataBuild() {
+    if (!selectedDataBuildStep) return;
+    await runBusy("data_build_preview", async () => {
+      const payload = await requestJson<{ preview: DataBuildPreview }>("/api/data-build/preview", {
+        method: "POST",
+        body: JSON.stringify({
+          step_id: selectedDataBuildStep.step_id,
+          values: dataBuildValues,
+          profile: profile ?? null,
+          dry_run: dataBuildDryRun,
+          bundle_id: dataBuildBundleId || sourceBundle?.bundle_id || null,
+          update_bundle: dataBuildUpdateBundle,
+        }),
+      });
+      setDataBuildPreview(payload.preview);
+    });
+  }
+
+  async function runDataBuild() {
+    if (!selectedDataBuildStep) return;
+    await runBusy("data_build_run", async () => {
+      const payload = await requestJson<{ job: RunJob; preview: DataBuildPreview }>("/api/data-build/run", {
+        method: "POST",
+        body: JSON.stringify({
+          step_id: selectedDataBuildStep.step_id,
+          values: dataBuildValues,
+          profile: profile ?? null,
+          dry_run: dataBuildDryRun,
+        }),
+      });
+      setDataBuildPreview(payload.preview);
+      setActiveJob(payload.job);
+      setJobEvents([]);
+      await refreshJob(payload.job.job_id);
+      await loadRuns();
+    });
   }
 
   async function loadSessionTurns(targetSessionId = sessionId) {
@@ -522,6 +710,8 @@ function App() {
   const navItems = useMemo(
     () => [
       { label: "数据源配置", icon: FolderOpen, href: "#profile", active: true },
+      { label: "数据包", icon: Database, href: "#source-bundles", active: false },
+      { label: "数据构建", icon: Terminal, href: "#data-build", active: false },
       { label: "数据源检查", icon: FileSearch, href: "#readiness", active: false },
       { label: "Agent 会话", icon: MessageSquareText, href: "#agent", active: false },
       { label: "评测入口", icon: FlaskConical, href: "#evals", active: false },
@@ -558,7 +748,7 @@ function App() {
         <header className="topbar">
           <div>
             <h1>FinSight Workbench</h1>
-            <p>配置研究数据源，检查证据产物，并为后续 Agent 会话准备可复用 profile。</p>
+            <p>配置研究数据源，检查证据产物，并为后续 Agent 会话准备可复用运行配置。</p>
           </div>
           <StatusPill status={health} label={health === "pass" ? "已连接" : "未连接"} />
         </header>
@@ -566,24 +756,24 @@ function App() {
         <section id="profile" className="panel">
           <div className="section-heading">
             <div>
-              <h2>Profile 导入</h2>
-              <p>导入现有 `.env` profile。Workbench 只保存环境变量名，不保存真实 API key。</p>
+              <h2>运行配置导入</h2>
+              <p>导入现有 `.env` 运行配置。Workbench 只保存环境变量名，不保存真实 API key。</p>
             </div>
           </div>
 
           <div className="profile-form">
-            <TextInput label="Profile 文件" value={form.envPath} onChange={(envPath) => setForm({ ...form, envPath })} />
-            <TextInput label="Profile ID" value={form.profileId} onChange={(profileId) => setForm({ ...form, profileId })} />
+            <TextInput label="配置文件" value={form.envPath} onChange={(envPath) => setForm({ ...form, envPath })} />
+            <TextInput label="配置 ID" value={form.profileId} onChange={(profileId) => setForm({ ...form, profileId })} />
             <TextInput label="显示名称" value={form.displayName} onChange={(displayName) => setForm({ ...form, displayName })} />
             <TextInput label="仓库根目录" value={form.repoRoot} onChange={(repoRoot) => setForm({ ...form, repoRoot })} />
             <div className="form-actions">
               <button type="button" onClick={importProfile} disabled={Boolean(busy)}>
                 <FolderOpen size={16} aria-hidden="true" />
-                {busy === "import" ? "导入中" : "导入 Profile"}
+                {busy === "import" ? "导入中" : "导入运行配置"}
               </button>
               <button type="button" className="secondary" onClick={saveProfile} disabled={Boolean(busy)}>
                 <Save size={16} aria-hidden="true" />
-                {busy === "save" ? "保存中" : "保存 Profile"}
+                {busy === "save" ? "保存中" : "保存运行配置"}
               </button>
               <button type="button" className="secondary" onClick={() => validateSources()} disabled={Boolean(busy)}>
                 <FileSearch size={16} aria-hidden="true" />
@@ -596,7 +786,7 @@ function App() {
 
           {profile ? (
             <div className="summary-grid">
-              <MetricBox label="Profile" value={profile.display_name} detail={profile.profile_id} />
+              <MetricBox label="运行配置" value={profile.display_name} detail={profile.profile_id} />
               <MetricBox label="模型路由" value={route.model_name ?? route.backend ?? "未配置"} detail={route.base_url ?? ""} />
               <MetricBox label="密钥环境变量" value={route.api_key_env ?? "未配置"} detail="不保存真实 key" />
               <MetricBox label="Source policy" value={sources.source_policy ?? "未配置"} />
@@ -615,6 +805,73 @@ function App() {
               </div>
             </div>
           )}
+        </section>
+
+        <section id="source-bundles" className="panel">
+          <div className="section-heading">
+            <div>
+              <h2>数据包</h2>
+              <p>把运行配置里的长路径整理成可读的数据包，后续运行时只需要选择数据包，不需要记住每个文件名。</p>
+            </div>
+            <StatusPill status={sourceBundleReadiness?.status ?? "neutral"} />
+          </div>
+
+          <div className="form-actions">
+            <button type="button" onClick={importSourceBundleFromProfile} disabled={Boolean(busy)}>
+              <Database size={16} aria-hidden="true" />
+              {busy === "source_bundle_import" ? "生成中" : "从当前配置生成数据包"}
+            </button>
+            <button type="button" className="secondary" onClick={() => validateSourceBundle()} disabled={Boolean(busy) || !sourceBundle}>
+              <FileSearch size={16} aria-hidden="true" />
+              {busy === "source_bundle_validate" ? "校验中" : "校验当前数据包"}
+            </button>
+          </div>
+
+          <SavedSourceBundles bundles={sourceBundles} onLoad={loadSourceBundle} />
+          {sourceBundle ? (
+            <SourceBundlePanel bundle={sourceBundle} readiness={sourceBundleReadiness} />
+          ) : (
+            <div className="summary-grid empty-state">
+              <div>
+                <h3>还没有选择数据包</h3>
+                <p>导入运行配置后，可以一键生成数据包；也可以从已保存数据包中重新加载。</p>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <section id="data-build" className="panel">
+          <div className="section-heading">
+            <div>
+              <h2>数据构建</h2>
+              <p>通过白名单步骤运行 SEC / 8-K 下载和本地处理脚本。先预览命令，再提交后台任务。</p>
+            </div>
+          </div>
+          <DataBuildPanel
+            steps={dataBuildSteps}
+            selectedStep={selectedDataBuildStep}
+            selectedStepId={dataBuildStepId}
+            values={dataBuildValues}
+            dryRun={dataBuildDryRun}
+            updateBundle={dataBuildUpdateBundle}
+            bundleId={dataBuildBundleId}
+            bundles={sourceBundles}
+            preview={dataBuildPreview}
+            busy={busy}
+            onSelectStep={(stepId) => {
+              setDataBuildStepId(stepId);
+              setDataBuildPreview(null);
+            }}
+            onChangeValue={(name, value) => {
+              setDataBuildValues((current) => ({ ...current, [name]: value }));
+              setDataBuildPreview(null);
+            }}
+            onDryRunChange={setDataBuildDryRun}
+            onUpdateBundleChange={setDataBuildUpdateBundle}
+            onBundleIdChange={setDataBuildBundleId}
+            onPreview={previewDataBuild}
+            onRun={runDataBuild}
+          />
         </section>
 
         <section id="readiness" className="panel">
@@ -787,14 +1044,14 @@ function SavedProfiles({ profiles, onLoad }: { profiles: StoredProfile[]; onLoad
   if (!profiles.length) {
     return (
       <div className="saved-profiles empty-state">
-        <h3>已保存 Profile</h3>
-        <p>还没有保存过 profile。</p>
+        <h3>已保存运行配置</h3>
+        <p>还没有保存过运行配置。</p>
       </div>
     );
   }
   return (
     <div className="saved-profiles">
-      <h3>已保存 Profile</h3>
+      <h3>已保存运行配置</h3>
       <div className="saved-profile-list">
         {profiles.map((profile) => (
           <button className="saved-profile-button" type="button" onClick={() => onLoad(profile.profile_id)} key={profile.profile_id}>
@@ -803,6 +1060,231 @@ function SavedProfiles({ profiles, onLoad }: { profiles: StoredProfile[]; onLoad
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function SavedSourceBundles({
+  bundles,
+  onLoad,
+}: {
+  bundles: StoredSourceBundle[];
+  onLoad: (bundleId: string) => void;
+}) {
+  if (!bundles.length) {
+    return (
+      <div className="saved-profiles empty-state">
+        <h3>已保存数据包</h3>
+        <p>还没有保存过数据包。</p>
+      </div>
+    );
+  }
+  return (
+    <div className="saved-profiles">
+      <h3>已保存数据包</h3>
+      <div className="saved-profile-list">
+        {bundles.map((bundle) => (
+          <button className="saved-profile-button" type="button" onClick={() => onLoad(bundle.bundle_id)} key={bundle.bundle_id}>
+            {bundle.display_name || bundle.bundle_id}
+            <span>
+              {bundle.market} · {bundle.ticker_count}家公司 · {bundle.as_of_date ?? "日期未记录"} · {bundle.status}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SourceBundlePanel({ bundle, readiness }: { bundle: SourceBundle; readiness: ReadinessReport | null }) {
+  return (
+    <div className="readiness-layout">
+      <div className="summary-grid">
+        <MetricBox label="数据包" value={bundle.display_name} detail={bundle.bundle_id} />
+        <MetricBox label="覆盖范围" value={`${bundle.market} · ${bundle.ticker_count} 家公司`} detail={bundle.coverage_theme} />
+        <MetricBox label="截至日期" value={bundle.as_of_date ?? "未记录"} detail={bundle.build.status} />
+      </div>
+      <div className="readiness-columns">
+        <div>
+          <h3>来源组合</h3>
+          <ListBlock title="数据来源" values={listRecord(bundle.source_families)} />
+          <ListBlock title="股票样例" values={listRecord(bundle.tickers_sample)} />
+          <ListBlock title="构建脚本" values={listRecord(bundle.build.scripts ?? [])} />
+        </div>
+        <div>
+          <h3>产物路径</h3>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>产物</th>
+                  <th>路径</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(bundle.artifacts).map(([name, path]) => (
+                  <tr key={name}>
+                    <td className="mono">{name}</td>
+                    <td className="mono">{path || "未配置"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {readiness ? (
+        <div className="readiness-columns">
+          <MessageBlock title="数据包警告" rows={readiness.warnings ?? []} status="warn" />
+          <MessageBlock title="数据包错误" rows={readiness.errors ?? []} status="fail" />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function DataBuildPanel({
+  steps,
+  selectedStep,
+  selectedStepId,
+  values,
+  dryRun,
+  updateBundle,
+  bundleId,
+  bundles,
+  preview,
+  busy,
+  onSelectStep,
+  onChangeValue,
+  onDryRunChange,
+  onUpdateBundleChange,
+  onBundleIdChange,
+  onPreview,
+  onRun,
+}: {
+  steps: DataBuildStep[];
+  selectedStep: DataBuildStep | null;
+  selectedStepId: string;
+  values: Record<string, string | boolean>;
+  dryRun: boolean;
+  updateBundle: boolean;
+  bundleId: string;
+  bundles: StoredSourceBundle[];
+  preview: DataBuildPreview | null;
+  busy: string | null;
+  onSelectStep: (stepId: string) => void;
+  onChangeValue: (name: string, value: string | boolean) => void;
+  onDryRunChange: (value: boolean) => void;
+  onUpdateBundleChange: (value: boolean) => void;
+  onBundleIdChange: (value: string) => void;
+  onPreview: () => void;
+  onRun: () => void;
+}) {
+  if (!steps.length || !selectedStep) {
+    return (
+      <div className="summary-grid empty-state">
+        <div>
+          <h3>没有可用构建步骤</h3>
+          <p>后端没有返回数据构建白名单。</p>
+        </div>
+      </div>
+    );
+  }
+  const supportsDryRun = selectedStep.step_id === "sec_download_filings" || selectedStep.step_id === "sec_download_8k_earnings";
+  return (
+    <div className="readiness-layout">
+      <div className="data-build-grid">
+        <label>
+          <span>构建步骤</span>
+          <select value={selectedStepId} onChange={(event) => onSelectStep(event.target.value)}>
+            {steps.map((step) => (
+              <option value={step.step_id} key={step.step_id}>
+                {step.family} · {step.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <MetricBox label="脚本" value={selectedStep.script} detail={`预计 ${selectedStep.timeout_hint_s}s 内`} />
+      </div>
+      <p className="muted-text">{selectedStep.description}</p>
+      <div className="data-build-params">
+        {selectedStep.parameters.map((parameter) =>
+          parameter.kind === "bool" ? (
+            <label className="check-row" key={parameter.name}>
+              <input
+                type="checkbox"
+                checked={Boolean(values[parameter.name] ?? false)}
+                onChange={(event) => onChangeValue(parameter.name, event.target.checked)}
+              />
+              <span>
+                {parameter.label}
+                {parameter.required ? " *" : ""}
+              </span>
+            </label>
+          ) : (
+            <label key={parameter.name}>
+              <span>
+                {parameter.label}
+                {parameter.required ? " *" : ""}
+              </span>
+              <input
+                value={String(values[parameter.name] ?? parameter.default ?? "")}
+                onChange={(event) => onChangeValue(parameter.name, event.target.value)}
+                placeholder={parameter.flag}
+                autoComplete="off"
+              />
+            </label>
+          ),
+        )}
+      </div>
+      <label className="check-row">
+        <input type="checkbox" checked={dryRun} disabled={!supportsDryRun} onChange={(event) => onDryRunChange(event.target.checked)} />
+        <span>{supportsDryRun ? "下载步骤先 dry-run 预演" : "当前步骤不支持 dry-run"}</span>
+      </label>
+      <div className="data-build-grid">
+        <label className="check-row">
+          <input type="checkbox" checked={updateBundle} disabled={dryRun} onChange={(event) => onUpdateBundleChange(event.target.checked)} />
+          <span>{dryRun ? "dry-run 不回填数据包" : "任务成功后回填数据包"}</span>
+        </label>
+        <label>
+          <span>回填目标数据包</span>
+          <select value={bundleId} onChange={(event) => onBundleIdChange(event.target.value)} disabled={!updateBundle || dryRun}>
+            <option value="">不绑定数据包</option>
+            {bundles.map((bundle) => (
+              <option value={bundle.bundle_id} key={bundle.bundle_id}>
+                {bundle.display_name || bundle.bundle_id}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="form-actions">
+        <button type="button" className="secondary" onClick={onPreview} disabled={Boolean(busy)}>
+          <Terminal size={16} aria-hidden="true" />
+          {busy === "data_build_preview" ? "预览中" : "预览命令"}
+        </button>
+        <button type="button" onClick={onRun} disabled={Boolean(busy)}>
+          <Play size={16} aria-hidden="true" />
+          {busy === "data_build_run" ? "提交中" : "提交后台任务"}
+        </button>
+      </div>
+      {preview ? (
+        <div className="job-console data-build-preview">
+          <div className="job-console-header">
+            <h3>命令预览</h3>
+            <span className="mono">{preview.label}</span>
+          </div>
+          <pre>{commandLine(preview.args)}</pre>
+          {Object.keys(preview.bundle_artifact_updates ?? {}).length || Object.keys(preview.bundle_field_updates ?? {}).length ? (
+            <p className="job-summary">
+              可回填数据包：{compactObject({ ...preview.bundle_artifact_updates, ...preview.bundle_field_updates })}
+            </p>
+          ) : null}
+          {preview.missing_required.length ? (
+            <p className="job-error">缺少必填参数：{preview.missing_required.join(", ")}</p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1202,6 +1684,10 @@ function compactObject(value: Record<string, unknown>) {
     .join(" · ");
 }
 
+function commandLine(args: string[]) {
+  return args.map((arg) => (/[\s"'$]/.test(arg) ? JSON.stringify(arg) : arg)).join(" ");
+}
+
 function flatSummary(value: Record<string, unknown>) {
   const result: Record<string, number> = {};
   for (const [key, item] of Object.entries(value ?? {})) {
@@ -1228,6 +1714,16 @@ function importPayload(form: FormState) {
     profile_id: form.profileId.trim() || null,
     display_name: form.displayName.trim() || null,
   };
+}
+
+function suggestedBundleId(profile: WorkbenchProfile) {
+  const source = profile.sources?.market_snapshot_id || profile.profile_id || "source_bundle";
+  return source
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_.-]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^[_\-.]+|[_\-.]+$/g, "") || "source_bundle";
 }
 
 function newSessionId() {

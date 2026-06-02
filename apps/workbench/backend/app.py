@@ -9,28 +9,34 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from sec_agent.workbench import (
     RunInspectionReport,
+    SourceBundle,
     WorkbenchProfile,
     WorkbenchStore,
+    build_data_build_command,
     build_agent_ask_command,
     build_agent_session_turn_command,
     build_eval_command,
     build_local_smoke_command,
     build_native_checkpoint_resume_command,
     default_store_path,
+    data_build_catalog,
     eval_output_path,
     eval_runner_catalog,
     inspect_run_artifacts,
     new_agent_ask_job,
     new_agent_session_turn_job,
+    new_data_build_job,
     new_eval_run_job,
     new_local_smoke_job,
     new_native_checkpoint_resume_job,
     new_saved_run_inspection_job,
     profile_from_env_file,
+    profile_from_source_bundle,
+    source_bundle_from_profile,
     start_command_job,
     validate_profile_sources,
 )
@@ -60,6 +66,44 @@ class ValidateProfileRequest(BaseModel):
     display_name: str | None = None
     repo_root: str | None = None
     require_full_source: bool | None = None
+
+
+class ImportSourceBundleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    profile: WorkbenchProfile | None = None
+    env_path: str | None = None
+    profile_id: str | None = None
+    display_name: str | None = None
+    bundle_id: str | None = None
+    bundle_display_name: str | None = None
+    repo_root: str | None = None
+    require_full_source: bool | None = None
+
+
+class ValidateSourceBundleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    bundle: SourceBundle | None = None
+    bundle_id: str | None = None
+    repo_root: str | None = None
+    require_full_source: bool | None = None
+
+
+class DataBuildPreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    step_id: str
+    values: dict[str, object] = Field(default_factory=dict)
+    profile: WorkbenchProfile | None = None
+    profile_id: str | None = None
+    dry_run: bool = False
+
+
+class DataBuildRunRequest(DataBuildPreviewRequest):
+    job_id: str | None = None
+    bundle_id: str | None = None
+    update_bundle: bool = False
 
 
 class InspectRunRequest(BaseModel):
@@ -207,6 +251,63 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             raise HTTPException(status_code=404, detail=f"profile_not_found: {profile_id}")
         return profile
 
+    @app.get("/api/source-bundles")
+    def list_source_bundles():
+        return {"bundles": store.list_source_bundles()}
+
+    @app.post("/api/source-bundles")
+    def save_source_bundle(bundle: SourceBundle):
+        return store.upsert_source_bundle(bundle)
+
+    @app.get("/api/source-bundles/{bundle_id}")
+    def get_source_bundle(bundle_id: str) -> SourceBundle:
+        bundle = store.get_source_bundle(bundle_id)
+        if bundle is None:
+            raise HTTPException(status_code=404, detail=f"source_bundle_not_found: {bundle_id}")
+        return bundle
+
+    @app.post("/api/source-bundles/import-profile")
+    def import_source_bundle(request: ImportSourceBundleRequest):
+        profile = _resolve_profile_like(
+            profile=request.profile,
+            env_path=request.env_path,
+            profile_id=request.profile_id,
+            display_name=request.display_name,
+            store=store,
+        )
+        repo_root = Path(request.repo_root).resolve() if request.repo_root else REPO_ROOT
+        readiness = validate_profile_sources(
+            profile,
+            repo_root=repo_root,
+            require_full_source=request.require_full_source,
+        )
+        bundle = source_bundle_from_profile(
+            profile,
+            readiness=readiness,
+            bundle_id=request.bundle_id,
+            display_name=request.bundle_display_name,
+        )
+        summary = store.upsert_source_bundle(bundle)
+        return {"bundle": bundle, "summary": summary, "readiness": readiness}
+
+    @app.post("/api/source-bundles/validate")
+    def validate_source_bundle(request: ValidateSourceBundleRequest):
+        bundle = request.bundle
+        if bundle is None:
+            if not request.bundle_id:
+                raise HTTPException(status_code=400, detail="bundle_or_bundle_id_required")
+            bundle = store.get_source_bundle(request.bundle_id)
+            if bundle is None:
+                raise HTTPException(status_code=404, detail=f"source_bundle_not_found: {request.bundle_id}")
+        repo_root = Path(request.repo_root).resolve() if request.repo_root else REPO_ROOT
+        profile = profile_from_source_bundle(bundle)
+        readiness = validate_profile_sources(
+            profile,
+            repo_root=repo_root,
+            require_full_source=request.require_full_source,
+        )
+        return {"bundle": bundle, "readiness": readiness}
+
     @app.post("/api/profiles/validate")
     def validate_profile(request: ValidateProfileRequest):
         profile = request.profile
@@ -237,6 +338,61 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
     @app.get("/api/evals")
     def list_evals():
         return {"evals": eval_runner_catalog()}
+
+    @app.get("/api/data-build/steps")
+    def list_data_build_steps():
+        return {"steps": data_build_catalog()}
+
+    @app.post("/api/data-build/preview")
+    def preview_data_build(request: DataBuildPreviewRequest):
+        profile = _optional_profile(request.profile, request.profile_id, store)
+        try:
+            _spec, preview = build_data_build_command(
+                repo_root=REPO_ROOT,
+                step_id=request.step_id,
+                values=request.values,
+                profile=profile,
+                dry_run=request.dry_run,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {"preview": preview}
+
+    @app.post("/api/data-build/run")
+    def run_data_build(request: DataBuildRunRequest):
+        profile = _optional_profile(request.profile, request.profile_id, store)
+        try:
+            spec, preview = build_data_build_command(
+                repo_root=REPO_ROOT,
+                step_id=request.step_id,
+                values=request.values,
+                profile=profile,
+                dry_run=request.dry_run,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        if preview.missing_required:
+            raise HTTPException(
+                status_code=400,
+                detail={"reason": "missing_required_parameters", "missing_required": preview.missing_required},
+            )
+        if request.update_bundle and not request.dry_run:
+            if not request.bundle_id:
+                raise HTTPException(status_code=400, detail="bundle_id_required_for_update")
+            if store.get_source_bundle(request.bundle_id) is None:
+                raise HTTPException(status_code=404, detail=f"source_bundle_not_found: {request.bundle_id}")
+        job = new_data_build_job(
+            step_id=preview.step_id,
+            step_label=preview.label,
+            command_preview=preview.args,
+            bundle_id=request.bundle_id if request.update_bundle and not request.dry_run else None,
+            bundle_artifact_updates=preview.bundle_artifact_updates if request.update_bundle and not request.dry_run else {},
+            bundle_field_updates=preview.bundle_field_updates if request.update_bundle and not request.dry_run else {},
+            job_id=request.job_id,
+            profile_id=profile.profile_id if profile else None,
+        )
+        start_command_job(store, job, spec)
+        return {"job": job, "preview": preview}
 
     @app.get("/api/sessions")
     def list_sessions():
@@ -445,6 +601,41 @@ def _resolve_run_profile(
     if saved is None:
         raise HTTPException(status_code=404, detail=f"profile_not_found: {profile_id}")
     return saved
+
+
+def _optional_profile(
+    profile: WorkbenchProfile | None,
+    profile_id: str | None,
+    store: WorkbenchStore,
+) -> WorkbenchProfile | None:
+    if profile is not None:
+        return profile
+    if not profile_id:
+        return None
+    saved = store.get_profile(profile_id)
+    if saved is None:
+        raise HTTPException(status_code=404, detail=f"profile_not_found: {profile_id}")
+    return saved
+
+
+def _resolve_profile_like(
+    *,
+    profile: WorkbenchProfile | None,
+    env_path: str | None,
+    profile_id: str | None,
+    display_name: str | None,
+    store: WorkbenchStore,
+) -> WorkbenchProfile:
+    if profile is not None:
+        return profile
+    if env_path:
+        return _load_env_profile(env_path, profile_id=profile_id, display_name=display_name)
+    if profile_id:
+        saved = store.get_profile(profile_id)
+        if saved is None:
+            raise HTTPException(status_code=404, detail=f"profile_not_found: {profile_id}")
+        return saved
+    raise HTTPException(status_code=400, detail="profile_or_env_path_or_profile_id_required")
 
 
 def _inspect_native_checkpoint_if_available(run_dir: str | Path | None) -> dict | None:

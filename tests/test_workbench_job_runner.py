@@ -13,8 +13,10 @@ from sec_agent.workbench.job_runner import (
     detect_run_dir_from_output,
     start_command_job,
 )
-from sec_agent.workbench.jobs import new_agent_ask_job, new_eval_run_job
+from sec_agent.workbench.data_build import build_data_build_command, data_build_catalog
+from sec_agent.workbench.jobs import new_agent_ask_job, new_data_build_job, new_eval_run_job
 from sec_agent.workbench.profiles import ModelRouteProfile, RuntimeProfile, WorkbenchProfile
+from sec_agent.workbench.source_bundles import SourceBundle, SourceBundleBuild
 from sec_agent.workbench.store import WorkbenchStore
 
 
@@ -244,6 +246,120 @@ def test_build_native_checkpoint_resume_command_can_target_wsl(tmp_path: Path) -
     assert spec.args[-2] == "-lc"
     assert 'sec_agent_graph_runner.py --resume-native-checkpoint "$SEC_AGENT_NATIVE_CHECKPOINT_PATH"' in spec.args[-1]
     assert "--native-resume-include-synthesis" not in spec.args[-1]
+
+
+def test_data_build_catalog_and_command_preview_are_whitelisted(tmp_path: Path) -> None:
+    step_ids = {step.step_id for step in data_build_catalog()}
+
+    spec, preview = build_data_build_command(
+        repo_root=tmp_path,
+        step_id="sec_build_manifest",
+        values={
+            "output": "data/processed_private/manifests/demo.jsonl",
+            "tickers": "NVDA,AMD",
+            "years": "2025,2026",
+        },
+    )
+
+    assert "sec_build_manifest" in step_ids
+    assert spec.args[:3] == [sys.executable, "-u", "scripts/build_sec_manifest.py"]
+    assert "--output" in preview.args
+    assert "data/processed_private/manifests/demo.jsonl" in preview.args
+    assert "--tickers" in preview.args
+    assert preview.missing_required == []
+    assert preview.bundle_artifact_updates == {"manifest_path": "data/processed_private/manifests/demo.jsonl"}
+
+
+def test_data_build_command_reports_missing_required_params(tmp_path: Path) -> None:
+    _spec, preview = build_data_build_command(
+        repo_root=tmp_path,
+        step_id="sec_build_chunks",
+        values={"manifest": "manifest.jsonl"},
+    )
+
+    assert preview.missing_required == ["output"]
+
+
+def test_data_build_download_dry_run_only_for_supported_steps(tmp_path: Path) -> None:
+    _spec, preview = build_data_build_command(
+        repo_root=tmp_path,
+        step_id="sec_download_filings",
+        values={"tickers": "NVDA", "limit": "1"},
+        dry_run=True,
+    )
+
+    assert "--dry-run" in preview.args
+
+
+def test_data_build_market_evidence_pack_requires_output(tmp_path: Path) -> None:
+    _spec, preview = build_data_build_command(
+        repo_root=tmp_path,
+        step_id="market_build_evidence_pack",
+        values={"snapshot_id": "market_snap_v1"},
+    )
+
+    assert preview.missing_required == ["output"]
+
+
+def test_data_build_industry_source_command_uses_contract_and_skip_live(tmp_path: Path) -> None:
+    spec, preview = build_data_build_command(
+        repo_root=tmp_path,
+        step_id="industry_download_source_snapshot",
+        values={
+            "snapshot_id": "industry_snap_v1",
+            "as_of_date": "2026-05-22",
+            "skip_live": True,
+        },
+    )
+
+    assert spec.args[:3] == [sys.executable, "-u", "scripts/industry/10_download_industry_source_snapshot.py"]
+    assert "--contract" in preview.args
+    assert "configs/industry_data_api_contracts_v0_2.yaml" in preview.args
+    assert "--skip-live" in preview.args
+    assert preview.missing_required == []
+
+
+def test_data_build_market_download_fmp_uses_key_env_name_only(tmp_path: Path) -> None:
+    _spec, preview = build_data_build_command(
+        repo_root=tmp_path,
+        step_id="market_download_fmp_historical",
+        values={"snapshot_id": "market_snap_v1", "tickers": "NVDA"},
+    )
+
+    assert "--api-key-env" in preview.args
+    assert "FMP_API_KEY" in preview.args
+    assert preview.missing_required == []
+
+
+def test_data_build_job_updates_bound_source_bundle_after_success(tmp_path: Path) -> None:
+    store = WorkbenchStore(tmp_path / "workbench.sqlite")
+    bundle = SourceBundle(
+        bundle_id="bundle_a",
+        display_name="Bundle A",
+        build=SourceBundleBuild(created_at="2026-05-25T00:00:00", status="ready"),
+    )
+    store.upsert_source_bundle(bundle)
+    job = new_data_build_job(
+        step_id="sec_build_bm25_index",
+        step_label="构建 BM25 索引",
+        command_preview=[sys.executable, "-c", "pass"],
+        bundle_id="bundle_a",
+        bundle_artifact_updates={"bm25_index_dir": "data/indexes/bm25/demo"},
+    )
+    spec = CommandSpec(args=[sys.executable, "-u", "-c", "print('done', flush=True)"], cwd=tmp_path, label="data-build:fixture")
+
+    start_command_job(store, job, spec)
+    finished = _wait_for_job(store, job.job_id)
+    updated = store.get_source_bundle("bundle_a")
+    events = store.list_run_events(job.job_id)
+
+    assert finished.status == "completed"
+    assert finished.metadata["bundle_update"]["status"] == "updated"
+    assert updated is not None
+    assert updated.artifacts.bm25_index_dir == "data/indexes/bm25/demo"
+    assert updated.build.status == "updated"
+    assert "sec_build_bm25_index" in updated.build.scripts
+    assert any("updated source bundle bundle_a" in event.message for event in events)
 
 
 def _write_minimal_run(run_dir: Path) -> Path:

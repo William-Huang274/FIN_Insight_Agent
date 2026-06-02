@@ -90,6 +90,82 @@ def test_workbench_backend_saves_and_lists_profiles(tmp_path: Path) -> None:
     assert get_response.json()["display_name"] == "Saved demo"
 
 
+def test_workbench_backend_imports_lists_and_validates_source_bundle(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.jsonl"
+    market = tmp_path / "market.jsonl"
+    bm25 = tmp_path / "bm25"
+    object_bm25 = tmp_path / "object_bm25"
+    env_file = tmp_path / "demo.env"
+    bm25.mkdir()
+    object_bm25.mkdir()
+    _write_jsonl(
+        manifest,
+        [
+            {
+                "ticker": "NVDA",
+                "fiscal_year": 2025,
+                "form_type": "10-K",
+                "source_tier": "primary_sec_filing",
+            }
+        ],
+    )
+    _write_jsonl(
+        market,
+        [
+            {
+                "ticker": "NVDA",
+                "as_of_date": "2026-05-22",
+                "field_refs": [{"field_name": "close_price", "value": 1.0}],
+            }
+        ],
+    )
+    env_file.write_text(
+        "\n".join(
+            [
+                "SEC_AGENT_SOURCE_POLICY=SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT",
+                f"MANIFEST_PATH={manifest}",
+                f"BM25_INDEX_DIR={bm25}",
+                f"OBJECT_BM25_INDEX_DIR={object_bm25}",
+                f"MARKET_EVIDENCE_PATH={market}",
+                "MARKET_AS_OF_DATE=2026-05-22",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    import_response = client.post(
+        "/api/source-bundles/import-profile",
+        json={
+            "env_path": str(env_file),
+            "profile_id": "demo",
+            "display_name": "Demo profile",
+            "bundle_id": "demo_bundle",
+            "bundle_display_name": "Demo source bundle",
+            "repo_root": str(tmp_path),
+        },
+    )
+    list_response = client.get("/api/source-bundles")
+    get_response = client.get("/api/source-bundles/demo_bundle")
+    validate_response = client.post(
+        "/api/source-bundles/validate",
+        json={"bundle_id": "demo_bundle", "repo_root": str(tmp_path)},
+    )
+
+    assert import_response.status_code == 200
+    payload = import_response.json()
+    assert payload["bundle"]["bundle_id"] == "demo_bundle"
+    assert payload["bundle"]["display_name"] == "Demo source bundle"
+    assert payload["bundle"]["ticker_count"] == 1
+    assert payload["readiness"]["manifest"]["row_count"] == 1
+    assert list_response.status_code == 200
+    assert list_response.json()["bundles"][0]["bundle_id"] == "demo_bundle"
+    assert get_response.status_code == 200
+    assert get_response.json()["artifacts"]["manifest_path"] == str(manifest)
+    assert validate_response.status_code == 200
+    assert validate_response.json()["readiness"]["manifest"]["row_count"] == 1
+
+
 def test_workbench_backend_inspects_and_persists_saved_run(tmp_path: Path) -> None:
     run_dir = tmp_path / "run"
     (run_dir / "qwen").mkdir(parents=True)
@@ -331,6 +407,83 @@ def test_workbench_backend_rejects_unknown_eval_runner(tmp_path: Path) -> None:
 
     assert response.status_code == 400
     assert response.json()["detail"] == "unsupported_eval_id: not_allowed"
+
+
+def test_workbench_backend_lists_previews_and_starts_data_build_job(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_start_command_job(store, job, spec) -> None:
+        captured["job"] = job
+        captured["spec"] = spec
+        store.upsert_run_job(job)
+
+    monkeypatch.setattr("apps.workbench.backend.app.start_command_job", fake_start_command_job)
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+    client.post(
+        "/api/source-bundles",
+        json={
+            "bundle_id": "bundle_a",
+            "display_name": "Bundle A",
+            "market": "US",
+            "coverage_theme": "demo",
+            "build": {"created_at": "2026-05-25T00:00:00", "status": "ready"},
+        },
+    ).raise_for_status()
+
+    catalog_response = client.get("/api/data-build/steps")
+    preview_response = client.post(
+        "/api/data-build/preview",
+        json={
+            "step_id": "sec_build_manifest",
+            "values": {
+                "output": "data/processed_private/manifests/demo.jsonl",
+                "tickers": "NVDA",
+            },
+        },
+    )
+    run_response = client.post(
+        "/api/data-build/run",
+        json={
+            "step_id": "sec_build_manifest",
+            "job_id": "data_build_fixture",
+            "bundle_id": "bundle_a",
+            "update_bundle": True,
+            "values": {
+                "output": "data/processed_private/manifests/demo.jsonl",
+                "tickers": "NVDA",
+            },
+        },
+    )
+
+    assert catalog_response.status_code == 200
+    assert "sec_build_manifest" in {item["step_id"] for item in catalog_response.json()["steps"]}
+    assert preview_response.status_code == 200
+    assert preview_response.json()["preview"]["missing_required"] == []
+    assert run_response.status_code == 200
+    payload = run_response.json()
+    assert payload["job"]["job_type"] == "data_build"
+    assert payload["job"]["metadata"]["step_id"] == "sec_build_manifest"
+    assert payload["job"]["metadata"]["bundle_id"] == "bundle_a"
+    assert payload["job"]["metadata"]["bundle_artifact_updates"] == {"manifest_path": "data/processed_private/manifests/demo.jsonl"}
+    spec = captured["spec"]
+    assert "scripts/build_sec_manifest.py" in spec.args
+    assert "--output" in spec.args
+
+
+def test_workbench_backend_rejects_data_build_missing_required_params(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.post(
+        "/api/data-build/run",
+        json={"step_id": "sec_build_chunks", "values": {"manifest": "manifest.jsonl"}},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["reason"] == "missing_required_parameters"
+    assert response.json()["detail"]["missing_required"] == ["output"]
 
 
 def test_workbench_backend_validates_env_profile(tmp_path: Path) -> None:

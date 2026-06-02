@@ -1,0 +1,33 @@
+{
+  "schema_version": "finsight_source_bundle_v1",
+  "bundle_id": "us_ai_full30_sec8k_market_20260522_v1",
+  "display_name": "美股 AI 30 家：SEC、8-K、三个月市场快照",
+  "market": "US",
+  "coverage_theme": "AI infrastructure",
+  "ticker_count": 30,
+  "tickers_sample": ["NVDA", "AMD", "MSFT", "AMZN", "GOOGL"],
+  "source_families": ["SEC 10-K/10-Q", "8-K earnings release", "market snapshot"],
+  "as_of_date": "2026-05-22",
+  "artifacts": {
+    "manifest_path": "data/processed_private/manifests/<bundle_id>_manifest.jsonl",
+    "bm25_index_dir": "data/indexes/bm25/<bundle_id>",
+    "object_bm25_index_dir": "data/indexes/bm25/<bundle_id>_objects",
+    "source_gap_path": "data/processed_private/source_gaps/<bundle_id>_source_gaps.jsonl",
+    "market_evidence_path": "data/processed_private/market/evidence_packs/<bundle_id>_market_evidence.jsonl"
+  },
+  "build": {
+    "created_at": "2026-05-25T00:00:00+08:00",
+    "scripts": [
+      "download_sec_filings",
+      "build_sec_manifest",
+      "build_sec_chunks",
+      "build_bm25_index",
+      "build_object_bm25_index",
+      "download_sec_8k_earnings",
+      "build_sec_8k_earnings_manifest",
+      "merge_sec_source_gaps",
+      "market/40_build_market_evidence_pack"
+    ],
+    "status": "template"
+  }
+}

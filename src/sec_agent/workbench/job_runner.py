@@ -428,6 +428,9 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
         if return_code == 0:
             completed = _job_update(running, status="completed", finished_at=_now(), error="")
             store.append_run_event(job.job_id, stream="system", message="process exited with code 0")
+            bundle_update = _apply_data_build_bundle_update(store, completed)
+            if bundle_update:
+                completed = completed.model_copy(update={"metadata": {**completed.metadata, "bundle_update": bundle_update}})
         else:
             completed = _job_update(
                 running,
@@ -563,6 +566,55 @@ def _read_eval_output_summary(job: RunJob) -> dict[str, object]:
         if key in payload:
             summary[key] = payload[key]
     return summary
+
+
+def _apply_data_build_bundle_update(store: WorkbenchStore, job: RunJob) -> dict[str, object]:
+    if job.job_type != "data_build":
+        return {}
+    metadata = job.metadata
+    bundle_id = str(metadata.get("bundle_id") or "").strip()
+    if not bundle_id:
+        return {}
+    artifact_updates = _string_dict(metadata.get("bundle_artifact_updates"))
+    field_updates = _string_dict(metadata.get("bundle_field_updates"))
+    if not artifact_updates and not field_updates:
+        return {}
+    bundle = store.get_source_bundle(bundle_id)
+    if bundle is None:
+        store.append_run_event(job.job_id, stream="system", message=f"source bundle not found for update: {bundle_id}")
+        return {"status": "missing_bundle", "bundle_id": bundle_id}
+
+    updated_artifacts = bundle.artifacts.model_copy(update=artifact_updates)
+    build_scripts = list(bundle.build.scripts or [])
+    step_id = str(metadata.get("step_id") or "").strip()
+    if step_id and step_id not in build_scripts:
+        build_scripts.append(step_id)
+    updated_build = bundle.build.model_copy(update={"scripts": build_scripts, "status": "updated"})
+    bundle_changes: dict[str, object] = {
+        "artifacts": updated_artifacts,
+        "build": updated_build,
+    }
+    if field_updates.get("as_of_date"):
+        bundle_changes["as_of_date"] = field_updates["as_of_date"]
+    updated_bundle = bundle.model_copy(update=bundle_changes)
+    store.upsert_source_bundle(updated_bundle)
+    store.append_run_event(
+        job.job_id,
+        stream="system",
+        message=f"updated source bundle {bundle_id}: {json.dumps({'artifacts': artifact_updates, 'fields': field_updates}, ensure_ascii=False, sort_keys=True)}",
+    )
+    return {
+        "status": "updated",
+        "bundle_id": bundle_id,
+        "artifact_updates": artifact_updates,
+        "field_updates": field_updates,
+    }
+
+
+def _string_dict(value: object) -> dict[str, str]:
+    if not isinstance(value, dict):
+        return {}
+    return {str(key): str(item) for key, item in value.items() if str(item).strip()}
 
 
 def _should_run_in_wsl(profile: WorkbenchProfile) -> bool:

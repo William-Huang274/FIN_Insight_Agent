@@ -189,3 +189,34 @@ def new_eval_run_job(
             "output_path": str(Path(output_path)),
         },
     )
+
+
+def new_data_build_job(
+    *,
+    step_id: str,
+    step_label: str,
+    command_preview: list[str],
+    bundle_id: str | None = None,
+    bundle_artifact_updates: dict[str, str] | None = None,
+    bundle_field_updates: dict[str, str] | None = None,
+    job_id: str | None = None,
+    profile_id: str | None = None,
+) -> RunJob:
+    now = datetime.now().isoformat(timespec="seconds")
+    return RunJob(
+        job_id=job_id or f"data_build_{uuid4().hex[:12]}",
+        job_type="data_build",
+        status="queued",
+        profile_id=profile_id,
+        created_at=now,
+        updated_at=now,
+        metadata={
+            "runner": "workbench_subprocess",
+            "step_id": step_id,
+            "step_label": step_label,
+            "command_preview": command_preview,
+            "bundle_id": bundle_id or "",
+            "bundle_artifact_updates": bundle_artifact_updates or {},
+            "bundle_field_updates": bundle_field_updates or {},
+        },
+    )

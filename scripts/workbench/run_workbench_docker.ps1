@@ -4,6 +4,8 @@
     [switch]$FullImage,
     [switch]$UsePypiHostFallback,
     [string]$PypiHostIp = "151.101.64.223",
+    [switch]$UseNpmHostFallback,
+    [string]$NpmRegistryHostIp = "104.16.5.34",
     [switch]$SkipBuild,
     [switch]$SkipRun,
     [switch]$SmokeOnly
@@ -39,11 +41,21 @@ if (-not $SkipBuild) {
         )
     }
 
+    if ($UseNpmHostFallback) {
+        $BuildArgs += @(
+            "--add-host",
+            "registry.npmjs.org:$NpmRegistryHostIp"
+        )
+    }
+
     $BuildArgs += "."
 
     Write-Host "构建 Workbench Docker 镜像：$ImageTag，target=$Target"
     if ($UsePypiHostFallback) {
         Write-Host "已启用 PyPI host fallback：$PypiHostIp"
+    }
+    if ($UseNpmHostFallback) {
+        Write-Host "已启用 npm registry host fallback：$NpmRegistryHostIp"
     }
     & docker @BuildArgs
     if ($LASTEXITCODE -ne 0) {

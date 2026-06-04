@@ -17,6 +17,7 @@ pytest.importorskip("httpx")
 from fastapi.testclient import TestClient
 
 from apps.workbench.backend.app import create_app
+from sec_agent.workbench.job_runner import CommandSpec, start_command_job
 from sec_agent.workbench.jobs import new_local_smoke_job
 from sec_agent.workbench.store import WorkbenchStore
 
@@ -46,6 +47,8 @@ def test_workbench_backend_system_status_reports_store_and_paths(tmp_path: Path)
     assert payload["store"]["status"] == "ok"
     assert payload["store"]["db_parent_writable"] is True
     assert payload["store"]["journal_mode"].lower() == "wal"
+    assert payload["store"]["schema_version"] >= 2
+    assert payload["store"]["migration_count"] >= 2
     assert payload["paths"]["repo_root"]["exists"] is True
     assert isinstance(payload["paths"]["repo_root"]["free_bytes"], int)
     assert "runtime-secret" not in json.dumps(payload, ensure_ascii=False)
@@ -421,6 +424,59 @@ def test_workbench_backend_run_status_reports_missing_job(tmp_path: Path) -> Non
     assert payload["error"]["error_code"] == "job_not_found"
 
 
+def test_workbench_backend_cancels_running_job(tmp_path: Path) -> None:
+    db_path = tmp_path / "workbench.sqlite"
+    store = WorkbenchStore(db_path)
+    client = TestClient(create_app(store_path=db_path))
+    job = new_local_smoke_job(job_id="long_fixture", trace_id="trace_cancel")
+    code = "import time; print('started', flush=True); time.sleep(30); print('done', flush=True)"
+    start_command_job(
+        store,
+        job,
+        CommandSpec(args=[sys.executable, "-u", "-c", code], cwd=tmp_path, label="long_fixture"),
+    )
+
+    for _ in range(30):
+        status = client.get("/api/runs/long_fixture/status").json()["status"]
+        if status == "running":
+            break
+        time.sleep(0.05)
+    cancel_response = client.post("/api/runs/long_fixture/cancel", json={"reason": "test cancellation"})
+
+    assert cancel_response.status_code == 200
+    payload = cancel_response.json()
+    assert payload["cancelled"] is True
+    assert payload["status"] == "cancelled"
+    final = client.get("/api/runs/long_fixture/status").json()
+    assert final["status"] == "cancelled"
+    assert final["is_terminal"] is True
+    messages = [event["message"] for event in client.get("/api/runs/long_fixture/events").json()["events"]]
+    assert "test cancellation" in messages
+
+
+def test_workbench_backend_prunes_terminal_run_history(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+    store = WorkbenchStore(tmp_path / "workbench.sqlite")
+    for job_id in ("keep_fixture", "drop_fixture"):
+        job = new_local_smoke_job(job_id=job_id, trace_id=f"trace_{job_id}").model_copy(
+            update={"status": "completed"}
+        )
+        store.upsert_run_job(job)
+        store.append_run_event(job_id, stream="system", message=f"{job_id} event")
+
+    dry_run = client.post("/api/runs/prune", json={"keep_latest": 1, "dry_run": True})
+    prune = client.post("/api/runs/prune", json={"keep_latest": 1, "dry_run": False})
+
+    assert dry_run.status_code == 200
+    assert dry_run.json()["deleted_job_count"] == 0
+    assert dry_run.json()["candidate_job_ids"] == ["drop_fixture"]
+    assert prune.status_code == 200
+    assert prune.json()["deleted_job_count"] == 1
+    assert prune.json()["deleted_event_count"] == 1
+    assert client.get("/api/runs/drop_fixture/status").status_code == 404
+    assert client.get("/api/runs/keep_fixture/status").status_code == 200
+
+
 def test_workbench_backend_streams_smoke_job_events(tmp_path: Path) -> None:
     client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
     client.post("/api/runs/smoke", json={"job_id": "smoke_stream_fixture"}).raise_for_status()
@@ -573,6 +629,8 @@ def test_workbench_backend_lists_previews_and_starts_data_build_job(
         "/api/data-build/preview",
         json={
             "step_id": "sec_build_manifest",
+            "bundle_id": "bundle_a",
+            "update_bundle": True,
             "values": {
                 "output": "data/processed_private/manifests/demo.jsonl",
                 "tickers": "NVDA",

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Mapping
 from uuid import uuid4
 
-from .jobs import RunJob
+from .jobs import RunCancelReport, RunJob
 from .profiles import WorkbenchProfile
 from .store import WorkbenchStore
 
@@ -80,6 +80,9 @@ _EVAL_RUNNERS = {
         "timeout_hint_s": 180,
     },
 }
+_ACTIVE_PROCESSES: dict[str, subprocess.Popen[str]] = {}
+_CANCEL_REQUESTED: set[str] = set()
+_ACTIVE_PROCESSES_LOCK = threading.Lock()
 
 
 @dataclass(frozen=True)
@@ -396,7 +399,38 @@ def start_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> 
     return job
 
 
+def cancel_command_job(store: WorkbenchStore, job_id: str, *, reason: str = "cancelled by user") -> RunCancelReport:
+    job = store.get_run_job(job_id)
+    if job is None:
+        return RunCancelReport(job_id=job_id, status="missing", cancelled=False, message=f"job_not_found: {job_id}")
+    if job.status in TERMINAL_STATUSES:
+        return RunCancelReport(job_id=job_id, status=job.status, cancelled=False, message="job_already_terminal", job=job)
+
+    with _ACTIVE_PROCESSES_LOCK:
+        _CANCEL_REQUESTED.add(job_id)
+        process = _ACTIVE_PROCESSES.get(job_id)
+
+    if process is not None and process.poll() is None:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
+
+    cancelled = _job_update(job, status="cancelled", finished_at=_now(), error=reason)
+    store.append_run_event(job_id, stream="system", message=reason, trace_id=cancelled.trace_id)
+    store.upsert_run_job(cancelled)
+    return RunCancelReport(job_id=job_id, status="cancelled", cancelled=True, message=reason, job=cancelled)
+
+
 def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> None:
+    if _cancel_requested(job.job_id):
+        cancelled = _job_update(job, status="cancelled", finished_at=_now(), error="cancelled by user")
+        store.append_run_event(job.job_id, stream="system", message="cancelled before start", trace_id=cancelled.trace_id)
+        store.upsert_run_job(cancelled)
+        return
+
     running = _job_update(job, status="running", started_at=_now())
     store.upsert_run_job(running)
     store.append_run_event(job.job_id, stream="system", message=f"started {spec.label} in {spec.cwd}", trace_id=running.trace_id)
@@ -419,6 +453,8 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
             errors="replace",
             bufsize=1,
         )
+        with _ACTIVE_PROCESSES_LOCK:
+            _ACTIVE_PROCESSES[job.job_id] = process
         assert process.stdout is not None
         for line in process.stdout:
             message = line.rstrip("\r\n")
@@ -426,6 +462,20 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
                 stdout_messages.append(message)
                 store.append_run_event(job.job_id, stream="stdout", message=message, trace_id=running.trace_id)
         return_code = process.wait()
+        latest = store.get_run_job(job.job_id)
+        with _ACTIVE_PROCESSES_LOCK:
+            cancel_requested = job.job_id in _CANCEL_REQUESTED
+        if cancel_requested or (latest is not None and latest.status == "cancelled"):
+            cancel_message = (latest.error_message if latest else "") or "cancelled by user"
+            cancelled = _job_update(latest or running, status="cancelled", finished_at=_now(), error=cancel_message)
+            store.upsert_run_job(cancelled)
+            store.append_run_event(
+                job.job_id,
+                stream="system",
+                message=f"process exited after cancellation with code {return_code}",
+                trace_id=cancelled.trace_id,
+            )
+            return
         detected_run_dir = detect_run_dir_from_output(stdout_messages, cwd=spec.cwd)
         if return_code == 0:
             completed = _job_update(running, status="completed", finished_at=_now(), error="")
@@ -460,16 +510,29 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
             )
         store.upsert_run_job(completed)
     except FileNotFoundError as exc:
-        failed = _job_update(running, status="failed", finished_at=_now(), error=str(exc))
-        store.append_run_event(job.job_id, stream="system", message=_missing_executable_message(spec.args[0], exc), trace_id=running.trace_id)
-        store.upsert_run_job(failed)
+        if _cancel_requested(job.job_id):
+            cancelled = _job_update(running, status="cancelled", finished_at=_now(), error="cancelled by user")
+            store.append_run_event(job.job_id, stream="system", message="cancelled before executable started", trace_id=running.trace_id)
+            store.upsert_run_job(cancelled)
+        else:
+            failed = _job_update(running, status="failed", finished_at=_now(), error=str(exc))
+            store.append_run_event(job.job_id, stream="system", message=_missing_executable_message(spec.args[0], exc), trace_id=running.trace_id)
+            store.upsert_run_job(failed)
     except Exception as exc:  # pragma: no cover - defensive persistence guard.
         if process and process.poll() is None:
             process.kill()
-        failed = _job_update(running, status="failed", finished_at=_now(), error=str(exc))
-        store.append_run_event(job.job_id, stream="system", message=f"runner failed: {exc}", trace_id=running.trace_id)
-        store.upsert_run_job(failed)
+        if _cancel_requested(job.job_id):
+            cancelled = _job_update(running, status="cancelled", finished_at=_now(), error="cancelled by user")
+            store.append_run_event(job.job_id, stream="system", message=f"runner stopped after cancellation: {exc}", trace_id=running.trace_id)
+            store.upsert_run_job(cancelled)
+        else:
+            failed = _job_update(running, status="failed", finished_at=_now(), error=str(exc))
+            store.append_run_event(job.job_id, stream="system", message=f"runner failed: {exc}", trace_id=running.trace_id)
+            store.upsert_run_job(failed)
     finally:
+        with _ACTIVE_PROCESSES_LOCK:
+            _ACTIVE_PROCESSES.pop(job.job_id, None)
+            _CANCEL_REQUESTED.discard(job.job_id)
         for path in spec.cleanup_paths:
             try:
                 path.unlink(missing_ok=True)
@@ -486,6 +549,11 @@ def _job_update(job: RunJob, **changes: object) -> RunJob:
     if elapsed_ms is not None and updated.elapsed_ms != elapsed_ms:
         updated = updated.model_copy(update={"elapsed_ms": elapsed_ms})
     return updated
+
+
+def _cancel_requested(job_id: str) -> bool:
+    with _ACTIVE_PROCESSES_LOCK:
+        return job_id in _CANCEL_REQUESTED
 
 
 def _now() -> str:

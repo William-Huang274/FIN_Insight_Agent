@@ -29,7 +29,7 @@
 ## 服务和本地工作台
 
 - `mcp/`：MCP 工具合同导出、服务端、调用器和冒烟检查。
-- `workbench/`：本地 Workbench 启动和环境辅助脚本，包括一键启动脚本、后端启动脚本、前端构建辅助和 Docker 本地 smoke 脚本。
+- `workbench/`：本地 Workbench 启动和环境辅助脚本，包括一键启动脚本、后端启动脚本、前端构建辅助和 Docker 本地 smoke 脚本。容器化日常入口优先用根目录 `compose.yaml`。
 
 ## 归档脚本
 

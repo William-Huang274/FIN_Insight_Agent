@@ -12,6 +12,7 @@ import {
   RefreshCcw,
   Terminal,
   Save,
+  CircleStop,
 } from "lucide-react";
 import "../../static/styles.css";
 import "./workbench.css";
@@ -194,11 +195,16 @@ type RunJob = {
   job_id: string;
   job_type: string;
   status: string;
+  trace_id?: string;
   profile_id?: string | null;
   prompt?: string | null;
   run_dir?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
+  elapsed_ms?: number | null;
   updated_at: string;
   error?: string;
+  error_message?: string;
   metadata?: Record<string, unknown>;
 };
 
@@ -226,6 +232,23 @@ type RunInspectionReport = {
   native_checkpoint?: NativeCheckpointInspection | null;
 };
 
+type RunStatusReport = {
+  job_id: string;
+  job_type: string;
+  status: string;
+  trace_id: string;
+  profile_id?: string | null;
+  run_dir?: string | null;
+  updated_at: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+  elapsed_ms?: number | null;
+  error_message?: string;
+  is_terminal: boolean;
+  event_count: number;
+  latest_event?: RunLogEvent | null;
+};
+
 type NativeCheckpointInspection = {
   schema_version: string;
   checkpoint_path: string;
@@ -246,6 +269,7 @@ type NativeCheckpointInspection = {
 type RunLogEvent = {
   job_id: string;
   sequence: number;
+  trace_id?: string;
   stream: string;
   message: string;
   created_at: string;
@@ -463,14 +487,7 @@ function App() {
     await runBusy("data_build_preview", async () => {
       const payload = await requestJson<{ preview: DataBuildPreview }>("/api/data-build/preview", {
         method: "POST",
-        body: JSON.stringify({
-          step_id: selectedDataBuildStep.step_id,
-          values: dataBuildValues,
-          profile: profile ?? null,
-          dry_run: dataBuildDryRun,
-          bundle_id: dataBuildBundleId || sourceBundle?.bundle_id || null,
-          update_bundle: dataBuildUpdateBundle,
-        }),
+        body: JSON.stringify(dataBuildRequestPayload(selectedDataBuildStep, dataBuildValues, profile, dataBuildDryRun, dataBuildBundleId, sourceBundle, dataBuildUpdateBundle)),
       });
       setDataBuildPreview(payload.preview);
     });
@@ -481,12 +498,7 @@ function App() {
     await runBusy("data_build_run", async () => {
       const payload = await requestJson<{ job: RunJob; preview: DataBuildPreview }>("/api/data-build/run", {
         method: "POST",
-        body: JSON.stringify({
-          step_id: selectedDataBuildStep.step_id,
-          values: dataBuildValues,
-          profile: profile ?? null,
-          dry_run: dataBuildDryRun,
-        }),
+        body: JSON.stringify(dataBuildRequestPayload(selectedDataBuildStep, dataBuildValues, profile, dataBuildDryRun, dataBuildBundleId, sourceBundle, dataBuildUpdateBundle)),
       });
       setDataBuildPreview(payload.preview);
       setActiveJob(payload.job);
@@ -494,6 +506,12 @@ function App() {
       await refreshJob(payload.job.job_id);
       await loadRuns();
     });
+  }
+
+  function applyDataBuildDefaults() {
+    if (!selectedDataBuildStep) return;
+    setDataBuildValues((current) => suggestDataBuildValues(selectedDataBuildStep, current, profile, sourceBundle, dataBuildBundleId));
+    setDataBuildPreview(null);
   }
 
   async function loadSessionTurns(targetSessionId = sessionId) {
@@ -654,19 +672,24 @@ function App() {
   }
 
   async function refreshJob(jobId: string) {
-    const payload = await requestJson<RunInspectionReport>(`/api/runs/${encodeURIComponent(jobId)}`);
-    setActiveJob(payload.job);
+    const status = await requestJson<RunStatusReport>(`/api/runs/${encodeURIComponent(jobId)}/status`);
+    setActiveJob((current) => mergeStatusIntoJob(status, current));
     await loadJobEvents(jobId);
-    if (payload.artifact_index) {
-      setRunReport(payload as RunInspectionReport);
+    if (status.run_dir) {
+      setRunDir(status.run_dir);
     }
-    if (payload.native_checkpoint !== undefined) {
-      setNativeCheckpoint(payload.native_checkpoint ?? null);
-    }
-    if (payload.job.run_dir) {
-      setRunDir(payload.job.run_dir);
-    }
-    if (isTerminal(payload.job.status)) {
+    if (status.is_terminal) {
+      const payload = await requestJson<RunInspectionReport>(`/api/runs/${encodeURIComponent(jobId)}`);
+      setActiveJob(payload.job);
+      if (payload.artifact_index) {
+        setRunReport(payload as RunInspectionReport);
+      }
+      if (payload.native_checkpoint !== undefined) {
+        setNativeCheckpoint(payload.native_checkpoint ?? null);
+      }
+      if (payload.job.run_dir) {
+        setRunDir(payload.job.run_dir);
+      }
       await loadRuns();
       await loadSessions();
       if (payload.artifact_index && !artifactJumpJobIds.current.has(payload.job.job_id)) {
@@ -674,6 +697,24 @@ function App() {
         window.setTimeout(() => document.getElementById("artifacts")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
       }
     }
+  }
+
+  async function cancelActiveJob() {
+    if (!activeJob?.job_id || isTerminal(activeJob.status)) return;
+    await runBusy("cancel_job", async () => {
+      const payload = await requestJson<{ cancelled: boolean; status: string; message: string; job?: RunJob | null }>(
+        `/api/runs/${encodeURIComponent(activeJob.job_id)}/cancel`,
+        {
+          method: "POST",
+          body: JSON.stringify({ reason: "cancelled from workbench" }),
+        },
+      );
+      if (payload.job) {
+        setActiveJob(payload.job);
+      }
+      await loadJobEvents(activeJob.job_id);
+      await loadRuns();
+    });
   }
 
   async function loadJobEvents(jobId: string) {
@@ -869,6 +910,7 @@ function App() {
             onDryRunChange={setDataBuildDryRun}
             onUpdateBundleChange={setDataBuildUpdateBundle}
             onBundleIdChange={setDataBuildBundleId}
+            onApplyDefaults={applyDataBuildDefaults}
             onPreview={previewDataBuild}
             onRun={runDataBuild}
           />
@@ -962,7 +1004,7 @@ function App() {
             <SessionTurns turns={sessionTurns} onLoadRun={loadRun} onRefresh={() => loadSessionTurns(sessionId)} />
           </div>
 
-          <JobConsole job={activeJob} events={jobEvents} />
+          <JobConsole job={activeJob} events={jobEvents} onCancel={cancelActiveJob} cancelling={busy === "cancel_job"} />
         </section>
 
         <section id="evals" className="panel">
@@ -1159,6 +1201,7 @@ function DataBuildPanel({
   onDryRunChange,
   onUpdateBundleChange,
   onBundleIdChange,
+  onApplyDefaults,
   onPreview,
   onRun,
 }: {
@@ -1177,6 +1220,7 @@ function DataBuildPanel({
   onDryRunChange: (value: boolean) => void;
   onUpdateBundleChange: (value: boolean) => void;
   onBundleIdChange: (value: string) => void;
+  onApplyDefaults: () => void;
   onPreview: () => void;
   onRun: () => void;
 }) {
@@ -1207,6 +1251,12 @@ function DataBuildPanel({
         <MetricBox label="脚本" value={selectedStep.script} detail={`预计 ${selectedStep.timeout_hint_s}s 内`} />
       </div>
       <p className="muted-text">{selectedStep.description}</p>
+      <div className="form-actions compact-actions">
+        <button type="button" className="secondary" onClick={onApplyDefaults} disabled={Boolean(busy)}>
+          <FolderOpen size={16} aria-hidden="true" />
+          填入建议路径
+        </button>
+      </div>
       <div className="data-build-params">
         {selectedStep.parameters.map((parameter) =>
           parameter.kind === "bool" ? (
@@ -1484,23 +1534,47 @@ function RunArtifacts({ report }: { report: RunInspectionReport }) {
   );
 }
 
-function JobConsole({ job, events }: { job: RunJob | null; events: RunLogEvent[] }) {
+function JobConsole({
+  job,
+  events,
+  onCancel,
+  cancelling,
+}: {
+  job: RunJob | null;
+  events: RunLogEvent[];
+  onCancel: () => void;
+  cancelling: boolean;
+}) {
   const evalSummary = job?.metadata?.eval_summary as Record<string, unknown> | undefined;
+  const canCancel = Boolean(job?.job_id && !isTerminal(job.status));
   return (
     <div className="job-console">
       <div className="job-console-header">
-        <h3>运行日志</h3>
-        {job ? (
-          <span className="mono">
-            {job.job_id} · {job.job_type} · {job.status}
-          </span>
-        ) : (
-          <span className="mono">尚未启动</span>
-        )}
+        <div>
+          <h3>运行日志</h3>
+          {job ? (
+            <span className="mono">
+              {job.job_id} · {job.job_type} · {job.status}
+            </span>
+          ) : (
+            <span className="mono">尚未启动</span>
+          )}
+        </div>
+        <button type="button" className="secondary" onClick={onCancel} disabled={!canCancel || cancelling}>
+          <CircleStop size={16} aria-hidden="true" />
+          {cancelling ? "取消中" : "取消运行"}
+        </button>
       </div>
+      {job ? (
+        <div className="job-meta-grid">
+          <MetricBox label="Trace" value={job.trace_id || "none"} />
+          <MetricBox label="Elapsed" value={job.elapsed_ms !== undefined && job.elapsed_ms !== null ? `${job.elapsed_ms} ms` : "running"} />
+          <MetricBox label="Events" value={String(events.length)} />
+        </div>
+      ) : null}
       <pre>
         {events.length
-          ? events.map((event) => `[${event.sequence}] ${event.stream}: ${event.message}`).join("\n")
+          ? events.map((event) => `[${event.sequence}] ${event.trace_id ? `${event.trace_id} ` : ""}${event.stream}: ${event.message}`).join("\n")
           : "运行本地 smoke 或单轮 Agent 后，这里会显示 stdout/system 事件。"}
       </pre>
       {evalSummary ? (
@@ -1511,7 +1585,7 @@ function JobConsole({ job, events }: { job: RunJob | null; events: RunLogEvent[]
           {evalSummary.skipped_count !== undefined ? ` · skipped ${String(evalSummary.skipped_count)}` : ""}
         </p>
       ) : null}
-      {job?.error ? <p className="job-error">{job.error}</p> : null}
+      {job?.error_message || job?.error ? <p className="job-error">{job.error_message || job.error}</p> : null}
     </div>
   );
 }
@@ -1688,6 +1762,94 @@ function commandLine(args: string[]) {
   return args.map((arg) => (/[\s"'$]/.test(arg) ? JSON.stringify(arg) : arg)).join(" ");
 }
 
+function dataBuildRequestPayload(
+  step: DataBuildStep,
+  values: Record<string, string | boolean>,
+  profile: WorkbenchProfile | null,
+  dryRun: boolean,
+  bundleId: string,
+  sourceBundle: SourceBundle | null,
+  updateBundle: boolean,
+) {
+  return {
+    step_id: step.step_id,
+    values,
+    profile: profile ?? null,
+    dry_run: dryRun,
+    bundle_id: bundleId || sourceBundle?.bundle_id || null,
+    update_bundle: updateBundle,
+  };
+}
+
+function suggestDataBuildValues(
+  step: DataBuildStep,
+  current: Record<string, string | boolean>,
+  profile: WorkbenchProfile | null,
+  sourceBundle: SourceBundle | null,
+  bundleId: string,
+) {
+  const next = { ...current };
+  const artifacts: SourceBundleArtifacts & Partial<SourceProfile> = sourceBundle?.artifacts ?? profile?.sources ?? {};
+  const baseId = pathSlug(bundleId || sourceBundle?.bundle_id || profile?.sources?.market_snapshot_id || profile?.profile_id || "workbench");
+  const snapshotId = profile?.sources?.market_snapshot_id || sourceBundle?.bundle_id || baseId;
+  const asOfDate = sourceBundle?.as_of_date || profile?.sources?.market_as_of_date || "";
+  const inputDefaults: Record<string, string | undefined | null> = {
+    manifest: artifacts.manifest_path,
+    manifest_paths: artifacts.manifest_path,
+    snapshot_id: snapshotId,
+    as_of_date: asOfDate,
+  };
+
+  for (const parameter of step.parameters) {
+    if (!isBlankValue(next[parameter.name])) continue;
+    const inputDefault = inputDefaults[parameter.name];
+    if (!isBlankValue(inputDefault)) {
+      next[parameter.name] = String(inputDefault);
+      continue;
+    }
+    if (step.output_parameters.includes(parameter.name)) {
+      next[parameter.name] = suggestedOutputPath(step.step_id, parameter.name, baseId);
+    }
+  }
+  return next;
+}
+
+function suggestedOutputPath(stepId: string, parameterName: string, baseId: string) {
+  const base = `data/workbench_private/builds/${baseId}/${stepId}`;
+  if (parameterName === "output_dir" || parameterName === "output_root") return base;
+  const fileNames: Record<string, Record<string, string>> = {
+    sec_build_manifest: { output: "sec_manifest.jsonl" },
+    sec_build_chunks: { output: "sec_chunks.jsonl" },
+    sec_build_evidence_store: { output: "sec_evidence_store.jsonl" },
+    sec_download_8k_earnings: { missing_output: "sec_8k_missing.jsonl" },
+    sec_build_8k_manifest: { output: "sec_8k_manifest.jsonl", gap_output: "sec_8k_gaps.jsonl" },
+    sec_merge_source_gaps: { output: "source_gaps.jsonl" },
+    market_build_events: { output: "market_events.jsonl" },
+    market_enrich_valuation_fmp: { output: "market_valuation.csv" },
+    market_build_catalog: { catalog_path: "market_snapshot_catalog.duckdb" },
+    market_compute_analytics: { output: "market_analytics.jsonl" },
+    market_build_evidence_pack: { output: "market_evidence_pack.jsonl" },
+    market_validate_snapshot: { report: "market_validation_report.json" },
+  };
+  const fileName = fileNames[stepId]?.[parameterName] ?? `${parameterName}.json`;
+  return `${base}/${fileName}`;
+}
+
+function pathSlug(value: string) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_.-]+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^[_\-.]+|[_\-.]+$/g, "") || "workbench"
+  );
+}
+
+function isBlankValue(value: unknown) {
+  return value === undefined || value === null || (typeof value === "string" && value.trim() === "");
+}
+
 function flatSummary(value: Record<string, unknown>) {
   const result: Record<string, number> = {};
   for (const [key, item] of Object.entries(value ?? {})) {
@@ -1731,6 +1893,25 @@ function newSessionId() {
   return `workbench_session_${stamp}`;
 }
 
+function mergeStatusIntoJob(status: RunStatusReport, current: RunJob | null): RunJob {
+  return {
+    ...(current ?? {}),
+    job_id: status.job_id,
+    job_type: status.job_type,
+    status: status.status,
+    trace_id: status.trace_id,
+    profile_id: status.profile_id ?? current?.profile_id ?? null,
+    run_dir: status.run_dir ?? current?.run_dir ?? null,
+    started_at: status.started_at ?? current?.started_at ?? null,
+    finished_at: status.finished_at ?? current?.finished_at ?? null,
+    elapsed_ms: status.elapsed_ms ?? current?.elapsed_ms ?? null,
+    updated_at: status.updated_at,
+    error_message: status.error_message ?? current?.error_message ?? "",
+    error: status.error_message ?? current?.error ?? "",
+    metadata: current?.metadata ?? {},
+  };
+}
+
 async function requestJson<T>(url: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(url, {
     headers: {
@@ -1743,7 +1924,10 @@ async function requestJson<T>(url: string, options: RequestInit = {}): Promise<T
   const payload = text ? JSON.parse(text) : {};
   if (!response.ok) {
     const detail = payload.detail ?? response.statusText;
-    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+    const error = payload.error ?? {};
+    const suffix = [error.error_code, error.trace_id].filter(Boolean).join(" · ");
+    const message = typeof detail === "string" ? detail : JSON.stringify(detail);
+    throw new Error(suffix ? `${message} · ${suffix}` : message);
   }
   return payload as T;
 }

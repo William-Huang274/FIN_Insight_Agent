@@ -5,7 +5,7 @@ FROM ${NODE_IMAGE} AS workbench-frontend
 
 WORKDIR /app/apps/workbench/frontend
 COPY apps/workbench/frontend/package*.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
 COPY apps/workbench/frontend/ ./
 RUN npm run build
 

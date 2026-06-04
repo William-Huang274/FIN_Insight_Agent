@@ -1,0 +1,7 @@
+services:
+  workbench:
+    build:
+      extra_hosts:
+        - "pypi.org:151.101.64.223"
+        - "files.pythonhosted.org:151.101.64.223"
+        - "registry.npmjs.org:104.16.5.34"

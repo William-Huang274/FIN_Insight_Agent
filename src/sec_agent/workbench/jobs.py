@@ -73,6 +73,16 @@ class RunStatusReport(BaseModel):
     latest_event: RunLogEvent | None = None
 
 
+class RunCancelReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    job_id: str
+    status: str
+    cancelled: bool
+    message: str
+    job: RunJob | None = None
+
+
 def run_status_report_from_job(
     job: RunJob,
     *,

@@ -13,7 +13,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
 from sec_agent.workbench import (
+    RunCancelReport,
     RunInspectionReport,
+    RunPruneReport,
     RunStatusReport,
     SourceBundle,
     TraceInspectionReport,
@@ -25,6 +27,7 @@ from sec_agent.workbench import (
     build_eval_command,
     build_local_smoke_command,
     build_native_checkpoint_resume_command,
+    cancel_command_job,
     default_store_path,
     data_build_catalog,
     eval_output_path,
@@ -102,12 +105,12 @@ class DataBuildPreviewRequest(BaseModel):
     profile: WorkbenchProfile | None = None
     profile_id: str | None = None
     dry_run: bool = False
+    bundle_id: str | None = None
+    update_bundle: bool = False
 
 
 class DataBuildRunRequest(DataBuildPreviewRequest):
     job_id: str | None = None
-    bundle_id: str | None = None
-    update_bundle: bool = False
 
 
 class InspectRunRequest(BaseModel):
@@ -176,6 +179,21 @@ class StartEvalRunRequest(BaseModel):
     eval_id: str
     job_id: str | None = None
     profile_id: str | None = None
+
+
+class CancelRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = "cancelled by user"
+
+
+class PruneRunHistoryRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    keep_latest: int = Field(default=200, ge=0, le=10000)
+    max_age_days: int | None = Field(default=None, ge=0, le=3650)
+    terminal_only: bool = True
+    dry_run: bool = True
 
 
 class NativeCheckpointInspectRequest(BaseModel):
@@ -473,6 +491,22 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
         if report is None:
             raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
         return report
+
+    @app.post("/api/runs/{job_id}/cancel")
+    def cancel_run(job_id: str, payload: CancelRunRequest) -> RunCancelReport:
+        report = cancel_command_job(store, job_id, reason=payload.reason.strip() or "cancelled by user")
+        if report.status == "missing":
+            raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
+        return report
+
+    @app.post("/api/runs/prune")
+    def prune_runs(payload: PruneRunHistoryRequest) -> RunPruneReport:
+        return store.prune_run_jobs(
+            keep_latest=payload.keep_latest,
+            max_age_days=payload.max_age_days,
+            terminal_only=payload.terminal_only,
+            dry_run=payload.dry_run,
+        )
 
     @app.get("/api/runs/{job_id}/events")
     def get_run_events(job_id: str, after_sequence: int = 0, limit: int = 500):

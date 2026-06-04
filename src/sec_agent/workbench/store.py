@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +12,9 @@ from pydantic import BaseModel, ConfigDict
 from .jobs import RunJob, RunLogEvent, RunStatusReport, run_status_report_from_job
 from .profiles import WorkbenchProfile
 from .source_bundles import SourceBundle
+
+
+WORKBENCH_SCHEMA_VERSION = 2
 
 
 class StoredProfileSummary(BaseModel):
@@ -90,11 +93,26 @@ class StoreHealthReport(BaseModel):
     db_size_bytes: int
     wal_size_bytes: int
     journal_mode: str
+    schema_version: int
+    migration_count: int
     profile_count: int
     source_bundle_count: int
     run_job_count: int
     run_event_count: int
     error_message: str = ""
+
+
+class RunPruneReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    dry_run: bool
+    terminal_only: bool
+    keep_latest: int
+    max_age_days: int | None = None
+    cutoff_before: str | None = None
+    candidate_job_ids: list[str]
+    deleted_job_count: int
+    deleted_event_count: int
 
 
 class WorkbenchStore:
@@ -557,6 +575,8 @@ class WorkbenchStore:
                     "run_job_count": _count_rows(conn, "run_jobs"),
                     "run_event_count": _count_rows(conn, "run_job_events"),
                 }
+                schema_version = _schema_version(conn)
+                migration_count = _count_rows(conn, "workbench_schema_migrations")
             status = "ok" if parent_writable else "degraded"
             return StoreHealthReport(
                 status=status,
@@ -567,6 +587,8 @@ class WorkbenchStore:
                 db_size_bytes=self.db_path.stat().st_size if self.db_path.exists() else 0,
                 wal_size_bytes=wal_path.stat().st_size if wal_path.exists() else 0,
                 journal_mode=str(journal_row[0] or "") if journal_row else "",
+                schema_version=schema_version,
+                migration_count=migration_count,
                 error_message="" if status == "ok" else "database_parent_not_writable",
                 **counts,
             )
@@ -580,12 +602,73 @@ class WorkbenchStore:
                 db_size_bytes=self.db_path.stat().st_size if self.db_path.exists() else 0,
                 wal_size_bytes=wal_path.stat().st_size if wal_path.exists() else 0,
                 journal_mode="",
+                schema_version=0,
+                migration_count=0,
                 profile_count=0,
                 source_bundle_count=0,
                 run_job_count=0,
                 run_event_count=0,
                 error_message=str(exc),
             )
+
+    def prune_run_jobs(
+        self,
+        *,
+        keep_latest: int = 200,
+        max_age_days: int | None = None,
+        terminal_only: bool = True,
+        dry_run: bool = True,
+    ) -> RunPruneReport:
+        keep_latest = max(0, min(int(keep_latest), 10000))
+        max_age_days = None if max_age_days is None else max(0, min(int(max_age_days), 3650))
+        cutoff_before = None
+        if max_age_days is not None:
+            cutoff = datetime.now() - timedelta(days=max_age_days)
+            cutoff_before = cutoff.isoformat(timespec="seconds")
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                select job_id, status, updated_at
+                from run_jobs
+                order by updated_at desc, job_id desc
+                """
+            ).fetchall()
+            candidate_ids: list[str] = []
+            for index, row in enumerate(rows):
+                beyond_keep = index >= keep_latest
+                older_than_cutoff = cutoff_before is not None and str(row["updated_at"]) < cutoff_before
+                if not beyond_keep and not older_than_cutoff:
+                    continue
+                if terminal_only and str(row["status"]) not in {"completed", "failed", "cancelled"}:
+                    continue
+                candidate_ids.append(str(row["job_id"]))
+            event_count = 0
+            if candidate_ids:
+                placeholders = ",".join("?" for _ in candidate_ids)
+                event_row = conn.execute(
+                    f"select count(*) as event_count from run_job_events where job_id in ({placeholders})",
+                    tuple(candidate_ids),
+                ).fetchone()
+                event_count = int(event_row["event_count"] or 0)
+                if not dry_run:
+                    conn.execute("begin immediate")
+                    try:
+                        conn.execute(f"delete from run_jobs where job_id in ({placeholders})", tuple(candidate_ids))
+                    except Exception:
+                        conn.rollback()
+                        raise
+                    else:
+                        conn.commit()
+        return RunPruneReport(
+            dry_run=dry_run,
+            terminal_only=terminal_only,
+            keep_latest=keep_latest,
+            max_age_days=max_age_days,
+            cutoff_before=cutoff_before,
+            candidate_job_ids=candidate_ids,
+            deleted_job_count=0 if dry_run else len(candidate_ids),
+            deleted_event_count=0 if dry_run else event_count,
+        )
 
     def _list_jobs_by_type(self, job_type: str) -> list[RunJob]:
         with self._connect() as conn:
@@ -611,6 +694,15 @@ class WorkbenchStore:
 
     def _init_schema(self) -> None:
         with self._connect() as conn:
+            conn.execute(
+                """
+                create table if not exists workbench_schema_migrations (
+                    version integer primary key,
+                    description text not null,
+                    applied_at text not null
+                )
+                """
+            )
             conn.execute(
                 """
                 create table if not exists profiles (
@@ -709,6 +801,8 @@ class WorkbenchStore:
                 on run_job_events(trace_id)
                 """
             )
+            self._record_schema_migration(conn, 1, "initial workbench store schema")
+            self._record_schema_migration(conn, 2, "run trace status fields and event trace indexes")
 
     @staticmethod
     def _ensure_column(conn: sqlite3.Connection, table: str, column: str, definition: str) -> None:
@@ -716,6 +810,16 @@ class WorkbenchStore:
         if column in {row["name"] for row in rows}:
             return
         conn.execute(f"alter table {table} add column {column} {definition}")
+
+    @staticmethod
+    def _record_schema_migration(conn: sqlite3.Connection, version: int, description: str) -> None:
+        conn.execute(
+            """
+            insert or ignore into workbench_schema_migrations (version, description, applied_at)
+            values (?, ?, ?)
+            """,
+            (version, description, datetime.now().isoformat(timespec="seconds")),
+        )
 
     @staticmethod
     def _run_job_trace_id(conn: sqlite3.Connection, job_id: str) -> str:
@@ -747,6 +851,11 @@ def _bounded_limit(value: object, *, default: int, maximum: int) -> int:
 def _count_rows(conn: sqlite3.Connection, table: str) -> int:
     row = conn.execute(f"select count(*) as row_count from {table}").fetchone()
     return int(row["row_count"] or 0)
+
+
+def _schema_version(conn: sqlite3.Connection) -> int:
+    row = conn.execute("select coalesce(max(version), 0) as schema_version from workbench_schema_migrations").fetchone()
+    return int(row["schema_version"] or 0)
 
 
 def _is_writable_dir(path: Path) -> bool:

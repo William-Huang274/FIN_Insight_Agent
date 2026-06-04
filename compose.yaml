@@ -1,0 +1,20 @@
+services:
+  workbench:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: workbench-backend
+      args:
+        REQUIREMENTS_FILE: requirements-workbench.txt
+    image: finsight-workbench:compose
+    ports:
+      - "8765:8765"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      FMP_API_KEY: "${FMP_API_KEY:-}"
+    volumes:
+      - ./configs:/app/configs
+      - ./data:/app/data
+      - ./reports:/app/reports

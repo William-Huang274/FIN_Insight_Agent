@@ -100,7 +100,29 @@ python scripts/workbench/start_workbench.py --port 8765
 http://127.0.0.1:8765/
 ```
 
-如果想用容器跑本地 Workbench，Windows 本地推荐用封装脚本：
+如果想用容器跑本地 Workbench，推荐先用 Docker Compose：
+
+```powershell
+docker compose up --build
+```
+
+Compose 默认构建轻量后端镜像，挂载本地 `configs/`、`data/` 和 `reports/`。这样通过 Workbench 生成的数据、运行产物和配置修改会留在本机目录里，不会因为容器重建而丢失。
+
+停止服务：
+
+```powershell
+docker compose down
+```
+
+如果 Docker Desktop 构建阶段能拉基础镜像，但 pip 或 npm 解析域名超时，可以叠加本仓库提供的 DNS fallback 覆盖文件：
+
+```powershell
+docker compose -f compose.yaml -f compose.dns-fallback.yaml up --build
+```
+
+这个覆盖文件只影响构建阶段的 PyPI / pythonhosted / npm registry 域名解析，不会写系统 hosts，也不会进入容器运行时配置。
+
+Windows 本地排障或做一次性 smoke 时，也可以用封装脚本：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1
@@ -116,6 +138,12 @@ http://127.0.0.1:8765/api/health
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -UsePypiHostFallback
+```
+
+如果构建完整镜像时 `npm ci` 卡在 npm registry，可以再加 npm registry fallback：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -FullImage -UsePypiHostFallback -UseNpmHostFallback -SmokeOnly
 ```
 
 如果只想做一次构建和健康检查，检查完自动停容器：
@@ -227,10 +255,11 @@ data/workbench_private/workbench.sqlite
 使用方式：
 
 1. 选择一个构建步骤。
-2. 填写必填路径或筛选条件。
+2. 点击“填入建议路径”，Workbench 会把常见输出放到 `data/workbench_private/builds/<数据包>/<步骤>/`；已经手动填写的值不会被覆盖。
 3. 点击“预览命令”，确认脚本和参数。
-4. 如果希望任务成功后更新数据包，勾选“任务成功后回填数据包”并选择目标数据包。
-5. 点击“提交后台任务”，在运行日志里看 stdout 和状态。
+4. 补齐仍然缺失的必填路径或筛选条件。
+5. 如果希望任务成功后更新数据包，勾选“任务成功后回填数据包”并选择目标数据包。
+6. 点击“提交后台任务”，在运行日志里看 stdout 和状态。
 
 下载类步骤默认建议先 dry-run，确认会抓哪些文件后再取消 dry-run 正式执行。生成类步骤不支持 dry-run，会直接按参数写入目标产物。
 

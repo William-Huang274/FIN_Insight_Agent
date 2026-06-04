@@ -385,7 +385,7 @@ def build_native_checkpoint_resume_command(
 
 def start_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> RunJob:
     store.upsert_run_job(job)
-    store.append_run_event(job.job_id, stream="system", message=f"queued {spec.label}")
+    store.append_run_event(job.job_id, stream="system", message=f"queued {spec.label}", trace_id=job.trace_id)
     thread = threading.Thread(
         target=_run_command_job,
         args=(store, job, spec),
@@ -399,13 +399,15 @@ def start_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> 
 def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> None:
     running = _job_update(job, status="running", started_at=_now())
     store.upsert_run_job(running)
-    store.append_run_event(job.job_id, stream="system", message=f"started {spec.label} in {spec.cwd}")
+    store.append_run_event(job.job_id, stream="system", message=f"started {spec.label} in {spec.cwd}", trace_id=running.trace_id)
 
     process: subprocess.Popen[str] | None = None
     stdout_messages: list[str] = []
     try:
         env = os.environ.copy()
         env.update({key: str(value) for key, value in spec.env_overrides.items() if value is not None})
+        env["SEC_AGENT_TRACE_ID"] = running.trace_id
+        env["SEC_AGENT_WORKBENCH_JOB_ID"] = running.job_id
         process = subprocess.Popen(
             spec.args,
             cwd=str(spec.cwd),
@@ -422,12 +424,12 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
             message = line.rstrip("\r\n")
             if message:
                 stdout_messages.append(message)
-                store.append_run_event(job.job_id, stream="stdout", message=message)
+                store.append_run_event(job.job_id, stream="stdout", message=message, trace_id=running.trace_id)
         return_code = process.wait()
         detected_run_dir = detect_run_dir_from_output(stdout_messages, cwd=spec.cwd)
         if return_code == 0:
             completed = _job_update(running, status="completed", finished_at=_now(), error="")
-            store.append_run_event(job.job_id, stream="system", message="process exited with code 0")
+            store.append_run_event(job.job_id, stream="system", message="process exited with code 0", trace_id=running.trace_id)
             bundle_update = _apply_data_build_bundle_update(store, completed)
             if bundle_update:
                 completed = completed.model_copy(update={"metadata": {**completed.metadata, "bundle_update": bundle_update}})
@@ -438,7 +440,7 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
                 finished_at=_now(),
                 error=f"process exited with code {return_code}",
             )
-            store.append_run_event(job.job_id, stream="system", message=completed.error)
+            store.append_run_event(job.job_id, stream="system", message=completed.error, trace_id=running.trace_id)
         if detected_run_dir:
             completed = completed.model_copy(
                 update={
@@ -446,7 +448,7 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
                     "metadata": {**completed.metadata, "detected_run_dir": str(detected_run_dir)},
                 }
             )
-            store.append_run_event(job.job_id, stream="system", message=f"detected run_dir: {detected_run_dir}")
+            store.append_run_event(job.job_id, stream="system", message=f"detected run_dir: {detected_run_dir}", trace_id=running.trace_id)
         eval_summary = _read_eval_output_summary(completed)
         if eval_summary:
             completed = completed.model_copy(update={"metadata": {**completed.metadata, "eval_summary": eval_summary}})
@@ -454,17 +456,18 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
                 job.job_id,
                 stream="system",
                 message=f"eval summary: {json.dumps(eval_summary, ensure_ascii=False, sort_keys=True)}",
+                trace_id=running.trace_id,
             )
         store.upsert_run_job(completed)
     except FileNotFoundError as exc:
         failed = _job_update(running, status="failed", finished_at=_now(), error=str(exc))
-        store.append_run_event(job.job_id, stream="system", message=_missing_executable_message(spec.args[0], exc))
+        store.append_run_event(job.job_id, stream="system", message=_missing_executable_message(spec.args[0], exc), trace_id=running.trace_id)
         store.upsert_run_job(failed)
     except Exception as exc:  # pragma: no cover - defensive persistence guard.
         if process and process.poll() is None:
             process.kill()
         failed = _job_update(running, status="failed", finished_at=_now(), error=str(exc))
-        store.append_run_event(job.job_id, stream="system", message=f"runner failed: {exc}")
+        store.append_run_event(job.job_id, stream="system", message=f"runner failed: {exc}", trace_id=running.trace_id)
         store.upsert_run_job(failed)
     finally:
         for path in spec.cleanup_paths:
@@ -474,12 +477,30 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
                 pass
 
 
-def _job_update(job: RunJob, **changes: str) -> RunJob:
-    return job.model_copy(update={"updated_at": _now(), **changes})
+def _job_update(job: RunJob, **changes: object) -> RunJob:
+    updates = {"updated_at": _now(), **changes}
+    if "error" in updates and "error_message" not in updates:
+        updates["error_message"] = str(updates.get("error") or "")
+    updated = job.model_copy(update=updates)
+    elapsed_ms = _elapsed_ms(updated.started_at, updated.finished_at)
+    if elapsed_ms is not None and updated.elapsed_ms != elapsed_ms:
+        updated = updated.model_copy(update={"elapsed_ms": elapsed_ms})
+    return updated
 
 
 def _now() -> str:
     return datetime.now().isoformat(timespec="seconds")
+
+
+def _elapsed_ms(started_at: str | None, finished_at: str | None) -> int | None:
+    if not started_at or not finished_at:
+        return None
+    try:
+        started = datetime.fromisoformat(started_at)
+        finished = datetime.fromisoformat(finished_at)
+    except ValueError:
+        return None
+    return max(0, int(round((finished - started).total_seconds() * 1000)))
 
 
 def _missing_executable_message(executable: str, exc: FileNotFoundError) -> str:
@@ -581,7 +602,7 @@ def _apply_data_build_bundle_update(store: WorkbenchStore, job: RunJob) -> dict[
         return {}
     bundle = store.get_source_bundle(bundle_id)
     if bundle is None:
-        store.append_run_event(job.job_id, stream="system", message=f"source bundle not found for update: {bundle_id}")
+        store.append_run_event(job.job_id, stream="system", message=f"source bundle not found for update: {bundle_id}", trace_id=job.trace_id)
         return {"status": "missing_bundle", "bundle_id": bundle_id}
 
     updated_artifacts = bundle.artifacts.model_copy(update=artifact_updates)
@@ -602,6 +623,7 @@ def _apply_data_build_bundle_update(store: WorkbenchStore, job: RunJob) -> dict[
         job.job_id,
         stream="system",
         message=f"updated source bundle {bundle_id}: {json.dumps({'artifacts': artifact_updates, 'fields': field_updates}, ensure_ascii=False, sort_keys=True)}",
+        trace_id=job.trace_id,
     )
     return {
         "status": "updated",

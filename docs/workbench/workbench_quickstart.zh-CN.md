@@ -29,6 +29,18 @@ powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench.ps1 -In
 http://127.0.0.1:8765/
 ```
 
+如果只想先确认后端能不能正常工作，可以访问：
+
+```text
+http://127.0.0.1:8765/api/system/status
+```
+
+这个接口会返回工作台数据库、数据目录、前端构建目录和磁盘剩余空间的状态。它不要求 Docker，也不会读取或返回真实 API key。简单健康检查仍然是：
+
+```text
+http://127.0.0.1:8765/api/health
+```
+
 如果已经安装好 Node/npm，可以省略 `-InstallNode`。如果只想启动后端并使用内置静态页面，可以加：
 
 ```powershell
@@ -87,6 +99,68 @@ python scripts/workbench/start_workbench.py --port 8765
 ```text
 http://127.0.0.1:8765/
 ```
+
+如果想用容器跑本地 Workbench，Windows 本地推荐用封装脚本：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1
+```
+
+这个脚本会构建轻量后端镜像、启动容器、挂载 `data/workbench_private/`，并检查：
+
+```text
+http://127.0.0.1:8765/api/health
+```
+
+如果 Docker Desktop 在本机网络下构建时能访问 Docker Hub，但 pip 解析 PyPI 超时，可以显式启用 PyPI host fallback：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -UsePypiHostFallback
+```
+
+如果只想做一次构建和健康检查，检查完自动停容器：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -UsePypiHostFallback -SmokeOnly
+```
+
+手动构建时，推荐先构建后端 target。它只安装 Workbench 后端需要的依赖，不会构建前端，也不会把私有数据打进镜像：
+
+```bash
+docker build \
+  --target workbench-backend \
+  --build-arg REQUIREMENTS_FILE=requirements-workbench.txt \
+  -t finsight-workbench:backend-local \
+  .
+```
+
+如果要构建包含 React/Vite 前端产物的完整镜像：
+
+```bash
+docker build \
+  --target workbench \
+  --build-arg REQUIREMENTS_FILE=requirements-workbench.txt \
+  -t finsight-workbench:workbench \
+  .
+```
+
+Linux / macOS 运行容器：
+
+```bash
+docker run --rm -p 8765:8765 \
+  -v "$PWD/data/workbench_private:/app/data/workbench_private" \
+  finsight-workbench:backend-local
+```
+
+Windows PowerShell 手动运行容器：
+
+```powershell
+docker run --rm -p 8765:8765 `
+  -v "${PWD}\data\workbench_private:/app/data/workbench_private" `
+  finsight-workbench:backend-local
+```
+
+镜像不包含私有数据、模型权重或 API key；这些仍然通过本地挂载目录和环境变量提供。后端 target 会使用内置静态页面或已有前端产物；完整 target 会在镜像构建时生成前端产物。
 
 如果要做前端开发，可以另开一个终端：
 
@@ -253,6 +327,8 @@ bash scripts/workbench/install_wsl_python_env.sh
 
 完整任务在 Windows 本地通常需要 Git Bash、WSL 或 Linux 环境，因为当前主链路仍复用 `scripts/cloud/sec_agent_interactive.sh` 和上下文会话 CLI。如果只想验证 Workbench 本身，先跑本地冒烟检查；如果要跑完整 SEC / 8-K / 市场快照链路，需要先准备数据产物、索引、BGE 模型路径和模型 API key。
 
+如果本机暂时不能安装 Docker，也可以继续用上面的本地脚本运行 Workbench。Docker 只是部署方式之一，不是 Workbench 后端和本地任务管理的前置条件。
+
 任务启动后，页面会显示：
 
 - 任务编号、任务类型和状态。
@@ -266,8 +342,46 @@ bash scripts/workbench/install_wsl_python_env.sh
 
 ```text
 GET /api/runs/{job_id}
+GET /api/runs/{job_id}/status
 GET /api/runs/{job_id}/events
 GET /api/runs/{job_id}/events/stream
+```
+
+也可以按运行状态或 trace 查：
+
+```text
+GET /api/runs?trace_id=<trace_id>&status=completed
+GET /api/runs?job_type=agent_session_turn&limit=50
+GET /api/traces/<trace_id>
+```
+
+`/api/traces/<trace_id>` 会返回同一个 trace 下的任务列表、事件列表、任务数、事件数和状态计数，适合排查一次请求从 API 到后台子进程的完整路径。
+
+`/api/runs/{job_id}/status` 是轻量轮询接口，只读取任务状态和最新事件，不检查运行目录里的大产物。前端刷新任务状态时优先用这个接口。
+
+每个 API 响应都会带：
+
+```text
+X-Trace-Id
+X-Elapsed-Time-Ms
+```
+
+启动后台任务时，这个 `trace_id` 会写入任务对象、运行事件，并作为 `SEC_AGENT_TRACE_ID` 传给子进程。排查问题时可以先在响应头里复制 `X-Trace-Id`，再到任务详情和事件列表里对齐同一次请求。
+
+错误响应会保留旧的 `detail` 字段，同时增加结构化 `error`：
+
+```json
+{
+  "detail": "profile_not_found: demo",
+  "error": {
+    "schema_version": "finsight_workbench_api_error_v0.1",
+    "error_code": "profile_not_found",
+    "message": "profile_not_found: demo",
+    "status_code": 404,
+    "trace_id": "trace_xxx",
+    "detail": "profile_not_found: demo"
+  }
+}
 ```
 
 ## 8. 查看已有运行产物

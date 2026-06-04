@@ -31,6 +31,7 @@ from .jobs import (
     RunInspectionReport,
     RunJob,
     RunLogEvent,
+    RunStatusReport,
     new_agent_ask_job,
     new_agent_session_turn_job,
     new_data_build_job,
@@ -38,6 +39,7 @@ from .jobs import (
     new_local_smoke_job,
     new_native_checkpoint_resume_job,
     new_saved_run_inspection_job,
+    run_status_report_from_job,
 )
 from .source_readiness import SourceReadinessReport, validate_profile_sources
 from .source_bundles import (
@@ -48,10 +50,12 @@ from .source_bundles import (
     source_bundle_from_profile,
 )
 from .store import (
+    StoreHealthReport,
     StoredProfileSummary,
     StoredRunJobSummary,
     StoredSessionSummary,
     StoredSourceBundleSummary,
+    TraceInspectionReport,
     WorkbenchStore,
     default_store_path,
 )
@@ -63,6 +67,7 @@ __all__ = [
     "RunInspectionReport",
     "RunJob",
     "RunLogEvent",
+    "RunStatusReport",
     "RuntimeProfile",
     "DataBuildCommandPreview",
     "DataBuildParameter",
@@ -72,10 +77,12 @@ __all__ = [
     "SourceBundleArtifacts",
     "SourceBundleBuild",
     "SourceReadinessReport",
+    "StoreHealthReport",
     "StoredProfileSummary",
     "StoredRunJobSummary",
     "StoredSessionSummary",
     "StoredSourceBundleSummary",
+    "TraceInspectionReport",
     "WorkbenchProfile",
     "WorkbenchStore",
     "default_store_path",
@@ -97,6 +104,7 @@ __all__ = [
     "new_local_smoke_job",
     "new_native_checkpoint_resume_job",
     "new_saved_run_inspection_job",
+    "run_status_report_from_job",
     "parse_env_file",
     "profile_from_env_file",
     "profile_from_source_bundle",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -8,7 +9,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from .jobs import RunJob, RunLogEvent
+from .jobs import RunJob, RunLogEvent, RunStatusReport, run_status_report_from_job
 from .profiles import WorkbenchProfile
 from .source_bundles import SourceBundle
 
@@ -29,8 +30,13 @@ class StoredRunJobSummary(BaseModel):
     job_id: str
     job_type: str
     status: str
+    trace_id: str = ""
     profile_id: str | None = None
     run_dir: str | None = None
+    started_at: str | None = None
+    finished_at: str | None = None
+    elapsed_ms: int | None = None
+    error_message: str = ""
     updated_at: str
 
 
@@ -58,6 +64,37 @@ class StoredSourceBundleSummary(BaseModel):
     as_of_date: str | None = None
     status: str
     updated_at: str
+
+
+class TraceInspectionReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    trace_id: str
+    jobs: list[StoredRunJobSummary]
+    events: list[RunLogEvent]
+    job_count: int
+    event_count: int
+    status_counts: dict[str, int]
+    first_event_at: str | None = None
+    latest_event_at: str | None = None
+
+
+class StoreHealthReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: str
+    db_path: str
+    db_exists: bool
+    db_parent_exists: bool
+    db_parent_writable: bool
+    db_size_bytes: int
+    wal_size_bytes: int
+    journal_mode: str
+    profile_count: int
+    source_bundle_count: int
+    run_job_count: int
+    run_event_count: int
+    error_message: str = ""
 
 
 class WorkbenchStore:
@@ -208,22 +245,49 @@ class WorkbenchStore:
             updated_at=timestamp,
         )
 
-    def list_run_jobs(self) -> list[StoredRunJobSummary]:
+    def list_run_jobs(
+        self,
+        *,
+        trace_id: str | None = None,
+        status: str | None = None,
+        job_type: str | None = None,
+        limit: int = 200,
+    ) -> list[StoredRunJobSummary]:
+        where: list[str] = []
+        values: list[object] = []
+        if _clean_filter(trace_id):
+            where.append("trace_id = ?")
+            values.append(_clean_filter(trace_id))
+        if _clean_filter(status):
+            where.append("status = ?")
+            values.append(_clean_filter(status))
+        if _clean_filter(job_type):
+            where.append("job_type = ?")
+            values.append(_clean_filter(job_type))
+        values.append(_bounded_limit(limit, default=200, maximum=1000))
+        where_sql = f"where {' and '.join(where)}" if where else ""
         with self._connect() as conn:
-            rows = conn.execute(
-                """
-                select job_id, job_type, status, profile_id, run_dir, updated_at
+            sql = f"""
+                select job_id, job_type, status, trace_id, profile_id, run_dir,
+                       started_at, finished_at, elapsed_ms, error_message, updated_at
                 from run_jobs
+                {where_sql}
                 order by updated_at desc, job_id asc
+                limit ?
                 """
-            ).fetchall()
+            rows = conn.execute(sql, tuple(values)).fetchall()
         return [
             StoredRunJobSummary(
                 job_id=row["job_id"],
                 job_type=row["job_type"],
                 status=row["status"],
+                trace_id=row["trace_id"] or "",
                 profile_id=row["profile_id"],
                 run_dir=row["run_dir"],
+                started_at=row["started_at"],
+                finished_at=row["finished_at"],
+                elapsed_ms=row["elapsed_ms"],
+                error_message=row["error_message"] or "",
                 updated_at=row["updated_at"],
             )
             for row in rows
@@ -284,6 +348,43 @@ class WorkbenchStore:
             return None
         return RunJob.model_validate(json.loads(row["payload_json"]))
 
+    def get_run_status(self, job_id: str) -> RunStatusReport | None:
+        with self._connect() as conn:
+            row = conn.execute("select payload_json from run_jobs where job_id = ?", (job_id,)).fetchone()
+            if row is None:
+                return None
+            count_row = conn.execute(
+                "select count(*) as event_count from run_job_events where job_id = ?",
+                (job_id,),
+            ).fetchone()
+            latest_row = conn.execute(
+                """
+                select job_id, sequence, trace_id, stream, message, created_at
+                from run_job_events
+                where job_id = ?
+                order by sequence desc
+                limit 1
+                """,
+                (job_id,),
+            ).fetchone()
+        latest_event = (
+            RunLogEvent(
+                job_id=latest_row["job_id"],
+                sequence=latest_row["sequence"],
+                trace_id=latest_row["trace_id"] or "",
+                stream=latest_row["stream"],
+                message=latest_row["message"],
+                created_at=latest_row["created_at"],
+            )
+            if latest_row is not None
+            else None
+        )
+        return run_status_report_from_job(
+            RunJob.model_validate(json.loads(row["payload_json"])),
+            event_count=int(count_row["event_count"] or 0),
+            latest_event=latest_event,
+        )
+
     def upsert_run_job(self, job: RunJob) -> StoredRunJobSummary:
         payload_json = json.dumps(job.model_dump(mode="json"), ensure_ascii=False, sort_keys=True)
         with self._connect() as conn:
@@ -292,14 +393,21 @@ class WorkbenchStore:
             conn.execute(
                 """
                 insert into run_jobs (
-                    job_id, job_type, status, profile_id, run_dir, payload_json, created_at, updated_at
+                    job_id, job_type, status, trace_id, profile_id, run_dir,
+                    started_at, finished_at, elapsed_ms, error_message,
+                    payload_json, created_at, updated_at
                 )
-                values (?, ?, ?, ?, ?, ?, ?, ?)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 on conflict(job_id) do update set
                     job_type = excluded.job_type,
                     status = excluded.status,
+                    trace_id = excluded.trace_id,
                     profile_id = excluded.profile_id,
                     run_dir = excluded.run_dir,
+                    started_at = excluded.started_at,
+                    finished_at = excluded.finished_at,
+                    elapsed_ms = excluded.elapsed_ms,
+                    error_message = excluded.error_message,
                     payload_json = excluded.payload_json,
                     updated_at = excluded.updated_at
                 """,
@@ -307,8 +415,13 @@ class WorkbenchStore:
                     job.job_id,
                     job.job_type,
                     job.status,
+                    job.trace_id,
                     job.profile_id,
                     job.run_dir,
+                    job.started_at,
+                    job.finished_at,
+                    job.elapsed_ms,
+                    job.error_message or job.error,
                     payload_json,
                     created_at,
                     job.updated_at,
@@ -318,29 +431,43 @@ class WorkbenchStore:
             job_id=job.job_id,
             job_type=job.job_type,
             status=job.status,
+            trace_id=job.trace_id,
             profile_id=job.profile_id,
             run_dir=job.run_dir,
+            started_at=job.started_at,
+            finished_at=job.finished_at,
+            elapsed_ms=job.elapsed_ms,
+            error_message=job.error_message or job.error,
             updated_at=job.updated_at,
         )
 
-    def append_run_event(self, job_id: str, *, stream: str, message: str) -> RunLogEvent:
+    def append_run_event(self, job_id: str, *, stream: str, message: str, trace_id: str | None = None) -> RunLogEvent:
         timestamp = datetime.now().isoformat(timespec="seconds")
         with self._connect() as conn:
-            row = conn.execute(
-                "select coalesce(max(sequence), 0) as last_sequence from run_job_events where job_id = ?",
-                (job_id,),
-            ).fetchone()
-            sequence = int(row["last_sequence"]) + 1
-            conn.execute(
-                """
-                insert into run_job_events (job_id, sequence, stream, message, created_at)
-                values (?, ?, ?, ?, ?)
-                """,
-                (job_id, sequence, stream, message, timestamp),
-            )
+            conn.execute("begin immediate")
+            try:
+                resolved_trace_id = trace_id or self._run_job_trace_id(conn, job_id)
+                row = conn.execute(
+                    "select coalesce(max(sequence), 0) as last_sequence from run_job_events where job_id = ?",
+                    (job_id,),
+                ).fetchone()
+                sequence = int(row["last_sequence"]) + 1
+                conn.execute(
+                    """
+                    insert into run_job_events (job_id, sequence, trace_id, stream, message, created_at)
+                    values (?, ?, ?, ?, ?, ?)
+                    """,
+                    (job_id, sequence, resolved_trace_id, stream, message, timestamp),
+                )
+            except Exception:
+                conn.rollback()
+                raise
+            else:
+                conn.commit()
         return RunLogEvent(
             job_id=job_id,
             sequence=sequence,
+            trace_id=resolved_trace_id,
             stream=stream,
             message=message,
             created_at=timestamp,
@@ -350,7 +477,7 @@ class WorkbenchStore:
         with self._connect() as conn:
             rows = conn.execute(
                 """
-                select job_id, sequence, stream, message, created_at
+                select job_id, sequence, trace_id, stream, message, created_at
                 from run_job_events
                 where job_id = ? and sequence > ?
                 order by sequence asc
@@ -362,12 +489,103 @@ class WorkbenchStore:
             RunLogEvent(
                 job_id=row["job_id"],
                 sequence=row["sequence"],
+                trace_id=row["trace_id"] or "",
                 stream=row["stream"],
                 message=row["message"],
                 created_at=row["created_at"],
             )
             for row in rows
         ]
+
+    def list_trace_events(self, trace_id: str, *, limit: int = 1000) -> list[RunLogEvent]:
+        trace = _clean_filter(trace_id)
+        if not trace:
+            return []
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                select job_id, sequence, trace_id, stream, message, created_at
+                from run_job_events
+                where trace_id = ?
+                order by created_at asc, job_id asc, sequence asc
+                limit ?
+                """,
+                (trace, _bounded_limit(limit, default=1000, maximum=5000)),
+            ).fetchall()
+        return [
+            RunLogEvent(
+                job_id=row["job_id"],
+                sequence=row["sequence"],
+                trace_id=row["trace_id"] or "",
+                stream=row["stream"],
+                message=row["message"],
+                created_at=row["created_at"],
+            )
+            for row in rows
+        ]
+
+    def inspect_trace(self, trace_id: str, *, event_limit: int = 1000) -> TraceInspectionReport:
+        trace = _clean_filter(trace_id)
+        jobs = self.list_run_jobs(trace_id=trace, limit=1000) if trace else []
+        events = self.list_trace_events(trace, limit=event_limit) if trace else []
+        status_counts: dict[str, int] = {}
+        for job in jobs:
+            status_counts[job.status] = status_counts.get(job.status, 0) + 1
+        event_times = [event.created_at for event in events]
+        return TraceInspectionReport(
+            trace_id=trace,
+            jobs=jobs,
+            events=events,
+            job_count=len(jobs),
+            event_count=len(events),
+            status_counts=status_counts,
+            first_event_at=event_times[0] if event_times else None,
+            latest_event_at=event_times[-1] if event_times else None,
+        )
+
+    def inspect_health(self) -> StoreHealthReport:
+        parent = self.db_path.parent
+        db_exists = self.db_path.exists()
+        wal_path = self.db_path.with_name(f"{self.db_path.name}-wal")
+        parent_writable = _is_writable_dir(parent)
+        try:
+            with self._connect() as conn:
+                journal_row = conn.execute("pragma journal_mode").fetchone()
+                counts = {
+                    "profile_count": _count_rows(conn, "profiles"),
+                    "source_bundle_count": _count_rows(conn, "source_bundles"),
+                    "run_job_count": _count_rows(conn, "run_jobs"),
+                    "run_event_count": _count_rows(conn, "run_job_events"),
+                }
+            status = "ok" if parent_writable else "degraded"
+            return StoreHealthReport(
+                status=status,
+                db_path=str(self.db_path),
+                db_exists=db_exists,
+                db_parent_exists=parent.exists(),
+                db_parent_writable=parent_writable,
+                db_size_bytes=self.db_path.stat().st_size if self.db_path.exists() else 0,
+                wal_size_bytes=wal_path.stat().st_size if wal_path.exists() else 0,
+                journal_mode=str(journal_row[0] or "") if journal_row else "",
+                error_message="" if status == "ok" else "database_parent_not_writable",
+                **counts,
+            )
+        except sqlite3.Error as exc:
+            return StoreHealthReport(
+                status="fail",
+                db_path=str(self.db_path),
+                db_exists=self.db_path.exists(),
+                db_parent_exists=parent.exists(),
+                db_parent_writable=parent_writable,
+                db_size_bytes=self.db_path.stat().st_size if self.db_path.exists() else 0,
+                wal_size_bytes=wal_path.stat().st_size if wal_path.exists() else 0,
+                journal_mode="",
+                profile_count=0,
+                source_bundle_count=0,
+                run_job_count=0,
+                run_event_count=0,
+                error_message=str(exc),
+            )
 
     def _list_jobs_by_type(self, job_type: str) -> list[RunJob]:
         with self._connect() as conn:
@@ -383,8 +601,12 @@ class WorkbenchStore:
         return [RunJob.model_validate(json.loads(row["payload_json"])) for row in rows]
 
     def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
         conn.row_factory = sqlite3.Row
+        conn.execute("pragma foreign_keys = on")
+        conn.execute("pragma busy_timeout = 30000")
+        conn.execute("pragma journal_mode = wal")
+        conn.execute("pragma synchronous = normal")
         return conn
 
     def _init_schema(self) -> None:
@@ -408,8 +630,13 @@ class WorkbenchStore:
                     job_id text primary key,
                     job_type text not null,
                     status text not null,
+                    trace_id text not null default '',
                     profile_id text,
                     run_dir text,
+                    started_at text,
+                    finished_at text,
+                    elapsed_ms integer,
+                    error_message text not null default '',
                     payload_json text not null,
                     created_at text not null,
                     updated_at text not null
@@ -437,6 +664,7 @@ class WorkbenchStore:
                 create table if not exists run_job_events (
                     job_id text not null,
                     sequence integer not null,
+                    trace_id text not null default '',
                     stream text not null,
                     message text not null,
                     created_at text not null,
@@ -451,6 +679,48 @@ class WorkbenchStore:
                 on run_job_events(job_id, sequence)
                 """
             )
+            self._ensure_column(conn, "run_jobs", "trace_id", "text not null default ''")
+            self._ensure_column(conn, "run_jobs", "started_at", "text")
+            self._ensure_column(conn, "run_jobs", "finished_at", "text")
+            self._ensure_column(conn, "run_jobs", "elapsed_ms", "integer")
+            self._ensure_column(conn, "run_jobs", "error_message", "text not null default ''")
+            self._ensure_column(conn, "run_job_events", "trace_id", "text not null default ''")
+            conn.execute(
+                """
+                create index if not exists idx_run_jobs_trace_id
+                on run_jobs(trace_id)
+                """
+            )
+            conn.execute(
+                """
+                create index if not exists idx_run_jobs_status
+                on run_jobs(status)
+                """
+            )
+            conn.execute(
+                """
+                create index if not exists idx_run_jobs_job_type
+                on run_jobs(job_type)
+                """
+            )
+            conn.execute(
+                """
+                create index if not exists idx_run_job_events_trace_id
+                on run_job_events(trace_id)
+                """
+            )
+
+    @staticmethod
+    def _ensure_column(conn: sqlite3.Connection, table: str, column: str, definition: str) -> None:
+        rows = conn.execute(f"pragma table_info({table})").fetchall()
+        if column in {row["name"] for row in rows}:
+            return
+        conn.execute(f"alter table {table} add column {column} {definition}")
+
+    @staticmethod
+    def _run_job_trace_id(conn: sqlite3.Connection, job_id: str) -> str:
+        row = conn.execute("select trace_id from run_jobs where job_id = ?", (job_id,)).fetchone()
+        return str(row["trace_id"] or "") if row else ""
 
 
 def default_store_path(repo_root: str | Path) -> Path:
@@ -460,3 +730,31 @@ def default_store_path(repo_root: str | Path) -> Path:
 def _string_or_none(value: Any) -> str | None:
     text = str(value or "").strip()
     return text or None
+
+
+def _clean_filter(value: object) -> str:
+    return str(value or "").strip()
+
+
+def _bounded_limit(value: object, *, default: int, maximum: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(1, min(parsed, maximum))
+
+
+def _count_rows(conn: sqlite3.Connection, table: str) -> int:
+    row = conn.execute(f"select count(*) as row_count from {table}").fetchone()
+    return int(row["row_count"] or 0)
+
+
+def _is_writable_dir(path: Path) -> bool:
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        probe = path / f".workbench_write_check_{os.getpid()}"
+        probe.write_text("", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return True
+    except OSError:
+        return False

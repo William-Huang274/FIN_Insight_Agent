@@ -21,6 +21,7 @@
 ## 评测和门控
 
 - `eval_multi_agent/`：多智能体分层门控、全链路真实模型评测和质量审计。
+- `eval_retrieval/`：检索资产质量评测，目前包含 SEC chunk / EvidenceObject / BM25 / ObjectBM25 一致性和切片质量审计。
 - `eval_context/`：上下文状态、请求 API、工具控制器、工具执行层、延迟和发布就绪检查。
 - `eval_query_planner/`：自由问题解析和查询合同评测。
 - `eval_sec_benchmark/`：SEC benchmark 运行、旧 benchmark 运行时支撑、Qwen/contract synthesis 适配、后置门控和相关 validator。虽然目录名保留 benchmark，但其中部分脚本仍被当前完整链路复用，不能归档。
@@ -28,7 +29,7 @@
 ## 服务和本地工作台
 
 - `mcp/`：MCP 工具合同导出、服务端、调用器和冒烟检查。
-- `workbench/`：本地 Workbench 启动和环境辅助脚本，包括一键启动脚本、后端启动脚本和前端构建辅助。
+- `workbench/`：本地 Workbench 启动和环境辅助脚本，包括一键启动脚本、后端启动脚本、前端构建辅助和 Docker 本地 smoke 脚本。
 
 ## 归档脚本
 

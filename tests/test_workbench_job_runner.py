@@ -61,7 +61,12 @@ def test_detect_run_dir_from_wsl_artifacts_line(tmp_path: Path) -> None:
 def test_command_job_attaches_detected_run_dir(tmp_path: Path) -> None:
     store = WorkbenchStore(tmp_path / "workbench.sqlite")
     run_dir = _write_minimal_run(tmp_path / "agent_run")
-    code = f"print('[artifacts] {run_dir.as_posix()}', flush=True)"
+    code = (
+        "import os\n"
+        "print('trace=' + os.environ.get('SEC_AGENT_TRACE_ID', ''), flush=True)\n"
+        "print('job=' + os.environ.get('SEC_AGENT_WORKBENCH_JOB_ID', ''), flush=True)\n"
+        f"print('[artifacts] {run_dir.as_posix()}', flush=True)\n"
+    )
     job = new_agent_ask_job(prompt="hello", command_mode="ask-api", job_id="ask_fixture", profile_id="profile_a")
     spec = CommandSpec(args=[sys.executable, "-u", "-c", code], cwd=tmp_path, label="fixture_agent")
 
@@ -72,6 +77,11 @@ def test_command_job_attaches_detected_run_dir(tmp_path: Path) -> None:
     assert finished.status == "completed"
     assert finished.run_dir == str(run_dir.resolve())
     assert finished.metadata["detected_run_dir"] == str(run_dir.resolve())
+    assert finished.elapsed_ms is not None
+    assert finished.error_message == ""
+    assert any(event.message == f"trace={finished.trace_id}" for event in events)
+    assert any(event.message == "job=ask_fixture" for event in events)
+    assert {event.trace_id for event in events} == {finished.trace_id}
     assert any("detected run_dir:" in event.message for event in events)
 
 

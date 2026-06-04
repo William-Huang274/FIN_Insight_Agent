@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,8 @@ pytest.importorskip("httpx")
 from fastapi.testclient import TestClient
 
 from apps.workbench.backend.app import create_app
+from sec_agent.workbench.jobs import new_local_smoke_job
+from sec_agent.workbench.store import WorkbenchStore
 
 
 def test_workbench_backend_health() -> None:
@@ -26,6 +29,82 @@ def test_workbench_backend_health() -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
     assert response.json()["frontend"] == "available"
+    assert response.headers["x-trace-id"].startswith("trace_")
+    assert response.headers["x-elapsed-time-ms"].isdigit()
+
+
+def test_workbench_backend_system_status_reports_store_and_paths(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.get("/api/system/status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "ok"
+    assert payload["docker_required"] is False
+    assert payload["checks"]["store"] == "ok"
+    assert payload["store"]["status"] == "ok"
+    assert payload["store"]["db_parent_writable"] is True
+    assert payload["store"]["journal_mode"].lower() == "wal"
+    assert payload["paths"]["repo_root"]["exists"] is True
+    assert isinstance(payload["paths"]["repo_root"]["free_bytes"], int)
+    assert "runtime-secret" not in json.dumps(payload, ensure_ascii=False)
+
+
+def test_workbench_store_concurrent_event_appends_keep_monotonic_sequences(tmp_path: Path) -> None:
+    store = WorkbenchStore(tmp_path / "workbench.sqlite")
+    job = new_local_smoke_job(job_id="concurrent_fixture", trace_id="trace_concurrent")
+    store.upsert_run_job(job)
+
+    def append_event(index: int) -> int:
+        event = store.append_run_event(
+            "concurrent_fixture",
+            stream="stdout",
+            message=f"line {index}",
+        )
+        return event.sequence
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        sequences = list(executor.map(append_event, range(20)))
+
+    events = store.list_run_events("concurrent_fixture", limit=100)
+    assert sorted(sequences) == list(range(1, 21))
+    assert [event.sequence for event in events] == list(range(1, 21))
+    assert len(events) == 20
+    assert {event.trace_id for event in events} == {"trace_concurrent"}
+    assert store.inspect_health().run_event_count == 20
+
+
+def test_workbench_backend_error_contract_preserves_detail_and_trace(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.get("/api/profiles/missing_profile", headers={"X-Trace-Id": "trace_test_profile"})
+
+    assert response.status_code == 404
+    payload = response.json()
+    assert payload["detail"] == "profile_not_found: missing_profile"
+    assert payload["error"]["schema_version"] == "finsight_workbench_api_error_v0.1"
+    assert payload["error"]["error_code"] == "profile_not_found"
+    assert payload["error"]["status_code"] == 404
+    assert payload["error"]["trace_id"] == "trace_test_profile"
+    assert response.headers["x-trace-id"] == "trace_test_profile"
+
+
+def test_workbench_backend_validation_error_uses_standard_error_contract(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.post(
+        "/api/runs/smoke",
+        json={"unexpected": "field"},
+        headers={"X-Trace-Id": "trace_test_validation"},
+    )
+
+    assert response.status_code == 422
+    payload = response.json()
+    assert isinstance(payload["detail"], list)
+    assert payload["error"]["error_code"] == "request_validation_error"
+    assert payload["error"]["trace_id"] == "trace_test_validation"
+    assert response.headers["x-trace-id"] == "trace_test_validation"
 
 
 def test_workbench_backend_serves_frontend_shell() -> None:
@@ -273,17 +352,73 @@ def test_workbench_backend_starts_native_checkpoint_resume_job(
 def test_workbench_backend_runs_local_smoke_job_and_persists_events(tmp_path: Path) -> None:
     client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
 
-    start_response = client.post("/api/runs/smoke", json={"job_id": "smoke_fixture"})
+    start_response = client.post(
+        "/api/runs/smoke",
+        json={"job_id": "smoke_fixture"},
+        headers={"X-Trace-Id": "trace_smoke_fixture"},
+    )
 
     assert start_response.status_code == 200
     assert start_response.json()["job"]["status"] == "queued"
+    assert start_response.json()["job"]["trace_id"] == "trace_smoke_fixture"
+    queued_status = client.get("/api/runs/smoke_fixture/status")
+    assert queued_status.status_code == 200
+    assert queued_status.json()["job_id"] == "smoke_fixture"
+    assert queued_status.json()["trace_id"] == "trace_smoke_fixture"
+    assert isinstance(queued_status.json()["is_terminal"], bool)
     payload = _wait_for_job(client, "smoke_fixture")
     assert payload["job"]["status"] == "completed"
+    assert payload["job"]["trace_id"] == "trace_smoke_fixture"
+    assert payload["job"]["elapsed_ms"] is not None
+    assert payload["job"]["error_message"] == ""
     events_response = client.get("/api/runs/smoke_fixture/events")
     assert events_response.status_code == 200
-    messages = [event["message"] for event in events_response.json()["events"]]
+    events = events_response.json()["events"]
+    final_status = client.get("/api/runs/smoke_fixture/status")
+    assert final_status.status_code == 200
+    final_status_payload = final_status.json()
+    assert final_status_payload["status"] == "completed"
+    assert final_status_payload["is_terminal"] is True
+    assert final_status_payload["event_count"] == len(events)
+    assert final_status_payload["latest_event"]["message"].startswith("process exited") or final_status_payload["latest_event"]["message"].startswith("detected run_dir")
+    messages = [event["message"] for event in events]
+    assert {event["trace_id"] for event in events} == {"trace_smoke_fixture"}
     assert "workbench smoke started" in messages
     assert "workbench smoke completed" in messages
+    filtered_runs = client.get("/api/runs", params={"trace_id": "trace_smoke_fixture", "status": "completed"})
+    trace_response = client.get("/api/traces/trace_smoke_fixture")
+    assert filtered_runs.status_code == 200
+    assert [item["job_id"] for item in filtered_runs.json()["runs"]] == ["smoke_fixture"]
+    assert trace_response.status_code == 200
+    trace_payload = trace_response.json()
+    assert trace_payload["trace_id"] == "trace_smoke_fixture"
+    assert trace_payload["job_count"] == 1
+    assert trace_payload["event_count"] == len(events)
+    assert trace_payload["status_counts"] == {"completed": 1}
+    assert trace_payload["jobs"][0]["elapsed_ms"] is not None
+    assert trace_payload["events"][0]["trace_id"] == "trace_smoke_fixture"
+
+
+def test_workbench_backend_trace_inspection_reports_missing_trace(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.get("/api/traces/trace_missing")
+
+    assert response.status_code == 404
+    payload = response.json()
+    assert payload["detail"] == "trace_not_found: trace_missing"
+    assert payload["error"]["error_code"] == "trace_not_found"
+
+
+def test_workbench_backend_run_status_reports_missing_job(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.get("/api/runs/missing_job/status")
+
+    assert response.status_code == 404
+    payload = response.json()
+    assert payload["detail"] == "job_not_found: missing_job"
+    assert payload["error"]["error_code"] == "job_not_found"
 
 
 def test_workbench_backend_streams_smoke_job_events(tmp_path: Path) -> None:

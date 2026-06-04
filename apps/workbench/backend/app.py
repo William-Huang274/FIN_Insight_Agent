@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
+import shutil
 import time
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -13,7 +14,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from sec_agent.workbench import (
     RunInspectionReport,
+    RunStatusReport,
     SourceBundle,
+    TraceInspectionReport,
     WorkbenchProfile,
     WorkbenchStore,
     build_data_build_command,
@@ -40,6 +43,7 @@ from sec_agent.workbench import (
     start_command_job,
     validate_profile_sources,
 )
+from sec_agent.workbench.api_contracts import install_api_contracts, request_trace_id
 from sec_agent.langgraph_orchestrator import inspect_node_checkpoint_artifact
 
 
@@ -200,6 +204,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
         version="0.1.0",
         description="Local API for FinSight-Agent profile import and source readiness checks.",
     )
+    install_api_contracts(app)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
@@ -226,6 +231,34 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             "service": "finsight-workbench",
             "version": "0.1.0",
             "frontend": "available" if (FRONTEND_DIST_ROOT / "index.html").exists() or (FRONTEND_ROOT / "index.html").exists() else "missing",
+        }
+
+    @app.get("/api/system/status")
+    def system_status():
+        frontend_available = (FRONTEND_DIST_ROOT / "index.html").exists() or (FRONTEND_ROOT / "index.html").exists()
+        store_health = store.inspect_health()
+        path_status = {
+            "repo_root": _path_status(REPO_ROOT),
+            "data_root": _path_status(REPO_ROOT / "data"),
+            "workbench_private": _path_status(REPO_ROOT / "data" / "workbench_private"),
+            "frontend_root": _path_status(FRONTEND_ROOT),
+            "frontend_dist": _path_status(FRONTEND_DIST_ROOT),
+        }
+        checks = {
+            "store": store_health.status,
+            "frontend": "available" if frontend_available else "missing",
+            "repo_root": "ok" if path_status["repo_root"]["exists"] else "missing",
+            "workbench_private": "ok" if path_status["workbench_private"]["writable"] else "not_writable",
+        }
+        critical_ok = store_health.status == "ok" and checks["repo_root"] == "ok" and checks["workbench_private"] == "ok"
+        return {
+            "status": "ok" if critical_ok else "degraded",
+            "service": "finsight-workbench",
+            "version": "0.1.0",
+            "docker_required": False,
+            "checks": checks,
+            "store": store_health,
+            "paths": path_status,
         }
 
     @app.post("/api/profiles/import-env")
@@ -332,8 +365,27 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
         )
 
     @app.get("/api/runs")
-    def list_runs():
-        return {"runs": store.list_run_jobs()}
+    def list_runs(
+        trace_id: str | None = None,
+        status: str | None = None,
+        job_type: str | None = None,
+        limit: int = Query(200, ge=1, le=1000),
+    ):
+        return {
+            "runs": store.list_run_jobs(
+                trace_id=trace_id,
+                status=status,
+                job_type=job_type,
+                limit=limit,
+            )
+        }
+
+    @app.get("/api/traces/{trace_id}")
+    def inspect_trace(trace_id: str, event_limit: int = Query(1000, ge=1, le=5000)) -> TraceInspectionReport:
+        report = store.inspect_trace(trace_id, event_limit=event_limit)
+        if report.job_count == 0 and report.event_count == 0:
+            raise HTTPException(status_code=404, detail=f"trace_not_found: {trace_id}")
+        return report
 
     @app.get("/api/evals")
     def list_evals():
@@ -359,15 +411,15 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
         return {"preview": preview}
 
     @app.post("/api/data-build/run")
-    def run_data_build(request: DataBuildRunRequest):
-        profile = _optional_profile(request.profile, request.profile_id, store)
+    def run_data_build(payload: DataBuildRunRequest, request: Request):
+        profile = _optional_profile(payload.profile, payload.profile_id, store)
         try:
             spec, preview = build_data_build_command(
                 repo_root=REPO_ROOT,
-                step_id=request.step_id,
-                values=request.values,
+                step_id=payload.step_id,
+                values=payload.values,
                 profile=profile,
-                dry_run=request.dry_run,
+                dry_run=payload.dry_run,
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -376,20 +428,21 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
                 status_code=400,
                 detail={"reason": "missing_required_parameters", "missing_required": preview.missing_required},
             )
-        if request.update_bundle and not request.dry_run:
-            if not request.bundle_id:
+        if payload.update_bundle and not payload.dry_run:
+            if not payload.bundle_id:
                 raise HTTPException(status_code=400, detail="bundle_id_required_for_update")
-            if store.get_source_bundle(request.bundle_id) is None:
-                raise HTTPException(status_code=404, detail=f"source_bundle_not_found: {request.bundle_id}")
+            if store.get_source_bundle(payload.bundle_id) is None:
+                raise HTTPException(status_code=404, detail=f"source_bundle_not_found: {payload.bundle_id}")
         job = new_data_build_job(
             step_id=preview.step_id,
             step_label=preview.label,
             command_preview=preview.args,
-            bundle_id=request.bundle_id if request.update_bundle and not request.dry_run else None,
-            bundle_artifact_updates=preview.bundle_artifact_updates if request.update_bundle and not request.dry_run else {},
-            bundle_field_updates=preview.bundle_field_updates if request.update_bundle and not request.dry_run else {},
-            job_id=request.job_id,
+            bundle_id=payload.bundle_id if payload.update_bundle and not payload.dry_run else None,
+            bundle_artifact_updates=preview.bundle_artifact_updates if payload.update_bundle and not payload.dry_run else {},
+            bundle_field_updates=preview.bundle_field_updates if payload.update_bundle and not payload.dry_run else {},
+            job_id=payload.job_id,
             profile_id=profile.profile_id if profile else None,
+            trace_id=request_trace_id(request),
         )
         start_command_job(store, job, spec)
         return {"job": job, "preview": preview}
@@ -414,6 +467,13 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
         native_checkpoint = _inspect_native_checkpoint_if_available(job.run_dir) if job.run_dir else None
         return {"job": job, "artifact_index": artifact_index, "native_checkpoint": native_checkpoint}
 
+    @app.get("/api/runs/{job_id}/status")
+    def get_run_status(job_id: str) -> RunStatusReport:
+        report = store.get_run_status(job_id)
+        if report is None:
+            raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
+        return report
+
     @app.get("/api/runs/{job_id}/events")
     def get_run_events(job_id: str, after_sequence: int = 0, limit: int = 500):
         if store.get_run_job(job_id) is None:
@@ -430,17 +490,18 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
         )
 
     @app.post("/api/runs/inspect")
-    def inspect_run(request: InspectRunRequest) -> RunInspectionReport:
-        run_dir = _repo_path(request.run_dir)
+    def inspect_run(payload: InspectRunRequest, request: Request) -> RunInspectionReport:
+        run_dir = _repo_path(payload.run_dir)
         artifact_index = inspect_run_artifacts(run_dir)
         native_checkpoint = _inspect_native_checkpoint_if_available(run_dir)
         job = new_saved_run_inspection_job(
             run_dir=run_dir,
             artifact_index=artifact_index,
-            job_id=request.job_id,
-            profile_id=request.profile_id,
+            job_id=payload.job_id,
+            profile_id=payload.profile_id,
+            trace_id=request_trace_id(request),
         )
-        if request.persist:
+        if payload.persist:
             store.upsert_run_job(job)
         return RunInspectionReport(job=job, artifact_index=artifact_index, native_checkpoint=native_checkpoint)
 
@@ -454,8 +515,8 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @app.post("/api/native-checkpoints/resume")
-    def resume_native_checkpoint(request: NativeCheckpointResumeRequest):
-        checkpoint_path = _repo_path(request.run_dir)
+    def resume_native_checkpoint(payload: NativeCheckpointResumeRequest, request: Request):
+        checkpoint_path = _repo_path(payload.run_dir)
         try:
             inspection = inspect_node_checkpoint_artifact(checkpoint_path)
         except FileNotFoundError as exc:
@@ -464,105 +525,109 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         if not inspection.get("resume_supported"):
             raise HTTPException(status_code=409, detail={"reason": "native_checkpoint_not_resumable", "inspection": inspection})
-        profile = _resolve_run_profile(request.profile, request.profile_id, store)
+        profile = _resolve_run_profile(payload.profile, payload.profile_id, store)
         try:
             spec = build_native_checkpoint_resume_command(
                 repo_root=REPO_ROOT,
                 profile=profile,
                 checkpoint_path=checkpoint_path,
-                api_key_value=request.api_key_value,
-                include_synthesis=request.include_synthesis,
-                stop_after_node=request.stop_after_node,
-                checkpoint_mode=request.checkpoint_mode,
+                api_key_value=payload.api_key_value,
+                include_synthesis=payload.include_synthesis,
+                stop_after_node=payload.stop_after_node,
+                checkpoint_mode=payload.checkpoint_mode,
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         job = new_native_checkpoint_resume_job(
             checkpoint_path=checkpoint_path,
             profile_id=profile.profile_id,
-            job_id=request.job_id,
-            stop_after_node=request.stop_after_node,
-            include_synthesis=request.include_synthesis,
+            job_id=payload.job_id,
+            stop_after_node=payload.stop_after_node,
+            include_synthesis=payload.include_synthesis,
+            trace_id=request_trace_id(request),
         )
         start_command_job(store, job, spec)
         return {"job": job, "inspection": inspection}
 
     @app.post("/api/runs/smoke")
-    def start_smoke_run(request: StartSmokeRunRequest):
-        job = new_local_smoke_job(job_id=request.job_id, profile_id=request.profile_id)
+    def start_smoke_run(payload: StartSmokeRunRequest, request: Request):
+        job = new_local_smoke_job(job_id=payload.job_id, profile_id=payload.profile_id, trace_id=request_trace_id(request))
         spec = build_local_smoke_command(REPO_ROOT)
         start_command_job(store, job, spec)
         return {"job": job}
 
     @app.post("/api/runs/ask")
-    def start_agent_ask(request: StartAgentAskRequest):
-        profile = _resolve_run_profile(request.profile, request.profile_id, store)
+    def start_agent_ask(payload: StartAgentAskRequest, request: Request):
+        profile = _resolve_run_profile(payload.profile, payload.profile_id, store)
         try:
             spec = build_agent_ask_command(
                 repo_root=REPO_ROOT,
                 profile=profile,
-                prompt=request.prompt,
-                command_mode=request.command_mode,
-                api_key_value=request.api_key_value,
+                prompt=payload.prompt,
+                command_mode=payload.command_mode,
+                api_key_value=payload.api_key_value,
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         job = new_agent_ask_job(
-            prompt=request.prompt.strip(),
-            command_mode=request.command_mode,
-            job_id=request.job_id,
+            prompt=payload.prompt.strip(),
+            command_mode=payload.command_mode,
+            job_id=payload.job_id,
             profile_id=profile.profile_id,
+            trace_id=request_trace_id(request),
         )
         start_command_job(store, job, spec)
         return {"job": job}
 
     @app.post("/api/sessions/turns")
-    def start_session_turn(request: StartSessionTurnRequest):
-        profile = _resolve_run_profile(request.profile, request.profile_id, store)
+    def start_session_turn(payload: StartSessionTurnRequest, request: Request):
+        profile = _resolve_run_profile(payload.profile, payload.profile_id, store)
         try:
             spec = build_agent_session_turn_command(
                 repo_root=REPO_ROOT,
                 profile=profile,
-                prompt=request.prompt,
-                session_id=request.session_id,
-                tenant_id=request.tenant_id,
-                user_id=request.user_id,
-                command_mode=request.command_mode,
-                api_key_value=request.api_key_value,
+                prompt=payload.prompt,
+                session_id=payload.session_id,
+                tenant_id=payload.tenant_id,
+                user_id=payload.user_id,
+                command_mode=payload.command_mode,
+                api_key_value=payload.api_key_value,
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         job = new_agent_session_turn_job(
-            prompt=request.prompt.strip(),
-            command_mode=request.command_mode,
-            session_id=request.session_id.strip(),
-            tenant_id=request.tenant_id.strip() or "workbench_tenant",
-            user_id=request.user_id.strip() or "workbench_user",
-            job_id=request.job_id,
+            prompt=payload.prompt.strip(),
+            command_mode=payload.command_mode,
+            session_id=payload.session_id.strip(),
+            tenant_id=payload.tenant_id.strip() or "workbench_tenant",
+            user_id=payload.user_id.strip() or "workbench_user",
+            job_id=payload.job_id,
             profile_id=profile.profile_id,
+            trace_id=request_trace_id(request),
         )
         start_command_job(store, job, spec)
         return {"job": job}
 
     @app.post("/api/evals/run")
-    def start_eval_run(request: StartEvalRunRequest):
-        profile = store.get_profile(request.profile_id) if request.profile_id else None
-        if request.profile_id and profile is None:
-            raise HTTPException(status_code=404, detail=f"profile_not_found: {request.profile_id}")
-        job_id = request.job_id or None
-        output_path = eval_output_path(REPO_ROOT, eval_id=request.eval_id, job_id=job_id or f"eval_{int(time.time())}")
+    def start_eval_run(payload: StartEvalRunRequest, request: Request):
+        profile = store.get_profile(payload.profile_id) if payload.profile_id else None
+        if payload.profile_id and profile is None:
+            raise HTTPException(status_code=404, detail=f"profile_not_found: {payload.profile_id}")
+        job_id = payload.job_id or None
+        output_path = eval_output_path(REPO_ROOT, eval_id=payload.eval_id, job_id=job_id or f"eval_{int(time.time())}")
         job = new_eval_run_job(
-            eval_id=request.eval_id,
+            eval_id=payload.eval_id,
             output_path=output_path,
             job_id=job_id,
             profile_id=profile.profile_id if profile else None,
+            trace_id=request_trace_id(request),
         )
-        output_path = eval_output_path(REPO_ROOT, eval_id=request.eval_id, job_id=job.job_id)
+        output_path = eval_output_path(REPO_ROOT, eval_id=payload.eval_id, job_id=job.job_id)
         job = job.model_copy(update={"metadata": {**job.metadata, "output_path": str(output_path)}})
         try:
             spec = build_eval_command(
                 repo_root=REPO_ROOT,
-                eval_id=request.eval_id,
+                eval_id=payload.eval_id,
                 job_id=job.job_id,
                 profile=profile,
             )
@@ -586,6 +651,40 @@ def _load_env_profile(env_path: str, *, profile_id: str | None, display_name: st
 def _repo_path(value: str | Path) -> Path:
     path = Path(value)
     return path if path.is_absolute() else REPO_ROOT / path
+
+
+def _path_status(path: Path) -> dict[str, object]:
+    target = path if path.exists() else path.parent
+    if not target.exists():
+        target = REPO_ROOT
+    try:
+        usage = shutil.disk_usage(target)
+        total_bytes = int(usage.total)
+        free_bytes = int(usage.free)
+    except OSError:
+        total_bytes = 0
+        free_bytes = 0
+    return {
+        "path": str(path),
+        "exists": path.exists(),
+        "is_dir": path.is_dir(),
+        "writable": _path_writable(path),
+        "total_bytes": total_bytes,
+        "free_bytes": free_bytes,
+    }
+
+
+def _path_writable(path: Path) -> bool:
+    target = path if path.exists() else path.parent
+    if not target.exists():
+        return False
+    try:
+        probe = target / ".workbench_api_write_check"
+        probe.write_text("", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return True
+    except OSError:
+        return False
 
 
 def _resolve_run_profile(

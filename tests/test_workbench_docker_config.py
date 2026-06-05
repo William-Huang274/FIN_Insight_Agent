@@ -27,6 +27,15 @@ def test_compose_mutable_mounts_can_move_off_repo_drive() -> None:
     assert "${WORKBENCH_REPORTS_MOUNT:-./reports}:/app/reports" in volumes
 
 
+def test_docker_smoke_runs_frontend_playwright() -> None:
+    workflow = (REPO_ROOT / ".github" / "workflows" / "docker-smoke.yml").read_text(encoding="utf-8")
+
+    assert "--target workbench" in workflow
+    assert "python -m playwright install --with-deps chromium" in workflow
+    assert "scripts/workbench/frontend_smoke_playwright.py" in workflow
+    assert "workbench-frontend-smoke-screenshots" in workflow
+
+
 def test_dockerfile_supports_extra_requirements_layer() -> None:
     dockerfile = (REPO_ROOT / "Dockerfile").read_text(encoding="utf-8")
 

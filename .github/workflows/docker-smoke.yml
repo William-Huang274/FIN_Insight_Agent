@@ -39,8 +39,10 @@ jobs:
       - name: Build Workbench image
         run: |
           docker build \
-            --target workbench-backend \
+            --target workbench \
             --build-arg REQUIREMENTS_FILE=requirements-workbench.txt \
+            --build-arg WORKBENCH_IMAGE_KIND=workbench \
+            --build-arg WORKBENCH_RUNTIME_PROFILE=control-plane \
             -t finsight-workbench:ci \
             .
 
@@ -69,6 +71,29 @@ jobs:
           done
           docker logs finsight-workbench-ci || true
           exit 1
+
+      - name: Install Playwright smoke dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "playwright>=1.55.0,<2"
+          python -m playwright install --with-deps chromium
+
+      - name: Run Workbench frontend Playwright smoke
+        env:
+          WORKBENCH_BASE_URL: http://127.0.0.1:8765
+          WORKBENCH_FRONTEND_SCREENSHOT_DIR: ${{ runner.temp }}/workbench-frontend-smoke
+        run: |
+          python scripts/workbench/frontend_smoke_playwright.py \
+            --base-url "$WORKBENCH_BASE_URL" \
+            --screenshot-dir "$WORKBENCH_FRONTEND_SCREENSHOT_DIR"
+
+      - name: Upload Workbench frontend smoke screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workbench-frontend-smoke-screenshots
+          path: ${{ runner.temp }}/workbench-frontend-smoke
+          if-no-files-found: ignore
 
       - name: Stop Workbench container
         if: always()

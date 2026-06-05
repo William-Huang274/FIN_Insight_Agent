@@ -417,6 +417,48 @@ GET /api/traces/<trace_id>
 
 `/api/runs/{job_id}/status` 是轻量轮询接口，只读取任务状态和最新事件，不检查运行目录里的大产物。前端刷新任务状态时优先用这个接口。
 
+Workbench 后端启动时会把上一次服务退出后残留的 `queued` / `running` 任务标记为 `interrupted`，避免页面误以为旧任务仍在运行。任务终态包括：
+
+```text
+completed
+failed
+cancelled
+interrupted
+timed_out
+```
+
+后台任务有并发和超时控制，可以用环境变量调整：
+
+```text
+WORKBENCH_MAX_ACTIVE_JOBS=2
+WORKBENCH_DEFAULT_TIMEOUT_S=
+WORKBENCH_CANCEL_GRACE_S=5
+WORKBENCH_EVENT_PAGE_MAX=5000
+```
+
+数据构建步骤默认使用各自的 `timeout_hint_s`；未设置步骤级 timeout 的任务会使用 `WORKBENCH_DEFAULT_TIMEOUT_S`。取消任务时，后端会尽量终止子进程树，而不仅是父进程。
+
+默认路径策略只允许访问仓库、`configs/`、`data/`、`reports/`、`eval_sets/` 和 Workbench SQLite 所在目录。需要额外允许本机目录时，优先设置：
+
+```text
+WORKBENCH_ALLOWED_ROOTS=<absolute-path-1><path-separator><absolute-path-2>
+```
+
+不建议设置 `WORKBENCH_ALLOW_EXTERNAL_PATHS=1`，除非你确认 Workbench 仍只绑定在 `127.0.0.1` 且只由可信本机用户访问。
+
+后端运维和合约接口：
+
+```text
+GET /api/health/live
+GET /api/health/ready
+GET /api/system/runtime/preflight
+GET /api/system/contracts
+POST /api/system/store/backup
+POST /api/runs/prune
+```
+
+`/api/system/runtime/preflight` 会区分控制面依赖和完整 runtime 依赖。轻量后端镜像只要求控制面依赖通过；完整数据构建或 Agent 子任务仍需要 runtime 依赖就绪。
+
 每个 API 响应都会带：
 
 ```text

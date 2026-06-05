@@ -13,12 +13,16 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
 from sec_agent.workbench import (
+    PathPolicyViolation,
     RunCancelReport,
     RunInspectionReport,
     RunPruneReport,
+    RunRecoveryReport,
     RunStatusReport,
+    StoreBackupReport,
     SourceBundle,
     TraceInspectionReport,
+    WorkbenchPathPolicy,
     WorkbenchProfile,
     WorkbenchStore,
     build_data_build_command,
@@ -32,6 +36,8 @@ from sec_agent.workbench import (
     data_build_catalog,
     eval_output_path,
     eval_runner_catalog,
+    get_data_build_step,
+    inspect_runtime_preflight,
     inspect_run_artifacts,
     new_agent_ask_job,
     new_agent_session_turn_job,
@@ -42,6 +48,7 @@ from sec_agent.workbench import (
     new_saved_run_inspection_job,
     profile_from_env_file,
     profile_from_source_bundle,
+    runtime_limits_from_env,
     source_bundle_from_profile,
     start_command_job,
     validate_profile_sources,
@@ -54,6 +61,7 @@ APP_ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_ROOT = APP_ROOT / "frontend"
 FRONTEND_DIST_ROOT = FRONTEND_ROOT / "dist"
 REPO_ROOT = Path(__file__).resolve().parents[3]
+EVENT_PAGE_MAX = runtime_limits_from_env().event_page_max
 
 
 class ImportEnvRequest(BaseModel):
@@ -194,6 +202,15 @@ class PruneRunHistoryRequest(BaseModel):
     max_age_days: int | None = Field(default=None, ge=0, le=3650)
     terminal_only: bool = True
     dry_run: bool = True
+    trace_id: str | None = None
+    status: str | None = None
+    job_type: str | None = None
+
+
+class StoreBackupRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    backup_dir: str | None = None
 
 
 class NativeCheckpointInspectRequest(BaseModel):
@@ -215,13 +232,33 @@ class NativeCheckpointResumeRequest(BaseModel):
     checkpoint_mode: Literal["memory", "sqlite", "none"] = "sqlite"
 
 
-def create_app(store_path: str | Path | None = None) -> FastAPI:
-    store = WorkbenchStore(store_path or default_store_path(REPO_ROOT))
+def create_app(
+    store_path: str | Path | None = None,
+    *,
+    allowed_roots: list[str | Path] | None = None,
+    allow_external_paths: bool | None = None,
+    recover_stale_jobs: bool = True,
+) -> FastAPI:
+    resolved_store_path = Path(store_path or default_store_path(REPO_ROOT))
+    store = WorkbenchStore(resolved_store_path)
+    path_policy = WorkbenchPathPolicy(
+        repo_root=REPO_ROOT,
+        extra_allowed_roots=[resolved_store_path.parent, *(allowed_roots or [])],
+        allow_external_paths=allow_external_paths,
+    )
+    recovery_report = (
+        store.interrupt_active_run_jobs(reason="workbench service restarted")
+        if recover_stale_jobs
+        else RunRecoveryReport(status="skipped", reason="disabled", interrupted_job_ids=[], interrupted_job_count=0)
+    )
     app = FastAPI(
         title="FinSight Workbench API",
         version="0.1.0",
         description="Local API for FinSight-Agent profile import and source readiness checks.",
     )
+    app.state.workbench_store = store
+    app.state.workbench_path_policy = path_policy
+    app.state.workbench_recovery_report = recovery_report
     install_api_contracts(app)
     app.add_middleware(
         CORSMiddleware,
@@ -251,33 +288,45 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             "frontend": "available" if (FRONTEND_DIST_ROOT / "index.html").exists() or (FRONTEND_ROOT / "index.html").exists() else "missing",
         }
 
+    @app.get("/api/health/live")
+    def liveness() -> dict[str, str]:
+        return {"status": "ok", "service": "finsight-workbench"}
+
+    @app.get("/api/health/ready")
+    def readiness():
+        payload = _system_status_payload(store=store, path_policy=path_policy, recovery_report=recovery_report)
+        if payload["status"] != "ok":
+            raise HTTPException(status_code=503, detail=payload)
+        return payload
+
     @app.get("/api/system/status")
     def system_status():
-        frontend_available = (FRONTEND_DIST_ROOT / "index.html").exists() or (FRONTEND_ROOT / "index.html").exists()
-        store_health = store.inspect_health()
-        path_status = {
-            "repo_root": _path_status(REPO_ROOT),
-            "data_root": _path_status(REPO_ROOT / "data"),
-            "workbench_private": _path_status(REPO_ROOT / "data" / "workbench_private"),
-            "frontend_root": _path_status(FRONTEND_ROOT),
-            "frontend_dist": _path_status(FRONTEND_DIST_ROOT),
-        }
-        checks = {
-            "store": store_health.status,
-            "frontend": "available" if frontend_available else "missing",
-            "repo_root": "ok" if path_status["repo_root"]["exists"] else "missing",
-            "workbench_private": "ok" if path_status["workbench_private"]["writable"] else "not_writable",
-        }
-        critical_ok = store_health.status == "ok" and checks["repo_root"] == "ok" and checks["workbench_private"] == "ok"
+        return _system_status_payload(store=store, path_policy=path_policy, recovery_report=recovery_report)
+
+    @app.get("/api/system/runtime/preflight")
+    def runtime_preflight():
+        return inspect_runtime_preflight(REPO_ROOT)
+
+    @app.get("/api/system/contracts")
+    def system_contracts():
         return {
-            "status": "ok" if critical_ok else "degraded",
+            "schema_version": "finsight_workbench_backend_contracts_v0.2",
             "service": "finsight-workbench",
-            "version": "0.1.0",
-            "docker_required": False,
-            "checks": checks,
-            "store": store_health,
-            "paths": path_status,
+            "run_statuses": {
+                "active": ["queued", "running"],
+                "terminal": ["completed", "failed", "cancelled", "interrupted", "timed_out"],
+            },
+            "trace_header": "X-Trace-Id",
+            "elapsed_header": "X-Elapsed-Time-Ms",
+            "runtime_limits": runtime_limits_from_env(),
+            "path_policy": path_policy.report(),
+            "error_schema_version": "finsight_workbench_api_error_v0.1",
         }
+
+    @app.post("/api/system/store/backup")
+    def backup_store(payload: StoreBackupRequest) -> StoreBackupReport:
+        backup_dir = _repo_path(payload.backup_dir, path_policy=path_policy) if payload.backup_dir else None
+        return store.backup_database(backup_dir=backup_dir)
 
     @app.post("/api/profiles/import-env")
     def import_env(request: ImportEnvRequest) -> WorkbenchProfile:
@@ -285,6 +334,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             request.env_path,
             profile_id=request.profile_id,
             display_name=request.display_name,
+            path_policy=path_policy,
         )
 
     @app.get("/api/profiles")
@@ -325,8 +375,9 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             profile_id=request.profile_id,
             display_name=request.display_name,
             store=store,
+            path_policy=path_policy,
         )
-        repo_root = Path(request.repo_root).resolve() if request.repo_root else REPO_ROOT
+        repo_root = _repo_path(request.repo_root, path_policy=path_policy) if request.repo_root else REPO_ROOT
         readiness = validate_profile_sources(
             profile,
             repo_root=repo_root,
@@ -350,7 +401,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             bundle = store.get_source_bundle(request.bundle_id)
             if bundle is None:
                 raise HTTPException(status_code=404, detail=f"source_bundle_not_found: {request.bundle_id}")
-        repo_root = Path(request.repo_root).resolve() if request.repo_root else REPO_ROOT
+        repo_root = _repo_path(request.repo_root, path_policy=path_policy) if request.repo_root else REPO_ROOT
         profile = profile_from_source_bundle(bundle)
         readiness = validate_profile_sources(
             profile,
@@ -368,6 +419,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
                     request.env_path,
                     profile_id=request.profile_id,
                     display_name=request.display_name,
+                    path_policy=path_policy,
                 )
             elif request.profile_id:
                 profile = store.get_profile(request.profile_id)
@@ -375,7 +427,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
                     raise HTTPException(status_code=404, detail=f"profile_not_found: {request.profile_id}")
             else:
                 raise HTTPException(status_code=400, detail="profile_or_env_path_required")
-        repo_root = Path(request.repo_root).resolve() if request.repo_root else Path.cwd().resolve()
+        repo_root = _repo_path(request.repo_root, path_policy=path_policy) if request.repo_root else REPO_ROOT
         return validate_profile_sources(
             profile,
             repo_root=repo_root,
@@ -399,7 +451,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
         }
 
     @app.get("/api/traces/{trace_id}")
-    def inspect_trace(trace_id: str, event_limit: int = Query(1000, ge=1, le=5000)) -> TraceInspectionReport:
+    def inspect_trace(trace_id: str, event_limit: int = Query(1000, ge=1, le=EVENT_PAGE_MAX)) -> TraceInspectionReport:
         report = store.inspect_trace(trace_id, event_limit=event_limit)
         if report.job_count == 0 and report.event_count == 0:
             raise HTTPException(status_code=404, detail=f"trace_not_found: {trace_id}")
@@ -416,6 +468,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
     @app.post("/api/data-build/preview")
     def preview_data_build(request: DataBuildPreviewRequest):
         profile = _optional_profile(request.profile, request.profile_id, store)
+        _validate_data_build_paths(request.step_id, request.values, path_policy=path_policy)
         try:
             _spec, preview = build_data_build_command(
                 repo_root=REPO_ROOT,
@@ -431,6 +484,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
     @app.post("/api/data-build/run")
     def run_data_build(payload: DataBuildRunRequest, request: Request):
         profile = _optional_profile(payload.profile, payload.profile_id, store)
+        _validate_data_build_paths(payload.step_id, payload.values, path_policy=path_policy)
         try:
             spec, preview = build_data_build_command(
                 repo_root=REPO_ROOT,
@@ -506,13 +560,16 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             max_age_days=payload.max_age_days,
             terminal_only=payload.terminal_only,
             dry_run=payload.dry_run,
+            trace_id=payload.trace_id,
+            status=payload.status,
+            job_type=payload.job_type,
         )
 
     @app.get("/api/runs/{job_id}/events")
     def get_run_events(
         job_id: str,
         after_sequence: int = Query(0, ge=0),
-        limit: int = Query(500, ge=1, le=5000),
+        limit: int = Query(500, ge=1, le=EVENT_PAGE_MAX),
     ):
         if store.get_run_job(job_id) is None:
             raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
@@ -529,7 +586,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
 
     @app.post("/api/runs/inspect")
     def inspect_run(payload: InspectRunRequest, request: Request) -> RunInspectionReport:
-        run_dir = _repo_path(payload.run_dir)
+        run_dir = _repo_path(payload.run_dir, path_policy=path_policy)
         artifact_index = inspect_run_artifacts(run_dir)
         native_checkpoint = _inspect_native_checkpoint_if_available(run_dir)
         job = new_saved_run_inspection_job(
@@ -546,7 +603,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
     @app.post("/api/native-checkpoints/inspect")
     def inspect_native_checkpoint(request: NativeCheckpointInspectRequest):
         try:
-            return inspect_node_checkpoint_artifact(_repo_path(request.run_dir))
+            return inspect_node_checkpoint_artifact(_repo_path(request.run_dir, path_policy=path_policy))
         except FileNotFoundError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
         except (json.JSONDecodeError, ValueError) as exc:
@@ -554,7 +611,7 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
 
     @app.post("/api/native-checkpoints/resume")
     def resume_native_checkpoint(payload: NativeCheckpointResumeRequest, request: Request):
-        checkpoint_path = _repo_path(payload.run_dir)
+        checkpoint_path = _repo_path(payload.run_dir, path_policy=path_policy)
         try:
             inspection = inspect_node_checkpoint_artifact(checkpoint_path)
         except FileNotFoundError as exc:
@@ -677,8 +734,58 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
     return app
 
 
-def _load_env_profile(env_path: str, *, profile_id: str | None, display_name: str | None) -> WorkbenchProfile:
-    path = Path(env_path)
+def _system_status_payload(
+    *,
+    store: WorkbenchStore,
+    path_policy: WorkbenchPathPolicy,
+    recovery_report: RunRecoveryReport,
+) -> dict[str, object]:
+    frontend_available = (FRONTEND_DIST_ROOT / "index.html").exists() or (FRONTEND_ROOT / "index.html").exists()
+    store_health = store.inspect_health()
+    runtime_preflight = inspect_runtime_preflight(REPO_ROOT)
+    path_status = {
+        "repo_root": _path_status(REPO_ROOT),
+        "data_root": _path_status(REPO_ROOT / "data"),
+        "workbench_private": _path_status(REPO_ROOT / "data" / "workbench_private"),
+        "frontend_root": _path_status(FRONTEND_ROOT),
+        "frontend_dist": _path_status(FRONTEND_DIST_ROOT),
+    }
+    checks = {
+        "store": store_health.status,
+        "frontend": "available" if frontend_available else "missing",
+        "repo_root": "ok" if path_status["repo_root"]["exists"] else "missing",
+        "workbench_private": "ok" if path_status["workbench_private"]["writable"] else "not_writable",
+        "runtime_preflight": runtime_preflight.status,
+    }
+    critical_ok = (
+        store_health.status == "ok"
+        and checks["repo_root"] == "ok"
+        and checks["workbench_private"] == "ok"
+        and runtime_preflight.status == "ok"
+    )
+    return {
+        "status": "ok" if critical_ok else "degraded",
+        "service": "finsight-workbench",
+        "version": "0.1.0",
+        "docker_required": False,
+        "checks": checks,
+        "store": store_health,
+        "paths": path_status,
+        "path_policy": path_policy.report(),
+        "runtime_limits": runtime_limits_from_env(),
+        "runtime_preflight": runtime_preflight,
+        "job_recovery": recovery_report,
+    }
+
+
+def _load_env_profile(
+    env_path: str,
+    *,
+    profile_id: str | None,
+    display_name: str | None,
+    path_policy: WorkbenchPathPolicy,
+) -> WorkbenchProfile:
+    path = _repo_path(env_path, path_policy=path_policy)
     if not path.exists():
         raise HTTPException(status_code=404, detail=f"env_path_not_found: {env_path}")
     if not path.is_file():
@@ -686,9 +793,22 @@ def _load_env_profile(env_path: str, *, profile_id: str | None, display_name: st
     return profile_from_env_file(path, profile_id=profile_id, display_name=display_name)
 
 
-def _repo_path(value: str | Path) -> Path:
-    path = Path(value)
-    return path if path.is_absolute() else REPO_ROOT / path
+def _repo_path(value: str | Path, *, path_policy: WorkbenchPathPolicy) -> Path:
+    try:
+        return path_policy.resolve(value, base=REPO_ROOT)
+    except PathPolicyViolation as exc:
+        raise _path_policy_http_exception(exc) from exc
+
+
+def _path_policy_http_exception(exc: PathPolicyViolation) -> HTTPException:
+    return HTTPException(
+        status_code=400,
+        detail={
+            "reason": "path_not_allowed",
+            "path": str(exc.path),
+            "allowed_roots": [str(root) for root in exc.allowed_roots],
+        },
+    )
 
 
 def _path_status(path: Path) -> dict[str, object]:
@@ -762,17 +882,76 @@ def _resolve_profile_like(
     profile_id: str | None,
     display_name: str | None,
     store: WorkbenchStore,
+    path_policy: WorkbenchPathPolicy,
 ) -> WorkbenchProfile:
     if profile is not None:
         return profile
     if env_path:
-        return _load_env_profile(env_path, profile_id=profile_id, display_name=display_name)
+        return _load_env_profile(env_path, profile_id=profile_id, display_name=display_name, path_policy=path_policy)
     if profile_id:
         saved = store.get_profile(profile_id)
         if saved is None:
             raise HTTPException(status_code=404, detail=f"profile_not_found: {profile_id}")
         return saved
     raise HTTPException(status_code=400, detail="profile_or_env_path_or_profile_id_required")
+
+
+_DATA_BUILD_PATH_PARAMETERS = {
+    "analytics",
+    "bars",
+    "cache_dir",
+    "catalog_path",
+    "chunks",
+    "config",
+    "contract",
+    "events",
+    "evidence",
+    "gap_output",
+    "input",
+    "manifest",
+    "manifest_paths",
+    "missing_output",
+    "output",
+    "output_dir",
+    "output_root",
+    "report",
+    "root",
+    "snapshot",
+    "structured_dir",
+    "tickers_config",
+}
+
+
+def _validate_data_build_paths(
+    step_id: str,
+    values: dict[str, object],
+    *,
+    path_policy: WorkbenchPathPolicy,
+) -> None:
+    step = get_data_build_step(step_id)
+    if step is None:
+        return
+    for parameter in step.parameters:
+        if parameter.name not in _DATA_BUILD_PATH_PARAMETERS:
+            continue
+        value = values.get(parameter.name, parameter.default)
+        for item in _iter_path_values(value):
+            if _looks_like_non_file_reference(item):
+                continue
+            _repo_path(item, path_policy=path_policy)
+
+
+def _iter_path_values(value: object) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [item.strip() for item in str(value).split(",") if item.strip()]
+
+
+def _looks_like_non_file_reference(value: str) -> bool:
+    text = value.strip()
+    return not text or "://" in text or text.startswith("$")
 
 
 def _inspect_native_checkpoint_if_available(run_dir: str | Path | None) -> dict | None:
@@ -813,7 +992,7 @@ def _event_stream(store: WorkbenchStore, job_id: str, *, after_sequence: int):
             cursor = event.sequence
             yield f"event: log\ndata: {json.dumps(event.model_dump(mode='json'), ensure_ascii=False)}\n\n"
         job = store.get_run_job(job_id)
-        if job is None or job.status in {"completed", "failed", "cancelled"}:
+        if job is None or job.status in {"completed", "failed", "cancelled", "interrupted", "timed_out"}:
             yield f"event: done\ndata: {json.dumps({'job_id': job_id, 'status': job.status if job else 'missing'}, ensure_ascii=False)}\n\n"
             break
         if not events:

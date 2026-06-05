@@ -48,11 +48,34 @@ def test_workbench_backend_system_status_reports_store_and_paths(tmp_path: Path)
     assert payload["store"]["status"] == "ok"
     assert payload["store"]["db_parent_writable"] is True
     assert payload["store"]["journal_mode"].lower() == "wal"
-    assert payload["store"]["schema_version"] >= 2
-    assert payload["store"]["migration_count"] >= 2
+    assert payload["store"]["schema_version"] >= 3
+    assert payload["store"]["migration_count"] >= 3
     assert payload["paths"]["repo_root"]["exists"] is True
+    assert payload["runtime_preflight"]["status"] == "ok"
+    assert payload["runtime_limits"]["max_active_jobs"] >= 1
+    assert payload["path_policy"]["allow_external_paths"] is False
+    assert payload["job_recovery"]["status"] == "ok"
     assert isinstance(payload["paths"]["repo_root"]["free_bytes"], int)
     assert "runtime-secret" not in json.dumps(payload, ensure_ascii=False)
+
+
+def test_workbench_backend_exposes_readiness_preflight_and_contracts(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    live = client.get("/api/health/live")
+    ready = client.get("/api/health/ready")
+    preflight = client.get("/api/system/runtime/preflight")
+    contracts = client.get("/api/system/contracts")
+
+    assert live.status_code == 200
+    assert live.json()["status"] == "ok"
+    assert ready.status_code == 200
+    assert ready.json()["checks"]["runtime_preflight"] == "ok"
+    assert preflight.status_code == 200
+    assert "fastapi" in {item["name"] for item in preflight.json()["control_plane_modules"]}
+    assert contracts.status_code == 200
+    assert "interrupted" in contracts.json()["run_statuses"]["terminal"]
+    assert contracts.json()["runtime_limits"]["max_active_jobs"] >= 1
 
 
 def test_workbench_store_concurrent_event_appends_keep_monotonic_sequences(tmp_path: Path) -> None:
@@ -153,6 +176,56 @@ def test_workbench_store_backfills_legacy_run_trace_ids_stably(tmp_path: Path) -
     assert summary.trace_id == first.trace_id
     assert event.trace_id == first.trace_id
     assert store.inspect_health().schema_version >= 3
+
+
+def test_workbench_backend_marks_stale_active_jobs_on_startup(tmp_path: Path) -> None:
+    db_path = tmp_path / "workbench.sqlite"
+    store = WorkbenchStore(db_path)
+    for job_id, status in (("queued_fixture", "queued"), ("running_fixture", "running")):
+        store.upsert_run_job(new_local_smoke_job(job_id=job_id, trace_id=f"trace_{job_id}").model_copy(update={"status": status}))
+
+    client = TestClient(create_app(store_path=db_path))
+
+    queued_status = client.get("/api/runs/queued_fixture/status").json()
+    running_status = client.get("/api/runs/running_fixture/status").json()
+    system = client.get("/api/system/status").json()
+    assert queued_status["status"] == "interrupted"
+    assert queued_status["is_terminal"] is True
+    assert running_status["status"] == "interrupted"
+    assert system["job_recovery"]["interrupted_job_count"] == 2
+    messages = [event["message"] for event in client.get("/api/runs/running_fixture/events").json()["events"]]
+    assert "workbench service restarted" in messages
+
+
+def test_workbench_backend_rejects_paths_outside_policy(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+    outside = tmp_path.parent / f"outside_{tmp_path.name}" / "run"
+
+    inspect_response = client.post("/api/runs/inspect", json={"run_dir": str(outside)})
+    data_build_response = client.post(
+        "/api/data-build/preview",
+        json={
+            "step_id": "sec_build_manifest",
+            "values": {"output": str(outside / "manifest.jsonl")},
+        },
+    )
+
+    assert inspect_response.status_code == 400
+    assert inspect_response.json()["detail"]["reason"] == "path_not_allowed"
+    assert data_build_response.status_code == 400
+    assert data_build_response.json()["detail"]["reason"] == "path_not_allowed"
+
+
+def test_workbench_backend_can_backup_store_inside_allowed_root(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.post("/api/system/store/backup", json={"backup_dir": str(tmp_path / "backups")})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "ok"
+    assert Path(payload["backup_path"]).exists()
+    assert payload["backup_size_bytes"] > 0
 
 
 def test_workbench_backend_error_contract_preserves_detail_and_trace(tmp_path: Path) -> None:
@@ -554,6 +627,25 @@ def test_workbench_backend_prunes_terminal_run_history(tmp_path: Path) -> None:
     assert client.get("/api/runs/keep_fixture/status").status_code == 200
 
 
+def test_workbench_backend_prunes_history_with_filters(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+    store = WorkbenchStore(tmp_path / "workbench.sqlite")
+    keep = new_local_smoke_job(job_id="keep_failed", trace_id="trace_a").model_copy(update={"status": "failed"})
+    drop = new_local_smoke_job(job_id="drop_cancelled", trace_id="trace_b").model_copy(update={"status": "cancelled"})
+    store.upsert_run_job(keep)
+    store.upsert_run_job(drop)
+
+    response = client.post(
+        "/api/runs/prune",
+        json={"keep_latest": 0, "status": "cancelled", "dry_run": True},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "cancelled"
+    assert payload["candidate_job_ids"] == ["drop_cancelled"]
+
+
 def test_workbench_backend_streams_smoke_job_events(tmp_path: Path) -> None:
     client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
     client.post("/api/runs/smoke", json={"job_id": "smoke_stream_fixture"}).raise_for_status()
@@ -902,7 +994,7 @@ def _write_native_checkpoint_fixture(run_dir: Path) -> Path:
 
 
 def _wait_for_job(client: TestClient, job_id: str) -> dict:
-    terminal = {"completed", "failed", "cancelled"}
+    terminal = {"completed", "failed", "cancelled", "interrupted", "timed_out"}
     for _ in range(50):
         response = client.get(f"/api/runs/{job_id}")
         response.raise_for_status()

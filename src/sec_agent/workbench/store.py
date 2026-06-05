@@ -10,8 +10,9 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from .jobs import RunJob, RunLogEvent, RunStatusReport, run_status_report_from_job
+from .jobs import ACTIVE_RUN_STATUSES, TERMINAL_RUN_STATUSES, RunJob, RunLogEvent, RunStatusReport, run_status_report_from_job
 from .profiles import WorkbenchProfile
+from .runtime_config import runtime_limits_from_env
 from .source_bundles import SourceBundle
 
 
@@ -111,9 +112,30 @@ class RunPruneReport(BaseModel):
     keep_latest: int
     max_age_days: int | None = None
     cutoff_before: str | None = None
+    trace_id: str | None = None
+    status: str | None = None
+    job_type: str | None = None
     candidate_job_ids: list[str]
     deleted_job_count: int
     deleted_event_count: int
+
+
+class RunRecoveryReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: str
+    reason: str
+    interrupted_job_ids: list[str]
+    interrupted_job_count: int
+
+
+class StoreBackupReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: str
+    source_path: str
+    backup_path: str
+    backup_size_bytes: int
 
 
 class WorkbenchStore:
@@ -494,7 +516,7 @@ class WorkbenchStore:
 
     def list_run_events(self, job_id: str, *, after_sequence: int = 0, limit: int = 500) -> list[RunLogEvent]:
         after_sequence = _non_negative_int(after_sequence, default=0)
-        limit = _bounded_limit(limit, default=500, maximum=5000)
+        limit = _bounded_limit(limit, default=500, maximum=runtime_limits_from_env().event_page_max)
         with self._connect() as conn:
             rows = conn.execute(
                 """
@@ -531,7 +553,7 @@ class WorkbenchStore:
                 order by created_at asc, job_id asc, sequence asc
                 limit ?
                 """,
-                (trace, _bounded_limit(limit, default=1000, maximum=5000)),
+                (trace, _bounded_limit(limit, default=1000, maximum=runtime_limits_from_env().event_page_max)),
             ).fetchall()
         return [
             RunLogEvent(
@@ -614,6 +636,57 @@ class WorkbenchStore:
                 error_message=str(exc),
             )
 
+    def interrupt_active_run_jobs(self, *, reason: str = "workbench service restarted") -> RunRecoveryReport:
+        jobs = [
+            job
+            for job in self._list_jobs_by_statuses(ACTIVE_RUN_STATUSES)
+            if job.status in ACTIVE_RUN_STATUSES
+        ]
+        interrupted_ids: list[str] = []
+        for job in jobs:
+            interrupted = _job_model_update(
+                job,
+                status="interrupted",
+                finished_at=datetime.now().isoformat(timespec="seconds"),
+                error=reason,
+                metadata={
+                    **job.metadata,
+                    "recovery": {
+                        "status": "interrupted_after_service_start",
+                        "reason": reason,
+                    },
+                },
+            )
+            self.upsert_run_job(interrupted)
+            self.append_run_event(
+                interrupted.job_id,
+                stream="system",
+                message=reason,
+                trace_id=interrupted.trace_id,
+            )
+            interrupted_ids.append(interrupted.job_id)
+        return RunRecoveryReport(
+            status="ok",
+            reason=reason,
+            interrupted_job_ids=interrupted_ids,
+            interrupted_job_count=len(interrupted_ids),
+        )
+
+    def backup_database(self, backup_dir: str | Path | None = None) -> StoreBackupReport:
+        target_dir = Path(backup_dir) if backup_dir else self.db_path.parent / "backups"
+        target_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_path = target_dir / f"{self.db_path.stem}_{timestamp}.sqlite"
+        with self._connect() as source:
+            with sqlite3.connect(backup_path) as target:
+                source.backup(target)
+        return StoreBackupReport(
+            status="ok",
+            source_path=str(self.db_path),
+            backup_path=str(backup_path),
+            backup_size_bytes=backup_path.stat().st_size if backup_path.exists() else 0,
+        )
+
     def prune_run_jobs(
         self,
         *,
@@ -621,6 +694,9 @@ class WorkbenchStore:
         max_age_days: int | None = None,
         terminal_only: bool = True,
         dry_run: bool = True,
+        trace_id: str | None = None,
+        status: str | None = None,
+        job_type: str | None = None,
     ) -> RunPruneReport:
         keep_latest = max(0, min(int(keep_latest), 10000))
         max_age_days = None if max_age_days is None else max(0, min(int(max_age_days), 3650))
@@ -629,12 +705,26 @@ class WorkbenchStore:
             cutoff = datetime.now() - timedelta(days=max_age_days)
             cutoff_before = cutoff.isoformat(timespec="seconds")
         with self._connect() as conn:
+            where: list[str] = []
+            values: list[object] = []
+            if _clean_filter(trace_id):
+                where.append("trace_id = ?")
+                values.append(_clean_filter(trace_id))
+            if _clean_filter(status):
+                where.append("status = ?")
+                values.append(_clean_filter(status))
+            if _clean_filter(job_type):
+                where.append("job_type = ?")
+                values.append(_clean_filter(job_type))
+            where_sql = f"where {' and '.join(where)}" if where else ""
             rows = conn.execute(
-                """
+                f"""
                 select job_id, status, updated_at
                 from run_jobs
+                {where_sql}
                 order by updated_at desc, job_id desc
-                """
+                """,
+                tuple(values),
             ).fetchall()
             candidate_ids: list[str] = []
             for index, row in enumerate(rows):
@@ -642,7 +732,7 @@ class WorkbenchStore:
                 older_than_cutoff = cutoff_before is not None and str(row["updated_at"]) < cutoff_before
                 if not beyond_keep and not older_than_cutoff:
                     continue
-                if terminal_only and str(row["status"]) not in {"completed", "failed", "cancelled"}:
+                if terminal_only and str(row["status"]) not in TERMINAL_RUN_STATUSES:
                     continue
                 candidate_ids.append(str(row["job_id"]))
             event_count = 0
@@ -668,10 +758,29 @@ class WorkbenchStore:
             keep_latest=keep_latest,
             max_age_days=max_age_days,
             cutoff_before=cutoff_before,
+            trace_id=_clean_filter(trace_id) or None,
+            status=_clean_filter(status) or None,
+            job_type=_clean_filter(job_type) or None,
             candidate_job_ids=candidate_ids,
             deleted_job_count=0 if dry_run else len(candidate_ids),
             deleted_event_count=0 if dry_run else event_count,
         )
+
+    def _list_jobs_by_statuses(self, statuses: set[str]) -> list[RunJob]:
+        if not statuses:
+            return []
+        placeholders = ",".join("?" for _ in statuses)
+        with self._connect() as conn:
+            rows = conn.execute(
+                f"""
+                select payload_json
+                from run_jobs
+                where status in ({placeholders})
+                order by updated_at desc, job_id desc
+                """,
+                tuple(sorted(statuses)),
+            ).fetchall()
+        return [RunJob.model_validate(json.loads(row["payload_json"])) for row in rows]
 
     def _list_jobs_by_type(self, job_type: str) -> list[RunJob]:
         with self._connect() as conn:
@@ -895,6 +1004,28 @@ def _non_negative_int(value: object, *, default: int) -> int:
 def _legacy_trace_id(job_id: str) -> str:
     digest = hashlib.sha256(job_id.encode("utf-8", errors="replace")).hexdigest()[:24]
     return f"trace_legacy_{digest}"
+
+
+def _job_model_update(job: RunJob, **changes: object) -> RunJob:
+    updates = {"updated_at": datetime.now().isoformat(timespec="seconds"), **changes}
+    if "error" in updates and "error_message" not in updates:
+        updates["error_message"] = str(updates.get("error") or "")
+    updated = job.model_copy(update=updates)
+    elapsed_ms = _elapsed_ms(updated.started_at, updated.finished_at)
+    if elapsed_ms is not None and updated.elapsed_ms != elapsed_ms:
+        updated = updated.model_copy(update={"elapsed_ms": elapsed_ms})
+    return updated
+
+
+def _elapsed_ms(started_at: str | None, finished_at: str | None) -> int | None:
+    if not started_at or not finished_at:
+        return None
+    try:
+        started = datetime.fromisoformat(started_at)
+        finished = datetime.fromisoformat(finished_at)
+    except ValueError:
+        return None
+    return max(0, int(round((finished - started).total_seconds() * 1000)))
 
 
 def _count_rows(conn: sqlite3.Connection, table: str) -> int:

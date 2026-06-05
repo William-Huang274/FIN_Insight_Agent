@@ -11,7 +11,8 @@ from .artifacts import RunArtifactIndex
 from .runtime_ids import new_trace_id
 
 
-TERMINAL_RUN_STATUSES = {"completed", "failed", "cancelled"}
+ACTIVE_RUN_STATUSES = {"queued", "running"}
+TERMINAL_RUN_STATUSES = {"completed", "failed", "cancelled", "interrupted", "timed_out"}
 
 
 class RunJob(BaseModel):

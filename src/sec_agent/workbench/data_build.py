@@ -75,6 +75,7 @@ def build_data_build_command(
         cwd=cwd,
         env_overrides=env_overrides,
         label=f"data-build:{step.step_id}",
+        timeout_s=step.timeout_hint_s,
     )
     preview = DataBuildCommandPreview(
         step_id=step.step_id,

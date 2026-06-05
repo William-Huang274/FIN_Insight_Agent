@@ -7,6 +7,8 @@ on:
       - Dockerfile
       - .dockerignore
       - requirements-workbench.txt
+      - compose.yaml
+      - compose.runtime.yaml
       - apps/workbench/**
       - scripts/workbench/**
       - src/sec_agent/workbench/**
@@ -18,6 +20,8 @@ on:
       - Dockerfile
       - .dockerignore
       - requirements-workbench.txt
+      - compose.yaml
+      - compose.runtime.yaml
       - apps/workbench/**
       - scripts/workbench/**
       - src/sec_agent/workbench/**
@@ -40,17 +44,24 @@ jobs:
             -t finsight-workbench:ci \
             .
 
+      - name: Validate Compose configs
+        run: |
+          docker compose -f compose.yaml config
+          docker compose -f compose.yaml -f compose.runtime.yaml config
+
       - name: Start Workbench container
         run: |
           docker run --rm -d \
             --name finsight-workbench-ci \
-            -p 8765:8765 \
+            -p 127.0.0.1:8765:8765 \
             finsight-workbench:ci
 
-      - name: Wait for health endpoint
+      - name: Wait for health and readiness endpoints
         run: |
           for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:8765/api/health; then
+            if curl -fsS http://127.0.0.1:8765/api/health \
+              && curl -fsS http://127.0.0.1:8765/api/health/ready \
+              && curl -fsS http://127.0.0.1:8765/api/system/contracts; then
               exit 0
             fi
             docker logs finsight-workbench-ci || true

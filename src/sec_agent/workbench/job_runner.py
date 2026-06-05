@@ -3,22 +3,26 @@ from __future__ import annotations
 import os
 import json
 import platform
+import queue
 import re
+import signal
 import subprocess
 import sys
 import threading
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Mapping
 from uuid import uuid4
 
-from .jobs import RunCancelReport, RunJob
+from .jobs import TERMINAL_RUN_STATUSES, RunCancelReport, RunJob
 from .profiles import WorkbenchProfile
+from .runtime_config import runtime_limits_from_env
 from .store import WorkbenchStore
 
 
-TERMINAL_STATUSES = {"completed", "failed", "cancelled"}
+TERMINAL_STATUSES = TERMINAL_RUN_STATUSES
 ALLOWED_AGENT_ASK_MODES = {
     "ask-full-source-api",
     "ask-full-source-deepseek",
@@ -83,6 +87,9 @@ _EVAL_RUNNERS = {
 _ACTIVE_PROCESSES: dict[str, subprocess.Popen[str]] = {}
 _CANCEL_REQUESTED: set[str] = set()
 _ACTIVE_PROCESSES_LOCK = threading.Lock()
+_JOB_SEMAPHORE: threading.BoundedSemaphore | None = None
+_JOB_SEMAPHORE_LIMIT = 0
+_JOB_SEMAPHORE_LOCK = threading.Lock()
 
 
 @dataclass(frozen=True)
@@ -92,6 +99,7 @@ class CommandSpec:
     env_overrides: Mapping[str, str] = field(default_factory=dict)
     label: str = "command"
     cleanup_paths: list[Path] = field(default_factory=list)
+    timeout_s: int | None = None
 
 
 def build_local_smoke_command(repo_root: str | Path) -> CommandSpec:
@@ -107,6 +115,7 @@ def build_local_smoke_command(repo_root: str | Path) -> CommandSpec:
         args=[sys.executable, "-u", "-c", code],
         cwd=Path(repo_root).resolve(),
         label="local_smoke",
+        timeout_s=30,
     )
 
 
@@ -188,6 +197,7 @@ def build_eval_command(
         cwd=Path(repo_root).resolve(),
         env_overrides=env_overrides,
         label=f"eval:{eval_id}",
+        timeout_s=int(_EVAL_RUNNERS[eval_id]["timeout_hint_s"]) + 30,
     )
 
 
@@ -411,12 +421,7 @@ def cancel_command_job(store: WorkbenchStore, job_id: str, *, reason: str = "can
         process = _ACTIVE_PROCESSES.get(job_id)
 
     if process is not None and process.poll() is None:
-        process.terminate()
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=5)
+        _terminate_process_tree(process, grace_s=runtime_limits_from_env().cancel_grace_s)
 
     cancelled = _job_update(job, status="cancelled", finished_at=_now(), error=reason)
     store.append_run_event(job_id, stream="system", message=reason, trace_id=cancelled.trace_id)
@@ -429,6 +434,28 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
         cancelled = _job_update(job, status="cancelled", finished_at=_now(), error="cancelled by user")
         store.append_run_event(job.job_id, stream="system", message="cancelled before start", trace_id=cancelled.trace_id)
         store.upsert_run_job(cancelled)
+        return
+
+    limits = runtime_limits_from_env()
+    semaphore = _semaphore_for_limit(limits.max_active_jobs)
+    acquired_slot = False
+    store.append_run_event(
+        job.job_id,
+        stream="system",
+        message=f"waiting for runner slot (max_active_jobs={limits.max_active_jobs})",
+        trace_id=job.trace_id,
+    )
+    while not acquired_slot:
+        if _cancel_requested(job.job_id):
+            cancelled = _job_update(job, status="cancelled", finished_at=_now(), error="cancelled by user")
+            store.append_run_event(job.job_id, stream="system", message="cancelled before start", trace_id=cancelled.trace_id)
+            store.upsert_run_job(cancelled)
+            return
+        acquired_slot = semaphore.acquire(timeout=0.2)
+
+    latest_before_start = store.get_run_job(job.job_id)
+    if latest_before_start is not None and latest_before_start.status in TERMINAL_STATUSES:
+        semaphore.release()
         return
 
     running = _job_update(job, status="running", started_at=_now())
@@ -452,19 +479,74 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
             encoding="utf-8",
             errors="replace",
             bufsize=1,
+            **_popen_process_group_kwargs(),
         )
         with _ACTIVE_PROCESSES_LOCK:
             _ACTIVE_PROCESSES[job.job_id] = process
         assert process.stdout is not None
-        for line in process.stdout:
+        timeout_s = spec.timeout_s or limits.default_timeout_s
+        started_monotonic = time.monotonic()
+        line_queue: queue.Queue[str | None] = queue.Queue()
+        reader_thread = threading.Thread(
+            target=_enqueue_process_stdout,
+            args=(process.stdout, line_queue),
+            name=f"workbench-job-reader-{job.job_id}",
+            daemon=True,
+        )
+        reader_thread.start()
+        timed_out = False
+        reader_done = False
+        while not reader_done:
+            if _cancel_requested(job.job_id):
+                _terminate_process_tree(process, grace_s=limits.cancel_grace_s)
+                break
+            if timeout_s is not None and time.monotonic() - started_monotonic > timeout_s:
+                timed_out = True
+                store.append_run_event(
+                    job.job_id,
+                    stream="system",
+                    message=f"process timed out after {timeout_s}s",
+                    trace_id=running.trace_id,
+                )
+                _terminate_process_tree(process, grace_s=limits.cancel_grace_s)
+                break
+            try:
+                line = line_queue.get(timeout=0.2)
+            except queue.Empty:
+                if process.poll() is not None:
+                    continue
+                continue
+            if line is None:
+                reader_done = True
+                continue
             message = line.rstrip("\r\n")
             if message:
                 stdout_messages.append(message)
                 store.append_run_event(job.job_id, stream="stdout", message=message, trace_id=running.trace_id)
-        return_code = process.wait()
+        while True:
+            try:
+                line = line_queue.get_nowait()
+            except queue.Empty:
+                break
+            if line is None:
+                continue
+            message = line.rstrip("\r\n")
+            if message:
+                stdout_messages.append(message)
+                store.append_run_event(job.job_id, stream="stdout", message=message, trace_id=running.trace_id)
+        return_code = process.wait(timeout=limits.cancel_grace_s)
         latest = store.get_run_job(job.job_id)
         with _ACTIVE_PROCESSES_LOCK:
             cancel_requested = job.job_id in _CANCEL_REQUESTED
+        if timed_out:
+            completed = _job_update(
+                latest or running,
+                status="timed_out",
+                finished_at=_now(),
+                error=f"process timed out after {timeout_s}s",
+            )
+            store.upsert_run_job(completed)
+            return
         if cancel_requested or (latest is not None and latest.status == "cancelled"):
             cancel_message = (latest.error_message if latest else "") or "cancelled by user"
             cancelled = _job_update(latest or running, status="cancelled", finished_at=_now(), error=cancel_message)
@@ -520,7 +602,7 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
             store.upsert_run_job(failed)
     except Exception as exc:  # pragma: no cover - defensive persistence guard.
         if process and process.poll() is None:
-            process.kill()
+            _terminate_process_tree(process, grace_s=runtime_limits_from_env().cancel_grace_s)
         if _cancel_requested(job.job_id):
             cancelled = _job_update(running, status="cancelled", finished_at=_now(), error="cancelled by user")
             store.append_run_event(job.job_id, stream="system", message=f"runner stopped after cancellation: {exc}", trace_id=running.trace_id)
@@ -533,11 +615,74 @@ def _run_command_job(store: WorkbenchStore, job: RunJob, spec: CommandSpec) -> N
         with _ACTIVE_PROCESSES_LOCK:
             _ACTIVE_PROCESSES.pop(job.job_id, None)
             _CANCEL_REQUESTED.discard(job.job_id)
+        if acquired_slot:
+            semaphore.release()
         for path in spec.cleanup_paths:
             try:
                 path.unlink(missing_ok=True)
             except OSError:
                 pass
+
+
+def _enqueue_process_stdout(stdout, line_queue: queue.Queue[str | None]) -> None:
+    try:
+        for line in stdout:
+            line_queue.put(line)
+    finally:
+        line_queue.put(None)
+
+
+def _semaphore_for_limit(limit: int) -> threading.BoundedSemaphore:
+    global _JOB_SEMAPHORE, _JOB_SEMAPHORE_LIMIT
+    safe_limit = max(1, int(limit))
+    with _JOB_SEMAPHORE_LOCK:
+        if _JOB_SEMAPHORE is None or _JOB_SEMAPHORE_LIMIT != safe_limit:
+            _JOB_SEMAPHORE = threading.BoundedSemaphore(safe_limit)
+            _JOB_SEMAPHORE_LIMIT = safe_limit
+        return _JOB_SEMAPHORE
+
+
+def _popen_process_group_kwargs() -> dict[str, object]:
+    if platform.system().lower() == "windows":
+        return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    return {"start_new_session": True}
+
+
+def _terminate_process_tree(process: subprocess.Popen[str], *, grace_s: int) -> None:
+    if process.poll() is not None:
+        return
+    if platform.system().lower() == "windows":
+        _terminate_windows_process_tree(process, grace_s=grace_s)
+        return
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except OSError:
+        process.terminate()
+    try:
+        process.wait(timeout=grace_s)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except OSError:
+            process.kill()
+        process.wait(timeout=grace_s)
+
+
+def _terminate_windows_process_tree(process: subprocess.Popen[str], *, grace_s: int) -> None:
+    try:
+        subprocess.run(
+            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError:
+        process.terminate()
+    try:
+        process.wait(timeout=grace_s)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait(timeout=grace_s)
 
 
 def _job_update(job: RunJob, **changes: object) -> RunJob:

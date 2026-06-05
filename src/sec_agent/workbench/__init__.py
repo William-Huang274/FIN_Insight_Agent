@@ -20,6 +20,9 @@ from .job_runner import (
     eval_runner_catalog,
     start_command_job,
 )
+from .path_policy import PathPolicyReport, PathPolicyViolation, WorkbenchPathPolicy
+from .runtime_config import WorkbenchRuntimeLimits, runtime_limits_from_env
+from .runtime_preflight import RuntimePreflightReport, inspect_runtime_preflight
 from .data_build import (
     DataBuildCommandPreview,
     DataBuildParameter,
@@ -52,8 +55,10 @@ from .source_bundles import (
     source_bundle_from_profile,
 )
 from .store import (
+    StoreBackupReport,
     StoreHealthReport,
     RunPruneReport,
+    RunRecoveryReport,
     StoredProfileSummary,
     StoredRunJobSummary,
     StoredSessionSummary,
@@ -81,14 +86,20 @@ __all__ = [
     "SourceBundleArtifacts",
     "SourceBundleBuild",
     "SourceReadinessReport",
+    "PathPolicyReport",
+    "RuntimePreflightReport",
+    "WorkbenchRuntimeLimits",
     "StoreHealthReport",
+    "StoreBackupReport",
     "RunPruneReport",
+    "RunRecoveryReport",
     "StoredProfileSummary",
     "StoredRunJobSummary",
     "StoredSessionSummary",
     "StoredSourceBundleSummary",
     "TraceInspectionReport",
     "WorkbenchProfile",
+    "WorkbenchPathPolicy",
     "WorkbenchStore",
     "default_store_path",
     "data_build_catalog",
@@ -112,9 +123,12 @@ __all__ = [
     "new_saved_run_inspection_job",
     "run_status_report_from_job",
     "parse_env_file",
+    "PathPolicyViolation",
     "profile_from_env_file",
     "profile_from_source_bundle",
     "source_bundle_from_profile",
     "start_command_job",
+    "inspect_runtime_preflight",
+    "runtime_limits_from_env",
     "validate_profile_sources",
 ]

@@ -1,0 +1,8 @@
+services:
+  workbench:
+    build:
+      target: workbench
+      args:
+        INSTALL_OS_PACKAGES: "1"
+        REQUIREMENTS_FILE: requirements.txt
+    image: finsight-workbench:runtime-compose

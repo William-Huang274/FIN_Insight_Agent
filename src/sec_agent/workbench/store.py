@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sqlite3
@@ -14,7 +15,7 @@ from .profiles import WorkbenchProfile
 from .source_bundles import SourceBundle
 
 
-WORKBENCH_SCHEMA_VERSION = 2
+WORKBENCH_SCHEMA_VERSION = 3
 
 
 class StoredProfileSummary(BaseModel):
@@ -492,6 +493,8 @@ class WorkbenchStore:
         )
 
     def list_run_events(self, job_id: str, *, after_sequence: int = 0, limit: int = 500) -> list[RunLogEvent]:
+        after_sequence = _non_negative_int(after_sequence, default=0)
+        limit = _bounded_limit(limit, default=500, maximum=5000)
         with self._connect() as conn:
             rows = conn.execute(
                 """
@@ -777,6 +780,7 @@ class WorkbenchStore:
             self._ensure_column(conn, "run_jobs", "elapsed_ms", "integer")
             self._ensure_column(conn, "run_jobs", "error_message", "text not null default ''")
             self._ensure_column(conn, "run_job_events", "trace_id", "text not null default ''")
+            self._backfill_legacy_trace_ids(conn)
             conn.execute(
                 """
                 create index if not exists idx_run_jobs_trace_id
@@ -803,6 +807,7 @@ class WorkbenchStore:
             )
             self._record_schema_migration(conn, 1, "initial workbench store schema")
             self._record_schema_migration(conn, 2, "run trace status fields and event trace indexes")
+            self._record_schema_migration(conn, 3, "stable legacy run trace backfill")
 
     @staticmethod
     def _ensure_column(conn: sqlite3.Connection, table: str, column: str, definition: str) -> None:
@@ -819,6 +824,37 @@ class WorkbenchStore:
             values (?, ?, ?)
             """,
             (version, description, datetime.now().isoformat(timespec="seconds")),
+        )
+
+    @staticmethod
+    def _backfill_legacy_trace_ids(conn: sqlite3.Connection) -> None:
+        rows = conn.execute("select job_id, trace_id, payload_json from run_jobs").fetchall()
+        for row in rows:
+            job_id = str(row["job_id"])
+            column_trace = _clean_filter(row["trace_id"])
+            payload_json = str(row["payload_json"] or "{}")
+            try:
+                payload = json.loads(payload_json)
+            except json.JSONDecodeError:
+                payload = None
+            payload_trace = _clean_filter(payload.get("trace_id")) if isinstance(payload, dict) else ""
+            trace_id = payload_trace or column_trace or _legacy_trace_id(job_id)
+            if isinstance(payload, dict):
+                payload["trace_id"] = trace_id
+                updated_payload_json = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+                if column_trace != trace_id or payload_trace != trace_id or updated_payload_json != payload_json:
+                    conn.execute(
+                        "update run_jobs set trace_id = ?, payload_json = ? where job_id = ?",
+                        (trace_id, updated_payload_json, job_id),
+                    )
+            elif column_trace != trace_id:
+                conn.execute("update run_jobs set trace_id = ? where job_id = ?", (trace_id, job_id))
+        conn.execute(
+            """
+            update run_job_events
+            set trace_id = coalesce((select trace_id from run_jobs where run_jobs.job_id = run_job_events.job_id), '')
+            where trace_id is null or trace_id = ''
+            """
         )
 
     @staticmethod
@@ -846,6 +882,19 @@ def _bounded_limit(value: object, *, default: int, maximum: int) -> int:
     except (TypeError, ValueError):
         return default
     return max(1, min(parsed, maximum))
+
+
+def _non_negative_int(value: object, *, default: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(0, parsed)
+
+
+def _legacy_trace_id(job_id: str) -> str:
+    digest = hashlib.sha256(job_id.encode("utf-8", errors="replace")).hexdigest()[:24]
+    return f"trace_legacy_{digest}"
 
 
 def _count_rows(conn: sqlite3.Connection, table: str) -> int:

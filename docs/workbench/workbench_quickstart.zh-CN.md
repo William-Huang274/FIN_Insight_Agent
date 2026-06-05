@@ -108,6 +108,16 @@ docker compose up --build
 
 Compose 默认构建轻量后端镜像，挂载本地 `configs/`、`data/` 和 `reports/`。这样通过 Workbench 生成的数据、运行产物和配置修改会留在本机目录里，不会因为容器重建而丢失。
 
+默认 Compose 服务只绑定本机回环地址 `127.0.0.1:8765`。Workbench 是本地控制台，不带登录认证，不建议暴露到局域网或公网。
+
+轻量后端镜像只安装 Workbench API、状态持久化和健康检查所需依赖，适合验证控制面是否能启动。如果希望在容器内直接运行数据构建步骤、完整 Agent 子任务或带前端产物的完整工作台，请叠加 runtime 覆盖文件：
+
+```powershell
+docker compose -f compose.yaml -f compose.runtime.yaml up --build
+```
+
+runtime 覆盖会使用 `requirements.txt` 和完整前端 target，并安装容器内执行 Agent 脚本所需的基础 OS 包。镜像仍然不包含私有数据、模型权重或真实 API key。
+
 停止服务：
 
 ```powershell
@@ -146,6 +156,12 @@ powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.
 powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -FullImage -UsePypiHostFallback -UseNpmHostFallback -SmokeOnly
 ```
 
+如果要在容器内实际运行数据构建或 Agent 子任务，用完整依赖构建：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -FullRuntime -FullImage
+```
+
 如果只想做一次构建和健康检查，检查完自动停容器：
 
 ```powershell
@@ -162,7 +178,20 @@ docker build \
   .
 ```
 
-如果要构建包含 React/Vite 前端产物的完整镜像：
+这个轻量镜像用于 Workbench 控制面 smoke。它不保证容器内可执行所有白名单数据构建脚本或 Agent 子任务。
+
+如果要构建完整 runtime 镜像：
+
+```bash
+docker build \
+  --target workbench \
+  --build-arg INSTALL_OS_PACKAGES=1 \
+  --build-arg REQUIREMENTS_FILE=requirements.txt \
+  -t finsight-workbench:runtime-local \
+  .
+```
+
+如果只想构建带 React/Vite 前端产物、但仍使用轻量后端依赖的镜像：
 
 ```bash
 docker build \
@@ -175,7 +204,7 @@ docker build \
 Linux / macOS 运行容器：
 
 ```bash
-docker run --rm -p 8765:8765 \
+docker run --rm -p 127.0.0.1:8765:8765 \
   -v "$PWD/data/workbench_private:/app/data/workbench_private" \
   finsight-workbench:backend-local
 ```
@@ -183,7 +212,7 @@ docker run --rm -p 8765:8765 \
 Windows PowerShell 手动运行容器：
 
 ```powershell
-docker run --rm -p 8765:8765 `
+docker run --rm -p 127.0.0.1:8765:8765 `
   -v "${PWD}\data\workbench_private:/app/data/workbench_private" `
   finsight-workbench:backend-local
 ```

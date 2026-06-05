@@ -2,6 +2,7 @@
     [string]$ImageTag = "finsight-workbench:backend-local",
     [int]$Port = 8765,
     [switch]$FullImage,
+    [switch]$FullRuntime,
     [switch]$UsePypiHostFallback,
     [string]$PypiHostIp = "151.101.64.223",
     [switch]$UseNpmHostFallback,
@@ -17,6 +18,8 @@ $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $WorkbenchData = Join-Path $RepoRoot "data\workbench_private"
 $ContainerName = "finsight-workbench-local"
 $Target = if ($FullImage) { "workbench" } else { "workbench-backend" }
+$RequirementsFile = if ($FullRuntime) { "requirements.txt" } else { "requirements-workbench.txt" }
+$InstallOsPackages = if ($FullRuntime) { "1" } else { "0" }
 
 Set-Location $RepoRoot
 New-Item -ItemType Directory -Force -Path $WorkbenchData | Out-Null
@@ -27,7 +30,9 @@ if (-not $SkipBuild) {
         "--target",
         $Target,
         "--build-arg",
-        "REQUIREMENTS_FILE=requirements-workbench.txt",
+        "REQUIREMENTS_FILE=$RequirementsFile",
+        "--build-arg",
+        "INSTALL_OS_PACKAGES=$InstallOsPackages",
         "-t",
         $ImageTag
     )
@@ -51,6 +56,7 @@ if (-not $SkipBuild) {
     $BuildArgs += "."
 
     Write-Host "构建 Workbench Docker 镜像：$ImageTag，target=$Target"
+    Write-Host "依赖文件：$RequirementsFile"
     if ($UsePypiHostFallback) {
         Write-Host "已启用 PyPI host fallback：$PypiHostIp"
     }
@@ -73,7 +79,7 @@ if ($ExistingContainer) {
 }
 
 $MountArg = "${WorkbenchData}:/app/data/workbench_private"
-$PortArg = "${Port}:8765"
+$PortArg = "127.0.0.1:${Port}:8765"
 
 Write-Host "启动 Workbench 容器： http://127.0.0.1:$Port/"
 $RunArgs = @(

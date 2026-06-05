@@ -509,13 +509,17 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
         )
 
     @app.get("/api/runs/{job_id}/events")
-    def get_run_events(job_id: str, after_sequence: int = 0, limit: int = 500):
+    def get_run_events(
+        job_id: str,
+        after_sequence: int = Query(0, ge=0),
+        limit: int = Query(500, ge=1, le=5000),
+    ):
         if store.get_run_job(job_id) is None:
             raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
         return {"events": store.list_run_events(job_id, after_sequence=after_sequence, limit=limit)}
 
     @app.get("/api/runs/{job_id}/events/stream")
-    def stream_run_events(job_id: str, after_sequence: int = 0):
+    def stream_run_events(job_id: str, after_sequence: int = Query(0, ge=0)):
         if store.get_run_job(job_id) is None:
             raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
         return StreamingResponse(

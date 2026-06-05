@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -76,6 +77,82 @@ def test_workbench_store_concurrent_event_appends_keep_monotonic_sequences(tmp_p
     assert len(events) == 20
     assert {event.trace_id for event in events} == {"trace_concurrent"}
     assert store.inspect_health().run_event_count == 20
+
+
+def test_workbench_store_backfills_legacy_run_trace_ids_stably(tmp_path: Path) -> None:
+    db_path = tmp_path / "workbench.sqlite"
+    legacy_payload = {
+        "job_id": "legacy_job",
+        "job_type": "local_smoke",
+        "status": "completed",
+        "created_at": "2026-01-01T00:00:00",
+        "updated_at": "2026-01-01T00:00:00",
+        "metadata": {},
+    }
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            """
+            create table run_jobs (
+                job_id text primary key,
+                job_type text not null,
+                status text not null,
+                profile_id text,
+                run_dir text,
+                payload_json text not null,
+                created_at text not null,
+                updated_at text not null
+            )
+            """
+        )
+        conn.execute(
+            """
+            create table run_job_events (
+                job_id text not null,
+                sequence integer not null,
+                stream text not null,
+                message text not null,
+                created_at text not null,
+                primary key (job_id, sequence)
+            )
+            """
+        )
+        conn.execute(
+            """
+            insert into run_jobs (job_id, job_type, status, profile_id, run_dir, payload_json, created_at, updated_at)
+            values (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "legacy_job",
+                "local_smoke",
+                "completed",
+                None,
+                None,
+                json.dumps(legacy_payload, ensure_ascii=False),
+                "2026-01-01T00:00:00",
+                "2026-01-01T00:00:00",
+            ),
+        )
+        conn.execute(
+            """
+            insert into run_job_events (job_id, sequence, stream, message, created_at)
+            values (?, ?, ?, ?, ?)
+            """,
+            ("legacy_job", 1, "system", "legacy event", "2026-01-01T00:00:00"),
+        )
+
+    store = WorkbenchStore(db_path)
+    first = store.get_run_job("legacy_job")
+    second = store.get_run_job("legacy_job")
+    summary = store.list_run_jobs()[0]
+    event = store.list_run_events("legacy_job")[0]
+
+    assert first is not None
+    assert second is not None
+    assert first.trace_id == second.trace_id
+    assert first.trace_id.startswith("trace_legacy_")
+    assert summary.trace_id == first.trace_id
+    assert event.trace_id == first.trace_id
+    assert store.inspect_health().schema_version >= 3
 
 
 def test_workbench_backend_error_contract_preserves_detail_and_trace(tmp_path: Path) -> None:
@@ -489,6 +566,18 @@ def test_workbench_backend_streams_smoke_job_events(tmp_path: Path) -> None:
     assert "event: log" in stream_text
     assert "workbench smoke completed" in stream_text
     assert "event: done" in stream_text
+
+
+def test_workbench_backend_validates_run_event_pagination_params(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    negative_cursor = client.get("/api/runs/smoke_fixture/events", params={"after_sequence": -1})
+    too_large_limit = client.get("/api/runs/smoke_fixture/events", params={"limit": 5001})
+    negative_stream_cursor = client.get("/api/runs/smoke_fixture/events/stream", params={"after_sequence": -1})
+
+    assert negative_cursor.status_code == 422
+    assert too_large_limit.status_code == 422
+    assert negative_stream_cursor.status_code == 422
 
 
 def test_workbench_backend_rejects_agent_ask_without_profile(tmp_path: Path) -> None:

@@ -410,3 +410,5 @@
 - [x] Reduce residual Memo Writer repair cost after S6/S7/S8 selected layer runs; v0.7 Chinese response-language representative runs are `4/4` pass with `0` repairs.
 - [ ] Run S9 full-chain replay with `response_language` renderer checks after S6-S8 language gate stabilization.
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.
+- [x] Add a Workbench backend release-quality report generator that summarizes CI, Docker/frontend smoke, pressure latency, throughput, token/cost proxy, and secret-safety evidence.
+- [ ] Run a 5-6 case Workbench backend release pressure profile before claiming full backend release readiness.

@@ -17,6 +17,16 @@ def test_runtime_compose_installs_workbench_api_requirements() -> None:
     assert build_args["WORKBENCH_RUNTIME_PROFILE"] == "integrated"
 
 
+def test_compose_mutable_mounts_can_move_off_repo_drive() -> None:
+    config = yaml.safe_load((REPO_ROOT / "compose.yaml").read_text(encoding="utf-8"))
+
+    volumes = config["services"]["workbench"]["volumes"]
+
+    assert "${WORKBENCH_CONFIGS_MOUNT:-./configs}:/app/configs" in volumes
+    assert "${WORKBENCH_DATA_MOUNT:-./data}:/app/data" in volumes
+    assert "${WORKBENCH_REPORTS_MOUNT:-./reports}:/app/reports" in volumes
+
+
 def test_dockerfile_supports_extra_requirements_layer() -> None:
     dockerfile = (REPO_ROOT / "Dockerfile").read_text(encoding="utf-8")
 

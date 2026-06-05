@@ -233,6 +233,17 @@ docker compose -f compose.yaml -f compose.runtime.yaml up --build
 - 脚本更新默认策略是重建镜像；未来如果接签名脚本包或远程发布通道，走 Workbench 的维护接口扩展，不开放任意命令执行。
 - 数据更新走白名单 data-build job，成功后可回填 source bundle，前端或自动化脚本不需要直接拼 shell 命令。
 
+如果仓库所在磁盘空间紧张，可以把可写层放到其它磁盘。Compose 的默认值不变，但支持覆盖三个挂载源：
+
+```powershell
+$env:WORKBENCH_CONFIGS_MOUNT = "D:/FIN_Insight_Agent/configs"
+$env:WORKBENCH_DATA_MOUNT = "Z:/finsight_workbench_runtime/data"
+$env:WORKBENCH_REPORTS_MOUNT = "Z:/finsight_workbench_runtime/reports"
+docker compose -f compose.yaml -f compose.runtime.yaml up --build
+```
+
+`WORKBENCH_DATA_MOUNT` 必须有足够空间并允许 SQLite 写入；否则 `/api/health/ready` 会因为 store 检查失败而返回 503。
+
 部署和更新契约可以通过这些接口查看：
 
 ```text

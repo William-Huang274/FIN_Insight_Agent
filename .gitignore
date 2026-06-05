@@ -34,6 +34,7 @@
 *.html
 *.htm
 !/apps/workbench/frontend/index.html
+!/apps/workbench/frontend/vite/index.html
 *.parquet
 *.sqlite
 .env

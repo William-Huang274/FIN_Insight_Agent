@@ -35,6 +35,10 @@ ARG REQUIREMENTS_FILE=requirements.txt
 COPY requirements.txt requirements-workbench.txt pyproject.toml README.md README.zh-CN.md README.en.md ./
 RUN python -m pip install --upgrade pip \
     && python -m pip install --no-cache-dir -r "${REQUIREMENTS_FILE}"
+ARG EXTRA_REQUIREMENTS_FILE=
+RUN if [ -n "$EXTRA_REQUIREMENTS_FILE" ]; then \
+        python -m pip install --no-cache-dir -r "${EXTRA_REQUIREMENTS_FILE}"; \
+    fi
 
 COPY apps ./apps
 COPY configs ./configs

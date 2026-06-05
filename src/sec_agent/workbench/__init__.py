@@ -23,6 +23,14 @@ from .job_runner import (
 from .path_policy import PathPolicyReport, PathPolicyViolation, WorkbenchPathPolicy
 from .runtime_config import WorkbenchRuntimeLimits, runtime_limits_from_env
 from .runtime_preflight import RuntimePreflightReport, inspect_runtime_preflight
+from .deployment import UpdateInterfaceReport, WorkbenchDeploymentReport, inspect_deployment
+from .maintenance import (
+    MaintenanceAction,
+    MaintenanceActionCatalog,
+    build_maintenance_command,
+    get_maintenance_action,
+    maintenance_action_catalog,
+)
 from .data_build import (
     DataBuildCommandPreview,
     DataBuildParameter,
@@ -42,6 +50,7 @@ from .jobs import (
     new_data_build_job,
     new_eval_run_job,
     new_local_smoke_job,
+    new_maintenance_job,
     new_native_checkpoint_resume_job,
     new_saved_run_inspection_job,
     run_status_report_from_job,
@@ -88,7 +97,11 @@ __all__ = [
     "SourceReadinessReport",
     "PathPolicyReport",
     "RuntimePreflightReport",
+    "UpdateInterfaceReport",
+    "WorkbenchDeploymentReport",
     "WorkbenchRuntimeLimits",
+    "MaintenanceAction",
+    "MaintenanceActionCatalog",
     "StoreHealthReport",
     "StoreBackupReport",
     "RunPruneReport",
@@ -109,16 +122,20 @@ __all__ = [
     "build_data_build_command",
     "build_eval_command",
     "build_local_smoke_command",
+    "build_maintenance_command",
     "build_native_checkpoint_resume_command",
     "cancel_command_job",
     "eval_output_path",
     "eval_runner_catalog",
     "get_data_build_step",
+    "get_maintenance_action",
+    "inspect_deployment",
     "new_agent_ask_job",
     "new_agent_session_turn_job",
     "new_data_build_job",
     "new_eval_run_job",
     "new_local_smoke_job",
+    "new_maintenance_job",
     "new_native_checkpoint_resume_job",
     "new_saved_run_inspection_job",
     "run_status_report_from_job",
@@ -129,6 +146,7 @@ __all__ = [
     "source_bundle_from_profile",
     "start_command_job",
     "inspect_runtime_preflight",
+    "maintenance_action_catalog",
     "runtime_limits_from_env",
     "validate_profile_sources",
 ]

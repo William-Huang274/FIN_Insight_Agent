@@ -6,11 +6,17 @@ services:
       target: workbench-backend
       args:
         REQUIREMENTS_FILE: requirements-workbench.txt
+        WORKBENCH_IMAGE_KIND: backend
+        WORKBENCH_RUNTIME_PROFILE: control-plane
     image: finsight-workbench:compose
     ports:
       - "127.0.0.1:8765:8765"
     environment:
       PYTHONUNBUFFERED: "1"
+      WORKBENCH_IMAGE_KIND: backend
+      WORKBENCH_RUNTIME_PROFILE: control-plane
+      WORKBENCH_SCRIPT_UPDATE_MODE: image_rebuild
+      WORKBENCH_DATA_UPDATE_MODE: data_build_jobs
       DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
       FMP_API_KEY: "${FMP_API_KEY:-}"
@@ -18,3 +24,9 @@ services:
       - ./configs:/app/configs
       - ./data:/app/data
       - ./reports:/app/reports
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/api/health/ready', timeout=5).read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

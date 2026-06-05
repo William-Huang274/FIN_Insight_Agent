@@ -15,14 +15,20 @@
 $ErrorActionPreference = "Stop"
 
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+$ConfigsData = Join-Path $RepoRoot "configs"
+$DataRoot = Join-Path $RepoRoot "data"
+$ReportsRoot = Join-Path $RepoRoot "reports"
 $WorkbenchData = Join-Path $RepoRoot "data\workbench_private"
 $ContainerName = "finsight-workbench-local"
 $Target = if ($FullImage) { "workbench" } else { "workbench-backend" }
 $RequirementsFile = if ($FullRuntime) { "requirements.txt" } else { "requirements-workbench.txt" }
 $InstallOsPackages = if ($FullRuntime) { "1" } else { "0" }
+$ImageKind = if ($FullRuntime) { "runtime" } elseif ($FullImage) { "workbench" } else { "backend" }
+$RuntimeProfile = if ($FullRuntime) { "integrated" } else { "control-plane" }
 
 Set-Location $RepoRoot
 New-Item -ItemType Directory -Force -Path $WorkbenchData | Out-Null
+New-Item -ItemType Directory -Force -Path $ReportsRoot | Out-Null
 
 if (-not $SkipBuild) {
     $BuildArgs = @(
@@ -33,6 +39,10 @@ if (-not $SkipBuild) {
         "REQUIREMENTS_FILE=$RequirementsFile",
         "--build-arg",
         "INSTALL_OS_PACKAGES=$InstallOsPackages",
+        "--build-arg",
+        "WORKBENCH_IMAGE_KIND=$ImageKind",
+        "--build-arg",
+        "WORKBENCH_RUNTIME_PROFILE=$RuntimeProfile",
         "-t",
         $ImageTag
     )
@@ -78,7 +88,9 @@ if ($ExistingContainer) {
     docker rm -f $ContainerName | Out-Null
 }
 
-$MountArg = "${WorkbenchData}:/app/data/workbench_private"
+$ConfigsMountArg = "${ConfigsData}:/app/configs"
+$DataMountArg = "${DataRoot}:/app/data"
+$ReportsMountArg = "${ReportsRoot}:/app/reports"
 $PortArg = "127.0.0.1:${Port}:8765"
 
 Write-Host "启动 Workbench 容器： http://127.0.0.1:$Port/"
@@ -91,7 +103,19 @@ $RunArgs = @(
     "-p",
     $PortArg,
     "-v",
-    $MountArg,
+    $ConfigsMountArg,
+    "-v",
+    $DataMountArg,
+    "-v",
+    $ReportsMountArg,
+    "-e",
+    "WORKBENCH_IMAGE_KIND=$ImageKind",
+    "-e",
+    "WORKBENCH_RUNTIME_PROFILE=$RuntimeProfile",
+    "-e",
+    "WORKBENCH_SCRIPT_UPDATE_MODE=image_rebuild",
+    "-e",
+    "WORKBENCH_DATA_UPDATE_MODE=data_build_jobs",
     $ImageTag
 )
 $ContainerId = & docker @RunArgs

@@ -268,6 +268,31 @@ def new_eval_run_job(
     )
 
 
+def new_maintenance_job(
+    *,
+    action_id: str,
+    action_label: str,
+    category: str,
+    job_id: str | None = None,
+    trace_id: str | None = None,
+) -> RunJob:
+    now = datetime.now().isoformat(timespec="seconds")
+    return RunJob(
+        job_id=job_id or f"maintenance_{uuid4().hex[:12]}",
+        job_type="maintenance",
+        status="queued",
+        trace_id=trace_id or new_trace_id(),
+        created_at=now,
+        updated_at=now,
+        metadata={
+            "runner": "workbench_subprocess",
+            "action_id": action_id,
+            "action_label": action_label,
+            "category": category,
+        },
+    )
+
+
 def new_data_build_job(
     *,
     step_id: str,

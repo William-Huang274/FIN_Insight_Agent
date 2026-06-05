@@ -219,6 +219,42 @@ docker run --rm -p 127.0.0.1:8765:8765 `
 
 镜像不包含私有数据、模型权重或 API key；这些仍然通过本地挂载目录和环境变量提供。后端 target 会使用内置静态页面或已有前端产物；完整 target 会在镜像构建时生成前端产物。
 
+真正一体化部署推荐使用：
+
+```powershell
+docker compose -f compose.yaml -f compose.runtime.yaml up --build
+```
+
+这个形态的约束是：
+
+- 镜像内置 Workbench 后端、前端产物、`requirements.txt` 完整 Python runtime 和基础 OS 包。
+- 宿主机只挂载 `configs/`、`data/`、`reports/` 作为持久层；私有数据、运行产物和配置不会被打入镜像。
+- `apps/`、`scripts/`、`src/` 在容器内视为不可变代码层。上线环境不要通过容器内手改脚本来更新逻辑。
+- 脚本更新默认策略是重建镜像；未来如果接签名脚本包或远程发布通道，走 Workbench 的维护接口扩展，不开放任意命令执行。
+- 数据更新走白名单 data-build job，成功后可回填 source bundle，前端或自动化脚本不需要直接拼 shell 命令。
+
+部署和更新契约可以通过这些接口查看：
+
+```text
+GET /api/system/deployment
+GET /api/system/maintenance/actions
+POST /api/system/maintenance/run
+GET /api/data-build/steps
+POST /api/data-build/preview
+POST /api/data-build/run
+POST /api/source-bundles/validate
+```
+
+`/api/system/deployment` 会报告当前是 `control-plane` 还是 `integrated` runtime、完整 runtime 依赖是否齐全、哪些目录是持久层、以及数据更新/脚本更新接口的状态。完整 runtime 模式下，如果 `requirements.txt` 对应依赖缺失，`/api/health/ready` 会降级，避免轻量镜像伪装成可执行完整链路的一体化部署。
+
+当前维护接口只启用只读检查动作：
+
+- `runtime_preflight`
+- `script_catalog_validate`
+- `data_build_catalog_validate`
+
+`script_update_reserved` 是为未来脚本更新保留的 action，默认不可运行。真实脚本更新应通过重建镜像或后续接入的签名更新机制完成。
+
 如果要做前端开发，可以另开一个终端：
 
 ```powershell

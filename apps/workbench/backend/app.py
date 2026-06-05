@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -30,6 +31,7 @@ from sec_agent.workbench import (
     build_agent_session_turn_command,
     build_eval_command,
     build_local_smoke_command,
+    build_maintenance_command,
     build_native_checkpoint_resume_command,
     cancel_command_job,
     default_store_path,
@@ -37,13 +39,17 @@ from sec_agent.workbench import (
     eval_output_path,
     eval_runner_catalog,
     get_data_build_step,
+    get_maintenance_action,
+    inspect_deployment,
     inspect_runtime_preflight,
     inspect_run_artifacts,
+    maintenance_action_catalog,
     new_agent_ask_job,
     new_agent_session_turn_job,
     new_data_build_job,
     new_eval_run_job,
     new_local_smoke_job,
+    new_maintenance_job,
     new_native_checkpoint_resume_job,
     new_saved_run_inspection_job,
     profile_from_env_file,
@@ -213,6 +219,14 @@ class StoreBackupRequest(BaseModel):
     backup_dir: str | None = None
 
 
+class MaintenanceRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    action_id: str
+    job_id: str | None = None
+    parameters: dict[str, object] = Field(default_factory=dict)
+
+
 class NativeCheckpointInspectRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -296,7 +310,7 @@ def create_app(
     def readiness():
         payload = _system_status_payload(store=store, path_policy=path_policy, recovery_report=recovery_report)
         if payload["status"] != "ok":
-            raise HTTPException(status_code=503, detail=payload)
+            raise HTTPException(status_code=503, detail=jsonable_encoder(payload))
         return payload
 
     @app.get("/api/system/status")
@@ -320,8 +334,57 @@ def create_app(
             "elapsed_header": "X-Elapsed-Time-Ms",
             "runtime_limits": runtime_limits_from_env(),
             "path_policy": path_policy.report(),
+            "deployment_schema_version": "finsight_workbench_deployment_v0.1",
+            "maintenance_schema_version": "finsight_workbench_maintenance_actions_v0.1",
             "error_schema_version": "finsight_workbench_api_error_v0.1",
         }
+
+    @app.get("/api/system/deployment")
+    def system_deployment():
+        runtime_preflight = inspect_runtime_preflight(REPO_ROOT)
+        frontend_bundled = (FRONTEND_DIST_ROOT / "index.html").exists()
+        return inspect_deployment(
+            repo_root=REPO_ROOT,
+            frontend_bundled=frontend_bundled,
+            path_policy=path_policy.report(),
+            runtime_preflight=runtime_preflight,
+        )
+
+    @app.get("/api/system/maintenance/actions")
+    def list_maintenance_actions():
+        return maintenance_action_catalog(REPO_ROOT)
+
+    @app.post("/api/system/maintenance/run")
+    def run_maintenance_action(payload: MaintenanceRunRequest, request: Request):
+        action = get_maintenance_action(REPO_ROOT, payload.action_id)
+        if action is None:
+            raise HTTPException(status_code=404, detail=f"maintenance_action_not_found: {payload.action_id}")
+        try:
+            spec = build_maintenance_command(
+                repo_root=REPO_ROOT,
+                action_id=payload.action_id,
+                parameters=payload.parameters,
+            )
+        except PermissionError as exc:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "reason": "maintenance_action_disabled",
+                    "action_id": payload.action_id,
+                    "status": action.status,
+                },
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        job = new_maintenance_job(
+            action_id=action.action_id,
+            action_label=action.label,
+            category=action.category,
+            job_id=payload.job_id,
+            trace_id=request_trace_id(request),
+        )
+        start_command_job(store, job, spec)
+        return {"job": job, "action": action}
 
     @app.post("/api/system/store/backup")
     def backup_store(payload: StoreBackupRequest) -> StoreBackupReport:
@@ -743,6 +806,13 @@ def _system_status_payload(
     frontend_available = (FRONTEND_DIST_ROOT / "index.html").exists() or (FRONTEND_ROOT / "index.html").exists()
     store_health = store.inspect_health()
     runtime_preflight = inspect_runtime_preflight(REPO_ROOT)
+    frontend_bundled = (FRONTEND_DIST_ROOT / "index.html").exists()
+    deployment = inspect_deployment(
+        repo_root=REPO_ROOT,
+        frontend_bundled=frontend_bundled,
+        path_policy=path_policy.report(),
+        runtime_preflight=runtime_preflight,
+    )
     path_status = {
         "repo_root": _path_status(REPO_ROOT),
         "data_root": _path_status(REPO_ROOT / "data"),
@@ -756,12 +826,14 @@ def _system_status_payload(
         "repo_root": "ok" if path_status["repo_root"]["exists"] else "missing",
         "workbench_private": "ok" if path_status["workbench_private"]["writable"] else "not_writable",
         "runtime_preflight": runtime_preflight.status,
+        "deployment": deployment.status,
     }
     critical_ok = (
         store_health.status == "ok"
         and checks["repo_root"] == "ok"
         and checks["workbench_private"] == "ok"
         and runtime_preflight.status == "ok"
+        and deployment.status == "ok"
     )
     return {
         "status": "ok" if critical_ok else "degraded",
@@ -774,6 +846,7 @@ def _system_status_payload(
         "path_policy": path_policy.report(),
         "runtime_limits": runtime_limits_from_env(),
         "runtime_preflight": runtime_preflight,
+        "deployment": deployment,
         "job_recovery": recovery_report,
     }
 

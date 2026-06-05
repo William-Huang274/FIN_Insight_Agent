@@ -76,6 +76,114 @@ def test_workbench_backend_exposes_readiness_preflight_and_contracts(tmp_path: P
     assert contracts.status_code == 200
     assert "interrupted" in contracts.json()["run_statuses"]["terminal"]
     assert contracts.json()["runtime_limits"]["max_active_jobs"] >= 1
+    assert contracts.json()["deployment_schema_version"] == "finsight_workbench_deployment_v0.1"
+    assert contracts.json()["maintenance_schema_version"] == "finsight_workbench_maintenance_actions_v0.1"
+
+
+def test_workbench_backend_reports_deployment_update_interfaces(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("WORKBENCH_RUNTIME_PROFILE", "control-plane")
+    monkeypatch.setenv("WORKBENCH_IMAGE_KIND", "backend")
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    status_response = client.get("/api/system/status")
+    deployment_response = client.get("/api/system/deployment")
+
+    assert status_response.status_code == 200
+    assert status_response.json()["checks"]["deployment"] == "ok"
+    assert deployment_response.status_code == 200
+    payload = deployment_response.json()
+    assert payload["schema_version"] == "finsight_workbench_deployment_v0.1"
+    assert payload["runtime_profile"] == "control-plane"
+    assert payload["image_kind"] == "backend"
+    assert payload["data_update_mode"] == "data_build_jobs"
+    interfaces = {item["interface_id"]: item for item in payload["update_interfaces"]}
+    assert interfaces["data_build_run"]["status"] == "available"
+    assert interfaces["script_update_reserved"]["status"] == "reserved"
+
+
+def test_workbench_backend_integrated_runtime_requires_full_dependencies(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from sec_agent.workbench.runtime_preflight import RuntimePreflightReport
+
+    def fake_preflight(repo_root: Path) -> RuntimePreflightReport:
+        return RuntimePreflightReport(
+            status="ok",
+            python_executable="python",
+            python_version="3.11",
+            platform="test",
+            control_plane_modules=[],
+            full_runtime_modules=[],
+            scripts=[],
+            shell={"bash": True, "wsl.exe": False},
+            missing_control_plane_modules=[],
+            missing_full_runtime_modules=["numpy"],
+            missing_scripts=[],
+        )
+
+    monkeypatch.setenv("WORKBENCH_RUNTIME_PROFILE", "integrated")
+    monkeypatch.setattr("apps.workbench.backend.app.inspect_runtime_preflight", fake_preflight)
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    status_response = client.get("/api/system/status")
+    ready_response = client.get("/api/health/ready")
+
+    assert status_response.status_code == 200
+    assert status_response.json()["status"] == "degraded"
+    assert status_response.json()["deployment"]["status"] == "degraded"
+    assert ready_response.status_code == 503
+    assert ready_response.json()["detail"]["checks"]["deployment"] == "degraded"
+
+
+def test_workbench_backend_lists_and_starts_maintenance_action(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_start_command_job(store, job, spec) -> None:
+        captured["job"] = job
+        captured["spec"] = spec
+        store.upsert_run_job(job)
+
+    monkeypatch.setattr("apps.workbench.backend.app.start_command_job", fake_start_command_job)
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    catalog_response = client.get("/api/system/maintenance/actions")
+    run_response = client.post(
+        "/api/system/maintenance/run",
+        json={"action_id": "script_catalog_validate", "job_id": "maintenance_fixture"},
+    )
+
+    assert catalog_response.status_code == 200
+    actions = {item["action_id"]: item for item in catalog_response.json()["actions"]}
+    assert actions["script_catalog_validate"]["enabled"] is True
+    assert actions["script_update_reserved"]["status"] == "reserved"
+    assert run_response.status_code == 200
+    payload = run_response.json()
+    assert payload["job"]["job_type"] == "maintenance"
+    assert payload["job"]["metadata"]["action_id"] == "script_catalog_validate"
+    spec = captured["spec"]
+    assert "scripts/workbench/runtime_maintenance.py" in spec.args
+    assert "script-catalog" in spec.args
+
+
+def test_workbench_backend_rejects_reserved_script_update_action(tmp_path: Path) -> None:
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.post(
+        "/api/system/maintenance/run",
+        json={"action_id": "script_update_reserved"},
+    )
+
+    assert response.status_code == 409
+    payload = response.json()
+    assert payload["detail"]["reason"] == "maintenance_action_disabled"
+    assert payload["detail"]["action_id"] == "script_update_reserved"
 
 
 def test_workbench_store_concurrent_event_appends_keep_monotonic_sequences(tmp_path: Path) -> None:

@@ -86,11 +86,15 @@ def iter_sec_filing_manifest(
                     ):
                         continue
 
-                    html_path = ticker_dir / f"{form_type}.html"
+                    metadata = _read_json(metadata_path)
+                    html_path = _metadata_html_path(
+                        metadata_path=metadata_path,
+                        metadata=metadata,
+                        default_path=ticker_dir / f"{form_type}.html",
+                    )
                     if require_html and not html_path.exists():
                         continue
 
-                    metadata = _read_json(metadata_path)
                     record = _build_record(
                         year=int(year_dir.name),
                         category_slug=category_dir.name,
@@ -228,6 +232,25 @@ def _read_json(path: Path) -> dict[str, Any]:
         return json.load(f)
 
 
+def _metadata_html_path(
+    *,
+    metadata_path: Path,
+    metadata: dict[str, Any],
+    default_path: Path,
+) -> Path:
+    raw_path = (
+        metadata.get("local_html_path")
+        or metadata.get("local_annual_package_path")
+        or metadata.get("local_exhibit_path")
+    )
+    if not raw_path:
+        return default_path
+    path = Path(str(raw_path))
+    if path.is_absolute():
+        return path
+    return (metadata_path.parent / path).resolve()
+
+
 def _normalize_years(values: Iterable[int | str] | None) -> set[str] | None:
     if values is None:
         return None
@@ -268,8 +291,8 @@ def _filing_period_metadata(
             "fiscal_year_source": "document_fiscal_year_focus",
             "document_fiscal_year_focus": document_year,
         }
-    if normalized_form == "10-K":
-        if _annual_document_year_conflicts_with_report_date(document_year, report_date):
+    if normalized_form in {"10-K", "20-F", "40-F"}:
+        if normalized_form == "10-K" and _annual_document_year_conflicts_with_report_date(document_year, report_date):
             fiscal_year_fields = {
                 "fiscal_year": report_year,
                 "fiscal_year_source": "annual_report_date_over_document_fiscal_year_focus",

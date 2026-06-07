@@ -1,0 +1,172 @@
+{
+  "schema_version": "fin_agent_sec_annual_download_config_summary_v0.1",
+  "status": "pass",
+  "dataset_id": "tier2_supply_chain_sec_annual_v0_1",
+  "source_family": "sec_primary_filing",
+  "source_tier": "primary_sec_filing",
+  "universe_tier": "tier2_supply_chain_supplement",
+  "company_count": 83,
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "form_types": [
+    "10-K",
+    "20-F",
+    "40-F"
+  ],
+  "company_form_type_counts": {
+    "AMKR": 1,
+    "ARM": 1,
+    "ASML": 1,
+    "BHP": 1,
+    "CCJ": 1,
+    "GFS": 1,
+    "NVO": 1,
+    "RIO": 1,
+    "SHOP": 1,
+    "TM": 1,
+    "TSM": 1,
+    "ACLS": 1,
+    "AEHR": 1,
+    "AZN": 1,
+    "BWXT": 1,
+    "CAMT": 1,
+    "CRDO": 1,
+    "FLNC": 1,
+    "FN": 1,
+    "FORM": 1,
+    "GSK": 1,
+    "HMC": 1,
+    "LEU": 1,
+    "LSCC": 1,
+    "MDB": 1,
+    "MELI": 1,
+    "MP": 1,
+    "NET": 1,
+    "NXT": 1,
+    "OLED": 1,
+    "ONTO": 1,
+    "RMBS": 1,
+    "SCCO": 1,
+    "SE": 1,
+    "SNY": 1,
+    "SONY": 1,
+    "TEAM": 1,
+    "TECK": 1,
+    "TLN": 1,
+    "VALE": 1,
+    "WOLF": 1,
+    "ALNY": 1,
+    "ARGX": 1,
+    "ARRY": 1,
+    "BE": 1,
+    "BILL": 1,
+    "BMRN": 1,
+    "BNTX": 1,
+    "CSIQ": 1,
+    "DIOD": 1,
+    "DNN": 1,
+    "DQ": 1,
+    "ENLT": 1,
+    "ENPH": 1,
+    "ESTC": 1,
+    "FIVN": 1,
+    "GTLB": 1,
+    "HUBS": 1,
+    "IOT": 1,
+    "JKS": 1,
+    "KRYS": 1,
+    "LAC": 1,
+    "LCID": 1,
+    "LI": 1,
+    "MTSI": 1,
+    "NIO": 1,
+    "NNE": 1,
+    "NXE": 1,
+    "OKLO": 1,
+    "PATH": 1,
+    "PCOR": 1,
+    "PLUG": 1,
+    "RIVN": 1,
+    "RUN": 1,
+    "S": 1,
+    "SEDG": 1,
+    "SMR": 1,
+    "SQM": 1,
+    "TENB": 1,
+    "TOST": 1,
+    "U": 1,
+    "UROY": 1,
+    "XPEV": 1
+  },
+  "expected_filing_tasks": 249,
+  "skipped_count": 15,
+  "skipped": [
+    {
+      "ticker": "000660.KS",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "005930.KS",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "2317.TW",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "2382.TW",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "300750.SZ",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "8035.T",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "1211.HK",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "2308.TW",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "3231.TW",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "373220.KS",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "6146.T",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "6723.T",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "6752.T",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "6857.T",
+      "reason": "not_sec_download_eligible"
+    },
+    {
+      "ticker": "IFX.DE",
+      "reason": "not_sec_download_eligible"
+    }
+  ],
+  "outputs": {
+    "config": "configs/data_sources/tier2_supply_chain_sec_annual_fy2023_2025.yaml",
+    "summary": "data/manifests/tier2_supply_chain_sec_annual_download_config_summary_v0_1.json"
+  }
+}

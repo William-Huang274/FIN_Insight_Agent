@@ -1,11 +1,13 @@
 /data/raw_private/
 /data/processed_private/
+/data/staging/
 /data/models_private/
 /data/indexes/
 /data/workbench_private/
 /data/logs/*.jsonl
 /data/logs/*.json
 /data/logs/*.log
+/data/logs/*.pid
 
 # Local diagnostics and sync scratch
 /.tmp_*

@@ -1,0 +1,33 @@
+schema_version: fin_agent_company_earnings_material_profiles_v0_1
+purpose: Keep already-validated US 8-K earnings material on the existing SEC path while staging non-US official company-authored earnings materials from issuer IR pages.
+default_years: [2024, 2025]
+default_fiscal_periods: ["FY", "Q1", "Q2", "Q3", "Q4"]
+source_boundary_policy:
+  audited_or_statutory_facts: false
+  may_explain_management_commentary: true
+  may_supply_relationship_leads: true
+  must_not_replace_filing_or_ledger_facts: true
+us_sec_reuse:
+  integration_mode: reuse_existing_sec_8k_earnings_pipeline
+  source_family: sec_8k_earnings_release
+  source_tier: company_authored_unaudited_sec_filing
+  existing_scripts:
+    - scripts/data_sec/download_sec_8k_earnings.py
+    - scripts/data_sec/build_sec_8k_earnings_manifest.py
+    - scripts/data_sec/build_sec_8k_earnings_chunks.py
+  source_boundary: company_authored_unaudited_sec_filing_not_audited_ledger_fact
+non_us_company_ir:
+  integration_mode: new_company_ir_material_locator
+  preferred_source_kind: company_ir
+  download_strategy: company_ir_material_locator
+  material_types:
+    earnings_release:
+      source_family: company_earnings_release
+      source_type: earnings_release
+      source_tier: company_authored_earnings_material
+      search_terms: ["results", "earnings", "financial results", "quarterly results"]
+    investor_presentation:
+      source_family: company_presentation
+      source_type: investor_presentation
+      source_tier: company_authored_presentation
+      search_terms: ["presentation", "investor presentation", "earnings presentation", "results presentation"]

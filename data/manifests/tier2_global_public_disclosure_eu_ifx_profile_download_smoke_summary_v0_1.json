@@ -1,0 +1,26 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_download_tasks_summary_v0.1",
+  "status": "pass",
+  "task_count": 3,
+  "company_count": 1,
+  "profile_counts": {
+    "eu_regulated_annual_report": 3
+  },
+  "report_type_counts": {
+    "annual_report": 3
+  },
+  "download_strategy_counts": {
+    "company_ir_official_report_download": 3
+  },
+  "download_status_counts": {
+    "document_downloaded": 3
+  },
+  "document_downloaded_count": 3,
+  "downloaded_byte_count": 15476160,
+  "issue_counts": {},
+  "issues": [],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_eu_ifx_profile_download_smoke_v0_1.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_eu_ifx_profile_download_smoke_summary_v0_1.json"
+  }
+}

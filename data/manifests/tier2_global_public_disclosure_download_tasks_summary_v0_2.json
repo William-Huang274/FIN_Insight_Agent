@@ -1,0 +1,39 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_download_tasks_summary_v0.1",
+  "status": "pass",
+  "task_count": 69,
+  "company_count": 15,
+  "profile_counts": {
+    "eu_regulated_annual_report": 3,
+    "hkex_annual_report": 3,
+    "jp_edinet_annual_securities_report": 30,
+    "kr_dart_business_report": 18,
+    "szse_cninfo_annual_report": 3,
+    "tw_mops_annual_report": 12
+  },
+  "report_type_counts": {
+    "annual_report": 30,
+    "annual_securities_report": 15,
+    "business_report": 9,
+    "integrated_report": 15
+  },
+  "download_strategy_counts": {
+    "cninfo_security_report_search": 3,
+    "company_ir_official_report_download": 3,
+    "edinet_document_search": 30,
+    "hkexnews_issuer_report_search": 3,
+    "mops_company_report_lookup": 12,
+    "official_locator_then_disclosure_search": 18
+  },
+  "download_status_counts": {
+    "dry_run_ready": 69
+  },
+  "document_downloaded_count": 0,
+  "downloaded_byte_count": 0,
+  "issue_counts": {},
+  "issues": [],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_download_tasks_v0_2.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_download_tasks_summary_v0_2.json"
+  }
+}

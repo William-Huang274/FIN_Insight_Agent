@@ -1,0 +1,894 @@
+schema_version: fin_agent_tier2_supply_chain_supplements_v0_1
+purpose: Supplement S&P 500 plus current coverage with public-company issuers that are important for sector-depth and upstream/downstream supply-chain analysis, including SEC issuers and non-US issuers with comparable public annual or exchange filings.
+promotion_role: sector_depth_supply_chain_supplement
+selection_policy:
+  include_only_if:
+    - SEC ticker/CIK can be resolved, or a non-US public disclosure profile has an official annual-report or exchange-filing source.
+    - Company improves a named supply-chain or sector-depth coverage gap.
+    - Company is not already covered by Tier 1 unless it needs a role tag for audit only.
+  use_boundary:
+    - Tier 2 supplements are not a replacement for Tier 1 broad-market coverage.
+    - Foreign issuers must preserve 20-F/40-F/6-K source-family boundaries.
+    - Non-US public annual reports, exchange filings, and regulator filings are primary company disclosure when source provenance is preserved.
+    - Non-reporting private strategic nodes remain source candidates, not main evidence companies.
+source_priority_policy:
+  - SEC 10-K, 10-Q, 20-F, 40-F, and 6-K stay in the SEC ingestion path.
+  - Non-US official annual reports, exchange filings, and regulator filings use the global public disclosure ingestion path.
+  - Company IR pages are used as source locators; the report document or exchange filing remains the cited evidence.
+  - News, press, websites, and private-company pages are lead evidence unless corroborated by primary disclosure.
+
+global_public_disclosure_companies:
+  - ticker: 005930.KS
+    issuer_id: KR-005930
+    exchange_symbol: "005930"
+    company_name: Samsung Electronics Co., Ltd.
+    country: South Korea
+    listing_exchange: KRX
+    sector: Information Technology
+    industry_group: memory_foundry_electronics
+    supply_chain_role: memory_foundry_consumer_electronics
+    priority: p0
+    source_family: global_public_annual_report
+    disclosure_profile: kr_dart_business_report
+    reporting_currency: KRW
+    official_sources:
+      - kind: company_ir
+        url: https://www.samsung.com/global/ir/reports-disclosures/business-report/
+      - kind: regulator
+        url: https://englishdart.fss.or.kr/
+    rationale: Memory, foundry, smartphone, display, and electronics supply-chain node for AI infrastructure and consumer hardware readthrough.
+  - ticker: 000660.KS
+    issuer_id: KR-000660
+    exchange_symbol: "000660"
+    company_name: SK hynix Inc.
+    country: South Korea
+    listing_exchange: KRX
+    sector: Information Technology
+    industry_group: memory_semiconductors
+    supply_chain_role: hbm_dram_nand_supplier
+    priority: p0
+    source_family: global_public_annual_report
+    disclosure_profile: kr_dart_business_report
+    reporting_currency: KRW
+    official_sources:
+      - kind: company_ir
+        url: https://www.skhynix.com/ir/
+      - kind: regulator
+        url: https://englishdart.fss.or.kr/
+    rationale: HBM, DRAM, and NAND supplier exposure for AI accelerator and server supply chains.
+  - ticker: 2317.TW
+    issuer_id: TW-2317
+    exchange_symbol: "2317"
+    company_name: Hon Hai Precision Industry Co., Ltd.
+    country: Taiwan
+    listing_exchange: TWSE
+    sector: Information Technology
+    industry_group: electronics_manufacturing_services
+    supply_chain_role: foxconn_ai_server_electronics_assembly
+    priority: p0
+    source_family: global_public_annual_report
+    disclosure_profile: tw_mops_annual_report
+    reporting_currency: TWD
+    official_sources:
+      - kind: company_ir
+        url: https://www.honhai.com/en-us/investor-relations
+      - kind: regulator
+        url: https://mops.twse.com.tw/mops/web/index
+    rationale: Foxconn electronics manufacturing, AI server, iPhone assembly, and global EMS supply-chain node.
+  - ticker: 2382.TW
+    issuer_id: TW-2382
+    exchange_symbol: "2382"
+    company_name: Quanta Computer Inc.
+    country: Taiwan
+    listing_exchange: TWSE
+    sector: Information Technology
+    industry_group: server_odm
+    supply_chain_role: ai_server_odm
+    priority: p0
+    source_family: global_public_annual_report
+    disclosure_profile: tw_mops_annual_report
+    reporting_currency: TWD
+    official_sources:
+      - kind: company_ir
+        url: https://www.quantatw.com/Quanta/english/investment/financials.aspx
+      - kind: regulator
+        url: https://mops.twse.com.tw/mops/web/index
+    rationale: AI server and cloud hardware ODM readthrough for hyperscaler capex.
+  - ticker: 3231.TW
+    issuer_id: TW-3231
+    exchange_symbol: "3231"
+    company_name: Wistron Corporation
+    country: Taiwan
+    listing_exchange: TWSE
+    sector: Information Technology
+    industry_group: electronics_manufacturing_services
+    supply_chain_role: ai_server_odm_electronics_assembly
+    priority: p1
+    source_family: global_public_annual_report
+    disclosure_profile: tw_mops_annual_report
+    reporting_currency: TWD
+    official_sources:
+      - kind: company_ir
+        url: https://www.wistron.com/CMS/ChangeLanguage/2
+      - kind: regulator
+        url: https://mops.twse.com.tw/mops/web/index
+    rationale: AI server, PC, and electronics manufacturing exposure.
+  - ticker: 2308.TW
+    issuer_id: TW-2308
+    exchange_symbol: "2308"
+    company_name: Delta Electronics, Inc.
+    country: Taiwan
+    listing_exchange: TWSE
+    sector: Industrials
+    industry_group: power_thermal_components
+    supply_chain_role: power_supplies_thermal_management
+    priority: p1
+    source_family: global_public_annual_report
+    disclosure_profile: tw_mops_annual_report
+    reporting_currency: TWD
+    official_sources:
+      - kind: company_ir
+        url: https://www.deltaww.com/en-US/investor
+      - kind: regulator
+        url: https://mops.twse.com.tw/mops/web/index
+    rationale: Data-center power supplies, thermal systems, industrial automation, and electrification exposure.
+  - ticker: 300750.SZ
+    issuer_id: CN-300750
+    exchange_symbol: "300750"
+    company_name: Contemporary Amperex Technology Co., Limited
+    country: China
+    listing_exchange: SZSE
+    sector: Industrials
+    industry_group: batteries
+    supply_chain_role: ev_grid_battery_supplier
+    priority: p0
+    source_family: global_public_annual_report
+    disclosure_profile: szse_cninfo_annual_report
+    reporting_currency: CNY
+    official_sources:
+      - kind: company_ir
+        url: https://www.catl.com/en/investor/
+      - kind: exchange
+        url: https://www.szse.cn/English/disclosure/listed/index.html
+      - kind: disclosure_platform
+        url: http://www.cninfo.com.cn/new/index
+    rationale: Global EV battery and grid-storage battery supplier for auto, utilities, and energy-storage sector-depth analysis.
+  - ticker: 1211.HK
+    issuer_id: HK-01211
+    exchange_symbol: "01211"
+    company_name: BYD Company Limited
+    country: China
+    listing_exchange: HKEX
+    sector: Consumer Discretionary
+    industry_group: autos_batteries
+    supply_chain_role: ev_oem_battery_supplier
+    priority: p1
+    source_family: global_public_annual_report
+    disclosure_profile: hkex_annual_report
+    reporting_currency: CNY
+    official_sources:
+      - kind: company_ir
+        url: https://www.bydglobal.com/en/Investor.html
+      - kind: exchange
+        url: https://www.hkexnews.hk/
+    rationale: EV OEM, battery, power electronics, and China auto demand readthrough.
+  - ticker: 373220.KS
+    issuer_id: KR-373220
+    exchange_symbol: "373220"
+    company_name: LG Energy Solution, Ltd.
+    country: South Korea
+    listing_exchange: KRX
+    sector: Industrials
+    industry_group: batteries
+    supply_chain_role: ev_grid_battery_supplier
+    priority: p1
+    source_family: global_public_annual_report
+    disclosure_profile: kr_dart_business_report
+    reporting_currency: KRW
+    official_sources:
+      - kind: company_ir
+        url: https://www.lgensol.com/en/ir
+      - kind: regulator
+        url: https://englishdart.fss.or.kr/
+    rationale: Battery supplier for EV and energy-storage supply-chain comparisons.
+  - ticker: 6752.T
+    issuer_id: JP-6752
+    exchange_symbol: "6752"
+    company_name: Panasonic Holdings Corporation
+    country: Japan
+    listing_exchange: TSE
+    sector: Industrials
+    industry_group: batteries_electronics
+    supply_chain_role: battery_electronics_supplier
+    priority: p1
+    source_family: global_public_annual_report
+    disclosure_profile: jp_edinet_annual_securities_report
+    reporting_currency: JPY
+    official_sources:
+      - kind: company_ir
+        url: https://holdings.panasonic/global/corporate/investors.html
+      - kind: regulator
+        url: https://disclosure2.edinet-fsa.go.jp/
+    rationale: Battery, industrial, and electronics supplier exposure across EV and consumer/industrial chains.
+  - ticker: 8035.T
+    issuer_id: JP-8035
+    exchange_symbol: "8035"
+    company_name: Tokyo Electron Limited
+    country: Japan
+    listing_exchange: TSE
+    sector: Information Technology
+    industry_group: semiconductor_equipment
+    supply_chain_role: wafer_fab_equipment
+    priority: p0
+    source_family: global_public_annual_report
+    disclosure_profile: jp_edinet_annual_securities_report
+    reporting_currency: JPY
+    official_sources:
+      - kind: company_ir
+        url: https://www.tel.com/ir/
+      - kind: regulator
+        url: https://disclosure2.edinet-fsa.go.jp/
+    rationale: Semiconductor equipment supplier for etch, deposition, and wafer-fab cycle analysis.
+  - ticker: 6857.T
+    issuer_id: JP-6857
+    exchange_symbol: "6857"
+    company_name: Advantest Corporation
+    country: Japan
+    listing_exchange: TSE
+    sector: Information Technology
+    industry_group: semiconductor_test_equipment
+    supply_chain_role: semiconductor_test_equipment
+    priority: p1
+    source_family: global_public_annual_report
+    disclosure_profile: jp_edinet_annual_securities_report
+    reporting_currency: JPY
+    official_sources:
+      - kind: company_ir
+        url: https://www.advantest.com/investors/
+      - kind: regulator
+        url: https://disclosure2.edinet-fsa.go.jp/
+    rationale: Semiconductor test equipment exposure, especially AI and advanced packaging cycles.
+  - ticker: 6146.T
+    issuer_id: JP-6146
+    exchange_symbol: "6146"
+    company_name: DISCO Corporation
+    country: Japan
+    listing_exchange: TSE
+    sector: Information Technology
+    industry_group: semiconductor_manufacturing_tools
+    supply_chain_role: dicing_grinding_polishing_tools
+    priority: p1
+    source_family: global_public_annual_report
+    disclosure_profile: jp_edinet_annual_securities_report
+    reporting_currency: JPY
+    official_sources:
+      - kind: company_ir
+        url: https://www.disco.co.jp/eg/ir/
+      - kind: regulator
+        url: https://disclosure2.edinet-fsa.go.jp/
+    rationale: Back-end semiconductor tools for wafer dicing, grinding, and advanced packaging.
+  - ticker: IFX.DE
+    issuer_id: DE-IFX
+    exchange_symbol: IFX
+    company_name: Infineon Technologies AG
+    country: Germany
+    listing_exchange: XETRA
+    sector: Information Technology
+    industry_group: power_automotive_semiconductors
+    supply_chain_role: power_auto_industrial_semiconductors
+    priority: p1
+    source_family: global_public_annual_report
+    disclosure_profile: eu_regulated_annual_report
+    reporting_currency: EUR
+    official_sources:
+      - kind: company_ir
+        url: https://www.infineon.com/cms/en/about-infineon/investor/
+    rationale: Power, automotive, and industrial semiconductor supplier for EV, renewables, and industrial chains.
+  - ticker: 6723.T
+    issuer_id: JP-6723
+    exchange_symbol: "6723"
+    company_name: Renesas Electronics Corporation
+    country: Japan
+    listing_exchange: TSE
+    sector: Information Technology
+    industry_group: automotive_industrial_semiconductors
+    supply_chain_role: automotive_industrial_microcontrollers
+    priority: p1
+    source_family: global_public_annual_report
+    disclosure_profile: jp_edinet_annual_securities_report
+    reporting_currency: JPY
+    official_sources:
+      - kind: company_ir
+        url: https://www.renesas.com/us/en/about/investor-relations
+      - kind: regulator
+        url: https://disclosure2.edinet-fsa.go.jp/
+    rationale: Automotive and industrial MCU/analog supplier for auto and factory-cycle analysis.
+
+companies:
+  - ticker: TSM
+    sector: Information Technology
+    industry_group: semiconductors
+    supply_chain_role: foundry
+    priority: p0
+    target_forms: ["20-F", "6-K"]
+    rationale: Advanced-node foundry capacity and AI accelerator supply-chain bottleneck.
+  - ticker: ASML
+    sector: Information Technology
+    industry_group: semiconductor_equipment
+    supply_chain_role: lithography_equipment
+    priority: p0
+    target_forms: ["20-F", "6-K"]
+    rationale: EUV lithography bottleneck for leading-edge semiconductor capacity.
+  - ticker: ARM
+    sector: Information Technology
+    industry_group: semiconductor_ip
+    supply_chain_role: cpu_ip_licensing
+    priority: p0
+    target_forms: ["20-F", "6-K"]
+    rationale: CPU/IP licensing exposure across mobile, edge, and AI infrastructure.
+  - ticker: GFS
+    sector: Information Technology
+    industry_group: semiconductors
+    supply_chain_role: mature_node_foundry
+    priority: p0
+    target_forms: ["20-F", "6-K"]
+    rationale: Mature-node foundry capacity and industrial/auto semiconductor exposure.
+  - ticker: AMKR
+    sector: Information Technology
+    industry_group: semiconductor_services
+    supply_chain_role: outsourced_packaging_test
+    priority: p0
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: OSAT packaging and test node for semiconductor supply chains.
+  - ticker: ONTO
+    sector: Information Technology
+    industry_group: semiconductor_equipment
+    supply_chain_role: metrology_inspection
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Metrology and process-control equipment exposure.
+  - ticker: ACLS
+    sector: Information Technology
+    industry_group: semiconductor_equipment
+    supply_chain_role: ion_implant_equipment
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Semiconductor equipment cycle outside the largest S&P 500 equipment names.
+  - ticker: FORM
+    sector: Information Technology
+    industry_group: semiconductor_services
+    supply_chain_role: wafer_probe_test
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Wafer probe cards and semiconductor test capacity signal.
+  - ticker: CAMT
+    sector: Information Technology
+    industry_group: semiconductor_equipment
+    supply_chain_role: inspection_metrology
+    priority: p1
+    target_forms: ["20-F", "6-K"]
+    rationale: Advanced packaging inspection and metrology exposure.
+  - ticker: AEHR
+    sector: Information Technology
+    industry_group: semiconductor_services
+    supply_chain_role: burn_in_test
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Burn-in and wafer-level test exposure for silicon carbide and advanced semiconductors.
+  - ticker: LSCC
+    sector: Information Technology
+    industry_group: semiconductors
+    supply_chain_role: fpga_low_power_logic
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Low-power FPGA and industrial/edge semiconductor demand.
+  - ticker: RMBS
+    sector: Information Technology
+    industry_group: semiconductor_ip
+    supply_chain_role: memory_interface_ip
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Memory interface IP and data-center memory architecture exposure.
+  - ticker: WOLF
+    sector: Information Technology
+    industry_group: power_semiconductors
+    supply_chain_role: silicon_carbide
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Silicon-carbide power semiconductor supply chain.
+  - ticker: OLED
+    sector: Information Technology
+    industry_group: display_materials
+    supply_chain_role: display_material_ip
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: OLED material and display royalty exposure.
+  - ticker: FN
+    sector: Information Technology
+    industry_group: electronics_manufacturing
+    supply_chain_role: optical_electronics_manufacturing
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Optical/electronics manufacturing services for networking and data-center chains.
+  - ticker: CRDO
+    sector: Information Technology
+    industry_group: networking_semiconductors
+    supply_chain_role: high_speed_connectivity
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: High-speed connectivity chips for AI networking.
+  - ticker: MTSI
+    sector: Information Technology
+    industry_group: analog_rf_semiconductors
+    supply_chain_role: rf_analog_components
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: RF/analog component exposure across telecom and defense.
+  - ticker: DIOD
+    sector: Information Technology
+    industry_group: analog_power_semiconductors
+    supply_chain_role: discrete_analog_components
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Discrete, analog, and power semiconductor exposure.
+
+  - ticker: MDB
+    sector: Information Technology
+    industry_group: cloud_software
+    supply_chain_role: database_platform
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Developer data platform and cloud software demand signal.
+  - ticker: NET
+    sector: Information Technology
+    industry_group: cloud_network_security
+    supply_chain_role: edge_network_security
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Edge network, security, and traffic demand signal.
+  - ticker: TEAM
+    sector: Information Technology
+    industry_group: collaboration_software
+    supply_chain_role: developer_collaboration
+    priority: p1
+    target_forms: ["20-F", "6-K"]
+    rationale: Developer workflow and collaboration software comparison.
+  - ticker: HUBS
+    sector: Information Technology
+    industry_group: application_software
+    supply_chain_role: crm_marketing_software
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: SMB demand and marketing software cycle.
+  - ticker: GTLB
+    sector: Information Technology
+    industry_group: devops_software
+    supply_chain_role: devops_platform
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: DevOps platform and software development cycle.
+  - ticker: PATH
+    sector: Information Technology
+    industry_group: automation_software
+    supply_chain_role: rpa_automation
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Enterprise automation demand.
+  - ticker: BILL
+    sector: Information Technology
+    industry_group: fintech_software
+    supply_chain_role: smb_payments_ap_ar
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: SMB payment and back-office software demand.
+  - ticker: TOST
+    sector: Information Technology
+    industry_group: vertical_software
+    supply_chain_role: restaurant_pos_payments
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Restaurant software, payments, and SMB demand signal.
+  - ticker: IOT
+    sector: Information Technology
+    industry_group: industrial_iot_software
+    supply_chain_role: fleet_operations_iot
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Fleet, logistics, and industrial IoT software signal.
+  - ticker: ESTC
+    sector: Information Technology
+    industry_group: search_observability_software
+    supply_chain_role: search_observability_platform
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: Search, observability, and cloud workload signal.
+  - ticker: PCOR
+    sector: Information Technology
+    industry_group: construction_software
+    supply_chain_role: construction_project_platform
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Construction software signal tied to infrastructure and building activity.
+  - ticker: S
+    sector: Information Technology
+    industry_group: cybersecurity
+    supply_chain_role: endpoint_security
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Cybersecurity demand outside large-cap S&P names.
+  - ticker: TENB
+    sector: Information Technology
+    industry_group: cybersecurity
+    supply_chain_role: vulnerability_management
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Security vulnerability-management cycle.
+  - ticker: FIVN
+    sector: Information Technology
+    industry_group: contact_center_software
+    supply_chain_role: customer_service_software
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Contact-center software and AI customer-service transition.
+  - ticker: U
+    sector: Information Technology
+    industry_group: gaming_developer_platform
+    supply_chain_role: interactive_content_tools
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Game engine and interactive content tooling.
+
+  - ticker: SHOP
+    sector: Consumer Discretionary
+    industry_group: commerce_software
+    supply_chain_role: merchant_commerce_platform
+    priority: p0
+    target_forms: ["40-F", "6-K"]
+    rationale: Commerce software and merchant demand outside US large-cap retail.
+  - ticker: MELI
+    sector: Consumer Discretionary
+    industry_group: ecommerce_fintech
+    supply_chain_role: latin_america_ecommerce_fintech
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Latin America ecommerce, logistics, and fintech signal.
+  - ticker: SE
+    sector: Consumer Discretionary
+    industry_group: ecommerce_gaming_fintech
+    supply_chain_role: southeast_asia_digital_commerce
+    priority: p1
+    target_forms: ["20-F", "6-K"]
+    rationale: Southeast Asia ecommerce, gaming, and fintech comparison.
+  - ticker: SONY
+    sector: Communication Services
+    industry_group: consumer_electronics_media_gaming
+    supply_chain_role: gaming_content_electronics
+    priority: p1
+    target_forms: ["20-F", "6-K"]
+    rationale: Gaming/content/electronics cross-sector comparison.
+  - ticker: TM
+    sector: Consumer Discretionary
+    industry_group: autos
+    supply_chain_role: global_auto_oem
+    priority: p0
+    target_forms: ["20-F", "6-K"]
+    rationale: Global auto cycle, hybrid/EV strategy, and supplier chain comparison.
+  - ticker: HMC
+    sector: Consumer Discretionary
+    industry_group: autos
+    supply_chain_role: global_auto_oem
+    priority: p1
+    target_forms: ["20-F", "6-K"]
+    rationale: Global auto cycle and currency/supply-chain comparison.
+  - ticker: RIVN
+    sector: Consumer Discretionary
+    industry_group: electric_vehicles
+    supply_chain_role: ev_oem
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: EV demand, production ramp, and battery supply exposure.
+  - ticker: LCID
+    sector: Consumer Discretionary
+    industry_group: electric_vehicles
+    supply_chain_role: ev_oem
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Premium EV demand and production ramp.
+  - ticker: NIO
+    sector: Consumer Discretionary
+    industry_group: electric_vehicles
+    supply_chain_role: china_ev_oem
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: China EV demand and battery/supply-chain signal.
+  - ticker: LI
+    sector: Consumer Discretionary
+    industry_group: electric_vehicles
+    supply_chain_role: china_ev_oem
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: China extended-range EV demand and production signal.
+  - ticker: XPEV
+    sector: Consumer Discretionary
+    industry_group: electric_vehicles
+    supply_chain_role: china_ev_oem
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: China EV technology and export signal.
+
+  - ticker: NVO
+    sector: Health Care
+    industry_group: pharmaceuticals
+    supply_chain_role: obesity_diabetes_drugs
+    priority: p0
+    target_forms: ["20-F", "6-K"]
+    rationale: Global obesity/diabetes drug cycle and capacity constraints.
+  - ticker: AZN
+    sector: Health Care
+    industry_group: pharmaceuticals
+    supply_chain_role: global_pharma
+    priority: p1
+    target_forms: ["20-F", "6-K"]
+    rationale: Global pharma pipeline and oncology/biopharma comparison.
+  - ticker: SNY
+    sector: Health Care
+    industry_group: pharmaceuticals
+    supply_chain_role: global_pharma
+    priority: p1
+    target_forms: ["20-F", "6-K"]
+    rationale: Global pharma and vaccine/consumer-health comparison.
+  - ticker: GSK
+    sector: Health Care
+    industry_group: pharmaceuticals
+    supply_chain_role: global_pharma
+    priority: p1
+    target_forms: ["20-F", "6-K"]
+    rationale: Global pharma and vaccine portfolio comparison.
+  - ticker: BNTX
+    sector: Health Care
+    industry_group: biotechnology
+    supply_chain_role: mrna_immunotherapy
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: mRNA and immunotherapy pipeline signal.
+  - ticker: BMRN
+    sector: Health Care
+    industry_group: biotechnology
+    supply_chain_role: rare_disease_biotech
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Rare disease product cycle and biotech profitability comparison.
+  - ticker: ARGX
+    sector: Health Care
+    industry_group: biotechnology
+    supply_chain_role: immunology_biotech
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: Immunology biologics and international biotech comparison.
+  - ticker: ALNY
+    sector: Health Care
+    industry_group: biotechnology
+    supply_chain_role: rna_therapeutics
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: RNA therapeutics platform and product cycle.
+  - ticker: KRYS
+    sector: Health Care
+    industry_group: biotechnology
+    supply_chain_role: gene_therapy
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Gene therapy commercialization signal.
+
+  - ticker: BHP
+    sector: Materials
+    industry_group: mining_metals
+    supply_chain_role: diversified_miner
+    priority: p0
+    target_forms: ["20-F", "6-K"]
+    rationale: Global iron ore, copper, and energy transition materials exposure.
+  - ticker: RIO
+    sector: Materials
+    industry_group: mining_metals
+    supply_chain_role: diversified_miner
+    priority: p0
+    target_forms: ["20-F", "6-K"]
+    rationale: Global mining, iron ore, copper, and aluminum exposure.
+  - ticker: VALE
+    sector: Materials
+    industry_group: mining_metals
+    supply_chain_role: iron_ore_base_metals
+    priority: p1
+    target_forms: ["20-F", "6-K"]
+    rationale: Iron ore and base-metals cycle.
+  - ticker: TECK
+    sector: Materials
+    industry_group: mining_metals
+    supply_chain_role: copper_metallurgical_coal
+    priority: p1
+    target_forms: ["40-F", "6-K"]
+    rationale: Copper and steelmaking coal exposure.
+  - ticker: SCCO
+    sector: Materials
+    industry_group: copper
+    supply_chain_role: copper_miner
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Copper supply and electrification demand exposure.
+  - ticker: MP
+    sector: Materials
+    industry_group: rare_earths
+    supply_chain_role: rare_earth_miner_processing
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Rare earth supply chain and strategic materials exposure.
+  - ticker: LAC
+    sector: Materials
+    industry_group: lithium
+    supply_chain_role: lithium_developer
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Lithium supply growth and EV battery chain.
+  - ticker: SQM
+    sector: Materials
+    industry_group: lithium_chemicals
+    supply_chain_role: lithium_chemicals
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: Lithium chemicals and fertilizer commodity exposure.
+
+  - ticker: CCJ
+    sector: Energy
+    industry_group: uranium
+    supply_chain_role: uranium_miner
+    priority: p0
+    target_forms: ["40-F", "6-K"]
+    rationale: Nuclear fuel supply and uranium price cycle.
+  - ticker: LEU
+    sector: Energy
+    industry_group: nuclear_fuel
+    supply_chain_role: uranium_enrichment
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Uranium enrichment and nuclear fuel-chain bottleneck.
+  - ticker: BWXT
+    sector: Industrials
+    industry_group: nuclear_components
+    supply_chain_role: nuclear_components_services
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Nuclear reactor components and defense nuclear services.
+  - ticker: TLN
+    sector: Utilities
+    industry_group: power_generation
+    supply_chain_role: independent_power_generator
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Merchant power and data-center load exposure.
+  - ticker: OKLO
+    sector: Utilities
+    industry_group: advanced_nuclear
+    supply_chain_role: nuclear_developer
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Advanced nuclear developer and speculative power-supply chain exposure.
+  - ticker: SMR
+    sector: Utilities
+    industry_group: advanced_nuclear
+    supply_chain_role: small_modular_reactor
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: SMR technology and nuclear commercialization signal.
+  - ticker: NNE
+    sector: Utilities
+    industry_group: advanced_nuclear
+    supply_chain_role: nuclear_developer
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Early-stage nuclear developer; kept as high-risk context only.
+  - ticker: UROY
+    sector: Energy
+    industry_group: uranium
+    supply_chain_role: uranium_royalty
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Uranium royalty exposure and commodity cycle proxy.
+  - ticker: NXE
+    sector: Energy
+    industry_group: uranium
+    supply_chain_role: uranium_developer
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Uranium development pipeline and long-cycle supply signal.
+  - ticker: DNN
+    sector: Energy
+    industry_group: uranium
+    supply_chain_role: uranium_developer
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Uranium developer and nuclear fuel-chain optionality.
+
+  - ticker: FLNC
+    sector: Industrials
+    industry_group: energy_storage
+    supply_chain_role: grid_storage
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Grid storage deployments and battery supply exposure.
+  - ticker: NXT
+    sector: Energy
+    industry_group: solar_infrastructure
+    supply_chain_role: solar_tracker
+    priority: p1
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Utility-scale solar tracker demand and project cycle.
+  - ticker: RUN
+    sector: Consumer Discretionary
+    industry_group: residential_solar
+    supply_chain_role: residential_solar_installer
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Residential solar financing and installation demand.
+  - ticker: BE
+    sector: Industrials
+    industry_group: fuel_cells_power
+    supply_chain_role: distributed_power_fuel_cells
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Distributed power and fuel-cell demand.
+  - ticker: PLUG
+    sector: Industrials
+    industry_group: hydrogen
+    supply_chain_role: hydrogen_fuel_cells
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Hydrogen and fuel-cell supply-chain exposure.
+  - ticker: ARRY
+    sector: Industrials
+    industry_group: solar_infrastructure
+    supply_chain_role: solar_tracker
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Solar tracker peer and project-cycle signal.
+  - ticker: ENLT
+    sector: Utilities
+    industry_group: renewable_power
+    supply_chain_role: renewable_developer
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: Renewable power developer with international project exposure.
+  - ticker: CSIQ
+    sector: Information Technology
+    industry_group: solar_modules_storage
+    supply_chain_role: solar_modules_storage
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: Solar module, battery storage, and global project supply chain.
+  - ticker: JKS
+    sector: Information Technology
+    industry_group: solar_modules
+    supply_chain_role: solar_modules
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: Solar module supply and pricing cycle.
+  - ticker: DQ
+    sector: Information Technology
+    industry_group: solar_materials
+    supply_chain_role: polysilicon
+    priority: p2
+    target_forms: ["20-F", "6-K"]
+    rationale: Polysilicon pricing and solar input-cost cycle.
+  - ticker: SEDG
+    sector: Information Technology
+    industry_group: solar_inverters
+    supply_chain_role: solar_power_electronics
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Solar inverter and distributed energy electronics cycle.
+  - ticker: ENPH
+    sector: Information Technology
+    industry_group: solar_inverters
+    supply_chain_role: solar_power_electronics
+    priority: p2
+    target_forms: ["10-K", "10-Q", "8-K"]
+    rationale: Residential/commercial solar inverter and storage demand.

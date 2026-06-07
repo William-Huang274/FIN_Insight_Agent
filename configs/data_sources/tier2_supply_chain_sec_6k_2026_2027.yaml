@@ -1,0 +1,450 @@
+schema_version: fin_agent_sec_full_source_download_config_v0.1
+dataset_id: tier2_supply_chain_sec_6k_2026_2027_v0_1
+status: reserved_parser_gap
+source_family: sec_primary_filing
+source_tier: primary_sec_filing
+universe_tier: tier2_supply_chain_supplement
+form_type: 6-K
+form_types:
+- 6-K
+years:
+- 2026
+- 2027
+companies:
+- ticker: ARM
+  cik: 0001973239
+  company_name: ARM HOLDINGS PLC /UK
+  category: semiconductor_ip
+  category_slug: semiconductor_ip
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: ASML
+  cik: 0000937966
+  company_name: ASML HOLDING NV
+  category: semiconductor_equipment
+  category_slug: semiconductor_equipment
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: BHP
+  cik: 0000811809
+  company_name: BHP Group Ltd
+  category: mining_metals
+  category_slug: mining_metals
+  sector: Materials
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: CCJ
+  cik: 0001009001
+  company_name: CAMECO CORP
+  category: uranium
+  category_slug: uranium
+  sector: Energy
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: GFS
+  cik: 0001709048
+  company_name: GLOBALFOUNDRIES Inc.
+  category: semiconductors
+  category_slug: semiconductors
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: NVO
+  cik: 0000353278
+  company_name: NOVO NORDISK A S
+  category: pharmaceuticals
+  category_slug: pharmaceuticals
+  sector: Health Care
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: RIO
+  cik: 0000863064
+  company_name: RIO TINTO PLC
+  category: mining_metals
+  category_slug: mining_metals
+  sector: Materials
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: SHOP
+  cik: 0001594805
+  company_name: SHOPIFY INC.
+  category: commerce_software
+  category_slug: commerce_software
+  sector: Consumer Discretionary
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: TM
+  cik: 0001094517
+  company_name: TOYOTA MOTOR CORP/
+  category: autos
+  category_slug: autos
+  sector: Consumer Discretionary
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: TSM
+  cik: 0001046179
+  company_name: TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD
+  category: semiconductors
+  category_slug: semiconductors
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: AZN
+  cik: 0000901832
+  company_name: ASTRAZENECA PLC
+  category: pharmaceuticals
+  category_slug: pharmaceuticals
+  sector: Health Care
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: CAMT
+  cik: 0001109138
+  company_name: CAMTEK LTD
+  category: semiconductor_equipment
+  category_slug: semiconductor_equipment
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: GSK
+  cik: 0001131399
+  company_name: GSK plc
+  category: pharmaceuticals
+  category_slug: pharmaceuticals
+  sector: Health Care
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: HMC
+  cik: '0000715153'
+  company_name: HONDA MOTOR CO LTD
+  category: autos
+  category_slug: autos
+  sector: Consumer Discretionary
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: SE
+  cik: 0001703399
+  company_name: Sea Ltd
+  category: ecommerce_gaming_fintech
+  category_slug: ecommerce_gaming_fintech
+  sector: Consumer Discretionary
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: SNY
+  cik: '0001121404'
+  company_name: Sanofi
+  category: pharmaceuticals
+  category_slug: pharmaceuticals
+  sector: Health Care
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: SONY
+  cik: 0000313838
+  company_name: Sony Group Corp
+  category: consumer_electronics_media_gaming
+  category_slug: consumer_electronics_media_gaming
+  sector: Communication Services
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: TEAM
+  cik: '0001650372'
+  company_name: Atlassian Corp
+  category: collaboration_software
+  category_slug: collaboration_software
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: TECK
+  cik: 0000886986
+  company_name: TECK RESOURCES LTD
+  category: mining_metals
+  category_slug: mining_metals
+  sector: Materials
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: VALE
+  cik: 0000917851
+  company_name: Vale S.A.
+  category: mining_metals
+  category_slug: mining_metals
+  sector: Materials
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: ARGX
+  cik: 0001697862
+  company_name: ARGENX SE
+  category: biotechnology
+  category_slug: biotechnology
+  sector: Health Care
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: BNTX
+  cik: 0001776985
+  company_name: BioNTech SE
+  category: biotechnology
+  category_slug: biotechnology
+  sector: Health Care
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: CSIQ
+  cik: 0001375877
+  company_name: Canadian Solar Inc.
+  category: solar_modules_storage
+  category_slug: solar_modules_storage
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: DQ
+  cik: '0001477641'
+  company_name: DAQO NEW ENERGY CORP.
+  category: solar_materials
+  category_slug: solar_materials
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: ENLT
+  cik: 0001922641
+  company_name: Enlight Renewable Energy Ltd.
+  category: renewable_power
+  category_slug: renewable_power
+  sector: Utilities
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: ESTC
+  cik: '0001707753'
+  company_name: Elastic N.V.
+  category: search_observability_software
+  category_slug: search_observability_software
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: JKS
+  cik: 0001481513
+  company_name: JinkoSolar Holding Co., Ltd.
+  category: solar_modules
+  category_slug: solar_modules
+  sector: Information Technology
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: LI
+  cik: 0001791706
+  company_name: Li Auto Inc.
+  category: electric_vehicles
+  category_slug: electric_vehicles
+  sector: Consumer Discretionary
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: NIO
+  cik: '0001736541'
+  company_name: NIO Inc.
+  category: electric_vehicles
+  category_slug: electric_vehicles
+  sector: Consumer Discretionary
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: SQM
+  cik: 0000909037
+  company_name: CHEMICAL & MINING CO OF CHILE INC
+  category: lithium_chemicals
+  category_slug: lithium_chemicals
+  sector: Materials
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+- ticker: XPEV
+  cik: 0001810997
+  company_name: XPENG INC.
+  category: electric_vehicles
+  category_slug: electric_vehicles
+  sector: Consumer Discretionary
+  source_sets:
+  - tier2_supply_chain_supplement
+  universe_tier: tier2_supply_chain_supplement
+  form_types:
+  - 6-K
+  target_forms:
+  - 6-K
+skipped_count: 15
+skipped_sample:
+- ticker: 000660.KS
+  reason: not_sec_download_eligible
+- ticker: 005930.KS
+  reason: not_sec_download_eligible
+- ticker: 2317.TW
+  reason: not_sec_download_eligible
+- ticker: 2382.TW
+  reason: not_sec_download_eligible
+- ticker: 300750.SZ
+  reason: not_sec_download_eligible
+- ticker: 8035.T
+  reason: not_sec_download_eligible
+- ticker: 1211.HK
+  reason: not_sec_download_eligible
+- ticker: 2308.TW
+  reason: not_sec_download_eligible
+- ticker: 3231.TW
+  reason: not_sec_download_eligible
+- ticker: 373220.KS
+  reason: not_sec_download_eligible
+- ticker: 6146.T
+  reason: not_sec_download_eligible
+- ticker: 6723.T
+  reason: not_sec_download_eligible
+- ticker: 6752.T
+  reason: not_sec_download_eligible
+- ticker: 6857.T
+  reason: not_sec_download_eligible
+- ticker: IFX.DE
+  reason: not_sec_download_eligible
+known_gap: 6-K needs a profile-aware event/interim selector and parser before promotion;
+  do not parse it with 10-K item rules.

@@ -16,6 +16,7 @@ DEFAULT_CASES_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_full_chain_mu
 DEFAULT_ARTIFACT_ROOT = REPO_ROOT / "reports" / "quality" / "workbench_eval" / "artifacts"
 SMOKE_CASE_IDS = [
     "fin_full_exact_msft_capex_zh",
+    "fin_full_scope_nvda_basic_fundamental_zh",
     "fin_full_standard_nvda_amd_market_zh",
     "fin_full_sector_ai_infra_depth_zh",
 ]

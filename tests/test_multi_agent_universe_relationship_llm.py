@@ -27,7 +27,10 @@ def test_universe_relationship_llm_accepts_valid_plan_json() -> None:
     assert result["source"] == ROUTE_SOURCE
     assert result["status"] == "pass"
     assert result["universe_relationship_plan"]["relationships"][0]["related_ticker"] == "MSFT"
+    assert result["universe_relationship_plan"]["included_ticker_contracts"][0]["included_ticker"] == "NVDA"
     assert "Relationship Universe Skill" in fake.calls[0]["messages"][0]["content"]
+    assert "included_ticker_contracts" in fake.calls[0]["messages"][0]["content"]
+    assert "downstream_operator_owner" in fake.calls[0]["messages"][0]["content"]
     assert "Do not call tools" in fake.calls[0]["messages"][0]["content"]
 
 

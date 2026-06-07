@@ -30,13 +30,21 @@ def test_multi_agent_real_llm_chain_fixture_schema() -> None:
 def test_fin_agent_full_chain_multiturn_fixture_schema() -> None:
     rows = _read_jsonl(FULL_CHAIN_MULTITURN_FIXTURE_PATH)
 
-    assert 10 <= len(rows) <= 20
+    assert len(rows) == 20
     assert {row["category"] for row in rows} >= {"exact_lookup", "focused_answer", "standard_memo", "sector_depth", "multi_turn"}
+    assert sum(1 for row in rows if row.get("category") == "scope_decision") == 3
     assert any(row.get("response_language") == "en-US" for row in rows)
     assert sum(1 for row in rows if row.get("conversation_id")) >= 4
     assert sum(1 for row in rows if row.get("require_real_retrieval_pass")) >= 5
     assert all(row["case_id"].startswith("fin_full_") for row in rows)
     assert all(row.get("response_language") for row in rows)
+    scope_cases = [row for row in rows if row.get("require_scope_decision_contract")]
+    assert len(scope_cases) == 3
+    assert all(row.get("expected_scoping_patterns") for row in scope_cases)
+    assert all(row.get("expected_expansion_modes") for row in scope_cases)
+    assert all(row.get("expected_catalogs_to_inspect") for row in scope_cases)
+    assert all(row.get("expected_candidate_lenses") for row in scope_cases)
+    assert all(row.get("max_total_tokens_lte") for row in scope_cases)
     sector_cases = [row for row in rows if row["category"] == "sector_depth"]
     assert all(row.get("expected_relationship_pack_ids") for row in sector_cases)
     assert all(row.get("require_rendered_memo_claims") for row in sector_cases)
@@ -765,6 +773,147 @@ def test_real_llm_chain_specialist_quality_allows_self_comparative_single_row() 
     detail = quality["details"]["risk_counterevidence_analyst"]
 
     assert detail["checks"]["temporal_claim_ref_depth_valid"] is True
+
+
+def test_real_llm_chain_scope_gap_and_performance_contracts_pass() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "scope_gap_contract_unit",
+        "category": "scope_decision",
+        "expected_execution_mode": "deep_research",
+        "required_agents": ["research_lead", "universe_relationship", "memo_writer", "renderer"],
+        "expected_operator_agents": ["universe_relationship"],
+        "expected_tool_names": ["relationship_graph_lookup"],
+        "require_scope_decision_contract": True,
+        "expected_scoping_patterns": ["supply_chain_readthrough"],
+        "expected_expansion_modes": ["required_expansion"],
+        "expected_catalogs_to_inspect": ["relationship_graph"],
+        "expected_candidate_lenses": ["memory_foundry_equipment_supply_chain"],
+        "require_universe_scope_contract": True,
+        "required_universe_candidate_lenses": ["upstream_supplier"],
+        "required_relationship_strengths": ["hypothesis"],
+        "require_evidence_gap_request_types": ["relationship_confirmation"],
+        "require_gap_preserved_to_judgment": True,
+        "require_gap_preserved_to_memo": True,
+        "require_rendered_gap_boundary": True,
+        "require_hypothesis_boundary_rendered": True,
+        "max_case_elapsed_ms_lte": 1000,
+        "max_total_tokens_lte": 5000,
+        "max_research_lead_tokens_lte": 1000,
+        "max_universe_tokens_lte": 1000,
+        "max_specialist_tokens_lte": 2000,
+        "max_memo_tokens_lte": 1000,
+        "max_verifier_tokens_lte": 500,
+    }
+    gap = {
+        "request_type": "relationship_confirmation",
+        "owner_agent": "universe_relationship",
+        "tickers": ["NVDA", "TSM"],
+        "source_family": "relationship_graph",
+        "reason": "Need company-confirmed relationship evidence.",
+        "blocking_level": "material",
+        "can_answer_bounded_without": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "deep_research",
+            "activate_agents": ["research_lead", "universe_relationship", "memo_writer", "renderer"],
+            "metadata": {
+                "scope_decision": {
+                    "scoping_pattern": "supply_chain_readthrough",
+                    "expansion_mode": "required_expansion",
+                    "why": "The question needs supply-chain confirmation.",
+                    "catalogs_to_inspect": ["relationship_graph", "source_family_inventory"],
+                    "candidate_lenses": ["memory_foundry_equipment_supply_chain"],
+                    "expansion_budget": {"max_expanded_tickers": 4},
+                    "stop_condition": "Stop when bounded catalog lacks relationship confirmation.",
+                }
+            },
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "universe_relationship_validation": {"status": "pass"},
+        "relationship_graph_observation": {
+            "status": "ok",
+            "relationships": [{"evidence_refs": ["rel_1"], "claim_scope": "scope_or_hypothesis_only"}],
+        },
+        "tool_call_ledger": {
+            "records": [
+                {
+                    "agent_id": "universe_relationship",
+                    "tool_name": "relationship_graph_lookup",
+                    "status": "completed",
+                    "row_count": 1,
+                }
+            ]
+        },
+        "universe_relationship_plan": {
+            "included_ticker_contracts": [
+                {
+                    "included_ticker": "TSM",
+                    "candidate_lens": "upstream_supplier",
+                    "inclusion_rationale": "Candidate supplier lens from bounded catalog.",
+                    "available_source_families": ["relationship_graph", "primary_sec_filing"],
+                    "relationship_strength": "hypothesis",
+                    "downstream_operator_owner": "universe_relationship",
+                }
+            ],
+            "excluded_ticker_contracts": [],
+        },
+        "specialist_outputs": [{"agent_id": "industry_supply_chain_analyst", "evidence_gap_requests": [gap]}],
+        "judgment_plan": {"evidence_gap_requests": [gap]},
+        "memo_answer": {"answer_status": "draft", "evidence_gap_requests": [gap]},
+        "rendered_answer": "关键论据:\n1. 这是 hypothesis-only 的供应链假设。证据=rel_1\n来源限制：存在 relationship confirmation evidence gap，不能证明直接商业关系。",
+        "claim_verification": {},
+    }
+    summary = {
+        "payload_policy": {"raw_evidence": "not_included"},
+        "llm_routes": {
+            "research_lead": {"diagnostics": {**_ok_diag(), "total_tokens": 800}},
+            "universe_relationship": {"diagnostics": {**_ok_diag(), "total_tokens": 900}},
+            "memo_writer": {"diagnostics": {**_ok_diag(), "total_tokens": 700}},
+            "verifier": {"diagnostics": {**_ok_diag(), "total_tokens": 300}},
+        },
+    }
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=500)
+
+    assert score["gate_status"] == "pass"
+    assert score["checks"]["scope_gap_contract.scope_decision_present"] is True
+    assert score["checks"]["scope_gap_contract.universe_included_ticker_fields_present"] is True
+    assert score["checks"]["scope_gap_contract.required_evidence_gap_types_present"] is True
+    assert score["checks"]["scope_gap_contract.gap_requests_preserved_to_memo"] is True
+    assert score["checks"]["performance.total_tokens_lte"] is True
+    assert score["token_usage"]["total_tokens"] == 2700
+
+
+def test_real_llm_chain_scope_contract_rejects_missing_scope_metadata() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "scope_missing_unit",
+        "category": "scope_decision",
+        "expected_execution_mode": "standard_memo",
+        "required_agents": ["research_lead", "memo_writer", "renderer"],
+        "require_scope_decision_contract": True,
+        "expected_scoping_patterns": ["single_company_fundamental"],
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["research_lead", "memo_writer", "renderer"],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "memo_answer": {"answer_status": "draft"},
+        "rendered_answer": "bounded answer",
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "fail"
+    assert score["checks"]["scope_gap_contract.scope_decision_present"] is False
+    assert score["checks"]["scope_gap_contract.scope_scoping_pattern_expected"] is False
 
 
 def _industry_relationship_result(

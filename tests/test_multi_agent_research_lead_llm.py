@@ -73,8 +73,13 @@ def test_research_lead_prompt_exposes_cost_aware_route_selection_policy() -> Non
     assert "Route choice policy" in system_prompt
     assert "route_selection_reason" in system_prompt
     assert "route_cost_tier" in system_prompt
+    assert "scope_decision" in system_prompt
+    assert "catalogs_to_inspect" in system_prompt
+    assert "candidate_lenses" in system_prompt
+    assert "expansion_budget" in system_prompt
     assert "milvus_semantic" in system_prompt
     assert "semantic recall supplement only" in system_prompt
+    assert "Put a structured scope_decision" in user_prompt
     assert "exact values use ledger_first first" in user_prompt
 
 

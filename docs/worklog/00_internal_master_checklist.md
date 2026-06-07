@@ -464,7 +464,7 @@
 - [x] Add Workbench A6 eval runners and summary wrapper for `expanded_a6_full_chain_smoke` and `expanded_a6_full_chain_main`, with transient API key env injection and local contract tests `84 passed`.
 - [x] Add cross-agent `evidence_gap_requests` protocol and update Research Lead / Universe / Specialist / Coverage / Judgment / Memo / Verifier / Renderer skills so professional scope decisions can request bounded upstream evidence without giving inspect-only agents tool authority.
 - [x] Harden Research Lead `scope_decision` and Universe per-ticker scope contracts with catalog inspection fields, expansion budgets, available source families, relationship strength, downstream operator owner, and explicit excluded ticker rationales.
-- [ ] Add A6 scope-decision and gap-escalation eval cases that check catalog-aware universe selection, candidate rationale, selected source families, and structured gap preservation for NVIDIA / AI infrastructure / supply-chain style prompts.
+- [x] Add A6 scope-decision and gap-escalation eval cases that check catalog-aware universe selection, candidate rationale, selected source families, structured gap preservation, token budget, and latency for NVIDIA / AI infrastructure / supply-chain style prompts.
 - [ ] If A6 shows material/blocking gap requests without automatic recovery, compile them into deterministic Coverage Reflection / Universe second-pass routes before broadening the full-chain case count.
 - [ ] Run A6 small-batch full-chain / multi-turn expanded gate over 10-20 cases before promoting the expanded path as the default agent route.
 - [ ] Add R3 entity resolution registry for external counterparties, subsidiaries, aliases, ticker, and CIK.

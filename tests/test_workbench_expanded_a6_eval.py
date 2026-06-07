@@ -93,6 +93,7 @@ def test_expanded_a6_smoke_default_case_selection() -> None:
 
     assert case_ids == [
         "fin_full_exact_msft_capex_zh",
+        "fin_full_scope_nvda_basic_fundamental_zh",
         "fin_full_standard_nvda_amd_market_zh",
         "fin_full_sector_ai_infra_depth_zh",
     ]

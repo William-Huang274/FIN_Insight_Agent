@@ -295,6 +295,24 @@ def _system_prompt() -> str:
         "expanded_tickers": ["TICKER"],
         "included_tickers": ["TICKER"],
         "excluded_tickers": [],
+        "included_ticker_contracts": [
+            {
+                "included_ticker": "TICKER",
+                "candidate_lens": "peer_competitor | upstream_supplier | downstream_customer | infrastructure_dependency | power_utilities_readthrough | non_us_supply_chain_disclosure | market_divergence_peer | sector_macro_proxy",
+                "inclusion_rationale": "why this ticker belongs in the bounded research universe",
+                "available_source_families": ["primary_sec_filing | company_authored_unaudited_sec_filing | market_snapshot | industry_snapshot | relationship_graph"],
+                "relationship_strength": "verified | inferred | hypothesis | source_gap",
+                "downstream_operator_owner": "sec_operator | eight_k_operator | market_operator | industry_operator | coverage_reflection | universe_relationship",
+                "source_gap": "",
+            }
+        ],
+        "excluded_ticker_contracts": [
+            {
+                "excluded_ticker": "TICKER",
+                "candidate_lens": "candidate lens that was considered",
+                "exclusion_rationale": "why bounded catalog/source coverage does not justify searching it",
+            }
+        ],
         "relationship_scope_rationale": "short rationale",
         "relationships": [
             {

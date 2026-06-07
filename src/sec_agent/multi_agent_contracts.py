@@ -234,6 +234,16 @@ def normalize_universe_relationship_plan(payload: Mapping[str, Any] | None = Non
     included_tickers = _unique_upper(raw.get("included_tickers")) or expanded_tickers or focus_tickers
     excluded_tickers = _unique_upper(raw.get("excluded_tickers"))
     budget = _relationship_budget(raw.get("budget") if isinstance(raw.get("budget"), Mapping) else {})
+    included_ticker_contracts = _normalize_included_ticker_contracts(
+        raw.get("included_ticker_contracts") or raw.get("included_scope") or raw.get("included_companies"),
+        included_tickers=included_tickers,
+        focus_tickers=focus_tickers,
+        relationships=relationships,
+    )
+    excluded_ticker_contracts = _normalize_excluded_ticker_contracts(
+        raw.get("excluded_ticker_contracts") or raw.get("excluded_scope") or raw.get("excluded_companies"),
+        excluded_tickers=excluded_tickers,
+    )
     return {
         "schema_version": UNIVERSE_RELATIONSHIP_PLAN_SCHEMA_VERSION,
         "agent_id": "universe_relationship",
@@ -242,6 +252,8 @@ def normalize_universe_relationship_plan(payload: Mapping[str, Any] | None = Non
         "expanded_tickers": expanded_tickers or included_tickers,
         "included_tickers": included_tickers,
         "excluded_tickers": excluded_tickers,
+        "included_ticker_contracts": included_ticker_contracts,
+        "excluded_ticker_contracts": excluded_ticker_contracts,
         "relationship_scope_rationale": str(raw.get("relationship_scope_rationale") or "").strip(),
         "scope_guard": _relationship_scope_guard(raw.get("scope_guard") if isinstance(raw.get("scope_guard"), Mapping) else {}, budget),
         "budget": budget,
@@ -309,6 +321,16 @@ def validate_universe_relationship_plan(
     for ticker in sorted(set(plan["included_tickers"]) - set(plan["focus_tickers"])):
         if ticker not in related_with_evidence:
             errors.append({"type": "expanded_ticker_without_relationship_evidence", "ticker": ticker})
+    valid_relationship_strengths = {"verified", "inferred", "hypothesis", "source_gap"}
+    for index, contract in enumerate(plan.get("included_ticker_contracts") or []):
+        if str(contract.get("relationship_strength") or "") not in valid_relationship_strengths:
+            errors.append(
+                {
+                    "type": "invalid_included_ticker_relationship_strength",
+                    "index": index,
+                    "value": contract.get("relationship_strength"),
+                }
+            )
     for index, relationship in enumerate(plan["relationships"]):
         if relationship["edge_schema_version"] != RELATIONSHIP_EDGE_SCHEMA_VERSION:
             warnings.append(
@@ -2699,6 +2721,163 @@ def _normalize_relationship(payload: Mapping[str, Any]) -> dict[str, Any]:
         "claim_scope": str(payload.get("claim_scope") or "scope_or_hypothesis_only").strip(),
         "notes": str(payload.get("notes") or "").strip(),
     }
+
+
+def _normalize_included_ticker_contracts(
+    value: Any,
+    *,
+    included_tickers: list[str],
+    focus_tickers: list[str],
+    relationships: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    explicit = [
+        _normalize_included_ticker_contract(item)
+        for item in value or []
+        if isinstance(item, Mapping)
+    ]
+    by_ticker = {row["included_ticker"]: row for row in explicit if row.get("included_ticker")}
+    focus = set(focus_tickers)
+    relationship_by_ticker: dict[str, list[dict[str, Any]]] = {}
+    for relationship in relationships:
+        for ticker in _unique_upper([relationship.get("ticker"), relationship.get("related_ticker")]):
+            relationship_by_ticker.setdefault(ticker, []).append(relationship)
+    for ticker in included_tickers:
+        if ticker in by_ticker:
+            continue
+        rows = relationship_by_ticker.get(ticker) or []
+        if ticker in focus and not rows:
+            rows = relationships[:1]
+        by_ticker[ticker] = _included_ticker_contract_from_relationships(ticker, rows, is_focus=ticker in focus)
+    return [by_ticker[ticker] for ticker in included_tickers if ticker in by_ticker]
+
+
+def _normalize_included_ticker_contract(payload: Mapping[str, Any]) -> dict[str, Any]:
+    ticker = str(payload.get("included_ticker") or payload.get("ticker") or "").upper().strip()
+    source_families = _unique_strings(
+        payload.get("available_source_families")
+        or payload.get("source_families")
+        or payload.get("source_family")
+    )
+    return {
+        "included_ticker": ticker,
+        "candidate_lens": str(payload.get("candidate_lens") or payload.get("lens") or "").strip(),
+        "inclusion_rationale": str(payload.get("inclusion_rationale") or payload.get("rationale") or "").strip(),
+        "available_source_families": source_families,
+        "relationship_strength": _normalize_relationship_strength(payload.get("relationship_strength")),
+        "downstream_operator_owner": str(payload.get("downstream_operator_owner") or payload.get("operator_owner") or "").strip(),
+        "source_gap": str(payload.get("source_gap") or "").strip(),
+    }
+
+
+def _included_ticker_contract_from_relationships(
+    ticker: str,
+    relationships: list[dict[str, Any]],
+    *,
+    is_focus: bool,
+) -> dict[str, Any]:
+    first = relationships[0] if relationships else {}
+    source_families = _unique_strings(
+        [
+            "relationship_graph" if relationships else "",
+            *[
+                source
+                for relationship in relationships
+                for source in relationship.get("evidence_source_needed") or []
+            ],
+        ]
+    )
+    return {
+        "included_ticker": ticker,
+        "candidate_lens": "focus_company" if is_focus else _relationship_candidate_lens(first),
+        "inclusion_rationale": str(first.get("inclusion_rationale") or ("Focus company in user scope." if is_focus else "Included by bounded relationship evidence.")).strip(),
+        "available_source_families": source_families,
+        "relationship_strength": _relationship_strength_from_relationships(relationships),
+        "downstream_operator_owner": _operator_owner_from_source_families(source_families),
+        "source_gap": "" if relationships or is_focus else "no_bounded_relationship_evidence",
+    }
+
+
+def _normalize_excluded_ticker_contracts(value: Any, *, excluded_tickers: list[str]) -> list[dict[str, Any]]:
+    explicit = [
+        _normalize_excluded_ticker_contract(item)
+        for item in value or []
+        if isinstance(item, Mapping)
+    ]
+    by_ticker = {row["excluded_ticker"]: row for row in explicit if row.get("excluded_ticker")}
+    for ticker in excluded_tickers:
+        by_ticker.setdefault(
+            ticker,
+            {
+                "excluded_ticker": ticker,
+                "candidate_lens": "",
+                "exclusion_rationale": "Excluded from bounded expansion scope.",
+            },
+        )
+    return [by_ticker[ticker] for ticker in excluded_tickers if ticker in by_ticker]
+
+
+def _normalize_excluded_ticker_contract(payload: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "excluded_ticker": str(payload.get("excluded_ticker") or payload.get("ticker") or "").upper().strip(),
+        "candidate_lens": str(payload.get("candidate_lens") or payload.get("lens") or "").strip(),
+        "exclusion_rationale": str(payload.get("exclusion_rationale") or payload.get("reason") or "").strip(),
+    }
+
+
+def _relationship_candidate_lens(relationship: Mapping[str, Any]) -> str:
+    rel_type = str(relationship.get("relationship_type") or "").strip()
+    direction = str(relationship.get("direction") or relationship.get("edge_direction") or "").lower()
+    if rel_type in {"peer", "competitor"}:
+        return "peer_competitor"
+    if rel_type == "customer":
+        return "downstream_customer"
+    if rel_type == "supplier":
+        return "upstream_supplier"
+    if "power" in direction or "utility" in direction or "load" in direction:
+        return "power_utilities_readthrough"
+    if "infrastructure" in direction or "server" in direction or "network" in direction:
+        return "infrastructure_dependency"
+    if rel_type in {"sector", "macro_sensitive"}:
+        return "sector_macro_proxy"
+    return "relationship_hypothesis"
+
+
+def _relationship_strength_from_relationships(relationships: list[dict[str, Any]]) -> str:
+    if not relationships:
+        return "source_gap"
+    for relationship in relationships:
+        if relationship.get("confirmation_status") == "confirmed_direct_edge" or relationship.get("inference_level") == "confirmed_direct":
+            return "verified"
+    for relationship in relationships:
+        if relationship.get("inference_level") in {"disclosed_indirect", "curated_input_unverified"}:
+            return "inferred"
+    return "hypothesis"
+
+
+def _normalize_relationship_strength(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    if text in {"verified", "confirmed"}:
+        return "verified"
+    if text in {"inferred", "disclosed_indirect", "curated_input_unverified"}:
+        return "inferred"
+    if text in {"source_gap", "gap", "missing"}:
+        return "source_gap"
+    return "hypothesis"
+
+
+def _operator_owner_from_source_families(source_families: list[str]) -> str:
+    families = set(source_families)
+    if "primary_sec_filing" in families:
+        return "sec_operator"
+    if "company_authored_unaudited_sec_filing" in families:
+        return "eight_k_operator"
+    if "market_snapshot" in families:
+        return "market_operator"
+    if "industry_snapshot" in families:
+        return "industry_operator"
+    if "relationship_graph" in families:
+        return "universe_relationship"
+    return "coverage_reflection"
 
 
 def _normalize_economic_entity(payload: Mapping[str, Any]) -> dict[str, Any]:

@@ -292,7 +292,26 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
         "focus_tickers": ["TICKER"],
         "search_scope_tickers": ["TICKER"],
         "relationship_scope_rationale": "",
-        "metadata": {},
+        "metadata": {
+            "scope_decision": {
+                "scoping_pattern": "single_company_fundamental | peer_comparison | durability_or_sustainability | supply_chain_readthrough | market_divergence | sector_depth | risk_counterevidence",
+                "expansion_mode": "no_expansion | conditional_expansion | required_expansion",
+                "why": "why the current scope is sufficient or why expansion is needed",
+                "catalogs_to_inspect": [
+                    "company_universe | relationship_graph | source_family_inventory | market_snapshot_catalog | industry_snapshot_catalog | exact_value_ledger_coverage"
+                ],
+                "candidate_lenses": [
+                    "company_fundamentals | cloud_capex_demand | memory_foundry_equipment_supply_chain | server_networking_power_downstream | export_control_risk | market_reaction"
+                ],
+                "expansion_budget": {
+                    "max_expanded_tickers": 0,
+                    "max_candidate_lenses": 0,
+                    "max_second_pass_routes": 0,
+                    "source_family_cap": 0,
+                },
+                "stop_condition": "when to stop expansion or keep a bounded answer",
+            }
+        },
     }
     evidence_requirement_schema_hint = {
         "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
@@ -462,6 +481,8 @@ def _user_prompt(request: MultiAgentRouteRequest) -> str:
     return (
         "Classify this request and output the bounded activation plan. "
         "Use only supplied tickers and scope; do not add named facts from memory. "
+        "Put a structured scope_decision under activation_plan.metadata. "
+        "The scope_decision must state the scoping pattern, expansion mode, catalogs to inspect, candidate lenses, budget, and stop condition. "
         "For evidence_requirements, select routes by query type and cost: exact values use ledger_first first; "
         "market/valuation use market_snapshot; industry/macro use industry_snapshot; relationship readthrough uses relationship_graph; "
         "milvus_semantic is only typed SEC semantic recall supplement for paraphrase/relationship/sector-depth needs.\n\n"

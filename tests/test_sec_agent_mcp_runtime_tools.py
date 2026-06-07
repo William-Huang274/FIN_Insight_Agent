@@ -377,6 +377,88 @@ def test_mcp_registry_compiles_mixed_sec_scope_to_available_route_requirements(t
     assert result["source_gaps"] == result["query_contract"]["source_coverage_gaps"]
 
 
+def test_mcp_registry_infers_available_scope_from_evidence_ids_without_form_type(tmp_path: Path, monkeypatch) -> None:
+    manifest_path = tmp_path / "evidence.jsonl"
+    manifest_rows = [
+        {
+            "ticker": "AMZN",
+            "fiscal_year": 2025,
+            "source_tier": "primary_sec_filing",
+            "evidence_id": "AMZN_2025_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+        },
+        {
+            "ticker": "AMZN",
+            "fiscal_year": 2026,
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "evidence_id": "AMZN_2026_8K_ITEM2_02_BLOCK_0001_CHUNK_0001",
+        },
+    ]
+    manifest_path.write_text("".join(json.dumps(row) + "\n" for row in manifest_rows), encoding="utf-8")
+
+    def fake_build_query_plan_for_graph(runtime_args, query):
+        return {
+            "query_contract": {
+                "task_type": "company_analysis",
+                "search_scope_tickers": ["AMZN"],
+                "focus_tickers": ["AMZN"],
+                "years": [2025, 2026],
+                "filing_types": ["10-K", "8-K"],
+                "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                "metric_families": ["margin"],
+            },
+            "selected_tickers": ["AMZN"],
+            "selected_years": [2025, 2026],
+        }
+
+    def fake_retrieve_context_for_graph(runtime_args, graph_state):
+        requirements = graph_state["query_contract"]["evidence_requirements"]
+        route_scopes = {
+            tuple(req["evidence_routes"]): (req["years"], req["filing_types"], req["source_tiers"], req["tickers"])
+            for req in requirements
+        }
+        assert route_scopes[("filing_text",)] == ([2025], ["10-K"], ["primary_sec_filing"], ["AMZN"])
+        assert route_scopes[("8k_commentary",)] == (
+            [2026],
+            ["8-K"],
+            ["company_authored_unaudited_sec_filing"],
+            ["AMZN"],
+        )
+        return {
+            "context_rows": [{"evidence_id": "AMZN_2026_8K_ITEM2_02_BLOCK_0001_CHUNK_0001", "ticker": "AMZN"}],
+            "retrieval_trace": {
+                "context_summary": {"context_row_count": 1},
+                "context_policy": {"candidate_row_count_pre_rerank": 2, "candidate_sent_to_bge": 1},
+            },
+            "context_runtime": {"context_runner": "fake"},
+            "artifact_refs": {"retrieved_context": str(tmp_path / "trace.jsonl")},
+        }
+
+    fake_interactive = SimpleNamespace(
+        build_query_plan_for_graph=fake_build_query_plan_for_graph,
+        retrieve_context_for_graph=fake_retrieve_context_for_graph,
+    )
+    monkeypatch.setattr("sec_agent.mcp_tool_registry._load_interactive_module", lambda: fake_interactive)
+
+    result = invoke_mcp_tool(
+        "sec_search_filings",
+        {
+            "query": "Compare AMZN FY2025 10-K margin context with FY2026 8-K commentary",
+            "tickers": ["AMZN"],
+            "years": [2025, 2026],
+            "filing_types": ["10-K", "8-K"],
+            "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+            "metric_families": ["margin"],
+            "manifest_path": str(manifest_path),
+            "output_dir": str(tmp_path),
+            "candidate_budget": 25,
+            "rerank_budget": 2,
+        },
+    )
+
+    assert result["status"] == "ok"
+    assert result["context_rows"][0]["evidence_id"].startswith("AMZN_2026_8K")
+
+
 def test_mcp_sec_search_overlay_refreshes_explicit_banking_metric_scope(tmp_path: Path, monkeypatch) -> None:
     def fake_build_query_plan_for_graph(runtime_args, query):
         return {

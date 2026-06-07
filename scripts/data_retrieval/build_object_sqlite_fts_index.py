@@ -26,6 +26,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-bytes", type=int, default=4 * 1024 * 1024)
     parser.add_argument("--insert-batch-size", type=int, default=5000)
     parser.add_argument("--progress-every", type=int, default=100000)
+    parser.add_argument(
+        "--sqlite-journal-mode",
+        default="WAL",
+        choices=["DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF"],
+        help="SQLite journal mode. Use MEMORY/OFF only for disposable temp builds.",
+    )
+    parser.add_argument(
+        "--sqlite-synchronous",
+        default="NORMAL",
+        choices=["OFF", "NORMAL", "FULL", "EXTRA"],
+        help="SQLite synchronous pragma. Use OFF only for disposable temp builds.",
+    )
+    parser.add_argument("--skip-fts-optimize", action="store_true", help="Skip final FTS5 optimize for faster temp builds.")
     return parser.parse_args()
 
 
@@ -42,6 +55,9 @@ def main() -> None:
         batch_bytes=args.batch_bytes,
         insert_batch_size=args.insert_batch_size,
         progress_every=args.progress_every,
+        journal_mode=args.sqlite_journal_mode,
+        synchronous=args.sqlite_synchronous,
+        optimize_fts=not args.skip_fts_optimize,
     )
     print(json.dumps(metadata, ensure_ascii=False, indent=2))
 

@@ -5,6 +5,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from types import ModuleType
@@ -36,6 +37,8 @@ _BANKING_MCP_METRIC_FAMILIES = {
     "provision_for_credit_losses",
     "total_assets",
 }
+_SEC_FORM_TYPES = {"10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"}
+_SEC_FORM_ID_RE = re.compile(r"(?:^|[^A-Z0-9])(?P<form>10-?K|10-?Q|8-?K|20-?F|40-?F|6-?K)(?:[^A-Z0-9]|$)")
 
 
 def list_registered_tools() -> list[dict[str, Any]]:
@@ -201,10 +204,50 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _invoke_milvus_semantic(args: dict[str, Any]) -> dict[str, Any]:
+    vector_kinds = _list_arg(args.get("vector_kinds"))
+    if not vector_kinds:
+        vector_kinds = ["narrative_chunk", "table_chunk", "paraphrase_context"]
+    db_path = str(args.get("milvus_db_path") or args.get("milvus_uri") or "").strip()
+    collection_name = str(args.get("milvus_collection_name") or "").strip()
+    missing = []
+    if not db_path:
+        missing.append("milvus_db_path")
+    if not collection_name:
+        missing.append("milvus_collection_name")
+    if not bool(args.get("typed_filter_required", True)):
+        missing.append("typed_filter_required")
+    gap = {
+        "source_family": "primary_sec_filing",
+        "retrieval_route": "milvus_semantic",
+        "reason_code": "milvus_semantic_runtime_not_bound" if not missing else "milvus_semantic_config_missing",
+        "reason": (
+            "Milvus semantic route is registered as a typed recall supplement, but the runtime search handler "
+            "is not bound in this process."
+        ),
+        "missing": missing,
+        "vector_kinds": vector_kinds,
+        "source_available": False,
+    }
+    return {
+        "status": "error",
+        "error": gap["reason_code"],
+        "context_rows": [],
+        "row_count": 0,
+        "vector_kind_counts": {},
+        "collection_name": collection_name,
+        "typed_filter_required": True,
+        "semantic_route_role": "semantic_recall_supplement",
+        "artifact_refs": [],
+        "source_gaps": [gap],
+    }
+
+
 def _invoke_market(args: dict[str, Any]) -> dict[str, Any]:
     path = Path(str(args.get("market_evidence_path") or "")).resolve()
     if not path.exists():
         return {"status": "error", "error": "market_evidence_path_not_found", "path": str(path)}
+    catalog_path = Path(str(args.get("market_catalog_path") or "")).resolve() if str(args.get("market_catalog_path") or "").strip() else None
     tickers = {ticker.upper() for ticker in _list_arg(args.get("tickers"))}
     snapshot_id = str(args.get("snapshot_id") or "").strip()
     limit = max(1, min(int(args.get("limit") or 1000), 1000))
@@ -230,13 +273,16 @@ def _invoke_market(args: dict[str, Any]) -> dict[str, Any]:
             for field in fields:
                 if ticker_rows and all(row.get(field) in {None, ""} for row in ticker_rows):
                     field_gaps.append({"ticker": ticker, "field": field, "reason": "missing_or_null"})
+    artifact_refs = [{"artifact_id": "market_evidence_rows", "path": str(path), "digest": "", "row_count": len(rows)}]
+    if catalog_path is not None:
+        artifact_refs.append({"artifact_id": "market_catalog", "path": str(catalog_path), "digest": "", "row_count": 0})
     return {
         "status": "ok" if rows else "partial",
         "market_rows": rows,
         "snapshot_id": snapshot_id or (str(rows[0].get("snapshot_id") or "") if rows else ""),
         "as_of_date": str(args.get("as_of_date") or (rows[0].get("as_of_date") if rows else "") or ""),
         "field_gaps": field_gaps,
-        "artifact_refs": [{"artifact_id": "market_evidence_rows", "path": str(path), "digest": "", "row_count": len(rows)}],
+        "artifact_refs": artifact_refs,
     }
 
 
@@ -439,7 +485,7 @@ def _compile_available_sec_requirements(
     for row in manifest_rows:
         ticker = str(row.get("ticker") or "").upper().strip()
         year = _int_or_none(row.get("fiscal_year") or row.get("year"))
-        form = _normalize_form_type(row.get("form_type") or row.get("source_type"))
+        form = _manifest_row_form_type(row)
         tier = str(row.get("source_tier") or _default_source_tier_for_form(form)).strip()
         if not ticker or year is None or not form:
             continue
@@ -532,7 +578,40 @@ def _read_manifest_rows(path_value: Any) -> list[dict[str, Any]]:
 
 def _normalize_form_type(value: Any) -> str:
     text = str(value or "").upper().strip()
-    return text.replace("10K", "10-K").replace("10Q", "10-Q").replace("20F", "20-F").replace("40F", "40-F")
+    return (
+        text.replace("10K", "10-K")
+        .replace("10Q", "10-Q")
+        .replace("8K", "8-K")
+        .replace("20F", "20-F")
+        .replace("40F", "40-F")
+        .replace("6K", "6-K")
+    )
+
+
+def _manifest_row_form_type(row: dict[str, Any]) -> str:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    for value in (
+        row.get("form_type"),
+        row.get("source_type"),
+        metadata.get("form_type"),
+        metadata.get("source_type"),
+    ):
+        form = _normalize_form_type(value)
+        if form in _SEC_FORM_TYPES:
+            return form
+    for key in ("evidence_id", "source_evidence_id", "source_id", "chunk_id", "block_id", "object_id", "id"):
+        form = _form_type_from_source_id(row.get(key))
+        if form:
+            return form
+    return ""
+
+
+def _form_type_from_source_id(value: Any) -> str:
+    match = _SEC_FORM_ID_RE.search(str(value or "").upper())
+    if not match:
+        return ""
+    form = _normalize_form_type(match.group("form"))
+    return form if form in _SEC_FORM_TYPES else ""
 
 
 def _default_source_tier_for_form(form: str) -> str:
@@ -685,6 +764,7 @@ def _sec_search_source_gaps(contract: dict[str, Any], rows: list[dict[str, Any]]
 
 _HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
     "sec_search_filings": _invoke_sec_search,
+    "sec_milvus_semantic_search": _invoke_milvus_semantic,
     "sec_query_exact_value_ledger": _invoke_ledger,
     "market_get_snapshot": _invoke_market,
     "industry_get_snapshot": _invoke_industry,

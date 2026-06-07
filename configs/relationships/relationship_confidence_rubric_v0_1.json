@@ -1,0 +1,38 @@
+{
+  "schema_version": "fin_agent_relationship_confidence_rubric_v0.1",
+  "high": {
+    "allowed_source_tiers": [
+      "primary_sec_filing",
+      "company_authored_unaudited_sec_filing",
+      "company_official_announcement",
+      "contract_or_exhibit",
+      "sec_exhibit"
+    ],
+    "requirements": [
+      "Source and target entities are resolved.",
+      "Evidence text explicitly names the counterparty.",
+      "The relationship type and direction are supported by the cited text.",
+      "verifier_status is verified."
+    ]
+  },
+  "medium": {
+    "requirements": [
+      "Evidence text names a counterparty and relationship cue.",
+      "At least one of direction, entity resolution, or formal-source confirmation is incomplete.",
+      "Output must use qualified wording."
+    ]
+  },
+  "low": {
+    "requirements": [
+      "Relationship is inferred from exposure, shipments, industry context, or weak public references.",
+      "Must not be used as a verified customer or supplier fact."
+    ]
+  },
+  "rejected": {
+    "requirements": [
+      "Evidence does not support the claimed relation type or direction.",
+      "Counterparty is generic or unresolved in a high-confidence direct edge.",
+      "Sector exposure, partner, news, or shipment lead was misclassified as customer/supplier."
+    ]
+  }
+}

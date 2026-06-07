@@ -15,6 +15,8 @@ from indexing.build_object_bm25_index import compact_structured_object_record
 
 SCHEMA_VERSION = "sec_agent_object_sqlite_fts_v0.1"
 SQLITE_INDEX_NAME = "records.sqlite"
+_SEC_FORM_TYPES = {"10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"}
+_SEC_FORM_ID_RE = re.compile(r"(?:^|[^A-Z0-9])(?P<form>10-?K|10-?Q|8-?K|20-?F|40-?F|6-?K)(?:[^A-Z0-9]|$)")
 
 
 def build_object_sqlite_fts_index(
@@ -26,6 +28,9 @@ def build_object_sqlite_fts_index(
     batch_bytes: int = 4 * 1024 * 1024,
     insert_batch_size: int = 5000,
     progress_every: int = 100000,
+    journal_mode: str = "WAL",
+    synchronous: str = "NORMAL",
+    optimize_fts: bool = True,
 ) -> dict[str, Any]:
     started = time.perf_counter()
     structured_path = Path(structured_dir)
@@ -37,9 +42,19 @@ def build_object_sqlite_fts_index(
         if path.exists():
             path.unlink()
 
+    journal_mode = _normalise_sqlite_pragma(
+        journal_mode,
+        allowed={"DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF"},
+        default="WAL",
+    )
+    synchronous = _normalise_sqlite_pragma(
+        synchronous,
+        allowed={"OFF", "NORMAL", "FULL", "EXTRA"},
+        default="NORMAL",
+    )
     con = sqlite3.connect(str(tmp_path))
-    con.execute("PRAGMA journal_mode=WAL")
-    con.execute("PRAGMA synchronous=NORMAL")
+    con.execute(f"PRAGMA journal_mode={journal_mode}")
+    con.execute(f"PRAGMA synchronous={synchronous}")
     con.execute("PRAGMA temp_store=MEMORY")
     con.execute("PRAGMA cache_size=-200000")
     _create_schema(con)
@@ -82,10 +97,14 @@ def build_object_sqlite_fts_index(
             "workers": max(1, int(workers)),
             "batch_bytes": max(1, int(batch_bytes)),
             "insert_batch_size": max(1, int(insert_batch_size)),
+            "journal_mode": journal_mode,
+            "synchronous": synchronous,
+            "optimize_fts": bool(optimize_fts),
             "elapsed_sec": round(time.perf_counter() - started, 3),
         }
         con.execute("INSERT INTO object_index_metadata(payload_json) VALUES (?)", [json.dumps(metadata, ensure_ascii=False)])
-        con.execute("INSERT INTO object_records_fts(object_records_fts) VALUES ('optimize')")
+        if optimize_fts:
+            con.execute("INSERT INTO object_records_fts(object_records_fts) VALUES ('optimize')")
         con.commit()
     finally:
         con.close()
@@ -98,6 +117,14 @@ def build_object_sqlite_fts_index(
     tmp_path.replace(db_path)
     (output_path / "metadata.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return metadata
+
+
+def _normalise_sqlite_pragma(value: str, *, allowed: set[str], default: str) -> str:
+    normalised = str(value or default).strip().upper()
+    if normalised not in allowed:
+        allowed_values = ", ".join(sorted(allowed))
+        raise ValueError(f"Unsupported SQLite pragma value {value!r}; expected one of: {allowed_values}")
+    return normalised
 
 
 def _create_schema(con: sqlite3.Connection) -> None:
@@ -251,6 +278,8 @@ def _sqlite_row(record: dict[str, Any]) -> tuple[Any, ...]:
     metadata = compact.get("metadata") if isinstance(compact.get("metadata"), dict) else {}
     periods = compact.get("periods") or compact.get("candidate_periods") or []
     form_type = _normalize_form_type(compact.get("form_type") or metadata.get("form_type"))
+    if not form_type:
+        form_type = _form_type_from_source_id(compact.get("source_evidence_id") or compact.get("object_id"))
     source_type = _normalize_form_type(compact.get("source_type") or metadata.get("source_type") or form_type)
     source_tier = compact.get("source_tier") or metadata.get("source_tier") or "primary_sec_filing"
     record_json = json.dumps(compact, ensure_ascii=False)
@@ -280,7 +309,23 @@ def _sqlite_row(record: dict[str, Any]) -> tuple[Any, ...]:
 
 
 def _normalize_form_type(value: Any) -> str:
-    return str(value or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
+    text = str(value or "").upper().strip()
+    return (
+        text.replace("10K", "10-K")
+        .replace("10Q", "10-Q")
+        .replace("8K", "8-K")
+        .replace("20F", "20-F")
+        .replace("40F", "40-F")
+        .replace("6K", "6-K")
+    )
+
+
+def _form_type_from_source_id(value: Any) -> str:
+    match = _SEC_FORM_ID_RE.search(str(value or "").upper())
+    if not match:
+        return ""
+    form = _normalize_form_type(match.group("form"))
+    return form if form in _SEC_FORM_TYPES else ""
 
 
 def _str_or_none(value: Any) -> str | None:

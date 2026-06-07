@@ -9,18 +9,18 @@ from retrieval.object_bm25_retriever import ObjectBM25Retriever
 
 
 class _FakeBM25:
-    def __init__(self) -> None:
+    def __init__(self, scores: list[float] | None = None) -> None:
+        self.scores = scores or [1.0, 9.0, 5.0]
         self.full_calls = 0
         self.batch_calls = 0
 
     def get_scores(self, _tokens: list[str]) -> list[float]:
         self.full_calls += 1
-        return [1.0, 9.0, 5.0]
+        return list(self.scores)
 
     def get_batch_scores(self, _tokens: list[str], indices: list[int]) -> list[float]:
         self.batch_calls += 1
-        scores = {0: 1.0, 1: 9.0, 2: 5.0}
-        return [scores[idx] for idx in indices]
+        return [self.scores[idx] for idx in indices]
 
 
 def _write_index(path: Path) -> None:
@@ -92,6 +92,58 @@ def test_bm25_unfiltered_search_keeps_full_scores_path(tmp_path: Path) -> None:
     assert retriever.bm25.batch_calls == 0
 
 
+def test_bm25_filters_infer_8k_form_type_from_legacy_evidence_id(tmp_path: Path) -> None:
+    tmp_path.mkdir(exist_ok=True)
+    with (tmp_path / "bm25.pkl").open("wb") as f:
+        pickle.dump(_FakeBM25([8.0, 7.0, 6.0]), f)
+    records = [
+        {
+            "evidence_id": "8K_EARNINGS::AAA::000000::EX991HTM::BLOCK_0001::CHUNK_0001",
+            "ticker": "AAA",
+            "fiscal_year": 2026,
+            "section": "Exhibit 99.1 Earnings Release",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "text": "AAA earnings release margin commentary",
+        },
+        {
+            "evidence_id": "AAA_2026_10Q_ITEM2_BLOCK_0001_CHUNK_0001",
+            "ticker": "AAA",
+            "fiscal_year": 2026,
+            "section": "Item 2",
+            "metadata": {"form_type": "10-Q", "source_tier": "primary_sec_filing"},
+            "text": "AAA quarterly filing margin",
+        },
+        {
+            "evidence_id": "8K_EARNINGS::BBB::000000::EX991HTM::BLOCK_0001::CHUNK_0001",
+            "ticker": "BBB",
+            "fiscal_year": 2026,
+            "section": "Exhibit 99.1 Earnings Release",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "text": "BBB earnings release margin commentary",
+        },
+    ]
+    (tmp_path / "records.jsonl").write_text(
+        "\n".join(json.dumps(row, ensure_ascii=False) for row in records) + "\n",
+        encoding="utf-8",
+    )
+
+    retriever = BM25Retriever(tmp_path)
+    hits = retriever.search(
+        "earnings margin commentary",
+        top_k=3,
+        filters={
+            "ticker": "AAA",
+            "fiscal_year": 2026,
+            "form_type": ["8-K"],
+            "source_tier": ["company_authored_unaudited_sec_filing"],
+        },
+    )
+
+    assert [row["evidence_id"] for row in hits] == ["8K_EARNINGS::AAA::000000::EX991HTM::BLOCK_0001::CHUNK_0001"]
+    assert retriever.bm25.full_calls == 0
+    assert retriever.bm25.batch_calls == 1
+
+
 def _write_object_index(path: Path) -> None:
     path.mkdir(exist_ok=True)
     with (path / "bm25.pkl").open("wb") as f:
@@ -154,6 +206,57 @@ def test_object_bm25_filtered_search_uses_indexed_filters_and_batch_scores(tmp_p
     assert retriever.bm25.full_calls == 0
     assert retriever.bm25.batch_calls == 1
     assert len(retriever._filter_cache) == 1
+
+
+def test_object_bm25_filters_infer_8k_form_type_from_legacy_object_id(tmp_path: Path) -> None:
+    tmp_path.mkdir(exist_ok=True)
+    with (tmp_path / "bm25.pkl").open("wb") as f:
+        pickle.dump(_FakeBM25([5.0, 4.0]), f)
+    records = [
+        {
+            "object_id": "8K_EARNINGS::AAA::000000::EX991HTM::BLOCK_0001::CHUNK_0001_METRIC_MARGIN",
+            "object_type": "metric",
+            "source_evidence_id": "8K_EARNINGS::AAA::000000::EX991HTM::BLOCK_0001::CHUNK_0001",
+            "ticker": "AAA",
+            "fiscal_year": 2026,
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "metric_name": "gross margin",
+            "raw_value": "42%",
+        },
+        {
+            "object_id": "AAA_2026_10Q_ITEM2_BLOCK_0001_CHUNK_0001_METRIC_MARGIN",
+            "object_type": "metric",
+            "source_evidence_id": "AAA_2026_10Q_ITEM2_BLOCK_0001_CHUNK_0001",
+            "ticker": "AAA",
+            "fiscal_year": 2026,
+            "metadata": {"form_type": "10-Q", "source_tier": "primary_sec_filing"},
+            "metric_name": "gross margin",
+            "raw_value": "41%",
+        },
+    ]
+    (tmp_path / "records.jsonl").write_text(
+        "\n".join(json.dumps(row, ensure_ascii=False) for row in records) + "\n",
+        encoding="utf-8",
+    )
+
+    retriever = ObjectBM25Retriever(tmp_path)
+    hits = retriever.search(
+        "gross margin",
+        top_k=2,
+        filters={
+            "ticker": ["AAA"],
+            "fiscal_year": 2026,
+            "object_type": ["metric"],
+            "form_type": ["8-K"],
+            "source_tier": ["company_authored_unaudited_sec_filing"],
+        },
+    )
+
+    assert [row["object_id"] for row in hits] == [
+        "8K_EARNINGS::AAA::000000::EX991HTM::BLOCK_0001::CHUNK_0001_METRIC_MARGIN"
+    ]
+    assert retriever.bm25.full_calls == 0
+    assert retriever.bm25.batch_calls == 1
 
 
 def test_object_bm25_prefers_slim_records_when_present(tmp_path: Path) -> None:

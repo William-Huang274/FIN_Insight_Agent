@@ -105,6 +105,9 @@ def test_planner_evidence_requirements_drive_physical_routes() -> None:
                 "metric_families": ["capex"],
                 "period_roles": ["QTD", "YTD"],
                 "evidence_routes": ["8k_commentary", "web_search"],
+                "route_selection_reason": "8-K earnings release commentary is the narrowest company-authored source.",
+                "route_cost_tier": "medium",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
                 "candidate_budget": 16,
                 "rerank_budget": 8,
             }
@@ -119,8 +122,13 @@ def test_planner_evidence_requirements_drive_physical_routes() -> None:
     assert erp["requirements"][0]["tickers"] == ["NVDA"]
     assert erp["requirements"][0]["years"] == [2026]
     assert erp["requirements"][0]["evidence_routes"] == ["8k_commentary"]
+    assert erp["requirements"][0]["route_selection_reason"].startswith("8-K earnings")
+    assert erp["requirements"][0]["route_cost_tier"] == "medium"
     assert (plan["retrieval_plan_validation"] or {})["status"] == "pass"
     assert [route["retrieval_route"] for route in routes] == ["8k_commentary"]
+    assert routes[0]["route_selection_reason"].startswith("8-K earnings")
+    assert routes[0]["route_cost_tier"] == "medium"
+    assert routes[0]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
     assert routes[0]["candidate_budget"] == 16
     assert routes[0]["rerank_budget"] == 8
     assert plan["evidence_requirement_plan"]["source"] == "planner_output_evidence_requirements"

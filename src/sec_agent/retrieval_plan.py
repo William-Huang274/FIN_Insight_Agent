@@ -12,11 +12,25 @@ ALLOWED_RETRIEVAL_ROUTES = {
     "ledger_first",
     "filing_text",
     "8k_commentary",
+    "milvus_semantic",
     "market_snapshot",
     "industry_snapshot",
     "risk_text",
     "run_artifact",
 }
+
+ROUTE_COST_TIERS = {
+    "ledger_first": "low",
+    "run_artifact": "low",
+    "filing_text": "medium",
+    "8k_commentary": "medium",
+    "risk_text": "medium",
+    "market_snapshot": "medium",
+    "industry_snapshot": "medium",
+    "milvus_semantic": "high",
+    "relationship_graph": "high",
+}
+ROUTE_COST_TIER_RANK = {"low": 1, "medium": 2, "high": 3}
 
 MARKET_SOURCE_TIER = "market_snapshot"
 INDUSTRY_SOURCE_TIER = "industry_snapshot"
@@ -191,6 +205,9 @@ def build_retrieval_plan(
                 "period_roles": period_roles,
                 "retrieval_routes": route_names,
                 "coverage_requirements": coverage_requirements,
+                "route_selection_reason": requirement.get("route_selection_reason") or "",
+                "route_cost_tier": requirement.get("route_cost_tier") or _normalize_route_cost_tier("", route_names),
+                "route_selection_policy": requirement.get("route_selection_policy") or "",
                 "second_pass_policy": _second_pass_policy(),
                 "evidence_requirement_id": requirement.get("requirement_id") or requirement.get("evidence_requirement_id") or "",
                 "evidence_requirement_source": evidence_requirement_plan.get("source") or "",
@@ -220,6 +237,9 @@ def build_retrieval_plan(
                     "candidate_budget": candidate_budget,
                     "rerank_budget": rerank_budget,
                     "coverage_requirements": coverage_requirements,
+                    "route_selection_reason": requirement.get("route_selection_reason") or "",
+                    "route_cost_tier": ROUTE_COST_TIERS.get(route_name, requirement.get("route_cost_tier") or "medium"),
+                    "route_selection_policy": requirement.get("route_selection_policy") or "",
                     "second_pass_policy": _second_pass_policy(),
                     "evidence_requirement_id": requirement.get("requirement_id") or requirement.get("evidence_requirement_id") or "",
                 }
@@ -522,6 +542,9 @@ def _normalize_evidence_requirements(
             "coverage_requirements": dict(req.get("coverage_requirements")) if isinstance(req.get("coverage_requirements"), dict) else {},
             "candidate_budget": _clamp_int(req.get("candidate_budget"), 0, 1000, 0),
             "rerank_budget": _clamp_int(req.get("rerank_budget"), 0, 1000, 0),
+            "route_selection_reason": _short_text(req.get("route_selection_reason") or req.get("route_reason") or "", 240),
+            "route_cost_tier": _normalize_route_cost_tier(req.get("route_cost_tier") or req.get("cost_tier"), routes),
+            "route_selection_policy": _short_text(req.get("route_selection_policy") or "cost_and_query_type_aware_v0_1", 80),
             "second_pass_policy": _normalize_second_pass_policy(req.get("second_pass_policy")),
         }
         if not requirement["tickers"] and not is_run_artifact:
@@ -564,6 +587,16 @@ def _routes_for_requirement(requirement: dict[str, Any], fallback_routes: list[s
     routes = _unique_strings(requirement.get("evidence_routes") or requirement.get("retrieval_routes") or requirement.get("retrieval_route") or [])
     routes = [route for route in routes if route in ALLOWED_RETRIEVAL_ROUTES]
     return routes or fallback_routes
+
+
+def _normalize_route_cost_tier(value: Any, routes: list[str]) -> str:
+    text = str(value or "").strip().lower()
+    if text in ROUTE_COST_TIER_RANK:
+        return text
+    tiers = [ROUTE_COST_TIERS.get(route, "medium") for route in routes]
+    if not tiers:
+        return "medium"
+    return max(tiers, key=lambda tier: ROUTE_COST_TIER_RANK.get(tier, 2))
 
 
 def _evidence_requirement_summary(requirements: list[dict[str, Any]]) -> dict[str, Any]:
@@ -622,6 +655,8 @@ def _route_budgets(route_name: str, *, ticker_count: int, family_count: int) -> 
         return {"candidate_budget": min(200, max(16, ticker_count * 2)), "rerank_budget": 0}
     if route_name == "industry_snapshot":
         return {"candidate_budget": 80, "rerank_budget": 0}
+    if route_name == "milvus_semantic":
+        return {"candidate_budget": 120 * scale, "rerank_budget": 0}
     if route_name == "8k_commentary":
         return {"candidate_budget": 80 * scale, "rerank_budget": 40 * scale}
     if route_name == "risk_text":
@@ -636,7 +671,7 @@ def _route_filing_types(route_name: str, filing_types: list[str]) -> list[str]:
         return ["8-K"] if "8-K" in set(filing_types) else filing_types
     if route_name == "industry_snapshot":
         return []
-    if route_name in {"ledger_first", "filing_text", "risk_text"}:
+    if route_name in {"ledger_first", "filing_text", "risk_text", "milvus_semantic"}:
         scoped = [form for form in filing_types if form in {"10-K", "10-Q"}]
         return scoped or filing_types
     return []
@@ -651,7 +686,7 @@ def _route_source_tiers(route_name: str, source_tiers: list[str]) -> list[str]:
         return [INDUSTRY_SOURCE_TIER] if INDUSTRY_SOURCE_TIER in set(source_tiers) else []
     if route_name == "8k_commentary":
         return [COMPANY_AUTHORED_SOURCE_TIER] if COMPANY_AUTHORED_SOURCE_TIER in set(source_tiers) else []
-    if route_name in {"ledger_first", "filing_text", "risk_text"}:
+    if route_name in {"ledger_first", "filing_text", "risk_text", "milvus_semantic"}:
         scoped = [tier for tier in source_tiers if tier in {PRIMARY_SEC_SOURCE_TIER, COMPANY_AUTHORED_SOURCE_TIER}]
         return scoped
     return source_tiers
@@ -668,6 +703,8 @@ def _section_hints(route_name: str) -> list[str]:
         return ["market_analytics", "event_window", "valuation_snapshot"]
     if route_name == "industry_snapshot":
         return ["industry_observations", "sector_context", "macro_context"]
+    if route_name == "milvus_semantic":
+        return ["typed_semantic_vector", "semantic_scope", "vector_kind_filter"]
     if route_name == "risk_text":
         return ["risk_factors", "md&a_risk", "business_risk"]
     return ["md&a", "business", "segment_discussion"]

@@ -1,0 +1,30 @@
+{
+  "schema_version": "fin_agent_entity_alias_rules_v0.1",
+  "normalization": {
+    "case": "lower",
+    "remove_legal_suffixes": [
+      "Inc",
+      "Incorporated",
+      "Corp",
+      "Corporation",
+      "Company",
+      "Co",
+      "Ltd",
+      "Limited",
+      "LLC",
+      "LP",
+      "PLC",
+      "Holdings",
+      "Group"
+    ],
+    "ampersand": "and",
+    "punctuation": "space"
+  },
+  "resolution_policy": {
+    "ticker_exact": "high",
+    "normalized_alias_exact": "high",
+    "specific_containment": "medium",
+    "subsidiary_alias": "requires_parent_resolution_confidence",
+    "unresolved_counterparty": "allowed_for_candidate_edges_only"
+  }
+}

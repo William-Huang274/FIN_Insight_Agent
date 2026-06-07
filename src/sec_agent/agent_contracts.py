@@ -84,13 +84,14 @@ MODE_DISALLOWED_AGENTS = {
 
 RETRIEVAL_TOOL_NAMES = {
     "sec_search_filings",
+    "sec_milvus_semantic_search",
     "sec_query_exact_value_ledger",
     "market_get_snapshot",
     "industry_get_snapshot",
 }
 
 OPERATOR_TOOL_ALLOWLIST = {
-    "sec_operator": {"sec_search_filings", "sec_query_exact_value_ledger"},
+    "sec_operator": {"sec_search_filings", "sec_milvus_semantic_search", "sec_query_exact_value_ledger"},
     "eight_k_operator": {"sec_search_filings"},
     "market_operator": {"market_get_snapshot"},
     "industry_operator": {"industry_get_snapshot"},

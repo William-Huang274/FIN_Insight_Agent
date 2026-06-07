@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import pickle
+import re
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,8 @@ INDEXED_FILTER_FIELDS = {
     "source_type",
     "ticker",
 }
+_SEC_FORM_TYPES = {"10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"}
+_SEC_FORM_ID_RE = re.compile(r"(?:^|[^A-Z0-9])(?P<form>10-?K|10-?Q|8-?K|20-?F|40-?F|6-?K)(?:[^A-Z0-9]|$)")
 
 
 class BM25Retriever:
@@ -160,7 +163,7 @@ def _record_filter_value(record: dict[str, Any], metadata: dict[str, Any], key: 
 
 def _normalize_filter_value(key: str, value: Any) -> Any:
     if key in {"form_type", "source_type", "filing_type"}:
-        return str(value or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
+        return _normalize_form_type(value)
     if key == "ticker":
         return str(value or "").upper().strip()
     if key == "fiscal_year":
@@ -172,12 +175,23 @@ def _normalize_filter_value(key: str, value: Any) -> Any:
 
 
 def _form_type_from_source_id(value: Any) -> str:
-    text = str(value or "").upper()
-    if "_10Q_" in text:
-        return "10-Q"
-    if "_10K_" in text:
-        return "10-K"
-    return ""
+    match = _SEC_FORM_ID_RE.search(str(value or "").upper())
+    if not match:
+        return ""
+    form = _normalize_form_type(match.group("form"))
+    return form if form in _SEC_FORM_TYPES else ""
+
+
+def _normalize_form_type(value: Any) -> str:
+    text = str(value or "").upper().strip()
+    return (
+        text.replace("10K", "10-K")
+        .replace("10Q", "10-Q")
+        .replace("8K", "8-K")
+        .replace("20F", "20-F")
+        .replace("40F", "40-F")
+        .replace("6K", "6-K")
+    )
 
 
 def _preview(text: str, max_chars: int = 280) -> str:

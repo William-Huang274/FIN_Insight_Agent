@@ -78,10 +78,26 @@ def test_research_lead_planning_skill_has_cost_aware_route_policy() -> None:
     assert "Route Selection Policy" in prompt
     assert "Professional Scoping Heuristics" in prompt
     assert "scope_decision" in prompt
+    assert "catalogs_to_inspect" in prompt
+    assert "expansion_budget" in prompt
+    assert "cloud capex demand" in prompt
+    assert "export-control risk" in prompt
     assert "route_selection_reason" in prompt
     assert "route_cost_tier" in prompt
     assert "milvus_semantic" in prompt
     assert "cannot prove exact values" in prompt
+
+
+def test_relationship_universe_skill_requires_per_ticker_scope_contract() -> None:
+    prompt = load_research_skill("relationship_universe")
+
+    assert "candidate_lens" in prompt
+    assert "available_source_families" in prompt
+    assert "relationship_strength" in prompt
+    assert "downstream_operator_owner" in prompt
+    assert "excluded_ticker" in prompt
+    assert "non_us_supply_chain_disclosure" in prompt
+    assert "source_gap" in prompt
 
 
 def test_market_and_industry_skills_use_source_family_bundle_boundaries() -> None:

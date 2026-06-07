@@ -4,7 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 
 
-SKILL_SCHEMA_VERSION = "sec_agent_research_skills_v0.4"
+SKILL_SCHEMA_VERSION = "sec_agent_research_skills_v0.5"
 
 PROMPT_ROOT = Path(__file__).resolve().parent / "prompts" / "skills"
 

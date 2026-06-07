@@ -17,8 +17,26 @@ class SectionDefinition:
 
 
 SECTION_DEFINITIONS: tuple[SectionDefinition, ...] = (
-    SectionDefinition("1", "Item 1. Business", ("item1business",)),
-    SectionDefinition("1A", "Item 1A. Risk Factors", ("item1ariskfactors",)),
+    SectionDefinition(
+        "1",
+        "Item 1. Business",
+        (
+            "item1business",
+            "items1and2business",
+            "item1and2business",
+            "item1generalcorporatestructureandbusiness",
+            "item1generalbusiness",
+            "item1corporatestructureandbusiness",
+            "em1business",
+            "tem1business",
+            "m1business",
+        ),
+    ),
+    SectionDefinition(
+        "1A",
+        "Item 1A. Risk Factors",
+        ("item1ariskfactors", "em1ariskfactors", "tem1ariskfactors", "m1ariskfactors"),
+    ),
     SectionDefinition("1B", "Item 1B. Unresolved Staff Comments", ("item1bunresolvedstaffcomments",)),
     SectionDefinition("1C", "Item 1C. Cybersecurity", ("item1ccybersecurity",)),
     SectionDefinition("2", "Item 2. Properties", ("item2properties",)),
@@ -26,9 +44,41 @@ SECTION_DEFINITIONS: tuple[SectionDefinition, ...] = (
     SectionDefinition("4", "Item 4. Mine Safety Disclosures", ("item4minesafety",)),
     SectionDefinition("5", "Item 5. Market for Registrant's Common Equity", ("item5marketforregistrants",)),
     SectionDefinition("6", "Item 6. Reserved", ("item6reserved",)),
-    SectionDefinition("7", "Item 7. Management's Discussion and Analysis", ("item7management",)),
-    SectionDefinition("7A", "Item 7A. Quantitative and Qualitative Disclosures About Market Risk", ("item7aquantitativeandqualitative",)),
-    SectionDefinition("8", "Item 8. Financial Statements and Supplementary Data", ("item8financialstatements",)),
+    SectionDefinition(
+        "7",
+        "Item 7. Management's Discussion and Analysis",
+        (
+            "item7management",
+            "items7and7amanagement",
+            "item7and7amanagement",
+            "em7management",
+            "tem7management",
+            "m7management",
+        ),
+    ),
+    SectionDefinition(
+        "7A",
+        "Item 7A. Quantitative and Qualitative Disclosures About Market Risk",
+        (
+            "item7aquantitativeandqualitative",
+            "em7aquantitativeandqualitative",
+            "tem7aquantitativeandqualitative",
+        ),
+    ),
+    SectionDefinition(
+        "8",
+        "Item 8. Financial Statements and Supplementary Data",
+        (
+            "item8financialstatements",
+            "item8consolidatedfinancialstatements",
+            "em8financialstatements",
+            "em8consolidatedfinancialstatements",
+            "tem8financialstatements",
+            "tem8consolidatedfinancialstatements",
+            "m8financialstatements",
+            "m8consolidatedfinancialstatements",
+        ),
+    ),
     SectionDefinition("9", "Item 9. Changes in and Disagreements With Accountants", ("item9changesinanddisagreements",)),
     SectionDefinition("9A", "Item 9A. Controls and Procedures", ("item9acontrolsandprocedures",)),
     SectionDefinition("9B", "Item 9B. Other Information", ("item9botherinformation",)),
@@ -55,7 +105,16 @@ QUARTERLY_SECTION_DEFINITIONS: tuple[SectionDefinition, ...] = (
             "item1condensedconsolidatedfinancialstatements",
         ),
     ),
-    SectionDefinition("2", "Item 2. Management's Discussion and Analysis", ("item2management",)),
+    SectionDefinition(
+        "2",
+        "Item 2. Management's Discussion and Analysis",
+        (
+            "item2management",
+            "items2and3management",
+            "item2and3management",
+            "financialreview",
+        ),
+    ),
     SectionDefinition("3", "Item 3. Quantitative and Qualitative Disclosures About Market Risk", ("item3quantitativeandqualitative",)),
     SectionDefinition("4", "Item 4. Controls and Procedures", ("item4controlsandprocedures",)),
     SectionDefinition("1A", "Item 1A. Risk Factors", ("item1ariskfactors",)),
@@ -64,6 +123,22 @@ QUARTERLY_SECTION_DEFINITION_BY_ITEM = {
     definition.item_code: definition for definition in QUARTERLY_SECTION_DEFINITIONS
 }
 DEFAULT_10Q_OUTPUT_ITEMS = ("1", "2", "3", "4", "1A")
+DEFAULT_20F_OUTPUT_ITEMS = DEFAULT_OUTPUT_ITEMS
+DEFAULT_40F_OUTPUT_ITEMS = ("1", "1A", "7", "8")
+FOREIGN_ANNUAL_SECTION_TITLES = {
+    "1": "Form 20-F Item 4. Information on the Company",
+    "1A": "Form 20-F Item 3.D. Risk Factors",
+    "7": "Form 20-F Item 5. Operating and Financial Review and Prospects",
+    "7A": "Form 20-F Item 11. Quantitative and Qualitative Disclosures About Market Risk",
+    "8": "Form 20-F Item 18. Financial Statements",
+}
+CANADIAN_ANNUAL_SECTION_TITLES = {
+    "1": "Form 40-F Annual Information Form - Business",
+    "1A": "Form 40-F Annual Information Form - Risk Factors",
+    "7": "Form 40-F Management's Discussion and Analysis",
+    "7A": "Form 40-F Market Risk and Financial Instruments",
+    "8": "Form 40-F Audited Financial Statements",
+}
 
 
 class SecFilingSection(BaseModel):
@@ -165,6 +240,23 @@ def find_10k_sections(
             )
         )
     if sections:
+        missing_required = _missing_required_items(
+            sections,
+            required_items=_required_items_for_output_filter(
+                output_item_set,
+                default_items=DEFAULT_OUTPUT_ITEMS,
+            ),
+        )
+        if missing_required:
+            sections = _merge_missing_sections(
+                primary_sections=sections,
+                fallback_sections=_find_nontraditional_10k_sections(
+                    text=text,
+                    output_item_set=output_item_set,
+                    min_section_chars=min_section_chars,
+                ),
+                missing_items=missing_required,
+            )
         return sections
 
     return _find_nontraditional_10k_sections(
@@ -186,6 +278,18 @@ def find_sec_filing_sections(
         return find_10q_sections(
             text=text,
             output_items=output_items,
+            min_section_chars=min_section_chars,
+        )
+    if normalized_form == "20-F":
+        return find_20f_sections(
+            text=text,
+            output_items=output_items if output_items is not None else DEFAULT_20F_OUTPUT_ITEMS,
+            min_section_chars=min_section_chars,
+        )
+    if normalized_form == "40-F":
+        return find_40f_sections(
+            text=text,
+            output_items=output_items if output_items is not None else DEFAULT_40F_OUTPUT_ITEMS,
             min_section_chars=min_section_chars,
         )
     return find_10k_sections(
@@ -233,7 +337,290 @@ def find_10q_sections(
         min_section_chars=min_section_chars,
     )
     if nontraditional_sections:
-        return nontraditional_sections
+        return _merge_missing_sections(
+            primary_sections=sections,
+            fallback_sections=nontraditional_sections,
+            missing_items=_missing_required_items(
+                sections,
+                required_items=_required_items_for_output_filter(
+                    output_item_set,
+                    default_items=("1", "2"),
+                ),
+            ),
+        )
+    return sections
+
+
+def find_20f_sections(
+    text: str,
+    output_items: Iterable[str] | None = DEFAULT_20F_OUTPUT_ITEMS,
+    min_section_chars: int = 100,
+) -> list[SecFilingSection]:
+    output_item_set = _normalize_item_filter(output_items)
+    lines = _line_offsets(text)
+    table_start_by_line_idx = _table_start_by_line_index(lines)
+    lower_bound = max(8000, int(len(text) * 0.01))
+
+    risk = _find_foreign_annual_marker(
+        lines,
+        markers=(
+            "item 3.d. risk factors",
+            "item 3.d risk factors",
+            "3.d. risk factors",
+            "d. risk factors",
+            "risk factors",
+            "risks relating to our business",
+        ),
+        after=lower_bound,
+    )
+    business = _find_foreign_annual_marker(
+        lines,
+        markers=(
+            "item 4. information on the company",
+            "item 4 information on the company",
+            "4. information on the company",
+            "b. business overview",
+            "business overview of the company",
+            "business overview",
+            "at a glance",
+        ),
+        after=lower_bound,
+    )
+    operating_review_after = min(
+        marker["start"] for marker in (risk, business) if marker is not None
+    ) if risk is not None or business is not None else lower_bound
+    operating_review = _find_foreign_annual_marker(
+        lines,
+        markers=(
+            "item 5. operating and financial review and prospects",
+            "item 5 operating and financial review and prospects",
+            "item 5 operating and financial reviews and prospects",
+            "5 operating and financial review and prospects",
+            "5 operating and financial reviews and prospects",
+            "operating and financial review and prospects",
+            "operating and financial reviews and prospects",
+            "operating results",
+            "financial performance",
+        ),
+        after=operating_review_after + 1,
+    )
+    market_risk = _find_foreign_annual_marker(
+        lines,
+        markers=(
+            "item 11. quantitative and qualitative disclosures about market risk",
+            "item 11 quantitative and qualitative disclosures about market risk",
+            "quantitative and qualitative disclosures about market risk",
+            "market risk",
+        ),
+        after=(operating_review["start"] + 1) if operating_review is not None else lower_bound,
+    )
+    financial_after = max(
+        marker["start"] for marker in (operating_review, market_risk, business, risk) if marker is not None
+    ) if any(marker is not None for marker in (operating_review, market_risk, business, risk)) else lower_bound
+    financials = _find_foreign_annual_marker(
+        lines,
+        markers=(
+            "item 18. financial statements",
+            "item 18 financial statements",
+            "18. financial statements",
+            "consolidated financial statements",
+            "report of independent registered public accounting firm",
+        ),
+        after=financial_after + 1,
+        allow_table_lines=True,
+    )
+    end_marker = _find_foreign_annual_marker(
+        lines,
+        markers=("signatures", "exhibits", "index to exhibits"),
+        after=(financials["start"] + 1) if financials is not None else financial_after + 1,
+    )
+
+    candidates = [
+        candidate
+        for candidate in [
+            _foreign_annual_candidate("1A", risk, table_start_by_line_idx),
+            _foreign_annual_candidate("1", business, table_start_by_line_idx),
+            _foreign_annual_candidate("7", operating_review, table_start_by_line_idx),
+            _foreign_annual_candidate("7A", market_risk, table_start_by_line_idx),
+            _foreign_annual_candidate("8", financials, table_start_by_line_idx),
+            _end_boundary_candidate(end_marker, table_start_by_line_idx),
+        ]
+        if candidate is not None
+    ]
+    candidates.sort(key=lambda candidate: candidate["start"])
+    candidates = _dedupe_nontraditional_boundaries(candidates)
+    if not any(candidate["item_code"] in {"1", "1A", "7", "8"} for candidate in candidates):
+        return []
+
+    sections: list[SecFilingSection] = []
+    for idx, candidate in enumerate(candidates):
+        item_code = candidate["item_code"]
+        if item_code == "__END__":
+            continue
+        if output_item_set is not None and item_code not in output_item_set:
+            continue
+        start = candidate["start"]
+        end = candidates[idx + 1]["start"] if idx + 1 < len(candidates) else len(text)
+        section_text = text[start:end].strip()
+        if len(section_text) < min_section_chars:
+            continue
+        sections.append(
+            SecFilingSection(
+                item_code=item_code,
+                section=str(candidate.get("section") or FOREIGN_ANNUAL_SECTION_TITLES[item_code]),
+                char_start=start,
+                char_end=end,
+                text=section_text,
+            )
+        )
+    return sections
+
+
+def find_40f_sections(
+    text: str,
+    output_items: Iterable[str] | None = DEFAULT_40F_OUTPUT_ITEMS,
+    min_section_chars: int = 100,
+) -> list[SecFilingSection]:
+    output_item_set = _normalize_item_filter(output_items)
+    lines = _line_offsets(text)
+    table_start_by_line_idx = _table_start_by_line_index(lines)
+    is_materialized_package = _compact_text(text[:3000]).startswith("fin40fannualpackage")
+    lower_bound = 0 if is_materialized_package else max(2500, int(len(text) * 0.005))
+
+    aif_heading = _find_canadian_annual_marker(
+        lines,
+        markers=("fin 40-f annual information form",),
+        after=lower_bound,
+    ) if is_materialized_package else None
+    financials_heading = _find_canadian_annual_marker(
+        lines,
+        markers=("fin 40-f financial statements",),
+        after=(aif_heading["start"] + 1) if aif_heading is not None else lower_bound,
+    ) if is_materialized_package else None
+    mda_heading = _find_canadian_annual_marker(
+        lines,
+        markers=("fin 40-f mda", "fin 40-f management discussion and analysis"),
+        after=(financials_heading["start"] + 1) if financials_heading is not None else (
+            (aif_heading["start"] + 1) if aif_heading is not None else lower_bound
+        ),
+    ) if is_materialized_package else None
+    aif_upper_bound = min(
+        marker["start"]
+        for marker in (financials_heading, mda_heading)
+        if marker is not None
+    ) if financials_heading is not None or mda_heading is not None else None
+
+    business_markers = (
+        "description of the business",
+        "business overview",
+        "our business",
+        "operations",
+    )
+    if not is_materialized_package:
+        business_markers = ("annual information form", *business_markers)
+    aif = _find_canadian_annual_marker(
+        lines,
+        markers=business_markers,
+        after=(aif_heading["start"] + 1) if aif_heading is not None else lower_bound,
+        before=aif_upper_bound,
+    ) or aif_heading
+    risk = _find_canadian_annual_marker(
+        lines,
+        markers=(
+            "risks that can affect our business",
+            "risk factors",
+            "risks and uncertainties",
+            "risk factors and other key information",
+            "principal risks",
+        ),
+        after=(aif_heading["start"] + 1) if aif_heading is not None else (
+            (aif["start"] + 1) if aif is not None else lower_bound
+        ),
+        before=aif_upper_bound,
+    )
+    financials = financials_heading or _find_canadian_annual_marker(
+        lines,
+        markers=(
+            "audited financial statements",
+            "consolidated financial statements",
+            "financial statements",
+            "independent auditor's report",
+            "independent auditors report",
+        ),
+        after=lower_bound,
+        allow_table_lines=True,
+    )
+    mda = mda_heading or _find_canadian_annual_marker(
+        lines,
+        markers=(
+            "management's discussion and analysis",
+            "managements discussion and analysis",
+            "management discussion and analysis",
+            "md&a",
+            "mda",
+        ),
+        after=lower_bound,
+    )
+    market_risk = None
+    if output_item_set is None or "7A" in output_item_set:
+        market_risk = _find_canadian_annual_marker(
+            lines,
+            markers=(
+                "market risk",
+                "financial instruments",
+                "liquidity risk",
+                "foreign exchange risk",
+                "commodity price risk",
+            ),
+            after=(mda["start"] + 1) if mda is not None else lower_bound,
+        )
+    latest_section_start = max(
+        marker["start"] for marker in (aif, risk, mda, financials, market_risk) if marker is not None
+    ) if any(marker is not None for marker in (aif, risk, mda, financials, market_risk)) else lower_bound
+    end_marker = _find_canadian_annual_marker(
+        lines,
+        markers=("signatures", "exhibit index", "list of exhibits"),
+        after=latest_section_start + 1,
+    )
+
+    candidates = [
+        candidate
+        for candidate in [
+            _canadian_annual_candidate("1", aif, table_start_by_line_idx),
+            _canadian_annual_candidate("1A", risk, table_start_by_line_idx),
+            _canadian_annual_candidate("8", financials, table_start_by_line_idx),
+            _canadian_annual_candidate("7", mda, table_start_by_line_idx),
+            _canadian_annual_candidate("7A", market_risk, table_start_by_line_idx),
+            _end_boundary_candidate(end_marker, table_start_by_line_idx),
+        ]
+        if candidate is not None
+    ]
+    candidates.sort(key=lambda candidate: candidate["start"])
+    candidates = _dedupe_nontraditional_boundaries(candidates)
+    if not any(candidate["item_code"] in {"1", "1A", "7", "8"} for candidate in candidates):
+        return []
+
+    sections: list[SecFilingSection] = []
+    for idx, candidate in enumerate(candidates):
+        item_code = candidate["item_code"]
+        if item_code == "__END__":
+            continue
+        if output_item_set is not None and item_code not in output_item_set:
+            continue
+        start = candidate["start"]
+        end = candidates[idx + 1]["start"] if idx + 1 < len(candidates) else len(text)
+        section_text = text[start:end].strip()
+        if len(section_text) < min_section_chars:
+            continue
+        sections.append(
+            SecFilingSection(
+                item_code=item_code,
+                section=str(candidate.get("section") or CANADIAN_ANNUAL_SECTION_TITLES[item_code]),
+                char_start=start,
+                char_end=end,
+                text=section_text,
+            )
+        )
     return sections
 
 
@@ -278,8 +665,6 @@ def _has_primary_10q_section_coverage(sections: list[SecFilingSection], text: st
         return False
     item_codes = {section.item_code for section in sections}
     if {"1", "2"}.issubset(item_codes):
-        return True
-    if len(item_codes) >= 2 and min(section.char_start for section in sections) < int(len(text) * 0.75):
         return True
     return False
 
@@ -413,11 +798,15 @@ def _find_section_candidates_with_definitions(
     table_start_by_line_idx = _table_start_by_line_index(lines)
     candidates: list[dict] = []
     for line_idx, (start, line) in enumerate(lines):
-        item_code = _parse_line_item_code(line)
+        combined = " ".join(
+            candidate_line
+            for _, candidate_line in lines[line_idx : line_idx + 12]
+            if not _is_table_start(candidate_line) and not _is_table_end(candidate_line)
+        )
+        item_code = _parse_line_item_code(combined) or _parse_line_item_code(line)
         if item_code not in definitions_by_item:
             continue
 
-        combined = " ".join(candidate_line for _, candidate_line in lines[line_idx : line_idx + 12])
         compact = _compact_text(combined)
         definition = definitions_by_item[item_code]
         if any(marker in compact[:260] for marker in definition.markers):
@@ -440,33 +829,74 @@ def _find_nontraditional_10k_sections(
 ) -> list[SecFilingSection]:
     """Handle readable 10-K layouts where formal Item labels only appear in an index."""
     lines = _line_offsets(text)
-    lower_bound = max(8000, int(len(text) * 0.02))
+    table_start_by_line_idx = _table_start_by_line_index(lines)
+    lower_bound = max(4500, int(len(text) * 0.01))
 
-    item7 = _find_nontraditional_marker(
+    item1_markers = (
+        "a year in review",
+        "about honeywell",
+        "item 1 business",
+        "item 1. business",
+        "item 1 - business",
+        "fundamentals of our business",
+        "fundamental of our business",
+        "business summary",
+        "business overview",
+        "business and properties",
+        "corporate structure and business",
+        "corporate structure and business and other information",
+        "description of the business",
+        "our business",
+        "overview",
+    )
+    item1_probe = _find_nontraditional_marker(
         lines,
-        markers=("management's discussion and analysis",),
+        markers=item1_markers,
         after=lower_bound,
     )
+    item7_markers = (
+        "item 7 management",
+        "item 7. management",
+        "item 7 - management",
+        "items 7 and 7a management",
+        "items 7. and 7a. management",
+        "management's discussion and analysis",
+        "managements discussion and analysis",
+    )
+    item7 = _find_nontraditional_marker(
+        lines,
+        markers=item7_markers,
+        after=(item1_probe["start"] + 1) if item1_probe is not None else lower_bound,
+    )
+    if item7 is None:
+        item7 = _find_nontraditional_marker(
+            lines,
+            markers=item7_markers,
+            after=lower_bound,
+        )
     if item7 is None:
         return []
 
-    item1 = _find_nontraditional_marker(
-        lines,
-        markers=(
-            "a year in review",
-            "fundamentals of our business",
-            "fundamental of our business",
-            "our business",
-            "overview",
-        ),
-        after=lower_bound,
-        before=item7["start"],
-    )
+    item1 = item1_probe if item1_probe is not None and item1_probe["start"] < item7["start"] else None
+    if item1 is None:
+        item1 = _find_nontraditional_marker(
+            lines,
+            markers=item1_markers,
+            after=lower_bound,
+            before=item7["start"],
+        )
     item1a = _find_nontraditional_marker(
         lines,
         markers=("risk factors and other key information", "risk factors"),
-        after=item7["start"] + 1,
+        after=(item1["start"] + 1) if item1 is not None else lower_bound,
+        before=item7["start"],
     )
+    if item1a is None:
+        item1a = _find_nontraditional_marker(
+            lines,
+            markers=("risk factors and other key information", "risk factors"),
+            after=item7["start"] + 1,
+        )
     item7a = _find_nontraditional_marker(
         lines,
         markers=("quantitative and qualitative disclosures about market risk",),
@@ -480,6 +910,12 @@ def _find_nontraditional_10k_sections(
         markers=(
             "financial statements and supplemental details",
             "financial statements and supplementary data",
+            "consolidated financial statements and supplementary data",
+            "consolidated financial statements",
+            "index to financial statements",
+            "index to consolidated financial statements",
+            "report of independent registered public accounting firm",
+            "managements report on internal control over financial reporting",
         ),
         after=latest_before_item8 + 1,
     )
@@ -487,11 +923,11 @@ def _find_nontraditional_10k_sections(
     candidates = [
         candidate
         for candidate in [
-            _nontraditional_candidate("1", item1),
-            _nontraditional_candidate("7", item7),
-            _nontraditional_candidate("1A", item1a),
-            _nontraditional_candidate("7A", item7a),
-            _nontraditional_candidate("8", item8),
+            _nontraditional_candidate("1", item1, table_start_by_line_idx),
+            _nontraditional_candidate("7", item7, table_start_by_line_idx),
+            _nontraditional_candidate("1A", item1a, table_start_by_line_idx),
+            _nontraditional_candidate("7A", item7a, table_start_by_line_idx),
+            _nontraditional_candidate("8", item8, table_start_by_line_idx),
         ]
         if candidate is not None
     ]
@@ -530,29 +966,67 @@ def _find_nontraditional_10q_sections(
     """Handle 10-Q layouts whose readable headings omit formal Item labels."""
     lines = _line_offsets(text)
     table_start_by_line_idx = _table_start_by_line_index(lines)
-    lower_bound = max(4500, int(len(text) * 0.03))
+    lower_bound = max(2500, int(len(text) * 0.005))
 
-    item1 = _find_nontraditional_marker(
-        lines,
-        markers=(
-            "consolidated condensed financial statements",
-            "consolidated condensed statements of operations",
-            "consolidated statements of operations",
-            "statement of operations unaudited",
-            "financial statements and notes",
-        ),
-        after=lower_bound,
-        allow_table_lines=True,
-    )
     item2 = _find_nontraditional_marker(
         lines,
         markers=(
+            "financial review",
+            "item 2 management",
+            "item 2 managements discussion",
+            "item 2 management discussion",
+            "items 2 and 3 management",
+            "items 2. and 3. management",
+            "item 2 and 3 management",
+            "2 managements discussion",
+            "2 management discussion",
             "managements discussion and analysis",
             "management discussion and analysis",
             "managements discussion and analysis of financial condition and results of operations",
         ),
         after=lower_bound,
     )
+    item1_markers = (
+        "consolidated condensed financial statements",
+        "consolidated condensed statements of operations",
+        "consolidated statements of operations",
+        "consolidated statements of income",
+        "consolidated balance sheets",
+        "statement of operations unaudited",
+        "financial statements and notes",
+        "financial statements",
+        "notes to consolidated financial statements",
+        "notes to the consolidated financial statements",
+        "notes to condensed consolidated financial statements",
+        "notes to the condensed consolidated financial statements",
+    )
+    item1 = _find_nontraditional_marker(
+        lines,
+        markers=item1_markers,
+        after=lower_bound,
+        before=item2["start"] if item2 is not None else None,
+        allow_table_lines=True,
+    )
+    if (
+        item1 is not None
+        and item2 is not None
+        and item1["line_idx"] in table_start_by_line_idx
+    ):
+        actual_item1 = _find_nontraditional_marker(
+            lines,
+            markers=item1_markers,
+            after=item2["start"] + 1,
+            allow_table_lines=True,
+        )
+        if actual_item1 is not None:
+            item1 = actual_item1
+    if item1 is None and item2 is not None:
+        item1 = _find_nontraditional_marker(
+            lines,
+            markers=item1_markers,
+            after=item2["start"] + 1,
+            allow_table_lines=True,
+        )
     earliest_primary_start = min(
         marker["start"] for marker in (item1, item2) if marker is not None
     ) if item1 is not None or item2 is not None else lower_bound
@@ -624,6 +1098,8 @@ def _find_nontraditional_marker(
             continue
         compact = _compact_text(line)
         if any(compact == marker or compact.startswith(marker) for marker in marker_set):
+            if _is_cross_reference_marker(lines, line_idx):
+                continue
             return {"start": start, "line_idx": line_idx, "line": line}
     return None
 
@@ -648,6 +1124,127 @@ def _nontraditional_candidate(
         "start": start,
         "line_idx": marker["line_idx"],
     }
+
+
+def _foreign_annual_candidate(
+    item_code: str,
+    marker: dict | None,
+    table_start_by_line_idx: dict[int, int] | None = None,
+) -> dict | None:
+    if marker is None:
+        return None
+    start = marker["start"]
+    if table_start_by_line_idx is not None:
+        start = table_start_by_line_idx.get(marker["line_idx"], start)
+    return {
+        "item_code": item_code,
+        "section": FOREIGN_ANNUAL_SECTION_TITLES[item_code],
+        "start": start,
+        "line_idx": marker["line_idx"],
+    }
+
+
+def _canadian_annual_candidate(
+    item_code: str,
+    marker: dict | None,
+    table_start_by_line_idx: dict[int, int] | None = None,
+) -> dict | None:
+    if marker is None:
+        return None
+    start = marker["start"]
+    if table_start_by_line_idx is not None:
+        start = table_start_by_line_idx.get(marker["line_idx"], start)
+    return {
+        "item_code": item_code,
+        "section": CANADIAN_ANNUAL_SECTION_TITLES[item_code],
+        "start": start,
+        "line_idx": marker["line_idx"],
+    }
+
+
+def _find_foreign_annual_marker(
+    lines: list[tuple[int, str]],
+    markers: tuple[str, ...],
+    after: int,
+    before: int | None = None,
+    allow_table_lines: bool = False,
+) -> dict | None:
+    marker_set = {_compact_text(marker) for marker in markers}
+    for line_idx, (start, line) in enumerate(lines):
+        if start < after:
+            continue
+        if before is not None and start >= before:
+            break
+        if "|" in line and not allow_table_lines:
+            continue
+        compact = _compact_text(line)
+        if any(compact == marker or compact.startswith(marker) or marker in compact[:180] for marker in marker_set):
+            if _is_cross_reference_marker(lines, line_idx):
+                continue
+            return {"start": start, "line_idx": line_idx, "line": line}
+    return None
+
+
+def _find_canadian_annual_marker(
+    lines: list[tuple[int, str]],
+    markers: tuple[str, ...],
+    after: int,
+    before: int | None = None,
+    allow_table_lines: bool = False,
+    allow_contains: bool = False,
+) -> dict | None:
+    marker_set = {_compact_text(marker) for marker in markers}
+    for line_idx, (start, line) in enumerate(lines):
+        if start < after:
+            continue
+        if before is not None and start >= before:
+            break
+        if "|" in line and not allow_table_lines:
+            continue
+        compact = _compact_text(line)
+        matched = any(
+            compact == marker
+            or compact.startswith(marker)
+            or (allow_contains and marker in compact[:180])
+            for marker in marker_set
+        )
+        if matched:
+            if _is_cross_reference_marker(lines, line_idx):
+                continue
+            return {"start": start, "line_idx": line_idx, "line": line}
+    return None
+
+
+def _is_cross_reference_marker(lines: list[tuple[int, str]], line_idx: int) -> bool:
+    previous_text = " ".join(
+        line for _, line in lines[max(0, line_idx - 3) : line_idx]
+    ).lower()
+    next_text = " ".join(
+        line for _, line in lines[line_idx + 1 : min(len(lines), line_idx + 4)]
+    ).lower()
+
+    previous_compact = _compact_text(previous_text)
+    next_compact = _compact_text(next_text)
+    if any(
+        phrase in previous_compact
+        for phrase in (
+            "sectiontitled",
+            "seethesection",
+            "refertothesection",
+            "refertothe",
+        )
+    ):
+        return True
+    return any(
+        phrase in next_compact[:260]
+        for phrase in (
+            "andinotherpartsofthisreport",
+            "foradiscussion",
+            "foradditionalinformation",
+            "sectionofmanagementsdiscussion",
+            "sectionofmanagementsdiscussionandanalysis",
+        )
+    )
 
 
 def _end_boundary_candidate(
@@ -692,6 +1289,44 @@ def _dedupe_close_candidates(candidates: list[dict], close_chars: int = 80) -> l
     return deduped
 
 
+def _required_items_for_output_filter(
+    output_item_set: set[str] | None,
+    default_items: Iterable[str],
+) -> set[str]:
+    required = set(default_items)
+    if output_item_set is None:
+        return required
+    return required.intersection(output_item_set)
+
+
+def _missing_required_items(
+    sections: list[SecFilingSection],
+    required_items: set[str],
+) -> set[str]:
+    observed = {section.item_code for section in sections}
+    return required_items - observed
+
+
+def _merge_missing_sections(
+    *,
+    primary_sections: list[SecFilingSection],
+    fallback_sections: list[SecFilingSection],
+    missing_items: set[str],
+) -> list[SecFilingSection]:
+    if not missing_items or not fallback_sections:
+        return primary_sections
+
+    merged = list(primary_sections)
+    observed = {section.item_code for section in merged}
+    for section in fallback_sections:
+        if section.item_code not in missing_items or section.item_code in observed:
+            continue
+        merged.append(section)
+        observed.add(section.item_code)
+    merged.sort(key=lambda section: (section.char_start, section.item_code))
+    return merged
+
+
 def _find_actual_item1_start(
     candidates: list[dict], text: str, min_start_span_chars: int
 ) -> int:
@@ -724,10 +1359,13 @@ def _find_actual_item_start(
 
 
 def _parse_line_item_code(line: str) -> str | None:
-    match = re.match(r"(?i)^item\s+(\d{1,2}[a-z]?)\b", line.strip())
+    match = re.match(
+        r"(?i)^(?:items?|em|tem|m)\s+(\d{1,2})(?:\s*\(?\s*([a-z])\s*\)?)?\b",
+        line.strip(),
+    )
     if not match:
         return None
-    return match.group(1).upper()
+    return f"{match.group(1)}{match.group(2) or ''}".upper()
 
 
 def _line_offsets(text: str) -> list[tuple[int, str]]:

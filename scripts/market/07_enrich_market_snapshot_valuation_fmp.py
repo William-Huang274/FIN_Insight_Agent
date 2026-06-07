@@ -9,6 +9,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -166,6 +167,34 @@ def _fetch_fmp_ratios_ttm(*, base_url: str, apikey: str, ticker: str, timeout: i
     return {}, url
 
 
+def _fetch_fmp_valuation_for_ticker(
+    *,
+    base_url: str,
+    apikey: str,
+    ticker: str,
+    endpoint_set: set[str],
+    quote_rows: dict[str, dict[str, Any]],
+    timeout: int,
+    sleep: float,
+) -> tuple[str, dict[str, Any], list[str], list[dict[str, str]]]:
+    metrics: dict[str, Any] = {}
+    ratios: dict[str, Any] = {}
+    source_urls: list[str] = []
+    failures: list[dict[str, str]] = []
+    try:
+        if "key_metrics_ttm" in endpoint_set:
+            metrics, metrics_url = _fetch_fmp_key_metrics_ttm(base_url=base_url, apikey=apikey, ticker=ticker, timeout=timeout)
+            source_urls.append(_redact_url(metrics_url))
+        if "ratios_ttm" in endpoint_set:
+            ratios, ratios_url = _fetch_fmp_ratios_ttm(base_url=base_url, apikey=apikey, ticker=ticker, timeout=timeout)
+            source_urls.append(_redact_url(ratios_url))
+    except Exception as exc:
+        failures.append({"ticker": ticker, "error": str(exc)})
+    if sleep > 0:
+        time.sleep(sleep)
+    return ticker, _extract_fmp_valuation(ticker, quote_rows.get(ticker), metrics, ratios), source_urls, failures
+
+
 def _extract_fmp_valuation(
     ticker: str,
     quote_row: dict[str, Any] | None,
@@ -255,12 +284,14 @@ def _enrich_latest_rows(
     indexes = _latest_row_indexes_by_ticker(rows, set(tickers), set(benchmark_tickers))
     missing_tickers = []
     field_coverage = {field: 0 for field in VALUATION_FIELDS}
+    enriched_ticker_count = 0
     for ticker in tickers:
         idx = indexes.get(ticker)
         valuation = valuations.get(ticker) or {}
-        if idx is None or not valuation:
+        if idx is None or not any(valuation.get(field) is not None for field in VALUATION_FIELDS):
             missing_tickers.append(ticker)
             continue
+        enriched_ticker_count += 1
         row = rows[idx]
         row["valuation_provider"] = PROVIDER
         row["valuation_source_url"] = valuation_source_url
@@ -271,7 +302,7 @@ def _enrich_latest_rows(
             if value is not None:
                 field_coverage[field] += 1
     return {
-        "enriched_ticker_count": sum(1 for ticker in tickers if ticker in indexes and valuations.get(ticker)),
+        "enriched_ticker_count": enriched_ticker_count,
         "missing_tickers": missing_tickers,
         "field_coverage": field_coverage,
     }
@@ -302,6 +333,12 @@ def main() -> int:
     )
     parser.add_argument("--timeout", type=int, default=30)
     parser.add_argument("--sleep", type=float, default=0.1)
+    parser.add_argument("--workers", type=int, default=1, help="Concurrent workers for per-ticker valuation endpoints.")
+    parser.add_argument(
+        "--skip-ticker-regex",
+        default="",
+        help="Optional regex for tickers that should not be sent to FMP valuation endpoints.",
+    )
     parser.add_argument("--fail-on-missing", action="store_true")
     args = parser.parse_args()
 
@@ -320,6 +357,10 @@ def main() -> int:
     if not target_tickers:
         parser.error("Provide --tickers or --tickers-config.")
 
+    skip_pattern = re.compile(args.skip_ticker_regex) if args.skip_ticker_regex else None
+    valuation_tickers = [ticker for ticker in target_tickers if not (skip_pattern and skip_pattern.fullmatch(ticker))]
+    skipped_tickers = [ticker for ticker in target_tickers if ticker not in valuation_tickers]
+
     rows, fieldnames = _read_rows(input_path)
     for field in [*VALUATION_FIELDS, *EXTRA_FIELDS]:
         if field not in fieldnames:
@@ -332,33 +373,48 @@ def main() -> int:
         quote_rows, quote_urls, quote_failures = _fetch_fmp_quotes(
             base_url=args.base_url,
             apikey=api_key,
-            tickers=target_tickers,
+            tickers=valuation_tickers,
             timeout=args.timeout,
             sleep=args.sleep,
         )
     valuations: dict[str, dict[str, Any]] = {}
     failures = list(quote_failures)
     source_urls = [_redact_url(url) for url in quote_urls]
-    for ticker in target_tickers:
-        try:
-            metrics: dict[str, Any] = {}
-            ratios: dict[str, Any] = {}
-            if "key_metrics_ttm" in endpoint_set:
-                metrics, metrics_url = _fetch_fmp_key_metrics_ttm(
+    worker_count = max(1, args.workers)
+    if worker_count == 1:
+        for ticker in valuation_tickers:
+            ticker, valuation, urls, ticker_failures = _fetch_fmp_valuation_for_ticker(
+                base_url=args.base_url,
+                apikey=api_key,
+                ticker=ticker,
+                endpoint_set=endpoint_set,
+                quote_rows=quote_rows,
+                timeout=args.timeout,
+                sleep=args.sleep,
+            )
+            valuations[ticker] = valuation
+            source_urls.extend(urls)
+            failures.extend(ticker_failures)
+    else:
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
+            futures = [
+                executor.submit(
+                    _fetch_fmp_valuation_for_ticker,
                     base_url=args.base_url,
                     apikey=api_key,
                     ticker=ticker,
+                    endpoint_set=endpoint_set,
+                    quote_rows=quote_rows,
                     timeout=args.timeout,
+                    sleep=args.sleep,
                 )
-                source_urls.append(_redact_url(metrics_url))
-            if "ratios_ttm" in endpoint_set:
-                ratios, ratios_url = _fetch_fmp_ratios_ttm(base_url=args.base_url, apikey=api_key, ticker=ticker, timeout=args.timeout)
-                source_urls.append(_redact_url(ratios_url))
-            valuations[ticker] = _extract_fmp_valuation(ticker, quote_rows.get(ticker), metrics, ratios)
-        except Exception as exc:
-            failures.append({"ticker": ticker, "error": str(exc)})
-        if args.sleep > 0:
-            time.sleep(args.sleep)
+                for ticker in valuation_tickers
+            ]
+            for future in as_completed(futures):
+                ticker, valuation, urls, ticker_failures = future.result()
+                valuations[ticker] = valuation
+                source_urls.extend(urls)
+                failures.extend(ticker_failures)
 
     valuation_as_of_date = datetime.now(timezone.utc).date().isoformat()
     enrichment = _enrich_latest_rows(
@@ -376,6 +432,8 @@ def main() -> int:
         "input": str(input_path),
         "output": str(output_path),
         "target_tickers": target_tickers,
+        "valuation_tickers": valuation_tickers,
+        "skipped_tickers": skipped_tickers,
         "benchmark_tickers": benchmark_tickers,
         "valuation_endpoints": sorted(endpoint_set),
         "valuation_as_of_date": valuation_as_of_date,

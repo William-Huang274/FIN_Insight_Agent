@@ -1,0 +1,24 @@
+{
+  "schema_version": "fin_agent_sec_annual_download_config_summary_v0.1",
+  "status": "pass",
+  "dataset_id": "tier1_sp500_us_annual_v0_1",
+  "source_family": "sec_primary_filing",
+  "source_tier": "primary_sec_filing",
+  "universe_tier": "tier1_sp500_plus_current",
+  "company_count": 505,
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "form_types": [
+    "10-K"
+  ],
+  "expected_filing_tasks": 1515,
+  "skipped_count": 0,
+  "skipped": [],
+  "outputs": {
+    "config": "configs/data_sources/tier1_sp500_us_annual_10k_fy2023_2025.yaml",
+    "summary": "data/manifests/tier1_sp500_us_annual_download_config_summary_v0_1.json"
+  }
+}

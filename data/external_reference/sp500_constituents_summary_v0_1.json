@@ -1,0 +1,21 @@
+{
+  "schema_version": "fin_agent_sp500_constituents_download_summary_v0.1",
+  "status": "completed",
+  "source_url": "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",
+  "downloaded_at_utc": "2026-06-05T11:00:01+00:00",
+  "row_count": 503,
+  "unique_ticker_count": 503,
+  "unique_cik_count": 500,
+  "missing_cik_count": 0,
+  "duplicate_tickers": [],
+  "duplicate_ciks": [
+    "0001564708",
+    "0001652044",
+    "0001754301"
+  ],
+  "dedupe_note": "S&P 500 can contain multiple share-class symbols for the same company; downstream universe builder deduplicates by CIK.",
+  "outputs": {
+    "csv": "D:\\FIN_Insight_Agent\\data\\external_reference\\sp500_constituents.csv",
+    "summary": "D:\\FIN_Insight_Agent\\data\\external_reference\\sp500_constituents_summary_v0_1.json"
+  }
+}

@@ -7,11 +7,29 @@ from typing import Any, Iterable, Literal
 from pydantic import BaseModel, Field
 
 
-SourceType = Literal["10-K", "10-Q", "8-K", "annual_report"]
+SourceType = Literal[
+    "10-K",
+    "10-Q",
+    "20-F",
+    "40-F",
+    "8-K",
+    "annual_report",
+    "business_report",
+    "annual_securities_report",
+    "integrated_report",
+    "earnings_release",
+    "investor_presentation",
+    "financial_fact",
+]
 SourceTier = Literal[
     "primary_filing",
     "primary_sec_filing",
     "company_authored_unaudited_sec_filing",
+    "company_authored_earnings_material",
+    "company_authored_presentation",
+    "primary_global_public_disclosure",
+    "primary_company_disclosure",
+    "company_reported_structured_fact",
 ]
 
 

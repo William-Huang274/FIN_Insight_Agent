@@ -51,16 +51,20 @@ def build_chunks_for_filing(
         output_items=output_items,
     )
     chunks: list[SecFilingChunk] = []
+    block_id_occurrences: dict[str, int] = {}
 
     for section in sections:
         blocks = build_semantic_blocks(section)
         for block in blocks:
-            block_id = _build_block_id(
-                ticker=manifest_record.ticker,
-                fiscal_year=manifest_record.fiscal_year,
-                source_type=manifest_record.source_type,
-                item_code=section.item_code,
-                block_index=block.block_index,
+            block_id = _unique_block_id(
+                _build_block_id(
+                    ticker=manifest_record.ticker,
+                    fiscal_year=manifest_record.fiscal_year,
+                    source_type=manifest_record.source_type,
+                    item_code=section.item_code,
+                    block_index=block.block_index,
+                ),
+                block_id_occurrences,
             )
             block_chunks = chunk_semantic_block(
                 block,
@@ -206,3 +210,11 @@ def _build_block_id(
     source_key = re.sub(r"[^A-Z0-9]", "", source_type.upper())
     item_key = f"ITEM{item_code.upper()}"
     return f"{ticker.upper()}_{fiscal_year}_{source_key}_{item_key}_BLOCK_{block_index:04d}"
+
+
+def _unique_block_id(base_block_id: str, occurrences: dict[str, int]) -> str:
+    occurrence = occurrences.get(base_block_id, 0) + 1
+    occurrences[base_block_id] = occurrence
+    if occurrence == 1:
+        return base_block_id
+    return f"{base_block_id}_OCC_{occurrence:02d}"

@@ -1,0 +1,22 @@
+{
+  "schema_version": "fin_agent_universe_tiers_build_summary_v0.1",
+  "status": "completed",
+  "current_config": "D:\\FIN_Insight_Agent\\configs\\sector_depth_full238_us_v0_2_10k_fy2023_2025.yaml",
+  "sec_company_reference": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\company_tickers.json",
+  "company_overrides": "D:\\FIN_Insight_Agent\\configs\\data_sources\\universe_company_overrides_v0_1.json",
+  "sp500_csv": "D:\\FIN_Insight_Agent\\data\\external_reference\\sp500_constituents.csv",
+  "sp500_source_status": "provided",
+  "tier0_company_count": 238,
+  "tier1_company_count": 505,
+  "tier1_sp500_source_row_count": 503,
+  "tier1_added_current_only_company_count": 5,
+  "target_tier1_count": 500,
+  "cap_tier1_count": 0,
+  "tier0_missing_cik": 0,
+  "tier1_missing_cik": 0,
+  "outputs": {
+    "tier0_manifest": "D:\\FIN_Insight_Agent\\data\\manifests\\tier0_full238_manifest.jsonl",
+    "tier1_manifest": "D:\\FIN_Insight_Agent\\data\\manifests\\tier1_sp500_plus_current_manifest.jsonl",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\universe_tiers_build_summary_v0_1.json"
+  }
+}

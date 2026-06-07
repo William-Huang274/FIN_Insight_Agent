@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-06-06T11:55:08.234288+00:00",
+  "industry": {
+    "company_count": 603,
+    "known_limitations": [
+      "Sector/category matching is a staging heuristic; Specialist routing must still use query intent.",
+      "Healthcare regulatory and energy/utilities power families require provider-specific evidence checks before strong claims.",
+      "Industry rows are background context and cannot prove company-level revenue, margin, customer, or supplier facts."
+    ],
+    "mapped_company_count": 603,
+    "source_family_company_counts": {
+      "industry_consumer_macro": 120,
+      "industry_energy_commodities": 153,
+      "industry_healthcare_regulatory": 68,
+      "industry_housing_real_estate_power": 219,
+      "industry_industrial_macro": 252,
+      "industry_macro_rates_credit": 203,
+      "industry_materials_commodities": 162,
+      "industry_utilities_power_demand": 164
+    },
+    "unmapped_company_count": 0,
+    "unmapped_ticker_sample": []
+  },
+  "inputs": {
+    "industry_source_families": "D:\\FIN_Insight_Agent\\configs\\industry_data_source_families_v0_2.yaml",
+    "universe_manifest": "D:\\FIN_Insight_Agent\\data\\manifests\\tier1_plus_tier2_supply_chain_manifest.jsonl"
+  },
+  "market": {
+    "company_count": 603,
+    "currency_counts": {
+      "CNY": 2,
+      "EUR": 1,
+      "JPY": 5,
+      "KRW": 3,
+      "TWD": 4,
+      "USD": 588
+    },
+    "known_limitations": [
+      "Yahoo chart is an unofficial market data source and remains market_snapshot context only.",
+      "Non-US local tickers are kept as provider_symbol candidates; provider availability must be validated by download results.",
+      "ADR/local share-class and FX conversion are not inferred here; later market snapshot normalization must keep currency fields explicit."
+    ],
+    "market_row_count": 603,
+    "non_us_provider_symbol_count": 15,
+    "provider_symbol_count": 603,
+    "region_counts": {
+      "non_us_local_listing": 15,
+      "us_listed_or_adr": 588
+    }
+  },
+  "outputs": {
+    "industry_source_family_map": "D:\\FIN_Insight_Agent\\data\\manifests\\tier1_tier2_industry_source_family_map_v0_1.jsonl",
+    "market_universe_csv": "D:\\FIN_Insight_Agent\\data\\manifests\\tier1_tier2_market_universe_v0_1.csv",
+    "market_yahoo_tickers_yaml": "D:\\FIN_Insight_Agent\\data\\manifests\\tier1_tier2_market_yahoo_tickers_v0_1.yaml"
+  },
+  "schema_version": "fin_agent_market_industry_expansion_manifest_v0.1",
+  "status": "pass"
+}

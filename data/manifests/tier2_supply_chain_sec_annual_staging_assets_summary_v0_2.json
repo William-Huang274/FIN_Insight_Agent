@@ -1,0 +1,88 @@
+{
+  "schema_version": "tier2_supply_chain_sec_annual_staging_assets_summary_v0_2",
+  "status": "staging_only_pass",
+  "run_date": "2026-06-06",
+  "scope": {
+    "forms": [
+      "10-K",
+      "20-F",
+      "40-F"
+    ],
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "filing_records": 226,
+    "tickers": 77
+  },
+  "fixes": [
+    "40-F annual package materialized from Annual Information Form, audited financial statements, and MD&A exhibits for CCJ/TECK.",
+    "40-F splitter maps Canadian annual package sections to business/risk/MD&A/financial statement evidence semantics.",
+    "Global-public downloader gained explicit company IR fallback gate; Samsung smoke rejects interim PDF rather than misclassifying it as annual report."
+  ],
+  "chunks": {
+    "count": 30600,
+    "form_chunk_counts": {
+      "10-K": 14849,
+      "20-F": 13316,
+      "40-F": 2435
+    },
+    "section_chunk_counts": {
+      "1": 6228,
+      "1A": 10577,
+      "7": 5849,
+      "7A": 1132,
+      "8": 6814
+    },
+    "zero_chunk_filings": []
+  },
+  "evidence": {
+    "count": 30600,
+    "source_type_counts": {
+      "10-K": 14849,
+      "20-F": 13316,
+      "40-F": 2435
+    },
+    "evidence_type_counts": {
+      "business_description": 6228,
+      "financial_statement_or_note": 6814,
+      "management_discussion": 5849,
+      "market_risk_disclosure": 1132,
+      "risk_disclosure": 10577
+    },
+    "table_evidence": 13066
+  },
+  "structured_objects": {
+    "tables": 48977,
+    "metrics": 421828,
+    "claims": 240694
+  },
+  "indexes": {
+    "bm25_records": 30600,
+    "sqlite_fts_records": 711499
+  },
+  "ledger": {
+    "facts": 392015,
+    "source_records": 470805,
+    "elapsed_sec": 20.957,
+    "path": "D:\\FIN_Insight_Agent\\data\\indexes\\staging\\ledger\\tier2_supply_chain_sec_annual_fy2023_2025_v0_1_ledger.duckdb"
+  },
+  "chunk_quality_audit": {
+    "run_id": "20260606_tier2_supply_chain_sec_annual_chunk_quality_v0_2",
+    "gate_status": "pass",
+    "chunk_count": 30600,
+    "ticker_count": 77,
+    "too_long_rate": 0.001568627450980392,
+    "primary_core_item_missing_filing_rate": 0.0,
+    "failed_checks": [],
+    "json_path": "eval\\sec_cases\\outputs\\chunk_quality_audit\\20260606_tier2_supply_chain_sec_annual_chunk_quality_v0_2\\chunk_quality_summary.json",
+    "md_path": "eval\\sec_cases\\outputs\\chunk_quality_audit\\20260606_tier2_supply_chain_sec_annual_chunk_quality_v0_2\\chunk_quality_summary.md"
+  },
+  "known_gaps": [
+    "CCJ 40-F AIF still has front-matter/table-of-contents noise; acceptable for staging, needs parser refinement before mainline promotion.",
+    "20-F/40-F exact-value ledger ranking still needs currency/value-role preference; CCJ revenue smoke can rank percent rows above amount rows.",
+    "Tier2 global-public parser/chunk/index is not built; DART/MOPS/EDINET/HKEX/CNINFO profile-specific downloaders remain pending."
+  ],
+  "promotion_status": "staging_only_no_mainline_overwrite"
+}

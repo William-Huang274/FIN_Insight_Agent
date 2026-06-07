@@ -1,0 +1,44 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_download_tasks_summary_v0.1",
+  "status": "fail",
+  "task_count": 2,
+  "company_count": 1,
+  "profile_counts": {
+    "kr_dart_business_report": 2
+  },
+  "report_type_counts": {
+    "annual_report": 1,
+    "business_report": 1
+  },
+  "download_strategy_counts": {
+    "company_ir_official_report_fallback": 2
+  },
+  "download_status_counts": {
+    "no_matching_document_candidate": 2
+  },
+  "document_downloaded_count": 0,
+  "downloaded_byte_count": 0,
+  "issue_counts": {
+    "company_ir_fallback_no_matching_document_candidate": 2
+  },
+  "issues": [
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::005930_KS::KR_DART_BUSINESS_REPORT::2023::ANNUAL_REPORT",
+      "ticker": "005930.KS",
+      "candidate_count": 61,
+      "primary_download_strategy": "official_locator_then_disclosure_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::005930_KS::KR_DART_BUSINESS_REPORT::2023::BUSINESS_REPORT",
+      "ticker": "005930.KS",
+      "candidate_count": 61,
+      "primary_download_strategy": "official_locator_then_disclosure_search"
+    }
+  ],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_samsung_ir_fallback_smoke_v0_2.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_samsung_ir_fallback_smoke_summary_v0_2.json"
+  }
+}

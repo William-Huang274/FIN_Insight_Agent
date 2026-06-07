@@ -134,7 +134,8 @@ def main() -> None:
             ticker = company["ticker"].upper()
             category = company["category"]
             category_slug = company["category_slug"]
-            for form_type in form_types:
+            company_form_types = config_form_types(company) or form_types
+            for form_type in company_form_types:
                 if args.limit is not None and processed >= args.limit:
                     break
                 planned_path = (

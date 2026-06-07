@@ -1,0 +1,12 @@
+{
+  "schema_version": "fin_agent_universe_company_overrides_v0.1",
+  "purpose": "Manual public-company mapping fixes for local universe manifests when the SEC ticker reference is stale or ambiguous.",
+  "companies": [
+    {
+      "ticker": "CTRA",
+      "cik": "0000858470",
+      "company_name": "Coterra Energy Inc.",
+      "evidence_basis": "Local CTRA SEC evidence rows identify the company as Coterra Energy Inc."
+    }
+  ]
+}

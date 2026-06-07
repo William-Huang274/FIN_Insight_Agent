@@ -1,0 +1,56 @@
+{
+  "schema_version": "fin_agent_tier2_supply_chain_supplement_summary_v0.1",
+  "status": "completed",
+  "base_company_count": 505,
+  "tier2_company_count": 98,
+  "combined_company_count": 603,
+  "tier2_sec_company_count": 83,
+  "tier2_global_public_company_count": 15,
+  "priority_counts": {
+    "p0": 17,
+    "p1": 39,
+    "p2": 42
+  },
+  "sector_counts": {
+    "Communication Services": 1,
+    "Consumer Discretionary": 12,
+    "Energy": 6,
+    "Health Care": 9,
+    "Industrials": 9,
+    "Information Technology": 48,
+    "Materials": 8,
+    "Utilities": 5
+  },
+  "target_form_counts": {
+    "10-K": 52,
+    "10-Q": 52,
+    "20-F": 28,
+    "40-F": 3,
+    "6-K": 31,
+    "8-K": 52
+  },
+  "target_report_counts": {},
+  "report_type_include_override_counts": {},
+  "report_type_exclude_override_counts": {},
+  "source_family_counts": {
+    "global_public_annual_report": 15,
+    "sec_primary_filing": 83
+  },
+  "disclosure_profile_counts": {
+    "eu_regulated_annual_report": 1,
+    "hkex_annual_report": 1,
+    "jp_edinet_annual_securities_report": 5,
+    "kr_dart_business_report": 3,
+    "sec_edgar_company_filing": 83,
+    "szse_cninfo_annual_report": 1,
+    "tw_mops_annual_report": 4
+  },
+  "skipped_counts": {},
+  "skipped": [],
+  "global_public_disclosure_config_count": 15,
+  "outputs": {
+    "tier2_manifest": "D:\\FIN_Insight_Agent\\data\\manifests\\tier2_supply_chain_supplement_manifest.jsonl",
+    "combined_manifest": "D:\\FIN_Insight_Agent\\data\\manifests\\tier1_plus_tier2_supply_chain_manifest.jsonl",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\tier2_supply_chain_supplement_summary_v0_1.json"
+  }
+}

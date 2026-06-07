@@ -1,0 +1,358 @@
+{
+  "schema_version": "tier1_sp500_us_annual_staging_assets_v0.1",
+  "run_date": "2026-06-05",
+  "dataset_id": "tier1_sp500_us_annual_10k_fy2023_2025_v0_1",
+  "source_scope": {
+    "source_family": "sec_primary_filing",
+    "source_tier": "primary_sec_filing",
+    "form_types": [
+      "10-K"
+    ],
+    "requested_fiscal_years": [
+      2023,
+      2024,
+      2025
+    ],
+    "download_config": "configs/data_sources/tier1_sp500_us_annual_10k_fy2023_2025.yaml",
+    "staging_dataset_registry": "configs/data_sources/layered_staging_datasets_v0_1.yaml"
+  },
+  "download": {
+    "requested_tasks": 1515,
+    "downloaded_filings": 1500,
+    "downloaded_unique_tickers": 504,
+    "downloaded_years": [
+      2023,
+      2024,
+      2025
+    ],
+    "missing_or_error_count": 15,
+    "missing_or_error_rows": [
+      {
+        "ticker": "BLK",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "Financials",
+        "error": "No 10-K filing found for CIK 0002012383 and fiscal year 2023."
+      },
+      {
+        "ticker": "FDXF",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "Industrials",
+        "error": "No 10-K filing found for CIK 0002082247 and fiscal year 2023."
+      },
+      {
+        "ticker": "GEV",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "Industrials",
+        "error": "No 10-K filing found for CIK 0001996810 and fiscal year 2023."
+      },
+      {
+        "ticker": "KR",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "Consumer Staples",
+        "error": "No 10-K filing found for CIK 0000056873 and fiscal year 2023."
+      },
+      {
+        "ticker": "PSKY",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "Communication Services",
+        "error": "No 10-K filing found for CIK 0002041610 and fiscal year 2023."
+      },
+      {
+        "ticker": "Q",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "Information Technology",
+        "error": "No 10-K filing found for CIK 0002058873 and fiscal year 2023."
+      },
+      {
+        "ticker": "SNDK",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "Information Technology",
+        "error": "No 10-K filing found for CIK 0002023554 and fiscal year 2023."
+      },
+      {
+        "ticker": "SOLV",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "Health Care",
+        "error": "No 10-K filing found for CIK 0001964738 and fiscal year 2023."
+      },
+      {
+        "ticker": "SW",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "Materials",
+        "error": "No 10-K filing found for CIK 0002005951 and fiscal year 2023."
+      },
+      {
+        "ticker": "FDXF",
+        "year": 2024,
+        "form_type": "10-K",
+        "category": "Industrials",
+        "error": "No 10-K filing found for CIK 0002082247 and fiscal year 2024."
+      },
+      {
+        "ticker": "PSKY",
+        "year": 2024,
+        "form_type": "10-K",
+        "category": "Communication Services",
+        "error": "No 10-K filing found for CIK 0002041610 and fiscal year 2024."
+      },
+      {
+        "ticker": "Q",
+        "year": 2024,
+        "form_type": "10-K",
+        "category": "Information Technology",
+        "error": "No 10-K filing found for CIK 0002058873 and fiscal year 2024."
+      },
+      {
+        "ticker": "SNDK",
+        "year": 2024,
+        "form_type": "10-K",
+        "category": "Information Technology",
+        "error": "No 10-K filing found for CIK 0002023554 and fiscal year 2024."
+      },
+      {
+        "ticker": "CRWD",
+        "year": 2025,
+        "form_type": "10-K",
+        "category": "Information Technology",
+        "error": "No 10-K filing found for CIK 0001535527 and fiscal year 2025."
+      },
+      {
+        "ticker": "FDXF",
+        "year": 2025,
+        "form_type": "10-K",
+        "category": "Industrials",
+        "error": "No 10-K filing found for CIK 0002082247 and fiscal year 2025."
+      }
+    ],
+    "raw_private_dir": "data/raw_private/sec_tier1_sp500_annual",
+    "stdout_log": "data/logs/tier1_sp500_us_annual_10k_download_stdout_v0_1.jsonl",
+    "stderr_log": "data/logs/tier1_sp500_us_annual_10k_download_stderr_v0_1.jsonl"
+  },
+  "manifest": {
+    "records": 1500,
+    "unique_tickers": 504,
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "path": "data/staging/sec_tier1_sp500_annual/manifests/tier1_sp500_us_annual_10k_manifest_fy2023_2025_v0_1.jsonl"
+  },
+  "chunks": {
+    "records": 161455,
+    "input_records": 1500,
+    "blocks": 93549,
+    "split_blocks": 22597,
+    "table_blocks": 31837,
+    "section_chunk_counts": {
+      "1": 24014,
+      "1A": 44738,
+      "7": 34475,
+      "7A": 3581,
+      "8": 54647
+    },
+    "path": "data/staging/sec_tier1_sp500_annual/chunks/tier1_sp500_us_annual_10k_chunks_fy2023_2025_v0_1.jsonl"
+  },
+  "evidence": {
+    "records": 161455,
+    "input_chunks": 161455,
+    "evidence_type_counts": {
+      "business_description": 24014,
+      "financial_statement_or_note": 54647,
+      "management_discussion": 34475,
+      "market_risk_disclosure": 3581,
+      "risk_disclosure": 44738
+    },
+    "table_evidence": 70243,
+    "streaming": true,
+    "path": "data/staging/sec_tier1_sp500_annual/evidence/tier1_sp500_us_annual_10k_evidence_fy2023_2025_v0_1.jsonl"
+  },
+  "structured_objects": {
+    "tables": 166025,
+    "metrics": 3896142,
+    "claims": 1223646,
+    "metric_method_counts": {
+      "sentence_heuristic": 111549,
+      "table_row_heuristic": 3784525,
+      "banking_ixbrl_fact_heuristic": 68
+    },
+    "claim_type_counts": {
+      "risk": 583772,
+      "demand": 145862,
+      "capex": 10213,
+      "accounting_policy": 42792,
+      "strategy": 165892,
+      "cost_pressure": 268966,
+      "revenue_visibility": 6149
+    },
+    "dir": "data/staging/sec_tier1_sp500_annual/structured_objects"
+  },
+  "indexes": {
+    "evidence_bm25": {
+      "status": "built_local",
+      "records": 161455,
+      "index_type": "rank_bm25",
+      "dir": "data/indexes/staging/bm25/tier1_sp500_us_annual_10k_fy2023_2025_v0_1"
+    },
+    "structured_object_sqlite_fts": {
+      "status": "built_local",
+      "records": 5285809,
+      "object_counts": {
+        "table": 166025,
+        "metric": 3896139,
+        "claim": 1223645
+      },
+      "index_type": "sqlite_fts5",
+      "optimize_fts": false,
+      "dir": "data/indexes/staging/sqlite_fts/tier1_sp500_us_annual_10k_objects_fy2023_2025_v0_1"
+    },
+    "exact_value_ledger": {
+      "status": "built_cloud_full_and_built_local_core",
+      "remote_dir": "/root/autodl-tmp/fin_agent_sp500_stage/workspace/data/indexes/staging/ledger",
+      "local_target_dir": "data/indexes/staging/ledger",
+      "core_ledger": {
+        "status": "built_local",
+        "path": "data/indexes/staging/ledger/tier1_sp500_us_annual_10k_fy2023_2025_v0_1_core_ledger.duckdb",
+        "size_mb": 175.26,
+        "source_record_count": 4062164,
+        "ledger_fact_count": 908586,
+        "elapsed_sec": 1198.751,
+        "metric_family_scope": [
+          "advertising_revenue",
+          "allowance_for_credit_losses",
+          "capital_expenditure_proxy",
+          "capital_ratio",
+          "cloud_revenue",
+          "customer_concentration",
+          "data_center_revenue",
+          "deferred_revenue",
+          "deposits",
+          "free_cash_flow_proxy",
+          "gross_margin",
+          "infrastructure_software",
+          "loans",
+          "net_charge_offs",
+          "net_interest_income",
+          "net_interest_margin",
+          "nonperforming_assets",
+          "nonperforming_loans",
+          "operating_cash_flow",
+          "operating_income",
+          "product_revenue",
+          "provision_for_credit_losses",
+          "research_and_development",
+          "revenue",
+          "rpo",
+          "semiconductor_solutions",
+          "semiconductor_systems",
+          "services_revenue",
+          "subscription_revenue",
+          "total_assets",
+          "total_revenue"
+        ],
+        "query_smoke": {
+          "status": "pass",
+          "checks": [
+            {
+              "name": "MSFT capex",
+              "top_metric_name": "Additions to property and equipment",
+              "top_value": -64551.0,
+              "unit": "usd_millions"
+            },
+            {
+              "name": "JPM provision",
+              "top_metric_name": "Provision for credit losses",
+              "top_value": 14212.0,
+              "unit": "usd_millions"
+            },
+            {
+              "name": "NVDA revenue",
+              "top_metric_name": "Compute & Networking",
+              "top_value": 116193.0,
+              "unit": "usd_millions"
+            }
+          ]
+        }
+      },
+      "full_ledger": {
+        "status": "built_cloud",
+        "path": "/root/autodl-tmp/fin_agent_sp500_stage/workspace/data/indexes/staging/ledger/tier1_sp500_us_annual_10k_fy2023_2025_v0_1_full_ledger.duckdb",
+        "size_mb": 990.76,
+        "source_record_count": 4062160,
+        "ledger_fact_count": 4810839,
+        "elapsed_sec": 240.58,
+        "write_mode": "csv_copy",
+        "query_smoke": {
+          "status": "pass",
+          "checks": [
+            {
+              "name": "MSFT capex",
+              "top_metric_name": "Additions to property and equipment",
+              "top_value": -64551.0,
+              "unit": "usd_millions"
+            },
+            {
+              "name": "JPM provision",
+              "top_metric_name": "Provision for credit losses",
+              "top_value": 14212.0,
+              "unit": "usd_millions"
+            },
+            {
+              "name": "NVDA revenue",
+              "top_metric_name": "Compute & Networking",
+              "top_value": 116193.0,
+              "unit": "usd_millions"
+            }
+          ]
+        },
+        "performance_note": "Previous duckdb_executemany full run wrote about 2.73M rows after more than two hours and did not complete; csv_copy mode completed the full 4.81M-row ledger in about 4 minutes."
+      }
+    },
+    "milvus_evidence_semantic": {
+      "status": "built_cloud",
+      "remote_run_id": "tier1_sp500_us_annual_10k_milvus_evidence_semantic_fy2023_2025_v0_1",
+      "remote_dir": "/root/autodl-tmp/fin_agent_sp500_stage/workspace/data/indexes/staging/milvus",
+      "remote_db_path": "/root/autodl-tmp/fin_agent_sp500_stage/workspace/data/indexes/staging/milvus/tier1_sp500_us_annual_10k_milvus_evidence_semantic_fy2023_2025_v0_1/milvus_lite.db",
+      "remote_summary_path": "/root/autodl-tmp/fin_agent_sp500_stage/workspace/eval/sec_cases/outputs/milvus_retrieval_ab/tier1_sp500_us_annual_10k_milvus_evidence_semantic_fy2023_2025_v0_1/milvus_retrieval_ab_summary.json",
+      "local_target_dir": "data/indexes/staging/milvus",
+      "collection_rows": 460988,
+      "evidence_rows": 161455,
+      "object_vector_rows": 0,
+      "vector_kind_counts": {
+        "narrative_chunk": 161455,
+        "paraphrase_context": 152959,
+        "relationship_context": 76331,
+        "table_chunk": 70243
+      },
+      "embedding_model": "bge-m3-local",
+      "embedding_device": "cuda",
+      "elapsed_ms": 5894946,
+      "query_smoke": {
+        "status": "pass",
+        "query": "NVIDIA data center revenue AI infrastructure supply constraints",
+        "top_ticker": "NVDA",
+        "top_vector_kind": "paraphrase_context",
+        "top_evidence_id": "NVDA_2024_10K_ITEM1A_BLOCK_0004_PART_03_OF_04"
+      }
+    },
+    "legacy_full_object_bm25": {
+      "status": "not_built",
+      "reason": "legacy rank_bm25 object builder holds all 5.28M tokenized object records in memory; SQLite FTS is the scalable staged backend for this dataset"
+    }
+  },
+  "promotion_gate": {
+    "mainline_index_overwrite_allowed": false,
+    "relationship_r1_r5_required_before_mainline_vector_promotion": true,
+    "non_us_shard_append_must_not_force_sec_rechunk": true,
+    "current_status": "staging_only"
+  }
+}

@@ -1,0 +1,30 @@
+schema_version: fin_agent_structured_financial_fact_sources_v0_1
+purpose: Stage structured financial fact sources separately from narrative chunks so exact-value retrieval can use auditable fact rows.
+default_years: [2023, 2024, 2025]
+source_boundary_policy:
+  facts_must_trace_to_company_or_regulator_source: true
+  facts_may_feed_exact_value_ledger: true
+  narrative_chunks_must_not_be_used_as_fact_rows_without_extraction: true
+sources:
+  sec_companyfacts:
+    integration_mode: new_sec_api_download
+    source_family: sec_companyfacts_structured_fact
+    source_tier: company_reported_structured_fact
+    endpoint_template: https://data.sec.gov/api/xbrl/companyfacts/CIK{cik10}.json
+    required_fields: ["cik", "taxonomy", "concept", "period_end", "unit", "value", "accession_number"]
+  sec_submissions:
+    integration_mode: new_sec_api_download
+    source_family: sec_submissions_metadata
+    source_tier: company_reported_structured_fact
+    endpoint_template: https://data.sec.gov/submissions/CIK{cik10}.json
+    required_fields: ["cik", "accession_number", "form_type", "filing_date", "period_end"]
+  global_public_financial_statement_tables:
+    integration_mode: derive_from_downloaded_official_disclosure
+    source_family: global_public_structured_financial_fact
+    source_tier: company_reported_structured_fact
+    dependency: global_public_official_report_document
+    required_fields: ["issuer_id", "ticker", "fiscal_year", "source_document_id", "metric_name", "unit", "value"]
+    promotion_blocker_until:
+      - global_public_parser_profile_pass
+      - source_document_checksum_present
+      - fact_table_boundary_audit_pass

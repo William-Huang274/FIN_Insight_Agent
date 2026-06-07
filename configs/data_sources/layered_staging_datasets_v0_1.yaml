@@ -1,0 +1,181 @@
+schema_version: fin_agent_layered_staging_datasets_v0_1
+purpose: Keep expanded primary disclosures in appendable staging shards before promotion to the mainline evidence and vector indexes.
+promotion_policy:
+  staging_only_until_relationship_gates_pass: true
+  preserve_source_family_boundaries: true
+  allow_incremental_non_us_append: true
+  mainline_index_overwrite_allowed: false
+datasets:
+  tier1_plus_global_primary_disclosure_v0_1:
+    description: Appendable primary-disclosure dataset for S&P 500 SEC annual filings plus later non-US official annual reports.
+    namespace: tier1_plus_global_primary_disclosure
+    source_shards:
+      sec_tier1_sp500_us_annual_v0_1:
+        status: active
+        source_family: sec_primary_filing
+        source_tier: primary_sec_filing
+        source_type: 10-K
+        universe_manifest: data/manifests/tier1_sp500_plus_current_manifest.jsonl
+        download_config: configs/data_sources/tier1_sp500_us_annual_10k_fy2023_2025.yaml
+        raw_root: data/raw_private/sec_tier1_sp500_annual
+        filing_manifest: data/staging/sec_tier1_sp500_annual/manifests/tier1_sp500_us_annual_10k_manifest_fy2023_2025_v0_1.jsonl
+        chunks: data/staging/sec_tier1_sp500_annual/chunks/tier1_sp500_us_annual_10k_chunks_fy2023_2025_v0_1.jsonl
+        evidence: data/staging/sec_tier1_sp500_annual/evidence/tier1_sp500_us_annual_10k_evidence_fy2023_2025_v0_1.jsonl
+        structured_dir: data/staging/sec_tier1_sp500_annual/structured_objects
+        structured_prefix: tier1_sp500_us_annual_10k_fy2023_2025_v0_1
+        bm25_index_dir: data/indexes/staging/bm25/tier1_sp500_us_annual_10k_fy2023_2025_v0_1
+        object_bm25_index_dir: data/indexes/staging/bm25/tier1_sp500_us_annual_10k_objects_fy2023_2025_v0_1
+        object_sqlite_fts_path: data/indexes/staging/sqlite_fts/tier1_sp500_us_annual_10k_objects_fy2023_2025_v0_1.sqlite
+        milvus_dir: data/indexes/staging/milvus/tier1_sp500_us_annual_10k_fy2023_2025_v0_1
+      sec_tier1_sp500_us_interim_10q_v0_1:
+        status: active_config_ready
+        source_family: sec_primary_filing
+        source_tier: primary_sec_filing
+        source_type: 10-Q
+        universe_manifest: data/manifests/tier1_sp500_plus_current_manifest.jsonl
+        download_config: configs/data_sources/tier1_sp500_us_interim_10q_fy2026_2027.yaml
+        raw_root: data/raw_private/sec_tier1_sp500_interim_10q
+        filing_manifest: data/staging/sec_tier1_sp500_interim_10q/manifests/tier1_sp500_us_interim_10q_manifest_fy2026_2027_v0_1.jsonl
+        chunks: data/staging/sec_tier1_sp500_interim_10q/chunks/tier1_sp500_us_interim_10q_chunks_fy2026_2027_v0_1.jsonl
+        evidence: data/staging/sec_tier1_sp500_interim_10q/evidence/tier1_sp500_us_interim_10q_evidence_fy2026_2027_v0_1.jsonl
+        structured_dir: data/staging/sec_tier1_sp500_interim_10q/structured_objects
+        structured_prefix: tier1_sp500_us_interim_10q_fy2026_2027_v0_1
+        bm25_index_dir: data/indexes/staging/bm25/tier1_sp500_us_interim_10q_fy2026_2027_v0_1
+        object_sqlite_fts_path: data/indexes/staging/sqlite_fts/tier1_sp500_us_interim_10q_objects_fy2026_2027_v0_1/records.sqlite
+        ledger_store: data/indexes/staging/ledger/tier1_sp500_us_interim_10q_fy2026_2027_v0_1_ledger.duckdb
+      sec_tier1_sp500_us_8k_earnings_v0_1:
+        status: active_config_ready
+        source_family: sec_8k_earnings_release
+        source_tier: company_authored_unaudited_sec_filing
+        source_type: 8-K
+        universe_manifest: data/manifests/tier1_sp500_plus_current_manifest.jsonl
+        download_config: configs/data_sources/tier1_sp500_us_8k_earnings_2026_2027.yaml
+        raw_root: data/raw_private/sec_tier1_sp500_8k_earnings
+        filing_manifest: data/staging/sec_tier1_sp500_8k_earnings/manifests/tier1_sp500_us_8k_earnings_manifest_2026_2027_v0_1.jsonl
+        source_gaps: data/staging/sec_tier1_sp500_8k_earnings/source_gaps/tier1_sp500_us_8k_earnings_source_gaps_2026_2027_v0_1.jsonl
+        chunks: data/staging/sec_tier1_sp500_8k_earnings/chunks/tier1_sp500_us_8k_earnings_chunks_2026_2027_v0_1.jsonl
+        evidence: data/staging/sec_tier1_sp500_8k_earnings/evidence/tier1_sp500_us_8k_earnings_evidence_2026_2027_v0_1.jsonl
+        bm25_index_dir: data/indexes/staging/bm25/tier1_sp500_us_8k_earnings_2026_2027_v0_1
+      sec_tier2_supply_chain_annual_v0_1:
+        status: active
+        source_family: sec_primary_filing
+        source_tier: primary_sec_filing
+        source_type: sec_annual_primary_forms
+        form_types: [10-K, 20-F, 40-F]
+        universe_manifest: data/manifests/tier2_supply_chain_supplement_manifest.jsonl
+        download_config: configs/data_sources/tier2_supply_chain_sec_annual_fy2023_2025.yaml
+        raw_root: data/raw_private/sec_tier2_supply_chain_annual
+        filing_manifest: data/staging/sec_tier2_supply_chain_annual/manifests/tier2_supply_chain_sec_annual_manifest_fy2023_2025_v0_1.jsonl
+        chunks: data/staging/sec_tier2_supply_chain_annual/chunks/tier2_supply_chain_sec_annual_chunks_fy2023_2025_v0_1.jsonl
+        evidence: data/staging/sec_tier2_supply_chain_annual/evidence/tier2_supply_chain_sec_annual_evidence_fy2023_2025_v0_1.jsonl
+        structured_dir: data/staging/sec_tier2_supply_chain_annual/structured_objects
+        structured_prefix: tier2_supply_chain_sec_annual_fy2023_2025_v0_1
+        bm25_index_dir: data/indexes/staging/bm25/tier2_supply_chain_sec_annual_fy2023_2025_v0_1
+        object_sqlite_fts_path: data/indexes/staging/sqlite_fts/tier2_supply_chain_sec_annual_objects_fy2023_2025_v0_1/records.sqlite
+        ledger_store: data/indexes/staging/ledger/tier2_supply_chain_sec_annual_fy2023_2025_v0_1_ledger.duckdb
+        known_gaps:
+          - 40-F Annual Information Form / MD&A / audited financial statement exhibits are materialized into annual_package HTML, but CCJ AIF still has front-matter/table-of-contents noise before mainline promotion.
+          - 20-F/40-F exact-value ledger is built, but ranking needs currency/value-role tuning before mainline promotion.
+      sec_tier2_supply_chain_interim_10q_v0_1:
+        status: active_config_ready
+        source_family: sec_primary_filing
+        source_tier: primary_sec_filing
+        source_type: 10-Q
+        universe_manifest: data/manifests/tier2_supply_chain_supplement_manifest.jsonl
+        download_config: configs/data_sources/tier2_supply_chain_sec_interim_10q_fy2026_2027.yaml
+        raw_root: data/raw_private/sec_tier2_supply_chain_interim_10q
+        filing_manifest: data/staging/sec_tier2_supply_chain_interim_10q/manifests/tier2_supply_chain_sec_interim_10q_manifest_fy2026_2027_v0_1.jsonl
+        chunks: data/staging/sec_tier2_supply_chain_interim_10q/chunks/tier2_supply_chain_sec_interim_10q_chunks_fy2026_2027_v0_1.jsonl
+        evidence: data/staging/sec_tier2_supply_chain_interim_10q/evidence/tier2_supply_chain_sec_interim_10q_evidence_fy2026_2027_v0_1.jsonl
+        structured_dir: data/staging/sec_tier2_supply_chain_interim_10q/structured_objects
+        structured_prefix: tier2_supply_chain_sec_interim_10q_fy2026_2027_v0_1
+        bm25_index_dir: data/indexes/staging/bm25/tier2_supply_chain_sec_interim_10q_fy2026_2027_v0_1
+        object_sqlite_fts_path: data/indexes/staging/sqlite_fts/tier2_supply_chain_sec_interim_10q_objects_fy2026_2027_v0_1/records.sqlite
+        ledger_store: data/indexes/staging/ledger/tier2_supply_chain_sec_interim_10q_fy2026_2027_v0_1_ledger.duckdb
+      sec_tier2_supply_chain_8k_earnings_v0_1:
+        status: active_config_ready
+        source_family: sec_8k_earnings_release
+        source_tier: company_authored_unaudited_sec_filing
+        source_type: 8-K
+        universe_manifest: data/manifests/tier2_supply_chain_supplement_manifest.jsonl
+        download_config: configs/data_sources/tier2_supply_chain_sec_8k_earnings_2026_2027.yaml
+        raw_root: data/raw_private/sec_tier2_supply_chain_8k_earnings
+        filing_manifest: data/staging/sec_tier2_supply_chain_8k_earnings/manifests/tier2_supply_chain_sec_8k_earnings_manifest_2026_2027_v0_1.jsonl
+        source_gaps: data/staging/sec_tier2_supply_chain_8k_earnings/source_gaps/tier2_supply_chain_sec_8k_earnings_source_gaps_2026_2027_v0_1.jsonl
+        chunks: data/staging/sec_tier2_supply_chain_8k_earnings/chunks/tier2_supply_chain_sec_8k_earnings_chunks_2026_2027_v0_1.jsonl
+        evidence: data/staging/sec_tier2_supply_chain_8k_earnings/evidence/tier2_supply_chain_sec_8k_earnings_evidence_2026_2027_v0_1.jsonl
+        bm25_index_dir: data/indexes/staging/bm25/tier2_supply_chain_sec_8k_earnings_2026_2027_v0_1
+      sec_tier2_supply_chain_6k_v0_1:
+        status: reserved_parser_gap
+        source_family: sec_primary_filing
+        source_tier: primary_sec_filing
+        source_type: 6-K
+        universe_manifest: data/manifests/tier2_supply_chain_supplement_manifest.jsonl
+        download_config: configs/data_sources/tier2_supply_chain_sec_6k_2026_2027.yaml
+        raw_root: data/raw_private/sec_tier2_supply_chain_6k
+        known_gaps:
+          - 6-K needs a profile-aware event/interim selector and parser before promotion; do not parse it with 10-K item rules.
+      global_public_tier2_annual_v0_1:
+        status: reserved
+        source_family: global_public_annual_report
+        source_tier: primary_global_public_disclosure
+        source_type: annual_report
+        universe_manifest: data/manifests/tier2_supply_chain_supplement_manifest.jsonl
+        source_plan: data/manifests/tier2_global_public_disclosure_source_plan_v0_1.jsonl
+        download_tasks: data/manifests/tier2_global_public_disclosure_download_tasks_v0_1.jsonl
+        raw_root: data/raw_private/global_public_disclosures
+        filing_manifest: data/staging/global_public_tier2_annual/manifests/global_public_tier2_annual_manifest_v0_1.jsonl
+        chunks: data/staging/global_public_tier2_annual/chunks/global_public_tier2_annual_chunks_v0_1.jsonl
+        evidence: data/staging/global_public_tier2_annual/evidence/global_public_tier2_annual_evidence_v0_1.jsonl
+        structured_dir: data/staging/global_public_tier2_annual/structured_objects
+        structured_prefix: global_public_tier2_annual_v0_1
+        bm25_index_dir: data/indexes/staging/bm25/global_public_tier2_annual_v0_1
+        object_bm25_index_dir: data/indexes/staging/bm25/global_public_tier2_annual_objects_v0_1
+        object_sqlite_fts_path: data/indexes/staging/sqlite_fts/global_public_tier2_annual_objects_v0_1.sqlite
+        milvus_dir: data/indexes/staging/milvus/global_public_tier2_annual_v0_1
+        known_gaps:
+          - Profile-specific DART/MOPS/EDINET/HKEX/CNINFO downloaders are pending.
+          - Company IR fallback exists only behind an explicit gate and remains staging-only.
+      company_earnings_materials_v0_1:
+        status: reserved
+        source_family: company_earnings_release_and_presentation
+        source_tier: company_authored_management_material
+        source_type: earnings_release_or_investor_presentation
+        universe_manifest: data/manifests/tier1_plus_tier2_supply_chain_manifest.jsonl
+        source_plan: data/manifests/company_earnings_material_source_plan_v0_1.jsonl
+        raw_root: data/raw_private/company_earnings_materials
+        evidence: data/staging/company_earnings_materials/evidence/company_earnings_materials_evidence_v0_1.jsonl
+        bm25_index_dir: data/indexes/staging/bm25/company_earnings_materials_v0_1
+        milvus_dir: data/indexes/staging/milvus/company_earnings_materials_v0_1
+        known_gaps:
+          - US SEC 8-K earnings material is reused from the existing validated SEC 8-K pipeline.
+          - Non-US company IR material locator rows are planned but not yet downloaded or parsed.
+          - Earnings materials are management commentary and cannot replace audited or statutory financial fact rows.
+      structured_financial_facts_v0_1:
+        status: active_staging_materialized
+        source_family: structured_financial_fact
+        source_tier: company_reported_structured_fact
+        source_type: sec_companyfacts_or_global_public_financial_statement_table
+        universe_manifest: data/manifests/tier1_plus_tier2_supply_chain_manifest.jsonl
+        source_plan: data/manifests/structured_financial_fact_source_plan_v0_1.jsonl
+        raw_root: data/raw_private/structured_financial_facts
+        fact_rows: data/staging/structured_financial_facts/sec_companyfacts_financial_fact_rows_v0_1.jsonl
+        submission_rows: data/staging/structured_financial_facts/sec_submissions_filing_rows_v0_1.jsonl
+        ledger_store: data/indexes/staging/ledger/structured_financial_facts_v0_1_ledger.duckdb
+        known_gaps:
+          - SEC CompanyFacts/Submissions API rows are materialized as staging fact rows, but not yet merged into exact-value ledger.
+          - Non-US structured facts depend on official disclosure parser, source checksum, and table-boundary audit.
+          - Fact rows are exact-value ledger candidates, not narrative chunk replacements.
+    merged_outputs:
+      evidence: data/staging/tier1_plus_global_primary_disclosure/evidence/merged_primary_disclosure_evidence_v0_1.jsonl
+      structured_dir: data/staging/tier1_plus_global_primary_disclosure/structured_objects
+      bm25_index_dir: data/indexes/staging/bm25/tier1_plus_global_primary_disclosure_v0_1
+      object_bm25_index_dir: data/indexes/staging/bm25/tier1_plus_global_primary_disclosure_objects_v0_1
+      object_sqlite_fts_path: data/indexes/staging/sqlite_fts/tier1_plus_global_primary_disclosure_objects_v0_1.sqlite
+      milvus_dir: data/indexes/staging/milvus/tier1_plus_global_primary_disclosure_v0_1
+    gates:
+      sec_shard_can_build_before_non_us: true
+      non_us_shard_append_must_not_force_sec_rechunk: true
+      chunk_s0_required_before_promotion: true
+      exact_value_ledger_required_before_promotion: true
+      relationship_r1_r5_required_before_mainline_vector_promotion: true

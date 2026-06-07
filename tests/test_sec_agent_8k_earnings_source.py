@@ -40,6 +40,15 @@ def _load_8k_downloader_module():
     return module
 
 
+def _load_benchmark_context_module():
+    path = REPO_ROOT / "scripts" / "eval_sec_benchmark" / "run_sec_benchmark_eval.py"
+    spec = importlib.util.spec_from_file_location("run_sec_benchmark_eval_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _load_source_gap_merge_module():
     path = REPO_ROOT / "scripts" / "data_sec" / "merge_sec_source_gaps.py"
     spec = importlib.util.spec_from_file_location("merge_sec_source_gaps_under_test", path)
@@ -1507,6 +1516,46 @@ def test_query_contract_uses_inventory_8k_source_gap_reasons() -> None:
         and gap["reason"] == "no_item_2_02_8k_for_filing_year"
         for gap in gaps
     )
+
+
+def test_benchmark_source_resolver_infers_8k_form_type_from_evidence_id() -> None:
+    benchmark = _load_benchmark_context_module()
+    manifest_row = {
+        "ticker": "AMZN",
+        "fiscal_year": 2026,
+        "source_type": "8-K",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "evidence_id": "8K_EARNINGS::AMZN::000101872426000012::AMZN20260331XEX991HTM::BLOCK_0001::CHUNK_0001",
+    }
+    form = benchmark._manifest_row_form_type(manifest_row)
+    manifest_index = {("AMZN", 2026, form): manifest_row}
+    case = {
+        "companies": ["AMZN"],
+        "years": [2025, 2026],
+        "filing_types": ["8-K"],
+        "source_tiers": ["company_authored_unaudited_sec_filing"],
+        "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_EARNINGS",
+        "retrieval_plan": {
+            "retrieval_plan_validation": {"status": "pass"},
+            "routes": [
+                {
+                    "route_id": "mcp_sec_search_8_k_2026::8k_commentary",
+                    "retrieval_route": "8k_commentary",
+                    "tickers": ["AMZN"],
+                    "years": [2026],
+                    "filing_types": ["8-K"],
+                    "source_tiers": ["company_authored_unaudited_sec_filing"],
+                }
+            ],
+        },
+    }
+
+    resolver = benchmark._source_resolver(case, manifest_index)
+
+    assert form == "8-K"
+    assert resolver["status"] == "complete"
+    assert resolver["available_count"] == 1
+    assert resolver["missing_count"] == 0
 
 
 def test_source_gap_merge_prefers_discovery_reason_over_manifest_cache_gap() -> None:

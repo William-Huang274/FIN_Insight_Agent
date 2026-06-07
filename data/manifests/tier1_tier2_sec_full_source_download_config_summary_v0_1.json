@@ -1,0 +1,105 @@
+{
+  "schema_version": "fin_agent_sec_full_source_download_config_summary_v0.1",
+  "status": "pass",
+  "config_count": 5,
+  "covered_company_count": 588,
+  "configs": {
+    "tier1_sp500_us_interim_10q_fy2026_2027": {
+      "dataset_id": "tier1_sp500_us_interim_10q_fy2026_2027_v0_1",
+      "status": "active",
+      "company_count": 505,
+      "years": [
+        2026,
+        2027
+      ],
+      "form_types": [
+        "10-Q"
+      ],
+      "expected_tasks": 1010,
+      "form_target_counts": {
+        "10-Q": 505,
+        "8-K": 505
+      },
+      "output": "configs/data_sources/tier1_sp500_us_interim_10q_fy2026_2027.yaml"
+    },
+    "tier1_sp500_us_8k_earnings_2026_2027": {
+      "dataset_id": "tier1_sp500_us_8k_earnings_2026_2027_v0_1",
+      "status": "active",
+      "company_count": 505,
+      "years": [
+        2026,
+        2027
+      ],
+      "form_types": [
+        "8-K"
+      ],
+      "expected_tasks": 1010,
+      "form_target_counts": {
+        "10-Q": 505,
+        "8-K": 505
+      },
+      "output": "configs/data_sources/tier1_sp500_us_8k_earnings_2026_2027.yaml"
+    },
+    "tier2_supply_chain_sec_interim_10q_fy2026_2027": {
+      "dataset_id": "tier2_supply_chain_sec_interim_10q_fy2026_2027_v0_1",
+      "status": "active",
+      "company_count": 52,
+      "years": [
+        2026,
+        2027
+      ],
+      "form_types": [
+        "10-Q"
+      ],
+      "expected_tasks": 104,
+      "form_target_counts": {
+        "10-Q": 52,
+        "8-K": 52
+      },
+      "output": "configs/data_sources/tier2_supply_chain_sec_interim_10q_fy2026_2027.yaml"
+    },
+    "tier2_supply_chain_sec_8k_earnings_2026_2027": {
+      "dataset_id": "tier2_supply_chain_sec_8k_earnings_2026_2027_v0_1",
+      "status": "active",
+      "company_count": 52,
+      "years": [
+        2026,
+        2027
+      ],
+      "form_types": [
+        "8-K"
+      ],
+      "expected_tasks": 104,
+      "form_target_counts": {
+        "10-Q": 52,
+        "8-K": 52
+      },
+      "output": "configs/data_sources/tier2_supply_chain_sec_8k_earnings_2026_2027.yaml"
+    },
+    "tier2_supply_chain_sec_6k_2026_2027": {
+      "dataset_id": "tier2_supply_chain_sec_6k_2026_2027_v0_1",
+      "status": "reserved_parser_gap",
+      "company_count": 31,
+      "years": [
+        2026,
+        2027
+      ],
+      "form_types": [
+        "6-K"
+      ],
+      "expected_tasks": 62,
+      "form_target_counts": {
+        "6-K": 31
+      },
+      "output": "configs/data_sources/tier2_supply_chain_sec_6k_2026_2027.yaml"
+    }
+  },
+  "outputs": {
+    "tier1_sp500_us_interim_10q_fy2026_2027": "configs/data_sources/tier1_sp500_us_interim_10q_fy2026_2027.yaml",
+    "tier1_sp500_us_8k_earnings_2026_2027": "configs/data_sources/tier1_sp500_us_8k_earnings_2026_2027.yaml",
+    "tier2_supply_chain_sec_interim_10q_fy2026_2027": "configs/data_sources/tier2_supply_chain_sec_interim_10q_fy2026_2027.yaml",
+    "tier2_supply_chain_sec_8k_earnings_2026_2027": "configs/data_sources/tier2_supply_chain_sec_8k_earnings_2026_2027.yaml",
+    "tier2_supply_chain_sec_6k_2026_2027": "configs/data_sources/tier2_supply_chain_sec_6k_2026_2027.yaml",
+    "summary": "data/manifests/tier1_tier2_sec_full_source_download_config_summary_v0_1.json"
+  }
+}

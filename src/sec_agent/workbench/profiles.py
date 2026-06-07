@@ -30,8 +30,13 @@ class SourceArtifactsProfile(BaseModel):
     object_bm25_index_dir: str | None = None
     source_gap_path: str | None = None
     market_evidence_path: str | None = None
+    market_catalog_path: str | None = None
     market_snapshot_id: str | None = None
     market_as_of_date: str | None = None
+    industry_evidence_path: str | None = None
+    industry_snapshot_db_path: str | None = None
+    industry_snapshot_id: str | None = None
+    industry_as_of_date: str | None = None
 
 
 class RuntimeProfile(BaseModel):
@@ -84,8 +89,13 @@ class WorkbenchProfile(BaseModel):
             "OBJECT_BM25_INDEX_DIR": self.sources.object_bm25_index_dir,
             "SOURCE_GAP_PATH": self.sources.source_gap_path,
             "MARKET_EVIDENCE_PATH": self.sources.market_evidence_path,
+            "MARKET_CATALOG_PATH": self.sources.market_catalog_path,
             "MARKET_SNAPSHOT_ID": self.sources.market_snapshot_id,
             "MARKET_AS_OF_DATE": self.sources.market_as_of_date,
+            "INDUSTRY_EVIDENCE_PATH": self.sources.industry_evidence_path,
+            "INDUSTRY_SNAPSHOT_DB_PATH": self.sources.industry_snapshot_db_path,
+            "INDUSTRY_SNAPSHOT_ID": self.sources.industry_snapshot_id,
+            "INDUSTRY_AS_OF_DATE": self.sources.industry_as_of_date,
             "SEC_AGENT_MULTI_AGENT_GRAPH": self.runtime.multi_agent_graph,
             "SEC_AGENT_MULTI_AGENT_LEAD_ROUTER": self.runtime.multi_agent_lead_router,
             "SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER": self.runtime.multi_agent_specialist_router,
@@ -126,8 +136,13 @@ def profile_from_env_file(
             object_bm25_index_dir=_none_if_blank(values.get("OBJECT_BM25_INDEX_DIR")),
             source_gap_path=_none_if_blank(values.get("SOURCE_GAP_PATH")),
             market_evidence_path=_none_if_blank(values.get("MARKET_EVIDENCE_PATH")),
+            market_catalog_path=_none_if_blank(values.get("MARKET_CATALOG_PATH")),
             market_snapshot_id=_none_if_blank(values.get("MARKET_SNAPSHOT_ID")),
             market_as_of_date=_none_if_blank(values.get("MARKET_AS_OF_DATE")),
+            industry_evidence_path=_none_if_blank(values.get("INDUSTRY_EVIDENCE_PATH")),
+            industry_snapshot_db_path=_none_if_blank(values.get("INDUSTRY_SNAPSHOT_DB_PATH")),
+            industry_snapshot_id=_none_if_blank(values.get("INDUSTRY_SNAPSHOT_ID")),
+            industry_as_of_date=_none_if_blank(values.get("INDUSTRY_AS_OF_DATE")),
         ),
         runtime=RuntimeProfile(
             python=values.get("PY", "python"),

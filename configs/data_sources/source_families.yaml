@@ -1,0 +1,61 @@
+schema_version: fin_agent_source_families_v0_1
+source_families:
+  sec_primary_filing:
+    source_tier: primary_sec_filing
+    claim_scope: company_reported_financial_fact
+    examples: ["10-K", "10-Q"]
+  global_public_annual_report:
+    source_tier: primary_company_disclosure
+    claim_scope: company_reported_financial_fact
+    examples: ["KR DART annual report", "TWSE annual report", "HKEX annual report", "SZSE annual report"]
+    required_fields: ["issuer_id", "exchange_symbol", "country", "disclosure_profile", "source_url"]
+  global_public_interim_report:
+    source_tier: primary_company_disclosure
+    claim_scope: company_reported_financial_fact
+    examples: ["KR DART quarterly report", "TWSE quarterly report", "HKEX interim report", "SZSE quarterly report"]
+    required_fields: ["issuer_id", "exchange_symbol", "country", "disclosure_profile", "source_url"]
+  sec_8k_earnings_release:
+    source_tier: company_authored_unaudited_sec_filing
+    claim_scope: management_commentary_or_unaudited_company_context
+    examples: ["8-K Item 2.02", "EX-99.1 earnings release"]
+  company_earnings_release:
+    source_tier: company_authored_earnings_material
+    claim_scope: management_commentary_or_unaudited_company_context
+    examples: ["quarterly results release", "financial results release", "company IR earnings release"]
+    required_fields: ["issuer_id", "ticker", "fiscal_year", "fiscal_period", "source_url", "publication_date"]
+  company_presentation:
+    source_tier: company_authored_presentation
+    claim_scope: management_commentary_or_unaudited_company_context
+    examples: ["investor presentation", "earnings presentation"]
+    required_fields: ["issuer_id", "ticker", "fiscal_year", "source_url", "presentation_type"]
+  sec_companyfacts_structured_fact:
+    source_tier: company_reported_structured_fact
+    claim_scope: company_reported_financial_fact
+    examples: ["SEC CompanyFacts XBRL JSON"]
+    required_fields: ["cik", "taxonomy", "concept", "period_end", "unit", "value", "accession_number"]
+  sec_submissions_metadata:
+    source_tier: company_reported_structured_fact
+    claim_scope: filing_metadata_and_period_identity
+    examples: ["SEC submissions JSON"]
+    required_fields: ["cik", "accession_number", "form_type", "filing_date", "period_end"]
+  global_public_structured_financial_fact:
+    source_tier: company_reported_structured_fact
+    claim_scope: company_reported_financial_fact
+    examples: ["official annual report financial statement table", "official interim report financial table"]
+    required_fields: ["issuer_id", "ticker", "fiscal_year", "source_document_id", "metric_name", "unit", "value"]
+  market_price_snapshot:
+    source_tier: market_snapshot
+    claim_scope: market_or_valuation_context_only
+    required_fields: ["as_of_date", "provider", "symbol"]
+  macro_industry_indicator:
+    source_tier: industry_snapshot
+    claim_scope: industry_context_only
+    required_fields: ["series_id", "period", "value", "unit", "source"]
+  relationship_edge:
+    source_tier: relationship_edge
+    claim_scope: relationship_fact_not_financial_fact
+    required_fields: ["edge_id", "relation_type", "confidence", "verifier_status", "evidence_id"]
+  external_event_lead:
+    source_tier: external_event_lead
+    claim_scope: lead_only_needs_verification
+    required_fields: ["event_id", "source_url", "publish_date", "verification_status"]

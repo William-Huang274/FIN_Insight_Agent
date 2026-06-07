@@ -18,6 +18,9 @@ class SourceBundleArtifacts(BaseModel):
     object_bm25_index_dir: str | None = None
     source_gap_path: str | None = None
     market_evidence_path: str | None = None
+    market_catalog_path: str | None = None
+    industry_evidence_path: str | None = None
+    industry_snapshot_db_path: str | None = None
 
 
 class SourceBundleBuild(BaseModel):
@@ -69,6 +72,9 @@ def source_bundle_from_profile(
             object_bm25_index_dir=profile.sources.object_bm25_index_dir,
             source_gap_path=profile.sources.source_gap_path,
             market_evidence_path=profile.sources.market_evidence_path,
+            market_catalog_path=profile.sources.market_catalog_path,
+            industry_evidence_path=profile.sources.industry_evidence_path,
+            industry_snapshot_db_path=profile.sources.industry_snapshot_db_path,
         ),
         build=SourceBundleBuild(
             created_at=datetime.now().isoformat(timespec="seconds"),
@@ -89,7 +95,11 @@ def profile_from_source_bundle(bundle: SourceBundle) -> WorkbenchProfile:
             object_bm25_index_dir=bundle.artifacts.object_bm25_index_dir,
             source_gap_path=bundle.artifacts.source_gap_path,
             market_evidence_path=bundle.artifacts.market_evidence_path,
+            market_catalog_path=bundle.artifacts.market_catalog_path,
             market_as_of_date=bundle.as_of_date,
+            industry_evidence_path=bundle.artifacts.industry_evidence_path,
+            industry_snapshot_db_path=bundle.artifacts.industry_snapshot_db_path,
+            industry_as_of_date=bundle.as_of_date,
         ),
     )
 
@@ -119,8 +129,10 @@ def _source_families(profile: WorkbenchProfile, readiness: SourceReadinessReport
         families.append("SEC filings")
     if profile.sources.source_gap_path and "8-K earnings release" not in families:
         families.append("8-K source gap")
-    if profile.sources.market_evidence_path:
+    if profile.sources.market_evidence_path or profile.sources.market_catalog_path:
         families.append("market snapshot")
+    if profile.sources.industry_evidence_path or profile.sources.industry_snapshot_db_path:
+        families.append("industry snapshot")
     return families or [profile.sources.source_policy]
 
 
@@ -134,8 +146,12 @@ def _build_scripts(profile: WorkbenchProfile) -> list[str]:
         scripts.append("build_object_bm25_index")
     if profile.sources.source_gap_path:
         scripts.extend(["download_sec_8k_earnings", "merge_sec_source_gaps"])
-    if profile.sources.market_evidence_path:
+    if profile.sources.market_evidence_path or profile.sources.market_catalog_path:
         scripts.append("market/40_build_market_evidence_pack")
+    if profile.sources.market_catalog_path:
+        scripts.append("market/20_build_market_snapshot_catalog")
+    if profile.sources.industry_evidence_path or profile.sources.industry_snapshot_db_path:
+        scripts.extend(["industry/10_download_industry_source_snapshot", "industry/20_merge_industry_source_snapshots"])
     return scripts
 
 
@@ -154,6 +170,8 @@ def _tickers_sample(readiness: SourceReadinessReport | None) -> list[str]:
 def _as_of_date(profile: WorkbenchProfile, readiness: SourceReadinessReport | None) -> str | None:
     if profile.sources.market_as_of_date:
         return profile.sources.market_as_of_date
+    if profile.sources.industry_as_of_date:
+        return profile.sources.industry_as_of_date
     if readiness and readiness.market_evidence.as_of_dates:
         return _largest_count_key(readiness.market_evidence.as_of_dates)
     return None
@@ -173,7 +191,11 @@ def _infer_market(profile: WorkbenchProfile) -> str:
 def _source_policy_from_bundle(bundle: SourceBundle) -> str:
     families = {item.lower() for item in bundle.source_families}
     if "market snapshot" in families:
+        if "industry snapshot" in families:
+            return "SEC_PRIMARY_MIXED_WITH_8K_MARKET_AND_INDUSTRY_SNAPSHOT"
         return "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT"
+    if "industry snapshot" in families:
+        return "SEC_PRIMARY_MIXED_WITH_8K_AND_INDUSTRY_SNAPSHOT"
     if any("8-k" in item for item in families):
         return "SEC_PRIMARY_MIXED_WITH_8K"
     return "SEC_PRIMARY_MIXED_RECENT"

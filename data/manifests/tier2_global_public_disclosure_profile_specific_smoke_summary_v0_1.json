@@ -1,0 +1,573 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_download_tasks_summary_v0.1",
+  "status": "fail",
+  "task_count": 69,
+  "company_count": 15,
+  "profile_counts": {
+    "eu_regulated_annual_report": 3,
+    "hkex_annual_report": 3,
+    "jp_edinet_annual_securities_report": 30,
+    "kr_dart_business_report": 18,
+    "szse_cninfo_annual_report": 3,
+    "tw_mops_annual_report": 12
+  },
+  "report_type_counts": {
+    "annual_report": 30,
+    "annual_securities_report": 15,
+    "business_report": 9,
+    "integrated_report": 15
+  },
+  "download_strategy_counts": {
+    "cninfo_security_report_search": 3,
+    "company_ir_official_report_download": 3,
+    "edinet_document_search": 30,
+    "hkexnews_issuer_report_search": 3,
+    "mops_company_report_lookup": 12,
+    "official_locator_then_disclosure_search": 18
+  },
+  "download_status_counts": {
+    "blocked_requires_official_api_key": 48,
+    "document_downloaded": 3,
+    "profile_specific_scaffold_pending": 18
+  },
+  "document_downloaded_count": 3,
+  "downloaded_byte_count": 15476160,
+  "issue_counts": {
+    "blocked_requires_official_api_key": 48,
+    "profile_specific_scaffold_pending": 18
+  },
+  "issues": [
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::000660_KS::KR_DART_BUSINESS_REPORT::2023::ANNUAL_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::000660_KS::KR_DART_BUSINESS_REPORT::2023::BUSINESS_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::000660_KS::KR_DART_BUSINESS_REPORT::2024::ANNUAL_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::000660_KS::KR_DART_BUSINESS_REPORT::2024::BUSINESS_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::000660_KS::KR_DART_BUSINESS_REPORT::2025::ANNUAL_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::000660_KS::KR_DART_BUSINESS_REPORT::2025::BUSINESS_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::005930_KS::KR_DART_BUSINESS_REPORT::2023::ANNUAL_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::005930_KS::KR_DART_BUSINESS_REPORT::2023::BUSINESS_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::005930_KS::KR_DART_BUSINESS_REPORT::2024::ANNUAL_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::005930_KS::KR_DART_BUSINESS_REPORT::2024::BUSINESS_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::005930_KS::KR_DART_BUSINESS_REPORT::2025::ANNUAL_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::005930_KS::KR_DART_BUSINESS_REPORT::2025::BUSINESS_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::1211_HK::HKEX_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "download_strategy": "hkexnews_issuer_report_search",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "HKEXnews issuer report search requires headline category/date filters and issuer-code mapping before download.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::1211_HK::HKEX_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "download_strategy": "hkexnews_issuer_report_search",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "HKEXnews issuer report search requires headline category/date filters and issuer-code mapping before download.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::1211_HK::HKEX_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "download_strategy": "hkexnews_issuer_report_search",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "HKEXnews issuer report search requires headline category/date filters and issuer-code mapping before download.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::2308_TW::TW_MOPS_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::2308_TW::TW_MOPS_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::2308_TW::TW_MOPS_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::2317_TW::TW_MOPS_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::2317_TW::TW_MOPS_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::2317_TW::TW_MOPS_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::2382_TW::TW_MOPS_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::2382_TW::TW_MOPS_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::2382_TW::TW_MOPS_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::300750_SZ::SZSE_CNINFO_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "download_strategy": "cninfo_security_report_search",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "CNINFO query requires security-code/org-id mapping, announcement category, and anti-stale result validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::300750_SZ::SZSE_CNINFO_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "download_strategy": "cninfo_security_report_search",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "CNINFO query requires security-code/org-id mapping, announcement category, and anti-stale result validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::300750_SZ::SZSE_CNINFO_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "download_strategy": "cninfo_security_report_search",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "CNINFO query requires security-code/org-id mapping, announcement category, and anti-stale result validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::3231_TW::TW_MOPS_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::3231_TW::TW_MOPS_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "profile_specific_scaffold_pending",
+      "task_id": "DOWNLOAD::GLOBALDISC::3231_TW::TW_MOPS_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "download_strategy": "mops_company_report_lookup",
+      "download_implementation_status": "profile_specific_scaffold_pending",
+      "download_blocker": "MOPS company report lookup requires profile-specific form parameters and language/report-type validation.",
+      "api_key_env": ""
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::373220_KS::KR_DART_BUSINESS_REPORT::2023::ANNUAL_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::373220_KS::KR_DART_BUSINESS_REPORT::2023::BUSINESS_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::373220_KS::KR_DART_BUSINESS_REPORT::2024::ANNUAL_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::373220_KS::KR_DART_BUSINESS_REPORT::2024::BUSINESS_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::373220_KS::KR_DART_BUSINESS_REPORT::2025::ANNUAL_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::373220_KS::KR_DART_BUSINESS_REPORT::2025::BUSINESS_REPORT",
+      "download_strategy": "official_locator_then_disclosure_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "DART Open API access key and company-code lookup are required before regulator-first download.",
+      "api_key_env": "DART_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6857_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6857_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6857_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6857_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6857_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::6857_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::8035_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::8035_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::8035_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::8035_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::8035_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    },
+    {
+      "type": "blocked_requires_official_api_key",
+      "task_id": "DOWNLOAD::GLOBALDISC::8035_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::INTEGRATED_REPORT",
+      "download_strategy": "edinet_document_search",
+      "download_implementation_status": "blocked_requires_official_api_key",
+      "download_blocker": "EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.",
+      "api_key_env": "EDINET_API_KEY"
+    }
+  ],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_profile_specific_smoke_v0_1.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_profile_specific_smoke_summary_v0_1.json"
+  }
+}

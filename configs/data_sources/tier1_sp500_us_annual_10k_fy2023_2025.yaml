@@ -1,0 +1,5082 @@
+schema_version: fin_agent_sec_annual_download_config_v0.1
+dataset_id: tier1_sp500_us_annual_v0_1
+source_family: sec_primary_filing
+source_tier: primary_sec_filing
+universe_tier: tier1_sp500_plus_current
+form_type: 10-K
+form_types:
+- 10-K
+years:
+- 2023
+- 2024
+- 2025
+companies:
+- ticker: A
+  cik: 0001090872
+  company_name: Agilent Technologies
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AAPL
+  cik: 0000320193
+  company_name: Apple Inc.
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: ABBV
+  cik: '0001551152'
+  company_name: AbbVie
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: ABNB
+  cik: 0001559720
+  company_name: Airbnb
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ABT
+  cik: 0000001800
+  company_name: Abbott Laboratories
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ACGL
+  cik: 0000947484
+  company_name: Arch Capital Group
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ACN
+  cik: '0001467373'
+  company_name: Accenture
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ADBE
+  cik: 0000796343
+  company_name: Adobe Inc.
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: ADI
+  cik: 0000006281
+  company_name: Analog Devices
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ADM
+  cik: 0000007084
+  company_name: Archer Daniels Midland
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ADP
+  cik: 0000008670
+  company_name: Automatic Data Processing
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: ADSK
+  cik: 0000769397
+  company_name: Autodesk
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AEE
+  cik: 0001002910
+  company_name: Ameren
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AEP
+  cik: 0000004904
+  company_name: American Electric Power
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: AES
+  cik: 0000874761
+  company_name: AES Corporation
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: AFL
+  cik: 0000004977
+  company_name: Aflac
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AIG
+  cik: '0000005272'
+  company_name: American International Group
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AIZ
+  cik: 0001267238
+  company_name: Assurant
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AJG
+  cik: 0000354190
+  company_name: Arthur J. Gallagher & Co.
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AKAM
+  cik: 0001086222
+  company_name: Akamai Technologies
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ALB
+  cik: 0000915913
+  company_name: Albemarle Corporation
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ALGN
+  cik: 0001097149
+  company_name: Align Technology
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ALL
+  cik: 0000899051
+  company_name: Allstate
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ALLE
+  cik: 0001579241
+  company_name: Allegion
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AMAT
+  cik: 0000006951
+  company_name: Applied Materials
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: AMCR
+  cik: 0001748790
+  company_name: Amcor
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AMD
+  cik: 0000002488
+  company_name: Advanced Micro Devices
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: AME
+  cik: 0001037868
+  company_name: Ametek
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AMGN
+  cik: 0000318154
+  company_name: Amgen
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: AMP
+  cik: 0000820027
+  company_name: Ameriprise Financial
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AMT
+  cik: '0001053507'
+  company_name: American Tower
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: AMZN
+  cik: 0001018724
+  company_name: Amazon
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: ANET
+  cik: 0001596532
+  company_name: Arista Networks
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: AON
+  cik: 0000315293
+  company_name: Aon plc
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: AOS
+  cik: 0000091142
+  company_name: A. O. Smith
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: APA
+  cik: 0001841666
+  company_name: APA Corporation
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: APD
+  cik: 0000002969
+  company_name: Air Products
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: APH
+  cik: 0000820313
+  company_name: Amphenol
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: APO
+  cik: 0001858681
+  company_name: Apollo Global Management
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: APP
+  cik: 0001751008
+  company_name: AppLovin
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: APTV
+  cik: '0001521332'
+  company_name: Aptiv
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ARE
+  cik: '0001035443'
+  company_name: Alexandria Real Estate Equities
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ARES
+  cik: 0001176948
+  company_name: Ares Management
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ATO
+  cik: 0000731802
+  company_name: Atmos Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AVB
+  cik: 0000915912
+  company_name: AvalonBay Communities
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: AVGO
+  cik: 0001730168
+  company_name: Broadcom
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: AVY
+  cik: 0000008818
+  company_name: Avery Dennison
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AWK
+  cik: '0001410636'
+  company_name: American Water Works
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AXON
+  cik: 0001069183
+  company_name: Axon Enterprise
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: AXP
+  cik: 0000004962
+  company_name: American Express
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: AZO
+  cik: 0000866787
+  company_name: AutoZone
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: BA
+  cik: 0000012927
+  company_name: Boeing
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: BAC
+  cik: 0000070858
+  company_name: Bank of America
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: BALL
+  cik: 0000009389
+  company_name: Ball Corporation
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: BAX
+  cik: '0000010456'
+  company_name: Baxter International
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BBY
+  cik: 0000764478
+  company_name: Best Buy
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BDX
+  cik: 0000010795
+  company_name: Becton Dickinson
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: BEN
+  cik: 0000038777
+  company_name: Franklin Resources
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BF-B
+  cik: 0000014693
+  company_name: Brown–Forman
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BG
+  cik: 0001996862
+  company_name: Bunge Global
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BIIB
+  cik: 0000875045
+  company_name: Biogen
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BK
+  cik: 0001390777
+  company_name: BNY Mellon
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: BKNG
+  cik: '0001075531'
+  company_name: Booking Holdings
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: BKR
+  cik: '0001701605'
+  company_name: Baker Hughes
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: BLDR
+  cik: 0001316835
+  company_name: Builders FirstSource
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BLK
+  cik: 0002012383
+  company_name: BlackRock
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: BMY
+  cik: '0000014272'
+  company_name: Bristol Myers Squibb
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: BR
+  cik: 0001383312
+  company_name: Broadridge Financial Solutions
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BRK-B
+  cik: 0001067983
+  company_name: Berkshire Hathaway
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BRO
+  cik: 0000079282
+  company_name: Brown & Brown
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: BSX
+  cik: 0000885725
+  company_name: Boston Scientific
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: BX
+  cik: 0001393818
+  company_name: Blackstone Inc.
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: BXP
+  cik: '0001037540'
+  company_name: BXP, Inc.
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: C
+  cik: 0000831001
+  company_name: Citigroup
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CAG
+  cik: '0000023217'
+  company_name: Conagra Brands
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CAH
+  cik: '0000721371'
+  company_name: Cardinal Health
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CARR
+  cik: 0001783180
+  company_name: Carrier Global
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CASY
+  cik: 0000726958
+  company_name: Casey's
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CAT
+  cik: 0000018230
+  company_name: Caterpillar Inc.
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: CB
+  cik: 0000896159
+  company_name: Chubb Limited
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CBOE
+  cik: '0001374310'
+  company_name: Cboe Global Markets
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CBRE
+  cik: 0001138118
+  company_name: CBRE Group
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CCI
+  cik: '0001051470'
+  company_name: Crown Castle
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CCL
+  cik: 0000815097
+  company_name: Carnival Corporation
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CDNS
+  cik: 0000813672
+  company_name: Cadence Design Systems
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CDW
+  cik: '0001402057'
+  company_name: CDW Corporation
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CE
+  cik: 0001306830
+  company_name: Celanese Corp
+  category: materials
+  category_slug: materials
+  sector: materials
+  source_sets:
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CEG
+  cik: 0001868275
+  company_name: Constellation Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: CF
+  cik: '0001324404'
+  company_name: CF Industries
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CFG
+  cik: 0000759944
+  company_name: Citizens Financial Group
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CHD
+  cik: 0000313927
+  company_name: Church & Dwight
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CHRW
+  cik: '0001043277'
+  company_name: C.H. Robinson
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CHTR
+  cik: 0001091667
+  company_name: Charter Communications
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CI
+  cik: 0001739940
+  company_name: Cigna
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CIEN
+  cik: 0000936395
+  company_name: Ciena
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CINF
+  cik: 0000020286
+  company_name: Cincinnati Financial
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CL
+  cik: '0000021665'
+  company_name: Colgate-Palmolive
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CLX
+  cik: '0000021076'
+  company_name: Clorox
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CMCSA
+  cik: 0001166691
+  company_name: Comcast
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CME
+  cik: '0001156375'
+  company_name: CME Group
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CMG
+  cik: 0001058090
+  company_name: Chipotle Mexican Grill
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CMI
+  cik: '0000026172'
+  company_name: Cummins
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CMS
+  cik: 0000811156
+  company_name: CMS Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CNC
+  cik: 0001071739
+  company_name: Centene Corporation
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CNP
+  cik: '0001130310'
+  company_name: CenterPoint Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: COF
+  cik: 0000927628
+  company_name: Capital One
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: COHR
+  cik: 0000820318
+  company_name: Coherent Corp.
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: COIN
+  cik: 0001679788
+  company_name: Coinbase
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: COO
+  cik: '0000711404'
+  company_name: Cooper Companies (The)
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: COP
+  cik: '0001163165'
+  company_name: ConocoPhillips
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: COR
+  cik: 0001140859
+  company_name: Cencora
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: COST
+  cik: 0000909832
+  company_name: Costco
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: CPAY
+  cik: '0001175454'
+  company_name: Corpay
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CPB
+  cik: '0000016732'
+  company_name: Campbell's Company (The)
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CPRT
+  cik: 0000900075
+  company_name: Copart
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CPT
+  cik: 0000906345
+  company_name: Camden Property Trust
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CRH
+  cik: 0000849395
+  company_name: CRH plc
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CRL
+  cik: 0001100682
+  company_name: Charles River Laboratories
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CRM
+  cik: 0001108524
+  company_name: Salesforce
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: CRWD
+  cik: '0001535527'
+  company_name: CrowdStrike
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: CSCO
+  cik: 0000858877
+  company_name: Cisco
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: CSGP
+  cik: '0001057352'
+  company_name: CoStar Group
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CSX
+  cik: 0000277948
+  company_name: CSX Corporation
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CTAS
+  cik: '0000723254'
+  company_name: Cintas
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CTRA
+  cik: 0000858470
+  company_name: Coterra Energy Inc.
+  category: energy
+  category_slug: energy
+  sector: energy
+  source_sets:
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CTSH
+  cik: 0001058290
+  company_name: Cognizant
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CTVA
+  cik: '0001755672'
+  company_name: Corteva
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: CVNA
+  cik: 0001690820
+  company_name: Carvana
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CVS
+  cik: 0000064803
+  company_name: CVS Health
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: CVX
+  cik: 0000093410
+  company_name: Chevron Corporation
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: D
+  cik: 0000715957
+  company_name: Dominion Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: DAL
+  cik: 0000027904
+  company_name: Delta Air Lines
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DASH
+  cik: 0001792789
+  company_name: DoorDash
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DD
+  cik: '0001666700'
+  company_name: DuPont
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: DDOG
+  cik: '0001561550'
+  company_name: Datadog
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DE
+  cik: 0000315189
+  company_name: Deere & Company
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: DECK
+  cik: 0000910521
+  company_name: Deckers Brands
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DELL
+  cik: 0001571996
+  company_name: Dell Technologies
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: DG
+  cik: 0000029534
+  company_name: Dollar General
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: DGX
+  cik: 0001022079
+  company_name: Quest Diagnostics
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DHI
+  cik: 0000882184
+  company_name: D. R. Horton
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: DHR
+  cik: '0000313616'
+  company_name: Danaher Corporation
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: DIS
+  cik: 0001744489
+  company_name: Walt Disney Company (The)
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: DLR
+  cik: 0001297996
+  company_name: Digital Realty
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: DLTR
+  cik: 0000935703
+  company_name: Dollar Tree
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DOC
+  cik: 0000765880
+  company_name: Healthpeak Properties
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DOV
+  cik: 0000029905
+  company_name: Dover Corporation
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DOW
+  cik: 0001751788
+  company_name: Dow Inc.
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DPZ
+  cik: 0001286681
+  company_name: Domino's
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DRI
+  cik: 0000940944
+  company_name: Darden Restaurants
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DTE
+  cik: 0000936340
+  company_name: DTE Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DUK
+  cik: '0001326160'
+  company_name: Duke Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: DVA
+  cik: 0000927066
+  company_name: DaVita
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: DVN
+  cik: 0001090012
+  company_name: Devon Energy
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: DXCM
+  cik: 0001093557
+  company_name: Dexcom
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: EA
+  cik: '0000712515'
+  company_name: Electronic Arts
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: EBAY
+  cik: 0001065088
+  company_name: eBay Inc.
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ECL
+  cik: '0000031462'
+  company_name: Ecolab
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ED
+  cik: 0001047862
+  company_name: Consolidated Edison
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: EFX
+  cik: 0000033185
+  company_name: Equifax
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: EG
+  cik: 0001095073
+  company_name: Everest Group
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: EIX
+  cik: 0000827052
+  company_name: Edison International
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: EL
+  cik: '0001001250'
+  company_name: Estée Lauder Companies (The)
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ELV
+  cik: 0001156039
+  company_name: Elevance Health
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: EME
+  cik: '0000105634'
+  company_name: Emcor
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: EMR
+  cik: '0000032604'
+  company_name: Emerson Electric
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: EOG
+  cik: 0000821189
+  company_name: EOG Resources
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: EQIX
+  cik: 0001101239
+  company_name: Equinix
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: EQR
+  cik: 0000906107
+  company_name: Equity Residential
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: EQT
+  cik: '0000033213'
+  company_name: EQT Corporation
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ERIE
+  cik: 0000922621
+  company_name: Erie Indemnity
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ES
+  cik: '0000072741'
+  company_name: Eversource Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ESS
+  cik: 0000920522
+  company_name: Essex Property Trust
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ETN
+  cik: 0001551182
+  company_name: Eaton Corporation
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ETR
+  cik: 0000065984
+  company_name: Entergy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: EVRG
+  cik: 0001711269
+  company_name: Evergy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: EW
+  cik: 0001099800
+  company_name: Edwards Lifesciences
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: EXC
+  cik: 0001109357
+  company_name: Exelon
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: EXE
+  cik: 0000895126
+  company_name: Expand Energy
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: EXPD
+  cik: '0000746515'
+  company_name: Expeditors International
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: EXPE
+  cik: '0001324424'
+  company_name: Expedia Group
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: EXR
+  cik: 0001289490
+  company_name: Extra Space Storage
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: F
+  cik: 0000037996
+  company_name: Ford Motor Company
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: FANG
+  cik: 0001539838
+  company_name: Diamondback Energy
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: FAST
+  cik: 0000815556
+  company_name: Fastenal
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FCX
+  cik: 0000831259
+  company_name: Freeport-McMoRan
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: FDS
+  cik: '0001013237'
+  company_name: FactSet
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FDX
+  cik: 0001048911
+  company_name: FedEx
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: FDXF
+  cik: 0002082247
+  company_name: FedEx Freight
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FE
+  cik: 0001031296
+  company_name: FirstEnergy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FFIV
+  cik: 0001048695
+  company_name: F5, Inc.
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FICO
+  cik: 0000814547
+  company_name: Fair Isaac
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FIS
+  cik: 0001136893
+  company_name: Fidelity National Information Services
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FISV
+  cik: 0000798354
+  company_name: Fiserv
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FITB
+  cik: '0000035527'
+  company_name: Fifth Third Bancorp
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FIX
+  cik: 0001035983
+  company_name: Comfort Systems USA
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FOXA
+  cik: '0001754301'
+  company_name: Fox Corporation (Class A)
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: FRT
+  cik: 0000034903
+  company_name: Federal Realty Investment Trust
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FSLR
+  cik: 0001274494
+  company_name: First Solar
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FTNT
+  cik: 0001262039
+  company_name: Fortinet
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: FTV
+  cik: 0001659166
+  company_name: Fortive
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GD
+  cik: '0000040533'
+  company_name: General Dynamics
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GDDY
+  cik: 0001609711
+  company_name: GoDaddy
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GE
+  cik: '0000040545'
+  company_name: GE Aerospace
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: GEHC
+  cik: 0001932393
+  company_name: GE HealthCare
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GEN
+  cik: 0000849399
+  company_name: Gen Digital
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GEV
+  cik: 0001996810
+  company_name: GE Vernova
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GILD
+  cik: 0000882095
+  company_name: Gilead Sciences
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: GIS
+  cik: '0000040704'
+  company_name: General Mills
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: GL
+  cik: '0000320335'
+  company_name: Globe Life
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GLW
+  cik: '0000024741'
+  company_name: Corning Inc.
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: GM
+  cik: 0001467858
+  company_name: General Motors
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: GNRC
+  cik: '0001474735'
+  company_name: Generac
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GOOGL
+  cik: '0001652044'
+  company_name: Alphabet Inc. (Class A)
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: GPC
+  cik: 0000040987
+  company_name: Genuine Parts Company
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GPN
+  cik: '0001123360'
+  company_name: Global Payments
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GRMN
+  cik: 0001121788
+  company_name: Garmin
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: GS
+  cik: 0000886982
+  company_name: Goldman Sachs
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: GWW
+  cik: '0000277135'
+  company_name: W. W. Grainger
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HAL
+  cik: '0000045012'
+  company_name: Halliburton
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: HAS
+  cik: 0000046080
+  company_name: Hasbro
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HBAN
+  cik: 0000049196
+  company_name: Huntington Bancshares
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HCA
+  cik: 0000860730
+  company_name: HCA Healthcare
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: HD
+  cik: 0000354950
+  company_name: Home Depot (The)
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: HIG
+  cik: 0000874766
+  company_name: Hartford (The)
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HII
+  cik: 0001501585
+  company_name: Huntington Ingalls Industries
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HLT
+  cik: 0001585689
+  company_name: Hilton Worldwide
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HON
+  cik: 0000773840
+  company_name: Honeywell
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: HOOD
+  cik: 0001783879
+  company_name: Robinhood Markets
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HPE
+  cik: 0001645590
+  company_name: Hewlett Packard Enterprise
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: HPQ
+  cik: '0000047217'
+  company_name: HP Inc.
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HRL
+  cik: 0000048465
+  company_name: Hormel Foods
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HSIC
+  cik: 0001000228
+  company_name: Henry Schein
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HST
+  cik: '0001070750'
+  company_name: Host Hotels & Resorts
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HSY
+  cik: '0000047111'
+  company_name: Hershey Company (The)
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: HUBB
+  cik: 0000048898
+  company_name: Hubbell Incorporated
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: HUM
+  cik: 0000049071
+  company_name: Humana
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: HWM
+  cik: 0000004281
+  company_name: Howmet Aerospace
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: IBKR
+  cik: 0001381197
+  company_name: Interactive Brokers
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: IBM
+  cik: '0000051143'
+  company_name: IBM
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ICE
+  cik: 0001571949
+  company_name: Intercontinental Exchange
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: IDXX
+  cik: 0000874716
+  company_name: Idexx Laboratories
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: IEX
+  cik: 0000832101
+  company_name: IDEX Corporation
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: IFF
+  cik: '0000051253'
+  company_name: International Flavors & Fragrances
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: INCY
+  cik: 0000879169
+  company_name: Incyte
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: INTC
+  cik: 0000050863
+  company_name: Intel
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: INTU
+  cik: 0000896878
+  company_name: Intuit
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: INVH
+  cik: 0001687229
+  company_name: Invitation Homes
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: IP
+  cik: '0000051434'
+  company_name: International Paper
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: IQV
+  cik: 0001478242
+  company_name: IQVIA
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: IR
+  cik: 0001699150
+  company_name: Ingersoll Rand
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: IRM
+  cik: 0001020569
+  company_name: Iron Mountain
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ISRG
+  cik: '0001035267'
+  company_name: Intuitive Surgical
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: IT
+  cik: 0000749251
+  company_name: Gartner
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ITW
+  cik: 0000049826
+  company_name: Illinois Tool Works
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: IVZ
+  cik: 0000914208
+  company_name: Invesco
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: J
+  cik: 0000052988
+  company_name: Jacobs Solutions
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: JBHT
+  cik: 0000728535
+  company_name: J.B. Hunt
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: JBL
+  cik: 0000898293
+  company_name: Jabil
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: JCI
+  cik: 0000833444
+  company_name: Johnson Controls
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: JKHY
+  cik: 0000779152
+  company_name: Jack Henry & Associates
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: JNJ
+  cik: '0000200406'
+  company_name: Johnson & Johnson
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: JPM
+  cik: 0000019617
+  company_name: JPMorgan Chase
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: KDP
+  cik: 0001418135
+  company_name: Keurig Dr Pepper
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: KEY
+  cik: 0000091576
+  company_name: KeyCorp
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: KEYS
+  cik: '0001601046'
+  company_name: Keysight Technologies
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: KHC
+  cik: 0001637459
+  company_name: Kraft Heinz
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: KIM
+  cik: 0000879101
+  company_name: Kimco Realty
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: KKR
+  cik: 0001404912
+  company_name: KKR & Co.
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: KLAC
+  cik: 0000319201
+  company_name: KLA Corporation
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: KMB
+  cik: 0000055785
+  company_name: Kimberly-Clark
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: KMI
+  cik: '0001506307'
+  company_name: Kinder Morgan
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: KO
+  cik: '0000021344'
+  company_name: Coca-Cola Company (The)
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: KR
+  cik: 0000056873
+  company_name: Kroger
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: KVUE
+  cik: 0001944048
+  company_name: Kenvue
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: L
+  cik: 0000060086
+  company_name: Loews Corporation
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LDOS
+  cik: 0001336920
+  company_name: Leidos
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LEN
+  cik: 0000920760
+  company_name: Lennar
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: LH
+  cik: 0000920148
+  company_name: Labcorp
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LHX
+  cik: 0000202058
+  company_name: L3Harris
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LII
+  cik: 0001069202
+  company_name: Lennox International
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LIN
+  cik: 0001707925
+  company_name: Linde plc
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: LITE
+  cik: 0001633978
+  company_name: Lumentum
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LLY
+  cik: 0000059478
+  company_name: Lilly (Eli)
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: LMT
+  cik: 0000936468
+  company_name: Lockheed Martin
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: LNG
+  cik: '0000003570'
+  company_name: Cheniere Energy, Inc.
+  category: LNG infrastructure
+  category_slug: lng_infrastructure
+  sector: energy
+  source_sets:
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: LNT
+  cik: '0000352541'
+  company_name: Alliant Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LOW
+  cik: '0000060667'
+  company_name: Lowe's
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: LRCX
+  cik: 0000707549
+  company_name: Lam Research
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: LULU
+  cik: 0001397187
+  company_name: Lululemon Athletica
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: LUV
+  cik: 0000092380
+  company_name: Southwest Airlines
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LVS
+  cik: '0001300514'
+  company_name: Las Vegas Sands
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LYB
+  cik: 0001489393
+  company_name: LyondellBasell
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: LYV
+  cik: 0001335258
+  company_name: Live Nation Entertainment
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MA
+  cik: 0001141391
+  company_name: Mastercard
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MAA
+  cik: 0000912595
+  company_name: Mid-America Apartment Communities
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MAR
+  cik: 0001048286
+  company_name: Marriott International
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MAS
+  cik: 0000062996
+  company_name: Masco
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MCD
+  cik: 0000063908
+  company_name: McDonald's
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: MCHP
+  cik: 0000827054
+  company_name: Microchip Technology
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MCK
+  cik: 0000927653
+  company_name: McKesson Corporation
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MCO
+  cik: 0001059556
+  company_name: Moody's Corporation
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MDLZ
+  cik: 0001103982
+  company_name: Mondelez International
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MDT
+  cik: '0001613103'
+  company_name: Medtronic
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MET
+  cik: 0001099219
+  company_name: MetLife
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: META
+  cik: 0001326801
+  company_name: Meta Platforms
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: MGM
+  cik: 0000789570
+  company_name: MGM Resorts
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MKC
+  cik: '0000063754'
+  company_name: McCormick & Company
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MLM
+  cik: 0000916076
+  company_name: Martin Marietta Materials
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MMM
+  cik: '0000066740'
+  company_name: 3M
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MNST
+  cik: 0000865752
+  company_name: Monster Beverage
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MO
+  cik: 0000764180
+  company_name: Altria
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MOS
+  cik: 0001285785
+  company_name: Mosaic Company (The)
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MPC
+  cik: 0001510295
+  company_name: Marathon Petroleum
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MPWR
+  cik: 0001280452
+  company_name: Monolithic Power Systems
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MRK
+  cik: 0000310158
+  company_name: Merck & Co.
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: MRNA
+  cik: 0001682852
+  company_name: Moderna
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MRSH
+  cik: 0000062709
+  company_name: Marsh McLennan
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MRVL
+  cik: 0001835632
+  company_name: Marvell Technology, Inc.
+  category: semiconductor/networking
+  category_slug: semiconductor_networking
+  sector: information_technology
+  source_sets:
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: MS
+  cik: 0000895421
+  company_name: Morgan Stanley
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: MSCI
+  cik: 0001408198
+  company_name: MSCI Inc.
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MSFT
+  cik: 0000789019
+  company_name: Microsoft
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: MSI
+  cik: 0000068505
+  company_name: Motorola Solutions
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MTB
+  cik: '0000036270'
+  company_name: M&T Bank
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MTD
+  cik: '0001037646'
+  company_name: Mettler Toledo
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: MU
+  cik: '0000723125'
+  company_name: Micron Technology
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: NCLH
+  cik: '0001513761'
+  company_name: Norwegian Cruise Line Holdings
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: NDAQ
+  cik: 0001120193
+  company_name: Nasdaq, Inc.
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: NDSN
+  cik: '0000072331'
+  company_name: Nordson Corporation
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: NEE
+  cik: 0000753308
+  company_name: NextEra Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: NEM
+  cik: '0001164727'
+  company_name: Newmont
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: NFLX
+  cik: 0001065280
+  company_name: Netflix
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: NI
+  cik: '0001111711'
+  company_name: NiSource
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: NKE
+  cik: 0000320187
+  company_name: Nike, Inc.
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: NOC
+  cik: '0001133421'
+  company_name: Northrop Grumman
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: NOW
+  cik: '0001373715'
+  company_name: ServiceNow
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: NRG
+  cik: 0001013871
+  company_name: NRG Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: NSC
+  cik: '0000702165'
+  company_name: Norfolk Southern
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: NTAP
+  cik: '0001002047'
+  company_name: NetApp
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: NTRS
+  cik: '0000073124'
+  company_name: Northern Trust
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: NUE
+  cik: 0000073309
+  company_name: Nucor
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: NVDA
+  cik: 0001045810
+  company_name: Nvidia
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: NVR
+  cik: 0000906163
+  company_name: NVR, Inc.
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: NWSA
+  cik: 0001564708
+  company_name: News Corp (Class A)
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: NXPI
+  cik: '0001413447'
+  company_name: NXP Semiconductors
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: O
+  cik: 0000726728
+  company_name: Realty Income
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ODFL
+  cik: 0000878927
+  company_name: Old Dominion
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: OKE
+  cik: 0001039684
+  company_name: Oneok
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: OMC
+  cik: 0000029989
+  company_name: Omnicom Group
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: 'ON'
+  cik: 0001097864
+  company_name: ON Semiconductor
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ORCL
+  cik: 0001341439
+  company_name: Oracle Corporation
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: ORLY
+  cik: 0000898173
+  company_name: O’Reilly Automotive
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: OTIS
+  cik: 0001781335
+  company_name: Otis Worldwide
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: OXY
+  cik: 0000797468
+  company_name: Occidental Petroleum
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PANW
+  cik: '0001327567'
+  company_name: Palo Alto Networks
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: PAYX
+  cik: '0000723531'
+  company_name: Paychex
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PCAR
+  cik: '0000075362'
+  company_name: Paccar
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PCG
+  cik: 0001004980
+  company_name: PG&E Corporation
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PEG
+  cik: 0000788784
+  company_name: Public Service Enterprise Group
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PEP
+  cik: '0000077476'
+  company_name: PepsiCo
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: PFE
+  cik: 0000078003
+  company_name: Pfizer
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PFG
+  cik: 0001126328
+  company_name: Principal Financial Group
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PG
+  cik: 0000080424
+  company_name: Procter & Gamble
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: PGR
+  cik: 0000080661
+  company_name: Progressive Corporation
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: PH
+  cik: '0000076334'
+  company_name: Parker Hannifin
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PHM
+  cik: 0000822416
+  company_name: PulteGroup
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PKG
+  cik: '0000075677'
+  company_name: Packaging Corporation of America
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PLD
+  cik: 0001045609
+  company_name: Prologis
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: PLTR
+  cik: '0001321655'
+  company_name: Palantir Technologies
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PM
+  cik: 0001413329
+  company_name: Philip Morris International
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: PNC
+  cik: '0000713676'
+  company_name: PNC Financial Services
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PNR
+  cik: '0000077360'
+  company_name: Pentair
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PNW
+  cik: '0000764622'
+  company_name: Pinnacle West Capital
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PODD
+  cik: 0001145197
+  company_name: Insulet Corporation
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: POOL
+  cik: 0000945841
+  company_name: Pool Corporation
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PPG
+  cik: 0000079879
+  company_name: PPG Industries
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PPL
+  cik: 0000922224
+  company_name: PPL Corporation
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PRU
+  cik: '0001137774'
+  company_name: Prudential Financial
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PSA
+  cik: 0001393311
+  company_name: Public Storage
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PSKY
+  cik: '0002041610'
+  company_name: Paramount Skydance Corporation
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PSX
+  cik: '0001534701'
+  company_name: Phillips 66
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PTC
+  cik: 0000857005
+  company_name: PTC Inc.
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: PWR
+  cik: 0001050915
+  company_name: Quanta Services
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: PYPL
+  cik: 0001633917
+  company_name: PayPal
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: Q
+  cik: 0002058873
+  company_name: Qnity Electronics
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: QCOM
+  cik: 0000804328
+  company_name: Qualcomm
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: RCL
+  cik: 0000884887
+  company_name: Royal Caribbean Group
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: REG
+  cik: 0000910606
+  company_name: Regency Centers
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: REGN
+  cik: 0000872589
+  company_name: Regeneron Pharmaceuticals
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: RF
+  cik: 0001281761
+  company_name: Regions Financial Corporation
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: RJF
+  cik: '0000720005'
+  company_name: Raymond James Financial
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: RL
+  cik: 0001037038
+  company_name: Ralph Lauren Corporation
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: RMD
+  cik: 0000943819
+  company_name: ResMed
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ROK
+  cik: 0001024478
+  company_name: Rockwell Automation
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ROL
+  cik: 0000084839
+  company_name: Rollins, Inc.
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ROP
+  cik: 0000882835
+  company_name: Roper Technologies
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ROST
+  cik: '0000745732'
+  company_name: Ross Stores
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: RSG
+  cik: 0001060391
+  company_name: Republic Services
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: RTX
+  cik: 0000101829
+  company_name: RTX Corporation
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: RVTY
+  cik: 0000031791
+  company_name: Revvity
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SATS
+  cik: '0001415404'
+  company_name: EchoStar
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SBAC
+  cik: '0001034054'
+  company_name: SBA Communications
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SBUX
+  cik: 0000829224
+  company_name: Starbucks
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: SCHW
+  cik: 0000316709
+  company_name: Charles Schwab Corporation
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: SHW
+  cik: 0000089800
+  company_name: Sherwin-Williams
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: SJM
+  cik: 0000091419
+  company_name: J.M. Smucker Company (The)
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SLB
+  cik: 0000087347
+  company_name: Schlumberger
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: SMCI
+  cik: '0001375365'
+  company_name: Supermicro
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: SNA
+  cik: 0000091440
+  company_name: Snap-on
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SNDK
+  cik: '0002023554'
+  company_name: Sandisk
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SNOW
+  cik: '0001640147'
+  company_name: Snowflake Inc.
+  category: data/cloud software
+  category_slug: data_cloud_software
+  sector: data/cloud software
+  source_sets:
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: SNPS
+  cik: 0000883241
+  company_name: Synopsys
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: SO
+  cik: 0000092122
+  company_name: Southern Company
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: SOLV
+  cik: 0001964738
+  company_name: Solventum
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SPG
+  cik: '0001063761'
+  company_name: Simon Property Group
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: SPGI
+  cik: '0000064040'
+  company_name: S&P Global
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: SRE
+  cik: 0001032208
+  company_name: Sempra
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: STE
+  cik: 0001757898
+  company_name: Steris
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: STLD
+  cik: '0001022671'
+  company_name: Steel Dynamics
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: STT
+  cik: 0000093751
+  company_name: State Street Corporation
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: STX
+  cik: 0001137789
+  company_name: Seagate Technology
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: STZ
+  cik: 0000016918
+  company_name: Constellation Brands
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SW
+  cik: 0002005951
+  company_name: Smurfit Westrock
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SWK
+  cik: 0000093556
+  company_name: Stanley Black & Decker
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SWKS
+  cik: '0000004127'
+  company_name: Skyworks Solutions
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SYF
+  cik: '0001601712'
+  company_name: Synchrony Financial
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: SYK
+  cik: '0000310764'
+  company_name: Stryker Corporation
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: SYY
+  cik: 0000096021
+  company_name: Sysco
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: T
+  cik: '0000732717'
+  company_name: AT&T
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TAP
+  cik: '0000024545'
+  company_name: Molson Coors Beverage Company
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TDG
+  cik: '0001260221'
+  company_name: TransDigm Group
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TDY
+  cik: 0001094285
+  company_name: Teledyne Technologies
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TECH
+  cik: 0000842023
+  company_name: Bio-Techne
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TEL
+  cik: 0001385157
+  company_name: TE Connectivity
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TER
+  cik: 0000097210
+  company_name: Teradyne
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TFC
+  cik: 0000092230
+  company_name: Truist Financial
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TGT
+  cik: 0000027419
+  company_name: Target Corporation
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TJX
+  cik: 0000109198
+  company_name: TJX Companies
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TKO
+  cik: 0001973266
+  company_name: TKO Group Holdings
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TMO
+  cik: 0000097745
+  company_name: Thermo Fisher Scientific
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: TMUS
+  cik: 0001283699
+  company_name: T-Mobile US
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TPL
+  cik: 0001811074
+  company_name: Texas Pacific Land Corporation
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TPR
+  cik: '0001116132'
+  company_name: Tapestry, Inc.
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TRGP
+  cik: 0001389170
+  company_name: Targa Resources
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TRMB
+  cik: 0000864749
+  company_name: Trimble Inc.
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TROW
+  cik: 0001113169
+  company_name: T. Rowe Price
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TRV
+  cik: 0000086312
+  company_name: Travelers Companies (The)
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TSCO
+  cik: 0000916365
+  company_name: Tractor Supply
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TSLA
+  cik: 0001318605
+  company_name: Tesla, Inc.
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: TSN
+  cik: 0000100493
+  company_name: Tyson Foods
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TT
+  cik: 0001466258
+  company_name: Trane Technologies
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TTD
+  cik: 0001671933
+  company_name: Trade Desk (The)
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TTWO
+  cik: 0000946581
+  company_name: Take-Two Interactive
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: TXN
+  cik: 0000097476
+  company_name: Texas Instruments
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: TXT
+  cik: '0000217346'
+  company_name: Textron
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: TYL
+  cik: 0000860731
+  company_name: Tyler Technologies
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: UAL
+  cik: '0000100517'
+  company_name: United Airlines Holdings
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: UBER
+  cik: '0001543151'
+  company_name: Uber
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: UDR
+  cik: 0000074208
+  company_name: UDR, Inc.
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: UHS
+  cik: 0000352915
+  company_name: Universal Health Services
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ULTA
+  cik: 0001403568
+  company_name: Ulta Beauty
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: UNH
+  cik: '0000731766'
+  company_name: UnitedHealth Group
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: UNP
+  cik: 0000100885
+  company_name: Union Pacific Corporation
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: UPS
+  cik: 0001090727
+  company_name: United Parcel Service
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: URI
+  cik: '0001067701'
+  company_name: United Rentals
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: USB
+  cik: '0000036104'
+  company_name: U.S. Bancorp
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: V
+  cik: '0001403161'
+  company_name: Visa Inc.
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: VEEV
+  cik: 0001393052
+  company_name: Veeva Systems
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: VICI
+  cik: 0001705696
+  company_name: Vici Properties
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: VLO
+  cik: '0001035002'
+  company_name: Valero Energy
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: VLTO
+  cik: 0001967680
+  company_name: Veralto
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: VMC
+  cik: 0001396009
+  company_name: Vulcan Materials Company
+  category: Materials
+  category_slug: materials
+  sector: Materials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: VRSK
+  cik: '0001442145'
+  company_name: Verisk Analytics
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: VRSN
+  cik: '0001014473'
+  company_name: Verisign
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: VRT
+  cik: '0001674101'
+  company_name: Vertiv
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: VRTX
+  cik: 0000875320
+  company_name: Vertex Pharmaceuticals
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: VST
+  cik: 0001692819
+  company_name: Vistra Corp .
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: VTR
+  cik: '0000740260'
+  company_name: Ventas
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: VTRS
+  cik: 0001792044
+  company_name: Viatris
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: VZ
+  cik: '0000732712'
+  company_name: Verizon
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: WAB
+  cik: 0000943452
+  company_name: Wabtec
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WAT
+  cik: 0001000697
+  company_name: Waters Corporation
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WBD
+  cik: '0001437107'
+  company_name: Warner Bros. Discovery
+  category: Communication Services
+  category_slug: communication_services
+  sector: Communication Services
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: WDAY
+  cik: 0001327811
+  company_name: Workday, Inc.
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WDC
+  cik: '0000106040'
+  company_name: Western Digital
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WEC
+  cik: 0000783325
+  company_name: WEC Energy Group
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WELL
+  cik: '0000766704'
+  company_name: Welltower
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: WFC
+  cik: 0000072971
+  company_name: Wells Fargo
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: WM
+  cik: 0000823768
+  company_name: Waste Management
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WMB
+  cik: '0000107263'
+  company_name: Williams Companies
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full128_us_addition
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: WMT
+  cik: 0000104169
+  company_name: Walmart
+  category: Consumer Staples
+  category_slug: consumer_staples
+  sector: Consumer Staples
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: WRB
+  cik: '0000011544'
+  company_name: W. R. Berkley Corporation
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WSM
+  cik: 0000719955
+  company_name: Williams-Sonoma, Inc.
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WST
+  cik: '0000105770'
+  company_name: West Pharmaceutical Services
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WTW
+  cik: '0001140536'
+  company_name: Willis Towers Watson
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WY
+  cik: '0000106535'
+  company_name: Weyerhaeuser
+  category: Real Estate
+  category_slug: real_estate
+  sector: Real Estate
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: WYNN
+  cik: 0001174922
+  company_name: Wynn Resorts
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: XEL
+  cik: 0000072903
+  company_name: Xcel Energy
+  category: Utilities
+  category_slug: utilities
+  sector: Utilities
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: XOM
+  cik: 0000034088
+  company_name: ExxonMobil
+  category: Energy
+  category_slug: energy
+  sector: Energy
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - full78_base
+  universe_tier: tier1_sp500_plus_current
+- ticker: XYL
+  cik: '0001524472'
+  company_name: Xylem Inc.
+  category: Industrials
+  category_slug: industrials
+  sector: Industrials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: XYZ
+  cik: '0001512673'
+  company_name: Block, Inc.
+  category: Financials
+  category_slug: financials
+  sector: Financials
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: YUM
+  cik: '0001041061'
+  company_name: Yum! Brands
+  category: Consumer Discretionary
+  category_slug: consumer_discretionary
+  sector: Consumer Discretionary
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current
+- ticker: ZBH
+  cik: 0001136869
+  company_name: Zimmer Biomet
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ZBRA
+  cik: 0000877212
+  company_name: Zebra Technologies
+  category: Information Technology
+  category_slug: information_technology
+  sector: Information Technology
+  source_sets:
+  - sp500_constituent
+  universe_tier: tier1_sp500_plus_current
+- ticker: ZTS
+  cik: 0001555280
+  company_name: Zoetis
+  category: Health Care
+  category_slug: health_care
+  sector: Health Care
+  source_sets:
+  - sp500_constituent
+  - current_full238
+  - sector_depth_pack
+  universe_tier: tier1_sp500_plus_current

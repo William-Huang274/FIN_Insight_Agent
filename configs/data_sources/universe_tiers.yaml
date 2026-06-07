@@ -1,0 +1,35 @@
+schema_version: fin_agent_universe_tiers_v0_1
+tiers:
+  tier0_current_full238:
+    description: Current 238-company regression baseline.
+    manifest_path: data/manifests/tier0_full238_manifest.jsonl
+    source_config_path: configs/sector_depth_full238_us_v0_2_10k_fy2023_2025.yaml
+    promotion_role: regression_baseline
+    expected_company_count: 238
+  tier1_sp500_plus_current:
+    description: S&P 500 plus current covered companies, deduplicated by CIK/company with alternate share-class tickers retained.
+    manifest_path: data/manifests/tier1_sp500_plus_current_manifest.jsonl
+    source_config_path: configs/sector_depth_full238_us_v0_2_10k_fy2023_2025.yaml
+    optional_external_universe_csv: data/external_reference/sp500_constituents.csv
+    promotion_role: next_main_evidence_pool
+    target_company_count: 500
+    latest_build_company_count: 505
+    latest_build_note: S&P 500 has 503 symbols / 500 unique CIKs in the downloaded reference; current full238 adds 5 non-S&P companies.
+  tier2_supply_chain_supplement:
+    description: SEC issuers plus non-US public-reporting companies that fill upstream/downstream supply-chain gaps for sector-depth analysis.
+    manifest_path: data/manifests/tier2_supply_chain_supplement_manifest.jsonl
+    combined_manifest_path: data/manifests/tier1_plus_tier2_supply_chain_manifest.jsonl
+    source_config_path: configs/data_sources/tier2_supply_chain_supplements_v0_1.yaml
+    promotion_role: sector_depth_supply_chain_supplement
+    activation_policy: Enable only for explicit supply-chain, relationship, cross-sector readthrough, supplier/customer, commodity-input, or global value-chain questions.
+    base_tier: tier1_sp500_plus_current
+    latest_build_company_count: 98
+    latest_combined_company_count: 603
+    latest_build_note: Built as 83 SEC-download eligible companies plus 15 non-US public disclosure companies; combined Tier1+Tier2 has 588 SEC-download eligible companies and 15 global-public disclosure companies.
+promotion_gates:
+  require_unique_ticker: true
+  require_unique_cik_for_sec_download: true
+  require_company_name: true
+  require_sector_or_source_gap: true
+  allow_non_sec_primary_disclosure_if_source_profile_present: true
+  relationship_r1_r5_required_before_mainline_vector_promotion: true

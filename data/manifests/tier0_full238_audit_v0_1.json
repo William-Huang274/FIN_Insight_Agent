@@ -1,0 +1,8 @@
+{
+  "schema_version": "fin_agent_universe_manifest_audit_v0.1",
+  "status": "pass",
+  "company_count": 238,
+  "missing_cik_count": 0,
+  "sec_download_eligible_count": 238,
+  "errors": []
+}

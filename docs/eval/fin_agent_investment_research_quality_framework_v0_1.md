@@ -8,6 +8,8 @@
 
 配套执行文档：`docs/eval/fin_agent_layered_quality_execution_plan_v0_1.md`
 
+上游数据资产评估：`docs/eval/fin_agent_chunk_quality_eval_framework_v0_1.md`
+
 ## 1. 目标
 
 本体系用于评价 Fin Agent 对投研报告、金融问题回答和多轮投研对话的质量。它不只判断“有没有引用证据”，而是判断答案是否对用户的金融问题有实际研究价值，同时保持证据边界、风险平衡、工具权限和合规安全。
@@ -58,6 +60,25 @@
 Hard gate 不由加权分数抵消。比如 source-boundary 失败时，即使语言很好，也不能通过。
 
 ## 4. 质量维度
+
+### D0 Chunk 与检索资产质量
+
+检查本地知识库的 chunk、EvidenceObject、BM25、ObjectBM25 和历史 dense 资产是否清楚、对齐、可审计。
+
+高质量表现：
+
+- 10-K / 10-Q / 8-K 的切片规则、目标长度、overlap 和最小长度有明确合同。
+- chunk 长度分布稳定，没有系统性超长、过短或表格断裂。
+- 10-K / 10-Q 核心 item 覆盖稳定，缺口能定位到 ticker / fiscal year / form。
+- chunk id、EvidenceObject、BM25 records 一致，ObjectBM25 / SQLite FTS 存在。
+- dense / FAISS / Milvus 是否属于主线或实验层有明确说明，避免把历史索引误当成当前默认召回。
+
+硬门控：
+
+- chunk 解析失败、重复 chunk id、表格起止标记断裂，fail。
+- EvidenceObject 与 chunk 不一致，fail。
+- BM25 metadata records 与 evidence rows 不一致，fail。
+- 主 SEC filing 核心 item 缺失比例超过门槛，fail。
 
 ### D1 问题理解与任务授权
 

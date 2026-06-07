@@ -76,6 +76,8 @@ def test_research_lead_planning_skill_has_cost_aware_route_policy() -> None:
     prompt = load_research_skill("research_lead_planning")
 
     assert "Route Selection Policy" in prompt
+    assert "Professional Scoping Heuristics" in prompt
+    assert "scope_decision" in prompt
     assert "route_selection_reason" in prompt
     assert "route_cost_tier" in prompt
     assert "milvus_semantic" in prompt
@@ -110,3 +112,26 @@ def test_specialist_role_specific_skills_use_v0_2_or_later_quality_contracts() -
         assert "Required Output Structure" in prompt
         assert "Failure / Evidence Gap Handling" in prompt
         assert "Quality Rubric" in prompt
+
+
+def test_research_skills_share_structured_evidence_gap_request_protocol() -> None:
+    shared = load_research_skill("shared_evidence_boundary")
+    coverage = load_research_skill("coverage_reflection")
+    verifier = load_research_skill("verification")
+
+    assert "evidence_gap_requests" in shared
+    assert "additional_company_scope" in shared
+    assert "relationship_confirmation" in shared
+    assert "specialist_evidence_gap_requests" in coverage
+    assert "needs_universe_rescope" in verifier
+
+    for skill_id in [
+        "fundamental_analysis",
+        "industry_supply_chain_analysis",
+        "market_valuation_analysis",
+        "risk_counterevidence",
+        "memo_writer",
+        "judgment_plan_aggregation",
+        "renderer",
+    ]:
+        assert "evidence_gap_requests" in load_research_skill(skill_id)

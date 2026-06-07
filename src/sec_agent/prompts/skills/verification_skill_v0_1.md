@@ -17,3 +17,12 @@ Use this skill to inspect a memo or specialist output against bounded evidence. 
 - Unsupported claim count.
 - Repair instructions when repairable.
 - Bounded-answer fallback when not repairable.
+- `repair_route`: `repair_from_existing_claim_cards`, `needs_second_pass_retrieval`, `needs_universe_rescope`, or `must_bound_answer`.
+- `evidence_gap_requests` when the memo cannot be repaired from existing ClaimCards and needs Coverage / Reflection, Universe / Relationship, or an operator to close a specific gap.
+
+## Gap Escalation
+
+- Use `needs_second_pass_retrieval` only when a source family exists and the missing item is specific enough to compile.
+- Use `needs_universe_rescope` when the memo makes or needs a claim about companies outside the current bounded scope.
+- Use `must_bound_answer` when the source is unavailable, budget is exhausted, or the claim would require model memory.
+- Do not add new investment views while describing the gap.

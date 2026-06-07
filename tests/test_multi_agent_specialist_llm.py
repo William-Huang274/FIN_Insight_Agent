@@ -33,6 +33,7 @@ def test_specialist_llm_accepts_valid_memolet_json() -> None:
     assert fake.calls[0]["response_format"] == {"type": "json_object"}
     assert "tools" not in fake.calls[0]
     assert "Do not call tools" in fake.calls[0]["messages"][0]["content"]
+    assert "evidence_gap_requests" in fake.calls[0]["messages"][0]["content"]
     assert "Fundamental Analysis Skill" in fake.calls[0]["messages"][0]["content"]
     assert "Shared Evidence Boundary Skill" in fake.calls[0]["messages"][0]["content"]
 

@@ -24,6 +24,24 @@ SPECIALIST_AGENT_IDS = {
 
 SPECIALIST_STATUSES = {"pass", "partial", "blocked", "stubbed"}
 CONFIDENCE_LEVELS = {"unknown", "low", "medium", "high"}
+EVIDENCE_GAP_REQUEST_TYPES = {
+    "missing_metric",
+    "missing_source_family",
+    "additional_company_scope",
+    "relationship_confirmation",
+    "market_field",
+    "industry_context",
+    "counterevidence_test",
+}
+EVIDENCE_GAP_OWNER_AGENTS = {
+    "coverage_reflection",
+    "universe_relationship",
+    "sec_operator",
+    "eight_k_operator",
+    "market_operator",
+    "industry_operator",
+}
+EVIDENCE_GAP_BLOCKING_LEVELS = {"blocking", "material", "optional"}
 RELATIONSHIP_TYPES = {"peer", "competitor", "customer", "supplier", "sector", "macro_sensitive", "other"}
 ECONOMIC_LINK_TYPES = {
     "direct_customer_supplier",
@@ -108,6 +126,11 @@ def normalize_specialist_memolet(payload: Mapping[str, Any] | None = None, *, ag
     observations = [_normalize_observation(item) for item in raw.get("observations") or [] if isinstance(item, Mapping)]
     unsupported_claims = [_normalize_claim_item(item) for item in raw.get("unsupported_claims") or []]
     conflicts = [_normalize_claim_item(item) for item in raw.get("conflicts") or []]
+    evidence_gap_requests = [
+        _normalize_evidence_gap_request(item, owner_agent="coverage_reflection")
+        for item in raw.get("evidence_gap_requests") or []
+        if isinstance(item, Mapping)
+    ]
     status = str(raw.get("status") or ("partial" if unsupported_claims else "pass")).strip()
     if status not in SPECIALIST_STATUSES:
         status = "partial"
@@ -120,6 +143,7 @@ def normalize_specialist_memolet(payload: Mapping[str, Any] | None = None, *, ag
         "observations": observations,
         "unsupported_claims": unsupported_claims,
         "conflicts": conflicts,
+        "evidence_gap_requests": evidence_gap_requests,
         "confidence": _normalize_confidence(raw.get("confidence")),
         "metadata": dict(raw.get("metadata") or {}),
     }
@@ -159,6 +183,18 @@ def validate_specialist_memolet(
         if not item.get("claim"):
             errors.append({"type": "unsupported_claim_text_required", "agent_id": agent_id, "index": index})
 
+    for index, request in enumerate(memolet["evidence_gap_requests"]):
+        if request["request_type"] not in EVIDENCE_GAP_REQUEST_TYPES:
+            errors.append({"type": "invalid_evidence_gap_request_type", "agent_id": agent_id, "index": index, "value": request["request_type"]})
+        if request["owner_agent"] not in EVIDENCE_GAP_OWNER_AGENTS:
+            errors.append({"type": "invalid_evidence_gap_owner_agent", "agent_id": agent_id, "index": index, "value": request["owner_agent"]})
+        if request["blocking_level"] not in EVIDENCE_GAP_BLOCKING_LEVELS:
+            errors.append({"type": "invalid_evidence_gap_blocking_level", "agent_id": agent_id, "index": index, "value": request["blocking_level"]})
+        if request["source_family"] and request["source_family"] not in RELATIONSHIP_EVIDENCE_SOURCES:
+            errors.append({"type": "invalid_evidence_gap_source_family", "agent_id": agent_id, "index": index, "value": request["source_family"]})
+        if not request["reason"]:
+            errors.append({"type": "evidence_gap_request_reason_required", "agent_id": agent_id, "index": index})
+
     return {
         "status": "fail" if errors else "pass",
         "schema_version": SPECIALIST_MEMOLET_SCHEMA_VERSION,
@@ -180,6 +216,7 @@ def build_stub_specialist_memolets(agent_ids: list[str]) -> list[dict[str, Any]]
                     "observations": [],
                     "unsupported_claims": [],
                     "conflicts": [],
+                    "evidence_gap_requests": [],
                     "confidence": "unknown",
                     "metadata": {"stubbed": True},
                 }
@@ -540,6 +577,7 @@ def aggregate_specialist_judgment_plan(
     supported_claims: list[dict[str, Any]] = []
     unsupported_claims: list[dict[str, Any]] = []
     conflicts: list[dict[str, Any]] = []
+    evidence_gap_requests: list[dict[str, Any]] = []
     blocked_specialist_agents: list[str] = []
 
     for memolet in normalized:
@@ -563,6 +601,8 @@ def aggregate_specialist_judgment_plan(
             unsupported_claims.append({"agent_id": agent_id, **item})
         for item in memolet["conflicts"]:
             conflicts.append({"agent_id": agent_id, **item})
+        for item in memolet["evidence_gap_requests"]:
+            evidence_gap_requests.append({"agent_id": agent_id, **item})
 
     supported_claims = _rank_supported_claims(supported_claims)
     unsupported_claims, unsupported_overflow = _cap_unsupported_claims_by_agent(unsupported_claims)
@@ -583,6 +623,7 @@ def aggregate_specialist_judgment_plan(
         memo_outline=memo_outline,
         conflicts=conflicts,
         unsupported_claims=unsupported_claims,
+        evidence_gap_requests=evidence_gap_requests,
         source_boundary_notes=source_boundary_notes,
     )
     memo_thesis_pack = _memo_thesis_pack_from_claims(
@@ -591,6 +632,7 @@ def aggregate_specialist_judgment_plan(
         memo_thesis_plan=memo_thesis_plan,
         conflicts=conflicts,
         unsupported_claims=unsupported_claims,
+        evidence_gap_requests=evidence_gap_requests,
         source_boundary_notes=source_boundary_notes,
     )
     memo_constraints = _memo_constraints(
@@ -598,6 +640,7 @@ def aggregate_specialist_judgment_plan(
         supported_claims=supported_claims,
         unsupported_claims=unsupported_claims,
         conflicts=conflicts,
+        evidence_gap_requests=evidence_gap_requests,
         blocked_specialist_agents=blocked_specialist_agents,
         reflection_report=reflection_report,
         source_boundary_notes=source_boundary_notes,
@@ -608,12 +651,13 @@ def aggregate_specialist_judgment_plan(
     )
     return {
         "schema_version": JUDGMENT_PLAN_SCHEMA_VERSION,
-        "status": "fail" if errors else "partial" if unsupported_claims or conflicts else "pass",
+        "status": "fail" if errors else "partial" if unsupported_claims or conflicts or evidence_gap_requests else "pass",
         "specialist_output_count": len(normalized),
         "source_agent_ids": [item["agent_id"] for item in normalized],
         "supported_claims": supported_claims,
         "unsupported_claims": unsupported_claims,
         "conflicts": conflicts,
+        "evidence_gap_requests": evidence_gap_requests,
         "blocked_specialist_agents": blocked_specialist_agents,
         "source_boundary_notes": source_boundary_notes,
         "memo_outline": memo_outline,
@@ -1496,6 +1540,7 @@ def _memo_thesis_plan_from_claims(
     memo_outline: list[dict[str, Any]],
     conflicts: list[dict[str, Any]],
     unsupported_claims: list[dict[str, Any]],
+    evidence_gap_requests: list[dict[str, Any]] | None = None,
     source_boundary_notes: list[dict[str, Any]],
 ) -> dict[str, Any]:
     thesis_claim = _primary_thesis_claim(supported_claims)
@@ -1534,6 +1579,7 @@ def _memo_thesis_plan_from_claims(
         "section_sequence": sections,
         "conflict_count": len(conflicts),
         "unsupported_claim_count": len(unsupported_claims),
+        "evidence_gap_request_count": len(evidence_gap_requests or []),
         "source_boundary_note_count": len(source_boundary_notes),
         "plan_policy": "claim_card_ranked_thesis_first_no_new_facts_v0_1",
     }
@@ -1553,6 +1599,7 @@ def _memo_thesis_pack_from_claims(
     memo_thesis_plan: Mapping[str, Any],
     conflicts: list[dict[str, Any]],
     unsupported_claims: list[dict[str, Any]],
+    evidence_gap_requests: list[dict[str, Any]] | None = None,
     source_boundary_notes: list[dict[str, Any]],
 ) -> dict[str, Any]:
     thesis_claim = _primary_thesis_claim(supported_claims) or {}
@@ -1613,10 +1660,15 @@ def _memo_thesis_pack_from_claims(
             unsupported_claims=unsupported_claims,
             source_boundary_notes=source_boundary_notes,
         ),
+        "evidence_gap_requests": [
+            _compact_evidence_gap_for_pack(item)
+            for item in (evidence_gap_requests or [])[:3]
+        ],
         "evidence_strength_map": {
             "supported_claim_count": len(supported_claims),
             "supported_memo_slots": supported_slots,
             "source_family_counts": source_family_counts,
+            "evidence_gap_request_count": len(evidence_gap_requests or []),
             "source_boundary_note_count": len(source_boundary_notes),
         },
         "source_boundary": "verified ClaimCards only; relationship and industry rows are scope/context evidence, not reported financial facts",
@@ -1641,6 +1693,20 @@ def _memo_pack_claim(claim: Mapping[str, Any]) -> dict[str, Any]:
         "missing_confirmations": _unique_strings(claim.get("missing_confirmations"))[:3],
         "claim_rank_score": _bounded_int(claim.get("claim_rank_score"), default=0, minimum=0, maximum=100),
         "claim_rank_bucket": str(claim.get("claim_rank_bucket") or ""),
+    }
+
+
+def _compact_evidence_gap_for_pack(value: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "agent_id": str(value.get("agent_id") or "").strip(),
+        "request_type": str(value.get("request_type") or "").strip(),
+        "owner_agent": str(value.get("owner_agent") or "coverage_reflection").strip(),
+        "tickers": _unique_upper(value.get("tickers"))[:6],
+        "metric_families": _unique_strings(value.get("metric_families"))[:6],
+        "source_family": str(value.get("source_family") or "").strip(),
+        "blocking_level": str(value.get("blocking_level") or "material").strip(),
+        "can_answer_bounded_without": bool(value.get("can_answer_bounded_without", True)),
+        "reason": str(value.get("reason") or "").strip()[:240],
     }
 
 
@@ -1786,6 +1852,7 @@ def build_multi_agent_memo_draft(
     supported = [dict(item) for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)]
     conflicts = [dict(item) for item in judgment.get("conflicts") or [] if isinstance(item, Mapping)]
     unsupported = [dict(item) for item in judgment.get("unsupported_claims") or [] if isinstance(item, Mapping)]
+    evidence_gap_requests = [dict(item) for item in judgment.get("evidence_gap_requests") or [] if isinstance(item, Mapping)]
     allowed = bool(judgment.get("memo_writer_allowed", True)) and bool(verification.get("memo_writer_allowed", True))
     common = {
         "schema_version": MEMO_DRAFT_SCHEMA_VERSION,
@@ -1798,6 +1865,7 @@ def build_multi_agent_memo_draft(
         "evidence_strength": _evidence_strength_summary(supported),
         "counterevidence": conflicts,
         "missing_evidence": list(constraints.get("missing_evidence") or []),
+        "evidence_gap_requests": evidence_gap_requests,
         "unsupported_claims_excluded": unsupported,
         "memo_constraints": dict(constraints),
         "memo_outline": [dict(item) for item in judgment.get("memo_outline") or [] if isinstance(item, Mapping)],
@@ -2351,6 +2419,7 @@ def _memo_constraints(
     supported_claims: list[dict[str, Any]],
     unsupported_claims: list[dict[str, Any]],
     conflicts: list[dict[str, Any]],
+    evidence_gap_requests: list[dict[str, Any]] | None = None,
     blocked_specialist_agents: list[str],
     reflection_report: Mapping[str, Any] | None,
     source_boundary_notes: list[dict[str, Any]],
@@ -2378,6 +2447,9 @@ def _memo_constraints(
         required_caveats.append("preserve_counterevidence_and_conflicts")
     if missing_evidence:
         required_caveats.append("state_missing_evidence_and_bounded_answer_scope")
+    gap_requests = [dict(item) for item in evidence_gap_requests or [] if isinstance(item, Mapping)]
+    if gap_requests:
+        required_caveats.append("preserve_specialist_evidence_gap_requests_for_coverage_reflection")
     if reflection.get("bounded_answer_allowed"):
         required_caveats.append("bounded_answer_only_until_gaps_close")
     overflow = dict(unsupported_claim_overflow or {})
@@ -2390,8 +2462,10 @@ def _memo_constraints(
         "forbidden_inputs": ["raw_rows", "physical_paths", "tool_calls", "retrieval_requests"],
         "required_caveats": required_caveats,
         "missing_evidence": missing_evidence,
+        "evidence_gap_requests": gap_requests,
         "conflict_count": len(conflicts),
         "unsupported_claim_count": len(unsupported_claims),
+        "evidence_gap_request_count": len(gap_requests),
         "unsupported_claim_overflow_count": int(overflow.get("overflow_count") or 0),
         "unsupported_claim_overflow_by_agent": dict(overflow.get("by_agent") or {}),
         "blocked_specialist_agents": list(blocked_specialist_agents),
@@ -2760,6 +2834,25 @@ def _normalize_claim_item(value: Any) -> dict[str, Any]:
             "evidence_refs": _unique_strings(value.get("evidence_refs") or value.get("refs")),
         }
     return {"claim": str(value or "").strip(), "reason": "", "evidence_refs": []}
+
+
+def _normalize_evidence_gap_request(value: Mapping[str, Any], *, owner_agent: str = "coverage_reflection") -> dict[str, Any]:
+    tickers = _unique_upper(value.get("tickers") or value.get("ticker_scope") or value.get("ticker"))
+    request_type = str(value.get("request_type") or value.get("type") or "missing_source_family").strip()
+    blocking_level = str(value.get("blocking_level") or value.get("materiality") or "material").strip()
+    if blocking_level not in EVIDENCE_GAP_BLOCKING_LEVELS:
+        blocking_level = "material"
+    resolved_owner = str(value.get("owner_agent") or owner_agent or "coverage_reflection").strip()
+    return {
+        "request_type": request_type,
+        "owner_agent": resolved_owner,
+        "tickers": tickers,
+        "metric_families": _unique_strings(value.get("metric_families") or value.get("metrics") or value.get("metric_scope")),
+        "source_family": str(value.get("source_family") or "").strip(),
+        "reason": str(value.get("reason") or value.get("rationale") or "").strip(),
+        "blocking_level": blocking_level,
+        "can_answer_bounded_without": bool(value.get("can_answer_bounded_without", True)),
+    }
 
 
 def _relationship_budget(payload: Mapping[str, Any]) -> dict[str, int]:

@@ -14,6 +14,7 @@ Use this skill only after Coverage / Reflection and Verifier constraints allow a
 - Treat `memo_thesis_pack` as the primary writing brief when present; use `memo_thesis_plan` to order the memo.
 - Treat `supported_claims` as fallback verified ClaimCard observations only when a thesis pack is absent.
 - If `memo_thesis_pack.status` or `memo_thesis_plan.status` is `ready`, return `answer_status=draft` with non-empty `memo_claims`. Use `blocked_by_judgment_plan` only when no verified memo-ready thesis or driver claim exists.
+- If `memo_constraints.evidence_gap_requests` contains blocking or material unresolved requests, preserve them as source limitations or `evidence_gaps_but_actionable`; do not write a full-strength conclusion that depends on those gaps.
 - Follow `memo_outline` when present. Each supported section should cite the relevant claim cards.
 - Emit `memo_generation_policy=thesis_led_claim_cards_v0_1`. Emit only a compact `memo_thesis_plan` carrying status, primary thesis id, primary thesis, and direction; do not copy the full plan or thesis pack.
 - Preserve `ticker_scope`, `metric_scope`, `memo_slot`, `materiality`, `direction`, `evidence_refs`, `source_families`, `caveats`, and `missing_confirmations`.
@@ -31,6 +32,7 @@ Use this skill only after Coverage / Reflection and Verifier constraints allow a
 - Industry or supply-chain context only as background or hypothesis support.
 - Counterevidence and what would weaken the view.
 - Source limitations and missing evidence.
+- Actionable evidence gaps only when they came from verified judgment constraints; do not invent new retrieval requests.
 
 ## Forbidden
 

@@ -44,7 +44,9 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 
 - If no SEC or ledger rows are present, return `status: "blocked"` or `status: "partial"` and explain the missing source family in `unsupported_claims`.
 - If rows exist but do not support the requested metric or company, do not infer. Mark the exact missing ticker/metric/period.
-- Do not ask for tools or fresh retrieval; the graph handles second-pass retrieval outside this role.
+- Do not ask for tools or fresh retrieval in prose; the graph handles second-pass retrieval outside this role.
+- When a missing company-reported metric, period, source family, or ledger row would materially change the memo, add `evidence_gap_requests` with `request_type="missing_metric"` or `request_type="missing_source_family"`, `owner_agent="coverage_reflection"` or `owner_agent="sec_operator"`, and a concise reason.
+- If the current ticker scope is too narrow for the fundamental question, add `evidence_gap_requests` with `request_type="additional_company_scope"` and `owner_agent="universe_relationship"` instead of adding companies from memory.
 
 ## Quality Rubric
 

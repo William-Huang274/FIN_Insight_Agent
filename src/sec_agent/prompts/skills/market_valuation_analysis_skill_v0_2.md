@@ -48,6 +48,9 @@ Use this skill only for the Market / Valuation Analyst. Produce local observatio
 - If no market snapshot row is present, return `partial` or `blocked` and list the missing market field.
 - If valuation fields are absent, do not invent multiples, price targets, or peer comps.
 - If only company evidence is present, do not pretend a market reaction was observed.
+- Do not ask for tools or fresh market data in prose.
+- When a missing return window, valuation multiple, volume/volatility field, event date, or snapshot timing would materially affect the market read, add `evidence_gap_requests` with `request_type="market_field"`, `owner_agent="coverage_reflection"` or `owner_agent="market_operator"`, and `source_family="market_snapshot"`.
+- If the requested peer comparison needs additional tickers before market data is useful, add `evidence_gap_requests` with `request_type="additional_company_scope"` and `owner_agent="universe_relationship"`.
 
 ## Quality Rubric
 

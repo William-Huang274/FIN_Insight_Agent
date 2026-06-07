@@ -50,7 +50,11 @@ Use this skill only for the Industry / Supply Chain Analyst. Produce bounded obs
 - If relationship evidence is expected but absent, return `partial` and add an unsupported claim describing the missing relationship graph context.
 - If industry rows exist but no relationship rows exist, give context-only observations and say which relationship dimension is missing.
 - If relationship rows exist but cannot support the requested chain, cite them only as scope evidence and mark the missing transmission mechanism.
-- Do not ask for tools or expand the universe; the Universe Relationship Agent owns expansion.
+- Do not ask for tools or expand the universe in prose; the Universe Relationship Agent owns expansion.
+- If the bounded rows imply the current ticker scope is too narrow, add `evidence_gap_requests` with `request_type="additional_company_scope"`, `owner_agent="universe_relationship"`, the missing lens, and the relevant candidate ticker class if known.
+- If a customer/supplier/infrastructure/dependency link needs confirmation, add `evidence_gap_requests` with `request_type="relationship_confirmation"`, `owner_agent="universe_relationship"` or `owner_agent="coverage_reflection"`, `source_family="relationship_graph"`, and hypothesis-only caveats.
+- If an industry, macro, commodity, regulatory, demand, or power/load context row is missing, add `evidence_gap_requests` with `request_type="industry_context"`, `owner_agent="industry_operator"`, and `source_family="industry_snapshot"`.
+- If bounded evidence supports only a hypothesis, clearly state what company-confirming metric or source family Coverage should try next; do not replace it with generic industry commentary.
 
 ## Quality Rubric
 

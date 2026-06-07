@@ -434,6 +434,7 @@ def _build_messages(
         "Prefer memo-ready investment implications over row summaries; downstream will rank ClaimCards by evidence support, role fit, and memo readiness. "
         "Each observation must state the role-specific investment implication, not just restate the row. "
         "Each supported observation should satisfy one required_claim_slot; if a slot is unsupported, add one material missing_confirmation or top unsupported_claim instead of a generic gap list. "
+        "Use evidence_gap_requests only for actionable upstream work that Coverage Reflection, Universe Relationship, or an Operator can compile; do not use it as a generic caveat list. "
         "Do not infer sequential change, prior-period trend, YoY/QoQ growth, acceleration, deceleration, or trajectory unless the cited evidence_refs include at least two relevant period rows; otherwise write it as an unsupported_claim or caveat. "
         "If relationship_summary is present, treat it as bounded hypothesis context only and cite its evidence_refs. "
         "If the bounded rows do not support your role-specific lens, put the gap in unsupported_claims. "
@@ -492,6 +493,18 @@ def _system_prompt(agent_id: str) -> str:
         ],
         "unsupported_claims": [{"claim": "unsupported named fact", "reason": "not in bounded evidence"}],
         "conflicts": [{"claim": "conflict or counterevidence", "reason": "why it conflicts"}],
+        "evidence_gap_requests": [
+            {
+                "request_type": "missing_metric | missing_source_family | additional_company_scope | relationship_confirmation | market_field | industry_context | counterevidence_test",
+                "owner_agent": "coverage_reflection | universe_relationship | sec_operator | eight_k_operator | market_operator | industry_operator",
+                "tickers": ["TICKER"],
+                "metric_families": ["metric_family"],
+                "source_family": "primary_sec_filing | company_authored_unaudited_sec_filing | market_snapshot | industry_snapshot | relationship_graph",
+                "reason": "why this bounded gap matters",
+                "blocking_level": "blocking | material | optional",
+                "can_answer_bounded_without": True,
+            }
+        ],
         "confidence": "low | medium | high",
     }
     return "\n\n".join(
@@ -503,6 +516,7 @@ def _system_prompt(agent_id: str) -> str:
             "You may only use bounded evidence rows and summaries in the input.",
             "Every supported observation must cite evidence_refs from known_evidence_refs.",
             "If a named fact, relationship, number, or causal claim is not supported by bounded evidence, put it in unsupported_claims.",
+            "If your role can identify a material missing source, metric, ticker, relationship confirmation, or market/industry field, put a structured evidence_gap_requests item in the output. Do not call tools.",
             f"SpecialistMemolet schema hint:\n{_json_for_prompt(schema_hint)}",
         ]
     )
@@ -624,6 +638,7 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
             "observations": [],
             "unsupported_claims": [],
             "conflicts": [],
+            "evidence_gap_requests": [],
             "confidence": "low | medium | high",
         },
     }

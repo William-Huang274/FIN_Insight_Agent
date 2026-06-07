@@ -461,6 +461,7 @@
 - [x] Run cloud expanded A3/S4 Coverage / Reflection gate from the focused-ledger A2 artifact: `20260607_expanded_a3_cloud_coverage_reflection_gate_v0_1` passed `4/4`; superseded by the full combined ledger + 603 assets A3 run below.
 - [x] Run cloud expanded A4/S5 and A5/S6-S8 after a cloud LLM provider key is configured; `20260607_expanded_a4_cloud_full_combined_603_assets_specialist_gate_deepseek_v0_2` and `20260607_expanded_a5_cloud_full_combined_603_assets_judgment_memo_gate_deepseek_v0_1` passed `2/2`.
 - [x] Rerun A2/A3 with a verified full combined Tier1+Tier2 exact-value ledger before promoting expanded full-chain; `20260607_expanded_a2_cloud_full_combined_603_assets_operator_gate_v0_1` and `20260607_expanded_a3_cloud_full_combined_603_assets_coverage_reflection_gate_v0_1` passed with full combined ledger plus 603 market/industry assets.
+- [x] Add Workbench A6 eval runners and summary wrapper for `expanded_a6_full_chain_smoke` and `expanded_a6_full_chain_main`, with transient API key env injection and local contract tests `84 passed`.
 - [ ] Run A6 small-batch full-chain / multi-turn expanded gate over 10-20 cases before promoting the expanded path as the default agent route.
 - [ ] Add R3 entity resolution registry for external counterparties, subsidiaries, aliases, ticker, and CIK.
 - [ ] Add R4 relationship verifier hard gate into Router/Specialist path so exposure/news/partner rows cannot be rewritten as direct customer/supplier.

@@ -193,6 +193,7 @@ class StartEvalRunRequest(BaseModel):
     eval_id: str
     job_id: str | None = None
     profile_id: str | None = None
+    api_key_value: str | None = None
 
 
 class CancelRunRequest(BaseModel):
@@ -788,6 +789,7 @@ def create_app(
                 eval_id=payload.eval_id,
                 job_id=job.job_id,
                 profile=profile,
+                api_key_value=payload.api_key_value,
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc

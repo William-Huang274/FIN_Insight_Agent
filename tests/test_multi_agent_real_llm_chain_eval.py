@@ -153,6 +153,44 @@ def test_exact_lookup_real_retrieval_accepts_structured_ledger_first_without_bge
     assert score["checks"]["evidence_operators.sec_search_runtime_ledger_rows_present"] is True
 
 
+def test_real_llm_chain_tool_budget_excludes_cached_calls() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "cached_budget_unit",
+        "category": "standard_memo",
+        "expected_execution_mode": "standard_memo",
+        "required_agents": ["research_lead", "sec_operator", "memo_writer", "renderer"],
+        "expected_operator_agents": ["sec_operator"],
+        "expected_tool_names": ["sec_search_filings"],
+        "max_tool_calls_total_lte": 1,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["research_lead", "sec_operator", "memo_writer", "renderer"],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "tool_call_ledger": {
+            "records": [
+                {"agent_id": "sec_operator", "tool_name": "sec_search_filings", "status": "ok", "row_count": 2},
+                {"agent_id": "sec_operator", "tool_name": "sec_search_filings", "status": "cached", "row_count": 2},
+                {"agent_id": "sec_operator", "tool_name": "sec_search_filings", "status": "cached", "row_count": 2},
+            ]
+        },
+        "memo_answer": {"answer_status": "draft"},
+        "rendered_answer": "bounded answer",
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["tool_call_count"] == 3
+    assert score["budgeted_tool_call_count"] == 1
+    assert score["cached_tool_call_count"] == 2
+    assert score["checks"]["evidence_operators.tool_budget_lte"] is True
+
+
 def test_multi_agent_real_llm_chain_scoring_rejects_memo_fallback_from_summary() -> None:
     module = _load_script_module()
     case = _read_jsonl(FIXTURE_PATH)[0]

@@ -94,6 +94,27 @@
     }
   ],
   "stage_gates": {
+    "chunk_quality": {
+      "required_case_pass_rate": 1.0,
+      "required_checks": [
+        "chunk_rows_present",
+        "parse_errors_absent",
+        "chunk_ids_present",
+        "duplicate_chunk_ids_absent",
+        "table_markers_balanced",
+        "char_boundaries_valid",
+        "chunk_length_extremes_bounded",
+        "short_chunk_rate_bounded",
+        "long_chunk_rate_bounded",
+        "split_block_parts_complete",
+        "split_overlap_present",
+        "primary_core_item_coverage_bounded",
+        "evidence_rows_match_chunks",
+        "evidence_ids_unique",
+        "bm25_records_match_evidence",
+        "object_bm25_present"
+      ]
+    },
     "research_lead": {
       "required_case_pass_rate": 1.0,
       "required_checks": [

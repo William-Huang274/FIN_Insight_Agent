@@ -55,8 +55,8 @@ def main(argv: list[str] | None = None) -> int:
     activation_summary = _read_json(args.activation_summary)
     relationship_summary = _read_json(args.relationship_summary) if args.relationship_summary.exists() else {}
     evidence_summary = _read_json(args.evidence_summary)
-    relationship_artifact_root = Path(relationship_summary.get("output_dir") or args.relationship_summary.parent)
-    evidence_artifact_root = Path(evidence_summary.get("output_dir") or args.evidence_summary.parent)
+    relationship_artifact_root = s3._summary_artifact_root(relationship_summary, args.relationship_summary)
+    evidence_artifact_root = s3._summary_artifact_root(evidence_summary, args.evidence_summary)
     cases = _selected_cases(_coverage_cases(activation_summary, evidence_summary), args.case_id)
     run_id = args.run_id or _default_run_id()
     output_dir = args.output_dir / run_id
@@ -158,10 +158,17 @@ def _s3_args_from_summary(evidence_summary: Mapping[str, Any]) -> argparse.Names
         object_bm25_index_dir=_path_or_default(config.get("object_bm25_index_ref"), s3.DEFAULT_SECTOR_DEPTH_OBJECT_BM25),
         ledger_store_path=_path_or_default(config.get("ledger_store_ref"), s3.DEFAULT_LEDGER_STORE),
         market_evidence_path=_path_or_default(config.get("market_evidence_ref"), s3.DEFAULT_MARKET_EVIDENCE),
+        market_catalog_path=_optional_path(config.get("market_catalog_ref")),
         industry_evidence_path=_path_or_default(config.get("industry_evidence_ref"), s3.DEFAULT_INDUSTRY_EVIDENCE),
+        industry_snapshot_db_path=_optional_path(config.get("industry_snapshot_db_ref")),
         sector_depth_pack_path=_path_or_default(config.get("sector_depth_pack_ref"), s3.DEFAULT_SECTOR_DEPTH_PACK),
-        market_snapshot_id=s3.DEFAULT_MARKET_SNAPSHOT_ID,
-        market_as_of_date=s3.DEFAULT_MARKET_AS_OF_DATE,
+        milvus_db_path=_optional_path(config.get("milvus_db_ref")),
+        milvus_collection_name=str(config.get("milvus_collection_name") or ""),
+        milvus_vector_kinds=",".join(str(item) for item in config.get("milvus_vector_kinds") or []),
+        milvus_top_k=int(config.get("milvus_top_k") or 40),
+        embedding_model=str(config.get("embedding_model") or ""),
+        market_snapshot_id=str(config.get("market_snapshot_id") or s3.DEFAULT_MARKET_SNAPSHOT_ID),
+        market_as_of_date=str(config.get("market_as_of_date") or s3.DEFAULT_MARKET_AS_OF_DATE),
         bge_model=_path_or_default(config.get("bge_model_ref"), s3.DEFAULT_BGE_MODEL),
         bge_device=str(config.get("bge_device") or "auto"),
         context_runner=str(config.get("context_runner") or "in_process"),
@@ -179,6 +186,13 @@ def _path_or_default(value: Any, default: Path) -> Path:
     text = str(value or "").strip()
     if not text or text.startswith(".../") or text.startswith("...\\"):
         return default
+    return Path(text)
+
+
+def _optional_path(value: Any) -> Path | None:
+    text = str(value or "").strip()
+    if not text or text.startswith(".../") or text.startswith("...\\"):
+        return None
     return Path(text)
 
 

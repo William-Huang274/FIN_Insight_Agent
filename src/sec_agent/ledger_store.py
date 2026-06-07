@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import re
 from pathlib import Path
@@ -12,6 +13,7 @@ METRIC_FAMILY_ALIASES = {
     "capex": ["capital_expenditure_proxy", "capital_expenditures", "capital_expenditure"],
     "capital_expenditure": ["capex", "capital_expenditure_proxy", "capital_expenditures"],
     "capital_expenditures": ["capex", "capital_expenditure_proxy", "capital_expenditure"],
+    "margin": ["gross_margin", "operating_margin", "operating_income", "net_income", "revenue", "total_revenue"],
     "gross_margin": ["margin"],
     "operating_margin": ["margin"],
     "revenue": ["revenues", "net_revenue", "net_sales", "sales_revenue"],
@@ -66,61 +68,29 @@ def write_ledger_store(
 
 
 class LedgerStoreWriter:
-    def __init__(self, db_path: str | Path, *, duckdb_threads: int | None = None) -> None:
+    def __init__(
+        self,
+        db_path: str | Path,
+        *,
+        duckdb_threads: int | None = None,
+        transaction_commit_rows: int = 50_000,
+    ) -> None:
         self.db_path = Path(db_path)
         self.duckdb_threads = duckdb_threads
+        self.transaction_commit_rows = max(0, int(transaction_commit_rows))
         self.con: Any = None
         self.row_count = 0
+        self._transaction_open = False
+        self._next_commit_row = self.transaction_commit_rows
 
     def __enter__(self) -> "LedgerStoreWriter":
         import duckdb
 
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.con = duckdb.connect(str(self.db_path))
-        if self.duckdb_threads:
-            self.con.execute(f"PRAGMA threads={max(1, int(self.duckdb_threads))}")
-        self.con.execute("DROP TABLE IF EXISTS ledger_facts")
-        self.con.execute("DROP TABLE IF EXISTS ledger_store_metadata")
-        self.con.execute(
-            """
-            CREATE TABLE ledger_facts (
-                metric_id_tail VARCHAR,
-                object_id VARCHAR,
-                source_evidence_id VARCHAR,
-                ticker VARCHAR,
-                fiscal_year INTEGER,
-                source_fiscal_year INTEGER,
-                period VARCHAR,
-                period_role VARCHAR,
-                form_type VARCHAR,
-                source_type VARCHAR,
-                source_tier VARCHAR,
-                period_end VARCHAR,
-                period_type VARCHAR,
-                duration_months INTEGER,
-                fiscal_period VARCHAR,
-                metric_family VARCHAR,
-                metric_role VARCHAR,
-                metric_name VARCHAR,
-                raw_value_text VARCHAR,
-                display_value_zh VARCHAR,
-                value DOUBLE,
-                value_text VARCHAR,
-                unit VARCHAR,
-                section VARCHAR,
-                row_label VARCHAR,
-                column_label VARCHAR,
-                cell_kind VARCHAR,
-                table_object_id VARCHAR,
-                table_title VARCHAR,
-                active_group VARCHAR,
-                row_index INTEGER,
-                source_text VARCHAR,
-                record_title VARCHAR,
-                payload_json VARCHAR
-            )
-            """
-        )
+        _configure_duckdb_connection(self.con, duckdb_threads=self.duckdb_threads)
+        _create_empty_ledger_store_tables(self.con)
+        self._begin_transaction()
         return self
 
     def append_rows(self, rows: list[dict[str, Any]]) -> None:
@@ -137,20 +107,120 @@ class LedgerStoreWriter:
             rows,
         )
         self.row_count += len(rows)
+        if self.transaction_commit_rows and self.row_count >= self._next_commit_row:
+            self._commit_transaction()
+            self._begin_transaction()
+            self._next_commit_row = self.row_count + self.transaction_commit_rows
 
     def finalize(self, *, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
+        if self._transaction_open:
+            self._commit_transaction()
         _create_indexes(self.con)
         summary = {
             "schema_version": SCHEMA_VERSION,
             "row_count": self.row_count,
-            "metadata": metadata or {},
+            "metadata": {
+                **(metadata or {}),
+                "transaction_commit_rows": self.transaction_commit_rows,
+            },
         }
         self.con.execute("CREATE TABLE ledger_store_metadata AS SELECT ? AS payload_json", [json.dumps(summary, ensure_ascii=False)])
         return summary
 
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
         if self.con is not None:
+            if self._transaction_open:
+                try:
+                    self.con.execute("ROLLBACK")
+                except Exception:
+                    pass
+                self._transaction_open = False
             self.con.close()
+
+    def _begin_transaction(self) -> None:
+        self.con.execute("BEGIN TRANSACTION")
+        self._transaction_open = True
+
+    def _commit_transaction(self) -> None:
+        self.con.execute("COMMIT")
+        self._transaction_open = False
+
+
+class LedgerStoreBulkCsvWriter:
+    def __init__(
+        self,
+        db_path: str | Path,
+        *,
+        duckdb_threads: int | None = None,
+        staging_path: str | Path | None = None,
+    ) -> None:
+        self.db_path = Path(db_path)
+        self.duckdb_threads = duckdb_threads
+        self.staging_path = Path(staging_path) if staging_path else self.db_path.with_name(f"{self.db_path.name}.rows.tsv.tmp")
+        self.row_count = 0
+        self._handle: Any = None
+        self._writer: csv.writer | None = None
+
+    def __enter__(self) -> "LedgerStoreBulkCsvWriter":
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.staging_path.parent.mkdir(parents=True, exist_ok=True)
+        self._handle = self.staging_path.open("w", encoding="utf-8", newline="")
+        self._writer = csv.writer(self._handle, delimiter="\t", lineterminator="\n")
+        self._writer.writerow(LEDGER_FACT_COLUMNS)
+        return self
+
+    def append_rows(self, rows: list[dict[str, Any]]) -> None:
+        if not rows:
+            return
+        self.append_row_values([normalize_ledger_fact_values(row) for row in rows])
+
+    def append_row_values(self, rows: list[list[Any]]) -> None:
+        if not rows:
+            return
+        assert self._writer is not None
+        null_safe_rows = [["\\N" if value is None else value for value in row] for row in rows]
+        self._writer.writerows(null_safe_rows)
+        self.row_count += len(rows)
+
+    def finalize(self, *, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
+        import duckdb
+
+        if self._handle is not None:
+            self._handle.flush()
+            self._handle.close()
+            self._handle = None
+        con = duckdb.connect(str(self.db_path))
+        try:
+            _configure_duckdb_connection(con, duckdb_threads=self.duckdb_threads)
+            _create_empty_ledger_store_tables(con)
+            con.execute(
+                f"""
+                COPY ledger_facts
+                FROM {_duckdb_sql_string(self.staging_path)}
+                (HEADER, DELIMITER '\t', QUOTE '"', ESCAPE '"', NULL '\\N')
+                """
+            )
+            _create_indexes(con)
+            summary = {
+                "schema_version": SCHEMA_VERSION,
+                "row_count": self.row_count,
+                "metadata": {
+                    **(metadata or {}),
+                    "write_mode": "csv_copy",
+                    "staging_csv_path": str(self.staging_path),
+                },
+            }
+            con.execute("CREATE TABLE ledger_store_metadata AS SELECT ? AS payload_json", [json.dumps(summary, ensure_ascii=False)])
+            return summary
+        finally:
+            con.close()
+            if self.staging_path.exists():
+                self.staging_path.unlink()
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        if self._handle is not None:
+            self._handle.close()
+            self._handle = None
 
 
 def query_ledger_facts(
@@ -183,7 +253,7 @@ def query_ledger_facts(
     sql = "SELECT * FROM ledger_facts"
     if where:
         sql += " WHERE " + " AND ".join(where)
-    sql += " ORDER BY ticker, fiscal_year DESC, metric_family, metric_role LIMIT ?"
+    sql += f" ORDER BY {_ledger_fact_order_by_sql()} LIMIT ?"
     params.append(max(1, int(limit)))
     con = duckdb.connect(str(db_path), read_only=True)
     try:
@@ -193,6 +263,50 @@ def query_ledger_facts(
     finally:
         con.close()
     return [_hydrate_runtime_row(row, case_id=case_id) for row in rows]
+
+
+def _ledger_fact_order_by_sql() -> str:
+    text_expr = (
+        "lower(coalesce(metric_name, '') || ' ' || coalesce(row_label, '') || ' ' || "
+        "coalesce(column_label, '') || ' ' || coalesce(table_title, '') || ' ' || coalesce(record_title, ''))"
+    )
+    label_expr = "lower(coalesce(metric_name, '') || ' ' || coalesce(row_label, ''))"
+    return f"""
+        ticker,
+        fiscal_year DESC,
+        CASE WHEN table_object_id IS NOT NULL AND table_object_id <> '' THEN 0 ELSE 1 END,
+        CASE lower(coalesce(period_role, ''))
+            WHEN 'annual' THEN 0
+            WHEN 'ytd' THEN 1
+            WHEN 'qtd' THEN 2
+            ELSE 3
+        END,
+        CASE
+            WHEN lower(coalesce(unit, '')) LIKE 'usd%' THEN 0
+            WHEN lower(coalesce(unit, '')) = 'percent' THEN 1
+            ELSE 2
+        END,
+        CASE lower(coalesce(cell_kind, ''))
+            WHEN 'period_value' THEN 0
+            WHEN 'value' THEN 1
+            WHEN 'change_value' THEN 2
+            WHEN 'percentage' THEN 3
+            ELSE 4
+        END,
+        CASE
+            WHEN metric_family = 'capital_expenditure_proxy'
+                AND regexp_matches({text_expr}, 'additions to property|capital expenditure|capital expenditures|purchases of property') THEN 0
+            WHEN metric_family = 'capital_expenditure_proxy'
+                AND regexp_matches({text_expr}, 'accumulated depreciation|depreciation|buildings and improvements|furniture and equipment') THEN 2
+            WHEN metric_family IN ('revenue', 'total_revenue', 'data_center_revenue', 'cloud_revenue')
+                AND regexp_matches({label_expr}, '(^| )revenue($| )|total revenue|net revenue|net sales|compute & networking|data center|graphics') THEN 0
+            WHEN metric_family IN ('revenue', 'total_revenue', 'data_center_revenue', 'cloud_revenue')
+                AND regexp_matches({text_expr}, 'operating expenses|interest income|interest expense|income tax|tax expense|other income|other, net') THEN 2
+            ELSE 1
+        END,
+        metric_family,
+        metric_role
+    """
 
 
 def read_ledger_store_metadata(db_path: str | Path) -> dict[str, Any]:
@@ -302,6 +416,67 @@ def _metric_id_tail(metric_id: Any) -> str:
     if len(parts) <= 1:
         return str(metric_id or "")
     return "::".join(parts[1:])
+
+
+def _configure_duckdb_connection(con: Any, *, duckdb_threads: int | None = None) -> None:
+    if duckdb_threads:
+        con.execute(f"PRAGMA threads={max(1, int(duckdb_threads))}")
+    try:
+        con.execute("SET preserve_insertion_order=false")
+    except Exception:
+        try:
+            con.execute("PRAGMA preserve_insertion_order=false")
+        except Exception:
+            pass
+
+
+def _create_empty_ledger_store_tables(con: Any) -> None:
+    con.execute("DROP TABLE IF EXISTS ledger_facts")
+    con.execute("DROP TABLE IF EXISTS ledger_store_metadata")
+    con.execute(
+        """
+        CREATE TABLE ledger_facts (
+            metric_id_tail VARCHAR,
+            object_id VARCHAR,
+            source_evidence_id VARCHAR,
+            ticker VARCHAR,
+            fiscal_year INTEGER,
+            source_fiscal_year INTEGER,
+            period VARCHAR,
+            period_role VARCHAR,
+            form_type VARCHAR,
+            source_type VARCHAR,
+            source_tier VARCHAR,
+            period_end VARCHAR,
+            period_type VARCHAR,
+            duration_months INTEGER,
+            fiscal_period VARCHAR,
+            metric_family VARCHAR,
+            metric_role VARCHAR,
+            metric_name VARCHAR,
+            raw_value_text VARCHAR,
+            display_value_zh VARCHAR,
+            value DOUBLE,
+            value_text VARCHAR,
+            unit VARCHAR,
+            section VARCHAR,
+            row_label VARCHAR,
+            column_label VARCHAR,
+            cell_kind VARCHAR,
+            table_object_id VARCHAR,
+            table_title VARCHAR,
+            active_group VARCHAR,
+            row_index INTEGER,
+            source_text VARCHAR,
+            record_title VARCHAR,
+            payload_json VARCHAR
+        )
+        """
+    )
+
+
+def _duckdb_sql_string(path: Path) -> str:
+    return "'" + str(path).replace("'", "''") + "'"
 
 
 def _add_in_filter(where: list[str], params: list[Any], column: str, values: list[Any] | None) -> None:

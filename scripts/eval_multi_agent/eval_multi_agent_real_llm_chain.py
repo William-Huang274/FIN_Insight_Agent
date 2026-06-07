@@ -231,6 +231,7 @@ def score_case(
     memo_status = str(memo.get("answer_status") or "")
     accept_bounded_block = bool(case.get("accept_bounded_block"))
     max_tool_calls = int(case.get("max_tool_calls_total_lte") or 999)
+    budgeted_tool_call_count = _budgeted_tool_call_count(tool_calls)
     activated_scope = set(_string_list(activation.get("focus_tickers")) + _string_list(activation.get("search_scope_tickers")))
     forbidden_scope_hits = sorted(activated_scope & set(_string_list(case.get("forbidden_scope_tickers"))))
     rendered_answer = str(result.get("rendered_answer") or "")
@@ -262,7 +263,7 @@ def score_case(
             "expected_operator_agents_called": set(_string_list(case.get("expected_operator_agents"))) <= {str(call.get("agent_id") or "") for call in tool_calls},
             "expected_tool_names_called": _expected_tool_names_called(case, tool_calls),
             "tool_ownership_valid": _tool_ownership_valid(tool_calls),
-            "tool_budget_lte": len(tool_calls) <= max_tool_calls,
+            "tool_budget_lte": budgeted_tool_call_count <= max_tool_calls,
             "no_budget_loop_break": str(result.get("loop_break_reason") or "") not in {"tool_budget_exhausted", "agent_tool_budget_exhausted"},
             "no_duplicate_loop_break": str(result.get("loop_break_reason") or "") != "duplicate_tool_call_blocked",
             **real_operator_checks,
@@ -324,6 +325,8 @@ def score_case(
         "forbidden_activated_agents": sorted(forbidden_agents & active_agents),
         "forbidden_scope_hits": forbidden_scope_hits,
         "tool_call_count": len(tool_calls),
+        "budgeted_tool_call_count": budgeted_tool_call_count,
+        "cached_tool_call_count": len(tool_calls) - budgeted_tool_call_count,
         "loop_break_reason": result.get("loop_break_reason") or "",
         "memo_status": memo_status,
         "memo_response_language": memo_response_language,
@@ -357,6 +360,11 @@ def _rendered_has_claim_section(rendered_answer: str) -> bool:
 def _rendered_has_evidence_refs(rendered_answer: str) -> bool:
     text = str(rendered_answer or "")
     return "refs=" in text or "证据=" in text
+
+
+def _budgeted_tool_call_count(tool_calls: list[Mapping[str, Any]]) -> int:
+    non_budget_statuses = {"cached", "blocked", "skipped"}
+    return sum(1 for call in tool_calls if str(call.get("status") or "").strip().lower() not in non_budget_statuses)
 
 
 def _expected_response_language(case: Mapping[str, Any]) -> str:

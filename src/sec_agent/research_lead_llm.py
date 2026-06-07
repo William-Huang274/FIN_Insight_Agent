@@ -309,8 +309,11 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
                 "metric_families": ["revenue | margin | capex | cash_flow"],
                 "period_roles": ["ANNUAL | QTD | YTD | TTM"],
                 "evidence_routes": [
-                    "ledger_first | filing_text | 8k_commentary | market_snapshot | industry_snapshot | relationship_graph | risk_text | run_artifact"
+                    "ledger_first | filing_text | 8k_commentary | milvus_semantic | market_snapshot | industry_snapshot | relationship_graph | risk_text | run_artifact"
                 ],
+                "route_selection_reason": "why this route set is the narrowest sufficient source mix",
+                "route_cost_tier": "low | medium | high",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
                 "reason": "why this evidence is needed for the investment question",
             }
         ],
@@ -360,10 +363,14 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
                 "business evidence needs only; do not include BM25 paths, DuckDB paths, index paths, raw file paths, "
                 "or tool-call arguments. Include skip_agents for inactive registry agents. Keep output compact: "
                 "at most 5 evidence requirements, one requirement per source family or business question, short skip reasons, "
-                "and agent_priorities for every active analyst/operator so all-specialist routes are not treated as equal priority."
+                "and agent_priorities for every active analyst/operator so all-specialist routes are not treated as equal priority. "
+                "Every evidence requirement should include route_selection_reason and route_cost_tier. Choose the narrowest "
+                "route set that can answer the business need; add high-cost semantic, industry, market, or relationship routes "
+                "only when query intent requires them."
             ),
             f"AgentActivationPlan schema hint:\n{_json_for_prompt(schema_hint)}",
             f"EvidenceRequirementPlan schema hint:\n{_json_for_prompt(evidence_requirement_schema_hint)}",
+            f"Route choice policy:\n{_json_for_prompt(_route_choice_policy_prompt())}",
             f"Static agent registry:\n{_json_for_prompt(registry)}",
             f"Mode rules:\n{_json_for_prompt(mode_rules)}",
             (
@@ -374,6 +381,60 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
             ),
         ]
     )
+
+
+def _route_choice_policy_prompt() -> dict[str, Any]:
+    return {
+        "schema_version": "sec_agent_research_lead_route_choice_policy_v0.1",
+        "default": "Use the cheapest route set that can prove the requested claim; do not add broad context routes by default.",
+        "routes": {
+            "ledger_first": {
+                "cost_tier": "low",
+                "use_when": "exact reported numeric facts, period-specific metrics, capex, cash flow, margin, RPO, banking ratios",
+                "boundary": "primary exact-value authority; use before semantic/text routes for numeric claims",
+            },
+            "filing_text": {
+                "cost_tier": "medium",
+                "use_when": "10-K/10-Q management discussion, business explanation, segment commentary, text support for ledger facts",
+                "boundary": "company filing text; not a substitute for exact ledger when exact values are requested",
+            },
+            "8k_commentary": {
+                "cost_tier": "medium",
+                "use_when": "earnings release, Exhibit 99, company-authored guidance or management commentary",
+                "boundary": "company-authored unaudited SEC filing context",
+            },
+            "milvus_semantic": {
+                "cost_tier": "high",
+                "use_when": "typed SEC semantic recall for paraphrase, relationship-context, sector-depth, or hard-to-keyword filing text needs",
+                "boundary": "semantic recall supplement only; never exact-value authority and never a replacement for ledger_first",
+            },
+            "market_snapshot": {
+                "cost_tier": "medium",
+                "use_when": "market reaction, valuation, relative return, drawdown, priced-in or divergence questions",
+                "boundary": "context-only market/valuation evidence; cannot overwrite SEC fundamentals",
+            },
+            "industry_snapshot": {
+                "cost_tier": "medium",
+                "use_when": "macro, commodity, interest-rate, demand environment, regulatory or sector context",
+                "boundary": "context-only industry evidence; cannot prove company-level reported facts",
+            },
+            "relationship_graph": {
+                "cost_tier": "high",
+                "use_when": "explicit supply-chain, customer/supplier, relationship, sector readthrough, cross-industry transmission questions",
+                "boundary": "scope or hypothesis context only unless confirmed by cited company filings",
+            },
+            "risk_text": {
+                "cost_tier": "medium",
+                "use_when": "risk-factor text, counterevidence, downside, uncertainty, conflict or source-gap checks",
+                "boundary": "risk/counterevidence support; cite bounded evidence only",
+            },
+            "run_artifact": {
+                "cost_tier": "low",
+                "use_when": "inspect existing run artifacts without new retrieval",
+                "boundary": "artifact inspection only; do not claim new source evidence",
+            },
+        },
+    }
 
 
 def _compact_agent_registry_for_prompt() -> list[dict[str, Any]]:
@@ -400,7 +461,10 @@ def _user_prompt(request: MultiAgentRouteRequest) -> str:
     }
     return (
         "Classify this request and output the bounded activation plan. "
-        "Use only supplied tickers and scope; do not add named facts from memory.\n\n"
+        "Use only supplied tickers and scope; do not add named facts from memory. "
+        "For evidence_requirements, select routes by query type and cost: exact values use ledger_first first; "
+        "market/valuation use market_snapshot; industry/macro use industry_snapshot; relationship readthrough uses relationship_graph; "
+        "milvus_semantic is only typed SEC semantic recall supplement for paraphrase/relationship/sector-depth needs.\n\n"
         f"Request JSON:\n{_json_for_prompt(payload)}"
     )
 
@@ -808,6 +872,10 @@ def _normalize_cost_aware_activation(plan: Mapping[str, Any], route_request: Mul
     mode = str(normalized.get("execution_mode") or "").strip()
     if mode not in {"focused_answer", "standard_memo", "deep_research"}:
         return normalized
+    metadata = dict(normalized.get("metadata") or {})
+    metadata.setdefault("route_selection_policy", "cost_and_query_type_aware_v0_1")
+    metadata.setdefault("route_cost_policy", "cheapest_sufficient_route_set_with_explicit_high_cost_semantic_context")
+    normalized["metadata"] = metadata
     risk_required = _route_request_requires_risk_lens(route_request, normalized)
 
     active = _dedupe([str(agent) for agent in normalized.get("activate_agents") or []])

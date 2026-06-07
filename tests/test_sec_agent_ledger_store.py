@@ -13,7 +13,13 @@ if str(SRC_ROOT) not in sys.path:
 
 from evidence.schema import EvidenceObject  # noqa: E402
 from evidence.structured_extractor import extract_structured_objects  # noqa: E402
-from sec_agent.ledger_store import query_ledger_facts, write_ledger_store  # noqa: E402
+from sec_agent.ledger_store import (  # noqa: E402
+    LedgerStoreBulkCsvWriter,
+    LedgerStoreWriter,
+    query_ledger_facts,
+    read_ledger_store_metadata,
+    write_ledger_store,
+)
 
 
 def _load_interactive_module():
@@ -68,6 +74,208 @@ def test_ledger_store_expands_common_metric_family_aliases(tmp_path: Path) -> No
 
     assert len(rows) == 1
     assert rows[0]["metric_family"] == "capital_expenditure_proxy"
+
+
+def test_ledger_store_margin_alias_matches_gross_margin_rows(tmp_path: Path) -> None:
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                ticker="AMZN",
+                metric_family="gross_margin",
+                metric_id="store_case::AMZN::2026::gross_margin::percentage_rate::qtd",
+                metric_name="Gross margin",
+                raw_value_text="42.1%",
+                display_value_zh="42.1%",
+                value=42.1,
+                unit="percent",
+            )
+        ],
+        store_path,
+    )
+
+    rows = query_ledger_facts(
+        store_path,
+        case_id="case_live",
+        tickers=["AMZN"],
+        years=[2026],
+        filing_types=["10-Q"],
+        metric_families=["margin"],
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["metric_family"] == "gross_margin"
+
+
+def test_ledger_store_margin_alias_includes_income_statement_base_rows(tmp_path: Path) -> None:
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                ticker="AMZN",
+                metric_family="revenue",
+                metric_id="store_case::AMZN::2026::revenue::total_value::qtd",
+                metric_name="Net sales",
+            ),
+            _fact_row(
+                case_id="store_case",
+                ticker="AMZN",
+                metric_family="operating_income",
+                metric_id="store_case::AMZN::2026::operating_income::total_value::qtd",
+                metric_name="Operating income",
+            ),
+        ],
+        store_path,
+    )
+
+    rows = query_ledger_facts(
+        store_path,
+        case_id="case_live",
+        tickers=["AMZN"],
+        years=[2026],
+        filing_types=["10-Q"],
+        metric_families=["margin"],
+    )
+
+    assert {row["metric_family"] for row in rows} == {"operating_income", "revenue"}
+
+
+def test_ledger_store_records_segmented_transaction_commit_rows(tmp_path: Path) -> None:
+    store_path = tmp_path / "ledger.duckdb"
+    with LedgerStoreWriter(store_path, transaction_commit_rows=2) as writer:
+        writer.append_rows([_fact_row(case_id="store_case", ticker="NVDA")])
+        writer.append_rows([_fact_row(case_id="store_case", ticker="MSFT", metric_id="store_case::MSFT::2026::revenue::total_value::qtd")])
+        writer.append_rows([_fact_row(case_id="store_case", ticker="AMZN", metric_id="store_case::AMZN::2026::revenue::total_value::qtd")])
+        writer.finalize(metadata={"purpose": "segmented_commit_smoke"})
+
+    metadata = read_ledger_store_metadata(store_path)
+    rows = query_ledger_facts(store_path, case_id="live_case", years=[2026], metric_families=["revenue"])
+
+    assert metadata["row_count"] == 3
+    assert metadata["metadata"]["transaction_commit_rows"] == 2
+    assert {row["ticker"] for row in rows} == {"AMZN", "MSFT", "NVDA"}
+
+
+def test_bulk_csv_ledger_writer_rehydrates_queryable_store(tmp_path: Path) -> None:
+    store_path = tmp_path / "ledger_csv.duckdb"
+    staging_path = tmp_path / "ledger_rows.tsv"
+    with LedgerStoreBulkCsvWriter(store_path, staging_path=staging_path, duckdb_threads=1) as writer:
+        writer.append_rows([
+            _fact_row(case_id="store_case", table_object_id=None),
+            _fact_row(
+                case_id="store_case",
+                ticker="MSFT",
+                metric_id="store_case::MSFT::2026::capital_expenditure_proxy::additions",
+                metric_family="capital_expenditure_proxy",
+                metric_name="Additions to property and equipment",
+                row_label="Additions to property and equipment",
+                value=-44000.0,
+                unit="usd_millions",
+                period_role="annual",
+                cell_kind="period_value",
+                table_object_id="table_cash_flow",
+            ),
+        ])
+        summary = writer.finalize(metadata={"purpose": "csv_copy_smoke"})
+
+    rows = query_ledger_facts(store_path, case_id="live_case", tickers=["MSFT"], years=[2026], metric_families=["capex"])
+    metadata = read_ledger_store_metadata(store_path)
+
+    assert summary["row_count"] == 2
+    assert rows[0]["row_label"] == "Additions to property and equipment"
+    assert metadata["metadata"]["write_mode"] == "csv_copy"
+    assert not staging_path.exists()
+
+
+def test_ledger_store_prioritizes_capex_table_purchase_rows(tmp_path: Path) -> None:
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                ticker="MSFT",
+                metric_id="store_case::MSFT::2026::capital_expenditure_proxy::narrative",
+                metric_family="capital_expenditure_proxy",
+                metric_name="Cash used in investing decreased",
+                value=24.4,
+                unit="usd_billions",
+                period_role="annual",
+                table_object_id=None,
+            ),
+            _fact_row(
+                case_id="store_case",
+                ticker="MSFT",
+                metric_id="store_case::MSFT::2026::capital_expenditure_proxy::depreciation",
+                metric_family="capital_expenditure_proxy",
+                metric_name="Accumulated depreciation",
+                row_label="Accumulated depreciation",
+                value=-76000.0,
+                unit="usd_millions",
+                period_role="annual",
+                cell_kind="period_value",
+                table_object_id="table_ppe",
+            ),
+            _fact_row(
+                case_id="store_case",
+                ticker="MSFT",
+                metric_id="store_case::MSFT::2026::capital_expenditure_proxy::additions",
+                metric_family="capital_expenditure_proxy",
+                metric_name="Additions to property and equipment",
+                row_label="Additions to property and equipment",
+                value=-44000.0,
+                unit="usd_millions",
+                period_role="annual",
+                cell_kind="period_value",
+                table_object_id="table_cash_flow",
+            ),
+        ],
+        store_path,
+    )
+
+    rows = query_ledger_facts(store_path, case_id="live_case", tickers=["MSFT"], years=[2026], metric_families=["capex"])
+
+    assert rows[0]["row_label"] == "Additions to property and equipment"
+
+
+def test_ledger_store_prioritizes_revenue_rows_over_tax_noise(tmp_path: Path) -> None:
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                ticker="NVDA",
+                metric_id="store_case::NVDA::2026::revenue::tax_noise",
+                metric_family="revenue",
+                metric_name="Income tax expense",
+                row_label="Income tax expense",
+                value=8.6,
+                unit="usd_millions",
+                period_role="annual",
+                cell_kind="period_value",
+                table_object_id="table_income_statement",
+            ),
+            _fact_row(
+                case_id="store_case",
+                ticker="NVDA",
+                metric_id="store_case::NVDA::2026::revenue::net_revenue",
+                metric_family="revenue",
+                metric_name="Net revenue",
+                row_label="Net revenue",
+                value=130000.0,
+                unit="usd_millions",
+                period_role="annual",
+                cell_kind="period_value",
+                table_object_id="table_revenue",
+            ),
+        ],
+        store_path,
+    )
+
+    rows = query_ledger_facts(store_path, case_id="live_case", tickers=["NVDA"], years=[2026], metric_families=["revenue"])
+
+    assert rows[0]["row_label"] == "Net revenue"
 
 
 def test_mcp_ledger_query_relaxes_filing_type_when_metric_row_exists(tmp_path: Path) -> None:

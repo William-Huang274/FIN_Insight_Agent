@@ -72,6 +72,29 @@ def test_role_specific_skill_prompts_truncate_and_fail_closed() -> None:
         research_skill_prompt("not_a_role")
 
 
+def test_research_lead_planning_skill_has_cost_aware_route_policy() -> None:
+    prompt = load_research_skill("research_lead_planning")
+
+    assert "Route Selection Policy" in prompt
+    assert "route_selection_reason" in prompt
+    assert "route_cost_tier" in prompt
+    assert "milvus_semantic" in prompt
+    assert "cannot prove exact values" in prompt
+
+
+def test_market_and_industry_skills_use_source_family_bundle_boundaries() -> None:
+    market = load_research_skill("market_valuation_analysis")
+    industry = load_research_skill("industry_supply_chain_analysis")
+
+    for prompt in (market, industry):
+        assert "source_family_bundle" in prompt
+        assert "selected_source_families" in prompt
+        assert "forbidden_claim_scopes" in prompt
+
+    assert "market rows cannot prove company-reported revenue" in market
+    assert "Industry and relationship evidence can support scope, context, and hypotheses" in industry
+
+
 def test_specialist_role_specific_skills_use_v0_2_or_later_quality_contracts() -> None:
     for skill_id in [
         "fundamental_analysis",

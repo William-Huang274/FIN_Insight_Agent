@@ -87,8 +87,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--object-bm25-index-dir", type=Path, default=Path(os.environ.get("OBJECT_BM25_INDEX_DIR", str(DEFAULT_SECTOR_DEPTH_OBJECT_BM25))))
     parser.add_argument("--ledger-store-path", type=Path, default=Path(os.environ.get("LEDGER_STORE_PATH", str(DEFAULT_LEDGER_STORE))))
     parser.add_argument("--market-evidence-path", type=Path, default=Path(os.environ.get("MARKET_EVIDENCE_PATH", str(DEFAULT_MARKET_EVIDENCE))))
+    parser.add_argument("--market-catalog-path", type=Path, default=Path(os.environ["MARKET_CATALOG_PATH"]) if os.environ.get("MARKET_CATALOG_PATH") else None)
     parser.add_argument("--industry-evidence-path", type=Path, default=Path(os.environ.get("INDUSTRY_EVIDENCE_PATH", str(DEFAULT_INDUSTRY_EVIDENCE))))
+    parser.add_argument("--industry-snapshot-db-path", type=Path, default=Path(os.environ["INDUSTRY_SNAPSHOT_DB_PATH"]) if os.environ.get("INDUSTRY_SNAPSHOT_DB_PATH") else None)
     parser.add_argument("--sector-depth-pack-path", type=Path, default=Path(os.environ.get("SECTOR_DEPTH_PACK_PATH", str(DEFAULT_SECTOR_DEPTH_PACK))))
+    parser.add_argument("--milvus-db-path", type=Path, default=Path(os.environ["MILVUS_DB_PATH"]) if os.environ.get("MILVUS_DB_PATH") else None)
+    parser.add_argument("--milvus-collection-name", default=os.environ.get("MILVUS_COLLECTION_NAME", ""))
+    parser.add_argument("--milvus-vector-kinds", default=os.environ.get("MILVUS_VECTOR_KINDS", ""))
+    parser.add_argument("--milvus-top-k", type=int, default=int(os.environ.get("MILVUS_TOP_K", "40")))
+    parser.add_argument("--embedding-model", default=os.environ.get("MILVUS_EMBEDDING_MODEL", ""))
     parser.add_argument("--market-snapshot-id", default=os.environ.get("MARKET_SNAPSHOT_ID", DEFAULT_MARKET_SNAPSHOT_ID))
     parser.add_argument("--market-as-of-date", default=os.environ.get("MARKET_AS_OF_DATE", DEFAULT_MARKET_AS_OF_DATE))
     parser.add_argument("--bge-model", type=Path, default=Path(os.environ.get("BGE_MODEL", str(DEFAULT_BGE_MODEL))))
@@ -109,7 +116,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     activation_summary = _read_json(args.activation_summary)
     relationship_summary = _read_json(args.relationship_summary) if args.relationship_summary.exists() else {}
-    relationship_artifact_root = Path(relationship_summary.get("output_dir") or args.relationship_summary.parent)
+    relationship_artifact_root = _summary_artifact_root(relationship_summary, args.relationship_summary)
     cases = _selected_cases(_operator_cases(activation_summary), args.case_id)
     run_id = args.run_id or _default_run_id()
     output_dir = args.output_dir / run_id
@@ -165,6 +172,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.strict and summary["gate_status"] != "pass":
         return 1
     return 0
+
+
+def _summary_artifact_root(summary: Mapping[str, Any], summary_path: Path) -> Path:
+    output_dir = str(summary.get("output_dir") or "").strip()
+    if output_dir:
+        candidate = Path(output_dir)
+        if candidate.exists():
+            return candidate
+    return summary_path.parent
 
 
 def _operator_cases(activation_summary: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -263,7 +279,14 @@ def _initial_state(
         "object_bm25_index_dir": str(args.object_bm25_index_dir),
         "ledger_store_path": str(args.ledger_store_path),
         "market_evidence_path": str(args.market_evidence_path),
+        "market_catalog_path": str(args.market_catalog_path or ""),
         "industry_evidence_path": str(args.industry_evidence_path),
+        "industry_snapshot_db_path": str(args.industry_snapshot_db_path or ""),
+        "milvus_db_path": str(args.milvus_db_path or ""),
+        "milvus_collection_name": args.milvus_collection_name,
+        "milvus_vector_kinds": _string_list(args.milvus_vector_kinds),
+        "milvus_top_k": args.milvus_top_k,
+        "embedding_model": args.embedding_model,
         "sector_depth_pack_path": str(args.sector_depth_pack_path),
         "market_snapshot": {"snapshot_id": args.market_snapshot_id, "as_of_date": args.market_as_of_date},
         "market_snapshot_id": args.market_snapshot_id,
@@ -454,8 +477,17 @@ def _aggregate(
             "object_bm25_index_ref": _path_ref(args.object_bm25_index_dir),
             "ledger_store_ref": _path_ref(args.ledger_store_path),
             "market_evidence_ref": _path_ref(args.market_evidence_path),
+            "market_catalog_ref": _path_ref(args.market_catalog_path),
             "industry_evidence_ref": _path_ref(args.industry_evidence_path),
+            "industry_snapshot_db_ref": _path_ref(args.industry_snapshot_db_path),
+            "milvus_db_ref": _path_ref(args.milvus_db_path),
+            "milvus_collection_name": args.milvus_collection_name,
+            "milvus_vector_kinds": _string_list(args.milvus_vector_kinds),
+            "milvus_top_k": args.milvus_top_k,
+            "embedding_model": args.embedding_model,
             "sector_depth_pack_ref": _path_ref(args.sector_depth_pack_path),
+            "market_snapshot_id": args.market_snapshot_id,
+            "market_as_of_date": args.market_as_of_date,
             "bge_model_ref": _path_ref(args.bge_model),
             "bge_device": args.bge_device,
             "context_runner": args.context_runner,
@@ -798,7 +830,9 @@ def _cuda_available() -> bool:
         return False
 
 
-def _path_ref(path: Path) -> str:
+def _path_ref(path: Path | None) -> str:
+    if path is None:
+        return ""
     text = str(path).replace("\\", "/")
     if len(text) <= 96:
         return text

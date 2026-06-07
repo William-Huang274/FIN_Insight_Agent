@@ -59,6 +59,25 @@ def test_research_lead_llm_accepts_activation_plus_evidence_requirement_plan() -
     assert "EvidenceRequirementPlan schema hint" in fake.calls[0]["messages"][0]["content"]
 
 
+def test_research_lead_prompt_exposes_cost_aware_route_selection_policy() -> None:
+    request = _case("Compare NVDA and AMD with valuation, industry context, and semantic filing recall.", "standard_memo", ["NVDA", "AMD"], ["NVDA", "AMD"])
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    system_prompt = fake.calls[0]["messages"][0]["content"]
+    user_prompt = fake.calls[0]["messages"][1]["content"]
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["metadata"]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
+    assert "Route choice policy" in system_prompt
+    assert "route_selection_reason" in system_prompt
+    assert "route_cost_tier" in system_prompt
+    assert "milvus_semantic" in system_prompt
+    assert "semantic recall supplement only" in system_prompt
+    assert "exact values use ledger_first first" in user_prompt
+
+
 def test_research_lead_llm_repairs_invalid_evidence_requirement_owner() -> None:
     request = _case("Analyze AMZN margins with management commentary.", "focused_answer", ["AMZN"], ["AMZN"])
     request["context"]["query_contract"] = _query_contract(["AMZN"])
@@ -290,6 +309,44 @@ def test_research_lead_llm_aligns_focused_followup_market_and_8k_sources() -> No
     requirements = result["evidence_requirement_plan"]["requirements"]
     assert any("market_snapshot" in requirement.get("evidence_routes", []) for requirement in requirements)
     assert any("market_operator" in requirement.get("operator_owners", []) for requirement in requirements)
+
+
+def test_research_lead_llm_preserves_cost_aware_route_metadata_for_mixed_sources() -> None:
+    request = _case(
+        "Compare NVDA and AMD fundamentals, market valuation reaction, industry power context, and hard-to-keyword filing themes.",
+        "standard_memo",
+        ["NVDA", "AMD"],
+        ["NVDA", "AMD"],
+    )
+    request["context"]["query_contract"] = {
+        **_query_contract(["NVDA", "AMD"]),
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+        ],
+        "metric_families": ["revenue", "gross_margin", "capex"],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["allowed_source_families"] = ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": _mixed_route_evidence_plan(["NVDA", "AMD"])})])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["metadata"]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
+    assert {"market_operator", "industry_operator"} <= set(result["activation_plan"]["activate_agents"])
+    assert {"market_snapshot", "industry_snapshot"} <= set(result["activation_plan"]["allowed_source_families"])
+    by_id = {req["requirement_id"]: req for req in result["evidence_requirement_plan"]["requirements"]}
+    assert by_id["req_exact"]["route_cost_tier"] == "low"
+    assert by_id["req_semantic"]["route_cost_tier"] == "high"
+    assert by_id["req_semantic"]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
+    assert "semantic supplement" in by_id["req_semantic"]["route_selection_reason"]
+    assert by_id["req_semantic"]["coverage_requirements"]["vector_kinds"] == ["paraphrase_context"]
+    assert by_id["req_semantic"]["route_intents"][0]["route_cost_tier"] == "high"
+    assert by_id["req_market"]["operator_owners"] == ["market_operator"]
+    assert result["evidence_requirement_plan"]["multi_agent_contract"]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
 
 
 def test_research_lead_llm_demotes_default_sector_pack_path_without_relationship_intent() -> None:
@@ -530,5 +587,75 @@ def _evidence_plan(tickers: list[str]) -> dict[str, Any]:
                 "period_roles": ["QTD", "YTD"],
                 "evidence_routes": ["ledger_first", "filing_text"],
             }
+        ],
+    }
+
+
+def _mixed_route_evidence_plan(tickers: list[str]) -> dict[str, Any]:
+    return {
+        "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+        "requirements": [
+            {
+                "requirement_id": "req_exact",
+                "task_id": "reported_fundamentals",
+                "question": "Need exact reported revenue and margin evidence.",
+                "priority": "primary",
+                "tickers": tickers,
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["revenue", "gross_margin"],
+                "evidence_routes": ["ledger_first"],
+                "route_selection_reason": "Exact values require the low-cost ledger authority first.",
+                "route_cost_tier": "low",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
+            },
+            {
+                "requirement_id": "req_semantic",
+                "task_id": "semantic_theme_recall",
+                "question": "Need semantic supplement for hard-to-keyword filing themes.",
+                "priority": "supporting",
+                "tickers": tickers,
+                "years": [2026],
+                "filing_types": ["10-Q", "10-K"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+                "evidence_routes": ["milvus_semantic"],
+                "coverage_requirements": {"vector_kinds": ["paraphrase_context"]},
+                "route_selection_reason": "Use Milvus as a typed SEC semantic supplement after exact/text routes.",
+                "route_cost_tier": "high",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
+            },
+            {
+                "requirement_id": "req_market",
+                "task_id": "market_reaction",
+                "question": "Need market valuation and reaction context.",
+                "priority": "supporting",
+                "tickers": tickers,
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["market_snapshot"],
+                "metric_families": ["valuation"],
+                "evidence_routes": ["market_snapshot"],
+                "market_fields": ["return_3m", "ev_sales_ttm"],
+                "route_selection_reason": "Market and valuation claims require stamped market snapshot context.",
+                "route_cost_tier": "medium",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
+            },
+            {
+                "requirement_id": "req_industry",
+                "task_id": "industry_context",
+                "question": "Need industry power-demand context.",
+                "priority": "supporting",
+                "tickers": tickers,
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["industry_snapshot"],
+                "metric_families": ["power_demand"],
+                "evidence_routes": ["industry_snapshot"],
+                "route_selection_reason": "Industry context is needed for demand environment but cannot prove company facts.",
+                "route_cost_tier": "medium",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
+            },
         ],
     }

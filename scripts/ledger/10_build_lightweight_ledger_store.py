@@ -17,7 +17,12 @@ for path in (SRC_ROOT, SCRIPTS_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from sec_agent.ledger_store import LEDGER_STORE_CASE_ID, LedgerStoreWriter, normalize_ledger_fact_values  # noqa: E402
+from sec_agent.ledger_store import (  # noqa: E402
+    LEDGER_STORE_CASE_ID,
+    LedgerStoreBulkCsvWriter,
+    LedgerStoreWriter,
+    normalize_ledger_fact_values,
+)
 from cloud import sec_agent_interactive as interactive  # noqa: E402
 
 
@@ -32,12 +37,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--source-batch-bytes",
         type=int,
-        default=32 * 1024 * 1024,
+        default=2 * 1024 * 1024,
         help="Approximate byte range per worker task when --max-rows is not set.",
     )
     parser.add_argument("--workers", type=int, default=1, help="Number of worker processes for ledger row extraction.")
     parser.add_argument("--progress-every", type=int, default=50000, help="Print progress to stderr every N source records.")
     parser.add_argument("--duckdb-threads", type=int, default=max(1, (os.cpu_count() or 4) - 1))
+    parser.add_argument("--transaction-commit-rows", type=int, default=50000)
+    parser.add_argument("--write-mode", choices=["duckdb_executemany", "csv_copy"], default="duckdb_executemany")
+    parser.add_argument("--staging-csv-path", default="", help="Optional TSV staging path for --write-mode csv_copy.")
     parser.add_argument("--years", default="", help="Optional comma-separated fiscal years to keep after ledger extraction.")
     parser.add_argument("--metric-families", default="", help="Optional comma-separated metric families to keep after ledger extraction.")
     return parser.parse_args()
@@ -63,7 +71,8 @@ def main() -> int:
         batch_bytes=max(1, int(args.source_batch_bytes)),
         max_rows=max(0, int(args.max_rows)),
     )
-    with LedgerStoreWriter(tmp_path, duckdb_threads=max(1, int(args.duckdb_threads))) as writer:
+    writer_context = _ledger_writer_context(args, tmp_path)
+    with writer_context as writer:
         for result in _iter_ledger_batch_results(
             batch_iter,
             workers=max(1, int(args.workers)),
@@ -72,11 +81,12 @@ def main() -> int:
         ):
             source_records += int(result["source_record_count"])
             extracted_rows += int(result["ledger_row_count"])
-            pending.extend(result["row_values"])
-            while len(pending) >= args.batch_size:
-                flush_rows = pending[: args.batch_size]
-                writer.append_row_values(flush_rows)
-                del pending[: args.batch_size]
+            pending = _append_row_values_streaming(
+                result["row_values"],
+                writer,
+                pending,
+                batch_size=max(1, int(args.batch_size)),
+            )
             if args.progress_every and source_records >= next_progress:
                 print(
                     json.dumps(
@@ -106,6 +116,8 @@ def main() -> int:
                 "source_batch_bytes": max(1, int(args.source_batch_bytes)),
                 "write_batch_size": max(1, int(args.batch_size)),
                 "duckdb_threads": max(1, int(args.duckdb_threads)),
+                "transaction_commit_rows": max(0, int(args.transaction_commit_rows)),
+                "write_mode": args.write_mode,
                 "elapsed_sec": round(time.perf_counter() - started, 3),
             }
         )
@@ -176,6 +188,37 @@ def _iter_source_record_batches(
             break
     if batch:
         yield batch
+
+
+def _ledger_writer_context(args: argparse.Namespace, tmp_path: Path):
+    if args.write_mode == "csv_copy":
+        staging_path = _repo_path(args.staging_csv_path) if str(args.staging_csv_path or "").strip() else None
+        return LedgerStoreBulkCsvWriter(
+            tmp_path,
+            duckdb_threads=max(1, int(args.duckdb_threads)),
+            staging_path=staging_path,
+        )
+    return LedgerStoreWriter(
+        tmp_path,
+        duckdb_threads=max(1, int(args.duckdb_threads)),
+        transaction_commit_rows=max(0, int(args.transaction_commit_rows)),
+    )
+
+
+def _append_row_values_streaming(
+    row_values: list[list[Any]],
+    writer: LedgerStoreWriter,
+    pending: list[list[Any]],
+    *,
+    batch_size: int,
+) -> list[list[Any]]:
+    batch_size = max(1, int(batch_size))
+    for row in row_values:
+        pending.append(row)
+        if len(pending) >= batch_size:
+            writer.append_row_values(pending)
+            pending = []
+    return pending
 
 
 def _iter_ledger_batch_results(

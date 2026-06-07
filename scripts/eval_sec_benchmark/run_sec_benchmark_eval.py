@@ -25,6 +25,9 @@ if hasattr(sys.stdout, "reconfigure"):
 from evidence.structured_text import structured_object_search_text  # noqa: E402
 from sec_agent.ledger_store import query_ledger_facts  # noqa: E402
 
+_SEC_FORM_TYPES = {"10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"}
+_SEC_FORM_ID_RE = re.compile(r"(?:^|[^A-Z0-9])(?P<form>10-?K|10-?Q|8-?K|20-?F|40-?F|6-?K)(?:[^A-Z0-9]|$)")
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run SEC benchmark v1 context preparation.")
@@ -108,10 +111,16 @@ def main() -> None:
             raise ValueError(f"Unknown --case-id values: {missing_case_ids}")
         cases = [case for case in cases if str(case.get("case_id") or "") in requested_case_ids]
     manifest_rows = _read_jsonl(REPO_ROOT / args.manifest_path)
-    manifest_index = {
-        (str(row.get("ticker")).upper(), int(row.get("fiscal_year")), str(row.get("form_type")).upper()): row
-        for row in manifest_rows
-    }
+    manifest_index: dict[tuple[str, int, str], dict[str, Any]] = {}
+    for row in manifest_rows:
+        ticker = str(row.get("ticker") or "").upper().strip()
+        try:
+            year = int(row.get("fiscal_year") or row.get("year"))
+        except (TypeError, ValueError):
+            continue
+        form = _manifest_row_form_type(row)
+        if ticker and form:
+            manifest_index[(ticker, year, form)] = row
     output_dir = _resolve_output_dir(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1127,16 +1136,41 @@ def _context_source_fields(record: dict[str, Any]) -> dict[str, Any]:
 
 
 def _form_type_from_source_id(value: Any) -> str:
-    text = str(value or "").upper()
-    if "_10Q_" in text:
-        return "10-Q"
-    if "_10K_" in text:
-        return "10-K"
+    match = _SEC_FORM_ID_RE.search(str(value or "").upper())
+    if not match:
+        return ""
+    form = _normalize_form_type(match.group("form"))
+    return form if form in _SEC_FORM_TYPES else ""
+
+
+def _manifest_row_form_type(row: dict[str, Any]) -> str:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    for value in (
+        row.get("form_type"),
+        row.get("source_type"),
+        metadata.get("form_type"),
+        metadata.get("source_type"),
+    ):
+        form = _normalize_form_type(value)
+        if form in _SEC_FORM_TYPES:
+            return form
+    for key in ("evidence_id", "source_evidence_id", "source_id", "chunk_id", "block_id", "object_id", "id"):
+        form = _form_type_from_source_id(row.get(key))
+        if form:
+            return form
     return ""
 
 
 def _normalize_form_type(value: Any) -> str:
-    return str(value or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
+    text = str(value or "").upper().strip()
+    return (
+        text.replace("10K", "10-K")
+        .replace("10Q", "10-Q")
+        .replace("8K", "8-K")
+        .replace("20F", "20-F")
+        .replace("40F", "40-F")
+        .replace("6K", "6-K")
+    )
 
 
 def _load_context_reranker(args: argparse.Namespace) -> Any:

@@ -68,9 +68,15 @@ def main(argv: list[str] | None = None) -> int:
     relationship_summary = _read_json(args.relationship_summary) if args.relationship_summary.exists() else {}
     evidence_summary = _read_json(args.evidence_summary)
     coverage_summary = _read_json(args.coverage_summary)
-    relationship_artifact_root = Path(relationship_summary.get("output_dir") or args.relationship_summary.parent)
-    evidence_artifact_root = Path(evidence_summary.get("output_dir") or args.evidence_summary.parent)
-    coverage_artifact_root = Path(coverage_summary.get("output_dir") or args.coverage_summary.parent)
+    artifact_roots = _input_artifact_roots(
+        args,
+        relationship_summary=relationship_summary,
+        evidence_summary=evidence_summary,
+        coverage_summary=coverage_summary,
+    )
+    relationship_artifact_root = artifact_roots["relationship"]
+    evidence_artifact_root = artifact_roots["evidence"]
+    coverage_artifact_root = artifact_roots["coverage"]
     cases = _selected_cases(_specialist_cases(activation_summary, coverage_summary), args.case_id)
     run_id = args.run_id or _default_run_id()
     output_dir = args.output_dir / run_id
@@ -157,6 +163,20 @@ def _selected_cases(cases: list[dict[str, Any]], selected_ids: list[str]) -> lis
         return cases
     selected = {str(item) for item in selected_ids}
     return [case for case in cases if str(case.get("case_id") or "") in selected]
+
+
+def _input_artifact_roots(
+    args: argparse.Namespace,
+    *,
+    relationship_summary: Mapping[str, Any],
+    evidence_summary: Mapping[str, Any],
+    coverage_summary: Mapping[str, Any],
+) -> dict[str, Path]:
+    return {
+        "relationship": s3._summary_artifact_root(relationship_summary, args.relationship_summary),
+        "evidence": s3._summary_artifact_root(evidence_summary, args.evidence_summary),
+        "coverage": s3._summary_artifact_root(coverage_summary, args.coverage_summary),
+    }
 
 
 def _graph_env(args: argparse.Namespace) -> dict[str, str]:

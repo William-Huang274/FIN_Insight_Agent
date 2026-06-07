@@ -10,6 +10,8 @@
 
 S1-S8 v0.2 case matrix：`docs/eval/fin_agent_s1_s8_agent_quality_case_matrix_v0_2.md`
 
+S0 chunk 质量框架：`docs/eval/fin_agent_chunk_quality_eval_framework_v0_1.md`
+
 ## 1. 执行原则
 
 本阶段不再直接从 full chain 看最终 memo 好不好，而是按 LangGraph 控制边界逐层验收。
@@ -19,7 +21,7 @@ S1-S8 v0.2 case matrix：`docs/eval/fin_agent_s1_s8_agent_quality_case_matrix_v0
 1. 每一层只消费上一层已经通过 gate 的 artifact。
 2. 某层失败时，冻结并复用已通过的上游产物，只修当前层。
 3. 每个 agent 既看 route / schema 是否通过，也看真实 evidence / output quality 是否通过。
-4. Full chain 只在 S1-S9 单层门控通过后运行。
+4. Full chain 只在 S0-S9 单层门控通过后运行。
 5. 多轮测试放在 full chain 之后，专门测试 scope revision、artifact reuse 和上下文边界。
 
 ## 2. Artifact 固化规则
@@ -28,6 +30,7 @@ S1-S8 v0.2 case matrix：`docs/eval/fin_agent_s1_s8_agent_quality_case_matrix_v0
 
 | Artifact | 用途 |
 | --- | --- |
+| `chunk_quality_summary.json` | Chunk / retrieval asset S0 gate |
 | `activation_diagnostic.json` | Research Lead S1 gate |
 | `relationship_plan.json` 或 `multi_agent_summary.json` 中的 relationship section | Universe / Relationship S2 gate |
 | `tool_call_ledger` / `tool_observations` | Evidence Operator S3 gate |
@@ -41,7 +44,61 @@ S1-S8 v0.2 case matrix：`docs/eval/fin_agent_s1_s8_agent_quality_case_matrix_v0
 
 如果某一层重跑，run id 必须体现阶段、case、目的和版本，不能覆盖上一次结果。
 
-## 3. 阶段 S1：Research Lead
+## 3. 阶段 S0：Chunk / Retrieval Asset Quality
+
+目标：验证本地知识库资产本身能支撑后续召回和投研链路，避免把 chunk / index 问题误判成 agent prompt 问题。
+
+输入：
+
+- full238 mixed SEC chunk JSONL。
+- 对应 EvidenceObject JSONL。
+- 对应 BM25 index metadata。
+- 对应 ObjectBM25 / SQLite FTS metadata。
+
+执行：
+
+```powershell
+python scripts\eval_retrieval\audit_sec_chunk_quality.py `
+  --chunks-path Z:/FIN_Insight_Agent_artifacts/chunks/sector_depth_full238_us_v0_5_mixed_with_8k_chunks_fy2023_2027.jsonl `
+  --evidence-path Z:/FIN_Insight_Agent_artifacts/evidence_objects/sector_depth_full238_us_v0_5_mixed_with_8k_evidence_fy2023_2027.jsonl `
+  --bm25-index-dir Z:/FIN_Insight_Agent_artifacts/indexes/bm25/sector_depth_full238_us_v0_5_mixed_with_8k_fy2023_2027 `
+  --object-bm25-index-dir Z:/FIN_Insight_Agent_artifacts/indexes/bm25/sector_depth_full238_us_v0_5_mixed_with_8k_fy2023_2027_objects `
+  --run-id 20260604_sec_chunk_quality_full238_v0_5_parser_item_s0_v0_1 `
+  --strict
+```
+
+通过门控：
+
+- JSONL 解析错误为 0。
+- `chunk_id` 不重复。
+- 表格起止标记成对。
+- chunk 长度尾部受控，极端超长比例 <= 1%。
+- split block 的 part 完整，overlap 真实存在。
+- 10-K / 10-Q 核心 item 缺失比例 <= 2%。
+- EvidenceObject 与 chunk id 一致。
+- EvidenceObject 的 `evidence_id` 唯一。
+- BM25 records 与 EvidenceObject 文件行数一致。
+- ObjectBM25 / SQLite FTS 存在。
+
+失败处理：
+
+- 不进入 S1-S10 批量评测。
+- 先修 SEC parser、section splitter、chunk 参数、evidence build 或 index build。
+- 若只是 `long_table_chunks_need_table_aware_review` 这类 warning，可继续诊断，但 Milvus 只能进入 retrieval-only 实验，不能宣称主线收益。
+
+当前接受结果：
+
+| Run ID | Gate | Key metrics |
+| --- | --- | --- |
+| `20260604_sec_chunk_quality_full238_v0_5_parser_item_s0_v0_1` | pass | chunks `91,708`，tickers `238`，duplicate chunk/evidence id `0`，unbalanced table marker `0`，primary core item missing filing rate `0.64%` |
+
+Milvus 诊断：
+
+- 已新增 retrieval-only A/B：`scripts/eval_retrieval/eval_milvus_retrieval_ab.py`。
+- 已跑 `20260604_fin_agent_milvus_retrieval_ab_full238_v0_3_balanced_rrf`，`12/12` cases pass。
+- 结论是 feature-flag Hybrid RRF 可继续实验；Milvus semantic-only 不替代 BM25/ObjectBM25/exact-value ledger。
+
+## 4. 阶段 S1：Research Lead
 
 目标：验证主 agent 能理解 query、选择正确 execution mode、agent activation、source family 和业务 evidence needs。
 
@@ -77,7 +134,7 @@ python scripts\eval_multi_agent\eval_multi_agent_research_lead_activation.py `
 - 不进入 Universe / Relationship。
 - 复用失败 case 的 request，调 Research Lead prompt / schema / validator。
 
-## 4. 阶段 S2：Universe / Relationship
+## 5. 阶段 S2：Universe / Relationship
 
 目标：验证关系图不是“公司列表扩展器”，而是形成经济关系、证据边界和缺证项。
 
@@ -134,7 +191,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
 - 复用 S1 artifact 和 relationship lookup rows。
 - 只修 Universe prompt / schema / validator / relationship pack selector。
 
-## 5. 阶段 S3：Evidence Operators / RAG
+## 6. 阶段 S3：Evidence Operators / RAG
 
 目标：验证工具实际执行、召回/重排/ledger 能给下游可用 rows，而不只是 route 成功。
 
@@ -190,9 +247,9 @@ S3 默认覆盖集：
 
 - 复用 S1/S2 artifact。
 - 不运行 Specialist。
-- 先查 retrieval policy、chunk 切片、manifest/source inventory、ledger selection、reranker device。
+- 先查 S0 chunk 质量报告，再查 retrieval policy、manifest/source inventory、ledger selection、reranker device。
 
-## 6. 阶段 S4：Coverage / Reflection
+## 7. 阶段 S4：Coverage / Reflection
 
 目标：验证系统能判断证据缺口，并在可查时触发有增益的 second pass。
 
@@ -245,7 +302,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
 - 复用 S3 rows。
 - 只修 reflection gap classifier / second-pass compiler。
 
-## 7. 阶段 S5：Specialists
+## 8. 阶段 S5：Specialists
 
 目标：验证每个专家能消费 bounded rows 和上游任务，输出 memo-ready ClaimCards，而不是行摘要。
 
@@ -280,7 +337,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
 | --- | --- | --- | --- |
 | `20260601_fin_agent_s5_specialist_layer_gate_after_s4_v0_1` | pass | `2/2` | specialist routes `7`，real-evidence quality `2/2`，repair `0`，tokens `65,251`，AI capex Industry Specialist cited relationship refs `14` |
 
-## 8. 阶段 S6：Judgment Aggregator
+## 9. 阶段 S6：Judgment Aggregator
 
 目标：验证 Aggregator 能把专家 ClaimCards 组织成投资判断计划，而不是安全地压扁为证据清单。
 
@@ -303,7 +360,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
 - 复用 S5 outputs。
 - 修 Aggregator schema / ranker / claim selection。
 
-## 9. 阶段 S7：Memo Writer
+## 10. 阶段 S7：Memo Writer
 
 目标：验证 Memo Writer 能写出自然语言投研 memo，而不是 schema 填空或证据摘要。
 
@@ -333,7 +390,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
 - 复用 S6 thesis plan。
 - 优先修 profile selector、输入 projection、memo schema、writing skill；不要只提高 max tokens。
 
-## 10. 阶段 S8：Verifier / Repair
+## 11. 阶段 S8：Verifier / Repair
 
 目标：验证 Verifier 是安全门，不是第二个 writer，也不是深度补偿器。
 
@@ -356,7 +413,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
 - 复用 S7 memo。
 - 修 verifier projection / specific repair instruction。
 
-## 11. 阶段 S9：Renderer / Product Answer
+## 12. 阶段 S9：Renderer / Product Answer
 
 目标：验证用户看到的是成熟回答，而不是内部 trace。
 
@@ -377,7 +434,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
 - 复用 S8 memo。
 - 修 renderer format / citation projection。
 
-## 12. 阶段 S10：Full Chain 和多轮回归
+## 13. 阶段 S10：Full Chain 和多轮回归
 
 只有 S1-S9 单层通过后运行。
 
@@ -400,7 +457,7 @@ python scripts\eval_multi_agent\eval_multi_agent_real_llm_chain.py `
 - `audit_fin_agent_layer_quality.py` 输出总 gate pass。
 - 高成本 flags 需要进入诊断队列，不能直接宣称成熟质量通过。
 
-## 13. 自动审计命令
+## 14. 自动审计命令
 
 Research Lead artifact：
 
@@ -423,7 +480,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
   --strict
 ```
 
-## 14. 当前优化顺序
+## 15. 当前优化顺序
 
 基于 216/P7 之后的问题，后续优化顺序为：
 
@@ -437,7 +494,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
 8. [ ] S7：Memo Writer 改为 thesis-plan-driven natural-language writer，减少 retry 和 evidence-summary 风格。
 9. [ ] S10：扩展 full-chain + multi-turn eval，再考虑 LLM judge。
 
-## 14.1 v0.2 分层测试补充
+## 15.1 v0.2 分层测试补充
 
 本补充用于 2026-06-01 后续 S1-S8 agent 能力测试，执行前先阅读 `fin_agent_s1_s8_agent_quality_case_matrix_v0_2.md`。
 
@@ -462,7 +519,7 @@ python scripts\eval_multi_agent\audit_fin_agent_layer_quality.py `
 - 如果本地 SEC/market/industry/relationship 数据无法证明真实客户/供应商、consensus、实时新闻、转录稿、监管/临床/商品价格事实，必须记录为 source/data limitation。
 - 数据缺口不算 prompt 失败；但未记录缺口而让下游 hallucinate，算 hard fail。
 
-## 15. Stop / Proceed 规则
+## 16. Stop / Proceed 规则
 
 Proceed：
 

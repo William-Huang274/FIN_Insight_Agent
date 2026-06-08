@@ -2,6 +2,8 @@
 
 [English version](sec_agent_v0_1_pre_release_checklist.md)
 
+> 历史说明：本文记录早期 full30 / SEC Agent 阶段的发布检查，不代表当前 FinSight-Agent 603-company 扩展链路状态。当前公开状态请优先阅读根目录 README 和 `docs/eval/fin_agent_public_eval_summary.zh-CN.md`。
+
 日期：2026-05-26
 
 ## 发布范围

@@ -1,57 +1,57 @@
 # 架构文档入口
 
-这个目录用于放 FinSight-Agent 的公开架构文档。这里要讲的是当前系统怎么工作，而不是每一轮实验怎么演进。实验过程、失败记录和具体运行编号放在 `docs/worklog/`。
+这里放 FinSight-Agent 的公开架构文档。公开架构文档只讲当前系统如何工作、为什么这样设计、当前边界是什么；内部执行计划和实验推进历史不作为架构主入口。
 
-## 后续三篇主文档
+## 推荐阅读顺序
 
-### `fin_sight_agent_architecture.zh-CN.md`
+1. [总体架构](fin_sight_agent_architecture.zh-CN.md)
+2. [多智能体协作机制](multi_agent_orchestration.zh-CN.md)
+3. [上下文与状态管理](context_and_state_management.zh-CN.md)
+4. [数据与工具权限模型](data_and_tool_access_model.zh-CN.md)
+5. [后端与评测运行时](backend_and_eval_runtime.zh-CN.md)
 
-讲整体系统架构。读者看完应该知道：
+## 五篇专题说明
 
-- 用户问题如何进入研究链路。
-- 图运行器、工具执行层、上下文管理器分别负责什么。
-- SEC / 8-K / 市场快照 / 行业 / 关系数据怎么进入证据上下文。
-- 数值台账、覆盖检查、专家结论卡、论证提纲、备忘录和校验结果之间怎么传递。
-- 已保存运行产物如何被检查和复用。
+### 总体架构
 
-### `multi_agent_orchestration.zh-CN.md`
+[总体架构](fin_sight_agent_architecture.zh-CN.md) 说明用户问题如何进入研究链路，研究负责人、公司范围、证据执行、专家结论卡、判断提纲、备忘录、校验和呈现如何串起来。
 
-讲多智能体调度。读者看完应该知道：
+### 多智能体协作机制
 
-- 研究负责人如何判断问题类型和研究深度。
-- 为什么不是每个问题都启动所有专家。
-- 主力智能体、辅助智能体、条件启动智能体和禁止启动智能体怎么区分。
-- 精确查询、单公司分析、标准投研备忘录、行业深度研究、市场反应、多轮追问分别走什么激活策略。
-- 多轮会话里哪些产物可以复用，哪些因为研究范围变化必须失效重跑。
-- 修复循环在哪里发生，什么时候必须停止。
+[多智能体协作机制](multi_agent_orchestration.zh-CN.md) 说明当前多智能体不是自由互聊，而是通过共享状态、任务卡、工具观察、专家结论卡和缺口请求协作。
 
-### `data_and_tool_access_model.zh-CN.md`
+### 上下文与状态管理
 
-讲工具和数据权限。读者看完应该知道：
+[上下文与状态管理](context_and_state_management.zh-CN.md) 说明多轮会话中如何保存研究范围、证据引用、运行产物和失效规则，避免旧公司、旧来源或旧假设污染新问题。
 
-- 每类智能体能看哪些输入，不能看哪些输入。
-- 谁能调用 SEC 检索、ObjectBM25、BGE、市场快照、行业和关系查询。
-- 专家智能体为什么只能消费限定证据，不能自己检索。
-- 备忘录写作器为什么不能读取原始证据，只能读取已验证论证包。
-- SEC、8-K、市场、行业、关系数据分别能支持什么结论，不能支持什么结论。
-- 运行时工具台账如何帮助检查是否越权、重复调用或浪费预算。
+### 数据与工具权限模型
 
-## 当前公开入口
+[数据与工具权限模型](data_and_tool_access_model.zh-CN.md) 说明不同来源能支持什么结论，各智能体能看什么、能调用什么、不能越过什么边界。
 
-在三篇主文档补齐前，可以先从这些文档理解系统：
+### 后端与评测运行时
 
-- [根目录 README](../../README.md)
+[后端与评测运行时](backend_and_eval_runtime.zh-CN.md) 说明本地工作台、任务管理、运行产物、工具台账、模型调用量、耗时和评测报告如何支撑可观测开发。
+
+## 相关公开文档
+
+- [项目主文档](../../README.md)
 - [文档地图](../README.md)
+- [公开评测摘要](../eval/fin_agent_public_eval_summary.zh-CN.md)
+- [投研质量评价体系](../eval/fin_agent_investment_research_quality_framework_v0_1.md)
+
+## 历史执行文档
+
+以下文档保留用于追溯阶段推进和内部设计，不作为公开架构主入口：
+
 - [分层数据源扩容计划](layered_data_source_expansion_plan.zh-CN.md)
 - [分层数据源扩容执行文档](layered_data_source_expansion_execution_plan.zh-CN.md)
 - [扩容后检索与多智能体架构执行文档](expanded_universe_retrieval_agent_framework_v0_1.zh-CN.md)
-- [投研质量评价体系](../eval/fin_agent_investment_research_quality_framework_v0_1.md)
-- [分层质量门控执行文档](../eval/fin_agent_layered_quality_execution_plan_v0_1.md)
-- [脚本发布面](../../scripts/README.md)
+
+这些文档可能保留历史语境、旧路径或阶段性判断。当前公开状态以项目主文档、五篇架构专题和公开评测摘要为准。
 
 ## 写作口径
 
-- 面向用户的说明优先使用中文专用名词，例如“研究负责人”“证据执行器”“专家结论卡”“论证提纲”“校验器”。
-- 保留 SEC、API、BM25、BGE、MCP、RAG、8-K、CLI、Workbench 等通用技术或金融名词。
-- 代码字段、脚本参数和文件名保持原样，不翻译。
-- 不把工作日志里的运行编号、调用成本和调试细节搬进架构主文档；这些内容只在需要证明当前状态时用摘要引用。
+- 面向公开读者优先使用中文专用名词，例如“研究负责人”“证据执行器”“专家结论卡”“判断提纲”“校验器”“工具台账”。
+- 保留 SEC、8-K、BM25、BGE、MCP、CLI 等通用技术或金融缩写。
+- 代码字段、脚本参数和文件名保持原样。
+- 不把工作日志里的运行编号、调试细节和临时云端路径搬进架构主文档。

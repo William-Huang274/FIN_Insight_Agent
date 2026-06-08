@@ -1,66 +1,60 @@
 # 文档地图
 
-这里是 FinSight-Agent 的公开文档入口。新用户不应该先去翻工作日志，也不应该从历史基准评测文档里猜当前系统长什么样；应该先从这里找到适合自己的阅读路径。
+这里是 FinSight-Agent 的公开文档入口。公开读者应该先从主文档、架构专题和公开评测摘要理解当前系统；工作日志、旧版本发布清单和阶段执行计划主要用于内部追溯，不作为公开主线阅读材料。
 
-## 项目叙事
+## 推荐阅读路径
 
-FinSight-Agent 是一个面向公开公司研究的可审计金融研究系统。它把用户的金融问题拆成可检查的研究步骤：判断问题类型、确定研究范围、检索证据、整理数值台账和关系/行业上下文、形成专家结论卡、汇总论证提纲、写投研备忘录，并检查来源边界和缺证结论。
-
-公开文档里统一使用 `FinSight-Agent` 作为项目名。`SEC Agent` 只在说明早期 SEC 数据链路或历史文档时使用。
-
-## 读者路径
-
-| 你想做什么 | 先看 | 再看 |
+| 你想了解什么 | 先看 | 再看 |
 | --- | --- | --- |
-| 快速理解项目 | 根目录 `README.md` | 架构文档入口、质量评价体系 |
-| 克隆后跑本地检查 | 根目录快速开始 | 演示入口、脚本发布面 |
-| 接入自己的数据 | 自有数据快速接入 | 演示入口、数据来源边界 |
-| 体验产品化界面 | Workbench 快速开始 | 数据包、数据构建、演示入口、运行产物说明 |
-| 看质量标准和评测 | 投研质量评价体系 | 分层质量门控执行文档 |
-| 查实现历史 | 工作日志索引 | 对应编号的工作日志 |
+| 快速理解项目 | [根目录 README](../README.md) | 公开评测摘要 |
+| 理解整体架构 | [总体架构](architecture/fin_sight_agent_architecture.zh-CN.md) | 多智能体协作、数据与工具权限 |
+| 理解智能体如何协作 | [多智能体协作机制](architecture/multi_agent_orchestration.zh-CN.md) | 上下文与状态管理 |
+| 理解多轮和状态恢复 | [上下文与状态管理](architecture/context_and_state_management.zh-CN.md) | 后端与评测运行时 |
+| 理解证据和权限边界 | [数据与工具权限模型](architecture/data_and_tool_access_model.zh-CN.md) | 投研质量评价体系 |
+| 理解后端和评测能力 | [后端与评测运行时](architecture/backend_and_eval_runtime.zh-CN.md) | 公开评测摘要 |
+| 看当前效果 | [公开评测摘要](eval/fin_agent_public_eval_summary.zh-CN.md) | 投研质量评价体系 |
+| 本地试运行 | 根目录快速开始 | 演示入口、工作台快速开始 |
+| 接入自己的数据 | 自有数据快速接入 | 数据与工具权限模型 |
 
-## 主要入口
+## 公开主文档
 
-- 根目录 `README.md`：项目定位、核心链路、快速开始、公开边界和文档地图。
-- [CLI 演示入口](demo/sec_agent_demo_entrypoints_v1.zh-CN.md)：单轮演示、多轮会话、已保存运行检查。
-- [自有数据快速接入](deployment/local_custom_data_quickstart.zh-CN.md)：用自己的 SEC、8-K、市场快照和索引跑完整链路。
-- [Workbench 快速开始](workbench/workbench_quickstart.zh-CN.md)：本地界面入口、配置导入、数据包管理、数据构建、产物回填、运行和产物查看。
+- [项目主文档](../README.md)：项目定位、核心亮点、当前能力、快速开始、评测摘要和边界。
+- [架构文档入口](architecture/README.md)：五篇架构专题的导航。
+- [公开评测摘要](eval/fin_agent_public_eval_summary.zh-CN.md)：20 个真实风格案例的覆盖、结果和边界。
+
+## 架构专题
+
+- [总体架构](architecture/fin_sight_agent_architecture.zh-CN.md)：用户问题如何进入研究链路，证据、智能体、写作和校验如何串起来。
+- [多智能体协作机制](architecture/multi_agent_orchestration.zh-CN.md)：研究负责人、范围构建、证据执行、专家、汇总、写作和校验如何通过结构化状态协作。
+- [上下文与状态管理](architecture/context_and_state_management.zh-CN.md)：多轮追问、范围收缩、产物复用、状态恢复和旧状态失效规则。
+- [数据与工具权限模型](architecture/data_and_tool_access_model.zh-CN.md)：证据来源、工具权限、来源强度和智能体可见范围。
+- [后端与评测运行时](architecture/backend_and_eval_runtime.zh-CN.md)：本地工作台、任务运行、工具台账、模型调用量、耗时和评测报告。
+
+## 使用和运行
+
+- [命令行演示入口](demo/sec_agent_demo_entrypoints_v1.zh-CN.md)：单轮演示、多轮会话和已保存运行检查。
+- [自有数据快速接入](deployment/local_custom_data_quickstart.zh-CN.md)：用自己的公开披露、市场快照和索引跑完整链路。
+- [工作台快速开始](workbench/workbench_quickstart.zh-CN.md)：本地工作台入口、配置导入、数据包管理、任务运行和产物查看。
 - [脚本发布面](../scripts/README.md)：当前主线保留的脚本入口和用途。
 
-后续文档整理时，演示入口会从 `sec_agent_demo_entrypoints_v1` 改成更统一的 FinSight 命名；当前链接先保持不动，避免一次性移动文件造成断链。
+## 质量与评测
 
-## 架构文档
+- [公开评测摘要](eval/fin_agent_public_eval_summary.zh-CN.md)：公开读者优先阅读。
+- [投研质量评价体系](eval/fin_agent_investment_research_quality_framework_v0_1.md)：定义什么是好的金融研究回答。
+- [分层质量门控执行文档](eval/fin_agent_layered_quality_execution_plan_v0_1.md)：说明各层智能体和节点如何过门控。
+- [全链路与多轮评测计划](eval/fin_agent_full_chain_multiturn_eval_plan_v0_1.md)：详细测试用例设计和停止/推进规则。
+- [S1-S8 用例矩阵](eval/fin_agent_s1_s8_agent_quality_case_matrix_v0_2.md)：分层用例覆盖和历史分层结果。
 
-架构文档应该讲当前系统怎么工作，而不是复述每轮实验历史。
+## 历史和内部资料
 
-计划公开三篇：
-
-- `architecture/fin_sight_agent_architecture.zh-CN.md`：整体架构，说明图运行、工具执行层、检索、数值台账、覆盖检查、备忘录写作和校验。
-- `architecture/multi_agent_orchestration.zh-CN.md`：多智能体调度，说明研究负责人、智能体激活策略、主力/辅助/条件启动、上下文交接和修复循环。
-- `architecture/data_and_tool_access_model.zh-CN.md`：工具和数据权限，说明每类智能体能看什么、能调用什么、不能越过什么边界。
-
-在这些文档写完之前，[分层质量门控执行文档](eval/fin_agent_layered_quality_execution_plan_v0_1.md) 和最近的工作日志保留了更细的实现记录。
-
-## 评测文档
-
-评测文档要分清两件事：一类讲“什么叫好”，一类讲“怎么测”。具体运行编号、调用成本和失败排查不要放在公开入口里，应该放进工作日志或模型运行记录。
-
-- [投研质量评价体系](eval/fin_agent_investment_research_quality_framework_v0_1.md)：定义好的金融研究回答应该满足什么标准。
-- [分层质量门控执行文档](eval/fin_agent_layered_quality_execution_plan_v0_1.md)：说明每一层智能体怎么过门控，什么时候才能跑全链路。
-- [全链路 / 多轮评测计划](eval/fin_agent_full_chain_multiturn_eval_plan_v0_1.md)：说明单轮、多轮和不同问题难度的测试思路。
-- [S1-S8 用例矩阵](eval/fin_agent_s1_s8_agent_quality_case_matrix_v0_2.md)：当前分层用例覆盖情况。后续应把过细的运行编号和成本诊断移到工作日志。
-
-早期 SEC 基准评测 v1/v2 文档属于历史资料，不再作为当前项目入口。
-
-## 发布和历史资料
-
-- `release/`：当前发布状态和公开就绪检查。
-- `worklog/`：按时间记录的实现过程、排查记录和交接文档。
-- 早期 `sec_agent_v0_1` 和 `sec_benchmark_v1/v2` 文档应保留，但后续会标注为历史资料或移动到归档目录。
+- [历史和内部资料索引](archive/README.zh-CN.md)：说明哪些文档不作为公开主入口。
+- `docs/worklog/`：内部实现记录、排查过程和交接文档。
+- `reports/model_runs/`：模型运行和评测审计记录。
+- 早期 `sec_agent_v0_1`、`full30` 和旧云端运行手册属于历史资料，不代表当前扩展链路的公开状态。
 
 ## 写作规则
 
-- 不在公开文档里写 API key、私有数据、云端临时路径、原始运行输出或私有供应商产物。
-- 用户真正会复制的命令放在 README、演示、部署、Workbench 或脚本索引里。
-- 实验失败、成本诊断、具体运行编号和调试细节放在工作日志或模型运行记录里。
-- 多智能体调度、上下文交接、工具权限和数据边界是项目主线，不是内部细节，必须在架构文档里讲清楚。
+- 公开文档优先讲当前系统设计、当前结果和当前边界。
+- 不在公开文档中写接口密钥、私有数据、云端临时地址、原始模型响应或供应商私有产物。
+- 具体运行编号、失败排查和内部成本诊断放在工作日志或模型运行记录中。
+- 有中文对应名词时优先使用中文；文件名、命令、股票代码、接口字段和通用技术缩写保持原样。

@@ -2,6 +2,7 @@
 
 Durable engineering notes for FinSight-Agent.
 
+- `268_public_documentation_surface_closeout.md`: 公开文档面收口；新增总体架构、多智能体协作、上下文与状态管理、数据与工具权限、后端与评测运行时五篇公开架构专题，新增公开评测摘要和历史/内部资料索引，更新 README / docs 入口，并给中文历史执行、发布和云端手册加归档说明。本轮只改 Markdown 文档，不运行代码测试。
 - `267_expanded_a6_20case_backend_eval_closeout.md`: A6 20-case Workbench backend eval closeout；新云端未卡死，修复 Memo Writer 结构化 `evidence_gap_requests` 透传后，non-US supply-chain gap case 通过；热缓存复测 banking/utilities sector-depth 通过；accepted roll-up `20/20` pass、max case `331.1s`、avg case `155.3s`、total tokens `905931`。该结果是 expanded backend diagnostic gate，不等同于 GPU Milvus/FAISS serving-ready。
 - `266_expanded_a6_20case_first_wave_perf_cache_fix.md`: A6 20case first-wave performance diagnosis and cache fix; identifies repeated manifest/project-inventory scan in resident SEC retrieval, adds tool elapsed/stage timing and manifest/inventory caches, verifies warm SEC search at `1424 ms`, and records that `w01c` rerun jobs were submitted but remain unconfirmed because cloud SSH closed before banner.
 - `00_internal_master_checklist.md`: current implementation checklist.

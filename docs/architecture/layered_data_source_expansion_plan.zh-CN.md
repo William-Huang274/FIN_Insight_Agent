@@ -1,5 +1,7 @@
 # 分层数据源扩容计划
 
+> 归档说明：本文是数据源扩容前的规划文档，用于追溯当时的数据层设计和执行拆分。当前公开说明请以 [总体架构](fin_sight_agent_architecture.zh-CN.md)、[数据与工具权限模型](data_and_tool_access_model.zh-CN.md) 和 [公开评测摘要](../eval/fin_agent_public_eval_summary.zh-CN.md) 为准。
+
 本文档说明 FinSight-Agent 下一阶段如何扩充数据底座。目标不是把数据源堆多，而是让每类数据进入链路后都有清楚的来源、可引用边界、置信度和质量门控。
 
 具体实施顺序、脚本、产物和门控见：[分层数据源扩容执行文档](layered_data_source_expansion_execution_plan.zh-CN.md)。

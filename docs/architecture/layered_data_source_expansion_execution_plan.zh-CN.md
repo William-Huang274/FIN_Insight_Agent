@@ -1,5 +1,7 @@
 # 分层数据源扩容执行文档
 
+> 归档说明：本文是数据源扩容阶段的内部执行文档，保留阶段计划、资产构建和门控过程。当前公开架构请以 [总体架构](fin_sight_agent_architecture.zh-CN.md)、[数据与工具权限模型](data_and_tool_access_model.zh-CN.md) 和 [公开评测摘要](../eval/fin_agent_public_eval_summary.zh-CN.md) 为准。
+
 本文档是 `layered_data_source_expansion_plan.zh-CN.md` 的执行层版本。它回答三个问题：
 
 - 下一阶段先做什么、后做什么。

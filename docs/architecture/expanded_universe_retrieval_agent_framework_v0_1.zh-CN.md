@@ -1,5 +1,7 @@
 # 扩容后检索与多智能体架构执行文档 v0.1
 
+> 归档说明：本文是 603-company 扩容期间的内部执行文档，保留阶段性路径、运行状态和下一步计划。当前公开架构请以 [总体架构](fin_sight_agent_architecture.zh-CN.md)、[多智能体协作机制](multi_agent_orchestration.zh-CN.md) 和 [公开评测摘要](../eval/fin_agent_public_eval_summary.zh-CN.md) 为准；文中的 A6 待办表述保留历史语境，不代表当前状态。
+
 本文档承接 `layered_data_source_expansion_execution_plan.zh-CN.md`。前一阶段已经把公司池从 full238 扩到 Tier1+Tier2 `603` 家，并开始重建 SEC 主披露、数值台账、市场快照、行业快照和 Milvus typed semantic recall。本阶段目标不是马上跑 full-chain，而是先把新增数据接入多智能体链路的节点、权限、上下文和门控重新定清楚。
 
 ## 当前数据资产状态

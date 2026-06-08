@@ -167,6 +167,7 @@ def build_specialist_request_from_state(
     refs = _known_evidence_refs_from_request({"bounded_evidence_rows": rows, "relationship_summary": relationship_summary})
     input_budget = _specialist_input_budget(agent_id, execution_mode, data_view, priority=priority)
     context = dict(shared_context or build_shared_specialist_context(state))
+    source_family_bundle = data_view.get("source_family_bundle") if isinstance(data_view.get("source_family_bundle"), Mapping) else {}
     return {
         "agent_id": agent_id,
         "execution_mode": execution_mode,
@@ -177,6 +178,7 @@ def build_specialist_request_from_state(
         "counterclaim_slots": counterclaim_slots,
         "bounded_evidence_rows": rows,
         "prompt_row_distribution": prompt_row_distribution,
+        "source_family_bundle": source_family_bundle,
         "input_coverage_summary": _specialist_input_coverage_summary(agent_id, rows, state),
         "relationship_summary": relationship_summary,
         "coverage_summary": data_view.get("coverage_summary") or state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {},
@@ -290,10 +292,16 @@ def route_specialist_memolet_llm(
         last_validation = validation
         salvaged_validation = _salvage_supported_claim_ref_errors(validation, known_evidence_refs=evidence_refs)
         if salvaged_validation is not None:
-            capped_memolet = _apply_specialist_output_contract_caps(salvaged_validation["memolet"], request)
+            temporal_validation = _salvage_temporal_single_ref_observations(
+                salvaged_validation,
+                request,
+                known_evidence_refs=evidence_refs,
+            )
+            effective_validation = temporal_validation or salvaged_validation
+            capped_memolet = _apply_specialist_output_contract_caps(effective_validation["memolet"], request)
             capped_validation = validate_specialist_memolet(capped_memolet, known_evidence_refs=evidence_refs)
             capped_validation["warnings"] = [
-                *list(salvaged_validation.get("warnings") or []),
+                *list(effective_validation.get("warnings") or []),
                 *list(capped_validation.get("warnings") or []),
             ]
             return {
@@ -313,8 +321,25 @@ def route_specialist_memolet_llm(
                 "failure_reason": "",
             }
         if validation["status"] == "pass":
-            capped_memolet = _apply_specialist_output_contract_caps(validation["memolet"], request)
+            temporal_validation = _salvage_temporal_single_ref_observations(
+                validation,
+                request,
+                known_evidence_refs=evidence_refs,
+            )
+            effective_validation = temporal_validation or validation
+            capped_memolet = _apply_specialist_output_contract_caps(effective_validation["memolet"], request)
             capped_validation = validate_specialist_memolet(capped_memolet, known_evidence_refs=evidence_refs)
+            capped_validation["warnings"] = [
+                *list(effective_validation.get("warnings") or []),
+                *list(capped_validation.get("warnings") or []),
+            ]
+            routing_trace = {
+                "attempt_count": len(model_calls),
+                "repair_attempts": attempt_index,
+                "known_evidence_ref_count": len(evidence_refs),
+            }
+            if temporal_validation is not None:
+                routing_trace["salvage_policy"] = "demote_single_ref_temporal_observations"
             return {
                 "schema_version": ROUTE_SCHEMA_VERSION,
                 "source": ROUTE_SOURCE,
@@ -322,11 +347,7 @@ def route_specialist_memolet_llm(
                 "agent_id": resolved_agent_id,
                 "memolet": capped_validation["memolet"],
                 "validation": capped_validation,
-                "routing_trace": {
-                    "attempt_count": len(model_calls),
-                    "repair_attempts": attempt_index,
-                    "known_evidence_ref_count": len(evidence_refs),
-                },
+                "routing_trace": routing_trace,
                 "model_diagnostics": _aggregate_model_calls(model_calls),
                 "failure_reason": "",
             }
@@ -385,6 +406,7 @@ def _build_messages(
         "counterclaim_slots": request.get("counterclaim_slots") or [],
         "bounded_evidence_rows": bounded_rows,
         "prompt_row_distribution": request.get("prompt_row_distribution") or _prompt_row_distribution(bounded_rows),
+        "source_family_bundle": request.get("source_family_bundle") or {},
         "input_coverage_summary": request.get("input_coverage_summary") or {},
         "relationship_summary": relationship_summary,
         "coverage_summary": {} if shared_context else request.get("coverage_summary") or {},
@@ -405,12 +427,14 @@ def _build_messages(
         "Write one SpecialistMemolet JSON object from the bounded evidence only. "
         "Do not add facts from memory. Supported observations require evidence_refs. "
         "Use shared_context for common scope, coverage, and source-boundary context; do not restate it unless it changes a claim. "
+        "Use source_family_bundle to enforce selected source families, context-only families, semantic-supplement limits, and forbidden claim scopes before writing any observation. "
         "Use assigned_task_card as your only role task brief; use required_claim_slots and counterclaim_slots to decide what to write. "
         "Inspect bounded_evidence_rows selectively: start with rows whose ticker, metric, source_family, or summary match a required_claim_slot; ignore irrelevant rows even if present. "
         "Treat each observation as a ClaimCard v0.3: include ticker_scope, metric_scope, memo_slot, materiality, direction, evidence_refs, source_families, caveats, and missing_confirmations. "
         "Prefer memo-ready investment implications over row summaries; downstream will rank ClaimCards by evidence support, role fit, and memo readiness. "
         "Each observation must state the role-specific investment implication, not just restate the row. "
         "Each supported observation should satisfy one required_claim_slot; if a slot is unsupported, add one material missing_confirmation or top unsupported_claim instead of a generic gap list. "
+        "Use evidence_gap_requests only for actionable upstream work that Coverage Reflection, Universe Relationship, or an Operator can compile; do not use it as a generic caveat list. "
         "Do not infer sequential change, prior-period trend, YoY/QoQ growth, acceleration, deceleration, or trajectory unless the cited evidence_refs include at least two relevant period rows; otherwise write it as an unsupported_claim or caveat. "
         "If relationship_summary is present, treat it as bounded hypothesis context only and cite its evidence_refs. "
         "If the bounded rows do not support your role-specific lens, put the gap in unsupported_claims. "
@@ -469,6 +493,18 @@ def _system_prompt(agent_id: str) -> str:
         ],
         "unsupported_claims": [{"claim": "unsupported named fact", "reason": "not in bounded evidence"}],
         "conflicts": [{"claim": "conflict or counterevidence", "reason": "why it conflicts"}],
+        "evidence_gap_requests": [
+            {
+                "request_type": "missing_metric | missing_source_family | additional_company_scope | relationship_confirmation | market_field | industry_context | counterevidence_test",
+                "owner_agent": "coverage_reflection | universe_relationship | sec_operator | eight_k_operator | market_operator | industry_operator",
+                "tickers": ["TICKER"],
+                "metric_families": ["metric_family"],
+                "source_family": "primary_sec_filing | company_authored_unaudited_sec_filing | market_snapshot | industry_snapshot | relationship_graph",
+                "reason": "why this bounded gap matters",
+                "blocking_level": "blocking | material | optional",
+                "can_answer_bounded_without": True,
+            }
+        ],
         "confidence": "low | medium | high",
     }
     return "\n\n".join(
@@ -480,6 +516,7 @@ def _system_prompt(agent_id: str) -> str:
             "You may only use bounded evidence rows and summaries in the input.",
             "Every supported observation must cite evidence_refs from known_evidence_refs.",
             "If a named fact, relationship, number, or causal claim is not supported by bounded evidence, put it in unsupported_claims.",
+            "If your role can identify a material missing source, metric, ticker, relationship confirmation, or market/industry field, put a structured evidence_gap_requests item in the output. Do not call tools.",
             f"SpecialistMemolet schema hint:\n{_json_for_prompt(schema_hint)}",
         ]
     )
@@ -585,6 +622,7 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
         "required_claim_slots": [dict(item) for item in payload.get("required_claim_slots") or [] if isinstance(item, Mapping)][:4],
         "counterclaim_slots": [dict(item) for item in payload.get("counterclaim_slots") or [] if isinstance(item, Mapping)][:3],
         "bounded_evidence_rows": rows[:8],
+        "source_family_bundle": payload.get("source_family_bundle") or {},
         "relationship_summary": compact_relationship_summary,
         "output_contract": payload.get("output_contract") or _specialist_output_contract(str(payload.get("agent_id") or ""), str(payload.get("execution_mode") or "")),
         "known_evidence_refs": {
@@ -600,6 +638,7 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
             "observations": [],
             "unsupported_claims": [],
             "conflicts": [],
+            "evidence_gap_requests": [],
             "confidence": "low | medium | high",
         },
     }
@@ -1143,6 +1182,196 @@ def _salvage_supported_claim_ref_errors(
     return salvaged
 
 
+def _salvage_temporal_single_ref_observations(
+    validation: Mapping[str, Any],
+    request: Mapping[str, Any],
+    *,
+    known_evidence_refs: set[str],
+) -> dict[str, Any] | None:
+    if validation.get("status") != "pass":
+        return None
+    row_by_ref = _row_by_known_ref_from_request(request)
+    if not row_by_ref:
+        return None
+    memolet = dict(validation.get("memolet") or {})
+    observations = [dict(item) for item in memolet.get("observations") or [] if isinstance(item, Mapping)]
+    kept: list[dict[str, Any]] = []
+    removed: list[dict[str, Any]] = []
+    for observation in observations:
+        if not _needs_temporal_single_ref_salvage(observation, row_by_ref=row_by_ref):
+            kept.append(observation)
+            continue
+        removed.append(
+            {
+                "claim": _truncate(str(observation.get("claim") or "Unsupported temporal specialist observation."), 240),
+                "reason": "demoted_single_ref_temporal_observation_without_row_level_comparison_support",
+                "evidence_refs": _string_list(observation.get("evidence_refs") or observation.get("refs")),
+            }
+        )
+    if not removed:
+        return None
+    repaired = dict(memolet)
+    repaired["status"] = "partial"
+    repaired["observations"] = kept
+    repaired["unsupported_claims"] = [
+        *[dict(item) for item in memolet.get("unsupported_claims") or [] if isinstance(item, Mapping)],
+        *removed,
+    ]
+    metadata = dict(repaired.get("metadata") or {})
+    metadata["salvage_policy"] = "demote_single_ref_temporal_observations_v0_1"
+    metadata["salvaged_observation_count"] = len(removed)
+    repaired["metadata"] = metadata
+    salvaged = validate_specialist_memolet(repaired, known_evidence_refs=known_evidence_refs)
+    if salvaged.get("status") != "pass":
+        return None
+    salvaged["warnings"] = [
+        *list(validation.get("warnings") or []),
+        *list(salvaged.get("warnings") or []),
+        {
+            "type": "single_ref_temporal_observation_demoted",
+            "removed_count": len(removed),
+            "policy": "supported_temporal_claims_require_two_refs_or_row_level_comparison_support",
+        },
+    ]
+    return salvaged
+
+
+def _needs_temporal_single_ref_salvage(
+    observation: Mapping[str, Any],
+    *,
+    row_by_ref: Mapping[str, Mapping[str, Any]],
+) -> bool:
+    if observation.get("unsupported"):
+        return False
+    claim = str(observation.get("claim") or "")
+    if not _looks_like_temporal_inference(claim):
+        return False
+    refs = [str(ref).strip() for ref in observation.get("evidence_refs") or observation.get("refs") or [] if str(ref or "").strip()]
+    if len(refs) >= 2:
+        return False
+    return not _single_ref_temporal_claim_supported_by_row(refs, row_by_ref)
+
+
+def _single_ref_temporal_claim_supported_by_row(
+    refs: list[str],
+    row_by_ref: Mapping[str, Mapping[str, Any]],
+) -> bool:
+    if len(refs) != 1:
+        return False
+    row = row_by_ref.get(refs[0]) or {}
+    text = " ".join(
+        str(row.get(key) or "").lower()
+        for key in (
+            "summary",
+            "text",
+            "preview",
+            "metric",
+            "metric_name",
+            "metric_family",
+            "value",
+            "raw_value_text",
+            "display_value_zh",
+            "period_role",
+            "source_statement",
+        )
+    )
+    if not text:
+        return False
+    comparative_markers = (
+        "higher than",
+        "lower than",
+        "compared with",
+        "compared to",
+        "versus",
+        " vs ",
+        "year-over-year",
+        "year over year",
+        "yoy",
+        "quarter-over-quarter",
+        "quarter over quarter",
+        "qoq",
+        "increased",
+        "decreased",
+        "grew",
+        "declined",
+        "rose",
+        "fell",
+        "up ",
+        "down ",
+        "\u589e\u52a0",
+        "\u589e\u957f",
+        "\u4e0a\u5347",
+        "\u4e0b\u964d",
+        "\u51cf\u5c11",
+        "\u540c\u6bd4",
+        "\u73af\u6bd4",
+        "\u8f83",
+        "\u9ad8\u4e8e",
+        "\u4f4e\u4e8e",
+    )
+    if not any(marker in text for marker in comparative_markers):
+        return False
+    return (
+        len(re.findall(r"\b20\d{2}\b", text)) >= 2
+        or "%" in text
+        or "percent" in text
+        or any(marker in text for marker in ("\u540c\u6bd4", "\u73af\u6bd4", "yoy", "qoq"))
+    )
+
+
+def _looks_like_temporal_inference(claim: str) -> bool:
+    text = claim.lower()
+    patterns = (
+        "sequential",
+        "prior quarter",
+        "prior period",
+        "previous quarter",
+        "previous period",
+        "year-over-year",
+        "year over year",
+        "quarter-over-quarter",
+        "quarter over quarter",
+        "yoy",
+        "qoq",
+        "grew from",
+        "declined from",
+        "increased from",
+        "decreased from",
+        "acceleration",
+        "deceleration",
+        "trajectory",
+    )
+    return any(pattern in text for pattern in patterns)
+
+
+def _row_by_known_ref_from_request(request: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
+    index: dict[str, Mapping[str, Any]] = {}
+    rows = request.get("bounded_evidence_rows") or request.get("evidence_rows") or []
+    for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, Mapping):
+            continue
+        for ref in _row_ref_candidates(row):
+            index.setdefault(ref, row)
+    relationship_summary = request.get("relationship_summary")
+    if isinstance(relationship_summary, Mapping):
+        relationship_rows = relationship_summary.get("relationships") or []
+        for row in relationship_rows if isinstance(relationship_rows, list) else []:
+            if not isinstance(row, Mapping):
+                continue
+            for ref in _row_ref_candidates(row):
+                index.setdefault(ref, row)
+    return index
+
+
+def _row_ref_candidates(row: Mapping[str, Any]) -> list[str]:
+    refs: list[str] = []
+    for key in ("evidence_ref", "evidence_id", "ref_id", "id", "metric_id", "source_id", "object_id"):
+        value = str(row.get(key) or "").strip()
+        if value and value not in refs:
+            refs.append(value)
+    return refs
+
+
 def _route_result_summary(result: Mapping[str, Any]) -> dict[str, Any]:
     diagnostics = result.get("model_diagnostics") if isinstance(result.get("model_diagnostics"), Mapping) else {}
     return {
@@ -1164,6 +1393,7 @@ def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
     task_card = request.get("assigned_task_card") if isinstance(request.get("assigned_task_card"), Mapping) else {}
     shared_context = request.get("shared_context") if isinstance(request.get("shared_context"), Mapping) else {}
     relationship_summary = request.get("relationship_summary") if isinstance(request.get("relationship_summary"), Mapping) else {}
+    source_family_bundle = request.get("source_family_bundle") if isinstance(request.get("source_family_bundle"), Mapping) else {}
     rows = [dict(row) for row in request.get("bounded_evidence_rows") or [] if isinstance(row, Mapping)]
     return {
         "task_card_schema_version": str(task_card.get("schema_version") or ""),
@@ -1176,6 +1406,8 @@ def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
         "prompt_bounded_evidence_row_count": len(request.get("bounded_evidence_rows") or []),
         "prompt_relationship_summary_row_count": len(relationship_summary.get("relationships") or []),
         "prompt_row_distribution": request.get("prompt_row_distribution") or _prompt_row_distribution(rows),
+        "selected_source_families": _string_list(source_family_bundle.get("selected_source_families"))[:8],
+        "semantic_supplement_row_count": int(source_family_bundle.get("semantic_supplement_row_count") or 0),
         "input_coverage_summary": request.get("input_coverage_summary") or {},
     }
 

@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_agent_sec_structured_facts_download_summary_v0.1",
+  "status": "pass",
+  "company_count": 2,
+  "companyfacts_payloads": 2,
+  "submissions_payloads": 2,
+  "fact_rows": 10640,
+  "submission_rows": 24,
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "forms": [
+    "10-K",
+    "10-Q",
+    "20-F",
+    "40-F"
+  ],
+  "source_family_counts": {
+    "sec_companyfacts_structured_fact": 10640
+  },
+  "form_counts": {
+    "10-K": 3430,
+    "10-Q": 7210
+  },
+  "top_concepts": {
+    "CommonStockDividendsPerShareDeclared": 119,
+    "DividendsCommonStockCash": 117,
+    "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents": 108,
+    "StockholdersEquity": 96,
+    "AmortizationOfIntangibleAssets": 78,
+    "ComprehensiveIncomeNetOfTax": 78,
+    "EarningsPerShareBasic": 78,
+    "EarningsPerShareDiluted": 78,
+    "EffectiveIncomeTaxRateContinuingOperations": 78,
+    "GrossProfit": 78,
+    "IncomeTaxExpenseBenefit": 78,
+    "NetIncomeLoss": 78,
+    "NonoperatingIncomeExpense": 78,
+    "OperatingIncomeLoss": 78,
+    "OperatingLeaseCost": 78,
+    "OtherComprehensiveIncomeLossCashFlowHedgeGainLossAfterReclassificationAndTax": 78,
+    "OtherNonoperatingIncomeExpense": 78,
+    "ResearchAndDevelopmentExpense": 78,
+    "WeightedAverageNumberOfDilutedSharesOutstanding": 78,
+    "WeightedAverageNumberOfSharesOutstandingBasic": 78,
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest": 78,
+    "ContractWithCustomerLiability": 69,
+    "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsPeriodIncreaseDecreaseIncludingExchangeRateEffect": 66,
+    "DeferredIncomeTaxExpenseBenefit": 66,
+    "GainLossOnInvestments": 66
+  },
+  "ticker_fact_rows_min": 5070,
+  "ticker_fact_rows_max": 5570,
+  "issue_counts": {},
+  "issues": [],
+  "outputs": {
+    "fact_rows": "D:\\FIN_Insight_Agent\\data\\staging\\structured_financial_facts\\sec_companyfacts_financial_fact_rows_smoke_msft_nvda_v0_1.jsonl",
+    "submission_rows": "D:\\FIN_Insight_Agent\\data\\staging\\structured_financial_facts\\sec_submissions_filing_rows_smoke_msft_nvda_v0_1.jsonl",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\sec_structured_facts_download_summary_smoke_msft_nvda_v0_1.json"
+  }
+}

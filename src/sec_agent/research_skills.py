@@ -4,7 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 
 
-SKILL_SCHEMA_VERSION = "sec_agent_research_skills_v0.3"
+SKILL_SCHEMA_VERSION = "sec_agent_research_skills_v0.5"
 
 PROMPT_ROOT = Path(__file__).resolve().parent / "prompts" / "skills"
 
@@ -64,8 +64,43 @@ def research_skill_prompt(role: str, *, max_chars: int = 4000) -> str:
     chunks = [load_research_skill(name) for name in skill_names]
     text = "\n\n".join(chunks).strip()
     if max_chars and len(text) > max_chars:
-        return text[: max(0, max_chars)].rstrip() + "\n[skill truncated by runtime budget]"
+        if len(chunks) > 1:
+            return _balanced_truncated_skill_prompt(chunks, max_chars=max_chars)
+        return _truncate_skill_chunk(text, max_chars=max_chars)
     return text
+
+
+def _balanced_truncated_skill_prompt(chunks: list[str], *, max_chars: int) -> str:
+    separator = "\n\n"
+    available = max(0, max_chars - len(separator) * (len(chunks) - 1))
+    if available <= 0:
+        return _truncate_skill_chunk(separator.join(chunks), max_chars=max_chars)
+    if available < 400:
+        return _truncate_skill_chunk(separator.join(chunks), max_chars=max_chars)
+    role_budget = max(min(700, available), int(available * 0.62))
+    role_budget = min(role_budget, available)
+    shared_budget = max(0, available - role_budget)
+    pieces = [_truncate_skill_chunk(chunks[0], max_chars=shared_budget)]
+    if len(chunks) > 2:
+        middle_available = max(0, shared_budget // max(1, len(chunks) - 1))
+        pieces = [_truncate_skill_chunk(chunk, max_chars=middle_available) for chunk in chunks[:-1]]
+        role_budget = max(0, available - sum(len(piece) for piece in pieces))
+    pieces.append(_truncate_skill_chunk(chunks[-1], max_chars=role_budget))
+    prompt = separator.join(piece for piece in pieces if piece).strip()
+    if len(prompt) <= max_chars:
+        return prompt
+    return _truncate_skill_chunk(prompt, max_chars=max_chars)
+
+
+def _truncate_skill_chunk(text: str, *, max_chars: int) -> str:
+    suffix = "\n[skill truncated by runtime budget]"
+    if max_chars <= 0:
+        return ""
+    if len(text) <= max_chars:
+        return text
+    if max_chars <= len(suffix) + 20:
+        return text[:max_chars].rstrip()
+    return text[: max(0, max_chars - len(suffix))].rstrip() + suffix
 
 
 def list_research_skills() -> dict[str, object]:

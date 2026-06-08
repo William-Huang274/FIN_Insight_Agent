@@ -65,7 +65,11 @@ def test_permission_matrix_hard_rules_match_step2() -> None:
     assert registry["renderer"]["allowed_tools"] == []
     assert registry["verifier"]["tool_permission"] == "inspect_only"
     assert registry["research_lead"]["tool_permission"] == "request_only"
-    assert registry["sec_operator"]["allowed_tools"] == ["sec_search_filings", "sec_query_exact_value_ledger"]
+    assert registry["sec_operator"]["allowed_tools"] == [
+        "sec_search_filings",
+        "sec_milvus_semantic_search",
+        "sec_query_exact_value_ledger",
+    ]
     assert registry["eight_k_operator"]["allowed_tools"] == ["sec_search_filings"]
     assert registry["market_operator"]["allowed_tools"] == ["market_get_snapshot"]
     assert registry["industry_operator"]["allowed_tools"] == ["industry_get_snapshot"]

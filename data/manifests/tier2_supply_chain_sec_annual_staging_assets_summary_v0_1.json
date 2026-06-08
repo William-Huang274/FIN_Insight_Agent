@@ -1,0 +1,379 @@
+{
+  "schema_version": "tier2_supply_chain_sec_annual_staging_assets_v0.1",
+  "run_date": "2026-06-06",
+  "dataset_id": "tier2_supply_chain_sec_annual_v0_1",
+  "source_scope": {
+    "source_family": "sec_primary_filing",
+    "source_tier": "primary_sec_filing",
+    "form_types": [
+      "10-K",
+      "20-F",
+      "40-F"
+    ],
+    "requested_fiscal_years": [
+      2023,
+      2024,
+      2025
+    ],
+    "download_config": "configs/data_sources/tier2_supply_chain_sec_annual_fy2023_2025.yaml",
+    "staging_dataset_registry": "configs/data_sources/layered_staging_datasets_v0_1.yaml"
+  },
+  "download": {
+    "requested_tasks": 249,
+    "downloaded_filings": 226,
+    "missing_or_error_count": 23,
+    "downloaded_unique_tickers": 77,
+    "success_form_counts": {
+      "10-K": 143,
+      "20-F": 77,
+      "40-F": 6
+    },
+    "missing_or_error_form_counts": {
+      "10-K": 13,
+      "20-F": 7,
+      "40-F": 3
+    },
+    "missing_or_error_rows": [
+      {
+        "ticker": "ARM",
+        "year": 2023,
+        "form_type": "20-F",
+        "category": "semiconductor_ip",
+        "error": "No 20-F filing found for CIK 0001973239 and fiscal year 2023."
+      },
+      {
+        "ticker": "SHOP",
+        "year": 2023,
+        "form_type": "40-F",
+        "category": "commerce_software",
+        "error": "No 40-F filing found for CIK 0001594805 and fiscal year 2023."
+      },
+      {
+        "ticker": "TEAM",
+        "year": 2023,
+        "form_type": "20-F",
+        "category": "collaboration_software",
+        "error": "No 20-F filing found for CIK 0001650372 and fiscal year 2023."
+      },
+      {
+        "ticker": "TLN",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "power_generation",
+        "error": "No 10-K filing found for CIK 0001622536 and fiscal year 2023."
+      },
+      {
+        "ticker": "DNN",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "uranium",
+        "error": "No 10-K filing found for CIK 0001063259 and fiscal year 2023."
+      },
+      {
+        "ticker": "ESTC",
+        "year": 2023,
+        "form_type": "20-F",
+        "category": "search_observability_software",
+        "error": "No 20-F filing found for CIK 0001707753 and fiscal year 2023."
+      },
+      {
+        "ticker": "LAC",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "lithium",
+        "error": "No 10-K filing found for CIK 0001966983 and fiscal year 2023."
+      },
+      {
+        "ticker": "NNE",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "advanced_nuclear",
+        "error": "No 10-K filing found for CIK 0001923891 and fiscal year 2023."
+      },
+      {
+        "ticker": "NXE",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "uranium",
+        "error": "No 10-K filing found for CIK 0001698535 and fiscal year 2023."
+      },
+      {
+        "ticker": "UROY",
+        "year": 2023,
+        "form_type": "10-K",
+        "category": "uranium",
+        "error": "No 10-K filing found for CIK 0001711570 and fiscal year 2023."
+      },
+      {
+        "ticker": "SHOP",
+        "year": 2024,
+        "form_type": "40-F",
+        "category": "commerce_software",
+        "error": "No 40-F filing found for CIK 0001594805 and fiscal year 2024."
+      },
+      {
+        "ticker": "TEAM",
+        "year": 2024,
+        "form_type": "20-F",
+        "category": "collaboration_software",
+        "error": "No 20-F filing found for CIK 0001650372 and fiscal year 2024."
+      },
+      {
+        "ticker": "DNN",
+        "year": 2024,
+        "form_type": "10-K",
+        "category": "uranium",
+        "error": "No 10-K filing found for CIK 0001063259 and fiscal year 2024."
+      },
+      {
+        "ticker": "ESTC",
+        "year": 2024,
+        "form_type": "20-F",
+        "category": "search_observability_software",
+        "error": "No 20-F filing found for CIK 0001707753 and fiscal year 2024."
+      },
+      {
+        "ticker": "NXE",
+        "year": 2024,
+        "form_type": "10-K",
+        "category": "uranium",
+        "error": "No 10-K filing found for CIK 0001698535 and fiscal year 2024."
+      },
+      {
+        "ticker": "UROY",
+        "year": 2024,
+        "form_type": "10-K",
+        "category": "uranium",
+        "error": "No 10-K filing found for CIK 0001711570 and fiscal year 2024."
+      },
+      {
+        "ticker": "SHOP",
+        "year": 2025,
+        "form_type": "40-F",
+        "category": "commerce_software",
+        "error": "No 40-F filing found for CIK 0001594805 and fiscal year 2025."
+      },
+      {
+        "ticker": "ONTO",
+        "year": 2025,
+        "form_type": "10-K",
+        "category": "semiconductor_equipment",
+        "error": "No 10-K filing found for CIK 0000704532 and fiscal year 2025."
+      },
+      {
+        "ticker": "TEAM",
+        "year": 2025,
+        "form_type": "20-F",
+        "category": "collaboration_software",
+        "error": "No 20-F filing found for CIK 0001650372 and fiscal year 2025."
+      },
+      {
+        "ticker": "DNN",
+        "year": 2025,
+        "form_type": "10-K",
+        "category": "uranium",
+        "error": "No 10-K filing found for CIK 0001063259 and fiscal year 2025."
+      },
+      {
+        "ticker": "ESTC",
+        "year": 2025,
+        "form_type": "20-F",
+        "category": "search_observability_software",
+        "error": "No 20-F filing found for CIK 0001707753 and fiscal year 2025."
+      },
+      {
+        "ticker": "NXE",
+        "year": 2025,
+        "form_type": "10-K",
+        "category": "uranium",
+        "error": "No 10-K filing found for CIK 0001698535 and fiscal year 2025."
+      },
+      {
+        "ticker": "UROY",
+        "year": 2025,
+        "form_type": "10-K",
+        "category": "uranium",
+        "error": "No 10-K filing found for CIK 0001711570 and fiscal year 2025."
+      }
+    ],
+    "raw_private_dir": "data/raw_private/sec_tier2_supply_chain_annual",
+    "stdout_log": "data/logs/tier2_supply_chain_sec_annual_download_stdout_v0_1.jsonl",
+    "stderr_log": "data/logs/tier2_supply_chain_sec_annual_download_stderr_v0_1.jsonl"
+  },
+  "manifest": {
+    "records": 226,
+    "path": "data/staging/sec_tier2_supply_chain_annual/manifests/tier2_supply_chain_sec_annual_manifest_fy2023_2025_v0_1.jsonl"
+  },
+  "chunks": {
+    "records": 28165,
+    "input_records": 226,
+    "blocks": 14421,
+    "table_blocks": 4787,
+    "section_chunk_counts": {
+      "1": 6079,
+      "1A": 8605,
+      "7": 5813,
+      "7A": 1132,
+      "8": 6536
+    },
+    "form_chunk_counts": {
+      "10-K": 14849,
+      "20-F": 13316
+    },
+    "zero_chunk_filings": 6,
+    "zero_chunk_by_form": {
+      "40-F": 6
+    },
+    "zero_chunk_rows": [
+      {
+        "ticker": "CCJ",
+        "fiscal_year": 2023,
+        "form_type": "40-F",
+        "period_end": "2023-12-31",
+        "period_type": null,
+        "fiscal_period": null,
+        "chunks": 0,
+        "blocks": 0,
+        "split_blocks": 0,
+        "table_blocks": 0,
+        "sections": {}
+      },
+      {
+        "ticker": "CCJ",
+        "fiscal_year": 2024,
+        "form_type": "40-F",
+        "period_end": "2024-12-31",
+        "period_type": null,
+        "fiscal_period": null,
+        "chunks": 0,
+        "blocks": 0,
+        "split_blocks": 0,
+        "table_blocks": 0,
+        "sections": {}
+      },
+      {
+        "ticker": "CCJ",
+        "fiscal_year": 2025,
+        "form_type": "40-F",
+        "period_end": "2025-12-31",
+        "period_type": null,
+        "fiscal_period": null,
+        "chunks": 0,
+        "blocks": 0,
+        "split_blocks": 0,
+        "table_blocks": 0,
+        "sections": {}
+      },
+      {
+        "ticker": "TECK",
+        "fiscal_year": 2023,
+        "form_type": "40-F",
+        "period_end": "2023-12-31",
+        "period_type": null,
+        "fiscal_period": null,
+        "chunks": 0,
+        "blocks": 0,
+        "split_blocks": 0,
+        "table_blocks": 0,
+        "sections": {}
+      },
+      {
+        "ticker": "TECK",
+        "fiscal_year": 2024,
+        "form_type": "40-F",
+        "period_end": "2024-12-31",
+        "period_type": null,
+        "fiscal_period": null,
+        "chunks": 0,
+        "blocks": 0,
+        "split_blocks": 0,
+        "table_blocks": 0,
+        "sections": {}
+      },
+      {
+        "ticker": "TECK",
+        "fiscal_year": 2025,
+        "form_type": "40-F",
+        "period_end": "2025-12-31",
+        "period_type": null,
+        "fiscal_period": null,
+        "chunks": 0,
+        "blocks": 0,
+        "split_blocks": 0,
+        "table_blocks": 0,
+        "sections": {}
+      }
+    ],
+    "path": "data/staging/sec_tier2_supply_chain_annual/chunks/tier2_supply_chain_sec_annual_chunks_fy2023_2025_v0_1.jsonl"
+  },
+  "evidence": {
+    "records": 28165,
+    "table_evidence": 11888,
+    "path": "data/staging/sec_tier2_supply_chain_annual/evidence/tier2_supply_chain_sec_annual_evidence_fy2023_2025_v0_1.jsonl"
+  },
+  "structured_objects": {
+    "tables": 43736,
+    "metrics": 396565,
+    "claims": 231091,
+    "dir": "data/staging/sec_tier2_supply_chain_annual/structured_objects"
+  },
+  "indexes": {
+    "evidence_bm25": {
+      "status": "built_local",
+      "records": 28165,
+      "dir": "data/indexes/staging/bm25/tier2_supply_chain_sec_annual_fy2023_2025_v0_1"
+    },
+    "structured_object_sqlite_fts": {
+      "status": "built_local",
+      "records": 671392,
+      "object_counts": {
+        "table": 43736,
+        "metric": 396565,
+        "claim": 231091
+      },
+      "dir": "data/indexes/staging/sqlite_fts/tier2_supply_chain_sec_annual_objects_fy2023_2025_v0_1"
+    },
+    "exact_value_ledger": {
+      "status": "built_local",
+      "path": "data/indexes/staging/ledger/tier2_supply_chain_sec_annual_fy2023_2025_v0_1_ledger.duckdb",
+      "metadata": {
+        "schema_version": "sec_agent_lightweight_ledger_store_v0.1",
+        "row_count": 373643,
+        "metadata": {
+          "structured_dir": "D:\\FIN_Insight_Agent\\data\\staging\\sec_tier2_supply_chain_annual\\structured_objects",
+          "prefix": "tier2_supply_chain_sec_annual_fy2023_2025_v0_1",
+          "source_record_count": 440301,
+          "ledger_row_count_extracted": 373643,
+          "years": [],
+          "metric_families": [],
+          "workers": 4,
+          "source_batch_size": 1000,
+          "source_batch_bytes": 2097152,
+          "write_batch_size": 10000,
+          "duckdb_threads": 31,
+          "transaction_commit_rows": 50000,
+          "write_mode": "csv_copy",
+          "elapsed_sec": 19.614,
+          "staging_csv_path": "D:\\FIN_Insight_Agent\\data\\tmp\\tier2_supply_chain_sec_annual_ledger_stage_v0_1.tsv"
+        }
+      }
+    },
+    "milvus_evidence_semantic": {
+      "status": "not_built",
+      "reason": "deferred until Tier2 SEC + global-public shards pass parser/source-boundary gates"
+    }
+  },
+  "quality_gates": {
+    "chunk_quality_audit": {
+      "status": "pass",
+      "failed_checks": [],
+      "path": "eval/sec_cases/outputs/chunk_quality_audit/20260606_tier2_supply_chain_sec_annual_chunk_quality_v0_1/chunk_quality_summary.json"
+    }
+  },
+  "known_gaps": [
+    "40-F primary wrapper files for CCJ and TECK downloaded, but exhibit annual information form / MD&A / audited financial statement documents are not yet materialized.",
+    "20-F chunk parser is now active; exact-value ledger ranking still needs currency/value-role tuning for some issuers such as TSM/ASML.",
+    "Global-public non-SEC profiles beyond Infineon company-IR smoke are not yet fully downloaded."
+  ],
+  "promotion_status": "staging_only"
+}

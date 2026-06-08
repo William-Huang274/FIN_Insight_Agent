@@ -1,0 +1,65 @@
+{
+  "schema_version": "fin_agent_sec_structured_facts_download_summary_v0.1",
+  "status": "pass",
+  "company_count": 588,
+  "companyfacts_payloads": 588,
+  "submissions_payloads": 588,
+  "fact_rows": 2790261,
+  "submission_rows": 6605,
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "forms": [
+    "10-K",
+    "10-Q",
+    "20-F",
+    "40-F"
+  ],
+  "source_family_counts": {
+    "sec_companyfacts_structured_fact": 2790261
+  },
+  "form_counts": {
+    "10-K": 988200,
+    "10-Q": 1752865,
+    "20-F": 44890,
+    "40-F": 4306
+  },
+  "top_concepts": {
+    "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents": 24370,
+    "NetIncomeLoss": 21842,
+    "EarningsPerShareBasic": 21509,
+    "EarningsPerShareDiluted": 21505,
+    "IncomeTaxExpenseBenefit": 21274,
+    "WeightedAverageNumberOfSharesOutstandingBasic": 20957,
+    "WeightedAverageNumberOfDilutedSharesOutstanding": 20949,
+    "StockholdersEquity": 20578,
+    "ComprehensiveIncomeNetOfTax": 19768,
+    "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest": 18477,
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest": 18216,
+    "OperatingIncomeLoss": 17569,
+    "NetCashProvidedByUsedInFinancingActivities": 14973,
+    "NetCashProvidedByUsedInInvestingActivities": 14947,
+    "NetCashProvidedByUsedInOperatingActivities": 14878,
+    "ProfitLoss": 14336,
+    "OtherNonoperatingIncomeExpense": 14331,
+    "Assets": 14176,
+    "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsPeriodIncreaseDecreaseIncludingExchangeRateEffect": 14144,
+    "OtherComprehensiveIncomeLossNetOfTax": 13986,
+    "RevenueFromContractWithCustomerExcludingAssessedTax": 13986,
+    "AccumulatedOtherComprehensiveIncomeLossNetOfTax": 13763,
+    "LiabilitiesAndStockholdersEquity": 13396,
+    "EffectiveIncomeTaxRateContinuingOperations": 13309,
+    "CashAndCashEquivalentsAtCarryingValue": 13164
+  },
+  "ticker_fact_rows_min": 537,
+  "ticker_fact_rows_max": 9941,
+  "issue_counts": {},
+  "issues": [],
+  "outputs": {
+    "fact_rows": "D:\\FIN_Insight_Agent\\data\\staging\\structured_financial_facts\\sec_companyfacts_financial_fact_rows_v0_1.jsonl",
+    "submission_rows": "D:\\FIN_Insight_Agent\\data\\staging\\structured_financial_facts\\sec_submissions_filing_rows_v0_1.jsonl",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\sec_structured_facts_download_summary_v0_1.json"
+  }
+}

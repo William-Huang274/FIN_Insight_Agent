@@ -6,14 +6,16 @@
   "coverage_theme": "AI infrastructure",
   "ticker_count": 30,
   "tickers_sample": ["NVDA", "AMD", "MSFT", "AMZN", "GOOGL"],
-  "source_families": ["SEC 10-K/10-Q", "8-K earnings release", "market snapshot"],
+  "source_families": ["SEC 10-K/10-Q", "8-K earnings release", "market snapshot", "industry snapshot"],
   "as_of_date": "2026-05-22",
   "artifacts": {
     "manifest_path": "data/processed_private/manifests/<bundle_id>_manifest.jsonl",
     "bm25_index_dir": "data/indexes/bm25/<bundle_id>",
     "object_bm25_index_dir": "data/indexes/bm25/<bundle_id>_objects",
     "source_gap_path": "data/processed_private/source_gaps/<bundle_id>_source_gaps.jsonl",
-    "market_evidence_path": "data/processed_private/market/evidence_packs/<bundle_id>_market_evidence.jsonl"
+    "market_evidence_path": "data/processed_private/market/evidence_packs/<bundle_id>_market_evidence.jsonl",
+    "industry_evidence_path": "data/processed_private/industry/source_snapshots/<bundle_id>/industry_evidence_rows.jsonl",
+    "industry_snapshot_db_path": "data/processed_private/industry/source_snapshots/<bundle_id>/industry_snapshot.duckdb"
   },
   "build": {
     "created_at": "2026-05-25T00:00:00+08:00",
@@ -26,7 +28,9 @@
       "download_sec_8k_earnings",
       "build_sec_8k_earnings_manifest",
       "merge_sec_source_gaps",
-      "market/40_build_market_evidence_pack"
+      "market/40_build_market_evidence_pack",
+      "industry/10_download_industry_source_snapshot",
+      "industry/20_merge_industry_source_snapshots"
     ],
     "status": "template"
   }

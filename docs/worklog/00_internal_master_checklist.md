@@ -412,3 +412,76 @@
 - [ ] Expand real multi-turn evaluation to non-contiguous follow-up, artifact inspection, context compression, and resumed graph state.
 - [x] Add a Workbench backend release-quality report generator that summarizes CI, Docker/frontend smoke, pressure latency, throughput, token/cost proxy, and secret-safety evidence.
 - [ ] Run a 5-6 case Workbench backend release pressure profile before claiming full backend release readiness.
+- [x] Add Workbench API error contract that preserves legacy `detail` and adds a structured `error` object with `trace_id`.
+- [x] Propagate Workbench `trace_id` through API response headers, run jobs, run events, and subprocess environment.
+- [x] Persist Workbench job `elapsed_ms` and `error_message` in SQLite with backward-compatible schema migration.
+- [x] Add Workbench Dockerfile and GitHub Actions backend-smoke workflow.
+- [x] Add Workbench backend run filters and trace-id inspection endpoint.
+- [x] Add Workbench lightweight run-status polling endpoint.
+- [x] Add Workbench Docker smoke workflow with lightweight dependency build arg.
+- [x] Add Workbench backend system-status endpoint for store/path/free-space readiness without requiring Docker.
+- [x] Harden Workbench SQLite local store with WAL, busy timeout, trace/status indexes, and atomic run-event append.
+- [ ] Add Workbench frontend trace display and trace-id search panel.
+- [x] Add S0 chunk / retrieval asset quality framework, rubric gate, eval docs, and artifact-only audit script.
+- [x] Run real full238 S0 chunk quality audit and record duplicate chunk/evidence id, table marker, item coverage, and index parity results.
+- [x] Add chunk generator occurrence suffix guard so future rebuilds do not emit duplicate block/chunk ids for repeated item sections.
+- [ ] Rebuild full238 chunks / evidence / BM25 / ObjectBM25 after the chunk id guard and rerun S0 to green.
+- [ ] Audit the 136 primary filing core-item gaps and 30 unbalanced table marker chunks before Milvus mainline insertion.
+- [ ] Install/configure Milvus Lite or Milvus server and run retrieval-only BM25/ObjectBM25 vs Milvus vs hybrid A/B after S0 passes.
+
+## Layered Data Source Expansion
+
+- [x] Add Chinese layered data-source expansion plan and execution plan for SEC, market, industry, relationship, and event-lead data.
+- [x] Add Tier 0 / Tier 1 universe configuration contracts with current full238 and S&P 500 plus current target-pool slots.
+- [x] Download current S&P 500 constituents, dedupe 503 symbols to 500 CIK/company rows, and merge with current full238 into a 505-company Tier 1 manifest.
+- [x] Add source-family and ingestion-profile configs that keep staged expansion data out of the mainline vector DB until relationship gates pass.
+- [x] Add relationship edge schema, confidence rubric, entity alias rules, deterministic SEC edge extractor, verifier, and audit scripts.
+- [x] Build and audit current full238 Tier 0 manifest smoke: `238` companies, `0` missing CIK.
+- [x] Run available full238 relationship-edge extraction baseline with `target_company_count=500`: `91,708` rows scanned, `818` candidates, `768` verified, `50` rejected after generic/geographic direct-edge gates.
+- [x] Provide or fetch a reviewed S&P 500 constituent CSV, then build true Tier 1 `sp500_plus_current` manifest instead of current-only Tier 1 smoke.
+- [x] Add Tier 2 supply-chain supplement contract with SEC issuers and non-US public-reporting companies treated as primary disclosure, not source gaps.
+- [x] Build and audit Tier 2 supply-chain manifest: `98` companies, including `83` SEC-download eligible and `15` global-public disclosure companies; combined Tier1+Tier2 has `603` companies.
+- [x] Add global public disclosure profile config and source-plan builder for KR DART, TW MOPS, JP EDINET, HKEX/SZSE/CNINFO, and EU annual-report profiles; generated `69` annual-like plan rows for `15` companies.
+- [x] Move non-US report-type rules from company rows into market/regulator disclosure profiles and add source-plan audit to block company-level `target_reports`.
+- [x] Add profile-aware global public disclosure dry-run download task queue: `69` tasks, `6` profile strategies, `document_downloaded_count=0`.
+- [x] Add profile-layer `company_ir_official_report_download` and pass EU regulated annual-report smoke for Infineon 2023-2025: `3/3` documents downloaded with checksum metadata.
+- [ ] Add global public disclosure downloader/parser for KR DART, TW MOPS, JP EDINET, HKEX/SZSE/CNINFO, and remaining EU/company-IR issuer profiles.
+- [x] Download and stage Tier 1 SEC evidence before claiming true 500-company relationship-edge extraction.
+- [x] Rebuild expanded Object SQLite FTS baseline for Tier1+Tier2 SEC full-source mixed structured objects: `7493637` records.
+- [x] Run expanded BM25/ObjectBM25/Milvus/Hybrid retrieval-only A/B: `20260607_tier1_tier2_sec_full_source_object_hybrid_ab_v0_3`, `12/12` pass.
+- [x] Locate or rebuild a verified combined Tier1+Tier2 exact-value ledger before using the `6789032` facts architecture-draft count; accepted cloud full-asset path uses the verified `6789032`-fact combined ledger from `tier1_tier2_full_source_v0_1`.
+- [ ] Run true expanded relationship-edge extraction over Tier1+Tier2 staged evidence before claiming 500/603-company relationship coverage.
+- [x] Write market/industry merged artifact paths into source inventory with context-only source boundary.
+- [x] Update `execute_evidence_operators` with Milvus typed semantic route and expanded market/industry catalog paths.
+- [x] Update Evidence Fusion Selector so each Specialist receives the right source-family bundle.
+- [x] Update Research Lead prompt/skill so route choice is cost-aware and query-type aware across SEC, Milvus, market, industry, and relationship sources.
+- [x] Update Specialist skill vNext for Market and Industry source-boundary language after source-family bundle and route-choice metadata are available.
+- [x] Run local full238 A1-A5 layered regression after expanded wiring: A1 `5/5`, S2 `1/1`, A2 `4/4`, A3 `4/4`, A4 `2/2`, A5 `2/2`; fixed S3/S4 expanded runtime config handoff.
+- [x] Run cloud expanded A2/S3 Evidence Operators gate with expanded SEC BM25/Object SQLite FTS/BGE and focused A2 ledger: `20260607_expanded_a2_cloud_sec_expanded_operator_gate_v0_2` passed `4/4`; superseded by the full combined ledger + 603 assets A2 run below.
+- [x] Run cloud expanded A3/S4 Coverage / Reflection gate from the focused-ledger A2 artifact: `20260607_expanded_a3_cloud_coverage_reflection_gate_v0_1` passed `4/4`; superseded by the full combined ledger + 603 assets A3 run below.
+- [x] Run cloud expanded A4/S5 and A5/S6-S8 after a cloud LLM provider key is configured; `20260607_expanded_a4_cloud_full_combined_603_assets_specialist_gate_deepseek_v0_2` and `20260607_expanded_a5_cloud_full_combined_603_assets_judgment_memo_gate_deepseek_v0_1` passed `2/2`.
+- [x] Rerun A2/A3 with a verified full combined Tier1+Tier2 exact-value ledger before promoting expanded full-chain; `20260607_expanded_a2_cloud_full_combined_603_assets_operator_gate_v0_1` and `20260607_expanded_a3_cloud_full_combined_603_assets_coverage_reflection_gate_v0_1` passed with full combined ledger plus 603 market/industry assets.
+- [x] Add Workbench A6 eval runners and summary wrapper for `expanded_a6_full_chain_smoke` and `expanded_a6_full_chain_main`, with transient API key env injection and local contract tests `84 passed`.
+- [x] Add cross-agent `evidence_gap_requests` protocol and update Research Lead / Universe / Specialist / Coverage / Judgment / Memo / Verifier / Renderer skills so professional scope decisions can request bounded upstream evidence without giving inspect-only agents tool authority.
+- [x] Harden Research Lead `scope_decision` and Universe per-ticker scope contracts with catalog inspection fields, expansion budgets, available source families, relationship strength, downstream operator owner, and explicit excluded ticker rationales.
+- [x] Add A6 scope-decision and gap-escalation eval cases that check catalog-aware universe selection, candidate rationale, selected source families, structured gap preservation, token budget, and latency for NVIDIA / AI infrastructure / supply-chain style prompts.
+- [x] Add resident MCP worker for high-cost SEC retrieval tools, cache BGE/Milvus model/client state, and validate NVIDIA A6 single-case smoke with Milvus typed semantic recall: `20260607_expanded_a6_scope_nvda_boundary_resident_milvus_v0_8_cache_hit` passed `1/1`.
+- [x] Run A6 4-case resident MCP + multi-query Milvus diagnostic smoke: historical scorer reported `4/4` functional pass, `174400` total LLM tokens, max case elapsed `331403 ms`, but the result is not promotion because exact lookup triggered Milvus and standard/sector-depth latency gates were too permissive.
+- [x] Patch the A6 4-case review findings: suppress Milvus for deterministic/exact lookup routes, add mode-level default performance gates, and render only the top exact metric for single-metric deterministic answers.
+- [x] Rerun the A6 4-case smoke after the suppression/performance/renderer fixes: `20260608_expanded_a6_multi_query_milvus_full_chain_smoke_postfix_v0_2` reached exact `0` Milvus calls, but overall `1/4` pass because standard, scope, and sector-depth failed performance gates.
+- [x] Fix A6 prompt budget truncation and Memo Writer surface repair waste; v0_3/v0_4 reruns reduced 4-case tokens from `206678` to `166154`, scope passed with Memo Writer `1` call / `8668` tokens, and standard passed after correcting the market evidence path.
+- [x] Improve the A6 4-case smoke performance profile before remaining-case gate expansion; accepted diagnostic run `20260608_expanded_a6_4case_prewarm_device_fixed_smoke_v0_14` passed `4/4` with max case `274427 ms`.
+- [ ] Reduce A6 Research Lead double-call / length-retry cost before another full smoke.
+- [x] Reduce Memo Writer retry/token failure for NVIDIA scope via direct-answer internal-label sanitizer; scope rerun passed with Memo Writer `1` call / `8668` tokens.
+- [ ] Reduce Universe Relationship repair/call count for sector-depth before concurrent expansion.
+- [x] Reduce sector-depth latency below the `300000 ms` gate after v0_4 failed only by `469 ms`; v0_14 sector-depth passed at `274427 ms`.
+- [ ] Canonicalize Workbench/cloud A6 `MARKET_EVIDENCE_PATH` to the expanded evidence pack path before future A6 runs.
+- [x] Add resident SEC search/reranker prewarm alongside Milvus warmup before timing-sensitive A6 smoke runs; Workbench prewarm now resolves `BGE_DEVICE=auto` to actual `cuda/cpu` and records tool errors.
+- [x] Run remaining A6 cases through the Workbench backend at low concurrency `2` only after the above gate or as a diagnostic, using backend trace/token/runtime/report outputs as the performance evidence.
+- [ ] Expose resident worker/cache-hit metadata directly in A6 eval summary and stabilize canonical `sec_search_filings` cache keys against LLM route variance.
+- [ ] Evaluate Milvus server GPU index or FAISS-GPU sidecar before claiming CUDA vector-search acceleration; current Milvus Lite path is resident but CPU index based.
+- [ ] If A6 shows material/blocking gap requests without automatic recovery, compile them into deterministic Coverage Reflection / Universe second-pass routes before broadening the full-chain case count.
+- [x] Run A6 small-batch full-chain / multi-turn expanded gate over 10-20 cases before promoting the expanded path as the default agent route.
+- [ ] Add R3 entity resolution registry for external counterparties, subsidiaries, aliases, ticker, and CIK.
+- [ ] Add R4 relationship verifier hard gate into Router/Specialist path so exposure/news/partner rows cannot be rewritten as direct customer/supplier.
+- [ ] Add R5 Relationship Router and Industry Specialist integration for verified relationship edge rows.

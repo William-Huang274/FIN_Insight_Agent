@@ -29,12 +29,23 @@ RELATIONSHIP_SUMMARY_DEEP_RESEARCH_MAX_ROWS = 24
 SEC_SEARCH_RUNTIME_POLICY_SCHEMA_VERSION = "sec_agent_sec_search_runtime_policy_v0.1"
 SEC_SEARCH_TEXT_ROUTES = {"filing_text", "risk_text", "8k_commentary"}
 SEC_SEARCH_GROUP_ROUTES = {"ledger_first", *SEC_SEARCH_TEXT_ROUTES}
+MILVUS_SEMANTIC_VECTOR_KINDS = {
+    "narrative_chunk",
+    "table_chunk",
+    "metric_row",
+    "table_row",
+    "claim_row",
+    "relationship_context",
+    "paraphrase_context",
+}
+MILVUS_DEFAULT_VECTOR_KINDS = ("narrative_chunk", "table_chunk", "paraphrase_context")
 
 ROUTE_OPERATOR_TOOL: dict[str, tuple[str, str]] = {
     "ledger_first": ("sec_operator", "sec_query_exact_value_ledger"),
     "filing_text": ("sec_operator", "sec_search_filings"),
     "risk_text": ("sec_operator", "sec_search_filings"),
     "8k_commentary": ("eight_k_operator", "sec_search_filings"),
+    "milvus_semantic": ("sec_operator", "sec_milvus_semantic_search"),
     "market_snapshot": ("market_operator", "market_get_snapshot"),
     "industry_snapshot": ("industry_operator", "industry_get_snapshot"),
     "relationship_graph": ("universe_relationship", "relationship_graph_lookup"),
@@ -46,11 +57,25 @@ ROUTE_SOURCE_FAMILY: dict[str, str] = {
     "filing_text": "primary_sec_filing",
     "risk_text": "primary_sec_filing",
     "8k_commentary": "company_authored_unaudited_sec_filing",
+    "milvus_semantic": "primary_sec_filing",
     "market_snapshot": "market_snapshot",
     "industry_snapshot": "industry_snapshot",
     "relationship_graph": "relationship_graph",
     "run_artifact": "run_artifact",
 }
+
+ROUTE_COST_TIER: dict[str, str] = {
+    "ledger_first": "low",
+    "run_artifact": "low",
+    "filing_text": "medium",
+    "risk_text": "medium",
+    "8k_commentary": "medium",
+    "market_snapshot": "medium",
+    "industry_snapshot": "medium",
+    "milvus_semantic": "high",
+    "relationship_graph": "high",
+}
+ROUTE_COST_TIER_RANK = {"low": 1, "medium": 2, "high": 3}
 
 SEC_SEARCH_SOURCE_TIERS = {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
 SPECIALIST_EXECUTION_ORDER = (
@@ -86,6 +111,7 @@ def build_multi_agent_evidence_requirement_plan(
             "planner_boundary": "business_need_only_no_physical_paths",
             "route_compiler": "deterministic_retrieval_plan_compiler",
             "operator_owner_source": "route_intent_mapping",
+            "route_selection_policy": "cost_and_query_type_aware_v0_1",
         },
     }
     validation = validate_multi_agent_evidence_requirement_plan(enriched, activation_plan=activation_plan)
@@ -430,7 +456,17 @@ def _coalesce_retrieval_plan_routes(plan: Mapping[str, Any], activation_plan: Ma
 def _promote_coverage_scope_to_route(route: Mapping[str, Any]) -> dict[str, Any]:
     promoted = dict(route or {})
     coverage = promoted.get("coverage_requirements") if isinstance(promoted.get("coverage_requirements"), Mapping) else {}
-    for field in ("tickers", "filing_types", "source_tiers", "metric_families", "period_roles", "section_hints", "market_fields", "market_analysis_tools"):
+    for field in (
+        "tickers",
+        "filing_types",
+        "source_tiers",
+        "metric_families",
+        "period_roles",
+        "section_hints",
+        "market_fields",
+        "market_analysis_tools",
+        "vector_kinds",
+    ):
         if not _string_list(promoted.get(field)) and _string_list(coverage.get(field)):
             promoted[field] = _string_list(coverage.get(field))
     if not _int_list(promoted.get("years")) and _int_list(coverage.get("years")):
@@ -464,6 +500,7 @@ def _route_coalescing_key(route: Mapping[str, Any]) -> tuple[Any, ...]:
         tuple(sorted(_dedupe(_string_list(route.get("period_roles") or coverage.get("period_roles"))))),
         tuple(sorted(_dedupe(_string_list(route.get("market_fields") or coverage.get("market_fields"))))),
         tuple(sorted(_dedupe(_string_list(route.get("source_families") or coverage.get("source_families"))))),
+        tuple(sorted(_dedupe(_string_list(route.get("vector_kinds") or coverage.get("vector_kinds"))))),
     )
 
 
@@ -669,6 +706,7 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
         bounded_rows = _bounded_rows_for_agent_data_view(entry["agent_id"], state)
         view["bounded_evidence_rows"] = bounded_rows
         view["bounded_row_distribution"] = _bounded_row_distribution(bounded_rows)
+        view["source_family_bundle"] = _source_family_bundle_for_agent(entry["agent_id"], bounded_rows, state)
     if "coverage_summary" in allowed:
         view["coverage_summary"] = _coverage_summary_view(state)
     if "tool_trace_summary" in allowed:
@@ -942,6 +980,9 @@ def _compact_task_card_requirement(requirement: Mapping[str, Any], index: int) -
         "filing_types": _string_list(requirement.get("filing_types"))[:8],
         "source_families": source_families[:8],
         "evidence_routes": evidence_routes[:8],
+        "route_selection_reason": str(requirement.get("route_selection_reason") or requirement.get("route_reason") or "")[:240],
+        "route_cost_tier": str(requirement.get("route_cost_tier") or "")[:40],
+        "route_selection_policy": str(requirement.get("route_selection_policy") or "")[:80],
         "metric_families": _string_list(requirement.get("metric_families") or requirement.get("required_metric_families"))[:12],
         "claim_families": claim_families[:8],
     }
@@ -1273,7 +1314,7 @@ def execute_evidence_operator_plan(
                 runtime_summary=runtime_summary,
             )
         )
-        if tool_name == "sec_search_filings":
+        if tool_name in {"sec_search_filings", "sec_milvus_semantic_search"}:
             context_rows.extend(rows)
             ledger_rows.extend(dict(item) for item in result.get("runtime_ledger_rows") or [] if isinstance(item, Mapping))
         elif tool_name == "sec_query_exact_value_ledger":
@@ -1594,6 +1635,9 @@ def tool_arguments_from_route(
         "metric_families": list(route.get("metric_families") or coverage.get("metric_families") or []),
         "period_roles": list(route.get("period_roles") or coverage.get("period_roles") or []),
         "evidence_requirement_id": str(route.get("evidence_requirement_id") or ""),
+        "route_selection_reason": str(route.get("route_selection_reason") or ""),
+        "route_cost_tier": str(route.get("route_cost_tier") or ""),
+        "route_selection_policy": str(route.get("route_selection_policy") or ""),
         "limit": int(route.get("limit") or context.get("limit") or 120),
     }
     if route_name == "ledger_first":
@@ -1615,6 +1659,32 @@ def tool_arguments_from_route(
         if isinstance(route.get("runtime_retrieval_plan"), Mapping):
             args["retrieval_plan"] = dict(route.get("runtime_retrieval_plan") or {})
         return args
+    if route_name == "milvus_semantic":
+        args["source_tiers"] = _sec_search_source_tiers_for_route("filing_text", _string_list(args.get("source_tiers")))
+        vector_kinds = _milvus_vector_kinds_for_route(route, context)
+        query = str(route.get("query") or user_query or route.get("task_id") or "")
+        args.update(
+            {
+                "query": query,
+                "query_probes": _milvus_query_probes_for_route(route, context=context, user_query=query, vector_kinds=vector_kinds),
+                "retrieval_route": route_name,
+                "candidate_budget": int(route.get("candidate_budget") or 0),
+                "milvus_top_k": int(route.get("milvus_top_k") or context.get("milvus_top_k") or route.get("limit") or 40),
+                "vector_kinds": vector_kinds,
+                "typed_filter_required": True,
+                "milvus_db_path": str(context.get("milvus_db_path") or context.get("milvus_uri") or ""),
+                "milvus_collection_name": str(context.get("milvus_collection_name") or ""),
+                "embedding_model": str(context.get("embedding_model") or context.get("milvus_embedding_model") or ""),
+                "milvus_search_policy": {
+                    "schema_version": "sec_agent_milvus_semantic_route_policy_v0.1",
+                    "route_role": "semantic_recall_supplement",
+                    "typed_filter_required": True,
+                    "vector_kinds": vector_kinds,
+                    "not_exact_value_authority": True,
+                },
+            }
+        )
+        return args
     if route_name == "market_snapshot":
         market = context.get("market_snapshot") if isinstance(context.get("market_snapshot"), Mapping) else {}
         args["tickers"] = _market_snapshot_tickers_for_route(args, context)
@@ -1625,6 +1695,7 @@ def tool_arguments_from_route(
                 "snapshot_id": str(context.get("market_snapshot_id") or market.get("snapshot_id") or ""),
                 "as_of_date": str(context.get("market_as_of_date") or market.get("as_of_date") or ""),
                 "market_evidence_path": str(context.get("market_evidence_path") or ""),
+                "market_catalog_path": str(context.get("market_catalog_path") or ""),
             }
         )
         return args
@@ -1660,6 +1731,72 @@ def tool_arguments_from_route(
     return args
 
 
+def _milvus_query_probes_for_route(
+    route: Mapping[str, Any],
+    *,
+    context: Mapping[str, Any],
+    user_query: str,
+    vector_kinds: list[str],
+) -> list[str]:
+    coverage = route.get("coverage_requirements") if isinstance(route.get("coverage_requirements"), Mapping) else {}
+    explicit = _string_list(route.get("query_probes") or route.get("semantic_probes") or coverage.get("query_probes") or coverage.get("semantic_probes"))
+    base = str(user_query or route.get("query") or route.get("task_id") or "").strip()
+    if explicit:
+        return _dedupe([base, *explicit])[: _milvus_query_probe_limit(context)]
+    tickers = _dedupe(
+        [
+            *_string_list(route.get("tickers") or coverage.get("tickers")),
+            *_string_list(context.get("focus_tickers")),
+            *_string_list(context.get("search_scope_tickers") if context.get("execution_mode") == "deep_research" else []),
+        ]
+    )
+    metrics = _dedupe([*_string_list(route.get("metric_families") or coverage.get("metric_families")), *_string_list(context.get("metric_families"))])
+    return _auto_milvus_query_probes(base, tickers=tickers, metrics=metrics, vector_kinds=vector_kinds, limit=_milvus_query_probe_limit(context))
+
+
+def _milvus_query_probe_limit(context: Mapping[str, Any]) -> int:
+    raw = context.get("milvus_query_probe_limit") or context.get("query_probe_limit")
+    try:
+        value = int(raw)
+    except Exception:
+        value = 8
+    return max(1, min(16, value))
+
+
+def _auto_milvus_query_probes(
+    base: str,
+    *,
+    tickers: list[str],
+    metrics: list[str],
+    vector_kinds: list[str],
+    limit: int,
+) -> list[str]:
+    ticker_text = " ".join(str(ticker).upper() for ticker in tickers if str(ticker).strip())
+    metric_text = " ".join(str(metric).replace("_", " ") for metric in metrics if str(metric).strip())
+    base_upper = str(base or "").upper()
+    ticker_prefix = "" if ticker_text and all(str(ticker).upper() in base_upper for ticker in tickers if str(ticker).strip()) else ticker_text
+    base_text = " ".join(part for part in (ticker_prefix, metric_text, base) if part)
+    probes = [base_text or base]
+    lower = " ".join([base, ticker_text, metric_text, " ".join(vector_kinds)]).lower()
+    if metric_text or any(term in lower for term in ("fundamental", "基本面", "revenue", "margin", "cash flow", "profit", "earnings")):
+        probes.append(" ".join(part for part in (ticker_text, "company fundamentals revenue gross margin operating margin cash flow data center segment performance", metric_text) if part))
+    if any(term in lower for term in ("nvda", "nvidia", "ai", "accelerated", "cloud", "hbm", "data center", "infrastructure", "semiconductor")):
+        probes.extend(
+            [
+                f"{ticker_text} cloud capex demand hyperscaler infrastructure spending AI accelerated computing".strip(),
+                f"{ticker_text} memory HBM foundry semiconductor equipment supply chain capacity constraints".strip(),
+                f"{ticker_text} server networking power downstream data center infrastructure demand transmission".strip(),
+                f"{ticker_text} export control China restrictions customer concentration risk counterevidence".strip(),
+                f"{ticker_text} market reaction valuation investor expectations AI infrastructure growth durability".strip(),
+            ]
+        )
+    if "relationship_context" in set(vector_kinds):
+        probes.append(" ".join(part for part in (ticker_text, "economic linkage demand transmission upstream downstream customer supplier supply chain") if part))
+    if "paraphrase_context" in set(vector_kinds):
+        probes.append(" ".join(part for part in (ticker_text, "plain language SEC filing evidence canonical financial terms management discussion") if part))
+    return _dedupe([probe for probe in probes if probe])[: max(1, int(limit))]
+
+
 def _market_snapshot_tickers_for_route(args: Mapping[str, Any], context: Mapping[str, Any]) -> list[str]:
     base = _string_list(args.get("tickers"))
     mode = str(context.get("execution_mode") or "").strip()
@@ -1669,6 +1806,28 @@ def _market_snapshot_tickers_for_route(args: Mapping[str, Any], context: Mapping
         if 0 < len(expanded) <= 12:
             return _dedupe([*base, *expanded])
     return base
+
+
+def _milvus_vector_kinds_for_route(route: Mapping[str, Any], context: Mapping[str, Any]) -> list[str]:
+    coverage = route.get("coverage_requirements") if isinstance(route.get("coverage_requirements"), Mapping) else {}
+    requested = _string_list(route.get("vector_kinds") or coverage.get("vector_kinds") or context.get("milvus_vector_kinds"))
+    valid = [kind for kind in requested if kind in MILVUS_SEMANTIC_VECTOR_KINDS]
+    if valid:
+        return _dedupe(valid)
+    source_families = set(_string_list(route.get("source_families") or coverage.get("source_families") or context.get("source_families") or context.get("source_tiers")))
+    text = " ".join(
+        [
+            str(route.get("query") or ""),
+            str(route.get("task_id") or ""),
+            " ".join(str(item) for item in route.get("metric_families") or coverage.get("metric_families") or []),
+        ]
+    ).lower()
+    defaults = list(MILVUS_DEFAULT_VECTOR_KINDS)
+    if "relationship_graph" in source_families or _contains_any(text, ("relationship", "supplier", "customer", "supply chain", "上下游", "供应链")):
+        defaults.append("relationship_context")
+    if _contains_any(text, ("metric", "table", "margin", "revenue", "capex", "cash flow", "数值", "表格")):
+        defaults.extend(["metric_row", "table_row"])
+    return _dedupe([kind for kind in defaults if kind in MILVUS_SEMANTIC_VECTOR_KINDS])
 
 
 def _sec_search_source_tiers_for_route(route_name: str, source_tiers: list[str]) -> list[str]:
@@ -1764,13 +1923,30 @@ def _sec_search_runtime_args(context: Mapping[str, Any], route: Mapping[str, Any
         "bge_device_policy": runtime_policy.get("bge_device_policy") or "",
         "cuda_available": runtime_policy.get("cuda_available"),
     }
-    if context.get("build_runtime_ledger") is not None:
-        args["build_runtime_ledger"] = _bool_value(context.get("build_runtime_ledger"))
+    args["build_runtime_ledger"] = _sec_search_should_build_runtime_ledger(context, route)
     if context.get("output_dir"):
         args["output_dir"] = _route_output_dir(str(context.get("output_dir") or ""), str(route.get("route_id") or "route"))
     if context.get("run_id"):
         args["run_id"] = f"{context.get('run_id')}_{_slug(route.get('route_id') or route.get('retrieval_route') or 'route')}"
     return args
+
+
+def _sec_search_should_build_runtime_ledger(context: Mapping[str, Any], route: Mapping[str, Any]) -> bool:
+    if context.get("sec_search_build_runtime_ledger") is not None:
+        return _bool_value(context.get("sec_search_build_runtime_ledger"))
+    if not _bool_value(context.get("build_runtime_ledger") or context.get("ledger_first_sec_search_fallback")):
+        return False
+    if _route_uses_ledger_first(route):
+        return True
+    runtime_plan = route.get("runtime_retrieval_plan") if isinstance(route.get("runtime_retrieval_plan"), Mapping) else {}
+    for item in runtime_plan.get("routes") or []:
+        if isinstance(item, Mapping) and _route_uses_ledger_first(item):
+            return True
+    return False
+
+
+def _route_uses_ledger_first(route: Mapping[str, Any]) -> bool:
+    return str(route.get("retrieval_route") or "") == "ledger_first" or str(route.get("fallback_from_retrieval_route") or "") == "ledger_first"
 
 
 def derive_sec_search_runtime_policy(context: Mapping[str, Any], route: Mapping[str, Any]) -> dict[str, Any]:
@@ -1933,12 +2109,27 @@ def _tool_runtime_summary(tool_name: str, result: Mapping[str, Any]) -> dict[str
     if tool_name == "sec_search_filings":
         candidate_counts = result.get("candidate_counts") if isinstance(result.get("candidate_counts"), Mapping) else {}
         context_runtime = result.get("context_runtime") if isinstance(result.get("context_runtime"), Mapping) else {}
+        resident_worker = result.get("resident_worker") if isinstance(result.get("resident_worker"), Mapping) else {}
+        registry_timing = result.get("registry_timing_ms") if isinstance(result.get("registry_timing_ms"), Mapping) else {}
         summary.update(
             {
+                "elapsed_ms": int(result.get("elapsed_ms") or 0),
                 "context_row_count": len(result.get("context_rows") or []),
                 "runtime_ledger_row_count": len(result.get("runtime_ledger_rows") or []),
                 "candidate_counts": _sanitize_runtime_mapping(candidate_counts),
                 "context_runtime": _sanitize_runtime_mapping(context_runtime),
+                "registry_timing_ms": _sanitize_runtime_mapping(registry_timing),
+                "resident_worker": _sanitize_runtime_mapping(resident_worker),
+            }
+        )
+    elif tool_name == "sec_milvus_semantic_search":
+        summary.update(
+            {
+                "context_row_count": len(result.get("context_rows") or []),
+                "vector_kind_counts": _sanitize_runtime_mapping(result.get("vector_kind_counts") if isinstance(result.get("vector_kind_counts"), Mapping) else {}),
+                "collection_name": str(result.get("collection_name") or ""),
+                "typed_filter_required": bool(result.get("typed_filter_required", True)),
+                "semantic_route_role": str(result.get("semantic_route_role") or "semantic_recall_supplement"),
             }
         )
     elif tool_name == "market_get_snapshot":
@@ -1956,6 +2147,14 @@ def _tool_runtime_summary(tool_name: str, result: Mapping[str, Any]) -> dict[str
             {
                 "relationship_row_count": len(result.get("relationship_rows") or []),
                 "expanded_ticker_count": len(result.get("expanded_tickers") or []),
+            }
+        )
+    elif tool_name == "sec_query_exact_value_ledger":
+        summary.update(
+            {
+                "elapsed_ms": int(result.get("elapsed_ms") or 0),
+                "ledger_row_count": len(result.get("ledger_rows") or []),
+                "fallback_trace_count": len(result.get("fallback_trace") or []),
             }
         )
     return summary
@@ -1988,6 +2187,14 @@ def _tool_argument_summary(arguments: Mapping[str, Any]) -> dict[str, Any]:
         "context_runner",
         "build_runtime_ledger",
         "retrieval_runtime_policy",
+        "milvus_top_k",
+        "vector_kinds",
+        "typed_filter_required",
+        "milvus_collection_name",
+        "milvus_search_policy",
+        "route_selection_reason",
+        "route_cost_tier",
+        "route_selection_policy",
     }
     return {key: arguments.get(key) for key in allowed if key in arguments}
 
@@ -2089,6 +2296,25 @@ def validate_tool_observation_boundary(tool_name: str, result: Mapping[str, Any]
             "status": "pass",
             "allowed_claim_scope": "industry_context_only",
             "prohibited_claim_scope": "company_reported_financial_fact",
+        }
+    if tool_name == "sec_milvus_semantic_search":
+        vector_counts = result.get("vector_kind_counts") if isinstance(result.get("vector_kind_counts"), Mapping) else {}
+        row_kinds = {
+            str(row.get("vector_kind") or "")
+            for row in result.get("context_rows") or []
+            if isinstance(row, Mapping) and str(row.get("vector_kind") or "")
+        }
+        missing = []
+        if not vector_counts and not row_kinds:
+            missing.append("vector_kind_counts")
+        if result.get("typed_filter_required") is False:
+            missing.append("typed_filter_required")
+        return {
+            "status": "fail" if missing else "pass",
+            "allowed_claim_scope": "filing_semantic_recall_supplement",
+            "prohibited_claim_scope": "exact_value_authority",
+            "typed_filter_required": True,
+            "missing": missing,
         }
     if tool_name == "relationship_graph_lookup":
         return {
@@ -3051,6 +3277,7 @@ def _route_intents_for_routes(routes: list[str]) -> list[dict[str, Any]]:
                 "operator_owner": owner,
                 "tool_name": tool_name,
                 "route_authority": "deterministic_compiler",
+                "route_cost_tier": ROUTE_COST_TIER.get(route, "medium"),
             }
         )
     return intents
@@ -3099,6 +3326,7 @@ def _source_family_gap_items(missing: Mapping[str, Any]) -> list[dict[str, Any]]
 def _rows_from_result(tool_name: str, result: Mapping[str, Any]) -> list[dict[str, Any]]:
     keys = {
         "sec_search_filings": "context_rows",
+        "sec_milvus_semantic_search": "context_rows",
         "sec_query_exact_value_ledger": "ledger_rows",
         "market_get_snapshot": "market_rows",
         "industry_get_snapshot": "industry_rows",
@@ -3136,6 +3364,7 @@ def _enrich_evidence_requirement(requirement: Mapping[str, Any]) -> dict[str, An
                 "operator_owner": owner,
                 "tool_name": tool_name,
                 "route_authority": "deterministic_compiler",
+                "route_cost_tier": ROUTE_COST_TIER.get(route, "medium"),
             }
         )
     req["route_intents"] = route_intents
@@ -3146,8 +3375,21 @@ def _enrich_evidence_requirement(requirement: Mapping[str, Any]) -> dict[str, An
     req["source_families"] = _dedupe(source_families)
     req["operator_owners"] = _dedupe(operator_owners)
     req["claim_families"] = _claim_families_for_requirement(req)
+    req["route_cost_tier"] = _normalize_route_cost_tier_value(req.get("route_cost_tier") or req.get("cost_tier"), _string_list(req.get("evidence_routes") or req.get("retrieval_routes")))
+    req["route_selection_reason"] = str(req.get("route_selection_reason") or req.get("route_reason") or "")[:300]
+    req["route_selection_policy"] = str(req.get("route_selection_policy") or "cost_and_query_type_aware_v0_1")[:100]
     req["planner_boundary"] = "business_need_only_no_physical_paths"
     return req
+
+
+def _normalize_route_cost_tier_value(value: Any, routes: list[str]) -> str:
+    text = str(value or "").strip().lower()
+    if text in ROUTE_COST_TIER_RANK:
+        return text
+    tiers = [ROUTE_COST_TIER.get(route, "medium") for route in routes]
+    if not tiers:
+        return "medium"
+    return max(tiers, key=lambda tier: ROUTE_COST_TIER_RANK.get(tier, 2))
 
 
 def _claim_families_for_requirement(requirement: Mapping[str, Any]) -> list[str]:
@@ -3276,6 +3518,26 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
         "snapshot_id": str(row.get("snapshot_id") or ""),
         "as_of_date": str(row.get("as_of_date") or ""),
     }
+    retrieval_route = str(row.get("retrieval_route") or "").strip()
+    if retrieval_route:
+        bounded["retrieval_route"] = retrieval_route
+    if _row_is_semantic_supplement(row):
+        vector_kind = str(row.get("vector_kind") or "").strip()
+        vector_kinds = _string_list(row.get("vector_kinds"))
+        if vector_kind and vector_kind not in vector_kinds:
+            vector_kinds = [vector_kind, *vector_kinds]
+        bounded.update(
+            {
+                "semantic_supplement": True,
+                "semantic_route_role": str(row.get("semantic_route_role") or "semantic_recall_supplement"),
+                "semantic_claim_scope": "filing_semantic_recall_supplement_only",
+                "exact_value_authority": False,
+            }
+        )
+        if vector_kind:
+            bounded["vector_kind"] = vector_kind
+        if vector_kinds:
+            bounded["vector_kinds"] = vector_kinds
     if _row_source_family(row) == "relationship_graph":
         bounded.update(
             {
@@ -3293,6 +3555,86 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
             }
         )
     return bounded
+
+
+def _source_family_bundle_for_agent(agent_id: str, rows: list[Mapping[str, Any]], state: Mapping[str, Any]) -> dict[str, Any]:
+    selected_families = _ordered_source_families(
+        [_row_source_family(row) or str(row.get("source_family") or "") for row in rows],
+        preferred_order=_specialist_required_source_families(agent_id),
+    )
+    counts = _bounded_row_distribution(rows).get("by_source_family") or {}
+    semantic_rows = [row for row in rows if _row_is_semantic_supplement(row)]
+    semantic_vector_kinds = _semantic_vector_kinds_from_rows(semantic_rows)
+    context_only_families = [
+        family
+        for family in selected_families
+        if family in {"market_snapshot", "industry_snapshot", "relationship_graph"}
+    ]
+    exact_authority_families = [
+        family
+        for family in selected_families
+        if family in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
+    ]
+    bundle = {
+        "schema_version": "sec_agent_source_family_bundle_v0.1",
+        "agent_id": agent_id,
+        "selection_policy": "specialist_role_source_family_selector_v0_1",
+        "allowed_source_families": _specialist_required_source_families(agent_id),
+        "available_source_families": _available_source_families_for_specialist(agent_id, state),
+        "selected_source_families": selected_families,
+        "row_count": len(rows),
+        "row_counts_by_source_family": counts,
+        "context_only_source_families": context_only_families,
+        "exact_value_authority_source_families": exact_authority_families,
+        "semantic_supplement_row_count": len(semantic_rows),
+        "semantic_vector_kinds": semantic_vector_kinds,
+        "forbidden_claim_scopes": _source_family_forbidden_claim_scopes(selected_families, semantic_row_count=len(semantic_rows)),
+    }
+    if semantic_rows:
+        bundle["semantic_supplement_policy"] = "typed_milvus_rows_are_sec_recall_supplements_not_exact_value_authority"
+    return bundle
+
+
+def _ordered_source_families(families: list[str], *, preferred_order: list[str]) -> list[str]:
+    unique = [family for family in _dedupe(str(family or "").strip() for family in families) if family]
+    preferred = [family for family in preferred_order if family in unique]
+    remaining = sorted(family for family in unique if family not in preferred)
+    return [*preferred, *remaining]
+
+
+def _semantic_vector_kinds_from_rows(rows: list[Mapping[str, Any]]) -> list[str]:
+    kinds: list[str] = []
+    for row in rows:
+        vector_kind = str(row.get("vector_kind") or "").strip()
+        if vector_kind:
+            kinds.append(vector_kind)
+        kinds.extend(_string_list(row.get("vector_kinds")))
+    return _dedupe(kinds)
+
+
+def _row_is_semantic_supplement(row: Mapping[str, Any]) -> bool:
+    retrieval_route = str(row.get("retrieval_route") or "").strip()
+    role = str(row.get("semantic_route_role") or "").strip()
+    return (
+        retrieval_route == "milvus_semantic"
+        or role == "semantic_recall_supplement"
+        or bool(str(row.get("vector_kind") or "").strip())
+        or bool(_string_list(row.get("vector_kinds")))
+    )
+
+
+def _source_family_forbidden_claim_scopes(families: list[str], *, semantic_row_count: int) -> list[str]:
+    forbidden: list[str] = []
+    family_set = set(families)
+    if "market_snapshot" in family_set:
+        forbidden.append("market_snapshot_cannot_prove_company_reported_fundamentals_or_overwrite_sec_facts")
+    if "industry_snapshot" in family_set:
+        forbidden.append("industry_snapshot_cannot_prove_company_level_revenue_margin_customer_or_supplier_facts")
+    if "relationship_graph" in family_set:
+        forbidden.append("relationship_graph_is_scope_or_hypothesis_only_not_company_reported_fact")
+    if semantic_row_count:
+        forbidden.append("milvus_semantic_rows_cannot_prove_exact_values_without_ledger_or_filing_quote")
+    return forbidden
 
 
 def _relationship_rows(plan: Any) -> list[dict[str, Any]]:
@@ -4002,6 +4344,15 @@ def _dry_run_result(tool_name: str, route: Mapping[str, Any]) -> dict[str, Any]:
     row = {"route_id": route.get("route_id") or "", "retrieval_route": route.get("retrieval_route") or ""}
     if tool_name == "sec_search_filings":
         return {"status": "dry_run", "context_rows": [row], "artifact_refs": []}
+    if tool_name == "sec_milvus_semantic_search":
+        return {
+            "status": "dry_run",
+            "context_rows": [{**row, "source_family": "primary_sec_filing", "vector_kind": "narrative_chunk"}],
+            "vector_kind_counts": {"narrative_chunk": 1},
+            "typed_filter_required": True,
+            "semantic_route_role": "semantic_recall_supplement",
+            "artifact_refs": [],
+        }
     if tool_name == "sec_query_exact_value_ledger":
         return {"status": "dry_run", "ledger_rows": [row], "artifact_refs": []}
     if tool_name == "market_get_snapshot":

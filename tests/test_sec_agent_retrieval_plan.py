@@ -72,6 +72,159 @@ def test_retrieval_plan_derives_structured_market_and_8k_routes() -> None:
     assert plan["summary"]["second_pass_enabled"] is True
 
 
+def test_retrieval_plan_adds_milvus_route_for_explicit_typed_semantic_recall() -> None:
+    contract = {
+        "focus_tickers": ["NVDA"],
+        "search_scope_tickers": ["NVDA"],
+        "years": [2026],
+        "filing_types": ["10-Q", "8-K"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+        ],
+        "metric_families": ["revenue", "segment_revenue", "gross_margin", "cash_flow"],
+        "decomposed_tasks": [
+            {
+                "task_id": "nvda_boundary_semantic",
+                "priority": "primary",
+                "question_zh": "先只从 NVIDIA 自身披露、已入库 SEC typed semantic recall 和已入库市场快照出发，分析基本面表现。",
+                "required_tickers": ["NVDA"],
+                "required_metric_families": ["revenue", "segment_revenue", "gross_margin", "cash_flow"],
+            }
+        ],
+    }
+
+    plan = build_retrieval_plan(contract)
+    semantic_routes = [route for route in plan["routes"] if route["retrieval_route"] == "milvus_semantic"]
+    route_names = {route["retrieval_route"] for route in plan["routes"]}
+
+    assert {"ledger_first", "filing_text", "8k_commentary", "market_snapshot", "milvus_semantic"} <= route_names
+    assert len(semantic_routes) == 1
+    assert semantic_routes[0]["source_tiers"] == [
+        "primary_sec_filing",
+        "company_authored_unaudited_sec_filing",
+    ]
+    assert semantic_routes[0]["section_hints"] == ["typed_semantic_vector", "semantic_scope", "vector_kind_filter"]
+    assert semantic_routes[0]["route_cost_tier"] == "high"
+
+
+def test_retrieval_plan_preserves_contract_semantic_intent_when_planner_routes_are_explicit() -> None:
+    contract = {
+        "focus_tickers": ["NVDA"],
+        "search_scope_tickers": ["NVDA"],
+        "years": [2026],
+        "filing_types": ["10-Q", "8-K"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+        ],
+        "metric_families": ["revenue", "segment_revenue", "gross_margin", "cash_flow"],
+        "decomposed_tasks": [
+            {
+                "task_id": "nvda_boundary_semantic",
+                "priority": "primary",
+                "question_zh": "先只从 NVIDIA 自身披露、已入库 SEC typed semantic recall 和已入库市场快照出发，分析基本面表现。",
+                "required_tickers": ["NVDA"],
+                "required_metric_families": ["revenue", "segment_revenue", "gross_margin", "cash_flow"],
+            }
+        ],
+        "evidence_requirements": [
+            {
+                "requirement_id": "req_nvda_fundamentals",
+                "task_id": "nvda_fundamentals",
+                "question_zh": "获取NVDA 2026财年10-Q中的收入和现金流等精确数值。",
+                "tickers": ["NVDA"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["revenue", "cash_flow"],
+                "evidence_routes": ["ledger_first", "filing_text"],
+            },
+            {
+                "requirement_id": "req_nvda_market_context",
+                "task_id": "nvda_market_context",
+                "question_zh": "获取NVDA的市场快照。",
+                "tickers": ["NVDA"],
+                "years": [2026],
+                "source_tiers": ["market_snapshot"],
+                "evidence_routes": ["market_snapshot"],
+            },
+        ],
+    }
+
+    plan = build_retrieval_plan(contract)
+    route_names = [route["retrieval_route"] for route in plan["routes"]]
+    semantic_routes = [route for route in plan["routes"] if route["retrieval_route"] == "milvus_semantic"]
+
+    assert route_names.count("milvus_semantic") == 1
+    assert semantic_routes[0]["task_id"] == "nvda_fundamentals"
+    assert semantic_routes[0]["source_tiers"] == ["primary_sec_filing"]
+    assert "market_snapshot" in route_names
+
+
+def test_retrieval_plan_suppresses_milvus_for_exact_lookup_even_when_planner_route_is_explicit() -> None:
+    contract = {
+        "focus_tickers": ["MSFT"],
+        "search_scope_tickers": ["MSFT"],
+        "years": [2026],
+        "filing_types": ["10-Q"],
+        "source_tiers": ["primary_sec_filing"],
+        "metric_families": ["capex"],
+        "evidence_requirements": [
+            {
+                "requirement_id": "req_msft_capex",
+                "task_id": "msft_capex",
+                "question_zh": "获取 MSFT 2026 capex 单一精确数值。",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+                "evidence_routes": ["ledger_first", "milvus_semantic"],
+                "route_selection_reason": "Exact capex is best retrieved from the ledger; no semantic or text routes needed.",
+            }
+        ],
+    }
+
+    plan = build_retrieval_plan(contract, case={"category": "exact_lookup", "expected_execution_mode": "deterministic_lookup"})
+
+    assert [route["retrieval_route"] for route in plan["routes"]] == ["ledger_first"]
+
+
+def test_retrieval_plan_suppresses_milvus_when_exact_mode_only_exists_in_query_contract() -> None:
+    contract = {
+        "case_id": "fin_full_exact_msft_capex_zh",
+        "category": "exact_lookup",
+        "expected_execution_mode": "deterministic_lookup",
+        "focus_tickers": ["MSFT"],
+        "search_scope_tickers": ["MSFT"],
+        "years": [2026],
+        "filing_types": ["10-Q"],
+        "source_tiers": ["primary_sec_filing"],
+        "metric_families": ["capex"],
+        "evidence_requirements": [
+            {
+                "requirement_id": "req_msft_capex",
+                "task_id": "msft_capex",
+                "question_zh": "MSFT 2026 capex 单一精确数值。",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+                "evidence_routes": ["ledger_first", "milvus_semantic"],
+                "route_selection_reason": "Exact numeric capex value requires authoritative primary_sec_filing ledger.",
+            }
+        ],
+    }
+
+    plan = build_retrieval_plan(contract, case={"case_id": "runtime_run_id", "query_contract": contract})
+
+    assert [route["retrieval_route"] for route in plan["routes"]] == ["ledger_first"]
+
+
 def test_planner_evidence_requirements_drive_physical_routes() -> None:
     contract = {
         "source_policy": "SEC_PRIMARY_MIXED_WITH_8K_AND_MARKET_SNAPSHOT",
@@ -105,6 +258,9 @@ def test_planner_evidence_requirements_drive_physical_routes() -> None:
                 "metric_families": ["capex"],
                 "period_roles": ["QTD", "YTD"],
                 "evidence_routes": ["8k_commentary", "web_search"],
+                "route_selection_reason": "8-K earnings release commentary is the narrowest company-authored source.",
+                "route_cost_tier": "medium",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
                 "candidate_budget": 16,
                 "rerank_budget": 8,
             }
@@ -119,8 +275,13 @@ def test_planner_evidence_requirements_drive_physical_routes() -> None:
     assert erp["requirements"][0]["tickers"] == ["NVDA"]
     assert erp["requirements"][0]["years"] == [2026]
     assert erp["requirements"][0]["evidence_routes"] == ["8k_commentary"]
+    assert erp["requirements"][0]["route_selection_reason"].startswith("8-K earnings")
+    assert erp["requirements"][0]["route_cost_tier"] == "medium"
     assert (plan["retrieval_plan_validation"] or {})["status"] == "pass"
     assert [route["retrieval_route"] for route in routes] == ["8k_commentary"]
+    assert routes[0]["route_selection_reason"].startswith("8-K earnings")
+    assert routes[0]["route_cost_tier"] == "medium"
+    assert routes[0]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
     assert routes[0]["candidate_budget"] == 16
     assert routes[0]["rerank_budget"] == 8
     assert plan["evidence_requirement_plan"]["source"] == "planner_output_evidence_requirements"

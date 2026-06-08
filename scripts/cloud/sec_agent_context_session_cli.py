@@ -82,6 +82,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Optional JSONL market snapshot evidence pack to forward into graph runs.",
     )
     parser.add_argument(
+        "--market-catalog-path",
+        default=os.environ.get("MARKET_CATALOG_PATH", ""),
+        help="Optional DuckDB market snapshot catalog to forward into graph runs.",
+    )
+    parser.add_argument(
         "--market-snapshot-id",
         default=os.environ.get("MARKET_SNAPSHOT_ID", ""),
         help="Optional market snapshot id to stamp into graph Query Contracts.",
@@ -288,6 +293,8 @@ def _graph_args(args: argparse.Namespace) -> list[str]:
         result.extend(["--source-gap-path", args.source_gap_path])
     if args.market_evidence_path:
         result.extend(["--market-evidence-path", args.market_evidence_path])
+    if args.market_catalog_path:
+        result.extend(["--market-catalog-path", args.market_catalog_path])
     if args.market_snapshot_id:
         result.extend(["--market-snapshot-id", args.market_snapshot_id])
     if args.market_as_of_date:
@@ -594,6 +601,8 @@ def _print_start_banner(*, args: argparse.Namespace, state: dict[str, str], sess
         print(f"source_gap_path: {args.source_gap_path}")
     if args.market_evidence_path:
         print(f"market_evidence_path: {args.market_evidence_path}")
+    if args.market_catalog_path:
+        print(f"market_catalog_path: {args.market_catalog_path}")
     if args.market_snapshot_id or args.market_as_of_date:
         print(
             "market_snapshot: "

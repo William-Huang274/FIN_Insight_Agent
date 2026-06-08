@@ -193,6 +193,9 @@ class StartEvalRunRequest(BaseModel):
     eval_id: str
     job_id: str | None = None
     profile_id: str | None = None
+    api_key_value: str | None = None
+    case_ids: list[str] = Field(default_factory=list)
+    prewarm_resident_tools: bool | None = None
 
 
 class CancelRunRequest(BaseModel):
@@ -779,6 +782,8 @@ def create_app(
             job_id=job_id,
             profile_id=profile.profile_id if profile else None,
             trace_id=request_trace_id(request),
+            case_ids=payload.case_ids,
+            prewarm_resident_tools=payload.prewarm_resident_tools,
         )
         output_path = eval_output_path(REPO_ROOT, eval_id=payload.eval_id, job_id=job.job_id)
         job = job.model_copy(update={"metadata": {**job.metadata, "output_path": str(output_path)}})
@@ -788,6 +793,9 @@ def create_app(
                 eval_id=payload.eval_id,
                 job_id=job.job_id,
                 profile=profile,
+                api_key_value=payload.api_key_value,
+                case_ids=payload.case_ids,
+                prewarm_resident_tools=payload.prewarm_resident_tools,
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc

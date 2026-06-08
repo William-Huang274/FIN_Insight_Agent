@@ -186,6 +186,7 @@ _TOOL_CONTRACTS: list[dict[str, Any]] = [
         input_schema=_object_schema(
             {
                 "query": {"type": "string"},
+                "query_probes": _array({"type": "string"}),
                 **_COMMON_SCOPE_PROPERTIES,
                 "source_tiers": _array(
                     {
@@ -230,6 +231,79 @@ _TOOL_CONTRACTS: list[dict[str, Any]] = [
         ],
         handler_module="scripts.cloud.sec_agent_interactive",
         handler_name="retrieve_context_for_graph",
+    ),
+    _tool(
+        name="sec_milvus_semantic_search",
+        namespace="sec",
+        title="Search Milvus typed semantic evidence",
+        description=(
+            "Run typed semantic recall over a Milvus collection built from SEC evidence vectors. "
+            "This is a recall supplement for bounded filing evidence, not an exact-value authority."
+        ),
+        roles=[ROLE_EVIDENCE_OPERATOR],
+        source_tiers=[SOURCE_PRIMARY_SEC, SOURCE_COMPANY_AUTHORED],
+        input_schema=_object_schema(
+            {
+                "query": {"type": "string"},
+                **_COMMON_SCOPE_PROPERTIES,
+                "source_tiers": _array(
+                    {
+                        "type": "string",
+                        "enum": [SOURCE_PRIMARY_SEC, SOURCE_COMPANY_AUTHORED],
+                    }
+                ),
+                "metric_families": _array({"type": "string"}),
+                "period_roles": _array({"type": "string", "enum": ["ANNUAL", "QTD", "YTD", "TTM", "INSTANT"]}),
+                "vector_kinds": _array(
+                    {
+                        "type": "string",
+                        "enum": [
+                            "narrative_chunk",
+                            "table_chunk",
+                            "metric_row",
+                            "table_row",
+                            "claim_row",
+                            "relationship_context",
+                            "paraphrase_context",
+                        ],
+                    }
+                ),
+                "typed_filter_required": {"type": "boolean"},
+                "milvus_db_path": {"type": "string"},
+                "milvus_collection_name": {"type": "string"},
+                "embedding_model": {"type": "string"},
+                "milvus_top_k": {"type": "integer", "minimum": 1, "maximum": 200},
+                "milvus_search_policy": {"type": "object"},
+            },
+            required=["query", "vector_kinds"],
+            additional_properties=True,
+        ),
+        output_schema=_object_schema(
+            {
+                "status": {"type": "string", "enum": ["ok", "partial", "error", "dry_run"]},
+                "context_rows": _array({"type": "object"}),
+                "row_count": {"type": "integer"},
+                "vector_kind_counts": {"type": "object"},
+                "collection_name": {"type": "string"},
+                "typed_filter_required": {"type": "boolean"},
+                "semantic_route_role": {"type": "string"},
+                "artifact_refs": _array(_artifact_ref_schema()),
+                "source_gaps": _array({"type": "object"}),
+            }
+        ),
+        allowed_claim_types=[
+            "company_disclosed_business_description",
+            "company_disclosed_management_discussion",
+            "risk_factor",
+            "semantic_recall_context",
+        ],
+        prohibited_claims=[
+            "Do not use Milvus semantic hits as exact financial values.",
+            "Do not run Milvus semantic search without a typed vector_kind filter.",
+            "Do not treat semantic recall as a source family outside bounded SEC evidence.",
+        ],
+        handler_module="sec_agent.mcp_tool_registry",
+        handler_name="_invoke_milvus_semantic",
     ),
     _tool(
         name="sec_query_exact_value_ledger",
@@ -291,6 +365,7 @@ _TOOL_CONTRACTS: list[dict[str, Any]] = [
                 "fields": _array({"type": "string"}),
                 "analysis_tools": _array({"type": "string"}),
                 "market_evidence_path": {"type": "string"},
+                "market_catalog_path": {"type": "string"},
                 "limit": {"type": "integer", "minimum": 1, "maximum": 1000},
             },
             required=["tickers"],

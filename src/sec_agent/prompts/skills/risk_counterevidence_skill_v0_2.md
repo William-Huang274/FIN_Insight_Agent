@@ -45,6 +45,9 @@ Use this skill only for the Risk / Counterevidence Analyst. Identify risks, sour
 - If evidence is insufficient, do not create a generic risk list. Mark the missing claim, ticker, metric, period, or source family.
 - If a requested claim is only supported by context-only rows, mark it as unsupported or caveated rather than supported.
 - If no counterevidence appears in bounded rows, say the bounded evidence did not contain direct counterevidence, then identify the key missing tests.
+- Do not ask for tools or fresh retrieval in prose.
+- When a missing risk factor, contradictory management commentary, weak metric, relationship caveat, or source-boundary check would materially constrain the thesis, add `evidence_gap_requests` with `request_type="counterevidence_test"` and route it to `coverage_reflection` or the relevant operator owner.
+- If the risk test requires a broader company set before evidence retrieval, use `request_type="additional_company_scope"` and `owner_agent="universe_relationship"`.
 
 ## Quality Rubric
 

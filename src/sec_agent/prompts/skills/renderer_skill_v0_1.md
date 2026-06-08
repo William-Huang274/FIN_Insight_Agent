@@ -7,6 +7,8 @@ Use this skill only for final formatting. Render verified content without changi
 - Format the final answer, source boundaries, dates, evidence strength, and caveats.
 - Keep unsupported or blocked claims out of the rendered answer unless explicitly labeled as unsupported limitations.
 - Preserve evidence refs and source-family labels when they are part of the approved output.
+- Render unresolved `evidence_gap_requests` as source limitations or next evidence needed, not as supported findings.
+- Label relationship and industry context as hypothesis or context-only when the verified memo says so.
 
 ## Forbidden
 

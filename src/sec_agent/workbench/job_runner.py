@@ -83,6 +83,16 @@ _EVAL_RUNNERS = {
         "description": "Runs the closeout aggregator in a lightweight profile without model/API-heavy subchecks.",
         "timeout_hint_s": 180,
     },
+    "expanded_a6_full_chain_smoke": {
+        "label": "Expanded A6 full-chain smoke",
+        "description": "Runs three representative expanded full-chain cases through the Workbench eval report wrapper.",
+        "timeout_hint_s": 1800,
+    },
+    "expanded_a6_full_chain_main": {
+        "label": "Expanded A6 full-chain main",
+        "description": "Runs the exact/focused/standard/sector-depth/multi-turn expanded full-chain gate.",
+        "timeout_hint_s": 7200,
+    },
 }
 _ACTIVE_PROCESSES: dict[str, subprocess.Popen[str]] = {}
 _CANCEL_REQUESTED: set[str] = set()
@@ -138,12 +148,16 @@ def build_eval_command(
     eval_id: str,
     job_id: str,
     profile: WorkbenchProfile | None = None,
+    api_key_value: str | None = None,
+    case_ids: list[str] | None = None,
+    prewarm_resident_tools: bool | None = None,
 ) -> CommandSpec:
     if eval_id not in _EVAL_RUNNERS:
         raise ValueError(f"unsupported_eval_id: {eval_id}")
     output_path = eval_output_path(repo_root, eval_id=eval_id, job_id=job_id)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     env_overrides = profile.to_runtime_env() if profile else {}
+    secret_env = _eval_secret_env(profile, api_key_value)
 
     if eval_id == "context_api_smoke":
         args = [
@@ -173,6 +187,24 @@ def build_eval_command(
             "--output-path",
             str(output_path),
         ]
+    elif eval_id in {"expanded_a6_full_chain_smoke", "expanded_a6_full_chain_main"}:
+        selected_case_ids = _clean_case_ids(case_ids)
+        args = [
+            sys.executable,
+            "-u",
+            "scripts/workbench/run_expanded_a6_eval.py",
+            "--eval-id",
+            eval_id,
+            "--output-path",
+            str(output_path),
+            "--strict",
+        ]
+        for case_id in selected_case_ids:
+            args.extend(["--case-id", case_id])
+        if prewarm_resident_tools is True:
+            args.append("--prewarm-resident-tools")
+        elif prewarm_resident_tools is False:
+            env_overrides["SEC_AGENT_A6_PREWARM_RESIDENT_TOOLS"] = "false"
     else:
         args = [
             sys.executable,
@@ -195,10 +227,22 @@ def build_eval_command(
     return CommandSpec(
         args=args,
         cwd=Path(repo_root).resolve(),
-        env_overrides=env_overrides,
+        env_overrides={**env_overrides, **secret_env},
         label=f"eval:{eval_id}",
         timeout_s=int(_EVAL_RUNNERS[eval_id]["timeout_hint_s"]) + 30,
     )
+
+
+def _clean_case_ids(case_ids: list[str] | None) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for item in case_ids or []:
+        case_id = str(item).strip()
+        if not case_id or case_id in seen:
+            continue
+        seen.add(case_id)
+        result.append(case_id)
+    return result
 
 
 def build_agent_ask_command(
@@ -956,6 +1000,18 @@ def _runtime_secret_env(profile: WorkbenchProfile, api_key_value: str | None) ->
     if not key_name or not value:
         return {}
     return {key_name: value}
+
+
+def _eval_secret_env(profile: WorkbenchProfile | None, api_key_value: str | None) -> dict[str, str]:
+    value = str(api_key_value or "").strip()
+    if not value:
+        return {}
+    if profile is not None:
+        return _runtime_secret_env(profile, value)
+    return {
+        "API_KEY_ENV": "DEEPSEEK_API_KEY",
+        "DEEPSEEK_API_KEY": value,
+    }
 
 
 def _write_prompt_file(repo_root: Path, prompt: str) -> Path:

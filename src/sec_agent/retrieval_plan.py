@@ -12,11 +12,25 @@ ALLOWED_RETRIEVAL_ROUTES = {
     "ledger_first",
     "filing_text",
     "8k_commentary",
+    "milvus_semantic",
     "market_snapshot",
     "industry_snapshot",
     "risk_text",
     "run_artifact",
 }
+
+ROUTE_COST_TIERS = {
+    "ledger_first": "low",
+    "run_artifact": "low",
+    "filing_text": "medium",
+    "8k_commentary": "medium",
+    "risk_text": "medium",
+    "market_snapshot": "medium",
+    "industry_snapshot": "medium",
+    "milvus_semantic": "high",
+    "relationship_graph": "high",
+}
+ROUTE_COST_TIER_RANK = {"low": 1, "medium": 2, "high": 3}
 
 MARKET_SOURCE_TIER = "market_snapshot"
 INDUSTRY_SOURCE_TIER = "industry_snapshot"
@@ -83,6 +97,21 @@ RISK_TERMS = (
     "周期",
 )
 
+SEMANTIC_RECALL_TERMS = (
+    "typed semantic recall",
+    "semantic recall",
+    "semantic search",
+    "milvus",
+    "vector recall",
+    "rag",
+    "typed vector",
+    "语义召回",
+    "语义检索",
+    "向量召回",
+    "向量检索",
+    "已入库",
+)
+
 INDUSTRY_CONTEXT_TERMS = (
     "industry",
     "sector",
@@ -139,6 +168,8 @@ def build_retrieval_plan(
 
     plan_tasks: list[dict[str, Any]] = []
     routes: list[dict[str, Any]] = []
+    plan_semantic_recall_requested = _contract_requests_semantic_recall(contract, case)
+    plan_semantic_recall_added = False
     for index, requirement in enumerate(requirements, start=1):
         task = _requirement_as_task(requirement)
         task_id = _task_id(task, index)
@@ -159,6 +190,18 @@ def build_retrieval_plan(
             source_tiers=task_source_tiers,
         )
         route_names = _routes_for_requirement(requirement, fallback_route_names)
+        if _semantic_recall_forbidden_for_requirement(requirement, task_text=task_text, case=case):
+            route_names = [route_name for route_name in route_names if route_name != "milvus_semantic"]
+        if "milvus_semantic" in route_names:
+            plan_semantic_recall_added = True
+        elif (
+            plan_semantic_recall_requested
+            and not plan_semantic_recall_added
+            and _semantic_recall_scope_allowed(task_source_tiers, task_filing_types)
+            and not _semantic_recall_forbidden_for_requirement(requirement, task_text=task_text, case=case)
+        ):
+            route_names = _dedupe_keep_order([*route_names, "milvus_semantic"])
+            plan_semantic_recall_added = True
         coverage_requirements = {
             "tickers": route_tickers or search_scope_tickers,
             "years": task_years,
@@ -191,6 +234,9 @@ def build_retrieval_plan(
                 "period_roles": period_roles,
                 "retrieval_routes": route_names,
                 "coverage_requirements": coverage_requirements,
+                "route_selection_reason": requirement.get("route_selection_reason") or "",
+                "route_cost_tier": requirement.get("route_cost_tier") or _normalize_route_cost_tier("", route_names),
+                "route_selection_policy": requirement.get("route_selection_policy") or "",
                 "second_pass_policy": _second_pass_policy(),
                 "evidence_requirement_id": requirement.get("requirement_id") or requirement.get("evidence_requirement_id") or "",
                 "evidence_requirement_source": evidence_requirement_plan.get("source") or "",
@@ -220,6 +266,9 @@ def build_retrieval_plan(
                     "candidate_budget": candidate_budget,
                     "rerank_budget": rerank_budget,
                     "coverage_requirements": coverage_requirements,
+                    "route_selection_reason": requirement.get("route_selection_reason") or "",
+                    "route_cost_tier": ROUTE_COST_TIERS.get(route_name, requirement.get("route_cost_tier") or "medium"),
+                    "route_selection_policy": requirement.get("route_selection_policy") or "",
                     "second_pass_policy": _second_pass_policy(),
                     "evidence_requirement_id": requirement.get("requirement_id") or requirement.get("evidence_requirement_id") or "",
                 }
@@ -522,6 +571,9 @@ def _normalize_evidence_requirements(
             "coverage_requirements": dict(req.get("coverage_requirements")) if isinstance(req.get("coverage_requirements"), dict) else {},
             "candidate_budget": _clamp_int(req.get("candidate_budget"), 0, 1000, 0),
             "rerank_budget": _clamp_int(req.get("rerank_budget"), 0, 1000, 0),
+            "route_selection_reason": _short_text(req.get("route_selection_reason") or req.get("route_reason") or "", 240),
+            "route_cost_tier": _normalize_route_cost_tier(req.get("route_cost_tier") or req.get("cost_tier"), routes),
+            "route_selection_policy": _short_text(req.get("route_selection_policy") or "cost_and_query_type_aware_v0_1", 80),
             "second_pass_policy": _normalize_second_pass_policy(req.get("second_pass_policy")),
         }
         if not requirement["tickers"] and not is_run_artifact:
@@ -566,6 +618,16 @@ def _routes_for_requirement(requirement: dict[str, Any], fallback_routes: list[s
     return routes or fallback_routes
 
 
+def _normalize_route_cost_tier(value: Any, routes: list[str]) -> str:
+    text = str(value or "").strip().lower()
+    if text in ROUTE_COST_TIER_RANK:
+        return text
+    tiers = [ROUTE_COST_TIERS.get(route, "medium") for route in routes]
+    if not tiers:
+        return "medium"
+    return max(tiers, key=lambda tier: ROUTE_COST_TIER_RANK.get(tier, 2))
+
+
 def _evidence_requirement_summary(requirements: list[dict[str, Any]]) -> dict[str, Any]:
     route_counts: dict[str, int] = {}
     source_counts: dict[str, int] = {}
@@ -593,6 +655,10 @@ def _routes_for_task(
     routes: list[str] = []
     form_set = set(filing_types)
     tier_set = set(source_tiers)
+    sec_scope = bool(
+        tier_set & {PRIMARY_SEC_SOURCE_TIER, COMPANY_AUTHORED_SOURCE_TIER}
+        or {"10-K", "10-Q"} & form_set
+    )
     if RUN_ARTIFACT_SOURCE_TIER in tier_set:
         return ["run_artifact"]
     if metric_families and (PRIMARY_SEC_SOURCE_TIER in tier_set or "10-K" in form_set or "10-Q" in form_set):
@@ -611,7 +677,100 @@ def _routes_for_task(
             routes.append("filing_text")
         elif not routes or set(routes) == {"ledger_first"}:
             routes.append("filing_text")
+    if sec_scope and _task_requests_semantic_recall(task, task_text):
+        routes.append("milvus_semantic")
     return _dedupe_keep_order(routes or ["filing_text"])
+
+
+def _task_requests_semantic_recall(task: dict[str, Any], task_text: str) -> bool:
+    text = " ".join(
+        [
+            task_text,
+            str(task.get("analysis_intent") or ""),
+            " ".join(str(item) for item in task.get("source_families") or []),
+            " ".join(str(item) for item in task.get("evidence_source_needed") or []),
+        ]
+    )
+    return _contains_any(text, SEMANTIC_RECALL_TERMS)
+
+
+def _contract_requests_semantic_recall(contract: dict[str, Any], case: dict[str, Any]) -> bool:
+    text_parts: list[str] = [
+        str(contract.get("user_query") or ""),
+        str(contract.get("prompt") or ""),
+        str(contract.get("source_policy") or ""),
+        str(case.get("prompt") or ""),
+        str(case.get("case_id") or ""),
+    ]
+    for task in contract.get("decomposed_tasks") or []:
+        if not isinstance(task, dict):
+            continue
+        text_parts.extend(
+            [
+                str(task.get("question_zh") or ""),
+                str(task.get("question") or ""),
+                str(task.get("analysis_intent") or ""),
+                " ".join(str(item) for item in task.get("source_families") or []),
+                " ".join(str(item) for item in task.get("evidence_source_needed") or []),
+            ]
+        )
+    return _contains_any(" ".join(text_parts), SEMANTIC_RECALL_TERMS)
+
+
+def _semantic_recall_forbidden_for_requirement(requirement: dict[str, Any], *, task_text: str, case: dict[str, Any]) -> bool:
+    contract = case.get("query_contract") if isinstance(case.get("query_contract"), dict) else {}
+    mode = str(case.get("expected_execution_mode") or contract.get("expected_execution_mode") or contract.get("execution_mode") or "").strip()
+    category = str(case.get("category") or contract.get("category") or "").strip()
+    if mode == "deterministic_lookup" or category == "exact_lookup":
+        return True
+    text = " ".join(
+        [
+            task_text,
+            str(requirement.get("route_selection_reason") or ""),
+            str(requirement.get("question") or ""),
+            str(requirement.get("question_zh") or ""),
+            str(contract.get("task_type") or ""),
+            str(contract.get("case_id") or ""),
+        ]
+    ).lower()
+    routes = set(_unique_strings(requirement.get("evidence_routes") or requirement.get("retrieval_routes") or []))
+    metric_families = _unique_strings(
+        requirement.get("metric_families")
+        or requirement.get("required_metric_families")
+        or contract.get("metric_families")
+        or []
+    )
+    exact_markers = (
+        "deterministic",
+        "single metric",
+        "single exact",
+        "单一指标",
+        "单一精确",
+        "只回答",
+    )
+    if "ledger_first" in routes and metric_families and any(marker in text for marker in exact_markers):
+        return True
+    return any(
+        marker in text
+        for marker in (
+            "no semantic",
+            "no milvus",
+            "semantic route not needed",
+            "不需要语义",
+            "无需语义",
+            "不要语义",
+            "不走语义",
+            "不走 milvus",
+            "无需 milvus",
+        )
+    )
+
+
+def _semantic_recall_scope_allowed(source_tiers: list[str], filing_types: list[str]) -> bool:
+    return bool(
+        set(source_tiers) & {PRIMARY_SEC_SOURCE_TIER, COMPANY_AUTHORED_SOURCE_TIER}
+        or {"10-K", "10-Q"} & set(filing_types)
+    )
 
 
 def _route_budgets(route_name: str, *, ticker_count: int, family_count: int) -> dict[str, int]:
@@ -622,6 +781,8 @@ def _route_budgets(route_name: str, *, ticker_count: int, family_count: int) -> 
         return {"candidate_budget": min(200, max(16, ticker_count * 2)), "rerank_budget": 0}
     if route_name == "industry_snapshot":
         return {"candidate_budget": 80, "rerank_budget": 0}
+    if route_name == "milvus_semantic":
+        return {"candidate_budget": 120 * scale, "rerank_budget": 0}
     if route_name == "8k_commentary":
         return {"candidate_budget": 80 * scale, "rerank_budget": 40 * scale}
     if route_name == "risk_text":
@@ -636,7 +797,7 @@ def _route_filing_types(route_name: str, filing_types: list[str]) -> list[str]:
         return ["8-K"] if "8-K" in set(filing_types) else filing_types
     if route_name == "industry_snapshot":
         return []
-    if route_name in {"ledger_first", "filing_text", "risk_text"}:
+    if route_name in {"ledger_first", "filing_text", "risk_text", "milvus_semantic"}:
         scoped = [form for form in filing_types if form in {"10-K", "10-Q"}]
         return scoped or filing_types
     return []
@@ -651,7 +812,7 @@ def _route_source_tiers(route_name: str, source_tiers: list[str]) -> list[str]:
         return [INDUSTRY_SOURCE_TIER] if INDUSTRY_SOURCE_TIER in set(source_tiers) else []
     if route_name == "8k_commentary":
         return [COMPANY_AUTHORED_SOURCE_TIER] if COMPANY_AUTHORED_SOURCE_TIER in set(source_tiers) else []
-    if route_name in {"ledger_first", "filing_text", "risk_text"}:
+    if route_name in {"ledger_first", "filing_text", "risk_text", "milvus_semantic"}:
         scoped = [tier for tier in source_tiers if tier in {PRIMARY_SEC_SOURCE_TIER, COMPANY_AUTHORED_SOURCE_TIER}]
         return scoped
     return source_tiers
@@ -668,6 +829,8 @@ def _section_hints(route_name: str) -> list[str]:
         return ["market_analytics", "event_window", "valuation_snapshot"]
     if route_name == "industry_snapshot":
         return ["industry_observations", "sector_context", "macro_context"]
+    if route_name == "milvus_semantic":
+        return ["typed_semantic_vector", "semantic_scope", "vector_kind_filter"]
     if route_name == "risk_text":
         return ["risk_factors", "md&a_risk", "business_risk"]
     return ["md&a", "business", "segment_discussion"]

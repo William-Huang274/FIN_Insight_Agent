@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import importlib.util
 import json
 import os
+import re
+import time
+import urllib.error
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 from types import ModuleType
@@ -20,6 +25,11 @@ from sec_agent.workbench.artifacts import inspect_run_artifacts
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _INTERACTIVE_MODULE: ModuleType | None = None
+_MILVUS_EMBEDDING_MODEL_CACHE: dict[tuple[str, str], Any] = {}
+_MILVUS_CLIENT_CACHE: dict[tuple[str, str], Any] = {}
+_SEC_SEARCH_RESULT_CACHE: dict[str, dict[str, Any]] = {}
+_SEC_MANIFEST_ROWS_CACHE: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+_RESIDENT_FORWARD_TOOLS = {"sec_search_filings", "sec_milvus_semantic_search"}
 _BANKING_MCP_METRIC_FAMILIES = {
     "allowance_for_credit_losses",
     "asset_quality",
@@ -36,6 +46,8 @@ _BANKING_MCP_METRIC_FAMILIES = {
     "provision_for_credit_losses",
     "total_assets",
 }
+_SEC_FORM_TYPES = {"10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"}
+_SEC_FORM_ID_RE = re.compile(r"(?:^|[^A-Z0-9])(?P<form>10-?K|10-?Q|8-?K|20-?F|40-?F|6-?K)(?:[^A-Z0-9]|$)")
 
 
 def list_registered_tools() -> list[dict[str, Any]]:
@@ -44,6 +56,8 @@ def list_registered_tools() -> list[dict[str, Any]]:
 
 def invoke_mcp_tool(tool_name: str, arguments: dict[str, Any] | None = None) -> dict[str, Any]:
     args = dict(arguments or {})
+    if _should_forward_to_resident(str(tool_name or "")):
+        return _invoke_resident_worker(str(tool_name or ""), args)
     handler = _HANDLERS.get(str(tool_name or ""))
     if handler is None:
         try:
@@ -62,7 +76,57 @@ def invoke_mcp_tool(tool_name: str, arguments: dict[str, Any] | None = None) -> 
         return {"status": "error", "error": f"{type(exc).__name__}:{exc}", "tool_name": tool_name}
 
 
+def _should_forward_to_resident(tool_name: str) -> bool:
+    if os.environ.get("SEC_AGENT_MCP_RESIDENT_BYPASS"):
+        return False
+    if tool_name not in _RESIDENT_FORWARD_TOOLS:
+        return False
+    return bool(str(os.environ.get("SEC_AGENT_MCP_RESIDENT_URL") or "").strip())
+
+
+def _invoke_resident_worker(tool_name: str, args: dict[str, Any]) -> dict[str, Any]:
+    base_url = str(os.environ.get("SEC_AGENT_MCP_RESIDENT_URL") or "").strip().rstrip("/")
+    timeout_s = _bounded_int(os.environ.get("SEC_AGENT_MCP_RESIDENT_TIMEOUT_S"), default=900, minimum=1, maximum=7200)
+    payload = json.dumps({"tool_name": tool_name, "arguments": args}, ensure_ascii=False).encode("utf-8")
+    request = urllib.request.Request(
+        f"{base_url}/invoke",
+        data=payload,
+        headers={"Content-Type": "application/json; charset=utf-8"},
+        method="POST",
+    )
+    started = datetime.now()
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_s) as response:  # noqa: S310 - local worker URL is explicitly configured.
+            raw = response.read()
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        return {
+            "status": "error",
+            "error": "resident_worker_unavailable",
+            "tool_name": tool_name,
+            "resident_worker": {"url": base_url, "elapsed_ms": int((datetime.now() - started).total_seconds() * 1000)},
+            "source_gaps": [
+                {
+                    "source_family": "run_artifact",
+                    "reason_code": "resident_worker_unavailable",
+                    "reason": "Configured resident MCP worker could not be reached; fail closed to avoid cold-start fallback.",
+                    "error": f"{type(exc).__name__}:{exc}"[:500],
+                }
+            ],
+        }
+    try:
+        result = json.loads(raw.decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "error", "error": f"resident_worker_invalid_json:{exc}", "tool_name": tool_name}
+    if not isinstance(result, dict):
+        return {"status": "error", "error": "resident_worker_invalid_response", "tool_name": tool_name}
+    metadata = dict(result.get("resident_worker") or {}) if isinstance(result.get("resident_worker"), dict) else {}
+    metadata.update({"url": base_url, "client_elapsed_ms": int((datetime.now() - started).total_seconds() * 1000)})
+    result["resident_worker"] = metadata
+    return result
+
+
 def _invoke_ledger(args: dict[str, Any]) -> dict[str, Any]:
+    started = time.perf_counter()
     db_path = args.get("ledger_store_path") or args.get("db_path") or ""
     if not str(db_path).strip():
         return {"status": "error", "error": "ledger_store_path_required"}
@@ -105,6 +169,7 @@ def _invoke_ledger(args: dict[str, Any]) -> dict[str, Any]:
         "status": "ok" if rows else "partial",
         "ledger_rows": rows,
         "row_count": len(rows),
+        "elapsed_ms": int(round((time.perf_counter() - started) * 1000)),
         "fallback_trace": fallback_trace,
         "missing_dimensions": [],
         "artifact_refs": [{"artifact_id": "ledger_store", "path": str(Path(db_path).resolve()), "digest": "", "row_count": len(rows)}],
@@ -133,6 +198,12 @@ def _query_ledger_with_args(
 
 
 def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
+    started = time.perf_counter()
+    timing_ms: dict[str, int] = {}
+
+    def mark(stage: str, stage_started: float) -> None:
+        timing_ms[stage] = int(round((time.perf_counter() - stage_started) * 1000))
+
     query = str(args.get("query") or "").strip()
     if not query:
         return {"status": "error", "error": "query_required", "context_rows": []}
@@ -140,10 +211,33 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
     if validation_error:
         return {"status": "error", "error": validation_error, "context_rows": []}
 
+    cache_enabled = _sec_search_result_cache_enabled(args)
+    cache_key = _sec_search_result_cache_key(args) if cache_enabled else ""
+    if cache_key and cache_key in _SEC_SEARCH_RESULT_CACHE:
+        stage_started = time.perf_counter()
+        result = copy.deepcopy(_SEC_SEARCH_RESULT_CACHE[cache_key])
+        mark("result_cache_deepcopy", stage_started)
+        result["mcp_result_cache"] = {
+            "hit": True,
+            "cache_key": cache_key,
+            "cache_size": len(_SEC_SEARCH_RESULT_CACHE),
+            "policy": "sec_search_result_cache_excludes_run_artifact_paths_v0_1",
+        }
+        result["registry_timing_ms"] = timing_ms
+        result["elapsed_ms"] = int(round((time.perf_counter() - started) * 1000))
+        return result
+
+    stage_started = time.perf_counter()
     interactive = _load_interactive_module()
+    mark("load_interactive_module", stage_started)
+    stage_started = time.perf_counter()
     runtime_args = _interactive_args_for_sec_search(args)
     plan = interactive.build_query_plan_for_graph(runtime_args, query)
+    query_plan_timing = plan.get("query_plan_timing_ms") if isinstance(plan.get("query_plan_timing_ms"), dict) else {}
     query_contract = _overlay_sec_search_contract(plan.get("query_contract") or {}, args, query)
+    mark("build_query_plan", stage_started)
+    if query_plan_timing:
+        timing_ms["query_plan_detail"] = _cacheable_value(query_plan_timing)  # type: ignore[assignment]
     output_dir = str(args.get("output_dir") or "").strip()
     if output_dir:
         resolved_output_dir = Path(output_dir).resolve()
@@ -159,14 +253,19 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
     }
     if isinstance(args.get("retrieval_plan"), dict):
         graph_state["retrieval_plan"] = dict(args.get("retrieval_plan") or {})
+    stage_started = time.perf_counter()
     result = interactive.retrieve_context_for_graph(runtime_args, graph_state)
+    mark("retrieve_context_for_graph", stage_started)
+    stage_started = time.perf_counter()
     rows = [row for row in result.get("context_rows") or [] if isinstance(row, dict)]
     trace = result.get("retrieval_trace") if isinstance(result.get("retrieval_trace"), dict) else {}
+    mark("extract_context_rows", stage_started)
     ledger_rows: list[dict[str, Any]] = []
     ledger_artifact_refs: list[dict[str, Any]] = []
     if _bool_arg(args.get("build_runtime_ledger"), default=False) and rows:
         build_runtime_ledger = getattr(interactive, "build_runtime_ledger_for_graph", None)
         if callable(build_runtime_ledger):
+            stage_started = time.perf_counter()
             ledger_result = build_runtime_ledger(
                 runtime_args,
                 {
@@ -180,8 +279,10 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
                 ledger_result.get("artifact_refs"),
                 row_count=len(ledger_rows),
             )
+            mark("build_runtime_ledger", stage_started)
+    stage_started = time.perf_counter()
     candidate_counts = _candidate_counts_from_trace(trace, rows)
-    return {
+    result = {
         "status": "ok" if rows else "partial",
         "context_rows": rows,
         "runtime_ledger_rows": ledger_rows,
@@ -193,18 +294,425 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
         "retrieval_trace": trace,
         "context_runtime": result.get("context_runtime") if isinstance(result.get("context_runtime"), dict) else {},
         "candidate_counts": candidate_counts,
+        "registry_timing_ms": timing_ms,
         "artifact_refs": [
             *_artifact_refs_from_mapping(result.get("artifact_refs"), row_count=len(rows)),
             *ledger_artifact_refs,
         ],
         "source_gaps": _sec_search_source_gaps(query_contract, rows),
     }
+    mark("assemble_result", stage_started)
+    if cache_key and result["status"] in {"ok", "partial"}:
+        stage_started = time.perf_counter()
+        _SEC_SEARCH_RESULT_CACHE[cache_key] = copy.deepcopy(result)
+        _trim_sec_search_result_cache()
+        mark("result_cache_store", stage_started)
+        result["mcp_result_cache"] = {
+            "hit": False,
+            "cache_key": cache_key,
+            "cache_size": len(_SEC_SEARCH_RESULT_CACHE),
+            "policy": "sec_search_result_cache_excludes_run_artifact_paths_v0_1",
+        }
+    result["registry_timing_ms"] = timing_ms
+    result["elapsed_ms"] = int(round((time.perf_counter() - started) * 1000))
+    return result
+
+
+def _invoke_milvus_semantic(args: dict[str, Any]) -> dict[str, Any]:
+    vector_kinds = _list_arg(args.get("vector_kinds"))
+    if not vector_kinds:
+        vector_kinds = ["narrative_chunk", "table_chunk", "paraphrase_context"]
+    db_path = str(args.get("milvus_db_path") or args.get("milvus_uri") or os.environ.get("MILVUS_DB_PATH") or os.environ.get("MILVUS_URI") or "").strip()
+    collection_name = str(args.get("milvus_collection_name") or os.environ.get("MILVUS_COLLECTION_NAME") or "").strip()
+    embedding_model = str(args.get("embedding_model") or os.environ.get("MILVUS_EMBEDDING_MODEL") or os.environ.get("BGE_EMBEDDING_MODEL") or "").strip()
+    missing = []
+    if not db_path:
+        missing.append("milvus_db_path")
+    if not collection_name:
+        missing.append("milvus_collection_name")
+    if not embedding_model:
+        missing.append("embedding_model")
+    if not bool(args.get("typed_filter_required", True)):
+        missing.append("typed_filter_required")
+    if missing:
+        gap = _milvus_semantic_gap("milvus_semantic_config_missing", args, missing=missing, vector_kinds=vector_kinds, source_available=False)
+        return _milvus_semantic_error(gap, collection_name=collection_name)
+
+    try:
+        from pymilvus import MilvusClient
+    except Exception as exc:  # noqa: BLE001
+        gap = _milvus_semantic_gap("pymilvus_unavailable", args, missing=[], vector_kinds=vector_kinds, source_available=False, error=str(exc))
+        return _milvus_semantic_error(gap, collection_name=collection_name)
+
+    started = datetime.now()
+    client = _milvus_client(MilvusClient, db_path, collection_name)
+    try:
+        model = _milvus_embedding_model(embedding_model, str(args.get("embedding_device") or os.environ.get("MILVUS_EMBEDDING_DEVICE") or os.environ.get("BGE_DEVICE") or "auto"))
+        query_probes = _milvus_query_probes(args)
+        embeddings = model.encode(
+            query_probes,
+            batch_size=_bounded_int(args.get("embedding_batch_size") or os.environ.get("MILVUS_QUERY_EMBEDDING_BATCH_SIZE"), default=16, minimum=1, maximum=128),
+            normalize_embeddings=True,
+            convert_to_numpy=True,
+            show_progress_bar=False,
+        )
+        filter_expr = _milvus_semantic_filter_expr(args, vector_kinds)
+        top_k = _bounded_int(args.get("milvus_top_k") or args.get("limit"), default=40, minimum=1, maximum=200)
+        final_top_k = _bounded_int(args.get("final_top_k") or args.get("limit") or args.get("milvus_top_k"), default=min(top_k, 40), minimum=1, maximum=200)
+        output_fields = [
+            "vector_id",
+            "evidence_id",
+            "ticker",
+            "fiscal_year",
+            "form_type",
+            "source_tier",
+            "item_code",
+            "category_slug",
+            "period_type",
+            "contains_table",
+            "vector_kind",
+            "vector_role",
+            "semantic_scope",
+            "intent_tags",
+            "relationship_role",
+            "object_type",
+            "preview",
+        ]
+        results = client.search(
+            collection_name=collection_name,
+            data=[_embedding_to_float_list(embedding) for embedding in embeddings],
+            anns_field="embedding",
+            limit=top_k,
+            filter=filter_expr,
+            output_fields=output_fields,
+        )
+    except Exception as exc:  # noqa: BLE001
+        gap = _milvus_semantic_gap("milvus_semantic_search_failed", args, missing=[], vector_kinds=vector_kinds, source_available=True, error=str(exc))
+        return _milvus_semantic_error(gap, collection_name=collection_name)
+
+    rows = _milvus_context_rows_from_results(results if results else [], args=args, vector_kinds=vector_kinds, query_probes=query_probes, top_k=final_top_k)
+    vector_kind_counts = _count_by(rows, "vector_kind")
+    gaps = []
+    if not rows:
+        gaps.append(_milvus_semantic_gap("milvus_semantic_no_hits_for_typed_filter", args, missing=[], vector_kinds=vector_kinds, source_available=True))
+    return {
+        "status": "ok" if rows else "partial",
+        "context_rows": rows,
+        "row_count": len(rows),
+        "vector_kind_counts": vector_kind_counts,
+        "collection_name": collection_name,
+        "typed_filter_required": True,
+        "semantic_route_role": "semantic_recall_supplement",
+        "elapsed_ms": int((datetime.now() - started).total_seconds() * 1000),
+        "filter_expr": _milvus_semantic_filter_expr(args, vector_kinds),
+        "query_probes": query_probes,
+        "query_probe_count": len(query_probes),
+        "milvus_batch_search": {
+            "enabled": len(query_probes) > 1,
+            "per_probe_top_k": top_k,
+            "final_top_k": final_top_k,
+            "fusion_policy": "weighted_rrf_by_evidence_id_v0_1",
+        },
+        "artifact_refs": [
+            {
+                "artifact_id": "milvus_semantic_collection",
+                "path": db_path,
+                "digest": "",
+                "row_count": len(rows),
+                "metadata": {"collection_name": collection_name},
+            }
+        ],
+        "source_gaps": gaps,
+    }
+
+
+def _milvus_embedding_model(model_ref: str, device: str) -> Any:
+    resolved_device = _resolve_embedding_device(device)
+    key = (model_ref, resolved_device)
+    cached = _MILVUS_EMBEDDING_MODEL_CACHE.get(key)
+    if cached is not None:
+        return cached
+    from sentence_transformers import SentenceTransformer
+
+    model = SentenceTransformer(model_ref, device=resolved_device)
+    _MILVUS_EMBEDDING_MODEL_CACHE[key] = model
+    return model
+
+
+def _milvus_query_probes(args: dict[str, Any]) -> list[str]:
+    base = str(args.get("query") or "").strip()
+    probes = [base]
+    probes.extend(str(item).strip() for item in _list_arg(args.get("query_probes") or args.get("semantic_probes")) if str(item).strip())
+    if not any(probe for probe in probes):
+        probes = [base]
+    limit = _bounded_int(args.get("query_probe_limit") or os.environ.get("MILVUS_QUERY_PROBE_LIMIT"), default=8, minimum=1, maximum=16)
+    return _dedupe_strings([probe for probe in probes if probe])[:limit]
+
+
+def _embedding_to_float_list(embedding: Any) -> list[float]:
+    if hasattr(embedding, "tolist"):
+        return [float(item) for item in embedding.tolist()]
+    return [float(item) for item in embedding]
+
+
+def _resolve_embedding_device(device: str) -> str:
+    requested = str(device or "").strip().lower()
+    if requested and requested not in {"auto", "default"}:
+        return requested
+    try:
+        import torch
+
+        return "cuda" if torch.cuda.is_available() else "cpu"
+    except Exception:  # noqa: BLE001
+        return "cpu"
+
+
+def _load_milvus_collection(client: Any, collection_name: str) -> None:
+    load = getattr(client, "load_collection", None)
+    if not callable(load):
+        return
+    try:
+        load(collection_name=collection_name)
+    except TypeError:
+        load(collection_name)
+
+
+def _milvus_client(client_cls: Any, db_path: str, collection_name: str) -> Any:
+    key = (db_path, collection_name)
+    cached = _MILVUS_CLIENT_CACHE.get(key)
+    if cached is not None:
+        return cached
+    client = client_cls(uri=db_path)
+    _load_milvus_collection(client, collection_name)
+    _MILVUS_CLIENT_CACHE[key] = client
+    return client
+
+
+def _close_milvus_client(client: Any) -> None:
+    for name in ("close", "disconnect"):
+        method = getattr(client, name, None)
+        if not callable(method):
+            continue
+        try:
+            method()
+        except Exception:
+            pass
+        return
+
+
+def _milvus_semantic_filter_expr(args: dict[str, Any], vector_kinds: list[Any]) -> str:
+    clauses = []
+    tickers = [str(item).upper() for item in _list_arg(args.get("tickers")) if str(item).strip()]
+    if tickers:
+        clauses.append(_milvus_in_clause("ticker", tickers))
+    years = [int(item) for item in _list_arg(args.get("years")) if str(item).isdigit()]
+    if years:
+        clauses.append("fiscal_year in [" + ", ".join(str(year) for year in years) + "]")
+    forms = [_normalize_form_type(item) for item in _list_arg(args.get("filing_types")) if str(item).strip()]
+    if forms:
+        clauses.append(_milvus_in_clause("form_type", forms))
+    source_tiers = [str(item) for item in _list_arg(args.get("source_tiers")) if str(item).strip()]
+    if source_tiers:
+        clauses.append(_milvus_in_clause("source_tier", source_tiers))
+    kinds = [str(item) for item in vector_kinds if str(item).strip()]
+    if kinds:
+        clauses.append(_milvus_in_clause("vector_kind", kinds))
+    return " and ".join(clause for clause in clauses if clause)
+
+
+def _milvus_in_clause(field: str, values: list[str]) -> str:
+    quoted = ", ".join(json.dumps(str(value), ensure_ascii=False) for value in values)
+    return f"{field} in [{quoted}]"
+
+
+def _milvus_context_rows(hits: list[Any], *, args: dict[str, Any], vector_kinds: list[Any]) -> list[dict[str, Any]]:
+    by_evidence_id: dict[str, dict[str, Any]] = {}
+    for raw_rank, hit in enumerate(hits, start=1):
+        entity = dict(hit.get("entity") or {}) if isinstance(hit, dict) else {}
+        evidence_id = str(entity.get("evidence_id") or "").strip()
+        if not evidence_id:
+            continue
+        score = float((hit.get("distance") if isinstance(hit, dict) else 0.0) or 0.0)
+        row = by_evidence_id.get(evidence_id)
+        if row is None or raw_rank < int(row.get("raw_semantic_rank") or 999999):
+            row = _milvus_context_row(entity, score=score, raw_rank=raw_rank, args=args, vector_kinds=vector_kinds)
+            by_evidence_id[evidence_id] = row
+        else:
+            row.setdefault("matched_vector_ids", []).append(str(entity.get("vector_id") or ""))
+        kind = str(entity.get("vector_kind") or "")
+        if kind:
+            row.setdefault("vector_kinds", [])
+            if kind not in row["vector_kinds"]:
+                row["vector_kinds"].append(kind)
+    rows = sorted(by_evidence_id.values(), key=lambda item: int(item.get("raw_semantic_rank") or 999999))
+    for rank, row in enumerate(rows, start=1):
+        row["rank"] = rank
+    return rows
+
+
+def _milvus_context_rows_from_results(
+    results: list[Any],
+    *,
+    args: dict[str, Any],
+    vector_kinds: list[Any],
+    query_probes: list[str],
+    top_k: int,
+) -> list[dict[str, Any]]:
+    if len(results) <= 1:
+        rows = _milvus_context_rows(results[0] if results else [], args=args, vector_kinds=vector_kinds)
+        for row in rows:
+            row["matched_query_indices"] = [0]
+            row["matched_queries"] = query_probes[:1]
+        return rows[:top_k]
+    scores: dict[str, float] = {}
+    by_evidence_id: dict[str, dict[str, Any]] = {}
+    for query_index, hits in enumerate(results):
+        query_weight = 1.0 if query_index == 0 else 0.85
+        for raw_rank, hit in enumerate(hits or [], start=1):
+            entity = dict(hit.get("entity") or {}) if isinstance(hit, dict) else {}
+            evidence_id = str(entity.get("evidence_id") or "").strip()
+            if not evidence_id:
+                continue
+            score = float((hit.get("distance") if isinstance(hit, dict) else 0.0) or 0.0)
+            scores[evidence_id] = scores.get(evidence_id, 0.0) + query_weight * _milvus_semantic_hit_weight(entity) / (60.0 + raw_rank)
+            row = by_evidence_id.get(evidence_id)
+            if row is None or raw_rank < int(row.get("raw_semantic_rank") or 999999):
+                row = _milvus_context_row(entity, score=score, raw_rank=raw_rank, args=args, vector_kinds=vector_kinds)
+                by_evidence_id[evidence_id] = row
+            row.setdefault("matched_query_indices", [])
+            row["matched_query_indices"].append(query_index)
+            row.setdefault("matched_queries", [])
+            if 0 <= query_index < len(query_probes):
+                row["matched_queries"].append(query_probes[query_index])
+            kind = str(entity.get("vector_kind") or "")
+            if kind:
+                row.setdefault("vector_kinds", [])
+                if kind not in row["vector_kinds"]:
+                    row["vector_kinds"].append(kind)
+            vector_id = str(entity.get("vector_id") or "")
+            if vector_id:
+                row.setdefault("matched_vector_ids", [])
+                if vector_id not in row["matched_vector_ids"]:
+                    row["matched_vector_ids"].append(vector_id)
+    ranked_ids = [evidence_id for evidence_id, _score in sorted(scores.items(), key=lambda item: item[1], reverse=True)[:top_k]]
+    rows = []
+    for rank, evidence_id in enumerate(ranked_ids, start=1):
+        row = by_evidence_id[evidence_id]
+        row["rank"] = rank
+        row["semantic_score"] = round(float(scores.get(evidence_id) or 0.0), 8)
+        row["matched_query_indices"] = sorted({int(item) for item in row.get("matched_query_indices") or []})
+        row["matched_queries"] = _dedupe_strings([str(item) for item in row.get("matched_queries") or [] if str(item).strip()])
+        row["vector_kinds"] = _dedupe_strings([str(item) for item in row.get("vector_kinds") or [] if str(item).strip()])
+        rows.append(row)
+    return rows
+
+
+def _milvus_semantic_hit_weight(entity: dict[str, Any]) -> float:
+    weight = 1.0
+    if str(entity.get("vector_kind") or "") in {"relationship_context", "paraphrase_context", "metric_row", "table_row"}:
+        weight += 0.12
+    if str(entity.get("vector_role") or "") in {"economic_linkage_context", "plain_language_context"}:
+        weight += 0.08
+    if str(entity.get("semantic_scope") or "") in {"relationship", "paraphrase"}:
+        weight += 0.06
+    return weight
+
+
+def _milvus_context_row(entity: dict[str, Any], *, score: float, raw_rank: int, args: dict[str, Any], vector_kinds: list[Any]) -> dict[str, Any]:
+    source_tier = str(entity.get("source_tier") or "primary_sec_filing")
+    vector_kind = str(entity.get("vector_kind") or "")
+    evidence_id = str(entity.get("evidence_id") or "")
+    preview = str(entity.get("preview") or "")
+    return {
+        "evidence_ref": evidence_id,
+        "evidence_id": evidence_id,
+        "source_family": source_tier,
+        "source_tier": source_tier,
+        "retrieval_route": "milvus_semantic",
+        "semantic_route_role": "semantic_recall_supplement",
+        "ticker": str(entity.get("ticker") or "").upper(),
+        "fiscal_year": int(entity.get("fiscal_year") or 0),
+        "form_type": str(entity.get("form_type") or ""),
+        "source_type": str(entity.get("form_type") or ""),
+        "item_code": str(entity.get("item_code") or ""),
+        "category_slug": str(entity.get("category_slug") or ""),
+        "period_type": str(entity.get("period_type") or ""),
+        "contains_table": bool(entity.get("contains_table")),
+        "object_type": str(entity.get("object_type") or ""),
+        "vector_kind": vector_kind,
+        "vector_kinds": [vector_kind] if vector_kind else [str(item) for item in vector_kinds if str(item).strip()],
+        "vector_role": str(entity.get("vector_role") or ""),
+        "semantic_scope": str(entity.get("semantic_scope") or ""),
+        "intent_tags": [part for part in str(entity.get("intent_tags") or "").split("|") if part],
+        "relationship_role": str(entity.get("relationship_role") or ""),
+        "summary": preview,
+        "text": preview,
+        "preview": preview,
+        "semantic_score": score,
+        "raw_semantic_rank": raw_rank,
+        "matched_vector_ids": [str(entity.get("vector_id") or "")],
+        "retrieval_query": str(args.get("query") or ""),
+        "claim_scope_boundary": "semantic_recall_supplement_not_exact_value_authority",
+    }
+
+
+def _milvus_semantic_gap(
+    reason_code: str,
+    args: dict[str, Any],
+    *,
+    missing: list[str],
+    vector_kinds: list[Any],
+    source_available: bool,
+    error: str = "",
+) -> dict[str, Any]:
+    return {
+        "source_family": "primary_sec_filing",
+        "retrieval_route": "milvus_semantic",
+        "reason_code": reason_code,
+        "reason": "Milvus typed semantic recall did not return bounded rows for the requested typed filter.",
+        "missing": missing,
+        "vector_kinds": [str(item) for item in vector_kinds if str(item).strip()],
+        "tickers": [str(item).upper() for item in _list_arg(args.get("tickers")) if str(item).strip()],
+        "years": [int(item) for item in _list_arg(args.get("years")) if str(item).isdigit()],
+        "source_available": source_available,
+        "error": error[:500],
+    }
+
+
+def _milvus_semantic_error(gap: dict[str, Any], *, collection_name: str) -> dict[str, Any]:
+    return {
+        "status": "error",
+        "error": gap["reason_code"],
+        "context_rows": [],
+        "row_count": 0,
+        "vector_kind_counts": {},
+        "collection_name": collection_name,
+        "typed_filter_required": True,
+        "semantic_route_role": "semantic_recall_supplement",
+        "artifact_refs": [],
+        "source_gaps": [gap],
+    }
+
+
+def _count_by(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        values = _list_arg(row.get(key))
+        if not values and key == "vector_kind":
+            values = _list_arg(row.get("vector_kinds"))
+        for value in values:
+            text = str(value or "").strip()
+            if not text:
+                continue
+            counts[text] = counts.get(text, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def _invoke_market(args: dict[str, Any]) -> dict[str, Any]:
     path = Path(str(args.get("market_evidence_path") or "")).resolve()
     if not path.exists():
         return {"status": "error", "error": "market_evidence_path_not_found", "path": str(path)}
+    catalog_path = Path(str(args.get("market_catalog_path") or "")).resolve() if str(args.get("market_catalog_path") or "").strip() else None
     tickers = {ticker.upper() for ticker in _list_arg(args.get("tickers"))}
     snapshot_id = str(args.get("snapshot_id") or "").strip()
     limit = max(1, min(int(args.get("limit") or 1000), 1000))
@@ -230,13 +738,16 @@ def _invoke_market(args: dict[str, Any]) -> dict[str, Any]:
             for field in fields:
                 if ticker_rows and all(row.get(field) in {None, ""} for row in ticker_rows):
                     field_gaps.append({"ticker": ticker, "field": field, "reason": "missing_or_null"})
+    artifact_refs = [{"artifact_id": "market_evidence_rows", "path": str(path), "digest": "", "row_count": len(rows)}]
+    if catalog_path is not None:
+        artifact_refs.append({"artifact_id": "market_catalog", "path": str(catalog_path), "digest": "", "row_count": 0})
     return {
         "status": "ok" if rows else "partial",
         "market_rows": rows,
         "snapshot_id": snapshot_id or (str(rows[0].get("snapshot_id") or "") if rows else ""),
         "as_of_date": str(args.get("as_of_date") or (rows[0].get("as_of_date") if rows else "") or ""),
         "field_gaps": field_gaps,
-        "artifact_refs": [{"artifact_id": "market_evidence_rows", "path": str(path), "digest": "", "row_count": len(rows)}],
+        "artifact_refs": artifact_refs,
     }
 
 
@@ -336,9 +847,18 @@ def _interactive_args_for_sec_search(args: dict[str, Any]) -> argparse.Namespace
         plan_only=False,
         auto_start_qwen=_bool_arg(args.get("auto_start_qwen"), default=_env_bool("AUTO_START_QWEN")),
         bge_first=bge_first,
-        context_runner=str(args.get("context_runner") or os.environ.get("CONTEXT_RUNNER") or os.environ.get("SEC_AGENT_CONTEXT_RUNNER") or "auto"),
+        context_runner=_context_runner_arg(args.get("context_runner") or os.environ.get("CONTEXT_RUNNER") or os.environ.get("SEC_AGENT_CONTEXT_RUNNER") or "auto"),
         quiet=_bool_arg(args.get("quiet"), default=True),
     )
+
+
+def _context_runner_arg(value: Any) -> str:
+    text = str(value or "auto").strip().lower().replace("-", "_")
+    if text in {"interactive", "resident", "mcp", "resident_worker"}:
+        return "in_process"
+    if text in {"auto", "in_process", "subprocess"}:
+        return text
+    return "auto"
 
 
 def _overlay_sec_search_contract(contract: dict[str, Any], args: dict[str, Any], query: str) -> dict[str, Any]:
@@ -439,7 +959,7 @@ def _compile_available_sec_requirements(
     for row in manifest_rows:
         ticker = str(row.get("ticker") or "").upper().strip()
         year = _int_or_none(row.get("fiscal_year") or row.get("year"))
-        form = _normalize_form_type(row.get("form_type") or row.get("source_type"))
+        form = _manifest_row_form_type(row)
         tier = str(row.get("source_tier") or _default_source_tier_for_form(form)).strip()
         if not ticker or year is None or not form:
             continue
@@ -516,6 +1036,10 @@ def _read_manifest_rows(path_value: Any) -> list[dict[str, Any]]:
         path = REPO_ROOT / path
     if not path.exists() or not path.is_file():
         return []
+    cache_key = _file_cache_token(path)
+    cached = _SEC_MANIFEST_ROWS_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
     rows: list[dict[str, Any]] = []
     with path.open("r", encoding="utf-8") as handle:
         for line in handle:
@@ -527,12 +1051,54 @@ def _read_manifest_rows(path_value: Any) -> list[dict[str, Any]]:
                 continue
             if isinstance(row, dict):
                 rows.append(row)
+    _SEC_MANIFEST_ROWS_CACHE.clear()
+    _SEC_MANIFEST_ROWS_CACHE[cache_key] = rows
     return rows
+
+
+def _file_cache_token(path: Path) -> tuple[Any, ...]:
+    if not path.exists() or not path.is_file():
+        return (str(path.resolve()), False, 0, 0)
+    stat = path.stat()
+    return (str(path.resolve()), True, stat.st_size, stat.st_mtime_ns)
 
 
 def _normalize_form_type(value: Any) -> str:
     text = str(value or "").upper().strip()
-    return text.replace("10K", "10-K").replace("10Q", "10-Q").replace("20F", "20-F").replace("40F", "40-F")
+    return (
+        text.replace("10K", "10-K")
+        .replace("10Q", "10-Q")
+        .replace("8K", "8-K")
+        .replace("20F", "20-F")
+        .replace("40F", "40-F")
+        .replace("6K", "6-K")
+    )
+
+
+def _manifest_row_form_type(row: dict[str, Any]) -> str:
+    metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+    for value in (
+        row.get("form_type"),
+        row.get("source_type"),
+        metadata.get("form_type"),
+        metadata.get("source_type"),
+    ):
+        form = _normalize_form_type(value)
+        if form in _SEC_FORM_TYPES:
+            return form
+    for key in ("evidence_id", "source_evidence_id", "source_id", "chunk_id", "block_id", "object_id", "id"):
+        form = _form_type_from_source_id(row.get(key))
+        if form:
+            return form
+    return ""
+
+
+def _form_type_from_source_id(value: Any) -> str:
+    match = _SEC_FORM_ID_RE.search(str(value or "").upper())
+    if not match:
+        return ""
+    form = _normalize_form_type(match.group("form"))
+    return form if form in _SEC_FORM_TYPES else ""
 
 
 def _default_source_tier_for_form(form: str) -> str:
@@ -606,6 +1172,18 @@ def _list_arg(value: Any) -> list[Any]:
     return [value]
 
 
+def _dedupe_strings(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for value in values:
+        text = str(value or "").strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        deduped.append(text)
+    return deduped
+
+
 def _csv_arg(value: Any) -> str:
     if value is None:
         return ""
@@ -634,6 +1212,138 @@ def _bounded_int(value: Any, *, default: int, minimum: int, maximum: int) -> int
     except (TypeError, ValueError):
         parsed = int(default)
     return max(minimum, min(maximum, parsed))
+
+
+def _sec_search_result_cache_enabled(args: dict[str, Any]) -> bool:
+    if str(args.get("disable_result_cache") or "").strip().lower() in {"1", "true", "yes", "on"}:
+        return False
+    if "cache_result" in args:
+        return _bool_arg(args.get("cache_result"), default=True)
+    if os.environ.get("SEC_AGENT_MCP_SEC_SEARCH_RESULT_CACHE") is not None:
+        return _env_bool("SEC_AGENT_MCP_SEC_SEARCH_RESULT_CACHE")
+    return True
+
+
+def _sec_search_result_cache_key(args: dict[str, Any]) -> str:
+    stable_args = _sec_search_cache_relevant_args(args)
+    env_fingerprint = {
+        name: os.environ.get(name, "")
+        for name in (
+            "MANIFEST_PATH",
+            "BM25_INDEX_DIR",
+            "OBJECT_BM25_INDEX_DIR",
+            "BGE_MODEL",
+            "BGE_DEVICE",
+            "LEDGER_STORE_PATH",
+            "SEC_AGENT_CONTEXT_RUNNER",
+            "CONTEXT_RUNNER",
+        )
+    }
+    payload = {"args": stable_args, "env": env_fingerprint}
+    return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:24]
+
+
+def _sec_search_cache_relevant_args(args: dict[str, Any]) -> dict[str, Any]:
+    relevant_keys = {
+        "query",
+        "tickers",
+        "years",
+        "filing_types",
+        "source_tiers",
+        "metric_families",
+        "period_roles",
+        "retrieval_route",
+        "candidate_budget",
+        "rerank_budget",
+        "bge_first",
+        "bge_device",
+        "build_runtime_ledger",
+        "evidence_top_k",
+        "object_top_k",
+        "reranker_candidate_limit",
+        "reranker_top_k",
+        "reranker_batch_size",
+        "reranker_max_length",
+        "reranker_doc_max_chars",
+        "context_runner",
+        "limit",
+        "manifest_path",
+        "bm25_index_dir",
+        "object_bm25_index_dir",
+        "bge_model",
+        "ledger_store_path",
+    }
+    stable = {
+        key: _cacheable_value(args[key])
+        for key in sorted(relevant_keys)
+        if key in args
+    }
+    if isinstance(args.get("retrieval_plan"), dict):
+        stable["retrieval_plan"] = _stable_sec_search_retrieval_plan(args["retrieval_plan"])
+    return stable
+
+
+def _stable_sec_search_retrieval_plan(plan: dict[str, Any]) -> dict[str, Any]:
+    stable_routes = []
+    for route in plan.get("routes") or []:
+        if not isinstance(route, dict):
+            continue
+        route_keys = {
+            "retrieval_route",
+            "tickers",
+            "years",
+            "filing_types",
+            "source_tiers",
+            "metric_families",
+            "period_roles",
+            "candidate_budget",
+            "rerank_budget",
+        }
+        stable_route = {
+            key: _cacheable_value(route[key])
+            for key in sorted(route_keys)
+            if key in route
+        }
+        coverage = route.get("coverage_requirements")
+        if isinstance(coverage, dict):
+            stable_route["coverage_requirements"] = {
+                key: _cacheable_value(coverage[key])
+                for key in sorted(
+                    {
+                        "tickers",
+                        "years",
+                        "filing_types",
+                        "source_tiers",
+                        "metric_families",
+                        "period_roles",
+                    }
+                )
+                if key in coverage
+            }
+        stable_routes.append(stable_route)
+    return {"routes": stable_routes}
+
+
+def _cacheable_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _cacheable_value(value[key]) for key in sorted(value)}
+    if isinstance(value, (list, tuple)):
+        return [_cacheable_value(item) for item in value]
+    if isinstance(value, set):
+        return sorted(_cacheable_value(item) for item in value)
+    if isinstance(value, Path):
+        return str(value)
+    return value
+
+
+def _trim_sec_search_result_cache() -> None:
+    max_entries = _bounded_int(os.environ.get("SEC_AGENT_MCP_SEC_SEARCH_RESULT_CACHE_SIZE"), default=16, minimum=0, maximum=256)
+    if max_entries <= 0:
+        _SEC_SEARCH_RESULT_CACHE.clear()
+        return
+    while len(_SEC_SEARCH_RESULT_CACHE) > max_entries:
+        oldest_key = next(iter(_SEC_SEARCH_RESULT_CACHE))
+        _SEC_SEARCH_RESULT_CACHE.pop(oldest_key, None)
 
 
 def _default_mcp_output_dir(query: str) -> Path:
@@ -685,6 +1395,7 @@ def _sec_search_source_gaps(contract: dict[str, Any], rows: list[dict[str, Any]]
 
 _HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
     "sec_search_filings": _invoke_sec_search,
+    "sec_milvus_semantic_search": _invoke_milvus_semantic,
     "sec_query_exact_value_ledger": _invoke_ledger,
     "market_get_snapshot": _invoke_market,
     "industry_get_snapshot": _invoke_industry,

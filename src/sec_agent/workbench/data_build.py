@@ -96,12 +96,21 @@ def source_bundle_artifact_updates(step_id: str, values: dict[str, Any]) -> dict
         "sec_build_object_bm25_index": {"output_dir": "object_bm25_index_dir"},
         "sec_merge_source_gaps": {"output": "source_gap_path"},
         "market_build_evidence_pack": {"output": "market_evidence_path"},
+        "market_build_catalog": {"catalog_path": "market_catalog_path"},
     }
     result: dict[str, str] = {}
     for value_key, artifact_key in mapping.get(step_id, {}).items():
         value = values.get(value_key)
         if not _is_blank(value):
             result[artifact_key] = str(value).strip()
+    if step_id == "industry_download_source_snapshot":
+        output_root = values.get("output_root")
+        snapshot_id = values.get("snapshot_id")
+        if not _is_blank(output_root) and not _is_blank(snapshot_id):
+            root = str(output_root).strip().rstrip("/\\")
+            snapshot = str(snapshot_id).strip()
+            result["industry_evidence_path"] = f"{root}/{snapshot}/industry_evidence_rows.jsonl"
+            result["industry_snapshot_db_path"] = f"{root}/{snapshot}/industry_snapshot.duckdb"
     return result
 
 
@@ -558,7 +567,13 @@ _DATA_BUILD_STEPS = {
             _param("output_root", "--output-root", "输出根目录", default="data/processed_private/industry/source_snapshots"),
             _param("timeout_s", "--timeout-s", "请求超时"),
             _param("sleep_s", "--sleep-s", "请求间隔"),
+            _param("request_retries", "--request-retries", "请求重试次数"),
+            _param("retry_backoff_s", "--retry-backoff-s", "重试退避秒数"),
             _param("max_rows_per_series", "--max-rows-per-series", "单序列最大行数"),
+            _param("provider_filter", "--provider-filter", "只下载指定 provider"),
+            _param("source_family_filter", "--source-family-filter", "只下载指定 source family"),
+            _param("series_id_filter", "--series-id-filter", "只下载指定 FRED series"),
+            _param("allow_source_failures", "--allow-source-failures", "允许记录缺口后继续", kind="bool"),
             _param("skip_live", "--skip-live", "跳过实时下载", kind="bool"),
         ],
         output_parameters=["output_root"],

@@ -1,9 +1,41 @@
-chunking:
-  target_tokens: 1000
-  overlap_tokens: 150
+schema_version: sec_agent_retrieval_config_v0.2
 
-retrieval:
-  bm25_top_k: 30
-  dense_top_k: 30
-  final_top_k: 10
-  rrf_k: 60
+chunking:
+  primary_sec_filings:
+    forms:
+      - 10-K
+      - 10-Q
+    target_words: 900
+    overlap_words: 150
+    min_words: 80
+    builder: scripts/data_sec/build_sec_chunks.py
+  earnings_8k:
+    forms:
+      - 8-K
+    target_words: 650
+    overlap_words: 100
+    min_words: 40
+    builder: scripts/data_sec/build_sec_8k_earnings_chunks.py
+
+mainline_retrieval:
+  bm25:
+    role: lexical_recall
+    default_index_dir: data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027
+  object_bm25:
+    role: structured_object_and_exact_value_recall
+    default_index_dir: data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027_objects
+  bge_reranker:
+    role: online_candidate_rerank
+    model: BAAI/bge-reranker-v2-m3
+    device_policy: auto
+    default_batch_size: 8
+    default_max_length: 512
+
+experimental_retrieval:
+  dense_numpy_faiss:
+    role: historical_dense_baseline
+    status: not_current_default
+  milvus:
+    role: semantic_recall_experiment_layer
+    status: not_current_default
+    insertion_point: after_bm25_objectbm25_candidate_generation_before_bge_rerank

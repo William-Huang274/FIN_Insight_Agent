@@ -24,6 +24,24 @@ SPECIALIST_AGENT_IDS = {
 
 SPECIALIST_STATUSES = {"pass", "partial", "blocked", "stubbed"}
 CONFIDENCE_LEVELS = {"unknown", "low", "medium", "high"}
+EVIDENCE_GAP_REQUEST_TYPES = {
+    "missing_metric",
+    "missing_source_family",
+    "additional_company_scope",
+    "relationship_confirmation",
+    "market_field",
+    "industry_context",
+    "counterevidence_test",
+}
+EVIDENCE_GAP_OWNER_AGENTS = {
+    "coverage_reflection",
+    "universe_relationship",
+    "sec_operator",
+    "eight_k_operator",
+    "market_operator",
+    "industry_operator",
+}
+EVIDENCE_GAP_BLOCKING_LEVELS = {"blocking", "material", "optional"}
 RELATIONSHIP_TYPES = {"peer", "competitor", "customer", "supplier", "sector", "macro_sensitive", "other"}
 ECONOMIC_LINK_TYPES = {
     "direct_customer_supplier",
@@ -108,6 +126,11 @@ def normalize_specialist_memolet(payload: Mapping[str, Any] | None = None, *, ag
     observations = [_normalize_observation(item) for item in raw.get("observations") or [] if isinstance(item, Mapping)]
     unsupported_claims = [_normalize_claim_item(item) for item in raw.get("unsupported_claims") or []]
     conflicts = [_normalize_claim_item(item) for item in raw.get("conflicts") or []]
+    evidence_gap_requests = [
+        _normalize_evidence_gap_request(item, owner_agent="coverage_reflection")
+        for item in raw.get("evidence_gap_requests") or []
+        if isinstance(item, Mapping)
+    ]
     status = str(raw.get("status") or ("partial" if unsupported_claims else "pass")).strip()
     if status not in SPECIALIST_STATUSES:
         status = "partial"
@@ -120,6 +143,7 @@ def normalize_specialist_memolet(payload: Mapping[str, Any] | None = None, *, ag
         "observations": observations,
         "unsupported_claims": unsupported_claims,
         "conflicts": conflicts,
+        "evidence_gap_requests": evidence_gap_requests,
         "confidence": _normalize_confidence(raw.get("confidence")),
         "metadata": dict(raw.get("metadata") or {}),
     }
@@ -159,6 +183,18 @@ def validate_specialist_memolet(
         if not item.get("claim"):
             errors.append({"type": "unsupported_claim_text_required", "agent_id": agent_id, "index": index})
 
+    for index, request in enumerate(memolet["evidence_gap_requests"]):
+        if request["request_type"] not in EVIDENCE_GAP_REQUEST_TYPES:
+            errors.append({"type": "invalid_evidence_gap_request_type", "agent_id": agent_id, "index": index, "value": request["request_type"]})
+        if request["owner_agent"] not in EVIDENCE_GAP_OWNER_AGENTS:
+            errors.append({"type": "invalid_evidence_gap_owner_agent", "agent_id": agent_id, "index": index, "value": request["owner_agent"]})
+        if request["blocking_level"] not in EVIDENCE_GAP_BLOCKING_LEVELS:
+            errors.append({"type": "invalid_evidence_gap_blocking_level", "agent_id": agent_id, "index": index, "value": request["blocking_level"]})
+        if request["source_family"] and request["source_family"] not in RELATIONSHIP_EVIDENCE_SOURCES:
+            errors.append({"type": "invalid_evidence_gap_source_family", "agent_id": agent_id, "index": index, "value": request["source_family"]})
+        if not request["reason"]:
+            errors.append({"type": "evidence_gap_request_reason_required", "agent_id": agent_id, "index": index})
+
     return {
         "status": "fail" if errors else "pass",
         "schema_version": SPECIALIST_MEMOLET_SCHEMA_VERSION,
@@ -180,6 +216,7 @@ def build_stub_specialist_memolets(agent_ids: list[str]) -> list[dict[str, Any]]
                     "observations": [],
                     "unsupported_claims": [],
                     "conflicts": [],
+                    "evidence_gap_requests": [],
                     "confidence": "unknown",
                     "metadata": {"stubbed": True},
                 }
@@ -197,6 +234,16 @@ def normalize_universe_relationship_plan(payload: Mapping[str, Any] | None = Non
     included_tickers = _unique_upper(raw.get("included_tickers")) or expanded_tickers or focus_tickers
     excluded_tickers = _unique_upper(raw.get("excluded_tickers"))
     budget = _relationship_budget(raw.get("budget") if isinstance(raw.get("budget"), Mapping) else {})
+    included_ticker_contracts = _normalize_included_ticker_contracts(
+        raw.get("included_ticker_contracts") or raw.get("included_scope") or raw.get("included_companies"),
+        included_tickers=included_tickers,
+        focus_tickers=focus_tickers,
+        relationships=relationships,
+    )
+    excluded_ticker_contracts = _normalize_excluded_ticker_contracts(
+        raw.get("excluded_ticker_contracts") or raw.get("excluded_scope") or raw.get("excluded_companies"),
+        excluded_tickers=excluded_tickers,
+    )
     return {
         "schema_version": UNIVERSE_RELATIONSHIP_PLAN_SCHEMA_VERSION,
         "agent_id": "universe_relationship",
@@ -205,6 +252,8 @@ def normalize_universe_relationship_plan(payload: Mapping[str, Any] | None = Non
         "expanded_tickers": expanded_tickers or included_tickers,
         "included_tickers": included_tickers,
         "excluded_tickers": excluded_tickers,
+        "included_ticker_contracts": included_ticker_contracts,
+        "excluded_ticker_contracts": excluded_ticker_contracts,
         "relationship_scope_rationale": str(raw.get("relationship_scope_rationale") or "").strip(),
         "scope_guard": _relationship_scope_guard(raw.get("scope_guard") if isinstance(raw.get("scope_guard"), Mapping) else {}, budget),
         "budget": budget,
@@ -272,6 +321,16 @@ def validate_universe_relationship_plan(
     for ticker in sorted(set(plan["included_tickers"]) - set(plan["focus_tickers"])):
         if ticker not in related_with_evidence:
             errors.append({"type": "expanded_ticker_without_relationship_evidence", "ticker": ticker})
+    valid_relationship_strengths = {"verified", "inferred", "hypothesis", "source_gap"}
+    for index, contract in enumerate(plan.get("included_ticker_contracts") or []):
+        if str(contract.get("relationship_strength") or "") not in valid_relationship_strengths:
+            errors.append(
+                {
+                    "type": "invalid_included_ticker_relationship_strength",
+                    "index": index,
+                    "value": contract.get("relationship_strength"),
+                }
+            )
     for index, relationship in enumerate(plan["relationships"]):
         if relationship["edge_schema_version"] != RELATIONSHIP_EDGE_SCHEMA_VERSION:
             warnings.append(
@@ -540,6 +599,7 @@ def aggregate_specialist_judgment_plan(
     supported_claims: list[dict[str, Any]] = []
     unsupported_claims: list[dict[str, Any]] = []
     conflicts: list[dict[str, Any]] = []
+    evidence_gap_requests: list[dict[str, Any]] = []
     blocked_specialist_agents: list[str] = []
 
     for memolet in normalized:
@@ -563,6 +623,8 @@ def aggregate_specialist_judgment_plan(
             unsupported_claims.append({"agent_id": agent_id, **item})
         for item in memolet["conflicts"]:
             conflicts.append({"agent_id": agent_id, **item})
+        for item in memolet["evidence_gap_requests"]:
+            evidence_gap_requests.append({"agent_id": agent_id, **item})
 
     supported_claims = _rank_supported_claims(supported_claims)
     unsupported_claims, unsupported_overflow = _cap_unsupported_claims_by_agent(unsupported_claims)
@@ -583,6 +645,7 @@ def aggregate_specialist_judgment_plan(
         memo_outline=memo_outline,
         conflicts=conflicts,
         unsupported_claims=unsupported_claims,
+        evidence_gap_requests=evidence_gap_requests,
         source_boundary_notes=source_boundary_notes,
     )
     memo_thesis_pack = _memo_thesis_pack_from_claims(
@@ -591,6 +654,7 @@ def aggregate_specialist_judgment_plan(
         memo_thesis_plan=memo_thesis_plan,
         conflicts=conflicts,
         unsupported_claims=unsupported_claims,
+        evidence_gap_requests=evidence_gap_requests,
         source_boundary_notes=source_boundary_notes,
     )
     memo_constraints = _memo_constraints(
@@ -598,6 +662,7 @@ def aggregate_specialist_judgment_plan(
         supported_claims=supported_claims,
         unsupported_claims=unsupported_claims,
         conflicts=conflicts,
+        evidence_gap_requests=evidence_gap_requests,
         blocked_specialist_agents=blocked_specialist_agents,
         reflection_report=reflection_report,
         source_boundary_notes=source_boundary_notes,
@@ -608,12 +673,13 @@ def aggregate_specialist_judgment_plan(
     )
     return {
         "schema_version": JUDGMENT_PLAN_SCHEMA_VERSION,
-        "status": "fail" if errors else "partial" if unsupported_claims or conflicts else "pass",
+        "status": "fail" if errors else "partial" if unsupported_claims or conflicts or evidence_gap_requests else "pass",
         "specialist_output_count": len(normalized),
         "source_agent_ids": [item["agent_id"] for item in normalized],
         "supported_claims": supported_claims,
         "unsupported_claims": unsupported_claims,
         "conflicts": conflicts,
+        "evidence_gap_requests": evidence_gap_requests,
         "blocked_specialist_agents": blocked_specialist_agents,
         "source_boundary_notes": source_boundary_notes,
         "memo_outline": memo_outline,
@@ -1496,6 +1562,7 @@ def _memo_thesis_plan_from_claims(
     memo_outline: list[dict[str, Any]],
     conflicts: list[dict[str, Any]],
     unsupported_claims: list[dict[str, Any]],
+    evidence_gap_requests: list[dict[str, Any]] | None = None,
     source_boundary_notes: list[dict[str, Any]],
 ) -> dict[str, Any]:
     thesis_claim = _primary_thesis_claim(supported_claims)
@@ -1534,6 +1601,7 @@ def _memo_thesis_plan_from_claims(
         "section_sequence": sections,
         "conflict_count": len(conflicts),
         "unsupported_claim_count": len(unsupported_claims),
+        "evidence_gap_request_count": len(evidence_gap_requests or []),
         "source_boundary_note_count": len(source_boundary_notes),
         "plan_policy": "claim_card_ranked_thesis_first_no_new_facts_v0_1",
     }
@@ -1553,6 +1621,7 @@ def _memo_thesis_pack_from_claims(
     memo_thesis_plan: Mapping[str, Any],
     conflicts: list[dict[str, Any]],
     unsupported_claims: list[dict[str, Any]],
+    evidence_gap_requests: list[dict[str, Any]] | None = None,
     source_boundary_notes: list[dict[str, Any]],
 ) -> dict[str, Any]:
     thesis_claim = _primary_thesis_claim(supported_claims) or {}
@@ -1613,10 +1682,15 @@ def _memo_thesis_pack_from_claims(
             unsupported_claims=unsupported_claims,
             source_boundary_notes=source_boundary_notes,
         ),
+        "evidence_gap_requests": [
+            _compact_evidence_gap_for_pack(item)
+            for item in (evidence_gap_requests or [])[:3]
+        ],
         "evidence_strength_map": {
             "supported_claim_count": len(supported_claims),
             "supported_memo_slots": supported_slots,
             "source_family_counts": source_family_counts,
+            "evidence_gap_request_count": len(evidence_gap_requests or []),
             "source_boundary_note_count": len(source_boundary_notes),
         },
         "source_boundary": "verified ClaimCards only; relationship and industry rows are scope/context evidence, not reported financial facts",
@@ -1641,6 +1715,20 @@ def _memo_pack_claim(claim: Mapping[str, Any]) -> dict[str, Any]:
         "missing_confirmations": _unique_strings(claim.get("missing_confirmations"))[:3],
         "claim_rank_score": _bounded_int(claim.get("claim_rank_score"), default=0, minimum=0, maximum=100),
         "claim_rank_bucket": str(claim.get("claim_rank_bucket") or ""),
+    }
+
+
+def _compact_evidence_gap_for_pack(value: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "agent_id": str(value.get("agent_id") or "").strip(),
+        "request_type": str(value.get("request_type") or "").strip(),
+        "owner_agent": str(value.get("owner_agent") or "coverage_reflection").strip(),
+        "tickers": _unique_upper(value.get("tickers"))[:6],
+        "metric_families": _unique_strings(value.get("metric_families"))[:6],
+        "source_family": str(value.get("source_family") or "").strip(),
+        "blocking_level": str(value.get("blocking_level") or "material").strip(),
+        "can_answer_bounded_without": bool(value.get("can_answer_bounded_without", True)),
+        "reason": str(value.get("reason") or "").strip()[:240],
     }
 
 
@@ -1786,6 +1874,7 @@ def build_multi_agent_memo_draft(
     supported = [dict(item) for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)]
     conflicts = [dict(item) for item in judgment.get("conflicts") or [] if isinstance(item, Mapping)]
     unsupported = [dict(item) for item in judgment.get("unsupported_claims") or [] if isinstance(item, Mapping)]
+    evidence_gap_requests = [dict(item) for item in judgment.get("evidence_gap_requests") or [] if isinstance(item, Mapping)]
     allowed = bool(judgment.get("memo_writer_allowed", True)) and bool(verification.get("memo_writer_allowed", True))
     common = {
         "schema_version": MEMO_DRAFT_SCHEMA_VERSION,
@@ -1798,6 +1887,7 @@ def build_multi_agent_memo_draft(
         "evidence_strength": _evidence_strength_summary(supported),
         "counterevidence": conflicts,
         "missing_evidence": list(constraints.get("missing_evidence") or []),
+        "evidence_gap_requests": evidence_gap_requests,
         "unsupported_claims_excluded": unsupported,
         "memo_constraints": dict(constraints),
         "memo_outline": [dict(item) for item in judgment.get("memo_outline") or [] if isinstance(item, Mapping)],
@@ -2351,6 +2441,7 @@ def _memo_constraints(
     supported_claims: list[dict[str, Any]],
     unsupported_claims: list[dict[str, Any]],
     conflicts: list[dict[str, Any]],
+    evidence_gap_requests: list[dict[str, Any]] | None = None,
     blocked_specialist_agents: list[str],
     reflection_report: Mapping[str, Any] | None,
     source_boundary_notes: list[dict[str, Any]],
@@ -2378,6 +2469,9 @@ def _memo_constraints(
         required_caveats.append("preserve_counterevidence_and_conflicts")
     if missing_evidence:
         required_caveats.append("state_missing_evidence_and_bounded_answer_scope")
+    gap_requests = [dict(item) for item in evidence_gap_requests or [] if isinstance(item, Mapping)]
+    if gap_requests:
+        required_caveats.append("preserve_specialist_evidence_gap_requests_for_coverage_reflection")
     if reflection.get("bounded_answer_allowed"):
         required_caveats.append("bounded_answer_only_until_gaps_close")
     overflow = dict(unsupported_claim_overflow or {})
@@ -2390,8 +2484,10 @@ def _memo_constraints(
         "forbidden_inputs": ["raw_rows", "physical_paths", "tool_calls", "retrieval_requests"],
         "required_caveats": required_caveats,
         "missing_evidence": missing_evidence,
+        "evidence_gap_requests": gap_requests,
         "conflict_count": len(conflicts),
         "unsupported_claim_count": len(unsupported_claims),
+        "evidence_gap_request_count": len(gap_requests),
         "unsupported_claim_overflow_count": int(overflow.get("overflow_count") or 0),
         "unsupported_claim_overflow_by_agent": dict(overflow.get("by_agent") or {}),
         "blocked_specialist_agents": list(blocked_specialist_agents),
@@ -2627,6 +2723,163 @@ def _normalize_relationship(payload: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _normalize_included_ticker_contracts(
+    value: Any,
+    *,
+    included_tickers: list[str],
+    focus_tickers: list[str],
+    relationships: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    explicit = [
+        _normalize_included_ticker_contract(item)
+        for item in value or []
+        if isinstance(item, Mapping)
+    ]
+    by_ticker = {row["included_ticker"]: row for row in explicit if row.get("included_ticker")}
+    focus = set(focus_tickers)
+    relationship_by_ticker: dict[str, list[dict[str, Any]]] = {}
+    for relationship in relationships:
+        for ticker in _unique_upper([relationship.get("ticker"), relationship.get("related_ticker")]):
+            relationship_by_ticker.setdefault(ticker, []).append(relationship)
+    for ticker in included_tickers:
+        if ticker in by_ticker:
+            continue
+        rows = relationship_by_ticker.get(ticker) or []
+        if ticker in focus and not rows:
+            rows = relationships[:1]
+        by_ticker[ticker] = _included_ticker_contract_from_relationships(ticker, rows, is_focus=ticker in focus)
+    return [by_ticker[ticker] for ticker in included_tickers if ticker in by_ticker]
+
+
+def _normalize_included_ticker_contract(payload: Mapping[str, Any]) -> dict[str, Any]:
+    ticker = str(payload.get("included_ticker") or payload.get("ticker") or "").upper().strip()
+    source_families = _unique_strings(
+        payload.get("available_source_families")
+        or payload.get("source_families")
+        or payload.get("source_family")
+    )
+    return {
+        "included_ticker": ticker,
+        "candidate_lens": str(payload.get("candidate_lens") or payload.get("lens") or "").strip(),
+        "inclusion_rationale": str(payload.get("inclusion_rationale") or payload.get("rationale") or "").strip(),
+        "available_source_families": source_families,
+        "relationship_strength": _normalize_relationship_strength(payload.get("relationship_strength")),
+        "downstream_operator_owner": str(payload.get("downstream_operator_owner") or payload.get("operator_owner") or "").strip(),
+        "source_gap": str(payload.get("source_gap") or "").strip(),
+    }
+
+
+def _included_ticker_contract_from_relationships(
+    ticker: str,
+    relationships: list[dict[str, Any]],
+    *,
+    is_focus: bool,
+) -> dict[str, Any]:
+    first = relationships[0] if relationships else {}
+    source_families = _unique_strings(
+        [
+            "relationship_graph" if relationships else "",
+            *[
+                source
+                for relationship in relationships
+                for source in relationship.get("evidence_source_needed") or []
+            ],
+        ]
+    )
+    return {
+        "included_ticker": ticker,
+        "candidate_lens": "focus_company" if is_focus else _relationship_candidate_lens(first),
+        "inclusion_rationale": str(first.get("inclusion_rationale") or ("Focus company in user scope." if is_focus else "Included by bounded relationship evidence.")).strip(),
+        "available_source_families": source_families,
+        "relationship_strength": _relationship_strength_from_relationships(relationships),
+        "downstream_operator_owner": _operator_owner_from_source_families(source_families),
+        "source_gap": "" if relationships or is_focus else "no_bounded_relationship_evidence",
+    }
+
+
+def _normalize_excluded_ticker_contracts(value: Any, *, excluded_tickers: list[str]) -> list[dict[str, Any]]:
+    explicit = [
+        _normalize_excluded_ticker_contract(item)
+        for item in value or []
+        if isinstance(item, Mapping)
+    ]
+    by_ticker = {row["excluded_ticker"]: row for row in explicit if row.get("excluded_ticker")}
+    for ticker in excluded_tickers:
+        by_ticker.setdefault(
+            ticker,
+            {
+                "excluded_ticker": ticker,
+                "candidate_lens": "",
+                "exclusion_rationale": "Excluded from bounded expansion scope.",
+            },
+        )
+    return [by_ticker[ticker] for ticker in excluded_tickers if ticker in by_ticker]
+
+
+def _normalize_excluded_ticker_contract(payload: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "excluded_ticker": str(payload.get("excluded_ticker") or payload.get("ticker") or "").upper().strip(),
+        "candidate_lens": str(payload.get("candidate_lens") or payload.get("lens") or "").strip(),
+        "exclusion_rationale": str(payload.get("exclusion_rationale") or payload.get("reason") or "").strip(),
+    }
+
+
+def _relationship_candidate_lens(relationship: Mapping[str, Any]) -> str:
+    rel_type = str(relationship.get("relationship_type") or "").strip()
+    direction = str(relationship.get("direction") or relationship.get("edge_direction") or "").lower()
+    if rel_type in {"peer", "competitor"}:
+        return "peer_competitor"
+    if rel_type == "customer":
+        return "downstream_customer"
+    if rel_type == "supplier":
+        return "upstream_supplier"
+    if "power" in direction or "utility" in direction or "load" in direction:
+        return "power_utilities_readthrough"
+    if "infrastructure" in direction or "server" in direction or "network" in direction:
+        return "infrastructure_dependency"
+    if rel_type in {"sector", "macro_sensitive"}:
+        return "sector_macro_proxy"
+    return "relationship_hypothesis"
+
+
+def _relationship_strength_from_relationships(relationships: list[dict[str, Any]]) -> str:
+    if not relationships:
+        return "source_gap"
+    for relationship in relationships:
+        if relationship.get("confirmation_status") == "confirmed_direct_edge" or relationship.get("inference_level") == "confirmed_direct":
+            return "verified"
+    for relationship in relationships:
+        if relationship.get("inference_level") in {"disclosed_indirect", "curated_input_unverified"}:
+            return "inferred"
+    return "hypothesis"
+
+
+def _normalize_relationship_strength(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    if text in {"verified", "confirmed"}:
+        return "verified"
+    if text in {"inferred", "disclosed_indirect", "curated_input_unverified"}:
+        return "inferred"
+    if text in {"source_gap", "gap", "missing"}:
+        return "source_gap"
+    return "hypothesis"
+
+
+def _operator_owner_from_source_families(source_families: list[str]) -> str:
+    families = set(source_families)
+    if "primary_sec_filing" in families:
+        return "sec_operator"
+    if "company_authored_unaudited_sec_filing" in families:
+        return "eight_k_operator"
+    if "market_snapshot" in families:
+        return "market_operator"
+    if "industry_snapshot" in families:
+        return "industry_operator"
+    if "relationship_graph" in families:
+        return "universe_relationship"
+    return "coverage_reflection"
+
+
 def _normalize_economic_entity(payload: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "ticker": str(payload.get("ticker") or payload.get("entity") or "").upper().strip(),
@@ -2760,6 +3013,25 @@ def _normalize_claim_item(value: Any) -> dict[str, Any]:
             "evidence_refs": _unique_strings(value.get("evidence_refs") or value.get("refs")),
         }
     return {"claim": str(value or "").strip(), "reason": "", "evidence_refs": []}
+
+
+def _normalize_evidence_gap_request(value: Mapping[str, Any], *, owner_agent: str = "coverage_reflection") -> dict[str, Any]:
+    tickers = _unique_upper(value.get("tickers") or value.get("ticker_scope") or value.get("ticker"))
+    request_type = str(value.get("request_type") or value.get("type") or "missing_source_family").strip()
+    blocking_level = str(value.get("blocking_level") or value.get("materiality") or "material").strip()
+    if blocking_level not in EVIDENCE_GAP_BLOCKING_LEVELS:
+        blocking_level = "material"
+    resolved_owner = str(value.get("owner_agent") or owner_agent or "coverage_reflection").strip()
+    return {
+        "request_type": request_type,
+        "owner_agent": resolved_owner,
+        "tickers": tickers,
+        "metric_families": _unique_strings(value.get("metric_families") or value.get("metrics") or value.get("metric_scope")),
+        "source_family": str(value.get("source_family") or "").strip(),
+        "reason": str(value.get("reason") or value.get("rationale") or "").strip(),
+        "blocking_level": blocking_level,
+        "can_answer_bounded_without": bool(value.get("can_answer_bounded_without", True)),
+    }
 
 
 def _relationship_budget(payload: Mapping[str, Any]) -> dict[str, int]:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from sec_agent.multi_agent_runtime import build_agent_data_view
 from sec_agent.specialist_llm import (
     ROUTE_SOURCE,
     SPECIALIST_ROUTER_ENV,
@@ -32,6 +33,7 @@ def test_specialist_llm_accepts_valid_memolet_json() -> None:
     assert fake.calls[0]["response_format"] == {"type": "json_object"}
     assert "tools" not in fake.calls[0]
     assert "Do not call tools" in fake.calls[0]["messages"][0]["content"]
+    assert "evidence_gap_requests" in fake.calls[0]["messages"][0]["content"]
     assert "Fundamental Analysis Skill" in fake.calls[0]["messages"][0]["content"]
     assert "Shared Evidence Boundary Skill" in fake.calls[0]["messages"][0]["content"]
 
@@ -242,6 +244,67 @@ def test_specialist_llm_salvages_single_no_ref_observation_when_supported_claims
     assert len(result["memolet"]["observations"]) == 1
     assert result["memolet"]["unsupported_claims"][0]["reason"] == "dropped_from_supported_observations_missing_or_unknown_evidence_refs"
     assert result["validation"]["warnings"][-1]["type"] == "supported_observation_dropped_missing_or_unknown_evidence_refs"
+
+
+def test_specialist_llm_demotes_single_ref_temporal_observation_without_row_support() -> None:
+    memolet = _memolet("fundamental_analyst", evidence_ref="pfe_ref")
+    memolet["observations"][0]["claim"] = (
+        "PFE management guides for approximately 4% product revenue growth in full-year 2026, "
+        "signaling moderate demand recovery but no blockbuster acceleration."
+    )
+    request = _request()
+    request["known_evidence_refs"] = ["pfe_ref"]
+    request["bounded_evidence_rows"] = [
+        {
+            "evidence_ref": "pfe_ref",
+            "source_family": "company_authored_unaudited_sec_filing",
+            "ticker": "PFE",
+            "summary": "Management guidance calls for approximately 4% product revenue growth in full-year 2026.",
+        }
+    ]
+    fake = _FakeChat([json.dumps(memolet)])
+
+    result = route_specialist_memolet_llm(
+        "fundamental_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["routing_trace"]["salvage_policy"] == "demote_single_ref_temporal_observations"
+    assert result["memolet"]["observations"] == []
+    assert result["memolet"]["unsupported_claims"][0]["reason"] == (
+        "demoted_single_ref_temporal_observation_without_row_level_comparison_support"
+    )
+    assert result["validation"]["warnings"][0]["type"] == "single_ref_temporal_observation_demoted"
+
+
+def test_specialist_llm_allows_single_ref_temporal_observation_with_row_level_comparison() -> None:
+    memolet = _memolet("fundamental_analyst", evidence_ref="jpm_ref")
+    memolet["observations"][0]["claim"] = "JPM reported 1Q26 net revenue of $23.4 billion, up 19% YoY."
+    request = _request()
+    request["known_evidence_refs"] = ["jpm_ref"]
+    request["bounded_evidence_rows"] = [
+        {
+            "evidence_ref": "jpm_ref",
+            "source_family": "primary_sec_filing",
+            "ticker": "JPM",
+            "summary": "1Q26 net revenue was $23.4 billion, up 19% YoY.",
+        }
+    ]
+    fake = _FakeChat([json.dumps(memolet)])
+
+    result = route_specialist_memolet_llm(
+        "fundamental_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert "salvage_policy" not in result["routing_trace"]
+    assert len(result["memolet"]["observations"]) == 1
 
 
 def test_specialist_llm_rejects_direct_tool_calls_before_validation() -> None:
@@ -536,6 +599,70 @@ def test_risk_specialist_request_excludes_relationship_rows() -> None:
     assert "rel_ref_1" not in request["known_evidence_refs"]
 
 
+def test_agent_data_view_source_family_bundle_selects_role_specific_rows() -> None:
+    state = {
+        "context_rows": [
+            {
+                "evidence_ref": "sec_semantic_ref",
+                "source_family": "primary_sec_filing",
+                "ticker": "NVDA",
+                "summary": "Typed semantic SEC evidence about supplier demand.",
+                "retrieval_route": "milvus_semantic",
+                "vector_kind": "relationship_context",
+            }
+        ],
+        "market_snapshot_rows": [
+            {
+                "evidence_ref": "market_ref",
+                "source_family": "market_snapshot",
+                "ticker": "NVDA",
+                "summary": "Timestamped market valuation context.",
+            }
+        ],
+        "industry_snapshot_rows": [
+            {
+                "evidence_ref": "industry_ref",
+                "source_family": "industry_snapshot",
+                "summary": "Industry electricity demand context.",
+            }
+        ],
+        "universe_relationship_plan": {
+            "relationships": [
+                {
+                    "ticker": "NVDA",
+                    "related_ticker": "MSFT",
+                    "relationship_type": "customer",
+                    "evidence_refs": ["rel_ref_1"],
+                    "notes": "Relationship hypothesis only.",
+                }
+            ]
+        },
+    }
+
+    fundamental = build_agent_data_view("fundamental_analyst", state)
+    market = build_agent_data_view("market_valuation_analyst", state)
+    industry = build_agent_data_view("industry_supply_chain_analyst", state)
+    risk = build_agent_data_view("risk_counterevidence_analyst", state)
+
+    fundamental_bundle = fundamental["source_family_bundle"]
+    assert fundamental_bundle["selected_source_families"] == ["primary_sec_filing"]
+    assert fundamental_bundle["semantic_supplement_row_count"] == 1
+    assert fundamental_bundle["semantic_vector_kinds"] == ["relationship_context"]
+    assert "milvus_semantic_rows_cannot_prove_exact_values_without_ledger_or_filing_quote" in fundamental_bundle["forbidden_claim_scopes"]
+    assert fundamental["bounded_evidence_rows"][0]["semantic_supplement"] is True
+    assert fundamental["bounded_evidence_rows"][0]["exact_value_authority"] is False
+
+    assert market["source_family_bundle"]["selected_source_families"] == ["market_snapshot"]
+    assert market["source_family_bundle"]["context_only_source_families"] == ["market_snapshot"]
+    assert "market_snapshot_cannot_prove_company_reported_fundamentals_or_overwrite_sec_facts" in market["source_family_bundle"]["forbidden_claim_scopes"]
+
+    assert industry["source_family_bundle"]["selected_source_families"] == ["industry_snapshot", "relationship_graph"]
+    assert industry["source_family_bundle"]["context_only_source_families"] == ["industry_snapshot", "relationship_graph"]
+
+    assert set(risk["source_family_bundle"]["selected_source_families"]) == {"primary_sec_filing", "market_snapshot", "industry_snapshot"}
+    assert "relationship_graph" not in {row["source_family"] for row in risk["bounded_evidence_rows"]}
+
+
 def test_build_specialist_request_from_state_uses_deep_research_prompt_budget() -> None:
     request = build_specialist_request_from_state(
         "fundamental_analyst",
@@ -800,6 +927,42 @@ def test_specialist_prompt_passes_task_card_and_slots() -> None:
     payload = json.loads(user_prompt.split("Input JSON:\n", 1)[1])
     assert payload["known_evidence_refs"]["count"] == 1
     assert "cite only evidence_ref values visible" in user_prompt
+
+
+def test_specialist_prompt_passes_source_family_bundle() -> None:
+    fake = _FakeChat([json.dumps(_memolet("fundamental_analyst", evidence_ref="sec_semantic_ref"))])
+    request = build_specialist_request_from_state(
+        "fundamental_analyst",
+        {
+            "context_rows": [
+                {
+                    "evidence_ref": "sec_semantic_ref",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "NVDA",
+                    "summary": "Typed semantic SEC evidence.",
+                    "retrieval_route": "milvus_semantic",
+                    "vector_kind": "paraphrase_context",
+                }
+            ]
+        },
+    )
+
+    result = route_specialist_memolet_llm(
+        "fundamental_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    user_prompt = fake.calls[0]["messages"][1]["content"]
+    payload = json.loads(user_prompt.split("Input JSON:\n", 1)[1])
+    assert result["status"] == "pass"
+    assert request["source_family_bundle"]["semantic_supplement_row_count"] == 1
+    assert payload["source_family_bundle"]["semantic_supplement_row_count"] == 1
+    assert payload["bounded_evidence_rows"][0]["semantic_supplement"] is True
+    assert payload["bounded_evidence_rows"][0]["exact_value_authority"] is False
+    assert "Use source_family_bundle to enforce selected source families" in user_prompt
+    assert "typed_milvus_rows_are_sec_recall_supplements_not_exact_value_authority" in user_prompt
 
 
 def test_shared_specialist_context_compacts_common_scope() -> None:

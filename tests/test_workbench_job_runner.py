@@ -9,8 +9,10 @@ from sec_agent.workbench.job_runner import (
     CommandSpec,
     build_agent_ask_command,
     build_agent_session_turn_command,
+    build_eval_command,
     build_native_checkpoint_resume_command,
     detect_run_dir_from_output,
+    eval_runner_catalog,
     start_command_job,
 )
 from sec_agent.workbench.data_build import build_data_build_command, data_build_catalog
@@ -106,6 +108,47 @@ def test_command_job_attaches_eval_output_summary(tmp_path: Path) -> None:
     assert finished.metadata["eval_summary"]["status"] == "pass"
     assert finished.metadata["eval_summary"]["case_count"] == 2
     assert any("eval summary:" in event.message for event in events)
+
+
+def test_build_expanded_a6_eval_command_uses_wrapper_and_transient_secret(tmp_path: Path) -> None:
+    profile = WorkbenchProfile(
+        profile_id="a6",
+        display_name="A6",
+        model_route=ModelRouteProfile(api_key_env="DEMO_API_KEY"),
+        runtime=RuntimeProfile(bge_device="cuda"),
+    )
+
+    spec = build_eval_command(
+        repo_root=tmp_path,
+        eval_id="expanded_a6_full_chain_smoke",
+        job_id="a6_smoke_fixture",
+        profile=profile,
+        api_key_value="secret-value",
+    )
+    catalog = {item["eval_id"]: item for item in eval_runner_catalog()}
+
+    assert "expanded_a6_full_chain_main" in catalog
+    assert spec.label == "eval:expanded_a6_full_chain_smoke"
+    assert "scripts/workbench/run_expanded_a6_eval.py" in spec.args
+    assert "--eval-id" in spec.args
+    assert "expanded_a6_full_chain_smoke" in spec.args
+    assert "--strict" in spec.args
+    assert spec.env_overrides["BGE_DEVICE"] == "cuda"
+    assert spec.env_overrides["DEMO_API_KEY"] == "secret-value"
+    assert "secret-value" not in " ".join(spec.args)
+
+
+def test_build_expanded_a6_eval_command_uses_default_deepseek_secret_without_profile(tmp_path: Path) -> None:
+    spec = build_eval_command(
+        repo_root=tmp_path,
+        eval_id="expanded_a6_full_chain_main",
+        job_id="a6_main_fixture",
+        api_key_value="secret-value",
+    )
+
+    assert spec.env_overrides["API_KEY_ENV"] == "DEEPSEEK_API_KEY"
+    assert spec.env_overrides["DEEPSEEK_API_KEY"] == "secret-value"
+    assert "secret-value" not in " ".join(spec.args)
 
 
 def test_command_job_times_out_silent_process(tmp_path: Path) -> None:

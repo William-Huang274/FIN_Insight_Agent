@@ -1,5 +1,6 @@
 beautifulsoup4>=4.12.3
 duckdb>=1.0.0
+fastapi>=0.115.0
 langgraph>=1.0.0
 langgraph-checkpoint-sqlite>=3.1.0
 lxml>=5.2.0
@@ -12,3 +13,4 @@ rank-bm25>=0.2.2
 requests>=2.32.0
 sentence-transformers>=3.0.0
 tqdm>=4.66.0
+uvicorn[standard]>=0.30.0

@@ -586,6 +586,7 @@ def test_deterministic_lookup_renderer_prefers_capex_answer_over_balance_sheet_a
     first_metric_line = rendered.splitlines()[1]
     assert "Capital expenditures" in first_metric_line
     assert "24,242（百万美元）" in first_metric_line
+    assert len([line for line in rendered.splitlines() if line.startswith(("1.", "2.", "3.", "4."))]) == 1
 
 
 def test_deterministic_lookup_renderer_prefers_credit_provision_amount_over_rate_rows() -> None:

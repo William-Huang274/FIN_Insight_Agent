@@ -1,0 +1,39 @@
+schema_version: fin_agent_ingestion_profiles_v0_1
+profiles:
+  tier0_relationship_edge_baseline:
+    universe_tier: tier0_current_full238
+    role: relationship_edge_baseline
+    allowed_inputs:
+      - sec_primary_filing
+      - sec_8k_earnings_release
+    output_stage: data/staging/relationships
+    mainline_vector_promotion: false
+  tier1_sec_staging:
+    universe_tier: tier1_sp500_plus_current
+    role: next_main_evidence_pool_staging
+    allowed_inputs:
+      - sec_primary_filing
+      - sec_8k_earnings_release
+      - company_presentation
+    output_stage: data/staging/sec_tier1
+    mainline_vector_promotion: false
+    promotion_dependencies:
+      - relationship_edges_schema_v0_1
+      - entity_resolution_v0_1
+      - relationship_verifier_gate_v0_1
+  tier2_global_supply_chain_staging:
+    universe_tier: tier2_supply_chain_supplement
+    role: global_supply_chain_primary_disclosure_staging
+    allowed_inputs:
+      - sec_primary_filing
+      - sec_8k_earnings_release
+      - global_public_annual_report
+      - global_public_interim_report
+      - company_presentation
+    output_stage: data/staging/global_supply_chain_tier2
+    mainline_vector_promotion: false
+    promotion_dependencies:
+      - relationship_edges_schema_v0_1
+      - entity_resolution_v0_1
+      - relationship_verifier_gate_v0_1
+      - global_public_disclosure_parser_v0_1

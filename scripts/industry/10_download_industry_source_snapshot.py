@@ -28,7 +28,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-root", default="data/processed_private/industry_data")
     parser.add_argument("--timeout-s", type=int, default=25)
     parser.add_argument("--sleep-s", type=float, default=0.1)
+    parser.add_argument("--request-retries", type=int, default=2)
+    parser.add_argument("--retry-backoff-s", type=float, default=1.0)
     parser.add_argument("--max-rows-per-series", type=int, default=5000)
+    parser.add_argument("--provider-filter", default="", help="Comma-separated provider names to include.")
+    parser.add_argument("--source-family-filter", default="", help="Comma-separated source_family values to include.")
+    parser.add_argument("--series-id-filter", default="", help="Comma-separated provider series_id values to include for fred_csv routes.")
+    parser.add_argument(
+        "--allow-source-failures",
+        action="store_true",
+        help="Write failures into metadata but return success when at least one source produced rows.",
+    )
     parser.add_argument("--skip-live", action="store_true")
     return parser.parse_args()
 
@@ -45,9 +55,17 @@ def main() -> int:
     observations: list[dict[str, Any]] = []
     evidence_rows: list[dict[str, Any]] = []
     failures: list[dict[str, Any]] = []
+    provider_filter = {item.lower() for item in split_csv(args.provider_filter)}
+    source_family_filter = set(split_csv(args.source_family_filter))
+    series_id_filter = set(split_csv(args.series_id_filter))
 
     for source in contract.get("source_families", []) or []:
         provider = str(source.get("provider") or "")
+        source_family = str(source.get("source_family") or "")
+        if provider_filter and provider.lower() not in provider_filter:
+            continue
+        if source_family_filter and source_family not in source_family_filter:
+            continue
         route_type = str(source.get("route_type") or "")
         if args.skip_live:
             failures.append(
@@ -60,8 +78,19 @@ def main() -> int:
             continue
         if route_type == "fred_csv":
             for series in source.get("series", []) or []:
+                series_id = str(series.get("series_id") or "")
+                if series_id_filter and series_id not in series_id_filter:
+                    continue
                 try:
-                    rows = download_fred_series(source, series, as_of_date=as_of_date, fetched_at=fetched_at, timeout=args.timeout_s)
+                    rows = download_fred_series(
+                        source,
+                        series,
+                        as_of_date=as_of_date,
+                        fetched_at=fetched_at,
+                        timeout=args.timeout_s,
+                        retries=args.request_retries,
+                        retry_backoff_s=args.retry_backoff_s,
+                    )
                     if args.max_rows_per_series > 0:
                         rows = rows[-args.max_rows_per_series :]
                     observations.extend(rows)
@@ -80,7 +109,14 @@ def main() -> int:
                     time.sleep(args.sleep_s)
         elif route_type == "public_json":
             try:
-                row = download_public_json_source(source, as_of_date=as_of_date, fetched_at=fetched_at, timeout=args.timeout_s)
+                row = download_public_json_source(
+                    source,
+                    as_of_date=as_of_date,
+                    fetched_at=fetched_at,
+                    timeout=args.timeout_s,
+                    retries=args.request_retries,
+                    retry_backoff_s=args.retry_backoff_s,
+                )
                 evidence_rows.append(row)
             except Exception as exc:  # noqa: BLE001
                 failures.append(
@@ -96,7 +132,14 @@ def main() -> int:
                 time.sleep(args.sleep_s)
         elif route_type == "eia_v2_json":
             try:
-                rows, row = download_eia_v2_source(source, as_of_date=as_of_date, fetched_at=fetched_at, timeout=args.timeout_s)
+                rows, row = download_eia_v2_source(
+                    source,
+                    as_of_date=as_of_date,
+                    fetched_at=fetched_at,
+                    timeout=args.timeout_s,
+                    retries=args.request_retries,
+                    retry_backoff_s=args.retry_backoff_s,
+                )
                 observations.extend(rows)
                 evidence_rows.append(row)
             except Exception as exc:  # noqa: BLE001
@@ -150,12 +193,20 @@ def main() -> int:
     }
     metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(metadata, ensure_ascii=False, indent=2))
-    return 0 if (not failures or args.skip_live) else 2
+    if not failures or args.skip_live:
+        return 0
+    if args.allow_source_failures and (observations or evidence_rows):
+        return 0
+    return 2
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
         return yaml.safe_load(handle) or {}
+
+
+def split_csv(value: str | None) -> list[str]:
+    return [item.strip() for item in (value or "").split(",") if item.strip()]
 
 
 def download_fred_series(
@@ -165,12 +216,14 @@ def download_fred_series(
     as_of_date: str,
     fetched_at: str,
     timeout: int,
+    retries: int = 0,
+    retry_backoff_s: float = 0.0,
 ) -> list[dict[str, Any]]:
     series_id = str(series.get("series_id") or "")
     if not series_id:
         raise ValueError("Missing FRED series_id")
     base_url = str(source.get("base_url") or "https://fred.stlouisfed.org/graph/fredgraph.csv")
-    response = requests.get(base_url, params={"id": series_id}, timeout=timeout)
+    response = request_get_with_retry(base_url, params={"id": series_id}, timeout=timeout, retries=retries, retry_backoff_s=retry_backoff_s)
     response.raise_for_status()
     rows: list[dict[str, Any]] = []
     for raw in csv.DictReader(response.text.splitlines()):
@@ -251,11 +304,13 @@ def download_public_json_source(
     as_of_date: str,
     fetched_at: str,
     timeout: int,
+    retries: int = 0,
+    retry_backoff_s: float = 0.0,
 ) -> dict[str, Any]:
     endpoint = str(source.get("endpoint") or "")
     params = source.get("params") or {}
     dataset = source.get("dataset") or {}
-    response = requests.get(endpoint, params=params, timeout=timeout)
+    response = request_get_with_retry(endpoint, params=params, timeout=timeout, retries=retries, retry_backoff_s=retry_backoff_s)
     response.raise_for_status()
     payload = response.json()
     count = _json_payload_count(payload)
@@ -290,6 +345,8 @@ def download_eia_v2_source(
     as_of_date: str,
     fetched_at: str,
     timeout: int,
+    retries: int = 0,
+    retry_backoff_s: float = 0.0,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     endpoint = str(source.get("endpoint") or "")
     if not endpoint:
@@ -302,7 +359,7 @@ def download_eia_v2_source(
         raise RuntimeError(f"Missing {env_var}; EIA v2 routes require api_key")
     params["api_key"] = api_key
 
-    response = requests.get(endpoint, params=params, timeout=timeout)
+    response = request_get_with_retry(endpoint, params=params, timeout=timeout, retries=retries, retry_backoff_s=retry_backoff_s)
     response.raise_for_status()
     payload = response.json()
     response_block = payload.get("response") if isinstance(payload, dict) else {}
@@ -477,6 +534,29 @@ def _json_payload_count(payload: Any) -> int:
     if isinstance(payload, list):
         return len(payload)
     return 1
+
+
+def request_get_with_retry(
+    url: str,
+    *,
+    params: dict[str, Any],
+    timeout: int,
+    retries: int = 0,
+    retry_backoff_s: float = 0.0,
+) -> requests.Response:
+    attempts = max(0, retries) + 1
+    last_exc: Exception | None = None
+    for attempt in range(attempts):
+        try:
+            return requests.get(url, params=params, timeout=timeout)
+        except requests.RequestException as exc:
+            last_exc = exc
+            if attempt >= attempts - 1:
+                break
+            if retry_backoff_s > 0:
+                time.sleep(retry_backoff_s * float(attempt + 1))
+    assert last_exc is not None
+    raise last_exc
 
 
 def _parse_provider_float(value: Any) -> float | None:

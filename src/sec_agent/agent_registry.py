@@ -364,9 +364,9 @@ _AGENT_REGISTRY: list[dict[str, Any]] = [
     _agent(
         agent_id="sec_operator",
         role="SEC Operator",
-        description="Executes bounded SEC filing and exact-value ledger retrieval through MCP registry.",
+        description="Executes bounded SEC filing, Milvus semantic recall, and exact-value ledger retrieval through MCP registry.",
         tool_permission="bounded_execute",
-        allowed_tools=["sec_search_filings", "sec_query_exact_value_ledger"],
+        allowed_tools=["sec_search_filings", "sec_milvus_semantic_search", "sec_query_exact_value_ledger"],
         allowed_data_views=["database_query", "artifact_ref"],
         route_authority="execute_route",
         model_profile="none",

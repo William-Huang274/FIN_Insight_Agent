@@ -59,6 +59,49 @@ def test_research_lead_llm_accepts_activation_plus_evidence_requirement_plan() -
     assert "EvidenceRequirementPlan schema hint" in fake.calls[0]["messages"][0]["content"]
 
 
+def test_research_lead_prompt_exposes_cost_aware_route_selection_policy() -> None:
+    request = _case("Compare NVDA and AMD with valuation, industry context, and semantic filing recall.", "standard_memo", ["NVDA", "AMD"], ["NVDA", "AMD"])
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    system_prompt = fake.calls[0]["messages"][0]["content"]
+    user_prompt = fake.calls[0]["messages"][1]["content"]
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["metadata"]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
+    assert "Route choice policy" in system_prompt
+    assert "route_selection_reason" in system_prompt
+    assert "route_cost_tier" in system_prompt
+    assert "scope_decision" in system_prompt
+    assert "catalogs_to_inspect" in system_prompt
+    assert "candidate_lenses" in system_prompt
+    assert "expansion_budget" in system_prompt
+    assert "milvus_semantic" in system_prompt
+    assert "semantic recall supplement only" in system_prompt
+    assert "source or scope boundary" in user_prompt
+    assert "Put a structured scope_decision" in user_prompt
+    assert "exact values use ledger_first first" in user_prompt
+
+
+def test_research_lead_llm_normalizes_missing_coverage_reflection_without_repair() -> None:
+    request = _case(
+        "Compare NVDA and AMD fundamentals, management commentary, and market reaction.",
+        "standard_memo",
+        ["NVDA", "AMD"],
+        ["NVDA", "AMD"],
+    )
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["activate_agents"] = [agent for agent in plan["activate_agents"] if agent != "coverage_reflection"]
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["routing_trace"]["repair_attempts"] == 0
+    assert "coverage_reflection" in result["activation_plan"]["activate_agents"]
+
+
 def test_research_lead_llm_repairs_invalid_evidence_requirement_owner() -> None:
     request = _case("Analyze AMZN margins with management commentary.", "focused_answer", ["AMZN"], ["AMZN"])
     request["context"]["query_contract"] = _query_contract(["AMZN"])
@@ -89,6 +132,8 @@ def test_research_lead_llm_repairs_invalid_evidence_requirement_owner() -> None:
 
     assert result["status"] == "pass"
     assert result["routing_trace"]["repair_attempts"] == 1
+    assert result["routing_trace"]["repair_history"][0]["type"] == "validation_failed"
+    assert result["routing_trace"]["last_repair_failure"]["type"] == "validation_failed"
     assert len(fake.calls) == 2
     assert "evidence_requirement_plan_validation_failed" in fake.calls[1]["messages"][1]["content"]
 
@@ -135,6 +180,8 @@ def test_research_lead_llm_repairs_invalid_json_then_passes() -> None:
 
     assert result["status"] == "pass"
     assert result["routing_trace"]["repair_attempts"] == 1
+    assert result["routing_trace"]["repair_history"][0]["type"] == "json_parse_failed"
+    assert result["routing_trace"]["last_repair_failure"]["type"] == "json_parse_failed"
     assert len(fake.calls) == 2
     assert "Repair the previous output" in fake.calls[1]["messages"][1]["content"]
     assert result["activation_plan"]["execution_mode"] == "standard_memo"
@@ -292,6 +339,76 @@ def test_research_lead_llm_aligns_focused_followup_market_and_8k_sources() -> No
     assert any("market_operator" in requirement.get("operator_owners", []) for requirement in requirements)
 
 
+def test_research_lead_llm_clamps_explicit_focused_followup_from_standard_plan() -> None:
+    request = _case(
+        "接上一轮，只看 BAC 的信用风险和资本缓冲，不要继续分析 JPM；如果证据不足，说明缺什么。",
+        "focused_answer",
+        ["BAC"],
+        ["BAC"],
+    )
+    request["context"]["query_contract"] = {
+        **_query_contract(["BAC"]),
+        "expected_execution_mode": "focused_answer",
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+        "metric_families": ["provision_for_credit_losses", "net_charge_offs", "capital_ratio", "deposits"],
+    }
+    standard_plan = route_multi_agent_activation(
+        _case("Compare JPM and BAC credit risk.", "standard_memo", ["JPM", "BAC"], ["JPM", "BAC"])
+    )["activation_plan"]
+    standard_plan["focus_tickers"] = ["BAC"]
+    standard_plan["search_scope_tickers"] = ["BAC"]
+    standard_plan["allowed_source_families"] = ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"]
+    fake = _FakeChat([json.dumps({"activation_plan": standard_plan, "evidence_requirement_plan": _evidence_plan(["BAC"])})])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["execution_mode"] == "focused_answer"
+    assert {"fundamental_analyst", "market_valuation_analyst", "risk_counterevidence_analyst"}.isdisjoint(
+        set(result["activation_plan"]["activate_agents"])
+    )
+    assert {"sec_operator", "eight_k_operator", "market_operator"} <= set(result["activation_plan"]["activate_agents"])
+    assert result["activation_plan"]["metadata"]["focused_answer_contract_applied"] is True
+
+
+def test_research_lead_llm_preserves_cost_aware_route_metadata_for_mixed_sources() -> None:
+    request = _case(
+        "Compare NVDA and AMD fundamentals, market valuation reaction, industry power context, and hard-to-keyword filing themes.",
+        "standard_memo",
+        ["NVDA", "AMD"],
+        ["NVDA", "AMD"],
+    )
+    request["context"]["query_contract"] = {
+        **_query_contract(["NVDA", "AMD"]),
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+        ],
+        "metric_families": ["revenue", "gross_margin", "capex"],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["allowed_source_families"] = ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": _mixed_route_evidence_plan(["NVDA", "AMD"])})])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["metadata"]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
+    assert {"market_operator", "industry_operator"} <= set(result["activation_plan"]["activate_agents"])
+    assert {"market_snapshot", "industry_snapshot"} <= set(result["activation_plan"]["allowed_source_families"])
+    by_id = {req["requirement_id"]: req for req in result["evidence_requirement_plan"]["requirements"]}
+    assert by_id["req_exact"]["route_cost_tier"] == "low"
+    assert by_id["req_semantic"]["route_cost_tier"] == "high"
+    assert by_id["req_semantic"]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
+    assert "semantic supplement" in by_id["req_semantic"]["route_selection_reason"]
+    assert by_id["req_semantic"]["coverage_requirements"]["vector_kinds"] == ["paraphrase_context"]
+    assert by_id["req_semantic"]["route_intents"][0]["route_cost_tier"] == "high"
+    assert by_id["req_market"]["operator_owners"] == ["market_operator"]
+    assert result["evidence_requirement_plan"]["multi_agent_contract"]["route_selection_policy"] == "cost_and_query_type_aware_v0_1"
+
+
 def test_research_lead_llm_demotes_default_sector_pack_path_without_relationship_intent() -> None:
     request = _case(
         "比较 XOM 和 CVX 的 capex、现金流、管理层对 commodity 环境的表述和市场反应，输出风险平衡的投研 memo。",
@@ -327,6 +444,81 @@ def test_research_lead_llm_demotes_default_sector_pack_path_without_relationship
     assert "industry_supply_chain_analyst" not in result["activation_plan"]["activate_agents"]
     assert "risk_counterevidence_analyst" in result["activation_plan"]["activate_agents"]
     assert result["activation_plan"]["metadata"]["relationship_overroute_pruned"] is True
+
+
+def test_research_lead_llm_respects_user_declared_no_expansion_boundary() -> None:
+    request = _case(
+        (
+            "先只从 NVIDIA 自身披露、已入库 SEC typed semantic recall 和已入库市场快照出发，分析基本面表现；"
+            "如果产业链或市场外部证据只是条件性需要，请说明为什么暂不扩展或条件扩展，不要主动扩到全行业。"
+        ),
+        "standard_memo",
+        ["NVDA"],
+        ["NVDA"],
+    )
+    request["context"].pop("execution_mode", None)
+    request["context"]["query_contract"] = {
+        **_query_contract(["NVDA"]),
+        "task_type": "open_analysis",
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+        "metric_families": ["revenue", "segment_revenue", "gross_margin", "operating_margin", "cash_flow"],
+    }
+    deep_plan = route_multi_agent_activation(
+        _case(
+            "Use sector-depth relationship evidence for NVDA supply-chain readthrough.",
+            "deep_research",
+            ["NVDA"],
+            ["NVDA", "DELL", "ANET", "VRT"],
+        )
+    )["activation_plan"]
+    fake = _FakeChat([json.dumps(deep_plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["execution_mode"] == "standard_memo"
+    assert "universe_relationship" not in result["activation_plan"]["activate_agents"]
+    assert "industry_supply_chain_analyst" not in result["activation_plan"]["activate_agents"]
+    assert "relationship_graph" not in result["activation_plan"]["allowed_source_families"]
+    assert "market_operator" in result["activation_plan"]["activate_agents"]
+    assert "market_snapshot" in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["metadata"]["relationship_overroute_pruned"] is True
+
+
+def test_research_lead_llm_promotes_focused_output_to_standard_when_contract_requires_memo() -> None:
+    request = _case(
+        (
+            "先只从 NVIDIA 自身披露、已入库 SEC typed semantic recall 和已入库市场快照出发，分析基本面表现；"
+            "如果产业链或市场外部证据只是条件性需要，请说明为什么暂不扩展或条件扩展，不要主动扩到全行业。"
+        ),
+        "standard_memo",
+        ["NVDA"],
+        ["NVDA"],
+    )
+    request["context"]["query_contract"] = {
+        **_query_contract(["NVDA"]),
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot"],
+        "metric_families": ["revenue", "segment_revenue", "gross_margin", "operating_margin", "cash_flow"],
+    }
+    focused_plan = route_multi_agent_activation(
+        _case("Analyze NVDA fundamentals from company disclosures.", "focused_answer", ["NVDA"], ["NVDA"])
+    )["activation_plan"]
+    fake = _FakeChat([json.dumps(focused_plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["execution_mode"] == "standard_memo"
+    assert {
+        "fundamental_analyst",
+        "market_valuation_analyst",
+        "risk_counterevidence_analyst",
+        "judgment_plan_aggregator",
+    } <= set(result["activation_plan"]["activate_agents"])
+    assert "industry_supply_chain_analyst" not in result["activation_plan"]["activate_agents"]
+    assert "universe_relationship" not in result["activation_plan"]["activate_agents"]
+    assert "market_snapshot" in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["metadata"]["standard_memo_floor_applied"] is True
 
 
 def test_research_lead_llm_promotes_relationship_source_to_deep_research() -> None:
@@ -407,7 +599,7 @@ def test_route_activation_from_env_returns_none_for_deterministic_default() -> N
 
 
 def test_route_activation_from_env_builds_llm_route_with_non_secret_profile_values() -> None:
-    request = _case("MSFT capex only.", "deterministic_lookup", ["MSFT"], ["MSFT"])
+    request = _case("Compare NVDA and AMD fundamentals and market reaction.", "standard_memo", ["NVDA", "AMD"], ["NVDA", "AMD"])
     plan = route_multi_agent_activation(request)["activation_plan"]
     fake = _FakeChat([json.dumps(plan)])
     route = route_activation_from_env(
@@ -424,11 +616,49 @@ def test_route_activation_from_env_builds_llm_route_with_non_secret_profile_valu
     )
 
     assert route is not None
-    result = route({"user_query": request["prompt"], "query_contract": request})
+    result = route({"user_query": request["prompt"], "query_contract": {**request, "expected_execution_mode": "standard_memo"}})
 
     assert result["status"] == "pass"
     assert fake.calls[0]["api_key_env"] == "UNIT_API_KEY"
     assert fake.calls[0]["model"] == "unit-model"
+
+
+def test_route_activation_from_env_bypasses_llm_for_deterministic_lookup() -> None:
+    request = _case("MSFT capex only.", "deterministic_lookup", ["MSFT"], ["MSFT"])
+    fake = _FakeChat([json.dumps({"unexpected": True})])
+    route = route_activation_from_env(
+        {
+            "SEC_AGENT_MULTI_AGENT_LEAD_ROUTER": "llm",
+            "LLM_BACKEND": "unit",
+            "BASE_URL": "http://unit.test",
+            "CHAT_COMPLETIONS_PATH": "/chat/completions",
+            "MODEL_NAME": "unit-model",
+            "API_KEY_ENV": "UNIT_API_KEY",
+        },
+        call_chat_completion=fake,
+    )
+
+    assert route is not None
+    result = route(
+        {
+            "user_query": request["prompt"],
+            "query_contract": {
+                **request,
+                "category": "exact_lookup",
+                "expected_execution_mode": "deterministic_lookup",
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+            },
+        }
+    )
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["execution_mode"] == "deterministic_lookup"
+    assert result["activation_plan"]["activate_agents"] == ["sec_operator", "renderer"]
+    assert result["routing_trace"]["deterministic_lookup_llm_bypass"] is True
+    assert result["model_diagnostics"]["call_count"] == 0
+    assert result["model_diagnostics"]["all_calls_ok"] is True
+    assert fake.calls == []
 
 
 def test_research_lead_llm_config_from_env_parses_feature_profile() -> None:
@@ -441,12 +671,21 @@ def test_research_lead_llm_config_from_env_parses_feature_profile() -> None:
             "RESEARCH_LEAD_MAX_TOKENS": "900",
             "RESEARCH_LEAD_TIMEOUT_S": "30",
             "RESEARCH_LEAD_ALLOW_DETERMINISTIC_FALLBACK": "true",
+            "RESEARCH_LEAD_BYPASS_DETERMINISTIC_LOOKUP_LLM": "false",
         }
     )
 
     assert config.max_tokens == 900
     assert config.timeout_s == 30
     assert config.allow_deterministic_fallback is True
+    assert config.bypass_deterministic_lookup_llm is False
+
+
+def test_research_lead_llm_config_default_max_tokens_has_headroom() -> None:
+    config = research_lead_llm_config_from_env({})
+
+    assert config.max_tokens == 3200
+    assert config.bypass_deterministic_lookup_llm is True
 
 
 class _FakeChat:
@@ -530,5 +769,75 @@ def _evidence_plan(tickers: list[str]) -> dict[str, Any]:
                 "period_roles": ["QTD", "YTD"],
                 "evidence_routes": ["ledger_first", "filing_text"],
             }
+        ],
+    }
+
+
+def _mixed_route_evidence_plan(tickers: list[str]) -> dict[str, Any]:
+    return {
+        "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+        "requirements": [
+            {
+                "requirement_id": "req_exact",
+                "task_id": "reported_fundamentals",
+                "question": "Need exact reported revenue and margin evidence.",
+                "priority": "primary",
+                "tickers": tickers,
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["revenue", "gross_margin"],
+                "evidence_routes": ["ledger_first"],
+                "route_selection_reason": "Exact values require the low-cost ledger authority first.",
+                "route_cost_tier": "low",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
+            },
+            {
+                "requirement_id": "req_semantic",
+                "task_id": "semantic_theme_recall",
+                "question": "Need semantic supplement for hard-to-keyword filing themes.",
+                "priority": "supporting",
+                "tickers": tickers,
+                "years": [2026],
+                "filing_types": ["10-Q", "10-K"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+                "evidence_routes": ["milvus_semantic"],
+                "coverage_requirements": {"vector_kinds": ["paraphrase_context"]},
+                "route_selection_reason": "Use Milvus as a typed SEC semantic supplement after exact/text routes.",
+                "route_cost_tier": "high",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
+            },
+            {
+                "requirement_id": "req_market",
+                "task_id": "market_reaction",
+                "question": "Need market valuation and reaction context.",
+                "priority": "supporting",
+                "tickers": tickers,
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["market_snapshot"],
+                "metric_families": ["valuation"],
+                "evidence_routes": ["market_snapshot"],
+                "market_fields": ["return_3m", "ev_sales_ttm"],
+                "route_selection_reason": "Market and valuation claims require stamped market snapshot context.",
+                "route_cost_tier": "medium",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
+            },
+            {
+                "requirement_id": "req_industry",
+                "task_id": "industry_context",
+                "question": "Need industry power-demand context.",
+                "priority": "supporting",
+                "tickers": tickers,
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["industry_snapshot"],
+                "metric_families": ["power_demand"],
+                "evidence_routes": ["industry_snapshot"],
+                "route_selection_reason": "Industry context is needed for demand environment but cannot prove company facts.",
+                "route_cost_tier": "medium",
+                "route_selection_policy": "cost_and_query_type_aware_v0_1",
+            },
         ],
     }

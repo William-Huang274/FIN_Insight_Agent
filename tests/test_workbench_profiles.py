@@ -26,7 +26,12 @@ def test_profile_from_env_file_maps_public_runtime_values_without_secret(tmp_pat
                 "BM25_INDEX_DIR=data/indexes/demo",
                 "OBJECT_BM25_INDEX_DIR=data/indexes/demo_objects",
                 "MARKET_EVIDENCE_PATH=data/private/market.jsonl",
+                "MARKET_CATALOG_PATH=data/private/market_catalog.duckdb",
                 "MARKET_AS_OF_DATE=2026-05-22",
+                "INDUSTRY_EVIDENCE_PATH=data/private/industry_evidence.jsonl",
+                "INDUSTRY_SNAPSHOT_DB_PATH=data/private/industry_snapshot.duckdb",
+                "INDUSTRY_SNAPSHOT_ID=industry_v1",
+                "INDUSTRY_AS_OF_DATE=2026-05-22",
                 "WORKBENCH_EXECUTION_SHELL=wsl",
                 "WORKBENCH_WSL_DISTRO=Ubuntu-22.04",
                 "WORKBENCH_WSL_REPO_ROOT=/mnt/d/FIN_Insight_Agent",
@@ -48,7 +53,11 @@ def test_profile_from_env_file_maps_public_runtime_values_without_secret(tmp_pat
     assert parsed["BGE_DEVICE"] == "cpu"
     assert profile.model_route.backend == "openai_compatible"
     assert profile.model_route.api_key_env == "DEMO_API_KEY"
+    assert profile.sources.market_catalog_path == "data/private/market_catalog.duckdb"
     assert profile.sources.market_as_of_date == "2026-05-22"
+    assert profile.sources.industry_evidence_path == "data/private/industry_evidence.jsonl"
+    assert profile.sources.industry_snapshot_db_path == "data/private/industry_snapshot.duckdb"
+    assert profile.sources.industry_snapshot_id == "industry_v1"
     assert profile.runtime.bge_model == "/models/bge-reranker-v2-m3"
     assert profile.runtime.execution_shell == "wsl"
     assert profile.runtime.wsl_distro == "Ubuntu-22.04"
@@ -64,6 +73,9 @@ def test_profile_from_env_file_maps_public_runtime_values_without_secret(tmp_pat
     assert runtime_env["SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER"] == "llm"
     assert runtime_env["SEC_AGENT_MULTI_AGENT_MEMO_ROUTER"] == "llm"
     assert runtime_env["BGE_MODEL"] == "/models/bge-reranker-v2-m3"
+    assert runtime_env["MARKET_CATALOG_PATH"] == "data/private/market_catalog.duckdb"
+    assert runtime_env["INDUSTRY_EVIDENCE_PATH"] == "data/private/industry_evidence.jsonl"
+    assert runtime_env["INDUSTRY_SNAPSHOT_DB_PATH"] == "data/private/industry_snapshot.duckdb"
     assert "DEMO_API_KEY" not in runtime_env
     assert "redacted-do-not-copy" not in json.dumps(profile.model_dump(), ensure_ascii=False)
 
@@ -71,6 +83,9 @@ def test_profile_from_env_file_maps_public_runtime_values_without_secret(tmp_pat
 def test_source_readiness_passes_for_complete_full_source_fixture(tmp_path: Path) -> None:
     manifest = tmp_path / "manifest.jsonl"
     market = tmp_path / "market.jsonl"
+    market_catalog = tmp_path / "market_catalog.duckdb"
+    industry = tmp_path / "industry_evidence.jsonl"
+    industry_db = tmp_path / "industry_snapshot.duckdb"
     bm25_dir = tmp_path / "bm25"
     object_dir = tmp_path / "object_bm25"
     bm25_dir.mkdir()
@@ -113,6 +128,19 @@ def test_source_readiness_passes_for_complete_full_source_fixture(tmp_path: Path
             }
         ],
     )
+    _write_jsonl(
+        industry,
+        [
+            {
+                "source_family": "industry_energy_commodities",
+                "provider": "EIA",
+                "as_of_date": "2026-05-22",
+                "summary": "EIA snapshot row.",
+            }
+        ],
+    )
+    market_catalog.write_text("duckdb placeholder", encoding="utf-8")
+    industry_db.write_text("duckdb placeholder", encoding="utf-8")
     profile = WorkbenchProfile(
         profile_id="complete",
         display_name="complete",
@@ -187,6 +215,9 @@ def test_source_readiness_fails_on_malformed_required_jsonl(tmp_path: Path) -> N
 def test_source_bundle_from_profile_summarizes_readiness_without_secret(tmp_path: Path) -> None:
     manifest = tmp_path / "manifest.jsonl"
     market = tmp_path / "market.jsonl"
+    market_catalog = tmp_path / "market_catalog.duckdb"
+    industry = tmp_path / "industry_evidence.jsonl"
+    industry_db = tmp_path / "industry_snapshot.duckdb"
     bm25_dir = tmp_path / "bm25"
     object_dir = tmp_path / "object_bm25"
     bm25_dir.mkdir()
@@ -218,6 +249,19 @@ def test_source_bundle_from_profile_summarizes_readiness_without_secret(tmp_path
             }
         ],
     )
+    _write_jsonl(
+        industry,
+        [
+            {
+                "source_family": "industry_energy_commodities",
+                "provider": "EIA",
+                "as_of_date": "2026-05-22",
+                "summary": "EIA snapshot row.",
+            }
+        ],
+    )
+    market_catalog.write_text("duckdb placeholder", encoding="utf-8")
+    industry_db.write_text("duckdb placeholder", encoding="utf-8")
     profile = WorkbenchProfile(
         profile_id="full_source_demo",
         display_name="Full source demo",
@@ -228,7 +272,11 @@ def test_source_bundle_from_profile_summarizes_readiness_without_secret(tmp_path
             object_bm25_index_dir=str(object_dir),
             source_gap_path=str(tmp_path / "source_gap.jsonl"),
             market_evidence_path=str(market),
+            market_catalog_path=str(market_catalog),
             market_as_of_date="2026-05-22",
+            industry_evidence_path=str(industry),
+            industry_snapshot_db_path=str(industry_db),
+            industry_as_of_date="2026-05-22",
         ),
     )
 
@@ -243,9 +291,15 @@ def test_source_bundle_from_profile_summarizes_readiness_without_secret(tmp_path
     assert "SEC 10-K/10-Q" in bundle.source_families
     assert "8-K earnings release" in bundle.source_families
     assert "market snapshot" in bundle.source_families
+    assert "industry snapshot" in bundle.source_families
+    assert readiness.industry_evidence.row_count == 1
+    assert readiness.industry_evidence.providers == {"EIA": 1}
     assert bundle.build.status == "warn"
     assert bundle_profile.sources.manifest_path == str(manifest)
     assert bundle_profile.sources.market_evidence_path == str(market)
+    assert bundle_profile.sources.market_catalog_path == str(market_catalog)
+    assert bundle_profile.sources.industry_evidence_path == str(industry)
+    assert bundle_profile.sources.industry_snapshot_db_path == str(industry_db)
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:

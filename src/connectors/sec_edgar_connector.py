@@ -197,6 +197,7 @@ class SecEdgarConnector:
             ) and self._cached_html_matches_request(html_path, public_filing_meta):
                 result = {**cached_metadata, **result}
                 self._apply_document_fiscal_focus(result, html_path)
+                self._ensure_40f_annual_package(result, wrapper_html_path=html_path)
                 result["cache_status"] = "hit"
                 self._write_json(metadata_path, result)
                 self._append_log(
@@ -228,6 +229,7 @@ class SecEdgarConnector:
         html_path.write_text(html, encoding="utf-8")
 
         self._apply_document_fiscal_focus(result, html_path, html=html)
+        self._ensure_40f_annual_package(result, wrapper_html_path=html_path, wrapper_html=html)
         result["cache_status"] = "downloaded"
         result["downloaded_at"] = datetime.now(timezone.utc).isoformat()
         self._write_json(metadata_path, result)
@@ -712,13 +714,27 @@ class SecEdgarConnector:
         return response.text
 
     def _request(self, url: str) -> requests.Response:
-        self._rate_limit()
-        response = self.session.get(url, timeout=self.timeout)
-        if response.status_code >= 400:
-            raise SecEdgarConnectorError(
-                f"SEC request failed with status {response.status_code}: {url}"
-            )
-        return response
+        last_error: Exception | None = None
+        for attempt in range(1, 4):
+            self._rate_limit()
+            try:
+                response = self.session.get(url, timeout=self.timeout)
+            except requests.RequestException as exc:
+                last_error = exc
+                if attempt < 3:
+                    time.sleep(min(2.0 * attempt, 5.0))
+                    continue
+                raise SecEdgarConnectorError(f"SEC request failed after retries: {url}; {exc}") from exc
+            if response.status_code >= 500 and attempt < 3:
+                last_error = SecEdgarConnectorError(f"SEC request failed with status {response.status_code}: {url}")
+                time.sleep(min(2.0 * attempt, 5.0))
+                continue
+            if response.status_code >= 400:
+                raise SecEdgarConnectorError(
+                    f"SEC request failed with status {response.status_code}: {url}"
+                )
+            return response
+        raise SecEdgarConnectorError(f"SEC request failed after retries: {url}; {last_error}")
 
     def _rate_limit(self) -> None:
         elapsed = time.monotonic() - self._last_request_ts
@@ -883,6 +899,93 @@ class SecEdgarConnector:
         candidates.sort(key=lambda item: item[0], reverse=True)
         return candidates[0][1]
 
+    @classmethod
+    def _select_40f_annual_package_documents(
+        cls,
+        filing_detail_index: dict[str, Any],
+        primary_html: str = "",
+    ) -> list[dict[str, Any]]:
+        descriptions = cls._exhibit_descriptions_from_primary_html(primary_html)
+        best_by_role: dict[str, tuple[int, dict[str, Any]]] = {}
+        for sequence, item in enumerate(cls._filing_detail_items(filing_detail_index), start=1):
+            name = str(item.get("name") or "").strip()
+            if not name:
+                continue
+            description = descriptions.get(name.lower()) or str(item.get("description") or "")
+            role_score = cls._classify_40f_annual_package_document(name, description)
+            if role_score is None:
+                continue
+            role, score, reason = role_score
+            current = best_by_role.get(role)
+            payload = {
+                **item,
+                "name": name,
+                "sequence": item.get("sequence") or sequence,
+                "annual_package_role": role,
+                "description": description,
+                "candidate_reason": reason,
+            }
+            if current is None or score > current[0]:
+                best_by_role[role] = (score, payload)
+        role_order = ("annual_information_form", "financial_statements", "mda", "annual_report")
+        return [best_by_role[role][1] for role in role_order if role in best_by_role]
+
+    @staticmethod
+    def _classify_40f_annual_package_document(
+        name: str,
+        description: str,
+    ) -> tuple[str, int, str] | None:
+        text = f"{name} {description}".lower()
+        compact = re.sub(r"[^a-z0-9]+", "", text)
+        negative_terms = (
+            "certification",
+            "consent",
+            "code of conduct",
+            "accountant fees",
+            "interactive data",
+            "xbrl",
+            "mine safety",
+            "reimbursement policy",
+            "recoupment policy",
+        )
+        if any(term in text for term in negative_terms):
+            return None
+        exhibit_number = SecEdgarConnector._infer_exhibit_number_from_name(name)
+        if "annual information form" in text or "annualinformationform" in compact or "aif" in compact:
+            return ("annual_information_form", 100, "annual_information_form")
+        if (
+            "management's discussion and analysis" in text
+            or "management discussion and analysis" in text
+            or "managements discussion and analysis" in text
+            or "md&a" in text
+            or "mda" in compact
+        ):
+            return ("mda", 90, "management_discussion_and_analysis")
+        if (
+            "audited financial statements" in text
+            or "consolidated financial statements" in text
+            or "financial statements" in text
+            or "auditor" in text
+        ):
+            return ("financial_statements", 85, "financial_statements")
+        if exhibit_number == "99.1":
+            return ("annual_information_form", 65, "canadian_40f_exhibit_99_1")
+        if exhibit_number == "99.2":
+            return ("financial_statements", 64, "canadian_40f_exhibit_99_2")
+        if exhibit_number == "99.3":
+            return ("mda", 63, "canadian_40f_exhibit_99_3")
+        if "annual report" in text and "form 40-f" not in text:
+            return ("annual_report", 70, "annual_report")
+        return None
+
+    @staticmethod
+    def _infer_exhibit_number_from_name(name: str) -> str | None:
+        lowered = str(name or "").lower()
+        match = re.search(r"(?:dex|ex|xexx)99([1-9])(?:[^0-9]|$)", lowered)
+        if not match:
+            return None
+        return f"99.{match.group(1)}"
+
     @staticmethod
     def _filing_detail_items(filing_detail_index: dict[str, Any]) -> list[dict[str, Any]]:
         directory = filing_detail_index.get("directory") if isinstance(filing_detail_index.get("directory"), dict) else {}
@@ -990,10 +1093,10 @@ class SecEdgarConnector:
                 "fiscal_year_source": "document_fiscal_year_focus",
                 "document_fiscal_year_focus": document_year,
             }
-        if normalized_form == "10-K":
+        if normalized_form in {"10-K", "20-F", "40-F"}:
             if SecEdgarConnector._annual_document_year_conflicts_with_report_date(
                 document_year, report_date
-            ):
+            ) and normalized_form == "10-K":
                 fiscal_year_fields = {
                     "fiscal_year": report_year,
                     "fiscal_year_source": "annual_report_date_over_document_fiscal_year_focus",
@@ -1042,7 +1145,7 @@ class SecEdgarConnector:
         html_path: Path,
         html: str | None = None,
     ) -> None:
-        if str(metadata.get("form_type") or "").upper().strip() not in {"10-K", "10-Q"}:
+        if str(metadata.get("form_type") or "").upper().strip() not in {"10-K", "10-Q", "20-F", "40-F"}:
             return
         text = html if html is not None else html_path.read_text(encoding="utf-8", errors="ignore")
         document_year = cls._document_fiscal_year_focus_from_html(text)
@@ -1057,6 +1160,91 @@ class SecEdgarConnector:
                 fiscal_year_focus=document_year,
             )
         )
+
+    def _ensure_40f_annual_package(
+        self,
+        metadata: dict[str, Any],
+        *,
+        wrapper_html_path: Path,
+        wrapper_html: str | None = None,
+    ) -> None:
+        if str(metadata.get("form_type") or "").upper().strip() != "40-F":
+            return
+        package_path = wrapper_html_path.with_name("40-F.annual_package.html")
+        existing_documents = metadata.get("annual_package_documents")
+        if package_path.exists() and existing_documents:
+            metadata["local_primary_path"] = str(wrapper_html_path)
+            metadata["local_annual_package_path"] = str(package_path)
+            metadata["local_html_path"] = str(package_path)
+            metadata.setdefault("annual_package_status", "materialized")
+            return
+
+        cik = str(metadata.get("cik") or "").strip()
+        accession_number = str(metadata.get("accession_number") or "").strip()
+        if not cik or not accession_number:
+            metadata["annual_package_status"] = "skipped_missing_cik_or_accession"
+            return
+
+        primary_html = wrapper_html if wrapper_html is not None else wrapper_html_path.read_text(encoding="utf-8", errors="ignore")
+        try:
+            detail_index = self.get_filing_detail_index(cik, accession_number)
+        except SecEdgarConnectorError as exc:
+            metadata["annual_package_status"] = "detail_index_failed"
+            metadata["annual_package_error"] = str(exc)
+            return
+
+        selected_documents = self._select_40f_annual_package_documents(
+            detail_index,
+            primary_html=primary_html,
+        )
+        if not selected_documents:
+            metadata["annual_package_status"] = "no_selected_annual_exhibits"
+            return
+
+        exhibit_dir = wrapper_html_path.with_name("40-F.exhibits")
+        exhibit_dir.mkdir(parents=True, exist_ok=True)
+        package_documents: list[dict[str, Any]] = []
+        package_parts = [
+            "<!doctype html><html><head><meta charset=\"utf-8\"><title>40-F annual package</title></head><body>",
+            "<h1>FIN 40-F Annual Package</h1>",
+            f"<section data-fin-40f-role=\"wrapper\"><h2>Form 40-F Wrapper</h2>{primary_html}</section>",
+        ]
+        for document in selected_documents:
+            name = str(document.get("name") or "")
+            if not name:
+                continue
+            exhibit_url = self._build_filing_url(cik, accession_number, name)
+            local_path = exhibit_dir / name
+            if local_path.exists():
+                exhibit_html = local_path.read_text(encoding="utf-8", errors="ignore")
+            else:
+                exhibit_html = self._request_text(exhibit_url)
+                local_path.write_text(exhibit_html, encoding="utf-8")
+            role = str(document.get("annual_package_role") or "annual_report")
+            description = html_lib.escape(str(document.get("description") or name))
+            package_documents.append(
+                {
+                    "name": name,
+                    "role": role,
+                    "description": document.get("description"),
+                    "sequence": document.get("sequence"),
+                    "candidate_reason": document.get("candidate_reason"),
+                    "url": exhibit_url,
+                    "local_path": str(local_path),
+                }
+            )
+            package_parts.append(
+                f"<section data-fin-40f-role=\"{html_lib.escape(role)}\">"
+                f"<h2>FIN 40-F {html_lib.escape(role.replace('_', ' ').title())}</h2>"
+                f"<p>{description}</p>{exhibit_html}</section>"
+            )
+        package_parts.append("</body></html>")
+        package_path.write_text("\n".join(package_parts), encoding="utf-8")
+        metadata["local_primary_path"] = str(wrapper_html_path)
+        metadata["local_annual_package_path"] = str(package_path)
+        metadata["local_html_path"] = str(package_path)
+        metadata["annual_package_status"] = "materialized"
+        metadata["annual_package_documents"] = package_documents
 
     @staticmethod
     def _document_fiscal_year_focus_from_html(html: str) -> int | None:

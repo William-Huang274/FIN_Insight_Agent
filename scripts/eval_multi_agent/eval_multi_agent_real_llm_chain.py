@@ -59,6 +59,24 @@ DEFAULT_LEDGER_STORE = (
 DEFAULT_BGE_MODEL = Path("D:/hf_cache/hub/models--BAAI--bge-reranker-v2-m3/snapshots/953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e")
 DEFAULT_MARKET_SNAPSHOT_ID = "20260530_market_yahoo_chart_full238_6m_bars_3m_fmp_key_metrics_partial_v1"
 DEFAULT_MARKET_AS_OF_DATE = "2026-05-29"
+DEFAULT_PERFORMANCE_LIMITS_BY_MODE: dict[str, dict[str, int]] = {
+    "deterministic_lookup": {
+        "max_case_elapsed_ms_lte": 60_000,
+        "max_total_tokens_lte": 20_000,
+    },
+    "focused_answer": {
+        "max_case_elapsed_ms_lte": 180_000,
+        "max_total_tokens_lte": 70_000,
+    },
+    "standard_memo": {
+        "max_case_elapsed_ms_lte": 180_000,
+        "max_total_tokens_lte": 90_000,
+    },
+    "deep_research": {
+        "max_case_elapsed_ms_lte": 360_000,
+        "max_total_tokens_lte": 140_000,
+    },
+}
 
 
 def _path_env_or_default(name: str, default: Path) -> Path:
@@ -79,7 +97,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--chat-completions-path", default=os.environ.get("CHAT_COMPLETIONS_PATH", "/chat/completions"))
     parser.add_argument("--model", default=os.environ.get("MODEL_NAME", "deepseek-v4-pro"))
     parser.add_argument("--api-key-env", default=os.environ.get("API_KEY_ENV", "DEEPSEEK_API_KEY"))
-    parser.add_argument("--research-lead-max-tokens", type=int, default=int(os.environ.get("RESEARCH_LEAD_MAX_TOKENS", "2400")))
+    parser.add_argument("--research-lead-max-tokens", type=int, default=int(os.environ.get("RESEARCH_LEAD_MAX_TOKENS", "3200")))
     parser.add_argument("--specialist-max-tokens", type=int, default=int(os.environ.get("SPECIALIST_MAX_TOKENS", "2000")))
     parser.add_argument("--universe-max-tokens", type=int, default=int(os.environ.get("UNIVERSE_MAX_TOKENS", "3000")))
     parser.add_argument("--memo-max-tokens", type=int, default=int(os.environ.get("MEMO_MAX_TOKENS", "3600")))
@@ -97,6 +115,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--market-as-of-date", default=os.environ.get("MARKET_AS_OF_DATE", DEFAULT_MARKET_AS_OF_DATE))
     parser.add_argument("--bge-model", type=Path, default=Path(os.environ.get("BGE_MODEL", str(DEFAULT_BGE_MODEL))))
     parser.add_argument("--bge-device", default=os.environ.get("BGE_DEVICE", "auto"))
+    parser.add_argument("--milvus-db-path", type=Path, default=Path(os.environ["MILVUS_DB_PATH"]) if os.environ.get("MILVUS_DB_PATH") else None)
+    parser.add_argument("--milvus-collection-name", default=os.environ.get("MILVUS_COLLECTION_NAME", ""))
+    parser.add_argument("--milvus-vector-kinds", default=os.environ.get("MILVUS_VECTOR_KINDS", ""))
+    parser.add_argument("--milvus-top-k", type=int, default=int(os.environ.get("MILVUS_TOP_K", "40")))
+    parser.add_argument("--embedding-model", default=os.environ.get("MILVUS_EMBEDDING_MODEL", ""))
     parser.add_argument("--context-runner", default=os.environ.get("SEC_AGENT_CONTEXT_RUNNER", os.environ.get("CONTEXT_RUNNER", "in_process")))
     parser.add_argument("--evidence-top-k", type=int, default=int(os.environ.get("EVIDENCE_TOP_K", "0")))
     parser.add_argument("--object-top-k", type=int, default=int(os.environ.get("OBJECT_TOP_K", "0")))
@@ -231,6 +254,7 @@ def score_case(
     memo_status = str(memo.get("answer_status") or "")
     accept_bounded_block = bool(case.get("accept_bounded_block"))
     max_tool_calls = int(case.get("max_tool_calls_total_lte") or 999)
+    budgeted_tool_call_count = _budgeted_tool_call_count(tool_calls)
     activated_scope = set(_string_list(activation.get("focus_tickers")) + _string_list(activation.get("search_scope_tickers")))
     forbidden_scope_hits = sorted(activated_scope & set(_string_list(case.get("forbidden_scope_tickers"))))
     rendered_answer = str(result.get("rendered_answer") or "")
@@ -239,6 +263,15 @@ def score_case(
     memo_response_language = _memo_response_language(memo)
     rendered_has_claim_section = _rendered_has_claim_section(rendered_answer)
     rendered_has_evidence_refs = _rendered_has_evidence_refs(rendered_answer)
+    scope_gap_contract = _scope_gap_contract_eval(case, result=result, summary=summary, rendered_answer=rendered_answer)
+    performance_eval = _performance_eval(
+        case,
+        result=result,
+        summary=summary,
+        specialist_routes=specialist_routes,
+        elapsed_ms=elapsed_ms,
+    )
+    retrieval_runtime = _retrieval_runtime_case_summary(result, tool_calls)
 
     layer_checks = {
         "research_lead": {
@@ -262,7 +295,7 @@ def score_case(
             "expected_operator_agents_called": set(_string_list(case.get("expected_operator_agents"))) <= {str(call.get("agent_id") or "") for call in tool_calls},
             "expected_tool_names_called": _expected_tool_names_called(case, tool_calls),
             "tool_ownership_valid": _tool_ownership_valid(tool_calls),
-            "tool_budget_lte": len(tool_calls) <= max_tool_calls,
+            "tool_budget_lte": budgeted_tool_call_count <= max_tool_calls,
             "no_budget_loop_break": str(result.get("loop_break_reason") or "") not in {"tool_budget_exhausted", "agent_tool_budget_exhausted"},
             "no_duplicate_loop_break": str(result.get("loop_break_reason") or "") != "duplicate_tool_call_blocked",
             **real_operator_checks,
@@ -298,9 +331,11 @@ def score_case(
                 else True
             ),
         },
+        "scope_gap_contract": scope_gap_contract["checks"],
+        "performance": performance_eval["checks"],
         "payload_safety": {
             "raw_payload_not_in_summary": (summary.get("payload_policy") or {}).get("raw_evidence") == "not_included",
-            "no_api_key_marker": "sk-" not in json.dumps(summary, ensure_ascii=False),
+            "no_api_key_marker": not _contains_api_key_marker(json.dumps(summary, ensure_ascii=False)),
             "no_private_path_marker": "raw_private" not in json.dumps(summary, ensure_ascii=False),
         },
     }
@@ -324,6 +359,8 @@ def score_case(
         "forbidden_activated_agents": sorted(forbidden_agents & active_agents),
         "forbidden_scope_hits": forbidden_scope_hits,
         "tool_call_count": len(tool_calls),
+        "budgeted_tool_call_count": budgeted_tool_call_count,
+        "cached_tool_call_count": len(tool_calls) - budgeted_tool_call_count,
         "loop_break_reason": result.get("loop_break_reason") or "",
         "memo_status": memo_status,
         "memo_response_language": memo_response_language,
@@ -339,6 +376,12 @@ def score_case(
         "real_retrieval_required": real_retrieval_required,
         "real_specialist_quality_required": real_specialist_quality_required,
         "specialist_real_evidence_quality": specialist_quality,
+        "scope_decision": scope_gap_contract["scope_decision"],
+        "universe_scope_contract": scope_gap_contract["universe_scope_contract"],
+        "evidence_gap_requests": scope_gap_contract["evidence_gap_requests"],
+        "token_usage": performance_eval["token_usage"],
+        "performance_limits": performance_eval["limits"],
+        "retrieval_runtime": retrieval_runtime,
         "layer_checks": layer_checks,
         "checks": checks,
         "agent_audit": _agent_audit(result, summary, tool_calls=tool_calls, specialist_routes=specialist_routes, specialist_quality=specialist_quality),
@@ -357,6 +400,15 @@ def _rendered_has_claim_section(rendered_answer: str) -> bool:
 def _rendered_has_evidence_refs(rendered_answer: str) -> bool:
     text = str(rendered_answer or "")
     return "refs=" in text or "证据=" in text
+
+
+def _contains_api_key_marker(text: str) -> bool:
+    return bool(re.search(r"\bsk-[A-Za-z0-9_-]{20,}\b", str(text or "")))
+
+
+def _budgeted_tool_call_count(tool_calls: list[Mapping[str, Any]]) -> int:
+    non_budget_statuses = {"cached", "blocked", "skipped"}
+    return sum(1 for call in tool_calls if str(call.get("status") or "").strip().lower() not in non_budget_statuses)
 
 
 def _expected_response_language(case: Mapping[str, Any]) -> str:
@@ -431,6 +483,11 @@ def _graph_env(args: argparse.Namespace) -> dict[str, str]:
             "MARKET_AS_OF_DATE": args.market_as_of_date,
             "BGE_MODEL": str(args.bge_model),
             "BGE_DEVICE": args.bge_device,
+            "MILVUS_DB_PATH": str(args.milvus_db_path or ""),
+            "MILVUS_COLLECTION_NAME": args.milvus_collection_name,
+            "MILVUS_VECTOR_KINDS": args.milvus_vector_kinds,
+            "MILVUS_TOP_K": str(args.milvus_top_k),
+            "MILVUS_EMBEDDING_MODEL": args.embedding_model,
             "SEC_AGENT_CONTEXT_RUNNER": args.context_runner,
             "RESEARCH_LEAD_MAX_TOKENS": str(args.research_lead_max_tokens),
             "SPECIALIST_MAX_TOKENS": str(args.specialist_max_tokens),
@@ -490,6 +547,12 @@ def _initial_state(
         "expected_relationship_pack_ids": _string_list(case.get("expected_relationship_pack_ids")),
         "bge_model": str(args.bge_model),
         "bge_device": args.bge_device,
+        "milvus_db_path": str(args.milvus_db_path or ""),
+        "milvus_collection_name": args.milvus_collection_name,
+        "milvus_vector_kinds": _string_list(args.milvus_vector_kinds),
+        "milvus_top_k": args.milvus_top_k,
+        "embedding_model": args.embedding_model,
+        "milvus_embedding_model": args.embedding_model,
         "context_runner": args.context_runner,
         "evidence_top_k": args.evidence_top_k,
         "object_top_k": args.object_top_k,
@@ -516,6 +579,9 @@ def _query_contract(case: Mapping[str, Any]) -> dict[str, Any]:
     source_tiers = _string_list(case.get("source_tiers")) or ["primary_sec_filing"]
     metric_families = _string_list(case.get("metric_families")) or ["revenue", "capex", "margin"]
     return {
+        "case_id": str(case.get("case_id") or ""),
+        "category": str(case.get("category") or ""),
+        "expected_execution_mode": str(case.get("expected_execution_mode") or ""),
         "task_type": "open_analysis",
         "search_scope_tickers": tickers,
         "focus_tickers": focus,
@@ -566,6 +632,389 @@ def _universe_checks(
     }
 
 
+def _scope_gap_contract_eval(
+    case: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    summary: Mapping[str, Any],
+    rendered_answer: str,
+) -> dict[str, Any]:
+    require_scope = bool(case.get("require_scope_decision_contract"))
+    require_universe_scope = bool(case.get("require_universe_scope_contract"))
+    require_exclusions = bool(case.get("require_excluded_ticker_rationales"))
+    required_gap_types = set(_string_list(case.get("require_evidence_gap_request_types")))
+    require_judgment_gap = bool(case.get("require_gap_preserved_to_judgment"))
+    require_memo_gap = bool(case.get("require_gap_preserved_to_memo"))
+    require_rendered_gap = bool(case.get("require_rendered_gap_boundary"))
+    require_hypothesis_boundary = bool(case.get("require_hypothesis_boundary_rendered"))
+
+    scope_decision = _scope_decision(result, summary)
+    universe_scope_contract = _universe_scope_contract(result)
+    evidence_gaps = _evidence_gap_requests(result)
+    gap_types = {str(item.get("request_type") or "") for item in evidence_gaps}
+    expected_patterns = set(_string_list(case.get("expected_scoping_patterns")))
+    expected_modes = set(_string_list(case.get("expected_expansion_modes")))
+    expected_catalogs = set(_string_list(case.get("expected_catalogs_to_inspect")))
+    expected_lenses = set(_string_list(case.get("expected_candidate_lenses")))
+    required_universe_lenses = set(_string_list(case.get("required_universe_candidate_lenses")))
+    required_relationship_strengths = set(_string_list(case.get("required_relationship_strengths")))
+
+    scope_catalogs = set(_string_list(scope_decision.get("catalogs_to_inspect")))
+    scope_lenses = set(_string_list(scope_decision.get("candidate_lenses")))
+    included_lenses = {
+        str(item.get("candidate_lens") or "")
+        for item in universe_scope_contract.get("included_ticker_contracts") or []
+        if isinstance(item, Mapping)
+    }
+    included_strengths = {
+        str(item.get("relationship_strength") or "")
+        for item in universe_scope_contract.get("included_ticker_contracts") or []
+        if isinstance(item, Mapping)
+    }
+    checks = {
+        "scope_decision_present": (not require_scope) or bool(scope_decision),
+        "scope_scoping_pattern_expected": (not expected_patterns) or str(scope_decision.get("scoping_pattern") or "") in expected_patterns,
+        "scope_expansion_mode_expected": (not expected_modes) or str(scope_decision.get("expansion_mode") or "") in expected_modes,
+        "scope_catalogs_to_inspect_present": (not require_scope) or bool(scope_catalogs),
+        "scope_expected_catalogs_present": (not expected_catalogs) or bool(scope_catalogs & expected_catalogs),
+        "scope_candidate_lenses_present": (not require_scope) or bool(scope_lenses),
+        "scope_expected_candidate_lenses_present": (not expected_lenses) or bool(scope_lenses & expected_lenses),
+        "scope_expansion_budget_present": (not require_scope) or bool(scope_decision.get("expansion_budget")),
+        "scope_stop_condition_present": (not require_scope) or bool(str(scope_decision.get("stop_condition") or "").strip()),
+        "universe_scope_contract_present": (not require_universe_scope) or bool(universe_scope_contract.get("included_ticker_contracts")),
+        "universe_included_ticker_fields_present": (not require_universe_scope)
+        or _included_ticker_contract_fields_present(universe_scope_contract.get("included_ticker_contracts") or []),
+        "universe_required_lenses_present": (not required_universe_lenses) or bool(included_lenses & required_universe_lenses),
+        "universe_relationship_strength_expected": (not required_relationship_strengths) or bool(included_strengths & required_relationship_strengths),
+        "universe_excluded_rationales_present": (not require_exclusions)
+        or _excluded_ticker_contract_fields_present(universe_scope_contract.get("excluded_ticker_contracts") or []),
+        "required_evidence_gap_types_present": (not required_gap_types) or required_gap_types <= gap_types,
+        "gap_requests_preserved_to_judgment": (not require_judgment_gap)
+        or required_gap_types <= _gap_request_types_from_mapping(result.get("judgment_plan") if isinstance(result.get("judgment_plan"), Mapping) else {}),
+        "gap_requests_preserved_to_memo": (not require_memo_gap)
+        or required_gap_types <= _gap_request_types_from_mapping(result.get("memo_answer") if isinstance(result.get("memo_answer"), Mapping) else {}),
+        "rendered_gap_boundary_present": (not require_rendered_gap) or _rendered_gap_boundary_present(rendered_answer),
+        "rendered_hypothesis_boundary_present": (not require_hypothesis_boundary) or _rendered_hypothesis_boundary_present(rendered_answer),
+    }
+    return {
+        "checks": checks,
+        "scope_decision": scope_decision,
+        "universe_scope_contract": universe_scope_contract,
+        "evidence_gap_requests": evidence_gaps,
+    }
+
+
+def _scope_decision(result: Mapping[str, Any], summary: Mapping[str, Any]) -> dict[str, Any]:
+    activation = result.get("agent_activation_plan") if isinstance(result.get("agent_activation_plan"), Mapping) else {}
+    metadata = activation.get("metadata") if isinstance(activation.get("metadata"), Mapping) else {}
+    summary_metadata = summary.get("activation_metadata") if isinstance(summary.get("activation_metadata"), Mapping) else {}
+    for value in (
+        activation.get("scope_decision"),
+        metadata.get("scope_decision"),
+        summary_metadata.get("scope_decision"),
+    ):
+        if isinstance(value, Mapping):
+            return {
+                "scoping_pattern": str(value.get("scoping_pattern") or "").strip(),
+                "expansion_mode": str(value.get("expansion_mode") or "").strip(),
+                "why": str(value.get("why") or value.get("reason") or "").strip(),
+                "catalogs_to_inspect": _string_list(value.get("catalogs_to_inspect") or value.get("catalogs")),
+                "candidate_lenses": _string_list(value.get("candidate_lenses") or value.get("lenses")),
+                "expansion_budget": value.get("expansion_budget") if isinstance(value.get("expansion_budget"), Mapping) else value.get("expansion_budget") or {},
+                "stop_condition": str(value.get("stop_condition") or "").strip(),
+            }
+    return {}
+
+
+def _universe_scope_contract(result: Mapping[str, Any]) -> dict[str, Any]:
+    plan = result.get("universe_relationship_plan") if isinstance(result.get("universe_relationship_plan"), Mapping) else {}
+    included = [
+        _compact_included_contract(item)
+        for item in plan.get("included_ticker_contracts") or []
+        if isinstance(item, Mapping)
+    ]
+    if not included:
+        included = _included_contracts_from_relationships(plan)
+    excluded = [
+        _compact_excluded_contract(item)
+        for item in plan.get("excluded_ticker_contracts") or []
+        if isinstance(item, Mapping)
+    ]
+    return {
+        "included_ticker_contracts": included,
+        "excluded_ticker_contracts": excluded,
+        "included_tickers": _string_list(plan.get("included_tickers")),
+        "excluded_tickers": _string_list(plan.get("excluded_tickers")),
+    }
+
+
+def _included_contracts_from_relationships(plan: Mapping[str, Any]) -> list[dict[str, Any]]:
+    relationships = [dict(item) for item in plan.get("relationships") or [] if isinstance(item, Mapping)]
+    by_ticker: dict[str, dict[str, Any]] = {}
+    for relationship in relationships:
+        tickers = _unique_upper([relationship.get("ticker"), relationship.get("related_ticker")])
+        for ticker in tickers:
+            by_ticker.setdefault(
+                ticker,
+                {
+                    "included_ticker": ticker,
+                    "candidate_lens": _relationship_candidate_lens(relationship),
+                    "inclusion_rationale": str(relationship.get("inclusion_rationale") or "").strip(),
+                    "available_source_families": _string_list([
+                        "relationship_graph",
+                        *(_string_list(relationship.get("evidence_source_needed"))),
+                    ]),
+                    "relationship_strength": _relationship_strength_for_eval(relationship),
+                    "downstream_operator_owner": _operator_owner_for_eval(_string_list(relationship.get("evidence_source_needed")) or ["relationship_graph"]),
+                    "source_gap": "",
+                },
+            )
+    return list(by_ticker.values())
+
+
+def _compact_included_contract(item: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "included_ticker": str(item.get("included_ticker") or item.get("ticker") or "").upper().strip(),
+        "candidate_lens": str(item.get("candidate_lens") or "").strip(),
+        "inclusion_rationale": str(item.get("inclusion_rationale") or "").strip(),
+        "available_source_families": _string_list(item.get("available_source_families") or item.get("source_families")),
+        "relationship_strength": str(item.get("relationship_strength") or "").strip(),
+        "downstream_operator_owner": str(item.get("downstream_operator_owner") or "").strip(),
+        "source_gap": str(item.get("source_gap") or "").strip(),
+    }
+
+
+def _compact_excluded_contract(item: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "excluded_ticker": str(item.get("excluded_ticker") or item.get("ticker") or "").upper().strip(),
+        "candidate_lens": str(item.get("candidate_lens") or "").strip(),
+        "exclusion_rationale": str(item.get("exclusion_rationale") or "").strip(),
+    }
+
+
+def _included_ticker_contract_fields_present(items: list[Any]) -> bool:
+    required = {
+        "included_ticker",
+        "candidate_lens",
+        "inclusion_rationale",
+        "available_source_families",
+        "relationship_strength",
+        "downstream_operator_owner",
+    }
+    valid_strengths = {"verified", "inferred", "hypothesis", "source_gap"}
+    if not items:
+        return False
+    for item in items:
+        if not isinstance(item, Mapping):
+            return False
+        if any(not item.get(key) for key in required):
+            return False
+        if str(item.get("relationship_strength") or "") not in valid_strengths:
+            return False
+    return True
+
+
+def _excluded_ticker_contract_fields_present(items: list[Any]) -> bool:
+    if not items:
+        return False
+    for item in items:
+        if not isinstance(item, Mapping):
+            return False
+        if not str(item.get("excluded_ticker") or "").strip():
+            return False
+        if not str(item.get("candidate_lens") or "").strip():
+            return False
+        if not str(item.get("exclusion_rationale") or "").strip():
+            return False
+    return True
+
+
+def _evidence_gap_requests(result: Mapping[str, Any]) -> list[dict[str, Any]]:
+    requests: list[dict[str, Any]] = []
+    for memolet in result.get("specialist_outputs") or []:
+        if not isinstance(memolet, Mapping):
+            continue
+        for request in memolet.get("evidence_gap_requests") or []:
+            if isinstance(request, Mapping):
+                requests.append({"source": "specialist_outputs", "agent_id": memolet.get("agent_id") or "", **dict(request)})
+    for key in ("judgment_plan", "verified_judgment_plan", "memo_answer", "claim_verification"):
+        value = result.get(key)
+        if not isinstance(value, Mapping):
+            continue
+        for request in value.get("evidence_gap_requests") or []:
+            if isinstance(request, Mapping):
+                requests.append({"source": key, **dict(request)})
+    return _dedupe_gap_requests(requests)
+
+
+def _dedupe_gap_requests(requests: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    deduped: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str, tuple[str, ...]]] = set()
+    for request in requests:
+        key = (
+            str(request.get("request_type") or ""),
+            str(request.get("owner_agent") or ""),
+            str(request.get("source_family") or ""),
+            str(request.get("agent_id") or ""),
+            tuple(_unique_upper(request.get("tickers"))),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(request)
+    return deduped
+
+
+def _gap_request_types_from_mapping(value: Mapping[str, Any]) -> set[str]:
+    return {
+        str(item.get("request_type") or "")
+        for item in value.get("evidence_gap_requests") or []
+        if isinstance(item, Mapping)
+    }
+
+
+def _rendered_gap_boundary_present(rendered_answer: str) -> bool:
+    text = str(rendered_answer or "").lower()
+    markers = ("evidence gap", "source gap", "coverage gap", "missing evidence", "缺口", "证据不足", "来源限制", "边界")
+    return any(marker in text for marker in markers)
+
+
+def _rendered_hypothesis_boundary_present(rendered_answer: str) -> bool:
+    text = str(rendered_answer or "").lower()
+    markers = ("hypothesis", "hypothesis-only", "context-only", "source gap", "假设", "上下文", "不能证明", "未确认")
+    return any(marker in text for marker in markers)
+
+
+def _relationship_candidate_lens(relationship: Mapping[str, Any]) -> str:
+    rel_type = str(relationship.get("relationship_type") or "").strip()
+    direction = str(relationship.get("direction") or relationship.get("edge_direction") or "").lower()
+    if rel_type in {"peer", "competitor"}:
+        return "peer_competitor"
+    if rel_type == "supplier":
+        return "upstream_supplier"
+    if rel_type == "customer":
+        return "downstream_customer"
+    if "power" in direction or "utility" in direction or "load" in direction:
+        return "power_utilities_readthrough"
+    if "server" in direction or "network" in direction or "infrastructure" in direction:
+        return "infrastructure_dependency"
+    return "sector_macro_proxy" if rel_type in {"sector", "macro_sensitive"} else "relationship_hypothesis"
+
+
+def _relationship_strength_for_eval(relationship: Mapping[str, Any]) -> str:
+    if relationship.get("confirmation_status") == "confirmed_direct_edge" or relationship.get("inference_level") == "confirmed_direct":
+        return "verified"
+    if relationship.get("inference_level") in {"disclosed_indirect", "curated_input_unverified"}:
+        return "inferred"
+    if not relationship.get("evidence_refs"):
+        return "source_gap"
+    return "hypothesis"
+
+
+def _operator_owner_for_eval(source_families: list[str]) -> str:
+    families = set(source_families)
+    if "primary_sec_filing" in families:
+        return "sec_operator"
+    if "company_authored_unaudited_sec_filing" in families:
+        return "eight_k_operator"
+    if "market_snapshot" in families:
+        return "market_operator"
+    if "industry_snapshot" in families:
+        return "industry_operator"
+    if "relationship_graph" in families:
+        return "universe_relationship"
+    return "coverage_reflection"
+
+
+def _performance_eval(
+    case: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    summary: Mapping[str, Any],
+    specialist_routes: list[dict[str, Any]],
+    elapsed_ms: int,
+) -> dict[str, Any]:
+    token_usage = _case_token_usage(result, summary, specialist_routes=specialist_routes)
+    default_limits = _default_performance_limits(case)
+    limits = {
+        "max_case_elapsed_ms_lte": _performance_limit(case, default_limits, "max_case_elapsed_ms_lte"),
+        "max_total_tokens_lte": _performance_limit(case, default_limits, "max_total_tokens_lte"),
+        "max_research_lead_tokens_lte": _performance_limit(case, default_limits, "max_research_lead_tokens_lte"),
+        "max_universe_tokens_lte": _performance_limit(case, default_limits, "max_universe_tokens_lte"),
+        "max_specialist_tokens_lte": _performance_limit(case, default_limits, "max_specialist_tokens_lte"),
+        "max_memo_tokens_lte": _performance_limit(case, default_limits, "max_memo_tokens_lte"),
+        "max_verifier_tokens_lte": _performance_limit(case, default_limits, "max_verifier_tokens_lte"),
+    }
+    by_agent = token_usage["by_agent"]
+    checks = {
+        "case_elapsed_ms_lte": limits["max_case_elapsed_ms_lte"] is None or elapsed_ms <= limits["max_case_elapsed_ms_lte"],
+        "total_tokens_lte": limits["max_total_tokens_lte"] is None or token_usage["total_tokens"] <= limits["max_total_tokens_lte"],
+        "research_lead_tokens_lte": limits["max_research_lead_tokens_lte"] is None or by_agent.get("research_lead", 0) <= limits["max_research_lead_tokens_lte"],
+        "universe_tokens_lte": limits["max_universe_tokens_lte"] is None or by_agent.get("universe_relationship", 0) <= limits["max_universe_tokens_lte"],
+        "specialist_tokens_lte": limits["max_specialist_tokens_lte"] is None or token_usage["specialist_tokens"] <= limits["max_specialist_tokens_lte"],
+        "memo_tokens_lte": limits["max_memo_tokens_lte"] is None or by_agent.get("memo_writer", 0) <= limits["max_memo_tokens_lte"],
+        "verifier_tokens_lte": limits["max_verifier_tokens_lte"] is None or by_agent.get("verifier", 0) <= limits["max_verifier_tokens_lte"],
+    }
+    return {"checks": checks, "token_usage": token_usage, "limits": limits}
+
+
+def _default_performance_limits(case: Mapping[str, Any]) -> dict[str, int]:
+    mode = str(case.get("expected_execution_mode") or case.get("execution_mode") or "").strip()
+    if not mode:
+        category = str(case.get("category") or "").strip()
+        mode = "deep_research" if category == "sector_depth" else "standard_memo" if category in {"standard_memo", "scope_decision"} else ""
+    return dict(DEFAULT_PERFORMANCE_LIMITS_BY_MODE.get(mode) or {})
+
+
+def _performance_limit(case: Mapping[str, Any], defaults: Mapping[str, int], key: str) -> int | None:
+    explicit = _optional_int(case.get(key))
+    if explicit is not None:
+        return explicit
+    return _optional_int(defaults.get(key))
+
+
+def _case_token_usage(
+    result: Mapping[str, Any],
+    summary: Mapping[str, Any],
+    *,
+    specialist_routes: list[dict[str, Any]],
+) -> dict[str, Any]:
+    llm_routes = summary.get("llm_routes") if isinstance(summary.get("llm_routes"), Mapping) else {}
+    by_agent: dict[str, int] = {
+        "research_lead": _diag_total_tokens(_route(llm_routes, "research_lead")),
+        "universe_relationship": _diag_total_tokens(_route(llm_routes, "universe_relationship")),
+        "memo_writer": _diag_total_tokens(_route(llm_routes, "memo_writer")),
+        "verifier": _diag_total_tokens(_route(llm_routes, "verifier")),
+    }
+    specialist_total = 0
+    for row in specialist_routes:
+        agent_id = str(row.get("agent_id") or "specialist")
+        tokens = _optional_int(row.get("total_tokens")) or 0
+        by_agent[agent_id] = by_agent.get(agent_id, 0) + tokens
+        specialist_total += tokens
+    total = sum(by_agent.values())
+    return {
+        "total_tokens": total,
+        "specialist_tokens": specialist_total,
+        "by_agent": dict(sorted((key, value) for key, value in by_agent.items() if value)),
+    }
+
+
+def _diag_total_tokens(route: Mapping[str, Any]) -> int:
+    diagnostics = route.get("diagnostics") if isinstance(route.get("diagnostics"), Mapping) else route
+    value = diagnostics.get("total_tokens") if isinstance(diagnostics, Mapping) else None
+    return _optional_int(value) or 0
+
+
+def _optional_int(value: Any) -> int | None:
+    if value in (None, ""):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _real_operator_checks(
     case: Mapping[str, Any],
     result: Mapping[str, Any],
@@ -581,11 +1030,18 @@ def _real_operator_checks(
     market_expected = "market_get_snapshot" in expected_tools
     industry_expected = "industry_get_snapshot" in expected_tools
     relationship_expected = "relationship_graph_lookup" in expected_tools
+    milvus_expected = "sec_milvus_semantic_search" in expected_tools
     sec_calls = [call for call in tool_calls if call.get("tool_name") == "sec_search_filings"]
+    milvus_calls = [call for call in tool_calls if call.get("tool_name") == "sec_milvus_semantic_search"]
     sec_success_calls = [call for call in sec_calls if str(call.get("status") or "") not in {"dry_run", "error"}]
+    milvus_success_calls = [call for call in milvus_calls if str(call.get("status") or "") not in {"dry_run", "error"}]
     sec_runtime = [_runtime_summary(call) for call in sec_calls]
+    milvus_runtime = [_runtime_summary(call) for call in milvus_calls]
     candidate_counts = [item.get("candidate_counts") or {} for item in sec_runtime if isinstance(item, Mapping)]
     ledger_first_structured = _ledger_first_structured_route_present(candidate_counts)
+    required_milvus_vector_kinds = set(_string_list(case.get("required_milvus_vector_kinds") or case.get("required_semantic_vector_kinds")))
+    milvus_vector_kind_counts = _milvus_vector_kind_counts(result, milvus_runtime)
+    milvus_rows = _milvus_context_rows(result)
     if not required:
         return {
             "real_retrieval_mode_required": True,
@@ -594,6 +1050,11 @@ def _real_operator_checks(
             "sec_search_bm25_candidates_present": True,
             "sec_search_bge_rerank_present": True,
             "sec_search_runtime_ledger_rows_present": True,
+            "milvus_semantic_not_dry_run": True,
+            "milvus_semantic_errors_absent": True,
+            "milvus_semantic_context_rows_present": True,
+            "milvus_semantic_vector_kind_hit": True,
+            "milvus_semantic_typed_filter_present": True,
             "market_rows_present": True,
             "industry_rows_present": True,
             "relationship_lookup_rows_present": True,
@@ -609,9 +1070,63 @@ def _real_operator_checks(
         or (runtime_ledger_required and ledger_first_structured and bool(result.get("runtime_ledger_rows")))
         or exact_ledger_satisfies_sec,
         "sec_search_runtime_ledger_rows_present": (not runtime_ledger_required) or bool(result.get("runtime_ledger_rows")),
+        "milvus_semantic_not_dry_run": (not milvus_expected)
+        or bool(milvus_success_calls and all(str(call.get("status") or "") != "dry_run" for call in milvus_calls)),
+        "milvus_semantic_errors_absent": (not milvus_expected) or all(str(call.get("status") or "") != "error" for call in milvus_calls),
+        "milvus_semantic_context_rows_present": (not milvus_expected) or bool(milvus_rows),
+        "milvus_semantic_vector_kind_hit": (not milvus_expected)
+        or not required_milvus_vector_kinds
+        or bool(required_milvus_vector_kinds & set(milvus_vector_kind_counts)),
+        "milvus_semantic_typed_filter_present": (not milvus_expected)
+        or any(bool(item.get("typed_filter_required", True)) and str(item.get("collection_name") or "") for item in milvus_runtime),
         "market_rows_present": (not market_expected) or bool(result.get("market_snapshot_rows")),
         "industry_rows_present": (not industry_expected) or bool(result.get("industry_snapshot_rows")),
         "relationship_lookup_rows_present": (not relationship_expected) or bool((result.get("relationship_graph_observation") or {}).get("relationships")),
+    }
+
+
+def _milvus_context_rows(result: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    return [
+        row
+        for row in result.get("context_rows") or []
+        if isinstance(row, Mapping)
+        and (
+            str(row.get("retrieval_route") or "") == "milvus_semantic"
+            or str(row.get("semantic_route_role") or "") == "semantic_recall_supplement"
+            or bool(_string_list(row.get("vector_kinds")))
+        )
+    ]
+
+
+def _milvus_vector_kind_counts(result: Mapping[str, Any], milvus_runtime: list[Mapping[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for runtime in milvus_runtime:
+        for key, value in dict(runtime.get("vector_kind_counts") or {}).items():
+            counts[str(key)] = counts.get(str(key), 0) + int(value or 0)
+    for row in _milvus_context_rows(result):
+        values = _string_list(row.get("vector_kinds") or row.get("vector_kind"))
+        for value in values:
+            counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _retrieval_runtime_case_summary(result: Mapping[str, Any], tool_calls: list[dict[str, Any]]) -> dict[str, Any]:
+    sec_calls = [call for call in tool_calls if call.get("tool_name") == "sec_search_filings"]
+    milvus_calls = [call for call in tool_calls if call.get("tool_name") == "sec_milvus_semantic_search"]
+    sec_candidate_counts = [
+        (_runtime_summary(call).get("candidate_counts") or {})
+        for call in sec_calls
+        if isinstance(_runtime_summary(call), Mapping)
+    ]
+    milvus_runtime = [_runtime_summary(call) for call in milvus_calls]
+    return {
+        "sec_tool_call_count": len(sec_calls),
+        "sec_candidate_count_pre_rerank": sum((_optional_int(item.get("candidate_row_count_pre_rerank")) or 0) for item in sec_candidate_counts),
+        "sec_candidate_sent_to_bge": sum((_optional_int(item.get("candidate_sent_to_bge")) or 0) for item in sec_candidate_counts),
+        "milvus_tool_call_count": len(milvus_calls),
+        "milvus_context_rows": len(_milvus_context_rows(result)),
+        "milvus_vector_kind_counts": _milvus_vector_kind_counts(result, milvus_runtime),
+        "milvus_collections": sorted({str(item.get("collection_name") or "") for item in milvus_runtime if str(item.get("collection_name") or "")}),
     }
 
 
@@ -1197,6 +1712,7 @@ def _agent_audit(
             "execution_mode": (result.get("agent_activation_plan") or {}).get("execution_mode")
             if isinstance(result.get("agent_activation_plan"), Mapping)
             else "",
+            "routing_trace": _route(llm_routes, "research_lead").get("routing_trace") or {},
             "diagnostics": _route(llm_routes, "research_lead").get("diagnostics") or {},
         },
         "universe_relationship": {
@@ -1206,6 +1722,7 @@ def _agent_audit(
             "validation_status": (result.get("universe_relationship_validation") or {}).get("status")
             if isinstance(result.get("universe_relationship_validation"), Mapping)
             else "",
+            "routing_trace": _route(llm_routes, "universe_relationship").get("routing_trace") or {},
             "diagnostics": _route(llm_routes, "universe_relationship").get("diagnostics") or {},
         },
         "evidence_operators": {
@@ -1293,6 +1810,11 @@ def _aggregate(
             "context_runner": args.context_runner,
             "bge_device": args.bge_device,
             "bge_model_ref": _model_ref(args.bge_model),
+            "milvus_db_ref": _model_ref(args.milvus_db_path or ""),
+            "milvus_collection_name": args.milvus_collection_name,
+            "milvus_vector_kinds": _string_list(args.milvus_vector_kinds),
+            "milvus_top_k": args.milvus_top_k,
+            "embedding_model_ref": _model_ref(args.embedding_model),
             "reranker_candidate_limit": args.reranker_candidate_limit,
             "reranker_top_k": args.reranker_top_k,
             "reranker_batch_size": args.reranker_batch_size,
@@ -1305,6 +1827,35 @@ def _aggregate(
             "failed": failed,
             "pass_rate": passed / len(scores) if scores else 0.0,
             "total_tool_calls": sum(int(score.get("tool_call_count") or 0) for score in scores),
+            "milvus_tool_calls": sum(int((score.get("retrieval_runtime") or {}).get("milvus_tool_call_count") or 0) for score in scores),
+            "milvus_context_rows": sum(int((score.get("retrieval_runtime") or {}).get("milvus_context_rows") or 0) for score in scores),
+            "sec_candidate_count_pre_rerank": sum(int((score.get("retrieval_runtime") or {}).get("sec_candidate_count_pre_rerank") or 0) for score in scores),
+            "sec_candidate_sent_to_bge": sum(int((score.get("retrieval_runtime") or {}).get("sec_candidate_sent_to_bge") or 0) for score in scores),
+            "total_llm_tokens": sum(int((score.get("token_usage") or {}).get("total_tokens") or 0) for score in scores),
+            "avg_llm_tokens_per_case": (
+                sum(int((score.get("token_usage") or {}).get("total_tokens") or 0) for score in scores) / len(scores)
+                if scores
+                else 0.0
+            ),
+            "max_case_elapsed_ms": max((int(score.get("elapsed_ms") or 0) for score in scores), default=0),
+            "scope_gap_contract_failed_cases": [
+                score["case_id"]
+                for score in scores
+                if any(
+                    not value
+                    for key, value in (score.get("checks") or {}).items()
+                    if str(key).startswith("scope_gap_contract.")
+                )
+            ],
+            "performance_failed_cases": [
+                score["case_id"]
+                for score in scores
+                if any(
+                    not value
+                    for key, value in (score.get("checks") or {}).items()
+                    if str(key).startswith("performance.")
+                )
+            ],
             "real_retrieval_required_cases": sum(1 for score in scores if score.get("real_retrieval_required")),
             "real_specialist_quality_required_cases": sum(1 for score in scores if score.get("real_specialist_quality_required")),
             "real_specialist_quality_passed": sum(

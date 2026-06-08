@@ -1,0 +1,130 @@
+schema_version: fin_agent_global_public_disclosure_profiles_v0_1
+purpose: Profile official non-US public disclosure sources so Tier2 supply-chain companies can be staged as primary company disclosure without mixing them with news or web leads.
+contract_policy:
+  rule_level: market_or_regulator_profile
+  company_rows_define_identity_and_locator_only: true
+  company_report_mix_default_source: profile
+  allowed_company_report_overrides:
+    - report_type_include_overrides
+    - report_type_exclude_overrides
+  override_requires_reason: true
+default_years: [2023, 2024, 2025]
+annual_like_report_types:
+  - annual_report
+  - annual_securities_report
+  - business_report
+  - integrated_report
+interim_report_types:
+  - quarterly_report
+  - semiannual_report
+  - interim_report
+profiles:
+  kr_dart_business_report:
+    source_tier: primary_company_disclosure
+    source_family: global_public_annual_report
+    jurisdiction_scope: ["South Korea"]
+    listing_exchange_scope: ["KRX"]
+    rule_scope: market_disclosure_system
+    regulator_or_exchange: "DART / Financial Supervisory Service"
+    cache_namespace: kr_dart
+    parser_profile: kr_dart_business_report_v0_1
+    preferred_source_kinds: ["regulator", "company_ir"]
+    annual_report_types: ["business_report", "annual_report"]
+    interim_report_types: ["quarterly_report"]
+    locator_strategy: official_locator_then_disclosure_search
+    download_implementation_status: blocked_requires_official_api_key
+    download_blocker: DART Open API access key and company-code lookup are required before regulator-first download.
+    api_key_env: DART_API_KEY
+    parser_implementation_status: blocked_until_profile_downloader_pass
+    parser_blocker: Parser requires downloaded business-report document and checksum metadata.
+    locator_notes: Use DART company code and report name when API/search support is added; company IR remains a locator, not cited evidence.
+  tw_mops_annual_report:
+    source_tier: primary_company_disclosure
+    source_family: global_public_annual_report
+    jurisdiction_scope: ["Taiwan"]
+    listing_exchange_scope: ["TWSE"]
+    rule_scope: market_disclosure_system
+    regulator_or_exchange: "TWSE MOPS"
+    cache_namespace: tw_mops
+    parser_profile: tw_mops_annual_report_v0_1
+    preferred_source_kinds: ["regulator", "company_ir"]
+    annual_report_types: ["annual_report"]
+    interim_report_types: ["quarterly_report"]
+    locator_strategy: mops_company_report_lookup
+    download_implementation_status: profile_specific_scaffold_pending
+    download_blocker: MOPS company report lookup requires profile-specific form parameters and language/report-type validation.
+    parser_implementation_status: blocked_until_profile_downloader_pass
+    parser_blocker: Parser requires downloaded MOPS annual-report document and table-boundary audit.
+    locator_notes: Use listed company code and fiscal year; preserve MOPS URL and downloaded report checksum.
+  jp_edinet_annual_securities_report:
+    source_tier: primary_company_disclosure
+    source_family: global_public_annual_report
+    jurisdiction_scope: ["Japan"]
+    listing_exchange_scope: ["TSE"]
+    rule_scope: market_disclosure_system
+    regulator_or_exchange: "EDINET / Financial Services Agency"
+    cache_namespace: jp_edinet
+    parser_profile: jp_edinet_annual_securities_report_v0_1
+    preferred_source_kinds: ["regulator", "company_ir"]
+    annual_report_types: ["annual_securities_report", "integrated_report"]
+    interim_report_types: ["quarterly_report"]
+    locator_strategy: edinet_document_search
+    download_implementation_status: blocked_requires_official_api_key
+    download_blocker: EDINET API v2 document search/download requires API-key-aware implementation and document type mapping.
+    api_key_env: EDINET_API_KEY
+    parser_implementation_status: blocked_until_profile_downloader_pass
+    parser_blocker: Parser requires downloaded annual securities report package and XBRL/PDF profile routing.
+    locator_notes: Use securities code and document type when EDINET API support is added.
+  hkex_annual_report:
+    source_tier: primary_company_disclosure
+    source_family: global_public_annual_report
+    jurisdiction_scope: ["China", "Hong Kong"]
+    listing_exchange_scope: ["HKEX"]
+    rule_scope: market_disclosure_system
+    regulator_or_exchange: "HKEXnews"
+    cache_namespace: hkex
+    parser_profile: hkex_annual_report_v0_1
+    preferred_source_kinds: ["exchange", "company_ir"]
+    annual_report_types: ["annual_report"]
+    interim_report_types: ["interim_report", "quarterly_report"]
+    locator_strategy: hkexnews_issuer_report_search
+    download_implementation_status: profile_specific_scaffold_pending
+    download_blocker: HKEXnews issuer report search requires headline category/date filters and issuer-code mapping before download.
+    parser_implementation_status: blocked_until_profile_downloader_pass
+    parser_blocker: Parser requires HKEX announcement/PDF checksum metadata and bilingual report handling.
+    locator_notes: Use HKEX issuer code and headline category; preserve announcement URL and PDF checksum.
+  szse_cninfo_annual_report:
+    source_tier: primary_company_disclosure
+    source_family: global_public_annual_report
+    jurisdiction_scope: ["China"]
+    listing_exchange_scope: ["SZSE"]
+    rule_scope: market_disclosure_system
+    regulator_or_exchange: "SZSE / CNINFO"
+    cache_namespace: szse_cninfo
+    parser_profile: szse_cninfo_annual_report_v0_1
+    preferred_source_kinds: ["disclosure_platform", "exchange", "company_ir"]
+    annual_report_types: ["annual_report"]
+    interim_report_types: ["semiannual_report", "quarterly_report"]
+    locator_strategy: cninfo_security_report_search
+    download_implementation_status: profile_specific_scaffold_pending
+    download_blocker: CNINFO query requires security-code/org-id mapping, announcement category, and anti-stale result validation.
+    parser_implementation_status: blocked_until_profile_downloader_pass
+    parser_blocker: Parser requires CNINFO announcement metadata, downloaded PDF checksum, and Chinese table-boundary audit.
+    locator_notes: Use security code and report title; preserve CNINFO announcement ID or official download URL.
+  eu_regulated_annual_report:
+    source_tier: primary_company_disclosure
+    source_family: global_public_annual_report
+    jurisdiction_scope: ["Germany", "Netherlands", "United Kingdom", "France"]
+    listing_exchange_scope: ["XETRA", "Euronext", "LSE"]
+    rule_scope: market_disclosure_system
+    regulator_or_exchange: "EU regulated market issuer disclosure"
+    cache_namespace: eu_regulated
+    parser_profile: eu_regulated_annual_report_v0_1
+    preferred_source_kinds: ["company_ir", "exchange", "regulator"]
+    annual_report_types: ["annual_report"]
+    interim_report_types: ["quarterly_report", "semiannual_report"]
+    locator_strategy: company_ir_official_report_download
+    download_implementation_status: implemented_company_ir_official_report_download
+    parser_implementation_status: pending_pdf_html_parser
+    parser_blocker: Generic annual-report PDF/HTML parser must pass source-boundary and table-boundary audit before vector promotion.
+    locator_notes: Use official issuer annual-report page first; add national OAM/regulator lookup after profile-specific implementation.

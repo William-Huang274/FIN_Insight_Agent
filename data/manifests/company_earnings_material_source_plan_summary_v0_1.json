@@ -1,0 +1,31 @@
+{
+  "schema_version": "fin_agent_company_earnings_material_source_plan_summary_v0.1",
+  "status": "pass",
+  "plan_row_count": 888,
+  "company_count": 603,
+  "integration_mode_counts": {
+    "new_company_ir_material_locator": 300,
+    "reuse_existing_sec_8k_earnings_pipeline": 588
+  },
+  "source_family_counts": {
+    "company_earnings_release": 150,
+    "company_presentation": 150,
+    "sec_8k_earnings_release": 588
+  },
+  "source_tier_counts": {
+    "company_authored_earnings_material": 150,
+    "company_authored_presentation": 150,
+    "company_authored_unaudited_sec_filing": 588
+  },
+  "material_type_counts": {
+    "earnings_release": 150,
+    "investor_presentation": 150,
+    "sec_8k_earnings_release": 588
+  },
+  "issue_counts": {},
+  "issues": [],
+  "outputs": {
+    "source_plan": "D:\\FIN_Insight_Agent\\data\\manifests\\company_earnings_material_source_plan_v0_1.jsonl",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\company_earnings_material_source_plan_summary_v0_1.json"
+  }
+}

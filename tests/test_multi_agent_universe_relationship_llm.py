@@ -27,7 +27,10 @@ def test_universe_relationship_llm_accepts_valid_plan_json() -> None:
     assert result["source"] == ROUTE_SOURCE
     assert result["status"] == "pass"
     assert result["universe_relationship_plan"]["relationships"][0]["related_ticker"] == "MSFT"
+    assert result["universe_relationship_plan"]["included_ticker_contracts"][0]["included_ticker"] == "NVDA"
     assert "Relationship Universe Skill" in fake.calls[0]["messages"][0]["content"]
+    assert "included_ticker_contracts" in fake.calls[0]["messages"][0]["content"]
+    assert "downstream_operator_owner" in fake.calls[0]["messages"][0]["content"]
     assert "Do not call tools" in fake.calls[0]["messages"][0]["content"]
 
 
@@ -42,8 +45,26 @@ def test_universe_relationship_llm_repairs_invalid_json_then_passes() -> None:
 
     assert result["status"] == "pass"
     assert result["routing_trace"]["repair_attempts"] == 1
+    assert result["routing_trace"]["repair_history"][0]["type"] == "json_parse_failed"
+    assert result["routing_trace"]["last_repair_failure"]["type"] == "json_parse_failed"
     assert len(fake.calls) == 2
     assert "Repair the previous output" in fake.calls[1]["messages"][1]["content"]
+
+
+def test_universe_relationship_llm_fallbacks_after_truncated_json_without_repair_loop() -> None:
+    fake = _FakeChat([{"content": "not-json", "finish_reason": "length"}])
+
+    result = route_universe_relationship_llm(
+        _request(),
+        config=_config(max_repair_attempts=2),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "fallback"
+    assert result["universe_relationship_validation"]["status"] == "pass"
+    assert result["routing_trace"]["attempt_count"] == 1
+    assert result["routing_trace"]["fallback_used"] is True
+    assert len(fake.calls) == 1
 
 
 def test_universe_relationship_llm_can_require_economic_link_map() -> None:
@@ -114,6 +135,46 @@ def test_universe_relationship_llm_completes_omitted_lookup_edges() -> None:
     assert result["status"] == "pass"
     assert refs == {"rel_nvda_msft", "rel_nvda_amzn"}
     assert plan["metadata"]["deterministic_completed_relationship_count"] == 1
+
+
+def test_universe_relationship_llm_canonicalizes_sector_pack_model_refs() -> None:
+    request = _request()
+    request["source_inventory"] = {"available_tickers": ["NVDA", "DELL"]}
+    request["relationship_lookup"] = {
+        "status": "ok",
+        "focus_tickers": ["NVDA"],
+        "relationships": [
+            {
+                "ticker": "NVDA",
+                "related_ticker": "DELL",
+                "relationship_type": "sector",
+                "direction": "sector_depth_peer",
+                "metrics_to_check": ["revenue", "margin"],
+                "evidence_source_needed": ["relationship_graph"],
+                "evidence_refs": ["sector_depth_pack:technology_ai_infrastructure_depth:DELL"],
+                "inclusion_rationale": "DELL is included from the bounded sector-depth pack.",
+                "claim_scope": "scope_or_hypothesis_only",
+            }
+        ],
+        "summary": {"claim_scope": "scope_or_hypothesis_only"},
+    }
+    plan = _plan()
+    plan["expanded_tickers"] = ["NVDA", "DELL"]
+    plan["included_tickers"] = ["NVDA", "DELL"]
+    plan["relationships"][0]["related_ticker"] = "DELL"
+    plan["relationships"][0]["evidence_refs"] = ["sector_depth_pack:technology_ai_infrastructure_depth:NVDA"]
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_universe_relationship_llm(
+        request,
+        config=_config(max_repair_attempts=0),
+        call_chat_completion=fake,
+    )
+
+    refs = {ref for row in result["universe_relationship_plan"]["relationships"] for ref in row["evidence_refs"]}
+    assert result["status"] == "pass"
+    assert refs == {"sector_depth_pack:technology_ai_infrastructure_depth:DELL"}
+    assert result["routing_trace"]["repair_attempts"] == 0
 
 
 def test_universe_relationship_env_router_returns_none_for_mock() -> None:
@@ -224,6 +285,7 @@ class _FakeChat:
         response = self.responses[min(len(self.calls) - 1, len(self.responses) - 1)]
         content = str(response.get("content") if isinstance(response, dict) else response or "")
         tool_calls = response.get("tool_calls") if isinstance(response, dict) else []
+        finish_reason = str(response.get("finish_reason") if isinstance(response, dict) else "stop")
         return {
             "status": "ok",
             "provider": kwargs["llm_backend"],
@@ -233,7 +295,7 @@ class _FakeChat:
             "content": content,
             "message": {"content": content, "tool_calls": tool_calls},
             "tool_calls": tool_calls or [],
-            "finish_reason": "stop",
+            "finish_reason": finish_reason,
             "latency_ms": 1,
             "input_tokens": 10,
             "output_tokens": 20,

@@ -877,6 +877,55 @@ def test_workbench_backend_lists_and_starts_controlled_eval_runner(
     assert "--output-path" in spec.args
 
 
+def test_workbench_backend_starts_expanded_a6_eval_with_transient_secret(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_start_command_job(store, job, spec) -> None:
+        captured["job"] = job
+        captured["spec"] = spec
+        store.upsert_run_job(job)
+
+    monkeypatch.setattr("apps.workbench.backend.app.start_command_job", fake_start_command_job)
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    catalog_response = client.get("/api/evals")
+    start_response = client.post(
+        "/api/evals/run",
+        json={
+            "eval_id": "expanded_a6_full_chain_smoke",
+            "job_id": "a6_fixture",
+            "api_key_value": "runtime-secret",
+            "case_ids": ["fin_full_exact_msft_capex_zh", "fin_full_scope_nvda_basic_fundamental_zh"],
+            "prewarm_resident_tools": False,
+        },
+    )
+
+    assert catalog_response.status_code == 200
+    assert "expanded_a6_full_chain_smoke" in {item["eval_id"] for item in catalog_response.json()["evals"]}
+    assert start_response.status_code == 200
+    payload = start_response.json()
+    assert payload["job"]["metadata"]["eval_id"] == "expanded_a6_full_chain_smoke"
+    assert payload["job"]["metadata"]["output_path"].endswith("a6_fixture_expanded_a6_full_chain_smoke.json")
+    assert payload["job"]["metadata"]["case_ids"] == [
+        "fin_full_exact_msft_capex_zh",
+        "fin_full_scope_nvda_basic_fundamental_zh",
+    ]
+    assert payload["job"]["metadata"]["prewarm_resident_tools"] is False
+    assert "runtime-secret" not in json.dumps(payload["job"], ensure_ascii=False)
+    spec = captured["spec"]
+    assert "scripts/workbench/run_expanded_a6_eval.py" in spec.args
+    assert spec.args.count("--case-id") == 2
+    assert "fin_full_exact_msft_capex_zh" in spec.args
+    assert "fin_full_scope_nvda_basic_fundamental_zh" in spec.args
+    assert spec.env_overrides["API_KEY_ENV"] == "DEEPSEEK_API_KEY"
+    assert spec.env_overrides["DEEPSEEK_API_KEY"] == "runtime-secret"
+    assert spec.env_overrides["SEC_AGENT_A6_PREWARM_RESIDENT_TOOLS"] == "false"
+    assert "runtime-secret" not in " ".join(spec.args)
+
+
 def test_workbench_backend_rejects_unknown_eval_runner(tmp_path: Path) -> None:
     client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
 

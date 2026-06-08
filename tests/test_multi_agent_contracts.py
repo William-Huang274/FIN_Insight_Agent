@@ -4,6 +4,7 @@ from sec_agent.multi_agent_contracts import (
     aggregate_focused_answer_judgment_plan,
     aggregate_specialist_judgment_plan,
     build_multi_agent_memo_draft,
+    normalize_specialist_memolet,
     normalize_universe_relationship_plan,
     validate_specialist_memolet,
     validate_universe_relationship_plan,
@@ -38,6 +39,71 @@ def test_specialist_memolet_rejects_tool_calls_and_unknown_refs() -> None:
     assert result["status"] == "fail"
     assert "specialist_tool_calls_forbidden" in error_types
     assert "unknown_evidence_ref" in error_types
+
+
+def test_specialist_memolet_preserves_structured_evidence_gap_requests() -> None:
+    memolet = normalize_specialist_memolet(
+        {
+            "agent_id": "industry_supply_chain_analyst",
+            "status": "partial",
+            "evidence_gap_requests": [
+                {
+                    "request_type": "relationship_confirmation",
+                    "owner_agent": "universe_relationship",
+                    "tickers": ["nvda", "vrt"],
+                    "source_family": "relationship_graph",
+                    "reason": "Need bounded relationship evidence for AI infrastructure demand transmission.",
+                    "blocking_level": "material",
+                    "can_answer_bounded_without": True,
+                }
+            ],
+        }
+    )
+    result = validate_specialist_memolet(memolet)
+
+    assert result["status"] == "pass"
+    gap = result["memolet"]["evidence_gap_requests"][0]
+    assert gap["tickers"] == ["NVDA", "VRT"]
+    assert gap["owner_agent"] == "universe_relationship"
+
+
+def test_judgment_and_memo_preserve_specialist_evidence_gap_requests() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "industry_supply_chain_analyst",
+                "status": "partial",
+                "observations": [
+                    {
+                        "claim": "Relationship evidence only supports a hypothesis-grade AI infrastructure readthrough.",
+                        "claim_type": "relationship_hypothesis",
+                        "evidence_refs": ["rel_ref_1"],
+                        "source_families": ["relationship_graph"],
+                        "memo_slot": "industry_relationship",
+                        "materiality": "medium",
+                    }
+                ],
+                "evidence_gap_requests": [
+                    {
+                        "request_type": "relationship_confirmation",
+                        "owner_agent": "universe_relationship",
+                        "tickers": ["NVDA", "VRT"],
+                        "source_family": "relationship_graph",
+                        "reason": "Need company-confirming evidence before treating VRT as more than a hypothesis.",
+                        "blocking_level": "material",
+                        "can_answer_bounded_without": True,
+                    }
+                ],
+            }
+        ]
+    )
+    memo = build_multi_agent_memo_draft(judgment)
+
+    assert judgment["status"] == "partial"
+    assert judgment["evidence_gap_requests"][0]["request_type"] == "relationship_confirmation"
+    assert judgment["memo_constraints"]["evidence_gap_request_count"] == 1
+    assert "preserve_specialist_evidence_gap_requests_for_coverage_reflection" in judgment["memo_constraints"]["required_caveats"]
+    assert memo["evidence_gap_requests"][0]["owner_agent"] == "universe_relationship"
 
 
 def test_relationship_graph_business_observation_is_normalized_to_hypothesis() -> None:

@@ -71,6 +71,18 @@ class MarketEvidenceSummary(BaseModel):
     parse_errors: list[str] = Field(default_factory=list)
 
 
+class IndustryEvidenceSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    exists: bool
+    path: str | None = None
+    row_count: int = 0
+    source_families: dict[str, int] = Field(default_factory=dict)
+    providers: dict[str, int] = Field(default_factory=dict)
+    as_of_dates: dict[str, int] = Field(default_factory=dict)
+    parse_errors: list[str] = Field(default_factory=list)
+
+
 class SourceReadinessReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -81,6 +93,7 @@ class SourceReadinessReport(BaseModel):
     paths: list[ArtifactPathStatus]
     manifest: ManifestSummary
     market_evidence: MarketEvidenceSummary
+    industry_evidence: IndustryEvidenceSummary
     missing_required_forms: list[str] = Field(default_factory=list)
     missing_required_filing_tiers: list[str] = Field(default_factory=list)
     missing_market_fields: list[str] = Field(default_factory=list)
@@ -97,12 +110,15 @@ def validate_profile_sources(
     root = Path(repo_root or Path.cwd()).resolve()
     require_full = _requires_full_source(profile) if require_full_source is None else bool(require_full_source)
     market_required = _requires_market_snapshot(profile) or bool(profile.sources.market_evidence_path)
+    industry_required = _requires_industry_snapshot(profile) or bool(profile.sources.industry_evidence_path)
 
-    path_checks = _path_checks(profile, root, market_required=market_required)
+    path_checks = _path_checks(profile, root, market_required=market_required, industry_required=industry_required)
     manifest_path = resolve_profile_path(root, profile.sources.manifest_path)
     market_path = resolve_profile_path(root, profile.sources.market_evidence_path)
+    industry_path = resolve_profile_path(root, profile.sources.industry_evidence_path)
     manifest_summary = _manifest_summary(manifest_path)
     market_summary = _market_evidence_summary(market_path)
+    industry_summary = _industry_evidence_summary(industry_path)
 
     warnings: list[str] = []
     errors: list[str] = []
@@ -116,6 +132,8 @@ def validate_profile_sources(
         errors.extend([f"manifest: {error}" for error in manifest_summary.parse_errors])
     if market_summary.parse_errors:
         errors.extend([f"market_evidence: {error}" for error in market_summary.parse_errors])
+    if industry_summary.parse_errors:
+        errors.extend([f"industry_evidence: {error}" for error in industry_summary.parse_errors])
 
     missing_forms: list[str] = []
     missing_tiers: list[str] = []
@@ -154,6 +172,7 @@ def validate_profile_sources(
         paths=path_checks,
         manifest=manifest_summary,
         market_evidence=market_summary,
+        industry_evidence=industry_summary,
         missing_required_forms=missing_forms,
         missing_required_filing_tiers=missing_tiers,
         missing_market_fields=missing_market_fields,
@@ -167,6 +186,7 @@ def _path_checks(
     repo_root: Path,
     *,
     market_required: bool,
+    industry_required: bool,
 ) -> list[ArtifactPathStatus]:
     specs = [
         ("manifest", profile.sources.manifest_path, "file", True),
@@ -174,6 +194,9 @@ def _path_checks(
         ("object_bm25_index", profile.sources.object_bm25_index_dir, "directory", True),
         ("source_gap", profile.sources.source_gap_path, "file", False),
         ("market_evidence", profile.sources.market_evidence_path, "file", market_required),
+        ("market_catalog", profile.sources.market_catalog_path, "file", bool(profile.sources.market_catalog_path)),
+        ("industry_evidence", profile.sources.industry_evidence_path, "file", industry_required),
+        ("industry_snapshot_db", profile.sources.industry_snapshot_db_path, "file", bool(profile.sources.industry_snapshot_db_path)),
     ]
     return [_path_status(name, value, kind, required, repo_root) for name, value, kind, required in specs]
 
@@ -278,6 +301,24 @@ def _market_evidence_summary(path: Path | None) -> MarketEvidenceSummary:
     )
 
 
+def _industry_evidence_summary(path: Path | None) -> IndustryEvidenceSummary:
+    if path is None or not path.exists():
+        return IndustryEvidenceSummary(exists=False, path=str(path) if path else None)
+    rows, errors = _read_jsonl(path)
+    source_families = Counter(str(row.get("source_family") or "") for row in rows)
+    providers = Counter(str(row.get("provider") or "") for row in rows)
+    as_of_dates = Counter(str(row.get("as_of_date") or "") for row in rows)
+    return IndustryEvidenceSummary(
+        exists=True,
+        path=str(path),
+        row_count=len(rows),
+        source_families=dict(sorted((key, value) for key, value in source_families.items() if key)),
+        providers=dict(sorted((key, value) for key, value in providers.items() if key)),
+        as_of_dates=dict(sorted((key, value) for key, value in as_of_dates.items() if key)),
+        parse_errors=errors,
+    )
+
+
 def _read_jsonl(path: Path) -> tuple[list[dict[str, Any]], list[str]]:
     rows: list[dict[str, Any]] = []
     errors: list[str] = []
@@ -314,7 +355,12 @@ def _requires_full_source(profile: WorkbenchProfile) -> bool:
 
 def _requires_market_snapshot(profile: WorkbenchProfile) -> bool:
     policy = str(profile.sources.source_policy or "").upper()
-    return "MARKET" in policy or "SNAPSHOT" in policy
+    return "MARKET" in policy
+
+
+def _requires_industry_snapshot(profile: WorkbenchProfile) -> bool:
+    policy = str(profile.sources.source_policy or "").upper()
+    return "INDUSTRY" in policy
 
 
 def _normalize_form(value: Any) -> str:

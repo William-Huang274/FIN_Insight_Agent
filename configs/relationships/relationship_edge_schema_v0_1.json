@@ -1,0 +1,44 @@
+{
+  "schema_version": "fin_agent_relationship_edge_v0.1",
+  "description": "Direct relationship edge contract for customer, supplier, contract, partner, shipment, news, and sector exposure rows.",
+  "required_fields": [
+    "edge_id",
+    "source_ticker",
+    "target_name_raw",
+    "relation_type",
+    "direction",
+    "confidence",
+    "evidence_tier",
+    "source_doc_type",
+    "source_url_or_filing_id",
+    "fiscal_year",
+    "report_date",
+    "evidence_id",
+    "evidence_text",
+    "extraction_method",
+    "verifier_status"
+  ],
+  "relation_types": [
+    "direct_customer_supplier",
+    "contractual_relationship",
+    "partner_channel",
+    "shipment_inferred",
+    "news_reported",
+    "sector_exposure"
+  ],
+  "directions": [
+    "source_sells_to_target",
+    "target_sells_to_source",
+    "bidirectional",
+    "unclear"
+  ],
+  "claim_scope": "relationship_fact_not_financial_fact",
+  "mainline_promotion_rules": {
+    "direct_customer_supplier": "Must have explicit counterparty, direction, source evidence, and verifier_status=verified.",
+    "contractual_relationship": "Can support contract/relationship facts, but not financial metrics.",
+    "partner_channel": "Must not be rewritten as customer or supplier.",
+    "shipment_inferred": "Lead only; must not be rewritten as durable supplier/customer relationship.",
+    "news_reported": "Lead only unless separately verified by official source.",
+    "sector_exposure": "Economic exposure only; never customer/supplier."
+  }
+}

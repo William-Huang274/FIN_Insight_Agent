@@ -1,0 +1,30 @@
+{
+  "schema_version": "fin_agent_structured_financial_fact_source_plan_summary_v0.1",
+  "status": "pass",
+  "plan_row_count": 1221,
+  "company_count": 603,
+  "integration_mode_counts": {
+    "derive_from_downloaded_official_disclosure": 45,
+    "new_sec_api_download": 1176
+  },
+  "fact_source_counts": {
+    "global_public_financial_statement_tables": 45,
+    "sec_companyfacts": 588,
+    "sec_submissions": 588
+  },
+  "source_family_counts": {
+    "global_public_structured_financial_fact": 45,
+    "sec_companyfacts_structured_fact": 588,
+    "sec_submissions_metadata": 588
+  },
+  "source_tier_counts": {
+    "company_reported_structured_fact": 1221
+  },
+  "exact_value_ledger_candidate_count": 633,
+  "issue_counts": {},
+  "issues": [],
+  "outputs": {
+    "source_plan": "D:\\FIN_Insight_Agent\\data\\manifests\\structured_financial_fact_source_plan_v0_1.jsonl",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\structured_financial_fact_source_plan_summary_v0_1.json"
+  }
+}

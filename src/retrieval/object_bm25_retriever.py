@@ -21,6 +21,8 @@ INDEXED_FILTER_FIELDS = {
     "source_type",
     "ticker",
 }
+_SEC_FORM_TYPES = {"10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"}
+_SEC_FORM_ID_RE = re.compile(r"(?:^|[^A-Z0-9])(?P<form>10-?K|10-?Q|8-?K|20-?F|40-?F|6-?K)(?:[^A-Z0-9]|$)")
 
 SQLITE_FILTERED_SCAN_LIMIT = 50000
 
@@ -36,6 +38,7 @@ class ObjectBM25Retriever:
         self._record_store_con: Any | None = None
         self._record_cache: dict[int, dict[str, Any]] = {}
         self._record_store_filter_cache: dict[str, list[dict[str, Any]]] = {}
+        self._sqlite_filtered_candidate_cache: dict[str, list[sqlite3.Row]] = {}
         if self.sqlite_fts_metadata:
             self.bm25 = None
             self.record_count = int(self.sqlite_fts_metadata.get("records") or 0)
@@ -135,12 +138,12 @@ class ObjectBM25Retriever:
         top_k: int,
         filters: dict[str, Any] | None,
     ) -> list[dict[str, Any]]:
-        filtered_fts_results = self._search_sqlite_filtered_required_fts(query, top_k=top_k, filters=filters)
-        if filtered_fts_results:
-            return filtered_fts_results
         filtered_results = self._search_sqlite_filtered_candidates(query, top_k=top_k, filters=filters)
         if filtered_results is not None:
             return filtered_results
+        filtered_fts_results = self._search_sqlite_filtered_required_fts(query, top_k=top_k, filters=filters)
+        if filtered_fts_results:
+            return filtered_fts_results
         where, params = _sqlite_filter_where(filters)
         fts_query = _sqlite_fts_query(query)
         limit = max(1, int(top_k))
@@ -226,16 +229,23 @@ class ObjectBM25Retriever:
         where, params = _sqlite_filter_where(filters)
         if not where:
             return None
-        limit = max(int(top_k), SQLITE_FILTERED_SCAN_LIMIT) + 1
-        sql = (
-            "SELECT r.record_json, r.period, r.periods_json "
-            "FROM object_records r "
-            "WHERE " + " AND ".join(where) + " "
-            "ORDER BY r.idx LIMIT ?"
-        )
-        rows = self._sqlite_fts_connection().execute(sql, [*params, limit]).fetchall()
-        if len(rows) > SQLITE_FILTERED_SCAN_LIMIT:
-            return None
+        cache_key = json.dumps(filters, sort_keys=True, ensure_ascii=False)
+        if cache_key in self._sqlite_filtered_candidate_cache:
+            rows = self._sqlite_filtered_candidate_cache[cache_key]
+        else:
+            limit = max(int(top_k), SQLITE_FILTERED_SCAN_LIMIT) + 1
+            sql = (
+                "SELECT r.record_json, r.period, r.periods_json "
+                "FROM object_records r "
+                "WHERE " + " AND ".join(where) + " "
+                "ORDER BY r.idx LIMIT ?"
+            )
+            rows = self._sqlite_fts_connection().execute(sql, [*params, limit]).fetchall()
+            if len(rows) > SQLITE_FILTERED_SCAN_LIMIT:
+                return None
+            if len(self._sqlite_filtered_candidate_cache) >= 4:
+                self._sqlite_filtered_candidate_cache.pop(next(iter(self._sqlite_filtered_candidate_cache)))
+            self._sqlite_filtered_candidate_cache[cache_key] = rows
         ranked: list[tuple[dict[str, Any], float, dict[str, Any]]] = []
         for row in rows:
             record = json.loads(row["record_json"])
@@ -696,7 +706,7 @@ def _record_filter_value(record: dict[str, Any], metadata: dict[str, Any], key: 
 
 def _normalize_filter_value(key: str, value: Any) -> Any:
     if key in {"form_type", "source_type", "filing_type"}:
-        return str(value or "").upper().strip().replace("10K", "10-K").replace("10Q", "10-Q")
+        return _normalize_form_type(value)
     if key == "ticker":
         return str(value or "").upper().strip()
     if key == "fiscal_year":
@@ -708,9 +718,20 @@ def _normalize_filter_value(key: str, value: Any) -> Any:
 
 
 def _form_type_from_source_id(value: Any) -> str:
-    text = str(value or "").upper()
-    if "_10Q_" in text:
-        return "10-Q"
-    if "_10K_" in text:
-        return "10-K"
-    return ""
+    match = _SEC_FORM_ID_RE.search(str(value or "").upper())
+    if not match:
+        return ""
+    form = _normalize_form_type(match.group("form"))
+    return form if form in _SEC_FORM_TYPES else ""
+
+
+def _normalize_form_type(value: Any) -> str:
+    text = str(value or "").upper().strip()
+    return (
+        text.replace("10K", "10-K")
+        .replace("10Q", "10-Q")
+        .replace("8K", "8-K")
+        .replace("20F", "20-F")
+        .replace("40F", "40-F")
+        .replace("6K", "6-K")
+    )

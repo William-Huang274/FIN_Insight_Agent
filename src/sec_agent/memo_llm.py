@@ -435,6 +435,10 @@ def _normalize_memo_llm_output(
     memo.setdefault("evidence_strength", base.get("evidence_strength") or {})
     memo.setdefault("counterevidence", base.get("counterevidence") or [])
     memo.setdefault("missing_evidence", base.get("missing_evidence") or [])
+    memo["evidence_gap_requests"] = _merge_memo_evidence_gap_requests(
+        memo.get("evidence_gap_requests"),
+        base.get("evidence_gap_requests"),
+    )
     if language == "zh-CN" and "unsupported_claims_excluded" not in memo:
         memo["unsupported_claims_excluded"] = []
     else:
@@ -521,7 +525,65 @@ def _normalize_memo_llm_output(
         response_language=language,
     )
     memo = _localize_memo_user_text(memo, response_language=language)
+    memo = _sanitize_memo_internal_user_labels(memo, response_language=language)
     return memo
+
+
+def _sanitize_memo_internal_user_labels(memo: Mapping[str, Any], *, response_language: str) -> dict[str, Any]:
+    sanitized = dict(memo)
+    text = str(sanitized.get("direct_answer") or "")
+    if not text:
+        return sanitized
+    replacement = "已验证证据" if _normalize_response_language(response_language) == "zh-CN" else "verified evidence"
+    cleaned = text
+    cleaned = re.sub(
+        r"Synthesized\s+thesis\s+from\s+bounded\s+ClaimCards?\s*:?",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    cleaned = re.sub(r"\bbounded\s+ClaimCards?\b", replacement, cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\bverified\s+ClaimCards?\b", replacement, cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\bClaimCards?\b", replacement, cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\bclaim\s+cards?\b", replacement, cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s*\|\s*", "；" if _normalize_response_language(response_language) == "zh-CN" else "; ", cleaned)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" ;；:：")
+    if cleaned != text:
+        sanitized["direct_answer"] = _normalize_zh_punctuation(cleaned) if _normalize_response_language(response_language) == "zh-CN" else cleaned
+        sanitized["direct_answer_internal_labels_sanitized"] = True
+    return sanitized
+
+
+def _merge_memo_evidence_gap_requests(primary: Any, fallback: Any) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str, tuple[str, ...], tuple[str, ...]]] = set()
+    for item in [
+        *([row for row in primary if isinstance(row, Mapping)] if isinstance(primary, list) else []),
+        *([row for row in fallback if isinstance(row, Mapping)] if isinstance(fallback, list) else []),
+    ]:
+        row = {
+            "request_type": str(item.get("request_type") or item.get("type") or "").strip(),
+            "owner_agent": str(item.get("owner_agent") or "").strip(),
+            "tickers": [ticker.upper() for ticker in _string_list(item.get("tickers") or item.get("ticker_scope") or item.get("ticker"))],
+            "metric_families": _string_list(item.get("metric_families") or item.get("metrics") or item.get("metric_scope")),
+            "source_family": str(item.get("source_family") or "").strip(),
+            "reason": str(item.get("reason") or item.get("rationale") or "").strip(),
+            "blocking_level": str(item.get("blocking_level") or item.get("materiality") or "").strip(),
+            "can_answer_bounded_without": bool(item.get("can_answer_bounded_without", True)),
+        }
+        key = (
+            row["request_type"],
+            row["owner_agent"],
+            row["source_family"],
+            row["blocking_level"],
+            tuple(row["tickers"]),
+            tuple(row["metric_families"]),
+        )
+        if not row["request_type"] or key in seen:
+            continue
+        seen.add(key)
+        rows.append(row)
+    return rows
 
 
 def _localize_memo_user_text(memo: Mapping[str, Any], *, response_language: str) -> dict[str, Any]:

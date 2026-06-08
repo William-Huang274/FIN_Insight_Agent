@@ -971,6 +971,8 @@ def _node_compile_evidence_requirements(state: SecAgentGraphRuntimeState) -> Sec
         return _record_node(state, "compile_evidence_requirements", metadata={"mode": "no_query_contract"})
     case = {
         "case_id": state.get("run_id") or "multi_agent",
+        "category": contract.get("category") or "",
+        "expected_execution_mode": contract.get("expected_execution_mode") or contract.get("execution_mode") or "",
         "prompt": state.get("user_query") or "",
         "companies": contract.get("search_scope_tickers") or contract.get("focus_tickers") or [],
         "years": contract.get("years") or [],
@@ -1725,7 +1727,7 @@ def _render_deterministic_lookup_answer(state: Mapping[str, Any]) -> str:
         same_year = [row for row in preferred if str(row.get("fiscal_year") or "") in requested_years]
         if same_year:
             preferred = same_year
-    selected = preferred[:4] or rows[:4]
+    selected = preferred[:1] or rows[:1]
     language = _state_response_language(state)
     if language.startswith("zh"):
         tickers = ", ".join(_unique_upper(query_contract.get("focus_tickers") or query_contract.get("search_scope_tickers") or []))
@@ -1961,6 +1963,8 @@ def _node_compile_retrieval_plan(state: SecAgentGraphRuntimeState) -> SecAgentGr
     contract = state.get("query_contract") or {}
     case = {
         "case_id": state.get("run_id") or "native_smoke",
+        "category": contract.get("category") or "",
+        "expected_execution_mode": contract.get("expected_execution_mode") or contract.get("execution_mode") or "",
         "prompt": state.get("user_query") or "",
         "companies": contract.get("search_scope_tickers") or contract.get("focus_tickers") or [],
         "years": contract.get("years") or [],
@@ -2617,6 +2621,7 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
                 "validation_status": (state.get("agent_activation_validation") or {}).get("status")
                 if isinstance(state.get("agent_activation_validation"), dict)
                 else "",
+                "routing_trace": dict(state.get("multi_agent_routing_trace") or {}),
                 "diagnostics": _model_diagnostics_summary(state.get("research_lead_model_diagnostics")),
             },
             "universe_relationship": {
@@ -2733,17 +2738,19 @@ def _model_diagnostics_summary(value: Any) -> dict[str, Any]:
             "raw_response_saved": False,
         }
     calls = [dict(item) for item in value.get("calls") or [] if isinstance(item, Mapping)]
+    call_count = int(value.get("call_count") or len(calls))
     provider = value.get("provider") or next((call.get("provider") for call in calls if call.get("provider")), "")
     model = value.get("model") or next((call.get("model") for call in calls if call.get("model")), "")
+    all_calls_ok = all(str(call.get("status") or "") == "ok" for call in calls) if calls else bool(value.get("all_calls_ok"))
     return {
-        "call_count": int(value.get("call_count") or len(calls)),
+        "call_count": call_count,
         "provider": provider,
         "model": model,
         "latency_ms": value.get("latency_ms") if value.get("latency_ms") is not None else _sum_optional_int(calls, "latency_ms"),
         "total_tokens": value.get("total_tokens") if value.get("total_tokens") is not None else _sum_optional_int(calls, "total_tokens"),
         "call_statuses": [str(call.get("status") or "") for call in calls],
         "finish_reasons": list(value.get("finish_reasons") or [call.get("finish_reason") for call in calls]),
-        "all_calls_ok": bool(calls) and all(str(call.get("status") or "") == "ok" for call in calls),
+        "all_calls_ok": all_calls_ok,
         "direct_tool_call_count": sum(int(call.get("tool_call_count") or 0) for call in calls),
         "failure_reasons": [
             str(call.get("failure_reason") or "")[:500]
@@ -2751,6 +2758,8 @@ def _model_diagnostics_summary(value: Any) -> dict[str, Any]:
             if str(call.get("failure_reason") or "")
         ],
         "raw_response_saved": bool(value.get("raw_response_saved")),
+        "bypassed": bool(value.get("bypassed")),
+        "bypass_reason": str(value.get("bypass_reason") or ""),
     }
 
 

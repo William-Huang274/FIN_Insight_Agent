@@ -65,14 +65,23 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     specialist_summary = _read_json(args.specialist_summary)
-    activation_summary = _read_json(Path(specialist_summary.get("activation_summary") or s3.DEFAULT_ACTIVATION_SUMMARY))
-    relationship_summary = _read_json(Path(specialist_summary.get("relationship_summary") or s3.DEFAULT_RELATIONSHIP_SUMMARY))
-    evidence_summary = _read_json(Path(specialist_summary.get("evidence_summary") or ""))
-    coverage_summary = _read_json(Path(specialist_summary.get("coverage_summary") or ""))
-    specialist_artifact_root = Path(specialist_summary.get("output_dir") or args.specialist_summary.parent)
-    relationship_artifact_root = Path(relationship_summary.get("output_dir") or Path(specialist_summary.get("relationship_summary") or ".").parent)
-    evidence_artifact_root = Path(evidence_summary.get("output_dir") or Path(specialist_summary.get("evidence_summary") or ".").parent)
-    coverage_artifact_root = Path(coverage_summary.get("output_dir") or Path(specialist_summary.get("coverage_summary") or ".").parent)
+    summary_paths = _summary_paths_from_specialist_summary(specialist_summary)
+    activation_summary = _read_json(summary_paths["activation"])
+    relationship_summary = _read_json(summary_paths["relationship"])
+    evidence_summary = _read_json(summary_paths["evidence"])
+    coverage_summary = _read_json(summary_paths["coverage"])
+    artifact_roots = _input_artifact_roots(
+        args,
+        specialist_summary=specialist_summary,
+        relationship_summary=relationship_summary,
+        evidence_summary=evidence_summary,
+        coverage_summary=coverage_summary,
+        summary_paths=summary_paths,
+    )
+    specialist_artifact_root = artifact_roots["specialist"]
+    relationship_artifact_root = artifact_roots["relationship"]
+    evidence_artifact_root = artifact_roots["evidence"]
+    coverage_artifact_root = artifact_roots["coverage"]
     case_scores_by_id = {
         str(case.get("case_id") or ""): dict(case)
         for case in specialist_summary.get("cases") or []
@@ -160,6 +169,32 @@ def _graph_env(args: argparse.Namespace) -> dict[str, str]:
         }
     )
     return env
+
+
+def _summary_paths_from_specialist_summary(specialist_summary: Mapping[str, Any]) -> dict[str, Path]:
+    return {
+        "activation": Path(specialist_summary.get("activation_summary") or s3.DEFAULT_ACTIVATION_SUMMARY),
+        "relationship": Path(specialist_summary.get("relationship_summary") or s3.DEFAULT_RELATIONSHIP_SUMMARY),
+        "evidence": Path(specialist_summary.get("evidence_summary") or ""),
+        "coverage": Path(specialist_summary.get("coverage_summary") or ""),
+    }
+
+
+def _input_artifact_roots(
+    args: argparse.Namespace,
+    *,
+    specialist_summary: Mapping[str, Any],
+    relationship_summary: Mapping[str, Any],
+    evidence_summary: Mapping[str, Any],
+    coverage_summary: Mapping[str, Any],
+    summary_paths: Mapping[str, Path],
+) -> dict[str, Path]:
+    return {
+        "specialist": s3._summary_artifact_root(specialist_summary, args.specialist_summary),
+        "relationship": s3._summary_artifact_root(relationship_summary, summary_paths["relationship"]),
+        "evidence": s3._summary_artifact_root(evidence_summary, summary_paths["evidence"]),
+        "coverage": s3._summary_artifact_root(coverage_summary, summary_paths["coverage"]),
+    }
 
 
 def _inject_s5_artifacts(state: dict[str, Any], specialist_artifact_root: Path, case_id: str) -> dict[str, Any]:

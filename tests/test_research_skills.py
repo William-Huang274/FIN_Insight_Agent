@@ -72,6 +72,55 @@ def test_role_specific_skill_prompts_truncate_and_fail_closed() -> None:
         research_skill_prompt("not_a_role")
 
 
+def test_truncated_role_prompt_preserves_role_specific_skill() -> None:
+    prompt = research_skill_prompt("memo_writer", max_chars=1800)
+
+    assert "Shared Evidence Boundary Skill" in prompt
+    assert "Memo Writer Skill" in prompt
+    assert len(prompt) <= 1800
+
+
+def test_research_lead_planning_skill_has_cost_aware_route_policy() -> None:
+    prompt = load_research_skill("research_lead_planning")
+
+    assert "Route Selection Policy" in prompt
+    assert "Professional Scoping Heuristics" in prompt
+    assert "scope_decision" in prompt
+    assert "catalogs_to_inspect" in prompt
+    assert "expansion_budget" in prompt
+    assert "cloud capex demand" in prompt
+    assert "export-control risk" in prompt
+    assert "route_selection_reason" in prompt
+    assert "route_cost_tier" in prompt
+    assert "milvus_semantic" in prompt
+    assert "cannot prove exact values" in prompt
+
+
+def test_relationship_universe_skill_requires_per_ticker_scope_contract() -> None:
+    prompt = load_research_skill("relationship_universe")
+
+    assert "candidate_lens" in prompt
+    assert "available_source_families" in prompt
+    assert "relationship_strength" in prompt
+    assert "downstream_operator_owner" in prompt
+    assert "excluded_ticker" in prompt
+    assert "non_us_supply_chain_disclosure" in prompt
+    assert "source_gap" in prompt
+
+
+def test_market_and_industry_skills_use_source_family_bundle_boundaries() -> None:
+    market = load_research_skill("market_valuation_analysis")
+    industry = load_research_skill("industry_supply_chain_analysis")
+
+    for prompt in (market, industry):
+        assert "source_family_bundle" in prompt
+        assert "selected_source_families" in prompt
+        assert "forbidden_claim_scopes" in prompt
+
+    assert "market rows cannot prove company-reported revenue" in market
+    assert "Industry and relationship evidence can support scope, context, and hypotheses" in industry
+
+
 def test_specialist_role_specific_skills_use_v0_2_or_later_quality_contracts() -> None:
     for skill_id in [
         "fundamental_analysis",
@@ -87,3 +136,26 @@ def test_specialist_role_specific_skills_use_v0_2_or_later_quality_contracts() -
         assert "Required Output Structure" in prompt
         assert "Failure / Evidence Gap Handling" in prompt
         assert "Quality Rubric" in prompt
+
+
+def test_research_skills_share_structured_evidence_gap_request_protocol() -> None:
+    shared = load_research_skill("shared_evidence_boundary")
+    coverage = load_research_skill("coverage_reflection")
+    verifier = load_research_skill("verification")
+
+    assert "evidence_gap_requests" in shared
+    assert "additional_company_scope" in shared
+    assert "relationship_confirmation" in shared
+    assert "specialist_evidence_gap_requests" in coverage
+    assert "needs_universe_rescope" in verifier
+
+    for skill_id in [
+        "fundamental_analysis",
+        "industry_supply_chain_analysis",
+        "market_valuation_analysis",
+        "risk_counterevidence",
+        "memo_writer",
+        "judgment_plan_aggregation",
+        "renderer",
+    ]:
+        assert "evidence_gap_requests" in load_research_skill(skill_id)

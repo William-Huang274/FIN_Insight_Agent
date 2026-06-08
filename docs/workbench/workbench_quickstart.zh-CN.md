@@ -29,6 +29,18 @@ powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench.ps1 -In
 http://127.0.0.1:8765/
 ```
 
+如果只想先确认后端能不能正常工作，可以访问：
+
+```text
+http://127.0.0.1:8765/api/system/status
+```
+
+这个接口会返回工作台数据库、数据目录、前端构建目录和磁盘剩余空间的状态。它不要求 Docker，也不会读取或返回真实 API key。简单健康检查仍然是：
+
+```text
+http://127.0.0.1:8765/api/health
+```
+
 如果已经安装好 Node/npm，可以省略 `-InstallNode`。如果只想启动后端并使用内置静态页面，可以加：
 
 ```powershell
@@ -87,6 +99,172 @@ python scripts/workbench/start_workbench.py --port 8765
 ```text
 http://127.0.0.1:8765/
 ```
+
+如果想用容器跑本地 Workbench，推荐先用 Docker Compose：
+
+```powershell
+docker compose up --build
+```
+
+Compose 默认构建轻量后端镜像，挂载本地 `configs/`、`data/` 和 `reports/`。这样通过 Workbench 生成的数据、运行产物和配置修改会留在本机目录里，不会因为容器重建而丢失。
+
+默认 Compose 服务只绑定本机回环地址 `127.0.0.1:8765`。Workbench 是本地控制台，不带登录认证，不建议暴露到局域网或公网。
+
+轻量后端镜像只安装 Workbench API、状态持久化和健康检查所需依赖，适合验证控制面是否能启动。如果希望在容器内直接运行数据构建步骤、完整 Agent 子任务或带前端产物的完整工作台，请叠加 runtime 覆盖文件：
+
+```powershell
+docker compose -f compose.yaml -f compose.runtime.yaml up --build
+```
+
+runtime 覆盖会使用 `requirements.txt` 和完整前端 target，并安装容器内执行 Agent 脚本所需的基础 OS 包。镜像仍然不包含私有数据、模型权重或真实 API key。
+
+停止服务：
+
+```powershell
+docker compose down
+```
+
+如果 Docker Desktop 构建阶段能拉基础镜像，但 pip 或 npm 解析域名超时，可以叠加本仓库提供的 DNS fallback 覆盖文件：
+
+```powershell
+docker compose -f compose.yaml -f compose.dns-fallback.yaml up --build
+```
+
+这个覆盖文件只影响构建阶段的 PyPI / pythonhosted / npm registry 域名解析，不会写系统 hosts，也不会进入容器运行时配置。
+
+Windows 本地排障或做一次性 smoke 时，也可以用封装脚本：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1
+```
+
+这个脚本会构建轻量后端镜像、启动容器、挂载 `data/workbench_private/`，并检查：
+
+```text
+http://127.0.0.1:8765/api/health
+```
+
+如果 Docker Desktop 在本机网络下构建时能访问 Docker Hub，但 pip 解析 PyPI 超时，可以显式启用 PyPI host fallback：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -UsePypiHostFallback
+```
+
+如果构建完整镜像时 `npm ci` 卡在 npm registry，可以再加 npm registry fallback：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -FullImage -UsePypiHostFallback -UseNpmHostFallback -SmokeOnly
+```
+
+如果要在容器内实际运行数据构建或 Agent 子任务，用完整依赖构建：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -FullRuntime -FullImage
+```
+
+如果只想做一次构建和健康检查，检查完自动停容器：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -UsePypiHostFallback -SmokeOnly
+```
+
+手动构建时，推荐先构建后端 target。它只安装 Workbench 后端需要的依赖，不会构建前端，也不会把私有数据打进镜像：
+
+```bash
+docker build \
+  --target workbench-backend \
+  --build-arg REQUIREMENTS_FILE=requirements-workbench.txt \
+  -t finsight-workbench:backend-local \
+  .
+```
+
+这个轻量镜像用于 Workbench 控制面 smoke。它不保证容器内可执行所有白名单数据构建脚本或 Agent 子任务。
+
+如果要构建完整 runtime 镜像：
+
+```bash
+docker build \
+  --target workbench \
+  --build-arg INSTALL_OS_PACKAGES=1 \
+  --build-arg REQUIREMENTS_FILE=requirements.txt \
+  -t finsight-workbench:runtime-local \
+  .
+```
+
+如果只想构建带 React/Vite 前端产物、但仍使用轻量后端依赖的镜像：
+
+```bash
+docker build \
+  --target workbench \
+  --build-arg REQUIREMENTS_FILE=requirements-workbench.txt \
+  -t finsight-workbench:workbench \
+  .
+```
+
+Linux / macOS 运行容器：
+
+```bash
+docker run --rm -p 127.0.0.1:8765:8765 \
+  -v "$PWD/data/workbench_private:/app/data/workbench_private" \
+  finsight-workbench:backend-local
+```
+
+Windows PowerShell 手动运行容器：
+
+```powershell
+docker run --rm -p 127.0.0.1:8765:8765 `
+  -v "${PWD}\data\workbench_private:/app/data/workbench_private" `
+  finsight-workbench:backend-local
+```
+
+镜像不包含私有数据、模型权重或 API key；这些仍然通过本地挂载目录和环境变量提供。后端 target 会使用内置静态页面或已有前端产物；完整 target 会在镜像构建时生成前端产物。
+
+真正一体化部署推荐使用：
+
+```powershell
+docker compose -f compose.yaml -f compose.runtime.yaml up --build
+```
+
+这个形态的约束是：
+
+- 镜像内置 Workbench 后端、前端产物、`requirements.txt` 完整 Python runtime 和基础 OS 包。
+- 宿主机只挂载 `configs/`、`data/`、`reports/` 作为持久层；私有数据、运行产物和配置不会被打入镜像。
+- `apps/`、`scripts/`、`src/` 在容器内视为不可变代码层。上线环境不要通过容器内手改脚本来更新逻辑。
+- 脚本更新默认策略是重建镜像；未来如果接签名脚本包或远程发布通道，走 Workbench 的维护接口扩展，不开放任意命令执行。
+- 数据更新走白名单 data-build job，成功后可回填 source bundle，前端或自动化脚本不需要直接拼 shell 命令。
+
+如果仓库所在磁盘空间紧张，可以把可写层放到其它磁盘。Compose 的默认值不变，但支持覆盖三个挂载源：
+
+```powershell
+$env:WORKBENCH_CONFIGS_MOUNT = "D:/FIN_Insight_Agent/configs"
+$env:WORKBENCH_DATA_MOUNT = "Z:/finsight_workbench_runtime/data"
+$env:WORKBENCH_REPORTS_MOUNT = "Z:/finsight_workbench_runtime/reports"
+docker compose -f compose.yaml -f compose.runtime.yaml up --build
+```
+
+`WORKBENCH_DATA_MOUNT` 必须有足够空间并允许 SQLite 写入；否则 `/api/health/ready` 会因为 store 检查失败而返回 503。
+
+部署和更新契约可以通过这些接口查看：
+
+```text
+GET /api/system/deployment
+GET /api/system/maintenance/actions
+POST /api/system/maintenance/run
+GET /api/data-build/steps
+POST /api/data-build/preview
+POST /api/data-build/run
+POST /api/source-bundles/validate
+```
+
+`/api/system/deployment` 会报告当前是 `control-plane` 还是 `integrated` runtime、完整 runtime 依赖是否齐全、哪些目录是持久层、以及数据更新/脚本更新接口的状态。完整 runtime 模式下，如果 `requirements.txt` 对应依赖缺失，`/api/health/ready` 会降级，避免轻量镜像伪装成可执行完整链路的一体化部署。
+
+当前维护接口只启用只读检查动作：
+
+- `runtime_preflight`
+- `script_catalog_validate`
+- `data_build_catalog_validate`
+
+`script_update_reserved` 是为未来脚本更新保留的 action，默认不可运行。真实脚本更新应通过重建镜像或后续接入的签名更新机制完成。
 
 如果要做前端开发，可以另开一个终端：
 
@@ -153,10 +331,11 @@ data/workbench_private/workbench.sqlite
 使用方式：
 
 1. 选择一个构建步骤。
-2. 填写必填路径或筛选条件。
+2. 点击“填入建议路径”，Workbench 会把常见输出放到 `data/workbench_private/builds/<数据包>/<步骤>/`；已经手动填写的值不会被覆盖。
 3. 点击“预览命令”，确认脚本和参数。
-4. 如果希望任务成功后更新数据包，勾选“任务成功后回填数据包”并选择目标数据包。
-5. 点击“提交后台任务”，在运行日志里看 stdout 和状态。
+4. 补齐仍然缺失的必填路径或筛选条件。
+5. 如果希望任务成功后更新数据包，勾选“任务成功后回填数据包”并选择目标数据包。
+6. 点击“提交后台任务”，在运行日志里看 stdout 和状态。
 
 下载类步骤默认建议先 dry-run，确认会抓哪些文件后再取消 dry-run 正式执行。生成类步骤不支持 dry-run，会直接按参数写入目标产物。
 
@@ -253,6 +432,8 @@ bash scripts/workbench/install_wsl_python_env.sh
 
 完整任务在 Windows 本地通常需要 Git Bash、WSL 或 Linux 环境，因为当前主链路仍复用 `scripts/cloud/sec_agent_interactive.sh` 和上下文会话 CLI。如果只想验证 Workbench 本身，先跑本地冒烟检查；如果要跑完整 SEC / 8-K / 市场快照链路，需要先准备数据产物、索引、BGE 模型路径和模型 API key。
 
+如果本机暂时不能安装 Docker，也可以继续用上面的本地脚本运行 Workbench。Docker 只是部署方式之一，不是 Workbench 后端和本地任务管理的前置条件。
+
 任务启动后，页面会显示：
 
 - 任务编号、任务类型和状态。
@@ -266,8 +447,88 @@ bash scripts/workbench/install_wsl_python_env.sh
 
 ```text
 GET /api/runs/{job_id}
+GET /api/runs/{job_id}/status
 GET /api/runs/{job_id}/events
 GET /api/runs/{job_id}/events/stream
+```
+
+也可以按运行状态或 trace 查：
+
+```text
+GET /api/runs?trace_id=<trace_id>&status=completed
+GET /api/runs?job_type=agent_session_turn&limit=50
+GET /api/traces/<trace_id>
+```
+
+`/api/traces/<trace_id>` 会返回同一个 trace 下的任务列表、事件列表、任务数、事件数和状态计数，适合排查一次请求从 API 到后台子进程的完整路径。
+
+`/api/runs/{job_id}/status` 是轻量轮询接口，只读取任务状态和最新事件，不检查运行目录里的大产物。前端刷新任务状态时优先用这个接口。
+
+Workbench 后端启动时会把上一次服务退出后残留的 `queued` / `running` 任务标记为 `interrupted`，避免页面误以为旧任务仍在运行。任务终态包括：
+
+```text
+completed
+failed
+cancelled
+interrupted
+timed_out
+```
+
+后台任务有并发和超时控制，可以用环境变量调整：
+
+```text
+WORKBENCH_MAX_ACTIVE_JOBS=2
+WORKBENCH_DEFAULT_TIMEOUT_S=
+WORKBENCH_CANCEL_GRACE_S=5
+WORKBENCH_EVENT_PAGE_MAX=5000
+```
+
+数据构建步骤默认使用各自的 `timeout_hint_s`；未设置步骤级 timeout 的任务会使用 `WORKBENCH_DEFAULT_TIMEOUT_S`。取消任务时，后端会尽量终止子进程树，而不仅是父进程。
+
+默认路径策略只允许访问仓库、`configs/`、`data/`、`reports/`、`eval_sets/` 和 Workbench SQLite 所在目录。需要额外允许本机目录时，优先设置：
+
+```text
+WORKBENCH_ALLOWED_ROOTS=<absolute-path-1><path-separator><absolute-path-2>
+```
+
+不建议设置 `WORKBENCH_ALLOW_EXTERNAL_PATHS=1`，除非你确认 Workbench 仍只绑定在 `127.0.0.1` 且只由可信本机用户访问。
+
+后端运维和合约接口：
+
+```text
+GET /api/health/live
+GET /api/health/ready
+GET /api/system/runtime/preflight
+GET /api/system/contracts
+POST /api/system/store/backup
+POST /api/runs/prune
+```
+
+`/api/system/runtime/preflight` 会区分控制面依赖和完整 runtime 依赖。轻量后端镜像只要求控制面依赖通过；完整数据构建或 Agent 子任务仍需要 runtime 依赖就绪。
+
+每个 API 响应都会带：
+
+```text
+X-Trace-Id
+X-Elapsed-Time-Ms
+```
+
+启动后台任务时，这个 `trace_id` 会写入任务对象、运行事件，并作为 `SEC_AGENT_TRACE_ID` 传给子进程。排查问题时可以先在响应头里复制 `X-Trace-Id`，再到任务详情和事件列表里对齐同一次请求。
+
+错误响应会保留旧的 `detail` 字段，同时增加结构化 `error`：
+
+```json
+{
+  "detail": "profile_not_found: demo",
+  "error": {
+    "schema_version": "finsight_workbench_api_error_v0.1",
+    "error_code": "profile_not_found",
+    "message": "profile_not_found: demo",
+    "status_code": 404,
+    "trace_id": "trace_xxx",
+    "detail": "profile_not_found: demo"
+  }
+}
 ```
 
 ## 8. 查看已有运行产物

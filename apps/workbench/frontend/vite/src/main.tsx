@@ -1,17 +1,24 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  Activity,
   Database,
   FileSearch,
   FlaskConical,
   FolderOpen,
   FolderSearch,
   History,
+  ListChecks,
   MessageSquareText,
   Play,
   RefreshCcw,
+  Server,
+  ShieldCheck,
   Terminal,
   Save,
+  CircleStop,
+  Trash2,
+  Wrench,
 } from "lucide-react";
 import "../../static/styles.css";
 import "./workbench.css";
@@ -194,11 +201,16 @@ type RunJob = {
   job_id: string;
   job_type: string;
   status: string;
+  trace_id?: string;
   profile_id?: string | null;
   prompt?: string | null;
   run_dir?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
+  elapsed_ms?: number | null;
   updated_at: string;
   error?: string;
+  error_message?: string;
   metadata?: Record<string, unknown>;
 };
 
@@ -226,6 +238,23 @@ type RunInspectionReport = {
   native_checkpoint?: NativeCheckpointInspection | null;
 };
 
+type RunStatusReport = {
+  job_id: string;
+  job_type: string;
+  status: string;
+  trace_id: string;
+  profile_id?: string | null;
+  run_dir?: string | null;
+  updated_at: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+  elapsed_ms?: number | null;
+  error_message?: string;
+  is_terminal: boolean;
+  event_count: number;
+  latest_event?: RunLogEvent | null;
+};
+
 type NativeCheckpointInspection = {
   schema_version: string;
   checkpoint_path: string;
@@ -246,9 +275,107 @@ type NativeCheckpointInspection = {
 type RunLogEvent = {
   job_id: string;
   sequence: number;
+  trace_id?: string;
   stream: string;
   message: string;
   created_at: string;
+};
+
+type StoreHealthReport = {
+  status: string;
+  db_path: string;
+  db_exists: boolean;
+  db_parent_writable: boolean;
+  db_size_bytes: number;
+  schema_version: number;
+  profile_count: number;
+  source_bundle_count: number;
+  run_job_count: number;
+  run_event_count: number;
+  error_message?: string;
+};
+
+type SystemStatusReport = {
+  status: string;
+  service: string;
+  version: string;
+  checks: Record<string, string>;
+  store: StoreHealthReport;
+  paths: Record<string, Record<string, unknown>>;
+  runtime_limits: Record<string, unknown>;
+  runtime_preflight: RuntimePreflightReport;
+  deployment: WorkbenchDeploymentReport;
+};
+
+type RuntimePreflightReport = {
+  status: string;
+  missing_full_runtime_modules?: string[];
+  control_plane_modules?: RuntimeModuleCheck[];
+  full_runtime_modules?: RuntimeModuleCheck[];
+  scripts?: RuntimeScriptCheck[];
+};
+
+type RuntimeModuleCheck = {
+  name: string;
+  available: boolean;
+};
+
+type RuntimeScriptCheck = {
+  path: string;
+  exists: boolean;
+};
+
+type UpdateInterfaceReport = {
+  interface_id: string;
+  category: string;
+  method: string;
+  endpoint: string;
+  status: string;
+  description: string;
+  action_id?: string | null;
+};
+
+type WorkbenchDeploymentReport = {
+  schema_version: string;
+  service: string;
+  status: string;
+  runtime_profile: string;
+  requested_runtime_profile: string;
+  image_kind: string;
+  release_id: string;
+  full_runtime_ready: boolean;
+  frontend_bundled: boolean;
+  code_update_mode: string;
+  data_update_mode: string;
+  update_interface_version: string;
+  immutable_roots: string[];
+  mutable_roots: string[];
+  path_policy_allowed_roots: string[];
+  missing_full_runtime_modules: string[];
+  update_interfaces: UpdateInterfaceReport[];
+};
+
+type MaintenanceAction = {
+  action_id: string;
+  category: string;
+  label: string;
+  description: string;
+  enabled: boolean;
+  status: string;
+  timeout_hint_s: number;
+  requires_full_runtime: boolean;
+  command_preview: string[];
+  output_contract: string;
+};
+
+type RunPruneReport = {
+  dry_run: boolean;
+  terminal_only: boolean;
+  keep_latest: number;
+  max_age_days?: number | null;
+  candidate_job_ids: string[];
+  deleted_job_count: number;
+  deleted_event_count: number;
 };
 
 type FormState = {
@@ -267,6 +394,9 @@ const initialForm: FormState = {
 
 function App() {
   const [health, setHealth] = useState<Status>("neutral");
+  const [systemStatus, setSystemStatus] = useState<SystemStatusReport | null>(null);
+  const [deployment, setDeployment] = useState<WorkbenchDeploymentReport | null>(null);
+  const [maintenanceActions, setMaintenanceActions] = useState<MaintenanceAction[]>([]);
   const [form, setForm] = useState<FormState>(initialForm);
   const [profile, setProfile] = useState<WorkbenchProfile | null>(null);
   const [profiles, setProfiles] = useState<StoredProfile[]>([]);
@@ -299,12 +429,14 @@ function App() {
   const [sessionId, setSessionId] = useState(() => newSessionId());
   const [activeJob, setActiveJob] = useState<RunJob | null>(null);
   const [jobEvents, setJobEvents] = useState<RunLogEvent[]>([]);
+  const [pruneKeepLatest, setPruneKeepLatest] = useState("200");
+  const [prunePreview, setPrunePreview] = useState<RunPruneReport | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const artifactJumpJobIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    void checkHealth();
+    void loadSystemDashboard({ quiet: true });
     void loadSavedProfiles();
     void loadSourceBundles();
     void loadRuns();
@@ -326,14 +458,31 @@ function App() {
   const sources = profile?.sources ?? {};
   const runtime = profile?.runtime ?? {};
   const selectedDataBuildStep = dataBuildSteps.find((step) => step.step_id === dataBuildStepId) ?? dataBuildSteps[0] ?? null;
+  const latestMaintenanceRun = runs.find((run) => run.job_type === "maintenance") ?? null;
 
-  async function checkHealth() {
+  async function loadSystemDashboard(options: { quiet?: boolean } = {}) {
     try {
-      const payload = await requestJson<{ status: string }>("/api/health");
-      setHealth(payload.status === "ok" ? "pass" : "warn");
-    } catch {
+      const [statusPayload, deploymentPayload, maintenancePayload] = await Promise.all([
+        requestJson<SystemStatusReport>("/api/system/status"),
+        requestJson<WorkbenchDeploymentReport>("/api/system/deployment"),
+        requestJson<{ actions: MaintenanceAction[] }>("/api/system/maintenance/actions"),
+      ]);
+      setSystemStatus(statusPayload);
+      setDeployment(deploymentPayload);
+      setMaintenanceActions(maintenancePayload.actions ?? []);
+      setHealth(statusPayload.status === "ok" ? "pass" : "warn");
+    } catch (err) {
       setHealth("fail");
+      if (!options.quiet) {
+        throw err;
+      }
     }
+  }
+
+  async function refreshSystemDashboard() {
+    await runBusy("system_refresh", async () => {
+      await loadSystemDashboard();
+    });
   }
 
   async function importProfile() {
@@ -441,6 +590,51 @@ function App() {
     setRuns(payload.runs ?? []);
   }
 
+  async function runMaintenanceAction(actionId: string) {
+    await runBusy(`maintenance:${actionId}`, async () => {
+      const payload = await requestJson<{ job: RunJob; action: MaintenanceAction }>("/api/system/maintenance/run", {
+        method: "POST",
+        body: JSON.stringify({ action_id: actionId }),
+      });
+      setActiveJob(payload.job);
+      setJobEvents([]);
+      await refreshJob(payload.job.job_id);
+      await loadRuns();
+      await loadSystemDashboard({ quiet: true });
+    });
+  }
+
+  async function previewRunPrune() {
+    await runBusy("runs_prune_preview", async () => {
+      const payload = await requestJson<RunPruneReport>("/api/runs/prune", {
+        method: "POST",
+        body: JSON.stringify({
+          keep_latest: normalizedKeepLatest(pruneKeepLatest),
+          terminal_only: true,
+          dry_run: true,
+        }),
+      });
+      setPrunePreview(payload);
+    });
+  }
+
+  async function executeRunPrune() {
+    if (!prunePreview?.candidate_job_ids.length) return;
+    if (!window.confirm(`确认裁剪 ${prunePreview.candidate_job_ids.length} 个终态任务记录？`)) return;
+    await runBusy("runs_prune_execute", async () => {
+      const payload = await requestJson<RunPruneReport>("/api/runs/prune", {
+        method: "POST",
+        body: JSON.stringify({
+          keep_latest: normalizedKeepLatest(pruneKeepLatest),
+          terminal_only: true,
+          dry_run: false,
+        }),
+      });
+      setPrunePreview(payload);
+      await loadRuns();
+    });
+  }
+
   async function loadSessions() {
     const payload = await requestJson<{ sessions: StoredSession[] }>("/api/sessions");
     setSessions(payload.sessions ?? []);
@@ -463,14 +657,7 @@ function App() {
     await runBusy("data_build_preview", async () => {
       const payload = await requestJson<{ preview: DataBuildPreview }>("/api/data-build/preview", {
         method: "POST",
-        body: JSON.stringify({
-          step_id: selectedDataBuildStep.step_id,
-          values: dataBuildValues,
-          profile: profile ?? null,
-          dry_run: dataBuildDryRun,
-          bundle_id: dataBuildBundleId || sourceBundle?.bundle_id || null,
-          update_bundle: dataBuildUpdateBundle,
-        }),
+        body: JSON.stringify(dataBuildRequestPayload(selectedDataBuildStep, dataBuildValues, profile, dataBuildDryRun, dataBuildBundleId, sourceBundle, dataBuildUpdateBundle)),
       });
       setDataBuildPreview(payload.preview);
     });
@@ -481,12 +668,7 @@ function App() {
     await runBusy("data_build_run", async () => {
       const payload = await requestJson<{ job: RunJob; preview: DataBuildPreview }>("/api/data-build/run", {
         method: "POST",
-        body: JSON.stringify({
-          step_id: selectedDataBuildStep.step_id,
-          values: dataBuildValues,
-          profile: profile ?? null,
-          dry_run: dataBuildDryRun,
-        }),
+        body: JSON.stringify(dataBuildRequestPayload(selectedDataBuildStep, dataBuildValues, profile, dataBuildDryRun, dataBuildBundleId, sourceBundle, dataBuildUpdateBundle)),
       });
       setDataBuildPreview(payload.preview);
       setActiveJob(payload.job);
@@ -494,6 +676,12 @@ function App() {
       await refreshJob(payload.job.job_id);
       await loadRuns();
     });
+  }
+
+  function applyDataBuildDefaults() {
+    if (!selectedDataBuildStep) return;
+    setDataBuildValues((current) => suggestDataBuildValues(selectedDataBuildStep, current, profile, sourceBundle, dataBuildBundleId));
+    setDataBuildPreview(null);
   }
 
   async function loadSessionTurns(targetSessionId = sessionId) {
@@ -654,19 +842,24 @@ function App() {
   }
 
   async function refreshJob(jobId: string) {
-    const payload = await requestJson<RunInspectionReport>(`/api/runs/${encodeURIComponent(jobId)}`);
-    setActiveJob(payload.job);
+    const status = await requestJson<RunStatusReport>(`/api/runs/${encodeURIComponent(jobId)}/status`);
+    setActiveJob((current) => mergeStatusIntoJob(status, current));
     await loadJobEvents(jobId);
-    if (payload.artifact_index) {
-      setRunReport(payload as RunInspectionReport);
+    if (status.run_dir) {
+      setRunDir(status.run_dir);
     }
-    if (payload.native_checkpoint !== undefined) {
-      setNativeCheckpoint(payload.native_checkpoint ?? null);
-    }
-    if (payload.job.run_dir) {
-      setRunDir(payload.job.run_dir);
-    }
-    if (isTerminal(payload.job.status)) {
+    if (status.is_terminal) {
+      const payload = await requestJson<RunInspectionReport>(`/api/runs/${encodeURIComponent(jobId)}`);
+      setActiveJob(payload.job);
+      if (payload.artifact_index) {
+        setRunReport(payload as RunInspectionReport);
+      }
+      if (payload.native_checkpoint !== undefined) {
+        setNativeCheckpoint(payload.native_checkpoint ?? null);
+      }
+      if (payload.job.run_dir) {
+        setRunDir(payload.job.run_dir);
+      }
       await loadRuns();
       await loadSessions();
       if (payload.artifact_index && !artifactJumpJobIds.current.has(payload.job.job_id)) {
@@ -674,6 +867,24 @@ function App() {
         window.setTimeout(() => document.getElementById("artifacts")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
       }
     }
+  }
+
+  async function cancelActiveJob() {
+    if (!activeJob?.job_id || isTerminal(activeJob.status)) return;
+    await runBusy("cancel_job", async () => {
+      const payload = await requestJson<{ cancelled: boolean; status: string; message: string; job?: RunJob | null }>(
+        `/api/runs/${encodeURIComponent(activeJob.job_id)}/cancel`,
+        {
+          method: "POST",
+          body: JSON.stringify({ reason: "cancelled from workbench" }),
+        },
+      );
+      if (payload.job) {
+        setActiveJob(payload.job);
+      }
+      await loadJobEvents(activeJob.job_id);
+      await loadRuns();
+    });
   }
 
   async function loadJobEvents(jobId: string) {
@@ -709,11 +920,13 @@ function App() {
 
   const navItems = useMemo(
     () => [
-      { label: "数据源配置", icon: FolderOpen, href: "#profile", active: true },
+      { label: "运行态", icon: Activity, href: "#runtime", active: true },
+      { label: "数据源配置", icon: FolderOpen, href: "#profile", active: false },
       { label: "数据包", icon: Database, href: "#source-bundles", active: false },
       { label: "数据构建", icon: Terminal, href: "#data-build", active: false },
       { label: "数据源检查", icon: FileSearch, href: "#readiness", active: false },
       { label: "Agent 会话", icon: MessageSquareText, href: "#agent", active: false },
+      { label: "任务中心", icon: ListChecks, href: "#jobs", active: false },
       { label: "评测入口", icon: FlaskConical, href: "#evals", active: false },
       { label: "运行产物", icon: Database, href: "#artifacts", active: false },
     ],
@@ -750,8 +963,32 @@ function App() {
             <h1>FinSight Workbench</h1>
             <p>配置研究数据源，检查证据产物，并为后续 Agent 会话准备可复用运行配置。</p>
           </div>
-          <StatusPill status={health} label={health === "pass" ? "已连接" : "未连接"} />
+          <div className="topbar-actions">
+            <button type="button" className="icon-button" onClick={refreshSystemDashboard} disabled={Boolean(busy)} aria-label="刷新系统状态">
+              <RefreshCcw size={16} aria-hidden="true" />
+            </button>
+            <StatusPill status={health} label={health === "pass" ? "已连接" : "未连接"} />
+          </div>
         </header>
+
+        <section id="runtime" className="panel">
+          <div className="section-heading">
+            <div>
+              <h2>运行态总览</h2>
+              <p>确认当前镜像、依赖、前端 bundle、可写目录和未来更新接口是否处在可上线状态。</p>
+            </div>
+            <StatusPill status={statusFromString(systemStatus?.status)} label={systemStatus?.status ?? "未知"} />
+          </div>
+          <SystemOverview
+            systemStatus={systemStatus}
+            deployment={deployment}
+            maintenanceActions={maintenanceActions}
+            latestMaintenanceRun={latestMaintenanceRun}
+            busy={busy}
+            onRefresh={refreshSystemDashboard}
+            onRunMaintenance={runMaintenanceAction}
+          />
+        </section>
 
         <section id="profile" className="panel">
           <div className="section-heading">
@@ -869,6 +1106,7 @@ function App() {
             onDryRunChange={setDataBuildDryRun}
             onUpdateBundleChange={setDataBuildUpdateBundle}
             onBundleIdChange={setDataBuildBundleId}
+            onApplyDefaults={applyDataBuildDefaults}
             onPreview={previewDataBuild}
             onRun={runDataBuild}
           />
@@ -962,7 +1200,7 @@ function App() {
             <SessionTurns turns={sessionTurns} onLoadRun={loadRun} onRefresh={() => loadSessionTurns(sessionId)} />
           </div>
 
-          <JobConsole job={activeJob} events={jobEvents} />
+          <JobConsole job={activeJob} events={jobEvents} onCancel={cancelActiveJob} cancelling={busy === "cancel_job"} />
         </section>
 
         <section id="evals" className="panel">
@@ -974,6 +1212,28 @@ function App() {
           </div>
 
           <EvalRunners evals={evals} busy={busy} onRun={startEvalRun} />
+        </section>
+
+        <section id="jobs" className="panel">
+          <div className="section-heading">
+            <div>
+              <h2>任务中心</h2>
+              <p>集中查看后台任务、载入日志、刷新状态，并在 dry-run 后裁剪终态历史。</p>
+            </div>
+            <StatusPill status={jobStatus(activeJob)} label={activeJob?.status ?? "未启动"} />
+          </div>
+          <TaskCenter
+            runs={runs}
+            activeJob={activeJob}
+            busy={busy}
+            pruneKeepLatest={pruneKeepLatest}
+            prunePreview={prunePreview}
+            onLoadRun={loadRun}
+            onRefresh={loadRuns}
+            onPruneKeepLatestChange={setPruneKeepLatest}
+            onPreviewPrune={previewRunPrune}
+            onExecutePrune={executeRunPrune}
+          />
         </section>
 
         <section id="artifacts" className="panel">
@@ -1012,6 +1272,193 @@ function App() {
   );
 }
 
+function SystemOverview({
+  systemStatus,
+  deployment,
+  maintenanceActions,
+  latestMaintenanceRun,
+  busy,
+  onRefresh,
+  onRunMaintenance,
+}: {
+  systemStatus: SystemStatusReport | null;
+  deployment: WorkbenchDeploymentReport | null;
+  maintenanceActions: MaintenanceAction[];
+  latestMaintenanceRun: RunJob | null;
+  busy: string | null;
+  onRefresh: () => void;
+  onRunMaintenance: (actionId: string) => void;
+}) {
+  if (!systemStatus || !deployment) {
+    return (
+      <div className="summary-grid empty-state">
+        <div>
+          <h3>等待系统状态</h3>
+          <p>Workbench 正在读取后端运行态、部署配置和维护动作目录。</p>
+        </div>
+      </div>
+    );
+  }
+  const runtimePreflight = systemStatus.runtime_preflight;
+  const missingModules = deployment.missing_full_runtime_modules ?? runtimePreflight.missing_full_runtime_modules ?? [];
+  return (
+    <div className="runtime-layout">
+      <div className="summary-grid runtime-summary">
+        <MetricBox label="服务状态" value={systemStatus.status} detail={`${systemStatus.service} · ${systemStatus.version}`} />
+        <MetricBox label="运行 profile" value={deployment.runtime_profile} detail={`requested: ${deployment.requested_runtime_profile}`} />
+        <MetricBox label="镜像类型" value={deployment.image_kind} detail={deployment.release_id} />
+        <MetricBox label="完整 runtime" value={boolText(deployment.full_runtime_ready)} detail={missingModules.length ? missingModules.join(", ") : "依赖完整"} />
+        <MetricBox label="前端 bundle" value={boolText(deployment.frontend_bundled)} detail={deployment.frontend_bundled ? "dist 已打入镜像" : "使用静态 fallback"} />
+        <MetricBox label="Store" value={systemStatus.store.status} detail={`${systemStatus.store.run_job_count} jobs · ${systemStatus.store.run_event_count} events`} />
+      </div>
+
+      <div className="runtime-columns">
+        <div>
+          <div className="inline-heading">
+            <h3>
+              <ShieldCheck size={15} aria-hidden="true" />
+              系统检查
+            </h3>
+            <button type="button" className="icon-button" onClick={onRefresh} disabled={Boolean(busy)} aria-label="刷新系统检查">
+              <RefreshCcw size={15} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="check-list">
+            {Object.entries(systemStatus.checks).map(([name, value]) => (
+              <div className="check-item" key={name}>
+                <span className="mono">{name}</span>
+                <StatusPill status={statusFromString(value)} label={value} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h3>
+            <Server size={15} aria-hidden="true" />
+            更新边界
+          </h3>
+          <div className="summary-grid compact-summary">
+            <MetricBox label="脚本更新" value={deployment.code_update_mode} />
+            <MetricBox label="数据更新" value={deployment.data_update_mode} />
+            <MetricBox label="接口版本" value={deployment.update_interface_version} />
+          </div>
+          <div className="root-lists">
+            <ListBlock title="可写目录" values={listRecord(deployment.mutable_roots)} />
+            <ListBlock title="镜像内只读目录" values={listRecord(deployment.immutable_roots)} />
+          </div>
+        </div>
+      </div>
+
+      <div className="runtime-columns">
+        <MaintenanceActions actions={maintenanceActions} latestRun={latestMaintenanceRun} busy={busy} onRun={onRunMaintenance} />
+        <UpdateInterfaces interfaces={deployment.update_interfaces} />
+      </div>
+    </div>
+  );
+}
+
+function MaintenanceActions({
+  actions,
+  latestRun,
+  busy,
+  onRun,
+}: {
+  actions: MaintenanceAction[];
+  latestRun: RunJob | null;
+  busy: string | null;
+  onRun: (actionId: string) => void;
+}) {
+  return (
+    <div>
+      <h3>
+        <Wrench size={15} aria-hidden="true" />
+        维护动作
+      </h3>
+      {latestRun ? (
+        <div className="maintenance-run-status">
+          <span className="maintenance-run-title">
+            <span className="mono">{latestRun.job_id}</span>
+            <StatusPill status={jobStatus(latestRun)} label={latestRun.status} />
+          </span>
+          <span className="maintenance-run-meta">
+            <span>{latestRun.job_type}</span>
+            <span className="mono">{latestRun.trace_id || "no trace"}</span>
+            <span>{latestRun.elapsed_ms !== undefined && latestRun.elapsed_ms !== null ? `${latestRun.elapsed_ms} ms` : "running"}</span>
+          </span>
+        </div>
+      ) : null}
+      {actions.length ? (
+        <div className="maintenance-list">
+          {actions.map((action) => {
+            const isBusy = busy === `maintenance:${action.action_id}`;
+            return (
+              <button
+                className="maintenance-action"
+                type="button"
+                onClick={() => onRun(action.action_id)}
+                disabled={Boolean(busy) || !action.enabled}
+                key={action.action_id}
+              >
+                <span className="maintenance-title">
+                  {isBusy ? "运行中" : action.label}
+                  <StatusPill status={statusFromString(action.status)} label={action.status} />
+                </span>
+                <span>{action.description}</span>
+                <span className="mono">
+                  {action.enabled ? `timeout ${action.timeout_hint_s}s` : "reserved"}
+                  {action.command_preview.length ? ` · ${commandLine(action.command_preview)}` : ""}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="muted-text">后端没有返回维护动作目录。</p>
+      )}
+    </div>
+  );
+}
+
+function UpdateInterfaces({ interfaces }: { interfaces: UpdateInterfaceReport[] }) {
+  return (
+    <div>
+      <h3>
+        <ListChecks size={15} aria-hidden="true" />
+        更新接口
+      </h3>
+      <div className="table-wrap compact-table">
+        <table>
+          <thead>
+            <tr>
+              <th>接口</th>
+              <th>类别</th>
+              <th>状态</th>
+              <th>Endpoint</th>
+            </tr>
+          </thead>
+          <tbody>
+            {interfaces.map((item) => (
+              <tr key={item.interface_id}>
+                <td>
+                  <div className="mono">{item.interface_id}</div>
+                  <div>{item.description}</div>
+                </td>
+                <td>{item.category}</td>
+                <td>
+                  <StatusPill status={statusFromString(item.status)} label={item.status} />
+                </td>
+                <td className="mono">
+                  {item.method} {item.endpoint}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function NativeCheckpointPanel({ inspection }: { inspection: NativeCheckpointInspection }) {
   return (
     <div className="checkpoint-panel">
@@ -1037,6 +1484,112 @@ function TextInput({ label, value, onChange }: { label: string; value: string; o
       <span>{label}</span>
       <input value={value} onChange={(event) => onChange(event.target.value)} autoComplete="off" />
     </label>
+  );
+}
+
+function TaskCenter({
+  runs,
+  activeJob,
+  busy,
+  pruneKeepLatest,
+  prunePreview,
+  onLoadRun,
+  onRefresh,
+  onPruneKeepLatestChange,
+  onPreviewPrune,
+  onExecutePrune,
+}: {
+  runs: RunJob[];
+  activeJob: RunJob | null;
+  busy: string | null;
+  pruneKeepLatest: string;
+  prunePreview: RunPruneReport | null;
+  onLoadRun: (jobId: string) => void;
+  onRefresh: () => void;
+  onPruneKeepLatestChange: (value: string) => void;
+  onPreviewPrune: () => void;
+  onExecutePrune: () => void;
+}) {
+  const activeRuns = runs.filter((run) => !isTerminal(run.status));
+  const failedRuns = runs.filter((run) => ["failed", "timed_out", "interrupted"].includes(run.status));
+  const latestRuns = runs.slice(0, 14);
+  return (
+    <div className="task-center">
+      <div className="summary-grid">
+        <MetricBox label="任务总数" value={String(runs.length)} detail={`${activeRuns.length} active`} />
+        <MetricBox label="失败/中断" value={String(failedRuns.length)} detail="failed · timed_out · interrupted" />
+        <MetricBox label="当前任务" value={activeJob?.job_id ?? "未选择"} detail={activeJob ? `${activeJob.job_type} · ${activeJob.status}` : ""} />
+      </div>
+
+      <div className="task-toolbar">
+        <button type="button" className="secondary" onClick={onRefresh} disabled={Boolean(busy)}>
+          <RefreshCcw size={16} aria-hidden="true" />
+          刷新任务
+        </button>
+        <label className="inline-input">
+          <span>保留最近</span>
+          <input value={pruneKeepLatest} onChange={(event) => onPruneKeepLatestChange(event.target.value)} inputMode="numeric" />
+        </label>
+        <button type="button" className="secondary" onClick={onPreviewPrune} disabled={Boolean(busy)}>
+          <Trash2 size={16} aria-hidden="true" />
+          {busy === "runs_prune_preview" ? "预览中" : "裁剪 dry-run"}
+        </button>
+        <button
+          type="button"
+          onClick={onExecutePrune}
+          disabled={Boolean(busy) || !prunePreview?.candidate_job_ids.length || prunePreview.dry_run === false}
+        >
+          <Trash2 size={16} aria-hidden="true" />
+          {busy === "runs_prune_execute" ? "裁剪中" : "执行裁剪"}
+        </button>
+        {prunePreview ? (
+          <span className="mono task-prune-status">
+            {prunePreview.dry_run ? "dry-run" : "done"} · candidates {prunePreview.candidate_job_ids.length} · deleted jobs {prunePreview.deleted_job_count}
+          </span>
+        ) : null}
+      </div>
+
+      {latestRuns.length ? (
+        <div className="table-wrap task-table">
+          <table>
+            <thead>
+              <tr>
+                <th>任务</th>
+                <th>状态</th>
+                <th>Trace</th>
+                <th>耗时</th>
+                <th>Run dir</th>
+              </tr>
+            </thead>
+            <tbody>
+              {latestRuns.map((job) => (
+                <tr key={job.job_id}>
+                  <td>
+                    <button className="table-link" type="button" onClick={() => onLoadRun(job.job_id)}>
+                      {job.job_id}
+                    </button>
+                    <div>{job.job_type}</div>
+                  </td>
+                  <td>
+                    <StatusPill status={jobStatus(job)} label={job.status} />
+                  </td>
+                  <td className="mono">{job.trace_id || "none"}</td>
+                  <td>{job.elapsed_ms !== undefined && job.elapsed_ms !== null ? `${job.elapsed_ms} ms` : "running"}</td>
+                  <td className="mono">{job.run_dir ?? "未记录"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="summary-grid empty-state">
+          <div>
+            <h3>还没有任务历史</h3>
+            <p>运行 smoke、维护动作、数据构建或 Agent 后，任务会出现在这里。</p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1159,6 +1712,7 @@ function DataBuildPanel({
   onDryRunChange,
   onUpdateBundleChange,
   onBundleIdChange,
+  onApplyDefaults,
   onPreview,
   onRun,
 }: {
@@ -1177,6 +1731,7 @@ function DataBuildPanel({
   onDryRunChange: (value: boolean) => void;
   onUpdateBundleChange: (value: boolean) => void;
   onBundleIdChange: (value: string) => void;
+  onApplyDefaults: () => void;
   onPreview: () => void;
   onRun: () => void;
 }) {
@@ -1207,6 +1762,12 @@ function DataBuildPanel({
         <MetricBox label="脚本" value={selectedStep.script} detail={`预计 ${selectedStep.timeout_hint_s}s 内`} />
       </div>
       <p className="muted-text">{selectedStep.description}</p>
+      <div className="form-actions compact-actions">
+        <button type="button" className="secondary" onClick={onApplyDefaults} disabled={Boolean(busy)}>
+          <FolderOpen size={16} aria-hidden="true" />
+          填入建议路径
+        </button>
+      </div>
       <div className="data-build-params">
         {selectedStep.parameters.map((parameter) =>
           parameter.kind === "bool" ? (
@@ -1484,23 +2045,47 @@ function RunArtifacts({ report }: { report: RunInspectionReport }) {
   );
 }
 
-function JobConsole({ job, events }: { job: RunJob | null; events: RunLogEvent[] }) {
+function JobConsole({
+  job,
+  events,
+  onCancel,
+  cancelling,
+}: {
+  job: RunJob | null;
+  events: RunLogEvent[];
+  onCancel: () => void;
+  cancelling: boolean;
+}) {
   const evalSummary = job?.metadata?.eval_summary as Record<string, unknown> | undefined;
+  const canCancel = Boolean(job?.job_id && !isTerminal(job.status));
   return (
     <div className="job-console">
       <div className="job-console-header">
-        <h3>运行日志</h3>
-        {job ? (
-          <span className="mono">
-            {job.job_id} · {job.job_type} · {job.status}
-          </span>
-        ) : (
-          <span className="mono">尚未启动</span>
-        )}
+        <div>
+          <h3>运行日志</h3>
+          {job ? (
+            <span className="mono">
+              {job.job_id} · {job.job_type} · {job.status}
+            </span>
+          ) : (
+            <span className="mono">尚未启动</span>
+          )}
+        </div>
+        <button type="button" className="secondary" onClick={onCancel} disabled={!canCancel || cancelling}>
+          <CircleStop size={16} aria-hidden="true" />
+          {cancelling ? "取消中" : "取消运行"}
+        </button>
       </div>
+      {job ? (
+        <div className="job-meta-grid">
+          <MetricBox label="Trace" value={job.trace_id || "none"} />
+          <MetricBox label="Elapsed" value={job.elapsed_ms !== undefined && job.elapsed_ms !== null ? `${job.elapsed_ms} ms` : "running"} />
+          <MetricBox label="Events" value={String(events.length)} />
+        </div>
+      ) : null}
       <pre>
         {events.length
-          ? events.map((event) => `[${event.sequence}] ${event.stream}: ${event.message}`).join("\n")
+          ? events.map((event) => `[${event.sequence}] ${event.trace_id ? `${event.trace_id} ` : ""}${event.stream}: ${event.message}`).join("\n")
           : "运行本地 smoke 或单轮 Agent 后，这里会显示 stdout/system 事件。"}
       </pre>
       {evalSummary ? (
@@ -1511,7 +2096,7 @@ function JobConsole({ job, events }: { job: RunJob | null; events: RunLogEvent[]
           {evalSummary.skipped_count !== undefined ? ` · skipped ${String(evalSummary.skipped_count)}` : ""}
         </p>
       ) : null}
-      {job?.error ? <p className="job-error">{job.error}</p> : null}
+      {job?.error_message || job?.error ? <p className="job-error">{job.error_message || job.error}</p> : null}
     </div>
   );
 }
@@ -1655,16 +2240,34 @@ function statusLabel(status: Status) {
   return "未检查";
 }
 
+function statusFromString(value?: string | null): Status {
+  const normalized = String(value ?? "").toLowerCase();
+  if (["ok", "pass", "passed", "available", "completed", "healthy", "true"].includes(normalized)) return "pass";
+  if (["warn", "warning", "degraded", "queued", "running", "reserved", "pending"].includes(normalized)) return "warn";
+  if (["fail", "failed", "missing", "not_writable", "interrupted", "timed_out", "false", "unhealthy"].includes(normalized)) return "fail";
+  return "neutral";
+}
+
 function jobStatus(job: RunJob | null): Status {
   if (!job) return "neutral";
   if (job.status === "completed") return "pass";
-  if (job.status === "failed" || job.status === "cancelled") return "fail";
+  if (["failed", "cancelled", "interrupted", "timed_out"].includes(job.status)) return "fail";
   if (job.status === "running" || job.status === "queued") return "warn";
   return "neutral";
 }
 
 function isTerminal(status: string) {
-  return ["completed", "failed", "cancelled"].includes(status);
+  return ["completed", "failed", "cancelled", "interrupted", "timed_out"].includes(status);
+}
+
+function boolText(value: boolean) {
+  return value ? "yes" : "no";
+}
+
+function normalizedKeepLatest(value: string) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return 200;
+  return Math.max(0, Math.min(10000, parsed));
 }
 
 function listText(values?: number[]) {
@@ -1686,6 +2289,94 @@ function compactObject(value: Record<string, unknown>) {
 
 function commandLine(args: string[]) {
   return args.map((arg) => (/[\s"'$]/.test(arg) ? JSON.stringify(arg) : arg)).join(" ");
+}
+
+function dataBuildRequestPayload(
+  step: DataBuildStep,
+  values: Record<string, string | boolean>,
+  profile: WorkbenchProfile | null,
+  dryRun: boolean,
+  bundleId: string,
+  sourceBundle: SourceBundle | null,
+  updateBundle: boolean,
+) {
+  return {
+    step_id: step.step_id,
+    values,
+    profile: profile ?? null,
+    dry_run: dryRun,
+    bundle_id: bundleId || sourceBundle?.bundle_id || null,
+    update_bundle: updateBundle,
+  };
+}
+
+function suggestDataBuildValues(
+  step: DataBuildStep,
+  current: Record<string, string | boolean>,
+  profile: WorkbenchProfile | null,
+  sourceBundle: SourceBundle | null,
+  bundleId: string,
+) {
+  const next = { ...current };
+  const artifacts: SourceBundleArtifacts & Partial<SourceProfile> = sourceBundle?.artifacts ?? profile?.sources ?? {};
+  const baseId = pathSlug(bundleId || sourceBundle?.bundle_id || profile?.sources?.market_snapshot_id || profile?.profile_id || "workbench");
+  const snapshotId = profile?.sources?.market_snapshot_id || sourceBundle?.bundle_id || baseId;
+  const asOfDate = sourceBundle?.as_of_date || profile?.sources?.market_as_of_date || "";
+  const inputDefaults: Record<string, string | undefined | null> = {
+    manifest: artifacts.manifest_path,
+    manifest_paths: artifacts.manifest_path,
+    snapshot_id: snapshotId,
+    as_of_date: asOfDate,
+  };
+
+  for (const parameter of step.parameters) {
+    if (!isBlankValue(next[parameter.name])) continue;
+    const inputDefault = inputDefaults[parameter.name];
+    if (!isBlankValue(inputDefault)) {
+      next[parameter.name] = String(inputDefault);
+      continue;
+    }
+    if (step.output_parameters.includes(parameter.name)) {
+      next[parameter.name] = suggestedOutputPath(step.step_id, parameter.name, baseId);
+    }
+  }
+  return next;
+}
+
+function suggestedOutputPath(stepId: string, parameterName: string, baseId: string) {
+  const base = `data/workbench_private/builds/${baseId}/${stepId}`;
+  if (parameterName === "output_dir" || parameterName === "output_root") return base;
+  const fileNames: Record<string, Record<string, string>> = {
+    sec_build_manifest: { output: "sec_manifest.jsonl" },
+    sec_build_chunks: { output: "sec_chunks.jsonl" },
+    sec_build_evidence_store: { output: "sec_evidence_store.jsonl" },
+    sec_download_8k_earnings: { missing_output: "sec_8k_missing.jsonl" },
+    sec_build_8k_manifest: { output: "sec_8k_manifest.jsonl", gap_output: "sec_8k_gaps.jsonl" },
+    sec_merge_source_gaps: { output: "source_gaps.jsonl" },
+    market_build_events: { output: "market_events.jsonl" },
+    market_enrich_valuation_fmp: { output: "market_valuation.csv" },
+    market_build_catalog: { catalog_path: "market_snapshot_catalog.duckdb" },
+    market_compute_analytics: { output: "market_analytics.jsonl" },
+    market_build_evidence_pack: { output: "market_evidence_pack.jsonl" },
+    market_validate_snapshot: { report: "market_validation_report.json" },
+  };
+  const fileName = fileNames[stepId]?.[parameterName] ?? `${parameterName}.json`;
+  return `${base}/${fileName}`;
+}
+
+function pathSlug(value: string) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_.-]+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^[_\-.]+|[_\-.]+$/g, "") || "workbench"
+  );
+}
+
+function isBlankValue(value: unknown) {
+  return value === undefined || value === null || (typeof value === "string" && value.trim() === "");
 }
 
 function flatSummary(value: Record<string, unknown>) {
@@ -1731,6 +2422,25 @@ function newSessionId() {
   return `workbench_session_${stamp}`;
 }
 
+function mergeStatusIntoJob(status: RunStatusReport, current: RunJob | null): RunJob {
+  return {
+    ...(current ?? {}),
+    job_id: status.job_id,
+    job_type: status.job_type,
+    status: status.status,
+    trace_id: status.trace_id,
+    profile_id: status.profile_id ?? current?.profile_id ?? null,
+    run_dir: status.run_dir ?? current?.run_dir ?? null,
+    started_at: status.started_at ?? current?.started_at ?? null,
+    finished_at: status.finished_at ?? current?.finished_at ?? null,
+    elapsed_ms: status.elapsed_ms ?? current?.elapsed_ms ?? null,
+    updated_at: status.updated_at,
+    error_message: status.error_message ?? current?.error_message ?? "",
+    error: status.error_message ?? current?.error ?? "",
+    metadata: current?.metadata ?? {},
+  };
+}
+
 async function requestJson<T>(url: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(url, {
     headers: {
@@ -1743,7 +2453,10 @@ async function requestJson<T>(url: string, options: RequestInit = {}): Promise<T
   const payload = text ? JSON.parse(text) : {};
   if (!response.ok) {
     const detail = payload.detail ?? response.statusText;
-    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+    const error = payload.error ?? {};
+    const suffix = [error.error_code, error.trace_id].filter(Boolean).join(" · ");
+    const message = typeof detail === "string" ? detail : JSON.stringify(detail);
+    throw new Error(suffix ? `${message} · ${suffix}` : message);
   }
   return payload as T;
 }

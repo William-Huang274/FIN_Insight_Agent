@@ -61,7 +61,12 @@ def test_detect_run_dir_from_wsl_artifacts_line(tmp_path: Path) -> None:
 def test_command_job_attaches_detected_run_dir(tmp_path: Path) -> None:
     store = WorkbenchStore(tmp_path / "workbench.sqlite")
     run_dir = _write_minimal_run(tmp_path / "agent_run")
-    code = f"print('[artifacts] {run_dir.as_posix()}', flush=True)"
+    code = (
+        "import os\n"
+        "print('trace=' + os.environ.get('SEC_AGENT_TRACE_ID', ''), flush=True)\n"
+        "print('job=' + os.environ.get('SEC_AGENT_WORKBENCH_JOB_ID', ''), flush=True)\n"
+        f"print('[artifacts] {run_dir.as_posix()}', flush=True)\n"
+    )
     job = new_agent_ask_job(prompt="hello", command_mode="ask-api", job_id="ask_fixture", profile_id="profile_a")
     spec = CommandSpec(args=[sys.executable, "-u", "-c", code], cwd=tmp_path, label="fixture_agent")
 
@@ -72,6 +77,11 @@ def test_command_job_attaches_detected_run_dir(tmp_path: Path) -> None:
     assert finished.status == "completed"
     assert finished.run_dir == str(run_dir.resolve())
     assert finished.metadata["detected_run_dir"] == str(run_dir.resolve())
+    assert finished.elapsed_ms is not None
+    assert finished.error_message == ""
+    assert any(event.message == f"trace={finished.trace_id}" for event in events)
+    assert any(event.message == "job=ask_fixture" for event in events)
+    assert {event.trace_id for event in events} == {finished.trace_id}
     assert any("detected run_dir:" in event.message for event in events)
 
 
@@ -96,6 +106,26 @@ def test_command_job_attaches_eval_output_summary(tmp_path: Path) -> None:
     assert finished.metadata["eval_summary"]["status"] == "pass"
     assert finished.metadata["eval_summary"]["case_count"] == 2
     assert any("eval summary:" in event.message for event in events)
+
+
+def test_command_job_times_out_silent_process(tmp_path: Path) -> None:
+    store = WorkbenchStore(tmp_path / "workbench.sqlite")
+    job = new_agent_ask_job(prompt="hello", command_mode="ask-api", job_id="timeout_fixture", profile_id="profile_a")
+    spec = CommandSpec(
+        args=[sys.executable, "-u", "-c", "import time; time.sleep(30)"],
+        cwd=tmp_path,
+        label="timeout_fixture",
+        timeout_s=1,
+    )
+
+    start_command_job(store, job, spec)
+    finished = _wait_for_job(store, "timeout_fixture", attempts=80)
+    events = store.list_run_events("timeout_fixture")
+
+    assert finished.status == "timed_out"
+    assert finished.error_message == "process timed out after 1s"
+    assert finished.elapsed_ms is not None
+    assert any("process timed out after 1s" in event.message for event in events)
 
 
 def test_build_agent_ask_command_can_target_wsl(tmp_path: Path) -> None:
@@ -371,10 +401,11 @@ def _write_minimal_run(run_dir: Path) -> Path:
     return run_dir
 
 
-def _wait_for_job(store: WorkbenchStore, job_id: str):
-    for _ in range(50):
+def _wait_for_job(store: WorkbenchStore, job_id: str, *, attempts: int = 50):
+    terminal = {"completed", "failed", "cancelled", "interrupted", "timed_out"}
+    for _ in range(attempts):
         job = store.get_run_job(job_id)
-        if job and job.status in {"completed", "failed", "cancelled"}:
+        if job and job.status in terminal:
             return job
         time.sleep(0.05)
     raise AssertionError(f"job did not finish: {job_id}")

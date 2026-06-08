@@ -4,10 +4,20 @@
   gap: 8px;
 }
 
+.topbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .form-actions button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.compact-actions {
+  margin-top: 10px;
 }
 
 .run-form {
@@ -76,6 +86,179 @@
 
 .data-build-preview {
   margin-top: 14px;
+}
+
+.runtime-layout {
+  display: grid;
+  gap: 18px;
+}
+
+.runtime-summary {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.runtime-columns {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(420px, 1.1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.check-list,
+.maintenance-list,
+.root-lists,
+.task-center {
+  display: grid;
+  gap: 10px;
+}
+
+.check-list {
+  margin-top: 12px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.maintenance-list {
+  margin-top: 12px;
+}
+
+.maintenance-run-status {
+  display: grid;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.maintenance-run-title,
+.maintenance-run-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.maintenance-run-title {
+  justify-content: space-between;
+  font-weight: 720;
+}
+
+.maintenance-run-meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.maintenance-run-status span,
+.compact-table td {
+  overflow-wrap: anywhere;
+}
+
+.maintenance-action {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  min-height: 76px;
+  border-color: var(--border-strong);
+  background: #ffffff;
+  color: var(--text);
+  text-align: left;
+}
+
+.maintenance-action span {
+  overflow-wrap: anywhere;
+}
+
+.maintenance-action > span:not(.maintenance-title) {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.maintenance-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 720;
+}
+
+.compact-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.root-lists {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.compact-table table {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.compact-table th:nth-child(1) {
+  width: 36%;
+}
+
+.compact-table th:nth-child(2),
+.compact-table th:nth-child(3) {
+  width: 14%;
+}
+
+.compact-table th:nth-child(4) {
+  width: 36%;
+}
+
+.task-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+}
+
+.inline-input {
+  display: inline-grid;
+  grid-template-columns: auto minmax(86px, 110px);
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-input input {
+  min-height: 40px;
+}
+
+.task-prune-status {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+}
+
+.task-table {
+  margin-top: 2px;
+}
+
+.table-link {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-strong);
+  font-weight: 720;
+  text-align: left;
 }
 
 .compact-panel {
@@ -206,6 +389,28 @@ select:focus {
   color: #ffffff;
 }
 
+.job-console-header button {
+  white-space: nowrap;
+}
+
+.job-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #243041;
+}
+
+.job-meta-grid .metric-box {
+  min-width: 0;
+  background: #111c31;
+  border-color: #243041;
+}
+
+.job-meta-grid .value {
+  overflow-wrap: anywhere;
+}
+
 .job-console pre {
   min-height: 160px;
   max-height: 320px;
@@ -243,12 +448,25 @@ select:focus {
   .agent-grid,
   .session-grid,
   .session-history-grid,
+  .runtime-summary,
+  .runtime-columns,
+  .compact-summary,
+  .root-lists,
   .data-build-grid,
   .data-build-params {
     grid-template-columns: 1fr;
   }
 
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .session-turn {
+    grid-template-columns: 1fr;
+  }
+
+  .job-meta-grid {
     grid-template-columns: 1fr;
   }
 }

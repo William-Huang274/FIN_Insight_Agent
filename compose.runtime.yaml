@@ -1,0 +1,14 @@
+services:
+  workbench:
+    build:
+      target: workbench
+      args:
+        INSTALL_OS_PACKAGES: "1"
+        REQUIREMENTS_FILE: requirements.txt
+        EXTRA_REQUIREMENTS_FILE: requirements-workbench.txt
+        WORKBENCH_IMAGE_KIND: runtime
+        WORKBENCH_RUNTIME_PROFILE: integrated
+    image: finsight-workbench:runtime-compose
+    environment:
+      WORKBENCH_IMAGE_KIND: runtime
+      WORKBENCH_RUNTIME_PROFILE: integrated

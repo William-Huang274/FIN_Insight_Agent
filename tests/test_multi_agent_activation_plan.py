@@ -117,6 +117,23 @@ def test_skip_agent_reason_is_required() -> None:
     assert result["errors"][0]["type"] == "skip_agent_reason_required"
 
 
+def test_active_agent_wins_over_conflicting_skip_agent() -> None:
+    payload = _focused_plan()
+    payload["activate_agents"] = [*payload["activate_agents"], "market_operator"]
+    payload["skip_agents"] = [
+        {"agent": "market_operator", "reason": "No market data requested."},
+        {"agent": "universe_relationship", "reason": "No universe expansion requested."},
+    ]
+    payload["allowed_source_families"] = [*payload["allowed_source_families"], "market_snapshot"]
+    payload["model_policy_hint"] = {**payload["model_policy_hint"], "market_operator": "none"}
+    payload["agent_priorities"] = {**payload["agent_priorities"], "market_operator": "supporting"}
+
+    result = validate_agent_activation_plan(payload)
+
+    assert result["status"] == "pass"
+    assert {item["agent_id"] for item in result["plan"]["skip_agents"]} == {"universe_relationship"}
+
+
 def test_required_agent_missing_fails() -> None:
     payload = _focused_plan()
     payload["activate_agents"] = ["research_lead", "sec_operator", "renderer"]

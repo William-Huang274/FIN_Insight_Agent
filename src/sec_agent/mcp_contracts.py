@@ -186,6 +186,7 @@ _TOOL_CONTRACTS: list[dict[str, Any]] = [
         input_schema=_object_schema(
             {
                 "query": {"type": "string"},
+                "query_probes": _array({"type": "string"}),
                 **_COMMON_SCOPE_PROPERTIES,
                 "source_tiers": _array(
                     {

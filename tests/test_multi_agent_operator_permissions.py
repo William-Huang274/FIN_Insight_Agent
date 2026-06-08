@@ -287,6 +287,9 @@ def test_evidence_operator_plan_executes_milvus_semantic_as_recall_supplement() 
 
     assert [call[0] for call in calls] == ["sec_milvus_semantic_search"]
     assert calls[0][1]["vector_kinds"] == ["relationship_context"]
+    assert calls[0][1]["query_probes"][0] == "NVDA supply chain"
+    assert len(calls[0][1]["query_probes"]) >= 2
+    assert any("upstream downstream" in probe for probe in calls[0][1]["query_probes"])
     assert result["context_rows"][0]["vector_kind"] == "relationship_context"
     assert result["tool_observations"][0]["boundary"]["allowed_claim_scope"] == "filing_semantic_recall_supplement"
     assert result["tool_call_ledger"]["records"][0]["metadata"]["runtime_summary"]["semantic_route_role"] == "semantic_recall_supplement"
@@ -410,6 +413,7 @@ def test_ledger_first_without_store_falls_back_to_sec_search_runtime_ledger() ->
     assert calls[0][1]["retrieval_route"] == "filing_text"
     assert calls[0][1]["retrieval_plan"]["routes"][0]["retrieval_route"] == "ledger_first"
     assert calls[0][1]["retrieval_plan"]["routes"][0]["rerank_budget"] > 0
+    assert calls[0][1]["build_runtime_ledger"] is True
     assert calls[0][1]["candidate_budget"] >= 120
     assert calls[0][1]["rerank_budget"] > 0
     assert result["context_rows"][0]["ticker"] == "MSFT"
@@ -548,11 +552,50 @@ def test_evidence_operator_groups_sec_search_routes_for_single_real_execution() 
         "filing_text",
         "8k_commentary",
     ]
+    assert calls[0][1]["build_runtime_ledger"] is True
     assert len(result["context_rows"]) == 3
     assert [row["status"] for row in result["tool_observations"]] == ["ok", "cached", "cached"]
     records = result["tool_call_ledger"]["records"]
     assert [record["status"] for record in records] == ["ok", "cached", "cached"]
     assert {record["agent_id"] for record in records} == {"sec_operator", "eight_k_operator"}
+
+
+def test_sec_text_route_does_not_build_runtime_ledger_without_ledger_first() -> None:
+    retrieval_plan = {
+        "routes": [
+            {
+                "route_id": "task::filing_text",
+                "task_id": "task",
+                "retrieval_route": "filing_text",
+                "tickers": ["NVDA"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["revenue"],
+            }
+        ],
+    }
+    calls: list[tuple[str, dict]] = []
+
+    def fake_executor(tool_name: str, args: dict) -> dict:
+        calls.append((tool_name, args))
+        return {
+            "status": "ok",
+            "context_rows": [{"evidence_ref": "nvda_text", "retrieval_route": "filing_text"}],
+            "runtime_ledger_rows": [],
+            "artifact_refs": [],
+        }
+
+    execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_sec_text_no_runtime_ledger",
+        ledger=ToolCallLedger(),
+        state_context={"user_query": "NVDA revenue", "focus_tickers": ["NVDA"], "build_runtime_ledger": True},
+        tool_executor=fake_executor,
+    )
+
+    assert [call[0] for call in calls] == ["sec_search_filings"]
+    assert calls[0][1]["build_runtime_ledger"] is False
 
 
 def test_market_and_industry_boundary_checks_are_explicit() -> None:

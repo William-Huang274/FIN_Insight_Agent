@@ -121,6 +121,10 @@ CONTEXT_RUNNERS = ("auto", "in_process", "subprocess")
 _CONTEXT_RUNTIME_CACHE: dict[tuple[Any, ...], dict[str, Any]] = {}
 _OBJECT_RECORDS_RUNTIME_CACHE: dict[tuple[Any, ...], dict[str, dict[str, Any]]] = {}
 _MANIFEST_INDEX_CACHE: dict[tuple[Any, ...], dict[tuple[str, int, str], dict[str, Any]]] = {}
+_MANIFEST_ROWS_CACHE: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+_AVAILABLE_SCOPE_CACHE: dict[tuple[Any, ...], set[tuple[str, int]]] = {}
+_PROJECT_INVENTORY_CACHE: dict[tuple[Any, ...], dict[str, Any]] = {}
+_SOURCE_GAP_ROWS_CACHE: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
 AI_FOCUS_TICKERS = (
     "NVDA",
     "AMD",
@@ -517,22 +521,43 @@ def build_query_plan_for_graph(args: argparse.Namespace, prompt: str) -> dict[st
     This is the behavior-preserving adapter used by the LangGraph-native
     plan_query node while the rest of the legacy pipeline is migrated.
     """
-    manifest_rows = _read_jsonl(REPO_ROOT / args.manifest_path)
-    available = _available_scope(manifest_rows)
+    timing_ms: dict[str, int] = {}
+
+    def mark(stage: str, stage_started: float) -> None:
+        timing_ms[stage] = int(round((time.perf_counter() - stage_started) * 1000))
+
+    stage_started = time.perf_counter()
+    manifest_path = _repo_path(args.manifest_path)
+    manifest_rows = _manifest_rows_cached(manifest_path)
+    mark("manifest_rows", stage_started)
+    stage_started = time.perf_counter()
+    available = _available_scope_cached(manifest_path, manifest_rows)
+    mark("available_scope", stage_started)
+    stage_started = time.perf_counter()
     tickers = _resolve_tickers(args.tickers, prompt, available)
+    mark("resolve_tickers", stage_started)
+    stage_started = time.perf_counter()
     years = _parse_years(args.years) or _infer_years(prompt) or _default_years_for_runtime_source_policy()
     tickers, years = _filter_available(tickers, years, available)
+    mark("resolve_years_and_filter_scope", stage_started)
     if not tickers or not years:
         raise RuntimeError("No available SEC filings matched inferred scope. Use /scope TICKERS YEARS.")
-    project_inventory = _project_inventory(args, manifest_rows)
+    stage_started = time.perf_counter()
+    project_inventory = _project_inventory_cached(args, manifest_rows)
+    mark("project_inventory", stage_started)
+    stage_started = time.perf_counter()
     query_contract = _build_query_contract(args, prompt, tickers, years, project_inventory)
+    mark("build_query_contract", stage_started)
+    stage_started = time.perf_counter()
     planner_trace = _detach_planner_trace(query_contract) or {}
+    mark("detach_planner_trace", stage_started)
     return {
         "query_contract": query_contract,
         "planner_trace": planner_trace,
         "project_inventory": project_inventory,
         "selected_tickers": tickers,
         "selected_years": years,
+        "query_plan_timing_ms": timing_ms,
     }
 
 
@@ -1293,14 +1318,15 @@ def run_one(args: argparse.Namespace, prompt: str) -> Path:
     progress("[0/5] building inventory-aware Query Contract ...", user_message="[0/5] planning query scope ...")
     planning_started_at = _utc_now_iso()
     planning_started = time.perf_counter()
-    manifest_rows = _read_jsonl(REPO_ROOT / args.manifest_path)
-    available = _available_scope(manifest_rows)
+    manifest_path = _repo_path(args.manifest_path)
+    manifest_rows = _manifest_rows_cached(manifest_path)
+    available = _available_scope_cached(manifest_path, manifest_rows)
     tickers = _resolve_tickers(args.tickers, prompt, available)
     years = _parse_years(args.years) or _infer_years(prompt) or _default_years_for_runtime_source_policy()
     tickers, years = _filter_available(tickers, years, available)
     if not tickers or not years:
         raise RuntimeError("No available SEC filings matched inferred scope. Use /scope TICKERS YEARS.")
-    project_inventory = _project_inventory(args, manifest_rows)
+    project_inventory = _project_inventory_cached(args, manifest_rows)
     query_contract = _build_query_contract(args, prompt, tickers, years, project_inventory)
     planning_elapsed_ms = int(round((time.perf_counter() - planning_started) * 1000))
     planning_finished_at = _utc_now_iso()
@@ -5972,8 +5998,74 @@ def _required_caveat_specs(caveats: list[Any]) -> list[dict[str, Any]]:
     return specs
 
 
+def _manifest_rows_cached(path: Path) -> list[dict[str, Any]]:
+    key = _file_cache_token(path)
+    cached = _MANIFEST_ROWS_CACHE.get(key)
+    if cached is not None:
+        return cached
+    rows = _read_jsonl(path)
+    _MANIFEST_ROWS_CACHE.clear()
+    _MANIFEST_ROWS_CACHE[key] = rows
+    return rows
+
+
+def _available_scope_cached(path: Path, manifest_rows: list[dict[str, Any]]) -> set[tuple[str, int]]:
+    key = _file_cache_token(path)
+    cached = _AVAILABLE_SCOPE_CACHE.get(key)
+    if cached is not None:
+        return cached
+    available = _available_scope(manifest_rows)
+    _AVAILABLE_SCOPE_CACHE.clear()
+    _AVAILABLE_SCOPE_CACHE[key] = available
+    return available
+
+
+def _source_gap_rows_cached(path_value: str) -> list[dict[str, Any]]:
+    if not path_value:
+        return []
+    path = _repo_path(path_value)
+    key = _file_cache_token(path)
+    cached = _SOURCE_GAP_ROWS_CACHE.get(key)
+    if cached is not None:
+        return cached
+    rows = _read_jsonl(path)
+    _SOURCE_GAP_ROWS_CACHE.clear()
+    _SOURCE_GAP_ROWS_CACHE[key] = rows
+    return rows
+
+
+def _project_inventory_cached(args: argparse.Namespace, manifest_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    manifest_path = _repo_path(args.manifest_path)
+    source_gap_path = _repo_path(args.source_gap_path) if args.source_gap_path else Path("")
+    key = (
+        _file_cache_token(manifest_path),
+        _file_cache_token(source_gap_path) if args.source_gap_path else ("", False, 0, 0),
+        str(args.bm25_index_dir),
+        str(args.object_bm25_index_dir),
+        str(args.bge_model),
+        str(args.market_evidence_path),
+        str(getattr(args, "market_catalog_path", "")),
+        str(args.market_snapshot_id),
+        str(args.market_as_of_date),
+        str(args.industry_evidence_path),
+        str(getattr(args, "industry_snapshot_db_path", "")),
+        str(args.industry_snapshot_id),
+        str(args.industry_as_of_date),
+        _file_cache_token(_repo_path(getattr(args, "market_industry_manifest_summary_path", "")))
+        if getattr(args, "market_industry_manifest_summary_path", "")
+        else ("", False, 0, 0),
+    )
+    cached = _PROJECT_INVENTORY_CACHE.get(key)
+    if cached is not None:
+        return cached
+    inventory = _project_inventory(args, manifest_rows)
+    _PROJECT_INVENTORY_CACHE.clear()
+    _PROJECT_INVENTORY_CACHE[key] = inventory
+    return inventory
+
+
 def _project_inventory(args: argparse.Namespace, manifest_rows: list[dict[str, Any]]) -> dict[str, Any]:
-    source_gap_rows = _read_jsonl(_repo_path(args.source_gap_path)) if args.source_gap_path else []
+    source_gap_rows = _source_gap_rows_cached(args.source_gap_path) if args.source_gap_path else []
     return build_project_inventory(
         manifest_rows,
         manifest_path=args.manifest_path,

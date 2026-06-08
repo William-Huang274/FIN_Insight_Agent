@@ -90,7 +90,7 @@ _EVAL_RUNNERS = {
     },
     "expanded_a6_full_chain_main": {
         "label": "Expanded A6 full-chain main",
-        "description": "Runs the 17-case exact/focused/standard/sector-depth/multi-turn expanded full-chain gate.",
+        "description": "Runs the exact/focused/standard/sector-depth/multi-turn expanded full-chain gate.",
         "timeout_hint_s": 7200,
     },
 }
@@ -149,6 +149,8 @@ def build_eval_command(
     job_id: str,
     profile: WorkbenchProfile | None = None,
     api_key_value: str | None = None,
+    case_ids: list[str] | None = None,
+    prewarm_resident_tools: bool | None = None,
 ) -> CommandSpec:
     if eval_id not in _EVAL_RUNNERS:
         raise ValueError(f"unsupported_eval_id: {eval_id}")
@@ -186,6 +188,7 @@ def build_eval_command(
             str(output_path),
         ]
     elif eval_id in {"expanded_a6_full_chain_smoke", "expanded_a6_full_chain_main"}:
+        selected_case_ids = _clean_case_ids(case_ids)
         args = [
             sys.executable,
             "-u",
@@ -196,6 +199,12 @@ def build_eval_command(
             str(output_path),
             "--strict",
         ]
+        for case_id in selected_case_ids:
+            args.extend(["--case-id", case_id])
+        if prewarm_resident_tools is True:
+            args.append("--prewarm-resident-tools")
+        elif prewarm_resident_tools is False:
+            env_overrides["SEC_AGENT_A6_PREWARM_RESIDENT_TOOLS"] = "false"
     else:
         args = [
             sys.executable,
@@ -222,6 +231,18 @@ def build_eval_command(
         label=f"eval:{eval_id}",
         timeout_s=int(_EVAL_RUNNERS[eval_id]["timeout_hint_s"]) + 30,
     )
+
+
+def _clean_case_ids(case_ids: list[str] | None) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for item in case_ids or []:
+        case_id = str(item).strip()
+        if not case_id or case_id in seen:
+            continue
+        seen.add(case_id)
+        result.append(case_id)
+    return result
 
 
 def build_agent_ask_command(

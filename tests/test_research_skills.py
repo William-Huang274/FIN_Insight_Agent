@@ -72,6 +72,14 @@ def test_role_specific_skill_prompts_truncate_and_fail_closed() -> None:
         research_skill_prompt("not_a_role")
 
 
+def test_truncated_role_prompt_preserves_role_specific_skill() -> None:
+    prompt = research_skill_prompt("memo_writer", max_chars=1800)
+
+    assert "Shared Evidence Boundary Skill" in prompt
+    assert "Memo Writer Skill" in prompt
+    assert len(prompt) <= 1800
+
+
 def test_research_lead_planning_skill_has_cost_aware_route_policy() -> None:
     prompt = load_research_skill("research_lead_planning")
 

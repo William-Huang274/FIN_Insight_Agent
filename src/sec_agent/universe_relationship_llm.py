@@ -112,6 +112,7 @@ def route_universe_relationship_llm(
     previous_content = ""
     last_failure: dict[str, Any] = {"type": "not_run"}
     last_validation: dict[str, Any] | None = None
+    repair_history: list[dict[str, Any]] = []
     for attempt_index in range(max_repair_attempts + 1):
         messages = _build_messages(
             prompt_request,
@@ -140,16 +141,21 @@ def route_universe_relationship_llm(
         previous_content = str(llm_result.get("content") or "")
         if llm_result.get("status") != "ok":
             last_failure = {"type": "provider_error", "reason": str(llm_result.get("failure_reason") or "")}
+            repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
             break
         if llm_result.get("tool_calls"):
             last_failure = {
                 "type": "direct_tool_call_forbidden",
                 "detail": "Universe Relationship may use relationship lookup input only; direct tool calls are forbidden.",
             }
+            repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
             continue
         parsed = extract_universe_relationship_plan_json(previous_content)
         if parsed is None:
             last_failure = {"type": "json_parse_failed", "detail": "No UniverseRelationshipPlan JSON object was found."}
+            repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
+            if str(llm_result.get("finish_reason") or "") == "length":
+                break
             continue
         completed = _complete_plan_from_lookup(
             parsed,
@@ -168,6 +174,7 @@ def route_universe_relationship_llm(
                     "type": "relationship_lookup_rows_dropped",
                     "detail": "Relationship lookup returned bounded relationship rows, but the model plan omitted all relationships.",
                 }
+                repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
                 continue
             if route_config.require_economic_link_map:
                 link_validation = validate_economic_link_map(
@@ -181,6 +188,7 @@ def route_universe_relationship_llm(
                         "errors": link_validation["errors"],
                         "warnings": link_validation["warnings"],
                     }
+                    repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
                     continue
             return {
                 "schema_version": ROUTE_SCHEMA_VERSION,
@@ -188,11 +196,19 @@ def route_universe_relationship_llm(
                 "status": "pass",
                 "universe_relationship_plan": validation["plan"],
                 "universe_relationship_validation": validation,
-                "routing_trace": {"attempt_count": len(model_calls), "repair_attempts": attempt_index},
+                "routing_trace": {
+                    "attempt_count": len(model_calls),
+                    "repair_attempts": attempt_index,
+                    "repair_history": repair_history,
+                    "last_repair_failure": repair_history[-1] if repair_history else {},
+                },
                 "model_diagnostics": _aggregate_model_calls(model_calls),
                 "failure_reason": "",
             }
         last_failure = {"type": "validation_failed", "errors": validation["errors"], "warnings": validation["warnings"]}
+        repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
+        if _should_fallback_without_universe_repair(validation.get("errors") or []):
+            break
 
     fallback = relationship_plan_from_lookup(
         lookup,
@@ -215,7 +231,13 @@ def route_universe_relationship_llm(
         "universe_relationship_plan": fallback_validation.get("plan") or {},
         "universe_relationship_validation": fallback_validation,
         "rejected_plan": (last_validation or {}).get("plan") or {},
-        "routing_trace": {"attempt_count": len(model_calls), "repair_attempts": max(0, len(model_calls) - 1), "fallback_used": True},
+        "routing_trace": {
+            "attempt_count": len(model_calls),
+            "repair_attempts": max(0, len(model_calls) - 1),
+            "fallback_used": True,
+            "repair_history": repair_history,
+            "last_repair_failure": repair_history[-1] if repair_history else {},
+        },
         "model_diagnostics": _aggregate_model_calls(model_calls),
         "failure_reason": _format_failure_reason(last_failure),
     }
@@ -227,6 +249,15 @@ def _lookup_relationships_present(lookup: Mapping[str, Any]) -> bool:
 
 def _plan_relationships_present(plan: Any) -> bool:
     return isinstance(plan, Mapping) and bool(plan.get("relationships"))
+
+
+def _should_fallback_without_universe_repair(errors: Any) -> bool:
+    for error in errors or []:
+        if not isinstance(error, Mapping):
+            continue
+        if str(error.get("type") or "").endswith("_unknown_evidence_ref"):
+            return True
+    return False
 
 
 def extract_universe_relationship_plan_json(text: str) -> dict[str, Any] | None:
@@ -428,11 +459,10 @@ def _complete_plan_from_lookup(
         for item in lookup.get("relationships") or []
         if isinstance(item, Mapping)
     ]
-    model_relationships = [
-        dict(item)
-        for item in raw.get("relationships") or []
-        if isinstance(item, Mapping)
-    ]
+    model_relationships = _sanitize_model_relationships_from_lookup(
+        [dict(item) for item in raw.get("relationships") or [] if isinstance(item, Mapping)],
+        lookup_relationships=lookup_relationships,
+    )
     seen = {_relationship_completion_key(item) for item in model_relationships}
     completed = list(model_relationships)
     added = 0
@@ -595,6 +625,71 @@ def _complete_economic_link_map_from_lookup(
     completed["metadata"] = metadata
     raw["economic_link_map"] = completed
     return raw
+
+
+def _sanitize_model_relationships_from_lookup(
+    relationships: list[dict[str, Any]],
+    *,
+    lookup_relationships: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    known_refs = set(_economic_refs(lookup_relationships))
+    if not known_refs:
+        return relationships
+    fallback_refs = _economic_refs(lookup_relationships)[:2]
+    sanitized: list[dict[str, Any]] = []
+    for relationship in relationships:
+        clean = dict(relationship)
+        refs = _string_list(clean.get("evidence_refs") or clean.get("refs"))
+        valid_refs = [ref for ref in refs if ref in known_refs]
+        if not valid_refs:
+            valid_refs = _matching_sector_pack_refs(refs, lookup_relationships)
+        if not valid_refs:
+            valid_refs = _matching_endpoint_refs(clean, lookup_relationships)
+        clean["evidence_refs"] = _dedupe(valid_refs or fallback_refs)[:4]
+        metadata = dict(clean.get("metadata") or {}) if isinstance(clean.get("metadata"), Mapping) else {}
+        if refs and set(refs) - set(clean["evidence_refs"]):
+            metadata["evidence_ref_canonicalized"] = True
+            metadata["dropped_model_refs"] = sorted(set(refs) - set(clean["evidence_refs"]))[:4]
+            metadata["canonicalization_policy"] = "bounded_lookup_relationship_refs_only_v0_1"
+        if metadata:
+            clean["metadata"] = metadata
+        sanitized.append(clean)
+    return sanitized
+
+
+def _matching_sector_pack_refs(refs: list[str], lookup_relationships: list[dict[str, Any]]) -> list[str]:
+    pack_ids = [_sector_pack_id(ref) for ref in refs if _sector_pack_id(ref)]
+    if not pack_ids:
+        return []
+    matched = []
+    for relationship in lookup_relationships:
+        for ref in _string_list(relationship.get("evidence_refs") or relationship.get("refs")):
+            if _sector_pack_id(ref) in pack_ids:
+                matched.append(ref)
+    return _dedupe(matched)
+
+
+def _sector_pack_id(ref: Any) -> str:
+    text = str(ref or "").strip()
+    if not text.startswith("sector_depth_pack:"):
+        return ""
+    parts = text.split(":")
+    return parts[1] if len(parts) >= 2 else ""
+
+
+def _matching_endpoint_refs(relationship: Mapping[str, Any], lookup_relationships: list[dict[str, Any]]) -> list[str]:
+    ticker = str(relationship.get("ticker") or relationship.get("from_ticker") or "").upper().strip()
+    related = str(relationship.get("related_ticker") or relationship.get("to_ticker") or "").upper().strip()
+    if not ticker and not related:
+        return []
+    refs = []
+    for candidate in lookup_relationships:
+        cand_ticker = str(candidate.get("ticker") or candidate.get("from_ticker") or "").upper().strip()
+        cand_related = str(candidate.get("related_ticker") or candidate.get("to_ticker") or "").upper().strip()
+        endpoints_match = {item for item in (ticker, related) if item} & {item for item in (cand_ticker, cand_related) if item}
+        if endpoints_match:
+            refs.extend(_string_list(candidate.get("evidence_refs") or candidate.get("refs")))
+    return _dedupe(refs)
 
 
 def _economic_entity_allowed(entity: Mapping[str, Any], allowed_tickers: set[str]) -> bool:
@@ -1124,6 +1219,19 @@ def _format_failure_reason(failure: Mapping[str, Any]) -> str:
         return f"validation_failed: {json.dumps(failure.get('errors') or [], ensure_ascii=False)[:700]}"
     reason = failure.get("reason") or failure.get("detail") or ""
     return f"{failure_type}: {reason}".strip()
+
+
+def _failure_for_trace(failure: Mapping[str, Any], *, attempt_index: int) -> dict[str, Any]:
+    trace = {
+        "attempt_index": attempt_index,
+        "type": str(failure.get("type") or "unknown_failure"),
+        "summary": _truncate(_format_failure_reason(failure), 700),
+    }
+    if failure.get("errors"):
+        trace["errors"] = _clean_for_prompt({"errors": list(failure.get("errors") or [])[:4]})["errors"]
+    if failure.get("warnings"):
+        trace["warnings"] = _clean_for_prompt({"warnings": list(failure.get("warnings") or [])[:4]})["warnings"]
+    return trace
 
 
 def _clean_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:

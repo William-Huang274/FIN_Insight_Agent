@@ -145,12 +145,15 @@ class AgentActivationPlan:
 
 def normalize_agent_activation_plan(payload: Mapping[str, Any] | AgentActivationPlan) -> AgentActivationPlan:
     if isinstance(payload, AgentActivationPlan):
-        return payload
+        payload = payload.to_dict()
+    active_agents = _unique_strings(payload.get("activate_agents"))
+    active_agent_ids = set(active_agents)
+    skipped_agents = [item for item in _skipped_agents(payload.get("skip_agents")) if item.agent_id not in active_agent_ids]
     return AgentActivationPlan(
         schema_version=str(payload.get("schema_version") or SCHEMA_VERSION).strip(),
         execution_mode=str(payload.get("execution_mode") or "").strip(),
-        activate_agents=_unique_strings(payload.get("activate_agents")),
-        skip_agents=_skipped_agents(payload.get("skip_agents")),
+        activate_agents=active_agents,
+        skip_agents=skipped_agents,
         allowed_source_families=_unique_strings(payload.get("allowed_source_families")),
         model_policy_hint={
             str(agent_id).strip(): str(profile).strip()

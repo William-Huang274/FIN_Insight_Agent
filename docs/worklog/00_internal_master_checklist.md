@@ -465,8 +465,23 @@
 - [x] Add cross-agent `evidence_gap_requests` protocol and update Research Lead / Universe / Specialist / Coverage / Judgment / Memo / Verifier / Renderer skills so professional scope decisions can request bounded upstream evidence without giving inspect-only agents tool authority.
 - [x] Harden Research Lead `scope_decision` and Universe per-ticker scope contracts with catalog inspection fields, expansion budgets, available source families, relationship strength, downstream operator owner, and explicit excluded ticker rationales.
 - [x] Add A6 scope-decision and gap-escalation eval cases that check catalog-aware universe selection, candidate rationale, selected source families, structured gap preservation, token budget, and latency for NVIDIA / AI infrastructure / supply-chain style prompts.
+- [x] Add resident MCP worker for high-cost SEC retrieval tools, cache BGE/Milvus model/client state, and validate NVIDIA A6 single-case smoke with Milvus typed semantic recall: `20260607_expanded_a6_scope_nvda_boundary_resident_milvus_v0_8_cache_hit` passed `1/1`.
+- [x] Run A6 4-case resident MCP + multi-query Milvus diagnostic smoke: historical scorer reported `4/4` functional pass, `174400` total LLM tokens, max case elapsed `331403 ms`, but the result is not promotion because exact lookup triggered Milvus and standard/sector-depth latency gates were too permissive.
+- [x] Patch the A6 4-case review findings: suppress Milvus for deterministic/exact lookup routes, add mode-level default performance gates, and render only the top exact metric for single-metric deterministic answers.
+- [x] Rerun the A6 4-case smoke after the suppression/performance/renderer fixes: `20260608_expanded_a6_multi_query_milvus_full_chain_smoke_postfix_v0_2` reached exact `0` Milvus calls, but overall `1/4` pass because standard, scope, and sector-depth failed performance gates.
+- [x] Fix A6 prompt budget truncation and Memo Writer surface repair waste; v0_3/v0_4 reruns reduced 4-case tokens from `206678` to `166154`, scope passed with Memo Writer `1` call / `8668` tokens, and standard passed after correcting the market evidence path.
+- [x] Improve the A6 4-case smoke performance profile before remaining-case gate expansion; accepted diagnostic run `20260608_expanded_a6_4case_prewarm_device_fixed_smoke_v0_14` passed `4/4` with max case `274427 ms`.
+- [ ] Reduce A6 Research Lead double-call / length-retry cost before another full smoke.
+- [x] Reduce Memo Writer retry/token failure for NVIDIA scope via direct-answer internal-label sanitizer; scope rerun passed with Memo Writer `1` call / `8668` tokens.
+- [ ] Reduce Universe Relationship repair/call count for sector-depth before concurrent expansion.
+- [x] Reduce sector-depth latency below the `300000 ms` gate after v0_4 failed only by `469 ms`; v0_14 sector-depth passed at `274427 ms`.
+- [ ] Canonicalize Workbench/cloud A6 `MARKET_EVIDENCE_PATH` to the expanded evidence pack path before future A6 runs.
+- [x] Add resident SEC search/reranker prewarm alongside Milvus warmup before timing-sensitive A6 smoke runs; Workbench prewarm now resolves `BGE_DEVICE=auto` to actual `cuda/cpu` and records tool errors.
+- [x] Run remaining A6 cases through the Workbench backend at low concurrency `2` only after the above gate or as a diagnostic, using backend trace/token/runtime/report outputs as the performance evidence.
+- [ ] Expose resident worker/cache-hit metadata directly in A6 eval summary and stabilize canonical `sec_search_filings` cache keys against LLM route variance.
+- [ ] Evaluate Milvus server GPU index or FAISS-GPU sidecar before claiming CUDA vector-search acceleration; current Milvus Lite path is resident but CPU index based.
 - [ ] If A6 shows material/blocking gap requests without automatic recovery, compile them into deterministic Coverage Reflection / Universe second-pass routes before broadening the full-chain case count.
-- [ ] Run A6 small-batch full-chain / multi-turn expanded gate over 10-20 cases before promoting the expanded path as the default agent route.
+- [x] Run A6 small-batch full-chain / multi-turn expanded gate over 10-20 cases before promoting the expanded path as the default agent route.
 - [ ] Add R3 entity resolution registry for external counterparties, subsidiaries, aliases, ticker, and CIK.
 - [ ] Add R4 relationship verifier hard gate into Router/Specialist path so exposure/news/partner rows cannot be rewritten as direct customer/supplier.
 - [ ] Add R5 Relationship Router and Industry Specialist integration for verified relationship edge rows.

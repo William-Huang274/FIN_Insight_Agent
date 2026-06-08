@@ -31,11 +31,12 @@ class ResearchLeadLLMConfig:
     model: str = "deepseek-v4-pro"
     api_key_env: str = "DEEPSEEK_API_KEY"
     temperature: float = 0.0
-    max_tokens: int = 2400
+    max_tokens: int = 3200
     timeout_s: int = 180
     max_repair_attempts: int = 2
     allow_deterministic_fallback: bool = False
     require_evidence_requirements: bool = False
+    bypass_deterministic_lookup_llm: bool = True
 
 
 def research_lead_llm_config_from_env(env: Mapping[str, str] | None = None) -> ResearchLeadLLMConfig:
@@ -47,11 +48,15 @@ def research_lead_llm_config_from_env(env: Mapping[str, str] | None = None) -> R
         model=values.get("MODEL_NAME", "deepseek-v4-pro"),
         api_key_env=values.get("API_KEY_ENV", "DEEPSEEK_API_KEY"),
         temperature=_float_env(values.get("RESEARCH_LEAD_TEMPERATURE"), default=0.0),
-        max_tokens=_int_env(values.get("RESEARCH_LEAD_MAX_TOKENS"), default=2400),
+        max_tokens=_int_env(values.get("RESEARCH_LEAD_MAX_TOKENS"), default=3200),
         timeout_s=_int_env(values.get("RESEARCH_LEAD_TIMEOUT_S"), default=180),
         max_repair_attempts=_int_env(values.get("RESEARCH_LEAD_MAX_REPAIR_ATTEMPTS"), default=2),
         allow_deterministic_fallback=_bool_env(values.get("RESEARCH_LEAD_ALLOW_DETERMINISTIC_FALLBACK")),
         require_evidence_requirements=_bool_env(values.get("RESEARCH_LEAD_REQUIRE_EVIDENCE_REQUIREMENTS")),
+        bypass_deterministic_lookup_llm=_bool_env_default(
+            values.get("RESEARCH_LEAD_BYPASS_DETERMINISTIC_LOOKUP_LLM"),
+            default=True,
+        ),
     )
 
 
@@ -69,20 +74,113 @@ def route_activation_from_env(
     config = research_lead_llm_config_from_env(values)
 
     def _route(state: Mapping[str, Any]) -> dict[str, Any]:
-        contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+        route_request = _route_request_from_state(state)
+        loop_budget = LoopBudget.from_dict(state.get("loop_budget_state") if isinstance(state.get("loop_budget_state"), Mapping) else None)
+        if config.bypass_deterministic_lookup_llm and _is_deterministic_lookup_route(route_request):
+            return _route_deterministic_lookup_without_llm(route_request, budget=loop_budget)
         return route_research_lead_activation_llm(
-            {
-                "prompt": state.get("user_query") or "",
-                "focus_tickers": contract.get("focus_tickers") or state.get("selected_tickers") or [],
-                "search_scope_tickers": contract.get("search_scope_tickers") or state.get("selected_tickers") or [],
-                "source_inventory": state.get("project_inventory") or {},
-                "context": {**dict(state.get("multi_agent_context") or {}), "query_contract": dict(contract)},
-            },
+            route_request,
             config=config,
+            budget=loop_budget,
             call_chat_completion=call_chat_completion,
         )
 
     return _route
+
+
+def _route_request_from_state(state: Mapping[str, Any]) -> MultiAgentRouteRequest:
+    contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    context = {**dict(state.get("multi_agent_context") or {}), "query_contract": dict(contract)}
+    context_mode = (
+        contract.get("expected_execution_mode")
+        or contract.get("execution_mode")
+        or ("deterministic_lookup" if str(contract.get("category") or "") == "exact_lookup" else "")
+    )
+    if context_mode and not context.get("execution_mode"):
+        context["execution_mode"] = str(context_mode)
+    return MultiAgentRouteRequest(
+        user_query=str(state.get("user_query") or ""),
+        focus_tickers=_unique_upper(contract.get("focus_tickers") or state.get("selected_tickers") or []),
+        search_scope_tickers=_unique_upper(contract.get("search_scope_tickers") or state.get("selected_tickers") or []),
+        source_inventory=dict(state.get("project_inventory") or {}),
+        context=context,
+    )
+
+
+def _route_deterministic_lookup_without_llm(
+    route_request: MultiAgentRouteRequest,
+    *,
+    budget: LoopBudget | None = None,
+) -> dict[str, Any]:
+    loop_budget = budget or LoopBudget()
+    fallback = route_multi_agent_activation(route_request, budget=loop_budget)
+    plan = dict(fallback.get("activation_plan") or {})
+    evidence_plan = _deterministic_lookup_evidence_plan(route_request, plan)
+    return {
+        "schema_version": ROUTE_SCHEMA_VERSION,
+        "source": f"{ROUTE_SOURCE}+deterministic_lookup_bypass",
+        "status": "pass" if (fallback.get("validation") or {}).get("status") == "pass" else "fail",
+        "activation_plan": plan,
+        "evidence_requirement_plan": evidence_plan,
+        "validation": fallback.get("validation") or {},
+        "routing_trace": {
+            "mode": plan.get("execution_mode") or "deterministic_lookup",
+            "attempt_count": 0,
+            "repair_attempts": 0,
+            "fallback_used": False,
+            "deterministic_lookup_llm_bypass": True,
+            "bypass_reason": "exact_lookup_single_metric_route",
+            "input_focus_tickers": route_request.focus_tickers,
+            "input_search_scope_tickers": route_request.search_scope_tickers,
+            "repair_history": [],
+            "last_repair_failure": {},
+        },
+        "model_diagnostics": {
+            "call_count": 0,
+            "provider": "",
+            "model": "",
+            "latency_ms": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "finish_reasons": [],
+            "calls": [],
+            "all_calls_ok": True,
+            "direct_tool_call_count": 0,
+            "raw_response_saved": False,
+            "bypassed": True,
+            "bypass_reason": "deterministic_lookup_llm_bypass",
+        },
+        "failure_reason": "",
+        "loop_budget": loop_budget.to_dict(),
+    }
+
+
+def _deterministic_lookup_evidence_plan(route_request: MultiAgentRouteRequest, activation_plan: Mapping[str, Any]) -> dict[str, Any]:
+    contract = _context_query_contract(route_request)
+    if not contract:
+        return {}
+    evidence_payload = {"requirements": contract.get("evidence_requirements") or []}
+    compiled_contract = _query_contract_for_evidence(route_request, activation_plan, evidence_payload)
+    return build_multi_agent_evidence_requirement_plan(
+        compiled_contract,
+        activation_plan=activation_plan,
+        case={"case_id": route_request.context.get("case_id") or "deterministic_lookup_bypass", "prompt": route_request.user_query},
+    )
+
+
+def _is_deterministic_lookup_route(route_request: MultiAgentRouteRequest) -> bool:
+    contract = _context_query_contract(route_request)
+    mode = str(
+        route_request.context.get("execution_mode")
+        or contract.get("expected_execution_mode")
+        or contract.get("execution_mode")
+        or ""
+    ).strip()
+    category = str(contract.get("category") or route_request.context.get("category") or "").strip()
+    if mode == "deterministic_lookup" or category == "exact_lookup":
+        return True
+    return False
 
 
 def route_research_lead_activation_llm(
@@ -100,6 +198,7 @@ def route_research_lead_activation_llm(
     model_calls: list[dict[str, Any]] = []
     last_failure: dict[str, Any] = {"type": "not_run"}
     last_validation: dict[str, Any] | None = None
+    repair_history: list[dict[str, Any]] = []
     previous_content = ""
 
     for attempt_index in range(max_repair_attempts + 1):
@@ -139,6 +238,7 @@ def route_research_lead_activation_llm(
                 "status": llm_result.get("status"),
                 "reason": str(llm_result.get("failure_reason") or ""),
             }
+            repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
             break
 
         if llm_result.get("tool_calls"):
@@ -146,6 +246,7 @@ def route_research_lead_activation_llm(
                 "type": "direct_tool_call_forbidden",
                 "detail": "Research Lead may request evidence needs only; direct tool calls are forbidden.",
             }
+            repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
             continue
 
         parsed = extract_activation_plan_json(previous_content)
@@ -158,11 +259,13 @@ def route_research_lead_activation_llm(
                         "ResearchLeadOutput: <=5 evidence requirements, concise skip reasons, no prose."
                     ),
                 }
+                repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
                 continue
             last_failure = {
                 "type": "json_parse_failed",
                 "detail": "No JSON object matching ResearchLeadOutput was found in model output.",
             }
+            repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
             continue
 
         validation = _validate_research_lead_output(
@@ -188,6 +291,8 @@ def route_research_lead_activation_llm(
                     "evidence_requirements_source": validation.get("evidence_requirements_source") or "",
                     "input_focus_tickers": route_request.focus_tickers,
                     "input_search_scope_tickers": route_request.search_scope_tickers,
+                    "repair_history": repair_history,
+                    "last_repair_failure": repair_history[-1] if repair_history else {},
                 },
                 "model_diagnostics": _aggregate_model_calls(model_calls),
                 "failure_reason": "",
@@ -199,6 +304,7 @@ def route_research_lead_activation_llm(
             "errors": validation["errors"],
             "warnings": validation["warnings"],
         }
+        repair_history.append(_failure_for_trace(last_failure, attempt_index=attempt_index))
 
     if route_config.allow_deterministic_fallback:
         fallback = route_multi_agent_activation(route_request, budget=loop_budget)
@@ -215,6 +321,8 @@ def route_research_lead_activation_llm(
                 "repair_attempts": max(0, len(model_calls) - 1),
                 "fallback_used": True,
                 "fallback_source": fallback.get("source"),
+                "repair_history": repair_history,
+                "last_repair_failure": repair_history[-1] if repair_history else {},
             },
             "model_diagnostics": _aggregate_model_calls(model_calls),
             "failure_reason": _format_failure_reason(last_failure),
@@ -233,6 +341,8 @@ def route_research_lead_activation_llm(
             "attempt_count": len(model_calls),
             "repair_attempts": max(0, len(model_calls) - 1),
             "fallback_used": False,
+            "repair_history": repair_history,
+            "last_repair_failure": repair_history[-1] if repair_history else {},
         },
         "model_diagnostics": _aggregate_model_calls(model_calls),
         "failure_reason": _format_failure_reason(last_failure),
@@ -356,6 +466,8 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
             "or regulatory context is explicitly requested. Do not activate universe_relationship unless relationship "
             "expansion is explicitly requested. Do not activate industry_supply_chain_analyst unless supply chain, "
             "sector, industry, macro, regulatory, customer, supplier, or relationship readthrough is explicit. "
+            "When the user explicitly says to start from a bounded source set, avoid active universe expansion; "
+            "record any supply-chain or external-market need as conditional_expansion in scope_decision instead. "
             "Market reaction and valuation alone use market_valuation_analyst, not industry_supply_chain_analyst. "
             "Activate risk_counterevidence_analyst for risk-balanced investment memos, market reaction/valuation "
             "memos, evidence gaps, margin or cash-flow pressure, bear/downside/uncertainty/credit-risk/conflict "
@@ -386,6 +498,12 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
                 "Every evidence requirement should include route_selection_reason and route_cost_tier. Choose the narrowest "
                 "route set that can answer the business need; add high-cost semantic, industry, market, or relationship routes "
                 "only when query intent requires them."
+            ),
+            (
+                "Compact output hard caps: use <=3 catalogs_to_inspect, <=4 candidate_lenses, <=5 active evidence "
+                "requirements, <=12 words for skip reasons, and <=160 characters for rationale fields. Do not include "
+                "free-form analysis, repeated source-family explanations, or long per-ticker prose. For focused_answer, "
+                "standard_memo, and deep_research include coverage_reflection in activate_agents."
             ),
             f"AgentActivationPlan schema hint:\n{_json_for_prompt(schema_hint)}",
             f"EvidenceRequirementPlan schema hint:\n{_json_for_prompt(evidence_requirement_schema_hint)}",
@@ -481,6 +599,8 @@ def _user_prompt(request: MultiAgentRouteRequest) -> str:
     return (
         "Classify this request and output the bounded activation plan. "
         "Use only supplied tickers and scope; do not add named facts from memory. "
+        "If the user declares a source or scope boundary such as 'start only from these sources', 'do not actively expand', "
+        "or '暂不扩展/不要主动扩到全行业', honor that boundary before relationship terms in the text. "
         "Put a structured scope_decision under activation_plan.metadata. "
         "The scope_decision must state the scoping pattern, expansion mode, catalogs to inspect, candidate lenses, budget, and stop condition. "
         "For evidence_requirements, select routes by query type and cost: exact values use ledger_first first; "
@@ -690,7 +810,10 @@ def _normalize_activation_for_source_contract(plan: Mapping[str, Any], route_req
         normalized["search_scope_tickers"] = list(route_request.search_scope_tickers)
     if not _requires_sector_depth_relationship_route(route_request):
         normalized = _normalize_non_relationship_activation(normalized, route_request)
-        return _normalize_cost_aware_activation(normalized, route_request)
+        normalized = _normalize_focused_answer_contract(normalized, route_request)
+        normalized = _normalize_standard_memo_floor(normalized, route_request)
+        normalized = _normalize_cost_aware_activation(normalized, route_request)
+        return _normalize_focused_answer_contract(normalized, route_request)
 
     context_sources = _context_source_families(route_request)
     active = _dedupe(
@@ -825,6 +948,198 @@ def _normalize_non_relationship_activation(plan: Mapping[str, Any], route_reques
     return normalized
 
 
+def _normalize_standard_memo_floor(plan: Mapping[str, Any], route_request: MultiAgentRouteRequest) -> dict[str, Any]:
+    normalized = dict(plan or {})
+    if not _route_request_requires_standard_memo_floor(route_request):
+        return normalized
+    if str(normalized.get("execution_mode") or "").strip() != "focused_answer":
+        return normalized
+
+    active = _dedupe([str(agent) for agent in normalized.get("activate_agents") or []])
+    allowed_sources = _dedupe([str(source) for source in normalized.get("allowed_source_families") or []])
+    context_sources = set(_context_source_families(route_request))
+    allowed_sources = _dedupe([*allowed_sources, *[source for source in context_sources if source != "relationship_graph"]])
+    if not allowed_sources:
+        allowed_sources = ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
+
+    for required_agent in ("research_lead", "sec_operator", "coverage_reflection", "memo_writer", "verifier", "renderer"):
+        if required_agent not in active:
+            active.append(required_agent)
+    if "company_authored_unaudited_sec_filing" in set(allowed_sources) and "eight_k_operator" not in active:
+        active = _insert_before(active, "eight_k_operator", "coverage_reflection")
+    if "market_snapshot" in set(allowed_sources) or _route_request_mentions_market_or_valuation(route_request):
+        if "market_operator" not in active:
+            active = _insert_before(active, "market_operator", "coverage_reflection")
+        if "market_valuation_analyst" not in active:
+            active = _insert_before(active, "market_valuation_analyst", "judgment_plan_aggregator")
+    if "fundamental_analyst" not in active:
+        active = _insert_before(active, "fundamental_analyst", "judgment_plan_aggregator")
+    if "judgment_plan_aggregator" not in active:
+        active = _insert_before(active, "judgment_plan_aggregator", "memo_writer")
+    if _route_request_requires_boundary_risk_lens(route_request) and "risk_counterevidence_analyst" not in active:
+        active = _insert_before(active, "risk_counterevidence_analyst", "judgment_plan_aggregator")
+
+    normalized["execution_mode"] = "standard_memo"
+    normalized["activate_agents"] = active
+    normalized["allowed_source_families"] = _dedupe([source for source in allowed_sources if source != "relationship_graph"])
+    normalized["max_tool_calls_total"] = max(10, _int_value(normalized.get("max_tool_calls_total"), default=10))
+    normalized["max_second_pass_rounds"] = min(1, _int_value(normalized.get("max_second_pass_rounds"), default=1))
+    normalized["max_repair_rounds"] = min(1, _int_value(normalized.get("max_repair_rounds"), default=1))
+    normalized["scope_mode"] = normalized.get("scope_mode") or "focused_peer"
+    priorities = dict(normalized.get("agent_priorities") or {})
+    model_policy = dict(normalized.get("model_policy_hint") or {})
+    for agent_id in active:
+        if agent_id.endswith("_operator") or agent_id == "renderer":
+            model_policy.setdefault(agent_id, "none")
+        elif agent_id in {"fundamental_analyst", "market_valuation_analyst", "risk_counterevidence_analyst"}:
+            model_policy.setdefault(agent_id, "balanced")
+            priorities.setdefault(agent_id, "supporting" if agent_id == "risk_counterevidence_analyst" else "primary")
+        else:
+            model_policy.setdefault(agent_id, "balanced")
+            priorities.setdefault(agent_id, "primary")
+    normalized["agent_priorities"] = priorities
+    normalized["model_policy_hint"] = model_policy
+    normalized["skip_agents"] = _sync_skip_agents(
+        normalized.get("skip_agents"),
+        active,
+        [
+            (
+                "industry_supply_chain_analyst",
+                "User declared an evidence boundary; supply-chain expansion is recorded as conditional gap, not an active specialist route.",
+            ),
+            (
+                "universe_relationship",
+                "User declared an evidence boundary; Universe expansion is conditional and not active in this standard memo pass.",
+            ),
+        ],
+    )
+    metadata = dict(normalized.get("metadata") or {})
+    metadata["standard_memo_floor_applied"] = True
+    metadata["standard_memo_floor_policy"] = "upstream_standard_memo_contract_requires_specialist_memo_route_v0_1"
+    normalized["metadata"] = metadata
+    return normalized
+
+
+def _normalize_focused_answer_contract(plan: Mapping[str, Any], route_request: MultiAgentRouteRequest) -> dict[str, Any]:
+    contract = _context_query_contract(route_request)
+    explicit_mode = str(
+        route_request.context.get("execution_mode")
+        or contract.get("expected_execution_mode")
+        or contract.get("execution_mode")
+        or ""
+    ).strip()
+    if explicit_mode != "focused_answer":
+        return dict(plan or {})
+
+    normalized = dict(plan or {})
+    sources = set(_context_source_families(route_request)) | set(_string_list(normalized.get("allowed_source_families")))
+    active = ["research_lead", "sec_operator", "coverage_reflection", "memo_writer", "verifier", "renderer"]
+    if "company_authored_unaudited_sec_filing" in sources:
+        active = _insert_before(active, "eight_k_operator", "coverage_reflection")
+    if "market_snapshot" in sources:
+        active = _insert_before(active, "market_operator", "coverage_reflection")
+    if "industry_snapshot" in sources:
+        active = _insert_before(active, "industry_operator", "coverage_reflection")
+    active = _dedupe(active)
+
+    removed_agents = [
+        (
+            "universe_relationship",
+            "Focused follow-up is bounded to the requested ticker scope; universe expansion is not active.",
+        ),
+        (
+            "industry_supply_chain_analyst",
+            "Focused follow-up does not request supply-chain or sector-depth synthesis.",
+        ),
+        (
+            "fundamental_analyst",
+            "Focused follow-up answers from bounded operator evidence without specialist memolet routing.",
+        ),
+        (
+            "market_valuation_analyst",
+            "Focused follow-up may retrieve market rows, but does not require a separate valuation specialist route.",
+        ),
+        (
+            "risk_counterevidence_analyst",
+            "Focused follow-up records risk evidence gaps through coverage and memo boundaries instead of a separate risk specialist route.",
+        ),
+        (
+            "judgment_plan_aggregator",
+            "Focused follow-up writes directly from bounded evidence and memo/verifier checks.",
+        ),
+    ]
+    allowed_sources = _non_relationship_allowed_sources(_string_list(normalized.get("allowed_source_families")), route_request)
+    normalized.update(
+        {
+            "execution_mode": "focused_answer",
+            "activate_agents": active,
+            "allowed_source_families": allowed_sources,
+            "max_tool_calls_total": 8,
+            "max_second_pass_rounds": min(1, _int_value(normalized.get("max_second_pass_rounds"), default=1)),
+            "max_repair_rounds": min(1, _int_value(normalized.get("max_repair_rounds"), default=1)),
+            "scope_mode": normalized.get("scope_mode") or "focused_followup",
+            "skip_agents": _sync_skip_agents(normalized.get("skip_agents"), active, removed_agents),
+        }
+    )
+    priorities = {agent_id: "primary" for agent_id in active}
+    for agent_id in ("eight_k_operator", "market_operator", "industry_operator", "verifier"):
+        if agent_id in priorities:
+            priorities[agent_id] = "supporting"
+    normalized["agent_priorities"] = priorities
+    normalized["model_policy_hint"] = {
+        agent_id: ("none" if agent_id.endswith("_operator") or agent_id == "renderer" else "balanced")
+        for agent_id in active
+    }
+    metadata = dict(normalized.get("metadata") or {})
+    metadata["focused_answer_contract_applied"] = True
+    metadata["focused_answer_contract_policy"] = "explicit_focused_followup_boundary_v0_1"
+    normalized["metadata"] = metadata
+    return normalized
+
+
+def _route_request_requires_standard_memo_floor(route_request: MultiAgentRouteRequest) -> bool:
+    contract = _context_query_contract(route_request)
+    explicit_mode = str(
+        route_request.context.get("execution_mode")
+        or contract.get("expected_execution_mode")
+        or contract.get("execution_mode")
+        or ""
+    ).strip()
+    if explicit_mode == "focused_answer":
+        return False
+    if str(route_request.context.get("execution_mode") or "").strip() == "standard_memo":
+        return True
+    if _route_request_standard_memo_shape(route_request):
+        return True
+    if str(contract.get("task_type") or route_request.context.get("task_type") or "").strip() != "open_analysis":
+        return False
+    sources = set(_context_source_families(route_request))
+    if "market_snapshot" not in sources and not _route_request_mentions_market_or_valuation(route_request):
+        return False
+    metrics = _string_list(contract.get("metric_families"))
+    fundamental_terms = (
+        "fundamental",
+        "fundamentals",
+        "business performance",
+        "financial performance",
+        "基本面",
+        "经营表现",
+        "财务表现",
+    )
+    text = _route_request_text(route_request)
+    has_fundamental_scope = len(metrics) >= 3 or any(term in text for term in fundamental_terms)
+    if not has_fundamental_scope:
+        return False
+    semantic_or_boundary = (
+        _route_request_declares_no_active_expansion(route_request)
+        or "typed semantic recall" in text
+        or "semantic filing recall" in text
+        or "milvus_semantic" in text
+        or "sec typed semantic" in text
+    )
+    return semantic_or_boundary
+
+
 def _align_non_relationship_source_operators(plan: Mapping[str, Any], route_request: MultiAgentRouteRequest) -> dict[str, Any]:
     normalized = dict(plan or {})
     mode = str(normalized.get("execution_mode") or "").strip()
@@ -900,6 +1215,8 @@ def _normalize_cost_aware_activation(plan: Mapping[str, Any], route_request: Mul
     risk_required = _route_request_requires_risk_lens(route_request, normalized)
 
     active = _dedupe([str(agent) for agent in normalized.get("activate_agents") or []])
+    active = _ensure_core_retrieval_agents(active, mode=mode)
+    normalized["activate_agents"] = active
     if risk_required:
         if "risk_counterevidence_analyst" not in active and mode in {"standard_memo", "deep_research"}:
             active = _insert_before(active, "risk_counterevidence_analyst", "judgment_plan_aggregator")
@@ -952,6 +1269,47 @@ def _normalize_cost_aware_activation(plan: Mapping[str, Any], route_request: Mul
     metadata["risk_counterevidence_prune_policy"] = "balanced_risk_or_pressure_intent_required_v0_2"
     normalized["metadata"] = metadata
     return normalized
+
+
+def _ensure_core_retrieval_agents(active: list[str], *, mode: str) -> list[str]:
+    required_by_mode = {
+        "focused_answer": ["research_lead", "sec_operator", "coverage_reflection", "memo_writer", "verifier", "renderer"],
+        "standard_memo": [
+            "research_lead",
+            "sec_operator",
+            "coverage_reflection",
+            "judgment_plan_aggregator",
+            "memo_writer",
+            "verifier",
+            "renderer",
+        ],
+        "deep_research": [
+            "research_lead",
+            "universe_relationship",
+            "sec_operator",
+            "industry_operator",
+            "coverage_reflection",
+            "judgment_plan_aggregator",
+            "memo_writer",
+            "verifier",
+            "renderer",
+        ],
+    }
+    result = list(active)
+    for agent_id in required_by_mode.get(mode, []):
+        if agent_id in result:
+            continue
+        if agent_id == "coverage_reflection":
+            result = _insert_before(result, agent_id, "judgment_plan_aggregator")
+        elif agent_id == "judgment_plan_aggregator":
+            result = _insert_before(result, agent_id, "memo_writer")
+        elif agent_id in {"memo_writer", "verifier", "renderer"}:
+            result.append(agent_id)
+        elif agent_id == "industry_operator":
+            result = _insert_before(result, agent_id, "coverage_reflection")
+        else:
+            result = _insert_before(result, agent_id, "coverage_reflection")
+    return _dedupe(result)
 
 
 def _sector_depth_agent_priorities(active: list[str]) -> dict[str, str]:
@@ -1088,10 +1446,33 @@ def _route_request_intent_text(route_request: MultiAgentRouteRequest) -> str:
 def _route_request_requires_risk_lens(route_request: MultiAgentRouteRequest, activation_plan: Mapping[str, Any]) -> bool:
     if _route_request_mentions_risk_or_counterevidence(route_request):
         return True
+    if _route_request_requires_boundary_risk_lens(route_request):
+        return True
     mode = str(activation_plan.get("execution_mode") or "").strip()
     if mode != "standard_memo":
         return False
     return _route_request_standard_memo_shape(route_request) and _standard_memo_balance_intent(route_request)
+
+
+def _route_request_requires_boundary_risk_lens(route_request: MultiAgentRouteRequest) -> bool:
+    if not _route_request_declares_no_active_expansion(route_request):
+        return False
+    text = _route_request_text(route_request)
+    return any(
+        term in text
+        for term in (
+            "conditional expansion",
+            "conditional need",
+            "external evidence",
+            "source boundary",
+            "coverage boundary",
+            "条件扩展",
+            "条件性需要",
+            "外部证据",
+            "证据边界",
+            "覆盖边界",
+        )
+    )
 
 
 def _standard_memo_balance_intent(route_request: MultiAgentRouteRequest) -> bool:
@@ -1146,6 +1527,8 @@ def _route_request_standard_memo_shape(route_request: MultiAgentRouteRequest) ->
 
 
 def _route_request_mentions_relationship_expansion(route_request: MultiAgentRouteRequest) -> bool:
+    if _route_request_declares_no_active_expansion(route_request):
+        return False
     text = _route_request_intent_text(route_request)
     return any(
         term in text
@@ -1182,9 +1565,59 @@ def _requires_sector_depth_relationship_route(route_request: MultiAgentRouteRequ
         return True
     if route_request.context.get("expected_relationship_pack_ids"):
         return True
+    if _route_request_declares_no_active_expansion(route_request):
+        return False
     if _route_request_mentions_relationship_expansion(route_request):
         return True
     return False
+
+
+def _route_request_declares_no_active_expansion(route_request: MultiAgentRouteRequest) -> bool:
+    text = _route_request_text(route_request)
+    boundary_terms = (
+        "do not actively expand",
+        "do not expand",
+        "no active expansion",
+        "without active expansion",
+        "stay within",
+        "bounded source",
+        "bounded sources",
+        "only from",
+        "start only from",
+        "do not broaden",
+        "暂不扩展",
+        "不要主动扩",
+        "不主动扩",
+        "先只从",
+        "只从",
+        "仅从",
+        "限定",
+        "边界",
+        "范围内",
+        "不要扩到全行业",
+        "不扩到全行业",
+    )
+    if not any(term in text for term in boundary_terms):
+        return False
+    relationship_terms = (
+        "supply chain",
+        "customer",
+        "supplier",
+        "readthrough",
+        "relationship",
+        "sector-depth",
+        "sector depth",
+        "industry chain",
+        "产业链",
+        "上下游",
+        "供应链",
+        "客户",
+        "供应商",
+        "传导",
+        "关系",
+        "全行业",
+    )
+    return any(term in text for term in relationship_terms)
 
 
 def _context_source_families(route_request: MultiAgentRouteRequest) -> list[str]:
@@ -1354,6 +1787,21 @@ def _format_failure_reason(failure: Mapping[str, Any]) -> str:
     return f"{failure_type}: {reason}".strip()
 
 
+def _failure_for_trace(failure: Mapping[str, Any], *, attempt_index: int) -> dict[str, Any]:
+    trace = {
+        "attempt_index": attempt_index,
+        "type": str(failure.get("type") or "unknown_failure"),
+        "summary": _truncate(_format_failure_reason(failure), 700),
+    }
+    if failure.get("status") is not None:
+        trace["status"] = failure.get("status")
+    if failure.get("errors"):
+        trace["errors"] = _clean_for_prompt({"errors": list(failure.get("errors") or [])[:4]})["errors"]
+    if failure.get("warnings"):
+        trace["warnings"] = _clean_for_prompt({"warnings": list(failure.get("warnings") or [])[:4]})["warnings"]
+    return trace
+
+
 def _clean_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
     return json.loads(json.dumps(value, ensure_ascii=False, default=str))
 
@@ -1382,6 +1830,10 @@ def _string_list(value: Any) -> list[str]:
         seen.add(text)
         result.append(text)
     return result
+
+
+def _unique_upper(value: Any) -> list[str]:
+    return _dedupe([str(item).strip().upper() for item in _string_list(value) if str(item).strip()])
 
 
 def _dedupe(values: list[str]) -> list[str]:
@@ -1451,3 +1903,14 @@ def _float_env(value: str | None, *, default: float) -> float:
 
 def _bool_env(value: str | None) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _bool_env_default(value: str | None, *, default: bool) -> bool:
+    text = str(value or "").strip().lower()
+    if not text:
+        return default
+    if text in {"1", "true", "yes", "y", "on"}:
+        return True
+    if text in {"0", "false", "no", "n", "off"}:
+        return False
+    return default

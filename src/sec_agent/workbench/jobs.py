@@ -250,8 +250,11 @@ def new_eval_run_job(
     job_id: str | None = None,
     profile_id: str | None = None,
     trace_id: str | None = None,
+    case_ids: list[str] | None = None,
+    prewarm_resident_tools: bool | None = None,
 ) -> RunJob:
     now = datetime.now().isoformat(timespec="seconds")
+    selected_case_ids = [str(item).strip() for item in case_ids or [] if str(item).strip()]
     return RunJob(
         job_id=job_id or f"eval_{uuid4().hex[:12]}",
         job_type="eval_run",
@@ -264,6 +267,8 @@ def new_eval_run_job(
             "runner": "workbench_subprocess",
             "eval_id": eval_id,
             "output_path": str(Path(output_path)),
+            "case_ids": selected_case_ids,
+            "prewarm_resident_tools": prewarm_resident_tools,
         },
     )
 

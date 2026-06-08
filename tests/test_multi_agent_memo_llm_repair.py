@@ -185,6 +185,30 @@ def test_memo_writer_llm_accepts_valid_memo_json() -> None:
     assert "do_not_emit_supported_claims" in fake.calls[0]["messages"][1]["content"]
 
 
+def test_memo_writer_sanitizes_internal_direct_answer_labels_without_repair() -> None:
+    memo = {
+        **_memo(),
+        "direct_answer": (
+            "Synthesized thesis from bounded ClaimCards: Supported capex claim. "
+            "| Extra joined claim remains bounded to verified ClaimCards."
+        ),
+    }
+    fake = _FakeChat([json.dumps(memo)])
+
+    result = route_memo_writer_llm(
+        _state(),
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    direct = result["memo_answer"]["direct_answer"]
+    assert result["memo_route_result"]["status"] == "pass"
+    assert result["memo_route_result"]["attempt_count"] == 1
+    assert result["memo_answer"]["direct_answer_internal_labels_sanitized"] is True
+    assert "ClaimCard" not in direct
+    assert "|" not in direct
+
+
 def test_memo_writer_llm_infers_chinese_response_language_from_query() -> None:
     judgment = _judgment_without_unsupported()
     memo = {
@@ -1027,6 +1051,75 @@ def test_memo_writer_uses_expanded_profile_for_standard_memo_with_dense_claims()
     assert payload["memo_output_contract"]["memo_claims_max"] == 8
     assert len(compact["supported_claims"]) == 5
     assert result["memo_answer"]["investment_implications"]
+
+
+def test_memo_writer_llm_preserves_judgment_evidence_gap_requests_when_model_omits_them() -> None:
+    gap = {
+        "request_type": "relationship_confirmation",
+        "owner_agent": "universe_relationship",
+        "tickers": ["nvda", "tsm"],
+        "metric_families": ["supply_chain_exposure"],
+        "source_family": "relationship_graph",
+        "reason": "Need direct relationship evidence before treating the supply-chain link as confirmed.",
+        "blocking_level": "blocking",
+        "can_answer_bounded_without": False,
+    }
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "industry_supply_chain_analyst",
+                "observations": [
+                    {
+                        "claim": "The relationship evidence supports only a hypothesis-grade readthrough.",
+                        "claim_type": "relationship_hypothesis",
+                        "memo_slot": "industry_relationship",
+                        "evidence_refs": ["rel_ref"],
+                        "source_families": ["relationship_graph"],
+                    }
+                ],
+                "evidence_gap_requests": [gap],
+            }
+        ]
+    )
+    claim = judgment["supported_claims"][0]
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "answer_status": "draft",
+                    "direct_answer": "The readthrough remains hypothesis-grade.",
+                    "memo_claims": [
+                        {
+                            "claim_id": claim["claim_id"],
+                            "claim": "The readthrough remains hypothesis-grade.",
+                            "evidence_refs": claim["evidence_refs"],
+                            "source_families": claim["source_families"],
+                        }
+                    ],
+                    "evidence_gap_requests": [],
+                    "memo_thesis_plan": judgment["memo_thesis_plan"],
+                    "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+                }
+            )
+        ]
+    )
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "Write a bounded supply-chain memo.",
+            "verified_judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    memo_gaps = result["memo_answer"]["evidence_gap_requests"]
+    assert result["memo_route_result"]["status"] == "pass"
+    assert memo_gaps[0]["request_type"] == "relationship_confirmation"
+    assert memo_gaps[0]["owner_agent"] == "universe_relationship"
+    assert memo_gaps[0]["tickers"] == ["NVDA", "TSM"]
+    assert memo_gaps[0]["can_answer_bounded_without"] is False
 
 
 def test_shared_memo_context_selects_deep_research_profile_when_evidence_dense() -> None:

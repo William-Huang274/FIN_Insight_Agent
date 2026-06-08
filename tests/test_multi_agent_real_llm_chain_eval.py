@@ -45,10 +45,25 @@ def test_fin_agent_full_chain_multiturn_fixture_schema() -> None:
     assert all(row.get("expected_catalogs_to_inspect") for row in scope_cases)
     assert all(row.get("expected_candidate_lenses") for row in scope_cases)
     assert all(row.get("max_total_tokens_lte") for row in scope_cases)
+    exact_cases = [row for row in rows if row.get("category") == "exact_lookup"]
+    assert all(row.get("require_lead_llm_pass") is False for row in exact_cases)
     sector_cases = [row for row in rows if row["category"] == "sector_depth"]
     assert all(row.get("expected_relationship_pack_ids") for row in sector_cases)
     assert all(row.get("require_rendered_memo_claims") for row in sector_cases)
     assert all(row.get("require_rendered_evidence_refs") for row in sector_cases)
+
+
+def test_api_key_marker_detection_ignores_plain_english_sk_sequence() -> None:
+    module = _load_script_module()
+
+    assert module._contains_api_key_marker("Risk-balanced memo requires downside checks.") is False
+    assert module._contains_api_key_marker("leaked sk-1234567890abcdef1234567890abcdef marker") is True
+
+
+def test_deep_research_default_performance_budget_allows_quality_second_pass_latency() -> None:
+    module = _load_script_module()
+
+    assert module._default_performance_limits({"expected_execution_mode": "deep_research"})["max_case_elapsed_ms_lte"] == 360_000
 
 
 def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
@@ -885,6 +900,27 @@ def test_real_llm_chain_scope_gap_and_performance_contracts_pass() -> None:
     assert score["checks"]["scope_gap_contract.gap_requests_preserved_to_memo"] is True
     assert score["checks"]["performance.total_tokens_lte"] is True
     assert score["token_usage"]["total_tokens"] == 2700
+
+
+def test_real_llm_chain_performance_eval_applies_default_standard_memo_latency_gate() -> None:
+    module = _load_script_module()
+
+    performance = module._performance_eval(
+        {
+            "case_id": "standard_default_perf_unit",
+            "category": "standard_memo",
+            "expected_execution_mode": "standard_memo",
+        },
+        result={},
+        summary={},
+        specialist_routes=[],
+        elapsed_ms=181_000,
+    )
+
+    assert performance["limits"]["max_case_elapsed_ms_lte"] == 180_000
+    assert performance["limits"]["max_total_tokens_lte"] == 90_000
+    assert performance["checks"]["case_elapsed_ms_lte"] is False
+    assert performance["checks"]["total_tokens_lte"] is True
 
 
 def test_real_llm_chain_scope_contract_rejects_missing_scope_metadata() -> None:

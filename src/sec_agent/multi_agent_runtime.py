@@ -1662,9 +1662,11 @@ def tool_arguments_from_route(
     if route_name == "milvus_semantic":
         args["source_tiers"] = _sec_search_source_tiers_for_route("filing_text", _string_list(args.get("source_tiers")))
         vector_kinds = _milvus_vector_kinds_for_route(route, context)
+        query = str(route.get("query") or user_query or route.get("task_id") or "")
         args.update(
             {
-                "query": str(route.get("query") or user_query or route.get("task_id") or ""),
+                "query": query,
+                "query_probes": _milvus_query_probes_for_route(route, context=context, user_query=query, vector_kinds=vector_kinds),
                 "retrieval_route": route_name,
                 "candidate_budget": int(route.get("candidate_budget") or 0),
                 "milvus_top_k": int(route.get("milvus_top_k") or context.get("milvus_top_k") or route.get("limit") or 40),
@@ -1727,6 +1729,72 @@ def tool_arguments_from_route(
         )
         return args
     return args
+
+
+def _milvus_query_probes_for_route(
+    route: Mapping[str, Any],
+    *,
+    context: Mapping[str, Any],
+    user_query: str,
+    vector_kinds: list[str],
+) -> list[str]:
+    coverage = route.get("coverage_requirements") if isinstance(route.get("coverage_requirements"), Mapping) else {}
+    explicit = _string_list(route.get("query_probes") or route.get("semantic_probes") or coverage.get("query_probes") or coverage.get("semantic_probes"))
+    base = str(user_query or route.get("query") or route.get("task_id") or "").strip()
+    if explicit:
+        return _dedupe([base, *explicit])[: _milvus_query_probe_limit(context)]
+    tickers = _dedupe(
+        [
+            *_string_list(route.get("tickers") or coverage.get("tickers")),
+            *_string_list(context.get("focus_tickers")),
+            *_string_list(context.get("search_scope_tickers") if context.get("execution_mode") == "deep_research" else []),
+        ]
+    )
+    metrics = _dedupe([*_string_list(route.get("metric_families") or coverage.get("metric_families")), *_string_list(context.get("metric_families"))])
+    return _auto_milvus_query_probes(base, tickers=tickers, metrics=metrics, vector_kinds=vector_kinds, limit=_milvus_query_probe_limit(context))
+
+
+def _milvus_query_probe_limit(context: Mapping[str, Any]) -> int:
+    raw = context.get("milvus_query_probe_limit") or context.get("query_probe_limit")
+    try:
+        value = int(raw)
+    except Exception:
+        value = 8
+    return max(1, min(16, value))
+
+
+def _auto_milvus_query_probes(
+    base: str,
+    *,
+    tickers: list[str],
+    metrics: list[str],
+    vector_kinds: list[str],
+    limit: int,
+) -> list[str]:
+    ticker_text = " ".join(str(ticker).upper() for ticker in tickers if str(ticker).strip())
+    metric_text = " ".join(str(metric).replace("_", " ") for metric in metrics if str(metric).strip())
+    base_upper = str(base or "").upper()
+    ticker_prefix = "" if ticker_text and all(str(ticker).upper() in base_upper for ticker in tickers if str(ticker).strip()) else ticker_text
+    base_text = " ".join(part for part in (ticker_prefix, metric_text, base) if part)
+    probes = [base_text or base]
+    lower = " ".join([base, ticker_text, metric_text, " ".join(vector_kinds)]).lower()
+    if metric_text or any(term in lower for term in ("fundamental", "基本面", "revenue", "margin", "cash flow", "profit", "earnings")):
+        probes.append(" ".join(part for part in (ticker_text, "company fundamentals revenue gross margin operating margin cash flow data center segment performance", metric_text) if part))
+    if any(term in lower for term in ("nvda", "nvidia", "ai", "accelerated", "cloud", "hbm", "data center", "infrastructure", "semiconductor")):
+        probes.extend(
+            [
+                f"{ticker_text} cloud capex demand hyperscaler infrastructure spending AI accelerated computing".strip(),
+                f"{ticker_text} memory HBM foundry semiconductor equipment supply chain capacity constraints".strip(),
+                f"{ticker_text} server networking power downstream data center infrastructure demand transmission".strip(),
+                f"{ticker_text} export control China restrictions customer concentration risk counterevidence".strip(),
+                f"{ticker_text} market reaction valuation investor expectations AI infrastructure growth durability".strip(),
+            ]
+        )
+    if "relationship_context" in set(vector_kinds):
+        probes.append(" ".join(part for part in (ticker_text, "economic linkage demand transmission upstream downstream customer supplier supply chain") if part))
+    if "paraphrase_context" in set(vector_kinds):
+        probes.append(" ".join(part for part in (ticker_text, "plain language SEC filing evidence canonical financial terms management discussion") if part))
+    return _dedupe([probe for probe in probes if probe])[: max(1, int(limit))]
 
 
 def _market_snapshot_tickers_for_route(args: Mapping[str, Any], context: Mapping[str, Any]) -> list[str]:
@@ -1855,13 +1923,30 @@ def _sec_search_runtime_args(context: Mapping[str, Any], route: Mapping[str, Any
         "bge_device_policy": runtime_policy.get("bge_device_policy") or "",
         "cuda_available": runtime_policy.get("cuda_available"),
     }
-    if context.get("build_runtime_ledger") is not None:
-        args["build_runtime_ledger"] = _bool_value(context.get("build_runtime_ledger"))
+    args["build_runtime_ledger"] = _sec_search_should_build_runtime_ledger(context, route)
     if context.get("output_dir"):
         args["output_dir"] = _route_output_dir(str(context.get("output_dir") or ""), str(route.get("route_id") or "route"))
     if context.get("run_id"):
         args["run_id"] = f"{context.get('run_id')}_{_slug(route.get('route_id') or route.get('retrieval_route') or 'route')}"
     return args
+
+
+def _sec_search_should_build_runtime_ledger(context: Mapping[str, Any], route: Mapping[str, Any]) -> bool:
+    if context.get("sec_search_build_runtime_ledger") is not None:
+        return _bool_value(context.get("sec_search_build_runtime_ledger"))
+    if not _bool_value(context.get("build_runtime_ledger") or context.get("ledger_first_sec_search_fallback")):
+        return False
+    if _route_uses_ledger_first(route):
+        return True
+    runtime_plan = route.get("runtime_retrieval_plan") if isinstance(route.get("runtime_retrieval_plan"), Mapping) else {}
+    for item in runtime_plan.get("routes") or []:
+        if isinstance(item, Mapping) and _route_uses_ledger_first(item):
+            return True
+    return False
+
+
+def _route_uses_ledger_first(route: Mapping[str, Any]) -> bool:
+    return str(route.get("retrieval_route") or "") == "ledger_first" or str(route.get("fallback_from_retrieval_route") or "") == "ledger_first"
 
 
 def derive_sec_search_runtime_policy(context: Mapping[str, Any], route: Mapping[str, Any]) -> dict[str, Any]:
@@ -2024,12 +2109,17 @@ def _tool_runtime_summary(tool_name: str, result: Mapping[str, Any]) -> dict[str
     if tool_name == "sec_search_filings":
         candidate_counts = result.get("candidate_counts") if isinstance(result.get("candidate_counts"), Mapping) else {}
         context_runtime = result.get("context_runtime") if isinstance(result.get("context_runtime"), Mapping) else {}
+        resident_worker = result.get("resident_worker") if isinstance(result.get("resident_worker"), Mapping) else {}
+        registry_timing = result.get("registry_timing_ms") if isinstance(result.get("registry_timing_ms"), Mapping) else {}
         summary.update(
             {
+                "elapsed_ms": int(result.get("elapsed_ms") or 0),
                 "context_row_count": len(result.get("context_rows") or []),
                 "runtime_ledger_row_count": len(result.get("runtime_ledger_rows") or []),
                 "candidate_counts": _sanitize_runtime_mapping(candidate_counts),
                 "context_runtime": _sanitize_runtime_mapping(context_runtime),
+                "registry_timing_ms": _sanitize_runtime_mapping(registry_timing),
+                "resident_worker": _sanitize_runtime_mapping(resident_worker),
             }
         )
     elif tool_name == "sec_milvus_semantic_search":
@@ -2057,6 +2147,14 @@ def _tool_runtime_summary(tool_name: str, result: Mapping[str, Any]) -> dict[str
             {
                 "relationship_row_count": len(result.get("relationship_rows") or []),
                 "expanded_ticker_count": len(result.get("expanded_tickers") or []),
+            }
+        )
+    elif tool_name == "sec_query_exact_value_ledger":
+        summary.update(
+            {
+                "elapsed_ms": int(result.get("elapsed_ms") or 0),
+                "ledger_row_count": len(result.get("ledger_rows") or []),
+                "fallback_trace_count": len(result.get("fallback_trace") or []),
             }
         )
     return summary

@@ -13,12 +13,14 @@ Use this skill only for Research Lead planning. Output an activation plan and bu
 - Emit a structured `scope_decision` in metadata or reasoning summary: `scoping_pattern`, `expansion_mode` (`no_expansion`, `conditional_expansion`, or `required_expansion`), `why`, `catalogs_to_inspect`, `candidate_lenses`, `expansion_budget`, and `stop_condition`.
 - Keep model policy hints as abstract profiles: `none`, `fast`, `balanced`, or `strong`.
 - Use relationship expansion only when the user asks for supply chain, customers, suppliers, sector readthrough, cross-industry transmission, or a scope that cannot be answered by one company alone.
+- User-declared evidence or scope boundaries take precedence over incidental relationship words. If the prompt says to start only from named sources, stay within a supplied source set, `暂不扩展`, `条件扩展`, or `不要主动扩到全行业`, do not activate `universe_relationship`; record the relationship or external-market need as `conditional_expansion` with a stop condition instead.
 - Choose evidence routes by query type and cost. Use the cheapest sufficient route set, then record `route_selection_reason`, `route_cost_tier`, and `route_selection_policy=cost_and_query_type_aware_v0_1` on each evidence requirement.
 
 ## Professional Scoping Heuristics
 
 - Single-company exact metric questions stay narrow and should prefer `ledger_first`.
 - Single-company fundamental performance questions start with company filings, exact-value ledger, management commentary, and optional market context; they should not automatically expand to the full universe.
+- SEC typed semantic recall (`milvus_semantic`) is still SEC evidence. It may support a single-company standard memo without triggering Universe / Relationship expansion.
 - Durability, sustainability, demand transmission, supply-chain, customer/supplier, AI infrastructure, power-load, capex readthrough, or cross-industry questions require a scoped universe decision.
 - For NVIDIA-style AI infrastructure questions, consider whether the user needs company fundamentals, cloud capex demand, memory / foundry / equipment supply chain, server / networking / power downstream, export-control risk, or market reaction; only activate the lenses that the question and inventory support.
 - If the knowledge base may contain relevant companies but the active prompt only lists the focus ticker, request Universe / Relationship catalog inspection rather than guessing candidates.

@@ -1,0 +1,79 @@
+{
+  "adapter_schema_version": "sec_agent_capital_macro_source_adapter_v0.1",
+  "adapter_summary": {
+    "capital_ownership_row_count": 7956,
+    "macro_driver_row_count": 943,
+    "macro_exposure_row_count": 20000,
+    "pack_input_row_count": 30914,
+    "source_gap_count": 18183,
+    "vertical_official_object_row_count": 2015
+  },
+  "boundary_policy": "K5/K6 rows are parser-gated pack inputs; unresolved source rows stay in source_gaps and must not be proxied into company claims.",
+  "capital_macro_pack_summary": {
+    "capital_structure_count": 386,
+    "company_exposure_edge_count": 2525,
+    "credit_facility_count": 1715,
+    "debt_instrument_count": 855,
+    "equity_offering_count": 0,
+    "industry_driver_count": 0,
+    "input_row_count": 12615,
+    "insider_transaction_count": 0,
+    "macro_driver_count": 155,
+    "ownership_position_count": 5000,
+    "rejected_object_count": 0,
+    "trade_driver_count": 0,
+    "vertical_official_object_count": 1979
+  },
+  "capital_macro_pack_validation": {
+    "errors": [],
+    "schema_version": "sec_agent_capital_macro_exposure_pack_validation_v0.1",
+    "status": "pass",
+    "warnings": []
+  },
+  "generated_at": "2026-06-12T19:47:52.501386+00:00",
+  "input_counts": {
+    "endpoint_record_count": 50000,
+    "inventory_row_count": 1103,
+    "mapping_candidate_count": 1219,
+    "normalized_record_count": 404,
+    "sec_capital_text_candidate_count": 13883,
+    "sec_filing_metadata_candidate_count": 50
+  },
+  "inputs": {
+    "endpoint_records": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/endpoint_records.jsonl",
+    "inventory_rows": "data/processed_private/public_sources/public_source_inventory_adapter_v0_1/public_source_inventory_rows.jsonl",
+    "mapping_candidates": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/mapping_candidates.jsonl",
+    "normalized_records": "Z:/FIN_Insight_Agent_data/processed_private/public_sources/public_source_normalized_materialized_v0_3/normalized_records.jsonl",
+    "sec_13f_zip": "Z:/FIN_Insight_Agent_data/raw_private/public_source_extended_materialization/sec_ownership_and_13f/01mar2026-31may2026_form13f.zip",
+    "sec_capital_text_inputs": [
+      "data/staging/sec_tier1_sp500_annual/chunks/tier1_sp500_us_annual_10k_chunks_fy2023_2025_v0_1.jsonl",
+      "data/staging/sec_tier2_supply_chain_annual/chunks/tier2_supply_chain_sec_annual_chunks_fy2023_2025_v0_1.jsonl"
+    ],
+    "sec_fsd_zip": "Z:/FIN_Insight_Agent_data/raw_private/public_source_extended_materialization/sec_financial_statement_data_sets/2026q1.zip"
+  },
+  "known_source_family_gaps": [
+    {
+      "reason": "Parser gate exists, but no configured local S-1/S-3/424B/8-K exhibit source text or structured offering rows were found.",
+      "source_family": "sec_offering_forms_s1_s3_424b_8k_exhibits",
+      "status": "raw_material_not_materialized"
+    },
+    {
+      "reason": "Parser gate exists, but no configured local Form 3/4/5 XML or structured insider transaction rows were found.",
+      "source_family": "sec_form_3_4_5_insider_transactions",
+      "status": "raw_material_not_materialized"
+    }
+  ],
+  "outputs": {
+    "capital_macro_pack": "Z:/FIN_Insight_Agent_data/processed_private/capital_macro_source_adapters/capital_macro_source_adapter_v0_1/capital_macro_pack.json",
+    "capital_ownership_rows": "Z:/FIN_Insight_Agent_data/processed_private/capital_macro_source_adapters/capital_macro_source_adapter_v0_1/capital_ownership_rows.jsonl",
+    "macro_driver_rows": "Z:/FIN_Insight_Agent_data/processed_private/capital_macro_source_adapters/capital_macro_source_adapter_v0_1/macro_driver_rows.jsonl",
+    "macro_exposure_rows": "Z:/FIN_Insight_Agent_data/processed_private/capital_macro_source_adapters/capital_macro_source_adapter_v0_1/macro_exposure_rows.jsonl",
+    "source_gaps": "Z:/FIN_Insight_Agent_data/processed_private/capital_macro_source_adapters/capital_macro_source_adapter_v0_1/source_gaps.jsonl",
+    "summary": "Z:/FIN_Insight_Agent_data/processed_private/capital_macro_source_adapters/capital_macro_source_adapter_v0_1/summary.json",
+    "vertical_official_object_rows": "Z:/FIN_Insight_Agent_data/processed_private/capital_macro_source_adapters/capital_macro_source_adapter_v0_1/vertical_official_object_rows.jsonl"
+  },
+  "run_id": "capital_macro_source_adapter_v0_1",
+  "schema_version": "sec_agent_capital_macro_source_adapter_summary_v0.1",
+  "status": "pass",
+  "target_company_count": 603
+}

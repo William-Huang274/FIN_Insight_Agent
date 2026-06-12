@@ -35,6 +35,11 @@ def build_entity_security_master(state: Mapping[str, Any]) -> dict[str, Any]:
         if ticker not in existing_tickers:
             entity_rows.append(_entity_from_row({"ticker": ticker}, source_ref="query_scope"))
             existing_tickers.add(ticker)
+    for row in _capital_macro_company_entity_rows(state):
+        ticker = str(row.get("ticker") or "").upper().strip()
+        if ticker and ticker not in existing_tickers:
+            entity_rows.append(_entity_from_row(row, source_ref="capital_macro_pack"))
+            existing_tickers.add(ticker)
 
     entities = _dedupe_entities(entity_rows)
     alias_registry = build_entity_alias_registry(
@@ -50,7 +55,10 @@ def build_entity_security_master(state: Mapping[str, Any]) -> dict[str, Any]:
             for row in entities
         ]
     )
-    unresolved = _unresolved_query_entities(state, alias_registry)
+    unresolved = [
+        *_unresolved_query_entities(state, alias_registry),
+        *_unresolved_capital_macro_entities(state, alias_registry),
+    ]
     payload = {
         "schema_version": ENTITY_SECURITY_MASTER_SCHEMA_VERSION,
         "policy": "per_run_entity_security_master_projection_v0_1",
@@ -228,6 +236,87 @@ def _unresolved_query_entities(state: Mapping[str, Any], alias_registry: list[Ma
         if resolved.get("status") != "resolved":
             unresolved.append(resolved)
     return unresolved
+
+
+def _capital_macro_company_entity_rows(state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for row in _iter_capital_macro_rows(state):
+        ticker = str(row.get("company_id") or row.get("ticker") or "").upper().strip()
+        if not ticker:
+            continue
+        rows.append(
+            {
+                "ticker": ticker,
+                "company_name": row.get("issuer_name") or row.get("company_name") or row.get("company") or ticker,
+                "cusip": row.get("cusip") or "",
+                "source_refs": ["capital_macro_pack"],
+                "source_priority": ["sec_13f", "sec_fsd", "sec_debt_footnote", "public_source_context"],
+            }
+        )
+    return rows
+
+
+def _unresolved_capital_macro_entities(state: Mapping[str, Any], alias_registry: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    unresolved: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in _iter_capital_macro_rows(state):
+        for role, field in (("investor", "investor_id"), ("insider", "insider_id")):
+            raw_name = str(row.get(field) or "").strip()
+            if not raw_name:
+                continue
+            key = f"{role}:{normalize_entity_name(raw_name)}"
+            if key in seen:
+                continue
+            seen.add(key)
+            resolved = resolve_entity_name(raw_name, alias_registry)
+            if resolved.get("status") == "resolved":
+                continue
+            unresolved.append(
+                {
+                    **resolved,
+                    "unresolved_reference_id": f"capital_macro_{role}:{_hash_text(raw_name)}",
+                    "raw_name": raw_name,
+                    "status": "unresolved_context_entity",
+                    "source_ref": "capital_macro_pack",
+                    "entity_role": role,
+                    "treatment_action": "resolve_with_entity_history_or_keep_context_only",
+                }
+            )
+    return unresolved
+
+
+def _iter_capital_macro_rows(state: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    rows: list[Mapping[str, Any]] = []
+    adapter = state.get("capital_macro_source_adapter") if isinstance(state.get("capital_macro_source_adapter"), Mapping) else {}
+    pack = state.get("capital_macro_pack") if isinstance(state.get("capital_macro_pack"), Mapping) else {}
+    for container, keys in (
+        (
+            adapter,
+            (
+                "capital_ownership_rows",
+                "macro_driver_rows",
+                "macro_exposure_rows",
+                "vertical_official_object_rows",
+            ),
+        ),
+        (
+            pack,
+            (
+                "capital_structures",
+                "debt_instruments",
+                "credit_facilities",
+                "equity_offerings",
+                "ownership_positions",
+                "insider_transactions",
+                "macro_drivers",
+                "company_exposure_edges",
+                "vertical_official_objects",
+            ),
+        ),
+    ):
+        for key in keys:
+            rows.extend(row for row in container.get(key) or [] if isinstance(row, Mapping))
+    return rows
 
 
 def _resolution_confidence(*, ticker: str, cik: str, canonical_name: str, row: Mapping[str, Any]) -> str:

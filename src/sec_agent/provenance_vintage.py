@@ -18,6 +18,27 @@ EVIDENCE_ROW_CHANNELS = (
     "product_evidence_rows",
     "public_source_context_rows",
 )
+CAPITAL_MACRO_ADAPTER_CHANNELS = (
+    "capital_ownership_rows",
+    "macro_driver_rows",
+    "macro_exposure_rows",
+    "vertical_official_object_rows",
+    "source_gaps",
+)
+CAPITAL_MACRO_PACK_CHANNELS = (
+    "capital_structures",
+    "debt_instruments",
+    "credit_facilities",
+    "equity_offerings",
+    "ownership_positions",
+    "insider_transactions",
+    "macro_drivers",
+    "trade_drivers",
+    "industry_drivers",
+    "company_exposure_edges",
+    "vertical_official_objects",
+    "rejected_objects",
+)
 
 
 def build_raw_source_provenance_store(state: Mapping[str, Any]) -> dict[str, Any]:
@@ -150,6 +171,16 @@ def _iter_state_rows(state: Mapping[str, Any]) -> list[tuple[str, Mapping[str, A
         for row in state.get(channel) or []:
             if isinstance(row, Mapping):
                 rows.append((channel, row))
+    adapter = state.get("capital_macro_source_adapter") if isinstance(state.get("capital_macro_source_adapter"), Mapping) else {}
+    for child_channel in CAPITAL_MACRO_ADAPTER_CHANNELS:
+        for row in adapter.get(child_channel) or []:
+            if isinstance(row, Mapping):
+                rows.append((f"capital_macro_source_adapter.{child_channel}", row))
+    pack = state.get("capital_macro_pack") if isinstance(state.get("capital_macro_pack"), Mapping) else {}
+    for child_channel in CAPITAL_MACRO_PACK_CHANNELS:
+        for row in pack.get(child_channel) or []:
+            if isinstance(row, Mapping):
+                rows.append((f"capital_macro_pack.{child_channel}", row))
     for row in state.get("tool_observations") or []:
         if isinstance(row, Mapping):
             rows.append(("tool_observations", row))
@@ -171,11 +202,15 @@ def _provenance_record(row: Mapping[str, Any], *, channel: str, state: Mapping[s
         "filing_id",
         "source_document_id",
     )
-    source_id = _first_text(row, "source_id") or _stable_id("source", channel, evidence_ref, raw_url, local_path, document_id)
+    source_provider_id = _first_text(row, "source_id")
+    source_id = source_provider_id or _stable_id("source", channel, evidence_ref, raw_url, local_path, document_id)
+    if channel.startswith("capital_macro") and evidence_ref:
+        source_id = _stable_id("capital_macro_source", source_provider_id, evidence_ref, raw_url, local_path, document_id)
     provided_checksum = _first_text(row, "checksum", "sha256", "content_sha256", "file_sha256")
     materialized_checksum = _file_sha256(local_path) if not provided_checksum else ""
     return {
         "source_id": source_id,
+        "source_provider_id": source_provider_id,
         "record_type": "tool_observation" if channel == "tool_observations" else "evidence_row",
         "run_id": str(state.get("run_id") or ""),
         "source_family": source_family,
@@ -261,17 +296,24 @@ def _inventory_filing_record(company: Mapping[str, Any], filing: Mapping[str, An
 
 def _vintage_record(row: Mapping[str, Any], *, channel: str, state: Mapping[str, Any]) -> dict[str, Any]:
     evidence_ref = _first_text(row, "evidence_ref", "evidence_id", "object_id", "metric_id", "claim_id", "route_id")
-    source_id = _first_text(row, "source_id") or _stable_id("source", channel, evidence_ref, _first_text(row, "document_id", "accession_number"))
+    document_id = _first_text(row, "document_id", "accession_number", "accession", "adsh")
+    source_provider_id = _first_text(row, "source_id")
+    source_id = source_provider_id or _stable_id("source", channel, evidence_ref, document_id)
+    if channel.startswith("capital_macro") and evidence_ref:
+        source_id = _stable_id("capital_macro_source", source_provider_id, evidence_ref, document_id)
     source_family = _source_family(row, channel=channel)
     market_as_of = _first_text(row, "market_as_of_date", "as_of_date") if source_family == "market_snapshot" else _first_text(row, "market_as_of_date")
     macro_vintage = _first_text(row, "macro_vintage_date", "vintage_date") or (
         _first_text(row, "as_of_date", "source_as_of_date") if source_family == "industry_snapshot" else ""
     )
-    fiscal_period_end = _first_text(row, "fiscal_period_end", "period_end", "report_date", "source_period_end")
+    if not macro_vintage and _is_macro_context_row(row, source_family=source_family):
+        macro_vintage = _first_text(row, "observation_date", "date", "as_of_date", "source_as_of_date")
+    fiscal_period_end = _first_text(row, "fiscal_period_end", "period_end", "report_date", "source_period_end", "report_period")
     return {
         "vintage_id": _stable_id("vintage", channel, evidence_ref, source_id, fiscal_period_end, market_as_of, macro_vintage),
         "run_id": str(state.get("run_id") or ""),
         "source_id": source_id,
+        "document_id": document_id,
         "evidence_ref": evidence_ref,
         "source_family": source_family,
         "channel": channel,
@@ -282,7 +324,7 @@ def _vintage_record(row: Mapping[str, Any], *, channel: str, state: Mapping[str,
         "filing_date": _first_text(row, "filing_date"),
         "accepted_date": _first_text(row, "accepted_date", "accepted_at"),
         "reported_date": _first_text(row, "reported_date", "report_date"),
-        "observation_date": _first_text(row, "observation_date", "date"),
+        "observation_date": _first_text(row, "observation_date", "date", "observed_at"),
         "retrieved_at": _first_text(row, "retrieved_at", "downloaded_at", "fetched_at"),
         "source_updated_at": _first_text(row, "source_updated_at", "updated_at"),
         "market_as_of_date": market_as_of,
@@ -340,13 +382,15 @@ def _source_family(row: Mapping[str, Any], *, channel: str) -> str:
         return family
     if channel == "runtime_ledger_rows":
         return "primary_sec_filing"
+    if channel.startswith("capital_macro_source_adapter") or channel.startswith("capital_macro_pack"):
+        return _first_text(row, "source_family") or "capital_macro_pack"
     if channel.startswith("project_inventory"):
         return _first_text(row, "source_tier") or "primary_sec_filing"
     return "unknown"
 
 
 def _ticker(row: Mapping[str, Any]) -> str:
-    return _first_text(row, "ticker", "symbol", "focus_ticker").upper()
+    return _first_text(row, "ticker", "company_id", "issuer_id", "symbol", "focus_ticker").upper()
 
 
 def _first_text(row: Mapping[str, Any], *keys: str) -> str:
@@ -408,7 +452,7 @@ def _citation_span(row: Mapping[str, Any]) -> dict[str, Any]:
         "start_char": _first_text(row, "start_char", "char_start"),
         "end_char": _first_text(row, "end_char", "char_end"),
         "line": _first_text(row, "line", "line_number"),
-        "quote": _first_text(row, "quote", "snippet", "source_text"),
+        "quote": _first_text(row, "quote", "snippet", "source_text", "source_statement"),
     }
     return {key: value for key, value in fields.items() if value}
 
@@ -451,6 +495,16 @@ def _time_basis(*, source_family: str, fiscal_period_end: str, market_as_of: str
     if source_family in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}:
         return "filing"
     return "source_observation"
+
+
+def _is_macro_context_row(row: Mapping[str, Any], *, source_family: str) -> bool:
+    object_type = _first_text(row, "object_type")
+    source_id = _first_text(row, "source_id")
+    return (
+        object_type in {"MacroDriver", "TradeDriver", "IndustryDriver", "CompanyExposureToDriver"}
+        or source_family in {"macro_or_industry_context", "public_source_context"}
+        and source_id in {"fred_api", "fred_graph_csv", "bls_public_api", "eia_open_data", "census_data_api", "usitc_dataweb_and_trade"}
+    )
 
 
 def _dedupe_records(rows: list[dict[str, Any]], *, key_fields: tuple[str, ...] = ("source_id", "evidence_ref", "document_id", "local_path", "raw_url")) -> list[dict[str, Any]]:

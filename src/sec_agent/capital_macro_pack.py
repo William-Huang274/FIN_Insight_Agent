@@ -243,6 +243,15 @@ def compact_capital_macro_pack(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 def _candidate_rows(state: Mapping[str, Any]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
+    adapter = state.get("capital_macro_source_adapter") if isinstance(state.get("capital_macro_source_adapter"), Mapping) else {}
+    if adapter:
+        for key in (
+            "capital_ownership_rows",
+            "macro_driver_rows",
+            "macro_exposure_rows",
+            "vertical_official_object_rows",
+        ):
+            rows.extend(_mapping_items(adapter.get(key)))
     for key in (
         "capital_ownership_rows",
         "ownership_rows",
@@ -263,7 +272,7 @@ def _candidate_rows(state: Mapping[str, Any]) -> list[dict[str, Any]]:
         or _is_debt_instrument_candidate(row)
         or _is_vertical_official_object_candidate(row)
     )
-    return rows
+    return _dedupe_candidate_rows(rows)
 
 
 def _capital_structure_from_row(row: Mapping[str, Any], *, ref: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
@@ -767,6 +776,18 @@ def _cap(values: list[dict[str, Any]], *, max_items: int) -> list[dict[str, Any]
 
 def _mapping_items(value: Any) -> list[dict[str, Any]]:
     return [dict(item) for item in value or [] if isinstance(item, Mapping)]
+
+
+def _dedupe_candidate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for index, row in enumerate(rows, start=1):
+        key = (_evidence_ref(row, index), _row_type(row), _source_id(row, ref=""))
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(row)
+    return result
 
 
 def _first_text(row: Mapping[str, Any], *keys: str) -> str:

@@ -544,10 +544,11 @@
 - [x] K4: Upgrade Product / Technology Specialist into a sub-agent that emits ProductSpecPack plus gated ClaimCards.
 - [ ] K5: Build Capital & Ownership Graph adapters for debt footnotes, offerings, credit facilities, 13F, 13D/G, Form 3/4/5, and proxy ownership.
   - [x] K5 runtime edge-pack slice: add gated CapitalMacroExposurePack objects for CapitalStructure, DebtInstrument, CreditFacility, EquityOffering, OwnershipPosition, and InsiderTransaction; 13F / ownership rows require report period, filing date, lag days, and `not_realtime_flag`.
-  - [ ] K5 source-specific parser/backfill hardening: connect real debt-footnote/offering/13F/13D/G/Form 3/4/5/proxy parsers to the runtime edge pack.
-- [ ] K6: Add Macro Exposure edges and vertical official object adapters before allowing macro/regulatory/public datasets to support company-specific reasoning.
+  - [x] K5 source-specific parser/backfill slice: connect SEC annual debt/credit local parser, SEC 13F bulk, and SEC FSD capital-structure rows to the runtime edge pack with strict source gaps.
+  - [ ] K5 remaining raw-material hardening: materialize S-1/S-3/424B/8-K offering text, 13D/G/proxy ownership, and Form 3/4/5 XML/structured insider rows before those object families can pass.
+- [x] K6: Add Macro Exposure edges and vertical official object adapters before allowing macro/regulatory/public datasets to support company-specific reasoning.
   - [x] K6 runtime edge-pack slice: add MacroDriver, TradeDriver, IndustryDriver, CompanyExposureToDriver, and VerticalOfficialObject pack objects; macro/vertical rows are context-only unless bridged by CompanyExposureToDriver.
-  - [ ] K6 source-specific parser/backfill hardening: map FRED/EIA/Census/FDIC/ClinicalTrials/openFDA/NHTSA/PatentsView/OpenAlex rows into edge-pack inputs by industry adapter.
+  - [x] K6 source-specific parser/backfill hardening: map FRED/EIA/Census/FDIC/ClinicalTrials/openFDA/NHTSA/PatentsView/OpenAlex rows into edge-pack inputs or bounded source gaps by industry/source adapter; unbound PatentsView/OpenAlex leads still require company/product binding.
 - [x] K7: Add verifier/reflection rules for product page vs sales, channel offer vs sell-through, 13F lag, macro exposure, patent/tech signal, and FieldInquiryNote boundaries.
 - [ ] K8: Run a 10-20 case KG sub-agent end-to-end gate covering product specs, product comparisons, capital/ownership, macro exposure, public buyer observer signals, and bounded gaps.
 
@@ -560,14 +561,17 @@
 - [x] D3: Build per-run Entity / Security Master v0.1 for ticker, issuer, CIK, LEI, FIGI, ISIN, CUSIP, SEDOL, legal name, alias registry, unresolved references, validation, summary, and persisted `entity_security_master.json`.
 - [ ] D3.1: Extend Entity / Security Master into SQL-backed resolver for brand, subsidiary, product owner, ADR/common share, ticker changes, and cross-run entity history.
   - [x] D3.1 runtime closeout slice: extend per-run entity rows and DB materialization/reader context with brand, subsidiary, product alias, ADR/common share, domain/country, and source priority fields.
+  - [x] D3.1 K5/K6 hardening slice: ingest capital/macro pack `company_id` rows into Entity Master and expose 13F manager / insider names as unresolved context entities instead of fake tickers.
   - [ ] D3.1 DB hardening: make entity resolution itself consult SQL-backed cross-run alias/security history instead of only emitting DB-readable context.
 - [x] D4: Build per-run Raw Source / Provenance Store v0.1 with raw URL/path, checksum, retrieved_at, source_as_of_date, parser version, license/robots policy, access method, document id, validation, summary, and persisted `raw_source_provenance_store.json`.
 - [x] D5: Build per-run As-of / Vintage Layer v0.1 covering fiscal period end, filing date, accepted date, reported date, observation date, retrieved_at, source_updated_at, market_as_of_date, macro vintage, parser_run_at, validation, summary, and persisted `asof_vintage_layer.json`.
 - [ ] D4.1: Move Raw Source / Provenance Store from per-run JSON to SQL / object-store backed provenance with materialized checksums, parser run lineage, license/robots registry, and cross-run before/after diff.
   - [x] D4.1 runtime closeout slice: materialize sha256 checksums for local source/artifact refs, preserve parser lineage, persist D4 to governance SQLite, and refresh provenance after graph artifact refs are known.
+  - [x] D4.1 K5/K6 hardening slice: flatten `capital_macro_source_adapter` / `capital_macro_pack` rows into provenance with evidence-ref level source ids, raw locator lineage, and SQLite parity.
   - [ ] D4.1 DB hardening: add object-store provenance policy, license/robots registry governance, and cross-run before/after diff views.
 - [ ] D5.1: Connect As-of / Vintage Layer to macro/industry vintage stores, market snapshot as-of tables, filing amendment lineage, and D9 staleness/time-mismatch gates.
   - [x] D5.1 runtime closeout slice: connect market/macro as-of fields and fiscal/market time-basis mismatch into D9 period/staleness gates and governance SQLite materialization.
+  - [x] D5.1 K5/K6 hardening slice: add 13F report period / filing lag, SEC filing dates, macro observation vintage, and vertical official observed_at from capital/macro pack rows into vintage records.
   - [ ] D5.1 DB hardening: add real macro/industry vintage stores, market snapshot as-of tables, and filing amendment lineage history.
 - [x] D6: Build per-run Reconciliation Ledger v0.1 for unit, period, taxonomy, amendment, segment, source priority, and rounding conflicts with preferred_value rules, validation, summary, conflict gaps, and persisted `reconciliation_ledger.json`.
 - [x] D7: Build per-run Metric / Product Ontology v0.1 with canonical ids, accepted/rejected aliases, unit family, period rule, allowed/exact source families, cannot_infer_from policies, validation, summary, and persisted `metric_product_ontology_snapshot.json`.
@@ -581,6 +585,7 @@
 - [x] D10.1: Move Derived Metric Layer into Memo Writer / ClaimCard fact selection, add SQL-backed formula registry and derived output store, and add formula-level eval fixtures for capex sign, negative prior period, quarter length, product/unit mismatch, and ASP boundary.
 - [x] D11: Build per-run Analyst View / Research Memory Layer v0.1 with company, segment, product KPI, earnings change, risk, bull/bear debate, and thesis tracker views that only reference claim, gap, and derived metric ids, with persisted `analyst_view_research_memory.json`.
 - [ ] D11.1: Move Analyst View into Research Lead planning input, add SQL / vector / graph-backed research memory store, cross-run dedupe/staleness/supersession, and memory-to-ledger drilldown parity tests.
+  - [x] D11.1 K5/K6 hardening slice: add `capital_macro_context_view` that indexes gated capital/macro pack object ids without raw source refs and persists through SQLite analyst memory parity.
 - [x] D12: Build D-series Database Closeout Gate v0.1 that lists required DB stores, schema objects, migration ids, backfill jobs, parity tests, reader default policies, pending actions, and persisted `d_series_database_closeout_gate.json`.
 - [x] D12.1a: Implement SQLite-backed schema migrations, artifact-to-database backfill, parity tests, optional graph materialization, and D12 closeout readiness state for D1 Claim Evidence Ledger, D2 Typed Gap Ledger, and D9 Gate Registry / History / Eval Matrix.
 - [x] D12.1b: Implement SQLite-backed schema migrations, artifact-to-database backfill jobs, parity tests, and D12 closeout readiness state for remaining D3-D8 / D10 / D11 required stores before allowing full D-series closeout to pass under explicit DB path.

@@ -11,7 +11,7 @@ from sec_agent.derived_metric_layer import build_derived_metric_layer
 
 ANALYST_VIEW_LAYER_SCHEMA_VERSION = "sec_agent_analyst_view_research_memory_v0.1"
 
-ALLOWED_VIEW_SOURCE_LAYERS = {"claim_evidence_ledger", "typed_gap_ledger", "derived_metric_layer"}
+ALLOWED_VIEW_SOURCE_LAYERS = {"claim_evidence_ledger", "typed_gap_ledger", "derived_metric_layer", "capital_macro_pack"}
 VIEW_TYPES = {
     "company_profile_view",
     "segment_model_view",
@@ -20,6 +20,7 @@ VIEW_TYPES = {
     "risk_factor_view",
     "bull_bear_debate_view",
     "thesis_tracker",
+    "capital_macro_context_view",
 }
 RAW_REF_FIELDS = {
     "evidence_refs",
@@ -52,6 +53,7 @@ def build_analyst_view_research_memory_layer(state: Mapping[str, Any]) -> dict[s
     views.extend(_risk_factor_views(claims, gaps))
     views.extend(_bull_bear_debate_views(claims, gaps, derived_metrics))
     views.extend(_thesis_tracker_views(claims, gaps, derived_metrics))
+    views.extend(_capital_macro_context_views(state))
     views = _dedupe_views(views)
     memory_entries = [_memory_entry(view) for view in views]
     payload = {
@@ -255,6 +257,46 @@ def _risk_factor_views(claims: list[dict[str, Any]], gaps: list[dict[str, Any]])
     return views
 
 
+def _capital_macro_context_views(state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    pack = state.get("capital_macro_pack") if isinstance(state.get("capital_macro_pack"), Mapping) else {}
+    if not pack:
+        return []
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in _capital_macro_pack_rows(pack):
+        ticker = str(row.get("company_id") or row.get("ticker") or "").upper().strip()
+        if ticker:
+            grouped[ticker].append(row)
+    views: list[dict[str, Any]] = []
+    for ticker, rows in sorted(grouped.items()):
+        object_ids = _unique_strings(_capital_macro_object_id(row) for row in rows)
+        object_counts = Counter(str(row.get("object_type") or "unknown") for row in rows)
+        view_id = _stable_id("analyst_view", "capital_macro_context_view", ticker, ",".join(object_ids))
+        views.append(
+            {
+                "view_id": view_id,
+                "view_type": "capital_macro_context_view",
+                "ticker": ticker,
+                "product_or_segment": "",
+                "title": f"{ticker} capital macro context view",
+                "view_status": "context_pack_available",
+                "focus_tags": ["capital_structure", "ownership", "macro_exposure", "official_vertical_context"],
+                "claim_ids": [],
+                "gap_ids": [],
+                "derived_metric_ids": [],
+                "capital_macro_object_ids": object_ids,
+                "drilldown_refs": {"capital_macro_pack": object_ids},
+                "source_layers": ["capital_macro_pack"],
+                "summary_signals": {
+                    "capital_macro_object_count": len(object_ids),
+                    "by_object_type": dict(sorted(object_counts.items())),
+                },
+                "evidence_policy": "view_is_not_source_must_drill_down_to_ledgers",
+                "claim_boundary": "capital_macro_view_is_index_not_company_fact_source",
+            }
+        )
+    return views
+
+
 def _bull_bear_debate_views(claims: list[dict[str, Any]], gaps: list[dict[str, Any]], derived: list[dict[str, Any]]) -> list[dict[str, Any]]:
     views = []
     for ticker in _all_tickers(claims, gaps, derived):
@@ -365,6 +407,7 @@ def _memory_entry(view: Mapping[str, Any]) -> dict[str, Any]:
         "claim_ids": list(view.get("claim_ids") or []),
         "gap_ids": list(view.get("gap_ids") or []),
         "derived_metric_ids": list(view.get("derived_metric_ids") or []),
+        "capital_macro_object_ids": list(view.get("capital_macro_object_ids") or []),
         "source_layers": list(view.get("source_layers") or []),
         "claim_boundary": "memory_entry_is_not_source_and_requires_ledger_drilldown",
     }
@@ -451,7 +494,7 @@ def _text_has_any(row: Mapping[str, Any], terms: list[str]) -> bool:
 
 
 def _has_ledger_ref(row: Mapping[str, Any]) -> bool:
-    return bool(row.get("claim_ids") or row.get("gap_ids") or row.get("derived_metric_ids"))
+    return bool(row.get("claim_ids") or row.get("gap_ids") or row.get("derived_metric_ids") or row.get("capital_macro_object_ids"))
 
 
 def _dedupe_views(views: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -491,6 +534,45 @@ def _unique_strings(values: Any) -> list[str]:
 def _stable_id(prefix: str, *values: Any) -> str:
     raw = "|".join(str(value or "") for value in values)
     return f"{prefix}:{hashlib.sha1(raw.encode('utf-8')).hexdigest()[:16]}"
+
+
+def _capital_macro_pack_rows(pack: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for key in (
+        "capital_structures",
+        "debt_instruments",
+        "credit_facilities",
+        "equity_offerings",
+        "ownership_positions",
+        "insider_transactions",
+        "macro_drivers",
+        "trade_drivers",
+        "industry_drivers",
+        "company_exposure_edges",
+        "vertical_official_objects",
+    ):
+        rows.extend(dict(row) for row in pack.get(key) or [] if isinstance(row, Mapping))
+    return rows
+
+
+def _capital_macro_object_id(row: Mapping[str, Any]) -> str:
+    for field in (
+        "capital_structure_id",
+        "debt_instrument_id",
+        "credit_facility_id",
+        "equity_offering_id",
+        "ownership_position_id",
+        "insider_transaction_id",
+        "driver_id",
+        "trade_driver_id",
+        "industry_driver_id",
+        "exposure_id",
+        "object_id",
+    ):
+        value = str(row.get(field) or "").strip()
+        if value:
+            return value
+    return _stable_id("capital_macro_object", row.get("object_type"), row.get("company_id"), row.get("source_id"), row.get("evidence_ref"))
 
 
 def _jsonable(value: Any) -> Any:

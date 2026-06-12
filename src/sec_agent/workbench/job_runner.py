@@ -79,6 +79,11 @@ _EVAL_RUNNERS = {
         "description": "Runs the closeout aggregator in a lightweight profile without model/API-heavy subchecks.",
         "timeout_hint_s": 180,
     },
+    "agent_graph_vnext_g11_full_chain": {
+        "label": "Agent Graph vNext G11 full-chain gate",
+        "description": "Runs the 12-case upgraded agent graph/skill full-chain gate with real evidence operators and vNext contract checks.",
+        "timeout_hint_s": 7200,
+    },
 }
 _ACTIVE_PROCESSES: dict[str, subprocess.Popen[str]] = {}
 _CANCEL_REQUESTED: set[str] = set()
@@ -163,6 +168,37 @@ def build_eval_command(
             "--clean-fixtures",
             "--output-path",
             str(output_path),
+        ]
+    elif eval_id == "agent_graph_vnext_g11_full_chain":
+        env_overrides["BGE_DEVICE"] = "cpu"
+        args = [
+            sys.executable,
+            "-u",
+            "scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py",
+            "--cases-path",
+            "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl",
+            "--output-dir",
+            "eval/sec_cases/outputs/multi_agent_vnext_g11_full_chain_eval",
+            "--run-id",
+            job_id,
+            "--real-evidence-operators",
+            "--evidence-top-k",
+            "16",
+            "--object-top-k",
+            "16",
+            "--reranker-candidate-limit",
+            "48",
+            "--reranker-top-k",
+            "10",
+            "--bge-device",
+            "cpu",
+            "--memo-max-tokens",
+            "4200",
+            "--verifier-max-tokens",
+            "1200",
+            "--summary-output-path",
+            str(output_path),
+            "--strict",
         ]
     else:
         args = [

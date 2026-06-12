@@ -105,6 +105,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--reranker-batch-size", type=int, default=int(os.environ.get("RERANKER_BATCH_SIZE", "8")))
     parser.add_argument("--reranker-max-length", type=int, default=int(os.environ.get("RERANKER_MAX_LENGTH", "512")))
     parser.add_argument("--reranker-doc-max-chars", type=int, default=int(os.environ.get("RERANKER_DOC_MAX_CHARS", "0")))
+    parser.add_argument("--summary-output-path", type=Path, default=None, help="Optional compact summary JSON for Workbench eval jobs.")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero unless all hard gates pass.")
     return parser.parse_args(argv)
 
@@ -166,10 +167,41 @@ def main(argv: list[str] | None = None) -> int:
     _write_jsonl(output_dir / "real_chain_case_scores.jsonl", scores)
     summary_path = output_dir / "real_chain_eval_summary.json"
     summary_path.write_text(json.dumps(aggregate, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if args.summary_output_path:
+        _write_workbench_eval_summary(aggregate, args.summary_output_path, source_summary_path=summary_path)
     print(json.dumps(_stdout_summary(aggregate, summary_path), ensure_ascii=False, indent=2))
     if args.strict and aggregate["gate_status"] != "pass":
         return 1
     return 0
+
+
+def _write_workbench_eval_summary(
+    summary: Mapping[str, Any],
+    output_path: Path,
+    *,
+    source_summary_path: Path,
+) -> None:
+    metrics = summary.get("metrics") if isinstance(summary.get("metrics"), Mapping) else {}
+    case_count = int(metrics.get("case_count") or 0)
+    pass_count = int(metrics.get("passed") or 0)
+    failure_count = int(metrics.get("failed") or max(0, case_count - pass_count))
+    payload = {
+        "schema_version": "sec_agent_workbench_eval_summary_v0.1",
+        "source_schema_version": summary.get("schema_version") or "",
+        "run_id": summary.get("run_id") or "",
+        "status": "pass" if summary.get("gate_status") == "pass" else "fail",
+        "gate_status": summary.get("gate_status") or "",
+        "diagnostic_only": bool(summary.get("diagnostic_only", True)),
+        "case_count": case_count,
+        "pass_count": pass_count,
+        "failure_count": failure_count,
+        "all_pass": summary.get("gate_status") == "pass" and case_count > 0,
+        "failed_cases": list(metrics.get("failed_cases") or []),
+        "source_summary_path": str(source_summary_path.resolve()),
+        "output_dir": summary.get("output_dir") or "",
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def _write_output_quality_audit(aggregate: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:

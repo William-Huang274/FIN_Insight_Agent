@@ -9,6 +9,7 @@ from sec_agent.multi_agent_router import route_multi_agent_activation
 from sec_agent.research_lead_llm import (
     ROUTE_SOURCE,
     ResearchLeadLLMConfig,
+    _normalize_evidence_requirement_payload_routes,
     extract_activation_plan_json,
     research_lead_llm_config_from_env,
     route_activation_from_env,
@@ -532,6 +533,313 @@ def test_research_lead_alignment_adds_product_specialist_from_evidence_sources()
     assert "product_technology_analyst" in result["activation_plan"]["activate_agents"]
     assert "company_product_evidence_graph" in result["activation_plan"]["allowed_source_families"]
     assert result["activation_plan"]["agent_priorities"]["product_technology_analyst"] == "supporting"
+
+
+def test_research_lead_normalizes_source_family_names_out_of_evidence_routes() -> None:
+    request = _case(
+        "Compare AAPL product evidence and public proxy gaps.",
+        "standard_memo",
+        ["AAPL"],
+        ["AAPL"],
+    )
+    request["context"]["query_contract"] = {
+        "focus_tickers": ["AAPL"],
+        "search_scope_tickers": ["AAPL"],
+        "source_tiers": ["primary_sec_filing", "company_product_evidence_graph", "public_source_context"],
+        "metric_families": ["product_revenue"],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    evidence_plan = {
+        "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+        "requirements": [
+            {
+                "requirement_id": "req_product_evidence_graph",
+                "task_id": "product_kpi",
+                "source_tiers": ["company_product_evidence_graph"],
+                "evidence_routes": ["company_product_evidence_graph"],
+                "metric_families": ["product_revenue"],
+            },
+            {
+                "requirement_id": "req_public_source_context",
+                "task_id": "public_proxy_context",
+                "source_tiers": ["public_source_context"],
+                "evidence_routes": ["public_source_context"],
+                "metric_families": ["market_share"],
+            },
+        ],
+    }
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": evidence_plan})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    normalized_payload = _normalize_evidence_requirement_payload_routes(evidence_plan)
+    normalized_requirements = {row["requirement_id"]: row for row in normalized_payload["requirements"]}
+    assert normalized_requirements["req_product_evidence_graph"]["evidence_routes"] == []
+    assert "company_product_evidence_graph" in normalized_requirements["req_product_evidence_graph"]["source_families"]
+    assert normalized_requirements["req_public_source_context"]["evidence_routes"] == []
+    assert "public_source_context" in normalized_requirements["req_public_source_context"]["source_families"]
+    assert "market_operator" in result["activation_plan"]["activate_agents"]
+    assert "market_snapshot" in result["activation_plan"]["allowed_source_families"]
+    requirements = result["evidence_requirement_plan"]["requirements"]
+    by_id = {row["requirement_id"]: row for row in requirements}
+    assert by_id["req_public_source_context"]["evidence_routes"] == ["market_snapshot"]
+    assert "market_snapshot" in by_id["req_public_source_context"]["source_families"]
+
+
+def test_research_lead_downgrades_live_web_without_scope_policy() -> None:
+    request = _case(
+        "Compare CRM and SNOW product traction using public context if available.",
+        "standard_memo",
+        ["CRM", "SNOW"],
+        ["CRM", "SNOW"],
+    )
+    request["context"]["query_contract"] = {
+        "focus_tickers": ["CRM", "SNOW"],
+        "search_scope_tickers": ["CRM", "SNOW"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "company_product_evidence_graph",
+            "public_source_context",
+        ],
+        "metric_families": ["revenue", "rpo_deferred_revenue", "market_share"],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["activate_agents"] = [*plan["activate_agents"], "web_evidence_operator"]
+    plan["allowed_source_families"] = [*plan["allowed_source_families"], "live_public_web_context"]
+    plan["agent_priorities"]["web_evidence_operator"] = "supporting"
+    plan["model_policy_hint"]["web_evidence_operator"] = "none"
+    evidence_plan = {
+        "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+        "requirements": [
+            {
+                "requirement_id": "req_live_web_context",
+                "task_id": "public_proxy_context",
+                "source_tiers": ["live_public_web_context"],
+                "evidence_routes": ["live_public_web_context"],
+                "metric_families": ["market_share"],
+            }
+        ],
+    }
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": evidence_plan})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert "web_evidence_operator" not in result["activation_plan"]["activate_agents"]
+    assert "live_public_web_context" not in result["activation_plan"]["allowed_source_families"]
+    assert "public_source_context" in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["metadata"]["live_web_downgraded"] is True
+    requirements = result["evidence_requirement_plan"]["requirements"]
+    assert requirements[0]["evidence_routes"] == ["market_snapshot"]
+    assert "market_snapshot" in result["activation_plan"]["allowed_source_families"]
+
+
+def test_research_lead_prunes_product_agent_for_public_context_without_product_intent() -> None:
+    request = _case(
+        "比较 WMT 和 TGT 的收入、利润率、库存或消费者需求风险，并说明 POS/panel/渠道库存这类缺口是否只能靠商业 tracker。",
+        "standard_memo",
+        ["WMT", "TGT"],
+        ["WMT", "TGT"],
+    )
+    request["context"]["query_contract"] = {
+        "focus_tickers": ["WMT", "TGT"],
+        "search_scope_tickers": ["WMT", "TGT"],
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot", "public_source_context"],
+        "metric_families": ["revenue", "gross_margin", "inventory", "cash_flow", "valuation"],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["activate_agents"] = [*plan["activate_agents"], "product_technology_analyst"]
+    plan["allowed_source_families"] = [*plan["allowed_source_families"], "company_product_evidence_graph"]
+    plan["agent_priorities"]["product_technology_analyst"] = "supporting"
+    plan["model_policy_hint"]["product_technology_analyst"] = "balanced"
+    evidence_plan = {
+        "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+        "requirements": [
+            {
+                "requirement_id": "req_bank_public_context",
+                "task_id": "market_public_context",
+                "source_tiers": ["market_snapshot"],
+                "evidence_routes": ["market_snapshot"],
+                "metric_families": ["inventory", "gross_margin"],
+            }
+        ],
+    }
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": evidence_plan})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert "product_technology_analyst" not in result["activation_plan"]["activate_agents"]
+    assert "company_product_evidence_graph" not in result["activation_plan"]["allowed_source_families"]
+    assert "public_source_context" in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["metadata"]["product_technology_pruned"] is True
+
+
+def test_research_lead_removes_milvus_semantic_when_runtime_unavailable() -> None:
+    request = _case(
+        "从 AI infrastructure sector-depth pack 出发，分析 NVDA、DELL、ANET、VRT 的需求传导和反证风险。",
+        "deep_research",
+        ["NVDA", "DELL"],
+        ["NVDA", "DELL", "ANET", "VRT"],
+    )
+    request["context"]["query_contract"] = {
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "ANET", "VRT"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+            "milvus_semantic",
+        ],
+        "metric_families": ["revenue", "orders_backlog", "capex", "rpo_deferred_revenue"],
+    }
+    request["source_inventory"] = {
+        "source_families": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+            "milvus_semantic",
+        ],
+        "milvus_runtime": {"available": False, "status": "unavailable"},
+        "source_family_availability": {"milvus_semantic": {"available": False, "status": "unavailable"}},
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["allowed_source_families"] = [*plan["allowed_source_families"], "milvus_semantic"]
+    evidence_plan = {
+        "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+        "requirements": [
+            {
+                "requirement_id": "req_semantic_recall",
+                "task_id": "filing_theme_recall",
+                "source_tiers": ["milvus_semantic", "primary_sec_filing"],
+                "evidence_routes": ["milvus_semantic", "filing_text"],
+                "metric_families": ["orders_backlog"],
+            }
+        ],
+    }
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": evidence_plan})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert "milvus_semantic" not in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["metadata"]["milvus_semantic_removed"] is True
+    assert "milvus_semantic" not in result["evidence_requirement_plan"]["scope"]["source_tiers"]
+    for requirement in result["evidence_requirement_plan"]["requirements"]:
+        assert "milvus_semantic" not in requirement["evidence_routes"]
+
+
+def test_research_lead_prunes_relationship_route_without_scope_intent_after_alignment() -> None:
+    request = _case(
+        "比较 AAPL 的 iPhone、Mac、Services 相关产品证据与财务表现。",
+        "standard_memo",
+        ["AAPL"],
+        ["AAPL"],
+    )
+    request["context"]["query_contract"] = {
+        "focus_tickers": ["AAPL"],
+        "search_scope_tickers": ["AAPL"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "company_product_evidence_graph",
+            "public_source_context",
+        ],
+        "metric_families": ["revenue", "segment_revenue", "product_revenue", "gross_margin", "valuation"],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["activate_agents"] = [*plan["activate_agents"], "universe_relationship"]
+    plan["allowed_source_families"] = [*plan["allowed_source_families"], "relationship_graph"]
+    plan["agent_priorities"]["universe_relationship"] = "supporting"
+    plan["model_policy_hint"]["universe_relationship"] = "balanced"
+    evidence_plan = {
+        "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+        "requirements": [
+            {
+                "requirement_id": "req_relationship_overroute",
+                "task_id": "product_peer_context",
+                "source_tiers": ["relationship_graph", "primary_sec_filing"],
+                "evidence_routes": ["relationship_graph", "filing_text"],
+                "metric_families": ["product_revenue"],
+            }
+        ],
+    }
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": evidence_plan})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert "universe_relationship" not in result["activation_plan"]["activate_agents"]
+    assert "relationship_graph" not in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["metadata"]["relationship_overroute_pruned"] is True
+    for requirement in result["evidence_requirement_plan"]["requirements"]:
+        assert "relationship_graph" not in requirement["evidence_routes"]
 
 
 def test_research_lead_alignment_applies_playbook_policy_from_inventory() -> None:

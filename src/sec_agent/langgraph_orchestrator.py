@@ -49,6 +49,7 @@ from sec_agent.multi_agent_contracts import (
     ledger_metric_display_value,
     build_stub_specialist_memolets,
     normalize_universe_relationship_plan,
+    refresh_judgment_plan_after_governance_filter,
     repair_multi_agent_memo_draft,
     validate_universe_relationship_plan,
     verify_multi_agent_memo_draft,
@@ -1890,6 +1891,7 @@ def _node_multi_agent_aggregate_judgment_plan(
         result.get("verified_judgment_plan") or result.get("judgment_plan") or judgment,
         fact_selection,
     )
+    selected_judgment = refresh_judgment_plan_after_governance_filter(selected_judgment)
     result["judgment_plan"] = selected_judgment
     result["verified_judgment_plan"] = selected_judgment
     governance_ledgers = build_evidence_governance_ledgers(

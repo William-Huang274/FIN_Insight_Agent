@@ -9,6 +9,7 @@ from sec_agent.workbench.job_runner import (
     CommandSpec,
     build_agent_ask_command,
     build_agent_session_turn_command,
+    build_eval_command,
     build_native_checkpoint_resume_command,
     detect_run_dir_from_output,
     start_command_job,
@@ -106,6 +107,24 @@ def test_command_job_attaches_eval_output_summary(tmp_path: Path) -> None:
     assert finished.metadata["eval_summary"]["status"] == "pass"
     assert finished.metadata["eval_summary"]["case_count"] == 2
     assert any("eval summary:" in event.message for event in events)
+
+
+def test_build_g11_full_chain_eval_command_targets_vnext_fixture(tmp_path: Path) -> None:
+    spec = build_eval_command(
+        repo_root=tmp_path,
+        eval_id="agent_graph_vnext_g11_full_chain",
+        job_id="g11_eval_fixture",
+    )
+
+    assert spec.label == "eval:agent_graph_vnext_g11_full_chain"
+    assert spec.args[:3] == [sys.executable, "-u", "scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py"]
+    assert "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl" in spec.args
+    assert "eval/sec_cases/outputs/multi_agent_vnext_g11_full_chain_eval" in spec.args
+    assert "--real-evidence-operators" in spec.args
+    assert spec.args[spec.args.index("--bge-device") + 1] == "cpu"
+    assert spec.env_overrides["BGE_DEVICE"] == "cpu"
+    assert "--summary-output-path" in spec.args
+    assert "--strict" in spec.args
 
 
 def test_build_agent_ask_command_can_target_wsl(tmp_path: Path) -> None:

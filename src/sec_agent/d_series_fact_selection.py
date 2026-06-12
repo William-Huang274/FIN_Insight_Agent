@@ -201,7 +201,7 @@ def apply_pre_memo_fact_selection_to_judgment(
             moved = {
                 "claim_id": _text(claim.get("claim_id")),
                 "agent_id": _text(claim.get("agent_id")),
-                "claim": _text(claim.get("claim")),
+                "claim": "claim text withheld because pre-memo governance blocked this fact; use bounded gap metadata instead",
                 "reason": "blocked_by_pre_memo_fact_selection",
                 "blocked_evidence_refs": blocked,
                 "unapproved_derived_metric_ids": unapproved_derived,

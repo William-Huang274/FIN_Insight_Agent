@@ -667,6 +667,7 @@ def test_workbench_backend_lists_and_starts_controlled_eval_runner(
 
     assert catalog_response.status_code == 200
     assert "context_api_smoke" in {item["eval_id"] for item in catalog_response.json()["evals"]}
+    assert "agent_graph_vnext_g11_full_chain" in {item["eval_id"] for item in catalog_response.json()["evals"]}
     assert start_response.status_code == 200
     payload = start_response.json()
     assert payload["job"]["job_type"] == "eval_run"
@@ -675,6 +676,38 @@ def test_workbench_backend_lists_and_starts_controlled_eval_runner(
     spec = captured["spec"]
     assert "scripts/eval_context/evaluate_sec_agent_context_api_smoke.py" in spec.args
     assert "--output-path" in spec.args
+
+
+def test_workbench_backend_starts_g11_full_chain_eval_runner_without_secret_args(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_start_command_job(store, job, spec) -> None:
+        captured["job"] = job
+        captured["spec"] = spec
+        store.upsert_run_job(job)
+
+    monkeypatch.setattr("apps.workbench.backend.app.start_command_job", fake_start_command_job)
+    client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.post(
+        "/api/evals/run",
+        json={"eval_id": "agent_graph_vnext_g11_full_chain", "job_id": "g11_fixture"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["job"]["job_type"] == "eval_run"
+    assert payload["job"]["metadata"]["eval_id"] == "agent_graph_vnext_g11_full_chain"
+    assert payload["job"]["metadata"]["output_path"].endswith("g11_fixture_agent_graph_vnext_g11_full_chain.json")
+    spec = captured["spec"]
+    assert "scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py" in spec.args
+    assert "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl" in spec.args
+    assert "--summary-output-path" in spec.args
+    assert "--strict" in spec.args
+    assert not any(str(arg).startswith("sk-") for arg in spec.args)
 
 
 def test_workbench_backend_rejects_unknown_eval_runner(tmp_path: Path) -> None:

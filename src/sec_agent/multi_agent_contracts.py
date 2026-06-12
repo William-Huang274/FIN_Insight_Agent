@@ -804,6 +804,51 @@ def verify_specialist_outputs_for_memo(
     }
 
 
+def refresh_judgment_plan_after_governance_filter(judgment_plan: Mapping[str, Any]) -> dict[str, Any]:
+    """Refresh memo-facing plan fields after D-series fact gates filter ClaimCards."""
+
+    judgment = dict(judgment_plan or {})
+    supported_claims = [dict(item) for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)]
+    unsupported_claims = [dict(item) for item in judgment.get("unsupported_claims") or [] if isinstance(item, Mapping)]
+    conflicts = [dict(item) for item in judgment.get("conflicts") or [] if isinstance(item, Mapping)]
+    blocked_specialist_agents = _unique_strings(judgment.get("blocked_specialist_agents"))
+    source_boundary_notes = [dict(item) for item in judgment.get("source_boundary_notes") or [] if isinstance(item, Mapping)]
+    source_agent_ids = _unique_strings(judgment.get("source_agent_ids")) if supported_claims else []
+    memo_outline = _memo_outline_from_claims(
+        supported_claims,
+        source_agent_ids=source_agent_ids,
+        blocked_specialist_agents=blocked_specialist_agents,
+    )
+    memo_thesis_plan = _memo_thesis_plan_from_claims(
+        supported_claims=supported_claims,
+        memo_outline=memo_outline,
+        conflicts=conflicts,
+        unsupported_claims=unsupported_claims,
+        source_boundary_notes=source_boundary_notes,
+    )
+    memo_thesis_pack = _memo_thesis_pack_from_claims(
+        supported_claims=supported_claims,
+        memo_outline=memo_outline,
+        memo_thesis_plan=memo_thesis_plan,
+        conflicts=conflicts,
+        unsupported_claims=unsupported_claims,
+        source_boundary_notes=source_boundary_notes,
+    )
+    thesis_synthesis = dict(judgment.get("thesis_synthesis") or {}) if isinstance(judgment.get("thesis_synthesis"), Mapping) else {}
+    if thesis_synthesis:
+        thesis_synthesis["supported_claim_count"] = len(supported_claims)
+    return {
+        **judgment,
+        "source_agent_ids": source_agent_ids,
+        "memo_outline": memo_outline,
+        "memo_thesis_plan": memo_thesis_plan,
+        "memo_thesis_pack": memo_thesis_pack,
+        "claim_card_stats": _claim_card_stats(supported_claims, memo_outline),
+        "thesis_synthesis": thesis_synthesis,
+        "governance_filter_refresh_policy": "refresh_memo_pack_after_pre_memo_fact_selection_v0_1",
+    }
+
+
 def _rank_supported_claims(claims: list[dict[str, Any]]) -> list[dict[str, Any]]:
     indexed = list(enumerate(claims))
     ranked = sorted(indexed, key=lambda item: _claim_rank_key(item[1], item[0]))

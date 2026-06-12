@@ -85,6 +85,10 @@ ROUTE_SOURCE_FAMILY: dict[str, str] = {
     "live_public_web_context": "live_public_web_context",
     "run_artifact": "run_artifact",
 }
+CONTEXT_ONLY_REQUIREMENT_SOURCE_FAMILIES = {
+    "company_product_evidence_graph",
+    "public_source_context",
+}
 
 ROUTE_COST_TIER: dict[str, str] = {
     "ledger_first": "low",
@@ -489,13 +493,16 @@ def validate_multi_agent_evidence_requirement_plan(
                 or requirement.get("operator_owner")
             )
         )
-        if explicit_sources and expected_sources and not explicit_sources.issubset(expected_sources):
+        context_only_sources = explicit_sources & CONTEXT_ONLY_REQUIREMENT_SOURCE_FAMILIES
+        route_backed_explicit_sources = explicit_sources - CONTEXT_ONLY_REQUIREMENT_SOURCE_FAMILIES
+        if route_backed_explicit_sources and expected_sources and not route_backed_explicit_sources.issubset(expected_sources):
             errors.append(
                 {
                     "type": "source_family_mismatch",
                     "requirement_id": requirement_id,
-                    "source_families": sorted(explicit_sources),
+                    "source_families": sorted(route_backed_explicit_sources),
                     "expected_source_families": sorted(expected_sources),
+                    "context_only_source_families": sorted(context_only_sources),
                 }
             )
         if explicit_owners and expected_owners and not explicit_owners.issubset(expected_owners):
@@ -508,7 +515,7 @@ def validate_multi_agent_evidence_requirement_plan(
                 }
             )
         if allowed_sources:
-            disallowed = sorted(expected_sources - allowed_sources)
+            disallowed = sorted((expected_sources | context_only_sources) - allowed_sources)
             if disallowed:
                 errors.append(
                     {
@@ -5747,6 +5754,8 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
             for row in _row_dicts(state.get("context_rows"))
             if _row_source_family(row) in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
         )
+        if not any(_row_source_family(row) in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"} for row in rows):
+            rows.extend(_product_source_gap_rows_for_agent_data_view(state))
         rows = _balanced_rows_by_source(
             rows,
             source_order=[
@@ -5829,6 +5838,76 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
                 max_rows=max_rows,
             )
     return [_bounded_row(row, index) for index, row in enumerate(rows[:max_rows], start=1)]
+
+
+def _product_source_gap_rows_for_agent_data_view(state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    requested_sources = _requested_product_source_families_from_state(state)
+    if not requested_sources:
+        return []
+    focus_tickers = _focus_tickers_from_state(state)
+    if not focus_tickers:
+        focus_tickers = _search_scope_tickers_from_state(state, focus_tickers=[])[:2]
+    if not focus_tickers:
+        focus_tickers = [""]
+    metrics = _requested_metric_families_from_state(state)
+    metric = ",".join(metrics[:6]) or "product_or_public_proxy_metric"
+    rows: list[dict[str, Any]] = []
+    for ticker in focus_tickers[:4]:
+        for source_family in requested_sources:
+            gap_type = (
+                "commercial_market_tracker_gap_after_public_source_check"
+                if source_family == "public_source_context"
+                else "product_kpi_parser_or_source_gap"
+            )
+            rows.append(
+                {
+                    "gap_id": f"product_source_gap::{ticker or 'UNKNOWN'}::{source_family}",
+                    "evidence_ref": f"product_source_gap::{ticker or 'UNKNOWN'}::{source_family}",
+                    "source_family": source_family,
+                    "ticker": ticker,
+                    "metric": metric,
+                    "gap_type": gap_type,
+                    "reason": "Requested product/public product evidence is not materialized in the current public-source runtime.",
+                    "reason_code": "product_public_source_not_materialized",
+                    "promotion_status": "gap_exposed_not_fallback",
+                    "claim_scope": "bounded_gap_only",
+                    "context_only": True,
+                    "exact_value_authority": False,
+                    "gap_only": True,
+                    "repairability": "requires_company_product_parser_or_commercial_tracker",
+                    "summary": (
+                        "Bounded product evidence gap: current public/free runtime has no product evidence row for this ticker/source family. "
+                        "Do not fill with generic SEC or market proxy facts; expose the missing product KPI/tracker confirmation."
+                    ),
+                }
+            )
+    return rows
+
+
+def _requested_product_source_families_from_state(state: Mapping[str, Any]) -> list[str]:
+    sources: list[str] = []
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    sources.extend(_string_list(query_contract.get("source_tiers") or query_contract.get("source_families")))
+    evidence_plan = state.get("evidence_requirement_plan") if isinstance(state.get("evidence_requirement_plan"), Mapping) else {}
+    scope = evidence_plan.get("scope") if isinstance(evidence_plan.get("scope"), Mapping) else {}
+    sources.extend(_string_list(scope.get("source_tiers") or scope.get("source_families")))
+    for requirement in evidence_plan.get("requirements") or []:
+        if isinstance(requirement, Mapping):
+            sources.extend(_string_list(requirement.get("source_tiers") or requirement.get("source_families")))
+    return _dedupe([source for source in sources if source in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}])
+
+
+def _requested_metric_families_from_state(state: Mapping[str, Any]) -> list[str]:
+    metrics: list[str] = []
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    metrics.extend(_string_list(query_contract.get("metric_families")))
+    evidence_plan = state.get("evidence_requirement_plan") if isinstance(state.get("evidence_requirement_plan"), Mapping) else {}
+    scope = evidence_plan.get("scope") if isinstance(evidence_plan.get("scope"), Mapping) else {}
+    metrics.extend(_string_list(scope.get("metric_families")))
+    for requirement in evidence_plan.get("requirements") or []:
+        if isinstance(requirement, Mapping):
+            metrics.extend(_string_list(requirement.get("metric_families")))
+    return _dedupe(metrics)
 
 
 def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:

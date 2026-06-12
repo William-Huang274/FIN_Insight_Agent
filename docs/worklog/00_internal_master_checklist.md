@@ -526,10 +526,10 @@
 - [x] G8: Upgrade AgentDataView to Global / Role / Private context contracts and keep Memo Writer off raw evidence.
 - [x] G9: Convert retrieval and specialist execution to async fan-out with fusion / delta / claim-store / adjudicator barriers.
 - [x] G10: Add Milvus runtime capability switch for cloud/local/unavailable and keep semantic recall out of exact-value authority.
-- [ ] G11: Run 10-20 case end-to-end gate covering exact/focused/standard/deep/multi-turn, product/public/web/Milvus boundaries, and bounded gaps.
+- [x] G11: Run 10-20 case end-to-end gate covering exact/focused/standard/deep/multi-turn, product/public/web/Milvus boundaries, and bounded gaps.
   - [x] Add G11-specific 12-case fixture and vNext scoring audit for graph barriers, bounded gaps, Milvus runtime, semantic exact-authority misuse, private handle exposure, and weak proxy fallback.
   - [x] Run initial real smoke for exact MSFT, focused LLY, and standard NVDA/AMD product/market cases: `3/3` pass across three single-case runs.
-  - [ ] Run the full 12-case G11 gate and repair only root causes or expose bounded gaps; do not weaken source-boundary checks.
+  - [x] Run the full 12-case G11 gate through Workbench backend with DeepSeek and repair only root causes or expose bounded gaps; final run `20260613_agent_graph_vnext_g11_full_chain_workbench_deepseek_v0_10` reached `12/12` pass.
 
 ## Knowledge Graph / Sub-agent / Product Edge vNext
 

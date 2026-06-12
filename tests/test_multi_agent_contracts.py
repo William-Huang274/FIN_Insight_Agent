@@ -5,6 +5,7 @@ from sec_agent.multi_agent_contracts import (
     aggregate_specialist_judgment_plan,
     build_multi_agent_memo_draft,
     normalize_universe_relationship_plan,
+    refresh_judgment_plan_after_governance_filter,
     repair_multi_agent_memo_draft,
     validate_specialist_memolet,
     validate_universe_relationship_plan,
@@ -97,6 +98,64 @@ def test_product_technology_claim_card_uses_product_memo_slot() -> None:
     assert judgment["supported_claims"][0]["memo_slot"] == "product_technology"
     assert outline["product_technology"]["status"] == "supported"
     assert draft["memo_claims"][0]["memo_slot"] == "product_technology"
+
+
+def test_governance_filter_refresh_rebuilds_memo_pack_without_blocked_claims() -> None:
+    kept = {
+        "claim_id": "claim_context",
+        "agent_id": "focused_answer_synthesizer",
+        "claim": "Company-authored context can be used only as management commentary.",
+        "claim_type": "business_observation",
+        "memo_slot": "fundamentals",
+        "evidence_refs": ["context_ref"],
+        "source_families": ["company_authored_unaudited_sec_filing"],
+        "materiality": "medium",
+        "confidence": "medium",
+    }
+    blocked = {
+        "claim_id": "claim_blocked",
+        "agent_id": "focused_answer_synthesizer",
+        "claim": "Revenue was 19,799 million dollars.",
+        "claim_type": "company_reported_financial_fact",
+        "memo_slot": "fundamentals",
+        "evidence_refs": ["blocked_ref"],
+        "source_families": ["primary_sec_filing"],
+        "materiality": "high",
+        "confidence": "high",
+    }
+    original = {
+        "schema_version": "sec_agent_judgment_plan_v0.1",
+        "source_agent_ids": ["focused_answer_synthesizer"],
+        "supported_claims": [kept, blocked],
+        "unsupported_claims": [],
+        "conflicts": [],
+        "blocked_specialist_agents": [],
+        "source_boundary_notes": [],
+    }
+    original["memo_outline"] = [{"memo_slot": "fundamentals", "status": "supported", "claim_ids": ["claim_context", "claim_blocked"]}]
+    original["memo_thesis_pack"] = {
+        "status": "ready",
+        "core_thesis": {"claim": "Revenue was 19,799 million dollars.", "evidence_refs": ["blocked_ref"]},
+        "supporting_drivers": [{"driver": blocked}],
+    }
+    filtered = {
+        **original,
+        "supported_claims": [kept],
+        "unsupported_claims": [
+            {
+                "claim_id": "claim_blocked",
+                "claim": "claim text withheld because pre-memo governance blocked this fact; use bounded gap metadata instead",
+                "reason": "blocked_by_pre_memo_fact_selection",
+            }
+        ],
+    }
+
+    refreshed = refresh_judgment_plan_after_governance_filter(filtered)
+    packed_text = str(refreshed["memo_thesis_pack"])
+
+    assert "19,799" not in packed_text
+    assert refreshed["memo_thesis_pack"]["core_thesis"]["claim_id"] == "claim_context"
+    assert refreshed["claim_card_stats"]["supported_claim_count"] == 1
 
 
 def test_verifier_blocks_ownership_filing_as_realtime_flow_and_repair_removes_it() -> None:

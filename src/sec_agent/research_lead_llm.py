@@ -581,9 +581,14 @@ def _validate_research_lead_output(
     *,
     require_evidence_requirements: bool,
 ) -> dict[str, Any]:
-    evidence_payload = _evidence_requirement_payload(payload)
+    evidence_payload = _normalize_live_web_evidence_payload_for_policy(_evidence_requirement_payload(payload), route_request)
+    evidence_payload = _normalize_milvus_evidence_payload_for_availability(evidence_payload, route_request)
+    evidence_payload = _normalize_relationship_evidence_payload_for_scope(evidence_payload, route_request)
     activation_payload = _normalize_activation_for_source_contract(_activation_plan_payload(payload), route_request)
     activation_payload = _align_activation_with_evidence_payload(activation_payload, evidence_payload)
+    activation_payload = _normalize_relationship_activation_for_scope(activation_payload, route_request)
+    activation_payload = _normalize_live_web_activation_for_policy(activation_payload, route_request)
+    activation_payload = _normalize_milvus_activation_for_availability(activation_payload, route_request)
     activation_payload = _apply_playbook_policy(activation_payload, route_request)
     activation_payload = _sanitize_activation_policy_maps(activation_payload)
     validation = _validate_plan(activation_payload, loop_budget)
@@ -765,6 +770,7 @@ def _align_activation_with_evidence_payload(plan: Mapping[str, Any], evidence_pa
     allowed_sources = _dedupe([str(source) for source in normalized.get("allowed_source_families") or []])
     added_agents: list[str] = []
     added_sources: list[str] = []
+    known_sources = set(allowed_source_families())
     for requirement in evidence_payload.get("requirements") or []:
         if not isinstance(requirement, Mapping):
             continue
@@ -775,7 +781,17 @@ def _align_activation_with_evidence_payload(plan: Mapping[str, Any], evidence_pa
                 or requirement.get("source_family")
             )
         )
-        for route in _string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes")):
+        for source in sorted(requirement_sources):
+            if source in known_sources and source != "live_public_web_context" and source not in allowed_sources:
+                allowed_sources.append(source)
+                added_sources.append(source)
+        requirement_routes = _dedupe(
+            [
+                *_string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes")),
+                *_implied_activation_routes_for_requirement(requirement, requirement_sources),
+            ]
+        )
+        for route in requirement_routes:
             source_family = ROUTE_SOURCE_FAMILY.get(route, "")
             owner = ROUTE_OPERATOR_TOOL.get(route, ("", ""))[0]
             if source_family:
@@ -788,7 +804,7 @@ def _align_activation_with_evidence_payload(plan: Mapping[str, Any], evidence_pa
                 added_agents.append(owner)
         if (
             str(normalized.get("execution_mode") or "") in {"standard_memo", "deep_research"}
-            and requirement_sources & {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+            and _requirement_requires_product_technology(requirement, requirement_sources)
             and "product_technology_analyst" not in active
         ):
             active = _insert_before(active, "product_technology_analyst", "judgment_plan_aggregator")
@@ -814,6 +830,80 @@ def _align_activation_with_evidence_payload(plan: Mapping[str, Any], evidence_pa
     metadata["evidence_route_source_alignment_added_agents"] = _dedupe(added_agents)
     normalized["metadata"] = metadata
     return normalized
+
+
+def _implied_activation_routes_for_requirement(requirement: Mapping[str, Any], source_families: set[str]) -> list[str]:
+    """Mirror deterministic compiler route implications that affect activation validation."""
+    routes: list[str] = []
+    if "market_snapshot" in source_families:
+        routes.append("market_snapshot")
+    if "industry_snapshot" in source_families:
+        routes.append("industry_snapshot")
+    if "relationship_graph" in source_families:
+        routes.append("relationship_graph")
+    if "run_artifact" in source_families:
+        routes.append("run_artifact")
+    if "live_public_web_context" in source_families:
+        routes.append("live_public_web_context")
+    if "public_source_context" in source_families and _requirement_implies_market_snapshot(requirement):
+        routes.append("market_snapshot")
+    return _dedupe(routes)
+
+
+def _requirement_implies_market_snapshot(requirement: Mapping[str, Any]) -> bool:
+    market_fields = _string_list(requirement.get("market_fields") or requirement.get("required_market_fields"))
+    if market_fields:
+        return True
+    text = " ".join(
+        [
+            str(requirement.get("task_id") or ""),
+            str(requirement.get("question_zh") or requirement.get("question") or ""),
+            str(requirement.get("analysis_intent") or ""),
+            " ".join(_string_list(requirement.get("metric_families") or requirement.get("required_metric_families"))),
+        ]
+    ).lower()
+    return any(
+        marker in text
+        for marker in (
+            "market",
+            "share",
+            "valuation",
+            "multiple",
+            "stock",
+            "price",
+            "return",
+            "proxy",
+            "traffic",
+            "download",
+            "ranking",
+            "rank",
+            "市场",
+            "份额",
+            "估值",
+            "股价",
+            "代理",
+        )
+    )
+
+
+def _requirement_requires_product_technology(requirement: Mapping[str, Any], source_families: set[str]) -> bool:
+    if "company_product_evidence_graph" in source_families:
+        return True
+    if not (source_families & {"public_source_context", "live_public_web_context"}):
+        return False
+    return _requirement_mentions_product_technology(requirement)
+
+
+def _requirement_mentions_product_technology(requirement: Mapping[str, Any]) -> bool:
+    text = " ".join(
+        [
+            str(requirement.get("task_id") or ""),
+            str(requirement.get("question_zh") or requirement.get("question") or ""),
+            str(requirement.get("analysis_intent") or ""),
+            " ".join(_string_list(requirement.get("metric_families") or requirement.get("required_metric_families"))),
+        ]
+    ).lower()
+    return _text_mentions_product_technology(text)
 
 
 def _normalize_non_relationship_activation(plan: Mapping[str, Any], route_request: MultiAgentRouteRequest) -> dict[str, Any]:
@@ -872,6 +962,7 @@ def _normalize_non_relationship_activation(plan: Mapping[str, Any], route_reques
     normalized["activate_agents"] = active
     normalized["allowed_source_families"] = _non_relationship_allowed_sources(allowed_sources, route_request)
     normalized = _align_non_relationship_source_operators(normalized, route_request)
+    normalized = _prune_non_requested_product_technology(normalized, route_request)
     normalized["scope_mode"] = _non_relationship_scope_mode(normalized, route_request)
     priorities = dict(normalized.get("agent_priorities") or {})
     model_policy = dict(normalized.get("model_policy_hint") or {})
@@ -962,7 +1053,7 @@ def _align_non_relationship_source_operators(plan: Mapping[str, Any], route_requ
         added.append("industry_operator")
     if (
         mode == "standard_memo"
-        and allowed_sources & {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+        and _route_request_requires_product_technology(route_request, allowed_sources)
         and "product_technology_analyst" not in active
     ):
         active = _insert_before(active, "product_technology_analyst", "judgment_plan_aggregator")
@@ -988,6 +1079,60 @@ def _align_non_relationship_source_operators(plan: Mapping[str, Any], route_requ
     if mode == "focused_answer" and "market_operator" in added:
         normalized["max_tool_calls_total"] = max(8, _int_value(normalized.get("max_tool_calls_total"), default=6))
     return normalized
+
+
+def _prune_non_requested_product_technology(plan: Mapping[str, Any], route_request: MultiAgentRouteRequest) -> dict[str, Any]:
+    normalized = dict(plan or {})
+    mode = str(normalized.get("execution_mode") or "").strip()
+    active = _dedupe([str(agent) for agent in normalized.get("activate_agents") or []])
+    allowed_sources = _dedupe([str(source) for source in normalized.get("allowed_source_families") or []])
+    if mode != "standard_memo" or "product_technology_analyst" not in active:
+        return normalized
+    if _route_request_requires_product_technology(route_request, set(allowed_sources)):
+        return normalized
+    active = [agent for agent in active if agent != "product_technology_analyst"]
+    context_sources = set(_context_source_families(route_request))
+    allowed_sources = [
+        source
+        for source in allowed_sources
+        if source != "company_product_evidence_graph" or source in context_sources
+    ]
+    normalized["activate_agents"] = active
+    normalized["allowed_source_families"] = _dedupe(allowed_sources)
+    priorities = dict(normalized.get("agent_priorities") or {})
+    priorities.pop("product_technology_analyst", None)
+    normalized["agent_priorities"] = priorities
+    model_policy = dict(normalized.get("model_policy_hint") or {})
+    model_policy.pop("product_technology_analyst", None)
+    normalized["model_policy_hint"] = model_policy
+    normalized["skip_agents"] = _sync_skip_agents(
+        normalized.get("skip_agents"),
+        active,
+        [
+            (
+                "product_technology_analyst",
+                "Public source context alone is not a product-technology task without product KPI, product taxonomy, or product adoption intent.",
+            )
+        ],
+    )
+    metadata = dict(normalized.get("metadata") or {})
+    metadata["product_technology_pruned"] = True
+    metadata["product_technology_prune_policy"] = "public_context_alone_is_not_product_lens_v0_1"
+    normalized["metadata"] = metadata
+    return normalized
+
+
+def _route_request_requires_product_technology(
+    route_request: MultiAgentRouteRequest,
+    candidate_sources: set[str] | None = None,
+) -> bool:
+    context_sources = set(_context_source_families(route_request))
+    if "company_product_evidence_graph" in context_sources:
+        return True
+    if _route_request_mentions_product_technology(route_request):
+        return True
+    source_set = set(candidate_sources or set())
+    return bool("company_product_evidence_graph" in source_set and _route_request_mentions_product_technology(route_request))
 
 
 def _non_relationship_execution_mode(route_request: MultiAgentRouteRequest) -> str:
@@ -1114,11 +1259,7 @@ def _sector_depth_optional_agents(route_request: MultiAgentRouteRequest) -> list
 
 def _product_technology_optional_agents(route_request: MultiAgentRouteRequest) -> list[str]:
     sources = set(_context_source_families(route_request))
-    if _route_request_mentions_product_technology(route_request) or sources & {
-        "company_product_evidence_graph",
-        "public_source_context",
-        "live_public_web_context",
-    }:
+    if _route_request_mentions_product_technology(route_request) or "company_product_evidence_graph" in sources:
         return ["product_technology_analyst"]
     return []
 
@@ -1142,35 +1283,63 @@ def _route_request_mentions_market_or_valuation(route_request: MultiAgentRouteRe
 
 
 def _route_request_mentions_product_technology(route_request: MultiAgentRouteRequest) -> bool:
-    text = _route_request_intent_text(route_request)
+    text = _route_request_product_intent_text(route_request)
+    return _text_mentions_product_technology(text)
+
+
+def _text_mentions_product_technology(text: str) -> bool:
+    normalized = str(text or "").lower()
+    word_patterns = (
+        r"\bproducts?\b",
+        r"\bproduct\s+(revenue|kpi|metric|metrics|line|lines|cycle|adoption|traction)\b",
+        r"\bsku(s)?\b",
+        r"\bplatform(s)?\b",
+        r"\bdeveloper(s)?\b",
+        r"\bapp\s+download(s)?\b",
+        r"\bclinical\b",
+        r"\btrial(s)?\b",
+        r"\bregulatory\b",
+        r"\bopenfda\b",
+        r"\bnhtsa\b",
+        r"\bsubscriber(s)?\b",
+        r"\brpo\b",
+        r"\bremaining\s+performance\s+obligation(s)?\b",
+        r"\bpublic\s+proxy\b",
+    )
+    if any(re.search(pattern, normalized) for pattern in word_patterns):
+        return True
     return any(
-        term in text
+        term in normalized
         for term in (
-            "product",
-            "product revenue",
-            "product kpi",
-            "sku",
-            "platform",
-            "developer",
-            "app download",
-            "clinical",
-            "trial",
-            "regulatory",
-            "openfda",
-            "nhtsa",
-            "public proxy",
-            "commercial tracker",
             "产品",
             "产品线",
             "产品收入",
             "产品指标",
             "主业",
+            "平台",
+            "订阅",
+            "剩余履约义务",
             "临床",
             "监管",
             "公开代理",
-            "商业tracker",
         )
     )
+
+
+def _route_request_product_intent_text(route_request: MultiAgentRouteRequest) -> str:
+    contract = _context_query_contract(route_request)
+    inventory = route_request.source_inventory if isinstance(route_request.source_inventory, Mapping) else {}
+    inventory_sources = _string_list(inventory.get("source_families") or inventory.get("source_tiers") or inventory.get("available_source_families"))
+    return " ".join(
+        [
+            str(route_request.user_query or ""),
+            str(route_request.context.get("task_type") or contract.get("task_type") or ""),
+            " ".join(_string_list(contract.get("source_tiers") or route_request.context.get("source_tiers"))),
+            " ".join(_string_list(contract.get("source_families") or route_request.context.get("source_families"))),
+            " ".join(_string_list(contract.get("metric_families"))),
+            " ".join(inventory_sources),
+        ]
+    ).lower()
 
 
 def _route_request_mentions_risk_or_counterevidence(route_request: MultiAgentRouteRequest) -> bool:
@@ -1374,16 +1543,354 @@ def _activation_plan_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _evidence_requirement_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
+    evidence_payload: dict[str, Any]
     if isinstance(payload.get("evidence_requirement_plan"), Mapping):
-        return dict(payload["evidence_requirement_plan"])  # type: ignore[index]
-    if isinstance(payload.get("evidence_requirements"), list):
-        return {"requirements": list(payload.get("evidence_requirements") or [])}
-    metadata = payload.get("metadata") if isinstance(payload.get("metadata"), Mapping) else {}
-    if isinstance(metadata.get("evidence_requirement_plan"), Mapping):
-        return dict(metadata["evidence_requirement_plan"])  # type: ignore[index]
-    if isinstance(metadata.get("evidence_requirements"), list):
-        return {"requirements": list(metadata.get("evidence_requirements") or [])}
-    return {}
+        evidence_payload = dict(payload["evidence_requirement_plan"])  # type: ignore[index]
+    elif isinstance(payload.get("evidence_requirements"), list):
+        evidence_payload = {"requirements": list(payload.get("evidence_requirements") or [])}
+    else:
+        metadata = payload.get("metadata") if isinstance(payload.get("metadata"), Mapping) else {}
+        if isinstance(metadata.get("evidence_requirement_plan"), Mapping):
+            evidence_payload = dict(metadata["evidence_requirement_plan"])  # type: ignore[index]
+        elif isinstance(metadata.get("evidence_requirements"), list):
+            evidence_payload = {"requirements": list(metadata.get("evidence_requirements") or [])}
+        else:
+            evidence_payload = {}
+    return _normalize_evidence_requirement_payload_routes(evidence_payload)
+
+
+def _normalize_evidence_requirement_payload_routes(evidence_payload: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(evidence_payload, Mapping) or not isinstance(evidence_payload.get("requirements"), list):
+        return dict(evidence_payload or {})
+    known_routes = set(ROUTE_SOURCE_FAMILY)
+    source_family_names = set(allowed_source_families())
+    normalized_requirements: list[dict[str, Any]] = []
+    normalized_count = 0
+    for requirement in evidence_payload.get("requirements") or []:
+        if not isinstance(requirement, Mapping):
+            continue
+        req = dict(requirement)
+        routes = _string_list(req.get("evidence_routes") or req.get("retrieval_routes"))
+        source_families = _dedupe(
+            [
+                *_string_list(req.get("source_families") or req.get("source_family")),
+                *_string_list(req.get("source_tiers")),
+            ]
+        )
+        kept_routes: list[str] = []
+        moved_source_families: list[str] = []
+        for route in routes:
+            if route in known_routes:
+                kept_routes.append(route)
+            elif route in source_family_names:
+                moved_source_families.append(route)
+            else:
+                kept_routes.append(route)
+        if moved_source_families:
+            normalized_count += 1
+            req["source_families"] = _dedupe([*source_families, *moved_source_families])
+            req["evidence_routes"] = _dedupe(kept_routes)
+            normalizations = [dict(item) for item in req.get("normalizations") or [] if isinstance(item, Mapping)]
+            normalizations.append(
+                {
+                    "field": "evidence_routes",
+                    "action": "moved_source_family_names_to_source_families",
+                    "source_families": moved_source_families,
+                    "policy": "research_lead_evidence_route_source_family_normalization_v0_1",
+                }
+            )
+            req["normalizations"] = normalizations
+        normalized_requirements.append(req)
+    result = dict(evidence_payload)
+    result["requirements"] = normalized_requirements
+    if normalized_count:
+        metadata = dict(result.get("metadata") or {}) if isinstance(result.get("metadata"), Mapping) else {}
+        metadata["route_source_family_normalization_count"] = normalized_count
+        metadata["route_source_family_normalization_policy"] = "research_lead_evidence_route_source_family_normalization_v0_1"
+        result["metadata"] = metadata
+    return result
+
+
+def _normalize_live_web_evidence_payload_for_policy(
+    evidence_payload: Mapping[str, Any],
+    route_request: MultiAgentRouteRequest,
+) -> dict[str, Any]:
+    if _live_web_scope_policy_allowed(route_request):
+        return dict(evidence_payload or {})
+    if not isinstance(evidence_payload, Mapping) or not isinstance(evidence_payload.get("requirements"), list):
+        return dict(evidence_payload or {})
+    normalized_requirements: list[dict[str, Any]] = []
+    normalized_count = 0
+    for requirement in evidence_payload.get("requirements") or []:
+        if not isinstance(requirement, Mapping):
+            continue
+        req = dict(requirement)
+        routes = _string_list(req.get("evidence_routes") or req.get("retrieval_routes"))
+        source_families = _dedupe(
+            [
+                *_string_list(req.get("source_families") or req.get("source_family")),
+                *_string_list(req.get("source_tiers")),
+            ]
+        )
+        has_live_route = "live_public_web_context" in routes
+        has_live_source = "live_public_web_context" in source_families
+        if has_live_route or has_live_source:
+            normalized_count += 1
+            req["evidence_routes"] = [route for route in routes if route != "live_public_web_context"]
+            replacement_sources = ["public_source_context" if source == "live_public_web_context" else source for source in source_families]
+            req["source_families"] = _dedupe(replacement_sources)
+            req["source_tiers"] = _dedupe(["public_source_context" if source == "live_public_web_context" else source for source in _string_list(req.get("source_tiers"))])
+            if not req["source_tiers"] and "public_source_context" in req["source_families"]:
+                req["source_tiers"] = ["public_source_context"]
+            normalizations = [dict(item) for item in req.get("normalizations") or [] if isinstance(item, Mapping)]
+            normalizations.append(
+                {
+                    "field": "live_public_web_context",
+                    "action": "downgraded_to_public_source_context_without_web_scope_policy",
+                    "policy": "research_lead_live_web_requires_explicit_scope_policy_v0_1",
+                }
+            )
+            req["normalizations"] = normalizations
+        normalized_requirements.append(req)
+    result = dict(evidence_payload)
+    result["requirements"] = normalized_requirements
+    if normalized_count:
+        metadata = dict(result.get("metadata") or {}) if isinstance(result.get("metadata"), Mapping) else {}
+        metadata["live_web_downgrade_count"] = normalized_count
+        metadata["live_web_downgrade_policy"] = "research_lead_live_web_requires_explicit_scope_policy_v0_1"
+        result["metadata"] = metadata
+    return result
+
+
+def _normalize_live_web_activation_for_policy(
+    plan: Mapping[str, Any],
+    route_request: MultiAgentRouteRequest,
+) -> dict[str, Any]:
+    if _live_web_scope_policy_allowed(route_request, plan):
+        return dict(plan or {})
+    normalized = dict(plan or {})
+    active = _dedupe([str(agent) for agent in normalized.get("activate_agents") or []])
+    allowed_sources = _dedupe([str(source) for source in normalized.get("allowed_source_families") or []])
+    if "web_evidence_operator" not in active and "live_public_web_context" not in allowed_sources:
+        return normalized
+    active = [agent for agent in active if agent != "web_evidence_operator"]
+    allowed_sources = ["public_source_context" if source == "live_public_web_context" else source for source in allowed_sources]
+    normalized["activate_agents"] = _dedupe(active)
+    normalized["allowed_source_families"] = _dedupe(allowed_sources)
+    priorities = dict(normalized.get("agent_priorities") or {})
+    priorities.pop("web_evidence_operator", None)
+    normalized["agent_priorities"] = priorities
+    model_policy = dict(normalized.get("model_policy_hint") or {})
+    model_policy.pop("web_evidence_operator", None)
+    normalized["model_policy_hint"] = model_policy
+    metadata = dict(normalized.get("metadata") or {})
+    metadata["live_web_downgraded"] = True
+    metadata["live_web_downgrade_policy"] = "research_lead_live_web_requires_explicit_scope_policy_v0_1"
+    normalized["metadata"] = metadata
+    normalized["skip_agents"] = _sync_skip_agents(
+        normalized.get("skip_agents"),
+        normalized["activate_agents"],
+        [
+            (
+                "web_evidence_operator",
+                "Live public web requires explicit web_scope_policy_ids; public source context remains bounded context only.",
+            )
+        ],
+    )
+    return normalized
+
+
+def _normalize_milvus_evidence_payload_for_availability(
+    evidence_payload: Mapping[str, Any],
+    route_request: MultiAgentRouteRequest,
+) -> dict[str, Any]:
+    if _milvus_semantic_available(route_request):
+        return dict(evidence_payload or {})
+    if not isinstance(evidence_payload, Mapping) or not isinstance(evidence_payload.get("requirements"), list):
+        return dict(evidence_payload or {})
+    normalized_requirements: list[dict[str, Any]] = []
+    normalized_count = 0
+    for requirement in evidence_payload.get("requirements") or []:
+        if not isinstance(requirement, Mapping):
+            continue
+        req = dict(requirement)
+        routes = _string_list(req.get("evidence_routes") or req.get("retrieval_routes"))
+        source_families = _dedupe(
+            [
+                *_string_list(req.get("source_families") or req.get("source_family")),
+                *_string_list(req.get("source_tiers")),
+            ]
+        )
+        if "milvus_semantic" in routes or "milvus_semantic" in source_families:
+            normalized_count += 1
+            req["evidence_routes"] = [route for route in routes if route != "milvus_semantic"]
+            req["source_families"] = [source for source in source_families if source != "milvus_semantic"]
+            req["source_tiers"] = [source for source in _string_list(req.get("source_tiers")) if source != "milvus_semantic"]
+            normalizations = [dict(item) for item in req.get("normalizations") or [] if isinstance(item, Mapping)]
+            normalizations.append(
+                {
+                    "field": "milvus_semantic",
+                    "action": "removed_when_runtime_unavailable",
+                    "policy": "research_lead_milvus_semantic_requires_available_runtime_v0_1",
+                }
+            )
+            req["normalizations"] = normalizations
+        normalized_requirements.append(req)
+    result = dict(evidence_payload)
+    result["requirements"] = normalized_requirements
+    if normalized_count:
+        metadata = dict(result.get("metadata") or {}) if isinstance(result.get("metadata"), Mapping) else {}
+        metadata["milvus_semantic_removed_count"] = normalized_count
+        metadata["milvus_semantic_removed_policy"] = "research_lead_milvus_semantic_requires_available_runtime_v0_1"
+        result["metadata"] = metadata
+    return result
+
+
+def _normalize_milvus_activation_for_availability(
+    plan: Mapping[str, Any],
+    route_request: MultiAgentRouteRequest,
+) -> dict[str, Any]:
+    if _milvus_semantic_available(route_request):
+        return dict(plan or {})
+    normalized = dict(plan or {})
+    allowed_sources = _dedupe([str(source) for source in normalized.get("allowed_source_families") or []])
+    if "milvus_semantic" not in allowed_sources:
+        return normalized
+    normalized["allowed_source_families"] = [source for source in allowed_sources if source != "milvus_semantic"]
+    metadata = dict(normalized.get("metadata") or {})
+    metadata["milvus_semantic_removed"] = True
+    metadata["milvus_semantic_removed_policy"] = "research_lead_milvus_semantic_requires_available_runtime_v0_1"
+    metadata["milvus_semantic_gap_boundary"] = "semantic_recall_supplement_unavailable_do_not_use_as_exact_value_authority"
+    normalized["metadata"] = metadata
+    return normalized
+
+
+def _normalize_relationship_evidence_payload_for_scope(
+    evidence_payload: Mapping[str, Any],
+    route_request: MultiAgentRouteRequest,
+) -> dict[str, Any]:
+    if _requires_sector_depth_relationship_route(route_request):
+        return dict(evidence_payload or {})
+    if not isinstance(evidence_payload, Mapping) or not isinstance(evidence_payload.get("requirements"), list):
+        return dict(evidence_payload or {})
+    normalized_requirements: list[dict[str, Any]] = []
+    normalized_count = 0
+    for requirement in evidence_payload.get("requirements") or []:
+        if not isinstance(requirement, Mapping):
+            continue
+        req = dict(requirement)
+        routes = _string_list(req.get("evidence_routes") or req.get("retrieval_routes"))
+        sources = _dedupe(
+            [
+                *_string_list(req.get("source_families") or req.get("source_family")),
+                *_string_list(req.get("source_tiers")),
+            ]
+        )
+        if "relationship_graph" in routes or "relationship_graph" in sources:
+            normalized_count += 1
+            req["evidence_routes"] = [route for route in routes if route != "relationship_graph"]
+            req["source_families"] = [source for source in sources if source != "relationship_graph"]
+            req["source_tiers"] = [source for source in _string_list(req.get("source_tiers")) if source != "relationship_graph"]
+            normalizations = [dict(item) for item in req.get("normalizations") or [] if isinstance(item, Mapping)]
+            normalizations.append(
+                {
+                    "field": "relationship_graph",
+                    "action": "removed_without_relationship_scope_intent",
+                    "policy": "research_lead_relationship_graph_requires_scope_intent_v0_1",
+                }
+            )
+            req["normalizations"] = normalizations
+        normalized_requirements.append(req)
+    result = dict(evidence_payload)
+    result["requirements"] = normalized_requirements
+    if normalized_count:
+        metadata = dict(result.get("metadata") or {}) if isinstance(result.get("metadata"), Mapping) else {}
+        metadata["relationship_graph_removed_count"] = normalized_count
+        metadata["relationship_graph_removed_policy"] = "research_lead_relationship_graph_requires_scope_intent_v0_1"
+        result["metadata"] = metadata
+    return result
+
+
+def _normalize_relationship_activation_for_scope(
+    plan: Mapping[str, Any],
+    route_request: MultiAgentRouteRequest,
+) -> dict[str, Any]:
+    if _requires_sector_depth_relationship_route(route_request):
+        return dict(plan or {})
+    normalized = dict(plan or {})
+    active = _dedupe([str(agent) for agent in normalized.get("activate_agents") or []])
+    allowed_sources = _dedupe([str(source) for source in normalized.get("allowed_source_families") or []])
+    if "universe_relationship" not in active and "relationship_graph" not in allowed_sources:
+        return normalized
+    active = [agent for agent in active if agent != "universe_relationship"]
+    allowed_sources = [source for source in allowed_sources if source != "relationship_graph"]
+    normalized["activate_agents"] = active
+    normalized["allowed_source_families"] = allowed_sources
+    normalized["relationship_scope_rationale"] = ""
+    priorities = dict(normalized.get("agent_priorities") or {})
+    priorities.pop("universe_relationship", None)
+    normalized["agent_priorities"] = priorities
+    model_policy = dict(normalized.get("model_policy_hint") or {})
+    model_policy.pop("universe_relationship", None)
+    normalized["model_policy_hint"] = model_policy
+    normalized["skip_agents"] = _sync_skip_agents(
+        normalized.get("skip_agents"),
+        active,
+        [
+            (
+                "universe_relationship",
+                "Relationship graph requires explicit relationship/supply-chain scope intent or relationship_graph source in the user/query contract.",
+            )
+        ],
+    )
+    metadata = dict(normalized.get("metadata") or {})
+    metadata["relationship_overroute_pruned"] = True
+    metadata["relationship_overroute_policy"] = "research_lead_relationship_graph_requires_scope_intent_v0_1"
+    normalized["metadata"] = metadata
+    return normalized
+
+
+def _milvus_semantic_available(route_request: MultiAgentRouteRequest) -> bool:
+    inventory = route_request.source_inventory if isinstance(route_request.source_inventory, Mapping) else {}
+    if not inventory:
+        return True
+    milvus = inventory.get("milvus_runtime") if isinstance(inventory.get("milvus_runtime"), Mapping) else {}
+    availability = inventory.get("source_family_availability") if isinstance(inventory.get("source_family_availability"), Mapping) else {}
+    milvus_availability = availability.get("milvus_semantic") if isinstance(availability.get("milvus_semantic"), Mapping) else {}
+    if not milvus and not milvus_availability:
+        return True
+    status = str(milvus.get("status") or milvus_availability.get("status") or "").strip()
+    if status == "unavailable":
+        return False
+    if "available" in milvus:
+        return bool(milvus.get("available"))
+    if "available" in milvus_availability:
+        return bool(milvus_availability.get("available"))
+    return False
+
+
+def _live_web_scope_policy_allowed(
+    route_request: MultiAgentRouteRequest,
+    plan: Mapping[str, Any] | None = None,
+) -> bool:
+    activation = dict(plan or {})
+    metadata = activation.get("metadata") if isinstance(activation.get("metadata"), Mapping) else {}
+    contract = _context_query_contract(route_request)
+    requested_policy_ids = _string_list(
+        activation.get("web_scope_policy_ids")
+        or metadata.get("web_scope_policy_ids")
+        or metadata.get("web_scope_policy_id")
+        or route_request.context.get("web_scope_policy_ids")
+        or route_request.context.get("web_scope_policy_id")
+        or contract.get("web_scope_policy_ids")
+        or contract.get("web_scope_policy_id")
+    )
+    if not requested_policy_ids:
+        return False
+    inventory = route_request.source_inventory if isinstance(route_request.source_inventory, Mapping) else {}
+    live_web = inventory.get("live_public_web_context") if isinstance(inventory.get("live_public_web_context"), Mapping) else {}
+    inventory_policy_ids = set(_string_list(live_web.get("web_scope_policy_ids")))
+    return not inventory_policy_ids or set(requested_policy_ids).issubset(inventory_policy_ids)
 
 
 def _query_contract_for_evidence(
@@ -1394,8 +1901,13 @@ def _query_contract_for_evidence(
     contract = _context_query_contract(route_request)
     contract["focus_tickers"] = route_request.focus_tickers or contract.get("focus_tickers") or []
     contract["search_scope_tickers"] = route_request.search_scope_tickers or contract.get("search_scope_tickers") or contract["focus_tickers"]
-    if not contract.get("source_tiers"):
+    allowed_sources = set(_string_list(activation_plan.get("allowed_source_families")))
+    if contract.get("source_tiers") and allowed_sources:
+        contract["source_tiers"] = [source for source in _string_list(contract.get("source_tiers")) if source in allowed_sources]
+    else:
         contract["source_tiers"] = list(activation_plan.get("allowed_source_families") or [])
+    if contract.get("source_families") and allowed_sources:
+        contract["source_families"] = [source for source in _string_list(contract.get("source_families")) if source in allowed_sources]
     if isinstance(evidence_payload.get("requirements"), list) and evidence_payload.get("requirements"):
         contract["evidence_requirement_plan"] = {"requirements": list(evidence_payload.get("requirements") or [])}
     elif isinstance(evidence_payload, Mapping):

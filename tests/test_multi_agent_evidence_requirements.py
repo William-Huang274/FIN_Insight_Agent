@@ -64,6 +64,38 @@ def test_multi_agent_evidence_requirement_validation_rejects_source_and_owner_mi
     assert "source_family_not_allowed_for_activation" in error_types
 
 
+def test_evidence_requirement_validation_allows_context_only_product_sources_with_sec_routes() -> None:
+    result = validate_multi_agent_evidence_requirement_plan(
+        {
+            "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+            "requirements": [
+                {
+                    "requirement_id": "req_product_evidence",
+                    "evidence_routes": ["filing_text", "8k_commentary"],
+                    "source_families": [
+                        "primary_sec_filing",
+                        "company_authored_unaudited_sec_filing",
+                        "company_product_evidence_graph",
+                        "public_source_context",
+                    ],
+                    "operator_owners": ["sec_operator", "eight_k_operator"],
+                }
+            ],
+        },
+        activation_plan={
+            "allowed_source_families": [
+                "primary_sec_filing",
+                "company_authored_unaudited_sec_filing",
+                "company_product_evidence_graph",
+                "public_source_context",
+            ]
+        },
+    )
+
+    assert result["status"] == "pass"
+    assert result["errors"] == []
+
+
 def test_run_artifact_evidence_route_maps_to_coverage_reflection() -> None:
     result = validate_multi_agent_evidence_requirement_plan(
         {
@@ -587,6 +619,36 @@ def test_industry_supply_chain_data_view_uses_bounded_industry_and_relationship_
     assert {row["evidence_ref"] for row in rows} == {"industry_ref_1", "rel_ref_1"}
     assert "private_path" not in payload
     assert "data/raw_private" not in payload
+
+
+def test_product_data_view_exposes_bounded_gap_when_product_sources_requested_but_empty() -> None:
+    view = build_agent_data_view(
+        "product_technology_analyst",
+        {
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["product_technology_analyst"],
+            },
+            "query_contract": {
+                "focus_tickers": ["NVDA", "DELL"],
+                "search_scope_tickers": ["NVDA", "DELL", "ANET", "VRT"],
+                "source_tiers": ["company_product_evidence_graph", "public_source_context"],
+                "metric_families": ["product_revenue", "orders_backlog"],
+            },
+            "product_evidence_rows": [],
+            "public_source_context_rows": [],
+            "context_rows": [],
+        },
+    )
+
+    rows = view["bounded_evidence_rows"]
+    families = {row["source_family"] for row in rows}
+
+    assert {"company_product_evidence_graph", "public_source_context"} <= families
+    assert {row["promotion_status"] for row in rows} == {"gap_exposed_not_fallback"}
+    assert {row["claim_scope"] for row in rows} == {"bounded_gap_only"}
+    assert all(row["exact_value_authority"] is False for row in rows)
+    assert all("Do not fill with generic SEC or market proxy facts" in row["summary"] for row in rows)
 
 
 def test_supporting_specialist_data_view_uses_priority_budget() -> None:

@@ -145,6 +145,8 @@ def test_pre_memo_fact_selection_moves_blocked_supported_claims_to_unsupported()
 
     assert filtered["supported_claims"] == []
     assert filtered["unsupported_claims"][0]["reason"] == "blocked_by_pre_memo_fact_selection"
+    assert "MSFT shipments grew" not in filtered["unsupported_claims"][0]["claim"]
+    assert filtered["unsupported_claims"][0]["source_claim"]["claim"] == "MSFT shipments grew."
     assert filtered["memo_writer_allowed"] is False
     assert filtered["aggregation_policy"] == "rank_supported_claim_cards_preserve_conflicts_no_average"
     assert filtered["governance_filter_policy"] == "pre_memo_governance_filtered_claim_cards_v0_1"

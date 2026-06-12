@@ -1,0 +1,72 @@
+{
+  "commercial_tracker_source_count": 16,
+  "external_source_plan_row_count": 67,
+  "external_source_role_counts": {
+    "commercial_market_tracker": 16,
+    "company_disclosed": 16,
+    "official_product_surface": 14,
+    "public_proxy": 21
+  },
+  "generated_at": "2026-06-11T13:17:19.219628+00:00",
+  "inputs": {
+    "chunk_inputs": [
+      "data/staging/sec_tier1_sp500_annual/chunks/tier1_sp500_us_annual_10k_chunks_fy2023_2025_v0_1.jsonl",
+      "data/staging/sec_tier2_supply_chain_annual/chunks/tier2_supply_chain_sec_annual_chunks_fy2023_2025_v0_1.jsonl"
+    ],
+    "strategy_config": "configs/data_sources/product_evidence_strategy_v0_1.yaml"
+  },
+  "metric_candidate_count": 6663,
+  "metric_candidate_ticker_count": 576,
+  "metric_candidate_ticker_coverage_pct": 99.83,
+  "metric_family_counts": {
+    "backlog_or_orders": 1708,
+    "product_revenue": 987,
+    "production_or_throughput": 1516,
+    "same_store_sales": 126,
+    "shipments": 777,
+    "subscribers_or_arpu": 149,
+    "unit_sales_or_deliveries": 1400
+  },
+  "outputs": {
+    "external_source_plan": "data/manifests/product_external_validation_source_plan_v0_1.jsonl",
+    "metric_candidates": "data/manifests/company_product_metric_candidates_balanced_v0_1.jsonl",
+    "report": "docs/internal/vnext_20260610/product_evidence_strategy_execution.zh-CN.md",
+    "summary": "data/manifests/company_product_evidence_strategy_summary_v0_1.json",
+    "taxonomy_candidates": "data/manifests/company_product_taxonomy_candidates_v0_1.jsonl"
+  },
+  "runtime_promotion_policy": [
+    "company_disclosed taxonomy is a candidate until review.",
+    "company_disclosed KPI is not a fact until value/unit/period/product/citation parser passes.",
+    "official_product_surface and public_proxy are context or directional verification only.",
+    "commercial_market_tracker rows remain blocked under current no-commercial policy."
+  ],
+  "scan_stats": {
+    "scanned_chunk_count": 192055,
+    "scanned_ticker_count": 577
+  },
+  "schema_version": "fin_agent_product_evidence_strategy_artifacts_v0.1",
+  "status": "pass",
+  "strategy": {
+    "anchor": "SEC/global filings are the first extraction path for product taxonomy and company-disclosed product KPI.",
+    "increment": "Third-party market and alternative data are the main incremental layer for product-to-financial judgment when public filings are insufficient.",
+    "non_degradation_rule": "Do not replace product-business evidence with generic fallback text, weak crawled pages, or unsupported proxy claims.",
+    "research_target": "public_evidence_research_analyst"
+  },
+  "taxonomy_candidate_count": 13712,
+  "taxonomy_candidate_ticker_count": 577,
+  "taxonomy_candidate_ticker_coverage_pct": 100.0,
+  "taxonomy_rule_counts": {
+    "block_heading_product_taxonomy": 1189,
+    "business_segments_sentence": 223,
+    "inline_product_heading": 8376,
+    "products_include_sentence": 1148,
+    "reportable_segment_sentence": 190,
+    "we_offer_sentence": 2586
+  },
+  "taxonomy_type_counts": {
+    "business_line": 1160,
+    "customer_market_or_application": 545,
+    "product_or_service_family": 11109,
+    "reportable_segment": 898
+  }
+}

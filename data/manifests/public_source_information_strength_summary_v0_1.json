@@ -1,0 +1,222 @@
+{
+  "blocked_or_deferred_source_count": 6,
+  "blocked_or_deferred_sources": [
+    "cninfo_portal",
+    "commercial_market_data_and_consensus",
+    "company_ir_reports",
+    "hkexnews_portal",
+    "jp_edinet_api",
+    "tw_mops_portal"
+  ],
+  "claim_evidence_source_count": 11,
+  "claim_evidence_sources": [
+    "cninfo_portal",
+    "company_ir_reports",
+    "company_product_pages",
+    "company_reported_product_operating_metrics",
+    "hkexnews_portal",
+    "jp_edinet_api",
+    "kr_dart_openapi",
+    "sec_edgar_apis",
+    "sec_financial_statement_data_sets",
+    "sec_ownership_and_13f",
+    "tw_mops_portal"
+  ],
+  "current_runtime_candidate_sources": [
+    "census_data_api",
+    "gleif_api",
+    "kr_dart_openapi",
+    "openfigi_api",
+    "sec_edgar_apis"
+  ],
+  "generated_at": "2026-06-11T12:28:57.974194+00:00",
+  "inputs": {
+    "availability_audit": "data/manifests/public_source_full_availability_audit_v0_1.jsonl",
+    "coverage_registry": "configs/data_sources/public_source_coverage_v0_1.yaml",
+    "inventory_adapter_summary": "data/manifests/public_source_inventory_adapter_summary_v0_1.json",
+    "mapping_gate_summary": "data/manifests/public_source_mapping_endpoint_gate_summary_v0_1.json",
+    "strength_config": "configs/data_sources/public_source_information_strength_v0_1.yaml"
+  },
+  "integration_mode_counts": {
+    "company_operating_metric_parser": 2,
+    "context_snapshot": 10,
+    "deferred_no_commercial_api": 1,
+    "held_for_parser_or_mapping": 3,
+    "lead_or_discovery": 4,
+    "primary_evidence_authority": 8,
+    "resolver_registry": 3,
+    "structured_fact_authority": 1
+  },
+  "inventory_adapter_bounded_evidence_eligible_row_count": 3,
+  "inventory_adapter_exact_value_authority_row_count": 0,
+  "inventory_adapter_runtime_eligible_row_count": 1103,
+  "inventory_adapter_runtime_sources": [
+    "census_data_api",
+    "gleif_api",
+    "kr_dart_openapi",
+    "openfigi_api",
+    "sec_universe_identity"
+  ],
+  "inventory_adapter_status": "pass_with_runtime_inventory_candidates",
+  "inventory_adapter_synthetic_or_internal_sources": [
+    "sec_universe_identity"
+  ],
+  "mapping_gate_status": "pass_with_gaps",
+  "mapping_gate_universe_company_count": 603,
+  "outputs": {
+    "matrix": "data/manifests/public_source_information_strength_matrix_v0_1.jsonl",
+    "report": "docs/internal/vnext_20260610/no_commercial_public_source_research_ceiling.zh-CN.md",
+    "summary": "data/manifests/public_source_information_strength_summary_v0_1.json"
+  },
+  "policy": {
+    "commercial_api_spend": "none",
+    "purpose": "no_commercial_public_source_research_ceiling",
+    "runtime_default": "planning_contract_only",
+    "source_claim_rule": "Source strength defines what a row can prove; engineering readiness defines whether it can enter runtime."
+  },
+  "quality_ceiling": {
+    "dimensions": [
+      {
+        "current_ceiling": "high",
+        "dimension": "us_company_fundamental_analysis",
+        "hard_limit": "Cannot replace sell-side estimates, management access, or undisclosed product/customer metrics.",
+        "potential_ceiling": "high",
+        "reason": "SEC primary filings, CompanyFacts, submissions, and exact-value ledgers can support audited filing-based analysis."
+      },
+      {
+        "current_ceiling": "low_medium",
+        "dimension": "non_us_primary_disclosure_analysis",
+        "hard_limit": "Until parser gates pass, metadata and locators cannot be cited as filing evidence.",
+        "potential_ceiling": "high",
+        "reason": "Official DART/EDINET/MOPS/HKEX/CNINFO/company IR sources are public, but document downloaders and parsers are not complete."
+      },
+      {
+        "current_ceiling": "low_medium",
+        "dimension": "company_reported_product_operating_metrics",
+        "hard_limit": "No public source can infer undisclosed SKU-level sales, channel inventory, or product profitability.",
+        "potential_ceiling": "medium_high",
+        "reason": "Public company filings and earnings materials can support product revenue, deliveries, subscribers, backlog, or unit metrics when companies disclose them."
+      },
+      {
+        "current_ceiling": "medium",
+        "dimension": "macro_industry_context",
+        "hard_limit": "Context rows cannot prove company-specific revenue, margin, customers, or product adoption.",
+        "potential_ceiling": "medium_high",
+        "reason": "FRED, BLS, BEA, Census, EIA, FDIC, and trade datasets can provide official context and demand proxies."
+      },
+      {
+        "current_ceiling": "low_medium",
+        "dimension": "healthcare_product_regulatory_research",
+        "hard_limit": "They do not prove approval success, commercial uptake, sales, or adverse-event causality.",
+        "potential_ceiling": "medium_high",
+        "reason": "ClinicalTrials.gov, openFDA, and CMS can support pipeline, regulatory, payer, and utilization context after product and sponsor resolvers."
+      },
+      {
+        "current_ceiling": "low",
+        "dimension": "auto_product_identity_and_context",
+        "hard_limit": "It does not provide deliveries, revenue, margins, or quality causality.",
+        "potential_ceiling": "medium",
+        "reason": "NHTSA vPIC can identify make/model/year and product metadata after issuer mapping."
+      },
+      {
+        "current_ceiling": "low_medium",
+        "dimension": "banking_regulatory_context",
+        "hard_limit": "FDIC institution rows are not consolidated listed-company financial statements.",
+        "potential_ceiling": "medium",
+        "reason": "FDIC BankFind can provide institution and branch/regulatory context after institution-to-issuer mapping."
+      },
+      {
+        "current_ceiling": "low",
+        "dimension": "investment_and_ownership_graph",
+        "hard_limit": "They cannot prove real-time positioning, intent, or non-filing private holdings.",
+        "potential_ceiling": "medium",
+        "reason": "SEC 13F and ownership forms are public and official but lagged."
+      },
+      {
+        "current_ceiling": "low_medium",
+        "dimension": "supply_chain_and_customer_relationships",
+        "hard_limit": "Public sources cannot replace paid supply-chain transaction databases or customs microdata.",
+        "potential_ceiling": "medium",
+        "reason": "SEC filings, verified relationship extraction, GLEIF, and official disclosures can support some relationship facts."
+      },
+      {
+        "current_ceiling": "low_medium",
+        "dimension": "market_valuation_and_consensus",
+        "hard_limit": "No reliable no-commercial source covers analyst consensus, target prices, or stable real-time valuation feeds.",
+        "potential_ceiling": "medium",
+        "reason": "Public/no-key data can provide prices, volumes, and some market context; identifier mapping is available."
+      },
+      {
+        "current_ceiling": "low",
+        "dimension": "event_and_news_research",
+        "hard_limit": "Leads must be verified against official/company/regulatory sources before entering claims.",
+        "potential_ceiling": "medium",
+        "reason": "Public event/news/discovery sources can surface leads."
+      },
+      {
+        "current_ceiling": "low",
+        "dimension": "technology_and_ip_signal",
+        "hard_limit": "Signals cannot prove product launch, moat, sales, or profitability.",
+        "potential_ceiling": "medium",
+        "reason": "OpenAlex and patent data can show research and IP activity after endpoint validation."
+      }
+    ],
+    "overall_current_verified_ceiling": "medium_high_for_us_filing_fundamentals_medium_for_context_low_for_consensus_and_private_supply_chain",
+    "overall_potential_after_public_buildout": "high_for_disclosed_company_facts_medium_high_for_context_and_regulatory_research_still_low_for_consensus_realtime_and_undisclosed_company_kpis"
+  },
+  "readiness_counts": {
+    "accepted_core": 1,
+    "accepted_no_key_context_fallback": 1,
+    "blocked_credential": 1,
+    "bulk_download_materialized_parser_gate_pending": 2,
+    "census_trade_api_materialized_hs_context_pending": 1,
+    "deferred_no_commercial_api": 1,
+    "downloaded_but_held": 5,
+    "feature_flag_candidate": 2,
+    "feature_flag_candidate_with_gaps": 1,
+    "identifier_ready_parser_blocked": 1,
+    "materialized_bounded_alias_candidate_snapshot": 1,
+    "materialized_bounded_crawl_index_metadata_snapshot": 1,
+    "materialized_bounded_provisional_context_only": 1,
+    "materialized_bounded_public_index_snapshot": 1,
+    "materialized_bounded_research_work_snapshot": 1,
+    "migration_metadata_materialized_endpoint_validation_pending": 1,
+    "normalized_catalog_materialized_endpoint_selection_pending": 1,
+    "normalized_context_materialized_allowlist_pending": 2,
+    "normalized_context_materialized_preferred_path": 1,
+    "official_page_sample_materialized_parser_gate_pending": 1,
+    "ontology_candidate_table_materialized_parser_required": 1,
+    "parser_required": 1,
+    "profile_validation_pending": 3
+  },
+  "runtime_surface_counts": {
+    "bounded_context_only": 10,
+    "bounded_evidence": 8,
+    "commercial_deferred_gap": 1,
+    "company_product_operating_metric": 2,
+    "exact_value_or_structured_fact": 1,
+    "gap_or_lead_queue": 4,
+    "gap_queue": 3,
+    "source_inventory_or_resolver": 3
+  },
+  "schema_version": "fin_agent_public_source_information_strength_summary_v0.1",
+  "source_count": 32,
+  "status": "pass",
+  "tier_counts": {
+    "S0_deferred_or_unofficial": 2,
+    "S1_resolver_or_lead": 7,
+    "S2_official_macro_industry_context": 9,
+    "S3_official_regulatory_product_context": 4,
+    "S4_company_authored_operating_context": 1,
+    "S5_primary_authority": 9
+  },
+  "validation": {
+    "assessed_source_count": 32,
+    "error_count": 0,
+    "errors": [],
+    "schema_version": "fin_agent_public_source_information_strength_validation_v0.1",
+    "source_count": 32,
+    "warning_count": 0,
+    "warnings": []
+  }
+}

@@ -443,7 +443,8 @@
 - [x] Move non-US report-type rules from company rows into market/regulator disclosure profiles and add source-plan audit to block company-level `target_reports`.
 - [x] Add profile-aware global public disclosure dry-run download task queue: `69` tasks, `6` profile strategies, `document_downloaded_count=0`.
 - [x] Add profile-layer `company_ir_official_report_download` and pass EU regulated annual-report smoke for Infineon 2023-2025: `3/3` documents downloaded with checksum metadata.
-- [ ] Add global public disclosure downloader/parser for KR DART, TW MOPS, JP EDINET, HKEX/SZSE/CNINFO, and remaining EU/company-IR issuer profiles.
+- [x] Add profile-specific global public disclosure downloaders for TW MOPS, HKEX/SZSE/CNINFO, EU/company IR, and bounded JP company-IR fallback; non-US staging now covers `47/69` plan rows and `12/15` companies.
+- [ ] Add JP EDINET official API downloader/parser after a valid key-backed smoke passes; company-IR fallback must remain separate from official EDINET claims.
 - [x] Download and stage Tier 1 SEC evidence before claiming true 500-company relationship-edge extraction.
 - [x] Rebuild expanded Object SQLite FTS baseline for Tier1+Tier2 SEC full-source mixed structured objects: `7493637` records.
 - [x] Run expanded BM25/ObjectBM25/Milvus/Hybrid retrieval-only A/B: `20260607_tier1_tier2_sec_full_source_object_hybrid_ab_v0_3`, `12/12` pass.
@@ -463,3 +464,66 @@
 - [ ] Add R3 entity resolution registry for external counterparties, subsidiaries, aliases, ticker, and CIK.
 - [ ] Add R4 relationship verifier hard gate into Router/Specialist path so exposure/news/partner rows cannot be rewritten as direct customer/supplier.
 - [ ] Add R5 Relationship Router and Industry Specialist integration for verified relationship edge rows.
+- [x] Absorb the 2026-06-10 ten-document vNext planning package into `docs/internal/vnext_20260610/` without runtime changes.
+- [x] Add a public/free data-source coverage audit before Agent Graph / Skill upgrades, with no commercial API spend assumed.
+- [x] Convert `docs/internal/vnext_20260610/public_data_source_coverage_audit.zh-CN.md` into an initial machine-readable source registry at `configs/data_sources/public_source_coverage_v0_1.yaml` with auth status, source family, claim boundary, collector status, parser status, and gap type.
+- [x] Add explicit product/sales coverage boundaries for company-reported product operating metrics, official product status, and public usage context after the first audit compressed this area too much.
+- [x] Add `company_product_operating_metric` ontology and candidate extraction rules for product revenue, unit sales, deliveries, shipments, subscribers, ARPU, backlog, orders, same-store sales, production, and throughput in filings and earnings materials.
+- [x] Promote `company_product_operating_metric_candidates_v0_1.jsonl` with a value/unit/period/product parser before using company product KPI facts in runtime; accepted runtime fact layer remains the strict SEC parser-verified `6,162` facts / `179` tickers baseline.
+- [x] Add `product_evidence_strategy_v0_1.yaml` to lock the product-data direction: SEC/global filings are anchor, official product surfaces are taxonomy/enrichment, public proxies are directional/context-only, and commercial trackers remain blocked under no-commercial policy.
+- [x] Build filings-first product taxonomy candidates over current SEC-staged universe: `13,712` candidates across `577/577` tickers.
+- [x] Rebuild product KPI candidates with per-ticker/per-family balancing instead of global alphabetical truncation: `6,663` candidates across `576/577` tickers.
+- [x] Build industry-specific product taxonomy normalization/review gates; latest strict run generated `5,590` normalized nodes, `10,817` aliases, and `2,895` review rows under `Z:/FIN_Insight_Agent/data/manifests/product_evidence_v0_1/`.
+- [x] Build a strict value/unit/period/product parser for `company_product_metric_candidates_balanced_v0_1.jsonl`; only `parser_verified_fact` rows may enter runtime, and the first strict text-window run accepted `1` fact while rejecting `6,662` candidates.
+- [x] Build table/list-aware value-bearing KPI parser from structured MetricObject SQLite FTS plus chunk source hydration; latest strict run scanned `488,975` structured rows and promoted `6,161` structured parser-verified facts / `6,162` combined facts across `179` tickers.
+- [x] Run targeted taxonomy/KPI repair audit without weakening gates; broad/table repair was rejected as noisy, strict sentence repair added `29` taxonomy nodes, and a monotonic promotion pass added `16` high-confidence facts while preserving the accepted baseline.
+- [ ] Add high-value taxonomy/table-header repairs for product KPI misses such as NVDA/MSFT and generic physical units before wiring product KPI facts into runtime Evidence Fusion; the current targeted repair audit did not satisfy this promotion bar.
+- [x] Build 603-company product evidence graph and explicit public/commercial gap ledger; latest final-public-repair run generated `5,873` evidence nodes, `2,979` gaps, `5,976` final runtime facts / `186` fact-covered tickers, and keeps remaining repair candidates as `review_queue_not_runtime_fact`.
+- [x] Promote source-specific high-confidence repair subsets for audited product KPI tables; v0.4 monotonic revenue repair adds `45` facts / `10` tickers while preserving baseline facts and tagging each repair scope/boundary.
+- [x] Review/promote high-confidence subsets of the repair-candidate companies through final public closeout before runtime use; accepted rows are now limited to source-specific promoted facts, while rejected rows are phase-verified or schema/parser backlog.
+- [x] Add final product KPI quality filter, operating metric repair, and sentence verifier; latest chain suppresses `240` false positives, promotes ED/WBD `9` operating facts, promotes `0` sentence facts, and outputs a final closeout ledger over `1,300` v0.4 rejections with generic `revenue_table_schema_candidate` cleared to `0`.
+- [ ] Add region/product-region revenue schema before promoting pharma/medtech and geographic product tables as runtime facts; do not coerce region rows into total product revenue.
+- [ ] Add source-version/restatement schema for GPC-like same-period conflicting public disclosure values before auto-selecting a value.
+- [ ] Add source-specific table layout repair for price/volume/currency waterfall tables and intersegment/consolidating tables before considering more targeted repair promotions.
+- [ ] Build public-proxy adapters by industry after mapping gates are specified; do not use generic proxy fallback.
+- [x] Add P0 public source registry validator and access-plan generator for `public_source_coverage_v0_1.yaml`.
+- [x] Run P1 no-key public source live probe: SEC EDGAR, FRED graph CSV, FDIC BankFind, ClinicalTrials.gov, openFDA, NHTSA vPIC, GLEIF, and OpenAlex all passed bounded smoke.
+- [x] Add P2 free-key environment detection and key-gap summary for EIA, BEA, Census, DART, EDINET, and FRED API.
+- [x] Add P3 portal/endpoint validation tasks for MOPS, HKEXnews, CNINFO, USITC/DataWeb, and USPTO PatentsView/Open Data Portal.
+- [x] Store user-provided public-source API keys in local ignored `.env` and wire scripts to load only environment variable names into manifests.
+- [x] Run key-backed P2 live smoke for BEA, Census, EIA, FRED API, and DART: `5/5` pass.
+- [x] Run optional key smoke for BLS, openFDA, and OpenFIGI: `3/3` pass.
+- [x] Add public-source normalized collector smoke for macro/industry and identity/product/disclosure lines; `13/13` sources passed, `118` normalized records and `13` evidence rows generated under ignored processed-private output.
+- [x] Run public-source full availability audit before runtime wiring: `32` source plan rows classified, `15` live audited, `0` live errors, `5` sources ready only after boundary/feature-flag gates, remaining sources blocked by mapping, endpoint, parser, credential, or commercial-deferred gaps.
+- [x] Add source-specific mapping/endpoint gates for Census, EIA, FDIC, GLEIF, ClinicalTrials.gov, openFDA, NHTSA, and DART before promoting public-source rows into agent runtime; target-universe run generated `127,712` endpoint records, `1,219` mapping candidates, and `213` source gaps under ignored processed-private output.
+- [x] Add resolver confidence thresholds and source-specific inventory adapters so only approved high-confidence public-source mappings can enter agent runtime.
+- [x] Add no-commercial public-source information-strength matrix and research-quality ceiling report before agent graph/skill usage design; 32 sources classified, validation `0` errors / `0` warnings.
+- [x] Use `public_source_information_strength_v0_1.yaml` to build the first S5-S0 materialization matrix before changing Agent Graph / Skill prompts; initial matrix had `9/32` sources materialized or inventory/resolver-only, and blocked/parser-pending sources were explicit.
+- [x] Materialize all currently reachable public/free/provisional sources except `jp_edinet_api` official API and commercial consensus per user policy; latest S5-S0 matrix has `30/32` sources materialized and only those two remain non-materialized/deferred.
+- [x] Materialize SEC Financial Statement Data Sets and FRED API as preferred structured/context paths; keep document extraction and FRED graph CSV as fallback or citation paths after parity/allowlist gates.
+- [ ] Add manual alias overrides for high-value GLEIF, ClinicalTrials.gov, openFDA, and NHTSA misses from the mapping/endpoint gate gap report.
+- [x] Build DART document/package downloader and cleaned-text staging after corp_code and filing metadata mapping passed for Korean target issuers; `18/18` DART rows downloaded/cleaned for `000660.KS`, `005930.KS`, and `373220.KS`.
+- [ ] Build DART table-aware section/financial parser and promotion gate before using Korean disclosure text in evidence, vector, or ledger runtime.
+- [x] Build MOPS/HKEX/CNINFO official report downloaders and cleaned-text staging for remaining non-US supply-chain issuers; MOPS `12/12`, HKEX `3/3`, CNINFO `3/3`.
+- [x] Wire `public_source_inventory_adapter_summary_v0_1.json` / `public_source_inventory_rows.jsonl` into `build_project_inventory` and Evidence Fusion behind an explicit feature flag.
+- [x] Wire public-source normalized evidence rows into source inventory / Evidence Fusion Selector behind a feature flag before agent runtime use.
+- [x] Wire `company_product_evidence_graph_v0_1` into source inventory / Evidence Fusion behind an explicit feature flag, preserving `runtime_fact_allowed`, `context_or_lead_available`, and `review_queue_not_runtime_fact` boundaries.
+- [ ] Obtain or activate a valid `EDINET_API_KEY`, then rerun JP EDINET official API smoke; the key is configured in local ignored `.env`, but the current official smoke returns `401`.
+- [x] Prioritize no-key/free-key public collectors before Graph/Skill prompt upgrades: SEC ownership/13F, FRED/BLS/FDIC, ClinicalTrials.gov, openFDA, PatentsView migration metadata, GLEIF, OpenFIGI, OpenAlex, Wikidata, GDELT, Common Crawl, EIA/BEA/Census/DART normalized snapshots are materialized.
+- [ ] Build parser/promotion gates for normalized public-source rows before Graph/Skill prompt upgrades consume them as runtime evidence.
+- [ ] Keep commercial APIs and consensus feeds as `commercial_deferred` unless the user explicitly changes the funding policy.
+
+## Agent Graph vNext
+
+- [x] Freeze Agent Graph vNext framework docs after product/public evidence wiring, including reflection checkpoints, second-pass repair loop, web evidence policy, playbook/skill contracts, shared context, async/sync barriers, and Milvus cloud/local runtime contract.
+- [ ] G1: Extend source family / inventory contracts for `company_product_evidence_graph`, `public_source_context`, `live_public_web_context`, and Milvus semantic capability without exposing raw rows to Research Lead.
+- [ ] G2: Add Plan Reflection Gate after Research Lead activation to catch wrong mode, industry schema, playbook, source family, web policy, or budget before retrieval.
+- [ ] G3: Upgrade Evidence Fusion Selector to emit authority-labeled bundles and a first-class Bounded Gap Register.
+- [ ] G4: Split second pass into Reflection Diagnosis, Repair Plan Builder, Hard Gate, Targeted Repair Executor, Delta Auditor, and stop on no authority-bearing delta.
+- [ ] G5: Add allowlisted Web Evidence Operator with snapshot-first / parser-gated / source-class claim boundaries.
+- [ ] G6: Add Product / Technology Specialist, product claim slots, and product source-family bundle rules.
+- [ ] G7: Add machine-readable industry playbook registry and route Research Lead planning through inventory + playbook metadata.
+- [ ] G8: Upgrade AgentDataView to Global / Role / Private context contracts and keep Memo Writer off raw evidence.
+- [ ] G9: Convert retrieval and specialist execution to async fan-out with fusion / delta / claim-store / adjudicator barriers.
+- [ ] G10: Add Milvus runtime capability switch for cloud/local/unavailable and keep semantic recall out of exact-value authority.
+- [ ] G11: Run 10-20 case end-to-end gate covering exact/focused/standard/deep/multi-turn, product/public/web/Milvus boundaries, and bounded gaps.

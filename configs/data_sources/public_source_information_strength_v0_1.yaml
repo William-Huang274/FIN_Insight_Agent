@@ -1,0 +1,606 @@
+schema_version: fin_agent_public_source_information_strength_v0_1
+as_of_date: "2026-06-11"
+policy:
+  commercial_api_spend: none
+  purpose: no_commercial_public_source_research_ceiling
+  runtime_default: planning_contract_only
+  source_claim_rule: "Source strength defines what a row can prove; engineering readiness defines whether it can enter runtime."
+
+information_strength_tiers:
+  S5_primary_authority:
+    score: 5
+    label: primary company or regulatory disclosure authority
+    can_support_company_facts: true
+    typical_surfaces:
+      - primary_evidence
+      - exact_value_ledger
+      - structured_fact_authority
+    boundary: "Can support company-reported financial or operating facts only when the parser preserves period, unit, issuer, source document, and citation."
+  S4_company_authored_operating_context:
+    score: 4
+    label: company-authored operating or product disclosure
+    can_support_company_facts: true
+    typical_surfaces:
+      - company_operating_metric
+      - earnings_material
+      - official_product_status
+    boundary: "Can support management commentary, product existence, and company-disclosed operating metrics; unaudited values need period and source caveats."
+  S3_official_regulatory_product_context:
+    score: 3
+    label: official regulatory, product, ownership, or entity context
+    can_support_company_facts: false
+    typical_surfaces:
+      - product_regulatory_context
+      - legal_entity_identifier_registry
+      - investment_graph_lagged
+    boundary: "Can support official status, registration, identifier, or lagged filing facts; cannot prove company sales, adoption, profitability, or causal safety outcomes."
+  S2_official_macro_industry_context:
+    score: 2
+    label: official macro, industry, trade, or public usage context
+    can_support_company_facts: false
+    typical_surfaces:
+      - industry_snapshot
+      - macro_context_inventory
+      - public_usage_context
+    boundary: "Can support macro/industry context and demand proxies; cannot be rewritten as company-level revenue, margin, customer, or product-sales facts."
+  S1_resolver_or_lead:
+    score: 1
+    label: resolver, discovery, technology signal, or event lead
+    can_support_company_facts: false
+    typical_surfaces:
+      - source_inventory
+      - entity_resolution_candidate
+      - external_event_lead
+    boundary: "Can help find or join evidence; must be verified against S5/S4/S3 sources before becoming a research claim."
+  S0_deferred_or_unofficial:
+    score: 0
+    label: deferred commercial, unofficial, or discovery-only source
+    can_support_company_facts: false
+    typical_surfaces:
+      - deferred_source_gap
+      - provisional_context
+      - discovery_only
+    boundary: "Cannot be treated as an authority source under the no-commercial-API policy."
+
+integration_modes:
+  primary_evidence_authority:
+    runtime_surface: bounded_evidence
+    feature_flag_required: true
+    default_admissibility: claim_evidence_after_parser_gate
+  structured_fact_authority:
+    runtime_surface: exact_value_or_structured_fact
+    feature_flag_required: true
+    default_admissibility: claim_evidence_after_ledger_parity_gate
+  company_operating_metric_parser:
+    runtime_surface: company_product_operating_metric
+    feature_flag_required: true
+    default_admissibility: claim_evidence_after_metric_ontology_gate
+  context_snapshot:
+    runtime_surface: bounded_context_only
+    feature_flag_required: true
+    default_admissibility: context_only
+  resolver_registry:
+    runtime_surface: source_inventory_or_resolver
+    feature_flag_required: true
+    default_admissibility: not_claim_evidence
+  lead_or_discovery:
+    runtime_surface: gap_or_lead_queue
+    feature_flag_required: true
+    default_admissibility: lead_only_needs_verification
+  held_for_parser_or_mapping:
+    runtime_surface: gap_queue
+    feature_flag_required: true
+    default_admissibility: not_runtime_evidence
+  deferred_no_commercial_api:
+    runtime_surface: commercial_deferred_gap
+    feature_flag_required: false
+    default_admissibility: not_allowed_under_current_policy
+
+research_quality_ceiling:
+  overall_current_verified_ceiling: medium_high_for_us_filing_fundamentals_medium_for_context_low_for_consensus_and_private_supply_chain
+  overall_potential_after_public_buildout: high_for_disclosed_company_facts_medium_high_for_context_and_regulatory_research_still_low_for_consensus_realtime_and_undisclosed_company_kpis
+  dimensions:
+    - dimension: us_company_fundamental_analysis
+      current_ceiling: high
+      potential_ceiling: high
+      reason: SEC primary filings, CompanyFacts, submissions, and exact-value ledgers can support audited filing-based analysis.
+      hard_limit: Cannot replace sell-side estimates, management access, or undisclosed product/customer metrics.
+    - dimension: non_us_primary_disclosure_analysis
+      current_ceiling: low_medium
+      potential_ceiling: high
+      reason: Official DART/EDINET/MOPS/HKEX/CNINFO/company IR sources are public, but document downloaders and parsers are not complete.
+      hard_limit: Until parser gates pass, metadata and locators cannot be cited as filing evidence.
+    - dimension: company_reported_product_operating_metrics
+      current_ceiling: low_medium
+      potential_ceiling: medium_high
+      reason: Public company filings and earnings materials can support product revenue, deliveries, subscribers, backlog, or unit metrics when companies disclose them.
+      hard_limit: No public source can infer undisclosed SKU-level sales, channel inventory, or product profitability.
+    - dimension: macro_industry_context
+      current_ceiling: medium
+      potential_ceiling: medium_high
+      reason: FRED, BLS, BEA, Census, EIA, FDIC, and trade datasets can provide official context and demand proxies.
+      hard_limit: Context rows cannot prove company-specific revenue, margin, customers, or product adoption.
+    - dimension: healthcare_product_regulatory_research
+      current_ceiling: low_medium
+      potential_ceiling: medium_high
+      reason: ClinicalTrials.gov, openFDA, and CMS can support pipeline, regulatory, payer, and utilization context after product and sponsor resolvers.
+      hard_limit: They do not prove approval success, commercial uptake, sales, or adverse-event causality.
+    - dimension: auto_product_identity_and_context
+      current_ceiling: low
+      potential_ceiling: medium
+      reason: NHTSA vPIC can identify make/model/year and product metadata after issuer mapping.
+      hard_limit: It does not provide deliveries, revenue, margins, or quality causality.
+    - dimension: banking_regulatory_context
+      current_ceiling: low_medium
+      potential_ceiling: medium
+      reason: FDIC BankFind can provide institution and branch/regulatory context after institution-to-issuer mapping.
+      hard_limit: FDIC institution rows are not consolidated listed-company financial statements.
+    - dimension: investment_and_ownership_graph
+      current_ceiling: low
+      potential_ceiling: medium
+      reason: SEC 13F and ownership forms are public and official but lagged.
+      hard_limit: They cannot prove real-time positioning, intent, or non-filing private holdings.
+    - dimension: supply_chain_and_customer_relationships
+      current_ceiling: low_medium
+      potential_ceiling: medium
+      reason: SEC filings, verified relationship extraction, GLEIF, and official disclosures can support some relationship facts.
+      hard_limit: Public sources cannot replace paid supply-chain transaction databases or customs microdata.
+    - dimension: market_valuation_and_consensus
+      current_ceiling: low_medium
+      potential_ceiling: medium
+      reason: Public/no-key data can provide prices, volumes, and some market context; identifier mapping is available.
+      hard_limit: No reliable no-commercial source covers analyst consensus, target prices, or stable real-time valuation feeds.
+    - dimension: event_and_news_research
+      current_ceiling: low
+      potential_ceiling: medium
+      reason: Public event/news/discovery sources can surface leads.
+      hard_limit: Leads must be verified against official/company/regulatory sources before entering claims.
+    - dimension: technology_and_ip_signal
+      current_ceiling: low
+      potential_ceiling: medium
+      reason: OpenAlex and patent data can show research and IP activity after endpoint validation.
+      hard_limit: Signals cannot prove product launch, moat, sales, or profitability.
+
+source_assessments:
+  - source_id: sec_edgar_apis
+    information_strength_tier: S5_primary_authority
+    integration_mode: primary_evidence_authority
+    readiness: accepted_core
+    evidence_admissibility: company_fact_evidence_after_existing_sec_parser_gate
+    current_quality_contribution: high_for_us_issuer_fundamentals
+    potential_quality_contribution: high
+    allowed_research_use:
+      - audited and unaudited SEC filing facts
+      - SEC structured facts and filing metadata
+      - issuer filing coverage and period identity
+    forbidden_research_use:
+      - market price or consensus claims
+      - non-US filings not present in SEC
+    next_gate: keep_core_and_extend_ownership_if_needed
+
+  - source_id: sec_financial_statement_data_sets
+    information_strength_tier: S5_primary_authority
+    integration_mode: structured_fact_authority
+    readiness: bulk_download_materialized_parser_gate_pending
+    evidence_admissibility: structured_fact_after_bulk_parser_and_ledger_parity_gate
+    current_quality_contribution: medium_as_official_bulk_structured_path_pending_parity
+    potential_quality_contribution: high_for_offline_ledger_and_companyfacts_parity
+    allowed_research_use:
+      - offline financial statement numeric parity
+      - bulk structured fact fallback
+    forbidden_research_use:
+      - replacing original filing citations
+    next_gate: build_bulk_parser_compare_to_companyfacts_and_promote_if_better_than_document_extraction
+
+  - source_id: sec_ownership_and_13f
+    information_strength_tier: S3_official_regulatory_product_context
+    integration_mode: primary_evidence_authority
+    readiness: bulk_download_materialized_parser_gate_pending
+    evidence_admissibility: lagged_investment_or_ownership_fact_after_parser_gate
+    current_quality_contribution: low_as_13f_bulk_staging_without_issuer_graph
+    potential_quality_contribution: medium_for_lagged_ownership_and_investment_context
+    allowed_research_use:
+      - 13F holdings
+      - beneficial ownership filings
+      - insider filing facts
+    forbidden_research_use:
+      - real-time trading intent
+      - non-filing private holdings
+    next_gate: build_13f_parser_investment_graph_edges_and_lag_policy
+
+  - source_id: company_ir_reports
+    information_strength_tier: S5_primary_authority
+    integration_mode: primary_evidence_authority
+    readiness: parser_required
+    evidence_admissibility: company_fact_evidence_after_official_url_checksum_and_parser_gate
+    current_quality_contribution: low_medium_limited_eu_smoke
+    potential_quality_contribution: high_for_non_us_primary_disclosure
+    allowed_research_use:
+      - official annual and interim reports
+      - earnings releases and presentations
+      - company-reported operating metrics
+    forbidden_research_use:
+      - using IR locator as regulator evidence
+      - uncited PDF facts without parser provenance
+    next_gate: build_pdf_html_parser_and_source_boundary_audit
+
+  - source_id: company_product_pages
+    information_strength_tier: S4_company_authored_operating_context
+    integration_mode: company_operating_metric_parser
+    readiness: official_page_sample_materialized_parser_gate_pending
+    evidence_admissibility: official_product_status_after_official_origin_and_parser_gate
+    current_quality_contribution: low_as_bounded_official_product_page_staging
+    potential_quality_contribution: medium_for_product_existence_and_positioning
+    allowed_research_use:
+      - product existence
+      - official specs and positioning
+      - launch or availability statements
+    forbidden_research_use:
+      - product sales or adoption
+      - profitability or customer traction
+    next_gate: expand_official_domain_allowlist_and_build_product_page_parser
+
+  - source_id: company_reported_product_operating_metrics
+    information_strength_tier: S5_primary_authority
+    integration_mode: company_operating_metric_parser
+    readiness: ontology_candidate_table_materialized_parser_required
+    evidence_admissibility: company_product_metric_evidence_after_metric_ontology_gate
+    current_quality_contribution: low_medium_via_candidate_table_without_value_unit_period_parser
+    potential_quality_contribution: medium_high_for_disclosed_product_kpis
+    allowed_research_use:
+      - product revenue
+      - unit sales, deliveries, shipments, subscribers, backlog, orders, ARPU
+      - same-store sales, production, throughput when company-disclosed
+    forbidden_research_use:
+      - undisclosed SKU-level sales
+      - third-party proxy converted into company KPI
+    next_gate: promote_candidate_table_to_value_unit_period_product_parser
+
+  - source_id: kr_dart_openapi
+    information_strength_tier: S5_primary_authority
+    integration_mode: primary_evidence_authority
+    readiness: identifier_ready_parser_blocked
+    evidence_admissibility: disclosure_locator_only_until_document_parser_gate
+    current_quality_contribution: low_locator_only
+    potential_quality_contribution: high_for_korean_primary_disclosure
+    allowed_research_use:
+      - corp_code and filing locator
+      - Korean official disclosure after parser
+    forbidden_research_use:
+      - citing filing metadata as financial evidence
+      - company facts before package parser
+    next_gate: build_dart_document_package_downloader_and_parser
+
+  - source_id: jp_edinet_api
+    information_strength_tier: S5_primary_authority
+    integration_mode: primary_evidence_authority
+    readiness: blocked_credential
+    evidence_admissibility: no_runtime_use_until_key_downloader_and_parser
+    current_quality_contribution: none
+    potential_quality_contribution: high_for_japanese_primary_disclosure
+    allowed_research_use:
+      - EDINET filings after document type and parser gates
+    forbidden_research_use:
+      - any runtime evidence before EDINET_API_KEY and parser
+    next_gate: configure_edinet_api_key_and_build_document_parser
+
+  - source_id: tw_mops_portal
+    information_strength_tier: S5_primary_authority
+    integration_mode: primary_evidence_authority
+    readiness: profile_validation_pending
+    evidence_admissibility: no_runtime_use_until_portal_validation_and_parser
+    current_quality_contribution: none
+    potential_quality_contribution: high_for_taiwan_primary_disclosure
+    allowed_research_use:
+      - MOPS annual and interim disclosures after validation
+    forbidden_research_use:
+      - stale portal search results
+    next_gate: validate_company_code_year_report_type_language_and_checksum
+
+  - source_id: hkexnews_portal
+    information_strength_tier: S5_primary_authority
+    integration_mode: primary_evidence_authority
+    readiness: profile_validation_pending
+    evidence_admissibility: no_runtime_use_until_portal_validation_and_parser
+    current_quality_contribution: none
+    potential_quality_contribution: high_for_hong_kong_primary_disclosure
+    allowed_research_use:
+      - HKEX annual and interim announcements after validation
+    forbidden_research_use:
+      - uncategorized announcement search as evidence
+    next_gate: validate_issuer_code_headline_category_date_filters_and_pdf_parser
+
+  - source_id: cninfo_portal
+    information_strength_tier: S5_primary_authority
+    integration_mode: primary_evidence_authority
+    readiness: profile_validation_pending
+    evidence_admissibility: no_runtime_use_until_portal_validation_and_parser
+    current_quality_contribution: none
+    potential_quality_contribution: high_for_china_primary_disclosure
+    allowed_research_use:
+      - CNINFO annual, semiannual, quarterly reports after validation
+    forbidden_research_use:
+      - stale or wrong-category portal results
+    next_gate: validate_security_code_org_id_category_and_download_parser
+
+  - source_id: yahoo_chart
+    information_strength_tier: S0_deferred_or_unofficial
+    integration_mode: context_snapshot
+    readiness: materialized_bounded_provisional_context_only
+    evidence_admissibility: provisional_market_context_only
+    current_quality_contribution: low_medium_for_market_reaction_context
+    potential_quality_contribution: low_medium
+    allowed_research_use:
+      - price and volume context with provider caveat
+      - event-window market reaction context
+    forbidden_research_use:
+      - authoritative pricing
+      - real-time valuation or consensus
+    next_gate: keep_provisional_label_or_replace_with_approved_market_provider
+
+  - source_id: openfigi_api
+    information_strength_tier: S1_resolver_or_lead
+    integration_mode: resolver_registry
+    readiness: feature_flag_candidate
+    evidence_admissibility: identifier_mapping_not_claim_evidence
+    current_quality_contribution: medium_for_security_identifier_resolution
+    potential_quality_contribution: medium
+    allowed_research_use:
+      - ticker exchange security mapping
+      - FIGI join key
+    forbidden_research_use:
+      - valuation or financial facts
+    next_gate: retry_failed_exchange_mappings_and_keep_resolver_only
+
+  - source_id: fred_graph_csv
+    information_strength_tier: S2_official_macro_industry_context
+    integration_mode: context_snapshot
+    readiness: accepted_no_key_context_fallback
+    evidence_admissibility: context_only_after_series_allowlist
+    current_quality_contribution: medium_for_macro_context_as_no_key_fallback
+    potential_quality_contribution: medium_high
+    allowed_research_use:
+      - rates, inflation, credit, consumer, commodity context
+    forbidden_research_use:
+      - company-level reported facts
+    next_gate: keep_as_no_key_fallback_after_fred_api_preferred_path_passes
+
+  - source_id: fred_api
+    information_strength_tier: S2_official_macro_industry_context
+    integration_mode: context_snapshot
+    readiness: normalized_context_materialized_preferred_path
+    evidence_admissibility: context_only_after_series_allowlist
+    current_quality_contribution: medium_for_macro_context_with_series_metadata
+    potential_quality_contribution: medium_high
+    allowed_research_use:
+      - richer FRED metadata and observations
+    forbidden_research_use:
+      - company-level reported facts
+    next_gate: prefer_fred_api_for_series_metadata_and_observations_keep_graph_csv_as_fallback
+
+  - source_id: bls_public_api
+    information_strength_tier: S2_official_macro_industry_context
+    integration_mode: context_snapshot
+    readiness: normalized_context_materialized_allowlist_pending
+    evidence_admissibility: context_only_after_series_allowlist
+    current_quality_contribution: medium_for_labor_cpi_ppi_context
+    potential_quality_contribution: medium_high
+    allowed_research_use:
+      - CPI, PPI, employment, wage, and industry statistics context
+    forbidden_research_use:
+      - company-level revenue or margin proof
+    next_gate: build_bls_series_allowlist_and_context_adapter
+
+  - source_id: bea_data_api
+    information_strength_tier: S2_official_macro_industry_context
+    integration_mode: context_snapshot
+    readiness: normalized_context_materialized_allowlist_pending
+    evidence_admissibility: context_only_after_dataset_table_allowlist
+    current_quality_contribution: medium_for_gdp_pce_industry_accounts
+    potential_quality_contribution: medium_high
+    allowed_research_use:
+      - GDP, NIPA, PCE, industry accounts, regional context
+    forbidden_research_use:
+      - company-level sales or profitability
+    next_gate: build_bea_dataset_table_allowlist
+
+  - source_id: census_data_api
+    information_strength_tier: S2_official_macro_industry_context
+    integration_mode: context_snapshot
+    readiness: feature_flag_candidate
+    evidence_admissibility: context_only_after_dataset_table_allowlist
+    current_quality_contribution: low_current_three_context_rows
+    potential_quality_contribution: medium_high_for_population_trade_and_business_context
+    allowed_research_use:
+      - demographic, consumer, trade, and business context
+    forbidden_research_use:
+      - company sales or operating metrics
+    next_gate: add_census_dataset_geography_table_allowlist
+
+  - source_id: eia_open_data
+    information_strength_tier: S2_official_macro_industry_context
+    integration_mode: context_snapshot
+    readiness: downloaded_but_held
+    evidence_admissibility: context_only_after_route_and_entity_mapping
+    current_quality_contribution: low_until_route_allowlist
+    potential_quality_contribution: medium_high_for_energy_and_utility_context
+    allowed_research_use:
+      - energy prices, inventories, electricity sales, power demand context
+    forbidden_research_use:
+      - single-company revenue, sales, or profit inference
+    next_gate: add_eia_route_allowlist_and_asset_or_sector_mapping
+
+  - source_id: fdic_bankfind_api
+    information_strength_tier: S2_official_macro_industry_context
+    integration_mode: context_snapshot
+    readiness: downloaded_but_held
+    evidence_admissibility: banking_context_only_after_institution_to_issuer_resolver
+    current_quality_contribution: low_until_resolver
+    potential_quality_contribution: medium_for_banking_context
+    allowed_research_use:
+      - bank institution and branch regulatory context
+      - FDIC institution financial context after mapping
+    forbidden_research_use:
+      - consolidated listed-company financial facts
+    next_gate: build_bank_institution_subsidiary_to_listed_issuer_resolver
+
+  - source_id: nhtsa_vpic_api
+    information_strength_tier: S3_official_regulatory_product_context
+    integration_mode: held_for_parser_or_mapping
+    readiness: downloaded_but_held
+    evidence_admissibility: product_identity_context_after_make_model_year_issuer_resolver
+    current_quality_contribution: low_until_resolver
+    potential_quality_contribution: medium_for_auto_product_identity
+    allowed_research_use:
+      - make, model, model-year, VIN metadata
+    forbidden_research_use:
+      - vehicle sales, deliveries, profitability, or safety causality
+    next_gate: build_vehicle_make_model_year_to_issuer_resolver
+
+  - source_id: usitc_dataweb_and_trade
+    information_strength_tier: S2_official_macro_industry_context
+    integration_mode: context_snapshot
+    readiness: census_trade_api_materialized_hs_context_pending
+    evidence_admissibility: trade_context_only_after_endpoint_validation
+    current_quality_contribution: low_as_bounded_hs_trade_context
+    potential_quality_contribution: medium_for_trade_and_manufacturing_context
+    allowed_research_use:
+      - trade, tariff, import/export, HS code context
+    forbidden_research_use:
+      - company-specific customer or supplier relationship proof
+    next_gate: validate_usitc_or_census_trade_endpoint_and_hs_mapping
+
+  - source_id: clinicaltrials_api
+    information_strength_tier: S3_official_regulatory_product_context
+    integration_mode: held_for_parser_or_mapping
+    readiness: downloaded_but_held
+    evidence_admissibility: clinical_pipeline_context_after_sponsor_product_condition_resolver
+    current_quality_contribution: low_until_healthcare_resolver
+    potential_quality_contribution: medium_high_for_pipeline_context
+    allowed_research_use:
+      - trial registration, status, phase, endpoints, sponsor context
+    forbidden_research_use:
+      - approval success, sales, commercial uptake
+    next_gate: build_sponsor_product_condition_resolver
+
+  - source_id: openfda_api
+    information_strength_tier: S3_official_regulatory_product_context
+    integration_mode: held_for_parser_or_mapping
+    readiness: downloaded_but_held
+    evidence_admissibility: regulatory_product_context_after_product_sponsor_endpoint_resolver
+    current_quality_contribution: low_until_product_resolver
+    potential_quality_contribution: medium_high_for_healthcare_regulatory_context
+    allowed_research_use:
+      - FDA regulatory, recall, product-status, safety-event context
+    forbidden_research_use:
+      - sales, commercial uptake, adverse-event causality
+    next_gate: build_openfda_product_sponsor_endpoint_resolver
+
+  - source_id: cms_public_data
+    information_strength_tier: S2_official_macro_industry_context
+    integration_mode: context_snapshot
+    readiness: normalized_catalog_materialized_endpoint_selection_pending
+    evidence_admissibility: healthcare_payer_or_utilization_context_after_endpoint_selection
+    current_quality_contribution: low_as_public_catalog_staging
+    potential_quality_contribution: medium_for_healthcare_payer_and_utilization_context
+    allowed_research_use:
+      - payer, provider, utilization, and coverage context
+    forbidden_research_use:
+      - company product sales without explicit product/company mapping
+    next_gate: select_cms_endpoints_and_product_or_procedure_mapping
+
+  - source_id: patentsview_api
+    information_strength_tier: S1_resolver_or_lead
+    integration_mode: lead_or_discovery
+    readiness: migration_metadata_materialized_endpoint_validation_pending
+    evidence_admissibility: technology_signal_only_after_endpoint_validation
+    current_quality_contribution: low_as_api_migration_metadata_only
+    potential_quality_contribution: medium_for_ip_and_technology_signal
+    allowed_research_use:
+      - patents, assignees, classifications, citations as technology signal
+    forbidden_research_use:
+      - product launch, product sales, revenue, or durable moat proof
+      - company financial facts
+    next_gate: validate_current_uspto_open_data_portal_endpoint_and_materialize_patent_tables
+
+  - source_id: openalex_api
+    information_strength_tier: S1_resolver_or_lead
+    integration_mode: lead_or_discovery
+    readiness: materialized_bounded_research_work_snapshot
+    evidence_admissibility: technology_signal_only_after_entity_topic_resolver
+    current_quality_contribution: low_for_research_trend_leads_after_bounded_snapshot
+    potential_quality_contribution: medium_for_research_and_technology_signal
+    allowed_research_use:
+      - research trends, citations, authors, institutions, concepts
+    forbidden_research_use:
+      - product sales, company financials, or moat proof
+    next_gate: build_topic_institution_company_resolver
+
+  - source_id: gleif_api
+    information_strength_tier: S1_resolver_or_lead
+    integration_mode: resolver_registry
+    readiness: feature_flag_candidate_with_gaps
+    evidence_admissibility: legal_entity_identifier_only_until_relationship_parser
+    current_quality_contribution: medium_for_lei_resolution
+    potential_quality_contribution: medium_for_entity_and_legal_relationship_context
+    allowed_research_use:
+      - LEI and legal entity identifier mapping
+      - legal parent/relationship context after parser
+    forbidden_research_use:
+      - customer, supplier, or commercial transaction proof
+      - company financial facts
+    next_gate: add_alias_overrides_and_relationship_resolver
+
+  - source_id: wikidata
+    information_strength_tier: S1_resolver_or_lead
+    integration_mode: resolver_registry
+    readiness: materialized_bounded_alias_candidate_snapshot
+    evidence_admissibility: low_weight_alias_candidate_only
+    current_quality_contribution: low_for_alias_candidates_after_bounded_snapshot
+    potential_quality_contribution: low_for_alias_resolution
+    allowed_research_use:
+      - alias and identifier candidates
+    forbidden_research_use:
+      - financial or operating facts
+    next_gate: build_low_weight_alias_candidate_adapter
+
+  - source_id: gdelt
+    information_strength_tier: S1_resolver_or_lead
+    integration_mode: lead_or_discovery
+    readiness: materialized_bounded_public_index_snapshot
+    evidence_admissibility: event_lead_only_needs_official_verification
+    current_quality_contribution: low_for_event_index_leads_after_bounded_snapshot
+    potential_quality_contribution: medium_for_event_discovery
+    allowed_research_use:
+      - event or news leads
+    forbidden_research_use:
+      - unverified claims or official fact replacement
+      - company financial facts
+    next_gate: build_event_lead_queue_and_verification_policy
+
+  - source_id: common_crawl_index
+    information_strength_tier: S1_resolver_or_lead
+    integration_mode: lead_or_discovery
+    readiness: materialized_bounded_crawl_index_metadata_snapshot
+    evidence_admissibility: discovery_only
+    current_quality_contribution: low_for_official_page_discovery_after_bounded_snapshot
+    potential_quality_contribution: low_for_official_page_discovery
+    allowed_research_use:
+      - official URL discovery candidates
+    forbidden_research_use:
+      - factual claims from crawl index rows
+      - company financial facts
+    next_gate: build_official_origin_filter_and_fetcher
+
+  - source_id: commercial_market_data_and_consensus
+    information_strength_tier: S0_deferred_or_unofficial
+    integration_mode: deferred_no_commercial_api
+    readiness: deferred_no_commercial_api
+    evidence_admissibility: not_allowed_under_current_no_commercial_policy
+    current_quality_contribution: none
+    potential_quality_contribution: unavailable_without_policy_change
+    allowed_research_use:
+      - source_gap marker only
+    forbidden_research_use:
+      - analyst consensus, target prices, ratings, estimates, paid feeds
+    next_gate: keep_deferred_until_user_changes_funding_policy

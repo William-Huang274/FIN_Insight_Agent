@@ -45,9 +45,15 @@
 - [分层数据源扩容计划](layered_data_source_expansion_plan.zh-CN.md)
 - [分层数据源扩容执行文档](layered_data_source_expansion_execution_plan.zh-CN.md)
 - [扩容后检索与多智能体架构执行文档](expanded_universe_retrieval_agent_framework_v0_1.zh-CN.md)
+- [Agent Graph vNext 框架与分功能执行文档](agent_graph_vnext/README.zh-CN.md)
 - [投研质量评价体系](../eval/fin_agent_investment_research_quality_framework_v0_1.md)
 - [分层质量门控执行文档](../eval/fin_agent_layered_quality_execution_plan_v0_1.md)
 - [脚本发布面](../../scripts/README.md)
+
+## 内部规划指针
+
+- [2026-06-10 vNext 规划吸收与公开数据源覆盖审计](../internal/vnext_20260610/README.md)：记录下一阶段 Skill / Playbook / Eval Gate、Agent Graph 和公开数据源覆盖边界。该目录是内部规划，不代表当前公开能力。
+- [公开源 S5-S0 物化状态](../internal/vnext_20260610/public_source_strength_materialization.zh-CN.md)：记录 32 个公开源在 no-commercial 约束下的 materialized / parser-pending / blocked 状态，供后续 Agent Graph 和 Skill 边界设计引用。
 
 ## 写作口径
 

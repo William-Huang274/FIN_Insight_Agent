@@ -1,0 +1,57 @@
+{
+  "failure_count": 0,
+  "failures": [],
+  "generated_at": "2026-06-11T12:27:06.519559+00:00",
+  "materialized_sources": [
+    "company_product_pages",
+    "company_reported_product_operating_metrics",
+    "sec_financial_statement_data_sets",
+    "sec_ownership_and_13f"
+  ],
+  "outputs": {
+    "manifest": "data/manifests/public_source_extended_materialization_v0_1.jsonl",
+    "product_metric_candidates": "data/manifests/company_product_operating_metric_candidates_v0_1.jsonl",
+    "summary": "data/manifests/public_source_extended_materialization_summary_v0_1.json"
+  },
+  "schema_version": "fin_agent_public_source_extended_materialization_summary_v0.1",
+  "source_count": 4,
+  "source_stats": {
+    "company_product_pages": {
+      "artifact_type": "official_product_page_html_text",
+      "cleaned_text_char_count": 128137,
+      "downloaded_bytes": 0,
+      "materialization_channel": "official_product_page_clean_text",
+      "record_count": 3,
+      "runtime_promotion_status": "staging_only_official_origin_parser_gate_pending",
+      "status": "materialized"
+    },
+    "company_reported_product_operating_metrics": {
+      "artifact_type": "product_operating_metric_ontology_candidate_table",
+      "cleaned_text_char_count": 0,
+      "downloaded_bytes": 0,
+      "materialization_channel": "metric_ontology_candidate_extraction",
+      "record_count": 300,
+      "runtime_promotion_status": "candidate_only_value_unit_period_parser_gate_pending",
+      "status": "materialized"
+    },
+    "sec_financial_statement_data_sets": {
+      "artifact_type": "sec_bulk_financial_statement_zip",
+      "cleaned_text_char_count": 0,
+      "downloaded_bytes": 85259424,
+      "materialization_channel": "public_bulk_zip",
+      "record_count": 4522052,
+      "runtime_promotion_status": "staging_only_parser_or_parity_gate_pending",
+      "status": "materialized"
+    },
+    "sec_ownership_and_13f": {
+      "artifact_type": "sec_bulk_13f_zip",
+      "cleaned_text_char_count": 0,
+      "downloaded_bytes": 99411274,
+      "materialization_channel": "public_bulk_zip",
+      "record_count": 3877007,
+      "runtime_promotion_status": "staging_only_parser_or_parity_gate_pending",
+      "status": "materialized"
+    }
+  },
+  "status": "pass"
+}

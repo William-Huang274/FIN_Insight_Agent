@@ -662,6 +662,75 @@ def test_agent_data_view_source_family_bundle_selects_role_specific_rows() -> No
     assert "relationship_graph" not in {row["source_family"] for row in risk["bounded_evidence_rows"]}
 
 
+def test_agent_data_view_routes_product_evidence_and_public_source_context_rows() -> None:
+    state = {
+        "query_contract": {"focus_tickers": ["AAPL"]},
+        "product_evidence_rows": [
+            {
+                "evidence_ref": "product_fact_aapl_services_2024",
+                "source_family": "company_product_evidence_graph",
+                "ticker": "AAPL",
+                "metric": "product_revenue",
+                "product_or_segment": "Services",
+                "value": "96.2 billion USD",
+                "promotion_status": "runtime_fact_allowed",
+                "claim_scope": "company_disclosed_product_kpi_fact",
+                "exact_value_authority": True,
+                "summary": "AAPL disclosed Services revenue for FY2024.",
+            },
+            {
+                "evidence_ref": "product_review_candidate",
+                "source_family": "company_product_evidence_graph",
+                "ticker": "AAPL",
+                "metric": "candidate_product_revenue",
+                "promotion_status": "review_queue_not_runtime_fact",
+                "claim_scope": "review_queue_not_runtime_fact",
+                "summary": "A review-only candidate should not enter fundamental bounded rows.",
+            },
+            {
+                "evidence_ref": "product_gap_aapl_channel_inventory",
+                "source_family": "company_product_evidence_graph",
+                "ticker": "AAPL",
+                "metric": "channel_inventory",
+                "promotion_status": "gap_exposed_not_fallback",
+                "claim_scope": "source_gap_only",
+                "summary": "Channel inventory requires commercial tracker data.",
+            },
+        ],
+        "public_source_context_rows": [
+            {
+                "evidence_ref": "public_fred_api_context",
+                "source_family": "public_source_context",
+                "source_id": "fred_api",
+                "underlying_source_family": "macro_industry_indicator",
+                "metric": "macro_time_series_observation",
+                "claim_scope": "industry_context_only",
+                "context_only": True,
+                "exact_value_authority": False,
+                "summary": "FRED context row for macro/industry conditions.",
+            }
+        ],
+    }
+
+    fundamental = build_agent_data_view("fundamental_analyst", state)
+    industry = build_agent_data_view("industry_supply_chain_analyst", state)
+    risk = build_agent_data_view("risk_counterevidence_analyst", state)
+
+    fundamental_refs = {row["evidence_ref"] for row in fundamental["bounded_evidence_rows"]}
+    assert "product_fact_aapl_services_2024" in fundamental_refs
+    assert "product_review_candidate" not in fundamental_refs
+    assert "public_fred_api_context" not in fundamental_refs
+    assert "company_product_evidence_graph" in fundamental["source_family_bundle"]["selected_source_families"]
+    assert "company_product_evidence_graph_requires_runtime_fact_allowed_for_product_kpi_claims" in fundamental["source_family_bundle"]["forbidden_claim_scopes"]
+
+    industry_families = {row["source_family"] for row in industry["bounded_evidence_rows"]}
+    assert {"company_product_evidence_graph", "public_source_context"} <= industry_families
+    assert "public_source_context_cannot_prove_company_reported_product_sales_market_share_or_profitability" in industry["source_family_bundle"]["forbidden_claim_scopes"]
+
+    risk_families = {row["source_family"] for row in risk["bounded_evidence_rows"]}
+    assert {"company_product_evidence_graph", "public_source_context"} <= risk_families
+
+
 def test_build_specialist_request_from_state_uses_deep_research_prompt_budget() -> None:
     request = build_specialist_request_from_state(
         "fundamental_analyst",

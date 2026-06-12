@@ -1,0 +1,140 @@
+{
+  "adapter_status_counts": {
+    "held": 5,
+    "partial_promoted_with_gaps": 3,
+    "promoted": 1,
+    "promoted_context_only": 1
+  },
+  "agent_promotion_allowed": true,
+  "agent_promotion_scope": "feature_flagged_source_inventory_and_context_only",
+  "bounded_evidence_counts_by_source": {
+    "census_data_api": 3
+  },
+  "bounded_evidence_eligible_row_count": 3,
+  "bounded_evidence_sources": [
+    "census_data_api"
+  ],
+  "company_product_sales_promotion_allowed": false,
+  "exact_value_authority_row_count": 0,
+  "gap_counts_by_source": {
+    "clinicaltrials_api": 9,
+    "eia_open_data": 1,
+    "fdic_bankfind_api": 66,
+    "gleif_api": 84,
+    "kr_dart_openapi": 1,
+    "nhtsa_vpic_api": 4,
+    "openfda_api": 54,
+    "openfigi_api": 1
+  },
+  "gap_row_count": 220,
+  "generated_at": "2026-06-11T10:02:46.668198+00:00",
+  "input_counts": {
+    "endpoint_record_rows": 127712,
+    "mapping_candidate_rows": 1219,
+    "source_gap_rows": 213
+  },
+  "inputs": {
+    "endpoint_records": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/endpoint_records.jsonl",
+    "mapping_candidates": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/mapping_candidates.jsonl",
+    "mapping_endpoint_gate_rows": "data/manifests/public_source_mapping_endpoint_gate_v0_1.jsonl",
+    "mapping_endpoint_gate_summary": "data/manifests/public_source_mapping_endpoint_gate_summary_v0_1.json",
+    "policy": "configs/data_sources/public_source_promotion_policy_v0_1.yaml",
+    "source_gaps": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/source_gaps.jsonl"
+  },
+  "outputs": {
+    "adapter_gate_rows": "data/manifests/public_source_inventory_adapter_v0_1.jsonl",
+    "metadata": "data/processed_private/public_sources/public_source_inventory_adapter_v0_1/metadata.json",
+    "processed_private_output_dir": "data/processed_private/public_sources/public_source_inventory_adapter_v0_1",
+    "public_source_gap_rows": "data/processed_private/public_sources/public_source_inventory_adapter_v0_1/public_source_gap_rows.jsonl",
+    "public_source_inventory_rows": "data/processed_private/public_sources/public_source_inventory_adapter_v0_1/public_source_inventory_rows.jsonl",
+    "rejected_public_source_candidates": "data/processed_private/public_sources/public_source_inventory_adapter_v0_1/rejected_public_source_candidates.jsonl",
+    "summary": "data/manifests/public_source_inventory_adapter_summary_v0_1.json"
+  },
+  "policy_as_of_date": "2026-06-11",
+  "policy_schema_version": "fin_agent_public_source_promotion_policy_v0_1",
+  "primary_disclosure_evidence_promotion_allowed": false,
+  "promoted_counts_by_source": {
+    "census_data_api": 3,
+    "gleif_api": 495,
+    "kr_dart_openapi": 3,
+    "openfigi_api": 14,
+    "sec_universe_identity": 588
+  },
+  "promoted_inventory_row_count": 1103,
+  "promoted_sources": [
+    "census_data_api",
+    "gleif_api",
+    "kr_dart_openapi",
+    "openfigi_api",
+    "sec_universe_identity"
+  ],
+  "promotion_counts_by_claim_scope": {
+    "demographic_or_macro_context_only": 3,
+    "issuer_disclosure_identifier_only": 3,
+    "issuer_identity_only": 588,
+    "legal_entity_identifier_mapping_only": 495,
+    "security_identifier_mapping_only": 14
+  },
+  "promotion_counts_by_source_family": {
+    "global_public_annual_report": 3,
+    "macro_industry_indicator": 3,
+    "relationship_edge": 509,
+    "sec_submissions_metadata": 588
+  },
+  "promotion_counts_by_surface": {
+    "entity_identifier_registry": 588,
+    "legal_entity_identifier_registry": 495,
+    "macro_context_inventory": 3,
+    "non_us_disclosure_resolver": 3,
+    "security_identifier_registry": 14
+  },
+  "rejected_candidate_count": 127828,
+  "rejected_counts_by_source": {
+    "clinicaltrials_api": 2006,
+    "eia_open_data": 1000,
+    "fdic_bankfind_api": 4287,
+    "gleif_api": 1405,
+    "kr_dart_openapi": 118444,
+    "nhtsa_vpic_api": 255,
+    "openfda_api": 417,
+    "openfigi_api": 14
+  },
+  "required_next_gates": [
+    "dart_document_parser_before_primary_disclosure_evidence",
+    "gleif_alias_and_relationship_resolver_before_relationship_claims"
+  ],
+  "resolver_counts_by_source": {
+    "gleif_api": 495,
+    "kr_dart_openapi": 3,
+    "openfigi_api": 14,
+    "sec_universe_identity": 588
+  },
+  "resolver_eligible_row_count": 1100,
+  "run_id": "public_source_inventory_adapter_v0_1",
+  "runtime_counts_by_source": {
+    "census_data_api": 3,
+    "gleif_api": 495,
+    "kr_dart_openapi": 3,
+    "openfigi_api": 14,
+    "sec_universe_identity": 588
+  },
+  "runtime_eligible_row_count": 1103,
+  "runtime_policy": {
+    "company_product_sales_promotion_allowed": false,
+    "default_runtime_enabled": false,
+    "exact_value_authority_default": false,
+    "feature_flag_required": true,
+    "notes": [
+      "Identity mappings can support resolver/source inventory but cannot prove financial or operating claims.",
+      "Macro and regulatory endpoint rows remain context-only unless a later source-specific parser or entity resolver promotes them.",
+      "Public sources cannot overwrite SEC filings or exact-value ledger rows."
+    ],
+    "primary_disclosure_text_promotion_allowed": false,
+    "promotion_scope": "source_inventory_and_context_only"
+  },
+  "schema_version": "fin_agent_public_source_inventory_adapter_summary_v0.1",
+  "source_gate_status": "pass_with_gaps",
+  "source_gate_universe_company_count": 603,
+  "source_policy_blocker_count": 7,
+  "status": "pass_with_runtime_inventory_candidates"
+}

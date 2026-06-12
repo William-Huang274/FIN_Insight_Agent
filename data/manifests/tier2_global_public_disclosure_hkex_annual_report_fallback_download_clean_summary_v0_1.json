@@ -1,0 +1,62 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_download_tasks_summary_v0.1",
+  "status": "fail",
+  "task_count": 3,
+  "company_count": 1,
+  "profile_counts": {
+    "hkex_annual_report": 3
+  },
+  "report_type_counts": {
+    "annual_report": 3
+  },
+  "download_strategy_counts": {
+    "company_ir_official_report_fallback": 3
+  },
+  "download_status_counts": {
+    "no_matching_document_candidate": 3
+  },
+  "document_downloaded_count": 0,
+  "downloaded_byte_count": 0,
+  "issue_counts": {
+    "company_ir_fallback_no_matching_document_candidate": 3
+  },
+  "issues": [
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::1211_HK::HKEX_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "ticker": "1211.HK",
+      "candidate_count": 0,
+      "primary_download_strategy": "hkexnews_issuer_report_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::1211_HK::HKEX_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "ticker": "1211.HK",
+      "candidate_count": 0,
+      "primary_download_strategy": "hkexnews_issuer_report_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::1211_HK::HKEX_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "ticker": "1211.HK",
+      "candidate_count": 0,
+      "primary_download_strategy": "hkexnews_issuer_report_search"
+    }
+  ],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_hkex_annual_report_fallback_download_clean_v0_1.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_hkex_annual_report_fallback_download_clean_summary_v0_1.json"
+  },
+  "loaded_env_keys": [
+    "CENSUS_API_KEY",
+    "BEA_API_KEY",
+    "FRED_API_KEY",
+    "DART_API_KEY",
+    "BLS_API_KEY",
+    "OPENFDA_API_KEY",
+    "FDA_API_KEY",
+    "OPENFIGI_API_KEY",
+    "EIA_API_KEY",
+    "EDINET_API_KEY"
+  ]
+}

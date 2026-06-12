@@ -1,0 +1,103 @@
+schema_version: fin_agent_company_product_operating_metric_ontology_v0_1
+as_of_date: "2026-06-11"
+purpose: "Bound product-level operating metrics that can be used only when directly company-reported in filings, earnings releases, shareholder letters, annual reports, or official presentations."
+promotion_rule: "A candidate is not a fact until ticker, product_or_segment, metric_name, period, unit, value, source_url, and citation span are all present and parser-verified."
+metric_families:
+  product_revenue:
+    allowed_units:
+      - currency
+      - percent_of_revenue
+    positive_examples:
+      - product revenue
+      - franchise revenue
+      - segment net sales
+      - revenue by product category
+    forbidden_inferences:
+      - estimating SKU sales from third-party traffic or industry volume
+      - treating regulator utilization data as company revenue
+  unit_sales_or_deliveries:
+    allowed_units:
+      - units
+      - vehicles
+      - devices
+      - systems
+      - MDt
+    positive_examples:
+      - deliveries
+      - units sold
+      - installed base additions
+    forbidden_inferences:
+      - using NHTSA model identity as deliveries
+      - using production capacity as delivered units
+  shipments:
+    allowed_units:
+      - units
+      - metric tons
+      - barrels
+      - packages
+    positive_examples:
+      - shipments
+      - shipped volume
+      - wafer starts shipped
+    forbidden_inferences:
+      - inferring shipments from industry import data without company disclosure
+  backlog_or_orders:
+    allowed_units:
+      - currency
+      - units
+      - months
+    positive_examples:
+      - backlog
+      - bookings
+      - orders
+      - remaining performance obligations
+    forbidden_inferences:
+      - using management adjectives without disclosed quantity or value
+  subscribers_or_arpu:
+    allowed_units:
+      - subscribers
+      - accounts
+      - currency_per_user
+    positive_examples:
+      - paid subscribers
+      - ARPU
+      - monthly active users when company-reported
+    forbidden_inferences:
+      - using app ranking or web traffic as subscriber count
+  same_store_sales:
+    allowed_units:
+      - percent
+    positive_examples:
+      - comparable sales
+      - same-store sales
+      - traffic and ticket components when company-disclosed
+    forbidden_inferences:
+      - using retail sales macro data as company comparable sales
+  production_or_throughput:
+    allowed_units:
+      - units
+      - barrels_per_day
+      - megawatt_hours
+      - tons
+    positive_examples:
+      - production
+      - throughput
+      - utilization rate
+    forbidden_inferences:
+      - using plant-level public data as company production without ownership mapping
+required_fact_fields:
+  - issuer_id
+  - ticker
+  - product_or_segment
+  - metric_family
+  - metric_name
+  - period
+  - unit
+  - value
+  - source_url
+  - source_document_id
+  - citation_span
+candidate_statuses:
+  needs_value_unit_period_product_parser: "Keyword evidence exists, but value/unit/period/product extraction is not parser-verified."
+  parser_verified_fact: "All required fact fields are present and source citation is verified."
+  rejected_context_only: "The row discusses product context but does not disclose a company metric."

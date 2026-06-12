@@ -1,0 +1,88 @@
+{
+  "agent_promotion_allowed": false,
+  "agent_promotion_blocker": "Mapping/endpoint gates generated target-universe data, but runtime promotion still requires source-specific boundary adapters and resolver confidence thresholds.",
+  "blocked_or_partial_sources": [
+    {
+      "decision": "partial_requires_entity_mapping",
+      "source_id": "gleif_api",
+      "status": "partial"
+    },
+    {
+      "decision": "partial_requires_entity_mapping",
+      "source_id": "fdic_bankfind_api",
+      "status": "pass"
+    },
+    {
+      "decision": "partial_requires_healthcare_entity_mapping",
+      "source_id": "clinicaltrials_api",
+      "status": "partial"
+    },
+    {
+      "decision": "partial_requires_endpoint_and_product_mapping",
+      "source_id": "openfda_api",
+      "status": "partial"
+    },
+    {
+      "decision": "partial_requires_auto_entity_mapping",
+      "source_id": "nhtsa_vpic_api",
+      "status": "partial"
+    },
+    {
+      "decision": "partial_requires_route_and_entity_mapping",
+      "source_id": "eia_open_data",
+      "status": "pass"
+    },
+    {
+      "decision": "partial_requires_dart_document_parser",
+      "source_id": "kr_dart_openapi",
+      "status": "pass"
+    }
+  ],
+  "decision_counts": {
+    "partial_requires_auto_entity_mapping": 1,
+    "partial_requires_dart_document_parser": 1,
+    "partial_requires_endpoint_and_product_mapping": 1,
+    "partial_requires_entity_mapping": 2,
+    "partial_requires_healthcare_entity_mapping": 1,
+    "partial_requires_route_and_entity_mapping": 1,
+    "ready_for_context_inventory_after_boundary_gate": 1,
+    "ready_for_identifier_mapping_after_rate_gate": 1,
+    "ready_for_primary_disclosure_inventory": 1
+  },
+  "generated_at": "2026-06-11T09:43:26.133313+00:00",
+  "loaded_env_key_names": [
+    "BEA_API_KEY",
+    "BLS_API_KEY",
+    "CENSUS_API_KEY",
+    "DART_API_KEY",
+    "EIA_API_KEY",
+    "FDA_API_KEY",
+    "FRED_API_KEY",
+    "OPENFDA_API_KEY",
+    "OPENFIGI_API_KEY"
+  ],
+  "outputs": {
+    "endpoint_records": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/endpoint_records.jsonl",
+    "gate_rows": "data/manifests/public_source_mapping_endpoint_gate_v0_1.jsonl",
+    "mapping_candidates": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/mapping_candidates.jsonl",
+    "metadata": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/metadata.json",
+    "processed_private_output_dir": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1",
+    "source_gaps": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/source_gaps.jsonl",
+    "summary": "data/manifests/public_source_mapping_endpoint_gate_summary_v0_1.json",
+    "universe_entities": "data/processed_private/public_sources/public_source_mapping_endpoint_gate_v0_1/universe_entities.jsonl"
+  },
+  "ready_sources": [
+    "sec_universe_identity",
+    "openfigi_api",
+    "census_data_api"
+  ],
+  "schema_version": "fin_agent_public_source_mapping_endpoint_gate_summary_v0.1",
+  "source_count": 10,
+  "started_at": "2026-06-11T09:36:20.838607+00:00",
+  "status": "pass_with_gaps",
+  "status_counts": {
+    "partial": 5,
+    "pass": 5
+  },
+  "universe_company_count": 603
+}

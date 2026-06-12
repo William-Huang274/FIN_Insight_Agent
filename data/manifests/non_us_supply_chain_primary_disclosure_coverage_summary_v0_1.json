@@ -1,0 +1,86 @@
+{
+  "schema_version": "fin_agent_non_us_supply_chain_disclosure_coverage_summary_v0.1",
+  "status": "pass_with_gaps",
+  "plan_row_count": 69,
+  "company_count": 15,
+  "downloaded_row_count": 47,
+  "downloaded_company_count": 12,
+  "downloaded_unique_document_count": 38,
+  "downloaded_byte_count": 286341064,
+  "cleaned_text_row_count": 47,
+  "cleaned_text_char_count": 24114298,
+  "gap_row_count": 22,
+  "gap_company_count": 5,
+  "coverage_status_counts": {
+    "downloaded_cleaned": 47,
+    "gap": 22
+  },
+  "profile_counts": {
+    "eu_regulated_annual_report": 3,
+    "hkex_annual_report": 3,
+    "jp_edinet_annual_securities_report": 30,
+    "kr_dart_business_report": 18,
+    "szse_cninfo_annual_report": 3,
+    "tw_mops_annual_report": 12
+  },
+  "profile_downloaded_counts": {
+    "eu_regulated_annual_report": 3,
+    "hkex_annual_report": 3,
+    "jp_edinet_annual_securities_report": 8,
+    "kr_dart_business_report": 18,
+    "szse_cninfo_annual_report": 3,
+    "tw_mops_annual_report": 12
+  },
+  "profile_gap_counts": {
+    "jp_edinet_annual_securities_report": 22
+  },
+  "gap_type_counts": {
+    "edinet_api_key_invalid_or_key_backed_smoke_failed": 22
+  },
+  "gap_companies_by_profile": {
+    "jp_edinet_annual_securities_report": [
+      "6146.T",
+      "6723.T",
+      "6752.T",
+      "6857.T",
+      "8035.T"
+    ]
+  },
+  "downloaded_companies_by_profile": {
+    "eu_regulated_annual_report": [
+      "IFX.DE"
+    ],
+    "hkex_annual_report": [
+      "1211.HK"
+    ],
+    "jp_edinet_annual_securities_report": [
+      "6857.T",
+      "8035.T"
+    ],
+    "kr_dart_business_report": [
+      "000660.KS",
+      "005930.KS",
+      "373220.KS"
+    ],
+    "szse_cninfo_annual_report": [
+      "300750.SZ"
+    ],
+    "tw_mops_annual_report": [
+      "2308.TW",
+      "2317.TW",
+      "2382.TW",
+      "3231.TW"
+    ]
+  },
+  "download_manifests": [
+    "data/manifests/tier2_global_public_disclosure_kr_dart_download_clean_v0_1.jsonl",
+    "data/manifests/tier2_global_public_disclosure_eu_ifx_download_clean_v0_1.jsonl",
+    "data/manifests/tier2_global_public_disclosure_tw_mops_portal_download_clean_v0_1.jsonl",
+    "data/manifests/tier2_global_public_disclosure_hkex_cninfo_portal_download_clean_v0_1.jsonl",
+    "data/manifests/tier2_global_public_disclosure_jp_company_ir_fallback_download_clean_v0_1.jsonl"
+  ],
+  "outputs": {
+    "coverage_rows": "data/manifests/non_us_supply_chain_primary_disclosure_coverage_v0_1.jsonl",
+    "summary": "data/manifests/non_us_supply_chain_primary_disclosure_coverage_summary_v0_1.json"
+  }
+}

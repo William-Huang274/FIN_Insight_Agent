@@ -1,0 +1,33 @@
+{
+  "candidate_count": 3,
+  "failed_count": 0,
+  "failed_sources": [],
+  "generated_at": "2026-06-11T07:30:31.217760+00:00",
+  "inputs": {
+    "access_plan": "data/manifests/public_source_access_plan_v0_1.jsonl"
+  },
+  "loaded_env_key_names": [
+    "BEA_API_KEY",
+    "BLS_API_KEY",
+    "CENSUS_API_KEY",
+    "DART_API_KEY",
+    "EIA_API_KEY",
+    "FDA_API_KEY",
+    "FRED_API_KEY",
+    "OPENFDA_API_KEY",
+    "OPENFIGI_API_KEY"
+  ],
+  "outputs": {
+    "probe_rows": "data/manifests/public_source_access_probe_optional_keys_v0_1.jsonl",
+    "summary": "data/manifests/public_source_access_probe_optional_keys_summary_v0_1.json"
+  },
+  "passed_count": 3,
+  "passed_sources": [
+    "bls_public_api",
+    "openfda_api",
+    "openfigi_api"
+  ],
+  "probed_count": 3,
+  "schema_version": "fin_agent_public_source_access_probe_summary_v0.1",
+  "status": "pass"
+}

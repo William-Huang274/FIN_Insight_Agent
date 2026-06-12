@@ -36,6 +36,15 @@ def build_project_inventory(
     industry_snapshot_id: str | None = None,
     industry_as_of_date: str | None = None,
     market_industry_manifest_summary_path: str | None = None,
+    product_evidence_graph_summary_path: str | None = None,
+    product_evidence_graph_path: str | None = None,
+    product_evidence_nodes_path: str | None = None,
+    product_evidence_gaps_path: str | None = None,
+    product_evidence_facts_path: str | None = None,
+    public_source_inventory_summary_path: str | None = None,
+    public_source_inventory_rows_path: str | None = None,
+    public_source_normalized_snapshot_summary_path: str | None = None,
+    public_source_normalized_evidence_rows_path: str | None = None,
 ) -> dict[str, Any]:
     companies: dict[str, dict[str, Any]] = {}
     categories: dict[str, set[str]] = defaultdict(set)
@@ -125,9 +134,22 @@ def build_project_inventory(
         industry_as_of_date=industry_as_of_date,
         market_industry_summary=market_industry_summary,
     )
+    product_evidence_graph = _product_evidence_graph_inventory(
+        product_evidence_graph_summary_path=product_evidence_graph_summary_path,
+        product_evidence_graph_path=product_evidence_graph_path,
+        product_evidence_nodes_path=product_evidence_nodes_path,
+        product_evidence_gaps_path=product_evidence_gaps_path,
+        product_evidence_facts_path=product_evidence_facts_path,
+    )
+    public_source_context = _public_source_context_inventory(
+        public_source_inventory_summary_path=public_source_inventory_summary_path,
+        public_source_inventory_rows_path=public_source_inventory_rows_path,
+        public_source_normalized_snapshot_summary_path=public_source_normalized_snapshot_summary_path,
+        public_source_normalized_evidence_rows_path=public_source_normalized_evidence_rows_path,
+    )
     context_source_families = [
         block["source_family"]
-        for block in (market_snapshot, industry_snapshot)
+        for block in (market_snapshot, industry_snapshot, product_evidence_graph, public_source_context)
         if isinstance(block, dict) and block.get("source_family")
     ]
     available_source_families = sorted(set(source_tier_counts) | set(context_source_families))
@@ -168,10 +190,16 @@ def build_project_inventory(
         inventory["market_snapshot"] = market_snapshot
     if industry_snapshot:
         inventory["industry_snapshot"] = industry_snapshot
-    if market_snapshot or industry_snapshot:
+    if product_evidence_graph:
+        inventory["product_evidence_graph"] = product_evidence_graph
+    if public_source_context:
+        inventory["public_source_context"] = public_source_context
+    if market_snapshot or industry_snapshot or product_evidence_graph or public_source_context:
         inventory["source_boundaries"] = _source_boundaries(
             market_snapshot=market_snapshot,
             industry_snapshot=industry_snapshot,
+            product_evidence_graph=product_evidence_graph,
+            public_source_context=public_source_context,
         )
     inventory["inventory_digest"] = inventory_digest(inventory)
     return inventory
@@ -203,6 +231,10 @@ def inventory_brief(inventory: dict[str, Any]) -> dict[str, Any]:
         brief["market_snapshot"] = _context_inventory_brief(inventory.get("market_snapshot") or {})
     if inventory.get("industry_snapshot"):
         brief["industry_snapshot"] = _context_inventory_brief(inventory.get("industry_snapshot") or {})
+    if inventory.get("product_evidence_graph"):
+        brief["product_evidence_graph"] = _context_inventory_brief(inventory.get("product_evidence_graph") or {})
+    if inventory.get("public_source_context"):
+        brief["public_source_context"] = _context_inventory_brief(inventory.get("public_source_context") or {})
     if inventory.get("source_boundaries"):
         brief["source_boundaries"] = inventory.get("source_boundaries")
     return brief
@@ -293,6 +325,8 @@ def inventory_prompt(
             "- Do not mention 8-K, earnings calls, market prices, macro data, or news unless the inventory lists those source types, source tiers, or context source families.",
             "- market_snapshot is context-only market or valuation evidence; it cannot prove company-reported fundamentals and cannot overwrite SEC Exact-Value Ledger values.",
             "- industry_snapshot is context-only industry, macro, regulatory, or demand evidence; it cannot prove company-level revenue, margin, customer, or supplier facts.",
+            "- company_product_evidence_graph exposes company-disclosed product facts only for rows marked runtime_fact_allowed; taxonomy, context, review, and gap rows are not facts.",
+            "- public_source_context is context/resolver/lead evidence only; it cannot prove company-reported product sales, market share, channel inventory, or profitability.",
             "- If 10-Q is available, label it as unaudited quarterly SEC evidence and do not mix it with annual 10-K values without period caveats.",
             "- Build the task around available materials first, then record missing materials as evidence gaps.",
         ]
@@ -494,10 +528,123 @@ def _industry_snapshot_inventory(
     }
 
 
+def _product_evidence_graph_inventory(
+    *,
+    product_evidence_graph_summary_path: str | None,
+    product_evidence_graph_path: str | None,
+    product_evidence_nodes_path: str | None,
+    product_evidence_gaps_path: str | None,
+    product_evidence_facts_path: str | None,
+) -> dict[str, Any] | None:
+    summary = _load_json_file(product_evidence_graph_summary_path)
+    path_values = {
+        "summary_path": str(product_evidence_graph_summary_path or "").strip(),
+        "graph_path": str(product_evidence_graph_path or "").strip(),
+        "nodes_path": str(product_evidence_nodes_path or "").strip(),
+        "gaps_path": str(product_evidence_gaps_path or "").strip(),
+        "facts_path": str(product_evidence_facts_path or "").strip(),
+    }
+    if not any(path_values.values()) and not summary:
+        return None
+    outputs = summary.get("outputs") if isinstance(summary.get("outputs"), dict) else {}
+    return {
+        "source_family": "company_product_evidence_graph",
+        "status": "available" if any(path_values.values()) or outputs else "manifest_only",
+        "feature_flag_required": True,
+        "default_runtime_enabled": False,
+        "context_only": False,
+        "allowed_claim_scope": "company_disclosed_product_evidence_with_promotion_status_boundary",
+        "company_count": summary.get("company_count"),
+        "runtime_fact_company_count": summary.get("companies_with_sec_verified_product_kpi"),
+        "evidence_node_count": summary.get("evidence_node_count"),
+        "gap_count": summary.get("gap_count"),
+        "gap_type_counts": _dict_value(summary.get("gap_type_counts")),
+        "node_promotion_counts": _dict_value(summary.get("node_promotion_counts")),
+        "monotonic_repair_fact_count": summary.get("monotonic_repair_fact_count"),
+        "operating_metric_repair_fact_count": summary.get("operating_metric_repair_fact_count"),
+        "sentence_repair_fact_count": summary.get("sentence_repair_fact_count"),
+        "summary_path": path_values["summary_path"],
+        "graph_path": path_values["graph_path"] or str(outputs.get("graph") or ""),
+        "nodes_path": path_values["nodes_path"] or str(outputs.get("nodes") or ""),
+        "gaps_path": path_values["gaps_path"] or str(outputs.get("gaps") or ""),
+        "facts_path": path_values["facts_path"],
+        "claim_boundary": {
+            "runtime_fact_allowed": "company-disclosed product KPI facts may support product-financial bridge claims.",
+            "runtime_context_taxonomy_only": "taxonomy may support product/segment retrieval planning only.",
+            "context_or_lead_available": "public or official context may support directional context or source leads only.",
+            "review_queue_not_runtime_fact": "review candidates are not facts.",
+            "gap_rows": "commercial/public gaps may be exposed as missing evidence, never filled by proxy fallback.",
+        },
+        "forbidden_uses": [
+            "cannot use review_queue_not_runtime_fact rows as facts",
+            "cannot use taxonomy/context rows to state product sales or market share",
+            "cannot fill commercial tracker gaps with weak public proxies",
+            "cannot overwrite SEC filing facts without a later promotion gate",
+        ],
+    }
+
+
+def _public_source_context_inventory(
+    *,
+    public_source_inventory_summary_path: str | None,
+    public_source_inventory_rows_path: str | None,
+    public_source_normalized_snapshot_summary_path: str | None,
+    public_source_normalized_evidence_rows_path: str | None,
+) -> dict[str, Any] | None:
+    adapter_summary = _load_json_file(public_source_inventory_summary_path)
+    normalized_summary = _load_json_file(public_source_normalized_snapshot_summary_path)
+    path_values = {
+        "inventory_summary_path": str(public_source_inventory_summary_path or "").strip(),
+        "inventory_rows_path": str(public_source_inventory_rows_path or "").strip(),
+        "normalized_snapshot_summary_path": str(public_source_normalized_snapshot_summary_path or "").strip(),
+        "normalized_evidence_rows_path": str(public_source_normalized_evidence_rows_path or "").strip(),
+    }
+    if not any(path_values.values()) and not adapter_summary and not normalized_summary:
+        return None
+    adapter_outputs = adapter_summary.get("outputs") if isinstance(adapter_summary.get("outputs"), dict) else {}
+    normalized_outputs = normalized_summary.get("outputs") if isinstance(normalized_summary.get("outputs"), dict) else {}
+    return {
+        "source_family": "public_source_context",
+        "status": "available" if any(path_values.values()) or adapter_outputs or normalized_outputs else "manifest_only",
+        "feature_flag_required": True,
+        "default_runtime_enabled": False,
+        "context_only": True,
+        "allowed_claim_scope": "public_context_resolver_and_lead_only",
+        "inventory_row_count": adapter_summary.get("promoted_inventory_row_count"),
+        "runtime_eligible_row_count": adapter_summary.get("runtime_eligible_row_count"),
+        "resolver_eligible_row_count": adapter_summary.get("resolver_eligible_row_count"),
+        "bounded_evidence_eligible_row_count": adapter_summary.get("bounded_evidence_eligible_row_count"),
+        "exact_value_authority_row_count": adapter_summary.get("exact_value_authority_row_count"),
+        "normalized_record_count": normalized_summary.get("normalized_record_count"),
+        "normalized_evidence_row_count": normalized_summary.get("evidence_row_count"),
+        "successful_source_count": normalized_summary.get("successful_source_count"),
+        "successful_sources": _string_list(normalized_summary.get("successful_sources")),
+        "promotion_counts_by_source_family": _dict_value(adapter_summary.get("promotion_counts_by_source_family")),
+        "normalized_source_family_counts": _dict_value(normalized_summary.get("source_family_counts")),
+        "source_record_counts": _dict_value(normalized_summary.get("source_record_counts")),
+        "inventory_summary_path": path_values["inventory_summary_path"],
+        "inventory_rows_path": path_values["inventory_rows_path"] or str(adapter_outputs.get("public_source_inventory_rows") or ""),
+        "normalized_snapshot_summary_path": path_values["normalized_snapshot_summary_path"],
+        "normalized_evidence_rows_path": path_values["normalized_evidence_rows_path"] or str(normalized_outputs.get("evidence_rows") or ""),
+        "claim_boundary": normalized_summary.get("claim_boundary") or [
+            "Public source rows are context/resolver/lead evidence only.",
+            "Company-level product sales and financial facts must come from filings or an explicit source-specific promotion gate.",
+        ],
+        "forbidden_uses": [
+            "cannot prove company-reported financial facts",
+            "cannot prove company product sales, deliveries, subscribers, backlog, ARPU, market share, or profitability",
+            "cannot overwrite SEC filings or exact-value ledger rows",
+            "cannot convert public proxies into commercial tracker replacements",
+        ],
+    }
+
+
 def _source_boundaries(
     *,
     market_snapshot: dict[str, Any] | None,
     industry_snapshot: dict[str, Any] | None,
+    product_evidence_graph: dict[str, Any] | None = None,
+    public_source_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     boundaries: dict[str, Any] = {}
     if market_snapshot:
@@ -511,6 +658,22 @@ def _source_boundaries(
             "context_only": True,
             "allowed_claim_scope": industry_snapshot.get("allowed_claim_scope"),
             "forbidden_uses": industry_snapshot.get("forbidden_uses") or [],
+        }
+    if product_evidence_graph:
+        boundaries["company_product_evidence_graph"] = {
+            "context_only": False,
+            "feature_flag_required": True,
+            "allowed_claim_scope": product_evidence_graph.get("allowed_claim_scope"),
+            "claim_boundary": product_evidence_graph.get("claim_boundary") or {},
+            "forbidden_uses": product_evidence_graph.get("forbidden_uses") or [],
+        }
+    if public_source_context:
+        boundaries["public_source_context"] = {
+            "context_only": True,
+            "feature_flag_required": True,
+            "allowed_claim_scope": public_source_context.get("allowed_claim_scope"),
+            "claim_boundary": public_source_context.get("claim_boundary") or [],
+            "forbidden_uses": public_source_context.get("forbidden_uses") or [],
         }
     return boundaries
 
@@ -537,6 +700,25 @@ def _context_inventory_brief(block: dict[str, Any]) -> dict[str, Any]:
         "currency_counts",
         "region_counts",
         "known_limitations",
+        "feature_flag_required",
+        "default_runtime_enabled",
+        "runtime_fact_company_count",
+        "evidence_node_count",
+        "gap_count",
+        "gap_type_counts",
+        "node_promotion_counts",
+        "inventory_row_count",
+        "runtime_eligible_row_count",
+        "resolver_eligible_row_count",
+        "bounded_evidence_eligible_row_count",
+        "exact_value_authority_row_count",
+        "normalized_record_count",
+        "normalized_evidence_row_count",
+        "successful_source_count",
+        "successful_sources",
+        "promotion_counts_by_source_family",
+        "normalized_source_family_counts",
+        "source_record_counts",
     )
     return {key: block.get(key) for key in keep_keys if block.get(key) not in (None, "", [], {})}
 
@@ -563,6 +745,26 @@ def _context_source_prompt_lines(inventory: dict[str, Any]) -> list[str]:
             f"as_of_date={industry.get('as_of_date') or '<unset>'} | "
             f"source_families={family_text} | "
             "context_only=industry_context_only"
+        )
+    product = inventory.get("product_evidence_graph") if isinstance(inventory.get("product_evidence_graph"), dict) else None
+    if product:
+        lines.append(
+            "- company_product_evidence_graph | "
+            f"status={product.get('status') or '<unknown>'} | "
+            f"runtime_fact_companies={product.get('runtime_fact_company_count') or 0} | "
+            f"nodes={product.get('evidence_node_count') or 0} | "
+            f"gaps={product.get('gap_count') or 0} | "
+            "feature_flag_required=true"
+        )
+    public_context = inventory.get("public_source_context") if isinstance(inventory.get("public_source_context"), dict) else None
+    if public_context:
+        lines.append(
+            "- public_source_context | "
+            f"status={public_context.get('status') or '<unknown>'} | "
+            f"inventory_rows={public_context.get('inventory_row_count') or 0} | "
+            f"bounded_rows={public_context.get('bounded_evidence_eligible_row_count') or 0} | "
+            f"normalized_records={public_context.get('normalized_record_count') or 0} | "
+            "context_only=true"
         )
     return lines or ["- <none>"]
 

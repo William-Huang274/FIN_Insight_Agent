@@ -1,0 +1,227 @@
+{
+  "agent_promotion_allowed": false,
+  "agent_promotion_blocker": "Full availability audit is complete enough to classify sources, but runtime use still requires source inventory wiring, feature flagging, and source-boundary gates.",
+  "availability_decision_counts": {
+    "blocked_missing_credential": 1,
+    "commercial_deferred": 1,
+    "not_ready_probe_only_requires_normalized_collector": 2,
+    "not_ready_source_plan_only": 15,
+    "partial_company_reference_only": 1,
+    "partial_requires_auto_entity_mapping": 1,
+    "partial_requires_dataset_table_contract": 1,
+    "partial_requires_endpoint_and_product_mapping": 1,
+    "partial_requires_entity_mapping": 2,
+    "partial_requires_healthcare_entity_mapping": 1,
+    "partial_requires_route_and_entity_mapping": 1,
+    "ready_for_context_inventory_after_boundary_gate": 3,
+    "ready_for_identifier_mapping_after_rate_gate": 1,
+    "ready_for_primary_disclosure_inventory": 1
+  },
+  "blocked_or_partial_sources": [
+    {
+      "decision": "partial_requires_healthcare_entity_mapping",
+      "required_before_agent_use": [
+        "sponsor/product/condition resolver",
+        "trial facts remain non-sales and non-approval claims"
+      ],
+      "source_id": "clinicaltrials_api"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "cms_public_data"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "common_crawl_index"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "company_ir_reports"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "company_product_pages"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "company_reported_product_operating_metrics"
+    },
+    {
+      "decision": "partial_requires_entity_mapping",
+      "required_before_agent_use": [
+        "FDIC institution to listed issuer resolver",
+        "context-only source-boundary gate"
+      ],
+      "source_id": "fdic_bankfind_api"
+    },
+    {
+      "decision": "not_ready_probe_only_requires_normalized_collector",
+      "required_before_agent_use": [
+        "reuse existing industry snapshot or add normalized CSV adapter",
+        "series allowlist and context-only gate"
+      ],
+      "source_id": "fred_graph_csv"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "gdelt"
+    },
+    {
+      "decision": "partial_requires_entity_mapping",
+      "required_before_agent_use": [
+        "LEI to issuer/ticker mapping",
+        "relationship evidence must stay legal-entity-only"
+      ],
+      "source_id": "gleif_api"
+    },
+    {
+      "decision": "partial_requires_auto_entity_mapping",
+      "required_before_agent_use": [
+        "manufacturer/make/model to issuer resolver",
+        "vehicle identity only; no sales/profit claims"
+      ],
+      "source_id": "nhtsa_vpic_api"
+    },
+    {
+      "decision": "not_ready_probe_only_requires_normalized_collector",
+      "required_before_agent_use": [
+        "topic/institution/company resolver",
+        "technology signal only; no product-sales claims",
+        "normalized collector/parser"
+      ],
+      "source_id": "openalex_api"
+    },
+    {
+      "decision": "partial_requires_endpoint_and_product_mapping",
+      "required_before_agent_use": [
+        "endpoint allowlist",
+        "product/application/sponsor resolver",
+        "regulatory-status-only claim-boundary gate"
+      ],
+      "source_id": "openfda_api"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "sec_financial_statement_data_sets"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "sec_ownership_and_13f"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "wikidata"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "yahoo_chart"
+    },
+    {
+      "decision": "partial_requires_dataset_table_contract",
+      "required_before_agent_use": [
+        "dataset/table/geography allowlist",
+        "source inventory adapter behind feature flag",
+        "context-only claim-boundary gate"
+      ],
+      "source_id": "census_data_api"
+    },
+    {
+      "decision": "partial_requires_route_and_entity_mapping",
+      "required_before_agent_use": [
+        "route/series allowlist and unit metadata",
+        "entity or asset mapping gate for company-adjacent claims",
+        "source inventory adapter behind feature flag"
+      ],
+      "source_id": "eia_open_data"
+    },
+    {
+      "decision": "blocked_missing_credential",
+      "required_before_agent_use": [],
+      "source_id": "jp_edinet_api"
+    },
+    {
+      "decision": "partial_company_reference_only",
+      "required_before_agent_use": [
+        "DART list.json date-window audit",
+        "document/package parser",
+        "corp_code to issuer mapping gate"
+      ],
+      "source_id": "kr_dart_openapi"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "cninfo_portal"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "hkexnews_portal"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "patentsview_api"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "tw_mops_portal"
+    },
+    {
+      "decision": "not_ready_source_plan_only",
+      "required_before_agent_use": [],
+      "source_id": "usitc_dataweb_and_trade"
+    }
+  ],
+  "generated_at": "2026-06-11T09:05:04.277241+00:00",
+  "inputs": {
+    "access_plan": "data/manifests/public_source_access_plan_v0_1.jsonl",
+    "loaded_env_key_names": [
+      "BEA_API_KEY",
+      "BLS_API_KEY",
+      "CENSUS_API_KEY",
+      "DART_API_KEY",
+      "EIA_API_KEY",
+      "FDA_API_KEY",
+      "FRED_API_KEY",
+      "OPENFDA_API_KEY",
+      "OPENFIGI_API_KEY"
+    ],
+    "normalized_summary": "data/manifests/public_source_normalized_snapshot_summary_v0_1.json"
+  },
+  "live_audited_source_count": 15,
+  "live_error_sources": [],
+  "normalized_profile_source_count": 13,
+  "outputs": {
+    "audit_rows": "data/manifests/public_source_full_availability_audit_v0_1.jsonl",
+    "summary": "data/manifests/public_source_full_availability_audit_summary_v0_1.json"
+  },
+  "ready_after_boundary_gate_sources": [
+    "bls_public_api",
+    "openfigi_api",
+    "sec_edgar_apis",
+    "bea_data_api",
+    "fred_api"
+  ],
+  "schema_version": "fin_agent_public_source_full_availability_audit_summary_v0.1",
+  "source_count": 32,
+  "status": "pass_with_blockers",
+  "status_counts": {
+    "live_pass": 13,
+    "live_pass_probe_only": 2,
+    "not_audited_blocked": 1,
+    "not_audited_deferred": 1,
+    "not_audited_source_plan_only": 15
+  }
+}

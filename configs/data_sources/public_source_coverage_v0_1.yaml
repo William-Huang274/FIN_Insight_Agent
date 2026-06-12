@@ -1,0 +1,663 @@
+schema_version: fin_agent_public_source_coverage_v0_1
+as_of_date: "2026-06-10"
+policy:
+  commercial_api_spend: none
+  credential_storage: env_only
+  runtime_status: planning_contract_only
+  promotion_rule: "A source can support production claims only after collector, parser, source-boundary audit, and gate coverage pass."
+
+auth_status_definitions:
+  no_key: "Public access without an API key, subject to published rate limits and terms."
+  no_key_limited: "No-key access is possible but low-limit; key is recommended for batch or stable runs."
+  free_key: "Free registration key or account required; key must be supplied via environment or private local config."
+  open_bulk: "Official open bulk datasets or downloads rather than request/response APIs."
+  official_web_no_key: "Official public web download with no stable API guarantee."
+  official_portal_pending: "Official portal exists, but profile-specific query/download behavior still needs validation."
+  endpoint_specific_pending: "Provider has public data, but target endpoint and parameter contract need validation."
+  unofficial_provisional: "Unofficial or reverse-engineered access; staging/context only."
+  commercial_deferred: "Commercial data or unstable free tier; deferred under the current no-paid-API policy."
+
+gap_type_definitions:
+  none: "No known source-level blocker; implementation may still be pending."
+  auth_gap: "Free credential or account setup is required before implementation."
+  parser_gap: "Download path exists but parser/normalizer is not accepted yet."
+  endpoint_validation_gap: "Official endpoint or portal parameters need validation."
+  identity_resolution_gap: "Entity/security mapping is required before downstream use."
+  unofficial_provider_gap: "Provider is not official enough for authority claims."
+  commercial_deferred: "Current policy blocks paid/commercial dependency."
+
+sources:
+  - source_id: sec_edgar_apis
+    provider: SEC
+    official_url: "https://www.sec.gov/search-filings/edgar-application-programming-interfaces"
+    auth_status: no_key
+    source_families:
+      - sec_primary_filing
+      - sec_companyfacts_structured_fact
+      - sec_submissions_metadata
+    data_available:
+      - submissions_metadata
+      - companyfacts_xbrl_json
+      - frames_structured_facts
+      - filing_metadata
+    claim_scope: company_reported_financial_fact
+    current_repo_status: implemented_partial
+    collector_status: implemented_for_sec_primary_companyfacts_submissions
+    parser_status: implemented_for_current_us_pipeline
+    priority: P0_keep_core
+    gap_type: none
+    boundary_notes: "Authoritative for US issuer filings and SEC structured facts; not a market-data or consensus source."
+
+  - source_id: sec_financial_statement_data_sets
+    provider: SEC
+    official_url: "https://www.sec.gov/dera/data/financial-statement-data-sets"
+    auth_status: open_bulk
+    source_families:
+      - sec_companyfacts_structured_fact
+    data_available:
+      - quarterly_financial_statement_bulk_data
+      - labels_and_numeric_facts
+    claim_scope: company_reported_financial_fact
+    current_repo_status: materialized_bulk_zip_pending_parity_gate
+    collector_status: implemented_bulk_zip_materialization
+    parser_status: table_row_count_and_metadata_parser_only
+    priority: P1_structured_financial_authority
+    gap_type: none
+    boundary_notes: "Official structured bulk path should be preferred for repeatable numeric extraction after parity gate; source filing citation remains required for investment claims."
+
+  - source_id: sec_ownership_and_13f
+    provider: SEC
+    official_url: "https://www.sec.gov/dera/data/form-13f-data-sets"
+    auth_status: open_bulk
+    source_families:
+      - relationship_edge
+    data_available:
+      - form_13f_holdings
+      - beneficial_ownership_filings
+      - insider_forms_3_4_5
+    claim_scope: ownership_or_investment_signal
+    current_repo_status: materialized_13f_bulk_zip_pending_investment_graph_gate
+    collector_status: implemented_bulk_zip_materialization
+    parser_status: table_row_count_and_metadata_parser_only
+    priority: P1_investment_graph
+    gap_type: identity_resolution_gap
+    boundary_notes: "Lagged filing facts only; do not infer real-time trading intent."
+
+  - source_id: company_ir_reports
+    provider: Company IR
+    official_url: "issuer_specific"
+    auth_status: official_web_no_key
+    source_families:
+      - global_public_annual_report
+      - global_public_interim_report
+      - company_earnings_release
+      - company_presentation
+      - company_product_operating_metric
+    data_available:
+      - annual_reports
+      - interim_reports
+      - presentations
+      - earnings_releases
+      - company_reported_product_sales_or_operating_metrics
+    claim_scope: company_authored_disclosure
+    current_repo_status: implemented_for_limited_eu_ir_smoke
+    collector_status: implemented_partial
+    parser_status: pending_pdf_html_parser
+    priority: P1_non_us_primary_disclosure
+    gap_type: parser_gap
+    boundary_notes: "Use official issuer URL, checksum, publication date, and source-boundary labels. Product sales, deliveries, backlog, subscribers, units, shipments, or product revenue are company-level facts only when the company reports them directly."
+
+  - source_id: company_product_pages
+    provider: Company official web
+    official_url: "issuer_specific"
+    auth_status: official_web_no_key
+    source_families:
+      - official_product_status
+      - external_event_lead
+    data_available:
+      - official_product_pages
+      - product_names
+      - product_specs
+      - launch_dates_or_availability_statements
+      - supported_platforms_or_use_cases
+    claim_scope: product_existence_spec_or_launch_context
+    current_repo_status: bounded_official_page_staging
+    collector_status: implemented_bounded_official_page_samples
+    parser_status: pending_product_page_parser
+    priority: P1_product_evidence
+    gap_type: parser_gap
+    boundary_notes: "Can support that a product exists, its official positioning, specifications, and launch/availability statements; cannot prove sales volume, revenue contribution, customer adoption, or profitability without company-reported operating metrics."
+
+  - source_id: company_reported_product_operating_metrics
+    provider: Company filings and earnings materials
+    official_url: "issuer_specific"
+    auth_status: official_web_no_key
+    source_families:
+      - company_product_operating_metric
+      - sec_primary_filing
+      - sec_8k_earnings_release
+      - company_earnings_release
+      - company_presentation
+    data_available:
+      - product_revenue
+      - unit_sales_or_deliveries
+      - shipments
+      - backlog_or_orders
+      - subscribers_or_arpu
+      - same_store_sales_or_traffic
+      - production_or_throughput
+      - procedure_volume_if_company_reported
+    claim_scope: company_reported_product_sales_or_operating_metric
+    current_repo_status: ontology_and_candidate_table_materialized
+    collector_status: partial_via_existing_filing_and_earnings_sources
+    parser_status: candidate_only_value_unit_period_parser_pending
+    priority: P1_product_sales_core
+    gap_type: parser_gap
+    boundary_notes: "This is the authority path for company-level product sales or volume claims. If the company does not disclose the metric, public industry/regulatory data must be labeled context or source_gap."
+
+  - source_id: kr_dart_openapi
+    provider: DART
+    official_url: "https://opendart.fss.or.kr/guide/main.do"
+    auth_status: free_key
+    env_var: DART_API_KEY
+    source_families:
+      - global_public_annual_report
+      - global_public_interim_report
+    data_available:
+      - korean_business_reports
+      - quarterly_reports
+      - company_code_lookup
+    claim_scope: primary_company_disclosure
+    current_repo_status: profile_configured_blocked_requires_key
+    collector_status: blocked_auth
+    parser_status: blocked_until_downloader_pass
+    priority: P2_free_key_non_us
+    gap_type: auth_gap
+    boundary_notes: "Company IR may be a locator, but DART evidence must remain distinct."
+
+  - source_id: jp_edinet_api
+    provider: EDINET
+    official_url: "https://disclosure2.edinet-fsa.go.jp/week0020.aspx"
+    auth_status: free_key
+    env_var: EDINET_API_KEY
+    source_families:
+      - global_public_annual_report
+      - global_public_interim_report
+    data_available:
+      - annual_securities_reports
+      - xbrl_packages
+      - pdf_documents
+    claim_scope: primary_company_disclosure
+    current_repo_status: profile_configured_blocked_requires_key
+    collector_status: blocked_auth
+    parser_status: blocked_until_downloader_pass
+    priority: P2_free_key_non_us
+    gap_type: auth_gap
+    boundary_notes: "Requires document type mapping and package parser before evidence promotion."
+
+  - source_id: tw_mops_portal
+    provider: TWSE MOPS
+    official_url: "https://mops.twse.com.tw"
+    auth_status: official_portal_pending
+    source_families:
+      - global_public_annual_report
+      - global_public_interim_report
+    data_available:
+      - taiwan_annual_reports
+      - quarterly_reports
+      - company_announcements
+    claim_scope: primary_company_disclosure
+    current_repo_status: profile_configured_scaffold_pending
+    collector_status: not_started
+    parser_status: blocked_until_downloader_pass
+    priority: P3_official_portal
+    gap_type: endpoint_validation_gap
+    boundary_notes: "Validate company code, year, language, and report type before batch use."
+
+  - source_id: hkexnews_portal
+    provider: HKEXnews
+    official_url: "https://www.hkexnews.hk"
+    auth_status: official_portal_pending
+    source_families:
+      - global_public_annual_report
+      - global_public_interim_report
+    data_available:
+      - hong_kong_annual_reports
+      - interim_reports
+      - announcements
+    claim_scope: primary_company_disclosure
+    current_repo_status: profile_configured_scaffold_pending
+    collector_status: not_started
+    parser_status: blocked_until_downloader_pass
+    priority: P3_official_portal
+    gap_type: endpoint_validation_gap
+    boundary_notes: "Requires issuer code, headline category, date filters, and bilingual document handling."
+
+  - source_id: cninfo_portal
+    provider: CNINFO
+    official_url: "http://www.cninfo.com.cn"
+    auth_status: official_portal_pending
+    source_families:
+      - global_public_annual_report
+      - global_public_interim_report
+    data_available:
+      - china_annual_reports
+      - semiannual_reports
+      - quarterly_reports
+      - announcements
+    claim_scope: primary_company_disclosure
+    current_repo_status: profile_configured_scaffold_pending
+    collector_status: not_started
+    parser_status: blocked_until_downloader_pass
+    priority: P3_official_portal
+    gap_type: endpoint_validation_gap
+    boundary_notes: "Requires security code, org id, category validation, and anti-stale result checks."
+
+  - source_id: yahoo_chart
+    provider: Yahoo
+    official_url: "unofficial_chart_endpoint"
+    auth_status: unofficial_provisional
+    source_families:
+      - market_price_snapshot
+    data_available:
+      - daily_price
+      - volume
+      - event_window_returns
+    claim_scope: market_or_valuation_context_only
+    current_repo_status: materialized_bounded_provisional_chart_snapshot
+    collector_status: implemented_bounded_normalized_snapshot
+    parser_status: implemented_market_context_only
+    priority: P1_provisional_market_context
+    gap_type: unofficial_provider_gap
+    boundary_notes: "Use only as provisional market context; not authoritative pricing or valuation data."
+
+  - source_id: openfigi_api
+    provider: OpenFIGI
+    official_url: "https://www.openfigi.com/api"
+    auth_status: no_key_limited
+    source_families:
+      - relationship_edge
+    data_available:
+      - figi_mapping
+      - ticker_exchange_security_mapping
+    claim_scope: entity_and_security_identifier_mapping
+    current_repo_status: planned
+    collector_status: not_started
+    parser_status: not_started
+    priority: P1_entity_resolution
+    gap_type: identity_resolution_gap
+    boundary_notes: "Identifier mapping only; not financial evidence."
+
+  - source_id: fred_graph_csv
+    provider: FRED
+    official_url: "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    auth_status: no_key
+    source_families:
+      - macro_industry_indicator
+    data_available:
+      - rates
+      - inflation
+      - employment
+      - credit
+      - consumer
+      - commodities
+    claim_scope: industry_context_only
+    current_repo_status: configured_as_no_key_fallback_for_industry_snapshot
+    collector_status: implemented_partial_fallback
+    parser_status: implemented_partial
+    priority: P0_keep_core
+    gap_type: none
+    boundary_notes: "Context only; cannot support company-level reported facts. Use FRED API as the preferred structured path when key-backed route is available."
+
+  - source_id: fred_api
+    provider: FRED
+    official_url: "https://fred.stlouisfed.org/docs/api/fred/"
+    auth_status: free_key
+    env_var: FRED_API_KEY
+    source_families:
+      - macro_industry_indicator
+    data_available:
+      - series_metadata
+      - observations
+      - releases
+      - categories
+    claim_scope: industry_context_only
+    current_repo_status: implemented_normalized_snapshot
+    collector_status: implemented
+    parser_status: implemented_bounded_observations
+    priority: P1_preferred_macro_context
+    gap_type: none
+    boundary_notes: "Preferred FRED path when API key is available because it preserves official API route and metadata; graph CSV remains fallback."
+
+  - source_id: bls_public_api
+    provider: BLS
+    official_url: "https://www.bls.gov/developers/"
+    auth_status: no_key_limited
+    source_families:
+      - macro_industry_indicator
+    data_available:
+      - cpi
+      - ppi
+      - employment
+      - wages
+      - industry_statistics
+    claim_scope: industry_context_only
+    current_repo_status: implemented_normalized_snapshot
+    collector_status: implemented
+    parser_status: implemented_bounded_observations
+    priority: P1_public_industry
+    gap_type: none
+    boundary_notes: "Registered key can improve limits; data remains macro/industry context."
+
+  - source_id: bea_data_api
+    provider: BEA
+    official_url: "https://apps.bea.gov/api/signup/"
+    auth_status: free_key
+    env_var: BEA_API_KEY
+    source_families:
+      - macro_industry_indicator
+    data_available:
+      - gdp
+      - nipa
+      - pce
+      - industry_accounts
+      - regional_data
+    claim_scope: industry_context_only
+    current_repo_status: implemented_normalized_snapshot
+    collector_status: implemented
+    parser_status: implemented_bounded_table_observations
+    priority: P2_free_key_industry
+    gap_type: none
+    boundary_notes: "Low-frequency macro/industry snapshot; not company-level proof."
+
+  - source_id: census_data_api
+    provider: Census
+    official_url: "https://www.census.gov/data/developers.html"
+    auth_status: free_key
+    env_var: CENSUS_API_KEY
+    source_families:
+      - macro_industry_indicator
+    data_available:
+      - population
+      - retail
+      - trade
+      - business_statistics
+    claim_scope: industry_context_only
+    current_repo_status: planned
+    collector_status: not_started
+    parser_status: not_started
+    priority: P2_free_key_industry
+    gap_type: auth_gap
+    boundary_notes: "Census API now requires a key; use only for macro/consumer/trade context."
+
+  - source_id: eia_open_data
+    provider: EIA
+    official_url: "https://www.eia.gov/opendata/"
+    auth_status: free_key
+    env_var: EIA_API_KEY
+    source_families:
+      - macro_industry_indicator
+      - public_product_usage_context
+    data_available:
+      - energy_prices
+      - inventories
+      - electricity_retail_sales
+      - electricity_price
+      - power_demand
+      - plant_generation_or_fuel_context_if_endpoint_validated
+    claim_scope: industry_context_only
+    current_repo_status: configured_requires_key
+    collector_status: configured_not_normalized
+    parser_status: not_started
+    priority: P2_free_key_industry
+    gap_type: auth_gap
+    boundary_notes: "Energy and utility context only. Plant/generation or retail-sales data can support public operating context after endpoint validation and entity mapping, but cannot infer single-company revenue or product profitability."
+
+  - source_id: fdic_bankfind_api
+    provider: FDIC
+    official_url: "https://api.fdic.gov/banks/docs/"
+    auth_status: no_key
+    source_families:
+      - macro_industry_indicator
+    data_available:
+      - bank_institutions
+      - branches
+      - bank_financials
+      - history
+    claim_scope: banking_industry_context
+    current_repo_status: planned
+    collector_status: not_started
+    parser_status: not_started
+    priority: P1_banking_context
+    gap_type: identity_resolution_gap
+    boundary_notes: "Requires mapping between FDIC institution and listed-company entities."
+
+  - source_id: nhtsa_vpic_api
+    provider: NHTSA
+    official_url: "https://vpic.nhtsa.dot.gov/api/"
+    auth_status: no_key
+    source_families:
+      - official_product_status
+      - public_product_usage_context
+    data_available:
+      - vehicle_manufacturers
+      - makes_models
+      - model_year_metadata
+      - vin_decode_metadata
+    claim_scope: vehicle_product_identity_and_spec_context
+    current_repo_status: planned
+    collector_status: not_started
+    parser_status: not_started
+    priority: P2_auto_product_context
+    gap_type: identity_resolution_gap
+    boundary_notes: "Can support vehicle model/manufacturer/VIN metadata and product identity context; does not provide company sales volume or profitability."
+
+  - source_id: usitc_dataweb_and_trade
+    provider: USITC/Census
+    official_url: "endpoint_specific"
+    auth_status: endpoint_specific_pending
+    source_families:
+      - macro_industry_indicator
+    data_available:
+      - trade_statistics
+      - hs_code_import_export
+      - tariff_context
+    claim_scope: trade_and_manufacturing_context
+    current_repo_status: implemented_bounded_census_trade_snapshot
+    collector_status: implemented_via_census_international_trade_api
+    parser_status: implemented_hs_trade_context_observations
+    priority: P3_trade_context
+    gap_type: none
+    boundary_notes: "Trade context only; cannot prove company-specific customer or supplier relationships."
+
+  - source_id: clinicaltrials_api
+    provider: ClinicalTrials.gov
+    official_url: "https://clinicaltrials.gov/data-api/about-api"
+    auth_status: no_key
+    source_families:
+      - macro_industry_indicator
+    data_available:
+      - clinical_trial_registration
+      - trial_status
+      - endpoints
+      - sponsors
+    claim_scope: healthcare_product_regulatory_context
+    current_repo_status: planned
+    collector_status: not_started
+    parser_status: not_started
+    priority: P1_healthcare_product
+    gap_type: identity_resolution_gap
+    boundary_notes: "Trial registry facts only; not proof of approval or commercial success."
+
+  - source_id: openfda_api
+    provider: openFDA
+    official_url: "https://open.fda.gov/apis/"
+    auth_status: no_key_limited
+    source_families:
+      - macro_industry_indicator
+      - official_product_status
+    data_available:
+      - drug_data
+      - device_data
+      - recalls
+      - adverse_events
+      - approvals_related_records
+      - device_clearance_or_classification_records
+    claim_scope: healthcare_regulatory_context
+    current_repo_status: configured_canary
+    collector_status: canary_only
+    parser_status: not_started
+    priority: P1_healthcare_product
+    gap_type: none
+    boundary_notes: "Regulatory/safety/product status context; adverse events are not causal conclusions, and clearance/approval does not prove commercial uptake."
+
+  - source_id: cms_public_data
+    provider: CMS
+    official_url: "https://data.cms.gov/"
+    auth_status: no_key
+    source_families:
+      - macro_industry_indicator
+      - public_product_usage_context
+    data_available:
+      - payer_policy
+      - provider_data
+      - utilization
+      - cms_catalog_metadata
+    claim_scope: healthcare_payer_context
+    current_repo_status: implemented_catalog_snapshot
+    collector_status: implemented_catalog_canary
+    parser_status: catalog_metadata_only_endpoint_selection_pending
+    priority: P2_healthcare_context
+    gap_type: endpoint_validation_gap
+    boundary_notes: "Can support payer, utilization, provider, or procedure context after endpoint selection; cannot prove one company's product sales unless matched to a company-reported metric or official reimbursement/product identifier with explicit caveats."
+
+  - source_id: patentsview_api
+    provider: USPTO PatentsView / Open Data Portal
+    official_url: "https://www.uspto.gov/subscription-center/2026/patentsview-migrating-uspto-open-data-portal-march-20"
+    auth_status: endpoint_specific_pending
+    source_families:
+      - external_event_lead
+      - official_product_status
+    data_available:
+      - patents
+      - assignees
+      - inventors
+      - classifications
+      - citations
+    claim_scope: product_technology_signal
+    current_repo_status: materialized_uspto_migration_metadata_api_endpoint_pending
+    collector_status: implemented_bounded_migration_metadata_snapshot
+    parser_status: migration_metadata_only_endpoint_parser_pending
+    priority: P3_product_technology_endpoint_validation
+    gap_type: endpoint_validation_gap
+    boundary_notes: "PatentsView migrated to USPTO Open Data Portal in March 2026; current repo materializes official migration/access metadata only. Treat patent data as endpoint-validation pending; technology/IP signal only, not proof of product launch, sales, product revenue, or durable moat."
+
+  - source_id: openalex_api
+    provider: OpenAlex
+    official_url: "https://docs.openalex.org/"
+    auth_status: no_key_limited
+    source_families:
+      - external_event_lead
+    data_available:
+      - works
+      - authors
+      - institutions
+      - concepts
+      - citations
+    claim_scope: product_technology_signal
+    current_repo_status: materialized_bounded_research_work_snapshot
+    collector_status: implemented_bounded_normalized_snapshot
+    parser_status: implemented_lead_record_only
+    priority: P2_product_technology
+    gap_type: identity_resolution_gap
+    boundary_notes: "Research trend signal; not company financial evidence."
+
+  - source_id: gleif_api
+    provider: GLEIF
+    official_url: "https://www.gleif.org/en/lei-data/gleif-api"
+    auth_status: no_key
+    source_families:
+      - relationship_edge
+    data_available:
+      - lei_records
+      - legal_entity_reference_data
+      - parent_relationships
+    claim_scope: entity_resolution_and_legal_relationship
+    current_repo_status: planned
+    collector_status: not_started
+    parser_status: not_started
+    priority: P1_entity_resolution
+    gap_type: identity_resolution_gap
+    boundary_notes: "Legal-entity relationships and identifiers only; not commercial transaction evidence."
+
+  - source_id: wikidata
+    provider: Wikidata
+    official_url: "https://www.wikidata.org/wiki/Wikidata:Data_access"
+    auth_status: no_key
+    source_families:
+      - external_event_lead
+    data_available:
+      - aliases
+      - identifiers
+      - basic_entity_metadata
+    claim_scope: entity_resolution_candidate_only
+    current_repo_status: materialized_bounded_alias_candidate_snapshot
+    collector_status: implemented_bounded_normalized_snapshot
+    parser_status: implemented_alias_candidate_only
+    priority: P3_entity_resolution_low_weight
+    gap_type: identity_resolution_gap
+    boundary_notes: "Candidate alias/identifier source only; not financial-fact evidence."
+
+  - source_id: gdelt
+    provider: GDELT
+    official_url: "https://www.gdeltproject.org/data.html"
+    auth_status: no_key
+    source_families:
+      - external_event_lead
+    data_available:
+      - news_event_leads
+      - document_api_results
+      - global_event_metadata
+    claim_scope: lead_only_needs_verification
+    current_repo_status: materialized_bounded_public_data_index_snapshot
+    collector_status: implemented_bounded_lastupdate_index_snapshot
+    parser_status: implemented_event_index_only
+    priority: P3_event_lead
+    gap_type: none
+    boundary_notes: "Lead/index only; must be verified against official/company/regulatory sources before claims. Doc API is rate-limited, so default materialization uses the public GDELT v2 lastupdate index."
+
+  - source_id: common_crawl_index
+    provider: Common Crawl
+    official_url: "https://index.commoncrawl.org/"
+    auth_status: no_key
+    source_families:
+      - external_event_lead
+    data_available:
+      - crawl_index_urls
+      - historical_web_discovery
+    claim_scope: discovery_only
+    current_repo_status: materialized_bounded_crawl_index_metadata_snapshot
+    collector_status: implemented_bounded_normalized_snapshot
+    parser_status: implemented_index_metadata_only
+    priority: P3_discovery
+    gap_type: none
+    boundary_notes: "Discovery only; fetched pages require source verification and official-origin checks."
+
+  - source_id: commercial_market_data_and_consensus
+    provider: commercial_vendors
+    official_url: "vendor_specific"
+    auth_status: commercial_deferred
+    source_families:
+      - market_price_snapshot
+    data_available:
+      - real_time_prices
+      - valuation_multiples
+      - analyst_consensus
+      - estimates
+    claim_scope: commercial_deferred
+    current_repo_status: deferred
+    collector_status: not_applicable
+    parser_status: not_applicable
+    priority: deferred
+    gap_type: commercial_deferred
+    boundary_notes: "Do not use under current no-paid-API policy; consensus questions should surface source_gap."

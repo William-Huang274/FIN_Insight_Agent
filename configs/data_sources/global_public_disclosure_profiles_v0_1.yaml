@@ -32,12 +32,12 @@ profiles:
     annual_report_types: ["business_report", "annual_report"]
     interim_report_types: ["quarterly_report"]
     locator_strategy: official_locator_then_disclosure_search
-    download_implementation_status: blocked_requires_official_api_key
-    download_blocker: DART Open API access key and company-code lookup are required before regulator-first download.
+    download_implementation_status: implemented_dart_openapi_document_download
+    download_blocker: DART Open API document download is implemented; runtime execution still requires DART_API_KEY and corp-code mapping.
     api_key_env: DART_API_KEY
-    parser_implementation_status: blocked_until_profile_downloader_pass
-    parser_blocker: Parser requires downloaded business-report document and checksum metadata.
-    locator_notes: Use DART company code and report name when API/search support is added; company IR remains a locator, not cited evidence.
+    parser_implementation_status: implemented_cleaned_text_staging_table_parser_pending
+    parser_blocker: XML text cleaner stages report text; table-aware section parser and metric extraction are still pending before evidence promotion.
+    locator_notes: Use DART corp_code and report name through OpenDART API; company IR remains a fallback locator, not cited evidence.
   tw_mops_annual_report:
     source_tier: primary_company_disclosure
     source_family: global_public_annual_report
@@ -51,11 +51,11 @@ profiles:
     annual_report_types: ["annual_report"]
     interim_report_types: ["quarterly_report"]
     locator_strategy: mops_company_report_lookup
-    download_implementation_status: profile_specific_scaffold_pending
-    download_blocker: MOPS company report lookup requires profile-specific form parameters and language/report-type validation.
-    parser_implementation_status: blocked_until_profile_downloader_pass
-    parser_blocker: Parser requires downloaded MOPS annual-report document and table-boundary audit.
-    locator_notes: Use listed company code and fiscal year; preserve MOPS URL and downloaded report checksum.
+    download_implementation_status: implemented_mops_annual_report_download
+    download_blocker: ""
+    parser_implementation_status: implemented_cleaned_text_staging_table_parser_pending
+    parser_blocker: Generic PDF text cleaner stages report text; table-aware annual-report parser and bilingual table-boundary audit remain pending.
+    locator_notes: Use listed company code, shareholder-meeting Minguo year, MOPS F04 annual-report document type, and downloaded report checksum.
   jp_edinet_annual_securities_report:
     source_tier: primary_company_disclosure
     source_family: global_public_annual_report
@@ -88,10 +88,10 @@ profiles:
     annual_report_types: ["annual_report"]
     interim_report_types: ["interim_report", "quarterly_report"]
     locator_strategy: hkexnews_issuer_report_search
-    download_implementation_status: profile_specific_scaffold_pending
-    download_blocker: HKEXnews issuer report search requires headline category/date filters and issuer-code mapping before download.
-    parser_implementation_status: blocked_until_profile_downloader_pass
-    parser_blocker: Parser requires HKEX announcement/PDF checksum metadata and bilingual report handling.
+    download_implementation_status: implemented_hkexnews_issuer_report_search
+    download_blocker: ""
+    parser_implementation_status: implemented_cleaned_text_staging_table_parser_pending
+    parser_blocker: Generic PDF text cleaner stages report text; HKEX announcement/PDF metadata parser and bilingual table-boundary audit remain pending.
     locator_notes: Use HKEX issuer code and headline category; preserve announcement URL and PDF checksum.
   szse_cninfo_annual_report:
     source_tier: primary_company_disclosure
@@ -106,10 +106,10 @@ profiles:
     annual_report_types: ["annual_report"]
     interim_report_types: ["semiannual_report", "quarterly_report"]
     locator_strategy: cninfo_security_report_search
-    download_implementation_status: profile_specific_scaffold_pending
-    download_blocker: CNINFO query requires security-code/org-id mapping, announcement category, and anti-stale result validation.
-    parser_implementation_status: blocked_until_profile_downloader_pass
-    parser_blocker: Parser requires CNINFO announcement metadata, downloaded PDF checksum, and Chinese table-boundary audit.
+    download_implementation_status: implemented_cninfo_security_report_search
+    download_blocker: ""
+    parser_implementation_status: implemented_cleaned_text_staging_table_parser_pending
+    parser_blocker: Generic PDF text cleaner stages report text; CNINFO announcement metadata parser and Chinese table-boundary audit remain pending.
     locator_notes: Use security code and report title; preserve CNINFO announcement ID or official download URL.
   eu_regulated_annual_report:
     source_tier: primary_company_disclosure

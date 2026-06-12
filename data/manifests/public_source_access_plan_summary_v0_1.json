@@ -1,0 +1,131 @@
+{
+  "action_status_counts": {
+    "deferred_by_no_paid_api_policy": 1,
+    "key_available": 6,
+    "portal_or_endpoint_validation_required": 5,
+    "ready_for_live_probe": 14,
+    "source_plan_only": 6
+  },
+  "available_required_key_envs": [
+    "BEA_API_KEY",
+    "CENSUS_API_KEY",
+    "DART_API_KEY",
+    "EDINET_API_KEY",
+    "EIA_API_KEY",
+    "FRED_API_KEY"
+  ],
+  "generated_at": "2026-06-11T12:18:06.947251+00:00",
+  "inputs": {
+    "coverage_registry": "configs/data_sources/public_source_coverage_v0_1.yaml",
+    "loaded_env_key_names": [
+      "BEA_API_KEY",
+      "BLS_API_KEY",
+      "CENSUS_API_KEY",
+      "DART_API_KEY",
+      "EDINET_API_KEY",
+      "EIA_API_KEY",
+      "FDA_API_KEY",
+      "FRED_API_KEY",
+      "OPENFDA_API_KEY",
+      "OPENFIGI_API_KEY"
+    ],
+    "source_families": "configs/data_sources/source_families.yaml"
+  },
+  "live_probe_supported_count": 20,
+  "missing_required_key_envs": [],
+  "optional_key_envs": [
+    {
+      "env_present": true,
+      "env_var": "BLS_API_KEY",
+      "provider": "BLS",
+      "source_id": "bls_public_api"
+    },
+    {
+      "env_present": true,
+      "env_var": "OPENFDA_API_KEY",
+      "provider": "openFDA",
+      "source_id": "openfda_api"
+    },
+    {
+      "env_present": true,
+      "env_var": "OPENFIGI_API_KEY",
+      "provider": "OpenFIGI",
+      "source_id": "openfigi_api"
+    }
+  ],
+  "outputs": {
+    "access_plan": "data/manifests/public_source_access_plan_v0_1.jsonl",
+    "portal_validation_tasks": "data/manifests/public_source_portal_validation_tasks_v0_1.jsonl",
+    "summary": "data/manifests/public_source_access_plan_summary_v0_1.json"
+  },
+  "p2_key_requirements": [
+    {
+      "claim_scope": "industry_context_only",
+      "env_present": true,
+      "env_var": "BEA_API_KEY",
+      "provider": "BEA",
+      "source_id": "bea_data_api"
+    },
+    {
+      "claim_scope": "industry_context_only",
+      "env_present": true,
+      "env_var": "CENSUS_API_KEY",
+      "provider": "Census",
+      "source_id": "census_data_api"
+    },
+    {
+      "claim_scope": "industry_context_only",
+      "env_present": true,
+      "env_var": "EIA_API_KEY",
+      "provider": "EIA",
+      "source_id": "eia_open_data"
+    },
+    {
+      "claim_scope": "industry_context_only",
+      "env_present": true,
+      "env_var": "FRED_API_KEY",
+      "provider": "FRED",
+      "source_id": "fred_api"
+    },
+    {
+      "claim_scope": "primary_company_disclosure",
+      "env_present": true,
+      "env_var": "EDINET_API_KEY",
+      "provider": "EDINET",
+      "source_id": "jp_edinet_api"
+    },
+    {
+      "claim_scope": "primary_company_disclosure",
+      "env_present": true,
+      "env_var": "DART_API_KEY",
+      "provider": "DART",
+      "source_id": "kr_dart_openapi"
+    }
+  ],
+  "phase_counts": {
+    "P1": 20,
+    "P2": 6,
+    "P3": 5,
+    "deferred": 1
+  },
+  "portal_validation_sources": [
+    "cninfo_portal",
+    "hkexnews_portal",
+    "patentsview_api",
+    "tw_mops_portal",
+    "usitc_dataweb_and_trade"
+  ],
+  "portal_validation_task_count": 5,
+  "schema_version": "fin_agent_public_source_access_plan_summary_v0.1",
+  "source_count": 32,
+  "status": "pass",
+  "validation": {
+    "error_count": 0,
+    "errors": [],
+    "schema_version": "fin_agent_public_source_registry_validation_v0.1",
+    "source_count": 32,
+    "unique_source_id_count": 32,
+    "warning_count": 0,
+    "warnings": []
+  }
+}

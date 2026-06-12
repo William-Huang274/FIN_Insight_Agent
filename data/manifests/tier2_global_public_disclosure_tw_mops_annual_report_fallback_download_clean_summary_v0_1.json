@@ -1,0 +1,125 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_download_tasks_summary_v0.1",
+  "status": "fail",
+  "task_count": 12,
+  "company_count": 4,
+  "profile_counts": {
+    "tw_mops_annual_report": 12
+  },
+  "report_type_counts": {
+    "annual_report": 12
+  },
+  "download_strategy_counts": {
+    "company_ir_official_report_fallback": 12
+  },
+  "download_status_counts": {
+    "no_matching_document_candidate": 12
+  },
+  "document_downloaded_count": 0,
+  "downloaded_byte_count": 0,
+  "issue_counts": {
+    "company_ir_fallback_no_matching_document_candidate": 12
+  },
+  "issues": [
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::2308_TW::TW_MOPS_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "ticker": "2308.TW",
+      "candidate_count": 0,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::2308_TW::TW_MOPS_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "ticker": "2308.TW",
+      "candidate_count": 0,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::2308_TW::TW_MOPS_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "ticker": "2308.TW",
+      "candidate_count": 0,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::2317_TW::TW_MOPS_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "ticker": "2317.TW",
+      "candidate_count": 51,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::2317_TW::TW_MOPS_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "ticker": "2317.TW",
+      "candidate_count": 51,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::2317_TW::TW_MOPS_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "ticker": "2317.TW",
+      "candidate_count": 51,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::2382_TW::TW_MOPS_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "ticker": "2382.TW",
+      "candidate_count": 0,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::2382_TW::TW_MOPS_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "ticker": "2382.TW",
+      "candidate_count": 0,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::2382_TW::TW_MOPS_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "ticker": "2382.TW",
+      "candidate_count": 0,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::3231_TW::TW_MOPS_ANNUAL_REPORT::2023::ANNUAL_REPORT",
+      "ticker": "3231.TW",
+      "candidate_count": 0,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::3231_TW::TW_MOPS_ANNUAL_REPORT::2024::ANNUAL_REPORT",
+      "ticker": "3231.TW",
+      "candidate_count": 0,
+      "primary_download_strategy": "mops_company_report_lookup"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::3231_TW::TW_MOPS_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "ticker": "3231.TW",
+      "candidate_count": 0,
+      "primary_download_strategy": "mops_company_report_lookup"
+    }
+  ],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_tw_mops_annual_report_fallback_download_clean_v0_1.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_tw_mops_annual_report_fallback_download_clean_summary_v0_1.json"
+  },
+  "loaded_env_keys": [
+    "CENSUS_API_KEY",
+    "BEA_API_KEY",
+    "FRED_API_KEY",
+    "DART_API_KEY",
+    "BLS_API_KEY",
+    "OPENFDA_API_KEY",
+    "FDA_API_KEY",
+    "OPENFIGI_API_KEY",
+    "EIA_API_KEY",
+    "EDINET_API_KEY"
+  ]
+}

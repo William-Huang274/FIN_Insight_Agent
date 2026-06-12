@@ -1,0 +1,38 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_download_tasks_summary_v0.1",
+  "status": "pass",
+  "task_count": 18,
+  "company_count": 3,
+  "profile_counts": {
+    "kr_dart_business_report": 18
+  },
+  "report_type_counts": {
+    "annual_report": 9,
+    "business_report": 9
+  },
+  "download_strategy_counts": {
+    "official_locator_then_disclosure_search": 18
+  },
+  "download_status_counts": {
+    "document_downloaded_cleaned": 18
+  },
+  "document_downloaded_count": 18,
+  "downloaded_byte_count": 11210578,
+  "issue_counts": {},
+  "issues": [],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_kr_dart_download_clean_v0_1.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_kr_dart_download_clean_summary_v0_1.json"
+  },
+  "loaded_env_keys": [
+    "CENSUS_API_KEY",
+    "BEA_API_KEY",
+    "FRED_API_KEY",
+    "DART_API_KEY",
+    "BLS_API_KEY",
+    "OPENFDA_API_KEY",
+    "FDA_API_KEY",
+    "OPENFIGI_API_KEY",
+    "EIA_API_KEY"
+  ]
+}

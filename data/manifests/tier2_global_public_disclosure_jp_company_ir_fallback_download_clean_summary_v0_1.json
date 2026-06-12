@@ -1,0 +1,197 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_download_tasks_summary_v0.1",
+  "status": "fail",
+  "task_count": 30,
+  "company_count": 5,
+  "profile_counts": {
+    "jp_edinet_annual_securities_report": 30
+  },
+  "report_type_counts": {
+    "annual_securities_report": 15,
+    "integrated_report": 15
+  },
+  "download_strategy_counts": {
+    "company_ir_official_report_fallback": 30
+  },
+  "download_status_counts": {
+    "document_downloaded": 8,
+    "no_matching_document_candidate": 22
+  },
+  "document_downloaded_count": 8,
+  "downloaded_byte_count": 78973272,
+  "issue_counts": {
+    "company_ir_fallback_no_matching_document_candidate": 22
+  },
+  "issues": [
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6146.T",
+      "candidate_count": 10,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::INTEGRATED_REPORT",
+      "ticker": "6146.T",
+      "candidate_count": 10,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6146.T",
+      "candidate_count": 10,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::INTEGRATED_REPORT",
+      "ticker": "6146.T",
+      "candidate_count": 10,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6146.T",
+      "candidate_count": 10,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6146_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::INTEGRATED_REPORT",
+      "ticker": "6146.T",
+      "candidate_count": 10,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6723.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::INTEGRATED_REPORT",
+      "ticker": "6723.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6723.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::INTEGRATED_REPORT",
+      "ticker": "6723.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6723.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6723_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::INTEGRATED_REPORT",
+      "ticker": "6723.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6752.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::INTEGRATED_REPORT",
+      "ticker": "6752.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6752.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::INTEGRATED_REPORT",
+      "ticker": "6752.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6752.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6752_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::INTEGRATED_REPORT",
+      "ticker": "6752.T",
+      "candidate_count": 0,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::6857_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "ticker": "6857.T",
+      "candidate_count": 63,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::8035_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2023::ANNUAL_SECURITIES_REPORT",
+      "ticker": "8035.T",
+      "candidate_count": 412,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::8035_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2024::ANNUAL_SECURITIES_REPORT",
+      "ticker": "8035.T",
+      "candidate_count": 412,
+      "primary_download_strategy": "edinet_document_search"
+    },
+    {
+      "type": "company_ir_fallback_no_matching_document_candidate",
+      "task_id": "DOWNLOAD::GLOBALDISC::8035_T::JP_EDINET_ANNUAL_SECURITIES_REPORT::2025::ANNUAL_SECURITIES_REPORT",
+      "ticker": "8035.T",
+      "candidate_count": 412,
+      "primary_download_strategy": "edinet_document_search"
+    }
+  ],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_jp_company_ir_fallback_download_clean_v0_1.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_jp_company_ir_fallback_download_clean_summary_v0_1.json"
+  },
+  "loaded_env_keys": [
+    "CENSUS_API_KEY",
+    "BEA_API_KEY",
+    "FRED_API_KEY",
+    "DART_API_KEY",
+    "BLS_API_KEY",
+    "OPENFDA_API_KEY",
+    "FDA_API_KEY",
+    "OPENFIGI_API_KEY",
+    "EIA_API_KEY",
+    "EDINET_API_KEY"
+  ]
+}

@@ -16,6 +16,8 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.append(str(REPO_ROOT / "scripts" / "data_expansion"))
+from env_loader import load_env_file  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -40,11 +42,13 @@ def parse_args() -> argparse.Namespace:
         help="Write failures into metadata but return success when at least one source produced rows.",
     )
     parser.add_argument("--skip-live", action="store_true")
+    parser.add_argument("--env-file", default=".env")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    loaded_env_keys = load_env_file(REPO_ROOT / args.env_file)
     contract = load_yaml(REPO_ROOT / args.contract)
     snapshot_id = args.snapshot_id or contract.get("snapshot_policy", {}).get("batch_id") or "industry_snapshot"
     as_of_date = args.as_of_date or contract.get("snapshot_policy", {}).get("default_as_of_date") or datetime.now(timezone.utc).date().isoformat()
@@ -177,6 +181,7 @@ def main() -> int:
         "snapshot_id": snapshot_id,
         "as_of_date": as_of_date,
         "contract_path": args.contract,
+        "loaded_env_key_names": sorted(loaded_env_keys),
         "generated_at": fetched_at,
         "observation_count": len(observations),
         "evidence_row_count": len(evidence_rows),

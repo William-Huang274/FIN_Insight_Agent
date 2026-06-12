@@ -56,6 +56,8 @@ FinSight-Agent 是一个面向公开公司研究的可审计金融研究系统�
 
 - `release/`：当前发布状态和公开就绪检查。
 - `worklog/`：按时间记录的实现过程、排查记录和交接文档。
+- [内部规划](internal/README.md)：尚未作为公开能力发布的 vNext 规划、覆盖审计和迁移合同；当前包含 2026-06-10 外部 10 份规划文档的吸收结果和公开/免费数据源覆盖审计。
+- [公开源 S5-S0 物化状态](internal/vnext_20260610/public_source_strength_materialization.zh-CN.md)：说明不使用商业 API 时，各公开源已经落地到 raw/cleaned text、structured fact、resolver/inventory 还是仍停在 parser/key/gap gate。
 - 早期 `sec_agent_v0_1` 和 `sec_benchmark_v1/v2` 文档应保留，但后续会标注为历史资料或移动到归档目录。
 
 ## 写作规则
@@ -64,3 +66,4 @@ FinSight-Agent 是一个面向公开公司研究的可审计金融研究系统�
 - 用户真正会复制的命令放在 README、演示、部署、Workbench 或脚本索引里。
 - 实验失败、成本诊断、具体运行编号和调试细节放在工作日志或模型运行记录里。
 - 多智能体调度、上下文交接、工具权限和数据边界是项目主线，不是内部细节，必须在架构文档里讲清楚。
+- `docs/internal/` 里的 vNext 规划不能直接描述为当前已实现能力；进入公开架构文档前必须有对应 source registry、schema、gate 和真实运行证据。

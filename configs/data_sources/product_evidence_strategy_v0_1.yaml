@@ -1,0 +1,215 @@
+schema_version: fin_agent_product_evidence_strategy_v0_1
+as_of_date: "2026-06-11"
+purpose: "Use product evidence to broaden financial judgment beyond statement-line recitation while preserving source strength boundaries."
+direction_lock:
+  research_target: public_evidence_research_analyst
+  target_quality_ceiling: "70-80% institutional fundamental research draft quality for public-evidence-backed work; 40-60% for short-horizon channel, consensus revision, or sell-through work without commercial data."
+  non_degradation_rule: "Do not replace product-business evidence with generic fallback text, weak crawled pages, or unsupported proxy claims."
+  analyst_judgment_boundary: "Facts, product evidence, and public signals support the memo; forecast, valuation, and buy/sell recommendation remain analyst judgment."
+evidence_roles:
+  company_disclosed:
+    strength: S5_primary_authority
+    allowed_use:
+      - product taxonomy from filings, annual reports, earnings releases, shareholder letters, and official presentations
+      - product or segment KPI facts after value/unit/period/product/citation parser verification
+      - product-financial bridge, including price-volume-mix, capex, inventory, gross margin, backlog, RPO, deliveries, subscribers, and production when disclosed
+    forbidden_use:
+      - infer undisclosed SKU sales, margins, channel inventory, or demand from adjectives
+      - use non-company proxy rows as company-reported facts
+    runtime_gate: parser_verified_fact_or_taxonomy_review_gate
+  official_product_surface:
+    strength: S4_company_authored_operating_context
+    allowed_use:
+      - product existence, positioning, feature surface, launch/update chronology, pricing page context
+      - taxonomy enrichment after official-origin and stale-page checks
+    forbidden_use:
+      - demand strength, sales volume, market share, margin, or revenue proof
+      - crawling failures as source gaps that weaken the filings-first path
+    runtime_gate: official_origin_clean_text_and_taxonomy_gate
+  public_proxy:
+    strength: S2_to_S1_context_or_lead
+    allowed_use:
+      - directional verification, event lead, industry demand context, developer ecosystem signal, regulatory or product-status context
+      - explicit proxy language in research memos
+    forbidden_use:
+      - direct company product KPI or market share proof without a verified mapping and source caveat
+      - replacing commercial tracker data with unqualified proxy claims
+    runtime_gate: proxy_mapping_and_claim_boundary_gate
+  commercial_market_tracker:
+    strength: S3_to_S4_external_market_measurement
+    allowed_use:
+      - market share, shipments, app downloads/revenue estimates, registrations, POS sell-through, prescriptions, channel inventory, tracker forecasts after provider approval
+    forbidden_use:
+      - use under current no-commercial policy without explicit user approval
+    runtime_gate: commercial_policy_approval_and_license_gate
+source_architecture:
+  anchor: "SEC/global filings are the first extraction path for product taxonomy and company-disclosed product KPI."
+  enrichment: "Company official product pages enrich product surface; they are not the full universe crawler path."
+  increment: "Third-party market and alternative data are the main incremental layer for product-to-financial judgment when public filings are insufficient."
+  macro_context: "FRED/BLS/BEA/EIA/Census trade explain industry cycles but cannot prove company product demand by themselves."
+industry_source_plan:
+  consumer_electronics_semiconductor_hardware:
+    company_disclosed_sources:
+      - SEC 10-K/10-Q/20-F/40-F
+      - earnings releases and investor presentations
+    official_product_surface_sources:
+      - company product pages
+      - product documentation and launch pages
+    public_proxy_sources:
+      - Statcounter public share pages where applicable
+      - Census trade HS imports/exports for category context
+      - USPTO/OpenAlex technology signal
+    commercial_market_tracker_sources:
+      - IDC
+      - Counterpoint
+      - Omdia/Canalys
+      - Gartner
+    external_metrics:
+      - shipments
+      - vendor_share
+      - ASP
+      - channel_inventory
+      - tracker_forecast
+  app_software_consumer_internet:
+    company_disclosed_sources:
+      - SEC filings
+      - shareholder letters
+      - earnings materials
+    official_product_surface_sources:
+      - product docs
+      - pricing pages
+      - status pages
+      - marketplace listings
+    public_proxy_sources:
+      - GitHub
+      - npm
+      - PyPI
+      - public app-store rankings
+      - web traffic public snapshots where allowed
+    commercial_market_tracker_sources:
+      - Sensor Tower
+      - data.ai
+      - Similarweb
+    external_metrics:
+      - downloads
+      - active_users
+      - app_revenue_estimates
+      - web_traffic
+      - category_rank
+  automotive:
+    company_disclosed_sources:
+      - SEC/global filings
+      - delivery and production releases
+    official_product_surface_sources:
+      - vehicle model pages
+      - order/configuration pages
+    public_proxy_sources:
+      - NHTSA vPIC
+      - NHTSA recalls
+      - public registration releases where available
+    commercial_market_tracker_sources:
+      - S&P Global Mobility
+      - national registration datasets
+    external_metrics:
+      - registrations
+      - deliveries
+      - model_share
+      - VIO
+      - owner_demographics
+  healthcare_pharma_medtech:
+    company_disclosed_sources:
+      - SEC/global filings
+      - earnings materials
+      - clinical or product update presentations
+    official_product_surface_sources:
+      - product and indication pages
+      - prescribing information
+    public_proxy_sources:
+      - ClinicalTrials.gov
+      - openFDA
+      - CMS
+      - USPTO/OpenAlex
+    commercial_market_tracker_sources:
+      - IQVIA
+      - Symphony
+    external_metrics:
+      - prescriptions
+      - units
+      - reimbursement
+      - indication share
+      - utilization
+  retail_cpg:
+    company_disclosed_sources:
+      - SEC filings
+      - earnings materials
+      - store and comparable sales disclosures
+    official_product_surface_sources:
+      - brand and product pages
+      - retailer assortment pages only after official or licensed source approval
+    public_proxy_sources:
+      - public pricing pages where allowed
+      - search interest
+      - Census retail context
+    commercial_market_tracker_sources:
+      - Circana
+      - NielsenIQ
+    external_metrics:
+      - POS_sell_through
+      - scanner_sales
+      - consumer_panel
+      - price_promotion
+      - channel_inventory
+  energy_industrials_materials:
+    company_disclosed_sources:
+      - SEC/global filings
+      - production and reserve disclosures
+      - earnings materials
+    official_product_surface_sources:
+      - product specification pages
+      - asset/project pages
+    public_proxy_sources:
+      - EIA
+      - Census trade
+      - BLS/BEA industrial context
+    commercial_market_tracker_sources:
+      - S&P Global Commodity Insights
+      - Wood Mackenzie
+      - Rystad
+    external_metrics:
+      - production
+      - throughput
+      - commodity_volume
+      - utilization
+      - project_pipeline
+extraction_steps:
+  - step_id: filings_first_product_taxonomy
+    objective: "Extract product, service, business-line, segment, and market taxonomy candidates for every SEC-staged company."
+    output: data/manifests/company_product_taxonomy_candidates_v0_1.jsonl
+    non_degradation_guard: "Do not use official product page crawling failures to reduce filings-first coverage."
+  - step_id: company_disclosed_product_kpi_candidates
+    objective: "Extract balanced product KPI candidates from filings without global alphabetical truncation."
+    output: data/manifests/company_product_metric_candidates_balanced_v0_1.jsonl
+    non_degradation_guard: "A keyword hit is only a candidate, never a promoted fact."
+  - step_id: industry_external_validation_plan
+    objective: "Map each industry group to public proxy and commercial tracker options with explicit role tags."
+    output: data/manifests/product_external_validation_source_plan_v0_1.jsonl
+    non_degradation_guard: "Public proxy rows must stay directional unless a source-specific mapping gate passes."
+promotion_policy:
+  allowed_fact_roles:
+    - company_disclosed
+  allowed_context_roles:
+    - official_product_surface
+    - public_proxy
+  blocked_without_policy_change:
+    - commercial_market_tracker
+  required_product_kpi_fact_fields:
+    - ticker
+    - product_or_segment
+    - metric_family
+    - metric_name
+    - period
+    - unit
+    - value
+    - source_url
+    - source_document_id
+    - citation_span

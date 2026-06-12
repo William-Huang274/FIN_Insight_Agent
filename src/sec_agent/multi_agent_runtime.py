@@ -1053,12 +1053,23 @@ def _specialist_memo_slot(agent_id: str) -> str:
 
 def _specialist_required_source_families(agent_id: str) -> list[str]:
     return {
-        "fundamental_analyst": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
-        "industry_supply_chain_analyst": ["industry_snapshot", "relationship_graph"],
+        "fundamental_analyst": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "company_product_evidence_graph",
+        ],
+        "industry_supply_chain_analyst": [
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+        ],
         "market_valuation_analyst": ["market_snapshot"],
         "risk_counterevidence_analyst": [
             "primary_sec_filing",
             "company_authored_unaudited_sec_filing",
+            "company_product_evidence_graph",
+            "public_source_context",
             "market_snapshot",
             "industry_snapshot",
             "run_artifact",
@@ -1068,7 +1079,14 @@ def _specialist_required_source_families(agent_id: str) -> list[str]:
 
 def _available_source_families_for_specialist(agent_id: str, state: Mapping[str, Any]) -> list[str]:
     families: list[str] = []
-    for key in ("runtime_ledger_rows", "context_rows", "market_snapshot_rows", "industry_snapshot_rows"):
+    for key in (
+        "runtime_ledger_rows",
+        "context_rows",
+        "market_snapshot_rows",
+        "industry_snapshot_rows",
+        "product_evidence_rows",
+        "public_source_context_rows",
+    ):
         families.extend(_row_source_family(row) for row in _row_dicts(state.get(key)))
     if _relationship_rows_from_state(state):
         families.append("relationship_graph")
@@ -2104,14 +2122,46 @@ def _tool_argument_summary(arguments: Mapping[str, Any]) -> dict[str, Any]:
 def _specialist_evidence_signal(agent_id: str, state: Mapping[str, Any]) -> dict[str, Any]:
     query_text = _state_query_text(state)
     if agent_id == "fundamental_analyst":
-        count = len(state.get("runtime_ledger_rows") or []) + len(
-            [row for row in _row_dicts(state.get("context_rows")) if _row_source_family(row) in {"", "primary_sec_filing", "company_authored_unaudited_sec_filing"}]
+        count = (
+            len(state.get("runtime_ledger_rows") or [])
+            + len(
+                [
+                    row
+                    for row in _row_dicts(state.get("context_rows"))
+                    if _row_source_family(row)
+                    in {"", "primary_sec_filing", "company_authored_unaudited_sec_filing", "company_product_evidence_graph"}
+                ]
+            )
+            + len(
+                [
+                    row
+                    for row in _row_dicts(state.get("product_evidence_rows"))
+                    if _product_evidence_promotion_status(row) in {"runtime_fact_allowed", "runtime_context_taxonomy_only"}
+                ]
+            )
         )
-        explicit = _contains_any(query_text, ("fundamental", "revenue", "margin", "capex", "cash flow", "基本面", "收入", "利润率", "资本开支"))
+        explicit = _contains_any(
+            query_text,
+            ("fundamental", "revenue", "margin", "capex", "cash flow", "product", "segment", "基本面", "收入", "利润率", "资本开支", "产品", "分部"),
+        )
         return _signal(count, explicit, "fundamental_evidence_rows_or_explicit_fundamental_intent")
     if agent_id == "industry_supply_chain_analyst":
-        count = len(state.get("industry_snapshot_rows") or []) + len(_relationship_rows_from_state(state))
-        explicit = _contains_any(query_text, ("industry", "sector", "supply chain", "customer", "supplier", "relationship", "行业", "产业链", "上下游", "供应链", "客户", "供应商", "关系"))
+        count = (
+            len(state.get("industry_snapshot_rows") or [])
+            + len(state.get("public_source_context_rows") or [])
+            + len(
+                [
+                    row
+                    for row in _row_dicts(state.get("product_evidence_rows"))
+                    if _product_evidence_promotion_status(row) in {"runtime_context_taxonomy_only", "context_or_lead_available", "gap_exposed_not_fallback"}
+                ]
+            )
+            + len(_relationship_rows_from_state(state))
+        )
+        explicit = _contains_any(
+            query_text,
+            ("industry", "sector", "supply chain", "customer", "supplier", "relationship", "public source", "行业", "产业链", "上下游", "供应链", "客户", "供应商", "关系", "公开源"),
+        )
         return _signal(count, explicit, "industry_or_relationship_rows_or_explicit_readthrough_intent")
     if agent_id == "market_valuation_analyst":
         count = len(state.get("market_snapshot_rows") or []) + len(
@@ -2126,6 +2176,8 @@ def _specialist_evidence_signal(agent_id: str, state: Mapping[str, Any]) -> dict
             + len(state.get("context_rows") or [])
             + len(state.get("market_snapshot_rows") or [])
             + len(state.get("industry_snapshot_rows") or [])
+            + len(state.get("product_evidence_rows") or [])
+            + len(state.get("public_source_context_rows") or [])
         )
         explicit = _contains_any(query_text, ("risk", "counterevidence", "downside", "uncertainty", "conflict", "风险", "反证", "下行", "不确定", "分歧"))
         return _signal(count if explicit else len(state.get("source_gaps") or []), explicit, "risk_intent_or_source_gaps")
@@ -3322,14 +3374,24 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
         rows.extend(_row_dicts(state.get("runtime_ledger_rows")))
         rows.extend(
             row
+            for row in _row_dicts(state.get("product_evidence_rows"))
+            if _product_evidence_promotion_status(row) in {"runtime_fact_allowed", "runtime_context_taxonomy_only"}
+        )
+        rows.extend(
+            row
             for row in _row_dicts(state.get("context_rows"))
-            if _row_source_family(row) in {"", "primary_sec_filing", "company_authored_unaudited_sec_filing"}
+            if _row_source_family(row)
+            in {"", "primary_sec_filing", "company_authored_unaudited_sec_filing", "company_product_evidence_graph"}
+            and (
+                _row_source_family(row) != "company_product_evidence_graph"
+                or _product_evidence_promotion_status(row) in {"runtime_fact_allowed", "runtime_context_taxonomy_only"}
+            )
         )
         rows = _focus_ticker_balanced_rows(
             rows,
             focus_tickers=focus_tickers,
             max_rows=max_rows,
-            source_families={"", "primary_sec_filing", "company_authored_unaudited_sec_filing"},
+            source_families={"", "primary_sec_filing", "company_authored_unaudited_sec_filing", "company_product_evidence_graph"},
             min_rows_per_ticker=_focus_ticker_min_rows(max_rows=max_rows, focus_ticker_count=len(focus_tickers)),
         )
     elif agent_id == "market_valuation_analyst":
@@ -3337,7 +3399,18 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
         rows.extend(row for row in _row_dicts(state.get("context_rows")) if _row_source_family(row) == "market_snapshot")
     elif agent_id == "industry_supply_chain_analyst":
         rows.extend(_row_dicts(state.get("industry_snapshot_rows")))
-        rows.extend(row for row in _row_dicts(state.get("context_rows")) if _row_source_family(row) in {"industry_snapshot", "relationship_graph"})
+        rows.extend(
+            row
+            for row in _row_dicts(state.get("product_evidence_rows"))
+            if _product_evidence_promotion_status(row) in {"runtime_fact_allowed", "runtime_context_taxonomy_only", "context_or_lead_available", "gap_exposed_not_fallback"}
+        )
+        rows.extend(_row_dicts(state.get("public_source_context_rows")))
+        rows.extend(
+            row
+            for row in _row_dicts(state.get("context_rows"))
+            if _row_source_family(row)
+            in {"industry_snapshot", "relationship_graph", "company_product_evidence_graph", "public_source_context"}
+        )
         rows.extend(_relationship_rows_from_state(state))
         rows = _balanced_industry_relationship_rows(
             rows,
@@ -3351,6 +3424,8 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
         rows.extend(_row_dicts(state.get("context_rows")))
         rows.extend(_row_dicts(state.get("market_snapshot_rows")))
         rows.extend(_row_dicts(state.get("industry_snapshot_rows")))
+        rows.extend(_row_dicts(state.get("product_evidence_rows")))
+        rows.extend(_row_dicts(state.get("public_source_context_rows")))
         if agent_id != "risk_counterevidence_analyst":
             rows.extend(_relationship_rows_from_state(state))
     else:
@@ -3385,8 +3460,10 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
                 source_order=[
                     "primary_sec_filing",
                     "company_authored_unaudited_sec_filing",
+                    "company_product_evidence_graph",
                     "market_snapshot",
                     "industry_snapshot",
+                    "public_source_context",
                     "run_artifact",
                     "",
                 ],
@@ -3420,6 +3497,28 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
         "snapshot_id": str(row.get("snapshot_id") or ""),
         "as_of_date": str(row.get("as_of_date") or ""),
     }
+    promotion_status = _product_evidence_promotion_status(row)
+    if promotion_status:
+        bounded["promotion_status"] = promotion_status
+    claim_scope = str(row.get("claim_scope") or row.get("allowed_claim_scope") or "").strip()
+    if claim_scope:
+        bounded["claim_scope"] = claim_scope
+    if row.get("context_only") is not None:
+        bounded["context_only"] = bool(row.get("context_only"))
+    if row.get("exact_value_authority") is not None:
+        bounded["exact_value_authority"] = bool(row.get("exact_value_authority"))
+    allowed_claims = _string_list(row.get("allowed_claims"))
+    forbidden_claims = _string_list(row.get("forbidden_claims"))
+    if allowed_claims:
+        bounded["allowed_claims"] = allowed_claims[:8]
+    if forbidden_claims:
+        bounded["forbidden_claims"] = forbidden_claims[:8]
+    evidence_layer = str(row.get("evidence_layer") or "").strip()
+    if evidence_layer:
+        bounded["evidence_layer"] = evidence_layer
+    source_id = str(row.get("source_id") or "").strip()
+    if source_id:
+        bounded["source_id"] = source_id
     retrieval_route = str(row.get("retrieval_route") or "").strip()
     if retrieval_route:
         bounded["retrieval_route"] = retrieval_route
@@ -3456,6 +3555,35 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
                 "claim_scope": "scope_or_hypothesis_only",
             }
         )
+    if _row_source_family(row) == "company_product_evidence_graph":
+        bounded.update(
+            {
+                "product_or_segment": str(row.get("product_or_segment") or row.get("product") or ""),
+                "metric_family": str(row.get("metric_family") or row.get("metric") or ""),
+                "unit": str(row.get("unit") or ""),
+                "product_evidence_boundary": str(
+                    row.get("runtime_use_boundary")
+                    or "Use only rows marked runtime_fact_allowed as company-disclosed product facts; keep context/review/gap rows out of factual claims."
+                ),
+            }
+        )
+        if "exact_value_authority" not in bounded:
+            bounded["exact_value_authority"] = promotion_status == "runtime_fact_allowed"
+        if promotion_status != "runtime_fact_allowed":
+            bounded["context_only"] = True
+    if _row_source_family(row) == "public_source_context":
+        bounded.update(
+            {
+                "underlying_source_id": str(row.get("source_id") or ""),
+                "underlying_source_family": str(row.get("underlying_source_family") or row.get("primary_source_family") or ""),
+                "public_source_boundary": str(
+                    row.get("source_boundary")
+                    or "Public source context is resolver/context/lead evidence only; it cannot prove company-reported product or financial facts."
+                ),
+                "context_only": True,
+                "exact_value_authority": False,
+            }
+        )
     return bounded
 
 
@@ -3470,12 +3598,20 @@ def _source_family_bundle_for_agent(agent_id: str, rows: list[Mapping[str, Any]]
     context_only_families = [
         family
         for family in selected_families
-        if family in {"market_snapshot", "industry_snapshot", "relationship_graph"}
+        if family in {"market_snapshot", "industry_snapshot", "relationship_graph", "public_source_context"}
+        or (
+            family == "company_product_evidence_graph"
+            and any(_product_evidence_promotion_status(row) != "runtime_fact_allowed" for row in rows if _row_source_family(row) == family)
+        )
     ]
     exact_authority_families = [
         family
         for family in selected_families
         if family in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
+        or (
+            family == "company_product_evidence_graph"
+            and any(_product_evidence_promotion_status(row) == "runtime_fact_allowed" for row in rows if _row_source_family(row) == family)
+        )
     ]
     bundle = {
         "schema_version": "sec_agent_source_family_bundle_v0.1",
@@ -3534,6 +3670,11 @@ def _source_family_forbidden_claim_scopes(families: list[str], *, semantic_row_c
         forbidden.append("industry_snapshot_cannot_prove_company_level_revenue_margin_customer_or_supplier_facts")
     if "relationship_graph" in family_set:
         forbidden.append("relationship_graph_is_scope_or_hypothesis_only_not_company_reported_fact")
+    if "company_product_evidence_graph" in family_set:
+        forbidden.append("company_product_evidence_graph_requires_runtime_fact_allowed_for_product_kpi_claims")
+        forbidden.append("company_product_evidence_graph_review_context_and_gap_rows_are_not_facts")
+    if "public_source_context" in family_set:
+        forbidden.append("public_source_context_cannot_prove_company_reported_product_sales_market_share_or_profitability")
     if semantic_row_count:
         forbidden.append("milvus_semantic_rows_cannot_prove_exact_values_without_ledger_or_filing_quote")
     return forbidden
@@ -3706,7 +3847,14 @@ def _metric_and_source_diverse_rows(rows: list[dict[str, Any]]) -> list[dict[str
                 selected.append(row)
                 selected_ids.add(id(row))
                 break
-    for family in ("market_snapshot", "industry_snapshot", "company_authored_unaudited_sec_filing", "primary_sec_filing"):
+    for family in (
+        "company_product_evidence_graph",
+        "market_snapshot",
+        "industry_snapshot",
+        "public_source_context",
+        "company_authored_unaudited_sec_filing",
+        "primary_sec_filing",
+    ):
         for row in rows:
             if id(row) in selected_ids:
                 continue
@@ -3785,6 +3933,8 @@ def _balanced_industry_relationship_rows(
         rows,
         source_order=[
             "industry_snapshot",
+            "public_source_context",
+            "company_product_evidence_graph",
             "relationship_graph",
             "primary_sec_filing",
             "company_authored_unaudited_sec_filing",
@@ -4044,10 +4194,19 @@ def _row_dicts(value: Any) -> list[dict[str, Any]]:
 
 def _row_source_family(row: Mapping[str, Any]) -> str:
     family = str(row.get("source_family") or "").strip()
+    runtime_family = str(row.get("runtime_source_family") or "").strip()
     tier = str(row.get("source_tier") or "").strip()
+    if family in {"company_product_evidence_graph", "public_source_context"}:
+        return family
+    if runtime_family in {"company_product_evidence_graph", "public_source_context"}:
+        return runtime_family
     if tier == "industry_snapshot" or family.startswith("industry_"):
         return "industry_snapshot"
     return family or tier
+
+
+def _product_evidence_promotion_status(row: Mapping[str, Any]) -> str:
+    return str(row.get("promotion_status") or row.get("runtime_promotion_status") or row.get("node_promotion_status") or "").strip()
 
 
 def _row_ticker(row: Mapping[str, Any]) -> str:

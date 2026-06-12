@@ -28,6 +28,21 @@ source_families:
     claim_scope: management_commentary_or_unaudited_company_context
     examples: ["investor presentation", "earnings presentation"]
     required_fields: ["issuer_id", "ticker", "fiscal_year", "source_url", "presentation_type"]
+  company_product_operating_metric:
+    source_tier: company_reported_operating_metric
+    claim_scope: company_reported_product_sales_or_operating_metric
+    examples: ["vehicle deliveries reported in earnings release", "product revenue by franchise in 10-K", "subscriber count reported in shareholder letter"]
+    required_fields: ["issuer_id", "ticker", "metric_name", "product_or_segment", "period", "unit", "value", "source_url"]
+  official_product_status:
+    source_tier: official_product_or_regulatory_metadata
+    claim_scope: product_existence_spec_or_regulatory_status_not_sales_fact
+    examples: ["official product page", "NHTSA vPIC model record", "FDA 510(k) clearance", "ClinicalTrials.gov trial registration"]
+    required_fields: ["product_id", "product_name", "issuer_or_sponsor", "source_url", "status_date"]
+  public_product_usage_context:
+    source_tier: public_usage_or_operating_context
+    claim_scope: public_usage_volume_or_utilization_context_only
+    examples: ["CMS utilization dataset", "EIA plant generation dataset", "industry vehicle sales series"]
+    required_fields: ["series_id", "period", "value", "unit", "source", "entity_resolution_status"]
   sec_companyfacts_structured_fact:
     source_tier: company_reported_structured_fact
     claim_scope: company_reported_financial_fact

@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-06-12T06:08:55.935839+00:00",
+  "outputs": {
+    "product_facts": "Z:/FIN_Insight_Agent/data/manifests/product_evidence_v0_1/company_product_kpi_facts_parser_verified_final_public_repair_v0_1.jsonl",
+    "product_gaps": "Z:/FIN_Insight_Agent/data/manifests/product_evidence_graph_final_public_repair_v0_1/company_product_evidence_gaps_v0_1.jsonl",
+    "product_nodes": "Z:/FIN_Insight_Agent/data/manifests/product_evidence_graph_final_public_repair_v0_1/company_product_evidence_nodes_v0_1.jsonl",
+    "product_output": "data/manifests/evidence_fusion_context_rows_v0_1/product_evidence_rows.jsonl",
+    "public_inventory_rows": "data/processed_private/public_sources/public_source_inventory_adapter_v0_1/public_source_inventory_rows.jsonl",
+    "public_normalized_evidence_rows": "Z:/FIN_Insight_Agent_data/processed_private/public_sources/public_source_normalized_materialized_v0_3/evidence_rows.jsonl",
+    "public_output": "data/manifests/evidence_fusion_context_rows_v0_1/public_source_context_rows.jsonl",
+    "summary": "data/manifests/evidence_fusion_context_rows_v0_1/summary.json"
+  },
+  "product_exact_value_authority_row_count": 5976,
+  "product_promotion_status_counts": {
+    "context_or_lead_available": 5009,
+    "gap_exposed_not_fallback": 2979,
+    "review_queue_not_runtime_fact": 112,
+    "runtime_context_taxonomy_only": 566,
+    "runtime_fact_allowed": 5976
+  },
+  "product_row_count": 14642,
+  "public_claim_scope_counts": {
+    "demographic_or_macro_context_only": 3,
+    "public_context_only": 22
+  },
+  "public_exact_value_authority_row_count": 0,
+  "public_source_context_row_count": 25,
+  "runtime_boundary": [
+    "Only product rows with promotion_status=runtime_fact_allowed and exact_value_authority=true may support product KPI facts.",
+    "Product taxonomy, context, review, and gap rows are context or missing-evidence rows only.",
+    "Public-source rows are context/resolver/lead evidence only and cannot prove company product sales, market share, or profitability."
+  ],
+  "schema_version": "fin_agent_evidence_fusion_context_rows_summary_v0.1",
+  "status": "pass"
+}

@@ -12,8 +12,17 @@
 # Local diagnostics and sync scratch
 /.tmp_*
 /.tmp_*/
+/tmp/
 *.tmp
 *.bak
+
+# Large generated data-expansion row dumps; keep summaries, configs, scripts, and tests tracked.
+/data/manifests/company_product_taxonomy_candidates_v0_1.jsonl
+/data/manifests/company_product_metric_candidates_balanced_v0_1.jsonl
+/data/manifests/evidence_fusion_context_rows_v0_1/*.jsonl
+/data/manifests/non_us_supply_chain_primary_disclosure_coverage_v0_1.jsonl
+/data/manifests/public_source_extended_materialization_v0_1.jsonl
+/data/manifests/tier2_global_public_disclosure_*_download_clean_v0_1.jsonl
 
 # Runtime and evaluation outputs
 /eval/

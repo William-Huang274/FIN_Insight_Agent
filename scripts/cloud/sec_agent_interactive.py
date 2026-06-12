@@ -389,6 +389,51 @@ def parse_args() -> argparse.Namespace:
         default=os.environ.get("MARKET_INDUSTRY_MANIFEST_SUMMARY_PATH", ""),
         help="Optional summary JSON from scripts/data_expansion/build_market_industry_expansion_manifests.py.",
     )
+    parser.add_argument(
+        "--product-evidence-graph-summary-path",
+        default=os.environ.get("PRODUCT_EVIDENCE_GRAPH_SUMMARY_PATH", ""),
+        help="Optional product evidence graph summary JSON for feature-flagged source inventory wiring.",
+    )
+    parser.add_argument(
+        "--product-evidence-graph-path",
+        default=os.environ.get("PRODUCT_EVIDENCE_GRAPH_PATH", ""),
+        help="Optional product evidence graph JSONL for feature-flagged runtime wiring.",
+    )
+    parser.add_argument(
+        "--product-evidence-nodes-path",
+        default=os.environ.get("PRODUCT_EVIDENCE_NODES_PATH", ""),
+        help="Optional product evidence graph nodes JSONL.",
+    )
+    parser.add_argument(
+        "--product-evidence-gaps-path",
+        default=os.environ.get("PRODUCT_EVIDENCE_GAPS_PATH", ""),
+        help="Optional product evidence graph gaps JSONL.",
+    )
+    parser.add_argument(
+        "--product-evidence-facts-path",
+        default=os.environ.get("PRODUCT_EVIDENCE_FACTS_PATH", ""),
+        help="Optional parser-verified product KPI fact JSONL.",
+    )
+    parser.add_argument(
+        "--public-source-inventory-summary-path",
+        default=os.environ.get("PUBLIC_SOURCE_INVENTORY_SUMMARY_PATH", ""),
+        help="Optional public source inventory adapter summary JSON.",
+    )
+    parser.add_argument(
+        "--public-source-inventory-rows-path",
+        default=os.environ.get("PUBLIC_SOURCE_INVENTORY_ROWS_PATH", ""),
+        help="Optional public source inventory adapter rows JSONL.",
+    )
+    parser.add_argument(
+        "--public-source-normalized-snapshot-summary-path",
+        default=os.environ.get("PUBLIC_SOURCE_NORMALIZED_SNAPSHOT_SUMMARY_PATH", ""),
+        help="Optional normalized public source snapshot summary JSON.",
+    )
+    parser.add_argument(
+        "--public-source-normalized-evidence-rows-path",
+        default=os.environ.get("PUBLIC_SOURCE_NORMALIZED_EVIDENCE_ROWS_PATH", ""),
+        help="Optional normalized public source evidence rows JSONL.",
+    )
     parser.add_argument("--bm25-index-dir", default=os.environ.get("BM25_INDEX_DIR", "data/indexes/bm25/sec_tech_10k"))
     parser.add_argument(
         "--object-bm25-index-dir",
@@ -5991,6 +6036,15 @@ def _project_inventory(args: argparse.Namespace, manifest_rows: list[dict[str, A
         industry_snapshot_id=args.industry_snapshot_id,
         industry_as_of_date=args.industry_as_of_date,
         market_industry_manifest_summary_path=getattr(args, "market_industry_manifest_summary_path", ""),
+        product_evidence_graph_summary_path=getattr(args, "product_evidence_graph_summary_path", ""),
+        product_evidence_graph_path=getattr(args, "product_evidence_graph_path", ""),
+        product_evidence_nodes_path=getattr(args, "product_evidence_nodes_path", ""),
+        product_evidence_gaps_path=getattr(args, "product_evidence_gaps_path", ""),
+        product_evidence_facts_path=getattr(args, "product_evidence_facts_path", ""),
+        public_source_inventory_summary_path=getattr(args, "public_source_inventory_summary_path", ""),
+        public_source_inventory_rows_path=getattr(args, "public_source_inventory_rows_path", ""),
+        public_source_normalized_snapshot_summary_path=getattr(args, "public_source_normalized_snapshot_summary_path", ""),
+        public_source_normalized_evidence_rows_path=getattr(args, "public_source_normalized_evidence_rows_path", ""),
     )
 
 

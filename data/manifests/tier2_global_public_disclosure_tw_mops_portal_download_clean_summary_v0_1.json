@@ -1,0 +1,21 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_portal_download_summary_v0.1",
+  "status": "pass",
+  "task_count": 12,
+  "company_count": 4,
+  "profile_counts": {
+    "tw_mops_annual_report": 12
+  },
+  "download_status_counts": {
+    "document_downloaded_cleaned": 12
+  },
+  "document_downloaded_count": 12,
+  "downloaded_byte_count": 77947355,
+  "cleaned_text_char_count": 4203750,
+  "issue_counts": {},
+  "issues": [],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_tw_mops_portal_download_clean_v0_1.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_tw_mops_portal_download_clean_summary_v0_1.json"
+  }
+}

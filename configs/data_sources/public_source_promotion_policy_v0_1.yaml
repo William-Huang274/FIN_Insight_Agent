@@ -1,0 +1,219 @@
+schema_version: fin_agent_public_source_promotion_policy_v0_1
+as_of_date: "2026-06-11"
+runtime_policy:
+  default_runtime_enabled: false
+  feature_flag_required: true
+  exact_value_authority_default: false
+  primary_disclosure_text_promotion_allowed: false
+  company_product_sales_promotion_allowed: false
+  promotion_scope: source_inventory_and_context_only
+  notes:
+    - Identity mappings can support resolver/source inventory but cannot prove financial or operating claims.
+    - Macro and regulatory endpoint rows remain context-only unless a later source-specific parser or entity resolver promotes them.
+    - Public sources cannot overwrite SEC filings or exact-value ledger rows.
+
+source_policies:
+  sec_universe_identity:
+    source_status: inventory_ready
+    default_reject_reason: sec_identity_rule_not_matched
+    default_next_action: inspect_sec_universe_manifest_mapping
+    mapping_candidate_rules:
+      - rule_id: sec_cik_high_confidence_identity
+        match:
+          mapping_types: [sec_cik]
+          statuses: [mapped]
+          confidence: [high]
+        promotion:
+          promotion_status: promoted_entity_identifier
+          inventory_surface: entity_identifier_registry
+          source_family: sec_submissions_metadata
+          runtime_source_family: ""
+          source_tier: company_reported_structured_fact
+          claim_scope: issuer_identity_only
+          allowed_claims:
+            - issuer_cik_identity
+            - sec_download_join_key
+          forbidden_claims:
+            - company_reported_financial_fact
+            - market_or_valuation_fact
+            - product_sales_or_operating_metric
+          runtime_eligible: true
+          resolver_eligible: true
+          bounded_evidence_eligible: false
+          context_only: false
+          exact_value_authority: false
+
+  openfigi_api:
+    source_status: inventory_ready_after_rate_gate
+    default_reject_reason: openfigi_rule_not_matched_or_no_mapping
+    default_next_action: retry_openfigi_mapping_with_exchange_override_or_manual_security_id
+    mapping_candidate_rules:
+      - rule_id: openfigi_high_confidence_security_identifier
+        match:
+          mapping_types: [figi]
+          statuses: [mapped]
+          confidence: [high]
+        promotion:
+          promotion_status: promoted_security_identifier
+          inventory_surface: security_identifier_registry
+          source_family: relationship_edge
+          runtime_source_family: ""
+          source_tier: relationship_edge
+          claim_scope: security_identifier_mapping_only
+          allowed_claims:
+            - ticker_exchange_figi_mapping
+            - security_identifier_join_key
+          forbidden_claims:
+            - company_reported_financial_fact
+            - security_valuation_fact
+            - ownership_or_supplier_relationship_fact
+          runtime_eligible: true
+          resolver_eligible: true
+          bounded_evidence_eligible: false
+          context_only: false
+          exact_value_authority: false
+
+  gleif_api:
+    source_status: partial_high_confidence_identifier_only
+    default_reject_reason: lei_candidate_not_high_confidence_or_endpoint_reference_only
+    default_next_action: add_legal_name_alias_override_or_parent_child_resolver_before_runtime_use
+    mapping_candidate_rules:
+      - rule_id: gleif_high_confidence_lei_identifier
+        match:
+          mapping_types: [lei]
+          statuses: [candidate_mapped]
+          confidence: [high]
+        promotion:
+          promotion_status: promoted_legal_entity_identifier_candidate
+          inventory_surface: legal_entity_identifier_registry
+          source_family: relationship_edge
+          runtime_source_family: ""
+          source_tier: relationship_edge
+          claim_scope: legal_entity_identifier_mapping_only
+          allowed_claims:
+            - issuer_lei_candidate_identity
+            - legal_entity_join_key
+          forbidden_claims:
+            - company_reported_financial_fact
+            - direct_customer_supplier_relationship
+            - ownership_or_control_without_relationship_parser
+          required_next_gates:
+            - gleif_alias_and_relationship_resolver_before_relationship_claims
+          runtime_eligible: true
+          resolver_eligible: true
+          bounded_evidence_eligible: false
+          context_only: false
+          exact_value_authority: false
+    source_level_gaps:
+      - gap_type: gleif_alias_and_relationship_resolver_required
+        detail: Medium/low LEI candidates and no-hit issuers require alias overrides or relationship parsing before use.
+        next_action: Review legal-name aliases, parent/child relationships, and rejected candidates.
+
+  fdic_bankfind_api:
+    source_status: held_for_entity_resolver
+    default_reject_reason: fdic_candidate_requires_bank_subsidiary_or_issuer_resolver
+    default_next_action: build_bank_subsidiary_to_listed_issuer_resolver
+    source_level_gaps:
+      - gap_type: fdic_entity_resolver_required
+        detail: FDIC institutions are banking entities or subsidiaries, not listed-issuer facts by themselves.
+        next_action: Build bank subsidiary/institution resolver and keep rows as banking context only.
+
+  clinicaltrials_api:
+    source_status: held_for_healthcare_resolver
+    default_reject_reason: clinical_trial_sponsor_candidate_requires_product_and_sponsor_resolver
+    default_next_action: build_healthcare_sponsor_product_condition_resolver
+    source_level_gaps:
+      - gap_type: clinicaltrials_sponsor_product_resolver_required
+        detail: Sponsor-query matches need sponsor, drug/device, indication, and trial-status resolution before context use.
+        next_action: Build healthcare sponsor/product resolver and do not infer approvals or commercial uptake.
+
+  openfda_api:
+    source_status: held_for_product_resolver
+    default_reject_reason: openfda_candidate_requires_product_endpoint_and_sponsor_resolver
+    default_next_action: build_openfda_product_sponsor_endpoint_resolver
+    source_level_gaps:
+      - gap_type: openfda_product_endpoint_resolver_required
+        detail: FDA rows are regulatory/product-status context and need product/sponsor endpoint resolution.
+        next_action: Map sponsor aliases to product identifiers and preserve adverse-event caveats.
+
+  nhtsa_vpic_api:
+    source_status: held_for_auto_resolver
+    default_reject_reason: nhtsa_make_candidate_requires_make_model_year_issuer_resolver
+    default_next_action: build_vehicle_make_model_year_to_issuer_resolver
+    source_level_gaps:
+      - gap_type: nhtsa_vehicle_resolver_required
+        detail: vPIC make/model rows identify vehicle metadata but do not prove listed-company sales or profitability.
+        next_action: Add make/model/year issuer resolver and product-status boundaries.
+
+  census_data_api:
+    source_status: context_inventory_ready
+    default_reject_reason: census_record_type_not_promoted
+    default_next_action: add_census_dataset_allowlist_before_expanding_routes
+    endpoint_record_rules:
+      - rule_id: census_macro_context_record
+        match:
+          record_types: [macro_cross_section_observation]
+        promotion:
+          promotion_status: promoted_macro_context
+          inventory_surface: macro_context_inventory
+          source_family: macro_industry_indicator
+          runtime_source_family: industry_snapshot
+          source_tier: industry_snapshot
+          claim_scope: demographic_or_macro_context_only
+          allowed_claims:
+            - macro_context
+            - demographic_context
+          forbidden_claims:
+            - company_reported_financial_fact
+            - company_sales_or_operating_metric
+            - real_time_market_fact
+          runtime_eligible: true
+          resolver_eligible: false
+          bounded_evidence_eligible: true
+          context_only: true
+          exact_value_authority: false
+
+  eia_open_data:
+    source_status: held_for_route_and_entity_mapping
+    default_reject_reason: eia_route_or_entity_mapping_required
+    default_next_action: add_eia_route_allowlist_and_asset_or_sector_mapping
+    source_level_gaps:
+      - gap_type: eia_route_entity_mapping_required
+        detail: EIA endpoints downloaded successfully but need route allowlists and entity/asset mapping before runtime context use.
+        next_action: Promote only approved EIA routes as industry context after route and entity mapping.
+
+  kr_dart_openapi:
+    source_status: identifier_ready_parser_blocked
+    default_reject_reason: dart_record_requires_document_parser_or_target_mapping
+    default_next_action: build_dart_document_package_downloader_and_parser
+    mapping_candidate_rules:
+      - rule_id: dart_high_confidence_corp_code_identifier
+        match:
+          mapping_types: [dart_corp_code]
+          statuses: [mapped]
+          confidence: [high]
+        promotion:
+          promotion_status: promoted_non_us_disclosure_identifier
+          inventory_surface: non_us_disclosure_resolver
+          source_family: global_public_annual_report
+          runtime_source_family: ""
+          source_tier: primary_company_disclosure
+          claim_scope: issuer_disclosure_identifier_only
+          allowed_claims:
+            - dart_corp_code_join_key
+            - korean_issuer_disclosure_locator
+          forbidden_claims:
+            - company_reported_financial_fact_without_document_parser
+            - management_commentary_without_document_parser
+            - product_sales_or_operating_metric_without_document_parser
+          required_next_gates:
+            - dart_document_parser_before_primary_disclosure_evidence
+          runtime_eligible: true
+          resolver_eligible: true
+          bounded_evidence_eligible: false
+          context_only: false
+          exact_value_authority: false
+    source_level_gaps:
+      - gap_type: dart_document_parser_required
+        detail: DART corp_code and filing metadata are available, but primary disclosure text/table parser is not promoted.
+        next_action: Build DART package downloader/parser before citing Korean filings as primary disclosure evidence.

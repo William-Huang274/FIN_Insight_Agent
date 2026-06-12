@@ -1,0 +1,40 @@
+{
+  "candidate_count": 10,
+  "failed_count": 0,
+  "failed_sources": [],
+  "generated_at": "2026-06-11T07:31:11.591960+00:00",
+  "inputs": {
+    "access_plan": "data/manifests/public_source_access_plan_v0_1.jsonl"
+  },
+  "loaded_env_key_names": [
+    "BEA_API_KEY",
+    "BLS_API_KEY",
+    "CENSUS_API_KEY",
+    "DART_API_KEY",
+    "EIA_API_KEY",
+    "FDA_API_KEY",
+    "FRED_API_KEY",
+    "OPENFDA_API_KEY",
+    "OPENFIGI_API_KEY"
+  ],
+  "outputs": {
+    "probe_rows": "data/manifests/public_source_access_probe_v0_1.jsonl",
+    "summary": "data/manifests/public_source_access_probe_summary_v0_1.json"
+  },
+  "passed_count": 10,
+  "passed_sources": [
+    "bls_public_api",
+    "clinicaltrials_api",
+    "fdic_bankfind_api",
+    "fred_graph_csv",
+    "gleif_api",
+    "nhtsa_vpic_api",
+    "openalex_api",
+    "openfda_api",
+    "openfigi_api",
+    "sec_edgar_apis"
+  ],
+  "probed_count": 10,
+  "schema_version": "fin_agent_public_source_access_probe_summary_v0.1",
+  "status": "pass"
+}

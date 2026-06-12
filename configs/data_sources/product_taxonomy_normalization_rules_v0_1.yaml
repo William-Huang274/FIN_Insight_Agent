@@ -1,0 +1,320 @@
+schema_version: fin_agent_product_taxonomy_normalization_rules_v0_1
+as_of_date: "2026-06-11"
+purpose: "Normalize filings-first product taxonomy candidates into industry-scoped product nodes, then allow KPI facts to link only to those nodes after parser verification."
+non_degradation_rule: "Do not promote a raw taxonomy label through a generic fallback. If industry routing, label quality, or source provenance fails, send the row to review_queue."
+promotion_boundary:
+  normalized_taxonomy: "May support product taxonomy, retrieval planning, and product-KPI linking; cannot prove demand, sales, market share, or margin."
+  parser_verified_kpi_fact: "May support company-disclosed product KPI facts only when value, unit, period, product node, source URL, source document id, and citation span are present."
+  rejected_or_context_only: "Cannot enter runtime evidence as a fact."
+default_inputs:
+  taxonomy_candidates: data/manifests/company_product_taxonomy_candidates_v0_1.jsonl
+  metric_candidates: data/manifests/company_product_metric_candidates_balanced_v0_1.jsonl
+  universe_manifest: data/manifests/tier1_tier2_market_universe_v0_1.csv
+  sector_depth_config: configs/sector_depth_full238_us_v0_2_10k_fy2023_2025.yaml
+  metric_ontology: configs/data_sources/company_product_operating_metric_ontology_v0_1.yaml
+default_outputs:
+  normalized_taxonomy: data/manifests/company_product_taxonomy_normalized_v0_1.jsonl
+  taxonomy_aliases: data/manifests/company_product_taxonomy_aliases_v0_1.jsonl
+  taxonomy_review_queue: data/manifests/company_product_taxonomy_review_queue_v0_1.jsonl
+  parser_verified_kpi_facts: data/manifests/company_product_kpi_facts_parser_verified_v0_1.jsonl
+  kpi_rejections: data/manifests/company_product_kpi_rejections_v0_1.jsonl
+  summary: data/manifests/company_product_taxonomy_kpi_parser_summary_v0_1.json
+  report: docs/internal/vnext_20260610/product_taxonomy_kpi_parser_execution.zh-CN.md
+label_quality_gate:
+  min_chars: 3
+  max_chars: 120
+  max_words: 12
+  reject_exact_lower:
+    - business
+    - business segments
+    - the
+    - overview of
+    - see note
+    - segment information
+    - products
+    - services
+    - reporting segment
+    - reporting segments
+    - reportable segment
+    - reportable segments
+    - customers
+    - markets
+    - stores
+    - seasonality
+    - financial
+    - raw materials
+    - highlights
+    - 2023 highlights
+    - 2024 highlights
+    - 2025 highlights
+    - index to financial statements
+    - let's make life delicious
+    - let’s make life delicious
+    - our products
+    - our services
+    - product revenue
+    - net sales
+    - revenue
+    - revenues
+    - operating revenue
+    - operating revenues
+    - growth
+    - production
+    - backlog
+    - orders
+    - shipments
+    - management discussion and analysis
+    - table of contents
+    - contents
+    - of contents
+    - of conten
+    - as of
+    - risk factors
+  reject_contains_lower:
+    - reportable segments
+    - reporting segments
+    - primary advantages
+    - overview of business
+    - market a wide array
+    - manufacture and market
+    - consolidated financial statements
+    - forward-looking
+    - depends on our ability
+    - results of operations
+    - liquidity and capital resources
+    - quantitative and qualitative
+    - table_start
+    - table_end
+  reject_regex:
+    - "^item\\s+\\d"
+    - "^part\\s+[ivx]+"
+    - "^note\\s+\\d+"
+    - "^page\\s+\\d+"
+    - "^[A-Za-z]+\\s+\\d{1,2},\\s+20\\d{2}$"
+    - "^[0-9.,%$()\\- ]+$"
+canonical_replacements:
+  "&": "and"
+  "data centre": "data center"
+  "e-commerce": "ecommerce"
+  "software-as-a-service": "saas"
+  "electric vehicle": "ev"
+industry_schemas:
+  consumer_electronics_semiconductor_hardware:
+    priority: 10
+    category_keywords:
+      - hardware
+      - semiconductor
+      - semiconductors
+      - memory
+      - foundry
+      - chip
+      - electronics
+      - server
+      - networking
+      - device
+      - equipment
+    label_keywords:
+      - iphone
+      - ipad
+      - mac
+      - gpu
+      - cpu
+      - hbm
+      - dram
+      - nand
+      - wafer
+      - data center
+      - networking
+      - server
+      - systems
+      - devices
+      - semiconductor
+      - hardware
+    node_types:
+      reportable_segment: segment
+      business_line: business_line
+      product_or_service_family: product_family
+      customer_market_or_application: end_market
+  app_software_consumer_internet:
+    priority: 20
+    category_keywords:
+      - software
+      - saas
+      - cloud
+      - cybersecurity
+      - internet
+      - ecommerce
+      - fintech
+      - marketplace
+      - gaming
+      - media
+    label_keywords:
+      - cloud
+      - platform
+      - software
+      - saas
+      - subscription
+      - app
+      - marketplace
+      - advertising
+      - search
+      - streaming
+      - security
+      - developer
+    node_types:
+      reportable_segment: segment
+      business_line: business_line
+      product_or_service_family: product_family
+      customer_market_or_application: use_case_or_customer_market
+  automotive:
+    priority: 30
+    category_keywords:
+      - auto
+      - autos
+      - vehicle
+      - vehicles
+      - electric_vehicles
+      - ev
+      - batteries
+      - automotive
+    label_keywords:
+      - automotive
+      - vehicle
+      - model
+      - ev
+      - energy storage
+      - battery
+      - powertrain
+      - charging
+    node_types:
+      reportable_segment: segment
+      business_line: business_line
+      product_or_service_family: model_or_product_family
+      customer_market_or_application: end_market
+  healthcare_pharma_medtech:
+    priority: 40
+    category_keywords:
+      - healthcare
+      - health care
+      - pharma
+      - pharmaceutical
+      - pharmaceuticals
+      - biotechnology
+      - biotech
+      - medtech
+      - medical
+      - diagnostics
+      - devices
+    label_keywords:
+      - drug
+      - therapy
+      - medicine
+      - oncology
+      - diabetes
+      - obesity
+      - glp-1
+      - diagnostic
+      - device
+      - clinical
+      - patient
+      - indication
+    node_types:
+      reportable_segment: segment
+      business_line: therapeutic_area_or_business_line
+      product_or_service_family: product_or_therapy_family
+      customer_market_or_application: indication_or_customer_market
+  retail_cpg:
+    priority: 50
+    category_keywords:
+      - retail
+      - consumer
+      - cpg
+      - apparel
+      - restaurant
+      - food
+      - beverage
+      - household
+      - merchandise
+    label_keywords:
+      - store
+      - comparable sales
+      - merchandise
+      - grocery
+      - apparel
+      - restaurant
+      - brand
+      - ecommerce
+      - private label
+    node_types:
+      reportable_segment: segment
+      business_line: banner_or_channel
+      product_or_service_family: category_or_brand_family
+      customer_market_or_application: customer_market_or_channel
+  energy_industrials_materials:
+    priority: 60
+    category_keywords:
+      - energy
+      - oil
+      - gas
+      - chemicals
+      - materials
+      - mining
+      - metals
+      - utility
+      - utilities
+      - industrial
+      - aerospace
+      - defense
+      - power
+      - solar
+      - hydrogen
+      - uranium
+      - lithium
+    label_keywords:
+      - upstream
+      - downstream
+      - production
+      - throughput
+      - refining
+      - chemicals
+      - commodity
+      - barrels
+      - power
+      - generation
+      - industrial
+      - aerospace
+      - defense
+      - equipment
+      - services
+    node_types:
+      reportable_segment: segment
+      business_line: business_line
+      product_or_service_family: asset_or_product_family
+      customer_market_or_application: end_market
+  banking_financial_services:
+    priority: 70
+    category_keywords:
+      - financial
+      - financials
+      - bank
+      - banking
+      - insurance
+      - payments
+      - asset management
+      - capital markets
+    label_keywords:
+      - banking
+      - deposits
+      - loans
+      - card
+      - payments
+      - insurance
+      - wealth
+      - asset management
+      - investment management
+      - capital markets
+    node_types:
+      reportable_segment: segment
+      business_line: business_line
+      product_or_service_family: financial_product_or_service
+      customer_market_or_application: customer_market

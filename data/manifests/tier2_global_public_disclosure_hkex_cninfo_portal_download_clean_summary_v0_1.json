@@ -1,0 +1,22 @@
+{
+  "schema_version": "fin_agent_global_public_disclosure_portal_download_summary_v0.1",
+  "status": "pass",
+  "task_count": 6,
+  "company_count": 2,
+  "profile_counts": {
+    "hkex_annual_report": 3,
+    "szse_cninfo_annual_report": 3
+  },
+  "download_status_counts": {
+    "document_downloaded_cleaned": 6
+  },
+  "document_downloaded_count": 6,
+  "downloaded_byte_count": 102733699,
+  "cleaned_text_char_count": 2702638,
+  "issue_counts": {},
+  "issues": [],
+  "outputs": {
+    "download_tasks": "data/manifests/tier2_global_public_disclosure_hkex_cninfo_portal_download_clean_v0_1.jsonl",
+    "summary": "data/manifests/tier2_global_public_disclosure_hkex_cninfo_portal_download_clean_summary_v0_1.json"
+  }
+}

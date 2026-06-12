@@ -307,6 +307,23 @@ gap_policy: string
 
 ### D9 Gate Registry / Gate History / Eval Matrix
 
+2026-06-12 v0.1 runtime projection 已落地：
+
+- 新增 `sec_agent_gate_registry_eval_matrix_v0.1`。
+- graph persist 阶段在 D4/D5、D7/D6、D3/D8、D1/D2 artifacts 之后生成 `gate_registry_eval_matrix.json`。
+- `artifact_refs`、`multi_agent_summary.json` 和 `langgraph_node_checkpoints.json` 暴露 gate count、gate result count、blocking fail count、status 分布和 validation status。
+- gate history 当前从以下运行时层投影：
+  - `source_capability_router.route_decisions`
+  - `raw_source_provenance_store.records`
+  - `asof_vintage_layer.records`
+  - `entity_security_master.entities / unresolved_references`
+  - `metric_product_ontology_snapshot.observed_metric_mappings`
+  - `reconciliation_ledger.reconciliation_groups`
+  - `claim_evidence_ledger.claims`
+  - `typed_gap_ledger.gaps`
+- eval matrix 会检查每个 gate 的 pass / warn / fail / not_applicable 数量，且显式确认 source-boundary violation 和 weak proxy fallback 是否被覆盖。
+- 当前用途是 per-run gate history / eval matrix artifact，不能被当成最终 pre-Memo hard gate 或跨 run SQL gate history。
+
 核心 gates：
 
 - source_boundary_gate
@@ -326,6 +343,13 @@ gap_policy: string
 
 - 每次 gate run 有 target_object_id、status、score、reason、repair_action、before_value、after_value。
 - eval case matrix 能覆盖 source-boundary violation 和 weak proxy fallback。
+
+后续 D9.1：
+
+- 把 Gate Registry 从 persist-only projection 前移到 Memo Writer / Presenter 前的 hard gate checkpoint。
+- 将 gate history 写入 SQL-backed append-only store，并支持按 run、ticker、claim、source、metric、gate id 回放。
+- 把 D5 stale / time-mismatch、D6 unresolved conflict、D8 source boundary、D2 commercial gap 接成统一阻断规则。
+- 增加 eval case fixture matrix，覆盖 source-boundary violation、weak proxy fallback、citation missing、period mismatch、unit conflict、numeric conflict、entity unresolved、claim unsupported、contradiction、staleness、commercial tracker required。
 
 ### D10 Derived Metric Layer
 

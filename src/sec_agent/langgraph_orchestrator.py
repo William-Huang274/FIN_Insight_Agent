@@ -26,6 +26,7 @@ from sec_agent.agent_contracts import validate_agent_activation_plan
 from sec_agent.agent_registry import agent_registry_by_id, allowed_source_families
 from sec_agent.claim_evidence_ledger import build_evidence_governance_ledgers
 from sec_agent.entity_master import build_entity_security_master
+from sec_agent.gate_registry import build_gate_registry_eval_matrix
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
 from sec_agent.metric_product_ontology import build_metric_product_ontology_snapshot
 from sec_agent.multi_agent_contracts import (
@@ -146,6 +147,7 @@ CHECKPOINT_STATE_KEYS = (
     "asof_vintage_layer",
     "metric_product_ontology_snapshot",
     "reconciliation_ledger",
+    "gate_registry_eval_matrix",
     "evidence_sufficiency_report",
     "second_pass_result",
     "second_pass_evidence_requirement_plan",
@@ -203,6 +205,7 @@ CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "asof_vintage_layer",
     "metric_product_ontology_snapshot",
     "reconciliation_ledger",
+    "gate_registry_eval_matrix",
     "coverage_matrix",
     "retrieval_trace",
     "project_inventory",
@@ -300,6 +303,7 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     asof_vintage_layer: dict[str, Any]
     metric_product_ontology_snapshot: dict[str, Any]
     reconciliation_ledger: dict[str, Any]
+    gate_registry_eval_matrix: dict[str, Any]
     claim_evidence_ledger: dict[str, Any]
     typed_gap_ledger: dict[str, Any]
     evidence_operator_fanout_plan: dict[str, Any]
@@ -2413,7 +2417,8 @@ def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) ->
     state_with_refs = _with_multi_agent_artifact_refs(_with_native_artifact_refs({**state, "status": "completed"}))
     state_with_layers = _state_with_d4_d5_layers(state_with_refs)
     state_with_reconciliation = _state_with_d6_d7_layers(state_with_layers)
-    final_state = _record_node(state_with_reconciliation, "persist_session_state")
+    state_with_gates = _state_with_d9_gate_matrix(state_with_reconciliation)
+    final_state = _record_node(state_with_gates, "persist_session_state")
     _write_native_state_artifacts(final_state)
     _write_multi_agent_governance_ledger_artifacts(final_state)
     _write_multi_agent_summary_artifact(final_state)
@@ -2448,6 +2453,13 @@ def _state_with_d6_d7_layers(state: SecAgentGraphRuntimeState) -> SecAgentGraphR
     if not reconciliation:
         reconciliation = layers.get("reconciliation_ledger") if isinstance(layers.get("reconciliation_ledger"), dict) else {}
     return {**state, "metric_product_ontology_snapshot": ontology, "reconciliation_ledger": reconciliation}
+
+
+def _state_with_d9_gate_matrix(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    gate_matrix = state.get("gate_registry_eval_matrix") if isinstance(state.get("gate_registry_eval_matrix"), dict) else {}
+    if gate_matrix:
+        return state
+    return {**state, "gate_registry_eval_matrix": build_gate_registry_eval_matrix(state)}
 
 
 def _node_plan_query(
@@ -3011,6 +3023,7 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["asof_vintage_layer"] = str((output_dir / "asof_vintage_layer.json").resolve())
         refs["metric_product_ontology_snapshot"] = str((output_dir / "metric_product_ontology_snapshot.json").resolve())
         refs["reconciliation_ledger"] = str((output_dir / "reconciliation_ledger.json").resolve())
+        refs["gate_registry_eval_matrix"] = str((output_dir / "gate_registry_eval_matrix.json").resolve())
         return {**state, "artifact_refs": refs}
     return state
 
@@ -3056,6 +3069,7 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     vintage_layer = state.get("asof_vintage_layer") if isinstance(state.get("asof_vintage_layer"), dict) else {}
     ontology = state.get("metric_product_ontology_snapshot") if isinstance(state.get("metric_product_ontology_snapshot"), dict) else {}
     reconciliation = state.get("reconciliation_ledger") if isinstance(state.get("reconciliation_ledger"), dict) else {}
+    gate_matrix = state.get("gate_registry_eval_matrix") if isinstance(state.get("gate_registry_eval_matrix"), dict) else {}
     if not claim_ledger:
         claim_ledger = ledgers.get("claim_evidence_ledger") if isinstance(ledgers.get("claim_evidence_ledger"), dict) else {}
     if not gap_ledger:
@@ -3074,6 +3088,20 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
         ontology = build_metric_product_ontology_snapshot(state)
     if not reconciliation:
         reconciliation = build_reconciliation_ledger({**state, "metric_product_ontology_snapshot": ontology})
+    if not gate_matrix:
+        gate_matrix = build_gate_registry_eval_matrix(
+            {
+                **state,
+                "raw_source_provenance_store": provenance_store,
+                "asof_vintage_layer": vintage_layer,
+                "metric_product_ontology_snapshot": ontology,
+                "reconciliation_ledger": reconciliation,
+                "entity_security_master": entity_master,
+                "source_capability_router": source_router,
+                "claim_evidence_ledger": claim_ledger,
+                "typed_gap_ledger": gap_ledger,
+            }
+        )
     (output_dir / "claim_evidence_ledger.json").write_text(
         json.dumps(claim_ledger, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -3104,6 +3132,10 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     )
     (output_dir / "reconciliation_ledger.json").write_text(
         json.dumps(reconciliation, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "gate_registry_eval_matrix.json").write_text(
+        json.dumps(gate_matrix, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -3159,6 +3191,9 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
     reconciliation = state.get("reconciliation_ledger") if isinstance(state.get("reconciliation_ledger"), dict) else {}
     reconciliation_summary = reconciliation.get("summary") if isinstance(reconciliation.get("summary"), dict) else {}
     reconciliation_validation = reconciliation.get("validation") if isinstance(reconciliation.get("validation"), dict) else {}
+    gate_matrix = state.get("gate_registry_eval_matrix") if isinstance(state.get("gate_registry_eval_matrix"), dict) else {}
+    gate_matrix_summary = gate_matrix.get("summary") if isinstance(gate_matrix.get("summary"), dict) else {}
+    gate_matrix_validation = gate_matrix.get("validation") if isinstance(gate_matrix.get("validation"), dict) else {}
     evidence_fanout_barrier = state.get("evidence_operator_fanout_barrier") if isinstance(state.get("evidence_operator_fanout_barrier"), dict) else {}
     specialist_fanout_barrier = state.get("specialist_fanout_barrier") if isinstance(state.get("specialist_fanout_barrier"), dict) else {}
     claim_card_store_barrier = state.get("claim_card_store_barrier") if isinstance(state.get("claim_card_store_barrier"), dict) else {}
@@ -3302,6 +3337,17 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
             "unresolved_conflict_count": reconciliation_summary.get("unresolved_conflict_count") or 0,
             "preferred_candidate_count": reconciliation_summary.get("preferred_candidate_count") or 0,
             "validation_status": reconciliation_validation.get("status") or "",
+        },
+        "gate_registry_eval_matrix": {
+            "schema_version": gate_matrix.get("schema_version") or "",
+            "gate_count": gate_matrix.get("gate_count") or 0,
+            "gate_result_count": gate_matrix.get("gate_result_count") or 0,
+            "blocking_fail_count": gate_matrix_summary.get("blocking_fail_count") or 0,
+            "by_status": dict(gate_matrix_summary.get("by_status") or {}),
+            "source_boundary_violation_covered": bool(gate_matrix_summary.get("source_boundary_violation_covered")),
+            "weak_proxy_fallback_covered": bool(gate_matrix_summary.get("weak_proxy_fallback_covered")),
+            "eval_matrix_gate_count": gate_matrix_summary.get("eval_matrix_gate_count") or 0,
+            "validation_status": gate_matrix_validation.get("status") or "",
         },
         "milvus_runtime": {
             "status": milvus_runtime.get("status") or "",
@@ -4126,6 +4172,7 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     vintage_layer = state.get("asof_vintage_layer") or {}
     ontology = state.get("metric_product_ontology_snapshot") or {}
     reconciliation = state.get("reconciliation_ledger") or {}
+    gate_matrix = state.get("gate_registry_eval_matrix") or {}
     second_pass_diagnosis = state.get("second_pass_reflection_diagnosis") or {}
     second_pass_repair_plan = state.get("second_pass_repair_plan") or {}
     second_pass_hard_gate = state.get("second_pass_hard_gate") or {}
@@ -4177,6 +4224,13 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
         "reconciliation_conflict_gap_count": reconciliation.get("conflict_gap_count") if isinstance(reconciliation, dict) else 0,
         "reconciliation_validation_status": (reconciliation.get("validation") or {}).get("status")
         if isinstance(reconciliation, dict) and isinstance(reconciliation.get("validation"), dict)
+        else "",
+        "gate_registry_gate_result_count": gate_matrix.get("gate_result_count") if isinstance(gate_matrix, dict) else 0,
+        "gate_registry_blocking_fail_count": (gate_matrix.get("summary") or {}).get("blocking_fail_count")
+        if isinstance(gate_matrix, dict) and isinstance(gate_matrix.get("summary"), dict)
+        else 0,
+        "gate_registry_validation_status": (gate_matrix.get("validation") or {}).get("status")
+        if isinstance(gate_matrix, dict) and isinstance(gate_matrix.get("validation"), dict)
         else "",
         "coverage_complete": coverage_summary.get("coverage_complete"),
         "primary_task_support_complete": coverage_summary.get("primary_task_support_complete"),

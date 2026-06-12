@@ -400,6 +400,16 @@ gap_policy: string
 
 ### D11 Analyst View / Research Memory
 
+2026-06-12 v0.1 runtime projection 已落地：
+
+- 新增 `sec_agent_analyst_view_research_memory_v0.1`。
+- graph persist 阶段在 D10 derived metric layer 后生成 `analyst_view_research_memory.json`。
+- 当前输出两类对象：
+  - `analyst_views`：run-scoped 结构化 analyst view。
+  - `research_memory_entries`：未来写入长期记忆 / DB 的候选索引。
+- view / memory entry 只能引用 `claim_ids`、`gap_ids`、`derived_metric_ids`，不能直接携带 raw evidence refs、source ids、input source ids。
+- `multi_agent_summary.json` 和 `langgraph_node_checkpoints.json` 暴露 view count、memory entry count、view type/status 分布、claim/gap/derived refs 数量和 validation status。
+
 目标：让 Research Lead 先读结构化 analyst view，再 drill down 到 evidence。
 
 视图类型：
@@ -416,6 +426,22 @@ gap_policy: string
 
 - Analyst view 只能引用 Claim Evidence Ledger 和 Gap Ledger。
 - 不能把 view 当原始事实来源。
+
+当前已支持：
+
+- `company_profile_view`：按 ticker 汇总 claim / gap / derived refs。
+- `segment_model_view`：按 ticker + product_or_segment 汇总 segment / product 相关 refs。
+- `product_kpi_view`：按产品经营指标、商业 tracker gap、产品 KPI derived refs 形成索引。
+- `earnings_change_view`：汇总 revenue / growth / margin / FCF 相关 claim 和 derived refs。
+- `risk_factor_view`：汇总 risk / conflict / source-boundary / commercial gap refs。
+- `bull_bear_debate_view`：把 supported / weak / contradicted / gap refs 放在同一 debate index。
+- `thesis_tracker`：按 ticker 记录当前 run 的 thesis claim/gap/derived refs。
+
+后续 D11.1：
+
+- 把 Analyst View 前置给 Research Lead 作为规划输入，但仍要求所有 claim 输出 drill down 到 D1/D2/D10 refs。
+- 将 research memory 写入 SQL / vector / graph-backed store，支持跨 run retrieval、dedupe、staleness 和 supersession。
+- 增加 memory retrieval parity tests：从 memory 召回 view 后必须能反查 Claim Evidence Ledger、Typed Gap Ledger 和 Derived Metric Layer。
 
 ### D12 D-series Database Closeout
 

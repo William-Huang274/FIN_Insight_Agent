@@ -24,6 +24,7 @@ else:
 from sec_agent.retrieval_plan import build_retrieval_plan
 from sec_agent.agent_contracts import validate_agent_activation_plan
 from sec_agent.agent_registry import agent_registry_by_id, allowed_source_families
+from sec_agent.analyst_view_layer import build_analyst_view_research_memory_layer
 from sec_agent.claim_evidence_ledger import build_evidence_governance_ledgers
 from sec_agent.derived_metric_layer import build_derived_metric_layer
 from sec_agent.entity_master import build_entity_security_master
@@ -150,6 +151,7 @@ CHECKPOINT_STATE_KEYS = (
     "reconciliation_ledger",
     "gate_registry_eval_matrix",
     "derived_metric_layer",
+    "analyst_view_research_memory",
     "evidence_sufficiency_report",
     "second_pass_result",
     "second_pass_evidence_requirement_plan",
@@ -209,6 +211,7 @@ CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "reconciliation_ledger",
     "gate_registry_eval_matrix",
     "derived_metric_layer",
+    "analyst_view_research_memory",
     "coverage_matrix",
     "retrieval_trace",
     "project_inventory",
@@ -308,6 +311,7 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     reconciliation_ledger: dict[str, Any]
     gate_registry_eval_matrix: dict[str, Any]
     derived_metric_layer: dict[str, Any]
+    analyst_view_research_memory: dict[str, Any]
     claim_evidence_ledger: dict[str, Any]
     typed_gap_ledger: dict[str, Any]
     evidence_operator_fanout_plan: dict[str, Any]
@@ -2423,7 +2427,8 @@ def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) ->
     state_with_reconciliation = _state_with_d6_d7_layers(state_with_layers)
     state_with_gates = _state_with_d9_gate_matrix(state_with_reconciliation)
     state_with_derived_metrics = _state_with_d10_derived_metric_layer(state_with_gates)
-    final_state = _record_node(state_with_derived_metrics, "persist_session_state")
+    state_with_analyst_views = _state_with_d11_analyst_view_layer(state_with_derived_metrics)
+    final_state = _record_node(state_with_analyst_views, "persist_session_state")
     _write_native_state_artifacts(final_state)
     _write_multi_agent_governance_ledger_artifacts(final_state)
     _write_multi_agent_summary_artifact(final_state)
@@ -2472,6 +2477,17 @@ def _state_with_d10_derived_metric_layer(state: SecAgentGraphRuntimeState) -> Se
     if derived_layer:
         return state
     return {**state, "derived_metric_layer": build_derived_metric_layer(state)}
+
+
+def _state_with_d11_analyst_view_layer(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    analyst_views = (
+        state.get("analyst_view_research_memory")
+        if isinstance(state.get("analyst_view_research_memory"), dict)
+        else {}
+    )
+    if analyst_views:
+        return state
+    return {**state, "analyst_view_research_memory": build_analyst_view_research_memory_layer(state)}
 
 
 def _node_plan_query(
@@ -3037,6 +3053,7 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["reconciliation_ledger"] = str((output_dir / "reconciliation_ledger.json").resolve())
         refs["gate_registry_eval_matrix"] = str((output_dir / "gate_registry_eval_matrix.json").resolve())
         refs["derived_metric_layer"] = str((output_dir / "derived_metric_layer.json").resolve())
+        refs["analyst_view_research_memory"] = str((output_dir / "analyst_view_research_memory.json").resolve())
         return {**state, "artifact_refs": refs}
     return state
 
@@ -3084,6 +3101,11 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     reconciliation = state.get("reconciliation_ledger") if isinstance(state.get("reconciliation_ledger"), dict) else {}
     gate_matrix = state.get("gate_registry_eval_matrix") if isinstance(state.get("gate_registry_eval_matrix"), dict) else {}
     derived_layer = state.get("derived_metric_layer") if isinstance(state.get("derived_metric_layer"), dict) else {}
+    analyst_views = (
+        state.get("analyst_view_research_memory")
+        if isinstance(state.get("analyst_view_research_memory"), dict)
+        else {}
+    )
     if not claim_ledger:
         claim_ledger = ledgers.get("claim_evidence_ledger") if isinstance(ledgers.get("claim_evidence_ledger"), dict) else {}
     if not gap_ledger:
@@ -3125,6 +3147,15 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
                 "gate_registry_eval_matrix": gate_matrix,
             }
         )
+    if not analyst_views:
+        analyst_views = build_analyst_view_research_memory_layer(
+            {
+                **state,
+                "claim_evidence_ledger": claim_ledger,
+                "typed_gap_ledger": gap_ledger,
+                "derived_metric_layer": derived_layer,
+            }
+        )
     (output_dir / "claim_evidence_ledger.json").write_text(
         json.dumps(claim_ledger, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -3163,6 +3194,10 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     )
     (output_dir / "derived_metric_layer.json").write_text(
         json.dumps(derived_layer, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "analyst_view_research_memory.json").write_text(
+        json.dumps(analyst_views, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -3224,6 +3259,15 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
     derived_layer = state.get("derived_metric_layer") if isinstance(state.get("derived_metric_layer"), dict) else {}
     derived_layer_summary = derived_layer.get("summary") if isinstance(derived_layer.get("summary"), dict) else {}
     derived_layer_validation = derived_layer.get("validation") if isinstance(derived_layer.get("validation"), dict) else {}
+    analyst_views = (
+        state.get("analyst_view_research_memory")
+        if isinstance(state.get("analyst_view_research_memory"), dict)
+        else {}
+    )
+    analyst_views_summary = analyst_views.get("summary") if isinstance(analyst_views.get("summary"), dict) else {}
+    analyst_views_validation = (
+        analyst_views.get("validation") if isinstance(analyst_views.get("validation"), dict) else {}
+    )
     evidence_fanout_barrier = state.get("evidence_operator_fanout_barrier") if isinstance(state.get("evidence_operator_fanout_barrier"), dict) else {}
     specialist_fanout_barrier = state.get("specialist_fanout_barrier") if isinstance(state.get("specialist_fanout_barrier"), dict) else {}
     claim_card_store_barrier = state.get("claim_card_store_barrier") if isinstance(state.get("claim_card_store_barrier"), dict) else {}
@@ -3388,6 +3432,18 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
             "by_gate_status": dict(derived_layer_summary.get("by_gate_status") or {}),
             "blocked_derivation_count": derived_layer_summary.get("blocked_derivation_count") or 0,
             "validation_status": derived_layer_validation.get("status") or "",
+        },
+        "analyst_view_research_memory": {
+            "schema_version": analyst_views.get("schema_version") or "",
+            "view_count": analyst_views.get("view_count") or 0,
+            "memory_entry_count": analyst_views.get("memory_entry_count") or 0,
+            "by_view_type": dict(analyst_views_summary.get("by_view_type") or {}),
+            "by_view_status": dict(analyst_views_summary.get("by_view_status") or {}),
+            "company_count": analyst_views_summary.get("company_count") or 0,
+            "claim_ref_count": analyst_views_summary.get("claim_ref_count") or 0,
+            "gap_ref_count": analyst_views_summary.get("gap_ref_count") or 0,
+            "derived_metric_ref_count": analyst_views_summary.get("derived_metric_ref_count") or 0,
+            "validation_status": analyst_views_validation.get("status") or "",
         },
         "milvus_runtime": {
             "status": milvus_runtime.get("status") or "",
@@ -4214,6 +4270,7 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     reconciliation = state.get("reconciliation_ledger") or {}
     gate_matrix = state.get("gate_registry_eval_matrix") or {}
     derived_layer = state.get("derived_metric_layer") or {}
+    analyst_views = state.get("analyst_view_research_memory") or {}
     second_pass_diagnosis = state.get("second_pass_reflection_diagnosis") or {}
     second_pass_repair_plan = state.get("second_pass_repair_plan") or {}
     second_pass_hard_gate = state.get("second_pass_hard_gate") or {}
@@ -4277,6 +4334,11 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
         "derived_metric_skipped_count": derived_layer.get("skipped_derivation_count") if isinstance(derived_layer, dict) else 0,
         "derived_metric_validation_status": (derived_layer.get("validation") or {}).get("status")
         if isinstance(derived_layer, dict) and isinstance(derived_layer.get("validation"), dict)
+        else "",
+        "analyst_view_count": analyst_views.get("view_count") if isinstance(analyst_views, dict) else 0,
+        "research_memory_entry_count": analyst_views.get("memory_entry_count") if isinstance(analyst_views, dict) else 0,
+        "analyst_view_validation_status": (analyst_views.get("validation") or {}).get("status")
+        if isinstance(analyst_views, dict) and isinstance(analyst_views.get("validation"), dict)
         else "",
         "coverage_complete": coverage_summary.get("coverage_complete"),
         "primary_task_support_complete": coverage_summary.get("primary_task_support_complete"),

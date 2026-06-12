@@ -563,3 +563,4 @@
 - [ ] D9: Build Gate Registry / Gate History / Eval Matrix for source boundary, citation, period, unit, numeric, metric mapping, entity resolution, claim support, contradiction, staleness, and commercial gap gates.
 - [ ] D10: Build Derived Metric Layer with formula, input_fact_ids, calculation version, gate status, and explainability trace.
 - [ ] D11: Build Analyst View / Research Memory Layer that summarizes company, segment, product KPI, earnings change, risk, bull/bear debate, and thesis tracker views while remaining traceable to evidence.
+- [ ] D12: Before closing the D-series, consolidate D1-D11 artifact-backed layers into durable SQL / DB-backed stores where needed, including D1.1, D3.1, D4.1, D5.1, gate history, research memory, migration scripts, backfill jobs, schema migrations, and artifact-to-database parity tests.

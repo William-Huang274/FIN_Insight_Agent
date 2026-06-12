@@ -348,6 +348,26 @@ gap_policy: string
 - Analyst view 只能引用 Claim Evidence Ledger 和 Gap Ledger。
 - 不能把 view 当原始事实来源。
 
+### D12 D-series Database Closeout
+
+目标：D1-D11 可以先以 per-run JSON / artifact-backed 方式快速落地，但 D 系列收口前必须补齐需要数据库化的治理层。
+
+必须回补：
+
+- D1.1 Claim Evidence Ledger SQL-backed append-only store。
+- D3.1 Entity / Security Master SQL-backed resolver 与跨 run entity history。
+- D4.1 Raw Source / Provenance Store SQL / object-store backed provenance、checksum、license / robots、parser run lineage。
+- D5.1 As-of / Vintage Layer 的 macro / industry vintage store、market snapshot as-of table、filing amendment lineage。
+- D9 Gate Registry / Gate History / Eval Matrix 的持久化。
+- D11 Analyst View / Research Memory 的可追溯数据库视图。
+
+通过条件：
+
+- 每个 per-run artifact 都有对应 SQL/DB schema 或明确的“不需要数据库化”理由。
+- 有 artifact -> database backfill / migration script。
+- 有 artifact 与数据库查询结果的 parity test。
+- 任何 agent 读取长期记忆、跨 run claim、source lineage、vintage 或 gate history 时，默认走数据库层，不再只扫单次 run JSON。
+
 ## 文档三：投研工作流升级文档.docx
 
 ### 已吸收到 07 的内容
@@ -382,8 +402,9 @@ gap_policy: string
 5. D9：Gate Registry / Gate History / Eval Matrix。
 6. D10：Derived Metric Layer。
 7. D11：Analyst View / Research Memory。
-8. K2-K4：产品规格 ontology、public buyer observer policy、Product / Technology sub-agent upgrade。
-9. K5-K8：Capital/Ownership、Macro Exposure、Verifier gates、end-to-end KG sub-agent gate。
+8. D12：D-series Database Closeout，补齐需要 SQL/DB 化的 D1-D11 stores、migration、backfill 和 parity tests。
+9. K2-K4：产品规格 ontology、public buyer observer policy、Product / Technology sub-agent upgrade。
+10. K5-K8：Capital/Ownership、Macro Exposure、Verifier gates、end-to-end KG sub-agent gate。
 
 ## 不改变的边界
 

@@ -353,6 +353,14 @@ gap_policy: string
 
 ### D10 Derived Metric Layer
 
+2026-06-12 v0.1 runtime projection 已落地：
+
+- 新增 `sec_agent_derived_metric_layer_v0.1`。
+- graph persist 阶段在 D9 gate matrix 后生成 `derived_metric_layer.json`，确保派生值消费 D6 preferred facts 和 D9 input gate status。
+- 当前只从 resolved reconciliation preferred values 派生；D6 unresolved conflict、D9 blocking gate、缺少输入、分母为 0、非数值输入都会进入 `skipped_derivations`，不会生成派生事实。
+- `multi_agent_summary.json` 和 `langgraph_node_checkpoints.json` 暴露 input fact count、derived metric count、skipped derivation count、blocked derivation count、gate status 分布和 validation status。
+- D7 financial ontology 同步补充 `operating_cash_flow`、`cost_of_revenue`、`inventory` 三类输入事实，但 `gross_margin`、`operating_margin`、`ASP` 等仍只由 D10 公式生成，不能作为基础 exact fact 直接提权。
+
 目标：保存派生指标和 lineage。
 
 示例：
@@ -370,6 +378,25 @@ gap_policy: string
 通过条件：
 
 - 每个 derived metric 保存 formula、input_fact_ids、calculation_version、value、unit、gate_status、explainability_trace。
+
+当前已支持：
+
+- `gross_margin = gross_profit / revenue * 100`
+- `operating_margin = operating_income / revenue * 100`
+- `free_cash_flow = operating_cash_flow - abs(capex)`
+- `free_cash_flow_margin = fcf / revenue * 100` 或 `(operating_cash_flow - abs(capex)) / revenue * 100`
+- `net_debt = debt - cash`
+- `inventory_days = inventory / abs(cost_of_revenue) * period_days`
+- `take_rate = revenue / GMV * 100`
+- `ARPU = revenue / subscribers`
+- `ASP = revenue / deliveries_or_shipments`
+- `YoY / QoQ growth`：只在同 ticker、同 product、同 canonical metric、同 unit、相邻 period 的 resolved facts 上生成。
+
+后续 D10.1：
+
+- 把派生值前移到 Memo Writer / ClaimCard fact selection，明确哪些 derived metric 可以进入 supported claim，哪些只能作为 analyst calculation。
+- 将 formula registry、calculation version、input fact lineage 和 derived output 写入 SQL / DB-backed store，支持跨 run replay。
+- 增加 formula-level eval fixtures，覆盖负数 prior period、capex 符号、quarter length、product revenue / unit mismatch、company ASP commercial tracker boundary、direct disclosed FCF vs calculated FCF precedence。
 
 ### D11 Analyst View / Research Memory
 

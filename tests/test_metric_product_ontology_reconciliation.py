@@ -1,0 +1,221 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from sec_agent.langgraph_orchestrator import build_multi_agent_orchestration_graph, make_multi_agent_smoke_state
+from sec_agent.metric_product_ontology import (
+    METRIC_PRODUCT_ONTOLOGY_SCHEMA_VERSION,
+    build_metric_product_ontology_snapshot,
+    resolve_metric_for_row,
+)
+from sec_agent.reconciliation_ledger import RECONCILIATION_LEDGER_SCHEMA_VERSION, build_reconciliation_ledger
+
+
+def test_metric_product_ontology_maps_financial_and_product_metrics_without_proxy_authority() -> None:
+    ontology = build_metric_product_ontology_snapshot(
+        {
+            "runtime_ledger_rows": [
+                {"evidence_ref": "rev", "ticker": "MSFT", "metric_family": "revenue"},
+                {"evidence_ref": "growth", "ticker": "MSFT", "metric_family": "revenue growth"},
+            ],
+            "product_evidence_rows": [
+                {"evidence_ref": "deliveries", "ticker": "TSLA", "metric_family": "deliveries"},
+            ],
+        }
+    )
+    revenue = resolve_metric_for_row({"metric_family": "revenue"}, ontology)
+    deliveries = resolve_metric_for_row({"metric_family": "deliveries"}, ontology)
+    rejected = resolve_metric_for_row({"metric_family": "revenue growth"}, ontology)
+
+    assert ontology["schema_version"] == METRIC_PRODUCT_ONTOLOGY_SCHEMA_VERSION
+    assert ontology["validation"]["status"] == "pass"
+    assert revenue["canonical_metric_id"] == "financial_metric:revenue"
+    assert deliveries["canonical_metric_id"] == "product_kpi:deliveries"
+    assert "public_source_context" in deliveries["cannot_infer_from"]
+    assert "market_snapshot" not in deliveries["exact_authority_source_families"]
+    assert rejected["match_status"] == "rejected_alias"
+    assert ontology["summary"]["observed_mapped_count"] == 2
+    assert ontology["summary"]["observed_rejected_alias_count"] == 1
+
+
+def test_reconciliation_resolves_source_priority_and_blocks_unit_and_taxonomy_conflicts() -> None:
+    ontology = build_metric_product_ontology_snapshot({})
+    ledger = build_reconciliation_ledger(
+        {
+            "run_id": "unit-d6",
+            "metric_product_ontology_snapshot": ontology,
+            "runtime_ledger_rows": [
+                {
+                    "evidence_ref": "rev_sec",
+                    "source_id": "sec-rev",
+                    "ticker": "MSFT",
+                    "metric_family": "revenue",
+                    "value": "100",
+                    "unit": "USD",
+                    "fiscal_year": 2025,
+                    "fiscal_period": "FY",
+                    "fiscal_period_end": "2025-06-30",
+                    "source_family": "primary_sec_filing",
+                },
+                {
+                    "evidence_ref": "rev_ir",
+                    "source_id": "ir-rev",
+                    "ticker": "MSFT",
+                    "metric_family": "revenue",
+                    "value": "98",
+                    "unit": "USD",
+                    "fiscal_year": 2025,
+                    "fiscal_period": "FY",
+                    "fiscal_period_end": "2025-06-30",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                },
+                {
+                    "evidence_ref": "capex_usd",
+                    "source_id": "sec-capex-usd",
+                    "ticker": "MSFT",
+                    "metric_family": "capex",
+                    "value": "10",
+                    "unit": "USD",
+                    "fiscal_year": 2025,
+                    "fiscal_period": "FY",
+                    "source_family": "primary_sec_filing",
+                },
+                {
+                    "evidence_ref": "capex_shares",
+                    "source_id": "sec-capex-shares",
+                    "ticker": "MSFT",
+                    "metric_family": "capex",
+                    "value": "10",
+                    "unit": "shares",
+                    "fiscal_year": 2025,
+                    "fiscal_period": "FY",
+                    "source_family": "primary_sec_filing",
+                },
+                {
+                    "evidence_ref": "market_share",
+                    "source_id": "sec-share",
+                    "ticker": "MSFT",
+                    "metric_family": "unmapped operating metric",
+                    "value": "12",
+                    "unit": "%",
+                    "fiscal_year": 2025,
+                    "fiscal_period": "FY",
+                    "source_family": "primary_sec_filing",
+                },
+                {
+                    "evidence_ref": "public_context_value",
+                    "source_id": "public-context",
+                    "ticker": "MSFT",
+                    "metric_family": "revenue",
+                    "value": "101",
+                    "unit": "USD",
+                    "fiscal_year": 2025,
+                    "fiscal_period": "FY",
+                    "source_family": "public_source_context",
+                },
+            ],
+        }
+    )
+    groups = {row["canonical_metric_id"]: row for row in ledger["reconciliation_groups"]}
+    revenue = groups["financial_metric:revenue"]
+    capex = groups["financial_metric:capex"]
+
+    assert ledger["schema_version"] == RECONCILIATION_LEDGER_SCHEMA_VERSION
+    assert ledger["validation"]["status"] == "pass"
+    assert revenue["resolution_status"] == "resolved_by_rule"
+    assert revenue["preferred_value"]["source_family"] == "primary_sec_filing"
+    assert revenue["preferred_value"]["resolution_rule"] == "source_priority_highest_authority_wins"
+    assert capex["resolution_status"] == "unresolved_conflict"
+    assert "unit_conflict" in capex["conflict_types"]
+    assert any("taxonomy_conflict" in row["conflict_types"] for row in ledger["reconciliation_groups"])
+    assert ledger["summary"]["unresolved_conflict_count"] == 2
+    assert ledger["excluded_candidate_count"] == 1
+    assert ledger["conflict_gap_count"] == 2
+
+
+def test_graph_persists_metric_product_ontology_and_reconciliation_ledger(tmp_path: Path) -> None:
+    def injected_execute(state: dict) -> dict:
+        return {
+            "tool_observations": [],
+            "tool_call_ledger": state.get("tool_call_ledger") or {},
+            "runtime_ledger_rows": [
+                {
+                    "source_id": "sec-msft-revenue",
+                    "evidence_ref": "msft-revenue-usd",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "MSFT",
+                    "metric_family": "revenue",
+                    "value": "100",
+                    "unit": "USD",
+                    "fiscal_year": 2025,
+                    "fiscal_period": "FY",
+                    "fiscal_period_end": "2025-06-30",
+                    "source_url": "https://www.sec.gov/Archives/edgar/data/789019/msft-2025.htm",
+                },
+                {
+                    "source_id": "sec-msft-revenue-bad-unit",
+                    "evidence_ref": "msft-revenue-shares",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "MSFT",
+                    "metric_family": "revenue",
+                    "value": "100",
+                    "unit": "shares",
+                    "fiscal_year": 2025,
+                    "fiscal_period": "FY",
+                    "fiscal_period_end": "2025-06-30",
+                    "source_url": "https://www.sec.gov/Archives/edgar/data/789019/msft-2025.htm",
+                },
+            ],
+        }
+
+    graph = build_multi_agent_orchestration_graph(execute_evidence_operators=injected_execute)
+    initial = make_multi_agent_smoke_state(
+        user_query="写一段 MSFT revenue 和产品交付表现 memo。",
+        output_dir=tmp_path,
+        query_contract={
+            "companies": ["MSFT"],
+            "focus_tickers": ["MSFT"],
+            "search_scope_tickers": ["MSFT"],
+            "source_tiers": ["primary_sec_filing", "company_product_evidence_graph"],
+            "intent": "standard_memo",
+        },
+        focus_tickers=["MSFT"],
+        search_scope_tickers=["MSFT"],
+    )
+    initial["product_evidence_rows"] = [
+        {
+            "source_id": "product-msft-deliveries",
+            "evidence_ref": "msft-product-deliveries",
+            "source_family": "company_product_evidence_graph",
+            "ticker": "MSFT",
+            "metric_family": "deliveries",
+            "product_or_segment": "Cloud",
+            "promotion_status": "runtime_fact_allowed",
+            "value": "42",
+            "unit": "units",
+            "fiscal_year": 2025,
+            "fiscal_period": "FY",
+        }
+    ]  # type: ignore[literal-required]
+
+    result = graph.invoke(initial, config={"configurable": {"thread_id": "unit-d6-d7-artifacts"}})
+    summary = json.loads((tmp_path / "multi_agent_summary.json").read_text(encoding="utf-8"))
+    ontology_artifact = json.loads((tmp_path / "metric_product_ontology_snapshot.json").read_text(encoding="utf-8"))
+    reconciliation_artifact = json.loads((tmp_path / "reconciliation_ledger.json").read_text(encoding="utf-8"))
+    checkpoint_artifact = json.loads((tmp_path / "langgraph_node_checkpoints.json").read_text(encoding="utf-8"))
+    recoverable_summary = checkpoint_artifact["recoverable_state_summary"]
+
+    assert result["metric_product_ontology_snapshot"]["schema_version"] == METRIC_PRODUCT_ONTOLOGY_SCHEMA_VERSION
+    assert result["reconciliation_ledger"]["schema_version"] == RECONCILIATION_LEDGER_SCHEMA_VERSION
+    assert result["artifact_refs"]["metric_product_ontology_snapshot"].endswith("metric_product_ontology_snapshot.json")
+    assert result["artifact_refs"]["reconciliation_ledger"].endswith("reconciliation_ledger.json")
+    assert ontology_artifact["validation"]["status"] == "pass"
+    assert reconciliation_artifact["validation"]["status"] == "pass"
+    assert reconciliation_artifact["summary"]["unit_conflict_count"] == 1
+    assert reconciliation_artifact["conflict_gap_count"] == 1
+    assert summary["metric_product_ontology_snapshot"]["schema_version"] == METRIC_PRODUCT_ONTOLOGY_SCHEMA_VERSION
+    assert summary["reconciliation_ledger"]["schema_version"] == RECONCILIATION_LEDGER_SCHEMA_VERSION
+    assert summary["reconciliation_ledger"]["unresolved_conflict_count"] == 1
+    assert recoverable_summary["metric_product_ontology_metric_count"] == ontology_artifact["metric_count"]
+    assert recoverable_summary["reconciliation_conflict_gap_count"] == reconciliation_artifact["conflict_gap_count"]

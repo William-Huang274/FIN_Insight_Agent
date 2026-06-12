@@ -556,8 +556,10 @@
 - [x] D5: Build per-run As-of / Vintage Layer v0.1 covering fiscal period end, filing date, accepted date, reported date, observation date, retrieved_at, source_updated_at, market_as_of_date, macro vintage, parser_run_at, validation, summary, and persisted `asof_vintage_layer.json`.
 - [ ] D4.1: Move Raw Source / Provenance Store from per-run JSON to SQL / object-store backed provenance with materialized checksums, parser run lineage, license/robots registry, and cross-run before/after diff.
 - [ ] D5.1: Connect As-of / Vintage Layer to macro/industry vintage stores, market snapshot as-of tables, filing amendment lineage, and D9 staleness/time-mismatch gates.
-- [ ] D6: Build Reconciliation Ledger for unit, period, taxonomy, amendment, segment, source priority, and rounding conflicts.
-- [ ] D7: Build Metric / Product Ontology with canonical ids, accepted/rejected aliases, unit, period rule, allowed source types, and cannot_infer_from policies.
+- [x] D6: Build per-run Reconciliation Ledger v0.1 for unit, period, taxonomy, amendment, segment, source priority, and rounding conflicts with preferred_value rules, validation, summary, conflict gaps, and persisted `reconciliation_ledger.json`.
+- [x] D7: Build per-run Metric / Product Ontology v0.1 with canonical ids, accepted/rejected aliases, unit family, period rule, allowed/exact source families, cannot_infer_from policies, validation, summary, and persisted `metric_product_ontology_snapshot.json`.
+- [ ] D6.1: Move Reconciliation Ledger from persist-only projection into pre-Memo fact selection, connect unresolved groups to Typed Gap Ledger / bounded gap register, and prevent unresolved conflicts from entering supported claim cards.
+- [ ] D7.1: Move Metric / Product Ontology into maintainable registry / DB ontology with industry playbook KPI overrides, product spec ontology, manual alias review queue, and D8.1 source policy integration.
 - [x] D8: Build Source Capability Router v0.1 so activation allowed sources, inventory availability/authority, and retrieval routes determine allowed/context/blocked/gap decisions with persisted `source_capability_router.json`.
 - [ ] D8.1: Extend Source Capability Router with query intent, industry, metric type, claim type, required authority, D7 ontology rules, and commercial gap policy table.
 - [ ] D9: Build Gate Registry / Gate History / Eval Matrix for source boundary, citation, period, unit, numeric, metric mapping, entity resolution, claim support, contradiction, staleness, and commercial gap gates.

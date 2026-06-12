@@ -27,6 +27,7 @@ from sec_agent.agent_registry import agent_registry_by_id, allowed_source_famili
 from sec_agent.claim_evidence_ledger import build_evidence_governance_ledgers
 from sec_agent.entity_master import build_entity_security_master
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
+from sec_agent.metric_product_ontology import build_metric_product_ontology_snapshot
 from sec_agent.multi_agent_contracts import (
     aggregate_focused_answer_judgment_plan,
     aggregate_specialist_judgment_plan,
@@ -65,6 +66,7 @@ from sec_agent.multi_agent_runtime import (
     validate_operator_tool_call,
 )
 from sec_agent.provenance_vintage import build_provenance_vintage_layers
+from sec_agent.reconciliation_ledger import build_metric_ontology_and_reconciliation_layers, build_reconciliation_ledger
 from sec_agent.relationship_graph import relationship_plan_from_lookup
 from sec_agent.source_capability_router import build_source_capability_router
 from sec_agent.tool_call_ledger import (
@@ -142,6 +144,8 @@ CHECKPOINT_STATE_KEYS = (
     "source_capability_router",
     "raw_source_provenance_store",
     "asof_vintage_layer",
+    "metric_product_ontology_snapshot",
+    "reconciliation_ledger",
     "evidence_sufficiency_report",
     "second_pass_result",
     "second_pass_evidence_requirement_plan",
@@ -197,6 +201,8 @@ CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "source_capability_router",
     "raw_source_provenance_store",
     "asof_vintage_layer",
+    "metric_product_ontology_snapshot",
+    "reconciliation_ledger",
     "coverage_matrix",
     "retrieval_trace",
     "project_inventory",
@@ -292,6 +298,8 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     source_capability_router: dict[str, Any]
     raw_source_provenance_store: dict[str, Any]
     asof_vintage_layer: dict[str, Any]
+    metric_product_ontology_snapshot: dict[str, Any]
+    reconciliation_ledger: dict[str, Any]
     claim_evidence_ledger: dict[str, Any]
     typed_gap_ledger: dict[str, Any]
     evidence_operator_fanout_plan: dict[str, Any]
@@ -2404,7 +2412,8 @@ def _node_multi_agent_renderer(
 def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
     state_with_refs = _with_multi_agent_artifact_refs(_with_native_artifact_refs({**state, "status": "completed"}))
     state_with_layers = _state_with_d4_d5_layers(state_with_refs)
-    final_state = _record_node(state_with_layers, "persist_session_state")
+    state_with_reconciliation = _state_with_d6_d7_layers(state_with_layers)
+    final_state = _record_node(state_with_reconciliation, "persist_session_state")
     _write_native_state_artifacts(final_state)
     _write_multi_agent_governance_ledger_artifacts(final_state)
     _write_multi_agent_summary_artifact(final_state)
@@ -2422,6 +2431,23 @@ def _state_with_d4_d5_layers(state: SecAgentGraphRuntimeState) -> SecAgentGraphR
     if not vintage_layer:
         vintage_layer = layers.get("asof_vintage_layer") if isinstance(layers.get("asof_vintage_layer"), dict) else {}
     return {**state, "raw_source_provenance_store": provenance_store, "asof_vintage_layer": vintage_layer}
+
+
+def _state_with_d6_d7_layers(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    ontology = state.get("metric_product_ontology_snapshot") if isinstance(state.get("metric_product_ontology_snapshot"), dict) else {}
+    reconciliation = state.get("reconciliation_ledger") if isinstance(state.get("reconciliation_ledger"), dict) else {}
+    if ontology and reconciliation:
+        return state
+    layers = build_metric_ontology_and_reconciliation_layers(state)
+    if not ontology:
+        ontology = (
+            layers.get("metric_product_ontology_snapshot")
+            if isinstance(layers.get("metric_product_ontology_snapshot"), dict)
+            else {}
+        )
+    if not reconciliation:
+        reconciliation = layers.get("reconciliation_ledger") if isinstance(layers.get("reconciliation_ledger"), dict) else {}
+    return {**state, "metric_product_ontology_snapshot": ontology, "reconciliation_ledger": reconciliation}
 
 
 def _node_plan_query(
@@ -2983,6 +3009,8 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["source_capability_router"] = str((output_dir / "source_capability_router.json").resolve())
         refs["raw_source_provenance_store"] = str((output_dir / "raw_source_provenance_store.json").resolve())
         refs["asof_vintage_layer"] = str((output_dir / "asof_vintage_layer.json").resolve())
+        refs["metric_product_ontology_snapshot"] = str((output_dir / "metric_product_ontology_snapshot.json").resolve())
+        refs["reconciliation_ledger"] = str((output_dir / "reconciliation_ledger.json").resolve())
         return {**state, "artifact_refs": refs}
     return state
 
@@ -3026,6 +3054,8 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     source_router = state.get("source_capability_router") if isinstance(state.get("source_capability_router"), dict) else {}
     provenance_store = state.get("raw_source_provenance_store") if isinstance(state.get("raw_source_provenance_store"), dict) else {}
     vintage_layer = state.get("asof_vintage_layer") if isinstance(state.get("asof_vintage_layer"), dict) else {}
+    ontology = state.get("metric_product_ontology_snapshot") if isinstance(state.get("metric_product_ontology_snapshot"), dict) else {}
+    reconciliation = state.get("reconciliation_ledger") if isinstance(state.get("reconciliation_ledger"), dict) else {}
     if not claim_ledger:
         claim_ledger = ledgers.get("claim_evidence_ledger") if isinstance(ledgers.get("claim_evidence_ledger"), dict) else {}
     if not gap_ledger:
@@ -3040,6 +3070,10 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
             provenance_store = layers.get("raw_source_provenance_store") if isinstance(layers.get("raw_source_provenance_store"), dict) else {}
         if not vintage_layer:
             vintage_layer = layers.get("asof_vintage_layer") if isinstance(layers.get("asof_vintage_layer"), dict) else {}
+    if not ontology:
+        ontology = build_metric_product_ontology_snapshot(state)
+    if not reconciliation:
+        reconciliation = build_reconciliation_ledger({**state, "metric_product_ontology_snapshot": ontology})
     (output_dir / "claim_evidence_ledger.json").write_text(
         json.dumps(claim_ledger, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -3062,6 +3096,14 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     )
     (output_dir / "asof_vintage_layer.json").write_text(
         json.dumps(vintage_layer, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "metric_product_ontology_snapshot.json").write_text(
+        json.dumps(ontology, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "reconciliation_ledger.json").write_text(
+        json.dumps(reconciliation, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -3111,6 +3153,12 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
     vintage_layer = state.get("asof_vintage_layer") if isinstance(state.get("asof_vintage_layer"), dict) else {}
     vintage_summary = vintage_layer.get("summary") if isinstance(vintage_layer.get("summary"), dict) else {}
     vintage_validation = vintage_layer.get("validation") if isinstance(vintage_layer.get("validation"), dict) else {}
+    ontology = state.get("metric_product_ontology_snapshot") if isinstance(state.get("metric_product_ontology_snapshot"), dict) else {}
+    ontology_summary = ontology.get("summary") if isinstance(ontology.get("summary"), dict) else {}
+    ontology_validation = ontology.get("validation") if isinstance(ontology.get("validation"), dict) else {}
+    reconciliation = state.get("reconciliation_ledger") if isinstance(state.get("reconciliation_ledger"), dict) else {}
+    reconciliation_summary = reconciliation.get("summary") if isinstance(reconciliation.get("summary"), dict) else {}
+    reconciliation_validation = reconciliation.get("validation") if isinstance(reconciliation.get("validation"), dict) else {}
     evidence_fanout_barrier = state.get("evidence_operator_fanout_barrier") if isinstance(state.get("evidence_operator_fanout_barrier"), dict) else {}
     specialist_fanout_barrier = state.get("specialist_fanout_barrier") if isinstance(state.get("specialist_fanout_barrier"), dict) else {}
     claim_card_store_barrier = state.get("claim_card_store_barrier") if isinstance(state.get("claim_card_store_barrier"), dict) else {}
@@ -3232,6 +3280,28 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
             "macro_vintage_record_count": vintage_summary.get("macro_vintage_record_count") or 0,
             "missing_time_anchor_count": vintage_summary.get("missing_time_anchor_count") or 0,
             "validation_status": vintage_validation.get("status") or "",
+        },
+        "metric_product_ontology_snapshot": {
+            "schema_version": ontology.get("schema_version") or "",
+            "metric_count": ontology.get("metric_count") or 0,
+            "financial_metric_count": ontology_summary.get("financial_metric_count") or 0,
+            "product_kpi_count": ontology_summary.get("product_kpi_count") or 0,
+            "observed_metric_count": ontology_summary.get("observed_metric_count") or 0,
+            "observed_mapped_count": ontology_summary.get("observed_mapped_count") or 0,
+            "observed_unmapped_count": ontology_summary.get("observed_unmapped_count") or 0,
+            "validation_status": ontology_validation.get("status") or "",
+        },
+        "reconciliation_ledger": {
+            "schema_version": reconciliation.get("schema_version") or "",
+            "candidate_count": reconciliation.get("candidate_count") or 0,
+            "group_count": reconciliation.get("group_count") or 0,
+            "conflict_gap_count": reconciliation.get("conflict_gap_count") or 0,
+            "by_resolution_status": dict(reconciliation_summary.get("by_resolution_status") or {}),
+            "by_conflict_type": dict(reconciliation_summary.get("by_conflict_type") or {}),
+            "resolved_group_count": reconciliation_summary.get("resolved_group_count") or 0,
+            "unresolved_conflict_count": reconciliation_summary.get("unresolved_conflict_count") or 0,
+            "preferred_candidate_count": reconciliation_summary.get("preferred_candidate_count") or 0,
+            "validation_status": reconciliation_validation.get("status") or "",
         },
         "milvus_runtime": {
             "status": milvus_runtime.get("status") or "",
@@ -4054,6 +4124,8 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     source_router = state.get("source_capability_router") or {}
     provenance_store = state.get("raw_source_provenance_store") or {}
     vintage_layer = state.get("asof_vintage_layer") or {}
+    ontology = state.get("metric_product_ontology_snapshot") or {}
+    reconciliation = state.get("reconciliation_ledger") or {}
     second_pass_diagnosis = state.get("second_pass_reflection_diagnosis") or {}
     second_pass_repair_plan = state.get("second_pass_repair_plan") or {}
     second_pass_hard_gate = state.get("second_pass_hard_gate") or {}
@@ -4096,6 +4168,15 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
         "asof_vintage_record_count": vintage_layer.get("record_count") if isinstance(vintage_layer, dict) else 0,
         "asof_vintage_validation_status": (vintage_layer.get("validation") or {}).get("status")
         if isinstance(vintage_layer, dict) and isinstance(vintage_layer.get("validation"), dict)
+        else "",
+        "metric_product_ontology_metric_count": ontology.get("metric_count") if isinstance(ontology, dict) else 0,
+        "metric_product_ontology_validation_status": (ontology.get("validation") or {}).get("status")
+        if isinstance(ontology, dict) and isinstance(ontology.get("validation"), dict)
+        else "",
+        "reconciliation_group_count": reconciliation.get("group_count") if isinstance(reconciliation, dict) else 0,
+        "reconciliation_conflict_gap_count": reconciliation.get("conflict_gap_count") if isinstance(reconciliation, dict) else 0,
+        "reconciliation_validation_status": (reconciliation.get("validation") or {}).get("status")
+        if isinstance(reconciliation, dict) and isinstance(reconciliation.get("validation"), dict)
         else "",
         "coverage_complete": coverage_summary.get("coverage_complete"),
         "primary_task_support_complete": coverage_summary.get("primary_task_support_complete"),

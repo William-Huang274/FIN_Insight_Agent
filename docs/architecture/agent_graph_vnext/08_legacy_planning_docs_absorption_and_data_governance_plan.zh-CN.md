@@ -235,6 +235,15 @@ rounding_conflict
 - preferred_value 必须有 resolution_rule 和 confidence。
 - conflict_gap 不直接进入 Memo。
 
+当前状态（2026-06-12 v0.1 已落地）：
+
+- 新增 `sec_agent_reconciliation_ledger_v0.1` per-run artifact。
+- graph persist 会写出 `reconciliation_ledger.json`，并在 `artifact_refs`、summary 和 checkpoint summary 暴露。
+- 当前候选来自 runtime ledger rows、product evidence rows、context/public rows 中带 value 且具备 exact-value authority 的行；context-only / public proxy 会被排除。
+- 当前已支持 `unit_conflict`、`period_conflict`、`taxonomy_conflict`、`segment_conflict`、`amendment_conflict`、`source_priority_conflict`、`rounding_conflict` 的确定性分类。
+- `source_priority_conflict`、`amendment_conflict`、`rounding_conflict` 只有在规则唯一时生成 `preferred_value`；`unit_conflict`、`period_conflict`、`taxonomy_conflict`、`segment_conflict` fail closed，写入 `conflict_gaps`。
+- D6.1 仍需把 reconciliation 结果前移到 Memo Writer 前的事实层选择，并与 D2 typed gap ledger、D9 gate history、D12 database closeout 联动。
+
 ### D7 Metric / Product Ontology
 
 分两层：
@@ -246,6 +255,15 @@ rounding_conflict
 
 - 每个 metric / KPI 有 canonical id、accepted aliases、rejected aliases、unit、period rule、allowed source type、cannot_infer_from。
 - 产品规格和 operating KPI 不靠字符串相似直接入库。
+
+当前状态（2026-06-12 v0.1 已落地）：
+
+- 新增 `sec_agent_metric_product_ontology_v0.1` per-run artifact。
+- graph persist 会写出 `metric_product_ontology_snapshot.json`，并在 `artifact_refs`、summary 和 checkpoint summary 暴露。
+- 内置 Financial Metric Ontology 覆盖 revenue、gross_profit、operating_income、net_income、FCF、capex、debt、cash、shares、EPS。
+- Product KPI Ontology 吸收既有 `company_product_operating_metric_ontology_v0_1.yaml` 的边界，但不把 grouped positive examples 直接提升为 canonical alias；当前覆盖 product_revenue、deliveries、shipments、subscribers、MAU、DAU、ARPU、ASP、bookings、backlog、installed_base、production、capacity、utilization、take_rate、GMV、same_store_sales。
+- 每个 metric/KPI 保留 accepted aliases、rejected aliases、unit_family、period_rule、allowed / exact-authority source families、cannot_infer_from 和 required gates。
+- D7.1 仍需迁移到可维护 registry / DB ontology，补行业 playbook 细分 KPI、product spec ontology、manual alias review queue 和 D8.1 source policy table。
 
 ### D8 Source Capability Router
 

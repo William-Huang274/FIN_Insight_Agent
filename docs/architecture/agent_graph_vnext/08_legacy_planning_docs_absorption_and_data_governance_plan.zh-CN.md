@@ -174,6 +174,14 @@ document_id: string | null
 - fact -> object -> filing/source -> raw document -> citation span 可逆。
 - parser 重跑后可以比较 before/after。
 
+当前状态（2026-06-12 v0.1 已落地）：
+
+- 新增 `sec_agent_raw_source_provenance_store_v0.1` per-run artifact。
+- graph persist 会写出 `raw_source_provenance_store.json`，并在 `artifact_refs`、summary 和 checkpoint summary 暴露。
+- 输入覆盖 runtime ledger rows、context rows、market / industry / product / public context rows、tool observations、project inventory filings 和本轮 run artifact refs。
+- validation 当前只做结构级 fail-closed：`source_id` 必填、duplicate / raw locator missing / SEC document id missing / URL access method missing 出 warning。
+- D4.1 仍需把 per-run JSON 升级为 SQL / object-store backed provenance table，补全 checksum materialization、license/robots registry、parser run lineage 和跨 run before/after diff。
+
 ### D5 As-of / Vintage Layer
 
 目标：解决时间错配。
@@ -196,6 +204,14 @@ document_id: string | null
 - 不用 2026 年修订后的宏观数据解释 2024 年当时判断。
 - 不把 filing date 和 fiscal period end 混用。
 - 不把 market snapshot as_of_date 和基本面 period 混用。
+
+当前状态（2026-06-12 v0.1 已落地）：
+
+- 新增 `sec_agent_asof_vintage_layer_v0.1` per-run artifact。
+- graph persist 会写出 `asof_vintage_layer.json`，并在 `artifact_refs`、summary 和 checkpoint summary 暴露。
+- records 保留 fiscal period、filing / accepted / reported date、observation date、retrieved/source updated date、market as-of、macro vintage 和 parser run time。
+- `time_basis` 当前区分 `fiscal_period`、`filing`、`market_as_of`、`macro_vintage`、`source_observation`。
+- D5.1 仍需接宏观/行业真实 vintage 数据库、market snapshot as-of table、filing amendment lineage，并把 stale / time-mismatch gate 接入 D9。
 
 ### D6 Reconciliation Ledger
 

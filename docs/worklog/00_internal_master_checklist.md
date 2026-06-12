@@ -552,8 +552,10 @@
 - [ ] D2.1: Connect typed `parser_failed` / `conflict_gap` / `commercial_gap` to targeted repair, reconciliation, and bounded-gap register history instead of summary-only reporting.
 - [x] D3: Build per-run Entity / Security Master v0.1 for ticker, issuer, CIK, LEI, FIGI, ISIN, CUSIP, SEDOL, legal name, alias registry, unresolved references, validation, summary, and persisted `entity_security_master.json`.
 - [ ] D3.1: Extend Entity / Security Master into SQL-backed resolver for brand, subsidiary, product owner, ADR/common share, ticker changes, and cross-run entity history.
-- [ ] D4: Build Raw Source / Provenance Store with raw URL/path, checksum, retrieved_at, source_as_of_date, parser version, license/robots policy, access method, and document id.
-- [ ] D5: Build As-of / Vintage Layer covering fiscal period end, filing date, accepted date, reported date, observation date, retrieved_at, source_updated_at, market_as_of_date, macro vintage, and parser_run_at.
+- [x] D4: Build per-run Raw Source / Provenance Store v0.1 with raw URL/path, checksum, retrieved_at, source_as_of_date, parser version, license/robots policy, access method, document id, validation, summary, and persisted `raw_source_provenance_store.json`.
+- [x] D5: Build per-run As-of / Vintage Layer v0.1 covering fiscal period end, filing date, accepted date, reported date, observation date, retrieved_at, source_updated_at, market_as_of_date, macro vintage, parser_run_at, validation, summary, and persisted `asof_vintage_layer.json`.
+- [ ] D4.1: Move Raw Source / Provenance Store from per-run JSON to SQL / object-store backed provenance with materialized checksums, parser run lineage, license/robots registry, and cross-run before/after diff.
+- [ ] D5.1: Connect As-of / Vintage Layer to macro/industry vintage stores, market snapshot as-of tables, filing amendment lineage, and D9 staleness/time-mismatch gates.
 - [ ] D6: Build Reconciliation Ledger for unit, period, taxonomy, amendment, segment, source priority, and rounding conflicts.
 - [ ] D7: Build Metric / Product Ontology with canonical ids, accepted/rejected aliases, unit, period rule, allowed source types, and cannot_infer_from policies.
 - [x] D8: Build Source Capability Router v0.1 so activation allowed sources, inventory availability/authority, and retrieval routes determine allowed/context/blocked/gap decisions with persisted `source_capability_router.json`.

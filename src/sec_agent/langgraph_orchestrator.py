@@ -64,6 +64,7 @@ from sec_agent.multi_agent_runtime import (
     specialist_activation_decisions,
     validate_operator_tool_call,
 )
+from sec_agent.provenance_vintage import build_provenance_vintage_layers
 from sec_agent.relationship_graph import relationship_plan_from_lookup
 from sec_agent.source_capability_router import build_source_capability_router
 from sec_agent.tool_call_ledger import (
@@ -139,6 +140,8 @@ CHECKPOINT_STATE_KEYS = (
     "bounded_gap_register",
     "entity_security_master",
     "source_capability_router",
+    "raw_source_provenance_store",
+    "asof_vintage_layer",
     "evidence_sufficiency_report",
     "second_pass_result",
     "second_pass_evidence_requirement_plan",
@@ -192,6 +195,8 @@ CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "bounded_gap_register",
     "entity_security_master",
     "source_capability_router",
+    "raw_source_provenance_store",
+    "asof_vintage_layer",
     "coverage_matrix",
     "retrieval_trace",
     "project_inventory",
@@ -285,6 +290,8 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     bounded_gap_register: dict[str, Any]
     entity_security_master: dict[str, Any]
     source_capability_router: dict[str, Any]
+    raw_source_provenance_store: dict[str, Any]
+    asof_vintage_layer: dict[str, Any]
     claim_evidence_ledger: dict[str, Any]
     typed_gap_ledger: dict[str, Any]
     evidence_operator_fanout_plan: dict[str, Any]
@@ -2396,11 +2403,25 @@ def _node_multi_agent_renderer(
 
 def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
     state_with_refs = _with_multi_agent_artifact_refs(_with_native_artifact_refs({**state, "status": "completed"}))
-    final_state = _record_node(state_with_refs, "persist_session_state")
+    state_with_layers = _state_with_d4_d5_layers(state_with_refs)
+    final_state = _record_node(state_with_layers, "persist_session_state")
     _write_native_state_artifacts(final_state)
     _write_multi_agent_governance_ledger_artifacts(final_state)
     _write_multi_agent_summary_artifact(final_state)
     return final_state
+
+
+def _state_with_d4_d5_layers(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    provenance_store = state.get("raw_source_provenance_store") if isinstance(state.get("raw_source_provenance_store"), dict) else {}
+    vintage_layer = state.get("asof_vintage_layer") if isinstance(state.get("asof_vintage_layer"), dict) else {}
+    if provenance_store and vintage_layer:
+        return state
+    layers = build_provenance_vintage_layers(state)
+    if not provenance_store:
+        provenance_store = layers.get("raw_source_provenance_store") if isinstance(layers.get("raw_source_provenance_store"), dict) else {}
+    if not vintage_layer:
+        vintage_layer = layers.get("asof_vintage_layer") if isinstance(layers.get("asof_vintage_layer"), dict) else {}
+    return {**state, "raw_source_provenance_store": provenance_store, "asof_vintage_layer": vintage_layer}
 
 
 def _node_plan_query(
@@ -2960,6 +2981,8 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["typed_gap_ledger"] = str((output_dir / "typed_gap_ledger.json").resolve())
         refs["entity_security_master"] = str((output_dir / "entity_security_master.json").resolve())
         refs["source_capability_router"] = str((output_dir / "source_capability_router.json").resolve())
+        refs["raw_source_provenance_store"] = str((output_dir / "raw_source_provenance_store.json").resolve())
+        refs["asof_vintage_layer"] = str((output_dir / "asof_vintage_layer.json").resolve())
         return {**state, "artifact_refs": refs}
     return state
 
@@ -3001,6 +3024,8 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     gap_ledger = state.get("typed_gap_ledger") if isinstance(state.get("typed_gap_ledger"), dict) else {}
     entity_master = state.get("entity_security_master") if isinstance(state.get("entity_security_master"), dict) else {}
     source_router = state.get("source_capability_router") if isinstance(state.get("source_capability_router"), dict) else {}
+    provenance_store = state.get("raw_source_provenance_store") if isinstance(state.get("raw_source_provenance_store"), dict) else {}
+    vintage_layer = state.get("asof_vintage_layer") if isinstance(state.get("asof_vintage_layer"), dict) else {}
     if not claim_ledger:
         claim_ledger = ledgers.get("claim_evidence_ledger") if isinstance(ledgers.get("claim_evidence_ledger"), dict) else {}
     if not gap_ledger:
@@ -3009,6 +3034,12 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
         entity_master = build_entity_security_master(state)
     if not source_router:
         source_router = build_source_capability_router(state)
+    if not provenance_store or not vintage_layer:
+        layers = build_provenance_vintage_layers(state)
+        if not provenance_store:
+            provenance_store = layers.get("raw_source_provenance_store") if isinstance(layers.get("raw_source_provenance_store"), dict) else {}
+        if not vintage_layer:
+            vintage_layer = layers.get("asof_vintage_layer") if isinstance(layers.get("asof_vintage_layer"), dict) else {}
     (output_dir / "claim_evidence_ledger.json").write_text(
         json.dumps(claim_ledger, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -3023,6 +3054,14 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     )
     (output_dir / "source_capability_router.json").write_text(
         json.dumps(source_router, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "raw_source_provenance_store.json").write_text(
+        json.dumps(provenance_store, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "asof_vintage_layer.json").write_text(
+        json.dumps(vintage_layer, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -3066,6 +3105,12 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
     source_router = state.get("source_capability_router") if isinstance(state.get("source_capability_router"), dict) else {}
     source_router_summary = source_router.get("summary") if isinstance(source_router.get("summary"), dict) else {}
     source_router_validation = source_router.get("validation") if isinstance(source_router.get("validation"), dict) else {}
+    provenance_store = state.get("raw_source_provenance_store") if isinstance(state.get("raw_source_provenance_store"), dict) else {}
+    provenance_summary = provenance_store.get("summary") if isinstance(provenance_store.get("summary"), dict) else {}
+    provenance_validation = provenance_store.get("validation") if isinstance(provenance_store.get("validation"), dict) else {}
+    vintage_layer = state.get("asof_vintage_layer") if isinstance(state.get("asof_vintage_layer"), dict) else {}
+    vintage_summary = vintage_layer.get("summary") if isinstance(vintage_layer.get("summary"), dict) else {}
+    vintage_validation = vintage_layer.get("validation") if isinstance(vintage_layer.get("validation"), dict) else {}
     evidence_fanout_barrier = state.get("evidence_operator_fanout_barrier") if isinstance(state.get("evidence_operator_fanout_barrier"), dict) else {}
     specialist_fanout_barrier = state.get("specialist_fanout_barrier") if isinstance(state.get("specialist_fanout_barrier"), dict) else {}
     claim_card_store_barrier = state.get("claim_card_store_barrier") if isinstance(state.get("claim_card_store_barrier"), dict) else {}
@@ -3166,6 +3211,27 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
             "blocked_decision_count": source_router_summary.get("blocked_decision_count") or 0,
             "gap_decision_count": source_router_summary.get("gap_decision_count") or 0,
             "validation_status": source_router_validation.get("status") or "",
+        },
+        "raw_source_provenance_store": {
+            "schema_version": provenance_store.get("schema_version") or "",
+            "record_count": provenance_store.get("record_count") or 0,
+            "by_source_family": dict(provenance_summary.get("by_source_family") or {}),
+            "by_record_type": dict(provenance_summary.get("by_record_type") or {}),
+            "missing_raw_locator_count": provenance_summary.get("missing_raw_locator_count") or 0,
+            "document_id_count": provenance_summary.get("document_id_count") or 0,
+            "checksum_count": provenance_summary.get("checksum_count") or 0,
+            "validation_status": provenance_validation.get("status") or "",
+        },
+        "asof_vintage_layer": {
+            "schema_version": vintage_layer.get("schema_version") or "",
+            "record_count": vintage_layer.get("record_count") or 0,
+            "by_source_family": dict(vintage_summary.get("by_source_family") or {}),
+            "by_time_basis": dict(vintage_summary.get("by_time_basis") or {}),
+            "fiscal_period_record_count": vintage_summary.get("fiscal_period_record_count") or 0,
+            "market_as_of_record_count": vintage_summary.get("market_as_of_record_count") or 0,
+            "macro_vintage_record_count": vintage_summary.get("macro_vintage_record_count") or 0,
+            "missing_time_anchor_count": vintage_summary.get("missing_time_anchor_count") or 0,
+            "validation_status": vintage_validation.get("status") or "",
         },
         "milvus_runtime": {
             "status": milvus_runtime.get("status") or "",
@@ -3986,6 +4052,8 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     bounded_gap_register = state.get("bounded_gap_register") or {}
     entity_master = state.get("entity_security_master") or {}
     source_router = state.get("source_capability_router") or {}
+    provenance_store = state.get("raw_source_provenance_store") or {}
+    vintage_layer = state.get("asof_vintage_layer") or {}
     second_pass_diagnosis = state.get("second_pass_reflection_diagnosis") or {}
     second_pass_repair_plan = state.get("second_pass_repair_plan") or {}
     second_pass_hard_gate = state.get("second_pass_hard_gate") or {}
@@ -4020,6 +4088,14 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
         "source_capability_decision_count": source_router.get("decision_count") if isinstance(source_router, dict) else 0,
         "source_capability_validation_status": (source_router.get("validation") or {}).get("status")
         if isinstance(source_router, dict) and isinstance(source_router.get("validation"), dict)
+        else "",
+        "raw_source_provenance_record_count": provenance_store.get("record_count") if isinstance(provenance_store, dict) else 0,
+        "raw_source_provenance_validation_status": (provenance_store.get("validation") or {}).get("status")
+        if isinstance(provenance_store, dict) and isinstance(provenance_store.get("validation"), dict)
+        else "",
+        "asof_vintage_record_count": vintage_layer.get("record_count") if isinstance(vintage_layer, dict) else 0,
+        "asof_vintage_validation_status": (vintage_layer.get("validation") or {}).get("status")
+        if isinstance(vintage_layer, dict) and isinstance(vintage_layer.get("validation"), dict)
         else "",
         "coverage_complete": coverage_summary.get("coverage_complete"),
         "primary_task_support_complete": coverage_summary.get("primary_task_support_complete"),

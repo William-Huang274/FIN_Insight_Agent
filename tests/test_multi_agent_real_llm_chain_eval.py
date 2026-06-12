@@ -8,6 +8,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "multi_agent_real_llm_chain_cases_v0_1.jsonl"
 FULL_CHAIN_MULTITURN_FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_full_chain_multiturn_cases_v0_1.jsonl"
+VNEXT_G11_FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_g11_cases_v0_1.jsonl"
 SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent" / "eval_multi_agent_real_llm_chain.py"
 
 
@@ -41,6 +42,23 @@ def test_fin_agent_full_chain_multiturn_fixture_schema() -> None:
     assert all(row.get("expected_relationship_pack_ids") for row in sector_cases)
     assert all(row.get("require_rendered_memo_claims") for row in sector_cases)
     assert all(row.get("require_rendered_evidence_refs") for row in sector_cases)
+
+
+def test_fin_agent_vnext_g11_fixture_schema() -> None:
+    rows = _read_jsonl(VNEXT_G11_FIXTURE_PATH)
+
+    assert 10 <= len(rows) <= 20
+    assert {row["category"] for row in rows} >= {"exact_lookup", "focused_answer", "standard_memo", "sector_depth", "multi_turn"}
+    assert all(row.get("require_vnext_contract") for row in rows)
+    assert all(row.get("require_milvus_runtime_contract") for row in rows)
+    assert all(row["case_id"].startswith("fin_g11_") for row in rows)
+    assert all(row.get("response_language") for row in rows)
+    assert sum(1 for row in rows if row.get("conversation_id")) >= 2
+    assert {"semiconductor", "consumer_electronics", "saas_cloud", "banking", "energy", "healthcare_pharma", "automotive", "retail_cpg"} <= {
+        row.get("industry_schema") for row in rows
+    }
+    assert any("product_technology_analyst" in row.get("expected_specialist_agents", []) for row in rows)
+    assert any("milvus_semantic" in row.get("source_tiers", []) for row in rows)
 
 
 def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
@@ -95,6 +113,134 @@ def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
     assert all(score["checks"].values())
     assert score["agent_audit"]["research_lead"]["validation_status"] == "pass"
     assert score["agent_audit"]["verifier"]["input_projection"]["projected_claim_count"] == 2
+
+
+def test_real_llm_chain_scoring_accepts_vnext_contract_summary() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_g11_contract_unit",
+        "category": "standard_memo",
+        "expected_execution_mode": "standard_memo",
+        "required_agents": ["research_lead", "sec_operator", "memo_writer", "verifier", "renderer"],
+        "expected_operator_agents": ["sec_operator"],
+        "expected_tool_names": ["sec_search_filings"],
+        "memo_status_allowed": ["draft"],
+        "require_vnext_contract": True,
+        "require_milvus_runtime_contract": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["research_lead", "sec_operator", "memo_writer", "verifier", "renderer"],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "tool_call_ledger": {"records": [{"agent_id": "sec_operator", "tool_name": "sec_search_filings", "status": "ok", "row_count": 2}]},
+        "bounded_gap_register": {
+            "schema_version": "sec_agent_bounded_gap_register_v0.1",
+            "gap_count": 1,
+            "gaps": [
+                {
+                    "gap_id": "gap_market_share_tracker",
+                    "source_family": "public_source_context",
+                    "gap_type": "commercial_tracker_gap",
+                    "bounded_reason": "true market share needs commercial tracker",
+                    "claim_boundary": "do_not_fill_with_generic_fallback_or_proxy_fact",
+                }
+            ],
+        },
+        "memo_answer": {"answer_status": "draft"},
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": "bounded rendered answer",
+    }
+    summary = {
+        "payload_policy": {"raw_evidence": "not_included"},
+        "plan_reflection": {"status": "pass"},
+        "evidence_fusion": {
+            "schema_version": "sec_agent_evidence_fusion_bundle_v0.1",
+            "public_exact_authority_violation_count": 0,
+            "semantic_exact_authority_violation_count": 0,
+        },
+        "bounded_gap_register": {
+            "schema_version": "sec_agent_bounded_gap_register_v0.1",
+            "gap_count": 1,
+            "commercial_tracker_gap_count": 1,
+        },
+        "milvus_runtime": {
+            "status": "unavailable",
+            "available": False,
+            "location": "none",
+            "claim_boundary": "semantic_recall_supplement_not_exact_value_authority",
+            "fallback_routes": ["bm25", "object_bm25", "exact_value_ledger"],
+        },
+        "graph_barriers": {
+            "claim_card_store": {"schema_version": "sec_agent_claim_card_store_barrier_v0.1"},
+            "adjudicator": {"schema_version": "sec_agent_adjudicator_barrier_v0.1"},
+            "specialist_fanout": {"schema_version": ""},
+        },
+    }
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "pass"
+    assert all(score["layer_checks"]["vnext_contract"].values())
+    assert score["vnext_contract_audit"]["details"]["milvus_runtime_status"] == "unavailable"
+
+
+def test_real_llm_chain_scoring_rejects_milvus_exact_authority_misuse() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_g11_milvus_exact_misuse",
+        "category": "standard_memo",
+        "expected_execution_mode": "standard_memo",
+        "required_agents": ["research_lead", "sec_operator", "memo_writer", "verifier", "renderer"],
+        "expected_operator_agents": ["sec_operator"],
+        "expected_tool_names": ["sec_search_filings"],
+        "memo_status_allowed": ["draft"],
+        "require_vnext_contract": True,
+        "require_milvus_runtime_contract": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["research_lead", "sec_operator", "memo_writer", "verifier", "renderer"],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "tool_call_ledger": {"records": [{"agent_id": "sec_operator", "tool_name": "sec_search_filings", "status": "ok", "row_count": 2}]},
+        "context_rows": [{"source_family": "milvus_semantic", "evidence_ref": "milvus_1", "exact_value_authority": True}],
+        "bounded_gap_register": {"schema_version": "sec_agent_bounded_gap_register_v0.1", "gap_count": 0, "gaps": []},
+        "memo_answer": {"answer_status": "draft"},
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": "bounded rendered answer",
+    }
+    summary = {
+        "payload_policy": {"raw_evidence": "not_included"},
+        "plan_reflection": {"status": "pass"},
+        "evidence_fusion": {
+            "schema_version": "sec_agent_evidence_fusion_bundle_v0.1",
+            "public_exact_authority_violation_count": 0,
+            "semantic_exact_authority_violation_count": 1,
+        },
+        "bounded_gap_register": {"schema_version": "sec_agent_bounded_gap_register_v0.1", "gap_count": 0},
+        "milvus_runtime": {
+            "status": "cloud_available",
+            "available": True,
+            "location": "cloud",
+            "claim_boundary": "semantic_recall_supplement_not_exact_value_authority",
+            "fallback_routes": ["bm25", "object_bm25", "exact_value_ledger"],
+        },
+        "graph_barriers": {
+            "claim_card_store": {"schema_version": "sec_agent_claim_card_store_barrier_v0.1"},
+            "adjudicator": {"schema_version": "sec_agent_adjudicator_barrier_v0.1"},
+        },
+    }
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "fail"
+    assert score["checks"]["vnext_contract.source_boundary_violation_absent"] is False
+    assert score["checks"]["vnext_contract.milvus_not_exact_value_authority"] is False
 
 
 def test_exact_lookup_real_retrieval_accepts_structured_ledger_first_without_bge_rerank() -> None:

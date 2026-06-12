@@ -21,6 +21,7 @@ _SPECIALIST_AGENT_IDS = {
     "fundamental_analyst",
     "industry_supply_chain_analyst",
     "market_valuation_analyst",
+    "product_technology_analyst",
     "risk_counterevidence_analyst",
 }
 

@@ -15,7 +15,7 @@ from sec_agent.research_skills import research_skill_prompt
 MEMO_ROUTE_SCHEMA_VERSION = "sec_agent_memo_llm_route_v0.1"
 VERIFIER_ROUTE_SCHEMA_VERSION = "sec_agent_verifier_llm_route_v0.1"
 VERIFIER_PROJECTION_SCHEMA_VERSION = "sec_agent_verifier_minimal_projection_v0.1"
-SHARED_MEMO_CONTEXT_SCHEMA_VERSION = "sec_agent_shared_memo_context_v0.1"
+SHARED_MEMO_CONTEXT_SCHEMA_VERSION = "sec_agent_shared_memo_context_v0.2"
 RESPONSE_LANGUAGE_SCHEMA_VERSION = "sec_agent_response_language_v0.1"
 MEMO_ROUTE_SOURCE = "memo_writer_llm_v0.1"
 VERIFIER_ROUTE_SOURCE = "verifier_llm_v0.1"
@@ -938,6 +938,7 @@ def build_shared_memo_context(state: Mapping[str, Any]) -> dict[str, Any]:
     claim_stats = judgment.get("claim_card_stats") if isinstance(judgment, Mapping) and isinstance(judgment.get("claim_card_stats"), Mapping) else {}
     route_results = [row for row in state.get("specialist_route_results") or [] if isinstance(row, Mapping)]
     relationship_plan = state.get("universe_relationship_plan") if isinstance(state.get("universe_relationship_plan"), Mapping) else {}
+    gap_register = _compact_bounded_gap_register_for_memo(state)
     response_language = _select_response_language(state, activation=activation, query_contract=query_contract)
     context = {
         "schema_version": SHARED_MEMO_CONTEXT_SCHEMA_VERSION,
@@ -958,7 +959,10 @@ def build_shared_memo_context(state: Mapping[str, Any]) -> dict[str, Any]:
             "market_row_count": len(state.get("market_snapshot_rows") or []),
             "industry_row_count": len(state.get("industry_snapshot_rows") or []),
             "relationship_row_count": len(relationship_plan.get("relationships") or []),
+            "raw_rows_excluded_from_prompt": True,
+            "private_operator_context_excluded": True,
         },
+        "bounded_gap_register": gap_register,
         "specialist_routes": {
             "route_count": len(route_results),
             "passed_agents": [
@@ -979,8 +983,13 @@ def build_shared_memo_context(state: Mapping[str, Any]) -> dict[str, Any]:
             "memo_slot_supported_count": int(claim_stats.get("memo_slot_supported_count") or claim_stats.get("supported_memo_slot_count") or 0),
         },
         "prompt_policy": {
-            "shared_context_policy": "scope_coverage_boundary_only_no_raw_rows_v0_1",
+            "shared_context_policy": "scope_coverage_boundary_gap_refs_only_no_raw_rows_v0_2",
             "memo_payload_policy": "write_from_verified_judgment_plan_and_thesis_pack_only",
+            "allowed_input_views": ["shared_memo_context", "verified_judgment_plan", "specialist_verification"],
+            "raw_evidence_rows": "excluded",
+            "bounded_evidence_rows": "excluded",
+            "private_operator_context": "excluded",
+            "bounded_gap_policy": "gaps_explain_missing_evidence_only_not_factual_substitutes",
         },
     }
     profile = _select_memo_profile(state, shared_context=context, judgment=judgment if isinstance(judgment, Mapping) else {})
@@ -1004,10 +1013,39 @@ def _compact_shared_memo_context_for_prompt(context: Mapping[str, Any]) -> dict[
         "search_scope_tickers": _string_list(context.get("search_scope_tickers"))[:12],
         "coverage": dict(context.get("coverage") or {}) if isinstance(context.get("coverage"), Mapping) else {},
         "source_boundaries": dict(context.get("source_boundaries") or {}) if isinstance(context.get("source_boundaries"), Mapping) else {},
+        "bounded_gap_register": dict(context.get("bounded_gap_register") or {}) if isinstance(context.get("bounded_gap_register"), Mapping) else {},
         "specialist_routes": dict(context.get("specialist_routes") or {}) if isinstance(context.get("specialist_routes"), Mapping) else {},
         "claim_card_stats": dict(context.get("claim_card_stats") or {}) if isinstance(context.get("claim_card_stats"), Mapping) else {},
+        "prompt_policy": dict(context.get("prompt_policy") or {}) if isinstance(context.get("prompt_policy"), Mapping) else {},
         "memo_profile": dict(context.get("memo_profile") or {}) if isinstance(context.get("memo_profile"), Mapping) else {},
         "context_digest": str(context.get("context_digest") or ""),
+    }
+
+
+def _compact_bounded_gap_register_for_memo(state: Mapping[str, Any]) -> dict[str, Any]:
+    register = state.get("bounded_gap_register") if isinstance(state.get("bounded_gap_register"), Mapping) else {}
+    if not register:
+        bundle = state.get("evidence_fusion_bundle") if isinstance(state.get("evidence_fusion_bundle"), Mapping) else {}
+        register = bundle.get("bounded_gap_register") if isinstance(bundle.get("bounded_gap_register"), Mapping) else {}
+    gaps = [dict(item) for item in register.get("gaps") or [] if isinstance(item, Mapping)]
+    summary = register.get("summary") if isinstance(register.get("summary"), Mapping) else {}
+    return {
+        "schema_version": str(register.get("schema_version") or "sec_agent_bounded_gap_register_v0.1"),
+        "gap_count": int(register.get("gap_count") or len(gaps)),
+        "summary": _clean_for_prompt(dict(summary)),
+        "gap_refs": [
+            {
+                "gap_id": str(gap.get("gap_id") or ""),
+                "source_family": str(gap.get("source_family") or ""),
+                "gap_type": str(gap.get("gap_type") or ""),
+                "ticker": str(gap.get("ticker") or ""),
+                "metric": str(gap.get("metric") or ""),
+                "repairability": str(gap.get("repairability") or ""),
+                "claim_boundary": str(gap.get("claim_boundary") or "do_not_fill_with_generic_fallback_or_proxy_fact"),
+            }
+            for gap in gaps[:24]
+        ],
+        "claim_policy": "bounded_gaps_may_be_disclosed_as_missing_evidence_but_not_used_as_supporting_facts",
     }
 
 
@@ -1182,6 +1220,9 @@ def _memo_messages(
         "memo_input_contract": {
             "allowed_views": ["shared_memo_context", "verified_judgment_plan", "specialist_verification"],
             "raw_rows_consumed": False,
+            "raw_evidence_rows": "excluded",
+            "bounded_evidence_rows": "excluded",
+            "private_operator_context": "excluded",
             "tool_calls_allowed": False,
             "response_language": response_language,
             "projection_policy": "memo_writer_v0_6_profiled_thesis_led_claim_cards",

@@ -10,8 +10,13 @@ from sec_agent.agent_contracts import SCHEMA_VERSION as ACTIVATION_PLAN_SCHEMA_V
 from sec_agent.agent_contracts import validate_agent_activation_plan
 from sec_agent.agent_registry import agent_registry_by_id, allowed_source_families, known_agent_ids, list_agent_registry
 from sec_agent.llm_gateway import chat_completion
-from sec_agent.multi_agent_runtime import build_multi_agent_evidence_requirement_plan, validate_multi_agent_evidence_requirement_plan
-from sec_agent.multi_agent_router import MultiAgentRouteRequest, route_multi_agent_activation
+from sec_agent.multi_agent_runtime import (
+    ROUTE_OPERATOR_TOOL,
+    ROUTE_SOURCE_FAMILY,
+    build_multi_agent_evidence_requirement_plan,
+    validate_multi_agent_evidence_requirement_plan,
+)
+from sec_agent.multi_agent_router import MultiAgentRouteRequest, _apply_playbook_policy, route_multi_agent_activation
 from sec_agent.research_skills import research_skill_prompt
 from sec_agent.tool_call_ledger import LoopBudget
 
@@ -309,7 +314,7 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
                 "metric_families": ["revenue | margin | capex | cash_flow"],
                 "period_roles": ["ANNUAL | QTD | YTD | TTM"],
                 "evidence_routes": [
-                    "ledger_first | filing_text | 8k_commentary | milvus_semantic | market_snapshot | industry_snapshot | relationship_graph | risk_text | run_artifact"
+                    "ledger_first | filing_text | 8k_commentary | milvus_semantic | market_snapshot | industry_snapshot | relationship_graph | live_public_web_context | risk_text | run_artifact"
                 ],
                 "route_selection_reason": "why this route set is the narrowest sufficient source mix",
                 "route_cost_tier": "low | medium | high",
@@ -338,6 +343,8 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
             "expansion is explicitly requested. Do not activate industry_supply_chain_analyst unless supply chain, "
             "sector, industry, macro, regulatory, customer, supplier, or relationship readthrough is explicit. "
             "Market reaction and valuation alone use market_valuation_analyst, not industry_supply_chain_analyst. "
+            "Activate product_technology_analyst only when product taxonomy, company-disclosed product KPI, public proxy, "
+            "developer/app/clinical/regulatory context, or commercial tracker gaps are explicitly requested. "
             "Activate risk_counterevidence_analyst for risk-balanced investment memos, market reaction/valuation "
             "memos, evidence gaps, margin or cash-flow pressure, bear/downside/uncertainty/credit-risk/conflict "
             "questions; otherwise skip it with a short reason. "
@@ -348,7 +355,9 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
             "Use only for supply chain, customers, suppliers, sector readthrough, cross-industry transmission, "
             "sector-depth packs, relationship_graph source requests, or full universe scope. "
             "Activate universe_relationship and include relationship_scope_rationale. "
-            "Activate industry_supply_chain_analyst. Set max_tool_calls_total <= 12, max_second_pass_rounds <= 2, "
+            "Activate industry_supply_chain_analyst. Add product_technology_analyst when product cycle, product KPI, "
+            "public proxy, developer/app/clinical/regulatory context, or commercial tracker gaps are in scope. "
+            "Set max_tool_calls_total <= 12, max_second_pass_rounds <= 2, "
             "and max_repair_rounds <= 2. Keep evidence requirements compact; do not create one requirement per ticker."
         ),
     }
@@ -366,7 +375,10 @@ def _system_prompt(loop_budget: LoopBudget) -> str:
                 "and agent_priorities for every active analyst/operator so all-specialist routes are not treated as equal priority. "
                 "Every evidence requirement should include route_selection_reason and route_cost_tier. Choose the narrowest "
                 "route set that can answer the business need; add high-cost semantic, industry, market, or relationship routes "
-                "only when query intent requires them."
+                "only when query intent requires them. Use playbook_candidates as machine-readable routing contracts: select "
+                "one playbook in activation_plan.metadata.selected_playbook_ids, set metadata.industry_schema, follow its "
+                "default_source_families and specialist_routing when the source family is available, and preserve its "
+                "forbidden_claims as boundaries rather than conclusions."
             ),
             f"AgentActivationPlan schema hint:\n{_json_for_prompt(schema_hint)}",
             f"EvidenceRequirementPlan schema hint:\n{_json_for_prompt(evidence_requirement_schema_hint)}",
@@ -485,11 +497,22 @@ def _compact_source_inventory_for_prompt(value: Any) -> dict[str, Any]:
         "ticker_count",
         "company_count",
         "available_tickers",
+        "available_source_families",
+        "source_family_availability",
+        "source_family_authority",
+        "source_boundaries",
+        "playbook_registry",
+        "playbook_candidates",
         "market_snapshot",
         "industry_snapshot",
+        "product_evidence_graph",
+        "public_source_context",
+        "live_public_web_context",
+        "milvus_runtime",
         "relationship_graph",
         "digest",
         "project_inventory_digest",
+        "inventory_digest",
     )
     compact: dict[str, Any] = {}
     for key in allowed_keys:
@@ -558,12 +581,15 @@ def _validate_research_lead_output(
     *,
     require_evidence_requirements: bool,
 ) -> dict[str, Any]:
+    evidence_payload = _evidence_requirement_payload(payload)
     activation_payload = _normalize_activation_for_source_contract(_activation_plan_payload(payload), route_request)
+    activation_payload = _align_activation_with_evidence_payload(activation_payload, evidence_payload)
+    activation_payload = _apply_playbook_policy(activation_payload, route_request)
+    activation_payload = _sanitize_activation_policy_maps(activation_payload)
     validation = _validate_plan(activation_payload, loop_budget)
     if validation["status"] != "pass":
         return validation
 
-    evidence_payload = _evidence_requirement_payload(payload)
     source = ""
     if evidence_payload:
         source = "llm_output"
@@ -683,6 +709,7 @@ def _normalize_activation_for_source_contract(plan: Mapping[str, Any], route_req
             "coverage_reflection",
             "fundamental_analyst",
             "industry_supply_chain_analyst",
+            *_product_technology_optional_agents(route_request),
             "judgment_plan_aggregator",
             "memo_writer",
             "verifier",
@@ -698,6 +725,7 @@ def _normalize_activation_for_source_contract(plan: Mapping[str, Any], route_req
             "market_snapshot",
             "industry_snapshot",
             "relationship_graph",
+            *(["company_product_evidence_graph"] if "product_technology_analyst" in active else []),
             *context_sources,
         ]
     )
@@ -727,6 +755,65 @@ def _normalize_activation_for_source_contract(plan: Mapping[str, Any], route_req
             skipped.append(dict(item))
     normalized["skip_agents"] = skipped
     return _normalize_cost_aware_activation(normalized, route_request)
+
+
+def _align_activation_with_evidence_payload(plan: Mapping[str, Any], evidence_payload: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(evidence_payload, Mapping) or not evidence_payload.get("requirements"):
+        return dict(plan or {})
+    normalized = dict(plan or {})
+    active = _dedupe([str(agent) for agent in normalized.get("activate_agents") or []])
+    allowed_sources = _dedupe([str(source) for source in normalized.get("allowed_source_families") or []])
+    added_agents: list[str] = []
+    added_sources: list[str] = []
+    for requirement in evidence_payload.get("requirements") or []:
+        if not isinstance(requirement, Mapping):
+            continue
+        requirement_sources = set(
+            _string_list(
+                requirement.get("source_families")
+                or requirement.get("source_tiers")
+                or requirement.get("source_family")
+            )
+        )
+        for route in _string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes")):
+            source_family = ROUTE_SOURCE_FAMILY.get(route, "")
+            owner = ROUTE_OPERATOR_TOOL.get(route, ("", ""))[0]
+            if source_family:
+                requirement_sources.add(source_family)
+            if source_family and source_family not in allowed_sources:
+                allowed_sources.append(source_family)
+                added_sources.append(source_family)
+            if owner and owner not in active:
+                active = _insert_before(active, owner, "coverage_reflection")
+                added_agents.append(owner)
+        if (
+            str(normalized.get("execution_mode") or "") in {"standard_memo", "deep_research"}
+            and requirement_sources & {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+            and "product_technology_analyst" not in active
+        ):
+            active = _insert_before(active, "product_technology_analyst", "judgment_plan_aggregator")
+            added_agents.append("product_technology_analyst")
+            if "company_product_evidence_graph" not in allowed_sources:
+                allowed_sources.append("company_product_evidence_graph")
+                added_sources.append("company_product_evidence_graph")
+    if not added_agents and not added_sources:
+        return normalized
+    normalized["activate_agents"] = active
+    normalized["allowed_source_families"] = allowed_sources
+    priorities = dict(normalized.get("agent_priorities") or {})
+    model_policy = dict(normalized.get("model_policy_hint") or {})
+    for agent_id in added_agents:
+        priorities.setdefault(agent_id, "supporting")
+        model_policy.setdefault(agent_id, "none" if agent_id.endswith("_operator") or agent_id in {"sec_operator", "eight_k_operator"} else "balanced")
+    normalized["agent_priorities"] = priorities
+    normalized["model_policy_hint"] = model_policy
+    normalized["skip_agents"] = _sync_skip_agents(normalized.get("skip_agents"), active, [])
+    metadata = dict(normalized.get("metadata") or {})
+    metadata["evidence_route_source_alignment_policy"] = "llm_evidence_routes_extend_activation_sources_v0_1"
+    metadata["evidence_route_source_alignment_added_sources"] = _dedupe(added_sources)
+    metadata["evidence_route_source_alignment_added_agents"] = _dedupe(added_agents)
+    normalized["metadata"] = metadata
+    return normalized
 
 
 def _normalize_non_relationship_activation(plan: Mapping[str, Any], route_request: MultiAgentRouteRequest) -> dict[str, Any]:
@@ -785,6 +872,7 @@ def _normalize_non_relationship_activation(plan: Mapping[str, Any], route_reques
     normalized["activate_agents"] = active
     normalized["allowed_source_families"] = _non_relationship_allowed_sources(allowed_sources, route_request)
     normalized = _align_non_relationship_source_operators(normalized, route_request)
+    normalized["scope_mode"] = _non_relationship_scope_mode(normalized, route_request)
     priorities = dict(normalized.get("agent_priorities") or {})
     model_policy = dict(normalized.get("model_policy_hint") or {})
     for agent_id, _reason in removed:
@@ -801,6 +889,53 @@ def _normalize_non_relationship_activation(plan: Mapping[str, Any], route_reques
         normalized["max_repair_rounds"] = min(1, _int_value(normalized.get("max_repair_rounds"), default=1))
     if removed:
         normalized["skip_agents"] = _sync_skip_agents(normalized.get("skip_agents"), active, removed)
+    return normalized
+
+
+def _non_relationship_scope_mode(plan: Mapping[str, Any], route_request: MultiAgentRouteRequest) -> str:
+    mode = str(plan.get("execution_mode") or "").strip()
+    scope = str(plan.get("scope_mode") or "").strip()
+    if mode in {"deterministic_lookup", "focused_answer"}:
+        return "focused_peer"
+    if mode != "standard_memo":
+        return scope
+    expanded_scope = len(route_request.search_scope_tickers or []) > len(route_request.focus_tickers or [])
+    if scope in {"", "full_universe"}:
+        return "sector_representative" if expanded_scope else "focused_peer"
+    return scope
+
+
+def _sanitize_activation_policy_maps(plan: Mapping[str, Any]) -> dict[str, Any]:
+    normalized = dict(plan or {})
+    active = set(_string_list(normalized.get("activate_agents")))
+    known = set(known_agent_ids())
+    removed: dict[str, list[str]] = {"model_policy_hint": [], "agent_priorities": []}
+    model_policy: dict[str, str] = {}
+    for agent_id, profile in dict(normalized.get("model_policy_hint") or {}).items():
+        key = str(agent_id or "").strip()
+        if key not in known:
+            removed["model_policy_hint"].append(key)
+            continue
+        model_policy[key] = str(profile or "").strip()
+    priorities: dict[str, str] = {}
+    for agent_id, priority in dict(normalized.get("agent_priorities") or {}).items():
+        key = str(agent_id or "").strip()
+        if key not in known or key not in active:
+            removed["agent_priorities"].append(key)
+            continue
+        priorities[key] = str(priority or "").strip()
+    normalized["model_policy_hint"] = model_policy
+    normalized["agent_priorities"] = priorities
+    if removed["model_policy_hint"] or removed["agent_priorities"]:
+        metadata = dict(normalized.get("metadata") or {})
+        metadata["policy_map_placeholder_pruned"] = True
+        metadata["policy_map_placeholder_prune_policy"] = "drop_unknown_or_inactive_policy_keys_v0_1"
+        metadata["policy_map_placeholder_pruned_keys"] = {
+            key: [item for item in values if item]
+            for key, values in removed.items()
+            if values
+        }
+        normalized["metadata"] = metadata
     return normalized
 
 
@@ -825,6 +960,13 @@ def _align_non_relationship_source_operators(plan: Mapping[str, Any], route_requ
     if "industry_snapshot" in allowed_sources and mode == "standard_memo" and "industry_operator" not in active:
         active = _insert_before(active, "industry_operator", "coverage_reflection")
         added.append("industry_operator")
+    if (
+        mode == "standard_memo"
+        and allowed_sources & {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+        and "product_technology_analyst" not in active
+    ):
+        active = _insert_before(active, "product_technology_analyst", "judgment_plan_aggregator")
+        added.append("product_technology_analyst")
 
     if not added:
         return normalized
@@ -941,6 +1083,7 @@ def _sector_depth_agent_priorities(active: list[str]) -> dict[str, str]:
         "industry_operator",
         "coverage_reflection",
         "fundamental_analyst",
+        "product_technology_analyst",
         "industry_supply_chain_analyst",
         "judgment_plan_aggregator",
         "memo_writer",
@@ -961,11 +1104,23 @@ def _sector_depth_agent_priorities(active: list[str]) -> dict[str, str]:
 
 def _sector_depth_optional_agents(route_request: MultiAgentRouteRequest) -> list[str]:
     optional: list[str] = []
+    optional.extend(_product_technology_optional_agents(route_request))
     if _route_request_mentions_market_or_valuation(route_request) or "market_snapshot" in set(_context_source_families(route_request)):
         optional.extend(["market_operator", "market_valuation_analyst"])
     if _route_request_mentions_risk_or_counterevidence(route_request):
         optional.append("risk_counterevidence_analyst")
     return optional
+
+
+def _product_technology_optional_agents(route_request: MultiAgentRouteRequest) -> list[str]:
+    sources = set(_context_source_families(route_request))
+    if _route_request_mentions_product_technology(route_request) or sources & {
+        "company_product_evidence_graph",
+        "public_source_context",
+        "live_public_web_context",
+    }:
+        return ["product_technology_analyst"]
+    return []
 
 
 def _route_request_mentions_market_or_valuation(route_request: MultiAgentRouteRequest) -> bool:
@@ -982,6 +1137,38 @@ def _route_request_mentions_market_or_valuation(route_request: MultiAgentRouteRe
             "估值",
             "倍数",
             "股价",
+        )
+    )
+
+
+def _route_request_mentions_product_technology(route_request: MultiAgentRouteRequest) -> bool:
+    text = _route_request_intent_text(route_request)
+    return any(
+        term in text
+        for term in (
+            "product",
+            "product revenue",
+            "product kpi",
+            "sku",
+            "platform",
+            "developer",
+            "app download",
+            "clinical",
+            "trial",
+            "regulatory",
+            "openfda",
+            "nhtsa",
+            "public proxy",
+            "commercial tracker",
+            "产品",
+            "产品线",
+            "产品收入",
+            "产品指标",
+            "主业",
+            "临床",
+            "监管",
+            "公开代理",
+            "商业tracker",
         )
     )
 
@@ -1052,6 +1239,8 @@ def _route_request_intent_text(route_request: MultiAgentRouteRequest) -> str:
     inventory = route_request.source_inventory if isinstance(route_request.source_inventory, Mapping) else {}
     compact_inventory = {
         "source_families": inventory.get("source_families") or inventory.get("source_tiers") or [],
+        "company_product_evidence_graph": bool(inventory.get("company_product_evidence_graph")),
+        "public_source_context": bool(inventory.get("public_source_context")),
         "relationship_graph": bool(inventory.get("relationship_graph")),
         "industry_snapshot": bool(inventory.get("industry_snapshot")),
     }

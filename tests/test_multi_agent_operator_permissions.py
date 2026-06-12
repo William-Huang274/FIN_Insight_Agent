@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from sec_agent.multi_agent_runtime import (
+    build_evidence_operator_fanout_plan,
     compile_multi_agent_retrieval_plan,
     derive_sec_search_runtime_policy,
+    execute_evidence_operator_fanout_plan,
     execute_evidence_operator_plan,
+    milvus_runtime_capability,
     tool_arguments_from_route,
     validate_operator_tool_call,
     validate_tool_observation_boundary,
+    validate_web_evidence_request,
 )
 import sec_agent.multi_agent_runtime as runtime
 from sec_agent.tool_call_ledger import ToolCallLedger
@@ -20,6 +24,7 @@ def test_operator_permission_bridge_blocks_cross_source_tool() -> None:
 
     assert blocked["status"] == "fail"
     assert blocked["error"] == "tool_not_allowed_for_agent:sec_operator:market_get_snapshot"
+    assert validate_operator_tool_call(agent_id="web_evidence_operator", tool_name="web_evidence_snapshot")["status"] == "pass"
 
 
 def test_relationship_graph_lookup_has_bounded_permission_boundary() -> None:
@@ -160,6 +165,72 @@ def test_milvus_semantic_route_arguments_require_typed_vector_filter() -> None:
     assert args["milvus_top_k"] == 32
     assert args["milvus_collection_name"] == "fin_ab_expanded"
     assert args["milvus_search_policy"]["not_exact_value_authority"] is True
+    assert args["milvus_search_policy"]["runtime_bound"] is True
+
+
+def test_milvus_runtime_capability_requires_bound_runtime_for_execution() -> None:
+    capability = milvus_runtime_capability(
+        {
+            "project_inventory": {
+                "milvus_runtime": {
+                    "status": "cloud_available",
+                    "available": True,
+                    "location": "cloud",
+                    "collection": "typed_sec_evidence_v0",
+                    "vector_kinds": ["narrative_chunk"],
+                }
+            }
+        }
+    )
+
+    assert capability["status"] == "cloud_available"
+    assert capability["available"] is True
+    assert capability["runtime_bound"] is False
+    assert capability["missing_runtime_fields"] == ["milvus_uri_or_db_path"]
+
+
+def test_milvus_semantic_route_skips_when_runtime_not_bound() -> None:
+    retrieval_plan = {
+        "routes": [
+            {
+                "route_id": "task::milvus_semantic",
+                "task_id": "task",
+                "retrieval_route": "milvus_semantic",
+                "tickers": ["NVDA"],
+                "source_tiers": ["primary_sec_filing"],
+                "vector_kinds": ["relationship_context"],
+            }
+        ]
+    }
+    calls: list[str] = []
+
+    def fake_executor(tool_name: str, _args: dict) -> dict:
+        calls.append(tool_name)
+        return {"status": "ok", "context_rows": []}
+
+    result = execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_milvus_unbound",
+        ledger=ToolCallLedger(),
+        state_context={
+            "user_query": "NVDA supply chain",
+            "project_inventory": {
+                "milvus_runtime": {
+                    "status": "cloud_available",
+                    "available": True,
+                    "location": "cloud",
+                    "collection": "typed_sec_evidence_v0",
+                }
+            },
+        },
+        tool_executor=fake_executor,
+    )
+
+    assert calls == []
+    assert result["tool_observations"][0]["status"] == "skipped"
+    assert result["tool_observations"][0]["error"] == "milvus_runtime_not_bound"
+    assert result["source_gaps"][0]["reason_code"] == "milvus_runtime_not_bound"
+    assert result["source_gaps"][0]["claim_boundary"] == "semantic_recall_unavailable_do_not_mock_or_use_as_exact_value_authority"
 
 
 def test_market_and_industry_operator_arguments_include_expanded_catalog_paths() -> None:
@@ -239,6 +310,62 @@ def test_evidence_operator_plan_executes_mcp_shaped_calls_and_records_ledger() -
     assert result["market_snapshot_rows"][0]["ticker"] == "MSFT"
     assert len(result["tool_call_ledger"]["records"]) == 2
     assert result["tool_observations"][1]["boundary"]["status"] == "pass"
+
+
+def test_evidence_operator_fanout_isolates_failed_source_family_and_merges_deterministically() -> None:
+    retrieval_plan = {
+        "routes": [
+            {
+                "route_id": "task::filing_text",
+                "task_id": "task",
+                "retrieval_route": "filing_text",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "source_tiers": ["primary_sec_filing"],
+            },
+            {
+                "route_id": "task::market_snapshot",
+                "task_id": "task",
+                "retrieval_route": "market_snapshot",
+                "tickers": ["MSFT"],
+            },
+            {
+                "route_id": "task::industry_snapshot",
+                "task_id": "task",
+                "retrieval_route": "industry_snapshot",
+                "tickers": ["MSFT"],
+            },
+        ]
+    }
+    plan = build_evidence_operator_fanout_plan(retrieval_plan)
+
+    def fake_executor(tool_name: str, _args: dict) -> dict:
+        if tool_name == "market_get_snapshot":
+            raise RuntimeError("market source unavailable")
+        if tool_name == "industry_get_snapshot":
+            return {"status": "ok", "industry_rows": [{"evidence_ref": "industry_1", "source_family": "industry_snapshot"}]}
+        return {"status": "ok", "context_rows": [{"evidence_ref": "sec_1", "source_family": "primary_sec_filing"}]}
+
+    result = execute_evidence_operator_fanout_plan(
+        retrieval_plan,
+        turn_id="turn_fanout",
+        ledger=ToolCallLedger(),
+        state_context={"user_query": "MSFT demand"},
+        tool_executor=fake_executor,
+        max_workers=3,
+    )
+
+    assert plan["shard_count"] == 3
+    assert [shard["source_family"] for shard in plan["shards"]] == ["primary_sec_filing", "market_snapshot", "industry_snapshot"]
+    assert [row["evidence_ref"] for row in result["context_rows"]] == ["sec_1"]
+    assert [row["evidence_ref"] for row in result["industry_snapshot_rows"]] == ["industry_1"]
+    assert result["market_snapshot_rows"] == []
+    assert result["fanout_barrier"]["execution_mode"] == "fanout_parallel"
+    assert result["fanout_barrier"]["completed_shard_count"] == 2
+    assert result["fanout_barrier"]["failed_shard_count"] == 1
+    assert result["fanout_barrier"]["failed_shards"][0]["source_family"] == "market_snapshot"
+    assert result["source_gaps"][0]["claim_boundary"] == "failed_operator_rows_not_available_do_not_fallback"
+    assert [obs["status"] for obs in result["tool_observations"]] == ["ok", "failed", "ok"]
 
 
 def test_evidence_operator_plan_executes_milvus_semantic_as_recall_supplement() -> None:
@@ -460,6 +587,121 @@ def test_relationship_graph_route_executes_and_returns_bounded_context_rows() ->
     assert result["tool_observations"][0]["status"] == "ok"
     assert result["context_rows"][0]["source_family"] == "relationship_graph"
     assert result["tool_call_ledger"]["records"][0]["agent_id"] == "universe_relationship"
+
+
+def test_web_evidence_request_fails_closed_for_unallowlisted_domain() -> None:
+    result = validate_web_evidence_request(
+        {
+            "url": "https://random-seo-blog.example/post",
+            "source_class": "major_financial_news",
+            "claim_types": ["event"],
+            "web_scope_policy_ids": ["major_financial_news"],
+        }
+    )
+
+    assert result["status"] == "fail"
+    assert {error["type"] for error in result["errors"]} == {"web_domain_not_allowlisted"}
+
+
+def test_web_ecommerce_request_cannot_support_sales_share_or_inventory_claims() -> None:
+    result = validate_web_evidence_request(
+        {
+            "url": "https://www.amazon.com/dp/example",
+            "source_class": "commerce_product_surface",
+            "claim_types": ["sku", "vendor_share", "channel_inventory"],
+            "web_scope_policy_ids": ["consumer_electronics_commerce"],
+        }
+    )
+
+    assert result["status"] == "fail"
+    assert "web_commerce_claim_scope_violation" in {error["type"] for error in result["errors"]}
+
+
+def test_web_social_source_cannot_support_financial_facts() -> None:
+    result = validate_web_evidence_request(
+        {
+            "url": "https://x.com/company/status/1",
+            "source_class": "social_official_account",
+            "claim_types": ["revenue"],
+            "web_scope_policy_ids": ["official_social_account"],
+        }
+    )
+
+    assert result["status"] == "fail"
+    assert "web_social_financial_fact_forbidden" in {error["type"] for error in result["errors"]}
+
+
+def test_web_snapshot_boundary_requires_snapshot_citation_and_context_only_rows() -> None:
+    missing = validate_tool_observation_boundary(
+        "web_evidence_snapshot",
+        {
+            "status": "ok",
+            "context_rows": [
+                {
+                    "source_family": "live_public_web_context",
+                    "source_class": "major_financial_news",
+                    "context_only": True,
+                    "exact_value_authority": False,
+                }
+            ],
+        },
+    )
+    valid = validate_tool_observation_boundary(
+        "web_evidence_snapshot",
+        {
+            "status": "ok",
+            "snapshot_id": "snap1",
+            "as_of_datetime": "2026-06-12T00:00:00Z",
+            "context_rows": [
+                {
+                    "source_family": "live_public_web_context",
+                    "source_class": "major_financial_news",
+                    "claim_types": ["event"],
+                    "snapshot_id": "snap1",
+                    "snapshot_url": "https://reuters.com/world/example",
+                    "citation": {"url": "https://reuters.com/world/example"},
+                    "context_only": True,
+                    "exact_value_authority": False,
+                }
+            ],
+        },
+    )
+
+    assert missing["status"] == "fail"
+    assert "snapshot_id" in missing["missing"]
+    assert "citation" in missing["missing"]
+    assert valid["status"] == "pass"
+    assert valid["prohibited_claim_scope"] == "company_reported_financial_fact_or_exact_value_authority"
+
+
+def test_web_evidence_route_executes_as_context_only_snapshot() -> None:
+    retrieval_plan = {
+        "routes": [
+            {
+                "route_id": "web::reuters",
+                "task_id": "web",
+                "retrieval_route": "live_public_web_context",
+                "url": "https://reuters.com/technology/example",
+                "source_class": "major_financial_news",
+                "claim_types": ["event"],
+                "web_scope_policy_ids": ["major_financial_news"],
+            }
+        ]
+    }
+
+    result = execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_web",
+        ledger=ToolCallLedger(),
+        dry_run=True,
+    )
+
+    row = result["context_rows"][0]
+    assert result["tool_observations"][0]["tool_name"] == "web_evidence_snapshot"
+    assert result["tool_observations"][0]["boundary"]["status"] == "pass"
+    assert row["source_family"] == "live_public_web_context"
+    assert row["context_only"] is True
+    assert row["exact_value_authority"] is False
 
 
 def test_evidence_operator_duplicate_call_is_blocked() -> None:

@@ -13,6 +13,8 @@
 - [04 共享上下文与协作](04_shared_context_and_collaboration.zh-CN.md)：Global / Role / Private context、各 agent 输入边界、并行与同步屏障。
 - [05 Milvus 与检索 Runtime](05_milvus_retrieval_runtime_plan.zh-CN.md)：云端 Milvus 现状、本地/云端双模式、typed vector route 边界。
 - [06 分功能执行顺序与通过条件](06_implementation_sequence_and_acceptance_gates.zh-CN.md)：按功能拆分的实施步骤、验收标准和禁止降级项。
+- [07 投研工作流知识图谱升级框架](07_investment_research_workflow_knowledge_graph_framework.zh-CN.md)：按投研问题驱动图谱重整业务经营图谱、资本/持仓/融资图谱、source hierarchy、产品规格/公开采购视角、次级 agent 和 K1-K8 落地顺序。
+- [08 旧规划文档吸收与数据治理执行计划](08_legacy_planning_docs_absorption_and_data_governance_plan.zh-CN.md)：对 G1-G10 前的三份规划文档做覆盖/缺口映射，并固化 D1-D11 evidence-governed runtime 数据治理序列。
 
 ## 总原则
 

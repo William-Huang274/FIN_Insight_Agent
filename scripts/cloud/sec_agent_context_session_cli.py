@@ -289,19 +289,19 @@ def _graph_args(args: argparse.Namespace) -> list[str]:
         "--object-bm25-index-dir",
         args.object_bm25_index_dir,
     ]
-    if args.source_gap_path:
+    if getattr(args, "source_gap_path", None):
         result.extend(["--source-gap-path", args.source_gap_path])
-    if args.market_evidence_path:
+    if getattr(args, "market_evidence_path", None):
         result.extend(["--market-evidence-path", args.market_evidence_path])
-    if args.market_catalog_path:
+    if getattr(args, "market_catalog_path", None):
         result.extend(["--market-catalog-path", args.market_catalog_path])
-    if args.market_snapshot_id:
+    if getattr(args, "market_snapshot_id", None):
         result.extend(["--market-snapshot-id", args.market_snapshot_id])
-    if args.market_as_of_date:
+    if getattr(args, "market_as_of_date", None):
         result.extend(["--market-as-of-date", args.market_as_of_date])
-    if args.api_key_env:
+    if getattr(args, "api_key_env", None):
         result.extend(["--api-key-env", args.api_key_env])
-    if not args.graph_verbose:
+    if not getattr(args, "graph_verbose", False):
         result.append("--quiet")
     return result
 

@@ -516,14 +516,48 @@
 ## Agent Graph vNext
 
 - [x] Freeze Agent Graph vNext framework docs after product/public evidence wiring, including reflection checkpoints, second-pass repair loop, web evidence policy, playbook/skill contracts, shared context, async/sync barriers, and Milvus cloud/local runtime contract.
-- [ ] G1: Extend source family / inventory contracts for `company_product_evidence_graph`, `public_source_context`, `live_public_web_context`, and Milvus semantic capability without exposing raw rows to Research Lead.
-- [ ] G2: Add Plan Reflection Gate after Research Lead activation to catch wrong mode, industry schema, playbook, source family, web policy, or budget before retrieval.
-- [ ] G3: Upgrade Evidence Fusion Selector to emit authority-labeled bundles and a first-class Bounded Gap Register.
-- [ ] G4: Split second pass into Reflection Diagnosis, Repair Plan Builder, Hard Gate, Targeted Repair Executor, Delta Auditor, and stop on no authority-bearing delta.
-- [ ] G5: Add allowlisted Web Evidence Operator with snapshot-first / parser-gated / source-class claim boundaries.
-- [ ] G6: Add Product / Technology Specialist, product claim slots, and product source-family bundle rules.
-- [ ] G7: Add machine-readable industry playbook registry and route Research Lead planning through inventory + playbook metadata.
-- [ ] G8: Upgrade AgentDataView to Global / Role / Private context contracts and keep Memo Writer off raw evidence.
-- [ ] G9: Convert retrieval and specialist execution to async fan-out with fusion / delta / claim-store / adjudicator barriers.
-- [ ] G10: Add Milvus runtime capability switch for cloud/local/unavailable and keep semantic recall out of exact-value authority.
+- [x] G1: Extend source family / inventory contracts for `company_product_evidence_graph`, `public_source_context`, `live_public_web_context`, and Milvus semantic capability without exposing raw rows to Research Lead.
+- [x] G2: Add Plan Reflection Gate after Research Lead activation to catch wrong mode, industry schema, playbook, source family, web policy, or budget before retrieval.
+- [x] G3: Upgrade Evidence Fusion Selector to emit authority-labeled bundles and a first-class Bounded Gap Register.
+- [x] G4: Split second pass into Reflection Diagnosis, Repair Plan Builder, Hard Gate, Targeted Repair Executor, Delta Auditor, and stop on no authority-bearing delta.
+- [x] G5: Add allowlisted Web Evidence Operator with snapshot-first / parser-gated / source-class claim boundaries.
+- [x] G6: Add Product / Technology Specialist, product claim slots, and product source-family bundle rules.
+- [x] G7: Add machine-readable industry playbook registry and route Research Lead planning through inventory + playbook metadata.
+- [x] G8: Upgrade AgentDataView to Global / Role / Private context contracts and keep Memo Writer off raw evidence.
+- [x] G9: Convert retrieval and specialist execution to async fan-out with fusion / delta / claim-store / adjudicator barriers.
+- [x] G10: Add Milvus runtime capability switch for cloud/local/unavailable and keep semantic recall out of exact-value authority.
 - [ ] G11: Run 10-20 case end-to-end gate covering exact/focused/standard/deep/multi-turn, product/public/web/Milvus boundaries, and bounded gaps.
+  - [x] Add G11-specific 12-case fixture and vNext scoring audit for graph barriers, bounded gaps, Milvus runtime, semantic exact-authority misuse, private handle exposure, and weak proxy fallback.
+  - [x] Run initial real smoke for exact MSFT, focused LLY, and standard NVDA/AMD product/market cases: `3/3` pass across three single-case runs.
+  - [ ] Run the full 12-case G11 gate and repair only root causes or expose bounded gaps; do not weaken source-boundary checks.
+
+## Knowledge Graph / Sub-agent / Product Edge vNext
+
+- [x] Freeze the next-stage KG/sub-agent/product-edge framework after reviewing the supplemental knowledge graph document and clarifying the public buyer observer boundary.
+- [x] Absorb the G1-G10-preceding `agent_graph和skill.docx`, `数据治理结构20260612.docx`, and `投研工作流升级文档.docx` planning docs into the architecture docs without rolling back implemented graph mechanisms.
+- [ ] K1: Build KG Matrix Registry for Operating KG, Capital & Ownership Graph, and Claim Evidence Layer object/edge schemas.
+- [ ] K2: Add ProductFamily / ProductModel / ProductSpec / ProductGenerationEdge / CompetitiveComparableEdge / ChannelOffer / FieldInquiryNote ontology and parser gates.
+- [ ] K3: Add `public_buyer_observer` source policy and web scope classes for public product, pricing, commerce, distributor, ordering, and documentation surfaces.
+- [ ] K4: Upgrade Product / Technology Specialist into a sub-agent that emits ProductSpecPack plus gated ClaimCards.
+- [ ] K5: Build Capital & Ownership Graph adapters for debt footnotes, offerings, credit facilities, 13F, 13D/G, Form 3/4/5, and proxy ownership.
+- [ ] K6: Add Macro Exposure edges and vertical official object adapters before allowing macro/regulatory/public datasets to support company-specific reasoning.
+- [ ] K7: Add verifier/reflection rules for product page vs sales, channel offer vs sell-through, 13F lag, macro exposure, patent/tech signal, and FieldInquiryNote boundaries.
+- [ ] K8: Run a 10-20 case KG sub-agent end-to-end gate covering product specs, product comparisons, capital/ownership, macro exposure, public buyer observer signals, and bounded gaps.
+
+## Evidence-governed Data Runtime vNext
+
+- [x] D1: Build artifact-backed Claim Evidence Ledger v0.1 with supporting evidence, contradicting evidence, required gates, confidence, as-of date, claim status, validation, summary, and persisted `claim_evidence_ledger.json`.
+- [x] D2: Upgrade Gap Ledger to typed gaps v0.1: not_disclosed, not_found, parser_failed, source_boundary_blocked, period_gap, unit_gap, alias_gap, commercial_gap, conflict_gap, staleness_gap, coverage_gap, validation, and persisted `typed_gap_ledger.json`.
+- [ ] D1.1: Move Claim Evidence Ledger from per-run JSON artifact to SQL-backed append-only store with cross-run query, dedupe, and research-memory linkage.
+- [ ] D2.1: Connect typed `parser_failed` / `conflict_gap` / `commercial_gap` to targeted repair, reconciliation, and bounded-gap register history instead of summary-only reporting.
+- [x] D3: Build per-run Entity / Security Master v0.1 for ticker, issuer, CIK, LEI, FIGI, ISIN, CUSIP, SEDOL, legal name, alias registry, unresolved references, validation, summary, and persisted `entity_security_master.json`.
+- [ ] D3.1: Extend Entity / Security Master into SQL-backed resolver for brand, subsidiary, product owner, ADR/common share, ticker changes, and cross-run entity history.
+- [ ] D4: Build Raw Source / Provenance Store with raw URL/path, checksum, retrieved_at, source_as_of_date, parser version, license/robots policy, access method, and document id.
+- [ ] D5: Build As-of / Vintage Layer covering fiscal period end, filing date, accepted date, reported date, observation date, retrieved_at, source_updated_at, market_as_of_date, macro vintage, and parser_run_at.
+- [ ] D6: Build Reconciliation Ledger for unit, period, taxonomy, amendment, segment, source priority, and rounding conflicts.
+- [ ] D7: Build Metric / Product Ontology with canonical ids, accepted/rejected aliases, unit, period rule, allowed source types, and cannot_infer_from policies.
+- [x] D8: Build Source Capability Router v0.1 so activation allowed sources, inventory availability/authority, and retrieval routes determine allowed/context/blocked/gap decisions with persisted `source_capability_router.json`.
+- [ ] D8.1: Extend Source Capability Router with query intent, industry, metric type, claim type, required authority, D7 ontology rules, and commercial gap policy table.
+- [ ] D9: Build Gate Registry / Gate History / Eval Matrix for source boundary, citation, period, unit, numeric, metric mapping, entity resolution, claim support, contradiction, staleness, and commercial gap gates.
+- [ ] D10: Build Derived Metric Layer with formula, input_fact_ids, calculation version, gate status, and explainability trace.
+- [ ] D11: Build Analyst View / Research Memory Layer that summarizes company, segment, product KPI, earnings change, risk, bull/bear debate, and thesis tracker views while remaining traceable to evidence.

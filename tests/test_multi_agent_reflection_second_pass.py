@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 from sec_agent.multi_agent_runtime import (
+    audit_second_pass_delta,
+    build_evidence_fusion_bundle,
+    build_second_pass_reflection_diagnosis,
+    build_second_pass_repair_plan,
     compile_second_pass_retrieval_plan,
+    gate_second_pass_repair_plan,
     normalize_reflection_report,
     quality_reflection_report_from_judgment,
     record_second_pass_outcome,
@@ -162,6 +167,255 @@ def test_second_pass_requests_compile_through_deterministic_retrieval_plan() -> 
     assert route_names == {"ledger_first", "filing_text"}
     assert requirement_ids == {"req_amd_capex_second_pass_1"}
     assert retrieval_plan["second_pass_evidence_requirement_plan"]["source"] == "reflection_second_pass_requests"
+
+
+def test_second_pass_pipeline_builds_executable_repair_for_retrievable_gap() -> None:
+    report = reflection_report_from_coverage(
+        _coverage_gap(),
+        source_available=True,
+        evidence_requirement_plan=_evidence_requirement_plan(),
+    )
+    diagnosis = build_second_pass_reflection_diagnosis(report)
+    repair_plan = build_second_pass_repair_plan(diagnosis)
+    hard_gate = gate_second_pass_repair_plan(
+        repair_plan,
+        activation_plan={"allowed_source_families": ["primary_sec_filing"]},
+        ledger=ToolCallLedger(),
+    )
+
+    assert diagnosis["diagnoses"][0]["gap_type"] == "exact_value_missing"
+    assert repair_plan["repairs"][0]["repair_action"] == "query_exact_ledger"
+    assert hard_gate["status"] == "pass"
+    assert hard_gate["summary"]["executable_request_count"] == 1
+    assert hard_gate["executable_requests"][0]["request_id"].startswith("second_pass_")
+
+
+def test_second_pass_hard_gate_routes_commercial_tracker_gap_to_bounded_gap() -> None:
+    report = normalize_reflection_report(
+        {
+            "sufficiency_level": "partial",
+            "source_available": True,
+            "missing_requirements": [
+                {
+                    "requirement_id": "req_true_rx_volume",
+                    "task_id": "rx_volume",
+                    "source_families": ["public_source_context"],
+                    "source_family_gaps": ["public_source_context"],
+                    "evidence_routes": ["industry_snapshot"],
+                    "reason": "commercial tracker required for true prescription volume",
+                }
+            ],
+            "second_pass_requests": [
+                {
+                    "request_id": "rx_volume_req",
+                    "requirement_id": "rx_volume_req",
+                    "parent_requirement_id": "req_true_rx_volume",
+                    "source_families": ["public_source_context"],
+                    "source_family_gaps": ["public_source_context"],
+                    "evidence_routes": ["industry_snapshot"],
+                    "metric_families": ["prescription_volume"],
+                }
+            ],
+        }
+    )
+    diagnosis = build_second_pass_reflection_diagnosis(report)
+    repair_plan = build_second_pass_repair_plan(diagnosis)
+    hard_gate = gate_second_pass_repair_plan(
+        repair_plan,
+        activation_plan={"allowed_source_families": ["public_source_context", "industry_snapshot"]},
+        ledger=ToolCallLedger(),
+    )
+
+    assert diagnosis["diagnoses"][0]["gap_type"] == "commercial_tracker_gap"
+    assert repair_plan["repairs"][0]["repair_action"] == "route_to_bounded_gap_register"
+    assert hard_gate["status"] == "blocked"
+    assert hard_gate["bounded_gap_candidates"][0]["gap_type"] == "commercial_tracker_gap"
+    assert "gap_not_retrievable_under_public_runtime" in hard_gate["decisions"][0]["block_reasons"]
+
+
+def test_second_pass_hard_gate_blocks_parser_schema_gap_instead_of_proxy_fallback() -> None:
+    report = normalize_reflection_report(
+        {
+            "sufficiency_level": "partial",
+            "source_available": True,
+            "missing_requirements": [
+                {
+                    "requirement_id": "req_region_product_revenue",
+                    "task_id": "region_product_revenue",
+                    "source_families": ["public_source_context"],
+                    "source_family_gaps": ["public_source_context"],
+                    "evidence_routes": ["industry_snapshot"],
+                    "reason": "regional columns require product-region revenue schema",
+                }
+            ],
+            "second_pass_requests": [
+                {
+                    "request_id": "region_schema_req",
+                    "requirement_id": "region_schema_req",
+                    "parent_requirement_id": "req_region_product_revenue",
+                    "source_families": ["public_source_context"],
+                    "source_family_gaps": ["public_source_context"],
+                    "evidence_routes": ["industry_snapshot"],
+                    "metric_families": ["product_revenue"],
+                }
+            ],
+        }
+    )
+    diagnosis = build_second_pass_reflection_diagnosis(report)
+    repair_plan = build_second_pass_repair_plan(diagnosis)
+    hard_gate = gate_second_pass_repair_plan(
+        repair_plan,
+        activation_plan={"allowed_source_families": ["public_source_context", "industry_snapshot"]},
+        ledger=ToolCallLedger(),
+    )
+
+    assert diagnosis["diagnoses"][0]["gap_type"] == "region_schema_gap"
+    assert repair_plan["repairs"][0]["repair_action"] == "run_source_specific_parser_repair"
+    assert hard_gate["status"] == "blocked"
+    assert "parser_schema_repair_not_runtime_executable" in hard_gate["decisions"][0]["block_reasons"]
+    assert "weak_proxy_cannot_replace_authority_fact" in hard_gate["decisions"][0]["block_reasons"]
+
+
+def test_second_pass_hard_gate_allows_allowlisted_live_web_snapshot_request() -> None:
+    report = normalize_reflection_report(
+        {
+            "sufficiency_level": "partial",
+            "source_available": True,
+            "missing_requirements": [
+                {
+                    "requirement_id": "req_news_event",
+                    "task_id": "news_event",
+                    "source_families": ["live_public_web_context"],
+                    "source_family_gaps": ["live_public_web_context"],
+                    "evidence_routes": ["live_public_web_context"],
+                    "reason": "Need allowlisted news event context.",
+                }
+            ],
+            "second_pass_requests": [
+                {
+                    "request_id": "news_event_req",
+                    "requirement_id": "news_event_req",
+                    "parent_requirement_id": "req_news_event",
+                    "source_families": ["live_public_web_context"],
+                    "source_family_gaps": ["live_public_web_context"],
+                    "evidence_routes": ["live_public_web_context"],
+                    "url": "https://www.reuters.com/technology/example",
+                    "source_class": "major_financial_news",
+                    "claim_types": ["event"],
+                    "web_scope_policy_ids": ["major_financial_news"],
+                }
+            ],
+        }
+    )
+    diagnosis = build_second_pass_reflection_diagnosis(report)
+    repair_plan = build_second_pass_repair_plan(diagnosis)
+    hard_gate = gate_second_pass_repair_plan(
+        repair_plan,
+        activation_plan={"allowed_source_families": ["live_public_web_context"]},
+        ledger=ToolCallLedger(),
+    )
+
+    assert repair_plan["repairs"][0]["repair_action"] == "request_live_web_snapshot"
+    assert hard_gate["status"] == "pass"
+    assert hard_gate["executable_requests"][0]["retrieval_route"] == "live_public_web_context"
+    assert hard_gate["executable_requests"][0]["exact_value_authority"] is False
+    assert hard_gate["decisions"][0]["web_request_validation"]["status"] == "pass"
+
+
+def test_second_pass_hard_gate_blocks_unallowlisted_live_web_domain() -> None:
+    report = normalize_reflection_report(
+        {
+            "sufficiency_level": "partial",
+            "source_available": True,
+            "missing_requirements": [
+                {
+                    "requirement_id": "req_bad_web",
+                    "source_families": ["live_public_web_context"],
+                    "source_family_gaps": ["live_public_web_context"],
+                    "evidence_routes": ["live_public_web_context"],
+                }
+            ],
+            "second_pass_requests": [
+                {
+                    "request_id": "bad_web_req",
+                    "parent_requirement_id": "req_bad_web",
+                    "source_families": ["live_public_web_context"],
+                    "source_family_gaps": ["live_public_web_context"],
+                    "evidence_routes": ["live_public_web_context"],
+                    "url": "https://random-seo-blog.example/post",
+                    "source_class": "major_financial_news",
+                    "claim_types": ["event"],
+                    "web_scope_policy_ids": ["major_financial_news"],
+                }
+            ],
+        }
+    )
+    hard_gate = gate_second_pass_repair_plan(
+        build_second_pass_repair_plan(build_second_pass_reflection_diagnosis(report)),
+        activation_plan={"allowed_source_families": ["live_public_web_context"]},
+        ledger=ToolCallLedger(),
+    )
+
+    assert hard_gate["status"] == "blocked"
+    assert "web_domain_not_allowlisted" in hard_gate["decisions"][0]["block_reasons"]
+    assert hard_gate["bounded_gap_candidates"][0]["source_family"] == "live_public_web_context"
+
+
+def test_second_pass_delta_audit_requires_authority_bearing_delta() -> None:
+    before = build_evidence_fusion_bundle({"runtime_ledger_rows": []})
+    after_exact = build_evidence_fusion_bundle(
+        {
+            "runtime_ledger_rows": [
+                {
+                    "evidence_ref": "amd_capex_ledger",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric_family": "capex",
+                    "value": "100",
+                }
+            ]
+        }
+    )
+    hard_gate = {
+        "decisions": [
+            {
+                "allowed": True,
+                "diagnosis_id": "diagnosis_exact",
+                "request_id": "req_exact",
+            }
+        ]
+    }
+    exact_audit = audit_second_pass_delta(
+        before,
+        after_exact,
+        hard_gate=hard_gate,
+        execution_result={"runtime_ledger_rows": [{"evidence_ref": "amd_capex_ledger"}]},
+    )
+    after_context = build_evidence_fusion_bundle(
+        {
+            "public_source_context_rows": [
+                {
+                    "evidence_ref": "public_context",
+                    "source_family": "public_source_context",
+                    "ticker": "AMD",
+                    "summary": "context only",
+                }
+            ]
+        }
+    )
+    context_audit = audit_second_pass_delta(
+        before,
+        after_context,
+        hard_gate=hard_gate,
+        execution_result={"public_source_context_rows": [{"evidence_ref": "public_context"}]},
+    )
+
+    assert exact_audit["status"] == "pass"
+    assert exact_audit["added_exact_authority_row_count"] == 1
+    assert exact_audit["closed_gap_ids"] == ["diagnosis_exact"]
+    assert context_audit["status"] == "no_authority_delta"
+    assert context_audit["bounded_answer_allowed"] is True
+    assert context_audit["stop_reason"] == "no_new_authority_bearing_evidence"
 
 
 def test_second_pass_compiler_overrides_stale_query_contract_requirements() -> None:

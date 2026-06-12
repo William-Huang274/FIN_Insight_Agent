@@ -17,6 +17,7 @@ ALLOWED_RETRIEVAL_ROUTES = {
     "industry_snapshot",
     "risk_text",
     "run_artifact",
+    "live_public_web_context",
 }
 
 ROUTE_COST_TIERS = {
@@ -29,12 +30,14 @@ ROUTE_COST_TIERS = {
     "industry_snapshot": "medium",
     "milvus_semantic": "high",
     "relationship_graph": "high",
+    "live_public_web_context": "high",
 }
 ROUTE_COST_TIER_RANK = {"low": 1, "medium": 2, "high": 3}
 
 MARKET_SOURCE_TIER = "market_snapshot"
 INDUSTRY_SOURCE_TIER = "industry_snapshot"
 RUN_ARTIFACT_SOURCE_TIER = "run_artifact"
+LIVE_PUBLIC_WEB_SOURCE_TIER = "live_public_web_context"
 PRIMARY_SEC_SOURCE_TIER = "primary_sec_filing"
 COMPANY_AUTHORED_SOURCE_TIER = "company_authored_unaudited_sec_filing"
 
@@ -219,31 +222,32 @@ def build_retrieval_plan(
             candidate_budget = raw_candidate_budget if raw_candidate_budget > 0 else budgets["candidate_budget"]
             raw_rerank_budget = _clamp_int(requirement.get("rerank_budget"), 0, candidate_budget, 0)
             rerank_budget = raw_rerank_budget if raw_rerank_budget > 0 else min(budgets["rerank_budget"], candidate_budget)
-            if route_name in {"ledger_first", "market_snapshot", "industry_snapshot"}:
+            if route_name in {"ledger_first", "market_snapshot", "industry_snapshot", "live_public_web_context"}:
                 rerank_budget = 0
-            routes.append(
-                {
-                    "route_id": f"{task_id}::{route_name}",
-                    "task_id": task_id,
-                    "retrieval_route": route_name,
-                    "tickers": route_tickers or search_scope_tickers,
-                    "sector": str(task.get("sector") or ""),
-                    "years": task_years,
-                    "filing_types": _route_filing_types(route_name, task_filing_types),
-                    "source_tiers": _route_source_tiers(route_name, task_source_tiers),
-                    "metric_families": metric_families,
-                    "period_roles": period_roles,
-                    "section_hints": _section_hints(route_name),
-                    "candidate_budget": candidate_budget,
-                    "rerank_budget": rerank_budget,
-                    "coverage_requirements": coverage_requirements,
-                    "route_selection_reason": requirement.get("route_selection_reason") or "",
-                    "route_cost_tier": ROUTE_COST_TIERS.get(route_name, requirement.get("route_cost_tier") or "medium"),
-                    "route_selection_policy": requirement.get("route_selection_policy") or "",
-                    "second_pass_policy": _second_pass_policy(),
-                    "evidence_requirement_id": requirement.get("requirement_id") or requirement.get("evidence_requirement_id") or "",
-                }
-            )
+            route_payload = {
+                "route_id": f"{task_id}::{route_name}",
+                "task_id": task_id,
+                "retrieval_route": route_name,
+                "tickers": route_tickers or search_scope_tickers,
+                "sector": str(task.get("sector") or ""),
+                "years": task_years,
+                "filing_types": _route_filing_types(route_name, task_filing_types),
+                "source_tiers": _route_source_tiers(route_name, task_source_tiers),
+                "metric_families": metric_families,
+                "period_roles": period_roles,
+                "section_hints": _section_hints(route_name),
+                "candidate_budget": candidate_budget,
+                "rerank_budget": rerank_budget,
+                "coverage_requirements": coverage_requirements,
+                "route_selection_reason": requirement.get("route_selection_reason") or "",
+                "route_cost_tier": ROUTE_COST_TIERS.get(route_name, requirement.get("route_cost_tier") or "medium"),
+                "route_selection_policy": requirement.get("route_selection_policy") or "",
+                "second_pass_policy": _second_pass_policy(),
+                "evidence_requirement_id": requirement.get("requirement_id") or requirement.get("evidence_requirement_id") or "",
+            }
+            if route_name == "live_public_web_context":
+                route_payload.update(_web_route_fields(requirement))
+            routes.append(route_payload)
 
     plan = {
         "schema_version": SCHEMA_VERSION,
@@ -395,15 +399,15 @@ def validate_retrieval_plan(
         route["period_roles"] = _period_role_list(route.get("period_roles") or [])
         route["candidate_budget"] = _clamp_int(route.get("candidate_budget"), 0, 1000, 120)
         route["rerank_budget"] = _clamp_int(route.get("rerank_budget"), 0, route["candidate_budget"], min(80, route["candidate_budget"]))
-        if route_name in {"ledger_first", "market_snapshot", "industry_snapshot"} and route["rerank_budget"] != 0:
+        if route_name in {"ledger_first", "market_snapshot", "industry_snapshot", "live_public_web_context"} and route["rerank_budget"] != 0:
             route["rerank_budget"] = 0
             normalizations.append({"field": "rerank_budget", "action": "zeroed_for_structured_route", "route_id": route_id})
         route["second_pass_policy"] = _normalize_second_pass_policy(route.get("second_pass_policy"))
         if not route["tickers"] and allowed_tickers:
             warnings.append({"type": "empty_route_tickers_after_scope_clamp", "route_id": route_id})
-        if not route["years"] and allowed_years and route_name not in {"market_snapshot", "industry_snapshot"}:
+        if not route["years"] and allowed_years and route_name not in {"market_snapshot", "industry_snapshot", "live_public_web_context"}:
             warnings.append({"type": "empty_route_years_after_scope_clamp", "route_id": route_id})
-        if not route["source_tiers"] and allowed_source_tiers:
+        if not route["source_tiers"] and allowed_source_tiers and route_name != "live_public_web_context":
             warnings.append({"type": "empty_route_source_tiers_after_scope_clamp", "route_id": route_id})
         normalized_routes.append(route)
 
@@ -547,9 +551,10 @@ def _normalize_evidence_requirements(
             "route_selection_policy": _short_text(req.get("route_selection_policy") or "cost_and_query_type_aware_v0_1", 80),
             "second_pass_policy": _normalize_second_pass_policy(req.get("second_pass_policy")),
         }
+        requirement.update(_web_route_fields(req))
         if not requirement["tickers"] and not is_run_artifact:
             errors.append({"type": "empty_requirement_tickers", "requirement_id": requirement_id})
-        if not requirement["years"] and not is_run_artifact:
+        if not requirement["years"] and not is_run_artifact and "live_public_web_context" not in routes:
             errors.append({"type": "empty_requirement_years", "requirement_id": requirement_id})
         requirements.append(requirement)
     if not requirements:
@@ -587,6 +592,33 @@ def _routes_for_requirement(requirement: dict[str, Any], fallback_routes: list[s
     routes = _unique_strings(requirement.get("evidence_routes") or requirement.get("retrieval_routes") or requirement.get("retrieval_route") or [])
     routes = [route for route in routes if route in ALLOWED_RETRIEVAL_ROUTES]
     return routes or fallback_routes
+
+
+def _web_route_fields(value: dict[str, Any]) -> dict[str, Any]:
+    fields: dict[str, Any] = {}
+    for key in (
+        "url",
+        "domain",
+        "source_class",
+        "claim_type",
+        "snapshot_id",
+        "snapshot_url",
+        "source_title",
+        "company_domain_verified",
+    ):
+        if value.get(key) not in (None, "", [], {}):
+            fields[key] = value.get(key)
+    for key in (
+        "claim_types",
+        "web_scope_policy_ids",
+        "company_domains",
+        "web_scope_allowed_domains",
+        "registry_allowed_domains",
+    ):
+        items = _unique_strings(value.get(key))
+        if items:
+            fields[key] = items
+    return fields
 
 
 def _normalize_route_cost_tier(value: Any, routes: list[str]) -> str:
@@ -628,6 +660,8 @@ def _routes_for_task(
     tier_set = set(source_tiers)
     if RUN_ARTIFACT_SOURCE_TIER in tier_set:
         return ["run_artifact"]
+    if LIVE_PUBLIC_WEB_SOURCE_TIER in tier_set:
+        routes.append("live_public_web_context")
     if metric_families and (PRIMARY_SEC_SOURCE_TIER in tier_set or "10-K" in form_set or "10-Q" in form_set):
         routes.append("ledger_first")
     if MARKET_SOURCE_TIER in tier_set or _task_requests_market(task, task_text):
@@ -655,6 +689,8 @@ def _route_budgets(route_name: str, *, ticker_count: int, family_count: int) -> 
         return {"candidate_budget": min(200, max(16, ticker_count * 2)), "rerank_budget": 0}
     if route_name == "industry_snapshot":
         return {"candidate_budget": 80, "rerank_budget": 0}
+    if route_name == "live_public_web_context":
+        return {"candidate_budget": 1, "rerank_budget": 0}
     if route_name == "milvus_semantic":
         return {"candidate_budget": 120 * scale, "rerank_budget": 0}
     if route_name == "8k_commentary":
@@ -669,7 +705,7 @@ def _route_filing_types(route_name: str, filing_types: list[str]) -> list[str]:
         return []
     if route_name == "8k_commentary":
         return ["8-K"] if "8-K" in set(filing_types) else filing_types
-    if route_name == "industry_snapshot":
+    if route_name in {"industry_snapshot", "live_public_web_context"}:
         return []
     if route_name in {"ledger_first", "filing_text", "risk_text", "milvus_semantic"}:
         scoped = [form for form in filing_types if form in {"10-K", "10-Q"}]
@@ -684,6 +720,8 @@ def _route_source_tiers(route_name: str, source_tiers: list[str]) -> list[str]:
         return [MARKET_SOURCE_TIER] if MARKET_SOURCE_TIER in set(source_tiers) else []
     if route_name == "industry_snapshot":
         return [INDUSTRY_SOURCE_TIER] if INDUSTRY_SOURCE_TIER in set(source_tiers) else []
+    if route_name == "live_public_web_context":
+        return [LIVE_PUBLIC_WEB_SOURCE_TIER] if LIVE_PUBLIC_WEB_SOURCE_TIER in set(source_tiers) else []
     if route_name == "8k_commentary":
         return [COMPANY_AUTHORED_SOURCE_TIER] if COMPANY_AUTHORED_SOURCE_TIER in set(source_tiers) else []
     if route_name in {"ledger_first", "filing_text", "risk_text", "milvus_semantic"}:
@@ -703,6 +741,8 @@ def _section_hints(route_name: str) -> list[str]:
         return ["market_analytics", "event_window", "valuation_snapshot"]
     if route_name == "industry_snapshot":
         return ["industry_observations", "sector_context", "macro_context"]
+    if route_name == "live_public_web_context":
+        return ["allowlisted_web_snapshot", "source_classifier", "authority_gate"]
     if route_name == "milvus_semantic":
         return ["typed_semantic_vector", "semantic_scope", "vector_kind_filter"]
     if route_name == "risk_text":

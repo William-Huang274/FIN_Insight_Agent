@@ -71,6 +71,39 @@ def test_specialist_llm_supports_industry_supply_chain_skill() -> None:
     assert "Skill v0.3" in fake.calls[0]["messages"][0]["content"]
 
 
+def test_specialist_llm_supports_product_technology_skill() -> None:
+    memolet = _memolet("product_technology_analyst", source_family="company_product_evidence_graph")
+    memolet["observations"][0].update(
+        {
+            "claim_type": "company_disclosed_product_kpi",
+            "memo_slot": "product_technology",
+            "metric_scope": ["product_revenue"],
+        }
+    )
+    fake = _FakeChat([json.dumps(memolet)])
+    request = _request(source_family="company_product_evidence_graph")
+    request["bounded_evidence_rows"][0].update(
+        {
+            "promotion_status": "runtime_fact_allowed",
+            "exact_value_authority": True,
+            "metric_family": "product_revenue",
+            "product_or_segment": "Data Center",
+        }
+    )
+
+    result = route_specialist_memolet_llm(
+        "product_technology_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["memolet"]["agent_id"] == "product_technology_analyst"
+    assert result["memolet"]["observations"][0]["memo_slot"] == "product_technology"
+    assert "Product Technology Analysis Skill v0.1" in fake.calls[0]["messages"][0]["content"]
+
+
 def test_specialist_llm_passes_relationship_summary_as_bounded_prompt_input() -> None:
     memolet = _memolet("industry_supply_chain_analyst", source_family="relationship_graph", evidence_ref="rel_ref_1")
     fake = _FakeChat([json.dumps(memolet)])
@@ -600,6 +633,35 @@ def test_risk_specialist_request_excludes_relationship_rows() -> None:
 
 def test_agent_data_view_source_family_bundle_selects_role_specific_rows() -> None:
     state = {
+        "user_query": "Assess NVDA AI demand.",
+        "query_contract": {"focus_tickers": ["NVDA"], "search_scope_tickers": ["NVDA", "AMD"]},
+        "agent_activation_plan": {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["fundamental_analyst", "market_valuation_analyst"],
+            "allowed_source_families": ["primary_sec_filing", "market_snapshot", "industry_snapshot", "relationship_graph"],
+        },
+        "project_inventory": {
+            "schema_version": "project_source_inventory_v0.1",
+            "universe": {"ticker_count": 2},
+            "indexes": {"manifest_path": "D:/FIN_Insight_Agent/data/raw_private/sec/index.json"},
+            "milvus_runtime": {"available": True, "location": "cloud", "handle": "private-handle"},
+        },
+        "bounded_gap_register": {
+            "schema_version": "sec_agent_bounded_gap_register_v0.1",
+            "gap_count": 1,
+            "gaps": [
+                {
+                    "gap_id": "gap_nvda_sell_through",
+                    "source_family": "market_snapshot",
+                    "gap_type": "commercial_tracker_gap",
+                    "ticker": "NVDA",
+                    "metric": "sell_through",
+                    "repairability": "commercial_tracker_required",
+                    "claim_boundary": "do_not_fill_with_generic_fallback_or_proxy_fact",
+                }
+            ],
+            "summary": {"commercial_tracker_gap_count": 1},
+        },
         "context_rows": [
             {
                 "evidence_ref": "sec_semantic_ref",
@@ -644,6 +706,18 @@ def test_agent_data_view_source_family_bundle_selects_role_specific_rows() -> No
     risk = build_agent_data_view("risk_counterevidence_analyst", state)
 
     fundamental_bundle = fundamental["source_family_bundle"]
+    assert fundamental["schema_version"] == "sec_agent_agent_data_view_v0.3"
+    assert fundamental["global_context_ref"]["context_digest"].startswith("sha256:")
+    assert fundamental["global_context"]["selected_playbook_ids"] == []
+    assert fundamental["global_context"]["source_boundary_registry"]["milvus_runtime"]["location"] == "cloud"
+    assert fundamental["role_context"]["role_context_type"] == "specialist"
+    assert fundamental["role_context"]["private_context_policy"] == "private_operator_context_excluded"
+    assert fundamental["role_context"]["raw_rows_visible"] is False
+    assert fundamental["context_digest"].startswith("sha256:")
+    assert fundamental["bounded_gap_refs"][0]["gap_id"] == "gap_nvda_sell_through"
+    serialized = json.dumps(fundamental, ensure_ascii=False)
+    assert "data/raw_private" not in serialized
+    assert "private-handle" not in serialized
     assert fundamental_bundle["selected_source_families"] == ["primary_sec_filing"]
     assert fundamental_bundle["semantic_supplement_row_count"] == 1
     assert fundamental_bundle["semantic_vector_kinds"] == ["relationship_context"]
@@ -665,6 +739,15 @@ def test_agent_data_view_source_family_bundle_selects_role_specific_rows() -> No
 def test_agent_data_view_routes_product_evidence_and_public_source_context_rows() -> None:
     state = {
         "query_contract": {"focus_tickers": ["AAPL"]},
+        "agent_activation_plan": {
+            "metadata": {
+                "playbook_policy": {
+                    "selected_playbook_ids": ["consumer_electronics"],
+                    "forbidden_claims": ["sell_through_without_tracker"],
+                    "commercial_gap_policy": {"sell_through": ["Circana", "NielsenIQ"]},
+                }
+            }
+        },
         "product_evidence_rows": [
             {
                 "evidence_ref": "product_fact_aapl_services_2024",
@@ -713,6 +796,7 @@ def test_agent_data_view_routes_product_evidence_and_public_source_context_rows(
     }
 
     fundamental = build_agent_data_view("fundamental_analyst", state)
+    product = build_agent_data_view("product_technology_analyst", state)
     industry = build_agent_data_view("industry_supply_chain_analyst", state)
     risk = build_agent_data_view("risk_counterevidence_analyst", state)
 
@@ -722,6 +806,19 @@ def test_agent_data_view_routes_product_evidence_and_public_source_context_rows(
     assert "public_fred_api_context" not in fundamental_refs
     assert "company_product_evidence_graph" in fundamental["source_family_bundle"]["selected_source_families"]
     assert "company_product_evidence_graph_requires_runtime_fact_allowed_for_product_kpi_claims" in fundamental["source_family_bundle"]["forbidden_claim_scopes"]
+
+    product_refs = {row["evidence_ref"] for row in product["bounded_evidence_rows"]}
+    assert {"product_fact_aapl_services_2024", "product_review_candidate", "product_gap_aapl_channel_inventory", "public_fred_api_context"} <= product_refs
+    assert product["assigned_task_card"]["assigned_memo_slot"] == "product_technology"
+    assert product["required_claim_slots"][1]["slot_id"] == "company_disclosed_product_kpi"
+    assert product["required_claim_slots"][1]["claim_type_allowlist"] == ["company_disclosed_product_kpi"]
+    assert product["counterclaim_slots"][0]["slot_id"] == "product_commercial_tracker_gap"
+    assert "public_source_context" in product["source_family_bundle"]["context_only_source_families"]
+    assert "company_product_evidence_graph_requires_runtime_fact_allowed_for_product_kpi_claims" in product["source_family_bundle"]["forbidden_claim_scopes"]
+    assert product["source_family_bundle"]["selected_playbook_ids"] == ["consumer_electronics"]
+    assert "sell_through_without_tracker" in product["source_family_bundle"]["playbook_forbidden_claims"]
+    assert "sell_through_without_tracker" in product["source_family_bundle"]["forbidden_claim_scopes"]
+    assert product["forbidden_claim_scopes"] == product["source_family_bundle"]["forbidden_claim_scopes"]
 
     industry_families = {row["source_family"] for row in industry["bounded_evidence_rows"]}
     assert {"company_product_evidence_graph", "public_source_context"} <= industry_families
@@ -1031,6 +1128,94 @@ def test_specialist_prompt_passes_source_family_bundle() -> None:
     assert payload["bounded_evidence_rows"][0]["exact_value_authority"] is False
     assert "Use source_family_bundle to enforce selected source families" in user_prompt
     assert "typed_milvus_rows_are_sec_recall_supplements_not_exact_value_authority" in user_prompt
+
+
+def test_product_specialist_demotes_product_kpi_without_exact_authority() -> None:
+    memolet = _memolet("product_technology_analyst", source_family="public_source_context", evidence_ref="public_proxy_ref")
+    memolet["observations"][0].update(
+        {
+            "claim": "The public proxy row proves product revenue momentum.",
+            "claim_type": "company_disclosed_product_kpi",
+            "memo_slot": "product_technology",
+            "metric_scope": ["product_revenue"],
+        }
+    )
+    fake = _FakeChat([json.dumps(memolet)])
+    request = {
+        "user_query": "Analyze product KPI.",
+        "known_evidence_refs": ["public_proxy_ref"],
+        "bounded_evidence_rows": [
+            {
+                "evidence_ref": "public_proxy_ref",
+                "source_family": "public_source_context",
+                "summary": "Public proxy context only.",
+                "context_only": True,
+                "exact_value_authority": False,
+            }
+        ],
+        "output_contract": {
+            "policy": "product_technology_claim_cards_v0_1",
+            "supported_observation_target": "1-3",
+            "unsupported_claim_cap": 2,
+            "conflict_cap": 1,
+        },
+    }
+
+    result = route_specialist_memolet_llm(
+        "product_technology_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["memolet"]["observations"] == []
+    assert result["memolet"]["unsupported_claims"][0]["reason"] == (
+        "demoted_product_kpi_without_company_disclosed_exact_authority"
+    )
+    assert result["routing_trace"]["salvage_policy"] == "demote_product_kpi_without_exact_authority"
+    assert result["validation"]["warnings"][-1]["type"] == "product_kpi_observation_demoted"
+
+
+def test_product_specialist_keeps_product_kpi_with_exact_authority() -> None:
+    memolet = _memolet("product_technology_analyst", source_family="company_product_evidence_graph", evidence_ref="product_fact_ref")
+    memolet["observations"][0].update(
+        {
+            "claim": "The company-disclosed product KPI supports the product thesis.",
+            "claim_type": "company_disclosed_product_kpi",
+            "memo_slot": "product_technology",
+            "metric_scope": ["product_revenue"],
+        }
+    )
+    fake = _FakeChat([json.dumps(memolet)])
+    request = {
+        "user_query": "Analyze product KPI.",
+        "known_evidence_refs": ["product_fact_ref"],
+        "bounded_evidence_rows": [
+            {
+                "evidence_ref": "product_fact_ref",
+                "source_family": "company_product_evidence_graph",
+                "promotion_status": "runtime_fact_allowed",
+                "exact_value_authority": True,
+                "context_only": False,
+                "metric_family": "product_revenue",
+                "product_or_segment": "Services",
+                "summary": "Company-disclosed Services product revenue.",
+            }
+        ],
+    }
+
+    result = route_specialist_memolet_llm(
+        "product_technology_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert len(result["memolet"]["observations"]) == 1
+    assert result["memolet"]["unsupported_claims"] == []
+    assert "salvage_policy" not in result["routing_trace"]
 
 
 def test_shared_specialist_context_compacts_common_scope() -> None:

@@ -17,6 +17,7 @@ ECONOMIC_LINK_MAP_SCHEMA_VERSION = "sec_agent_economic_link_map_v0.1"
 
 SPECIALIST_AGENT_IDS = {
     "fundamental_analyst",
+    "product_technology_analyst",
     "industry_supply_chain_analyst",
     "market_valuation_analyst",
     "risk_counterevidence_analyst",
@@ -43,12 +44,23 @@ RELATIONSHIP_EVIDENCE_SOURCES = {
     "industry_snapshot",
     "relationship_graph",
 }
-CONTEXT_ONLY_SOURCE_FAMILIES = {"market_snapshot", "industry_snapshot", "relationship_graph"}
+CONTEXT_ONLY_SOURCE_FAMILIES = {
+    "market_snapshot",
+    "industry_snapshot",
+    "relationship_graph",
+    "public_source_context",
+    "live_public_web_context",
+    "milvus_semantic",
+}
 SOURCE_FAMILY_CLAIM_SCOPE = {
     "primary_sec_filing": "company_reported_financial_fact",
     "company_authored_unaudited_sec_filing": "management_commentary_or_unaudited_company_context",
     "market_snapshot": "market_or_valuation_context_only",
     "industry_snapshot": "industry_context_only",
+    "company_product_evidence_graph": "company_product_evidence_row_level_authority",
+    "public_source_context": "public_proxy_context_only",
+    "live_public_web_context": "allowlisted_web_context_only",
+    "milvus_semantic": "semantic_recall_supplement_only",
     "relationship_graph": "research_scope_or_hypothesis_only",
     "run_artifact": "audit_summary_only",
 }
@@ -57,6 +69,23 @@ RELATIONSHIP_GRAPH_ALLOWED_CLAIM_TYPES = {
     "scope_hypothesis",
     "industry_context_only",
     "investment_thesis_synthesis",
+}
+PRODUCT_KPI_CLAIM_TYPES = {
+    "company_disclosed_product_kpi",
+    "company_reported_product_fact",
+    "product_kpi",
+    "product_revenue",
+    "product_sales",
+    "product_operating_metric",
+    "reported_financial_fact",
+    "company_reported_financial_fact",
+}
+PRODUCT_CONTEXT_CLAIM_TYPES = {
+    "product_taxonomy_context",
+    "public_proxy_context",
+    "source_gap",
+    "business_observation",
+    "unsupported_claim",
 }
 UNSUPPORTED_CLAIM_CAP_PER_AGENT = 2
 FOCUSED_ANSWER_SYNTHESIZER_AGENT_ID = "focused_answer_synthesizer"
@@ -1190,6 +1219,9 @@ def _claim_card_rank_annotation(claim: Mapping[str, Any], index: int) -> dict[st
     if agent_id == "market_valuation_analyst" and "market_snapshot" in set(source_families) and str(claim.get("as_of_date") or ""):
         score += 5
         reasons.append("market_timestamped")
+    if agent_id == "product_technology_analyst" and "company_product_evidence_graph" in set(source_families):
+        score += 5
+        reasons.append("product_graph_source_fit")
     if agent_id == "industry_supply_chain_analyst" and set(source_families) & {"relationship_graph", "industry_snapshot"}:
         score += 5
         reasons.append("industry_relationship_source_fit")
@@ -1220,6 +1252,7 @@ def _claim_card_rank_annotation(claim: Mapping[str, Any], index: int) -> dict[st
 def _agent_expected_memo_slot(agent_id: str) -> str:
     return {
         "fundamental_analyst": "fundamentals",
+        "product_technology_analyst": "product_technology",
         "industry_supply_chain_analyst": "industry_relationship",
         "market_valuation_analyst": "market_valuation",
         "risk_counterevidence_analyst": "risk_counterevidence",
@@ -1232,6 +1265,10 @@ def _claim_source_scope_penalty(claim_type: str, source_families: list[str]) -> 
     normalized_type = str(claim_type or "").strip()
     if normalized_type in {"reported_financial_fact", "company_reported_financial_fact"} and families & CONTEXT_ONLY_SOURCE_FAMILIES:
         return 24
+    if normalized_type in PRODUCT_KPI_CLAIM_TYPES and families & {"public_source_context", "live_public_web_context", "milvus_semantic"}:
+        return 28
+    if "company_product_evidence_graph" in families and normalized_type in PRODUCT_CONTEXT_CLAIM_TYPES:
+        return 0
     if "relationship_graph" in families and normalized_type not in RELATIONSHIP_GRAPH_ALLOWED_CLAIM_TYPES:
         return 20
     if "market_snapshot" in families and normalized_type in {"company_reported_financial_fact", "reported_financial_fact"}:
@@ -1619,7 +1656,10 @@ def _memo_thesis_pack_from_claims(
             "source_family_counts": source_family_counts,
             "source_boundary_note_count": len(source_boundary_notes),
         },
-        "source_boundary": "verified ClaimCards only; relationship and industry rows are scope/context evidence, not reported financial facts",
+        "source_boundary": (
+            "verified ClaimCards only; relationship, industry, public-source, and live-web rows are scope/context evidence; "
+            "product KPI facts require company_product_evidence_graph exact-authority rows"
+        ),
         "source_claim_refs": source_claim_refs[:12],
         "pack_policy": "deterministic_thesis_pack_from_verified_claim_cards_v0_1",
     }
@@ -1679,6 +1719,7 @@ def _memo_slot_objective(slot: str) -> str:
     return {
         "thesis": "State the bounded investment thesis using verified ClaimCards only.",
         "fundamentals": "Explain company-reported financial evidence and what it implies for the thesis.",
+        "product_technology": "Explain product taxonomy, company-disclosed product KPI, public proxy context, and commercial tracker gaps.",
         "industry_relationship": "Use relationship or industry evidence as scope and mechanism context, not as reported financial fact.",
         "market_valuation": "Add timestamped market or valuation context without overwriting SEC facts.",
         "risk_counterevidence": "Present downside evidence, conflicts, and missing confirmations that constrain the thesis.",
@@ -1691,6 +1732,7 @@ def _expected_memo_slots(agent_ids: list[str]) -> list[str]:
     slots = ["thesis"]
     agent_slot = {
         "fundamental_analyst": "fundamentals",
+        "product_technology_analyst": "product_technology",
         "industry_supply_chain_analyst": "industry_relationship",
         "market_valuation_analyst": "market_valuation",
         "risk_counterevidence_analyst": "risk_counterevidence",
@@ -1706,6 +1748,7 @@ def _expected_memo_slots(agent_ids: list[str]) -> list[str]:
 def _slot_agent(slot: str) -> str:
     return {
         "fundamentals": "fundamental_analyst",
+        "product_technology": "product_technology_analyst",
         "industry_relationship": "industry_supply_chain_analyst",
         "market_valuation": "market_valuation_analyst",
         "risk_counterevidence": "risk_counterevidence_analyst",
@@ -1716,6 +1759,7 @@ def _memo_slot_title(slot: str) -> str:
     return {
         "thesis": "Thesis",
         "fundamentals": "Fundamentals",
+        "product_technology": "Product and Technology Evidence",
         "industry_relationship": "Industry and Relationship Evidence",
         "market_valuation": "Market and Valuation Context",
         "risk_counterevidence": "Risks and Counterevidence",
@@ -1749,6 +1793,10 @@ def _claim_type_for_source_scope(claim_type: Any, source_families: Any) -> str:
     families = set(_unique_strings(source_families))
     if "relationship_graph" in families and normalized not in RELATIONSHIP_GRAPH_ALLOWED_CLAIM_TYPES:
         return "relationship_hypothesis"
+    if families & {"public_source_context", "live_public_web_context", "milvus_semantic"} and normalized in PRODUCT_KPI_CLAIM_TYPES:
+        return "public_proxy_context"
+    if "company_product_evidence_graph" in families and normalized in {"product_kpi", "product_revenue", "product_sales"}:
+        return "company_disclosed_product_kpi"
     return normalized
 
 
@@ -1770,6 +1818,10 @@ def _source_strength_score(value: Any) -> int:
         return 2
     if "industry_snapshot" in families:
         return 2
+    if "company_product_evidence_graph" in families:
+        return 3
+    if families & {"public_source_context", "live_public_web_context"}:
+        return 1
     if "relationship_graph" in families:
         return 1
     return 0
@@ -2409,6 +2461,12 @@ def _source_prohibited_use(source_family: str) -> str:
         return "do_not_use_as_company_specific_reported_fact"
     if source_family == "relationship_graph":
         return "do_not_use_as_financial_fact_or_confirmed_customer_supplier_claim"
+    if source_family == "company_product_evidence_graph":
+        return "require_runtime_fact_allowed_exact_authority_for_product_kpi_claims"
+    if source_family == "public_source_context":
+        return "do_not_use_as_company_product_sales_share_inventory_margin_or_profitability_fact"
+    if source_family == "live_public_web_context":
+        return "do_not_use_web_snapshot_as_company_product_kpi_or_financial_fact"
     if source_family == "company_authored_unaudited_sec_filing":
         return "do_not_restate_as_audited_financial_statement"
     return "do_not_exceed_bounded_evidence"
@@ -2855,6 +2913,7 @@ def _normalize_memo_slot(value: Any) -> str:
     allowed = {
         "thesis",
         "fundamentals",
+        "product_technology",
         "industry_relationship",
         "market_valuation",
         "risk_counterevidence",

@@ -1,19 +1,37 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Mapping
+from urllib.parse import urlparse
 
 from sec_agent.agent_registry import agent_registry_by_id
+from sec_agent.industry_playbooks import selected_playbook_policy
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
 from sec_agent.multi_agent_contracts import evidence_requirements_from_universe_relationship_plan
+from sec_agent.project_inventory import inventory_brief
 from sec_agent.retrieval_plan import EVIDENCE_REQUIREMENT_SCHEMA_VERSION, build_evidence_requirement_plan, build_retrieval_plan
 from sec_agent.tool_call_ledger import ToolCallLedger
 
 
 RUNTIME_SCHEMA_VERSION = "sec_agent_multi_agent_runtime_v0.1"
-AGENT_DATA_VIEW_SCHEMA_VERSION = "sec_agent_agent_data_view_v0.2"
+AGENT_DATA_VIEW_SCHEMA_VERSION = "sec_agent_agent_data_view_v0.3"
 SPECIALIST_TASK_CARD_SCHEMA_VERSION = "sec_agent_specialist_task_card_v0.1"
 SPECIALIST_CLAIM_SLOT_SCHEMA_VERSION = "sec_agent_specialist_claim_slot_v0.1"
+PLAN_REFLECTION_GATE_SCHEMA_VERSION = "sec_agent_plan_reflection_gate_v0.1"
+EVIDENCE_FUSION_BUNDLE_SCHEMA_VERSION = "sec_agent_evidence_fusion_bundle_v0.1"
+BOUNDED_GAP_REGISTER_SCHEMA_VERSION = "sec_agent_bounded_gap_register_v0.1"
+SECOND_PASS_REFLECTION_DIAGNOSIS_SCHEMA_VERSION = "sec_agent_second_pass_reflection_diagnosis_v0.1"
+SECOND_PASS_REPAIR_PLAN_SCHEMA_VERSION = "sec_agent_second_pass_repair_plan_v0.1"
+SECOND_PASS_HARD_GATE_SCHEMA_VERSION = "sec_agent_second_pass_hard_gate_v0.1"
+SECOND_PASS_DELTA_AUDIT_SCHEMA_VERSION = "sec_agent_second_pass_delta_audit_v0.1"
+WEB_SOURCE_SCOPE_REGISTRY_SCHEMA_VERSION = "sec_agent_web_source_scope_registry_v0.1"
+WEB_EVIDENCE_REPAIR_REQUEST_SCHEMA_VERSION = "sec_agent_web_repair_request_v0.1"
+WEB_EVIDENCE_SNAPSHOT_SCHEMA_VERSION = "sec_agent_web_evidence_snapshot_v0.1"
+EVIDENCE_OPERATOR_FANOUT_PLAN_SCHEMA_VERSION = "sec_agent_evidence_operator_fanout_plan_v0.1"
+FANOUT_BARRIER_SCHEMA_VERSION = "sec_agent_fanout_barrier_v0.1"
 AGENT_DATA_VIEW_MAX_ROWS = 16
 AGENT_DATA_VIEW_STANDARD_MEMO_MAX_ROWS = 24
 AGENT_DATA_VIEW_DEEP_RESEARCH_MAX_ROWS = 32
@@ -49,6 +67,7 @@ ROUTE_OPERATOR_TOOL: dict[str, tuple[str, str]] = {
     "market_snapshot": ("market_operator", "market_get_snapshot"),
     "industry_snapshot": ("industry_operator", "industry_get_snapshot"),
     "relationship_graph": ("universe_relationship", "relationship_graph_lookup"),
+    "live_public_web_context": ("web_evidence_operator", "web_evidence_snapshot"),
     "run_artifact": ("coverage_reflection", "run_inspect_artifacts"),
 }
 
@@ -57,10 +76,11 @@ ROUTE_SOURCE_FAMILY: dict[str, str] = {
     "filing_text": "primary_sec_filing",
     "risk_text": "primary_sec_filing",
     "8k_commentary": "company_authored_unaudited_sec_filing",
-    "milvus_semantic": "primary_sec_filing",
+    "milvus_semantic": "milvus_semantic",
     "market_snapshot": "market_snapshot",
     "industry_snapshot": "industry_snapshot",
     "relationship_graph": "relationship_graph",
+    "live_public_web_context": "live_public_web_context",
     "run_artifact": "run_artifact",
 }
 
@@ -74,12 +94,14 @@ ROUTE_COST_TIER: dict[str, str] = {
     "industry_snapshot": "medium",
     "milvus_semantic": "high",
     "relationship_graph": "high",
+    "live_public_web_context": "high",
 }
 ROUTE_COST_TIER_RANK = {"low": 1, "medium": 2, "high": 3}
 
 SEC_SEARCH_SOURCE_TIERS = {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
 SPECIALIST_EXECUTION_ORDER = (
     "fundamental_analyst",
+    "product_technology_analyst",
     "industry_supply_chain_analyst",
     "market_valuation_analyst",
     "risk_counterevidence_analyst",
@@ -87,6 +109,236 @@ SPECIALIST_EXECUTION_ORDER = (
 
 
 ToolExecutor = Callable[[str, dict[str, Any]], dict[str, Any]]
+
+
+WEB_FINANCIAL_FACT_CLAIM_TYPES = {
+    "arr",
+    "cash_flow",
+    "channel_inventory",
+    "company_revenue",
+    "customer_count",
+    "exact_financial_fact",
+    "gross_margin",
+    "inventory",
+    "market_share",
+    "prescription_volume",
+    "product_revenue",
+    "reported_financial_fact",
+    "revenue",
+    "sales_uptake",
+    "sell_through",
+    "shipment_volume",
+    "vendor_share",
+}
+WEB_COMMERCE_ALLOWED_CLAIM_TYPES = {
+    "availability",
+    "listed_price",
+    "official_feature_description",
+    "price",
+    "product_presence",
+    "sku",
+    "sku_configuration",
+}
+WEB_SOURCE_CLASS_CLAIM_SCOPES = {
+    "company_official_product_surface": "product_presence_taxonomy_feature_official_pricing",
+    "company_ir_material": "company_authored_context_or_management_statement",
+    "official_regulatory_page": "regulatory_status_or_registration_context",
+    "government_dataset_endpoint": "macro_industry_or_regulatory_context",
+    "commerce_product_surface": "sku_price_availability_only",
+    "major_financial_news": "event_public_reporting_and_quote_leads",
+    "research_developer_signal": "technical_activity_or_developer_adoption_signal",
+    "social_official_account": "official_statement_lead_only_requires_account_verification",
+    "social_unverified_or_influencer": "lead_only_not_fact_authority",
+}
+
+
+def default_web_source_scope_registry() -> dict[str, Any]:
+    """Return the default allowlisted web source policies used by hard gates."""
+    policies = {
+        "consumer_electronics_commerce": {
+            "policy_id": "consumer_electronics_commerce",
+            "source_classes": ["commerce_product_surface"],
+            "allowed_domains": [
+                "amazon.com",
+                "jd.com",
+                "taobao.com",
+                "tmall.com",
+                "bestbuy.com",
+                "walmart.com",
+                "target.com",
+                "currys.co.uk",
+                "argos.co.uk",
+            ],
+            "allowed_claim_types": sorted(WEB_COMMERCE_ALLOWED_CLAIM_TYPES),
+            "claim_boundary": "commerce_product_surface_supports_sku_price_availability_only",
+        },
+        "major_financial_news": {
+            "policy_id": "major_financial_news",
+            "source_classes": ["major_financial_news"],
+            "allowed_domains": [
+                "ft.com",
+                "wsj.com",
+                "reuters.com",
+                "bloomberg.com",
+                "nytimes.com",
+                "caixin.com",
+                "xinhuanet.com",
+            ],
+            "allowed_claim_types": ["event", "management_quote_lead", "public_reporting_lead"],
+            "claim_boundary": "major_news_supports_event_or_quote_leads_not_company_financial_facts",
+        },
+        "healthcare_regulatory": {
+            "policy_id": "healthcare_regulatory",
+            "source_classes": ["official_regulatory_page", "government_dataset_endpoint"],
+            "allowed_domains": [
+                "clinicaltrials.gov",
+                "fda.gov",
+                "open.fda.gov",
+                "pubmed.ncbi.nlm.nih.gov",
+                "cms.gov",
+            ],
+            "allowed_claim_types": [
+                "adverse_event_context",
+                "indication",
+                "phase",
+                "recall_context",
+                "regulatory_status_context",
+                "sponsor",
+                "trial_status",
+            ],
+            "claim_boundary": "regulatory_healthcare_context_not_prescription_volume_or_sales_uptake",
+        },
+        "developer_product_signal": {
+            "policy_id": "developer_product_signal",
+            "source_classes": ["company_official_product_surface", "research_developer_signal"],
+            "allowed_domains": [
+                "github.com",
+                "npmjs.com",
+                "pypi.org",
+                "huggingface.co",
+                "arxiv.org",
+                "openalex.org",
+                "crossref.org",
+                "pubmed.ncbi.nlm.nih.gov",
+            ],
+            "allowed_claim_types": [
+                "developer_adoption_signal",
+                "official_feature_description",
+                "package_presence",
+                "product_presence",
+                "research_activity_signal",
+            ],
+            "claim_boundary": "developer_and_research_surfaces_support_presence_or_activity_signals_not_arr_or_revenue",
+        },
+        "official_social_account": {
+            "policy_id": "official_social_account",
+            "source_classes": ["social_official_account"],
+            "allowed_domains": ["x.com", "twitter.com", "reddit.com", "youtube.com", "linkedin.com"],
+            "allowed_claim_types": ["official_statement_lead"],
+            "claim_boundary": "official_social_accounts_are_lead_only_and_cannot_support_financial_facts",
+        },
+        "company_official_product_surface": {
+            "policy_id": "company_official_product_surface",
+            "source_classes": ["company_official_product_surface", "company_ir_material"],
+            "allowed_domains": [],
+            "allowed_claim_types": [
+                "official_feature_description",
+                "official_pricing",
+                "product_presence",
+                "product_taxonomy",
+                "status_context",
+            ],
+            "claim_boundary": "company_domains_must_be_preverified_in_request_or_inventory_before_use",
+            "requires_verified_company_domain": True,
+        },
+    }
+    return {
+        "schema_version": WEB_SOURCE_SCOPE_REGISTRY_SCHEMA_VERSION,
+        "registry_boundary": "allowlisted_web_repair_requests_only_no_free_search",
+        "policies": policies,
+    }
+
+
+def validate_web_evidence_request(
+    request: Mapping[str, Any],
+    *,
+    web_scope_registry: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate a structured live-web repair request before any web operator may run."""
+    registry = _normalize_web_scope_registry(web_scope_registry)
+    policies = registry.get("policies") if isinstance(registry.get("policies"), Mapping) else {}
+    policy_ids = _string_list(request.get("web_scope_policy_ids") or request.get("web_scope_policy_id"))
+    source_class = str(request.get("source_class") or "").strip()
+    claim_types = _web_claim_types(request)
+    domain = _normalize_domain(request.get("domain") or _domain_from_url(request.get("url") or request.get("snapshot_url")))
+    errors: list[dict[str, Any]] = []
+
+    if not policy_ids:
+        errors.append({"type": "web_scope_policy_required"})
+    if not source_class:
+        errors.append({"type": "web_source_class_required"})
+    if not domain:
+        errors.append({"type": "web_domain_or_url_required"})
+    selected_policies: list[dict[str, Any]] = []
+    for policy_id in policy_ids:
+        policy = policies.get(policy_id) if isinstance(policies.get(policy_id), Mapping) else None
+        if policy is None:
+            errors.append({"type": "web_scope_policy_unknown", "web_scope_policy_id": policy_id})
+            continue
+        selected_policies.append(dict(policy))
+    if selected_policies and source_class:
+        allowed_classes = {
+            source
+            for policy in selected_policies
+            for source in _string_list(policy.get("source_classes") or policy.get("allowed_source_classes"))
+        }
+        if allowed_classes and source_class not in allowed_classes:
+            errors.append({"type": "web_source_class_not_allowed_by_policy", "source_class": source_class})
+    if selected_policies and domain:
+        if not _web_domain_allowed(domain, selected_policies, request):
+            errors.append({"type": "web_domain_not_allowlisted", "domain": domain})
+    if source_class == "commerce_product_surface":
+        disallowed = sorted(set(claim_types) - WEB_COMMERCE_ALLOWED_CLAIM_TYPES)
+        if disallowed:
+            errors.append(
+                {
+                    "type": "web_commerce_claim_scope_violation",
+                    "claim_types": disallowed,
+                    "allowed_claim_types": sorted(WEB_COMMERCE_ALLOWED_CLAIM_TYPES),
+                }
+            )
+    if source_class in {"social_official_account", "social_unverified_or_influencer"}:
+        financial = sorted(set(claim_types) & WEB_FINANCIAL_FACT_CLAIM_TYPES)
+        if financial:
+            errors.append({"type": "web_social_financial_fact_forbidden", "claim_types": financial})
+    financial_from_non_authority = sorted(
+        set(claim_types)
+        & WEB_FINANCIAL_FACT_CLAIM_TYPES
+        - {"exact_financial_fact", "reported_financial_fact"}
+    )
+    if source_class in {"major_financial_news", "research_developer_signal", "government_dataset_endpoint"} and financial_from_non_authority:
+        errors.append({"type": "web_source_cannot_support_company_financial_fact", "claim_types": financial_from_non_authority})
+
+    normalized = {
+        "schema_version": WEB_EVIDENCE_REPAIR_REQUEST_SCHEMA_VERSION,
+        "source_family": "live_public_web_context",
+        "retrieval_route": "live_public_web_context",
+        "url": str(request.get("url") or request.get("snapshot_url") or "").strip(),
+        "domain": domain,
+        "source_class": source_class,
+        "claim_types": claim_types,
+        "web_scope_policy_ids": policy_ids,
+        "allowed_claim_scope": WEB_SOURCE_CLASS_CLAIM_SCOPES.get(source_class, "allowlisted_web_context_only"),
+        "context_only": True,
+        "exact_value_authority": False,
+        "authority_boundary": "live_web_rows_are_context_only_until_snapshot_parser_and_authority_gate_pass",
+    }
+    return {
+        "status": "fail" if errors else "pass",
+        "errors": errors,
+        "normalized_request": _sanitize_payload(normalized),
+        "web_scope_registry_schema_version": registry.get("schema_version") or WEB_SOURCE_SCOPE_REGISTRY_SCHEMA_VERSION,
+    }
 
 
 def build_multi_agent_evidence_requirement_plan(
@@ -270,6 +522,594 @@ def validate_multi_agent_evidence_requirement_plan(
         "status": "fail" if errors else "pass",
         "errors": errors,
         "warnings": warnings,
+    }
+
+
+def plan_reflection_gate(
+    activation_plan: Mapping[str, Any],
+    *,
+    activation_validation: Mapping[str, Any] | None = None,
+    source_inventory: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Deterministic post-Lead gate before retrieval or relationship expansion."""
+    plan = dict(activation_plan or {})
+    validation = dict(activation_validation or {})
+    inventory = dict(source_inventory or {})
+    metadata = dict(plan.get("metadata") or {}) if isinstance(plan.get("metadata"), Mapping) else {}
+    errors: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+
+    if validation and validation.get("status") != "pass":
+        errors.append({"type": "activation_validation_failed", "validation_status": validation.get("status")})
+
+    mode = str(plan.get("execution_mode") or "").strip()
+    active_agents = set(_string_list(plan.get("activate_agents")))
+    allowed_sources = set(_string_list(plan.get("allowed_source_families")))
+    required_sources = set(_string_list(plan.get("required_source_families") or metadata.get("required_source_families")))
+    if not required_sources:
+        required_sources = set(_string_list(metadata.get("required_source_family") or metadata.get("required_sources")))
+
+    if mode == "focused_answer" and (("universe_relationship" in active_agents) or ("relationship_graph" in allowed_sources)):
+        errors.append(
+            {
+                "type": "focused_answer_deep_research_scope",
+                "reason": "focused_answer cannot activate relationship expansion or relationship_graph.",
+            }
+        )
+    if mode == "deep_research" and (("universe_relationship" in active_agents) or ("relationship_graph" in allowed_sources)):
+        if not str(plan.get("relationship_scope_rationale") or "").strip():
+            errors.append({"type": "relationship_scope_rationale_required_for_deep_research"})
+
+    _check_required_source_family_availability(
+        required_sources,
+        allowed_sources,
+        inventory,
+        errors=errors,
+        warnings=warnings,
+    )
+    _check_milvus_plan_boundary(allowed_sources | required_sources, inventory, errors=errors)
+    _check_live_web_plan_boundary(plan, metadata, allowed_sources | required_sources, inventory, errors=errors)
+    playbook_policy = _check_playbook_plan_boundary(
+        plan,
+        metadata,
+        inventory,
+        allowed_sources=allowed_sources,
+        errors=errors,
+        warnings=warnings,
+    )
+
+    repair_requests = [
+        {
+            "request_id": f"plan_repair_{index}",
+            "error_type": error.get("type") or "plan_reflection_error",
+            "action": "repair_activation_plan_before_retrieval",
+        }
+        for index, error in enumerate(errors, start=1)
+    ]
+    return {
+        "schema_version": PLAN_REFLECTION_GATE_SCHEMA_VERSION,
+        "status": "fail" if errors else "pass",
+        "policy": "deterministic_plan_reflection_hard_gate_v0_1",
+        "checked": {
+            "execution_mode": mode,
+            "active_agent_count": len(active_agents),
+            "allowed_source_families": sorted(allowed_sources),
+            "required_source_families": sorted(required_sources),
+        },
+        "errors": errors,
+        "warnings": warnings,
+        "playbook_policy": playbook_policy,
+        "repair_requests": repair_requests,
+    }
+
+
+def _check_required_source_family_availability(
+    required_sources: set[str],
+    allowed_sources: set[str],
+    inventory: Mapping[str, Any],
+    *,
+    errors: list[dict[str, Any]],
+    warnings: list[dict[str, Any]],
+) -> None:
+    if not inventory:
+        if required_sources:
+            warnings.append({"type": "required_source_family_unchecked_no_inventory", "source_families": sorted(required_sources)})
+        return
+    availability = inventory.get("source_family_availability") if isinstance(inventory.get("source_family_availability"), Mapping) else {}
+    available_families = set(_string_list(inventory.get("available_source_families") or inventory.get("source_families")))
+    for family in sorted(required_sources):
+        item = availability.get(family) if isinstance(availability.get(family), Mapping) else {}
+        if item:
+            if item.get("available") is False or str(item.get("status") or "").strip() in {"unavailable", "policy_not_loaded"}:
+                errors.append({"type": "required_source_family_unavailable", "source_family": family, "status": item.get("status") or ""})
+            continue
+        if available_families and family not in available_families:
+            errors.append({"type": "required_source_family_missing_from_inventory", "source_family": family})
+    for family in sorted(allowed_sources - required_sources):
+        item = availability.get(family) if isinstance(availability.get(family), Mapping) else {}
+        if item and (item.get("available") is False or str(item.get("status") or "").strip() in {"unavailable", "policy_not_loaded"}):
+            warnings.append({"type": "allowed_source_family_unavailable", "source_family": family, "status": item.get("status") or ""})
+
+
+def _check_milvus_plan_boundary(source_families: set[str], inventory: Mapping[str, Any], *, errors: list[dict[str, Any]]) -> None:
+    if "milvus_semantic" not in source_families:
+        return
+    milvus = inventory.get("milvus_runtime") if isinstance(inventory.get("milvus_runtime"), Mapping) else {}
+    availability = inventory.get("source_family_availability") if isinstance(inventory.get("source_family_availability"), Mapping) else {}
+    milvus_availability = availability.get("milvus_semantic") if isinstance(availability.get("milvus_semantic"), Mapping) else {}
+    status = str(milvus.get("status") or milvus_availability.get("status") or "unavailable").strip()
+    available = bool(milvus.get("available") if "available" in milvus else milvus_availability.get("available", False))
+    if not available or status == "unavailable":
+        errors.append({"type": "milvus_semantic_requested_but_unavailable", "status": status or "unavailable"})
+
+
+def _check_live_web_plan_boundary(
+    plan: Mapping[str, Any],
+    metadata: Mapping[str, Any],
+    source_families: set[str],
+    inventory: Mapping[str, Any],
+    *,
+    errors: list[dict[str, Any]],
+) -> None:
+    if "live_public_web_context" not in source_families:
+        return
+    requested_policy_ids = _string_list(plan.get("web_scope_policy_ids") or metadata.get("web_scope_policy_ids") or metadata.get("web_scope_policy_id"))
+    live_web = inventory.get("live_public_web_context") if isinstance(inventory.get("live_public_web_context"), Mapping) else {}
+    inventory_policy_ids = set(_string_list(live_web.get("web_scope_policy_ids")))
+    if not requested_policy_ids:
+        errors.append({"type": "live_web_scope_policy_required"})
+        return
+    if inventory_policy_ids:
+        invalid = sorted(set(requested_policy_ids) - inventory_policy_ids)
+        if invalid:
+            errors.append({"type": "live_web_scope_policy_not_in_inventory", "web_scope_policy_ids": invalid})
+
+
+def _check_playbook_plan_boundary(
+    plan: Mapping[str, Any],
+    metadata: Mapping[str, Any],
+    inventory: Mapping[str, Any],
+    *,
+    allowed_sources: set[str],
+    errors: list[dict[str, Any]],
+    warnings: list[dict[str, Any]],
+) -> dict[str, Any]:
+    candidates = [dict(item) for item in inventory.get("playbook_candidates") or [] if isinstance(item, Mapping)]
+    if not candidates:
+        return {}
+    candidate_ids = {str(item.get("playbook_id") or "") for item in candidates}
+    candidate_schemas = {str(item.get("industry_schema") or "") for item in candidates}
+    selected_playbooks = set(_string_list(plan.get("selected_playbooks") or plan.get("selected_playbook_ids") or metadata.get("selected_playbooks") or metadata.get("selected_playbook_ids")))
+    industry_schema = str(plan.get("industry_schema") or metadata.get("industry_schema") or "").strip()
+    if selected_playbooks:
+        invalid = sorted(playbook for playbook in selected_playbooks if playbook not in candidate_ids and playbook != "generic_public_research")
+        if invalid:
+            errors.append({"type": "selected_playbook_not_in_inventory_candidates", "playbook_ids": invalid})
+    elif str(plan.get("execution_mode") or "") in {"standard_memo", "deep_research"}:
+        warnings.append({"type": "selected_playbook_missing", "candidate_playbooks": sorted(candidate_ids)})
+    if industry_schema and industry_schema not in candidate_schemas and industry_schema != "generic":
+        errors.append(
+            {
+                "type": "industry_schema_not_supported_by_inventory_playbooks",
+                "industry_schema": industry_schema,
+                "candidate_industry_schemas": sorted(candidate_schemas),
+            }
+        )
+    selected_policy = selected_playbook_policy(inventory, sorted(selected_playbooks) if selected_playbooks else None)
+    if not selected_policy:
+        return {}
+    selected_ids = set(_string_list(selected_policy.get("selected_playbook_ids")))
+    if "generic_public_research" in selected_ids:
+        fallback_candidates = [item for item in candidates if str(item.get("playbook_id") or "") == "generic_public_research"]
+        coverage_gap = next((item.get("coverage_gap") for item in fallback_candidates if isinstance(item.get("coverage_gap"), Mapping)), None)
+        warnings.append(
+            {
+                "type": "generic_playbook_selected_coverage_gap",
+                "coverage_gap": dict(coverage_gap or {"gap_type": "industry_playbook_not_matched"}),
+            }
+        )
+    policy_sources = set(_string_list(selected_policy.get("default_source_families"))) | set(
+        str(source) for source in dict(selected_policy.get("source_family_policy") or {}) if str(source)
+    )
+    always_allowed = {
+        "primary_sec_filing",
+        "company_authored_unaudited_sec_filing",
+        "market_snapshot",
+        "run_artifact",
+    }
+    outside_policy = sorted(source for source in allowed_sources if source not in policy_sources and source not in always_allowed)
+    if outside_policy and selected_playbooks:
+        warnings.append(
+            {
+                "type": "allowed_source_family_outside_selected_playbook_policy",
+                "source_families": outside_policy,
+                "selected_playbook_ids": sorted(selected_ids),
+            }
+        )
+    forbidden_claims = _string_list(selected_policy.get("forbidden_claims"))
+    if forbidden_claims:
+        warnings.append(
+            {
+                "type": "playbook_forbidden_claims_available_for_verifier",
+                "selected_playbook_ids": sorted(selected_ids),
+                "forbidden_claims": forbidden_claims[:12],
+            }
+        )
+    return selected_policy
+
+
+def build_evidence_fusion_bundle(state: Mapping[str, Any]) -> dict[str, Any]:
+    """Project runtime evidence rows into claim-authority labels before reflection."""
+    candidate_rows = _evidence_fusion_candidate_rows(state)
+    authority_rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str]] = set()
+    for index, item in enumerate(candidate_rows, start=1):
+        row = item["row"]
+        projection = _authority_projection_for_row(
+            row,
+            row_channel=str(item.get("row_channel") or ""),
+            index=index,
+        )
+        key = (
+            str(projection.get("evidence_ref") or ""),
+            str(projection.get("source_family") or ""),
+            str(projection.get("row_channel") or ""),
+            str(projection.get("claim_scope") or ""),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        authority_rows.append(projection)
+
+    gap_register = _bounded_gap_register_from_state(state, authority_rows)
+    summary = _evidence_fusion_summary(authority_rows, gap_register)
+    return _sanitize_payload(
+        {
+            "schema_version": EVIDENCE_FUSION_BUNDLE_SCHEMA_VERSION,
+            "policy": "authority_labeled_evidence_fusion_v0_1",
+            "row_count": len(authority_rows),
+            "authority_rows": authority_rows,
+            "summary": summary,
+            "bounded_gap_register": gap_register,
+        }
+    )
+
+
+def _evidence_fusion_candidate_rows(state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for key in (
+        "runtime_ledger_rows",
+        "context_rows",
+        "market_snapshot_rows",
+        "industry_snapshot_rows",
+        "product_evidence_rows",
+        "public_source_context_rows",
+    ):
+        for row in _row_dicts(state.get(key)):
+            rows.append({"row_channel": key, "row": row})
+    for row in _relationship_rows_from_state(state):
+        rows.append({"row_channel": "relationship_graph_rows", "row": row})
+    for row in _row_dicts(state.get("source_gaps")):
+        rows.append({"row_channel": "source_gaps", "row": row})
+    return rows
+
+
+def _authority_projection_for_row(row: Mapping[str, Any], *, row_channel: str, index: int) -> dict[str, Any]:
+    bounded = _bounded_row(row, index)
+    family = _fusion_source_family(row, bounded)
+    promotion_status = _product_evidence_promotion_status(row)
+    gap_only = row_channel == "source_gaps" or _row_is_gap_only(row, promotion_status=promotion_status)
+    lead_only = _row_is_lead_only(row, family=family)
+    exact_value_authority = _row_has_exact_value_authority(
+        row,
+        row_channel=row_channel,
+        source_family=family,
+        promotion_status=promotion_status,
+    )
+    if gap_only or lead_only:
+        exact_value_authority = False
+    context_only = _row_is_context_only(
+        row,
+        source_family=family,
+        promotion_status=promotion_status,
+        exact_value_authority=exact_value_authority,
+        gap_only=gap_only,
+        lead_only=lead_only,
+    )
+    authority_tier = _authority_tier(
+        source_family=family,
+        exact_value_authority=exact_value_authority,
+        context_only=context_only,
+        lead_only=lead_only,
+        gap_only=gap_only,
+        promotion_status=promotion_status,
+    )
+    claim_scope = _claim_scope_for_authority(
+        row,
+        source_family=family,
+        authority_tier=authority_tier,
+        promotion_status=promotion_status,
+        exact_value_authority=exact_value_authority,
+        lead_only=lead_only,
+        gap_only=gap_only,
+    )
+    projection = {
+        **bounded,
+        "row_channel": row_channel,
+        "source_family": family,
+        "authority_tier": authority_tier,
+        "claim_scope": claim_scope,
+        "exact_value_authority": exact_value_authority,
+        "context_only": context_only,
+        "lead_only": lead_only,
+        "gap_only": gap_only,
+        "runtime_fact_allowed": family == "company_product_evidence_graph" and promotion_status == "runtime_fact_allowed",
+        "semantic_supplement": family == "milvus_semantic" or bool(bounded.get("semantic_supplement")),
+        "authority_policy": "ledger_and_runtime_product_facts_only_for_exact_values",
+    }
+    if gap_only:
+        projection["gap_type"] = _gap_type_for_row(row)
+        projection["bounded_gap_reason"] = _bounded_gap_reason(row)
+    return projection
+
+
+def _fusion_source_family(row: Mapping[str, Any], bounded: Mapping[str, Any]) -> str:
+    if _row_is_semantic_supplement(row) or bool(bounded.get("semantic_supplement")):
+        return "milvus_semantic"
+    family = _row_source_family(row) or str(bounded.get("source_family") or "").strip()
+    if family:
+        return family
+    channel = str(row.get("row_channel") or "").strip()
+    if channel == "runtime_ledger_rows":
+        return "primary_sec_filing"
+    return "primary_sec_filing"
+
+
+def _row_has_exact_value_authority(
+    row: Mapping[str, Any],
+    *,
+    row_channel: str,
+    source_family: str,
+    promotion_status: str,
+) -> bool:
+    if source_family in {"public_source_context", "milvus_semantic", "market_snapshot", "industry_snapshot", "relationship_graph", "live_public_web_context"}:
+        return False
+    if source_family == "company_product_evidence_graph":
+        return promotion_status == "runtime_fact_allowed"
+    if row_channel == "runtime_ledger_rows":
+        return True
+    if source_family == "primary_sec_filing" and bool(row.get("exact_value_authority")):
+        return True
+    if source_family == "company_authored_unaudited_sec_filing" and bool(row.get("exact_value_authority")):
+        return True
+    return False
+
+
+def _row_is_context_only(
+    row: Mapping[str, Any],
+    *,
+    source_family: str,
+    promotion_status: str,
+    exact_value_authority: bool,
+    gap_only: bool,
+    lead_only: bool,
+) -> bool:
+    if gap_only or lead_only or exact_value_authority:
+        return False
+    if bool(row.get("context_only")):
+        return True
+    if source_family in {
+        "public_source_context",
+        "milvus_semantic",
+        "market_snapshot",
+        "industry_snapshot",
+        "relationship_graph",
+        "live_public_web_context",
+    }:
+        return True
+    if source_family == "company_product_evidence_graph" and promotion_status != "runtime_fact_allowed":
+        return True
+    return True
+
+
+def _row_is_lead_only(row: Mapping[str, Any], *, family: str) -> bool:
+    if family == "live_public_web_context":
+        return True
+    text = " ".join(
+        str(row.get(key) or "").lower()
+        for key in ("authority_tier", "claim_scope", "allowed_claim_scope", "promotion_status", "runtime_use_boundary")
+    )
+    return "lead_only" in text or "lead-only" in text or "search_lead" in text
+
+
+def _row_is_gap_only(row: Mapping[str, Any], *, promotion_status: str) -> bool:
+    if promotion_status == "gap_exposed_not_fallback":
+        return True
+    if row.get("gap_type") or row.get("reason") or row.get("reason_code"):
+        marker = str(row.get("source_family") or row.get("source_tier") or "").strip()
+        return marker in {"", "source_gap", "run_artifact", "company_product_evidence_graph", "public_source_context"}
+    return bool(row.get("gap_only"))
+
+
+def _authority_tier(
+    *,
+    source_family: str,
+    exact_value_authority: bool,
+    context_only: bool,
+    lead_only: bool,
+    gap_only: bool,
+    promotion_status: str,
+) -> str:
+    if gap_only:
+        return "gap_only"
+    if lead_only:
+        return "lead_only"
+    if exact_value_authority:
+        if source_family == "company_product_evidence_graph" and promotion_status == "runtime_fact_allowed":
+            return "company_disclosed_product_kpi_fact"
+        return "primary_exact_value"
+    if context_only and source_family in {"primary_sec_filing", "company_authored_unaudited_sec_filing", "company_product_evidence_graph"}:
+        return "company_disclosed_context"
+    if context_only:
+        return "context_or_proxy"
+    return "context_or_proxy"
+
+
+def _claim_scope_for_authority(
+    row: Mapping[str, Any],
+    *,
+    source_family: str,
+    authority_tier: str,
+    promotion_status: str,
+    exact_value_authority: bool,
+    lead_only: bool,
+    gap_only: bool,
+) -> str:
+    explicit = str(row.get("claim_scope") or row.get("allowed_claim_scope") or "").strip()
+    if gap_only:
+        return "bounded_gap_only"
+    if lead_only:
+        return "lead_generation_only"
+    if source_family == "company_product_evidence_graph":
+        if promotion_status == "runtime_fact_allowed":
+            return explicit or "company_disclosed_product_kpi_fact"
+        return explicit or "product_taxonomy_or_context_only"
+    if source_family == "public_source_context":
+        return explicit or "public_context_or_proxy_only"
+    if source_family == "milvus_semantic":
+        return explicit or "filing_semantic_recall_supplement_only"
+    if source_family == "relationship_graph":
+        return explicit or "scope_or_hypothesis_only"
+    if source_family in {"market_snapshot", "industry_snapshot", "live_public_web_context"}:
+        return explicit or "context_or_proxy_only"
+    if exact_value_authority:
+        return explicit or "reported_financial_fact"
+    if authority_tier == "company_disclosed_context":
+        return explicit or "company_disclosed_context_only"
+    return explicit or "context_or_proxy_only"
+
+
+def _bounded_gap_register_from_state(state: Mapping[str, Any], authority_rows: list[Mapping[str, Any]]) -> dict[str, Any]:
+    entries: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for index, row in enumerate(_row_dicts(state.get("source_gaps")), start=1):
+        entry = _bounded_gap_entry(row, index=index, source="source_gaps")
+        key = (entry["gap_id"], entry["source_family"], entry["gap_type"])
+        if key not in seen:
+            seen.add(key)
+            entries.append(entry)
+    for row in authority_rows:
+        if not bool(row.get("gap_only")):
+            continue
+        entry = _bounded_gap_entry(row, index=len(entries) + 1, source="evidence_fusion_authority_rows")
+        key = (entry["gap_id"], entry["source_family"], entry["gap_type"])
+        if key in seen:
+            continue
+        seen.add(key)
+        entries.append(entry)
+    return {
+        "schema_version": BOUNDED_GAP_REGISTER_SCHEMA_VERSION,
+        "policy": "bounded_public_gap_not_fallback_v0_1",
+        "gap_count": len(entries),
+        "gaps": entries,
+        "summary": {
+            "by_gap_type": _count_by_key(entries, "gap_type"),
+            "by_source_family": _count_by_key(entries, "source_family"),
+            "commercial_tracker_gap_count": len([row for row in entries if row.get("gap_type") == "commercial_tracker_gap"]),
+            "public_unavailable_gap_count": len([row for row in entries if row.get("gap_type") == "public_unavailable_gap"]),
+            "parser_schema_gap_count": len([row for row in entries if row.get("gap_type") == "parser_schema_gap"]),
+        },
+    }
+
+
+def _bounded_gap_entry(row: Mapping[str, Any], *, index: int, source: str) -> dict[str, Any]:
+    gap_type = _gap_type_for_row(row)
+    evidence_ref = str(
+        row.get("gap_id")
+        or row.get("evidence_ref")
+        or row.get("source_gap_id")
+        or row.get("metric_id")
+        or f"bounded_gap_{index}"
+    )
+    source_family = _fusion_source_family(row, row) if str(row.get("source_family") or "") != "source_gap" else ""
+    if not source_family:
+        source_family = str(row.get("source_family") or row.get("source_tier") or "unknown").strip() or "unknown"
+    return {
+        "gap_id": evidence_ref,
+        "source_family": source_family,
+        "gap_type": gap_type,
+        "status": str(row.get("status") or row.get("gap_status") or "open").strip() or "open",
+        "ticker": str(row.get("ticker") or row.get("company") or "").upper().strip(),
+        "metric": str(row.get("metric") or row.get("metric_family") or row.get("field") or "").strip(),
+        "product_or_segment": str(row.get("product_or_segment") or row.get("product") or "").strip(),
+        "bounded_reason": _bounded_gap_reason(row),
+        "repairability": _gap_repairability(gap_type),
+        "register_source": source,
+        "claim_boundary": "do_not_fill_with_generic_fallback_or_proxy_fact",
+    }
+
+
+def _gap_type_for_row(row: Mapping[str, Any]) -> str:
+    explicit = str(row.get("gap_type") or row.get("gap_category") or "").strip()
+    if explicit:
+        return explicit
+    text = " ".join(str(row.get(key) or "").lower() for key in ("reason", "reason_code", "bounded_reason", "claim_scope", "summary"))
+    if "commercial" in text or "tracker" in text or "consensus" in text:
+        return "commercial_tracker_gap"
+    if "parser" in text or "schema" in text or "table" in text or "column" in text or "region" in text:
+        return "parser_schema_gap"
+    if "unavailable" in text or "not_available" in text or "missing_source" in text or "401" in text:
+        return "public_unavailable_gap"
+    if "mapping" in text or "resolver" in text or "alias" in text:
+        return "mapping_or_resolver_gap"
+    if "endpoint" in text or "download" in text:
+        return "endpoint_or_collector_gap"
+    return "retrievable_gap"
+
+
+def _bounded_gap_reason(row: Mapping[str, Any]) -> str:
+    reason = str(row.get("bounded_reason") or row.get("reason") or row.get("reason_code") or row.get("summary") or "").strip()
+    return _truncate(reason, 500) if reason else "public_or_runtime_authority_not_available"
+
+
+def _gap_repairability(gap_type: str) -> str:
+    if gap_type == "commercial_tracker_gap":
+        return "commercial_tracker_required"
+    if gap_type == "public_unavailable_gap":
+        return "blocked_until_public_source_available"
+    if gap_type in {"parser_schema_gap", "mapping_or_resolver_gap", "endpoint_or_collector_gap", "retrievable_gap"}:
+        return "public_repair_candidate"
+    return "review_required"
+
+
+def _evidence_fusion_summary(authority_rows: list[Mapping[str, Any]], gap_register: Mapping[str, Any]) -> dict[str, Any]:
+    public_exact_violations = [
+        row
+        for row in authority_rows
+        if row.get("source_family") == "public_source_context" and bool(row.get("exact_value_authority"))
+    ]
+    semantic_exact_violations = [
+        row
+        for row in authority_rows
+        if row.get("source_family") == "milvus_semantic" and bool(row.get("exact_value_authority"))
+    ]
+    return {
+        "row_count": len(authority_rows),
+        "by_source_family": _count_by_key(authority_rows, "source_family"),
+        "by_authority_tier": _count_by_key(authority_rows, "authority_tier"),
+        "exact_authority_row_count": len([row for row in authority_rows if row.get("exact_value_authority")]),
+        "context_only_row_count": len([row for row in authority_rows if row.get("context_only")]),
+        "lead_only_row_count": len([row for row in authority_rows if row.get("lead_only")]),
+        "gap_only_row_count": len([row for row in authority_rows if row.get("gap_only")]),
+        "product_runtime_fact_count": len([row for row in authority_rows if row.get("runtime_fact_allowed")]),
+        "semantic_supplement_row_count": len([row for row in authority_rows if row.get("semantic_supplement")]),
+        "bounded_gap_count": int(gap_register.get("gap_count") or 0),
+        "public_exact_authority_violation_count": len(public_exact_violations),
+        "semantic_exact_authority_violation_count": len(semantic_exact_violations),
+        "forbidden_claim_scopes": _source_family_forbidden_claim_scopes(
+            [str(row.get("source_family") or "") for row in authority_rows],
+            semantic_row_count=len([row for row in authority_rows if row.get("semantic_supplement")]),
+        ),
     }
 
 
@@ -670,17 +1510,508 @@ def compile_second_pass_retrieval_plan(
     return retrieval_plan
 
 
+def build_second_pass_reflection_diagnosis(
+    reflection_report: Mapping[str, Any],
+    *,
+    evidence_fusion_bundle: Mapping[str, Any] | None = None,
+    bounded_gap_register: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    report = normalize_reflection_report(reflection_report)
+    request_by_id = {
+        str(item.get("request_id") or item.get("requirement_id") or f"request_{index}"): dict(item)
+        for index, item in enumerate(report.get("second_pass_requests") or [], start=1)
+        if isinstance(item, Mapping)
+    }
+    missing_by_parent = {
+        str(item.get("requirement_id") or item.get("task_id") or f"missing_{index}"): dict(item)
+        for index, item in enumerate(report.get("missing_requirements") or [], start=1)
+        if isinstance(item, Mapping)
+    }
+    bounded_gaps = [dict(item) for item in (bounded_gap_register or {}).get("gaps") or [] if isinstance(item, Mapping)]
+    diagnoses: list[dict[str, Any]] = []
+    for index, request in enumerate(request_by_id.values(), start=1):
+        parent_id = str(request.get("parent_requirement_id") or request.get("requirement_id") or request.get("task_id") or "")
+        missing = missing_by_parent.get(parent_id, {})
+        source_families = _second_pass_source_families(request, missing)
+        evidence_routes = _string_list(request.get("evidence_routes") or request.get("retrieval_routes") or missing.get("evidence_routes"))
+        gap_type = _second_pass_gap_type(request, missing, source_families=source_families, evidence_routes=evidence_routes)
+        diagnoses.append(
+            {
+                "diagnosis_id": f"diagnosis_{index}",
+                "request_id": str(request.get("request_id") or f"second_pass_{index}"),
+                "parent_requirement_id": str(request.get("parent_requirement_id") or ""),
+                "task_id": str(request.get("task_id") or ""),
+                "trigger": report.get("trigger") or "coverage_reflection",
+                "gap_type": gap_type,
+                "source_families": source_families,
+                "evidence_routes": evidence_routes,
+                "operator_owners": _string_list(request.get("operator_owners") or missing.get("operator_owners")) or _operator_owners_for_routes(evidence_routes),
+                "tickers": _string_list(request.get("tickers") or missing.get("tickers")),
+                "metric_families": _string_list(request.get("metric_families") or missing.get("metric_families")),
+                "reason": _bounded_gap_reason({**missing, **request}),
+                "original_request": _sanitize_payload(request),
+                "matched_bounded_gap_ids": _matching_bounded_gap_ids(request, missing, bounded_gaps),
+                "diagnosis_boundary": "diagnosis_only_no_new_facts",
+            }
+        )
+    for gap in bounded_gaps:
+        gap_id = str(gap.get("gap_id") or "")
+        if not gap_id:
+            continue
+        if any(gap_id in _string_list(item.get("matched_bounded_gap_ids")) for item in diagnoses):
+            continue
+        diagnoses.append(
+            {
+                "diagnosis_id": f"diagnosis_{len(diagnoses) + 1}",
+                "request_id": "",
+                "parent_requirement_id": "",
+                "task_id": "",
+                "trigger": report.get("trigger") or "coverage_reflection",
+                "gap_type": _gap_type_for_row(gap),
+                "source_families": _string_list(gap.get("source_family")),
+                "evidence_routes": [],
+                "operator_owners": [],
+                "tickers": _string_list(gap.get("ticker")),
+                "metric_families": _string_list(gap.get("metric")),
+                "reason": _bounded_gap_reason(gap),
+                "original_request": {},
+                "matched_bounded_gap_ids": [gap_id],
+                "diagnosis_boundary": "bounded_gap_only_no_repair_request",
+            }
+        )
+    fusion_summary = (evidence_fusion_bundle or {}).get("summary") if isinstance((evidence_fusion_bundle or {}).get("summary"), Mapping) else {}
+    return _sanitize_payload(
+        {
+            "schema_version": SECOND_PASS_REFLECTION_DIAGNOSIS_SCHEMA_VERSION,
+            "trigger": report.get("trigger") or "coverage_reflection",
+            "diagnosis_count": len(diagnoses),
+            "diagnoses": diagnoses,
+            "summary": {
+                "by_gap_type": _count_by_key(diagnoses, "gap_type"),
+                "request_count": len(request_by_id),
+                "bounded_gap_reference_count": len([item for item in diagnoses if item.get("matched_bounded_gap_ids")]),
+                "pre_second_pass_exact_authority_row_count": int(fusion_summary.get("exact_authority_row_count") or 0),
+            },
+        }
+    )
+
+
+def build_second_pass_repair_plan(diagnosis: Mapping[str, Any]) -> dict[str, Any]:
+    repairs: list[dict[str, Any]] = []
+    for index, item in enumerate(diagnosis.get("diagnoses") or [], start=1):
+        if not isinstance(item, Mapping):
+            continue
+        gap_type = str(item.get("gap_type") or "exact_value_missing")
+        source_families = _string_list(item.get("source_families"))
+        evidence_routes = _string_list(item.get("evidence_routes")) or _routes_for_source_families(source_families)
+        action = _repair_action_for_gap(gap_type, source_families=source_families, evidence_routes=evidence_routes)
+        repairs.append(
+            {
+                "repair_id": f"repair_{index}",
+                "diagnosis_id": str(item.get("diagnosis_id") or f"diagnosis_{index}"),
+                "request_id": str(item.get("request_id") or ""),
+                "parent_requirement_id": str(item.get("parent_requirement_id") or ""),
+                "trigger": item.get("trigger") or diagnosis.get("trigger") or "coverage_reflection",
+                "gap_type": gap_type,
+                "repair_action": action,
+                "source_families": source_families,
+                "evidence_routes": evidence_routes,
+                "operator_owners": _string_list(item.get("operator_owners")) or _operator_owners_for_routes(evidence_routes),
+                "expected_authority_delta": _expected_authority_delta_for_repair(action, source_families=source_families, evidence_routes=evidence_routes),
+                "original_request": dict(item.get("original_request") or {}) if isinstance(item.get("original_request"), Mapping) else {},
+                "matched_bounded_gap_ids": _string_list(item.get("matched_bounded_gap_ids")),
+                "planner_boundary": "repair_plan_only_no_tool_execution",
+            }
+        )
+    return _sanitize_payload(
+        {
+            "schema_version": SECOND_PASS_REPAIR_PLAN_SCHEMA_VERSION,
+            "trigger": diagnosis.get("trigger") or "coverage_reflection",
+            "repair_count": len(repairs),
+            "repairs": repairs,
+            "summary": {
+                "by_repair_action": _count_by_key(repairs, "repair_action"),
+                "by_gap_type": _count_by_key(repairs, "gap_type"),
+            },
+        }
+    )
+
+
+def gate_second_pass_repair_plan(
+    repair_plan: Mapping[str, Any],
+    *,
+    activation_plan: Mapping[str, Any] | None = None,
+    ledger: ToolCallLedger | None = None,
+    web_scope_registry: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    activation = dict(activation_plan or {})
+    allowed_sources = set(_string_list(activation.get("allowed_source_families")))
+    budget_decision = ledger.can_start_second_pass() if ledger is not None else {"allowed": True, "reason": ""}
+    decisions: list[dict[str, Any]] = []
+    executable_requests: list[dict[str, Any]] = []
+    bounded_gap_candidates: list[dict[str, Any]] = []
+    for index, repair in enumerate(repair_plan.get("repairs") or [], start=1):
+        if not isinstance(repair, Mapping):
+            continue
+        source_families = _string_list(repair.get("source_families"))
+        evidence_routes = _string_list(repair.get("evidence_routes"))
+        action = str(repair.get("repair_action") or "")
+        request = dict(repair.get("original_request") or {}) if isinstance(repair.get("original_request"), Mapping) else {}
+        block_reasons: list[str] = []
+        if not budget_decision.get("allowed"):
+            block_reasons.append(str(budget_decision.get("reason") or "second_pass_budget_exhausted"))
+        if allowed_sources:
+            disallowed = sorted(set(source_families) - allowed_sources)
+            if disallowed:
+                block_reasons.append("source_family_not_allowed")
+        if action == "route_to_bounded_gap_register":
+            block_reasons.append("gap_not_retrievable_under_public_runtime")
+        if action == "run_source_specific_parser_repair":
+            block_reasons.append("parser_schema_repair_not_runtime_executable")
+        web_validation: dict[str, Any] = {}
+        if action == "request_live_web_snapshot":
+            web_validation = validate_web_evidence_request(request, web_scope_registry=web_scope_registry)
+            if web_validation["status"] != "pass":
+                block_reasons.extend(
+                    _dedupe(
+                        [
+                            str(error.get("type") or "web_evidence_request_invalid")
+                            for error in web_validation.get("errors") or []
+                            if isinstance(error, Mapping)
+                        ]
+                    )
+                    or ["web_evidence_request_invalid"]
+                )
+        if action != "route_to_bounded_gap_register" and not evidence_routes:
+            block_reasons.append("no_executable_evidence_routes")
+        if _repair_would_use_weak_proxy_for_strong_fact(repair):
+            block_reasons.append("weak_proxy_cannot_replace_authority_fact")
+
+        allowed = not block_reasons
+        if allowed and request:
+            normalized_web_request = (
+                dict(web_validation.get("normalized_request") or {})
+                if action == "request_live_web_snapshot" and isinstance(web_validation.get("normalized_request"), Mapping)
+                else {}
+            )
+            executable_requests.append(
+                {
+                    **request,
+                    **normalized_web_request,
+                    "repair_id": repair.get("repair_id") or f"repair_{index}",
+                    "repair_action": action,
+                    "expected_authority_delta": repair.get("expected_authority_delta") or "",
+                }
+            )
+        if not allowed:
+            bounded_gap_candidates.append(_repair_as_bounded_gap_candidate(repair, block_reasons=block_reasons))
+        decisions.append(
+            {
+                "repair_id": repair.get("repair_id") or f"repair_{index}",
+                "diagnosis_id": repair.get("diagnosis_id") or "",
+                "request_id": repair.get("request_id") or "",
+                "gap_type": repair.get("gap_type") or "",
+                "repair_action": action,
+                "allowed": allowed,
+                "block_reasons": block_reasons,
+                "source_families": source_families,
+                "evidence_routes": evidence_routes,
+                "web_request_validation": web_validation,
+            }
+        )
+    return _sanitize_payload(
+        {
+            "schema_version": SECOND_PASS_HARD_GATE_SCHEMA_VERSION,
+            "status": "pass" if executable_requests else "blocked",
+            "trigger": repair_plan.get("trigger") or "coverage_reflection",
+            "policy": "second_pass_repair_hard_gate_v0_1",
+            "decision_count": len(decisions),
+            "decisions": decisions,
+            "executable_requests": executable_requests,
+            "bounded_gap_candidates": bounded_gap_candidates,
+            "summary": {
+                "executable_request_count": len(executable_requests),
+                "blocked_repair_count": len([item for item in decisions if not item.get("allowed")]),
+                "by_block_reason": _count_block_reasons(decisions),
+            },
+        }
+    )
+
+
+def audit_second_pass_delta(
+    before_fusion_bundle: Mapping[str, Any] | None,
+    after_fusion_bundle: Mapping[str, Any] | None,
+    *,
+    hard_gate: Mapping[str, Any] | None = None,
+    execution_result: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    before_rows = [dict(item) for item in (before_fusion_bundle or {}).get("authority_rows") or [] if isinstance(item, Mapping)]
+    after_rows = [dict(item) for item in (after_fusion_bundle or {}).get("authority_rows") or [] if isinstance(item, Mapping)]
+    before_exact_refs = _authority_refs(before_rows, exact_only=True)
+    after_exact_refs = _authority_refs(after_rows, exact_only=True)
+    before_authority_refs = _authority_refs(before_rows, exact_only=False)
+    after_authority_refs = _authority_refs(after_rows, exact_only=False)
+    added_exact_refs = sorted(after_exact_refs - before_exact_refs)
+    added_authority_refs = sorted(after_authority_refs - before_authority_refs)
+    added_row_count = _second_pass_added_row_count(execution_result or {})
+    source_gap_delta = len((execution_result or {}).get("source_gaps") or [])
+    executable_decisions = [
+        dict(item)
+        for item in (hard_gate or {}).get("decisions") or []
+        if isinstance(item, Mapping) and item.get("allowed")
+    ]
+    blocked_decisions = [
+        dict(item)
+        for item in (hard_gate or {}).get("decisions") or []
+        if isinstance(item, Mapping) and not item.get("allowed")
+    ]
+    closed_gap_ids = [str(item.get("diagnosis_id") or item.get("request_id") or item.get("repair_id") or "") for item in executable_decisions[: len(added_authority_refs)] if str(item.get("diagnosis_id") or item.get("request_id") or item.get("repair_id") or "")]
+    open_gap_ids = [
+        str(item.get("diagnosis_id") or item.get("request_id") or item.get("repair_id") or "")
+        for item in [*executable_decisions[len(closed_gap_ids) :], *blocked_decisions]
+        if str(item.get("diagnosis_id") or item.get("request_id") or item.get("repair_id") or "")
+    ]
+    authority_bearing_delta = len(added_authority_refs)
+    stop_reason = "" if authority_bearing_delta else "no_new_authority_bearing_evidence"
+    return _sanitize_payload(
+        {
+            "schema_version": SECOND_PASS_DELTA_AUDIT_SCHEMA_VERSION,
+            "status": "pass" if authority_bearing_delta else "no_authority_delta",
+            "added_row_count": added_row_count,
+            "added_exact_authority_row_count": len(added_exact_refs),
+            "added_authority_bearing_row_count": authority_bearing_delta,
+            "added_exact_authority_refs": added_exact_refs[:20],
+            "added_authority_refs": added_authority_refs[:20],
+            "closed_gap_ids": closed_gap_ids,
+            "open_gap_ids": open_gap_ids,
+            "source_gap_delta": source_gap_delta,
+            "bounded_answer_allowed": not bool(authority_bearing_delta),
+            "stop_reason": stop_reason,
+            "policy": "authority_delta_required_to_continue_second_pass_v0_1",
+        }
+    )
+
+
+def _second_pass_source_families(request: Mapping[str, Any], missing: Mapping[str, Any]) -> list[str]:
+    families = _string_list(
+        request.get("source_families")
+        or request.get("source_family_gaps")
+        or missing.get("source_families")
+        or missing.get("source_family_gaps")
+    )
+    if families:
+        return families
+    routes = _string_list(request.get("evidence_routes") or missing.get("evidence_routes"))
+    return _source_families_for_routes(routes)
+
+
+def _second_pass_gap_type(
+    request: Mapping[str, Any],
+    missing: Mapping[str, Any],
+    *,
+    source_families: list[str],
+    evidence_routes: list[str],
+) -> str:
+    explicit = str(
+        request.get("gap_type")
+        or request.get("quality_gap_type")
+        or missing.get("gap_type")
+        or missing.get("quality_gap_type")
+        or ""
+    ).strip()
+    if explicit:
+        if explicit == "missing_numeric_runtime_ledger":
+            return "exact_value_missing"
+        if explicit == "missing_required_ticker_claim_card":
+            return "citation_weak"
+        if explicit == "missing_relationship_claim_ref":
+            return "relationship_scope_gap"
+        return explicit
+    combined = {**dict(missing or {}), **dict(request or {})}
+    reason = str(combined.get("reason") or combined.get("question_zh") or combined.get("analysis_intent") or "").lower()
+    if "region" in reason:
+        return "region_schema_gap"
+    if "period" in reason or "column" in reason:
+        return "period_column_group_gap"
+    classified = _gap_type_for_row(combined)
+    if classified != "retrievable_gap":
+        return classified
+    family_set = set(source_families)
+    route_set = set(evidence_routes)
+    if "parser" in reason or "table" in reason:
+        return "product_kpi_parser_gap" if "company_product_evidence_graph" in family_set else "source_specific_table_gate_gap"
+    if "commercial" in reason or "tracker" in reason:
+        return "commercial_tracker_gap"
+    if "milvus_semantic" in family_set or "milvus_semantic" in route_set:
+        return "milvus_semantic_recall_gap"
+    if "company_product_evidence_graph" in family_set:
+        return "product_binding_missing"
+    if "relationship_graph" in family_set:
+        return "relationship_scope_gap"
+    if "ledger_first" in route_set:
+        return "exact_value_missing"
+    if "risk_text" in route_set or "counter" in reason:
+        return "counterevidence_missing"
+    return "citation_weak"
+
+
+def _matching_bounded_gap_ids(
+    request: Mapping[str, Any],
+    missing: Mapping[str, Any],
+    bounded_gaps: list[Mapping[str, Any]],
+) -> list[str]:
+    if not bounded_gaps:
+        return []
+    tickers = set(_unique_upper(request.get("tickers") or missing.get("tickers") or []))
+    metrics = set(_string_list(request.get("metric_families") or missing.get("metric_families")))
+    families = set(_second_pass_source_families(request, missing))
+    matches: list[str] = []
+    for gap in bounded_gaps:
+        gap_id = str(gap.get("gap_id") or "")
+        if not gap_id:
+            continue
+        gap_ticker = str(gap.get("ticker") or "").upper().strip()
+        gap_metric = str(gap.get("metric") or "").strip()
+        gap_family = str(gap.get("source_family") or "").strip()
+        if tickers and gap_ticker and gap_ticker not in tickers:
+            continue
+        if metrics and gap_metric and gap_metric not in metrics:
+            continue
+        if families and gap_family and gap_family not in families:
+            continue
+        matches.append(gap_id)
+    return _dedupe(matches)
+
+
+def _repair_action_for_gap(gap_type: str, *, source_families: list[str], evidence_routes: list[str]) -> str:
+    if gap_type in {"commercial_tracker_gap", "public_unavailable_gap"}:
+        return "route_to_bounded_gap_register"
+    if gap_type in {"product_kpi_parser_gap", "region_schema_gap", "period_column_group_gap", "source_specific_table_gate_gap", "parser_schema_gap"}:
+        return "run_source_specific_parser_repair"
+    route_set = set(evidence_routes)
+    family_set = set(source_families)
+    if "ledger_first" in route_set:
+        return "query_exact_ledger"
+    if route_set & {"filing_text", "risk_text", "8k_commentary", "milvus_semantic"}:
+        return "query_sec_table_or_text"
+    if "company_product_evidence_graph" in family_set:
+        return "query_product_evidence_graph"
+    if "public_source_context" in family_set:
+        return "query_public_source_context"
+    if family_set & {"market_snapshot", "industry_snapshot"}:
+        return "query_market_or_industry_snapshot"
+    if "relationship_graph" in family_set:
+        return "query_relationship_graph"
+    if "live_public_web_context" in family_set:
+        return "request_live_web_snapshot"
+    return "route_to_bounded_gap_register"
+
+
+def _expected_authority_delta_for_repair(
+    action: str,
+    *,
+    source_families: list[str],
+    evidence_routes: list[str],
+) -> str:
+    if action == "query_exact_ledger" or "ledger_first" in set(evidence_routes):
+        return "exact_authority"
+    if action == "query_product_evidence_graph":
+        return "product_runtime_fact_if_runtime_fact_allowed"
+    if action in {"query_sec_table_or_text", "query_relationship_graph"}:
+        return "context_or_authority_depending_on_source_row"
+    if action in {"query_public_source_context", "query_market_or_industry_snapshot", "request_live_web_snapshot"}:
+        return "context_only"
+    return "none"
+
+
+def _repair_would_use_weak_proxy_for_strong_fact(repair: Mapping[str, Any]) -> bool:
+    gap_type = str(repair.get("gap_type") or "")
+    source_families = set(_string_list(repair.get("source_families")))
+    if gap_type in {"exact_value_missing", "product_binding_missing", "product_kpi_parser_gap", "region_schema_gap", "period_column_group_gap"}:
+        return bool(source_families & {"public_source_context", "market_snapshot", "industry_snapshot", "live_public_web_context"})
+    return False
+
+
+def _repair_as_bounded_gap_candidate(repair: Mapping[str, Any], *, block_reasons: list[str]) -> dict[str, Any]:
+    source_families = _string_list(repair.get("source_families"))
+    source_family = source_families[0] if source_families else "unknown"
+    original = repair.get("original_request") if isinstance(repair.get("original_request"), Mapping) else {}
+    return {
+        "gap_id": str(repair.get("diagnosis_id") or repair.get("repair_id") or ""),
+        "source_family": source_family,
+        "gap_type": str(repair.get("gap_type") or "retrievable_gap"),
+        "status": "blocked_by_second_pass_hard_gate",
+        "ticker": ",".join(_string_list(original.get("tickers"))),
+        "metric": ",".join(_string_list(original.get("metric_families"))),
+        "bounded_reason": ",".join(block_reasons) or "second_pass_repair_blocked",
+        "repairability": _gap_repairability(str(repair.get("gap_type") or "retrievable_gap")),
+        "claim_boundary": "do_not_fill_with_generic_fallback_or_proxy_fact",
+    }
+
+
+def _count_block_reasons(decisions: list[Mapping[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for decision in decisions:
+        for reason in _string_list(decision.get("block_reasons")):
+            counts[reason] = counts.get(reason, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _authority_refs(rows: list[Mapping[str, Any]], *, exact_only: bool) -> set[str]:
+    refs: set[str] = set()
+    for row in rows:
+        if exact_only and not bool(row.get("exact_value_authority")):
+            continue
+        if not exact_only and not _row_is_authority_bearing(row):
+            continue
+        ref = str(row.get("evidence_ref") or "")
+        if ref:
+            refs.add(ref)
+    return refs
+
+
+def _row_is_authority_bearing(row: Mapping[str, Any]) -> bool:
+    if bool(row.get("exact_value_authority")):
+        return True
+    tier = str(row.get("authority_tier") or "")
+    return tier in {"primary_exact_value", "company_disclosed_product_kpi_fact", "company_disclosed_context"}
+
+
+def _second_pass_added_row_count(result: Mapping[str, Any]) -> int:
+    return (
+        len(result.get("context_rows") or [])
+        + len(result.get("runtime_ledger_rows") or [])
+        + len(result.get("market_snapshot_rows") or [])
+        + len(result.get("industry_snapshot_rows") or [])
+        + len(result.get("product_evidence_rows") or [])
+        + len(result.get("public_source_context_rows") or [])
+    )
+
+
 def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, Any]:
     """Build the bounded role input allowed by the static agent registry."""
     registry = agent_registry_by_id()
     entry = dict(registry.get(str(agent_id or "")) or {})
+    global_context = _global_context_for_agent_data_view(state)
+    global_context_ref = _global_context_ref(global_context)
     if not entry:
-        return {
+        failed = {
             "schema_version": AGENT_DATA_VIEW_SCHEMA_VERSION,
             "status": "fail",
             "agent_id": str(agent_id or ""),
+            "global_context_ref": global_context_ref,
+            "role_context": _role_context_for_agent_data_view(str(agent_id or ""), {}, state, [], {}, [], []),
+            "bounded_evidence_rows": [],
+            "source_family_bundle": {},
+            "assigned_task_card": {},
+            "required_claim_slots": [],
+            "forbidden_claim_scopes": [],
+            "bounded_gap_refs": _bounded_gap_refs_for_agent_data_view(state, []),
+            "private_context_policy": "private_operator_context_excluded",
             "errors": [{"type": "unknown_agent", "agent_id": str(agent_id or "")}],
         }
+        failed["context_digest"] = _payload_digest(failed)
+        return _sanitize_payload(failed)
 
     allowed_views = _string_list(entry.get("allowed_data_views"))
     view: dict[str, Any] = {
@@ -688,25 +2019,40 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
         "status": "pass",
         "agent_id": entry["agent_id"],
         "allowed_data_views": allowed_views,
+        "global_context_ref": global_context_ref,
+        "role_context": {},
+        "private_context_policy": "private_operator_context_excluded",
         "payload_policy": {
             "raw_evidence": "not_included",
             "private_paths": "stripped",
+            "private_operator_context": "not_included",
+            "milvus_handles": "not_included",
+            "api_key_env_names": "not_included",
             "internal_reasoning": "not_included",
         },
         "summary": _state_summary_for_data_view(state),
         "input_budget": _data_view_input_budget(entry["agent_id"], state),
+        "forbidden_claim_scopes": [],
+        "bounded_gap_refs": [],
     }
+    if entry["agent_id"] != "memo_writer":
+        view["global_context"] = global_context
 
     allowed = set(allowed_views)
+    bounded_rows: list[dict[str, Any]] = []
+    source_family_bundle: dict[str, Any] = {}
+    task_card: dict[str, Any] = {}
+    required_claim_slots: list[dict[str, Any]] = []
     if "source_inventory" in allowed or "summary_only" in allowed:
-        view["source_inventory"] = _sanitize_payload(state.get("project_inventory") or state.get("source_inventory") or {})
+        view["source_inventory"] = _sanitize_payload(_source_inventory_for_agent_view(state.get("project_inventory") or state.get("source_inventory") or {}))
     if "artifact_ref" in allowed:
         view["artifact_refs"] = _artifact_ref_summary(state.get("artifact_refs") or {})
     if "bounded_rows" in allowed:
         bounded_rows = _bounded_rows_for_agent_data_view(entry["agent_id"], state)
         view["bounded_evidence_rows"] = bounded_rows
         view["bounded_row_distribution"] = _bounded_row_distribution(bounded_rows)
-        view["source_family_bundle"] = _source_family_bundle_for_agent(entry["agent_id"], bounded_rows, state)
+        source_family_bundle = _source_family_bundle_for_agent(entry["agent_id"], bounded_rows, state)
+        view["source_family_bundle"] = source_family_bundle
     if "coverage_summary" in allowed:
         view["coverage_summary"] = _coverage_summary_view(state)
     if "tool_trace_summary" in allowed:
@@ -720,18 +2066,374 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
     if entry["agent_id"] in SPECIALIST_EXECUTION_ORDER:
         task_card = _assigned_task_card_for_specialist(entry["agent_id"], state)
         view["assigned_task_card"] = task_card
-        view["required_claim_slots"] = _required_claim_slots_for_specialist(
+        required_claim_slots = _required_claim_slots_for_specialist(
             entry["agent_id"],
             state,
             task_card=task_card,
         )
+        view["required_claim_slots"] = required_claim_slots
         view["counterclaim_slots"] = _counterclaim_slots_for_specialist(
             entry["agent_id"],
             state,
             task_card=task_card,
         )
+    view["forbidden_claim_scopes"] = _string_list(source_family_bundle.get("forbidden_claim_scopes"))[:32]
+    view["bounded_gap_refs"] = _bounded_gap_refs_for_agent_data_view(state, bounded_rows)
+    view["role_context"] = _role_context_for_agent_data_view(
+        entry["agent_id"],
+        entry,
+        state,
+        bounded_rows,
+        source_family_bundle,
+        task_card,
+        required_claim_slots,
+    )
+    view["context_digest"] = _payload_digest(
+        {
+            "schema_version": view["schema_version"],
+            "agent_id": view["agent_id"],
+            "global_context_ref": view["global_context_ref"],
+            "role_context": view["role_context"],
+            "bounded_row_distribution": view.get("bounded_row_distribution") or {},
+            "source_family_bundle": view.get("source_family_bundle") or {},
+            "assigned_task_card": view.get("assigned_task_card") or {},
+            "required_claim_slots": view.get("required_claim_slots") or [],
+            "bounded_gap_refs": view.get("bounded_gap_refs") or [],
+        }
+    )
 
     return _sanitize_payload(view)
+
+
+def _global_context_for_agent_data_view(state: Mapping[str, Any]) -> dict[str, Any]:
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    gap_register = _bounded_gap_register_for_agent_data_view(state)
+    return _sanitize_payload(
+        {
+            "schema_version": "sec_agent_global_context_v0.3",
+            "user_query": _truncate(str(state.get("user_query") or query_contract.get("raw_query") or query_contract.get("user_query") or ""), 500),
+            "query_contract": {
+                "focus_tickers": _string_list(query_contract.get("focus_tickers") or activation.get("focus_tickers"))[:16],
+                "search_scope_tickers": _string_list(query_contract.get("search_scope_tickers") or activation.get("search_scope_tickers"))[:32],
+                "question_type": str(query_contract.get("question_type") or query_contract.get("intent") or ""),
+                "time_horizon": str(query_contract.get("time_horizon") or ""),
+                "raw_query_present": bool(query_contract.get("raw_query") or state.get("user_query")),
+            },
+            "activation_plan": {
+                "execution_mode": str(activation.get("execution_mode") or state.get("execution_mode") or ""),
+                "activate_agents": _string_list(activation.get("activate_agents"))[:16],
+                "allowed_source_families": _string_list(activation.get("allowed_source_families"))[:16],
+                "agent_priorities": dict(activation.get("agent_priorities") or {}) if isinstance(activation.get("agent_priorities"), Mapping) else {},
+                "max_tool_calls_total": activation.get("max_tool_calls_total"),
+            },
+            "selected_playbook_ids": _selected_playbook_ids_from_state(state),
+            "source_inventory_brief": _source_inventory_brief_for_global_context(state),
+            "source_boundary_registry": _source_boundary_registry_for_global_context(state),
+            "coverage_summary": _coverage_summary_for_global_context(state),
+            "bounded_gap_register": _compact_bounded_gap_register_for_context(gap_register),
+            "claim_card_schema": _claim_card_schema_for_global_context(),
+            "run_trace_summary": _run_trace_summary_for_global_context(state),
+        }
+    )
+
+
+def _global_context_ref(global_context: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": "sec_agent_global_context_ref_v0.3",
+        "context_digest": _payload_digest(global_context),
+        "visible_fields": [
+            "user_query",
+            "query_contract",
+            "activation_plan",
+            "selected_playbook_ids",
+            "source_inventory_brief",
+            "source_boundary_registry",
+            "coverage_summary",
+            "bounded_gap_register",
+            "claim_card_schema",
+            "run_trace_summary",
+        ],
+        "private_context_policy": "private_operator_context_excluded",
+    }
+
+
+def _role_context_for_agent_data_view(
+    agent_id: str,
+    entry: Mapping[str, Any],
+    state: Mapping[str, Any],
+    rows: list[Mapping[str, Any]],
+    source_family_bundle: Mapping[str, Any],
+    task_card: Mapping[str, Any],
+    required_claim_slots: list[Mapping[str, Any]],
+) -> dict[str, Any]:
+    allowed_views = _string_list(entry.get("allowed_data_views"))
+    base = {
+        "schema_version": "sec_agent_role_context_v0.3",
+        "agent_id": str(agent_id or ""),
+        "role_context_type": _role_context_type(agent_id),
+        "allowed_data_views": allowed_views,
+        "private_context_policy": "private_operator_context_excluded",
+        "raw_rows_visible": False,
+        "bounded_rows_visible": "bounded_rows" in set(allowed_views),
+        "selected_source_families": _string_list(source_family_bundle.get("selected_source_families"))[:16],
+        "context_only_source_families": _string_list(source_family_bundle.get("context_only_source_families"))[:16],
+        "exact_value_authority_source_families": _string_list(source_family_bundle.get("exact_value_authority_source_families"))[:16],
+        "forbidden_claim_scopes": _string_list(source_family_bundle.get("forbidden_claim_scopes"))[:32],
+        "bounded_gap_refs": _bounded_gap_refs_for_agent_data_view(state, rows)[:16],
+    }
+    if agent_id in SPECIALIST_EXECUTION_ORDER:
+        base.update(
+            {
+                "assigned_memo_slot": str(task_card.get("assigned_memo_slot") or _specialist_memo_slot(agent_id)),
+                "analyst_lens": str(task_card.get("analyst_lens") or _specialist_lens(agent_id)),
+                "required_claim_slot_ids": [
+                    str(slot.get("slot_id") or "")
+                    for slot in required_claim_slots
+                    if isinstance(slot, Mapping) and str(slot.get("slot_id") or "")
+                ][:12],
+                "bounded_row_count": len(rows),
+                "claim_card_output_required": True,
+            }
+        )
+    elif agent_id == "memo_writer":
+        base.update(
+            {
+                "allowed_input_views": ["verified_judgment_plan", "approved_claim_cards", "bounded_gap_register"],
+                "bounded_rows_visible": False,
+                "memo_writer_policy": "verified_judgment_plan_only_no_raw_or_bounded_rows",
+            }
+        )
+    elif agent_id == "research_lead":
+        base.update(
+            {
+                "planning_inputs": ["source_inventory_brief", "playbook_candidates", "source_boundary_registry", "query_contract"],
+                "raw_rows_visible": False,
+            }
+        )
+    elif agent_id in {"coverage_reflection", "judgment_plan_aggregator", "verifier"}:
+        base.update(
+            {
+                "review_inputs": allowed_views,
+                "bounded_row_count": len(rows),
+                "claim_boundary_check_required": True,
+            }
+        )
+    return _sanitize_payload(base)
+
+
+def _role_context_type(agent_id: str) -> str:
+    if agent_id in SPECIALIST_EXECUTION_ORDER:
+        return "specialist"
+    if agent_id == "memo_writer":
+        return "memo_writer"
+    if agent_id == "research_lead":
+        return "research_lead"
+    if agent_id in {"coverage_reflection", "judgment_plan_aggregator", "verifier"}:
+        return "review_barrier"
+    return "operator_or_support"
+
+
+def _source_inventory_brief_for_global_context(state: Mapping[str, Any]) -> dict[str, Any]:
+    inventory = state.get("project_inventory") if isinstance(state.get("project_inventory"), Mapping) else {}
+    if not inventory and isinstance(state.get("source_inventory"), Mapping):
+        inventory = state.get("source_inventory")  # type: ignore[assignment]
+    if inventory:
+        return _sanitize_payload(_source_inventory_for_agent_view(inventory))
+    return {
+        "schema_version": "inventory_brief_unavailable_v0.1",
+        "available_source_families": _available_source_families_from_state(state),
+        "source_family_availability": {},
+        "milvus_runtime": _milvus_runtime_context_from_state(state),
+    }
+
+
+def _source_boundary_registry_for_global_context(state: Mapping[str, Any]) -> dict[str, Any]:
+    inventory = _source_inventory_brief_for_global_context(state)
+    return {
+        "schema_version": "sec_agent_source_boundary_registry_v0.3",
+        "allowed_source_families": _available_source_families_from_state(state),
+        "source_family_authority": dict(inventory.get("source_family_authority") or {}) if isinstance(inventory.get("source_family_authority"), Mapping) else {},
+        "source_boundaries": dict(inventory.get("source_boundaries") or {}) if isinstance(inventory.get("source_boundaries"), Mapping) else {},
+        "milvus_runtime": _milvus_runtime_context_from_state(state),
+        "private_operator_context": "excluded",
+    }
+
+
+def _coverage_summary_for_global_context(state: Mapping[str, Any]) -> dict[str, Any]:
+    bundle = state.get("evidence_fusion_bundle") if isinstance(state.get("evidence_fusion_bundle"), Mapping) else {}
+    fusion_summary = bundle.get("summary") if isinstance(bundle.get("summary"), Mapping) else {}
+    coverage_view = _coverage_summary_view(state)
+    return {
+        "schema_version": "sec_agent_coverage_summary_v0.3",
+        "row_counts": {
+            "context_rows": len(state.get("context_rows") or []),
+            "runtime_ledger_rows": len(state.get("runtime_ledger_rows") or []),
+            "market_snapshot_rows": len(state.get("market_snapshot_rows") or []),
+            "industry_snapshot_rows": len(state.get("industry_snapshot_rows") or []),
+            "product_evidence_rows": len(state.get("product_evidence_rows") or []),
+            "public_source_context_rows": len(state.get("public_source_context_rows") or []),
+        },
+        "fusion_summary": _sanitize_payload(fusion_summary),
+        "reflection_summary": coverage_view,
+    }
+
+
+def _compact_bounded_gap_register_for_context(register: Mapping[str, Any]) -> dict[str, Any]:
+    gaps = [dict(item) for item in register.get("gaps") or [] if isinstance(item, Mapping)]
+    summary = register.get("summary") if isinstance(register.get("summary"), Mapping) else {}
+    return _sanitize_payload(
+        {
+            "schema_version": str(register.get("schema_version") or BOUNDED_GAP_REGISTER_SCHEMA_VERSION),
+            "gap_count": int(register.get("gap_count") or len(gaps)),
+            "summary": dict(summary),
+            "gap_refs": [
+                {
+                    "gap_id": str(gap.get("gap_id") or ""),
+                    "source_family": str(gap.get("source_family") or ""),
+                    "gap_type": str(gap.get("gap_type") or ""),
+                    "ticker": str(gap.get("ticker") or ""),
+                    "metric": str(gap.get("metric") or ""),
+                    "repairability": str(gap.get("repairability") or ""),
+                    "claim_boundary": str(gap.get("claim_boundary") or "do_not_fill_with_generic_fallback_or_proxy_fact"),
+                }
+                for gap in gaps[:24]
+            ],
+        }
+    )
+
+
+def _bounded_gap_register_for_agent_data_view(state: Mapping[str, Any]) -> dict[str, Any]:
+    register = state.get("bounded_gap_register") if isinstance(state.get("bounded_gap_register"), Mapping) else {}
+    if register:
+        return dict(register)
+    bundle = state.get("evidence_fusion_bundle") if isinstance(state.get("evidence_fusion_bundle"), Mapping) else {}
+    register = bundle.get("bounded_gap_register") if isinstance(bundle.get("bounded_gap_register"), Mapping) else {}
+    if register:
+        return dict(register)
+    return _bounded_gap_register_from_state(state, [])
+
+
+def _bounded_gap_refs_for_agent_data_view(state: Mapping[str, Any], rows: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    register = _bounded_gap_register_for_agent_data_view(state)
+    gaps = [dict(item) for item in register.get("gaps") or [] if isinstance(item, Mapping)]
+    if not gaps:
+        return []
+    row_refs = {str(row.get("evidence_ref") or row.get("gap_id") or "") for row in rows if isinstance(row, Mapping)}
+    row_tickers = {str(row.get("ticker") or "").upper() for row in rows if isinstance(row, Mapping) and str(row.get("ticker") or "").strip()}
+    row_families = {str(row.get("source_family") or "") for row in rows if isinstance(row, Mapping) and str(row.get("source_family") or "").strip()}
+    selected: list[dict[str, Any]] = []
+    for gap in gaps:
+        gap_id = str(gap.get("gap_id") or "")
+        ticker = str(gap.get("ticker") or "").upper()
+        family = str(gap.get("source_family") or "")
+        if rows and gap_id not in row_refs and ticker not in row_tickers and family not in row_families:
+            continue
+        selected.append(
+            {
+                "gap_id": gap_id,
+                "source_family": family,
+                "gap_type": str(gap.get("gap_type") or ""),
+                "ticker": ticker,
+                "metric": str(gap.get("metric") or ""),
+                "repairability": str(gap.get("repairability") or ""),
+                "claim_boundary": str(gap.get("claim_boundary") or "do_not_fill_with_generic_fallback_or_proxy_fact"),
+            }
+        )
+    if not selected and not rows:
+        selected = [
+            {
+                "gap_id": str(gap.get("gap_id") or ""),
+                "source_family": str(gap.get("source_family") or ""),
+                "gap_type": str(gap.get("gap_type") or ""),
+                "ticker": str(gap.get("ticker") or "").upper(),
+                "metric": str(gap.get("metric") or ""),
+                "repairability": str(gap.get("repairability") or ""),
+                "claim_boundary": str(gap.get("claim_boundary") or "do_not_fill_with_generic_fallback_or_proxy_fact"),
+            }
+            for gap in gaps[:12]
+        ]
+    return _sanitize_payload(selected[:16])
+
+
+def _claim_card_schema_for_global_context() -> dict[str, Any]:
+    return {
+        "schema_version": "sec_agent_claim_card_schema_ref_v0.3",
+        "required_fields": [
+            "claim_id",
+            "agent_id",
+            "claim",
+            "claim_type",
+            "memo_slot",
+            "evidence_refs",
+            "source_families",
+            "materiality",
+        ],
+        "evidence_policy": "supported_claims_must_cite_visible_bounded_evidence_refs",
+        "gap_policy": "bounded_gap_refs_can_explain_missing_evidence_but_cannot_substitute_for_facts",
+    }
+
+
+def _run_trace_summary_for_global_context(state: Mapping[str, Any]) -> dict[str, Any]:
+    trace = _tool_trace_summary_view(state)
+    return {
+        "schema_version": "sec_agent_run_trace_summary_v0.3",
+        "tool_call_count": len(trace.get("tool_calls") or []),
+        "tool_observation_count": len(trace.get("tool_observations") or []),
+        "loop_break_reason": str(trace.get("loop_break_reason") or ""),
+        "private_query_traces": "excluded",
+    }
+
+
+def _selected_playbook_ids_from_state(state: Mapping[str, Any]) -> list[str]:
+    policy = _playbook_policy_from_state(state)
+    if policy:
+        return _string_list(policy.get("selected_playbook_ids"))[:8]
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    return _string_list(activation.get("selected_playbook_ids"))[:8]
+
+
+def _available_source_families_from_state(state: Mapping[str, Any]) -> list[str]:
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    families = _string_list(activation.get("allowed_source_families"))
+    if families:
+        return families[:16]
+    return sorted(
+        family
+        for family in {
+            _row_source_family(row)
+            for key in (
+                "runtime_ledger_rows",
+                "context_rows",
+                "market_snapshot_rows",
+                "industry_snapshot_rows",
+                "product_evidence_rows",
+                "public_source_context_rows",
+            )
+            for row in _row_dicts(state.get(key))
+        }
+        if family
+    )
+
+
+def _milvus_runtime_context_from_state(state: Mapping[str, Any]) -> dict[str, Any]:
+    inventory = state.get("project_inventory") if isinstance(state.get("project_inventory"), Mapping) else {}
+    runtime = {}
+    for source in (
+        state.get("milvus_runtime") if isinstance(state.get("milvus_runtime"), Mapping) else {},
+        inventory.get("milvus_runtime") if isinstance(inventory.get("milvus_runtime"), Mapping) else {},
+    ):
+        if isinstance(source, Mapping) and source:
+            runtime = dict(source)
+            break
+    location = str(runtime.get("location") or runtime.get("deployment") or runtime.get("mode") or "")
+    available = bool(runtime.get("available")) if "available" in runtime else bool(location)
+    return {
+        "available": available,
+        "location": location or ("cloud_or_local_configured" if available else "unavailable"),
+        "semantic_authority_boundary": "semantic_recall_only_not_exact_value_authority",
+        "private_handles": "excluded",
+    }
 
 
 def _assigned_task_card_for_specialist(agent_id: str, state: Mapping[str, Any]) -> dict[str, Any]:
@@ -791,6 +2493,39 @@ def _required_claim_slots_for_specialist(
                 claim_type_allowlist=["business_observation"],
                 required_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing"],
                 instruction="Explain whether the bounded facts imply growth quality, margin pressure, capital intensity, liquidity, or demand strength.",
+            ),
+        ]
+    if agent_id == "product_technology_analyst":
+        return [
+            _claim_slot(
+                agent_id,
+                slot_id="product_taxonomy_or_surface",
+                memo_slot="product_technology",
+                target_claim_count="1-2",
+                claim_type_allowlist=["product_taxonomy_context", "business_observation"],
+                required_source_families=["company_product_evidence_graph", "public_source_context", "live_public_web_context"],
+                instruction="Describe the product, segment, SKU, platform, or technology surface. Company product graph rows are primary; public/live rows are enrichment context only.",
+            ),
+            _claim_slot(
+                agent_id,
+                slot_id="company_disclosed_product_kpi",
+                memo_slot="product_technology",
+                target_claim_count=target,
+                claim_type_allowlist=["company_disclosed_product_kpi"],
+                required_source_families=["company_product_evidence_graph"],
+                instruction=(
+                    "Write product KPI facts only from company_product_evidence_graph rows with "
+                    "promotion_status=runtime_fact_allowed and exact_value_authority=true; include product/segment, value, unit, and period when visible."
+                ),
+            ),
+            _claim_slot(
+                agent_id,
+                slot_id="public_proxy_or_verification_context",
+                memo_slot="product_technology",
+                target_claim_count="0-2",
+                claim_type_allowlist=["public_proxy_context", "business_observation"],
+                required_source_families=["public_source_context", "live_public_web_context"],
+                instruction="Use public source and allowlisted web rows only as directional proxy, validation context, or lead evidence; do not convert them into product sales, share, inventory, margin, or profitability facts.",
             ),
         ]
     if agent_id == "industry_supply_chain_analyst":
@@ -876,6 +2611,22 @@ def _counterclaim_slots_for_specialist(
                 instruction="Use conflicts only when bounded evidence directly opposes the thesis or another bounded ClaimCard.",
                 slot_kind="counterclaim_or_gap",
             ),
+        ]
+    if agent_id == "product_technology_analyst":
+        return [
+            _claim_slot(
+                agent_id,
+                slot_id="product_commercial_tracker_gap",
+                memo_slot="product_technology",
+                target_claim_count=common_cap,
+                claim_type_allowlist=["source_gap", "unsupported_claim"],
+                required_source_families=["company_product_evidence_graph", "public_source_context", "live_public_web_context"],
+                instruction=(
+                    "Expose missing sell-through, market share, channel inventory, app revenue, prescriptions, POS, ASP, or tracker forecast data as a commercial tracker gap; "
+                    "do not backfill the gap with public proxy rows."
+                ),
+                slot_kind="counterclaim_or_gap",
+            )
         ]
     return [
         _claim_slot(
@@ -998,6 +2749,33 @@ def _requirement_matches_specialist(agent_id: str, requirement: Mapping[str, Any
     )
     if agent_id == "fundamental_analyst":
         return bool(families & {"primary_sec_filing", "company_authored_unaudited_sec_filing"} or routes & {"ledger_first", "filing_text", "8k_commentary"} or owners & {"sec_operator", "eight_k_operator"})
+    if agent_id == "product_technology_analyst":
+        return bool(
+            families & {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+            or routes & {"live_public_web_context"}
+            or owners & {"web_evidence_operator"}
+            or any(
+                term in text
+                for term in (
+                    "product",
+                    "sku",
+                    "taxonomy",
+                    "platform",
+                    "developer",
+                    "clinical",
+                    "trial",
+                    "regulatory",
+                    "app",
+                    "product_kpi",
+                    "产品",
+                    "产品线",
+                    "产品指标",
+                    "主业",
+                    "临床",
+                    "监管",
+                )
+            )
+        )
     if agent_id == "industry_supply_chain_analyst":
         return bool(families & {"industry_snapshot", "relationship_graph"} or routes & {"industry_snapshot", "relationship_graph"} or any(term in text for term in ("industry", "supply", "relationship", "sector", "chain", "readthrough")))
     if agent_id == "market_valuation_analyst":
@@ -1036,6 +2814,7 @@ def _dedupe_requirements(requirements: list[dict[str, Any]]) -> list[dict[str, A
 def _specialist_lens(agent_id: str) -> str:
     return {
         "fundamental_analyst": "company_reported_fundamentals_and_management_commentary",
+        "product_technology_analyst": "product_taxonomy_company_disclosed_product_kpi_public_proxy_and_commercial_gap",
         "industry_supply_chain_analyst": "industry_supply_chain_relationship_hypotheses_and_transmission",
         "market_valuation_analyst": "timestamped_market_reaction_and_valuation_context",
         "risk_counterevidence_analyst": "risks_counterevidence_source_gaps_and_boundary_misuse",
@@ -1045,6 +2824,7 @@ def _specialist_lens(agent_id: str) -> str:
 def _specialist_memo_slot(agent_id: str) -> str:
     return {
         "fundamental_analyst": "fundamentals",
+        "product_technology_analyst": "product_technology",
         "industry_supply_chain_analyst": "industry_relationship",
         "market_valuation_analyst": "market_valuation",
         "risk_counterevidence_analyst": "risk_counterevidence",
@@ -1058,6 +2838,11 @@ def _specialist_required_source_families(agent_id: str) -> list[str]:
             "company_authored_unaudited_sec_filing",
             "company_product_evidence_graph",
         ],
+        "product_technology_analyst": [
+            "company_product_evidence_graph",
+            "public_source_context",
+            "live_public_web_context",
+        ],
         "industry_supply_chain_analyst": [
             "industry_snapshot",
             "relationship_graph",
@@ -1070,6 +2855,7 @@ def _specialist_required_source_families(agent_id: str) -> list[str]:
             "company_authored_unaudited_sec_filing",
             "company_product_evidence_graph",
             "public_source_context",
+            "live_public_web_context",
             "market_snapshot",
             "industry_snapshot",
             "run_artifact",
@@ -1246,6 +3032,42 @@ def execute_evidence_operator_plan(
         if not agent_id:
             observations.append(_observation(route, "", "", "blocked", error="unsupported_retrieval_route"))
             continue
+        if route_name == "milvus_semantic":
+            capability = milvus_runtime_capability(context)
+            if not capability["runtime_bound"]:
+                gap = {
+                    "source_family": "milvus_semantic",
+                    "retrieval_route": "milvus_semantic",
+                    "reason_code": "milvus_runtime_unavailable" if not capability["available"] else "milvus_runtime_not_bound",
+                    "reason": (
+                        "Milvus semantic route was requested, but the current runtime is not bound to a usable "
+                        "cloud/local Milvus endpoint and collection."
+                    ),
+                    "status": capability["status"],
+                    "location": capability["location"],
+                    "missing": capability["missing_runtime_fields"],
+                    "fallback_routes": capability["fallback_routes"],
+                    "claim_boundary": "semantic_recall_unavailable_do_not_mock_or_use_as_exact_value_authority",
+                }
+                observations.append(
+                    _observation(
+                        route,
+                        agent_id,
+                        tool_name,
+                        "skipped",
+                        error=gap["reason_code"],
+                        row_count=0,
+                        source_gap_count=1,
+                        boundary={
+                            "status": "fail",
+                            "policy": "milvus_runtime_capability_gate_v0_1",
+                            "claim_boundary": gap["claim_boundary"],
+                        },
+                        runtime_summary={"milvus_runtime": _public_milvus_runtime_capability(capability)},
+                    )
+                )
+                source_gaps.append(gap)
+                continue
         permission = validate_operator_tool_call(agent_id=agent_id, tool_name=tool_name)
         if permission["status"] != "pass":
             observations.append(_observation(route, agent_id, tool_name, "blocked", error=permission["error"]))
@@ -1343,6 +3165,8 @@ def execute_evidence_operator_plan(
             industry_rows.extend(rows)
         elif tool_name == "relationship_graph_lookup":
             context_rows.extend(rows)
+        elif tool_name == "web_evidence_snapshot":
+            context_rows.extend(rows)
         source_gaps.extend(gaps)
         artifact_refs.extend(refs)
         if sec_group_member and sec_group_member.get("is_first") and tool_name == "sec_search_filings":
@@ -1371,6 +3195,264 @@ def execute_evidence_operator_plan(
         "loop_break_reason": active_ledger.loop_break_reason,
         "bounded_answer_allowed": active_ledger.bounded_answer_allowed,
     }
+
+
+def build_evidence_operator_fanout_plan(retrieval_plan: Mapping[str, Any]) -> dict[str, Any]:
+    routes = [dict(route) for route in retrieval_plan.get("routes") or [] if isinstance(route, Mapping)]
+    shards_by_key: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
+    first_index: dict[tuple[str, str, str], int] = {}
+    for index, route in enumerate(routes):
+        route_name = str(route.get("retrieval_route") or "")
+        source_family = _route_source_family_for_fanout(route)
+        agent_id, tool_name = ROUTE_OPERATOR_TOOL.get(route_name, ("", ""))
+        key = (source_family, agent_id, tool_name)
+        shards_by_key.setdefault(key, []).append(route)
+        first_index.setdefault(key, index)
+    shards = []
+    for shard_index, key in enumerate(sorted(shards_by_key, key=lambda item: first_index[item]), start=1):
+        source_family, agent_id, tool_name = key
+        shard_routes = shards_by_key[key]
+        shards.append(
+            {
+                "shard_id": f"evidence_shard_{shard_index:02d}_{_slug(source_family or 'unknown')}",
+                "shard_index": shard_index,
+                "source_family": source_family,
+                "operator_owner": agent_id,
+                "tool_name": tool_name,
+                "route_ids": [_route_identity(route) for route in shard_routes],
+                "route_count": len(shard_routes),
+                "merge_key": [shard_index, source_family, agent_id, tool_name],
+                "routes": shard_routes,
+            }
+        )
+    return {
+        "schema_version": EVIDENCE_OPERATOR_FANOUT_PLAN_SCHEMA_VERSION,
+        "policy": "source_family_operator_shards_deterministic_merge_v0_1",
+        "shard_count": len(shards),
+        "route_count": len(routes),
+        "shards": shards,
+    }
+
+
+def execute_evidence_operator_fanout_plan(
+    retrieval_plan: Mapping[str, Any],
+    *,
+    turn_id: str,
+    ledger: ToolCallLedger | None = None,
+    state_context: Mapping[str, Any] | None = None,
+    tool_executor: ToolExecutor | None = None,
+    dry_run: bool = False,
+    max_workers: int = 4,
+) -> dict[str, Any]:
+    fanout_plan = build_evidence_operator_fanout_plan(retrieval_plan)
+    shards = [dict(shard) for shard in fanout_plan.get("shards") or [] if isinstance(shard, Mapping)]
+    if not shards:
+        base = execute_evidence_operator_plan(
+            retrieval_plan,
+            turn_id=turn_id,
+            ledger=ledger,
+            state_context=state_context,
+            tool_executor=tool_executor,
+            dry_run=dry_run,
+        )
+        return {
+            **base,
+            "evidence_operator_fanout_plan": fanout_plan,
+            "fanout_barrier": _fanout_barrier_summary(fanout_plan, [], execution_mode="fanout_empty"),
+        }
+
+    worker_count = max(1, min(max_workers, len(shards)))
+    if worker_count == 1:
+        shard_results = [_execute_evidence_fanout_shard(shard, turn_id, state_context, tool_executor, dry_run) for shard in shards]
+        execution_mode = "fanout_sequential"
+    else:
+        shard_results = []
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
+            futures = {
+                executor.submit(_execute_evidence_fanout_shard, shard, turn_id, state_context, tool_executor, dry_run): shard
+                for shard in shards
+            }
+            for future in as_completed(futures):
+                try:
+                    shard_results.append(future.result())
+                except Exception as exc:  # defensive: _execute_evidence_fanout_shard already catches route errors
+                    shard = futures[future]
+                    shard_results.append(_failed_evidence_fanout_shard(shard, exc))
+        execution_mode = "fanout_parallel"
+    shard_results = sorted(shard_results, key=lambda item: int(item.get("shard_index") or 0))
+    merged = _merge_evidence_fanout_results(shard_results, ledger=ledger)
+    return {
+        **merged,
+        "schema_version": RUNTIME_SCHEMA_VERSION,
+        "evidence_operator_fanout_plan": _sanitize_payload(fanout_plan),
+        "fanout_barrier": _fanout_barrier_summary(fanout_plan, shard_results, execution_mode=execution_mode),
+    }
+
+
+def _execute_evidence_fanout_shard(
+    shard: Mapping[str, Any],
+    turn_id: str,
+    state_context: Mapping[str, Any] | None,
+    tool_executor: ToolExecutor | None,
+    dry_run: bool,
+) -> dict[str, Any]:
+    shard_routes = [dict(route) for route in shard.get("routes") or [] if isinstance(route, Mapping)]
+    shard_plan = {
+        "schema_version": "sec_agent_retrieval_plan_v0.1",
+        "source": "evidence_operator_fanout_shard",
+        "tasks": [],
+        "routes": shard_routes,
+        "summary": _retrieval_plan_summary(shard_routes, task_count=0),
+    }
+    try:
+        result = execute_evidence_operator_plan(
+            shard_plan,
+            turn_id=f"{turn_id}::{shard.get('shard_id') or 'shard'}",
+            ledger=ToolCallLedger(),
+            state_context=state_context,
+            tool_executor=tool_executor,
+            dry_run=dry_run,
+        )
+        status = "pass"
+        error = ""
+    except Exception as exc:
+        result = _failed_evidence_fanout_shard(shard, exc)
+        status = "fail"
+        error = str(exc)[:500]
+    return {
+        **result,
+        "shard_id": str(shard.get("shard_id") or ""),
+        "shard_index": int(shard.get("shard_index") or 0),
+        "source_family": str(shard.get("source_family") or ""),
+        "operator_owner": str(shard.get("operator_owner") or ""),
+        "tool_name": str(shard.get("tool_name") or ""),
+        "route_ids": _string_list(shard.get("route_ids")),
+        "status": status,
+        "error": error,
+    }
+
+
+def _failed_evidence_fanout_shard(shard: Mapping[str, Any], exc: Exception) -> dict[str, Any]:
+    error = str(exc)[:500]
+    routes = [dict(route) for route in shard.get("routes") or [] if isinstance(route, Mapping)]
+    source_family = str(shard.get("source_family") or "unknown")
+    operator_owner = str(shard.get("operator_owner") or "")
+    tool_name = str(shard.get("tool_name") or "")
+    observations = [
+        _observation(
+            route,
+            operator_owner,
+            tool_name,
+            "failed",
+            error=error,
+            source_gap_count=1,
+            boundary={
+                "status": "fail",
+                "policy": "fanout_shard_failure_isolated",
+                "source_family": source_family,
+            },
+        )
+        for route in routes
+    ]
+    return {
+        "schema_version": RUNTIME_SCHEMA_VERSION,
+        "shard_id": str(shard.get("shard_id") or ""),
+        "shard_index": int(shard.get("shard_index") or 0),
+        "source_family": source_family,
+        "operator_owner": operator_owner,
+        "tool_name": tool_name,
+        "route_ids": _string_list(shard.get("route_ids")),
+        "status": "fail",
+        "error": error,
+        "tool_observations": observations,
+        "tool_call_ledger": ToolCallLedger().to_dict(),
+        "context_rows": [],
+        "runtime_ledger_rows": [],
+        "market_snapshot_rows": [],
+        "industry_snapshot_rows": [],
+        "source_gaps": [
+            {
+                "source_family": source_family,
+                "gap_type": "operator_shard_failed",
+                "reason": error,
+                "route_ids": _string_list(shard.get("route_ids")),
+                "claim_boundary": "failed_operator_rows_not_available_do_not_fallback",
+            }
+        ],
+        "artifact_refs": [],
+        "loop_break_reason": "",
+        "bounded_answer_allowed": True,
+    }
+
+
+def _merge_evidence_fanout_results(shard_results: list[Mapping[str, Any]], *, ledger: ToolCallLedger | None) -> dict[str, Any]:
+    base_ledger = ToolCallLedger.from_dict((ledger or ToolCallLedger()).to_dict())
+    ledger_payload = base_ledger.to_dict()
+    merged_records: list[dict[str, Any]] = [
+        dict(item) for item in ledger_payload.get("records") or [] if isinstance(item, Mapping)
+    ]
+    for shard in shard_results:
+        shard_ledger = shard.get("tool_call_ledger") if isinstance(shard.get("tool_call_ledger"), Mapping) else {}
+        merged_records.extend(dict(item) for item in shard_ledger.get("records") or [] if isinstance(item, Mapping))
+    ledger_payload["records"] = merged_records
+    if any(bool(shard.get("bounded_answer_allowed")) for shard in shard_results):
+        ledger_payload["bounded_answer_allowed"] = True
+    loop_break_reason = next((str(shard.get("loop_break_reason") or "") for shard in shard_results if str(shard.get("loop_break_reason") or "")), "")
+    return {
+        "tool_observations": [dict(row) for shard in shard_results for row in shard.get("tool_observations") or [] if isinstance(row, Mapping)],
+        "tool_call_ledger": ledger_payload,
+        "context_rows": [dict(row) for shard in shard_results for row in shard.get("context_rows") or [] if isinstance(row, Mapping)],
+        "runtime_ledger_rows": [dict(row) for shard in shard_results for row in shard.get("runtime_ledger_rows") or [] if isinstance(row, Mapping)],
+        "market_snapshot_rows": [dict(row) for shard in shard_results for row in shard.get("market_snapshot_rows") or [] if isinstance(row, Mapping)],
+        "industry_snapshot_rows": [dict(row) for shard in shard_results for row in shard.get("industry_snapshot_rows") or [] if isinstance(row, Mapping)],
+        "source_gaps": [dict(row) for shard in shard_results for row in shard.get("source_gaps") or [] if isinstance(row, Mapping)],
+        "artifact_refs": [dict(row) for shard in shard_results for row in shard.get("artifact_refs") or [] if isinstance(row, Mapping)],
+        "loop_break_reason": loop_break_reason,
+        "bounded_answer_allowed": bool(ledger_payload.get("bounded_answer_allowed")),
+    }
+
+
+def _fanout_barrier_summary(plan: Mapping[str, Any], shard_results: list[Mapping[str, Any]], *, execution_mode: str) -> dict[str, Any]:
+    completed = [shard for shard in shard_results if str(shard.get("status") or "") == "pass"]
+    failed = [shard for shard in shard_results if str(shard.get("status") or "") != "pass"]
+    return _sanitize_payload(
+        {
+            "schema_version": FANOUT_BARRIER_SCHEMA_VERSION,
+            "barrier_id": "evidence_operator_fanout_barrier",
+            "execution_mode": execution_mode,
+            "deterministic_merge_policy": "sort_by_shard_index_then_append_source_family_rows",
+            "input_shard_count": int(plan.get("shard_count") or 0),
+            "completed_shard_count": len(completed),
+            "failed_shard_count": len(failed),
+            "failed_shards": [
+                {
+                    "shard_id": str(shard.get("shard_id") or ""),
+                    "source_family": str(shard.get("source_family") or ""),
+                    "operator_owner": str(shard.get("operator_owner") or ""),
+                    "tool_name": str(shard.get("tool_name") or ""),
+                    "error": str(shard.get("error") or "")[:500],
+                }
+                for shard in failed
+            ],
+            "output_schema": {
+                "context_rows": "append_only",
+                "runtime_ledger_rows": "append_only",
+                "market_snapshot_rows": "append_only",
+                "industry_snapshot_rows": "append_only",
+                "source_gaps": "append_only",
+                "tool_observations": "append_only",
+            },
+        }
+    )
+
+
+def _route_source_family_for_fanout(route: Mapping[str, Any]) -> str:
+    route_name = str(route.get("retrieval_route") or "")
+    family = ROUTE_SOURCE_FAMILY.get(route_name, "")
+    if family:
+        return family
+    families = _string_list(route.get("source_families") or route.get("source_tiers"))
+    return families[0] if families else "unknown"
 
 
 def _ledger_missing_despite_context_gaps(
@@ -1678,6 +3760,7 @@ def tool_arguments_from_route(
             args["retrieval_plan"] = dict(route.get("runtime_retrieval_plan") or {})
         return args
     if route_name == "milvus_semantic":
+        milvus_capability = milvus_runtime_capability(context)
         args["source_tiers"] = _sec_search_source_tiers_for_route("filing_text", _string_list(args.get("source_tiers")))
         vector_kinds = _milvus_vector_kinds_for_route(route, context)
         args.update(
@@ -1688,15 +3771,19 @@ def tool_arguments_from_route(
                 "milvus_top_k": int(route.get("milvus_top_k") or context.get("milvus_top_k") or route.get("limit") or 40),
                 "vector_kinds": vector_kinds,
                 "typed_filter_required": True,
-                "milvus_db_path": str(context.get("milvus_db_path") or context.get("milvus_uri") or ""),
-                "milvus_collection_name": str(context.get("milvus_collection_name") or ""),
+                "milvus_db_path": str(context.get("milvus_db_path") or context.get("milvus_uri") or milvus_capability.get("uri") or ""),
+                "milvus_collection_name": str(context.get("milvus_collection_name") or milvus_capability.get("collection") or ""),
                 "embedding_model": str(context.get("embedding_model") or context.get("milvus_embedding_model") or ""),
+                "milvus_runtime": milvus_capability,
                 "milvus_search_policy": {
                     "schema_version": "sec_agent_milvus_semantic_route_policy_v0.1",
                     "route_role": "semantic_recall_supplement",
                     "typed_filter_required": True,
                     "vector_kinds": vector_kinds,
                     "not_exact_value_authority": True,
+                    "runtime_status": milvus_capability["status"],
+                    "runtime_location": milvus_capability["location"],
+                    "runtime_bound": milvus_capability["runtime_bound"],
                 },
             }
         )
@@ -1744,6 +3831,31 @@ def tool_arguments_from_route(
             }
         )
         return args
+    if route_name == "live_public_web_context":
+        args.update(
+            {
+                "query": str(route.get("query") or user_query or route.get("task_id") or ""),
+                "retrieval_route": route_name,
+                "url": str(route.get("url") or coverage.get("url") or ""),
+                "domain": str(route.get("domain") or coverage.get("domain") or ""),
+                "source_class": str(route.get("source_class") or coverage.get("source_class") or ""),
+                "claim_types": _string_list(route.get("claim_types") or coverage.get("claim_types") or route.get("claim_type") or coverage.get("claim_type")),
+                "web_scope_policy_ids": _string_list(
+                    route.get("web_scope_policy_ids")
+                    or coverage.get("web_scope_policy_ids")
+                    or context.get("web_scope_policy_ids")
+                    or (context.get("agent_activation_plan") or {}).get("web_scope_policy_ids")
+                ),
+                "snapshot_id": str(route.get("snapshot_id") or coverage.get("snapshot_id") or ""),
+                "snapshot_url": str(route.get("snapshot_url") or route.get("url") or coverage.get("snapshot_url") or ""),
+                "source_title": str(route.get("source_title") or coverage.get("source_title") or ""),
+                "company_domain_verified": _bool_value(route.get("company_domain_verified") or coverage.get("company_domain_verified")),
+                "company_domains": _string_list(route.get("company_domains") or coverage.get("company_domains")),
+                "web_scope_allowed_domains": _string_list(route.get("web_scope_allowed_domains") or coverage.get("web_scope_allowed_domains")),
+                "authority_boundary": "live_web_context_only_no_snippet_claims",
+            }
+        )
+        return args
     return args
 
 
@@ -1756,6 +3868,85 @@ def _market_snapshot_tickers_for_route(args: Mapping[str, Any], context: Mapping
         if 0 < len(expanded) <= 12:
             return _dedupe([*base, *expanded])
     return base
+
+
+def milvus_runtime_capability(context: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    runtime_context = dict(context or {})
+    project_inventory = runtime_context.get("project_inventory") if isinstance(runtime_context.get("project_inventory"), Mapping) else {}
+    inventory_runtime = project_inventory.get("milvus_runtime") if isinstance(project_inventory.get("milvus_runtime"), Mapping) else {}
+    explicit_runtime = runtime_context.get("milvus_runtime") if isinstance(runtime_context.get("milvus_runtime"), Mapping) else {}
+    runtime = {**dict(inventory_runtime), **dict(explicit_runtime)}
+    uri = str(
+        runtime_context.get("milvus_uri")
+        or runtime_context.get("milvus_db_path")
+        or runtime.get("uri")
+        or runtime.get("endpoint")
+        or runtime.get("db_path")
+        or ""
+    ).strip()
+    collection = str(runtime_context.get("milvus_collection_name") or runtime.get("collection") or runtime.get("collection_name") or "").strip()
+    status = str(runtime.get("status") or "").strip().lower()
+    location = str(runtime_context.get("milvus_runtime_location") or runtime.get("location") or "").strip().lower()
+    if not status:
+        if uri and collection:
+            location = location or ("cloud" if uri.startswith(("http://", "https://", "tcp://")) else "local")
+            status = f"{location}_available"
+        else:
+            status = "unavailable"
+    if status in {"available", "enabled"}:
+        status = f"{location or 'cloud'}_available"
+    if status not in {"cloud_available", "local_available", "unavailable"}:
+        status = "unavailable"
+    if status == "cloud_available":
+        location = "cloud"
+    elif status == "local_available":
+        location = "local"
+    else:
+        location = "none"
+    available = bool(runtime.get("available")) if "available" in runtime else status in {"cloud_available", "local_available"}
+    missing: list[str] = []
+    if not uri:
+        missing.append("milvus_uri_or_db_path")
+    if not collection:
+        missing.append("milvus_collection_name")
+    runtime_bound = available and not missing
+    vector_kinds = _string_list(runtime_context.get("milvus_vector_kinds") or runtime.get("vector_kinds"))
+    if not vector_kinds:
+        vector_kinds = list(MILVUS_DEFAULT_VECTOR_KINDS)
+    return {
+        "schema_version": "sec_agent_milvus_runtime_capability_v0.1",
+        "status": status,
+        "available": available,
+        "runtime_bound": runtime_bound,
+        "location": location,
+        "collection": collection,
+        "uri": uri,
+        "vector_kinds": vector_kinds,
+        "vector_count": runtime.get("vector_count") or runtime.get("row_count"),
+        "as_of_date": str(runtime.get("as_of_date") or runtime.get("materialized_at") or "").strip(),
+        "schema_digest": str(runtime.get("schema_digest") or runtime.get("digest") or "").strip(),
+        "fallback_routes": _string_list(runtime.get("fallback_routes")) or ["bm25", "object_bm25", "exact_value_ledger"],
+        "claim_boundary": str(runtime.get("claim_boundary") or "semantic_recall_supplement_not_exact_value_authority"),
+        "missing_runtime_fields": missing,
+    }
+
+
+def _public_milvus_runtime_capability(capability: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": str(capability.get("schema_version") or "sec_agent_milvus_runtime_capability_v0.1"),
+        "status": str(capability.get("status") or ""),
+        "available": bool(capability.get("available")),
+        "runtime_bound": bool(capability.get("runtime_bound")),
+        "location": str(capability.get("location") or ""),
+        "collection": str(capability.get("collection") or ""),
+        "vector_kinds": _string_list(capability.get("vector_kinds")),
+        "vector_count": capability.get("vector_count"),
+        "as_of_date": str(capability.get("as_of_date") or ""),
+        "schema_digest": str(capability.get("schema_digest") or ""),
+        "fallback_routes": _string_list(capability.get("fallback_routes")),
+        "claim_boundary": str(capability.get("claim_boundary") or ""),
+        "missing_runtime_fields": _string_list(capability.get("missing_runtime_fields")),
+    }
 
 
 def _milvus_vector_kinds_for_route(route: Mapping[str, Any], context: Mapping[str, Any]) -> list[str]:
@@ -2077,6 +4268,15 @@ def _tool_runtime_summary(tool_name: str, result: Mapping[str, Any]) -> dict[str
                 "expanded_ticker_count": len(result.get("expanded_tickers") or []),
             }
         )
+    elif tool_name == "web_evidence_snapshot":
+        summary.update(
+            {
+                "context_row_count": len(result.get("context_rows") or result.get("web_rows") or []),
+                "snapshot_id": str(result.get("snapshot_id") or ""),
+                "source_class": str(result.get("source_class") or ""),
+                "web_scope_policy_ids": _string_list(result.get("web_scope_policy_ids")),
+            }
+        )
     return summary
 
 
@@ -2115,6 +4315,14 @@ def _tool_argument_summary(arguments: Mapping[str, Any]) -> dict[str, Any]:
         "route_selection_reason",
         "route_cost_tier",
         "route_selection_policy",
+        "url",
+        "domain",
+        "source_class",
+        "claim_types",
+        "web_scope_policy_ids",
+        "snapshot_id",
+        "snapshot_url",
+        "company_domain_verified",
     }
     return {key: arguments.get(key) for key in allowed if key in arguments}
 
@@ -2145,6 +4353,50 @@ def _specialist_evidence_signal(agent_id: str, state: Mapping[str, Any]) -> dict
             ("fundamental", "revenue", "margin", "capex", "cash flow", "product", "segment", "基本面", "收入", "利润率", "资本开支", "产品", "分部"),
         )
         return _signal(count, explicit, "fundamental_evidence_rows_or_explicit_fundamental_intent")
+    if agent_id == "product_technology_analyst":
+        count = (
+            len(
+                [
+                    row
+                    for row in _row_dicts(state.get("product_evidence_rows"))
+                    if _product_evidence_promotion_status(row)
+                    in {"runtime_fact_allowed", "runtime_context_taxonomy_only", "context_or_lead_available", "gap_exposed_not_fallback"}
+                ]
+            )
+            + len(state.get("public_source_context_rows") or [])
+            + len(
+                [
+                    row
+                    for row in _row_dicts(state.get("context_rows"))
+                    if _row_source_family(row) in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+                ]
+            )
+        )
+        explicit = _contains_any(
+            query_text,
+            (
+                "product",
+                "product kpi",
+                "sku",
+                "taxonomy",
+                "platform",
+                "developer",
+                "clinical",
+                "trial",
+                "regulatory",
+                "app",
+                "openfda",
+                "nhtsa",
+                "产品",
+                "产品线",
+                "产品指标",
+                "主业",
+                "临床",
+                "监管",
+                "应用",
+            ),
+        )
+        return _signal(count, explicit, "product_evidence_rows_public_proxy_rows_or_explicit_product_intent")
     if agent_id == "industry_supply_chain_analyst":
         count = (
             len(state.get("industry_snapshot_rows") or [])
@@ -2275,6 +4527,44 @@ def validate_tool_observation_boundary(tool_name: str, result: Mapping[str, Any]
             "status": "pass",
             "allowed_claim_scope": "research_scope_or_hypothesis_only",
             "prohibited_claim_scope": "company_reported_financial_fact",
+        }
+    if tool_name == "web_evidence_snapshot":
+        rows = [dict(row) for row in result.get("context_rows") or result.get("web_rows") or [] if isinstance(row, Mapping)]
+        missing: list[str] = []
+        violations: list[str] = []
+        if not str(result.get("snapshot_id") or "") and not any(str(row.get("snapshot_id") or "") for row in rows):
+            missing.append("snapshot_id")
+        if not str(result.get("as_of_datetime") or result.get("as_of_date") or "") and not any(str(row.get("as_of_datetime") or row.get("as_of_date") or "") for row in rows):
+            missing.append("as_of_datetime")
+        if not rows:
+            missing.append("context_rows")
+        for row in rows:
+            if str(row.get("source_family") or "") != "live_public_web_context":
+                violations.append("source_family_must_be_live_public_web_context")
+            if not bool(row.get("context_only", True)):
+                violations.append("web_rows_must_be_context_only")
+            if bool(row.get("exact_value_authority")):
+                violations.append("web_rows_cannot_be_exact_value_authority")
+            if not str(row.get("source_class") or ""):
+                missing.append("source_class")
+            if not str(row.get("snapshot_url") or row.get("url") or ""):
+                missing.append("snapshot_url")
+            if not (row.get("citation") or row.get("citation_url") or row.get("source_url")):
+                missing.append("citation")
+            if row.get("search_snippet") and not str(row.get("snapshot_id") or result.get("snapshot_id") or ""):
+                violations.append("search_snippet_without_snapshot_forbidden")
+            source_class = str(row.get("source_class") or "")
+            claim_types = set(_web_claim_types(row))
+            if source_class == "commerce_product_surface" and claim_types - WEB_COMMERCE_ALLOWED_CLAIM_TYPES:
+                violations.append("commerce_claim_scope_violation")
+            if source_class in {"social_official_account", "social_unverified_or_influencer"} and claim_types & WEB_FINANCIAL_FACT_CLAIM_TYPES:
+                violations.append("social_financial_fact_forbidden")
+        return {
+            "status": "fail" if missing or violations else "pass",
+            "allowed_claim_scope": "allowlisted_web_snapshot_context_only",
+            "prohibited_claim_scope": "company_reported_financial_fact_or_exact_value_authority",
+            "missing": _dedupe(missing),
+            "violations": _dedupe(violations),
         }
     if tool_name == "sec_query_exact_value_ledger":
         return {"status": "pass", "allowed_claim_scope": "reported_financial_fact"}
@@ -3179,6 +5469,10 @@ def _routes_for_source_families(source_families: list[str]) -> list[str]:
         routes.append("industry_snapshot")
     if "relationship_graph" in source_set:
         routes.append("relationship_graph")
+    if "milvus_semantic" in source_set:
+        routes.append("milvus_semantic")
+    if "live_public_web_context" in source_set:
+        routes.append("live_public_web_context")
     return _dedupe(routes)
 
 
@@ -3285,6 +5579,7 @@ def _rows_from_result(tool_name: str, result: Mapping[str, Any]) -> list[dict[st
         "market_get_snapshot": "market_rows",
         "industry_get_snapshot": "industry_rows",
         "relationship_graph_lookup": "relationship_rows",
+        "web_evidence_snapshot": "context_rows",
     }
     rows = result.get(keys.get(tool_name, "rows")) or []
     return [dict(item) for item in rows if isinstance(item, Mapping)]
@@ -3361,6 +5656,8 @@ def _claim_families_for_requirement(requirement: Mapping[str, Any]) -> list[str]
         families.append("industry_context_only")
     if "relationship_graph" in routes:
         families.append("relationship_hypothesis")
+    if "live_public_web_context" in routes:
+        families.append("allowlisted_web_context")
     if not families:
         families.append(str(requirement.get("analysis_intent") or "business_observation"))
     return _dedupe(families)
@@ -3397,6 +5694,34 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
     elif agent_id == "market_valuation_analyst":
         rows.extend(_row_dicts(state.get("market_snapshot_rows")))
         rows.extend(row for row in _row_dicts(state.get("context_rows")) if _row_source_family(row) == "market_snapshot")
+    elif agent_id == "product_technology_analyst":
+        rows.extend(
+            row
+            for row in _row_dicts(state.get("product_evidence_rows"))
+            if _product_evidence_promotion_status(row)
+            in {
+                "runtime_fact_allowed",
+                "runtime_context_taxonomy_only",
+                "context_or_lead_available",
+                "review_queue_not_runtime_fact",
+                "gap_exposed_not_fallback",
+            }
+        )
+        rows.extend(_row_dicts(state.get("public_source_context_rows")))
+        rows.extend(
+            row
+            for row in _row_dicts(state.get("context_rows"))
+            if _row_source_family(row) in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+        )
+        rows = _balanced_rows_by_source(
+            rows,
+            source_order=[
+                "company_product_evidence_graph",
+                "public_source_context",
+                "live_public_web_context",
+            ],
+            max_rows=max_rows,
+        )
     elif agent_id == "industry_supply_chain_analyst":
         rows.extend(_row_dicts(state.get("industry_snapshot_rows")))
         rows.extend(
@@ -3476,6 +5801,7 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
     evidence_ref = (
         row.get("evidence_ref")
         or row.get("evidence_id")
+        or row.get("gap_id")
         or row.get("metric_id")
         or row.get("source_id")
         or row.get("id")
@@ -3584,6 +5910,19 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
                 "exact_value_authority": False,
             }
         )
+    if _row_source_family(row) == "live_public_web_context":
+        bounded.update(
+            {
+                "source_class": str(row.get("source_class") or ""),
+                "snapshot_url": str(row.get("snapshot_url") or row.get("url") or ""),
+                "web_source_boundary": str(
+                    row.get("authority_boundary")
+                    or "Allowlisted web snapshot rows are context/proxy evidence only; they cannot prove company product KPI, sales, share, inventory, margin, or profitability."
+                ),
+                "context_only": True,
+                "exact_value_authority": False,
+            }
+        )
     return bounded
 
 
@@ -3598,7 +5937,7 @@ def _source_family_bundle_for_agent(agent_id: str, rows: list[Mapping[str, Any]]
     context_only_families = [
         family
         for family in selected_families
-        if family in {"market_snapshot", "industry_snapshot", "relationship_graph", "public_source_context"}
+        if family in {"market_snapshot", "industry_snapshot", "relationship_graph", "public_source_context", "live_public_web_context"}
         or (
             family == "company_product_evidence_graph"
             and any(_product_evidence_promotion_status(row) != "runtime_fact_allowed" for row in rows if _row_source_family(row) == family)
@@ -3628,9 +5967,28 @@ def _source_family_bundle_for_agent(agent_id: str, rows: list[Mapping[str, Any]]
         "semantic_vector_kinds": semantic_vector_kinds,
         "forbidden_claim_scopes": _source_family_forbidden_claim_scopes(selected_families, semantic_row_count=len(semantic_rows)),
     }
+    playbook_policy = _playbook_policy_from_state(state)
+    if playbook_policy:
+        bundle["selected_playbook_ids"] = _string_list(playbook_policy.get("selected_playbook_ids"))
+        bundle["playbook_forbidden_claims"] = _string_list(playbook_policy.get("forbidden_claims"))[:16]
+        bundle["playbook_commercial_gap_policy"] = dict(playbook_policy.get("commercial_gap_policy") or {})
+        bundle["forbidden_claim_scopes"] = _dedupe(
+            [*bundle["forbidden_claim_scopes"], *_string_list(playbook_policy.get("forbidden_claims"))]
+        )
     if semantic_rows:
         bundle["semantic_supplement_policy"] = "typed_milvus_rows_are_sec_recall_supplements_not_exact_value_authority"
     return bundle
+
+
+def _playbook_policy_from_state(state: Mapping[str, Any]) -> dict[str, Any]:
+    reflection = state.get("plan_reflection_report") if isinstance(state.get("plan_reflection_report"), Mapping) else {}
+    policy = reflection.get("playbook_policy") if isinstance(reflection.get("playbook_policy"), Mapping) else {}
+    if policy:
+        return dict(policy)
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    metadata = activation.get("metadata") if isinstance(activation.get("metadata"), Mapping) else {}
+    policy = metadata.get("playbook_policy") if isinstance(metadata.get("playbook_policy"), Mapping) else {}
+    return dict(policy)
 
 
 def _ordered_source_families(families: list[str], *, preferred_order: list[str]) -> list[str]:
@@ -3675,6 +6033,9 @@ def _source_family_forbidden_claim_scopes(families: list[str], *, semantic_row_c
         forbidden.append("company_product_evidence_graph_review_context_and_gap_rows_are_not_facts")
     if "public_source_context" in family_set:
         forbidden.append("public_source_context_cannot_prove_company_reported_product_sales_market_share_or_profitability")
+    if "live_public_web_context" in family_set:
+        forbidden.append("live_public_web_context_requires_allowlisted_snapshot_and_is_context_only_by_default")
+        forbidden.append("live_public_web_context_cannot_overwrite_sec_or_product_runtime_facts")
     if semantic_row_count:
         forbidden.append("milvus_semantic_rows_cannot_prove_exact_values_without_ledger_or_filing_quote")
     return forbidden
@@ -3984,6 +6345,15 @@ def _state_summary_for_data_view(state: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _source_inventory_for_agent_view(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    schema_version = str(value.get("schema_version") or "")
+    if schema_version.startswith("project_source_inventory_"):
+        return inventory_brief(dict(value))
+    return dict(value)
+
+
 def _artifact_ref_summary(value: Any) -> list[dict[str, Any]]:
     refs = []
     if isinstance(value, Mapping):
@@ -4260,6 +6630,12 @@ def _sanitize_payload(value: Any) -> Any:
     return value
 
 
+def _payload_digest(value: Mapping[str, Any]) -> str:
+    clean = _sanitize_payload(value)
+    text = json.dumps(clean, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str)
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
 def _is_private_or_raw_key(key: str) -> bool:
     lowered = key.lower()
     if any(marker in lowered for marker in ("private_path", "raw_path", "raw_text", "full_text", "absolute_path")):
@@ -4290,6 +6666,82 @@ def _truncate(text: str, limit: int) -> str:
 def _slug(value: Any) -> str:
     slug = "".join(ch.lower() if ch.isalnum() else "_" for ch in str(value or ""))
     return "_".join(part for part in slug.split("_") if part)[:96] or "route"
+
+
+def _normalize_web_scope_registry(value: Mapping[str, Any] | None) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or not value:
+        return default_web_source_scope_registry()
+    if isinstance(value.get("policies"), Mapping):
+        policies = {str(policy_id): dict(policy) for policy_id, policy in value.get("policies", {}).items() if isinstance(policy, Mapping)}
+    else:
+        policies = {}
+        for item in value.get("policies") or value.get("web_scope_policies") or []:
+            if not isinstance(item, Mapping):
+                continue
+            policy_id = str(item.get("policy_id") or item.get("web_scope_policy_id") or "").strip()
+            if policy_id:
+                policies[policy_id] = dict(item)
+    if not policies:
+        default = default_web_source_scope_registry()
+        policies = dict(default["policies"])
+    return {
+        **dict(value),
+        "schema_version": str(value.get("schema_version") or WEB_SOURCE_SCOPE_REGISTRY_SCHEMA_VERSION),
+        "policies": policies,
+    }
+
+
+def _web_claim_types(request: Mapping[str, Any]) -> list[str]:
+    return [
+        item.strip().lower()
+        for item in _string_list(
+            request.get("claim_types")
+            or request.get("claim_type")
+            or request.get("allowed_claim_types")
+            or request.get("claim_scope")
+        )
+        if item.strip()
+    ]
+
+
+def _domain_from_url(value: Any) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    parsed = urlparse(text if "://" in text else f"https://{text}")
+    return _normalize_domain(parsed.netloc or parsed.path.split("/")[0])
+
+
+def _normalize_domain(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    if not text:
+        return ""
+    if "://" in text or "/" in text:
+        return _domain_from_url(text)
+    text = text.split("@")[-1].split(":")[0].strip(".")
+    if text.startswith("www."):
+        text = text[4:]
+    return text
+
+
+def _web_domain_allowed(domain: str, policies: list[Mapping[str, Any]], request: Mapping[str, Any]) -> bool:
+    domain = _normalize_domain(domain)
+    if not domain:
+        return False
+    allowed_domains: list[str] = []
+    for policy in policies:
+        allowed_domains.extend(_string_list(policy.get("allowed_domains")))
+        if policy.get("requires_verified_company_domain") and _bool_value(request.get("company_domain_verified")):
+            allowed_domains.extend(_string_list(request.get("company_domains") or request.get("verified_company_domains") or request.get("allowed_domains")))
+    allowed_domains.extend(_string_list(request.get("registry_allowed_domains") or request.get("web_scope_allowed_domains")))
+    return any(_domain_matches(domain, allowed) for allowed in allowed_domains)
+
+
+def _domain_matches(domain: str, allowed_domain: Any) -> bool:
+    allowed = _normalize_domain(allowed_domain)
+    if not domain or not allowed:
+        return False
+    return domain == allowed or domain.endswith(f".{allowed}")
 
 
 def _string_list(value: Any) -> list[str]:
@@ -4420,4 +6872,29 @@ def _dry_run_result(tool_name: str, route: Mapping[str, Any]) -> dict[str, Any]:
         return {"status": "dry_run", "market_rows": [row], "snapshot_id": "dry_run", "as_of_date": "dry_run", "artifact_refs": []}
     if tool_name == "industry_get_snapshot":
         return {"status": "dry_run", "industry_rows": [row], "artifact_refs": []}
+    if tool_name == "web_evidence_snapshot":
+        snapshot_id = f"dry_web_{_slug(route.get('route_id') or route.get('url') or 'snapshot')}"
+        return {
+            "schema_version": WEB_EVIDENCE_SNAPSHOT_SCHEMA_VERSION,
+            "status": "dry_run",
+            "snapshot_id": snapshot_id,
+            "as_of_datetime": "dry_run",
+            "source_class": str(route.get("source_class") or "major_financial_news"),
+            "web_scope_policy_ids": _string_list(route.get("web_scope_policy_ids")),
+            "context_rows": [
+                {
+                    **row,
+                    "source_family": "live_public_web_context",
+                    "source_class": str(route.get("source_class") or "major_financial_news"),
+                    "web_scope_policy_ids": _string_list(route.get("web_scope_policy_ids")),
+                    "claim_types": _string_list(route.get("claim_types") or route.get("claim_type")) or ["public_reporting_lead"],
+                    "snapshot_id": snapshot_id,
+                    "snapshot_url": str(route.get("snapshot_url") or route.get("url") or "https://reuters.com"),
+                    "citation": {"url": str(route.get("snapshot_url") or route.get("url") or "https://reuters.com"), "title": "dry run web snapshot"},
+                    "context_only": True,
+                    "exact_value_authority": False,
+                }
+            ],
+            "artifact_refs": [],
+        }
     return {"status": "dry_run", "rows": [row], "artifact_refs": []}

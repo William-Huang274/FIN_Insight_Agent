@@ -343,6 +343,7 @@ def _has_nonuniform_specialist_priorities(specialists: Mapping[str, Any]) -> boo
             "fundamental_analyst",
             "industry_supply_chain_analyst",
             "market_valuation_analyst",
+            "product_technology_analyst",
             "risk_counterevidence_analyst",
         )
         if priorities.get(agent_id)
@@ -499,6 +500,7 @@ def _short_agent(agent_id: Any) -> str:
         "fundamental_analyst": "fund",
         "industry_supply_chain_analyst": "ind",
         "market_valuation_analyst": "mkt",
+        "product_technology_analyst": "prod",
         "risk_counterevidence_analyst": "risk",
     }
     return aliases.get(str(agent_id), str(agent_id))

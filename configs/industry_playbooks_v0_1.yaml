@@ -1,0 +1,274 @@
+schema_version: fin_agent_industry_playbook_registry_v0.1
+registry_id: public_evidence_industry_playbooks_v0_1
+default_playbook_id: generic_public_research
+common_policy:
+  source_family_policy:
+    primary_sec_filing:
+      allowed_claims: [reported_financial_fact, segment_fact, management_commentary]
+      forbidden_claims: [non_disclosed_product_sales, market_share_without_tracker]
+    company_authored_unaudited_sec_filing:
+      allowed_claims: [management_commentary, guidance_context, earnings_release_fact]
+      forbidden_claims: [audited_fact_replacement]
+    market_snapshot:
+      allowed_claims: [market_reaction_context, valuation_context]
+      forbidden_claims: [business_fact, reported_financial_fact]
+    industry_snapshot:
+      allowed_claims: [industry_cycle_context, macro_context, regulatory_context]
+      forbidden_claims: [company_reported_financial_fact]
+    relationship_graph:
+      allowed_claims: [relationship_scope, transmission_hypothesis]
+      forbidden_claims: [confirmed_customer_revenue, confirmed_supplier_revenue]
+    company_product_evidence_graph:
+      allowed_claims: [product_taxonomy, company_disclosed_product_kpi]
+      requires: [runtime_fact_allowed_for_kpi, exact_value_authority_for_kpi]
+      forbidden_claims: [review_queue_as_fact, context_row_as_product_kpi]
+    public_source_context:
+      allowed_claims: [context, resolver, lead, public_proxy_context]
+      forbidden_claims: [company_product_sales, market_share, sell_through, profitability]
+    live_public_web_context:
+      allowed_claims: [allowlisted_snapshot_context, public_surface_context]
+      forbidden_claims: [search_snippet_as_evidence, unallowlisted_domain_evidence]
+      allowed_source_classes: [major_financial_news, company_official_product_surface]
+
+playbooks:
+  - playbook_id: generic_public_research
+    industry_schema: generic
+    aliases: [generic, unknown, diversified]
+    business_model_drivers: [reported_financials, management_commentary, risk_factors]
+    core_metric_families:
+      reported_financials: [revenue, margin, cash_flow, capex, balance_sheet]
+      product_kpis: []
+      operating_metrics: []
+    default_source_families: [primary_sec_filing, company_authored_unaudited_sec_filing]
+    deep_only_source_families: []
+    source_family_policy: {}
+    commercial_gap_policy: {}
+    common_failure_modes: [industry_not_covered_by_playbook, public_proxy_overreach]
+    forbidden_claims: [commercial_tracker_replacement, unsupported_product_or_market_share_fact]
+    specialist_routing:
+      fundamental_analyst: high
+      risk_counterevidence_analyst: conditional
+
+  - playbook_id: semiconductors
+    industry_schema: semiconductors
+    aliases: [semiconductor, semiconductors, chip, chips, ai infrastructure, gpu, foundry]
+    business_model_drivers: [shipments, ASP, mix, capacity, node_transition, customer_capex_cycle]
+    core_metric_families:
+      reported_financials: [revenue, gross_margin, operating_margin, inventory, capex]
+      product_kpis: [datacenter_revenue, gaming_revenue, foundry_revenue, units, ASP]
+      operating_metrics: [wafer_starts, utilization, backlog, lead_time]
+    default_source_families: [primary_sec_filing, company_authored_unaudited_sec_filing, company_product_evidence_graph, industry_snapshot]
+    deep_only_source_families: [relationship_graph]
+    source_family_policy:
+      industry_snapshot:
+        allowed_claims: [semiconductor_cycle_context, capex_cycle_context]
+      public_source_context:
+        allowed_claims: [product_launch_context, developer_ecosystem_context]
+      live_public_web_context:
+        allowed_source_classes: [major_financial_news, company_official_product_surface]
+    commercial_gap_policy:
+      shipments: [IDC, Gartner, Omdia, Counterpoint]
+      vendor_share: [IDC, Gartner, Omdia]
+      ASP: [IDC, Omdia]
+      channel_inventory: [commercial_tracker]
+    common_failure_modes: [using_product_launch_as_revenue_fact, using_cloud_capex_news_as_company_product_sales]
+    forbidden_claims: [public_proxy_as_shipments, relationship_graph_as_customer_revenue, channel_inventory_without_tracker]
+    specialist_routing:
+      fundamental_analyst: high
+      product_technology_analyst: high
+      industry_supply_chain_analyst: high
+      market_valuation_analyst: conditional
+      risk_counterevidence_analyst: high
+    web_scope_policy_ids: [major_financial_news, company_official_product_surface]
+
+  - playbook_id: consumer_electronics
+    industry_schema: consumer_electronics
+    aliases: [consumer electronics, hardware, smartphone, smartphones, pc, device, devices]
+    business_model_drivers: [shipments, ASP, mix, replacement_cycle, channel_inventory, component_cost]
+    core_metric_families:
+      reported_financials: [revenue, gross_margin, operating_margin, inventory]
+      product_kpis: [units, shipments, ASP, installed_base]
+      operating_metrics: [sell_through, channel_inventory, production]
+    default_source_families: [primary_sec_filing, company_authored_unaudited_sec_filing, company_product_evidence_graph, public_source_context]
+    deep_only_source_families: [industry_snapshot]
+    source_family_policy:
+      public_source_context:
+        allowed_claims: [product_surface_context, ecommerce_price_availability_context]
+      live_public_web_context:
+        allowed_source_classes: [company_official_product_surface, commerce_product_surface, major_financial_news]
+    commercial_gap_policy:
+      shipments: [IDC, Counterpoint, Canalys]
+      market_share: [IDC, Counterpoint, Canalys]
+      channel_inventory: [commercial_tracker]
+      sell_through: [Circana, NielsenIQ, Counterpoint]
+    common_failure_modes: [ecommerce_reviews_as_demand_fact, search_interest_as_shipment_proxy]
+    forbidden_claims: [commerce_rank_as_shipments, public_price_as_ASP_fact, sell_through_without_tracker]
+    specialist_routing:
+      fundamental_analyst: high
+      product_technology_analyst: high
+      industry_supply_chain_analyst: medium
+      market_valuation_analyst: conditional
+      risk_counterevidence_analyst: high
+    web_scope_policy_ids: [company_official_product_surface, commerce_product_surface, major_financial_news]
+
+  - playbook_id: software_saas
+    industry_schema: software_saas
+    aliases: [software, saas, cloud, cyber, cybersecurity, developer]
+    business_model_drivers: [ARR, net_retention, seats, pricing, usage, cloud_consumption]
+    core_metric_families:
+      reported_financials: [revenue, gross_margin, operating_margin, free_cash_flow, RPO]
+      product_kpis: [ARR, net_retention, customer_count, seats, usage]
+      operating_metrics: [downloads, developer_activity, status_uptime, marketplace_reviews]
+    default_source_families: [primary_sec_filing, company_authored_unaudited_sec_filing, company_product_evidence_graph, public_source_context]
+    deep_only_source_families: []
+    source_family_policy:
+      public_source_context:
+        allowed_claims: [developer_ecosystem_context, product_surface_context, web_traffic_context]
+      live_public_web_context:
+        allowed_source_classes: [company_official_product_surface, developer_ecosystem, major_financial_news]
+    commercial_gap_policy:
+      app_downloads: [SensorTower, data.ai]
+      web_traffic: [Similarweb]
+      private_pricing: [company_disclosure_or_commercial_tracker]
+    common_failure_modes: [github_stars_as_revenue_fact, npm_downloads_as_paid_usage_fact]
+    forbidden_claims: [developer_activity_as_revenue, public_reviews_as_churn_fact]
+    specialist_routing:
+      fundamental_analyst: high
+      product_technology_analyst: high
+      market_valuation_analyst: conditional
+      risk_counterevidence_analyst: high
+    web_scope_policy_ids: [company_official_product_surface, developer_ecosystem, major_financial_news]
+
+  - playbook_id: banks
+    industry_schema: banks
+    aliases: [bank, banks, banking, financial, credit, deposit, deposits]
+    business_model_drivers: [net_interest_income, deposit_beta, credit_cost, loan_growth, capital, liquidity]
+    core_metric_families:
+      reported_financials: [net_interest_income, noninterest_income, provision, CET1, deposits, loans]
+      product_kpis: []
+      operating_metrics: [delinquencies, charge_offs, AUM, card_spend]
+    default_source_families: [primary_sec_filing, company_authored_unaudited_sec_filing, industry_snapshot, market_snapshot]
+    deep_only_source_families: []
+    source_family_policy:
+      industry_snapshot:
+        allowed_claims: [rate_cycle_context, credit_condition_context, deposit_flow_context]
+    commercial_gap_policy:
+      card_spend: [issuer_disclosure, payment_network_data]
+      loan_share: [regulatory_or_commercial_bank_data]
+    common_failure_modes: [rate_move_as_NII_fact, macro_credit_series_as_company_loss_fact]
+    forbidden_claims: [macro_rate_as_company_NII, industry_credit_as_bank_charge_off_fact]
+    specialist_routing:
+      fundamental_analyst: high
+      industry_supply_chain_analyst: medium
+      market_valuation_analyst: conditional
+      risk_counterevidence_analyst: high
+
+  - playbook_id: energy_oil_gas
+    industry_schema: energy_oil_gas
+    aliases: [energy, oil, gas, e&p, refining, lng, upstream]
+    business_model_drivers: [production, realized_price, reserves, refining_margin, capex, decline_rate]
+    core_metric_families:
+      reported_financials: [revenue, operating_cash_flow, capex, free_cash_flow, debt]
+      product_kpis: [production, reserves, refinery_throughput]
+      operating_metrics: [boe, lifting_cost, utilization, realized_price]
+    default_source_families: [primary_sec_filing, company_authored_unaudited_sec_filing, industry_snapshot, market_snapshot]
+    deep_only_source_families: []
+    source_family_policy:
+      industry_snapshot:
+        allowed_claims: [commodity_price_context, inventory_supply_context, energy_demand_context]
+    commercial_gap_policy:
+      realized_price: [company_disclosure]
+      basin_activity: [rig_count_or_commercial_tracker]
+    common_failure_modes: [spot_price_as_realized_price_fact, commodity_context_as_company_margin]
+    forbidden_claims: [spot_price_as_company_realized_price, macro_inventory_as_company_inventory]
+    specialist_routing:
+      fundamental_analyst: high
+      industry_supply_chain_analyst: high
+      market_valuation_analyst: conditional
+      risk_counterevidence_analyst: high
+
+  - playbook_id: pharma_biotech
+    industry_schema: pharma_biotech
+    aliases: [pharma, biotech, drug, therapeutic, glp-1, oncology, clinical]
+    business_model_drivers: [pipeline, approval, launch_curve, patent_life, reimbursement, prescription_volume]
+    core_metric_families:
+      reported_financials: [revenue, gross_margin, R&D, operating_margin]
+      product_kpis: [product_sales, prescriptions, trial_status, approvals]
+      operating_metrics: [clinical_trial_phase, adverse_event, label_expansion]
+    default_source_families: [primary_sec_filing, company_authored_unaudited_sec_filing, company_product_evidence_graph, public_source_context]
+    deep_only_source_families: [industry_snapshot]
+    source_family_policy:
+      public_source_context:
+        allowed_claims: [clinical_trial_context, regulatory_context, safety_context]
+      live_public_web_context:
+        allowed_source_classes: [official_regulatory_or_scientific, company_official_product_surface, major_financial_news]
+    commercial_gap_policy:
+      prescription_volume: [IQVIA, Symphony]
+      product_share: [IQVIA, Symphony]
+      real_world_usage: [claims_or_commercial_tracker]
+    common_failure_modes: [clinical_trial_status_as_sales_fact, approval_as_revenue_amount]
+    forbidden_claims: [clinical_trial_as_product_sales, openfda_event_as_usage_share, prescription_volume_without_tracker]
+    specialist_routing:
+      fundamental_analyst: high
+      product_technology_analyst: high
+      industry_supply_chain_analyst: medium
+      risk_counterevidence_analyst: high
+    web_scope_policy_ids: [official_regulatory_or_scientific, company_official_product_surface, major_financial_news]
+
+  - playbook_id: autos_ev
+    industry_schema: autos_ev
+    aliases: [auto, automotive, ev, vehicle, vehicles, mobility, oem]
+    business_model_drivers: [deliveries, ASP, mix, incentives, battery_cost, regulatory_credit]
+    core_metric_families:
+      reported_financials: [revenue, gross_margin, operating_margin, inventory, capex]
+      product_kpis: [deliveries, production, ASP, model_mix]
+      operating_metrics: [registrations, recalls, backlog, utilization]
+    default_source_families: [primary_sec_filing, company_authored_unaudited_sec_filing, company_product_evidence_graph, public_source_context, industry_snapshot]
+    deep_only_source_families: []
+    source_family_policy:
+      public_source_context:
+        allowed_claims: [recall_context, model_surface_context, registration_context_lead]
+      live_public_web_context:
+        allowed_source_classes: [official_regulatory_or_scientific, company_official_product_surface, major_financial_news]
+    commercial_gap_policy:
+      registrations: [S&P Global Mobility, national_registration_data]
+      VIO: [S&P Global Mobility]
+      owner_demographics: [S&P Global Mobility]
+    common_failure_modes: [NHTSA_recall_as_sales_fact, registration_proxy_as_company_deliveries]
+    forbidden_claims: [recall_count_as_quality_rate, registration_proxy_as_company_delivery_fact]
+    specialist_routing:
+      fundamental_analyst: high
+      product_technology_analyst: high
+      industry_supply_chain_analyst: medium
+      market_valuation_analyst: conditional
+      risk_counterevidence_analyst: high
+    web_scope_policy_ids: [official_regulatory_or_scientific, company_official_product_surface, major_financial_news]
+
+  - playbook_id: retail_cpg
+    industry_schema: retail_cpg
+    aliases: [retail, cpg, consumer packaged, grocery, restaurant, apparel]
+    business_model_drivers: [traffic, ticket, price_mix, same_store_sales, promotion, inventory_turn]
+    core_metric_families:
+      reported_financials: [revenue, gross_margin, operating_margin, inventory, working_capital]
+      product_kpis: [same_store_sales, category_sales, unit_volume]
+      operating_metrics: [traffic, basket_size, POS, scanner_data, promotions]
+    default_source_families: [primary_sec_filing, company_authored_unaudited_sec_filing, public_source_context, industry_snapshot]
+    deep_only_source_families: []
+    source_family_policy:
+      public_source_context:
+        allowed_claims: [store_surface_context, price_promotion_context, category_context]
+      live_public_web_context:
+        allowed_source_classes: [commerce_product_surface, company_official_product_surface, major_financial_news]
+    commercial_gap_policy:
+      POS: [Circana, NielsenIQ]
+      scanner: [Circana, NielsenIQ]
+      panel: [NielsenIQ]
+      channel_inventory: [retail_or_commercial_tracker]
+    common_failure_modes: [website_product_page_as_POS_fact, promotion_as_volume_fact]
+    forbidden_claims: [public_price_as_sell_through, store_locator_as_traffic_fact, POS_without_tracker]
+    specialist_routing:
+      fundamental_analyst: high
+      product_technology_analyst: medium
+      industry_supply_chain_analyst: medium
+      risk_counterevidence_analyst: high
+    web_scope_policy_ids: [commerce_product_surface, company_official_product_surface, major_financial_news]

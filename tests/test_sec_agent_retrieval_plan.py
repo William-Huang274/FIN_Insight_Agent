@@ -159,6 +159,43 @@ def test_run_artifact_evidence_requirement_allows_empty_company_scope() -> None:
     assert plan["routes"][0]["source_tiers"] == ["run_artifact"]
 
 
+def test_live_web_evidence_requirement_preserves_structured_request_fields() -> None:
+    contract = {
+        "focus_tickers": ["AAPL"],
+        "search_scope_tickers": ["AAPL"],
+        "source_tiers": ["live_public_web_context"],
+        "evidence_requirements": [
+            {
+                "requirement_id": "req_web_sku",
+                "task_id": "web_sku",
+                "question_zh": "Check allowlisted commerce product surface.",
+                "tickers": ["AAPL"],
+                "source_tiers": ["live_public_web_context"],
+                "evidence_routes": ["live_public_web_context"],
+                "url": "https://www.amazon.com/dp/example",
+                "source_class": "commerce_product_surface",
+                "claim_types": ["sku", "price", "availability"],
+                "web_scope_policy_ids": ["consumer_electronics_commerce"],
+            }
+        ],
+    }
+
+    erp = build_evidence_requirement_plan(contract)
+    plan = build_retrieval_plan(contract)
+    route = plan["routes"][0]
+
+    assert erp["evidence_requirement_validation"]["status"] == "pass"
+    assert erp["requirements"][0]["evidence_routes"] == ["live_public_web_context"]
+    assert route["retrieval_route"] == "live_public_web_context"
+    assert route["source_tiers"] == ["live_public_web_context"]
+    assert route["url"] == "https://www.amazon.com/dp/example"
+    assert route["source_class"] == "commerce_product_surface"
+    assert route["claim_types"] == ["sku", "price", "availability"]
+    assert route["web_scope_policy_ids"] == ["consumer_electronics_commerce"]
+    assert route["rerank_budget"] == 0
+    assert plan["retrieval_plan_validation"]["status"] == "pass"
+
+
 def test_retrieval_plan_scopes_route_values_to_query_contract() -> None:
     plan = {
         "schema_version": "bad",

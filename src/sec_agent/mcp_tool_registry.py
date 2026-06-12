@@ -316,6 +316,77 @@ def _invoke_relationship_graph(args: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def _invoke_web_evidence_snapshot(args: dict[str, Any]) -> dict[str, Any]:
+    url = str(args.get("url") or args.get("snapshot_url") or "").strip()
+    domain = _web_domain(args.get("domain") or url)
+    source_class = str(args.get("source_class") or "").strip()
+    policy_ids = [str(item) for item in _list_arg(args.get("web_scope_policy_ids")) if str(item).strip()]
+    claim_types = [str(item).strip().lower() for item in _list_arg(args.get("claim_types") or args.get("claim_type")) if str(item).strip()]
+    missing = []
+    if not url:
+        missing.append("url")
+    if not source_class:
+        missing.append("source_class")
+    if not policy_ids:
+        missing.append("web_scope_policy_ids")
+    if missing:
+        return {
+            "schema_version": "sec_agent_web_evidence_snapshot_v0.1",
+            "status": "error",
+            "error": "web_evidence_request_missing_fields",
+            "context_rows": [],
+            "source_gaps": [
+                {
+                    "source_family": "live_public_web_context",
+                    "reason_code": "web_evidence_request_missing_fields",
+                    "missing": missing,
+                    "source_available": False,
+                }
+            ],
+            "artifact_refs": [],
+        }
+    seed = "|".join([url, source_class, ",".join(policy_ids), ",".join(claim_types)])
+    snapshot_id = str(args.get("snapshot_id") or "websnap_" + hashlib.sha1(seed.encode("utf-8", errors="ignore")).hexdigest()[:12])
+    as_of_datetime = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    row = {
+        "evidence_ref": snapshot_id,
+        "source_family": "live_public_web_context",
+        "retrieval_route": "live_public_web_context",
+        "source_class": source_class,
+        "web_scope_policy_ids": policy_ids,
+        "claim_types": claim_types,
+        "url": url,
+        "domain": domain,
+        "snapshot_id": snapshot_id,
+        "snapshot_url": url,
+        "as_of_datetime": as_of_datetime,
+        "citation": {"url": url, "title": str(args.get("source_title") or domain or url)},
+        "context_only": True,
+        "lead_only": True,
+        "exact_value_authority": False,
+        "authority_boundary": "live_web_snapshot_context_only_no_sec_or_product_fact_overwrite",
+    }
+    return {
+        "schema_version": "sec_agent_web_evidence_snapshot_v0.1",
+        "status": "ok",
+        "snapshot_id": snapshot_id,
+        "snapshot_url": url,
+        "as_of_datetime": as_of_datetime,
+        "source_class": source_class,
+        "web_scope_policy_ids": policy_ids,
+        "context_rows": [row],
+        "source_gaps": [],
+        "artifact_refs": [
+            {
+                "artifact_id": snapshot_id,
+                "path": "",
+                "digest": hashlib.sha1(json.dumps(row, sort_keys=True).encode("utf-8", errors="ignore")).hexdigest(),
+                "row_count": 1,
+            }
+        ],
+    }
+
+
 def _load_interactive_module() -> ModuleType:
     global _INTERACTIVE_MODULE
     if _INTERACTIVE_MODULE is not None:
@@ -645,6 +716,17 @@ def _slug(value: Any) -> str:
     return "".join(ch.lower() if ch.isalnum() else "_" for ch in str(value or "")).strip("_") or "scope"
 
 
+def _web_domain(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    if not text:
+        return ""
+    text = re.sub(r"^[a-z]+://", "", text)
+    text = text.split("/")[0].split("@")[-1].split(":")[0].strip(".")
+    if text.startswith("www."):
+        text = text[4:]
+    return text
+
+
 def _validate_sec_search_arguments(args: dict[str, Any]) -> str:
     allowed_source_tiers = {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
     allowed_routes = {"", "filing_text", "8k_commentary", "risk_text"}
@@ -769,6 +851,7 @@ _HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
     "market_get_snapshot": _invoke_market,
     "industry_get_snapshot": _invoke_industry,
     "relationship_graph_lookup": _invoke_relationship_graph,
+    "web_evidence_snapshot": _invoke_web_evidence_snapshot,
     "run_inspect_artifacts": _invoke_run_inspect,
     "run_read_artifact": _invoke_run_read,
 }

@@ -35,6 +35,7 @@ def test_multi_agent_graph_runs_focused_path_and_writes_summary(tmp_path: Path) 
     assert result["agent_activation_validation"]["status"] == "pass"
     assert result["multi_agent_routing_trace"]["mode"] == "focused_answer"
     assert "research_lead_plan" in nodes
+    assert nodes.index("evidence_fusion_selector") < nodes.index("coverage_reflection")
     assert "memo_writer" in nodes
     assert "optional_specialist_subgraph" not in nodes
     assert result["judgment_plan"]["aggregation_policy"] == "focused_answer_claim_cards_from_bounded_rows_v0_1"
@@ -43,7 +44,101 @@ def test_multi_agent_graph_runs_focused_path_and_writes_summary(tmp_path: Path) 
     assert summary["execution_mode"] == "focused_answer"
     assert summary["evidence_rows"]["tool_observation_count"] >= 1
     assert summary["evidence_rows"]["retrieval_route_count"] >= 1
+    assert "evidence_fusion" in summary
+    assert "bounded_gap_register" in summary
     assert summary["payload_policy"]["raw_evidence"] == "not_included"
+
+
+def test_multi_agent_graph_runs_evidence_fusion_before_coverage(tmp_path: Path) -> None:
+    def injected_execute(state: dict) -> dict:
+        return {
+            "tool_observations": [],
+            "tool_call_ledger": state.get("tool_call_ledger") or ToolCallLedger().to_dict(),
+            "runtime_ledger_rows": [
+                {
+                    "evidence_ref": "msft_capex_ledger",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "MSFT",
+                    "metric_family": "capex",
+                    "value": "24242",
+                }
+            ],
+            "source_gaps": [
+                {
+                    "gap_id": "gap_market_share_tracker",
+                    "source_family": "public_source_context",
+                    "ticker": "MSFT",
+                    "reason": "commercial tracker required for true market share",
+                }
+            ],
+        }
+
+    graph = build_multi_agent_orchestration_graph(
+        execute_evidence_operators=injected_execute,
+        stop_after_node="coverage_reflection",
+    )
+    initial = make_multi_agent_smoke_state(
+        user_query="分析 MSFT 的 capex 与产品表现支撑。",
+        output_dir=tmp_path,
+        query_contract=_query_contract(["MSFT"], source_tiers=["primary_sec_filing"]),
+        focus_tickers=["MSFT"],
+        search_scope_tickers=["MSFT"],
+    )
+    initial["product_evidence_rows"] = [
+        {
+            "evidence_ref": "msft_product_runtime",
+            "source_family": "company_product_evidence_graph",
+            "ticker": "MSFT",
+            "product_or_segment": "Cloud",
+            "metric_family": "product_revenue",
+            "promotion_status": "runtime_fact_allowed",
+            "value": "100",
+        }
+    ]  # type: ignore[literal-required]
+    initial["public_source_context_rows"] = [
+        {
+            "evidence_ref": "msft_public_context",
+            "source_family": "public_source_context",
+            "ticker": "MSFT",
+            "summary": "public context only",
+            "exact_value_authority": True,
+        }
+    ]  # type: ignore[literal-required]
+
+    result = graph.invoke(initial, config={"configurable": {"thread_id": "unit-evidence-fusion-before-coverage"}})
+    nodes = [row["node"] for row in result["node_trace"]]
+    fusion = result["evidence_fusion_bundle"]
+    summary = build_multi_agent_summary_artifact_payload(result)
+
+    assert nodes.index("evidence_fusion_selector") < nodes.index("coverage_reflection")
+    assert result["status"] == "stopped_after_node"
+    assert fusion["summary"]["exact_authority_row_count"] == 2
+    assert fusion["summary"]["product_runtime_fact_count"] == 1
+    assert fusion["summary"]["public_exact_authority_violation_count"] == 0
+    assert result["bounded_gap_register"]["summary"]["commercial_tracker_gap_count"] == 1
+    assert summary["evidence_fusion"]["exact_authority_row_count"] == 2
+    assert summary["bounded_gap_register"]["commercial_tracker_gap_count"] == 1
+
+
+def test_multi_agent_graph_records_evidence_fanout_barrier_when_enabled(tmp_path: Path) -> None:
+    graph = build_multi_agent_orchestration_graph(stop_after_node="evidence_fusion_selector")
+    initial = make_multi_agent_smoke_state(
+        user_query="比较 MSFT 的基本面和市场反应。",
+        output_dir=tmp_path,
+        query_contract=_query_contract(["MSFT"], source_tiers=["primary_sec_filing", "market_snapshot"]),
+        focus_tickers=["MSFT"],
+        search_scope_tickers=["MSFT"],
+    )
+    initial["multi_agent_context"] = {"evidence_operator_fanout": True, "evidence_operator_fanout_workers": 2}  # type: ignore[literal-required]
+
+    result = graph.invoke(initial, config={"configurable": {"thread_id": "unit-evidence-fanout-barrier"}})
+
+    barrier = result["evidence_operator_fanout_barrier"]
+    assert result["status"] == "stopped_after_node"
+    assert barrier["schema_version"] == "sec_agent_fanout_barrier_v0.1"
+    assert barrier["input_shard_count"] >= 1
+    assert barrier["failed_shard_count"] == 0
+    assert result["evidence_operator_fanout_plan"]["schema_version"] == "sec_agent_evidence_operator_fanout_plan_v0.1"
 
 
 def test_multi_agent_graph_deterministic_run_artifact_skips_memo(tmp_path: Path) -> None:
@@ -83,10 +178,15 @@ def test_multi_agent_graph_standard_path_runs_specialists(tmp_path: Path) -> Non
     assert result["judgment_plan"]["aggregation_policy"] == "rank_supported_claim_cards_preserve_conflicts_no_average"
     assert result["judgment_plan"]["memo_outline"]
     assert result["specialist_verification"]["memo_writer_allowed"] is True
+    assert result["specialist_fanout_barrier"]["schema_version"] == "sec_agent_specialist_fanout_barrier_v0.1"
+    assert result["claim_card_store_barrier"]["schema_version"] == "sec_agent_claim_card_store_barrier_v0.1"
+    assert result["adjudicator_barrier"]["schema_version"] == "sec_agent_adjudicator_barrier_v0.1"
     summary = json.loads((tmp_path / "multi_agent_summary.json").read_text(encoding="utf-8"))
     assert "claim_card_stats" in summary["judgment_plan"]
     assert "claim_card_stats" in summary["verified_judgment_plan"]
     assert summary["judgment_plan"]["memo_thesis_pack"]["present"] is True
+    assert summary["graph_barriers"]["specialist_fanout"]["schema_version"] == "sec_agent_specialist_fanout_barrier_v0.1"
+    assert summary["graph_barriers"]["claim_card_store"]["schema_version"] == "sec_agent_claim_card_store_barrier_v0.1"
 
 
 def test_multi_agent_summary_preserves_specialist_prompt_diagnostics() -> None:
@@ -252,6 +352,62 @@ def test_quality_second_pass_caps_remaining_agent_budget_without_top_level_loop_
     assert result["second_pass_retrieval_plan"]["route_budget_pruning"]["dropped_routes"][0]["reason"] == "max_tool_calls_per_agent"
     assert result["loop_break_reason"] == ""
     assert result["tool_call_ledger"]["loop_break_reason"] == ""
+
+
+def test_second_pass_hard_gate_blocks_commercial_gap_before_tools(tmp_path: Path) -> None:
+    graph = build_multi_agent_orchestration_graph(
+        entry_node="optional_second_pass",
+        stop_after_node="optional_second_pass",
+    )
+    state = make_multi_agent_smoke_state(
+        user_query="commercial gap second pass only",
+        output_dir=tmp_path,
+        query_contract=_query_contract(["PFE"], source_tiers=["public_source_context", "industry_snapshot"]),
+        focus_tickers=["PFE"],
+        search_scope_tickers=["PFE"],
+    )
+    state["agent_activation_plan"] = {
+        "execution_mode": "deep_research",
+        "activate_agents": ["research_lead", "industry_supply_chain_analyst", "memo_writer"],
+        "allowed_source_families": ["public_source_context", "industry_snapshot"],
+        "max_second_pass_rounds": 1,
+    }
+    state["multi_agent_reflection_report"] = {
+        "sufficiency_level": "partial",
+        "source_available": True,
+        "trigger": "coverage_reflection",
+        "missing_requirements": [
+            {
+                "requirement_id": "req_true_rx_volume",
+                "task_id": "rx_volume",
+                "source_families": ["public_source_context"],
+                "source_family_gaps": ["public_source_context"],
+                "evidence_routes": ["industry_snapshot"],
+                "reason": "commercial tracker required for true prescription volume",
+            }
+        ],
+        "second_pass_requests": [
+            {
+                "request_id": "rx_volume_req",
+                "requirement_id": "rx_volume_req",
+                "parent_requirement_id": "req_true_rx_volume",
+                "source_families": ["public_source_context"],
+                "source_family_gaps": ["public_source_context"],
+                "evidence_routes": ["industry_snapshot"],
+                "metric_families": ["prescription_volume"],
+            }
+        ],
+    }
+
+    result = graph.invoke(state, config={"configurable": {"thread_id": "unit-second-pass-commercial-hard-gate"}})
+
+    assert result["second_pass_hard_gate"]["status"] == "blocked"
+    assert result["second_pass_hard_gate"]["summary"]["executable_request_count"] == 0
+    assert result["second_pass_retrieval_plan"] == {}
+    assert result["bounded_gap_register"]["summary"]["commercial_tracker_gap_count"] == 1
+    assert result["second_pass_result"]["status"] == "blocked_by_second_pass_hard_gate"
+    assert result["second_pass_delta_audit"]["status"] == "no_authority_delta"
+    assert result["tool_call_ledger"]["records"] == []
 
 
 def test_market_snapshot_routes_coalesce_across_ticker_groups() -> None:
@@ -671,6 +827,53 @@ def test_multi_agent_graph_stops_on_invalid_activation_plan(tmp_path: Path) -> N
     assert result["status"] == "failed"
     assert result["loop_break_reason"] == "invalid_agent_activation_plan"
     assert "validate_activation_plan" in nodes
+    assert "execute_evidence_operators" not in nodes
+    assert "renderer" not in nodes
+
+
+def test_multi_agent_graph_stops_on_plan_reflection_gate_failure(tmp_path: Path) -> None:
+    def milvus_unavailable_route(_state: dict) -> dict:
+        return {
+            "activation_plan": {
+                "execution_mode": "focused_answer",
+                "activate_agents": ["research_lead", "sec_operator", "coverage_reflection", "memo_writer", "verifier", "renderer"],
+                "allowed_source_families": ["primary_sec_filing", "milvus_semantic"],
+                "model_policy_hint": {"research_lead": "balanced", "memo_writer": "strong", "verifier": "strong", "renderer": "none"},
+                "max_tool_calls_total": 4,
+                "max_second_pass_rounds": 1,
+                "max_repair_rounds": 1,
+                "metadata": {"required_source_families": ["milvus_semantic"]},
+            },
+            "routing_trace": {"mode": "focused_answer"},
+        }
+
+    graph = build_multi_agent_orchestration_graph(route_activation=milvus_unavailable_route)
+    initial = make_multi_agent_smoke_state(
+        user_query="用语义检索补充 NVDA 的供应链关系表述。",
+        output_dir=tmp_path,
+        query_contract=_query_contract(["NVDA"]),
+        focus_tickers=["NVDA"],
+        search_scope_tickers=["NVDA"],
+    )
+    initial["project_inventory"] = {
+        "available_source_families": ["primary_sec_filing"],
+        "source_family_availability": {
+            "milvus_semantic": {"status": "unavailable", "available": False},
+        },
+        "milvus_runtime": {"status": "unavailable", "available": False, "location": "none"},
+    }  # type: ignore[literal-required]
+
+    result = graph.invoke(initial, config={"configurable": {"thread_id": "unit-plan-reflection-stop"}})
+    nodes = [row["node"] for row in result["node_trace"]]
+
+    assert result["status"] == "failed"
+    assert result["loop_break_reason"] == "plan_reflection_gate_failed"
+    assert result["plan_reflection_report"]["status"] == "fail"
+    assert {error["type"] for error in result["plan_reflection_report"]["errors"]} == {
+        "required_source_family_unavailable",
+        "milvus_semantic_requested_but_unavailable",
+    }
+    assert "plan_reflection_gate" in nodes
     assert "execute_evidence_operators" not in nodes
     assert "renderer" not in nodes
 

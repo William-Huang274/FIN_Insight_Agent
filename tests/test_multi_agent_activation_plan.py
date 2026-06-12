@@ -222,6 +222,31 @@ def test_industry_supply_chain_agent_requires_industry_or_relationship_scope() -
     )
 
 
+def test_product_technology_agent_requires_product_or_public_scope() -> None:
+    payload = _focused_plan()
+    payload["execution_mode"] = "standard_memo"
+    payload["activate_agents"] = [
+        "research_lead",
+        "sec_operator",
+        "coverage_reflection",
+        "fundamental_analyst",
+        "product_technology_analyst",
+        "judgment_plan_aggregator",
+        "memo_writer",
+        "verifier",
+        "renderer",
+    ]
+    payload["allowed_source_families"] = ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
+
+    result = validate_agent_activation_plan(payload)
+
+    assert result["status"] == "fail"
+    assert any(
+        error["type"] == "product_technology_agent_requires_product_or_public_scope"
+        for error in result["errors"]
+    )
+
+
 def test_agent_registry_permission_checks_fail_closed() -> None:
     payload = _focused_plan()
     registry = {

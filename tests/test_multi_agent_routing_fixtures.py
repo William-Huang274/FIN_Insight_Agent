@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from sec_agent.agent_contracts import DEFAULT_GLOBAL_LIMITS
+from sec_agent.industry_playbooks import load_playbook_registry, match_playbook_candidates
 from sec_agent.multi_agent_router import ROUTER_SOURCE, route_multi_agent_activation
 
 
@@ -87,3 +88,79 @@ def test_forced_context_mode_still_passes_validator() -> None:
 
     assert result["activation_plan"]["execution_mode"] == "standard_memo"
     assert result["validation"]["status"] == "pass"
+
+
+def test_product_technology_intent_activates_product_specialist() -> None:
+    result = route_multi_agent_activation(
+        {
+            "prompt": "Compare AAPL and MSFT product revenue, product taxonomy, and public proxy gaps.",
+            "focus_tickers": ["AAPL", "MSFT"],
+            "search_scope_tickers": ["AAPL", "MSFT"],
+            "context": {
+                "execution_mode": "standard_memo",
+                "query_contract": {
+                    "metric_families": ["product_revenue"],
+                    "source_tiers": ["primary_sec_filing", "company_product_evidence_graph"],
+                },
+            },
+        }
+    )
+    plan = result["activation_plan"]
+
+    assert result["validation"]["status"] == "pass"
+    assert "product_technology_analyst" in plan["activate_agents"]
+    assert "company_product_evidence_graph" in plan["allowed_source_families"]
+    assert plan["agent_priorities"]["product_technology_analyst"] == "primary"
+
+
+def test_same_query_uses_different_playbook_source_policy_by_industry_schema() -> None:
+    registry = load_playbook_registry()
+    consumer_inventory = _inventory_with_playbook(
+        match_playbook_candidates({"consumer electronics hardware": {"AAPL", "MSFT"}}, registry),
+        available=[
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "company_product_evidence_graph",
+            "public_source_context",
+        ],
+    )
+    bank_inventory = _inventory_with_playbook(
+        match_playbook_candidates({"banks": {"JPM", "C"}}, registry),
+        available=[
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "industry_snapshot",
+            "market_snapshot",
+        ],
+    )
+    base = {
+        "prompt": "Compare these peers' business drivers for a standard memo.",
+        "context": {"execution_mode": "standard_memo"},
+    }
+
+    consumer_plan = route_multi_agent_activation(
+        {**base, "focus_tickers": ["AAPL", "MSFT"], "search_scope_tickers": ["AAPL", "MSFT"], "source_inventory": consumer_inventory}
+    )["activation_plan"]
+    bank_plan = route_multi_agent_activation(
+        {**base, "focus_tickers": ["JPM", "C"], "search_scope_tickers": ["JPM", "C"], "source_inventory": bank_inventory}
+    )["activation_plan"]
+
+    assert consumer_plan["metadata"]["industry_schema"] == "consumer_electronics"
+    assert "product_technology_analyst" in consumer_plan["activate_agents"]
+    assert "company_product_evidence_graph" in consumer_plan["allowed_source_families"]
+    assert "public_source_context" in consumer_plan["allowed_source_families"]
+    assert bank_plan["metadata"]["industry_schema"] == "banks"
+    assert "product_technology_analyst" not in bank_plan["activate_agents"]
+    assert "industry_snapshot" in bank_plan["allowed_source_families"]
+    assert "market_snapshot" in bank_plan["allowed_source_families"]
+
+
+def _inventory_with_playbook(candidates: list[dict], *, available: list[str]) -> dict:
+    return {
+        "playbook_candidates": candidates,
+        "available_source_families": available,
+        "source_family_availability": {
+            family: {"status": "available", "available": True, "row_count": 1}
+            for family in available
+        },
+    }

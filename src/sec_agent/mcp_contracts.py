@@ -20,6 +20,7 @@ SOURCE_MARKET = "market_snapshot"
 SOURCE_INDUSTRY = "industry_snapshot"
 SOURCE_RUN_ARTIFACT = "run_artifact"
 SOURCE_RELATIONSHIP = "relationship_graph"
+SOURCE_LIVE_WEB = "live_public_web_context"
 
 
 def list_mcp_tool_contracts() -> list[dict[str, Any]]:
@@ -491,6 +492,80 @@ _TOOL_CONTRACTS: list[dict[str, Any]] = [
         ],
         handler_module="sec_agent.relationship_graph",
         handler_name="query_relationship_graph",
+    ),
+    _tool(
+        name="web_evidence_snapshot",
+        namespace="web",
+        title="Fetch allowlisted web evidence snapshot",
+        description=(
+            "Execute a structured live-web repair request against an allowlisted source scope. "
+            "The operator binds fetched content to snapshot metadata, source classification, parser output, "
+            "and an authority gate. Search snippets alone are never evidence rows."
+        ),
+        roles=[ROLE_EVIDENCE_OPERATOR],
+        source_tiers=[SOURCE_LIVE_WEB],
+        input_schema=_object_schema(
+            {
+                "query": {"type": "string"},
+                "url": {"type": "string"},
+                "domain": {"type": "string"},
+                "source_class": _string_enum(
+                    [
+                        "company_official_product_surface",
+                        "company_ir_material",
+                        "official_regulatory_page",
+                        "government_dataset_endpoint",
+                        "commerce_product_surface",
+                        "major_financial_news",
+                        "research_developer_signal",
+                        "social_official_account",
+                        "social_unverified_or_influencer",
+                    ]
+                ),
+                "claim_types": _array({"type": "string"}),
+                "web_scope_policy_ids": _array({"type": "string"}),
+                "snapshot_id": {"type": "string"},
+                "snapshot_url": {"type": "string"},
+                "source_title": {"type": "string"},
+                "company_domain_verified": {"type": "boolean"},
+                "company_domains": _array({"type": "string"}),
+                "web_scope_allowed_domains": _array({"type": "string"}),
+                "limit": {"type": "integer", "minimum": 1, "maximum": 10},
+            },
+            required=["url", "source_class", "web_scope_policy_ids"],
+            additional_properties=True,
+        ),
+        output_schema=_object_schema(
+            {
+                "schema_version": {"type": "string"},
+                "status": {"type": "string", "enum": ["ok", "partial", "error", "dry_run"]},
+                "snapshot_id": {"type": "string"},
+                "snapshot_url": {"type": "string"},
+                "as_of_datetime": {"type": "string"},
+                "source_class": {"type": "string"},
+                "web_scope_policy_ids": _array({"type": "string"}),
+                "context_rows": _array({"type": "object"}),
+                "source_gaps": _array({"type": "object"}),
+                "artifact_refs": _array(_artifact_ref_schema()),
+            },
+            additional_properties=True,
+        ),
+        allowed_claim_types=[
+            "allowlisted_web_context",
+            "product_presence_or_sku_price_availability_when_source_class_allows",
+            "regulatory_or_government_context_when_source_class_allows",
+            "developer_or_research_activity_signal_when_source_class_allows",
+            "major_news_event_or_quote_lead",
+        ],
+        prohibited_claims=[
+            "Do not turn search snippets into evidence rows or claim cards.",
+            "Do not use ecommerce pages for shipment volume, vendor share, sell-through, channel inventory, margin, or revenue.",
+            "Do not use social or self-media sources to support financial facts.",
+            "Do not overwrite SEC ledger rows or company product runtime facts with live-web context rows.",
+            "Official or regulatory web snapshots need parser and authority-gate success before any future promotion beyond context-only.",
+        ],
+        handler_module="sec_agent.mcp_tool_registry",
+        handler_name="_invoke_web_evidence_snapshot",
     ),
     _tool(
         name="run_inspect_artifacts",

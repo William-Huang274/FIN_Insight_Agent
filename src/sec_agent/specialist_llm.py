@@ -4,6 +4,7 @@ import json
 import os
 import re
 import hashlib
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
@@ -17,6 +18,7 @@ ROUTE_SCHEMA_VERSION = "sec_agent_specialist_llm_route_v0.1"
 ROUTE_SOURCE = "specialist_llm_v0.1"
 SPECIALIST_ROUTER_ENV = "SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER"
 SHARED_SPECIALIST_CONTEXT_SCHEMA_VERSION = "sec_agent_shared_specialist_context_v0.1"
+SPECIALIST_FANOUT_BARRIER_SCHEMA_VERSION = "sec_agent_specialist_fanout_barrier_v0.1"
 
 ChatCompletionFunc = Callable[..., dict[str, Any]]
 
@@ -72,15 +74,20 @@ def route_specialists_from_env(
             if row.get("decision") == "skipped"
         ]
         decision_by_agent = {str(row.get("agent_id") or ""): row for row in decisions}
-        for agent_id in specialists:
-            request = build_specialist_request_from_state(agent_id, state, shared_context=shared_context)
-            result = route_specialist_memolet_llm(
-                agent_id,
-                request,
-                config=config,
-                known_evidence_refs=set(request.get("known_evidence_refs") or []),
-                call_chat_completion=call_chat_completion,
-            )
+        fanout_enabled = _bool_env(values.get("SEC_AGENT_SPECIALIST_FANOUT"))
+        routed = _route_specialist_requests(
+            specialists,
+            state,
+            shared_context=shared_context,
+            config=config,
+            call_chat_completion=call_chat_completion,
+            fanout_enabled=fanout_enabled,
+            max_workers=_int_env(values.get("SEC_AGENT_SPECIALIST_FANOUT_WORKERS"), default=4),
+        )
+        for item in routed:
+            agent_id = str(item.get("agent_id") or "")
+            request = item.get("request") if isinstance(item.get("request"), Mapping) else {}
+            result = item.get("result") if isinstance(item.get("result"), Mapping) else {}
             summary = _route_result_summary(result)
             summary.update(_request_route_summary(request))
             decision = decision_by_agent.get(agent_id) or {}
@@ -95,9 +102,73 @@ def route_specialists_from_env(
             "shared_specialist_context": shared_context,
             "specialist_outputs": outputs,
             "specialist_route_results": route_results,
+            "specialist_fanout_barrier": _specialist_fanout_barrier(route_results, outputs, execution_mode="fanout_parallel" if fanout_enabled else "sequential"),
         }
 
     return _route
+
+
+def _route_specialist_requests(
+    specialists: list[str],
+    state: Mapping[str, Any],
+    *,
+    shared_context: Mapping[str, Any],
+    config: SpecialistLLMConfig,
+    call_chat_completion: ChatCompletionFunc,
+    fanout_enabled: bool,
+    max_workers: int,
+) -> list[dict[str, Any]]:
+    indexed = list(enumerate(specialists))
+    if not fanout_enabled or len(indexed) <= 1:
+        return [
+            _route_one_specialist_request(index, agent_id, state, shared_context, config, call_chat_completion)
+            for index, agent_id in indexed
+        ]
+    worker_count = max(1, min(max_workers, len(indexed)))
+    routed: list[dict[str, Any]] = []
+    with ThreadPoolExecutor(max_workers=worker_count) as executor:
+        futures = {
+            executor.submit(_route_one_specialist_request, index, agent_id, state, shared_context, config, call_chat_completion): (index, agent_id)
+            for index, agent_id in indexed
+        }
+        for future in as_completed(futures):
+            index, agent_id = futures[future]
+            try:
+                routed.append(future.result())
+            except Exception as exc:
+                routed.append(
+                    {
+                        "index": index,
+                        "agent_id": agent_id,
+                        "request": {"agent_id": agent_id},
+                        "result": _fail_result(
+                            agent_id=agent_id,
+                            model_calls=[],
+                            failure={"type": "specialist_fanout_exception", "error": str(exc)[:500]},
+                            validation={"status": "fail", "errors": [{"type": "specialist_fanout_exception", "error": str(exc)[:500]}]},
+                        ),
+                    }
+                )
+    return sorted(routed, key=lambda item: int(item.get("index") or 0))
+
+
+def _route_one_specialist_request(
+    index: int,
+    agent_id: str,
+    state: Mapping[str, Any],
+    shared_context: Mapping[str, Any],
+    config: SpecialistLLMConfig,
+    call_chat_completion: ChatCompletionFunc,
+) -> dict[str, Any]:
+    request = build_specialist_request_from_state(agent_id, state, shared_context=shared_context)
+    result = route_specialist_memolet_llm(
+        agent_id,
+        request,
+        config=config,
+        known_evidence_refs=set(request.get("known_evidence_refs") or []),
+        call_chat_completion=call_chat_completion,
+    )
+    return {"index": index, "agent_id": agent_id, "request": request, "result": result}
 
 
 def build_shared_specialist_context(state: Mapping[str, Any]) -> dict[str, Any]:
@@ -172,6 +243,13 @@ def build_specialist_request_from_state(
         "agent_id": agent_id,
         "execution_mode": execution_mode,
         "user_query": state.get("user_query") or "",
+        "agent_data_view_ref": {
+            "schema_version": data_view.get("schema_version") or "",
+            "context_digest": data_view.get("context_digest") or "",
+            "global_context_ref": data_view.get("global_context_ref") or {},
+            "private_context_policy": data_view.get("private_context_policy") or "private_operator_context_excluded",
+        },
+        "role_context": data_view.get("role_context") or {},
         "shared_context": context,
         "assigned_task_card": task_card,
         "required_claim_slots": required_claim_slots,
@@ -297,7 +375,12 @@ def route_specialist_memolet_llm(
                 request,
                 known_evidence_refs=evidence_refs,
             )
-            effective_validation = temporal_validation or salvaged_validation
+            product_validation = _salvage_product_kpi_authority_violations(
+                temporal_validation or salvaged_validation,
+                request,
+                known_evidence_refs=evidence_refs,
+            )
+            effective_validation = product_validation or temporal_validation or salvaged_validation
             capped_memolet = _apply_specialist_output_contract_caps(effective_validation["memolet"], request)
             capped_validation = validate_specialist_memolet(capped_memolet, known_evidence_refs=evidence_refs)
             capped_validation["warnings"] = [
@@ -326,7 +409,12 @@ def route_specialist_memolet_llm(
                 request,
                 known_evidence_refs=evidence_refs,
             )
-            effective_validation = temporal_validation or validation
+            product_validation = _salvage_product_kpi_authority_violations(
+                temporal_validation or validation,
+                request,
+                known_evidence_refs=evidence_refs,
+            )
+            effective_validation = product_validation or temporal_validation or validation
             capped_memolet = _apply_specialist_output_contract_caps(effective_validation["memolet"], request)
             capped_validation = validate_specialist_memolet(capped_memolet, known_evidence_refs=evidence_refs)
             capped_validation["warnings"] = [
@@ -340,6 +428,8 @@ def route_specialist_memolet_llm(
             }
             if temporal_validation is not None:
                 routing_trace["salvage_policy"] = "demote_single_ref_temporal_observations"
+            if product_validation is not None:
+                routing_trace["salvage_policy"] = "demote_product_kpi_without_exact_authority"
             return {
                 "schema_version": ROUTE_SCHEMA_VERSION,
                 "source": ROUTE_SOURCE,
@@ -398,6 +488,8 @@ def _build_messages(
     )
     user_payload = {
         "shared_context": shared_context,
+        "agent_data_view_ref": request.get("agent_data_view_ref") or {},
+        "role_context": request.get("role_context") or {},
         "agent_id": agent_id,
         "execution_mode": execution_mode,
         "user_query": request.get("user_query") or request.get("prompt") or "",
@@ -479,7 +571,7 @@ def _system_prompt(agent_id: str) -> str:
                 "claim_type": "business_observation",
                 "ticker_scope": ["TICKER"],
                 "metric_scope": ["metric_family"],
-                "memo_slot": "thesis | fundamentals | industry_relationship | market_valuation | risk_counterevidence | evidence_gap | caveat",
+                "memo_slot": "thesis | fundamentals | product_technology | industry_relationship | market_valuation | risk_counterevidence | evidence_gap | caveat",
                 "materiality": "high | medium | low",
                 "direction": "positive | negative | mixed | neutral | unknown",
                 "evidence_refs": ["evidence_ref"],
@@ -702,6 +794,8 @@ def _select_prompt_rows(
     ranked = _rank_rows_for_prompt(rows, terms, agent_id=agent_id)
     if agent_id == "industry_supply_chain_analyst":
         return _relationship_preserving_selection(ranked, max_rows=max_rows)
+    if agent_id == "product_technology_analyst":
+        return _balanced_rows_by_source_for_prompt(ranked, max_rows=max_rows)
     if agent_id in {"fundamental_analyst", "risk_counterevidence_analyst"}:
         focus_tickers = _unique_upper(task_card.get("focus_tickers"))
         if len(focus_tickers) >= 2:
@@ -781,6 +875,10 @@ def _row_selection_score(row: Mapping[str, Any], *, terms: set[str], agent_id: s
             score += 3 if len(term) > 2 else 1
     if agent_id == "fundamental_analyst" and family in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}:
         score += 4
+    elif agent_id == "product_technology_analyst" and family == "company_product_evidence_graph":
+        score += 6 if str(row.get("promotion_status") or "") == "runtime_fact_allowed" else 4
+    elif agent_id == "product_technology_analyst" and family in {"public_source_context", "live_public_web_context"}:
+        score += 3
     elif agent_id == "market_valuation_analyst" and family == "market_snapshot":
         score += 6
     elif agent_id == "industry_supply_chain_analyst" and family == "relationship_graph":
@@ -818,6 +916,7 @@ def _selection_terms(
     ]
     role_terms = {
         "fundamental_analyst": ["revenue", "margin", "capex", "cash", "backlog", "deposit", "credit", "asset", "income"],
+        "product_technology_analyst": ["product", "segment", "sku", "taxonomy", "platform", "developer", "clinical", "regulatory", "proxy", "gap"],
         "market_valuation_analyst": ["return", "valuation", "market", "price", "volume", "multiple", "snapshot"],
         "industry_supply_chain_analyst": ["relationship", "supplier", "customer", "chain", "industry", "sector", "capex", "demand"],
         "risk_counterevidence_analyst": ["risk", "gap", "conflict", "decline", "pressure", "constraint", "missing", "caveat"],
@@ -870,6 +969,9 @@ def _balanced_rows_by_source_for_prompt(rows: list[dict[str, Any]], *, max_rows:
     order = [
         "primary_sec_filing",
         "company_authored_unaudited_sec_filing",
+        "company_product_evidence_graph",
+        "public_source_context",
+        "live_public_web_context",
         "market_snapshot",
         "industry_snapshot",
         "relationship_graph",
@@ -1167,6 +1269,88 @@ def _salvage_supported_claim_ref_errors(
     return salvaged
 
 
+def _salvage_product_kpi_authority_violations(
+    validation: Mapping[str, Any],
+    request: Mapping[str, Any],
+    *,
+    known_evidence_refs: set[str],
+) -> dict[str, Any] | None:
+    memolet = dict(validation.get("memolet") or {})
+    if str(memolet.get("agent_id") or "") != "product_technology_analyst":
+        return None
+    row_by_ref = _row_by_known_ref_from_request(request)
+    observations = [dict(item) for item in memolet.get("observations") or [] if isinstance(item, Mapping)]
+    kept: list[dict[str, Any]] = []
+    removed: list[dict[str, Any]] = []
+    for observation in observations:
+        if not _is_product_kpi_observation(observation):
+            kept.append(observation)
+            continue
+        refs = _string_list(observation.get("evidence_refs") or observation.get("refs"))
+        rows = [row_by_ref.get(ref) or {} for ref in refs]
+        if refs and rows and all(_row_has_product_kpi_exact_authority(row) for row in rows):
+            kept.append(observation)
+            continue
+        removed.append(
+            {
+                "claim": _truncate(str(observation.get("claim") or "Unsupported product KPI claim."), 240),
+                "reason": "demoted_product_kpi_without_company_disclosed_exact_authority",
+                "evidence_refs": refs,
+            }
+        )
+    if not removed:
+        return None
+    repaired = dict(memolet)
+    repaired["status"] = "partial"
+    repaired["observations"] = kept
+    repaired["unsupported_claims"] = [
+        *[dict(item) for item in memolet.get("unsupported_claims") or [] if isinstance(item, Mapping)],
+        *removed,
+    ]
+    metadata = dict(repaired.get("metadata") or {})
+    metadata["salvage_policy"] = "demote_product_kpi_without_exact_authority_v0_1"
+    metadata["salvaged_observation_count"] = int(metadata.get("salvaged_observation_count") or 0) + len(removed)
+    repaired["metadata"] = metadata
+    salvaged = validate_specialist_memolet(repaired, known_evidence_refs=known_evidence_refs)
+    if salvaged.get("status") != "pass":
+        return None
+    salvaged["warnings"] = [
+        *list(validation.get("warnings") or []),
+        *list(salvaged.get("warnings") or []),
+        {
+            "type": "product_kpi_observation_demoted",
+            "removed_count": len(removed),
+            "policy": "product_kpi_claims_require_company_product_evidence_graph_runtime_fact_allowed_exact_authority",
+        },
+    ]
+    return salvaged
+
+
+def _is_product_kpi_observation(observation: Mapping[str, Any]) -> bool:
+    claim_type = str(observation.get("claim_type") or "").strip()
+    if claim_type in {
+        "company_disclosed_product_kpi",
+        "company_reported_product_fact",
+        "product_kpi",
+        "product_revenue",
+        "product_sales",
+        "reported_financial_fact",
+        "company_reported_financial_fact",
+    }:
+        return True
+    metric_text = " ".join(_string_list(observation.get("metric_scope") or observation.get("metrics") or observation.get("metric"))).lower()
+    return any(term in metric_text for term in ("product_revenue", "product_sales", "sell_through", "prescription_volume"))
+
+
+def _row_has_product_kpi_exact_authority(row: Mapping[str, Any]) -> bool:
+    return (
+        str(row.get("source_family") or "").strip() == "company_product_evidence_graph"
+        and str(row.get("promotion_status") or "").strip() == "runtime_fact_allowed"
+        and bool(row.get("exact_value_authority"))
+        and not bool(row.get("context_only"))
+    )
+
+
 def _salvage_temporal_single_ref_observations(
     validation: Mapping[str, Any],
     request: Mapping[str, Any],
@@ -1377,6 +1561,7 @@ def _route_result_summary(result: Mapping[str, Any]) -> dict[str, Any]:
 def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
     task_card = request.get("assigned_task_card") if isinstance(request.get("assigned_task_card"), Mapping) else {}
     shared_context = request.get("shared_context") if isinstance(request.get("shared_context"), Mapping) else {}
+    agent_data_view_ref = request.get("agent_data_view_ref") if isinstance(request.get("agent_data_view_ref"), Mapping) else {}
     relationship_summary = request.get("relationship_summary") if isinstance(request.get("relationship_summary"), Mapping) else {}
     source_family_bundle = request.get("source_family_bundle") if isinstance(request.get("source_family_bundle"), Mapping) else {}
     rows = [dict(row) for row in request.get("bounded_evidence_rows") or [] if isinstance(row, Mapping)]
@@ -1388,12 +1573,38 @@ def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
         "counterclaim_slot_count": len(request.get("counterclaim_slots") or []),
         "available_source_families": _string_list(task_card.get("available_source_families"))[:8],
         "shared_context_digest": str(shared_context.get("context_digest") or ""),
+        "agent_data_view_digest": str(agent_data_view_ref.get("context_digest") or ""),
+        "agent_data_view_schema_version": str(agent_data_view_ref.get("schema_version") or ""),
         "prompt_bounded_evidence_row_count": len(request.get("bounded_evidence_rows") or []),
         "prompt_relationship_summary_row_count": len(relationship_summary.get("relationships") or []),
         "prompt_row_distribution": request.get("prompt_row_distribution") or _prompt_row_distribution(rows),
         "selected_source_families": _string_list(source_family_bundle.get("selected_source_families"))[:8],
         "semantic_supplement_row_count": int(source_family_bundle.get("semantic_supplement_row_count") or 0),
         "input_coverage_summary": request.get("input_coverage_summary") or {},
+    }
+
+
+def _specialist_fanout_barrier(route_results: Any, outputs: Any, *, execution_mode: str) -> dict[str, Any]:
+    routes = [dict(item) for item in route_results or [] if isinstance(item, Mapping)]
+    output_rows = [dict(item) for item in outputs or [] if isinstance(item, Mapping)]
+    failed = [
+        row
+        for row in routes
+        if str(row.get("status") or "") not in {"pass", "run", "stubbed", "skipped"}
+    ]
+    return {
+        "schema_version": SPECIALIST_FANOUT_BARRIER_SCHEMA_VERSION,
+        "barrier_id": "specialist_fanout_barrier",
+        "execution_mode": execution_mode,
+        "deterministic_merge_policy": "active_specialist_order",
+        "specialist_count": len(output_rows),
+        "route_result_count": len(routes),
+        "failed_route_count": len(failed),
+        "failed_agents": [str(row.get("agent_id") or "") for row in failed if str(row.get("agent_id") or "")],
+        "output_schema": {
+            "specialist_outputs": "append_only_claim_card_memolets",
+            "specialist_route_results": "append_only_route_summaries",
+        },
     }
 
 
@@ -1419,6 +1630,8 @@ def _skipped_route_result_summary(decision: Mapping[str, Any]) -> dict[str, Any]
         "counterclaim_slot_count": 0,
         "available_source_families": [],
         "shared_context_digest": "",
+        "agent_data_view_digest": "",
+        "agent_data_view_schema_version": "",
         "prompt_bounded_evidence_row_count": 0,
         "prompt_relationship_summary_row_count": 0,
         "prompt_row_distribution": _prompt_row_distribution([]),
@@ -1437,6 +1650,12 @@ def _int_env(value: str | None, *, default: int) -> int:
         return int(value) if value not in {None, ""} else default
     except (TypeError, ValueError):
         return default
+
+
+def _bool_env(value: str | None) -> bool:
+    if value is None:
+        return False
+    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
 def _specialist_input_max_rows(execution_mode: str, *, priority: str = "", agent_id: str = "") -> int:
@@ -1545,12 +1764,16 @@ def _observation_budget_text(
     if mode == "deep_research":
         if agent_id == "risk_counterevidence_analyst":
             return "produce 2-3 supported risk ClaimCards when evidence supports them; use at most 2 unsupported_claims and at most 2 conflicts"
+        if agent_id == "product_technology_analyst":
+            return "produce 2-4 product ClaimCards when exact product KPI or proxy context supports them; expose commercial tracker gaps instead of filling them"
         if agent_id == "fundamental_analyst":
             return "produce 2-4 supported fundamental ClaimCards when evidence supports them; prioritize investment implications over row summaries; keep unsupported_claims/conflicts to the top 3 each"
         return "produce 3-5 supported observations when evidence supports them; keep unsupported_claims/conflicts to the top 3 each"
     if mode == "standard_memo":
         if agent_id == "risk_counterevidence_analyst":
             return "produce 2-3 supported risk ClaimCards when evidence supports them; use at most 2 unsupported_claims and at most 2 conflicts"
+        if agent_id == "product_technology_analyst":
+            return "produce 1-3 product ClaimCards when evidence supports them; expose at most 2 commercial tracker gaps"
         return "produce 3-6 supported observations when evidence supports them; keep unsupported_claims/conflicts to the top 3 each"
     return "at most 3 observations, 3 unsupported_claims, and 3 conflicts"
 
@@ -1564,6 +1787,14 @@ def _specialist_output_contract(agent_id: str, execution_mode: str) -> dict[str,
             "unsupported_claim_cap": 2,
             "conflict_cap": 2,
             "memo_ready_requirement": "each risk must be a downside driver, evidence weakness, or confirmation need",
+        }
+    if agent_id == "product_technology_analyst":
+        return {
+            "policy": "product_technology_claim_cards_v0_1",
+            "supported_observation_target": "2-4" if mode == "deep_research" else "1-3",
+            "unsupported_claim_cap": 2,
+            "conflict_cap": 1,
+            "memo_ready_requirement": "product KPI facts require company_product_evidence_graph runtime_fact_allowed exact authority; public proxy rows stay context or gap",
         }
     if agent_id == "fundamental_analyst" and mode == "deep_research":
         return {
@@ -1639,6 +1870,8 @@ def _specialist_summary_chars_for_row(agent_id: str, row: Mapping[str, Any], *, 
         return _int_env(os.environ.get("SPECIALIST_INDUSTRY_SUMMARY_CHARS"), default=240)
     if family == "relationship_graph":
         return _relationship_summary_chars(execution_mode)
+    if family in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}:
+        return _int_env(os.environ.get("SPECIALIST_PRODUCT_SUMMARY_CHARS"), default=260 if mode == "deep_research" else 340)
     return _int_env(os.environ.get("SPECIALIST_OTHER_SUMMARY_CHARS"), default=240 if mode == "deep_research" else 320)
 
 

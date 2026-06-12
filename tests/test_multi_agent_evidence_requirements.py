@@ -3,10 +3,12 @@ from __future__ import annotations
 import json
 
 from sec_agent.multi_agent_runtime import (
+    build_evidence_fusion_bundle,
     build_agent_data_view,
     build_multi_agent_evidence_requirement_plan,
     compile_multi_agent_retrieval_plan,
     merge_universe_relationship_evidence_requirements,
+    plan_reflection_gate,
     validate_multi_agent_evidence_requirement_plan,
 )
 
@@ -100,6 +102,260 @@ def test_relationship_graph_evidence_route_maps_to_universe_relationship() -> No
 
     assert result["status"] == "pass"
     assert result["errors"] == []
+
+
+def test_milvus_semantic_route_maps_to_explicit_semantic_source_family() -> None:
+    result = validate_multi_agent_evidence_requirement_plan(
+        {
+            "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+            "requirements": [
+                {
+                    "requirement_id": "req_semantic",
+                    "evidence_routes": ["milvus_semantic"],
+                    "source_families": ["milvus_semantic"],
+                    "operator_owners": ["sec_operator"],
+                }
+            ],
+        },
+        activation_plan={"allowed_source_families": ["milvus_semantic"]},
+    )
+
+    assert result["status"] == "pass"
+    assert result["errors"] == []
+
+
+def test_evidence_fusion_promotes_runtime_product_fact_scope() -> None:
+    bundle = build_evidence_fusion_bundle(
+        {
+            "product_evidence_rows": [
+                {
+                    "evidence_ref": "prod_nvda_dc_revenue",
+                    "source_family": "company_product_evidence_graph",
+                    "ticker": "NVDA",
+                    "product_or_segment": "Data Center",
+                    "metric_family": "product_revenue",
+                    "value": "47,525",
+                    "unit": "USD millions",
+                    "promotion_status": "runtime_fact_allowed",
+                }
+            ]
+        }
+    )
+
+    row = bundle["authority_rows"][0]
+
+    assert row["source_family"] == "company_product_evidence_graph"
+    assert row["authority_tier"] == "company_disclosed_product_kpi_fact"
+    assert row["claim_scope"] == "company_disclosed_product_kpi_fact"
+    assert row["exact_value_authority"] is True
+    assert row["runtime_fact_allowed"] is True
+    assert bundle["summary"]["product_runtime_fact_count"] == 1
+    assert bundle["summary"]["exact_authority_row_count"] == 1
+
+
+def test_evidence_fusion_keeps_public_source_context_out_of_exact_authority() -> None:
+    bundle = build_evidence_fusion_bundle(
+        {
+            "public_source_context_rows": [
+                {
+                    "evidence_ref": "openfda_lly_context",
+                    "source_family": "public_source_context",
+                    "underlying_source_family": "openfda",
+                    "ticker": "LLY",
+                    "metric": "adverse_event_context",
+                    "summary": "openFDA context lead",
+                    "exact_value_authority": True,
+                }
+            ]
+        }
+    )
+
+    row = bundle["authority_rows"][0]
+
+    assert row["source_family"] == "public_source_context"
+    assert row["authority_tier"] == "context_or_proxy"
+    assert row["exact_value_authority"] is False
+    assert row["context_only"] is True
+    assert bundle["summary"]["public_exact_authority_violation_count"] == 0
+
+
+def test_evidence_fusion_keeps_milvus_semantic_out_of_exact_values() -> None:
+    bundle = build_evidence_fusion_bundle(
+        {
+            "context_rows": [
+                {
+                    "evidence_ref": "sem_amd_ai",
+                    "source_family": "primary_sec_filing",
+                    "retrieval_route": "milvus_semantic",
+                    "vector_kind": "narrative_chunk",
+                    "ticker": "AMD",
+                    "summary": "semantic recall hit for AI demand commentary",
+                    "exact_value_authority": True,
+                }
+            ]
+        }
+    )
+
+    row = bundle["authority_rows"][0]
+
+    assert row["source_family"] == "milvus_semantic"
+    assert row["semantic_supplement"] is True
+    assert row["claim_scope"] == "filing_semantic_recall_supplement_only"
+    assert row["exact_value_authority"] is False
+    assert bundle["summary"]["semantic_exact_authority_violation_count"] == 0
+
+
+def test_evidence_fusion_builds_bounded_gap_register() -> None:
+    bundle = build_evidence_fusion_bundle(
+        {
+            "source_gaps": [
+                {
+                    "gap_id": "gap_rx_sales",
+                    "source_family": "company_product_evidence_graph",
+                    "ticker": "PFE",
+                    "metric_family": "product_revenue",
+                    "product_or_segment": "Eliquis",
+                    "reason": "commercial tracker required for true prescription volume",
+                }
+            ],
+            "product_evidence_rows": [
+                {
+                    "evidence_ref": "gap_region_schema",
+                    "source_family": "company_product_evidence_graph",
+                    "ticker": "MDT",
+                    "metric_family": "product_revenue",
+                    "promotion_status": "gap_exposed_not_fallback",
+                    "reason": "regional columns require product-region revenue schema",
+                }
+            ],
+        }
+    )
+
+    register = bundle["bounded_gap_register"]
+    gap_types = {row["gap_id"]: row["gap_type"] for row in register["gaps"]}
+
+    assert register["gap_count"] == 2
+    assert gap_types["gap_rx_sales"] == "commercial_tracker_gap"
+    assert gap_types["gap_region_schema"] == "parser_schema_gap"
+    assert all(row["claim_boundary"] == "do_not_fill_with_generic_fallback_or_proxy_fact" for row in register["gaps"])
+
+
+def test_plan_reflection_gate_rejects_required_source_family_missing_from_inventory() -> None:
+    report = plan_reflection_gate(
+        {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["research_lead", "sec_operator", "coverage_reflection", "memo_writer", "verifier", "renderer"],
+            "allowed_source_families": ["primary_sec_filing", "company_product_evidence_graph"],
+            "metadata": {"required_source_families": ["company_product_evidence_graph"]},
+        },
+        activation_validation={"status": "pass"},
+        source_inventory={
+            "available_source_families": ["primary_sec_filing"],
+            "source_family_availability": {
+                "company_product_evidence_graph": {"status": "unavailable", "available": False},
+            },
+        },
+    )
+
+    assert report["status"] == "fail"
+    assert {error["type"] for error in report["errors"]} == {"required_source_family_unavailable"}
+    assert report["repair_requests"][0]["action"] == "repair_activation_plan_before_retrieval"
+
+
+def test_plan_reflection_gate_rejects_milvus_when_runtime_unavailable() -> None:
+    report = plan_reflection_gate(
+        {
+            "execution_mode": "focused_answer",
+            "activate_agents": ["research_lead", "sec_operator", "coverage_reflection", "memo_writer", "verifier", "renderer"],
+            "allowed_source_families": ["primary_sec_filing", "milvus_semantic"],
+        },
+        activation_validation={"status": "pass"},
+        source_inventory={
+            "available_source_families": ["primary_sec_filing"],
+            "milvus_runtime": {"status": "unavailable", "available": False, "location": "none"},
+        },
+    )
+
+    assert report["status"] == "fail"
+    assert {error["type"] for error in report["errors"]} == {"milvus_semantic_requested_but_unavailable"}
+
+
+def test_plan_reflection_gate_rejects_live_web_without_scope_policy() -> None:
+    report = plan_reflection_gate(
+        {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["research_lead", "coverage_reflection", "memo_writer", "verifier", "renderer"],
+            "allowed_source_families": ["primary_sec_filing", "live_public_web_context"],
+        },
+        activation_validation={"status": "pass"},
+        source_inventory={
+            "available_source_families": ["primary_sec_filing", "live_public_web_context"],
+            "live_public_web_context": {
+                "status": "policy_available",
+                "available": True,
+                "web_scope_policy_ids": ["major_financial_news"],
+            },
+        },
+    )
+
+    assert report["status"] == "fail"
+    assert {error["type"] for error in report["errors"]} == {"live_web_scope_policy_required"}
+
+
+def test_plan_reflection_gate_rejects_wrong_industry_schema_for_playbook_candidates() -> None:
+    report = plan_reflection_gate(
+        {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["research_lead", "sec_operator", "coverage_reflection", "memo_writer", "verifier", "renderer"],
+            "allowed_source_families": ["primary_sec_filing"],
+            "metadata": {"industry_schema": "banks", "selected_playbook_ids": ["banks"]},
+        },
+        activation_validation={"status": "pass"},
+        source_inventory={
+            "available_source_families": ["primary_sec_filing"],
+            "playbook_candidates": [{"playbook_id": "semiconductors", "industry_schema": "semiconductors"}],
+        },
+    )
+
+    assert report["status"] == "fail"
+    error_types = {error["type"] for error in report["errors"]}
+    assert "industry_schema_not_supported_by_inventory_playbooks" in error_types
+    assert "selected_playbook_not_in_inventory_candidates" in error_types
+
+
+def test_plan_reflection_exposes_playbook_forbidden_claims_for_verifier() -> None:
+    report = plan_reflection_gate(
+        {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["research_lead", "sec_operator", "industry_operator", "coverage_reflection", "memo_writer", "verifier", "renderer"],
+            "allowed_source_families": ["primary_sec_filing", "industry_snapshot"],
+            "metadata": {"industry_schema": "banks", "selected_playbook_ids": ["banks"]},
+        },
+        activation_validation={"status": "pass"},
+        source_inventory={
+            "available_source_families": ["primary_sec_filing", "industry_snapshot"],
+            "source_family_availability": {
+                "primary_sec_filing": {"status": "available", "available": True},
+                "industry_snapshot": {"status": "available", "available": True},
+            },
+            "playbook_candidates": [
+                {
+                    "playbook_id": "banks",
+                    "industry_schema": "banks",
+                    "default_source_families": ["primary_sec_filing", "industry_snapshot"],
+                    "source_family_policy": {"industry_snapshot": {"allowed_claims": ["rate_cycle_context"]}},
+                    "forbidden_claims": ["macro_rate_as_company_NII"],
+                    "commercial_gap_policy": {"card_spend": ["issuer_disclosure"]},
+                    "specialist_routing": {"industry_supply_chain_analyst": "medium"},
+                }
+            ],
+        },
+    )
+
+    assert report["status"] == "pass"
+    assert report["playbook_policy"]["selected_playbook_ids"] == ["banks"]
+    assert "macro_rate_as_company_NII" in report["playbook_policy"]["forbidden_claims"]
+    assert "playbook_forbidden_claims_available_for_verifier" in {item["type"] for item in report["warnings"]}
 
 
 def test_relationship_requirements_are_capped_by_activation_tool_budget() -> None:
@@ -257,6 +513,45 @@ def test_research_lead_data_view_is_summary_inventory_and_artifact_refs_only() -
     assert "artifact_refs" in view
     assert "data/raw_private" not in payload
     assert "private_path" not in payload
+
+
+def test_research_lead_data_view_compacts_full_inventory_to_brief_v02() -> None:
+    view = build_agent_data_view(
+        "research_lead",
+        {
+            "project_inventory": {
+                "schema_version": "project_source_inventory_v0.1",
+                "inventory_digest": "digest123",
+                "company_count": 1,
+                "filing_count": 1,
+                "years": [2025],
+                "form_types": {"10-K": 1},
+                "source_tiers": {"primary_sec_filing": 1},
+                "available_source_families": ["primary_sec_filing", "milvus_semantic"],
+                "manifest_path": "data/raw_private/source.jsonl",
+                "indexes": {"bm25_index_dir": "data/indexes/bm25/sec"},
+                "companies": [{"ticker": "NVDA", "private_path": "data/raw_private/nvda.json"}],
+                "milvus_runtime": {
+                    "source_family": "milvus_semantic",
+                    "status": "cloud_available",
+                    "available": True,
+                    "location": "cloud",
+                    "exact_value_authority": False,
+                    "summary_path": "data/processed_private/milvus/summary.json",
+                },
+            }
+        },
+    )
+
+    payload = json.dumps(view, ensure_ascii=False)
+    inventory = view["source_inventory"]
+
+    assert inventory["schema_version"] == "project_inventory_brief_v0.2"
+    assert inventory["milvus_runtime"]["status"] == "cloud_available"
+    assert "companies" not in inventory
+    assert "data/raw_private" not in payload
+    assert "data/processed_private" not in payload
+    assert "data/indexes" not in payload
 
 
 def test_industry_supply_chain_data_view_uses_bounded_industry_and_relationship_rows() -> None:

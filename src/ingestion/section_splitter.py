@@ -337,6 +337,20 @@ def find_10q_sections(
         min_section_chars=min_section_chars,
     )
     if nontraditional_sections:
+        if _has_primary_10q_section_coverage(nontraditional_sections, text):
+            return _merge_missing_sections(
+                primary_sections=nontraditional_sections,
+                fallback_sections=[
+                    section for section in sections if not _section_looks_like_10q_index(section)
+                ],
+                missing_items=_missing_required_items(
+                    nontraditional_sections,
+                    required_items=_required_items_for_output_filter(
+                        output_item_set,
+                        default_items=DEFAULT_10Q_OUTPUT_ITEMS,
+                    ),
+                ),
+            )
         return _merge_missing_sections(
             primary_sections=sections,
             fallback_sections=nontraditional_sections,
@@ -667,6 +681,20 @@ def _has_primary_10q_section_coverage(sections: list[SecFilingSection], text: st
     if {"1", "2"}.issubset(item_codes):
         return True
     return False
+
+
+def _section_looks_like_10q_index(section: SecFilingSection) -> bool:
+    head = _compact_text(section.text[:500])
+    return any(
+        marker in head
+        for marker in (
+            "form10qcrossreferenceindex",
+            "crossreferenceindex",
+            "itemnumberitem",
+            "item1financialstatementspages",
+            "item1financialstatementsitem2management",
+        )
+    )
 
 
 def build_semantic_blocks(

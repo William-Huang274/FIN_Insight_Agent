@@ -207,11 +207,102 @@ def test_project_inventory_registers_product_graph_and_public_source_context(tmp
     assert inventory["source_boundaries"]["public_source_context"]["context_only"] is True
 
     brief = inventory_brief(inventory)
+    assert brief["schema_version"] == "project_inventory_brief_v0.2"
     assert brief["product_evidence_graph"]["gap_count"] == 2979
     assert brief["public_source_context"]["normalized_record_count"] == 404
+    assert brief["source_family_authority"]["public_source_context"]["exact_value_authority"] is False
 
     prompt = inventory_prompt(inventory, selected_tickers=["NVDA"], selected_years=[2025])
     assert "company_product_evidence_graph | status=available" in prompt
     assert "public_source_context | status=available" in prompt
     assert "runtime_fact_allowed" in prompt
     assert "cannot prove company-reported product sales" in prompt
+
+
+def test_inventory_brief_v02_exposes_milvus_web_and_playbook_without_private_paths(tmp_path: Path) -> None:
+    milvus_summary = tmp_path / "milvus_summary.json"
+    milvus_summary.write_text(
+        json.dumps(
+            {
+                "status": "cloud_available",
+                "location": "cloud",
+                "collection": "typed_sec_evidence_v0",
+                "vector_kinds": ["narrative_chunk", "relationship_context"],
+                "vector_count": 12345,
+                "materialized_at": "2026-06-12",
+                "schema_digest": "milvus_schema_digest_1",
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    inventory = build_project_inventory(
+        [
+            {
+                "ticker": "NVDA",
+                "company": "NVIDIA CORP",
+                "fiscal_year": 2025,
+                "category": "semiconductors",
+                "form_type": "10-K",
+                "source_type": "10-K",
+                "source_tier": "primary_sec_filing",
+            }
+        ],
+        manifest_path="data/raw_private/sec_manifest.jsonl",
+        bm25_index_dir="data/indexes/bm25/sec",
+        object_bm25_index_dir="data/indexes/sqlite_fts/sec_objects",
+        bge_model="BAAI/bge-reranker-v2-m3",
+        milvus_summary_path=str(milvus_summary),
+        live_public_web_policy_ids=["major_financial_news", "company_official_product_surface"],
+    )
+
+    brief = inventory_brief(inventory)
+    payload = json.dumps(brief, ensure_ascii=False)
+
+    assert brief["schema_version"] == "project_inventory_brief_v0.2"
+    assert "milvus_semantic" in brief["available_source_families"]
+    assert brief["milvus_runtime"]["status"] == "cloud_available"
+    assert brief["milvus_runtime"]["exact_value_authority"] is False
+    assert brief["milvus_runtime"]["vector_count"] == 12345
+    assert brief["milvus_runtime"]["schema_digest"] == "milvus_schema_digest_1"
+    assert brief["milvus_runtime"]["fallback_routes"] == ["bm25", "object_bm25", "exact_value_ledger"]
+    assert brief["milvus_runtime"]["claim_boundary"] == "semantic_recall_supplement_not_exact_value_authority"
+    assert brief["source_family_availability"]["milvus_semantic"]["location"] == "cloud"
+    assert brief["live_public_web_context"]["status"] == "policy_available"
+    assert brief["source_family_availability"]["live_public_web_context"]["web_scope_policy_ids"] == [
+        "major_financial_news",
+        "company_official_product_surface",
+    ]
+    assert brief["playbook_candidates"][0]["playbook_id"] == "semiconductors"
+    assert "company_product_evidence_graph" in brief["playbook_candidates"][0]["default_source_families"]
+    assert brief["playbook_candidates"][0]["specialist_routing"]["product_technology_analyst"] == "high"
+    assert "playbooks" in brief["playbook_registry"]
+    assert "data/raw_private" not in payload
+    assert "data/indexes" not in payload
+    assert str(milvus_summary) not in payload
+
+
+def test_project_inventory_uses_generic_playbook_for_uncovered_industry() -> None:
+    inventory = build_project_inventory(
+        [
+            {
+                "ticker": "XYZ",
+                "company": "XYZ CORP",
+                "fiscal_year": 2025,
+                "category": "miscellaneous services",
+                "form_type": "10-K",
+                "source_type": "10-K",
+                "source_tier": "primary_sec_filing",
+            }
+        ],
+        manifest_path="manifest.jsonl",
+        bm25_index_dir="bm25",
+        object_bm25_index_dir="objects",
+        bge_model="BAAI/bge-reranker-v2-m3",
+    )
+
+    brief = inventory_brief(inventory)
+
+    assert brief["playbook_candidates"][0]["playbook_id"] == "generic_public_research"
+    assert brief["playbook_candidates"][0]["coverage_gap"]["gap_type"] == "industry_playbook_not_matched"

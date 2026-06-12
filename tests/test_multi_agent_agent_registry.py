@@ -24,8 +24,10 @@ EXPECTED_AGENT_IDS = {
     "eight_k_operator",
     "market_operator",
     "industry_operator",
+    "web_evidence_operator",
     "coverage_reflection",
     "fundamental_analyst",
+    "product_technology_analyst",
     "industry_supply_chain_analyst",
     "market_valuation_analyst",
     "risk_counterevidence_analyst",
@@ -44,7 +46,16 @@ def test_agent_registry_is_valid_and_covers_step2_agents() -> None:
     assert result["schema_version"] == SCHEMA_VERSION
     assert {entry["agent_id"] for entry in registry} == EXPECTED_AGENT_IDS
     assert known_agent_ids() == EXPECTED_AGENT_IDS
-    assert {"primary_sec_filing", "market_snapshot", "industry_snapshot", "run_artifact"} <= allowed_source_families()
+    assert {
+        "primary_sec_filing",
+        "market_snapshot",
+        "industry_snapshot",
+        "company_product_evidence_graph",
+        "public_source_context",
+        "live_public_web_context",
+        "milvus_semantic",
+        "run_artifact",
+    } <= allowed_source_families()
 
 
 def test_registry_tools_exist_or_are_future_marked() -> None:
@@ -73,12 +84,21 @@ def test_permission_matrix_hard_rules_match_step2() -> None:
     assert registry["eight_k_operator"]["allowed_tools"] == ["sec_search_filings"]
     assert registry["market_operator"]["allowed_tools"] == ["market_get_snapshot"]
     assert registry["industry_operator"]["allowed_tools"] == ["industry_get_snapshot"]
+    assert registry["web_evidence_operator"]["allowed_tools"] == ["web_evidence_snapshot"]
+    assert registry["product_technology_analyst"]["tool_permission"] == "inspect_only"
+    assert registry["product_technology_analyst"]["allowed_tools"] == []
+    assert registry["product_technology_analyst"]["source_families"] == [
+        "company_product_evidence_graph",
+        "public_source_context",
+        "live_public_web_context",
+    ]
     assert all("raw_source_read" not in entry["allowed_data_views"] for entry in registry.values())
     assert {agent_id for agent_id, entry in registry.items() if entry["route_authority"] == "execute_route"} == {
         "sec_operator",
         "eight_k_operator",
         "market_operator",
         "industry_operator",
+        "web_evidence_operator",
     }
 
 

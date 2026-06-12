@@ -16,6 +16,7 @@ def test_role_specific_multi_agent_skills_are_listed_and_loadable() -> None:
         "memo_writer",
         "verification",
         "fundamental_analysis",
+        "product_technology_analysis",
         "industry_supply_chain_analysis",
         "market_valuation_analysis",
         "risk_counterevidence",
@@ -37,7 +38,9 @@ def test_role_specific_multi_agent_skills_are_listed_and_loadable() -> None:
         "eight_k_operator",
         "market_operator",
         "industry_operator",
+        "web_evidence_operator",
         "fundamental_analyst",
+        "product_technology_analyst",
         "industry_supply_chain_analyst",
         "market_valuation_analyst",
         "risk_counterevidence_analyst",
@@ -110,3 +113,18 @@ def test_specialist_role_specific_skills_use_v0_2_or_later_quality_contracts() -
         assert "Required Output Structure" in prompt
         assert "Failure / Evidence Gap Handling" in prompt
         assert "Quality Rubric" in prompt
+
+
+def test_product_technology_skill_enforces_product_kpi_authority_boundary() -> None:
+    prompt = load_research_skill("product_technology_analysis")
+
+    assert "Product Technology Analysis Skill v0.1" in prompt
+    assert "Required Input Fields" in prompt
+    assert "Analysis Steps" in prompt
+    assert "Required Output Structure" in prompt
+    assert "Failure / Evidence Gap Handling" in prompt
+    assert "Quality Rubric" in prompt
+    assert "company_product_evidence_graph" in prompt
+    assert "runtime_fact_allowed" in prompt
+    assert "public proxy" in prompt
+    assert "commercial tracker gap" in prompt

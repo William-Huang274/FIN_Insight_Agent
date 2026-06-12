@@ -23,8 +23,10 @@ DEFAULT_AGENT_IDS = {
     "eight_k_operator",
     "market_operator",
     "industry_operator",
+    "web_evidence_operator",
     "coverage_reflection",
     "fundamental_analyst",
+    "product_technology_analyst",
     "industry_supply_chain_analyst",
     "market_valuation_analyst",
     "risk_counterevidence_analyst",
@@ -39,6 +41,11 @@ DEFAULT_SOURCE_FAMILIES = {
     "company_authored_unaudited_sec_filing",
     "market_snapshot",
     "industry_snapshot",
+    "company_product_evidence_graph",
+    "public_source_context",
+    "live_public_web_context",
+    "milvus_semantic",
+    "relationship_graph",
     "run_artifact",
 }
 
@@ -66,6 +73,7 @@ MODE_DISALLOWED_AGENTS = {
     "deterministic_lookup": {
         "universe_relationship",
         "fundamental_analyst",
+        "product_technology_analyst",
         "industry_supply_chain_analyst",
         "market_valuation_analyst",
         "risk_counterevidence_analyst",
@@ -75,6 +83,7 @@ MODE_DISALLOWED_AGENTS = {
     "focused_answer": {
         "universe_relationship",
         "fundamental_analyst",
+        "product_technology_analyst",
         "industry_supply_chain_analyst",
         "market_valuation_analyst",
         "risk_counterevidence_analyst",
@@ -88,6 +97,7 @@ RETRIEVAL_TOOL_NAMES = {
     "sec_query_exact_value_ledger",
     "market_get_snapshot",
     "industry_get_snapshot",
+    "web_evidence_snapshot",
 }
 
 OPERATOR_TOOL_ALLOWLIST = {
@@ -95,6 +105,7 @@ OPERATOR_TOOL_ALLOWLIST = {
     "eight_k_operator": {"sec_search_filings"},
     "market_operator": {"market_get_snapshot"},
     "industry_operator": {"industry_get_snapshot"},
+    "web_evidence_operator": {"web_evidence_snapshot"},
 }
 
 
@@ -335,17 +346,30 @@ def _validate_scope_drift(
 
 def _validate_role_specific_scope(plan: AgentActivationPlan, errors: list[dict[str, Any]]) -> None:
     active = set(plan.activate_agents)
-    if "industry_supply_chain_analyst" not in active:
-        return
-    scope_sources = set(plan.allowed_source_families) & {"industry_snapshot", "relationship_graph"}
-    scope_agents = active & {"industry_operator", "universe_relationship"}
-    if not scope_sources and not scope_agents:
-        errors.append(
-            {
-                "type": "industry_supply_chain_agent_requires_industry_or_relationship_scope",
-                "agent_id": "industry_supply_chain_analyst",
-            }
-        )
+    allowed_sources = set(plan.allowed_source_families)
+    if "industry_supply_chain_analyst" in active:
+        scope_sources = allowed_sources & {"industry_snapshot", "relationship_graph"}
+        scope_agents = active & {"industry_operator", "universe_relationship"}
+        if not scope_sources and not scope_agents:
+            errors.append(
+                {
+                    "type": "industry_supply_chain_agent_requires_industry_or_relationship_scope",
+                    "agent_id": "industry_supply_chain_analyst",
+                }
+            )
+    if "product_technology_analyst" in active:
+        product_sources = allowed_sources & {
+            "company_product_evidence_graph",
+            "public_source_context",
+            "live_public_web_context",
+        }
+        if not product_sources:
+            errors.append(
+                {
+                    "type": "product_technology_agent_requires_product_or_public_scope",
+                    "agent_id": "product_technology_analyst",
+                }
+            )
 
 
 def _validate_agent_registry_permissions(

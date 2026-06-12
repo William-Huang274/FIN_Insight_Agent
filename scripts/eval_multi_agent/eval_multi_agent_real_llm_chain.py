@@ -20,7 +20,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 from sec_agent.agent_registry import agent_registry_by_id  # noqa: E402
 from sec_agent.multi_agent_contracts import validate_specialist_memolet  # noqa: E402
-from sec_agent.multi_agent_runtime import build_agent_data_view  # noqa: E402
+from sec_agent.multi_agent_runtime import build_agent_data_view, milvus_runtime_capability  # noqa: E402
 from sec_agent.langgraph_orchestrator import (  # noqa: E402
     build_multi_agent_orchestration_graph_from_env,
     make_multi_agent_smoke_state,
@@ -211,6 +211,7 @@ def score_case(
     total: int = 1,
 ) -> dict[str, Any]:
     activation = result.get("agent_activation_plan") if isinstance(result.get("agent_activation_plan"), Mapping) else {}
+    activation_validation = result.get("agent_activation_validation") if isinstance(result.get("agent_activation_validation"), Mapping) else {}
     active_agents = set(_string_list(activation.get("activate_agents")))
     required_agents = set(_string_list(case.get("required_agents")))
     forbidden_agents = set(_string_list(case.get("forbidden_agents")))
@@ -240,6 +241,7 @@ def score_case(
     memo_response_language = _memo_response_language(memo)
     rendered_has_claim_section = _rendered_has_claim_section(rendered_answer)
     rendered_has_evidence_refs = _rendered_has_evidence_refs(rendered_answer)
+    vnext_contract = _vnext_contract_audit(case, result=result, summary=summary, tool_calls=tool_calls)
 
     layer_checks = {
         "research_lead": {
@@ -304,6 +306,7 @@ def score_case(
             "no_api_key_marker": "sk-" not in json.dumps(summary, ensure_ascii=False),
             "no_private_path_marker": "raw_private" not in json.dumps(summary, ensure_ascii=False),
         },
+        "vnext_contract": vnext_contract["checks"],
     }
     checks = _flatten_checks(layer_checks)
     hard_gate_status = "pass" if all(checks.values()) and result.get("status") == "completed" else "fail"
@@ -339,9 +342,13 @@ def score_case(
         "specialist_verification": specialist_verification.get("status") or "",
         "universe_validation": universe_validation.get("status") or ("skipped" if "universe_relationship" not in active_agents else ""),
         "relationship_lookup_status": relationship_lookup.get("status") or "",
+        "agent_activation_validation_errors": activation_validation.get("errors") or [],
+        "research_lead_failure_reason": result.get("research_lead_failure_reason") or "",
+        "research_lead_routing_trace": result.get("multi_agent_routing_trace") or {},
         "real_retrieval_required": real_retrieval_required,
         "real_specialist_quality_required": real_specialist_quality_required,
         "specialist_real_evidence_quality": specialist_quality,
+        "vnext_contract_audit": vnext_contract,
         "layer_checks": layer_checks,
         "checks": checks,
         "agent_audit": _agent_audit(result, summary, tool_calls=tool_calls, specialist_routes=specialist_routes, specialist_quality=specialist_quality),
@@ -413,6 +420,236 @@ def _selected_cases(rows: list[dict[str, Any]], args: argparse.Namespace) -> lis
     return cases
 
 
+def _vnext_contract_audit(
+    case: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    summary: Mapping[str, Any],
+    tool_calls: list[dict[str, Any]],
+) -> dict[str, Any]:
+    required = bool(case.get("require_vnext_contract"))
+    require_plan_reflection = required or bool(case.get("require_plan_reflection_gate"))
+    require_fusion = required or bool(case.get("require_evidence_fusion_contract"))
+    require_gap_register = required or bool(case.get("require_bounded_gap_register"))
+    require_graph_barriers = required or bool(case.get("require_graph_barrier_contract"))
+    require_milvus = required or bool(case.get("require_milvus_runtime_contract"))
+    if not any((required, require_plan_reflection, require_fusion, require_gap_register, require_graph_barriers, require_milvus)):
+        return {
+            "required": False,
+            "checks": {
+                "plan_reflection_pass": True,
+                "evidence_fusion_contract_present": True,
+                "source_boundary_violation_absent": True,
+                "bounded_gap_register_contract_present": True,
+                "bounded_gaps_are_bounded_not_fallback": True,
+                "graph_barrier_contract_present": True,
+                "milvus_runtime_contract_present": True,
+                "milvus_not_exact_value_authority": True,
+                "private_runtime_handles_not_exposed": True,
+                "weak_proxy_fallback_absent": True,
+            },
+            "details": {},
+        }
+    plan_reflection = summary.get("plan_reflection") if isinstance(summary.get("plan_reflection"), Mapping) else {}
+    evidence_fusion = summary.get("evidence_fusion") if isinstance(summary.get("evidence_fusion"), Mapping) else {}
+    bounded_gap_summary = summary.get("bounded_gap_register") if isinstance(summary.get("bounded_gap_register"), Mapping) else {}
+    bounded_gap_register = result.get("bounded_gap_register") if isinstance(result.get("bounded_gap_register"), Mapping) else {}
+    graph_barriers = summary.get("graph_barriers") if isinstance(summary.get("graph_barriers"), Mapping) else {}
+    milvus_runtime = summary.get("milvus_runtime") if isinstance(summary.get("milvus_runtime"), Mapping) else {}
+    checks = {
+        "plan_reflection_pass": (not require_plan_reflection) or str(plan_reflection.get("status") or "") == "pass",
+        "evidence_fusion_contract_present": (not require_fusion)
+        or str(evidence_fusion.get("schema_version") or "") == "sec_agent_evidence_fusion_bundle_v0.1",
+        "source_boundary_violation_absent": _source_boundary_violation_absent(evidence_fusion),
+        "bounded_gap_register_contract_present": (not require_gap_register)
+        or str(bounded_gap_summary.get("schema_version") or "") == "sec_agent_bounded_gap_register_v0.1",
+        "bounded_gaps_are_bounded_not_fallback": _bounded_gaps_are_bounded_not_fallback(bounded_gap_register),
+        "graph_barrier_contract_present": (not require_graph_barriers)
+        or _graph_barrier_contract_present(case, result=result, graph_barriers=graph_barriers),
+        "milvus_runtime_contract_present": (not require_milvus) or _milvus_runtime_contract_present(milvus_runtime),
+        "milvus_not_exact_value_authority": _milvus_not_exact_value_authority(result, summary),
+        "private_runtime_handles_not_exposed": _private_runtime_handles_not_exposed(summary),
+        "weak_proxy_fallback_absent": _weak_proxy_fallback_absent(result=result, summary=summary, tool_calls=tool_calls),
+    }
+    return {
+        "required": required,
+        "checks": checks,
+        "details": {
+            "plan_reflection_status": plan_reflection.get("status") or "",
+            "evidence_fusion_schema_version": evidence_fusion.get("schema_version") or "",
+            "public_exact_authority_violation_count": evidence_fusion.get("public_exact_authority_violation_count") or 0,
+            "semantic_exact_authority_violation_count": evidence_fusion.get("semantic_exact_authority_violation_count") or 0,
+            "bounded_gap_count": bounded_gap_summary.get("gap_count") or 0,
+            "milvus_runtime_status": milvus_runtime.get("status") or "",
+            "milvus_runtime_location": milvus_runtime.get("location") or "",
+            "milvus_runtime_claim_boundary": milvus_runtime.get("claim_boundary") or "",
+            "graph_barrier_keys": sorted(graph_barriers.keys()),
+            "tool_names": sorted({str(call.get("tool_name") or "") for call in tool_calls if str(call.get("tool_name") or "")}),
+        },
+    }
+
+
+def _source_boundary_violation_absent(evidence_fusion: Mapping[str, Any]) -> bool:
+    return (
+        int(evidence_fusion.get("public_exact_authority_violation_count") or 0) == 0
+        and int(evidence_fusion.get("semantic_exact_authority_violation_count") or 0) == 0
+    )
+
+
+def _bounded_gaps_are_bounded_not_fallback(register: Mapping[str, Any]) -> bool:
+    gaps = [dict(row) for row in register.get("gaps") or [] if isinstance(row, Mapping)]
+    if not gaps:
+        return True
+    for gap in gaps:
+        boundary = str(gap.get("claim_boundary") or "").strip()
+        if boundary != "do_not_fill_with_generic_fallback_or_proxy_fact":
+            return False
+        if str(gap.get("gap_type") or "").strip() in {"", "unknown"}:
+            return False
+        if str(gap.get("bounded_reason") or "").strip() == "":
+            return False
+    return True
+
+
+def _graph_barrier_contract_present(
+    case: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    graph_barriers: Mapping[str, Any],
+) -> bool:
+    if not isinstance(graph_barriers, Mapping) or not graph_barriers:
+        return False
+    execution_mode = str((result.get("agent_activation_plan") or {}).get("execution_mode") or case.get("expected_execution_mode") or "")
+    specialist_expected = bool(_string_list(case.get("expected_specialist_agents")))
+    memo_expected = "memo_writer" in set(_string_list(case.get("required_agents")))
+    claim_barrier = graph_barriers.get("claim_card_store") if isinstance(graph_barriers.get("claim_card_store"), Mapping) else {}
+    adjudicator = graph_barriers.get("adjudicator") if isinstance(graph_barriers.get("adjudicator"), Mapping) else {}
+    specialist_barrier = graph_barriers.get("specialist_fanout") if isinstance(graph_barriers.get("specialist_fanout"), Mapping) else {}
+    if specialist_expected and str(specialist_barrier.get("schema_version") or "") != "sec_agent_specialist_fanout_barrier_v0.1":
+        return False
+    if memo_expected or execution_mode in {"focused_answer", "standard_memo", "deep_research"}:
+        if str(claim_barrier.get("schema_version") or "") != "sec_agent_claim_card_store_barrier_v0.1":
+            return False
+        if str(adjudicator.get("schema_version") or "") != "sec_agent_adjudicator_barrier_v0.1":
+            return False
+    return True
+
+
+def _milvus_runtime_contract_present(milvus_runtime: Mapping[str, Any]) -> bool:
+    status = str(milvus_runtime.get("status") or "").strip()
+    location = str(milvus_runtime.get("location") or "").strip()
+    boundary = str(milvus_runtime.get("claim_boundary") or "").strip()
+    if status not in {"cloud_available", "local_available", "unavailable"}:
+        return False
+    if location not in {"cloud", "local", "none"}:
+        return False
+    if boundary != "semantic_recall_supplement_not_exact_value_authority":
+        return False
+    return bool(milvus_runtime.get("fallback_routes"))
+
+
+def _milvus_not_exact_value_authority(result: Mapping[str, Any], summary: Mapping[str, Any]) -> bool:
+    evidence_fusion = summary.get("evidence_fusion") if isinstance(summary.get("evidence_fusion"), Mapping) else {}
+    if int(evidence_fusion.get("semantic_exact_authority_violation_count") or 0) != 0:
+        return False
+    containers = [
+        result.get("context_rows"),
+        result.get("runtime_ledger_rows"),
+        result.get("market_snapshot_rows"),
+        result.get("industry_snapshot_rows"),
+        (result.get("evidence_fusion_bundle") or {}).get("rows") if isinstance(result.get("evidence_fusion_bundle"), Mapping) else [],
+    ]
+    for rows in containers:
+        for row in rows or []:
+            if not isinstance(row, Mapping):
+                continue
+            if str(row.get("source_family") or "") == "milvus_semantic" and bool(row.get("exact_value_authority")):
+                return False
+    for output in result.get("specialist_outputs") or []:
+        if not isinstance(output, Mapping):
+            continue
+        for observation in output.get("observations") or []:
+            if not isinstance(observation, Mapping):
+                continue
+            source_families = {str(item) for item in observation.get("source_families") or []}
+            claim_type = str(observation.get("claim_type") or "")
+            if "milvus_semantic" in source_families and claim_type in {"exact_value", "product_revenue", "financial_metric"}:
+                return False
+    return True
+
+
+def _private_runtime_handles_not_exposed(summary: Mapping[str, Any]) -> bool:
+    text = json.dumps(summary, ensure_ascii=False).lower()
+    private_markers = (
+        "milvus_uri",
+        "zilliz_uri",
+        "milvus_db_path",
+        "api_key",
+        "password",
+        "bearer ",
+        "raw_private",
+    )
+    return not any(marker in text for marker in private_markers)
+
+
+def _weak_proxy_fallback_absent(
+    *,
+    result: Mapping[str, Any],
+    summary: Mapping[str, Any],
+    tool_calls: list[dict[str, Any]],
+) -> bool:
+    text = json.dumps(
+        {
+            "summary_evidence_fusion": summary.get("evidence_fusion"),
+            "summary_bounded_gaps": summary.get("bounded_gap_register"),
+            "tool_calls": tool_calls,
+            "specialist_outputs": result.get("specialist_outputs"),
+            "memo_claims": (result.get("memo_answer") or {}).get("memo_claims")
+            if isinstance(result.get("memo_answer"), Mapping)
+            else [],
+        },
+        ensure_ascii=False,
+    ).lower()
+    blocked_markers = ("weak_proxy_fallback", "generic_proxy_fallback", "proxy_as_fact")
+    return not any(marker in text for marker in blocked_markers)
+
+
+def _case_requires_milvus_runtime_contract(case: Mapping[str, Any]) -> bool:
+    if case.get("require_vnext_contract") or case.get("require_milvus_runtime_contract"):
+        return True
+    return "milvus_semantic" in set(_string_list(case.get("expected_tool_names")))
+
+
+def _milvus_runtime_context_from_env(case: Mapping[str, Any]) -> dict[str, Any]:
+    runtime = case.get("milvus_runtime") if isinstance(case.get("milvus_runtime"), Mapping) else {}
+    context = {
+        "milvus_runtime": dict(runtime),
+        "milvus_uri": os.environ.get("MILVUS_URI") or os.environ.get("ZILLIZ_URI") or "",
+        "milvus_db_path": os.environ.get("MILVUS_DB_PATH") or "",
+        "milvus_collection_name": os.environ.get("MILVUS_COLLECTION_NAME")
+        or os.environ.get("MILVUS_COLLECTION")
+        or str(runtime.get("collection") or ""),
+    }
+    return context
+
+
+def _public_milvus_runtime_for_eval(capability: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": str(capability.get("schema_version") or "sec_agent_milvus_runtime_capability_v0.1"),
+        "status": str(capability.get("status") or "unavailable"),
+        "available": bool(capability.get("available")),
+        "location": str(capability.get("location") or "none"),
+        "collection": str(capability.get("collection") or ""),
+        "vector_count": capability.get("vector_count"),
+        "as_of_date": str(capability.get("as_of_date") or ""),
+        "schema_digest": str(capability.get("schema_digest") or ""),
+        "vector_kinds": list(capability.get("vector_kinds") or []),
+        "fallback_routes": list(capability.get("fallback_routes") or []),
+        "claim_boundary": str(capability.get("claim_boundary") or "semantic_recall_supplement_not_exact_value_authority"),
+        "exact_value_authority": False,
+    }
+
+
 def _graph_env(args: argparse.Namespace) -> dict[str, str]:
     env = dict(os.environ)
     env.update(
@@ -477,6 +714,10 @@ def _initial_state(
     }
     if inventory_companies:
         project_inventory["companies"] = [{"ticker": ticker} for ticker in inventory_companies]
+    if _case_requires_milvus_runtime_contract(case):
+        milvus_context = _milvus_runtime_context_from_env(case)
+        capability = milvus_runtime_capability({"project_inventory": project_inventory, **milvus_context})
+        project_inventory["milvus_runtime"] = _public_milvus_runtime_for_eval(capability)
     state["project_inventory"] = project_inventory
     response_language = str(case.get("response_language") or case.get("output_language") or "").strip()
     if response_language:
@@ -512,6 +753,9 @@ def _initial_state(
         "turn_index": int(case.get("turn_index") or 0),
         "previous_turn_summary": dict(previous_turn_summary or {}),
     }
+    if _case_requires_milvus_runtime_contract(case):
+        context.update(_milvus_runtime_context_from_env(case))
+        context["milvus_runtime"] = project_inventory.get("milvus_runtime") or {}
     if response_language:
         context["response_language"] = response_language
     state["multi_agent_context"] = context
@@ -749,6 +993,8 @@ def _allowed_specialist_source_families(agent_id: str) -> set[str]:
         return {"market_snapshot"}
     if agent_id == "industry_supply_chain_analyst":
         return {"industry_snapshot", "relationship_graph"}
+    if agent_id == "product_technology_analyst":
+        return {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
     if agent_id == "risk_counterevidence_analyst":
         return {
             "primary_sec_filing",
@@ -756,9 +1002,21 @@ def _allowed_specialist_source_families(agent_id: str) -> set[str]:
             "market_snapshot",
             "industry_snapshot",
             "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+            "live_public_web_context",
             "run_artifact",
         }
-    return {"primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot", "industry_snapshot", "relationship_graph"}
+    return {
+        "primary_sec_filing",
+        "company_authored_unaudited_sec_filing",
+        "market_snapshot",
+        "industry_snapshot",
+        "relationship_graph",
+        "company_product_evidence_graph",
+        "public_source_context",
+        "live_public_web_context",
+    }
 
 
 def _known_row_refs(rows: list[Mapping[str, Any]]) -> set[str]:
@@ -801,6 +1059,9 @@ def _bounded_row_has_real_evidence_fields(row: Mapping[str, Any]) -> bool:
         "market_snapshot",
         "industry_snapshot",
         "relationship_graph",
+        "company_product_evidence_graph",
+        "public_source_context",
+        "live_public_web_context",
         "run_artifact",
     }:
         return False
@@ -811,6 +1072,12 @@ def _bounded_row_has_real_evidence_fields(row: Mapping[str, Any]) -> bool:
             "related_ticker",
             "form_type",
             "metric",
+            "metric_name",
+            "metric_family",
+            "product",
+            "product_name",
+            "source_url",
+            "snapshot_url",
             "summary",
             "snapshot_id",
             "as_of_date",
@@ -1199,13 +1466,20 @@ def _agent_audit(
     llm_routes = summary.get("llm_routes") if isinstance(summary.get("llm_routes"), Mapping) else {}
     return {
         "research_lead": {
+            "route_status": result.get("research_lead_route_status")
+            or _route(llm_routes, "research_lead").get("route_status")
+            or "",
+            "failure_reason": result.get("research_lead_failure_reason")
+            or _route(llm_routes, "research_lead").get("failure_reason")
+            or "",
+            "validation_errors": (result.get("research_lead_validation") or {}).get("errors") or [],
             "validation_status": (result.get("agent_activation_validation") or {}).get("status")
             if isinstance(result.get("agent_activation_validation"), Mapping)
             else "",
             "execution_mode": (result.get("agent_activation_plan") or {}).get("execution_mode")
             if isinstance(result.get("agent_activation_plan"), Mapping)
             else "",
-            "diagnostics": _route(llm_routes, "research_lead").get("diagnostics") or {},
+            "diagnostics": _route(llm_routes, "research_lead").get("diagnostics") or result.get("research_lead_model_diagnostics") or {},
         },
         "universe_relationship": {
             "lookup_status": (result.get("relationship_graph_observation") or {}).get("status")

@@ -864,7 +864,7 @@ def test_memo_writer_prompt_uses_slot_balanced_v0_3_caps() -> None:
     assert len(compact["conflicts"]) == 2
     assert "memo_thesis_plan" in compact
     assert payload["memo_output_contract"]["memo_claims_max"] == 5
-    assert payload["shared_memo_context"]["schema_version"] == "sec_agent_shared_memo_context_v0.1"
+    assert payload["shared_memo_context"]["schema_version"] == "sec_agent_shared_memo_context_v0.2"
     assert payload["shared_memo_context"]["context_digest"].startswith("sha256:")
 
 
@@ -1066,6 +1066,21 @@ def test_shared_memo_context_carries_scope_without_raw_rows() -> None:
             "agent_activation_plan": {"execution_mode": "deep_research", "allowed_source_families": ["primary_sec_filing"]},
             "runtime_ledger_rows": [{"metric_id": "ledger_ref_1"}],
             "context_rows": [{"evidence_ref": "context_ref_1"}],
+            "bounded_gap_register": {
+                "schema_version": "sec_agent_bounded_gap_register_v0.1",
+                "gap_count": 1,
+                "gaps": [
+                    {
+                        "gap_id": "gap_channel_inventory",
+                        "source_family": "public_source_context",
+                        "gap_type": "commercial_tracker_gap",
+                        "ticker": "NVDA",
+                        "metric": "channel_inventory",
+                        "repairability": "commercial_tracker_required",
+                    }
+                ],
+                "summary": {"commercial_tracker_gap_count": 1},
+            },
             "specialist_route_results": [
                 {"agent_id": "fundamental_analyst", "status": "pass"},
                 {"agent_id": "risk_counterevidence_analyst", "status": "fail"},
@@ -1082,10 +1097,18 @@ def test_shared_memo_context_carries_scope_without_raw_rows() -> None:
 
     assert context["execution_mode"] == "deep_research"
     assert context["source_boundaries"]["ledger_row_count"] == 1
+    assert context["source_boundaries"]["raw_rows_excluded_from_prompt"] is True
+    assert context["source_boundaries"]["private_operator_context_excluded"] is True
+    assert context["bounded_gap_register"]["gap_refs"][0]["gap_id"] == "gap_channel_inventory"
+    assert context["bounded_gap_register"]["claim_policy"] == "bounded_gaps_may_be_disclosed_as_missing_evidence_but_not_used_as_supporting_facts"
+    assert context["prompt_policy"]["allowed_input_views"] == ["shared_memo_context", "verified_judgment_plan", "specialist_verification"]
+    assert context["prompt_policy"]["bounded_evidence_rows"] == "excluded"
     assert context["specialist_routes"]["passed_agents"] == ["fundamental_analyst"]
     assert context["specialist_routes"]["failed_agents"] == ["risk_counterevidence_analyst"]
     assert context["claim_card_stats"]["memo_ready_claim_count"] == 2
     assert context["context_digest"].startswith("sha256:")
+    serialized = json.dumps(context, ensure_ascii=False)
+    assert "bounded_evidence_rows" not in serialized or '"bounded_evidence_rows": "excluded"' in serialized
 
 
 def test_memo_env_router_returns_none_for_mock_mode() -> None:

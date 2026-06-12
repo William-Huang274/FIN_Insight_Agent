@@ -7,6 +7,7 @@ from typing import Any, Mapping
 from sec_agent.agent_contracts import SCHEMA_VERSION as ACTIVATION_PLAN_SCHEMA_VERSION
 from sec_agent.agent_contracts import validate_agent_activation_plan
 from sec_agent.agent_registry import agent_registry_by_id, allowed_source_families, known_agent_ids
+from sec_agent.industry_playbooks import selected_playbook_policy
 from sec_agent.tool_call_ledger import LoopBudget
 
 
@@ -15,6 +16,7 @@ ROUTER_SOURCE = "deterministic_research_lead_mock_v0.1"
 
 SPECIALIST_AGENT_IDS = {
     "fundamental_analyst",
+    "product_technology_analyst",
     "industry_supply_chain_analyst",
     "market_valuation_analyst",
     "risk_counterevidence_analyst",
@@ -26,6 +28,7 @@ EVIDENCE_OPERATOR_AGENT_IDS = {
     "eight_k_operator",
     "market_operator",
     "industry_operator",
+    "web_evidence_operator",
 }
 
 ALL_ROUTABLE_AGENT_IDS = tuple(sorted(known_agent_ids()))
@@ -67,6 +70,7 @@ def route_multi_agent_activation(
         search_scope_tickers=search_scope_tickers,
         budget=loop_budget,
     )
+    plan = _apply_playbook_policy(plan, route_request)
     validation = validate_agent_activation_plan(
         plan,
         known_agent_ids=known_agent_ids(),
@@ -194,6 +198,11 @@ def _standard_memo_plan(
     if _market_or_valuation_intent(request) or _source_family_requested(request, "market_snapshot"):
         active.insert(3 if "eight_k_operator" in active else 2, "market_operator")
         active.insert(active.index("judgment_plan_aggregator"), "market_valuation_analyst")
+    if _product_technology_intent(request) or any(
+        _source_family_requested(request, family)
+        for family in ("company_product_evidence_graph", "public_source_context", "live_public_web_context")
+    ):
+        active.insert(active.index("judgment_plan_aggregator"), "product_technology_analyst")
     if _industry_context_intent(request) or _source_family_requested(request, "industry_snapshot"):
         active.insert(active.index("coverage_reflection"), "industry_operator")
         active.insert(active.index("judgment_plan_aggregator"), "industry_supply_chain_analyst")
@@ -203,6 +212,12 @@ def _standard_memo_plan(
     allowed_sources = ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
     if "market_operator" in active or "market_valuation_analyst" in active:
         allowed_sources.append("market_snapshot")
+    if "product_technology_analyst" in active:
+        allowed_sources.append("company_product_evidence_graph")
+        if _source_family_requested(request, "public_source_context"):
+            allowed_sources.append("public_source_context")
+        if _source_family_requested(request, "live_public_web_context"):
+            allowed_sources.append("live_public_web_context")
     if "industry_operator" in active or "industry_supply_chain_analyst" in active:
         allowed_sources.append("industry_snapshot")
     return _plan(
@@ -213,6 +228,7 @@ def _standard_memo_plan(
         model_policy_hint={
             "research_lead": "balanced",
             "fundamental_analyst": "balanced",
+            **({"product_technology_analyst": "balanced"} if "product_technology_analyst" in active else {}),
             **({"industry_supply_chain_analyst": "balanced"} if "industry_supply_chain_analyst" in active else {}),
             **({"market_valuation_analyst": "balanced"} if "market_valuation_analyst" in active else {}),
             **({"risk_counterevidence_analyst": "balanced"} if "risk_counterevidence_analyst" in active else {}),
@@ -253,6 +269,11 @@ def _deep_research_plan(
     if _market_or_valuation_intent(request) or _source_family_requested(request, "market_snapshot"):
         active.insert(active.index("industry_operator"), "market_operator")
         active.insert(active.index("judgment_plan_aggregator"), "market_valuation_analyst")
+    if _product_technology_intent(request) or any(
+        _source_family_requested(request, family)
+        for family in ("company_product_evidence_graph", "public_source_context", "live_public_web_context")
+    ):
+        active.insert(active.index("judgment_plan_aggregator"), "product_technology_analyst")
     if _risk_or_counterevidence_intent(request):
         active.insert(active.index("judgment_plan_aggregator"), "risk_counterevidence_analyst")
     scope_tickers = search_scope_tickers or focus_tickers
@@ -263,6 +284,9 @@ def _deep_research_plan(
         allowed_source_families=[
             "primary_sec_filing",
             "company_authored_unaudited_sec_filing",
+            *(["company_product_evidence_graph"] if "product_technology_analyst" in active else []),
+            *(["public_source_context"] if "product_technology_analyst" in active and _source_family_requested(request, "public_source_context") else []),
+            *(["live_public_web_context"] if "product_technology_analyst" in active and _source_family_requested(request, "live_public_web_context") else []),
             *(["market_snapshot"] if "market_operator" in active or "market_valuation_analyst" in active else []),
             "industry_snapshot",
             "relationship_graph",
@@ -271,6 +295,7 @@ def _deep_research_plan(
             "research_lead": "strong",
             "universe_relationship": "balanced",
             "fundamental_analyst": "balanced",
+            **({"product_technology_analyst": "balanced"} if "product_technology_analyst" in active else {}),
             "industry_supply_chain_analyst": "balanced",
             **({"market_valuation_analyst": "balanced"} if "market_valuation_analyst" in active else {}),
             **({"risk_counterevidence_analyst": "strong"} if "risk_counterevidence_analyst" in active else {}),
@@ -339,6 +364,135 @@ def _plan(
     }
 
 
+def _apply_playbook_policy(plan: Mapping[str, Any], request: MultiAgentRouteRequest) -> dict[str, Any]:
+    normalized = dict(plan or {})
+    mode = str(normalized.get("execution_mode") or "")
+    if mode not in {"standard_memo", "deep_research"}:
+        return normalized
+    policy = selected_playbook_policy(request.source_inventory)
+    if not policy:
+        return normalized
+
+    active = _dedupe([str(agent) for agent in normalized.get("activate_agents") or []])
+    allowed_sources = _dedupe([str(source) for source in normalized.get("allowed_source_families") or []])
+    source_policy = policy.get("source_family_policy") if isinstance(policy.get("source_family_policy"), Mapping) else {}
+    default_sources = _dedupe([*list(policy.get("default_source_families") or []), *list(source_policy)])
+    added_agents: list[str] = []
+    added_sources: list[str] = []
+    for family in default_sources:
+        if family == "relationship_graph" and mode != "deep_research":
+            continue
+        if family == "live_public_web_context" and not _source_family_requested(request, "live_public_web_context"):
+            continue
+        if not _playbook_source_family_available(request, family):
+            continue
+        if family not in allowed_sources:
+            allowed_sources.append(family)
+            added_sources.append(family)
+        for agent_id in _agents_for_playbook_source_family(family, policy, mode):
+            if agent_id not in active:
+                active = _insert_before(active, agent_id, "judgment_plan_aggregator")
+                added_agents.append(agent_id)
+
+    if "market_snapshot" in allowed_sources and "market_operator" not in active:
+        active = _insert_before(active, "market_operator", "coverage_reflection")
+        added_agents.append("market_operator")
+    if "industry_snapshot" in allowed_sources and "industry_operator" not in active:
+        active = _insert_before(active, "industry_operator", "coverage_reflection")
+        added_agents.append("industry_operator")
+    if "live_public_web_context" in allowed_sources and "web_evidence_operator" not in active:
+        active = _insert_before(active, "web_evidence_operator", "coverage_reflection")
+        added_agents.append("web_evidence_operator")
+
+    priorities = dict(normalized.get("agent_priorities") or {})
+    model_policy = dict(normalized.get("model_policy_hint") or {})
+    routing = dict(policy.get("specialist_routing") or {})
+    for agent_id in _dedupe(added_agents):
+        if agent_id.endswith("_operator") or agent_id in EVIDENCE_OPERATOR_AGENT_IDS:
+            priorities.setdefault(agent_id, "supporting")
+            model_policy.setdefault(agent_id, "none")
+        else:
+            weight = str(routing.get(agent_id) or "").lower()
+            priorities.setdefault(agent_id, "primary" if weight == "high" and mode == "deep_research" else "supporting")
+            model_policy.setdefault(agent_id, "balanced")
+
+    metadata = dict(normalized.get("metadata") or {})
+    metadata["selected_playbook_ids"] = policy.get("selected_playbook_ids") or []
+    schemas = [str(item) for item in policy.get("industry_schemas") or [] if str(item)]
+    if schemas:
+        metadata["industry_schema"] = schemas[0]
+    metadata["playbook_policy"] = {
+        "schema_version": policy.get("schema_version"),
+        "selected_playbook_ids": policy.get("selected_playbook_ids") or [],
+        "industry_schemas": policy.get("industry_schemas") or [],
+        "default_source_families": policy.get("default_source_families") or [],
+        "source_family_policy": source_policy,
+        "forbidden_claims": policy.get("forbidden_claims") or [],
+        "commercial_gap_policy": policy.get("commercial_gap_policy") or {},
+        "web_scope_policy_ids": policy.get("web_scope_policy_ids") or [],
+    }
+    if added_sources:
+        metadata["playbook_added_source_families"] = _dedupe(added_sources)
+    if added_agents:
+        metadata["playbook_added_agents"] = _dedupe(added_agents)
+    if "live_public_web_context" in allowed_sources and policy.get("web_scope_policy_ids"):
+        normalized["web_scope_policy_ids"] = _dedupe(
+            [*list(normalized.get("web_scope_policy_ids") or []), *list(policy.get("web_scope_policy_ids") or [])]
+        )
+
+    normalized["activate_agents"] = active
+    normalized["allowed_source_families"] = _dedupe(allowed_sources)
+    normalized["agent_priorities"] = priorities
+    normalized["model_policy_hint"] = model_policy
+    normalized["skip_agents"] = [
+        dict(item)
+        for item in normalized.get("skip_agents") or []
+        if isinstance(item, Mapping) and str(item.get("agent_id") or item.get("agent") or "") not in set(active)
+    ]
+    normalized["metadata"] = metadata
+    return normalized
+
+
+def _playbook_source_family_available(request: MultiAgentRouteRequest, family: str) -> bool:
+    inventory = request.source_inventory if isinstance(request.source_inventory, Mapping) else {}
+    availability = inventory.get("source_family_availability") if isinstance(inventory.get("source_family_availability"), Mapping) else {}
+    item = availability.get(family) if isinstance(availability.get(family), Mapping) else {}
+    if item:
+        return item.get("available") is not False and str(item.get("status") or "") not in {"unavailable", "policy_not_loaded"}
+    families = set(_unique_strings(inventory.get("available_source_families") or inventory.get("source_families")))
+    if families:
+        return family in families
+    return family in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
+
+
+def _agents_for_playbook_source_family(family: str, policy: Mapping[str, Any], mode: str) -> list[str]:
+    routing = {str(key): str(value).lower() for key, value in dict(policy.get("specialist_routing") or {}).items()}
+    agents: list[str] = []
+    if family in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}:
+        if routing.get("product_technology_analyst") in {"high", "medium"}:
+            agents.append("product_technology_analyst")
+    if family == "market_snapshot" and routing.get("market_valuation_analyst") in {"high", "medium", "conditional"}:
+        agents.append("market_valuation_analyst")
+    if family in {"industry_snapshot", "relationship_graph"} and (
+        mode == "deep_research" or routing.get("industry_supply_chain_analyst") == "high"
+    ):
+        agents.append("industry_supply_chain_analyst")
+    if routing.get("risk_counterevidence_analyst") == "high":
+        agents.append("risk_counterevidence_analyst")
+    return _dedupe(agents)
+
+
+def _insert_before(items: list[str], item: str, before: str) -> list[str]:
+    values = [value for value in items if value != item]
+    try:
+        index = values.index(before)
+    except ValueError:
+        values.append(item)
+    else:
+        values.insert(index, item)
+    return _dedupe(values)
+
+
 def _agent_priorities(execution_mode: str, active: list[str]) -> dict[str, str]:
     primary_by_mode = {
         "deterministic_lookup": {"sec_operator", "coverage_reflection", "renderer"},
@@ -350,6 +504,7 @@ def _agent_priorities(execution_mode: str, active: list[str]) -> dict[str, str]:
             "market_operator",
             "coverage_reflection",
             "fundamental_analyst",
+            "product_technology_analyst",
             "market_valuation_analyst",
             "risk_counterevidence_analyst",
             "judgment_plan_aggregator",
@@ -364,6 +519,7 @@ def _agent_priorities(execution_mode: str, active: list[str]) -> dict[str, str]:
             "industry_operator",
             "coverage_reflection",
             "fundamental_analyst",
+            "product_technology_analyst",
             "industry_supply_chain_analyst",
             "judgment_plan_aggregator",
             "memo_writer",
@@ -405,6 +561,7 @@ def _heuristic_trace(request: MultiAgentRouteRequest, mode: str) -> dict[str, bo
         "run_artifact_intent": _run_artifact_intent(request),
         "deterministic_lookup_intent": _deterministic_lookup_intent(request),
         "management_commentary_intent": _management_commentary_intent(request),
+        "product_technology_intent": _product_technology_intent(request),
         "standard_memo_intent": _standard_memo_intent(request),
         "deep_research_intent": _deep_research_intent(request),
     }
@@ -572,6 +729,38 @@ def _industry_context_intent(request: MultiAgentRouteRequest) -> bool:
     )
 
 
+def _product_technology_intent(request: MultiAgentRouteRequest) -> bool:
+    text = _text_with_context(request)
+    return any(
+        term in text
+        for term in (
+            "product",
+            "product revenue",
+            "product kpi",
+            "sku",
+            "platform",
+            "developer",
+            "app download",
+            "clinical",
+            "trial",
+            "regulatory",
+            "openfda",
+            "nhtsa",
+            "public proxy",
+            "commercial tracker",
+            "产品",
+            "产品线",
+            "产品收入",
+            "产品指标",
+            "主业",
+            "临床",
+            "监管",
+            "公开代理",
+            "商业tracker",
+        )
+    )
+
+
 def _source_family_requested(request: MultiAgentRouteRequest, source_family: str) -> bool:
     needle = str(source_family or "").strip()
     if not needle:
@@ -596,11 +785,14 @@ def _source_family_requested(request: MultiAgentRouteRequest, source_family: str
 
 
 def _text_with_context(request: MultiAgentRouteRequest) -> str:
+    query_contract = request.context.get("query_contract") if isinstance(request.context, Mapping) else {}
     return " ".join(
         [
             _text(request),
             str(request.context.get("task_type") or "").lower(),
             " ".join(_unique_strings(request.context.get("source_tiers") or request.context.get("source_families"))).lower(),
+            " ".join(_unique_strings(query_contract.get("metric_families") if isinstance(query_contract, Mapping) else [])).lower(),
+            " ".join(_unique_strings(query_contract.get("source_tiers") if isinstance(query_contract, Mapping) else [])).lower(),
         ]
     )
 

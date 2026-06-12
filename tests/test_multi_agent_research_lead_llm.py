@@ -4,6 +4,7 @@ import json
 from typing import Any
 
 from sec_agent.agent_registry import agent_registry_by_id
+from sec_agent.industry_playbooks import load_playbook_registry, match_playbook_candidates
 from sec_agent.multi_agent_router import route_multi_agent_activation
 from sec_agent.research_lead_llm import (
     ROUTE_SOURCE,
@@ -438,6 +439,28 @@ def test_research_lead_llm_fails_closed_after_repair_budget_without_fallback() -
     assert "validation_failed" in result["failure_reason"]
 
 
+def test_research_lead_llm_prunes_schema_hint_policy_placeholders_and_focused_scope_drift() -> None:
+    request = _case(
+        "用本地披露证据分析 LLY 最近研发投入和产品证据缺口。",
+        "focused_answer",
+        ["LLY"],
+        ["LLY"],
+    )
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["scope_mode"] = "full_universe"
+    plan["model_policy_hint"]["agent_id"] = "none | fast | balanced | strong"
+    plan["agent_priorities"]["agent_id"] = "primary | supporting | conditional | low"
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["scope_mode"] == "focused_peer"
+    assert "agent_id" not in result["activation_plan"]["model_policy_hint"]
+    assert "agent_id" not in result["activation_plan"]["agent_priorities"]
+    assert result["activation_plan"]["metadata"]["policy_map_placeholder_pruned"] is True
+
+
 def test_research_lead_llm_rejects_direct_tool_calls_before_plan_validation() -> None:
     request = _case("MSFT capex only.", "deterministic_lookup", ["MSFT"], ["MSFT"])
     plan = route_multi_agent_activation(request)["activation_plan"]
@@ -456,6 +479,98 @@ def test_research_lead_llm_rejects_direct_tool_calls_before_plan_validation() ->
     assert result["status"] == "pass"
     assert result["routing_trace"]["repair_attempts"] == 1
     assert agent_registry_by_id()["research_lead"]["allowed_tools"] == ["run_inspect_artifacts"]
+
+
+def test_research_lead_alignment_adds_product_specialist_from_evidence_sources() -> None:
+    request = _case(
+        "Compare product revenue and commercial tracker gaps.",
+        "standard_memo",
+        ["AAPL", "MSFT"],
+        ["AAPL", "MSFT"],
+    )
+    request["context"]["query_contract"] = {
+        "focus_tickers": ["AAPL", "MSFT"],
+        "search_scope_tickers": ["AAPL", "MSFT"],
+        "source_tiers": ["primary_sec_filing", "company_product_evidence_graph"],
+        "metric_families": ["product_revenue"],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["activate_agents"] = [agent for agent in plan["activate_agents"] if agent != "product_technology_analyst"]
+    plan["allowed_source_families"] = ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
+    plan["agent_priorities"].pop("product_technology_analyst", None)
+    evidence_plan = {
+        "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+        "requirements": [
+            {
+                "requirement_id": "req_product",
+                "task_id": "product_kpi",
+                "question": "Need company-disclosed product KPI evidence.",
+                "tickers": ["AAPL", "MSFT"],
+                "source_tiers": ["company_product_evidence_graph"],
+                "source_families": ["company_product_evidence_graph"],
+                "metric_families": ["product_revenue"],
+                "evidence_routes": [],
+            }
+        ],
+    }
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": evidence_plan})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert "product_technology_analyst" in result["activation_plan"]["activate_agents"]
+    assert "company_product_evidence_graph" in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["agent_priorities"]["product_technology_analyst"] == "supporting"
+
+
+def test_research_lead_alignment_applies_playbook_policy_from_inventory() -> None:
+    registry = load_playbook_registry()
+    request = _case(
+        "Compare these peers' business drivers for a standard memo.",
+        "standard_memo",
+        ["AAPL", "MSFT"],
+        ["AAPL", "MSFT"],
+    )
+    request["source_inventory"] = {
+        "playbook_candidates": match_playbook_candidates({"consumer electronics hardware": {"AAPL", "MSFT"}}, registry),
+        "available_source_families": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "company_product_evidence_graph",
+            "public_source_context",
+        ],
+        "source_family_availability": {
+            "primary_sec_filing": {"status": "available", "available": True},
+            "company_authored_unaudited_sec_filing": {"status": "available", "available": True},
+            "company_product_evidence_graph": {"status": "available", "available": True},
+            "public_source_context": {"status": "available", "available": True},
+        },
+    }
+    plan = route_multi_agent_activation({**request, "source_inventory": {}})["activation_plan"]
+    plan["activate_agents"] = [agent for agent in plan["activate_agents"] if agent != "product_technology_analyst"]
+    plan["allowed_source_families"] = ["primary_sec_filing", "company_authored_unaudited_sec_filing"]
+    plan["agent_priorities"].pop("product_technology_analyst", None)
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["metadata"]["selected_playbook_ids"] == ["consumer_electronics"]
+    assert result["activation_plan"]["metadata"]["industry_schema"] == "consumer_electronics"
+    assert "product_technology_analyst" in result["activation_plan"]["activate_agents"]
+    assert "company_product_evidence_graph" in result["activation_plan"]["allowed_source_families"]
+    assert "sell_through_without_tracker" in result["activation_plan"]["metadata"]["playbook_policy"]["forbidden_claims"]
 
 
 def test_route_activation_from_env_returns_none_for_deterministic_default() -> None:

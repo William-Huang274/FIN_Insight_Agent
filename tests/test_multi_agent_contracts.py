@@ -68,6 +68,36 @@ def test_relationship_graph_business_observation_is_normalized_to_hypothesis() -
     assert verification["status"] == "pass"
 
 
+def test_product_technology_claim_card_uses_product_memo_slot() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "product_technology_analyst",
+                "observations": [
+                    {
+                        "claim": "Company-disclosed product KPI supports the product evidence section.",
+                        "claim_type": "company_disclosed_product_kpi",
+                        "evidence_refs": ["product_ref_1"],
+                        "source_families": ["company_product_evidence_graph"],
+                        "memo_slot": "product_technology",
+                        "ticker_scope": ["AAPL"],
+                        "metric_scope": ["product_revenue"],
+                        "materiality": "high",
+                        "confidence": "high",
+                    }
+                ],
+            }
+        ]
+    )
+    draft = build_multi_agent_memo_draft(judgment)
+    outline = {row["memo_slot"]: row for row in judgment["memo_outline"]}
+
+    assert judgment["supported_claims"][0]["agent_id"] == "product_technology_analyst"
+    assert judgment["supported_claims"][0]["memo_slot"] == "product_technology"
+    assert outline["product_technology"]["status"] == "supported"
+    assert draft["memo_claims"][0]["memo_slot"] == "product_technology"
+
+
 def test_judgment_plan_preserves_conflicts_without_averaging() -> None:
     judgment = aggregate_specialist_judgment_plan(
         [

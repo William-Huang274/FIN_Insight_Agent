@@ -550,7 +550,7 @@
   - [x] K6 runtime edge-pack slice: add MacroDriver, TradeDriver, IndustryDriver, CompanyExposureToDriver, and VerticalOfficialObject pack objects; macro/vertical rows are context-only unless bridged by CompanyExposureToDriver.
   - [x] K6 source-specific parser/backfill hardening: map FRED/EIA/Census/FDIC/ClinicalTrials/openFDA/NHTSA/PatentsView/OpenAlex rows into edge-pack inputs or bounded source gaps by industry/source adapter; unbound PatentsView/OpenAlex leads still require company/product binding.
 - [x] K7: Add verifier/reflection rules for product page vs sales, channel offer vs sell-through, 13F lag, macro exposure, patent/tech signal, and FieldInquiryNote boundaries.
-- [ ] K8: Run a 10-20 case KG sub-agent end-to-end gate covering product specs, product comparisons, capital/ownership, macro exposure, public buyer observer signals, and bounded gaps.
+- [x] K8: Run a 10-20 case KG sub-agent end-to-end gate covering product specs, product comparisons, capital/ownership, macro exposure, public buyer observer signals, and bounded gaps.
 
 ## Evidence-governed Data Runtime vNext
 

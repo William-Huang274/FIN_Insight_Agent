@@ -1296,6 +1296,18 @@ def _claim_source_scope_penalty(claim_type: str, source_families: list[str]) -> 
     return 0
 
 
+def _claim_type_tokens(claim: Mapping[str, Any]) -> set[str]:
+    tokens = {
+        str(claim.get("claim_type") or "").strip(),
+        str(claim.get("raw_claim_type") or "").strip(),
+    }
+    for metric in _unique_strings(claim.get("metric_scope") or claim.get("metrics") or claim.get("metric")):
+        metric_token = str(metric or "").strip()
+        if metric_token in PRODUCT_KPI_CLAIM_TYPES | OWNERSHIP_REALTIME_FLOW_CLAIM_TYPES | MACRO_COMPANY_FACT_CLAIM_TYPES:
+            tokens.add(metric_token)
+    return {token for token in tokens if token}
+
+
 def _text_suggests_ownership_realtime_flow(text: str) -> bool:
     value = str(text or "").lower()
     ownership_terms = ("13f", "13d", "13g", "ownership", "holding", "holdings", "持仓", "持有")
@@ -2016,6 +2028,7 @@ def verify_multi_agent_memo_draft(
                 )
         source_families = set(_unique_strings(claim.get("source_families") or claim.get("source_family")))
         claim_type = str(claim.get("claim_type") or "").strip()
+        claim_type_tokens = _claim_type_tokens(claim)
         if claim_type in {"reported_financial_fact", "company_reported_financial_fact"} and source_families & CONTEXT_ONLY_SOURCE_FAMILIES:
             errors.append(
                 {
@@ -2024,7 +2037,7 @@ def verify_multi_agent_memo_draft(
                     "source_families": sorted(source_families & CONTEXT_ONLY_SOURCE_FAMILIES),
                 }
             )
-        if claim_type in OWNERSHIP_REALTIME_FLOW_CLAIM_TYPES and source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"}:
+        if claim_type_tokens & OWNERSHIP_REALTIME_FLOW_CLAIM_TYPES and source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"}:
             errors.append(
                 {
                     "type": "ownership_filing_used_as_realtime_flow",
@@ -2032,7 +2045,7 @@ def verify_multi_agent_memo_draft(
                     "source_families": sorted(source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"}),
                 }
             )
-        if claim_type in MACRO_COMPANY_FACT_CLAIM_TYPES and source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"}:
+        if claim_type_tokens & MACRO_COMPANY_FACT_CLAIM_TYPES and source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"}:
             errors.append(
                 {
                     "type": "macro_or_public_context_used_as_company_fact",
@@ -2040,7 +2053,7 @@ def verify_multi_agent_memo_draft(
                     "source_families": sorted(source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"}),
                 }
             )
-        if claim_type in PRODUCT_KPI_CLAIM_TYPES and source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"}:
+        if claim_type_tokens & PRODUCT_KPI_CLAIM_TYPES and source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"}:
             errors.append(
                 {
                     "type": "public_proxy_used_as_product_kpi_fact",
@@ -2413,6 +2426,7 @@ def repair_multi_agent_memo_draft(
         refs = _unique_strings(claim.get("evidence_refs") or claim.get("refs"))
         source_families = set(_unique_strings(claim.get("source_families") or claim.get("source_family")))
         claim_type = str(claim.get("claim_type") or "").strip()
+        claim_type_tokens = _claim_type_tokens(claim)
         remove_reason = ""
         if not refs:
             remove_reason = "missing_evidence_refs"
@@ -2422,11 +2436,11 @@ def repair_multi_agent_memo_draft(
             remove_reason = "unsupported_claim_text"
         elif claim_type in {"reported_financial_fact", "company_reported_financial_fact"} and source_families & CONTEXT_ONLY_SOURCE_FAMILIES:
             remove_reason = "context_source_used_as_financial_fact"
-        elif claim_type in OWNERSHIP_REALTIME_FLOW_CLAIM_TYPES and source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"}:
+        elif claim_type_tokens & OWNERSHIP_REALTIME_FLOW_CLAIM_TYPES and source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"}:
             remove_reason = "ownership_filing_used_as_realtime_flow"
-        elif claim_type in MACRO_COMPANY_FACT_CLAIM_TYPES and source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"}:
+        elif claim_type_tokens & MACRO_COMPANY_FACT_CLAIM_TYPES and source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"}:
             remove_reason = "macro_or_public_context_used_as_company_fact"
-        elif claim_type in PRODUCT_KPI_CLAIM_TYPES and source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"}:
+        elif claim_type_tokens & PRODUCT_KPI_CLAIM_TYPES and source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"}:
             remove_reason = "public_proxy_used_as_product_kpi_fact"
         elif source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"} and _text_suggests_ownership_realtime_flow(text):
             remove_reason = "ownership_filing_used_as_realtime_flow"
@@ -2635,6 +2649,7 @@ def _memo_claim_from_supported_claim(item: Mapping[str, Any]) -> dict[str, Any]:
         "claim_id": str(item.get("claim_id") or ""),
         "claim": str(item.get("claim") or ""),
         "claim_type": _claim_type_for_source_scope(item.get("claim_type"), source_families),
+        "raw_claim_type": str(item.get("raw_claim_type") or item.get("claim_type") or "").strip(),
         "evidence_refs": _unique_strings(item.get("evidence_refs") or item.get("refs")),
         "source_families": source_families,
         "confidence": _normalize_confidence(item.get("confidence")),
@@ -2739,9 +2754,11 @@ def _repair_instruction(errors: list[dict[str, Any]]) -> str:
 
 def _normalize_observation(payload: Mapping[str, Any]) -> dict[str, Any]:
     source_families = _unique_strings(payload.get("source_families") or payload.get("source_family"))
+    raw_claim_type = str(payload.get("claim_type") or "").strip()
     return {
         "claim": str(payload.get("claim") or "").strip(),
         "claim_type": _claim_type_for_source_scope(payload.get("claim_type"), source_families),
+        "raw_claim_type": raw_claim_type,
         "evidence_refs": _unique_strings(payload.get("evidence_refs") or payload.get("refs")),
         "source_families": source_families,
         "confidence": _normalize_confidence(payload.get("confidence")),

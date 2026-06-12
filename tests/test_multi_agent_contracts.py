@@ -196,6 +196,39 @@ def test_verifier_blocks_public_proxy_as_product_kpi_fact_and_repair_removes_it(
     assert repaired["removed_claims"][0]["reason"] == "public_proxy_used_as_product_kpi_fact"
 
 
+def test_verifier_blocks_public_proxy_product_sales_after_claim_type_normalization() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "product_technology_analyst",
+                "observations": [
+                    {
+                        "claim": "The official product page proves model sales.",
+                        "claim_type": "product_sales",
+                        "evidence_refs": ["official_product_page_ref"],
+                        "source_families": ["live_public_web_context"],
+                        "memo_slot": "product_technology",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["product_sales"],
+                        "materiality": "high",
+                        "confidence": "medium",
+                    }
+                ],
+            }
+        ]
+    )
+    memo = build_multi_agent_memo_draft(judgment)
+
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+    repaired = repair_multi_agent_memo_draft(memo, verification, judgment)
+
+    assert judgment["supported_claims"][0]["claim_type"] == "public_proxy_context"
+    assert judgment["supported_claims"][0]["raw_claim_type"] == "product_sales"
+    assert verification["status"] == "fail"
+    assert {item["type"] for item in verification["errors"]} >= {"public_proxy_used_as_product_kpi_fact"}
+    assert repaired["removed_claims"][0]["reason"] == "public_proxy_used_as_product_kpi_fact"
+
+
 def test_verifier_blocks_channel_offer_as_sell_through_and_field_inquiry_authority_fact() -> None:
     judgment = aggregate_specialist_judgment_plan(
         [

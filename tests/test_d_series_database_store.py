@@ -16,6 +16,11 @@ from sec_agent.d_series_database_store import (
     read_claim_gap_gate_research_context,
     read_d1_d2_d9_governance_counts,
     read_d_series_governance_counts,
+    read_d_series_research_context,
+)
+from sec_agent.d_series_fact_selection import (
+    apply_pre_memo_fact_selection_to_judgment,
+    build_pre_memo_fact_selection,
 )
 from sec_agent.gate_registry import build_gate_registry_eval_matrix
 from sec_agent.langgraph_orchestrator import build_multi_agent_orchestration_graph, make_multi_agent_smoke_state
@@ -72,6 +77,42 @@ def test_reader_returns_claim_gap_gate_context_across_runs(tmp_path: Path) -> No
     assert context["summary"]["gate_history_count"] >= 1
     assert {row["ticker"] for row in context["claims"]} == {"MSFT"}
     assert any(row["gap_id"] == "gap_commercial_shipments" for row in context["typed_gaps"])
+
+
+def test_full_d_series_reader_returns_cross_layer_context_and_supersession(tmp_path: Path) -> None:
+    db_path = tmp_path / "full_reader_governance.sqlite"
+    materialize_d_series_governance_store(db_path, _sample_governance_artifacts(run_id="unit-d12-1-reader-a"))
+    materialize_d_series_governance_store(db_path, _sample_governance_artifacts(run_id="unit-d12-1-reader-b"))
+
+    context = read_d_series_research_context(db_path, tickers=["MSFT"], limit=50)
+
+    assert context["reader_default_status"] == "database_default"
+    assert context["summary"]["context_group_count"] == 8
+    assert context["summary"]["row_count"] > 0
+    assert context["contexts"]["entity_security"]["entities"]
+    assert context["contexts"]["source_provenance"]["raw_documents"]
+    assert context["contexts"]["asof_vintage"]["vintage_records"]
+    assert context["contexts"]["reconciliation"]["unresolved_groups"]
+    assert context["contexts"]["metric_product_ontology"]["metrics"]
+    assert context["contexts"]["source_policy"]["source_capabilities"]
+    assert "outputs" in context["contexts"]["derived_metrics"]
+    assert context["contexts"]["analyst_memory"]["views"]
+    assert context["summary"]["stale_or_superseded_row_count"] >= 1
+    assert context["staleness_policy"]["policy"] == "latest_inserted_at_per_context_stable_key_v0_1"
+
+
+def test_pre_memo_fact_selection_blocks_unresolved_conflict_claims() -> None:
+    artifacts = _sample_governance_artifacts(run_id="unit-d12-1-pre-memo")
+    selection = build_pre_memo_fact_selection(artifacts)
+    selected = apply_pre_memo_fact_selection_to_judgment(artifacts["verified_judgment_plan"], selection)
+
+    assert selection["schema_version"] == "sec_agent_pre_memo_fact_selection_v0.1"
+    assert selection["summary"]["rejected_fact_count"] >= 1
+    assert "rev_usd" in selection["blocked_evidence_refs"]
+    assert selected["pre_memo_fact_selection"]["summary"]["rejected_fact_count"] >= 1
+    assert not any(claim.get("claim_id") == "cl_msft_revenue" for claim in selected["supported_claims"])
+    assert any(row.get("reason") == "blocked_by_pre_memo_fact_selection" for row in selected["unsupported_claims"])
+    assert selected["memo_writer_allowed"] is False
 
 
 def test_materializes_full_d_series_artifacts_to_sqlite_with_parity(tmp_path: Path) -> None:
@@ -196,9 +237,14 @@ def test_graph_materializes_full_d_series_when_db_path_is_explicit(tmp_path: Pat
     second_checkpoint = json.loads((second_output / "langgraph_node_checkpoints.json").read_text(encoding="utf-8"))
 
     assert second_result["d_series_claim_gap_gate_reader_context"]["reader_default_status"] == "database_default"
+    assert second_result["d_series_research_context"]["reader_default_status"] == "database_default"
     assert second_summary["d_series_claim_gap_gate_reader"]["typed_gap_count"] >= 1
+    assert second_summary["d_series_research_context_reader"]["row_count"] >= 1
+    assert second_summary["pre_memo_fact_selection"]["approved_fact_count"] >= 1
     assert second_summary["d_series_claim_gap_gate_reader"]["gate_history_count"] >= 1
     assert second_checkpoint["recoverable_state_summary"]["d_series_claim_gap_gate_reader_status"] == "database_default"
+    assert second_checkpoint["recoverable_state_summary"]["d_series_research_context_reader_status"] == "database_default"
+    assert second_checkpoint["recoverable_state_summary"]["pre_memo_approved_fact_count"] >= 1
 
 
 def _sample_governance_artifacts(run_id: str = "unit-d12-1") -> dict:

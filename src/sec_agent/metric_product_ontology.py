@@ -9,6 +9,8 @@ from typing import Any, Mapping
 
 import yaml
 
+from sec_agent.kg_minimal_registry import load_kg_minimal_registry, validate_kg_minimal_registry
+
 
 METRIC_PRODUCT_ONTOLOGY_SCHEMA_VERSION = "sec_agent_metric_product_ontology_v0.1"
 
@@ -39,10 +41,18 @@ PRODUCT_EXACT_SOURCE_FAMILIES = {
     "company_authored_unaudited_sec_filing",
 }
 
+REGISTRY_ALIAS_CANONICAL_REUSE = {
+    "product_sales": "product_kpi:product_revenue",
+    "accounts": "product_kpi:subscribers",
+}
+
 
 def build_metric_product_ontology_snapshot(state: Mapping[str, Any]) -> dict[str, Any]:
+    kg_registry = _kg_minimal_registry(state)
+    kg_validation = validate_kg_minimal_registry(kg_registry)
     definitions = _default_metric_definitions()
     definitions.extend(_product_metric_definitions_from_config(_product_ontology_config(state)))
+    definitions.extend(_industry_metric_definitions_from_registry(kg_registry))
     metrics = _dedupe_metric_definitions(definitions)
     alias_index = _alias_index(metrics)
     observed = [_observed_metric(row, alias_index=alias_index) for _, row in _iter_metric_rows(state)]
@@ -50,6 +60,8 @@ def build_metric_product_ontology_snapshot(state: Mapping[str, Any]) -> dict[str
     payload = {
         "schema_version": METRIC_PRODUCT_ONTOLOGY_SCHEMA_VERSION,
         "policy": "metric_product_ontology_no_string_similarity_promotion_v0_1",
+        "registry_schema_version": str(kg_registry.get("schema_version") or ""),
+        "registry_validation_status": kg_validation.get("status") or "",
         "metric_count": len(metrics),
         "metrics": metrics,
         "alias_index": {
@@ -60,6 +72,8 @@ def build_metric_product_ontology_snapshot(state: Mapping[str, Any]) -> dict[str
             }
             for key, value in sorted(alias_index.items())
         },
+        "industry_kpi_overrides": _industry_kpi_overrides(kg_registry),
+        "product_spec_ontology": _product_spec_ontology_summary(kg_registry),
         "observed_metric_mappings": observed,
         "summary": {
             "by_metric_type": dict(sorted(Counter(row.get("metric_type") or "unknown" for row in metrics).items())),
@@ -69,6 +83,18 @@ def build_metric_product_ontology_snapshot(state: Mapping[str, Any]) -> dict[str
             "observed_mapped_count": len([row for row in observed if row.get("match_status") == "mapped"]),
             "observed_rejected_alias_count": len([row for row in observed if row.get("match_status") == "rejected_alias"]),
             "observed_unmapped_count": len([row for row in observed if row.get("match_status") == "unmapped"]),
+            "industry_kpi_override_count": sum(
+                len(_string_list(row.get("financial_metrics")))
+                + len(_string_list(row.get("product_kpis")))
+                + len(_string_list(row.get("commercial_gap_metrics")))
+                for row in _industry_kpi_overrides(kg_registry).values()
+                if isinstance(row, Mapping)
+            ),
+            "product_spec_industry_count": len(
+                ((_product_spec_ontology_summary(kg_registry).get("industry_spec_dimensions") or {}))
+                if isinstance(_product_spec_ontology_summary(kg_registry).get("industry_spec_dimensions"), Mapping)
+                else {}
+            ),
         },
     }
     payload["validation"] = validate_metric_product_ontology(payload)
@@ -516,6 +542,109 @@ def _product_ontology_config(state: Mapping[str, Any]) -> dict[str, Any]:
         return yaml.safe_load(handle) or {}
 
 
+def _kg_minimal_registry(state: Mapping[str, Any]) -> dict[str, Any]:
+    registry = state.get("kg_minimal_registry")
+    if isinstance(registry, Mapping):
+        return dict(registry)
+    inventory = state.get("project_inventory") if isinstance(state.get("project_inventory"), Mapping) else {}
+    registry = inventory.get("kg_minimal_registry") if isinstance(inventory.get("kg_minimal_registry"), Mapping) else {}
+    if registry:
+        return dict(registry)
+    path = state.get("kg_minimal_registry_path") or inventory.get("kg_minimal_registry_path")
+    return load_kg_minimal_registry(path if str(path or "").strip() else None)
+
+
+def _industry_metric_definitions_from_registry(registry: Mapping[str, Any]) -> list[dict[str, Any]]:
+    k1 = registry.get("k1_industry_kpi_dictionary") if isinstance(registry.get("k1_industry_kpi_dictionary"), Mapping) else {}
+    definitions: list[dict[str, Any]] = []
+    cannot_infer = sorted(CONTEXT_ONLY_SOURCE_FAMILIES | {"commercial_market_data_and_consensus"})
+    for industry, item in k1.items():
+        if not isinstance(item, Mapping):
+            continue
+        for metric in _string_list(item.get("product_kpis")):
+            normalized = normalize_metric_alias(metric)
+            if not normalized:
+                continue
+            if normalized in REGISTRY_ALIAS_CANONICAL_REUSE:
+                continue
+            row = _product_metric(
+                normalized,
+                [metric],
+                unit_family=_industry_metric_unit_family(normalized),
+                cannot_infer_from=cannot_infer,
+            )
+            row["registry_source"] = "kg_minimal_p0_k1_k2_k3"
+            row["industry_overrides"] = _unique_strings([*(row.get("industry_overrides") or []), str(industry)])
+            definitions.append(row)
+        for metric in _string_list(item.get("commercial_gap_metrics")):
+            normalized = normalize_metric_alias(metric)
+            if not normalized:
+                continue
+            if normalized in REGISTRY_ALIAS_CANONICAL_REUSE:
+                continue
+            row = _metric(
+                f"product_kpi:{normalized}",
+                "product_kpi",
+                normalized,
+                [metric],
+                rejected_aliases=[],
+                unit_family=_industry_metric_unit_family(normalized),
+                period_rule="commercial_tracker_required_for_exact_company_claim",
+                allowed_source_families=["commercial_market_tracker"],
+                exact_authority_source_families=[],
+                cannot_infer_from=sorted(CONTEXT_ONLY_SOURCE_FAMILIES | PRODUCT_EXACT_SOURCE_FAMILIES),
+                required_gates=["commercial_gap_gate", "source_boundary_gate"],
+            )
+            row["registry_source"] = "kg_minimal_p0_k1_k2_k3"
+            row["industry_overrides"] = _unique_strings([str(industry)])
+            row["claim_boundary"] = "commercial_gap_metric_expose_gap_do_not_proxy"
+            definitions.append(row)
+    return definitions
+
+
+def _industry_kpi_overrides(registry: Mapping[str, Any]) -> dict[str, dict[str, list[str]]]:
+    k1 = registry.get("k1_industry_kpi_dictionary") if isinstance(registry.get("k1_industry_kpi_dictionary"), Mapping) else {}
+    return {
+        str(industry): {
+            "financial_metrics": _string_list(item.get("financial_metrics")),
+            "product_kpis": _string_list(item.get("product_kpis")),
+            "commercial_gap_metrics": _string_list(item.get("commercial_gap_metrics")),
+        }
+        for industry, item in k1.items()
+        if isinstance(item, Mapping)
+    }
+
+
+def _product_spec_ontology_summary(registry: Mapping[str, Any]) -> dict[str, Any]:
+    k2 = registry.get("k2_product_spec_ontology") if isinstance(registry.get("k2_product_spec_ontology"), Mapping) else {}
+    dimensions = k2.get("industry_spec_dimensions") if isinstance(k2.get("industry_spec_dimensions"), Mapping) else {}
+    boundary = k2.get("channel_offer_boundary") if isinstance(k2.get("channel_offer_boundary"), Mapping) else {}
+    return {
+        "common_required_fields": _string_list(k2.get("common_required_fields")),
+        "industry_spec_dimensions": {
+            str(industry): _string_list(values)
+            for industry, values in dimensions.items()
+        },
+        "channel_offer_boundary": {
+            "allowed_claims": _string_list(boundary.get("allowed_claims")),
+            "forbidden_claims": _string_list(boundary.get("forbidden_claims")),
+        },
+    }
+
+
+def _industry_metric_unit_family(metric: str) -> str:
+    normalized = normalize_metric_alias(metric)
+    if any(token in normalized for token in ("margin", "rate", "share", "utilization", "cet1")):
+        return "percent"
+    if any(token in normalized for token in ("asp", "arpu", "price")):
+        return "currency_per_unit"
+    if any(token in normalized for token in ("revenue", "sales", "aum", "gmv", "pos", "rpo")):
+        return "currency"
+    if any(token in normalized for token in ("subscriber", "customer", "seat", "account", "user", "unit", "delivery", "shipment", "production", "registration")):
+        return "units"
+    return "unknown_or_industry_specific"
+
+
 def _dedupe_metric_definitions(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     by_id: dict[str, dict[str, Any]] = {}
     for row in rows:
@@ -527,8 +656,12 @@ def _dedupe_metric_definitions(rows: list[dict[str, Any]]) -> list[dict[str, Any
             by_id[canonical_id] = row
             continue
         merged = dict(existing)
-        for key in ("accepted_aliases", "rejected_aliases", "allowed_source_families", "exact_authority_source_families", "cannot_infer_from", "required_gates"):
+        for key in ("accepted_aliases", "rejected_aliases", "allowed_source_families", "exact_authority_source_families", "cannot_infer_from", "required_gates", "industry_overrides"):
             merged[key] = _unique_strings([*(existing.get(key) or []), *(row.get(key) or [])])
+        if row.get("registry_source") and not merged.get("registry_source"):
+            merged["registry_source"] = row.get("registry_source")
+        if row.get("claim_boundary") and not merged.get("claim_boundary"):
+            merged["claim_boundary"] = row.get("claim_boundary")
         by_id[canonical_id] = merged
     return sorted(by_id.values(), key=lambda item: str(item.get("canonical_metric_id") or ""))
 

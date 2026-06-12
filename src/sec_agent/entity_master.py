@@ -10,6 +10,16 @@ from sec_agent.entities.entity_resolution import build_entity_alias_registry, no
 
 ENTITY_SECURITY_MASTER_SCHEMA_VERSION = "sec_agent_entity_security_master_v0.1"
 IDENTIFIER_FIELDS = ("cik", "lei", "figi", "isin", "cusip", "sedol", "issuer_id")
+EXTENDED_ENTITY_FIELDS = (
+    "exchange",
+    "country",
+    "company_domain",
+    "ir_domain",
+    "security_type",
+    "ordinary_share_ticker",
+    "adr_ticker",
+    "parent_entity_id",
+)
 
 
 def build_entity_security_master(state: Mapping[str, Any]) -> dict[str, Any]:
@@ -53,6 +63,16 @@ def build_entity_security_master(state: Mapping[str, Any]) -> dict[str, Any]:
             "ticker_count": len([row for row in entities if row.get("ticker")]),
             "cik_count": len([row for row in entities if row.get("cik")]),
             "external_identifier_count": len([row for row in entities if _has_external_identifier(row)]),
+            "brand_alias_count": sum(len(row.get("brands") or []) for row in entities),
+            "subsidiary_alias_count": sum(len(row.get("subsidiaries") or []) for row in entities),
+            "product_alias_count": sum(len(row.get("product_aliases") or []) for row in entities),
+            "adr_or_common_share_link_count": len(
+                [
+                    row
+                    for row in entities
+                    if str(row.get("ordinary_share_ticker") or "").strip() or str(row.get("adr_ticker") or "").strip()
+                ]
+            ),
             "unresolved_reference_count": len(unresolved),
         },
     }
@@ -115,7 +135,10 @@ def _entity_from_row(row: Mapping[str, Any], *, source_ref: str) -> dict[str, An
     entity_id = str(row.get("entity_id") or "").strip()
     if not entity_id:
         entity_id = f"sec_cik:{cik}" if cik else f"issuer:{issuer_id}" if issuer_id else f"ticker:{ticker or _hash_text(canonical_name)}"
-    aliases = _unique_strings([ticker, canonical_name, legal_name, *_string_list(row.get("aliases"))])
+    brands = _string_list(row.get("brands") or row.get("brand_names"))
+    subsidiaries = _string_list(row.get("subsidiaries") or row.get("subsidiary_names"))
+    product_aliases = _string_list(row.get("product_aliases") or row.get("product_names"))
+    aliases = _unique_strings([ticker, canonical_name, legal_name, *_string_list(row.get("aliases")), *brands, *subsidiaries, *product_aliases])
     return {
         "entity_id": entity_id,
         "ticker": ticker,
@@ -129,10 +152,22 @@ def _entity_from_row(row: Mapping[str, Any], *, source_ref: str) -> dict[str, An
         "cusip": str(row.get("cusip") or "").strip(),
         "sedol": str(row.get("sedol") or "").strip(),
         "issuer_id": issuer_id,
+        "exchange": str(row.get("exchange") or row.get("exchange_code") or "").strip(),
+        "country": str(row.get("country") or row.get("country_code") or "").strip(),
+        "company_domain": str(row.get("company_domain") or row.get("domain") or "").strip(),
+        "ir_domain": str(row.get("ir_domain") or "").strip(),
+        "security_type": str(row.get("security_type") or row.get("share_class") or "").strip(),
+        "ordinary_share_ticker": str(row.get("ordinary_share_ticker") or row.get("local_ticker") or "").upper().strip(),
+        "adr_ticker": str(row.get("adr_ticker") or "").upper().strip(),
+        "parent_entity_id": str(row.get("parent_entity_id") or row.get("parent_lei") or "").strip(),
+        "brands": brands,
+        "subsidiaries": subsidiaries,
+        "product_aliases": product_aliases,
         "aliases": aliases,
         "normalized_aliases": _unique_strings([normalize_entity_name(alias) for alias in aliases]),
         "resolution_confidence": _resolution_confidence(ticker=ticker, cik=cik, canonical_name=canonical_name, row=row),
         "source_refs": _unique_strings([source_ref, *_string_list(row.get("source_refs"))]),
+        "source_priority": _unique_strings(_string_list(row.get("source_priority")) or ["sec_submissions", "gleif", "openfigi", "company_ir", "wikidata_low_weight"]),
     }
 
 
@@ -146,14 +181,22 @@ def _dedupe_entities(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             by_key[key] = dict(row)
             continue
         existing = by_key[key]
-        for field in ("ticker", "issuer_name", "canonical_name", "legal_name", *IDENTIFIER_FIELDS):
+        for field in ("ticker", "issuer_name", "canonical_name", "legal_name", *IDENTIFIER_FIELDS, *EXTENDED_ENTITY_FIELDS):
             if not existing.get(field) and row.get(field):
                 existing[field] = row[field]
-        existing["aliases"] = _unique_strings([*(existing.get("aliases") or []), *(row.get("aliases") or [])])
+        for list_field in ("aliases", "brands", "subsidiaries", "product_aliases", "source_refs", "source_priority"):
+            existing[list_field] = _unique_strings([*(existing.get(list_field) or []), *(row.get(list_field) or [])])
+        existing["aliases"] = _unique_strings(
+            [
+                *(existing.get("aliases") or []),
+                *(existing.get("brands") or []),
+                *(existing.get("subsidiaries") or []),
+                *(existing.get("product_aliases") or []),
+            ]
+        )
         existing["normalized_aliases"] = _unique_strings(
             [*(existing.get("normalized_aliases") or []), *(row.get("normalized_aliases") or [])]
         )
-        existing["source_refs"] = _unique_strings([*(existing.get("source_refs") or []), *(row.get("source_refs") or [])])
         if _confidence_rank(row.get("resolution_confidence")) > _confidence_rank(existing.get("resolution_confidence")):
             existing["resolution_confidence"] = row.get("resolution_confidence")
     return sorted(by_key.values(), key=lambda item: (str(item.get("ticker") or ""), str(item.get("entity_id") or "")))

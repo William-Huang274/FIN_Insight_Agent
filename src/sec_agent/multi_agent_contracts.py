@@ -1839,10 +1839,13 @@ def build_multi_agent_memo_draft(
     conflicts = [dict(item) for item in judgment.get("conflicts") or [] if isinstance(item, Mapping)]
     unsupported = [dict(item) for item in judgment.get("unsupported_claims") or [] if isinstance(item, Mapping)]
     allowed = bool(judgment.get("memo_writer_allowed", True)) and bool(verification.get("memo_writer_allowed", True))
+    consumed_views = ["verified_judgment_plan", "verified_summary"]
+    if isinstance(judgment.get("pre_memo_fact_selection"), Mapping):
+        consumed_views.append("pre_memo_fact_selection")
     common = {
         "schema_version": MEMO_DRAFT_SCHEMA_VERSION,
         "memo_writer_allowed": allowed,
-        "consumed_input_views": ["verified_judgment_plan", "verified_summary"],
+        "consumed_input_views": consumed_views,
         "raw_rows_consumed": False,
         "tool_calls_requested": [],
         "source_boundary": _source_boundary_text(judgment),
@@ -1856,6 +1859,9 @@ def build_multi_agent_memo_draft(
         "memo_thesis_plan": dict(judgment.get("memo_thesis_plan") or {}) if isinstance(judgment.get("memo_thesis_plan"), Mapping) else {},
         "memo_thesis_pack": dict(judgment.get("memo_thesis_pack") or {}) if isinstance(judgment.get("memo_thesis_pack"), Mapping) else {},
         "claim_card_stats": dict(judgment.get("claim_card_stats") or {}),
+        "pre_memo_fact_selection": dict(judgment.get("pre_memo_fact_selection") or {})
+        if isinstance(judgment.get("pre_memo_fact_selection"), Mapping)
+        else {},
     }
     if not allowed:
         return {

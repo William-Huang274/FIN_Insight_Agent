@@ -1,0 +1,137 @@
+schema_version: fin_agent_kg_minimal_p0_k1_k2_k3_registry_v0.1
+registry_id: kg_minimal_p0_k1_k2_k3_v0_1
+
+p0_business_product_kpi_graph:
+  object_types:
+    Company:
+      required_fields: [entity_id, ticker, legal_name, reporting_currency]
+      source_authority: resolver_only
+    Segment:
+      required_fields: [segment_id, company_id, segment_name, period, source_id]
+      source_authority: company_disclosed_exact
+    ProductFamily:
+      required_fields: [product_family_id, company_id, product_name, source_id, source_strength]
+      source_authority: company_or_official_context
+    ProductKPI:
+      required_fields: [metric_id, company_id, metric_name, value, unit, period, source_id, disclosure_type]
+      source_authority: company_disclosed_exact
+  edge_types:
+    reports_segment:
+      from: Company
+      to: Segment
+      required_gates: [entity_resolution_gate, citation_span_gate, period_alignment_gate]
+    segment_contains_product:
+      from: Segment
+      to: ProductFamily
+      required_gates: [entity_resolution_gate, metric_mapping_gate]
+    product_has_kpi:
+      from: ProductFamily
+      to: ProductKPI
+      required_gates: [metric_mapping_gate, unit_normalization_gate, period_alignment_gate, numeric_consistency_gate]
+  promotion_policy:
+    product_kpi_exact_authority_sources:
+      - primary_sec_filing
+      - company_authored_unaudited_sec_filing
+      - company_product_evidence_graph
+    context_only_sources:
+      - public_source_context
+      - live_public_web_context
+      - industry_snapshot
+      - market_snapshot
+      - relationship_graph
+      - milvus_semantic
+    forbidden_promotions:
+      - public_proxy_to_company_sales
+      - product_page_to_shipments
+      - channel_offer_to_sell_through
+      - macro_series_to_company_fact
+
+k1_industry_kpi_dictionary:
+  semiconductors:
+    financial_metrics: [revenue, gross_margin, operating_margin, inventory, capex]
+    product_kpis: [datacenter_revenue, foundry_revenue, shipments, ASP, backlog, capacity, utilization]
+    commercial_gap_metrics: [shipments, vendor_share, ASP, channel_inventory]
+  consumer_electronics:
+    financial_metrics: [revenue, gross_margin, operating_margin, inventory]
+    product_kpis: [shipments, units, ASP, installed_base, product_revenue]
+    commercial_gap_metrics: [market_share, sell_through, channel_inventory]
+  software_saas:
+    financial_metrics: [revenue, gross_margin, operating_margin, free_cash_flow, RPO]
+    product_kpis: [ARR, net_retention, customer_count, seats, usage, ARPU]
+    commercial_gap_metrics: [app_downloads, web_traffic, paid_usage]
+  banks:
+    financial_metrics: [net_interest_income, deposits, loans, provision, CET1]
+    product_kpis: [AUM, card_spend, accounts, transaction_volume]
+    commercial_gap_metrics: [card_spend, loan_share]
+  pharma_biotech:
+    financial_metrics: [revenue, gross_margin, R&D, operating_margin]
+    product_kpis: [product_sales, trial_status, approvals, prescription_volume]
+    commercial_gap_metrics: [prescription_volume, product_share, real_world_usage]
+  autos_ev:
+    financial_metrics: [revenue, gross_margin, operating_margin, inventory, capex]
+    product_kpis: [deliveries, production, ASP, model_mix, recalls]
+    commercial_gap_metrics: [registrations, VIO, owner_demographics]
+  energy_oil_gas:
+    financial_metrics: [revenue, operating_cash_flow, capex, free_cash_flow, debt]
+    product_kpis: [production, reserves, refinery_throughput, realized_price]
+    commercial_gap_metrics: [basin_activity, customer_contract_detail]
+  retail_cpg:
+    financial_metrics: [revenue, gross_margin, operating_margin, inventory, working_capital]
+    product_kpis: [same_store_sales, category_sales, unit_volume, traffic]
+    commercial_gap_metrics: [POS, scanner, panel, channel_inventory]
+
+k2_product_spec_ontology:
+  common_required_fields:
+    - spec_id
+    - product_model_id
+    - spec_name
+    - value
+    - unit
+    - region
+    - effective_date
+    - source_id
+    - claim_scope
+  industry_spec_dimensions:
+    semiconductors: [process_node, memory_capacity, memory_bandwidth, compute_throughput, power, form_factor, interconnect]
+    consumer_electronics: [model, storage, screen_size, battery, camera, connectivity, price, availability]
+    software_saas: [edition, seat_limit, usage_limit, API_limit, pricing_tier, region, SLA]
+    pharma_biotech: [compound, indication, dosage_form, trial_phase, regulatory_status, label_population]
+    autos_ev: [model_trim, battery_capacity, range, drivetrain, charging_rate, safety_rating, price, availability]
+    retail_cpg: [SKU, package_size, flavor_variant, channel_price, promotion, availability]
+  channel_offer_boundary:
+    allowed_claims: [price_context, availability_context, configuration_context, delivery_lead_time_context]
+    forbidden_claims: [company_sales, market_share, sell_through, company_ASP, channel_inventory]
+
+k3_source_policy_minimal:
+  public_buyer_observer:
+    allowed_source_classes:
+      - company_official_product_surface
+      - commerce_product_surface
+      - distributor_public_catalog
+      - developer_documentation
+      - pricing_page
+    forbidden_actions:
+      - impersonate_credentials_or_authorization
+      - bypass_login_paywall_captcha_or_permissions
+      - submit_false_forms_or_orders
+      - treat_channel_surface_as_company_sales
+  source_family_claim_boundaries:
+    primary_sec_filing:
+      authority: exact_company_fact
+      allowed_claims: [reported_financial_fact, segment_fact, company_disclosed_product_kpi]
+    company_product_evidence_graph:
+      authority: limited_exact_company_disclosed_product_fact
+      allowed_claims: [product_taxonomy, company_disclosed_product_kpi]
+      required_gates: [runtime_fact_allowed, metric_mapping_gate, unit_normalization_gate, period_alignment_gate]
+    public_source_context:
+      authority: context_only
+      allowed_claims: [resolver, official_or_public_context, directional_proxy]
+      forbidden_claims: [company_sales, market_share, sell_through, profitability]
+    live_public_web_context:
+      authority: parser_gated_context_only
+      allowed_claims: [product_surface_context, channel_offer_context, news_context]
+      forbidden_claims: [search_snippet_as_evidence, unallowlisted_domain_evidence, channel_offer_as_sell_through]
+    commercial_market_tracker:
+      authority: commercial_deferred_gap
+      allowed_claims: []
+      gap_policy: expose_commercial_gap_do_not_proxy

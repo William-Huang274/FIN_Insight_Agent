@@ -220,6 +220,176 @@ def read_claim_gap_gate_research_context(
     }
 
 
+def read_d_series_research_context(
+    db_path: str | Path,
+    *,
+    tickers: Sequence[str] | None = None,
+    run_id: str = "",
+    limit: int = 100,
+) -> dict[str, Any]:
+    ticker_filter = [str(item).upper().strip() for item in tickers or [] if str(item or "").strip()]
+    with _connect(Path(db_path)) as conn:
+        contexts = {
+            "entity_security": {
+                "entities": _select_payload_rows_with_metadata(
+                    conn,
+                    "entity_master",
+                    run_id=run_id,
+                    ticker_filter=ticker_filter,
+                    order_by="inserted_at desc, entity_id",
+                    limit=limit,
+                ),
+                "unresolved_references": _select_payload_rows_with_metadata(
+                    conn,
+                    "unresolved_entity_references",
+                    run_id=run_id,
+                    ticker_filter=[],
+                    order_by="inserted_at desc, unresolved_reference_id",
+                    limit=limit,
+                ),
+            },
+            "source_provenance": {
+                "raw_documents": _select_payload_rows_with_metadata(
+                    conn,
+                    "raw_source_documents",
+                    run_id=run_id,
+                    ticker_filter=ticker_filter,
+                    order_by="inserted_at desc, source_id",
+                    limit=limit,
+                ),
+            },
+            "asof_vintage": {
+                "vintage_records": _select_payload_rows_with_metadata(
+                    conn,
+                    "asof_vintage_records",
+                    run_id=run_id,
+                    ticker_filter=ticker_filter,
+                    order_by="inserted_at desc, vintage_id",
+                    limit=limit,
+                ),
+            },
+            "reconciliation": {
+                "resolved_groups": _select_payload_rows_with_metadata(
+                    conn,
+                    "reconciliation_groups",
+                    run_id=run_id,
+                    ticker_filter=ticker_filter,
+                    where_extra="resolution_status like 'resolved%'",
+                    order_by="inserted_at desc, group_id",
+                    limit=limit,
+                ),
+                "unresolved_groups": _select_payload_rows_with_metadata(
+                    conn,
+                    "reconciliation_groups",
+                    run_id=run_id,
+                    ticker_filter=ticker_filter,
+                    where_extra="resolution_status = 'unresolved_conflict'",
+                    order_by="inserted_at desc, group_id",
+                    limit=limit,
+                ),
+                "conflict_gaps": _select_payload_rows_with_metadata(
+                    conn,
+                    "reconciliation_conflict_gaps",
+                    run_id=run_id,
+                    ticker_filter=ticker_filter,
+                    order_by="inserted_at desc, gap_id",
+                    limit=limit,
+                ),
+            },
+            "metric_product_ontology": {
+                "metrics": _select_payload_rows_with_metadata(
+                    conn,
+                    "metric_product_ontology_metrics",
+                    run_id=run_id,
+                    ticker_filter=[],
+                    order_by="inserted_at desc, canonical_metric_id",
+                    limit=limit,
+                ),
+                "manual_review_queue": _select_payload_rows_with_metadata(
+                    conn,
+                    "metric_product_manual_review_queue",
+                    run_id=run_id,
+                    ticker_filter=[],
+                    order_by="inserted_at desc, review_id",
+                    limit=limit,
+                ),
+            },
+            "source_policy": {
+                "source_capabilities": _select_payload_rows_with_metadata(
+                    conn,
+                    "source_capability_policy",
+                    run_id=run_id,
+                    ticker_filter=[],
+                    order_by="inserted_at desc, source_family",
+                    limit=limit,
+                ),
+                "route_decisions": _select_payload_rows_with_metadata(
+                    conn,
+                    "source_route_decisions",
+                    run_id=run_id,
+                    ticker_filter=[],
+                    order_by="inserted_at desc, route_id",
+                    limit=limit,
+                ),
+            },
+            "derived_metrics": {
+                "outputs": _select_payload_rows_with_metadata(
+                    conn,
+                    "derived_metric_outputs",
+                    run_id=run_id,
+                    ticker_filter=ticker_filter,
+                    order_by="inserted_at desc, derived_metric_id",
+                    limit=limit,
+                ),
+            },
+            "analyst_memory": {
+                "views": _select_payload_rows_with_metadata(
+                    conn,
+                    "analyst_view_index",
+                    run_id=run_id,
+                    ticker_filter=ticker_filter,
+                    order_by="inserted_at desc, view_id",
+                    limit=limit,
+                ),
+                "memory_entries": _select_payload_rows_with_metadata(
+                    conn,
+                    "analyst_research_memory_entries",
+                    run_id=run_id,
+                    ticker_filter=ticker_filter,
+                    order_by="inserted_at desc, memory_entry_id",
+                    limit=limit,
+                ),
+            },
+        }
+        counts = read_d_series_governance_counts(db_path)
+    staleness = _reader_staleness_summary(contexts)
+    return {
+        "schema_version": "sec_agent_d_series_research_context_reader_v0.1",
+        "db_path": str(Path(db_path).resolve()),
+        "reader_default_status": "database_default",
+        "run_id": run_id,
+        "tickers": ticker_filter,
+        "contexts": contexts,
+        "summary": {
+            "source": "d_series_governance_sqlite_store",
+            "context_group_count": len(contexts),
+            "row_count": sum(
+                len(rows)
+                for group in contexts.values()
+                for rows in group.values()
+                if isinstance(rows, list)
+            ),
+            "table_counts": counts,
+            "stale_or_superseded_row_count": staleness.get("stale_or_superseded_row_count", 0),
+            "latest_key_count": staleness.get("latest_key_count", 0),
+        },
+        "staleness_policy": {
+            "policy": "latest_inserted_at_per_context_stable_key_v0_1",
+            "stale_or_superseded_rows": staleness.get("stale_or_superseded_rows", []),
+        },
+    }
+
+
 def _backfill_layers(db_path: str | Path, artifacts: Mapping[str, Any], *, layer_keys: Sequence[str]) -> dict[str, Any]:
     path = Path(db_path)
     migrate = migrate_d_series_governance_store(path)
@@ -1425,6 +1595,136 @@ def _select_payload_rows(
     query = f"select payload_json from {table} {where} order by {order_by} limit ?"
     rows = conn.execute(query, (*params, max(1, int(limit or 100)))).fetchall()
     return [_json_loads(row["payload_json"]) for row in rows]
+
+
+def _select_payload_rows_with_metadata(
+    conn: sqlite3.Connection,
+    table: str,
+    *,
+    run_id: str,
+    ticker_filter: Sequence[str],
+    order_by: str,
+    limit: int,
+    where_extra: str = "",
+) -> list[dict[str, Any]]:
+    clauses: list[str] = []
+    params: list[Any] = []
+    if run_id:
+        clauses.append("run_id = ?")
+        params.append(run_id)
+    if ticker_filter:
+        placeholders = ", ".join("?" for _ in ticker_filter)
+        clauses.append(f"upper(ticker) in ({placeholders})")
+        params.extend(ticker_filter)
+    if where_extra:
+        clauses.append(f"({where_extra})")
+    where = f"where {' and '.join(clauses)}" if clauses else ""
+    query = f"select run_id, inserted_at, payload_json from {table} {where} order by {order_by} limit ?"
+    rows = conn.execute(query, (*params, max(1, int(limit or 100)))).fetchall()
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        payload = _json_loads(row["payload_json"])
+        payload["_reader_metadata"] = {
+            "table": table,
+            "run_id": row["run_id"],
+            "inserted_at": row["inserted_at"],
+            "stable_key": _reader_stable_key(table, payload),
+        }
+        out.append(payload)
+    return out
+
+
+def _reader_staleness_summary(contexts: Mapping[str, Any]) -> dict[str, Any]:
+    latest_by_key: dict[str, dict[str, Any]] = {}
+    stale_rows: list[dict[str, Any]] = []
+    for group_name, group in contexts.items():
+        if not isinstance(group, Mapping):
+            continue
+        for row_name, rows in group.items():
+            for row in rows or []:
+                if not isinstance(row, Mapping):
+                    continue
+                metadata = row.get("_reader_metadata") if isinstance(row.get("_reader_metadata"), Mapping) else {}
+                key = str(metadata.get("stable_key") or "")
+                inserted_at = str(metadata.get("inserted_at") or "")
+                if not key:
+                    continue
+                current = latest_by_key.get(key)
+                if current is None or inserted_at > str(current.get("inserted_at") or ""):
+                    if current is not None:
+                        stale_rows.append(
+                            {
+                                "context_group": current.get("context_group"),
+                                "row_group": current.get("row_group"),
+                                "stable_key": key,
+                                "run_id": current.get("run_id"),
+                                "inserted_at": current.get("inserted_at"),
+                                "superseded_by_run_id": metadata.get("run_id"),
+                                "superseded_by_inserted_at": inserted_at,
+                            }
+                        )
+                    latest_by_key[key] = {
+                        "context_group": group_name,
+                        "row_group": row_name,
+                        "run_id": metadata.get("run_id"),
+                        "inserted_at": inserted_at,
+                    }
+                else:
+                    stale_rows.append(
+                        {
+                            "context_group": group_name,
+                            "row_group": row_name,
+                            "stable_key": key,
+                            "run_id": metadata.get("run_id"),
+                            "inserted_at": inserted_at,
+                            "superseded_by_run_id": current.get("run_id"),
+                            "superseded_by_inserted_at": current.get("inserted_at"),
+                        }
+                    )
+    return {
+        "latest_key_count": len(latest_by_key),
+        "stale_or_superseded_row_count": len(stale_rows),
+        "stale_or_superseded_rows": stale_rows[:100],
+    }
+
+
+def _reader_stable_key(table: str, payload: Mapping[str, Any]) -> str:
+    if table == "entity_master":
+        parts = [table, _first_text(payload, "entity_id", "ticker")]
+    elif table == "unresolved_entity_references":
+        parts = [table, _first_text(payload, "unresolved_reference_id", "raw_reference")]
+    elif table == "raw_source_documents":
+        parts = [table, _first_text(payload, "source_id", "document_id", "evidence_ref")]
+    elif table == "asof_vintage_records":
+        parts = [table, _first_text(payload, "source_id"), _first_text(payload, "evidence_ref"), _first_text(payload, "time_basis")]
+    elif table == "reconciliation_groups":
+        group_key = payload.get("group_key") if isinstance(payload.get("group_key"), Mapping) else {}
+        parts = [
+            table,
+            _first_text(payload, "ticker"),
+            _first_text(payload, "canonical_metric_id"),
+            _first_text(group_key, "product_key"),
+            _first_text(payload, "period_key"),
+        ]
+    elif table == "reconciliation_conflict_gaps":
+        parts = [table, _first_text(payload, "gap_id")]
+    elif table == "metric_product_ontology_metrics":
+        parts = [table, _first_text(payload, "canonical_metric_id")]
+    elif table == "metric_product_manual_review_queue":
+        parts = [table, _first_text(payload, "raw_metric_text", "review_id")]
+    elif table == "source_capability_policy":
+        parts = [table, _first_text(payload, "source_family")]
+    elif table == "source_route_decisions":
+        parts = [table, _first_text(payload, "route_id", "retrieval_route", "source_family")]
+    elif table == "derived_metric_outputs":
+        parts = [table, _first_text(payload, "derived_metric_id")]
+    elif table == "analyst_view_index":
+        parts = [table, _first_text(payload, "view_id")]
+    elif table == "analyst_research_memory_entries":
+        parts = [table, _first_text(payload, "memory_entry_id")]
+    else:
+        parts = [table, _json_text(payload)]
+    return _stable_id("reader_key", *parts)
 
 
 def _delete_run_tables(conn: sqlite3.Connection, run_id: str, tables: Sequence[str]) -> None:

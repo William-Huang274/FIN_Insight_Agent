@@ -31,6 +31,11 @@ from sec_agent.d_series_database_store import (
     d_series_materialization_state_from_report,
     materialize_d_series_governance_store,
     read_claim_gap_gate_research_context,
+    read_d_series_research_context,
+)
+from sec_agent.d_series_fact_selection import (
+    apply_pre_memo_fact_selection_to_judgment,
+    build_pre_memo_fact_selection,
 )
 from sec_agent.derived_metric_layer import build_derived_metric_layer
 from sec_agent.entity_master import build_entity_security_master
@@ -161,6 +166,8 @@ CHECKPOINT_STATE_KEYS = (
     "d_series_database_materialization",
     "d_series_database_materialization_report",
     "d_series_claim_gap_gate_reader_context",
+    "d_series_research_context",
+    "pre_memo_fact_selection",
     "d_series_database_closeout_gate",
     "evidence_sufficiency_report",
     "second_pass_result",
@@ -223,6 +230,8 @@ CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "derived_metric_layer",
     "analyst_view_research_memory",
     "d_series_database_materialization_report",
+    "d_series_research_context",
+    "pre_memo_fact_selection",
     "d_series_database_closeout_gate",
     "coverage_matrix",
     "retrieval_trace",
@@ -329,6 +338,8 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     d_series_database_materialization: dict[str, Any]
     d_series_database_materialization_report: dict[str, Any]
     d_series_claim_gap_gate_reader_context: dict[str, Any]
+    d_series_research_context: dict[str, Any]
+    pre_memo_fact_selection: dict[str, Any]
     d_series_database_closeout_gate: dict[str, Any]
     claim_evidence_ledger: dict[str, Any]
     typed_gap_ledger: dict[str, Any]
@@ -870,6 +881,8 @@ def _mark_stopped_after_node(state: SecAgentGraphRuntimeState, node_name: str) -
 def _node_load_session_state(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
     next_state = _state_with_d12_1_reader_context({**state, "status": "running"})
     reader_context = next_state.get("d_series_claim_gap_gate_reader_context") or {}
+    d_series_context = next_state.get("d_series_research_context") or {}
+    d_series_summary = d_series_context.get("summary") if isinstance(d_series_context, dict) and isinstance(d_series_context.get("summary"), dict) else {}
     return _record_node(
         next_state,
         "load_session_state",
@@ -878,6 +891,8 @@ def _node_load_session_state(state: SecAgentGraphRuntimeState) -> SecAgentGraphR
             "d_series_reader_claim_count": (reader_context.get("summary") or {}).get("claim_count")
             if isinstance(reader_context, dict) and isinstance(reader_context.get("summary"), dict)
             else 0,
+            "d_series_context_status": d_series_context.get("reader_default_status") if isinstance(d_series_context, dict) else "",
+            "d_series_context_row_count": d_series_summary.get("row_count") or 0,
         },
     )
 
@@ -1865,16 +1880,52 @@ def _node_multi_agent_aggregate_judgment_plan(
     if "verified_judgment_plan" not in result:
         result = {**result, "verified_judgment_plan": (result.get("specialist_verification") or {}).get("verified_judgment_plan") or result.get("judgment_plan") or judgment}
     governance_ledgers = build_evidence_governance_ledgers({**state, **result})
+    governance_state: SecAgentGraphRuntimeState = {**state, **result, **governance_ledgers}
+    governance_state = _state_with_d4_d5_layers(governance_state)
+    governance_state = _state_with_d6_d7_layers(governance_state)
+    governance_state = _state_with_d9_gate_matrix(governance_state)
+    governance_state = _state_with_d10_derived_metric_layer(governance_state)
+    fact_selection = build_pre_memo_fact_selection(governance_state)
+    selected_judgment = apply_pre_memo_fact_selection_to_judgment(
+        result.get("verified_judgment_plan") or result.get("judgment_plan") or judgment,
+        fact_selection,
+    )
+    result["judgment_plan"] = selected_judgment
+    result["verified_judgment_plan"] = selected_judgment
+    governance_ledgers = build_evidence_governance_ledgers(
+        {**governance_state, "judgment_plan": selected_judgment, "verified_judgment_plan": selected_judgment}
+    )
+    governance_state = {
+        **governance_state,
+        **governance_ledgers,
+        "judgment_plan": selected_judgment,
+        "verified_judgment_plan": selected_judgment,
+    }
+    governance_state["gate_registry_eval_matrix"] = build_gate_registry_eval_matrix(governance_state)
     result = {
+        **{
+            key: governance_state[key]
+            for key in (
+                "raw_source_provenance_store",
+                "asof_vintage_layer",
+                "metric_product_ontology_snapshot",
+                "reconciliation_ledger",
+                "gate_registry_eval_matrix",
+                "derived_metric_layer",
+            )
+            if key in governance_state
+        },
         **result,
         **governance_ledgers,
+        "pre_memo_fact_selection": fact_selection,
         "claim_card_store_barrier": _claim_card_store_barrier(
             result.get("specialist_outputs") or specialist_outputs,
             result.get("specialist_verification") or specialist_verification,
-            result.get("verified_judgment_plan") or result.get("judgment_plan") or judgment,
+            result.get("verified_judgment_plan") or result.get("judgment_plan") or selected_judgment,
             governance_ledgers.get("claim_evidence_ledger") if isinstance(governance_ledgers, Mapping) else {},
+            pre_memo_fact_selection=fact_selection,
         ),
-        "adjudicator_barrier": _adjudicator_barrier(result.get("verified_judgment_plan") or result.get("judgment_plan") or judgment),
+        "adjudicator_barrier": _adjudicator_barrier(result.get("verified_judgment_plan") or result.get("judgment_plan") or selected_judgment),
     }
     next_state: SecAgentGraphRuntimeState = {**state, **result}
     quality_report = quality_reflection_report_from_judgment(
@@ -1912,6 +1963,7 @@ def _claim_card_store_barrier(
     verification: Mapping[str, Any],
     judgment: Mapping[str, Any],
     claim_evidence_ledger: Mapping[str, Any] | None = None,
+    pre_memo_fact_selection: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     output_rows = [dict(item) for item in outputs or [] if isinstance(item, Mapping)]
     supported = [dict(item) for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)]
@@ -1919,6 +1971,8 @@ def _claim_card_store_barrier(
     conflicts = [dict(item) for item in judgment.get("conflicts") or [] if isinstance(item, Mapping)]
     ledger = claim_evidence_ledger if isinstance(claim_evidence_ledger, Mapping) else {}
     ledger_summary = ledger.get("summary") if isinstance(ledger.get("summary"), Mapping) else {}
+    fact_selection = pre_memo_fact_selection if isinstance(pre_memo_fact_selection, Mapping) else {}
+    fact_summary = fact_selection.get("summary") if isinstance(fact_selection.get("summary"), Mapping) else {}
     return {
         "schema_version": "sec_agent_claim_card_store_barrier_v0.1",
         "barrier_id": "claim_card_store_barrier",
@@ -1932,6 +1986,11 @@ def _claim_card_store_barrier(
         "claim_evidence_ledger_schema_version": str(ledger.get("schema_version") or ""),
         "ledger_claim_count": int(ledger.get("claim_count") or 0),
         "ledger_memo_writer_eligible_claim_count": int(ledger_summary.get("memo_writer_eligible_claim_count") or 0),
+        "pre_memo_fact_selection_schema_version": str(fact_selection.get("schema_version") or ""),
+        "pre_memo_approved_fact_count": int(fact_summary.get("approved_fact_count") or 0),
+        "pre_memo_rejected_fact_count": int(fact_summary.get("rejected_fact_count") or 0),
+        "pre_memo_approved_derived_metric_count": int(fact_summary.get("approved_derived_metric_count") or 0),
+        "pre_memo_bounded_gap_link_count": int(fact_summary.get("bounded_gap_link_count") or 0),
     }
 
 
@@ -2469,14 +2528,22 @@ def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) ->
 def _state_with_d4_d5_layers(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
     provenance_store = state.get("raw_source_provenance_store") if isinstance(state.get("raw_source_provenance_store"), dict) else {}
     vintage_layer = state.get("asof_vintage_layer") if isinstance(state.get("asof_vintage_layer"), dict) else {}
-    if provenance_store and vintage_layer:
+    needs_artifact_ref_refresh = bool(state.get("artifact_refs")) and not _provenance_has_artifact_refs(provenance_store)
+    if provenance_store and vintage_layer and not needs_artifact_ref_refresh:
         return state
     layers = build_provenance_vintage_layers(state)
-    if not provenance_store:
+    if not provenance_store or needs_artifact_ref_refresh:
         provenance_store = layers.get("raw_source_provenance_store") if isinstance(layers.get("raw_source_provenance_store"), dict) else {}
     if not vintage_layer:
         vintage_layer = layers.get("asof_vintage_layer") if isinstance(layers.get("asof_vintage_layer"), dict) else {}
     return {**state, "raw_source_provenance_store": provenance_store, "asof_vintage_layer": vintage_layer}
+
+
+def _provenance_has_artifact_refs(provenance_store: Mapping[str, Any]) -> bool:
+    return any(
+        isinstance(row, Mapping) and row.get("record_type") == "artifact_ref"
+        for row in provenance_store.get("records") or []
+    )
 
 
 def _state_with_d6_d7_layers(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
@@ -2522,14 +2589,17 @@ def _state_with_d11_analyst_view_layer(state: SecAgentGraphRuntimeState) -> SecA
 
 
 def _state_with_d12_1_reader_context(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
-    if isinstance(state.get("d_series_claim_gap_gate_reader_context"), dict):
+    if isinstance(state.get("d_series_claim_gap_gate_reader_context"), dict) and isinstance(state.get("d_series_research_context"), dict):
         return state
     db_path = _d_series_governance_db_path(state)
     if db_path is None or not db_path.exists():
         return state
     tickers = _d_series_reader_tickers(state)
+    reader_context = state.get("d_series_claim_gap_gate_reader_context") if isinstance(state.get("d_series_claim_gap_gate_reader_context"), dict) else {}
+    d_series_context = state.get("d_series_research_context") if isinstance(state.get("d_series_research_context"), dict) else {}
     try:
-        reader_context = read_claim_gap_gate_research_context(db_path, tickers=tickers, limit=100)
+        if not reader_context:
+            reader_context = read_claim_gap_gate_research_context(db_path, tickers=tickers, limit=100)
     except Exception as exc:  # pragma: no cover - defensive against manually edited local sqlite files.
         reader_context = {
             "schema_version": "sec_agent_d_series_claim_gap_gate_reader_v0.1",
@@ -2538,9 +2608,26 @@ def _state_with_d12_1_reader_context(state: SecAgentGraphRuntimeState) -> SecAge
             "failure_reason": str(exc)[:500],
             "summary": {"claim_count": 0, "typed_gap_count": 0, "gate_history_count": 0},
         }
+    try:
+        if not d_series_context:
+            d_series_context = read_d_series_research_context(db_path, tickers=tickers, limit=100)
+    except Exception as exc:  # pragma: no cover - defensive against manually edited local sqlite files.
+        d_series_context = {
+            "schema_version": "sec_agent_d_series_research_context_reader_v0.1",
+            "db_path": str(db_path.resolve()),
+            "reader_default_status": "database_unavailable",
+            "failure_reason": str(exc)[:500],
+            "summary": {"context_group_count": 0, "row_count": 0},
+        }
     context = dict(state.get("multi_agent_context") or {}) if isinstance(state.get("multi_agent_context"), Mapping) else {}
     context["d_series_claim_gap_gate_reader_context"] = reader_context
-    return {**state, "multi_agent_context": context, "d_series_claim_gap_gate_reader_context": reader_context}
+    context["d_series_research_context"] = d_series_context
+    return {
+        **state,
+        "multi_agent_context": context,
+        "d_series_claim_gap_gate_reader_context": reader_context,
+        "d_series_research_context": d_series_context,
+    }
 
 
 def _state_with_d12_1_database_materialization(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
@@ -3216,6 +3303,7 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["reconciliation_ledger"] = str((output_dir / "reconciliation_ledger.json").resolve())
         refs["gate_registry_eval_matrix"] = str((output_dir / "gate_registry_eval_matrix.json").resolve())
         refs["derived_metric_layer"] = str((output_dir / "derived_metric_layer.json").resolve())
+        refs["pre_memo_fact_selection"] = str((output_dir / "pre_memo_fact_selection.json").resolve())
         refs["analyst_view_research_memory"] = str((output_dir / "analyst_view_research_memory.json").resolve())
         refs["d_series_database_closeout_gate"] = str((output_dir / "d_series_database_closeout_gate.json").resolve())
         return {**state, "artifact_refs": refs}
@@ -3265,6 +3353,7 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     reconciliation = state.get("reconciliation_ledger") if isinstance(state.get("reconciliation_ledger"), dict) else {}
     gate_matrix = state.get("gate_registry_eval_matrix") if isinstance(state.get("gate_registry_eval_matrix"), dict) else {}
     derived_layer = state.get("derived_metric_layer") if isinstance(state.get("derived_metric_layer"), dict) else {}
+    pre_memo_selection = state.get("pre_memo_fact_selection") if isinstance(state.get("pre_memo_fact_selection"), dict) else {}
     analyst_views = (
         state.get("analyst_view_research_memory")
         if isinstance(state.get("analyst_view_research_memory"), dict)
@@ -3319,6 +3408,17 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
                 "metric_product_ontology_snapshot": ontology,
                 "reconciliation_ledger": reconciliation,
                 "gate_registry_eval_matrix": gate_matrix,
+            }
+        )
+    if not pre_memo_selection:
+        pre_memo_selection = build_pre_memo_fact_selection(
+            {
+                **state,
+                "typed_gap_ledger": gap_ledger,
+                "bounded_gap_register": state.get("bounded_gap_register") or {},
+                "reconciliation_ledger": reconciliation,
+                "gate_registry_eval_matrix": gate_matrix,
+                "derived_metric_layer": derived_layer,
             }
         )
     if not analyst_views:
@@ -3385,6 +3485,10 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     )
     (output_dir / "derived_metric_layer.json").write_text(
         json.dumps(derived_layer, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "pre_memo_fact_selection.json").write_text(
+        json.dumps(pre_memo_selection, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     (output_dir / "analyst_view_research_memory.json").write_text(
@@ -3487,6 +3591,18 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
         else {}
     )
     reader_summary = reader_context.get("summary") if isinstance(reader_context.get("summary"), dict) else {}
+    d_series_context = (
+        state.get("d_series_research_context")
+        if isinstance(state.get("d_series_research_context"), dict)
+        else {}
+    )
+    d_series_context_summary = d_series_context.get("summary") if isinstance(d_series_context.get("summary"), dict) else {}
+    pre_memo_selection = (
+        state.get("pre_memo_fact_selection")
+        if isinstance(state.get("pre_memo_fact_selection"), dict)
+        else {}
+    )
+    pre_memo_summary = pre_memo_selection.get("summary") if isinstance(pre_memo_selection.get("summary"), dict) else {}
     closeout_summary = closeout_gate.get("summary") if isinstance(closeout_gate.get("summary"), dict) else {}
     closeout_validation = closeout_gate.get("validation") if isinstance(closeout_gate.get("validation"), dict) else {}
     evidence_fanout_barrier = state.get("evidence_operator_fanout_barrier") if isinstance(state.get("evidence_operator_fanout_barrier"), dict) else {}
@@ -3698,6 +3814,28 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
             "claim_count": reader_summary.get("claim_count") or 0,
             "typed_gap_count": reader_summary.get("typed_gap_count") or 0,
             "gate_history_count": reader_summary.get("gate_history_count") or 0,
+        },
+        "d_series_research_context_reader": {
+            "schema_version": d_series_context.get("schema_version") or "",
+            "reader_default_status": d_series_context.get("reader_default_status") or "",
+            "db_path": d_series_context.get("db_path") or "",
+            "context_group_count": d_series_context_summary.get("context_group_count") or 0,
+            "row_count": d_series_context_summary.get("row_count") or 0,
+            "stale_or_superseded_row_count": d_series_context_summary.get("stale_or_superseded_row_count") or 0,
+            "latest_key_count": d_series_context_summary.get("latest_key_count") or 0,
+        },
+        "pre_memo_fact_selection": {
+            "schema_version": pre_memo_selection.get("schema_version") or "",
+            "policy": pre_memo_selection.get("policy") or "",
+            "approved_fact_count": pre_memo_summary.get("approved_fact_count") or 0,
+            "rejected_fact_count": pre_memo_summary.get("rejected_fact_count") or 0,
+            "approved_derived_metric_count": pre_memo_summary.get("approved_derived_metric_count") or 0,
+            "rejected_derived_metric_count": pre_memo_summary.get("rejected_derived_metric_count") or 0,
+            "bounded_gap_link_count": pre_memo_summary.get("bounded_gap_link_count") or 0,
+            "blocking_gate_result_count": pre_memo_summary.get("blocking_gate_result_count") or 0,
+            "validation_status": (pre_memo_selection.get("validation") or {}).get("status")
+            if isinstance(pre_memo_selection.get("validation"), dict)
+            else "",
         },
         "milvus_runtime": {
             "status": milvus_runtime.get("status") or "",
@@ -4532,6 +4670,10 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     )
     reader_context = state.get("d_series_claim_gap_gate_reader_context") or {}
     reader_summary = reader_context.get("summary") if isinstance(reader_context, dict) and isinstance(reader_context.get("summary"), dict) else {}
+    d_series_context = state.get("d_series_research_context") or {}
+    d_series_context_summary = d_series_context.get("summary") if isinstance(d_series_context, dict) and isinstance(d_series_context.get("summary"), dict) else {}
+    pre_memo_selection = state.get("pre_memo_fact_selection") or {}
+    pre_memo_summary = pre_memo_selection.get("summary") if isinstance(pre_memo_selection, dict) and isinstance(pre_memo_selection.get("summary"), dict) else {}
     second_pass_diagnosis = state.get("second_pass_reflection_diagnosis") or {}
     second_pass_repair_plan = state.get("second_pass_repair_plan") or {}
     second_pass_hard_gate = state.get("second_pass_hard_gate") or {}
@@ -4617,6 +4759,21 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
         else "",
         "d_series_claim_gap_gate_reader_claim_count": reader_summary.get("claim_count")
         if isinstance(reader_summary, dict)
+        else 0,
+        "d_series_research_context_reader_status": d_series_context.get("reader_default_status")
+        if isinstance(d_series_context, dict)
+        else "",
+        "d_series_research_context_row_count": d_series_context_summary.get("row_count")
+        if isinstance(d_series_context_summary, dict)
+        else 0,
+        "pre_memo_approved_fact_count": pre_memo_summary.get("approved_fact_count")
+        if isinstance(pre_memo_summary, dict)
+        else 0,
+        "pre_memo_rejected_fact_count": pre_memo_summary.get("rejected_fact_count")
+        if isinstance(pre_memo_summary, dict)
+        else 0,
+        "pre_memo_approved_derived_metric_count": pre_memo_summary.get("approved_derived_metric_count")
+        if isinstance(pre_memo_summary, dict)
         else 0,
         "d_series_database_closeout_validation_status": (closeout_gate.get("validation") or {}).get("status")
         if isinstance(closeout_gate, dict) and isinstance(closeout_gate.get("validation"), dict)

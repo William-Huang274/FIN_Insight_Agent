@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import Counter
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from typing import Any, Mapping
 
 
@@ -45,6 +45,10 @@ def build_raw_source_provenance_store(state: Mapping[str, Any]) -> dict[str, Any
             "missing_raw_locator_count": len([row for row in records if not _has_raw_locator(row)]),
             "document_id_count": len([row for row in records if row.get("document_id")]),
             "checksum_count": len([row for row in records if row.get("checksum")]),
+            "materialized_checksum_count": len([row for row in records if row.get("checksum_materialized")]),
+            "parser_lineage_record_count": len([row for row in records if row.get("parser_run_id") or row.get("parser_version")]),
+            "license_policy_count": len([row for row in records if row.get("license_policy")]),
+            "robots_policy_count": len([row for row in records if row.get("robots_policy")]),
         },
     }
     payload["validation"] = validate_raw_source_provenance_store(payload)
@@ -168,6 +172,8 @@ def _provenance_record(row: Mapping[str, Any], *, channel: str, state: Mapping[s
         "source_document_id",
     )
     source_id = _first_text(row, "source_id") or _stable_id("source", channel, evidence_ref, raw_url, local_path, document_id)
+    provided_checksum = _first_text(row, "checksum", "sha256", "content_sha256", "file_sha256")
+    materialized_checksum = _file_sha256(local_path) if not provided_checksum else ""
     return {
         "source_id": source_id,
         "record_type": "tool_observation" if channel == "tool_observations" else "evidence_row",
@@ -181,7 +187,8 @@ def _provenance_record(row: Mapping[str, Any], *, channel: str, state: Mapping[s
         "file_type": _file_type(row, raw_url=raw_url, local_path=local_path),
         "retrieved_at": _first_text(row, "retrieved_at", "downloaded_at", "fetched_at"),
         "source_as_of_date": _first_text(row, "source_as_of_date", "as_of_date", "market_as_of_date", "industry_as_of_date"),
-        "checksum": _first_text(row, "checksum", "sha256", "content_sha256", "file_sha256"),
+        "checksum": provided_checksum or materialized_checksum,
+        "checksum_materialized": bool(materialized_checksum),
         "parser_version": _first_text(row, "parser_version", "schema_version", "extractor_version"),
         "license_policy": _first_text(row, "license_policy", "license", "license_boundary"),
         "robots_policy": _first_text(row, "robots_policy", "robots_boundary"),
@@ -193,6 +200,7 @@ def _provenance_record(row: Mapping[str, Any], *, channel: str, state: Mapping[s
 
 
 def _artifact_ref_record(key: str, path: str, *, state: Mapping[str, Any]) -> dict[str, Any]:
+    materialized_checksum = _file_sha256(path)
     return {
         "source_id": _stable_id("artifact", key, path),
         "record_type": "artifact_ref",
@@ -206,7 +214,8 @@ def _artifact_ref_record(key: str, path: str, *, state: Mapping[str, Any]) -> di
         "file_type": _file_type({}, raw_url="", local_path=path),
         "retrieved_at": "",
         "source_as_of_date": "",
-        "checksum": "",
+        "checksum": materialized_checksum,
+        "checksum_materialized": bool(materialized_checksum),
         "parser_version": "",
         "license_policy": "",
         "robots_policy": "",
@@ -222,6 +231,9 @@ def _inventory_filing_record(company: Mapping[str, Any], filing: Mapping[str, An
     document_id = _first_text(filing, "accession_number", "document_id")
     source_family = _source_family(filing, channel="project_inventory")
     evidence_ref = _stable_id("inventory_filing", ticker, filing.get("year"), filing.get("form_type"), document_id)
+    local_path = _first_text(filing, "local_path", "html_path", "metadata_path", "path")
+    provided_checksum = _first_text(filing, "checksum", "sha256")
+    materialized_checksum = _file_sha256(local_path) if not provided_checksum else ""
     return {
         "source_id": _stable_id("inventory_source", ticker, filing.get("year"), filing.get("form_type"), document_id),
         "record_type": "inventory_filing",
@@ -231,11 +243,12 @@ def _inventory_filing_record(company: Mapping[str, Any], filing: Mapping[str, An
         "evidence_ref": evidence_ref,
         "ticker": ticker,
         "raw_url": _first_text(filing, "raw_url", "source_url", "url"),
-        "local_path": _first_text(filing, "local_path", "html_path", "metadata_path", "path"),
-        "file_type": _file_type(filing, raw_url="", local_path=_first_text(filing, "local_path", "html_path", "metadata_path", "path")),
+        "local_path": local_path,
+        "file_type": _file_type(filing, raw_url="", local_path=local_path),
         "retrieved_at": _first_text(filing, "retrieved_at", "downloaded_at"),
         "source_as_of_date": _first_text(filing, "source_as_of_date", "filing_date", "report_date", "period_end"),
-        "checksum": _first_text(filing, "checksum", "sha256"),
+        "checksum": provided_checksum or materialized_checksum,
+        "checksum_materialized": bool(materialized_checksum),
         "parser_version": _first_text(filing, "parser_version"),
         "license_policy": _first_text(filing, "license_policy"),
         "robots_policy": _first_text(filing, "robots_policy"),
@@ -364,6 +377,19 @@ def _file_type(row: Mapping[str, Any], *, raw_url: str, local_path: str) -> str:
     if raw_url.startswith("http"):
         return "html"
     return ""
+
+
+def _file_sha256(local_path: str) -> str:
+    if not str(local_path or "").strip():
+        return ""
+    path = Path(str(local_path))
+    if not path.exists() or not path.is_file():
+        return ""
+    hasher = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    return "sha256:" + hasher.hexdigest()
 
 
 def _access_method(row: Mapping[str, Any], *, raw_url: str) -> str:

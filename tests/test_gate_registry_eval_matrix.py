@@ -6,6 +6,7 @@ from pathlib import Path
 from sec_agent.gate_registry import GATE_REGISTRY_EVAL_MATRIX_SCHEMA_VERSION, build_gate_registry_eval_matrix
 from sec_agent.langgraph_orchestrator import build_multi_agent_orchestration_graph, make_multi_agent_smoke_state
 from sec_agent.metric_product_ontology import build_metric_product_ontology_snapshot
+from sec_agent.provenance_vintage import build_asof_vintage_layer
 from sec_agent.reconciliation_ledger import build_reconciliation_ledger
 
 
@@ -107,6 +108,35 @@ def test_gate_registry_eval_matrix_collects_boundary_conflict_and_claim_gates() 
     assert by_gate["claim_support_gate"]["pass_count"] >= 1
     assert by_gate["contradiction_gate"]["fail_count"] >= 1
     assert matrix["summary"]["blocking_fail_count"] >= 4
+
+
+def test_gate_registry_marks_market_snapshot_fiscal_time_basis_mismatch() -> None:
+    vintage_layer = build_asof_vintage_layer(
+        {
+            "run_id": "unit-d5-time-mismatch",
+            "market_snapshot_rows": [
+                {
+                    "source_id": "market-msft-2026-06-12",
+                    "evidence_ref": "msft-market-share-proxy",
+                    "source_family": "market_snapshot",
+                    "ticker": "MSFT",
+                    "fiscal_year": 2025,
+                    "fiscal_period_end": "2025-06-30",
+                    "market_as_of_date": "2026-06-12",
+                    "retrieved_at": "2026-06-12T02:00:00Z",
+                }
+            ],
+        }
+    )
+
+    matrix = build_gate_registry_eval_matrix({"run_id": "unit-d5-time-mismatch", "asof_vintage_layer": vintage_layer})
+    period_results = [row for row in matrix["gate_history"] if row["gate_id"] == "period_alignment_gate"]
+
+    assert matrix["validation"]["status"] == "pass"
+    assert len(period_results) == 1
+    assert period_results[0]["status"] == "warn"
+    assert period_results[0]["reason"] == "time_basis_mismatch"
+    assert period_results[0]["after_value"]["time_mismatch"] is True
 
 
 def test_graph_persists_gate_registry_eval_matrix(tmp_path: Path) -> None:

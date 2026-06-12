@@ -205,7 +205,16 @@ def _vintage_results(state: Mapping[str, Any], *, registry_by_id: Mapping[str, M
         target = _first_text(row, "vintage_id", "source_id", "evidence_ref")
         time_basis = str(row.get("time_basis") or "")
         has_anchor = _has_any(row, "fiscal_period_end", "filing_date", "accepted_date", "observation_date", "market_as_of_date", "macro_vintage_date", "retrieved_at", "parser_run_at", "fiscal_year")
+        source_family = str(row.get("source_family") or "")
+        time_mismatch = (
+            source_family in {"market_snapshot", "industry_snapshot"}
+            and _has_any(row, "fiscal_period_end", "fiscal_year")
+            and _has_any(row, "market_as_of_date", "macro_vintage_date", "observation_date")
+        )
         period_status = "pass" if has_anchor and time_basis not in {"", "source_observation"} else ("warn" if has_anchor else "fail")
+        if time_mismatch:
+            period_status = "warn"
+        period_reason = "time_anchor_present" if period_status == "pass" else ("time_basis_mismatch" if time_mismatch else ("source_observation_only" if has_anchor else "time_anchor_missing"))
         results.append(
             _result(
                 registry_by_id,
@@ -213,15 +222,20 @@ def _vintage_results(state: Mapping[str, Any], *, registry_by_id: Mapping[str, M
                 target_type="vintage_record",
                 target_object_id=target,
                 status=period_status,
-                reason="time_anchor_present" if period_status == "pass" else ("source_observation_only" if has_anchor else "time_anchor_missing"),
+                reason=period_reason,
                 repair_action="period_ok" if period_status == "pass" else "repair_period_or_bind_vintage",
                 before_value=row.get("evidence_ref"),
-                after_value={"time_basis": time_basis, "fiscal_period_end": row.get("fiscal_period_end")},
+                after_value={
+                    "time_basis": time_basis,
+                    "fiscal_period_end": row.get("fiscal_period_end"),
+                    "market_as_of_date": row.get("market_as_of_date"),
+                    "macro_vintage_date": row.get("macro_vintage_date"),
+                    "time_mismatch": time_mismatch,
+                },
                 source_artifact="asof_vintage_layer",
                 evidence_refs=[_first_text(row, "evidence_ref")],
             )
         )
-        source_family = str(row.get("source_family") or "")
         stale_status = "pass"
         reason = "freshness_anchor_present"
         if source_family in {"market_snapshot", "industry_snapshot"} and not _has_any(row, "market_as_of_date", "macro_vintage_date", "observation_date"):

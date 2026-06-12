@@ -56,6 +56,47 @@ def test_entity_security_master_uses_inventory_identifiers_and_aliases() -> None
     assert resolved["ticker"] == "MSFT"
 
 
+def test_entity_security_master_preserves_brand_subsidiary_product_owner_and_share_links() -> None:
+    master = build_entity_security_master(
+        {
+            "project_inventory": {
+                "companies": [
+                    {
+                        "ticker": "SONY",
+                        "company": "Sony Group Corporation",
+                        "lei": "549300F6K2GFK4Q2ZF34",
+                        "exchange": "NYSE",
+                        "country": "JP",
+                        "company_domain": "sony.com",
+                        "ir_domain": "sony.com/en/SonyInfo/IR",
+                        "security_type": "ADR",
+                        "ordinary_share_ticker": "6758.T",
+                        "adr_ticker": "SONY",
+                        "brands": ["PlayStation"],
+                        "subsidiaries": ["Sony Interactive Entertainment"],
+                        "product_aliases": ["PlayStation 5", "PS5"],
+                    }
+                ]
+            },
+            "query_contract": {"companies": ["PlayStation"]},
+        }
+    )
+    entity = master["entities"][0]
+    resolved = resolve_entity_reference("PS5", master)
+
+    assert master["validation"]["status"] == "pass"
+    assert entity["brands"] == ["PlayStation"]
+    assert entity["subsidiaries"] == ["Sony Interactive Entertainment"]
+    assert "PS5" in entity["product_aliases"]
+    assert entity["ordinary_share_ticker"] == "6758.T"
+    assert entity["adr_ticker"] == "SONY"
+    assert master["summary"]["brand_alias_count"] == 1
+    assert master["summary"]["product_alias_count"] == 2
+    assert master["summary"]["adr_or_common_share_link_count"] == 1
+    assert resolved["status"] == "resolved"
+    assert resolved["ticker"] == "SONY"
+
+
 def test_source_capability_router_marks_context_blocked_and_gap_routes() -> None:
     router = build_source_capability_router(
         {
@@ -90,6 +131,52 @@ def test_source_capability_router_marks_context_blocked_and_gap_routes() -> None
     assert decisions["industry_snapshot"]["gap_type"] == "source_boundary_blocked"
     assert decisions["milvus_semantic"]["decision_status"] == "gap"
     assert decisions["milvus_semantic"]["gap_type"] == "coverage_gap"
+
+
+def test_source_capability_router_applies_minimal_kg_source_boundaries() -> None:
+    router = build_source_capability_router(
+        {
+            "project_inventory": {
+                "available_source_families": ["primary_sec_filing", "public_source_context"],
+            },
+            "query_contract": {
+                "intent": "standard_memo",
+                "industry_schema": "consumer_electronics",
+                "metric_families": ["shipments"],
+                "claim_type": "company_disclosed_product_kpi",
+                "required_authority": "exact_company_fact",
+            },
+            "agent_activation_plan": {
+                "allowed_source_families": ["primary_sec_filing", "public_source_context", "commercial_market_tracker"],
+            },
+            "retrieval_plan": {
+                "routes": [
+                    {
+                        "route_id": "task::public_context",
+                        "task_id": "task",
+                        "retrieval_route": "public_source_context",
+                        "source_family": "public_source_context",
+                    },
+                    {
+                        "route_id": "task::commercial_tracker",
+                        "task_id": "task",
+                        "retrieval_route": "commercial_market_tracker",
+                        "source_family": "commercial_market_tracker",
+                    },
+                ]
+            },
+        }
+    )
+    decisions = {row["source_family"]: row for row in router["route_decisions"]}
+
+    assert router["registry_schema_version"] == "fin_agent_kg_minimal_p0_k1_k2_k3_registry_v0.1"
+    assert router["registry_validation_status"] == "pass"
+    assert decisions["public_source_context"]["decision_status"] == "blocked"
+    assert decisions["public_source_context"]["reason"] == "context_only_source_cannot_satisfy_exact_company_fact_authority"
+    assert "company_sales" in decisions["public_source_context"]["boundary_forbidden_claims"]
+    assert decisions["commercial_market_tracker"]["decision_status"] == "gap"
+    assert decisions["commercial_market_tracker"]["gap_type"] == "commercial_gap"
+    assert router["summary"]["commercial_gap_decision_count"] == 1
 
 
 def test_graph_persists_entity_master_and_source_capability_router(tmp_path: Path) -> None:

@@ -39,6 +39,28 @@ def test_metric_product_ontology_maps_financial_and_product_metrics_without_prox
     assert ontology["summary"]["observed_rejected_alias_count"] == 1
 
 
+def test_metric_product_ontology_consumes_minimal_kg_registry_boundaries() -> None:
+    ontology = build_metric_product_ontology_snapshot(
+        {
+            "runtime_ledger_rows": [
+                {"evidence_ref": "share", "ticker": "AAPL", "metric_family": "market share"},
+            ],
+        }
+    )
+    market_share = resolve_metric_for_row({"metric_family": "market share"}, ontology)
+
+    assert ontology["registry_schema_version"] == "fin_agent_kg_minimal_p0_k1_k2_k3_registry_v0.1"
+    assert ontology["registry_validation_status"] == "pass"
+    assert ontology["product_spec_ontology"]["channel_offer_boundary"]["forbidden_claims"]
+    assert "consumer_electronics" in ontology["industry_kpi_overrides"]
+    assert market_share["canonical_metric_id"] == "product_kpi:market_share"
+    metric = next(row for row in ontology["metrics"] if row["canonical_metric_id"] == "product_kpi:market_share")
+    assert metric["period_rule"] == "commercial_tracker_required_for_exact_company_claim"
+    assert metric["allowed_source_families"] == ["commercial_market_tracker"]
+    assert metric["exact_authority_source_families"] == []
+    assert metric["claim_boundary"] == "commercial_gap_metric_expose_gap_do_not_proxy"
+
+
 def test_reconciliation_resolves_source_priority_and_blocks_unit_and_taxonomy_conflicts() -> None:
     ontology = build_metric_product_ontology_snapshot({})
     ledger = build_reconciliation_ledger(

@@ -140,7 +140,8 @@ coverage_gap
 - `project_inventory.companies` 会保留 `cik`、`issuer_id`、`lei`、`figi`、`isin`、`cusip`、`sedol`、`legal_name`、`aliases`。
 - graph 会从 `project_inventory` 和 query scope 投影 per-run Entity / Security Master。
 - persist 节点会写出 `entity_security_master.json`，并把路径登记到 `artifact_refs.entity_security_master`。
-- 当前只做 per-run conservative resolver，不做跨 run entity warehouse；品牌、子公司、product owner、ADR/common share、ticker change 仍需 D3.1 扩展。
+- 2026-06-13 D3.1 runtime closeout slice 已补：per-run entity rows 和 D12 DB materialization / reader context 支持品牌、子公司、product alias、ADR/common share、domain / country 和 source priority。
+- 仍未完成的是更重的 D3.1 DB hardening：entity resolver 自身还没有默认查询 SQL-backed cross-run alias / security history。
 
 通过条件：
 
@@ -180,7 +181,8 @@ document_id: string | null
 - graph persist 会写出 `raw_source_provenance_store.json`，并在 `artifact_refs`、summary 和 checkpoint summary 暴露。
 - 输入覆盖 runtime ledger rows、context rows、market / industry / product / public context rows、tool observations、project inventory filings 和本轮 run artifact refs。
 - validation 当前只做结构级 fail-closed：`source_id` 必填、duplicate / raw locator missing / SEC document id missing / URL access method missing 出 warning。
-- D4.1 仍需把 per-run JSON 升级为 SQL / object-store backed provenance table，补全 checksum materialization、license/robots registry、parser run lineage 和跨 run before/after diff。
+- 2026-06-13 D4.1 runtime closeout slice 已补：local source / artifact refs 会物化 sha256 checksum，parser lineage 会入 provenance summary，D4 已进入 governance SQLite materialization / reader context；graph persist 会在 artifact refs 已知后刷新 provenance，避免缺少 run artifact lineage。
+- 仍未完成的是 D4.1 DB hardening：object-store backed provenance policy、license / robots registry governance 和跨 run before/after diff。
 
 ### D5 As-of / Vintage Layer
 
@@ -211,7 +213,8 @@ document_id: string | null
 - graph persist 会写出 `asof_vintage_layer.json`，并在 `artifact_refs`、summary 和 checkpoint summary 暴露。
 - records 保留 fiscal period、filing / accepted / reported date、observation date、retrieved/source updated date、market as-of、macro vintage 和 parser run time。
 - `time_basis` 当前区分 `fiscal_period`、`filing`、`market_as_of`、`macro_vintage`、`source_observation`。
-- D5.1 仍需接宏观/行业真实 vintage 数据库、market snapshot as-of table、filing amendment lineage，并把 stale / time-mismatch gate 接入 D9。
+- 2026-06-13 D5.1 runtime closeout slice 已补：market / macro as-of 字段进入 D5，market snapshot 同时带 fiscal period 和 market as-of 时会在 D9 `period_alignment_gate` 标记 `warn/time_basis_mismatch`，D5 也已进入 governance SQLite materialization / reader context。
+- 仍未完成的是 D5.1 DB hardening：真实 macro / industry vintage store、market snapshot as-of table 和 filing amendment lineage history。
 
 ### D6 Reconciliation Ledger
 
@@ -242,7 +245,7 @@ rounding_conflict
 - 当前候选来自 runtime ledger rows、product evidence rows、context/public rows 中带 value 且具备 exact-value authority 的行；context-only / public proxy 会被排除。
 - 当前已支持 `unit_conflict`、`period_conflict`、`taxonomy_conflict`、`segment_conflict`、`amendment_conflict`、`source_priority_conflict`、`rounding_conflict` 的确定性分类。
 - `source_priority_conflict`、`amendment_conflict`、`rounding_conflict` 只有在规则唯一时生成 `preferred_value`；`unit_conflict`、`period_conflict`、`taxonomy_conflict`、`segment_conflict` fail closed，写入 `conflict_gaps`。
-- D6.1 仍需把 reconciliation 结果前移到 Memo Writer 前的事实层选择，并与 D2 typed gap ledger、D9 gate history、D12 database closeout 联动。
+- 2026-06-13 D6.1 已落地：新增 pre-Memo fact selection，只有 D6 resolved 且没有 D9 blocking gate 的事实可进入 Memo / ClaimCards；unresolved groups、typed gaps 和 bounded gaps 会作为缺口暴露。
 
 ### D7 Metric / Product Ontology
 
@@ -263,7 +266,7 @@ rounding_conflict
 - 内置 Financial Metric Ontology 覆盖 revenue、gross_profit、operating_income、net_income、FCF、capex、debt、cash、shares、EPS。
 - Product KPI Ontology 吸收既有 `company_product_operating_metric_ontology_v0_1.yaml` 的边界，但不把 grouped positive examples 直接提升为 canonical alias；当前覆盖 product_revenue、deliveries、shipments、subscribers、MAU、DAU、ARPU、ASP、bookings、backlog、installed_base、production、capacity、utilization、take_rate、GMV、same_store_sales。
 - 每个 metric/KPI 保留 accepted aliases、rejected aliases、unit_family、period_rule、allowed / exact-authority source families、cannot_infer_from 和 required gates。
-- D7.1 仍需迁移到可维护 registry / DB ontology，补行业 playbook 细分 KPI、product spec ontology、manual alias review queue 和 D8.1 source policy table。
+- 2026-06-13 D7.1 minimal closeout 已落地：新增 minimal P0/K1/K2/K3 registry，D7 会加载行业 KPI overrides、commercial gap metrics 和 product spec ontology；D12 DB ontology / manual review queue materialization 已接入。full K1-K3 仍在下一阶段展开。
 
 ### D8 Source Capability Router
 
@@ -298,7 +301,7 @@ gap_policy: string
 - decision 显式区分 `allowed`、`blocked`、`gap`，并带上 `claim_authority`、`context_only`、`exact_value_authority`、`allowed_claim_scope` 和 gap type。
 - context-only source family 不能被标成 exact authority；unavailable source 不能被标成 allowed。
 - persist 节点会写出 `source_capability_router.json`，并把路径登记到 `artifact_refs.source_capability_router`。
-- 当前仍是 route/source-family 层，不是完整 query_intent/industry/metric_type/claim_type policy table；行业和 metric 细粒度 policy 留给 D8.1 与 D7 ontology 联动。
+- 2026-06-13 D8.1 minimal closeout 已落地：router 会使用 query intent、industry schema、metric type、claim type、required authority 和 D7/K3 source boundaries；commercial tracker required 的 exact company metric 会暴露 commercial gap，不允许 public proxy / context source 提权。
 
 通过条件：
 
@@ -509,7 +512,13 @@ gap_policy: string
   - graph `load_session_state` 在显式 DB path 且 SQLite 文件存在时读取历史 claim/gap/gate context，并写入 `multi_agent_context["d_series_claim_gap_gate_reader_context"]`。
   - `multi_agent_summary.json` 和 `langgraph_node_checkpoints.json` 暴露 reader status、claim/gap/gate counts。
   - 首跑空库不会隐式创建或伪造 reader context；persist 阶段仍负责建库和物化。
-- 后续 D11.1 / Milvus 阶段仍需继续：把 analyst memory 的跨 run retrieval、semantic recall、staleness / supersession 和 vector drilldown parity 接入 Research Lead 的规划输入。
+- D12.1d 已落地：D3-D8 / D10 / D11 的 DB-default research context reader 接入 graph load 阶段。
+  - 新增 `read_d_series_research_context`，读取 entity / source provenance / as-of vintage / reconciliation / ontology / source policy / derived metrics / analyst memory 的跨 run context。
+  - graph `load_session_state` 在显式 DB path 且 SQLite 文件存在时写入 `multi_agent_context["d_series_research_context"]`。
+  - reader summary 暴露 context row count、table counts、staleness summary 和 per-context stable key。
+  - reader 不隐式创建 DB；不存在 DB 时保持 artifact-first runtime，不伪造历史 context。
+- 2026-06-13 D-series runtime closeout 已验收：D6/D9/D10 pre-Memo fact selection、minimal P0/K1/K2/K3 registry、D7/D8 policy integration、D3/D4/D5 runtime closeout slices 和 D12.1d reader 已接入；D-series + multi-agent merged regression `195 passed`，full pytest `863 passed`。
+- 后续 D11.1 / Milvus / full P/K 阶段仍需继续：把 analyst memory 的跨 run retrieval、semantic recall、staleness / supersession、vector drilldown parity 和产品/资本/宏观 KG sub-agent 接入 Research Lead 的规划输入。
 
 ## 文档三：投研工作流升级文档.docx
 
@@ -538,16 +547,11 @@ gap_policy: string
 
 下一阶段建议顺序：
 
-1. D1 + D2：Claim Evidence Ledger 和 Typed Gap Ledger。
-2. D3 + D8：Entity / Security Master 和 Source Capability Router。
-3. D4 + D5：Raw Source / Provenance Store 和 As-of / Vintage Layer。
-4. D6 + D7：Reconciliation Ledger 和 Metric / Product Ontology。
-5. D9：Gate Registry / Gate History / Eval Matrix。
-6. D10：Derived Metric Layer。
-7. D11：Analyst View / Research Memory。
-8. D12：D-series Database Closeout，补齐需要 SQL/DB 化的 D1-D11 stores、migration、backfill 和 parity tests。
-9. K2-K4：产品规格 ontology、public buyer observer policy、Product / Technology sub-agent upgrade。
-10. K5-K8：Capital/Ownership、Macro Exposure、Verifier gates、end-to-end KG sub-agent gate。
+1. Full P/K：把 minimal P0/K1/K2/K3 扩成完整 KG Matrix Registry、ProductModel / ProductSpec / ProductGenerationEdge / CompetitiveComparableEdge / ChannelOffer / FieldInquiryNote。
+2. Product / Technology sub-agent：把专家 agent 升级为次级 agent，输出 ProductSpecPack + gated ClaimCards。
+3. Capital / Ownership 和 Macro Exposure：补 debt / offering / ownership / macro driver edges，但继续保持公开源 / 商业源 / gap 边界。
+4. Agent graph / skill：回到反思插入点、联网工具权限、Research Lead planning skill、专家 skill、共享上下文和 async/sync 协作机制。
+5. D-series DB hardening：在 full P/K 结构稳定后，补 D3 true SQL-backed resolver、D4 object-store provenance / before-after diff、D5 real vintage stores、D11 vector / graph memory parity。
 
 ## 不改变的边界
 

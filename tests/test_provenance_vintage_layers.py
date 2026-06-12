@@ -13,6 +13,10 @@ from sec_agent.provenance_vintage import (
 
 
 def test_raw_source_provenance_store_preserves_source_locator_and_artifact_refs(tmp_path: Path) -> None:
+    local_html = tmp_path / "msft-2025-10k.htm"
+    local_html.write_text("<html>Revenue by product line.</html>\n", encoding="utf-8")
+    claim_artifact = tmp_path / "claim_evidence_ledger.json"
+    claim_artifact.write_text('{"claims":[]}\n', encoding="utf-8")
     state = {
         "run_id": "unit-d4",
         "runtime_ledger_rows": [
@@ -22,9 +26,8 @@ def test_raw_source_provenance_store_preserves_source_locator_and_artifact_refs(
                 "source_family": "primary_sec_filing",
                 "ticker": "MSFT",
                 "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017026000000/msft-20250630.htm",
-                "local_path": str(tmp_path / "msft-2025-10k.htm"),
+                "local_path": str(local_html),
                 "accession_number": "0000950170-26-000000",
-                "checksum": "sha256:abc",
                 "parser_version": "sec_product_kpi_parser_v0.4",
                 "retrieved_at": "2026-06-12T00:00:00Z",
                 "source_as_of_date": "2025-06-30",
@@ -34,7 +37,7 @@ def test_raw_source_provenance_store_preserves_source_locator_and_artifact_refs(
                 "quote": "Revenue by product line.",
             }
         ],
-        "artifact_refs": {"claim_evidence_ledger": str(tmp_path / "claim_evidence_ledger.json")},
+        "artifact_refs": {"claim_evidence_ledger": str(claim_artifact)},
         "project_inventory": {
             "companies": [
                 {
@@ -62,11 +65,16 @@ def test_raw_source_provenance_store_preserves_source_locator_and_artifact_refs(
     assert store["validation"]["status"] == "pass"
     assert sec_record["document_id"] == "0000950170-26-000000"
     assert sec_record["file_type"] == "html"
+    assert sec_record["checksum"].startswith("sha256:")
+    assert sec_record["checksum_materialized"] is True
     assert sec_record["citation_span"]["section"] == "Item 7"
     assert sec_record["access_method"] == "http"
     assert artifact_record["source_family"] == "run_artifact"
     assert store["summary"]["document_id_count"] >= 2
-    assert store["summary"]["checksum_count"] == 1
+    assert artifact_record["checksum"].startswith("sha256:")
+    assert store["summary"]["checksum_count"] >= 2
+    assert store["summary"]["materialized_checksum_count"] >= 2
+    assert store["summary"]["parser_lineage_record_count"] >= 1
 
 
 def test_asof_vintage_layer_keeps_fiscal_market_and_macro_time_basis() -> None:

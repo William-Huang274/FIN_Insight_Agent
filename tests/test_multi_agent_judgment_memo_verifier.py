@@ -453,7 +453,11 @@ def test_graph_step13_keeps_verified_plan_and_verifier_constraints(tmp_path) -> 
 
     assert result["judgment_plan"]["memo_writer_allowed"] is True
     assert result["verified_judgment_plan"]["conflicts"][0]["claim"] == "Risk factors cite demand uncertainty."
-    assert result["memo_answer"]["consumed_input_views"] == ["verified_judgment_plan", "verified_summary"]
+    assert result["memo_answer"]["consumed_input_views"] == [
+        "verified_judgment_plan",
+        "verified_summary",
+        "pre_memo_fact_selection",
+    ]
     assert result["memo_answer"]["raw_rows_consumed"] is False
     assert result["claim_verification"]["status"] == "pass"
     assert "NVDA capex is supported" in result["rendered_answer"]

@@ -29,7 +29,8 @@ from sec_agent.claim_evidence_ledger import build_evidence_governance_ledgers
 from sec_agent.d_series_database_closeout import build_d_series_database_closeout_gate
 from sec_agent.d_series_database_store import (
     d_series_materialization_state_from_report,
-    materialize_d1_d2_d9_governance_store,
+    materialize_d_series_governance_store,
+    read_claim_gap_gate_research_context,
 )
 from sec_agent.derived_metric_layer import build_derived_metric_layer
 from sec_agent.entity_master import build_entity_security_master
@@ -159,6 +160,7 @@ CHECKPOINT_STATE_KEYS = (
     "analyst_view_research_memory",
     "d_series_database_materialization",
     "d_series_database_materialization_report",
+    "d_series_claim_gap_gate_reader_context",
     "d_series_database_closeout_gate",
     "evidence_sufficiency_report",
     "second_pass_result",
@@ -326,6 +328,7 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     d_series_database_path: str
     d_series_database_materialization: dict[str, Any]
     d_series_database_materialization_report: dict[str, Any]
+    d_series_claim_gap_gate_reader_context: dict[str, Any]
     d_series_database_closeout_gate: dict[str, Any]
     claim_evidence_ledger: dict[str, Any]
     typed_gap_ledger: dict[str, Any]
@@ -865,7 +868,18 @@ def _mark_stopped_after_node(state: SecAgentGraphRuntimeState, node_name: str) -
 
 
 def _node_load_session_state(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
-    return _record_node({**state, "status": "running"}, "load_session_state")
+    next_state = _state_with_d12_1_reader_context({**state, "status": "running"})
+    reader_context = next_state.get("d_series_claim_gap_gate_reader_context") or {}
+    return _record_node(
+        next_state,
+        "load_session_state",
+        metadata={
+            "d_series_reader_status": reader_context.get("reader_default_status") if isinstance(reader_context, dict) else "",
+            "d_series_reader_claim_count": (reader_context.get("summary") or {}).get("claim_count")
+            if isinstance(reader_context, dict) and isinstance(reader_context.get("summary"), dict)
+            else 0,
+        },
+    )
 
 
 def _node_research_lead_plan(
@@ -2507,6 +2521,28 @@ def _state_with_d11_analyst_view_layer(state: SecAgentGraphRuntimeState) -> SecA
     return {**state, "analyst_view_research_memory": build_analyst_view_research_memory_layer(state)}
 
 
+def _state_with_d12_1_reader_context(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    if isinstance(state.get("d_series_claim_gap_gate_reader_context"), dict):
+        return state
+    db_path = _d_series_governance_db_path(state)
+    if db_path is None or not db_path.exists():
+        return state
+    tickers = _d_series_reader_tickers(state)
+    try:
+        reader_context = read_claim_gap_gate_research_context(db_path, tickers=tickers, limit=100)
+    except Exception as exc:  # pragma: no cover - defensive against manually edited local sqlite files.
+        reader_context = {
+            "schema_version": "sec_agent_d_series_claim_gap_gate_reader_v0.1",
+            "db_path": str(db_path.resolve()),
+            "reader_default_status": "database_unavailable",
+            "failure_reason": str(exc)[:500],
+            "summary": {"claim_count": 0, "typed_gap_count": 0, "gate_history_count": 0},
+        }
+    context = dict(state.get("multi_agent_context") or {}) if isinstance(state.get("multi_agent_context"), Mapping) else {}
+    context["d_series_claim_gap_gate_reader_context"] = reader_context
+    return {**state, "multi_agent_context": context, "d_series_claim_gap_gate_reader_context": reader_context}
+
+
 def _state_with_d12_1_database_materialization(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
     existing_report = (
         state.get("d_series_database_materialization_report")
@@ -2524,7 +2560,7 @@ def _state_with_d12_1_database_materialization(state: SecAgentGraphRuntimeState)
     if db_path is None:
         return state
     state_with_governance = _state_with_d1_d2_d9_artifacts(state)
-    report = materialize_d1_d2_d9_governance_store(db_path, state_with_governance)
+    report = materialize_d_series_governance_store(db_path, state_with_governance)
     materialization = d_series_materialization_state_from_report(report)
     artifact_refs = dict(state_with_governance.get("artifact_refs") or {})
     output_dir = str(state_with_governance.get("output_dir") or "").strip()
@@ -2577,6 +2613,33 @@ def _d_series_governance_db_path(state: SecAgentGraphRuntimeState) -> Path | Non
     if output_dir:
         return Path(output_dir) / path
     return path
+
+
+def _d_series_reader_tickers(state: SecAgentGraphRuntimeState) -> list[str]:
+    contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    scope = contract.get("scope") if isinstance(contract.get("scope"), Mapping) else {}
+    values: list[Any] = []
+    for key in ("focus_tickers", "search_scope_tickers", "companies"):
+        values.extend(_d_series_string_list(contract.get(key)))
+    for key in ("focus_tickers", "search_scope_tickers", "universe_tickers"):
+        values.extend(_d_series_string_list(scope.get(key)))
+    values.extend(_d_series_string_list(state.get("selected_tickers")))
+    return _unique_upper([item for item in values if _d_series_looks_like_ticker(item)])
+
+
+def _d_series_string_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [part.strip() for part in value.split(",") if part.strip()]
+    if isinstance(value, (list, tuple, set)):
+        return [str(item or "").strip() for item in value if str(item or "").strip()]
+    return [str(value).strip()] if str(value).strip() else []
+
+
+def _d_series_looks_like_ticker(value: Any) -> bool:
+    text = str(value or "").strip()
+    return bool(text) and text == text.upper() and " " not in text and len(text) <= 16
 
 
 def _state_with_d12_database_closeout_gate(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
@@ -3418,6 +3481,12 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
     materialized_layers = (
         materialization_report.get("layers") if isinstance(materialization_report.get("layers"), dict) else {}
     )
+    reader_context = (
+        state.get("d_series_claim_gap_gate_reader_context")
+        if isinstance(state.get("d_series_claim_gap_gate_reader_context"), dict)
+        else {}
+    )
+    reader_summary = reader_context.get("summary") if isinstance(reader_context.get("summary"), dict) else {}
     closeout_summary = closeout_gate.get("summary") if isinstance(closeout_gate.get("summary"), dict) else {}
     closeout_validation = closeout_gate.get("validation") if isinstance(closeout_gate.get("validation"), dict) else {}
     evidence_fanout_barrier = state.get("evidence_operator_fanout_barrier") if isinstance(state.get("evidence_operator_fanout_barrier"), dict) else {}
@@ -3621,6 +3690,14 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
                 isinstance(layer, Mapping) and layer.get("parity_status") == "pass"
                 for layer in materialized_layers.values()
             ),
+        },
+        "d_series_claim_gap_gate_reader": {
+            "schema_version": reader_context.get("schema_version") or "",
+            "reader_default_status": reader_context.get("reader_default_status") or "",
+            "db_path": reader_context.get("db_path") or "",
+            "claim_count": reader_summary.get("claim_count") or 0,
+            "typed_gap_count": reader_summary.get("typed_gap_count") or 0,
+            "gate_history_count": reader_summary.get("gate_history_count") or 0,
         },
         "milvus_runtime": {
             "status": milvus_runtime.get("status") or "",
@@ -4453,6 +4530,8 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     materialized_layers = (
         materialization_report.get("layers") if isinstance(materialization_report, dict) and isinstance(materialization_report.get("layers"), dict) else {}
     )
+    reader_context = state.get("d_series_claim_gap_gate_reader_context") or {}
+    reader_summary = reader_context.get("summary") if isinstance(reader_context, dict) and isinstance(reader_context.get("summary"), dict) else {}
     second_pass_diagnosis = state.get("second_pass_reflection_diagnosis") or {}
     second_pass_repair_plan = state.get("second_pass_repair_plan") or {}
     second_pass_hard_gate = state.get("second_pass_hard_gate") or {}
@@ -4533,6 +4612,12 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
         "d_series_materialization_db_path": materialization_report.get("db_path")
         if isinstance(materialization_report, dict)
         else "",
+        "d_series_claim_gap_gate_reader_status": reader_context.get("reader_default_status")
+        if isinstance(reader_context, dict)
+        else "",
+        "d_series_claim_gap_gate_reader_claim_count": reader_summary.get("claim_count")
+        if isinstance(reader_summary, dict)
+        else 0,
         "d_series_database_closeout_validation_status": (closeout_gate.get("validation") or {}).get("status")
         if isinstance(closeout_gate, dict) and isinstance(closeout_gate.get("validation"), dict)
         else "",

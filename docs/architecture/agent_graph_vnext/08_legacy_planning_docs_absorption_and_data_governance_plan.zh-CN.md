@@ -493,9 +493,23 @@ gap_policy: string
   - graph persist 阶段在 D11 后、D12 closeout gate 前检查显式 `d_series_governance_db_path` / `d_series_database_path`。只有显式传入路径时才落 SQLite，不写隐藏默认库。
   - 有 DB path 时写出 `d_series_database_materialization_report.json`，并把 `claim_evidence_ledger`、`typed_gap_ledger`、`gate_registry_eval_matrix` 三层 materialization 状态交给 D12 closeout gate。
   - 没有 DB path 时维持 v0.1 行为：不物化、不伪造 materialization，D12 gate 仍为 `blocked`。
-- D12.1b 后续继续：实现 D3-D8 / D10 / D11 的 SQL / object-store / vector-store schema migrations。
-- D12.1c 后续继续：将跨 run entity/source/vintage/reconciliation/ontology/source-policy/derived/memory 读取默认切到 DB 层。
-- 只有 D1-D11 required stores 都完成 schema、backfill、parity、DB-default reader 后，D 系列整体 closeout 才能从 `blocked` 变成 `pass`。
+- D12.1b 已落地：D3-D8 / D10 / D11 的 artifact-to-SQL materialization 已补齐到同一个 governance SQLite store。
+  - D3：`entity_master`、`security_identifier_map`、`entity_alias_history`、`unresolved_entity_references`。
+  - D4：`raw_source_documents`、`raw_source_checksums`、`raw_source_parser_runs`、`source_license_robots_policy`。
+  - D5：`asof_vintage_records`、`macro_vintage_observations`、`market_snapshot_asof`、`filing_amendment_lineage`。
+  - D6：`reconciliation_candidates`、`reconciliation_groups`、`reconciliation_conflict_gaps`。
+  - D7：`metric_product_ontology_metrics`、`metric_product_alias_registry`、`metric_product_manual_review_queue`。
+  - D8：`source_capability_policy`、`source_route_decisions`、`commercial_gap_policy`。
+  - D10：`derived_metric_formula_registry`、`derived_metric_outputs`、`derived_metric_input_lineage`。
+  - D11：`analyst_research_memory_entries`、`analyst_view_index`、`thesis_tracker`。
+  - 新增 `materialize_d_series_governance_store`、`backfill_d_series_governance_artifacts`、`parity_check_d_series_governance_artifacts`、`read_d_series_governance_counts`。
+  - 显式 DB path 下，D1-D11 全部 layer 的 schema migration、backfill、parity 和 reader default status 都通过时，D12 closeout gate 可从 `blocked` 变为 `pass`。
+- D12.1c 已落地：D1 / D2 / D9 的 DB-default reader 合同接入 graph load 阶段。
+  - 新增 `read_claim_gap_gate_research_context`。
+  - graph `load_session_state` 在显式 DB path 且 SQLite 文件存在时读取历史 claim/gap/gate context，并写入 `multi_agent_context["d_series_claim_gap_gate_reader_context"]`。
+  - `multi_agent_summary.json` 和 `langgraph_node_checkpoints.json` 暴露 reader status、claim/gap/gate counts。
+  - 首跑空库不会隐式创建或伪造 reader context；persist 阶段仍负责建库和物化。
+- 后续 D11.1 / Milvus 阶段仍需继续：把 analyst memory 的跨 run retrieval、semantic recall、staleness / supersession 和 vector drilldown parity 接入 Research Lead 的规划输入。
 
 ## 文档三：投研工作流升级文档.docx
 

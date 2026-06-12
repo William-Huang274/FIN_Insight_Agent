@@ -445,16 +445,37 @@ gap_policy: string
 
 ### D12 D-series Database Closeout
 
+2026-06-12 v0.1 closeout gate 已落地：
+
+- 新增 `sec_agent_d_series_database_closeout_gate_v0.1`。
+- graph persist 阶段在 D11 analyst view / research memory 后生成 `d_series_database_closeout_gate.json`。
+- closeout gate 为 D1-D11 每一层生成：
+  - `database_required`
+  - `store_kind`
+  - `schema_objects`
+  - `migration_id`
+  - `backfill_job`
+  - `parity_test`
+  - `reader_default_policy`
+  - `closeout_required_actions`
+- `multi_agent_summary.json` 和 `langgraph_node_checkpoints.json` 暴露 `gate_status`、`d_series_closeout_allowed`、required DB layer count、ready layer count、pending required layer count、artifact coverage 和 validation status。
+- 当前没有真实 DB materialization，因此 gate status 正常为 `blocked`，`d_series_closeout_allowed=false`。这不是运行失败，而是防止把 per-run JSON artifacts 误宣称为最终 D 系列收口。
+
 目标：D1-D11 可以先以 per-run JSON / artifact-backed 方式快速落地，但 D 系列收口前必须补齐需要数据库化的治理层。
 
 必须回补：
 
 - D1.1 Claim Evidence Ledger SQL-backed append-only store。
+- D2.1 Typed Gap Ledger SQL-backed append-only store。
 - D3.1 Entity / Security Master SQL-backed resolver 与跨 run entity history。
 - D4.1 Raw Source / Provenance Store SQL / object-store backed provenance、checksum、license / robots、parser run lineage。
 - D5.1 As-of / Vintage Layer 的 macro / industry vintage store、market snapshot as-of table、filing amendment lineage。
-- D9 Gate Registry / Gate History / Eval Matrix 的持久化。
-- D11 Analyst View / Research Memory 的可追溯数据库视图。
+- D6.1 Reconciliation Ledger SQL-backed preferred fact / conflict history。
+- D7.1 Metric / Product Ontology registry / DB ontology。
+- D8.1 Source Capability Router policy table。
+- D9.1 Gate Registry / Gate History / Eval Matrix 的持久化。
+- D10.1 Derived Metric formula registry / derived output store。
+- D11.1 Analyst View / Research Memory 的可追溯数据库 / vector / graph store。
 
 通过条件：
 
@@ -462,6 +483,14 @@ gap_policy: string
 - 有 artifact -> database backfill / migration script。
 - 有 artifact 与数据库查询结果的 parity test。
 - 任何 agent 读取长期记忆、跨 run claim、source lineage、vintage 或 gate history 时，默认走数据库层，不再只扫单次 run JSON。
+
+后续 D12.1：
+
+- 实现实际 SQL / object-store schema migrations。
+- 实现 artifact -> database backfill jobs。
+- 实现 artifact-to-database parity tests。
+- 将跨 run claim/gap/source/vintage/gate/derived/memory 读取默认切到 DB 层。
+- 只有 D12.1 通过后，D 系列才能从 `blocked` 变成 `pass`。
 
 ## 文档三：投研工作流升级文档.docx
 

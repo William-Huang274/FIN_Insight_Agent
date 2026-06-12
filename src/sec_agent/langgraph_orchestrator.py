@@ -26,6 +26,7 @@ from sec_agent.agent_contracts import validate_agent_activation_plan
 from sec_agent.agent_registry import agent_registry_by_id, allowed_source_families
 from sec_agent.analyst_view_layer import build_analyst_view_research_memory_layer
 from sec_agent.claim_evidence_ledger import build_evidence_governance_ledgers
+from sec_agent.d_series_database_closeout import build_d_series_database_closeout_gate
 from sec_agent.derived_metric_layer import build_derived_metric_layer
 from sec_agent.entity_master import build_entity_security_master
 from sec_agent.gate_registry import build_gate_registry_eval_matrix
@@ -152,6 +153,7 @@ CHECKPOINT_STATE_KEYS = (
     "gate_registry_eval_matrix",
     "derived_metric_layer",
     "analyst_view_research_memory",
+    "d_series_database_closeout_gate",
     "evidence_sufficiency_report",
     "second_pass_result",
     "second_pass_evidence_requirement_plan",
@@ -212,6 +214,7 @@ CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "gate_registry_eval_matrix",
     "derived_metric_layer",
     "analyst_view_research_memory",
+    "d_series_database_closeout_gate",
     "coverage_matrix",
     "retrieval_trace",
     "project_inventory",
@@ -312,6 +315,7 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     gate_registry_eval_matrix: dict[str, Any]
     derived_metric_layer: dict[str, Any]
     analyst_view_research_memory: dict[str, Any]
+    d_series_database_closeout_gate: dict[str, Any]
     claim_evidence_ledger: dict[str, Any]
     typed_gap_ledger: dict[str, Any]
     evidence_operator_fanout_plan: dict[str, Any]
@@ -2428,7 +2432,8 @@ def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) ->
     state_with_gates = _state_with_d9_gate_matrix(state_with_reconciliation)
     state_with_derived_metrics = _state_with_d10_derived_metric_layer(state_with_gates)
     state_with_analyst_views = _state_with_d11_analyst_view_layer(state_with_derived_metrics)
-    final_state = _record_node(state_with_analyst_views, "persist_session_state")
+    state_with_closeout_gate = _state_with_d12_database_closeout_gate(state_with_analyst_views)
+    final_state = _record_node(state_with_closeout_gate, "persist_session_state")
     _write_native_state_artifacts(final_state)
     _write_multi_agent_governance_ledger_artifacts(final_state)
     _write_multi_agent_summary_artifact(final_state)
@@ -2488,6 +2493,17 @@ def _state_with_d11_analyst_view_layer(state: SecAgentGraphRuntimeState) -> SecA
     if analyst_views:
         return state
     return {**state, "analyst_view_research_memory": build_analyst_view_research_memory_layer(state)}
+
+
+def _state_with_d12_database_closeout_gate(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    closeout_gate = (
+        state.get("d_series_database_closeout_gate")
+        if isinstance(state.get("d_series_database_closeout_gate"), dict)
+        else {}
+    )
+    if closeout_gate:
+        return state
+    return {**state, "d_series_database_closeout_gate": build_d_series_database_closeout_gate(state)}
 
 
 def _node_plan_query(
@@ -3054,6 +3070,7 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["gate_registry_eval_matrix"] = str((output_dir / "gate_registry_eval_matrix.json").resolve())
         refs["derived_metric_layer"] = str((output_dir / "derived_metric_layer.json").resolve())
         refs["analyst_view_research_memory"] = str((output_dir / "analyst_view_research_memory.json").resolve())
+        refs["d_series_database_closeout_gate"] = str((output_dir / "d_series_database_closeout_gate.json").resolve())
         return {**state, "artifact_refs": refs}
     return state
 
@@ -3106,6 +3123,11 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
         if isinstance(state.get("analyst_view_research_memory"), dict)
         else {}
     )
+    closeout_gate = (
+        state.get("d_series_database_closeout_gate")
+        if isinstance(state.get("d_series_database_closeout_gate"), dict)
+        else {}
+    )
     if not claim_ledger:
         claim_ledger = ledgers.get("claim_evidence_ledger") if isinstance(ledgers.get("claim_evidence_ledger"), dict) else {}
     if not gap_ledger:
@@ -3156,6 +3178,23 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
                 "derived_metric_layer": derived_layer,
             }
         )
+    if not closeout_gate:
+        closeout_gate = build_d_series_database_closeout_gate(
+            {
+                **state,
+                "claim_evidence_ledger": claim_ledger,
+                "typed_gap_ledger": gap_ledger,
+                "entity_security_master": entity_master,
+                "source_capability_router": source_router,
+                "raw_source_provenance_store": provenance_store,
+                "asof_vintage_layer": vintage_layer,
+                "metric_product_ontology_snapshot": ontology,
+                "reconciliation_ledger": reconciliation,
+                "gate_registry_eval_matrix": gate_matrix,
+                "derived_metric_layer": derived_layer,
+                "analyst_view_research_memory": analyst_views,
+            }
+        )
     (output_dir / "claim_evidence_ledger.json").write_text(
         json.dumps(claim_ledger, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -3198,6 +3237,10 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     )
     (output_dir / "analyst_view_research_memory.json").write_text(
         json.dumps(analyst_views, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "d_series_database_closeout_gate.json").write_text(
+        json.dumps(closeout_gate, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -3268,6 +3311,13 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
     analyst_views_validation = (
         analyst_views.get("validation") if isinstance(analyst_views.get("validation"), dict) else {}
     )
+    closeout_gate = (
+        state.get("d_series_database_closeout_gate")
+        if isinstance(state.get("d_series_database_closeout_gate"), dict)
+        else {}
+    )
+    closeout_summary = closeout_gate.get("summary") if isinstance(closeout_gate.get("summary"), dict) else {}
+    closeout_validation = closeout_gate.get("validation") if isinstance(closeout_gate.get("validation"), dict) else {}
     evidence_fanout_barrier = state.get("evidence_operator_fanout_barrier") if isinstance(state.get("evidence_operator_fanout_barrier"), dict) else {}
     specialist_fanout_barrier = state.get("specialist_fanout_barrier") if isinstance(state.get("specialist_fanout_barrier"), dict) else {}
     claim_card_store_barrier = state.get("claim_card_store_barrier") if isinstance(state.get("claim_card_store_barrier"), dict) else {}
@@ -3444,6 +3494,19 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
             "gap_ref_count": analyst_views_summary.get("gap_ref_count") or 0,
             "derived_metric_ref_count": analyst_views_summary.get("derived_metric_ref_count") or 0,
             "validation_status": analyst_views_validation.get("status") or "",
+        },
+        "d_series_database_closeout_gate": {
+            "schema_version": closeout_gate.get("schema_version") or "",
+            "gate_status": closeout_gate.get("gate_status") or "",
+            "d_series_closeout_allowed": bool(closeout_gate.get("d_series_closeout_allowed")),
+            "layer_count": closeout_gate.get("layer_count") or 0,
+            "required_database_layer_count": closeout_gate.get("required_database_layer_count") or 0,
+            "database_ready_layer_count": closeout_gate.get("database_ready_layer_count") or 0,
+            "pending_required_database_layer_count": closeout_gate.get("pending_required_database_layer_count") or 0,
+            "pending_required_layers": list(closeout_summary.get("pending_required_layers") or []),
+            "artifact_present_count": closeout_summary.get("artifact_present_count") or 0,
+            "required_artifact_missing_count": closeout_summary.get("required_artifact_missing_count") or 0,
+            "validation_status": closeout_validation.get("status") or "",
         },
         "milvus_runtime": {
             "status": milvus_runtime.get("status") or "",
@@ -4271,6 +4334,7 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     gate_matrix = state.get("gate_registry_eval_matrix") or {}
     derived_layer = state.get("derived_metric_layer") or {}
     analyst_views = state.get("analyst_view_research_memory") or {}
+    closeout_gate = state.get("d_series_database_closeout_gate") or {}
     second_pass_diagnosis = state.get("second_pass_reflection_diagnosis") or {}
     second_pass_repair_plan = state.get("second_pass_repair_plan") or {}
     second_pass_hard_gate = state.get("second_pass_hard_gate") or {}
@@ -4339,6 +4403,16 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
         "research_memory_entry_count": analyst_views.get("memory_entry_count") if isinstance(analyst_views, dict) else 0,
         "analyst_view_validation_status": (analyst_views.get("validation") or {}).get("status")
         if isinstance(analyst_views, dict) and isinstance(analyst_views.get("validation"), dict)
+        else "",
+        "d_series_database_closeout_gate_status": closeout_gate.get("gate_status") if isinstance(closeout_gate, dict) else "",
+        "d_series_closeout_allowed": bool(closeout_gate.get("d_series_closeout_allowed"))
+        if isinstance(closeout_gate, dict)
+        else False,
+        "d_series_pending_required_database_layer_count": closeout_gate.get("pending_required_database_layer_count")
+        if isinstance(closeout_gate, dict)
+        else 0,
+        "d_series_database_closeout_validation_status": (closeout_gate.get("validation") or {}).get("status")
+        if isinstance(closeout_gate, dict) and isinstance(closeout_gate.get("validation"), dict)
         else "",
         "coverage_complete": coverage_summary.get("coverage_complete"),
         "primary_task_support_complete": coverage_summary.get("primary_task_support_complete"),

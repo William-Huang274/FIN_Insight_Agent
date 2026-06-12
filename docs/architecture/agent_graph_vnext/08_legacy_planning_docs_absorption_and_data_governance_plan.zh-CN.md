@@ -486,11 +486,16 @@ gap_policy: string
 
 后续 D12.1：
 
-- 实现实际 SQL / object-store schema migrations。
-- 实现 artifact -> database backfill jobs。
-- 实现 artifact-to-database parity tests。
-- 将跨 run claim/gap/source/vintage/gate/derived/memory 读取默认切到 DB 层。
-- 只有 D12.1 通过后，D 系列才能从 `blocked` 变成 `pass`。
+- D12.1a 已落地：先把 D1 / D2 / D9 三个最高频治理层接入 SQLite-backed governance store。
+  - 新增 `sec_agent_d_series_governance_store_v0.1`。
+  - schema 覆盖 `claim_evidence_claims`、claim support/gap/gate refs、`typed_gap_events`、gap source attempts / commercial requirements、`gate_registry`、`gate_history`、`gate_eval_matrix`。
+  - 提供 `migrate_d_series_governance_store`、`backfill_d1_d2_d9_governance_artifacts`、`parity_check_d1_d2_d9_governance_artifacts`、`materialize_d1_d2_d9_governance_store`。
+  - graph persist 阶段在 D11 后、D12 closeout gate 前检查显式 `d_series_governance_db_path` / `d_series_database_path`。只有显式传入路径时才落 SQLite，不写隐藏默认库。
+  - 有 DB path 时写出 `d_series_database_materialization_report.json`，并把 `claim_evidence_ledger`、`typed_gap_ledger`、`gate_registry_eval_matrix` 三层 materialization 状态交给 D12 closeout gate。
+  - 没有 DB path 时维持 v0.1 行为：不物化、不伪造 materialization，D12 gate 仍为 `blocked`。
+- D12.1b 后续继续：实现 D3-D8 / D10 / D11 的 SQL / object-store / vector-store schema migrations。
+- D12.1c 后续继续：将跨 run entity/source/vintage/reconciliation/ontology/source-policy/derived/memory 读取默认切到 DB 层。
+- 只有 D1-D11 required stores 都完成 schema、backfill、parity、DB-default reader 后，D 系列整体 closeout 才能从 `blocked` 变成 `pass`。
 
 ## 文档三：投研工作流升级文档.docx
 

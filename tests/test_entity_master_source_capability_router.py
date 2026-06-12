@@ -179,6 +179,52 @@ def test_source_capability_router_applies_minimal_kg_source_boundaries() -> None
     assert router["summary"]["commercial_gap_decision_count"] == 1
 
 
+def test_source_capability_router_accepts_full_kg_matrix_registry_path() -> None:
+    router = build_source_capability_router(
+        {
+            "kg_matrix_registry_path": "configs/kg_matrix_registry_v0_1.yaml",
+            "project_inventory": {
+                "available_source_families": ["live_public_web_context", "commercial_market_tracker"],
+            },
+            "query_contract": {
+                "intent": "deep_research",
+                "industry_schema": "consumer_electronics",
+                "metric_families": ["sell_through"],
+                "claim_type": "company_sales",
+                "required_authority": "exact_company_fact",
+            },
+            "agent_activation_plan": {
+                "allowed_source_families": ["live_public_web_context", "commercial_market_tracker"],
+            },
+            "retrieval_plan": {
+                "routes": [
+                    {
+                        "route_id": "task::web",
+                        "task_id": "task",
+                        "retrieval_route": "live_public_web_context",
+                        "source_family": "live_public_web_context",
+                    },
+                    {
+                        "route_id": "task::commercial_tracker",
+                        "task_id": "task",
+                        "retrieval_route": "commercial_market_tracker",
+                        "source_family": "commercial_market_tracker",
+                    },
+                ]
+            },
+        }
+    )
+    decisions = {row["source_family"]: row for row in router["route_decisions"]}
+
+    assert router["registry_schema_version"] == "fin_agent_kg_minimal_p0_k1_k2_k3_registry_v0.1"
+    assert router["registry_validation_status"] == "pass"
+    assert decisions["live_public_web_context"]["decision_status"] == "blocked"
+    assert decisions["live_public_web_context"]["reason"] == "context_only_source_cannot_satisfy_exact_company_fact_authority"
+    assert "channel_offer_as_sell_through" in decisions["live_public_web_context"]["boundary_forbidden_claims"]
+    assert decisions["commercial_market_tracker"]["decision_status"] == "gap"
+    assert decisions["commercial_market_tracker"]["gap_type"] == "commercial_gap"
+
+
 def test_graph_persists_entity_master_and_source_capability_router(tmp_path: Path) -> None:
     graph = build_multi_agent_orchestration_graph()
     initial = make_multi_agent_smoke_state(

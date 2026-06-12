@@ -4,6 +4,7 @@ from collections import Counter
 from typing import Any, Mapping
 
 from sec_agent.kg_minimal_registry import load_kg_minimal_registry, validate_kg_minimal_registry
+from sec_agent.kg_matrix_registry import derive_minimal_kg_registry, load_kg_matrix_registry
 from sec_agent.project_inventory import SOURCE_FAMILY_AUTHORITY
 
 
@@ -234,13 +235,22 @@ def _route_decision(
 
 
 def _kg_minimal_registry(state: Mapping[str, Any]) -> dict[str, Any]:
+    matrix_registry = state.get("kg_matrix_registry")
+    if isinstance(matrix_registry, Mapping):
+        return derive_minimal_kg_registry(matrix_registry)
     registry = state.get("kg_minimal_registry")
     if isinstance(registry, Mapping):
         return dict(registry)
     inventory = state.get("project_inventory") if isinstance(state.get("project_inventory"), Mapping) else {}
+    matrix_registry = inventory.get("kg_matrix_registry") if isinstance(inventory.get("kg_matrix_registry"), Mapping) else {}
+    if matrix_registry:
+        return derive_minimal_kg_registry(matrix_registry)
     registry = inventory.get("kg_minimal_registry") if isinstance(inventory.get("kg_minimal_registry"), Mapping) else {}
     if registry:
         return dict(registry)
+    matrix_path = state.get("kg_matrix_registry_path") or inventory.get("kg_matrix_registry_path")
+    if str(matrix_path or "").strip():
+        return derive_minimal_kg_registry(load_kg_matrix_registry(matrix_path))
     path = state.get("kg_minimal_registry_path") or inventory.get("kg_minimal_registry_path")
     return load_kg_minimal_registry(path if str(path or "").strip() else None)
 

@@ -535,16 +535,20 @@
 
 - [x] Freeze the next-stage KG/sub-agent/product-edge framework after reviewing the supplemental knowledge graph document and clarifying the public buyer observer boundary.
 - [x] Absorb the G1-G10-preceding `agent_graph和skill.docx`, `数据治理结构20260612.docx`, and `投研工作流升级文档.docx` planning docs into the architecture docs without rolling back implemented graph mechanisms.
-- [ ] K1: Build KG Matrix Registry for Operating KG, Capital & Ownership Graph, and Claim Evidence Layer object/edge schemas.
+- [x] K1: Build KG Matrix Registry for Operating KG, Capital & Ownership Graph, and Claim Evidence Layer object/edge schemas.
   - [x] K1 minimal D-closeout slice: add machine-readable P0 business/product/KPI graph registry and validator for D7/D8 consumption.
-- [ ] K2: Add ProductFamily / ProductModel / ProductSpec / ProductGenerationEdge / CompetitiveComparableEdge / ChannelOffer / FieldInquiryNote ontology and parser gates.
+- [x] K2: Add ProductFamily / ProductModel / ProductSpec / ProductGenerationEdge / CompetitiveComparableEdge / ChannelOffer / FieldInquiryNote ontology and parser gates.
   - [x] K2 minimal D-closeout slice: add ProductFamily / ProductKPI / product spec ontology and channel-offer claim boundary; full model/generation/comparable/field-inquiry graph remains open.
-- [ ] K3: Add `public_buyer_observer` source policy and web scope classes for public product, pricing, commerce, distributor, ordering, and documentation surfaces.
+- [x] K3: Add `public_buyer_observer` source policy and web scope classes for public product, pricing, commerce, distributor, ordering, and documentation surfaces.
   - [x] K3 minimal D-closeout slice: add public buyer observer allowed/forbidden actions and source-family boundaries, with no impersonation/auth-bypass/fake-order behavior.
-- [ ] K4: Upgrade Product / Technology Specialist into a sub-agent that emits ProductSpecPack plus gated ClaimCards.
+- [x] K4: Upgrade Product / Technology Specialist into a sub-agent that emits ProductSpecPack plus gated ClaimCards.
 - [ ] K5: Build Capital & Ownership Graph adapters for debt footnotes, offerings, credit facilities, 13F, 13D/G, Form 3/4/5, and proxy ownership.
+  - [x] K5 runtime edge-pack slice: add gated CapitalMacroExposurePack objects for CapitalStructure, DebtInstrument, CreditFacility, EquityOffering, OwnershipPosition, and InsiderTransaction; 13F / ownership rows require report period, filing date, lag days, and `not_realtime_flag`.
+  - [ ] K5 source-specific parser/backfill hardening: connect real debt-footnote/offering/13F/13D/G/Form 3/4/5/proxy parsers to the runtime edge pack.
 - [ ] K6: Add Macro Exposure edges and vertical official object adapters before allowing macro/regulatory/public datasets to support company-specific reasoning.
-- [ ] K7: Add verifier/reflection rules for product page vs sales, channel offer vs sell-through, 13F lag, macro exposure, patent/tech signal, and FieldInquiryNote boundaries.
+  - [x] K6 runtime edge-pack slice: add MacroDriver, TradeDriver, IndustryDriver, CompanyExposureToDriver, and VerticalOfficialObject pack objects; macro/vertical rows are context-only unless bridged by CompanyExposureToDriver.
+  - [ ] K6 source-specific parser/backfill hardening: map FRED/EIA/Census/FDIC/ClinicalTrials/openFDA/NHTSA/PatentsView/OpenAlex rows into edge-pack inputs by industry adapter.
+- [x] K7: Add verifier/reflection rules for product page vs sales, channel offer vs sell-through, 13F lag, macro exposure, patent/tech signal, and FieldInquiryNote boundaries.
 - [ ] K8: Run a 10-20 case KG sub-agent end-to-end gate covering product specs, product comparisons, capital/ownership, macro exposure, public buyer observer signals, and bounded gaps.
 
 ## Evidence-governed Data Runtime vNext

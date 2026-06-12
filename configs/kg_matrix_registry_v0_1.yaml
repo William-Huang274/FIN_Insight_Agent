@@ -1,0 +1,554 @@
+schema_version: fin_agent_kg_matrix_registry_v0.1
+registry_id: kg_matrix_registry_v0_1
+
+layers:
+  layer0_entity_identifier:
+    description: Resolver-only identity layer.
+    node_types: [Company, LegalEntity, Security, Brand, ProductAlias, IndustryClassification, ExchangeIdentifier]
+  layer1_business_operating:
+    description: Company operating graph for segments, products, specs, channels, customers, suppliers, capacity, regions, technology, and regulation.
+    node_types:
+      - Segment
+      - ProductFamily
+      - ProductModel
+      - ProductSpec
+      - ProductKPI
+      - ChannelOffer
+      - FieldInquiryNote
+      - CustomerRelationship
+      - SupplierRelationship
+      - CapacityAsset
+      - RegionExposure
+      - RegulatoryEvent
+      - TechnologySignal
+  layer2_capital_ownership:
+    description: Financing, debt, ownership, insider, and capital return graph.
+    node_types: [CapitalStructure, DebtInstrument, CreditFacility, EquityOffering, OwnershipPosition, InsiderTransaction, CapitalReturn]
+  layer3_macro_industry_driver:
+    description: Macro, industry, trade, regulatory, and vertical official driver graph.
+    node_types: [MacroDriver, TradeDriver, IndustryDriver, CompanyExposureToDriver, VerticalOfficialObject]
+  layer4_evidence_claim_gap:
+    description: Evidence-governed claim, contradiction, gate, and gap layer.
+    node_types: [SourceArtifact, AtomicFact, Claim, Gap, GateResult]
+  layer5_workflow_runtime:
+    description: Runtime planning, sub-agent task, barrier, reflection, and memory layer.
+    node_types: [ResearchTask, SubAgentTaskCard, ProductSpecPack, ClaimCard, ReflectionGate, AnalystView]
+
+node_types:
+  Company:
+    layer: layer0_entity_identifier
+    required_fields: [entity_id, ticker, legal_name, reporting_currency]
+    source_authority: resolver_only
+  LegalEntity:
+    layer: layer0_entity_identifier
+    required_fields: [entity_id, legal_name, jurisdiction, source_id, resolution_confidence]
+    source_authority: resolver_only
+  Security:
+    layer: layer0_entity_identifier
+    required_fields: [security_id, entity_id, ticker, exchange, security_type, source_id]
+    source_authority: resolver_only
+  Brand:
+    layer: layer0_entity_identifier
+    required_fields: [brand_id, company_id, brand_name, source_id, source_strength]
+    source_authority: resolver_only
+  ProductAlias:
+    layer: layer0_entity_identifier
+    required_fields: [alias_id, company_id, alias_text, normalized_alias, source_id, resolution_confidence]
+    source_authority: resolver_only
+  IndustryClassification:
+    layer: layer0_entity_identifier
+    required_fields: [classification_id, company_id, industry_schema, source_id]
+    source_authority: resolver_only
+  ExchangeIdentifier:
+    layer: layer0_entity_identifier
+    required_fields: [exchange_identifier_id, security_id, identifier_type, identifier_value, source_id]
+    source_authority: resolver_only
+
+  Segment:
+    layer: layer1_business_operating
+    required_fields: [segment_id, company_id, segment_name, period, source_id, source_strength]
+    source_authority: company_disclosed_exact
+  ProductFamily:
+    layer: layer1_business_operating
+    required_fields: [product_family_id, company_id, product_name, product_category, source_id, source_strength]
+    source_authority: company_or_official_context
+  ProductModel:
+    layer: layer1_business_operating
+    required_fields: [product_model_id, product_family_id, model_name, configuration, region, generation, launch_status, source_id, source_strength]
+    source_authority: official_product_surface_or_company_disclosure
+  ProductSpec:
+    layer: layer1_business_operating
+    required_fields: [spec_id, product_model_id, spec_name, value, unit, configuration, region, effective_date, source_id, claim_scope]
+    source_authority: parser_verified_product_surface
+  ProductKPI:
+    layer: layer1_business_operating
+    required_fields: [metric_id, company_id, metric_name, value, unit, period, source_id, disclosure_type]
+    source_authority: company_disclosed_exact
+  ChannelOffer:
+    layer: layer1_business_operating
+    required_fields: [channel_offer_id, product_model_id, channel_name, source_class, price, currency, availability, region, observed_at, source_id, claim_scope]
+    source_authority: public_surface_context_only
+  FieldInquiryNote:
+    layer: layer1_business_operating
+    required_fields: [field_inquiry_id, product_model_id, provider_role, inquiry_target, inquiry_time, region, raw_record_ref, confidence, source_id, claim_scope]
+    source_authority: user_or_analyst_provided_lead_only
+  CustomerRelationship:
+    layer: layer1_business_operating
+    required_fields: [relationship_id, company_id, customer_entity_id, relationship_type, confidence, source_id]
+    source_authority: company_or_regulatory_disclosure
+  SupplierRelationship:
+    layer: layer1_business_operating
+    required_fields: [relationship_id, company_id, supplier_entity_id, input_product, dependency_type, confidence, source_id]
+    source_authority: company_or_regulatory_disclosure
+  CapacityAsset:
+    layer: layer1_business_operating
+    required_fields: [capacity_asset_id, company_id, asset_type, location, capacity_value, unit, period, source_id]
+    source_authority: company_or_official_context
+  RegionExposure:
+    layer: layer1_business_operating
+    required_fields: [region_exposure_id, company_id, region, exposure_type, period, source_id]
+    source_authority: company_or_official_context
+  RegulatoryEvent:
+    layer: layer1_business_operating
+    required_fields: [regulatory_event_id, company_id, product_id, event_type, event_date, regulator, source_id]
+    source_authority: official_regulatory_context
+  TechnologySignal:
+    layer: layer1_business_operating
+    required_fields: [technology_signal_id, company_id, product_id, signal_type, observed_at, source_id, claim_scope]
+    source_authority: technology_signal_only
+
+  CapitalStructure:
+    layer: layer2_capital_ownership
+    required_fields: [capital_structure_id, company_id, cash, debt, net_debt, period, source_id]
+    source_authority: company_disclosed_exact
+  DebtInstrument:
+    layer: layer2_capital_ownership
+    required_fields: [debt_instrument_id, company_id, principal, currency, maturity_date, coupon, interest_rate_type, source_id]
+    source_authority: company_or_offering_document
+  CreditFacility:
+    layer: layer2_capital_ownership
+    required_fields: [credit_facility_id, company_id, facility_size, available_liquidity, maturity_date, covenant_flag, source_id]
+    source_authority: company_or_credit_agreement
+  EquityOffering:
+    layer: layer2_capital_ownership
+    required_fields: [equity_offering_id, company_id, form_type, filing_date, amount, security_type, source_id]
+    source_authority: offering_or_company_disclosure
+  OwnershipPosition:
+    layer: layer2_capital_ownership
+    required_fields: [ownership_position_id, investor_id, company_id, shares, value, filing_date, report_period, form_type, lag_policy, not_realtime_flag, source_id]
+    source_authority: lagged_public_ownership_filing
+  InsiderTransaction:
+    layer: layer2_capital_ownership
+    required_fields: [insider_transaction_id, insider_id, company_id, transaction_type, transaction_date, shares, price, form_type, source_id]
+    source_authority: public_insider_filing
+  CapitalReturn:
+    layer: layer2_capital_ownership
+    required_fields: [capital_return_id, company_id, return_type, amount, period, source_id]
+    source_authority: company_disclosed_exact
+
+  MacroDriver:
+    layer: layer3_macro_industry_driver
+    required_fields: [driver_id, series_id, variable_name, value, date, frequency, source_id]
+    source_authority: macro_or_industry_context_only
+  TradeDriver:
+    layer: layer3_macro_industry_driver
+    required_fields: [trade_driver_id, series_id, product_or_code, country_or_region, value, date, source_id]
+    source_authority: trade_context_only
+  IndustryDriver:
+    layer: layer3_macro_industry_driver
+    required_fields: [industry_driver_id, industry_schema, driver_name, value, date, source_id]
+    source_authority: industry_context_only
+  CompanyExposureToDriver:
+    layer: layer3_macro_industry_driver
+    required_fields: [exposure_id, company_id, driver_id, exposure_type, evidence_ref, source_id, claim_scope]
+    source_authority: exposure_bridge_required
+  VerticalOfficialObject:
+    layer: layer3_macro_industry_driver
+    required_fields: [object_id, company_id, object_type, event_or_status, observed_at, source_id, claim_scope]
+    source_authority: official_object_context_only
+
+  SourceArtifact:
+    layer: layer4_evidence_claim_gap
+    required_fields: [source_id, raw_url, local_path, file_type, retrieved_at, checksum, parser_version]
+    source_authority: provenance_only
+  AtomicFact:
+    layer: layer4_evidence_claim_gap
+    required_fields: [fact_id, source_id, entity_id, metric_id, value, unit, period, citation_anchor, gate_status]
+    source_authority: gate_controlled_fact
+  Claim:
+    layer: layer4_evidence_claim_gap
+    required_fields: [claim_id, claim_text, supported_by, contradicted_by, confidence, as_of_date]
+    source_authority: claim_layer_only
+  Gap:
+    layer: layer4_evidence_claim_gap
+    required_fields: [gap_id, gap_type, target_object_id, reason, treatment_action]
+    source_authority: gap_layer_only
+  GateResult:
+    layer: layer4_evidence_claim_gap
+    required_fields: [gate_result_id, gate_id, target_object_id, status, reason, repair_action]
+    source_authority: gate_layer_only
+
+  ResearchTask:
+    layer: layer5_workflow_runtime
+    required_fields: [task_id, query_intent, ticker_scope, kg_slice, required_authority]
+    source_authority: runtime_planning_only
+  SubAgentTaskCard:
+    layer: layer5_workflow_runtime
+    required_fields: [task_card_id, agent_id, kg_slice, source_families, claim_slots, barriers]
+    source_authority: runtime_planning_only
+  ProductSpecPack:
+    layer: layer5_workflow_runtime
+    required_fields: [product_spec_pack_id, product_family_id, product_model_ids, spec_ids, generation_edge_ids, comparable_edge_ids, channel_offer_ids, field_inquiry_ids, gate_status]
+    source_authority: gated_kg_object_bundle
+  ClaimCard:
+    layer: layer5_workflow_runtime
+    required_fields: [claim_id, agent_id, claim, evidence_refs, source_families, required_gates, confidence]
+    source_authority: claim_layer_only
+  ReflectionGate:
+    layer: layer5_workflow_runtime
+    required_fields: [reflection_gate_id, gate_type, failed_gate_ids, repair_scope, allowed_tools]
+    source_authority: runtime_governance_only
+  AnalystView:
+    layer: layer5_workflow_runtime
+    required_fields: [view_id, view_type, ticker, claim_ids, gap_ids, derived_metric_ids]
+    source_authority: memory_index_only
+
+edge_types:
+  company_reports_segment:
+    from: Company
+    to: Segment
+    required_gates: [entity_resolution_gate, citation_span_gate, period_alignment_gate]
+  segment_contains_product_family:
+    from: Segment
+    to: ProductFamily
+    required_gates: [entity_resolution_gate, citation_span_gate]
+  product_family_has_model:
+    from: ProductFamily
+    to: ProductModel
+    required_gates: [entity_resolution_gate, citation_span_gate, source_boundary_gate]
+  product_model_has_spec:
+    from: ProductModel
+    to: ProductSpec
+    required_gates: [citation_span_gate, unit_normalization_gate, period_alignment_gate, source_boundary_gate]
+  product_model_supersedes_model:
+    from: ProductModel
+    to: ProductModel
+    edge_class: ProductGenerationEdge
+    required_gates: [citation_span_gate, product_generation_gate]
+  product_model_competes_with_model:
+    from: ProductModel
+    to: ProductModel
+    edge_class: CompetitiveComparableEdge
+    required_gates: [citation_span_gate, comparable_dimension_gate, source_boundary_gate]
+  product_model_has_channel_offer:
+    from: ProductModel
+    to: ChannelOffer
+    required_gates: [citation_span_gate, source_boundary_gate, channel_offer_scope_gate]
+  product_model_has_field_inquiry:
+    from: ProductModel
+    to: FieldInquiryNote
+    required_gates: [field_inquiry_scope_gate, source_boundary_gate]
+  product_has_kpi:
+    from: ProductFamily
+    to: ProductKPI
+    required_gates: [metric_mapping_gate, unit_normalization_gate, period_alignment_gate, numeric_consistency_gate]
+  company_has_capital_structure:
+    from: Company
+    to: CapitalStructure
+    required_gates: [citation_span_gate, period_alignment_gate, numeric_consistency_gate]
+  company_has_debt_instrument:
+    from: Company
+    to: DebtInstrument
+    required_gates: [citation_span_gate, maturity_gate, unit_normalization_gate]
+  company_has_credit_facility:
+    from: Company
+    to: CreditFacility
+    required_gates: [citation_span_gate, maturity_gate, covenant_scope_gate]
+  company_has_equity_offering:
+    from: Company
+    to: EquityOffering
+    required_gates: [citation_span_gate, offering_document_gate]
+  investor_holds_company:
+    from: OwnershipPosition
+    to: Company
+    required_gates: [ownership_lag_gate, citation_span_gate]
+  insider_traded_security:
+    from: InsiderTransaction
+    to: Security
+    required_gates: [citation_span_gate, insider_form_gate]
+  company_exposed_to_macro_driver:
+    from: Company
+    to: MacroDriver
+    edge_class: CompanyExposureToDriver
+    required_gates: [exposure_bridge_gate, source_boundary_gate]
+  vertical_object_context_for_company:
+    from: VerticalOfficialObject
+    to: Company
+    required_gates: [official_object_scope_gate, source_boundary_gate]
+  claim_supported_by_evidence:
+    from: Claim
+    to: AtomicFact
+    required_gates: [claim_support_gate, citation_span_gate]
+  claim_exposes_gap:
+    from: Claim
+    to: Gap
+    required_gates: [bounded_gap_gate]
+
+industry_kpi_dictionary:
+  semiconductors:
+    financial_metrics: [revenue, gross_margin, operating_margin, inventory, capex]
+    product_kpis: [datacenter_revenue, foundry_revenue, shipments, ASP, backlog, capacity, utilization]
+    commercial_gap_metrics: [shipments, vendor_share, ASP, channel_inventory]
+  consumer_electronics:
+    financial_metrics: [revenue, gross_margin, operating_margin, inventory]
+    product_kpis: [shipments, units, ASP, installed_base, product_revenue]
+    commercial_gap_metrics: [market_share, sell_through, channel_inventory]
+  software_saas:
+    financial_metrics: [revenue, gross_margin, operating_margin, free_cash_flow, RPO]
+    product_kpis: [ARR, net_retention, customer_count, seats, usage, ARPU]
+    commercial_gap_metrics: [app_downloads, web_traffic, paid_usage]
+  banks:
+    financial_metrics: [net_interest_income, deposits, loans, provision, CET1]
+    product_kpis: [AUM, card_spend, accounts, transaction_volume]
+    commercial_gap_metrics: [card_spend, loan_share]
+  pharma_biotech:
+    financial_metrics: [revenue, gross_margin, R&D, operating_margin]
+    product_kpis: [product_sales, trial_status, approvals, prescription_volume]
+    commercial_gap_metrics: [prescription_volume, product_share, real_world_usage]
+  autos_ev:
+    financial_metrics: [revenue, gross_margin, operating_margin, inventory, capex]
+    product_kpis: [deliveries, production, ASP, model_mix, recalls]
+    commercial_gap_metrics: [registrations, VIO, owner_demographics]
+  energy_oil_gas:
+    financial_metrics: [revenue, operating_cash_flow, capex, free_cash_flow, debt]
+    product_kpis: [production, reserves, refinery_throughput, realized_price]
+    commercial_gap_metrics: [basin_activity, customer_contract_detail]
+  retail_cpg:
+    financial_metrics: [revenue, gross_margin, operating_margin, inventory, working_capital]
+    product_kpis: [same_store_sales, category_sales, unit_volume, traffic]
+    commercial_gap_metrics: [POS, scanner, panel, channel_inventory]
+  defense_gov_it:
+    financial_metrics: [revenue, backlog, operating_margin, cash_flow]
+    product_kpis: [contract_awards, funded_backlog, book_to_bill]
+    commercial_gap_metrics: [classified_program_detail, contract_pipeline_share]
+
+product_spec_ontology:
+  common_required_fields:
+    - spec_id
+    - product_model_id
+    - spec_name
+    - value
+    - unit
+    - configuration
+    - region
+    - effective_date
+    - source_id
+    - claim_scope
+  product_model_required_fields:
+    - product_model_id
+    - product_family_id
+    - model_name
+    - configuration
+    - region
+    - generation
+    - launch_status
+    - source_id
+  generation_edge_required_fields:
+    - generation_edge_id
+    - prior_product_model_id
+    - current_product_model_id
+    - comparable_dimensions
+    - source_id
+  comparable_edge_required_fields:
+    - comparable_edge_id
+    - product_model_id
+    - competitor_product_model_id
+    - comparable_dimensions
+    - region
+    - source_id
+  channel_offer_required_fields:
+    - channel_offer_id
+    - product_model_id
+    - channel_name
+    - source_class
+    - price
+    - currency
+    - availability
+    - region
+    - observed_at
+    - source_id
+    - claim_scope
+  field_inquiry_required_fields:
+    - field_inquiry_id
+    - product_model_id
+    - provider_role
+    - inquiry_target
+    - inquiry_time
+    - region
+    - raw_record_ref
+    - confidence
+    - source_id
+    - claim_scope
+  industry_spec_dimensions:
+    semiconductors: [process_node, memory_capacity, memory_bandwidth, compute_throughput, power, form_factor, interconnect]
+    consumer_electronics: [model, storage, screen_size, battery, camera, connectivity, price, availability]
+    software_saas: [edition, seat_limit, usage_limit, API_limit, pricing_tier, region, SLA]
+    pharma_biotech: [compound, indication, dosage_form, trial_phase, regulatory_status, label_population]
+    autos_ev: [model_trim, battery_capacity, range, drivetrain, charging_rate, safety_rating, price, availability]
+    retail_cpg: [SKU, package_size, flavor_variant, channel_price, promotion, availability]
+    defense_gov_it: [contract_vehicle, clearance_requirement, performance_period, award_ceiling, delivery_location]
+  channel_offer_boundary:
+    allowed_claims: [price_context, availability_context, configuration_context, delivery_lead_time_context]
+    forbidden_claims: [company_sales, market_share, sell_through, company_ASP, channel_inventory]
+  field_inquiry_boundary:
+    allowed_claims: [qualitative_channel_lead, price_or_lead_time_sample, verification_lead]
+    forbidden_claims: [authority_fact, company_sales, market_share, sell_through, company_ASP, channel_inventory]
+
+source_policy:
+  public_buyer_observer:
+    allowed_source_classes:
+      - company_official_product_surface
+      - commerce_product_surface
+      - distributor_public_catalog
+      - developer_documentation
+      - pricing_page
+      - official_regulatory_or_scientific
+    forbidden_actions:
+      - impersonate_credentials_or_authorization
+      - bypass_login_paywall_captcha_or_permissions
+      - submit_false_forms_or_orders
+      - create_false_account_or_order
+      - accept_contract_or_trigger_commercial_commitment
+      - treat_channel_surface_as_company_sales
+    allowed_observer_roles: [ordinary_end_user, procurement_researcher, developer_researcher, distributor_researcher]
+  source_class_claim_boundaries:
+    company_official_product_surface:
+      authority: official_context
+      allowed_claims: [product_presence, official_feature_description, product_configuration, official_pricing_context]
+      forbidden_claims: [company_sales, sell_through, market_share, company_ASP]
+    commerce_product_surface:
+      authority: public_surface_context_only
+      allowed_claims: [price_context, availability_context, configuration_context, delivery_lead_time_context]
+      forbidden_claims: [company_sales, sell_through, market_share, company_ASP, channel_inventory]
+    distributor_public_catalog:
+      authority: public_surface_context_only
+      allowed_claims: [price_context, availability_context, configuration_context, lead_time_context]
+      forbidden_claims: [company_sales, sell_through, market_share, company_ASP, total_channel_inventory]
+    developer_documentation:
+      authority: technical_context_only
+      allowed_claims: [feature_description, API_limit_context, version_context]
+      forbidden_claims: [paid_usage, ARR, churn, revenue]
+    pricing_page:
+      authority: official_or_public_pricing_context
+      allowed_claims: [listed_price_context, package_configuration_context]
+      forbidden_claims: [company_ASP, realized_price, revenue]
+    field_inquiry_note:
+      authority: lead_only
+      allowed_claims: [qualitative_channel_lead, price_or_lead_time_sample]
+      forbidden_claims: [authority_fact, company_sales, sell_through, market_share, company_ASP]
+    major_financial_news:
+      authority: event_or_quote_lead
+      allowed_claims: [event_lead, management_quote_lead, public_reporting_lead]
+      forbidden_claims: [reported_financial_fact_replacement, company_sales, sell_through]
+    official_regulatory_or_scientific:
+      authority: official_context
+      allowed_claims: [trial_status, approval_status, recall_context, regulatory_status_context]
+      forbidden_claims: [prescription_volume, product_sales, market_share, clinical_success_probability]
+    macro_industry_dataset:
+      authority: context_only
+      allowed_claims: [macro_context, industry_cycle_context, trade_context]
+      forbidden_claims: [company_reported_financial_fact, company_sales, company_margin]
+    commercial_market_tracker:
+      authority: commercial_deferred_gap
+      allowed_claims: []
+      gap_policy: expose_commercial_gap_do_not_proxy
+  source_family_claim_boundaries:
+    primary_sec_filing:
+      authority: exact_company_fact
+      allowed_claims: [reported_financial_fact, segment_fact, company_disclosed_product_kpi, debt_footnote, ownership_context]
+    company_authored_unaudited_sec_filing:
+      authority: company_authored_context
+      allowed_claims: [management_commentary, guidance_context, product_context, unaudited_company_fact]
+      forbidden_claims: [audited_fact_replacement]
+    company_product_evidence_graph:
+      authority: limited_exact_company_disclosed_product_fact
+      allowed_claims: [product_taxonomy, company_disclosed_product_kpi, parser_verified_product_spec]
+      required_gates: [runtime_fact_allowed, metric_mapping_gate, unit_normalization_gate, period_alignment_gate]
+    public_source_context:
+      authority: context_only
+      allowed_claims: [resolver, official_or_public_context, directional_proxy]
+      forbidden_claims: [company_sales, market_share, sell_through, profitability]
+    live_public_web_context:
+      authority: parser_gated_context_only
+      allowed_claims: [product_surface_context, channel_offer_context, news_context]
+      forbidden_claims: [search_snippet_as_evidence, unallowlisted_domain_evidence, channel_offer_as_sell_through]
+    industry_snapshot:
+      authority: macro_or_industry_context_only
+      allowed_claims: [industry_cycle_context, macro_context, regulatory_context]
+      forbidden_claims: [company_reported_financial_fact, company_sales]
+    market_snapshot:
+      authority: market_context_only
+      allowed_claims: [market_reaction_context, valuation_context]
+      forbidden_claims: [business_fact, reported_financial_fact]
+    relationship_graph:
+      authority: hypothesis_context_only
+      allowed_claims: [relationship_scope, transmission_hypothesis]
+      forbidden_claims: [confirmed_customer_revenue, confirmed_supplier_revenue]
+    milvus_semantic:
+      authority: semantic_recall_only
+      allowed_claims: [retrieval_candidate, paraphrase_context]
+      forbidden_claims: [exact_value_fact, product_spec_without_parser, capital_structure_without_parser]
+    commercial_market_tracker:
+      authority: commercial_deferred_gap
+      allowed_claims: []
+      gap_policy: expose_commercial_gap_do_not_proxy
+
+promotion_policy:
+  exact_authority_sources: [primary_sec_filing, sec_companyfacts_api, sec_financial_statement_data_sets, company_authored_unaudited_sec_filing]
+  product_kpi_exact_authority_sources: [primary_sec_filing, company_authored_unaudited_sec_filing, company_product_evidence_graph]
+  product_spec_authority_sources: [company_product_evidence_graph, live_public_web_context]
+  context_only_sources: [public_source_context, live_public_web_context, industry_snapshot, market_snapshot, relationship_graph, milvus_semantic]
+  forbidden_promotions:
+    - public_proxy_to_company_sales
+    - product_page_to_shipments
+    - channel_offer_to_sell_through
+    - channel_offer_to_company_ASP
+    - field_inquiry_to_authority_fact
+    - macro_series_to_company_fact
+    - patent_to_commercial_success
+    - ownership_filing_to_realtime_flow
+
+subagent_slices:
+  research_lead:
+    consumes: [source_inventory, kg_inventory, playbook_registry, gap_summary, d_series_research_context]
+    forbidden: [raw_rows_as_claims, product_or_financial_judgment]
+  fundamental_subagent:
+    consumes: [Segment, ProductKPI, AtomicFact, CapitalStructure]
+    outputs: [ClaimCard]
+    forbidden: [channel_proxy_as_financial_fact, macro_series_as_company_fact]
+  product_technology_subagent:
+    consumes: [ProductFamily, ProductModel, ProductSpec, ProductKPI, RegulatoryEvent, TechnologySignal, ChannelOffer, FieldInquiryNote]
+    outputs: [ProductSpecPack, ClaimCard]
+    forbidden: [product_page_as_sales, channel_offer_as_sell_through, no_comparable_dimension_competitive_claim]
+  industry_supply_chain_subagent:
+    consumes: [CustomerRelationship, SupplierRelationship, CapacityAsset, RegionExposure, MacroDriver, TradeDriver]
+    outputs: [ClaimCard]
+    forbidden: [hypothesis_edge_as_confirmed_customer_revenue]
+  capital_ownership_subagent:
+    consumes: [CapitalStructure, DebtInstrument, CreditFacility, EquityOffering, OwnershipPosition, InsiderTransaction]
+    outputs: [ClaimCard]
+    forbidden: [thirteen_f_as_realtime_flow, bond_context_as_company_liquidity_without_bridge]
+  risk_counterevidence_subagent:
+    consumes: [ClaimCard, Gap, GateResult]
+    outputs: [CounterClaimCard]
+    forbidden: [new_fact_creation, gate_bypass]
+
+capital_ownership_policy:
+  ownership_lag_required_fields: [report_period, filing_date, lag_days, not_realtime_flag]
+  debt_required_fields: [maturity_date, coupon, interest_rate_type, currency, source_id]
+  forbidden_promotions: [thirteen_f_as_realtime_flow, ownership_position_as_purchase_today, credit_spread_as_company_default]
+
+macro_exposure_policy:
+  exposure_bridge_required: true
+  exposure_required_fields: [company_id, driver_id, exposure_type, evidence_ref, source_id, claim_scope]
+  forbidden_promotions: [macro_series_to_company_revenue, macro_series_to_company_margin, patent_to_commercial_success, clinical_status_to_sales]

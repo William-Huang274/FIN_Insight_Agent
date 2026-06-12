@@ -8,9 +8,11 @@ from typing import Any, Callable, Mapping
 from urllib.parse import urlparse
 
 from sec_agent.agent_registry import agent_registry_by_id
+from sec_agent.capital_macro_pack import build_capital_macro_pack, compact_capital_macro_pack
 from sec_agent.industry_playbooks import selected_playbook_policy
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
 from sec_agent.multi_agent_contracts import evidence_requirements_from_universe_relationship_plan
+from sec_agent.product_spec_pack import build_product_spec_pack, compact_product_spec_pack
 from sec_agent.project_inventory import inventory_brief
 from sec_agent.retrieval_plan import EVIDENCE_REQUIREMENT_SCHEMA_VERSION, build_evidence_requirement_plan, build_retrieval_plan
 from sec_agent.tool_call_ledger import ToolCallLedger
@@ -2053,6 +2055,21 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
         view["bounded_row_distribution"] = _bounded_row_distribution(bounded_rows)
         source_family_bundle = _source_family_bundle_for_agent(entry["agent_id"], bounded_rows, state)
         view["source_family_bundle"] = source_family_bundle
+        if entry["agent_id"] == "product_technology_analyst":
+            product_spec_pack = build_product_spec_pack(
+                state,
+                max_items=max(8, min(32, _data_view_max_rows_for_agent(entry["agent_id"], state))),
+            )
+            view["product_spec_pack"] = product_spec_pack
+            view["product_spec_pack_ref"] = compact_product_spec_pack(product_spec_pack)
+        if entry["agent_id"] in {"fundamental_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"}:
+            capital_macro_pack = build_capital_macro_pack(
+                state,
+                max_items=max(8, min(32, _data_view_max_rows_for_agent(entry["agent_id"], state))),
+            )
+            if (capital_macro_pack.get("summary") or {}).get("input_row_count"):
+                view["capital_macro_pack"] = capital_macro_pack
+                view["capital_macro_pack_ref"] = compact_capital_macro_pack(capital_macro_pack)
     if "coverage_summary" in allowed:
         view["coverage_summary"] = _coverage_summary_view(state)
     if "tool_trace_summary" in allowed:
@@ -2096,6 +2113,8 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
             "role_context": view["role_context"],
             "bounded_row_distribution": view.get("bounded_row_distribution") or {},
             "source_family_bundle": view.get("source_family_bundle") or {},
+            "product_spec_pack_ref": view.get("product_spec_pack_ref") or {},
+            "capital_macro_pack_ref": view.get("capital_macro_pack_ref") or {},
             "assigned_task_card": view.get("assigned_task_card") or {},
             "required_claim_slots": view.get("required_claim_slots") or [],
             "bounded_gap_refs": view.get("bounded_gap_refs") or [],
@@ -2196,6 +2215,21 @@ def _role_context_for_agent_data_view(
                 "claim_card_output_required": True,
             }
         )
+        if agent_id == "product_technology_analyst":
+            base.update(
+                {
+                    "product_spec_pack_required": True,
+                    "product_spec_pack_policy": "parser_gated_product_objects_and_boundaries_only_no_public_proxy_financial_promotion",
+                    "product_spec_pack_output_required": True,
+                }
+            )
+        if agent_id in {"fundamental_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"}:
+            base.update(
+                {
+                    "capital_macro_pack_allowed": True,
+                    "capital_macro_pack_policy": "capital_ownership_and_macro_edges_require_parser_gates_13f_lag_and_exposure_bridge",
+                }
+            )
     elif agent_id == "memo_writer":
         base.update(
             {

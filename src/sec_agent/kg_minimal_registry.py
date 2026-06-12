@@ -30,6 +30,10 @@ def load_kg_minimal_registry(path: str | Path | None = None) -> dict[str, Any]:
         payload = yaml.safe_load(handle) or {}
     if not isinstance(payload, Mapping):
         return _fallback_registry()
+    if str(payload.get("schema_version") or "") == "fin_agent_kg_matrix_registry_v0.1":
+        from sec_agent.kg_matrix_registry import derive_minimal_kg_registry
+
+        return normalize_kg_minimal_registry(derive_minimal_kg_registry(payload))
     return normalize_kg_minimal_registry(payload)
 
 

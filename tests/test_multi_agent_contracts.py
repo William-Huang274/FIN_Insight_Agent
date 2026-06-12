@@ -5,6 +5,7 @@ from sec_agent.multi_agent_contracts import (
     aggregate_specialist_judgment_plan,
     build_multi_agent_memo_draft,
     normalize_universe_relationship_plan,
+    repair_multi_agent_memo_draft,
     validate_specialist_memolet,
     validate_universe_relationship_plan,
     verify_multi_agent_memo_draft,
@@ -96,6 +97,148 @@ def test_product_technology_claim_card_uses_product_memo_slot() -> None:
     assert judgment["supported_claims"][0]["memo_slot"] == "product_technology"
     assert outline["product_technology"]["status"] == "supported"
     assert draft["memo_claims"][0]["memo_slot"] == "product_technology"
+
+
+def test_verifier_blocks_ownership_filing_as_realtime_flow_and_repair_removes_it() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "industry_supply_chain_analyst",
+                "observations": [
+                    {
+                        "claim": "13F holdings show real-time money inflow into NVDA.",
+                        "claim_type": "realtime_flow",
+                        "evidence_refs": ["nvda_13f_ref"],
+                        "source_families": ["public_source_context"],
+                        "memo_slot": "industry_relationship",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["ownership"],
+                        "materiality": "high",
+                        "confidence": "medium",
+                    }
+                ],
+            }
+        ]
+    )
+    memo = build_multi_agent_memo_draft(judgment)
+
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+    repaired = repair_multi_agent_memo_draft(memo, verification, judgment)
+
+    error_types = {item["type"] for item in verification["errors"]}
+    assert verification["status"] == "fail"
+    assert "ownership_filing_used_as_realtime_flow" in error_types
+    assert not repaired["memo_claims"]
+    assert repaired["removed_claims"][0]["reason"] == "ownership_filing_used_as_realtime_flow"
+
+
+def test_verifier_blocks_macro_context_as_company_fact_and_repair_removes_it() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "industry_supply_chain_analyst",
+                "observations": [
+                    {
+                        "claim": "FRED macro rate data proves JPM company revenue growth.",
+                        "claim_type": "company_revenue",
+                        "evidence_refs": ["fred_rate_ref"],
+                        "source_families": ["industry_snapshot"],
+                        "memo_slot": "industry_relationship",
+                        "ticker_scope": ["JPM"],
+                        "metric_scope": ["revenue"],
+                        "materiality": "high",
+                        "confidence": "medium",
+                    }
+                ],
+            }
+        ]
+    )
+    memo = build_multi_agent_memo_draft(judgment)
+
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+    repaired = repair_multi_agent_memo_draft(memo, verification, judgment)
+
+    error_types = {item["type"] for item in verification["errors"]}
+    assert verification["status"] == "fail"
+    assert "macro_or_public_context_used_as_company_fact" in error_types
+    assert not repaired["memo_claims"]
+    assert repaired["removed_claims"][0]["reason"] == "macro_or_public_context_used_as_company_fact"
+
+
+def test_verifier_blocks_public_proxy_as_product_kpi_fact_and_repair_removes_it() -> None:
+    claim = {
+        "claim_id": "product_claim_1",
+        "agent_id": "product_technology_analyst",
+        "claim": "A commerce listing proves product sales for the model.",
+        "claim_type": "product_sales",
+        "evidence_refs": ["commerce_listing_ref"],
+        "source_families": ["live_public_web_context"],
+        "memo_slot": "product_technology",
+        "ticker_scope": ["NVDA"],
+        "metric_scope": ["product_sales"],
+        "materiality": "high",
+        "confidence": "medium",
+    }
+    judgment = {"supported_claims": [claim], "unsupported_claims": []}
+    memo = {
+        "answer_status": "draft",
+        "direct_answer": "A commerce listing proves product sales for the model.",
+        "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+        "memo_claims": [claim],
+    }
+
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+    repaired = repair_multi_agent_memo_draft(memo, verification, judgment)
+
+    error_types = {item["type"] for item in verification["errors"]}
+    assert verification["status"] == "fail"
+    assert "public_proxy_used_as_product_kpi_fact" in error_types
+    assert repaired["removed_claims"][0]["reason"] == "public_proxy_used_as_product_kpi_fact"
+
+
+def test_verifier_blocks_channel_offer_as_sell_through_and_field_inquiry_authority_fact() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "product_technology_analyst",
+                "observations": [
+                    {
+                        "claim": "Channel offer price availability proves sell-through and market share.",
+                        "claim_type": "business_observation",
+                        "evidence_refs": ["channel_offer_ref"],
+                        "source_families": ["live_public_web_context"],
+                        "memo_slot": "product_technology",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["sell_through"],
+                        "materiality": "high",
+                        "confidence": "medium",
+                    },
+                    {
+                        "claim": "Field inquiry note from a dealer quote is an authority fact for sales.",
+                        "claim_type": "business_observation",
+                        "evidence_refs": ["field_inquiry_ref"],
+                        "source_families": ["public_source_context"],
+                        "memo_slot": "product_technology",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["sales"],
+                        "materiality": "high",
+                        "confidence": "medium",
+                    },
+                ],
+            }
+        ]
+    )
+    memo = build_multi_agent_memo_draft(judgment)
+
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+    repaired = repair_multi_agent_memo_draft(memo, verification, judgment)
+
+    error_types = {item["type"] for item in verification["errors"]}
+    removed_reasons = {item["reason"] for item in repaired["removed_claims"]}
+    assert verification["status"] == "fail"
+    assert "channel_offer_used_as_sell_through" in error_types
+    assert "field_inquiry_note_used_as_authority_fact" in error_types
+    assert {"channel_offer_used_as_sell_through", "field_inquiry_note_used_as_authority_fact"} <= removed_reasons
 
 
 def test_judgment_plan_preserves_conflicts_without_averaging() -> None:

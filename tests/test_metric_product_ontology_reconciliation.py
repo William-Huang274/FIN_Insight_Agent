@@ -61,6 +61,28 @@ def test_metric_product_ontology_consumes_minimal_kg_registry_boundaries() -> No
     assert metric["claim_boundary"] == "commercial_gap_metric_expose_gap_do_not_proxy"
 
 
+def test_metric_product_ontology_accepts_full_kg_matrix_registry_path() -> None:
+    ontology = build_metric_product_ontology_snapshot(
+        {
+            "kg_matrix_registry_path": "configs/kg_matrix_registry_v0_1.yaml",
+            "runtime_ledger_rows": [
+                {"evidence_ref": "contract_awards", "ticker": "LMT", "metric_family": "contract awards"},
+            ],
+        }
+    )
+    contract_awards = resolve_metric_for_row({"metric_family": "contract awards"}, ontology)
+    product_spec = ontology["product_spec_ontology"]
+
+    assert ontology["registry_schema_version"] == "fin_agent_kg_minimal_p0_k1_k2_k3_registry_v0.1"
+    assert ontology["registry_validation_status"] == "pass"
+    assert "ProductModel" not in ontology["product_spec_ontology"].get("node_types", [])
+    assert "product_model_id" in product_spec["product_model_required_fields"]
+    assert "comparable_dimensions" in product_spec["comparable_edge_required_fields"]
+    assert "observed_at" in product_spec["channel_offer_required_fields"]
+    assert "authority_fact" in product_spec["field_inquiry_boundary"]["forbidden_claims"]
+    assert contract_awards["canonical_metric_id"] == "product_kpi:contract_awards"
+
+
 def test_reconciliation_resolves_source_priority_and_blocks_unit_and_taxonomy_conflicts() -> None:
     ontology = build_metric_product_ontology_snapshot({})
     ledger = build_reconciliation_ledger(

@@ -87,6 +87,22 @@ PRODUCT_CONTEXT_CLAIM_TYPES = {
     "business_observation",
     "unsupported_claim",
 }
+OWNERSHIP_REALTIME_FLOW_CLAIM_TYPES = {
+    "realtime_flow",
+    "real_time_flow",
+    "fund_flow",
+    "money_flow",
+    "ownership_purchase_today",
+}
+MACRO_COMPANY_FACT_CLAIM_TYPES = {
+    "company_revenue",
+    "company_sales",
+    "company_margin",
+    "company_reported_macro_fact",
+    "commercial_success",
+    "product_sales",
+    "sell_through",
+}
 UNSUPPORTED_CLAIM_CAP_PER_AGENT = 2
 FOCUSED_ANSWER_SYNTHESIZER_AGENT_ID = "focused_answer_synthesizer"
 AMOUNT_METRIC_TERMS = {
@@ -1265,6 +1281,10 @@ def _claim_source_scope_penalty(claim_type: str, source_families: list[str]) -> 
     normalized_type = str(claim_type or "").strip()
     if normalized_type in {"reported_financial_fact", "company_reported_financial_fact"} and families & CONTEXT_ONLY_SOURCE_FAMILIES:
         return 24
+    if normalized_type in OWNERSHIP_REALTIME_FLOW_CLAIM_TYPES and families & {"public_source_context", "industry_snapshot", "milvus_semantic"}:
+        return 32
+    if normalized_type in MACRO_COMPANY_FACT_CLAIM_TYPES and families & {"industry_snapshot", "public_source_context", "milvus_semantic"}:
+        return 30
     if normalized_type in PRODUCT_KPI_CLAIM_TYPES and families & {"public_source_context", "live_public_web_context", "milvus_semantic"}:
         return 28
     if "company_product_evidence_graph" in families and normalized_type in PRODUCT_CONTEXT_CLAIM_TYPES:
@@ -1274,6 +1294,45 @@ def _claim_source_scope_penalty(claim_type: str, source_families: list[str]) -> 
     if "market_snapshot" in families and normalized_type in {"company_reported_financial_fact", "reported_financial_fact"}:
         return 20
     return 0
+
+
+def _text_suggests_ownership_realtime_flow(text: str) -> bool:
+    value = str(text or "").lower()
+    ownership_terms = ("13f", "13d", "13g", "ownership", "holding", "holdings", "持仓", "持有")
+    realtime_terms = ("real-time", "realtime", "now buying", "buying today", "flow", "inflow", "outflow", "资金流", "实时", "正在买入")
+    return any(term in value for term in ownership_terms) and any(term in value for term in realtime_terms)
+
+
+def _text_suggests_macro_company_fact(text: str) -> bool:
+    value = str(text or "").lower()
+    macro_terms = ("macro", "fred", "fed funds", "interest rate", "rates", "oil price", "eia", "census", "宏观", "利率")
+    company_fact_terms = (
+        "company revenue",
+        "reported revenue",
+        "sales were",
+        "margin was",
+        "product sales",
+        "commercial success",
+        "sell-through",
+        "公司收入",
+        "公司销售",
+        "利润率",
+    )
+    return any(term in value for term in macro_terms) and any(term in value for term in company_fact_terms)
+
+
+def _text_suggests_channel_offer_sell_through(text: str) -> bool:
+    value = str(text or "").lower()
+    channel_terms = ("channel offer", "commerce", "ecommerce", "listing", "price", "availability", "电商", "报价", "渠道")
+    sellthrough_terms = ("sell-through", "sell through", "sales volume", "channel inventory", "market share", "售罄率", "销量", "份额", "库存")
+    return any(term in value for term in channel_terms) and any(term in value for term in sellthrough_terms)
+
+
+def _text_suggests_field_inquiry_authority_fact(text: str) -> bool:
+    value = str(text or "").lower()
+    inquiry_terms = ("field inquiry", "inquiry note", "sales desk", "dealer quote", "询价", "访谈", "经销商")
+    authority_terms = ("authority fact", "proves", "confirmed fact", "official fact", "权威事实", "证明", "确认")
+    return any(term in value for term in inquiry_terms) and any(term in value for term in authority_terms)
 
 
 def _claim_implication_score(claim_text: str) -> tuple[int, str]:
@@ -1965,6 +2024,39 @@ def verify_multi_agent_memo_draft(
                     "source_families": sorted(source_families & CONTEXT_ONLY_SOURCE_FAMILIES),
                 }
             )
+        if claim_type in OWNERSHIP_REALTIME_FLOW_CLAIM_TYPES and source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"}:
+            errors.append(
+                {
+                    "type": "ownership_filing_used_as_realtime_flow",
+                    "index": index,
+                    "source_families": sorted(source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"}),
+                }
+            )
+        if claim_type in MACRO_COMPANY_FACT_CLAIM_TYPES and source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"}:
+            errors.append(
+                {
+                    "type": "macro_or_public_context_used_as_company_fact",
+                    "index": index,
+                    "source_families": sorted(source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"}),
+                }
+            )
+        if claim_type in PRODUCT_KPI_CLAIM_TYPES and source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"}:
+            errors.append(
+                {
+                    "type": "public_proxy_used_as_product_kpi_fact",
+                    "index": index,
+                    "source_families": sorted(source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"}),
+                }
+            )
+        claim_text = str(claim.get("claim") or "").lower()
+        if source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"} and _text_suggests_ownership_realtime_flow(claim_text):
+            errors.append({"type": "ownership_filing_used_as_realtime_flow", "index": index, "source_families": sorted(source_families)})
+        if source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"} and _text_suggests_macro_company_fact(claim_text):
+            errors.append({"type": "macro_or_public_context_used_as_company_fact", "index": index, "source_families": sorted(source_families)})
+        if source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"} and _text_suggests_channel_offer_sell_through(claim_text):
+            errors.append({"type": "channel_offer_used_as_sell_through", "index": index, "source_families": sorted(source_families)})
+        if source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"} and _text_suggests_field_inquiry_authority_fact(claim_text):
+            errors.append({"type": "field_inquiry_note_used_as_authority_fact", "index": index, "source_families": sorted(source_families)})
         if (
             "market_snapshot" in source_families
             and (claim_type in {"market_context", "valuation_context"} or source_families <= {"market_snapshot"})
@@ -2330,6 +2422,20 @@ def repair_multi_agent_memo_draft(
             remove_reason = "unsupported_claim_text"
         elif claim_type in {"reported_financial_fact", "company_reported_financial_fact"} and source_families & CONTEXT_ONLY_SOURCE_FAMILIES:
             remove_reason = "context_source_used_as_financial_fact"
+        elif claim_type in OWNERSHIP_REALTIME_FLOW_CLAIM_TYPES and source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"}:
+            remove_reason = "ownership_filing_used_as_realtime_flow"
+        elif claim_type in MACRO_COMPANY_FACT_CLAIM_TYPES and source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"}:
+            remove_reason = "macro_or_public_context_used_as_company_fact"
+        elif claim_type in PRODUCT_KPI_CLAIM_TYPES and source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"}:
+            remove_reason = "public_proxy_used_as_product_kpi_fact"
+        elif source_families & {"public_source_context", "industry_snapshot", "milvus_semantic"} and _text_suggests_ownership_realtime_flow(text):
+            remove_reason = "ownership_filing_used_as_realtime_flow"
+        elif source_families & {"industry_snapshot", "public_source_context", "milvus_semantic"} and _text_suggests_macro_company_fact(text):
+            remove_reason = "macro_or_public_context_used_as_company_fact"
+        elif source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"} and _text_suggests_channel_offer_sell_through(text):
+            remove_reason = "channel_offer_used_as_sell_through"
+        elif source_families & {"public_source_context", "live_public_web_context", "milvus_semantic"} and _text_suggests_field_inquiry_authority_fact(text):
+            remove_reason = "field_inquiry_note_used_as_authority_fact"
         elif "market_snapshot" in source_families and not str(claim.get("as_of_date") or "") and not _refs_contain_iso_date(refs):
             remove_reason = "market_claim_missing_as_of_date"
 

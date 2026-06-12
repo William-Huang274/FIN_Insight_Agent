@@ -3058,6 +3058,7 @@ def _multi_agent_specialists_active(state: SecAgentGraphRuntimeState) -> bool:
         active
         & {
             "fundamental_analyst",
+            "product_technology_analyst",
             "industry_supply_chain_analyst",
             "market_valuation_analyst",
             "risk_counterevidence_analyst",

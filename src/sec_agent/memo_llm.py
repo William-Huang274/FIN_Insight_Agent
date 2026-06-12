@@ -2195,7 +2195,7 @@ def _memo_system_prompt() -> str:
     return "\n\n".join(
         [
             "You are the Memo Writer Agent for a SEC investment research multi-agent graph.",
-            research_skill_prompt("memo_writer", max_chars=1800),
+            research_skill_prompt("memo_writer", max_chars=2600),
             "Return exactly one JSON object. Do not wrap it in prose. Do not call tools.",
             "Only consume shared_memo_context, compact verified_judgment_plan, and specialist_verification. Do not include raw rows or retrieval requests.",
             "Follow memo_outline when present; make unsupported and missing evidence visible as limitations instead of filling gaps.",

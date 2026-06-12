@@ -10,6 +10,7 @@ from typing import Any, Mapping
 import yaml
 
 from sec_agent.kg_minimal_registry import load_kg_minimal_registry, validate_kg_minimal_registry
+from sec_agent.kg_matrix_registry import derive_minimal_kg_registry, load_kg_matrix_registry
 
 
 METRIC_PRODUCT_ONTOLOGY_SCHEMA_VERSION = "sec_agent_metric_product_ontology_v0.1"
@@ -543,13 +544,22 @@ def _product_ontology_config(state: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _kg_minimal_registry(state: Mapping[str, Any]) -> dict[str, Any]:
+    matrix_registry = state.get("kg_matrix_registry")
+    if isinstance(matrix_registry, Mapping):
+        return derive_minimal_kg_registry(matrix_registry)
     registry = state.get("kg_minimal_registry")
     if isinstance(registry, Mapping):
         return dict(registry)
     inventory = state.get("project_inventory") if isinstance(state.get("project_inventory"), Mapping) else {}
+    matrix_registry = inventory.get("kg_matrix_registry") if isinstance(inventory.get("kg_matrix_registry"), Mapping) else {}
+    if matrix_registry:
+        return derive_minimal_kg_registry(matrix_registry)
     registry = inventory.get("kg_minimal_registry") if isinstance(inventory.get("kg_minimal_registry"), Mapping) else {}
     if registry:
         return dict(registry)
+    matrix_path = state.get("kg_matrix_registry_path") or inventory.get("kg_matrix_registry_path")
+    if str(matrix_path or "").strip():
+        return derive_minimal_kg_registry(load_kg_matrix_registry(matrix_path))
     path = state.get("kg_minimal_registry_path") or inventory.get("kg_minimal_registry_path")
     return load_kg_minimal_registry(path if str(path or "").strip() else None)
 
@@ -619,8 +629,14 @@ def _product_spec_ontology_summary(registry: Mapping[str, Any]) -> dict[str, Any
     k2 = registry.get("k2_product_spec_ontology") if isinstance(registry.get("k2_product_spec_ontology"), Mapping) else {}
     dimensions = k2.get("industry_spec_dimensions") if isinstance(k2.get("industry_spec_dimensions"), Mapping) else {}
     boundary = k2.get("channel_offer_boundary") if isinstance(k2.get("channel_offer_boundary"), Mapping) else {}
+    inquiry_boundary = k2.get("field_inquiry_boundary") if isinstance(k2.get("field_inquiry_boundary"), Mapping) else {}
     return {
         "common_required_fields": _string_list(k2.get("common_required_fields")),
+        "product_model_required_fields": _string_list(k2.get("product_model_required_fields")),
+        "generation_edge_required_fields": _string_list(k2.get("generation_edge_required_fields")),
+        "comparable_edge_required_fields": _string_list(k2.get("comparable_edge_required_fields")),
+        "channel_offer_required_fields": _string_list(k2.get("channel_offer_required_fields")),
+        "field_inquiry_required_fields": _string_list(k2.get("field_inquiry_required_fields")),
         "industry_spec_dimensions": {
             str(industry): _string_list(values)
             for industry, values in dimensions.items()
@@ -628,6 +644,10 @@ def _product_spec_ontology_summary(registry: Mapping[str, Any]) -> dict[str, Any
         "channel_offer_boundary": {
             "allowed_claims": _string_list(boundary.get("allowed_claims")),
             "forbidden_claims": _string_list(boundary.get("forbidden_claims")),
+        },
+        "field_inquiry_boundary": {
+            "allowed_claims": _string_list(inquiry_boundary.get("allowed_claims")),
+            "forbidden_claims": _string_list(inquiry_boundary.get("forbidden_claims")),
         },
     }
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from sec_agent.langgraph_orchestrator import build_multi_agent_orchestration_graph, make_multi_agent_smoke_state
+from sec_agent.langgraph_orchestrator import _render_memo_answer, build_multi_agent_orchestration_graph, make_multi_agent_smoke_state
 from sec_agent.memo_llm import (
     MEMO_ROUTE_SOURCE,
     MEMO_ROUTER_ENV,
@@ -11,6 +11,7 @@ from sec_agent.memo_llm import (
     build_shared_memo_context,
     extract_json_object,
     memo_writer_from_env,
+    _localize_dimension_analyses,
     _normalize_zh_punctuation,
     route_memo_writer_llm,
     route_verifier_llm,
@@ -31,6 +32,55 @@ def test_zh_punctuation_normalization_separates_concatenated_ticker_sentence() -
 
     assert "增长TGT" not in normalized
     assert "增长；TGT" in normalized
+
+
+def test_zh_gap_only_dimension_localization_avoids_english_fallback_template() -> None:
+    rows = _localize_dimension_analyses(
+        [
+            {
+                "dimension_id": "product_and_production",
+                "status": "gap_or_counterevidence",
+                "summary": "Bounded evidence contains only product_source_gap rows; no company_product_evidence_graph rows are present.",
+                "business_mechanism": "The evidence links product adoption, capacity, units, backlog, usage, or product mix to the operating line being evaluated.",
+                "financial_bridge": "Bridge product evidence to revenue, margin, inventory, capacity, or backlog only when the verified ClaimCard states the metric.",
+            }
+        ]
+    )
+
+    assert "当前产品/产线维度只有公开证据缺口" in rows[0]["summary"]
+    assert "Bounded evidence" not in rows[0]["summary"]
+    assert "exact-authority" in rows[0]["financial_bridge"]
+
+
+def test_standard_memo_renderer_surfaces_more_than_five_dimensions() -> None:
+    memo = {
+        "response_language": {"language": "zh-CN"},
+        "memo_profile": {"profile": "standard"},
+        "direct_answer": "有边界的核心判断。",
+        "dimension_analyses": [
+            {
+                "dimension_id": dimension_id,
+                "title": title,
+                "summary": f"{title} 有可追踪分析。",
+                "claim_ids": [f"claim_{index}"],
+            }
+            for index, (dimension_id, title) in enumerate(
+                [
+                    ("fundamentals", "基本面"),
+                    ("product_and_production", "产品"),
+                    ("capital_and_financing", "资本"),
+                    ("competition_and_market_position", "竞争"),
+                    ("industry_supply_chain", "行业"),
+                    ("risk_and_counterevidence", "风险"),
+                ],
+                start=1,
+            )
+        ],
+    }
+
+    rendered = _render_memo_answer(memo, bounded=False)
+
+    assert "6. 风险" in rendered
 
 
 def test_repair_multi_agent_memo_removes_raw_tool_and_bad_claims() -> None:

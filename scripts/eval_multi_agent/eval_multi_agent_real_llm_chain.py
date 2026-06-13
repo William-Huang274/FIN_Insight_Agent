@@ -106,6 +106,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--reranker-max-length", type=int, default=int(os.environ.get("RERANKER_MAX_LENGTH", "512")))
     parser.add_argument("--reranker-doc-max-chars", type=int, default=int(os.environ.get("RERANKER_DOC_MAX_CHARS", "0")))
     parser.add_argument("--summary-output-path", type=Path, default=None, help="Optional compact summary JSON for Workbench eval jobs.")
+    parser.add_argument(
+        "--run-audit-db-path",
+        type=Path,
+        default=Path(os.environ["RUN_AUDIT_DB_PATH"]) if os.environ.get("RUN_AUDIT_DB_PATH") else None,
+        help="Optional SQLite run audit store. Redis remains coordination-only; this is the final audit source.",
+    )
     parser.add_argument("--strict", action="store_true", help="Exit non-zero unless all hard gates pass.")
     return parser.parse_args(argv)
 
@@ -273,7 +279,25 @@ def score_case(
     memo_response_language = _memo_response_language(memo)
     rendered_has_claim_section = _rendered_has_claim_section(rendered_answer)
     rendered_has_evidence_refs = _rendered_has_evidence_refs(rendered_answer)
+    rendered_has_dimension_section = _rendered_has_dimension_section(rendered_answer)
+    memo_dimension_analyses = [row for row in memo.get("dimension_analyses") or [] if isinstance(row, Mapping)]
+    analyst_depth_gate = claim_verification.get("analyst_depth_gate") if isinstance(claim_verification.get("analyst_depth_gate"), Mapping) else {}
+    thesis_driver_pack = (
+        (result.get("verified_judgment_plan") or {}).get("thesis_driver_pack")
+        if isinstance(result.get("verified_judgment_plan"), Mapping)
+        else {}
+    )
+    if not isinstance(thesis_driver_pack, Mapping):
+        thesis_driver_pack = {}
     vnext_contract = _vnext_contract_audit(case, result=result, summary=summary, tool_calls=tool_calls)
+    run_audit = _run_audit_checks(case, result)
+    analyst_depth = _analyst_depth_checks(
+        case,
+        memo_dimension_analyses=memo_dimension_analyses,
+        analyst_depth_gate=analyst_depth_gate,
+        rendered_has_dimension_section=rendered_has_dimension_section,
+        thesis_driver_pack=thesis_driver_pack,
+    )
 
     layer_checks = {
         "research_lead": {
@@ -322,6 +346,7 @@ def score_case(
             "rendered_answer_not_empty": bool(str(result.get("rendered_answer") or "").strip()),
             "rendered_answer_has_memo_claims": rendered_has_claim_section if case.get("require_rendered_memo_claims") else True,
             "rendered_answer_has_evidence_refs": rendered_has_evidence_refs if case.get("require_rendered_evidence_refs") else True,
+            "rendered_answer_has_dimension_section": rendered_has_dimension_section if case.get("require_dimension_memo_surface") else True,
             "response_language_matches_query": (
                 memo_response_language == expected_response_language
                 if case.get("require_response_language_match")
@@ -338,6 +363,8 @@ def score_case(
             "no_api_key_marker": "sk-" not in json.dumps(summary, ensure_ascii=False),
             "no_private_path_marker": "raw_private" not in json.dumps(summary, ensure_ascii=False),
         },
+        "analyst_depth": analyst_depth["checks"],
+        "run_audit": run_audit["checks"],
         "vnext_contract": vnext_contract["checks"],
     }
     checks = _flatten_checks(layer_checks)
@@ -367,9 +394,12 @@ def score_case(
         "memo_response_language": memo_response_language,
         "expected_response_language": expected_response_language,
         "memo_claim_count": memo_claim_count,
+        "memo_dimension_analysis_count": len(memo_dimension_analyses),
+        "analyst_depth_gate_status": analyst_depth_gate.get("status") or "",
         "rendered_answer_chars": len(rendered_answer),
         "rendered_answer_has_claim_section": rendered_has_claim_section,
         "rendered_answer_has_evidence_refs": rendered_has_evidence_refs,
+        "rendered_answer_has_dimension_section": rendered_has_dimension_section,
         "claim_verification": claim_verification.get("status") or "",
         "specialist_verification": specialist_verification.get("status") or "",
         "universe_validation": universe_validation.get("status") or ("skipped" if "universe_relationship" not in active_agents else ""),
@@ -380,6 +410,8 @@ def score_case(
         "real_retrieval_required": real_retrieval_required,
         "real_specialist_quality_required": real_specialist_quality_required,
         "specialist_real_evidence_quality": specialist_quality,
+        "analyst_depth_audit": analyst_depth,
+        "run_audit": run_audit,
         "vnext_contract_audit": vnext_contract,
         "layer_checks": layer_checks,
         "checks": checks,
@@ -399,6 +431,103 @@ def _rendered_has_claim_section(rendered_answer: str) -> bool:
 def _rendered_has_evidence_refs(rendered_answer: str) -> bool:
     text = str(rendered_answer or "")
     return "refs=" in text or "证据=" in text
+
+
+def _rendered_has_dimension_section(rendered_answer: str) -> bool:
+    text = str(rendered_answer or "")
+    return "Dimension analysis:" in text or "分维度分析:" in text
+
+
+def _analyst_depth_checks(
+    case: Mapping[str, Any],
+    *,
+    memo_dimension_analyses: list[Mapping[str, Any]],
+    analyst_depth_gate: Mapping[str, Any],
+    rendered_has_dimension_section: bool,
+    thesis_driver_pack: Mapping[str, Any],
+) -> dict[str, Any]:
+    required = bool(case.get("require_dimension_memo_surface") or case.get("require_analyst_depth_gate"))
+    required_dimension_ids = set(_string_list(case.get("required_dimension_ids")))
+    memo_dimension_ids = {
+        str(row.get("dimension_id") or "")
+        for row in memo_dimension_analyses
+        if str(row.get("dimension_id") or "").strip()
+    }
+    pack_dimension_ids = {
+        str(row.get("dimension_id") or "")
+        for row in thesis_driver_pack.get("dimension_sections") or []
+        if isinstance(row, Mapping) and str(row.get("dimension_id") or "").strip()
+    }
+    traceable_count = 0
+    for row in memo_dimension_analyses:
+        summary = str(row.get("summary") or row.get("section_thesis") or "").strip()
+        refs = _string_list(row.get("evidence_refs") or row.get("refs"))
+        claim_ids = _string_list(row.get("claim_ids") or row.get("primary_claim_ids"))
+        counter_claim_ids = _string_list(row.get("counter_claim_ids"))
+        gap_ids = _string_list(row.get("gap_ids"))
+        if summary and (refs or claim_ids or counter_claim_ids or gap_ids):
+            traceable_count += 1
+    checks = {
+        "dimension_pack_present": bool(pack_dimension_ids) if required else True,
+        "dimension_analyses_present": bool(memo_dimension_analyses) if required else True,
+        "dimension_analyses_traceable": traceable_count >= min(2, len(memo_dimension_analyses)) if required else True,
+        "rendered_dimension_section_present": rendered_has_dimension_section if case.get("require_dimension_memo_surface") else True,
+        "analyst_depth_gate_pass": str(analyst_depth_gate.get("status") or "") == "pass" if case.get("require_analyst_depth_gate") else True,
+        "required_dimensions_present": required_dimension_ids <= (memo_dimension_ids | pack_dimension_ids) if required_dimension_ids else True,
+    }
+    return {
+        "schema_version": "sec_agent_analyst_depth_eval_audit_v0.1",
+        "required": required,
+        "memo_dimension_ids": sorted(memo_dimension_ids),
+        "pack_dimension_ids": sorted(pack_dimension_ids),
+        "required_dimension_ids": sorted(required_dimension_ids),
+        "traceable_dimension_count": traceable_count,
+        "analyst_depth_gate_status": analyst_depth_gate.get("status") or "",
+        "checks": checks,
+    }
+
+
+def _run_audit_checks(case: Mapping[str, Any], result: Mapping[str, Any]) -> dict[str, Any]:
+    report = (
+        result.get("run_audit_materialization_report")
+        if isinstance(result.get("run_audit_materialization_report"), Mapping)
+        else {}
+    )
+    counts = report.get("table_counts") if isinstance(report.get("table_counts"), Mapping) else {}
+    required = bool(case.get("require_run_audit_store"))
+    required_tables = _string_list(case.get("required_run_audit_tables")) or [
+        "run",
+        "node_execution",
+        "artifact_ref",
+        "evidence_row",
+        "claim_card",
+        "gap",
+        "gate_result",
+        "model_call",
+    ]
+    nonempty_tables = _string_list(case.get("required_run_audit_nonempty_tables")) or [
+        "run",
+        "node_execution",
+        "artifact_ref",
+        "gate_result",
+        "model_call",
+    ]
+    checks = {
+        "run_audit_report_present": bool(report) if required else True,
+        "run_audit_status_pass": str(report.get("status") or "") == "pass" if required else True,
+        "required_tables_present": all(table in counts for table in required_tables) if required else True,
+        "required_nonempty_tables_nonempty": all(int(counts.get(table) or 0) > 0 for table in nonempty_tables) if required else True,
+        "redis_coordination_only": "redis_coordination_only" in str(report.get("run_audit_policy") or "").lower() if required else True,
+    }
+    return {
+        "schema_version": "sec_agent_run_audit_eval_check_v0.1",
+        "required": required,
+        "db_path": report.get("db_path") or "",
+        "table_counts": dict(counts),
+        "required_tables": required_tables,
+        "required_nonempty_tables": nonempty_tables,
+        "checks": checks,
+    }
 
 
 def _budgeted_tool_call_count(tool_calls: list[Mapping[str, Any]]) -> int:
@@ -739,6 +868,9 @@ def _initial_state(
         search_scope_tickers=_string_list(case.get("search_scope_tickers")),
     )
     state["run_id"] = f"{run_id}_{case.get('case_id')}"
+    state["case_id"] = str(case.get("case_id") or "")
+    if args.run_audit_db_path:
+        state["run_audit_db_path"] = str(args.run_audit_db_path)
     inventory_companies = _string_list(case.get("source_inventory_companies"))
     project_inventory: dict[str, Any] = {
         "source_families": _string_list(case.get("source_tiers")),
@@ -785,6 +917,8 @@ def _initial_state(
         "turn_index": int(case.get("turn_index") or 0),
         "previous_turn_summary": dict(previous_turn_summary or {}),
     }
+    if args.run_audit_db_path:
+        context["run_audit_db_path"] = str(args.run_audit_db_path)
     if _case_requires_milvus_runtime_contract(case):
         context.update(_milvus_runtime_context_from_env(case))
         context["milvus_runtime"] = project_inventory.get("milvus_runtime") or {}
@@ -799,6 +933,7 @@ def _query_contract(case: Mapping[str, Any]) -> dict[str, Any]:
     focus = _string_list(case.get("focus_tickers")) or tickers[:2]
     source_tiers = _string_list(case.get("source_tiers")) or ["primary_sec_filing"]
     metric_families = _string_list(case.get("metric_families")) or ["revenue", "capex", "margin"]
+    required_dimension_ids = _string_list(case.get("required_dimension_ids"))
     return {
         "task_type": "open_analysis",
         "search_scope_tickers": tickers,
@@ -807,6 +942,7 @@ def _query_contract(case: Mapping[str, Any]) -> dict[str, Any]:
         "filing_types": _string_list(case.get("filing_types")) or ["10-Q", "8-K"],
         "source_tiers": source_tiers,
         "metric_families": metric_families,
+        "required_dimension_ids": required_dimension_ids,
         "decomposed_tasks": [
             {
                 "task_id": f"{case.get('case_id')}_primary",
@@ -814,6 +950,7 @@ def _query_contract(case: Mapping[str, Any]) -> dict[str, Any]:
                 "priority": "primary",
                 "required_tickers": tickers or focus,
                 "required_metric_families": metric_families,
+                "required_dimension_ids": required_dimension_ids,
             }
         ],
     }

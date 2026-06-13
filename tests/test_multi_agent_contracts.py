@@ -177,6 +177,108 @@ def test_thesis_driver_pack_structures_verified_claims_for_memo_surface() -> Non
     assert draft["dimension_analyses"][0]["business_mechanism"]
 
 
+def test_thesis_driver_pack_keeps_risk_claims_in_risk_dimension_when_they_mention_capex_or_valuation() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "market_valuation_analyst",
+                "observations": [
+                    {
+                        "claim": "The stock's EV/Sales multiple embeds elevated growth expectations.",
+                        "claim_type": "market_snapshot_context",
+                        "evidence_refs": ["market_ref_1"],
+                        "source_families": ["market_snapshot"],
+                        "memo_slot": "market_valuation",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["valuation"],
+                        "materiality": "medium",
+                        "confidence": "medium",
+                    }
+                ],
+            },
+            {
+                "agent_id": "risk_counterevidence_analyst",
+                "observations": [
+                    {
+                        "claim": "The EV/Sales multiple creates repricing risk if hyperscaler capex slows.",
+                        "claim_type": "risk_factor",
+                        "evidence_refs": ["risk_ref_1"],
+                        "source_families": ["market_snapshot"],
+                        "memo_slot": "risk_counterevidence",
+                        "ticker_scope": ["NVDA", "MSFT"],
+                        "metric_scope": ["valuation", "capex"],
+                        "materiality": "high",
+                        "confidence": "medium",
+                    }
+                ],
+            },
+        ]
+    )
+
+    pack = judgment["thesis_driver_pack"]
+    dimensions = {row["dimension_id"]: row for row in pack["dimension_sections"]}
+
+    assert "risk_and_counterevidence" in dimensions
+    assert dimensions["risk_and_counterevidence"]["primary_claim_ids"]
+    assert dimensions["risk_and_counterevidence"]["primary_claim_ids"][0].startswith("risk_counterevidence_analyst")
+    assert "capital_and_financing" not in dimensions
+
+
+def test_thesis_driver_pack_keeps_gap_only_product_and_risk_dimensions_traceable() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": "Reported revenue supports the baseline fundamental setup.",
+                        "claim_type": "company_reported_financial_fact",
+                        "evidence_refs": ["fund_ref_1"],
+                        "source_families": ["primary_sec_filing"],
+                        "memo_slot": "fundamentals",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["revenue"],
+                        "materiality": "high",
+                        "confidence": "high",
+                    }
+                ],
+            },
+            {
+                "agent_id": "product_technology_analyst",
+                "status": "partial",
+                "observations": [],
+                "unsupported_claims": [
+                    {
+                        "claim": "Product revenue and order backlog are not available from public exact-authority rows.",
+                        "reason": "commercial tracker or company product source is required",
+                    }
+                ],
+            },
+            {
+                "agent_id": "risk_counterevidence_analyst",
+                "status": "partial",
+                "observations": [],
+                "conflicts": [
+                    {
+                        "claim": "Hyperscaler capex visibility is missing, which weakens the demand-transmission thesis.",
+                        "reason": "no bounded capex evidence",
+                    }
+                ],
+            },
+        ]
+    )
+    draft = build_multi_agent_memo_draft(judgment)
+    dimensions = {row["dimension_id"]: row for row in judgment["thesis_driver_pack"]["dimension_sections"]}
+    draft_dimensions = {row["dimension_id"]: row for row in draft["dimension_analyses"]}
+
+    assert dimensions["product_and_production"]["status"] == "gap_or_counterevidence"
+    assert dimensions["risk_and_counterevidence"]["status"] == "gap_or_counterevidence"
+    assert dimensions["product_and_production"]["gap_ids"]
+    assert "product_and_production" in draft_dimensions
+    assert "risk_and_counterevidence" in draft_dimensions
+    assert draft_dimensions["product_and_production"]["gap_ids"]
+
+
 def test_analyst_depth_gate_requires_dimension_analyses_for_standard_memo() -> None:
     judgment = aggregate_specialist_judgment_plan(
         [
@@ -853,6 +955,81 @@ def test_verifier_blocks_unsupported_specialist_claims_before_memo_writer() -> N
     assert report["status"] == "fail"
     assert report["memo_writer_allowed"] is False
     assert report["unsupported_claim_count"] == 1
+
+
+def test_required_dimensions_become_visible_gap_only_sections_after_refresh() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "product_technology_analyst",
+                "observations": [
+                    {
+                        "claim": "Company-disclosed product evidence supports a product mix discussion.",
+                        "claim_type": "product_kpi",
+                        "memo_slot": "product_technology",
+                        "evidence_refs": ["product_ref_1"],
+                        "source_families": ["company_product_evidence_graph"],
+                        "confidence": "high",
+                    }
+                ],
+            }
+        ]
+    )
+    refreshed = refresh_judgment_plan_after_governance_filter(
+        {
+            **judgment,
+            "required_dimension_ids": [
+                "fundamentals",
+                "product_and_production",
+                "capital_and_financing",
+            ],
+        }
+    )
+    sections = refreshed["thesis_driver_pack"]["dimension_sections"]
+    by_id = {row["dimension_id"]: row for row in sections}
+
+    assert set(by_id) >= {"fundamentals", "product_and_production", "capital_and_financing"}
+    assert by_id["product_and_production"]["status"] == "supported"
+    assert by_id["fundamentals"]["status"] == "gap_or_counterevidence"
+    assert by_id["fundamentals"]["required_by_user"] is True
+    assert by_id["capital_and_financing"]["gap_ids"] == ["gap_required_dimension_capital_and_financing"]
+    assert refreshed["thesis_driver_pack"]["gap_cards"][0]["gap_type"] == "required_dimension_missing_verified_evidence"
+
+
+def test_analyst_depth_gate_blocks_missing_user_required_dimension() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "product_technology_analyst",
+                "observations": [
+                    {
+                        "claim": "Product evidence supports the current product and production read.",
+                        "claim_type": "product_kpi",
+                        "memo_slot": "product_technology",
+                        "evidence_refs": ["product_ref_1"],
+                        "source_families": ["company_product_evidence_graph"],
+                        "confidence": "high",
+                    }
+                ],
+            }
+        ]
+    )
+    judgment = refresh_judgment_plan_after_governance_filter(
+        {**judgment, "required_dimension_ids": ["fundamentals", "product_and_production"]}
+    )
+    memo = build_multi_agent_memo_draft(judgment)
+    memo["memo_profile"] = {"profile": "standard"}
+    memo["dimension_analyses"] = [
+        row for row in memo["dimension_analyses"] if row["dimension_id"] == "product_and_production"
+    ]
+
+    result = verify_multi_agent_memo_draft(memo, judgment)
+
+    assert result["status"] == "fail"
+    assert {
+        error["type"]
+        for error in result["analyst_depth_gate"]["errors"]
+    } >= {"analyst_depth_required_dimensions_not_carried"}
 
 
 def test_universe_relationship_plan_requires_relationship_evidence_and_rationale() -> None:

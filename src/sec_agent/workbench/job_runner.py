@@ -84,6 +84,11 @@ _EVAL_RUNNERS = {
         "description": "Runs the 12-case upgraded agent graph/skill full-chain gate with real evidence operators and vNext contract checks.",
         "timeout_hint_s": 7200,
     },
+    "agent_graph_vnext_run_audit_smoke": {
+        "label": "Agent Graph vNext run-audit full-chain smoke",
+        "description": "Runs 1-2 full-chain activation cases with SQL run audit, analyst-depth, and dimension-led memo gates.",
+        "timeout_hint_s": 2400,
+    },
 }
 _ACTIVE_PROCESSES: dict[str, subprocess.Popen[str]] = {}
 _CANCEL_REQUESTED: set[str] = set()
@@ -169,18 +174,31 @@ def build_eval_command(
             "--output-path",
             str(output_path),
         ]
-    elif eval_id == "agent_graph_vnext_g11_full_chain":
+    elif eval_id in {"agent_graph_vnext_g11_full_chain", "agent_graph_vnext_run_audit_smoke"}:
         env_overrides["BGE_DEVICE"] = "cpu"
+        cases_path = (
+            "tests/fixtures/fin_agent_vnext_run_audit_full_chain_cases_v0_1.jsonl"
+            if eval_id == "agent_graph_vnext_run_audit_smoke"
+            else "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl"
+        )
+        output_dir = (
+            "eval/sec_cases/outputs/multi_agent_vnext_run_audit_smoke_eval"
+            if eval_id == "agent_graph_vnext_run_audit_smoke"
+            else "eval/sec_cases/outputs/multi_agent_vnext_g11_full_chain_eval"
+        )
+        run_audit_db_path = Path("data") / "workbench_private" / "run_audit" / f"{job_id}_run_audit.sqlite"
         args = [
             sys.executable,
             "-u",
             "scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py",
             "--cases-path",
-            "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl",
+            cases_path,
             "--output-dir",
-            "eval/sec_cases/outputs/multi_agent_vnext_g11_full_chain_eval",
+            output_dir,
             "--run-id",
             job_id,
+            "--run-audit-db-path",
+            str(run_audit_db_path),
             "--real-evidence-operators",
             "--evidence-top-k",
             "16",
@@ -200,6 +218,8 @@ def build_eval_command(
             str(output_path),
             "--strict",
         ]
+        if eval_id == "agent_graph_vnext_run_audit_smoke":
+            args.extend(["--limit", "2"])
     else:
         args = [
             sys.executable,

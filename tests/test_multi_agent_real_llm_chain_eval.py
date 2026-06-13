@@ -9,6 +9,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "multi_agent_real_llm_chain_cases_v0_1.jsonl"
 FULL_CHAIN_MULTITURN_FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_full_chain_multiturn_cases_v0_1.jsonl"
 VNEXT_G11_FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_g11_cases_v0_1.jsonl"
+VNEXT_RUN_AUDIT_FIXTURE_PATH = (
+    REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_run_audit_full_chain_cases_v0_1.jsonl"
+)
 SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent" / "eval_multi_agent_real_llm_chain.py"
 
 
@@ -59,6 +62,34 @@ def test_fin_agent_vnext_g11_fixture_schema() -> None:
     }
     assert any("product_technology_analyst" in row.get("expected_specialist_agents", []) for row in rows)
     assert any("milvus_semantic" in row.get("source_tiers", []) for row in rows)
+
+
+def test_fin_agent_vnext_run_audit_full_chain_fixture_schema() -> None:
+    rows = _read_jsonl(VNEXT_RUN_AUDIT_FIXTURE_PATH)
+
+    assert len(rows) == 2
+    assert all(row["case_id"].startswith("fin_run_audit_") for row in rows)
+    assert {row["category"] for row in rows} == {"sector_depth", "standard_memo"}
+    assert all(row.get("require_run_audit_store") for row in rows)
+    assert all(row.get("require_dimension_memo_surface") for row in rows)
+    assert all(row.get("require_analyst_depth_gate") for row in rows)
+    assert all(row.get("require_real_retrieval_pass") for row in rows)
+    assert all(row.get("require_real_evidence_quality_pass") for row in rows)
+    assert all(row.get("required_dimension_ids") for row in rows)
+    assert all(
+        {
+            "run",
+            "node_execution",
+            "artifact_ref",
+            "evidence_row",
+            "claim_card",
+            "gap",
+            "gate_result",
+            "model_call",
+        }
+        <= set(row.get("required_run_audit_tables", []))
+        for row in rows
+    )
 
 
 def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
@@ -113,6 +144,81 @@ def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
     assert all(score["checks"].values())
     assert score["agent_audit"]["research_lead"]["validation_status"] == "pass"
     assert score["agent_audit"]["verifier"]["input_projection"]["projected_claim_count"] == 2
+
+
+def test_real_llm_chain_scoring_accepts_run_audit_and_dimension_depth() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "run_audit_depth_unit",
+        "category": "standard_memo",
+        "require_run_audit_store": True,
+        "require_dimension_memo_surface": True,
+        "require_analyst_depth_gate": True,
+        "required_dimension_ids": ["fundamentals", "product_and_production", "risk_and_counterevidence"],
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {},
+        "agent_activation_validation": {"status": "pass"},
+        "memo_answer": {
+            "answer_status": "draft",
+            "dimension_analyses": [
+                {
+                    "dimension_id": "fundamentals",
+                    "summary": "Fundamental evidence is traceable.",
+                    "evidence_refs": ["ref_1"],
+                },
+                {
+                    "dimension_id": "product_and_production",
+                    "section_thesis": "Product evidence is traceable.",
+                    "claim_ids": ["claim_2"],
+                },
+                {
+                    "dimension_id": "risk_and_counterevidence",
+                    "section_thesis": "Risk evidence is currently a bounded public-source gap.",
+                    "gap_ids": ["gap_3"],
+                },
+            ],
+        },
+        "claim_verification": {
+            "status": "pass",
+            "analyst_depth_gate": {"status": "pass"},
+        },
+        "verified_judgment_plan": {
+            "thesis_driver_pack": {
+                "dimension_sections": [
+                    {"dimension_id": "fundamentals"},
+                    {"dimension_id": "product_and_production"},
+                    {"dimension_id": "risk_and_counterevidence"},
+                ]
+            }
+        },
+        "run_audit_materialization_report": {
+            "status": "pass",
+            "run_audit_policy": "sqlite_is_final_audit_source_redis_coordination_only_v0_1",
+            "table_counts": {
+                "run": 1,
+                "node_execution": 4,
+                "artifact_ref": 2,
+                "evidence_row": 1,
+                "claim_card": 1,
+                "gap": 0,
+                "gate_result": 2,
+                "model_call": 1,
+            },
+        },
+        "rendered_answer": "分维度分析:\n- 基本面：可追溯到 ref_1。\n- 产品产线：可追溯到 claim_2。\n关键论据:\n1. 支持性论据。证据=ref_1",
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "pass"
+    assert all(score["layer_checks"]["run_audit"].values())
+    assert all(score["layer_checks"]["analyst_depth"].values())
+    assert score["memo_dimension_analysis_count"] == 3
+    assert score["analyst_depth_gate_status"] == "pass"
+    assert score["run_audit"]["table_counts"]["model_call"] == 1
 
 
 def test_real_llm_chain_scoring_accepts_vnext_contract_summary() -> None:

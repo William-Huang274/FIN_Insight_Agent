@@ -124,7 +124,25 @@ def test_build_g11_full_chain_eval_command_targets_vnext_fixture(tmp_path: Path)
     assert spec.args[spec.args.index("--bge-device") + 1] == "cpu"
     assert spec.env_overrides["BGE_DEVICE"] == "cpu"
     assert "--summary-output-path" in spec.args
+    assert "--run-audit-db-path" in spec.args
     assert "--strict" in spec.args
+
+
+def test_build_run_audit_full_chain_smoke_eval_command(tmp_path: Path) -> None:
+    spec = build_eval_command(
+        repo_root=tmp_path,
+        eval_id="agent_graph_vnext_run_audit_smoke",
+        job_id="run_audit_fixture",
+    )
+
+    assert spec.label == "eval:agent_graph_vnext_run_audit_smoke"
+    assert "tests/fixtures/fin_agent_vnext_run_audit_full_chain_cases_v0_1.jsonl" in spec.args
+    assert "eval/sec_cases/outputs/multi_agent_vnext_run_audit_smoke_eval" in spec.args
+    assert "--run-audit-db-path" in spec.args
+    assert "data\\workbench_private\\run_audit\\run_audit_fixture_run_audit.sqlite" in "\\".join(spec.args)
+    assert "--limit" in spec.args
+    assert spec.args[spec.args.index("--limit") + 1] == "2"
+    assert not any(str(arg).startswith("sk-") for arg in spec.args)
 
 
 def test_build_agent_ask_command_can_target_wsl(tmp_path: Path) -> None:

@@ -452,7 +452,7 @@ def _normalize_memo_llm_output(
     memo["dimension_analyses"] = _normalize_output_dimension_analyses(
         memo.get("dimension_analyses"),
         base.get("dimension_analyses") or [],
-        max_items=6 if profile.profile in {"expanded", "deep_research"} else 4,
+        max_items=8 if profile.profile in {"expanded", "deep_research"} else 6,
     )
     memo.setdefault("claim_card_stats", base.get("claim_card_stats") or {})
     memo.setdefault("bounded_answer_allowed", False)
@@ -729,34 +729,45 @@ def _normalize_output_dimension_analyses(value: Any, fallback: Any, *, max_items
     if not rows:
         rows = fallback_rows
     normalized: list[dict[str, Any]] = []
-    for row in rows[: max(1, max_items)]:
+
+    def normalize_row(row: Mapping[str, Any]) -> dict[str, Any]:
         dimension_id = str(row.get("dimension_id") or row.get("id") or "").strip()
         fallback_row = fallback_by_id.get(dimension_id, {})
         if not dimension_id:
             dimension_id = str(fallback_row.get("dimension_id") or "").strip()
         merged = {**fallback_row, **row}
         summary = str(merged.get("summary") or merged.get("section_thesis") or merged.get("text") or "").strip()
-        normalized.append(
-            {
-                "dimension_id": dimension_id,
-                "title": _truncate(str(merged.get("title") or merged.get("dimension_title") or _dimension_title_for_id(dimension_id)), 90),
-                "summary": _truncate(summary, 420),
-                "analysis_lens": _truncate(str(merged.get("analysis_lens") or ""), 260),
-                "business_mechanism": _truncate(str(merged.get("business_mechanism") or ""), 260),
-                "financial_bridge": _truncate(str(merged.get("financial_bridge") or ""), 260),
-                "comparison_basis": _string_list(merged.get("comparison_basis"))[:4],
-                "competitive_read": _truncate(str(merged.get("competitive_read") or ""), 240),
-                "counter_read": _truncate(str(merged.get("counter_read") or ""), 260),
-                "claim_ids": _string_list(merged.get("claim_ids") or merged.get("primary_claim_ids"))[:8],
-                "counter_claim_ids": _string_list(merged.get("counter_claim_ids"))[:4],
-                "evidence_refs": _string_list(merged.get("evidence_refs") or merged.get("refs"))[:8],
-                "source_boundaries": [_truncate(str(item), 160) for item in _string_list(merged.get("source_boundaries"))[:5]],
-                "what_would_change_view": [
-                    _truncate(str(item), 180) for item in _string_list(merged.get("what_would_change_view"))[:4]
-                ],
-                "status": str(merged.get("status") or ""),
-            }
-        )
+        return {
+            "dimension_id": dimension_id,
+            "title": _truncate(str(merged.get("title") or merged.get("dimension_title") or _dimension_title_for_id(dimension_id)), 90),
+            "summary": _truncate(summary, 420),
+            "analysis_lens": _truncate(str(merged.get("analysis_lens") or ""), 260),
+            "business_mechanism": _truncate(str(merged.get("business_mechanism") or ""), 260),
+            "financial_bridge": _truncate(str(merged.get("financial_bridge") or ""), 260),
+            "comparison_basis": _string_list(merged.get("comparison_basis"))[:4],
+            "competitive_read": _truncate(str(merged.get("competitive_read") or ""), 240),
+            "counter_read": _truncate(str(merged.get("counter_read") or ""), 260),
+            "claim_ids": _string_list(merged.get("claim_ids") or merged.get("primary_claim_ids"))[:8],
+            "counter_claim_ids": _string_list(merged.get("counter_claim_ids"))[:4],
+            "gap_ids": _string_list(merged.get("gap_ids"))[:5],
+            "evidence_refs": _string_list(merged.get("evidence_refs") or merged.get("refs"))[:8],
+            "source_boundaries": [_truncate(str(item), 160) for item in _string_list(merged.get("source_boundaries"))[:5]],
+            "what_would_change_view": [
+                _truncate(str(item), 180) for item in _string_list(merged.get("what_would_change_view"))[:4]
+            ],
+            "status": str(merged.get("status") or ""),
+        }
+
+    for row in rows[: max(1, max_items)]:
+        normalized.append(normalize_row(row))
+    seen_dimension_ids = {str(row.get("dimension_id") or "") for row in normalized if str(row.get("dimension_id") or "")}
+    for fallback_row in fallback_rows:
+        dimension_id = str(fallback_row.get("dimension_id") or "").strip()
+        if len(normalized) >= max(1, max_items):
+            break
+        if dimension_id and dimension_id not in seen_dimension_ids:
+            normalized.append(normalize_row(fallback_row))
+            seen_dimension_ids.add(dimension_id)
     return [row for row in normalized if row.get("dimension_id") or row.get("summary")]
 
 
@@ -784,7 +795,12 @@ def _localize_dimension_analyses(value: Any) -> list[dict[str, Any]]:
         for key in ("summary", "analysis_lens", "business_mechanism", "financial_bridge", "competitive_read", "counter_read"):
             row[key] = _normalize_zh_punctuation(row.get(key))
             if _needs_zh_wrapper(row.get(key)):
-                row[key] = _zh_wrapped_user_text(str(row.get(key) or ""), kind=f"dimension_{key}")
+                row[key] = _zh_dimension_fallback_text(
+                    dimension_id=dimension_id,
+                    field=key,
+                    text=str(row.get(key) or ""),
+                    status=str(row.get("status") or ""),
+                )
                 row["response_language_normalized_user_text"] = True
         row["source_boundaries"] = [
             _localize_source_boundary_for_zh(item) if not _contains_cjk(str(item or "")) else _normalize_zh_punctuation(item)
@@ -811,6 +827,55 @@ def _zh_dimension_title(dimension_id: str, fallback: Any) -> str:
         "evidence_gap": "证据缺口",
     }
     return labels.get(str(dimension_id or "").strip(), str(fallback or "分析维度"))
+
+
+def _zh_dimension_fallback_text(*, dimension_id: str, field: str, text: str, status: str) -> str:
+    dimension = str(dimension_id or "").strip()
+    normalized_status = str(status or "").strip()
+    if normalized_status == "gap_or_counterevidence":
+        if dimension == "fundamentals":
+            if field in {"summary", "counter_read"}:
+                return "当前基本面维度只有公开证据缺口：缺少可验证的公司财务披露或同口径经营指标，不能判断产品线对收入、毛利、现金流或利润质量的贡献。"
+            if field == "business_mechanism":
+                return "该维度本应用收入、利润率、现金转换或细分组合解释盈利质量；当前只能记录缺口，不能形成基本面事实判断。"
+            if field == "financial_bridge":
+                return "只有出现公司披露或 exact-authority 财务指标时，才允许桥接到收入、毛利率、经营利润率或现金流。"
+        if dimension == "product_and_production":
+            if field in {"summary", "counter_read"}:
+                return "当前产品/产线维度只有公开证据缺口：缺少可验证的公司产品页、产品证据图或产品 KPI 行，不能推断产品收入、订单、出货或份额。"
+            if field == "business_mechanism":
+                return "该维度本应把产品采用、产能、订单积压、使用量或产品组合连接到经营线索；当前只能作为缺口跟踪。"
+            if field == "financial_bridge":
+                return "只有出现公司披露或 exact-authority 产品 KPI 时，才允许桥接到收入、毛利、库存、产能或 backlog。"
+        if dimension == "capital_and_financing":
+            if field in {"summary", "counter_read"}:
+                return "当前投融资/资本开支维度只有公开证据缺口：缺少可验证的 capex、债务、发行、现金流或资产负债表证据，不能判断再投资能力或融资风险。"
+            if field == "business_mechanism":
+                return "该维度本应用再投资、杠杆、发行或现金生成解释产能与资产负债表弹性；当前只能作为缺口跟踪。"
+            if field == "financial_bridge":
+                return "只有出现公司披露或 exact-authority 资本/融资指标时，才允许桥接到 capex、杠杆、流动性、利息负担或发行。"
+        if dimension == "industry_supply_chain":
+            if field in {"summary", "counter_read"}:
+                return "当前行业/供应链维度只有公开证据缺口：缺少可验证的客户、供应商、行业需求或公司暴露边，不能把外部 proxy 直接写成公司事实。"
+            if field == "business_mechanism":
+                return "该维度本应用行业需求、客户/供应商或供应链 proxy 解释公司暴露；当前只能作为范围假设或缺口。"
+            if field == "financial_bridge":
+                return "只有出现公司业务、segment、product 或 counterparty 暴露关系时，才允许桥接到收入、订单、产能或利润率。"
+        if dimension == "competition_and_market_position":
+            if field in {"summary", "counter_read"}:
+                return "当前竞争/市场位置维度只有公开证据缺口：缺少可验证的份额、渠道、定价或竞品数据，不能判断真实竞争地位。"
+            if field == "business_mechanism":
+                return "该维度本应用估值、市场反应、同行、份额或渠道证据解释相对位置；当前只能作为缺口或市场背景。"
+            if field == "financial_bridge":
+                return "只有出现同口径份额、价格、渠道或竞品指标时，才允许桥接到收入增长、毛利率或估值溢价。"
+        if dimension == "risk_and_counterevidence":
+            if field in {"summary", "counter_read"}:
+                return "当前风险/反证维度主要来自缺口或反向信号：缺少足够公开证据确认核心传导链，因此该维度只能降低结论置信度，不能扩展为新增事实。"
+            if field == "business_mechanism":
+                return "该维度用于说明哪些证据会抵消主线 thesis，或哪些缺口会降低业务传导与财务桥接的可信度。"
+            if field == "financial_bridge":
+                return "风险项只有在同口径证据指向收入、利润率、现金流、订单或资本开支压力时，才进入财务判断。"
+    return _zh_wrapped_user_text(text, kind=f"dimension_{field}")
 
 
 def _normalize_memo_action_items(value: Any, *, max_items: int, max_chars: int) -> list[dict[str, Any]]:

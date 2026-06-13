@@ -842,6 +842,7 @@ def refresh_judgment_plan_after_governance_filter(judgment_plan: Mapping[str, An
     conflicts = [dict(item) for item in judgment.get("conflicts") or [] if isinstance(item, Mapping)]
     blocked_specialist_agents = _unique_strings(judgment.get("blocked_specialist_agents"))
     source_boundary_notes = [dict(item) for item in judgment.get("source_boundary_notes") or [] if isinstance(item, Mapping)]
+    required_dimension_ids = _valid_analysis_dimension_ids(judgment.get("required_dimension_ids"))
     source_agent_ids = _unique_strings(judgment.get("source_agent_ids")) if supported_claims else []
     memo_outline = _memo_outline_from_claims(
         supported_claims,
@@ -870,6 +871,7 @@ def refresh_judgment_plan_after_governance_filter(judgment_plan: Mapping[str, An
         conflicts=conflicts,
         unsupported_claims=unsupported_claims,
         source_boundary_notes=source_boundary_notes,
+        required_dimension_ids=required_dimension_ids,
     )
     thesis_synthesis = dict(judgment.get("thesis_synthesis") or {}) if isinstance(judgment.get("thesis_synthesis"), Mapping) else {}
     if thesis_synthesis:
@@ -881,6 +883,7 @@ def refresh_judgment_plan_after_governance_filter(judgment_plan: Mapping[str, An
         "memo_thesis_plan": memo_thesis_plan,
         "memo_thesis_pack": memo_thesis_pack,
         "thesis_driver_pack": thesis_driver_pack,
+        "required_dimension_ids": required_dimension_ids,
         "claim_card_stats": _claim_card_stats(supported_claims, memo_outline),
         "thesis_synthesis": thesis_synthesis,
         "governance_filter_refresh_policy": "refresh_memo_pack_after_pre_memo_fact_selection_v0_1",
@@ -1392,6 +1395,10 @@ def _analysis_dimension_for_claim(claim: Mapping[str, Any]) -> str:
     text = f"{metrics} {claim_type} {agent_id} {str(claim.get('claim') or '').lower()}"
     if slot == "thesis":
         return "thesis_synthesis"
+    if slot == "risk_counterevidence":
+        return "risk_and_counterevidence"
+    if slot == "industry_relationship":
+        return "industry_supply_chain"
     if slot == "product_technology" or any(term in text for term in ("product", "unit", "shipment", "capacity", "backlog", "usage")):
         return "product_and_production"
     if any(
@@ -1416,7 +1423,7 @@ def _analysis_dimension_for_claim(claim: Mapping[str, Any]) -> str:
         return "competition_and_market_position"
     if slot == "industry_relationship" or "industry_snapshot" in source_families or "relationship_graph" in source_families:
         return "industry_supply_chain"
-    if slot == "risk_counterevidence" or any(term in text for term in ("risk", "counter", "constraint", "decline", "pressure")):
+    if any(term in text for term in ("risk", "counter", "constraint", "decline", "pressure")):
         return "risk_and_counterevidence"
     if slot == "evidence_gap":
         return "evidence_gap"
@@ -1995,6 +2002,7 @@ def _thesis_driver_pack_from_claims(
     conflicts: list[dict[str, Any]],
     unsupported_claims: list[dict[str, Any]],
     source_boundary_notes: list[dict[str, Any]],
+    required_dimension_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     thesis_claim = _primary_thesis_claim(supported_claims) or {}
     driver_cards: list[dict[str, Any]] = []
@@ -2028,6 +2036,7 @@ def _thesis_driver_pack_from_claims(
                 "counter_driver_id": f"counter_conflict_{index}",
                 "driver_id": "",
                 "source_claim_id": "",
+                "agent_id": str(conflict.get("agent_id") or ""),
                 "memo_slot": "risk_counterevidence",
                 "driver_type": "conflict_or_counterevidence",
                 "statement": str(conflict.get("claim") or conflict.get("reason") or ""),
@@ -2067,6 +2076,17 @@ def _thesis_driver_pack_from_claims(
                 "claim_boundary": "source_boundary_not_supporting_fact",
             }
         )
+    required_dimension_ids = _valid_analysis_dimension_ids(required_dimension_ids)
+    if required_dimension_ids:
+        required_gaps = _required_dimension_gap_cards(
+            required_dimension_ids=required_dimension_ids,
+            supported_claims=supported_claims,
+            counter_driver_cards=counter_driver_cards,
+            gap_cards=gap_cards,
+        )
+        if required_gaps:
+            existing_gap_ids = {str(card.get("gap_id") or "") for card in required_gaps}
+            gap_cards = [*required_gaps, *[card for card in gap_cards if str(card.get("gap_id") or "") not in existing_gap_ids]]
 
     evidence_refs = _unique_strings(
         [
@@ -2109,6 +2129,7 @@ def _thesis_driver_pack_from_claims(
         counter_driver_cards=counter_driver_cards,
         gap_cards=gap_cards,
         source_boundary_notes=source_boundary_notes,
+        required_dimension_ids=required_dimension_ids,
     )
     return {
         "schema_version": THESIS_DRIVER_PACK_SCHEMA_VERSION,
@@ -2116,6 +2137,7 @@ def _thesis_driver_pack_from_claims(
         "present": bool(supported_claims),
         "thesis_cards": thesis_cards if thesis_text else [],
         "dimension_sections": dimension_sections,
+        "required_dimension_ids": required_dimension_ids,
         "driver_cards": driver_cards[:8],
         "counter_driver_cards": counter_driver_cards[:6],
         "gap_cards": gap_cards[:10],
@@ -2170,8 +2192,10 @@ def _dimension_sections_from_claims(
     counter_driver_cards: list[dict[str, Any]],
     gap_cards: list[dict[str, Any]],
     source_boundary_notes: list[dict[str, Any]],
+    required_dimension_ids: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     grouped: dict[str, list[dict[str, Any]]] = {}
+    claim_dimension_by_id: dict[str, str] = {}
     for claim in supported_claims:
         slot = _normalize_memo_slot(claim.get("memo_slot"))
         if slot == "thesis":
@@ -2180,31 +2204,64 @@ def _dimension_sections_from_claims(
         if dimension == "thesis_synthesis":
             continue
         grouped.setdefault(dimension, []).append(claim)
+        claim_id = str(claim.get("claim_id") or "")
+        if claim_id:
+            claim_dimension_by_id[claim_id] = dimension
 
-    dimensions = [item for item in ANALYSIS_DIMENSION_ORDER if item in grouped]
-    dimensions.extend(sorted(dimension for dimension in grouped if dimension not in set(dimensions)))
+    counter_dimensions = {
+        _dimension_for_counter_card(card, claim_dimension_by_id)
+        for card in counter_driver_cards
+        if isinstance(card, Mapping)
+    }
+    gap_dimensions = {
+        _dimension_for_gap_card(gap, claim_dimension_by_id)
+        for gap in gap_cards
+        if isinstance(gap, Mapping)
+    }
+    active_dimensions = set(grouped) | counter_dimensions | gap_dimensions
+    required_dimensions = set(_valid_analysis_dimension_ids(required_dimension_ids))
+    active_dimensions |= required_dimensions
+    active_dimensions.discard("")
+    dimensions = [item for item in ANALYSIS_DIMENSION_ORDER if item in active_dimensions]
+    dimensions.extend(sorted(dimension for dimension in active_dimensions if dimension not in set(dimensions)))
     sections: list[dict[str, Any]] = []
     for dimension in dimensions:
         claims = grouped.get(dimension) or []
-        if not claims:
-            continue
-        primary = claims[0]
         claim_ids = _unique_strings([str(claim.get("claim_id") or "") for claim in claims])[:8]
         claim_id_set = set(claim_ids)
         related_gaps = [
             gap
             for gap in gap_cards
-            if isinstance(gap, Mapping) and (str(gap.get("source_claim_id") or "") in claim_id_set or dimension == "evidence_gap")
+            if isinstance(gap, Mapping) and _dimension_for_gap_card(gap, claim_dimension_by_id) == dimension
         ]
         related_counters = [
             card
             for card in counter_driver_cards
-            if isinstance(card, Mapping)
-            and (str(card.get("source_claim_id") or "") in claim_id_set or dimension == "risk_and_counterevidence")
+            if isinstance(card, Mapping) and _dimension_for_counter_card(card, claim_dimension_by_id) == dimension
         ]
-        evidence_refs = _unique_strings([ref for claim in claims for ref in _unique_strings(claim.get("evidence_refs") or claim.get("refs"))])
+        if claim_id_set:
+            related_gaps = [
+                gap
+                for gap in related_gaps
+                if str(gap.get("source_claim_id") or "") in claim_id_set
+                or str(gap.get("source_claim_id") or "") not in claim_dimension_by_id
+            ]
+            related_counters = [
+                card
+                for card in related_counters
+                if str(card.get("source_claim_id") or "") in claim_id_set
+                or str(card.get("source_claim_id") or "") not in claim_dimension_by_id
+            ]
+        if not claims and not related_gaps and not related_counters:
+            continue
+        primary = claims[0] if claims else {}
+        evidence_refs = _unique_strings(
+            [ref for claim in claims for ref in _unique_strings(claim.get("evidence_refs") or claim.get("refs"))]
+            + [ref for card in related_counters for ref in _unique_strings(card.get("evidence_refs") or card.get("refs"))]
+            + [ref for gap in related_gaps for ref in _unique_strings(gap.get("evidence_refs") or gap.get("refs"))]
+        )
         primary_depth = primary.get("analyst_depth") if isinstance(primary.get("analyst_depth"), Mapping) else {}
-        section_thesis = _dimension_section_thesis(dimension, claims)
+        section_thesis = _dimension_section_thesis(dimension, claims, related_counters=related_counters, related_gaps=related_gaps)
         comparison_basis = []
         for claim in claims:
             depth = claim.get("analyst_depth") if isinstance(claim.get("analyst_depth"), Mapping) else {}
@@ -2213,7 +2270,8 @@ def _dimension_sections_from_claims(
             {
                 "dimension_id": dimension,
                 "dimension_title": _analysis_dimension_title(dimension),
-                "status": "supported",
+                "required_by_user": dimension in required_dimensions,
+                "status": "supported" if claims else "gap_or_counterevidence",
                 "section_thesis": section_thesis,
                 "analysis_lens": str(primary_depth.get("analysis_lens") or _analysis_dimension_lens(dimension)),
                 "business_mechanism": str(primary_depth.get("business_mechanism") or _business_mechanism_for_dimension(dimension)),
@@ -2230,20 +2288,160 @@ def _dimension_sections_from_claims(
                         for claim in claims
                         for family in _unique_strings(claim.get("source_families") or claim.get("source_family"))
                     ]
+                    + [
+                        family
+                        for card in related_counters
+                        for family in _unique_strings(card.get("source_families") or card.get("source_family"))
+                    ]
+                    + [
+                        str(gap.get("source_family") or "")
+                        for gap in related_gaps
+                        if str(gap.get("source_family") or "")
+                    ]
                 )[:6],
                 "source_boundaries": _dimension_source_boundaries(claims, source_boundary_notes),
                 "counter_read": _dimension_counter_read(claims, related_counters, related_gaps),
                 "what_would_change_view": _dimension_view_change(claims, related_counters, related_gaps),
-                "depth_status": "analysis_ready" if len(claim_ids) >= 1 and evidence_refs else "insufficient_evidence",
+                "depth_status": (
+                    "analysis_ready"
+                    if len(claim_ids) >= 1 and evidence_refs
+                    else "bounded_gap_or_counterevidence"
+                    if related_counters or related_gaps
+                    else "insufficient_evidence"
+                ),
             }
         )
     return sections[:8]
 
 
-def _dimension_section_thesis(dimension: str, claims: list[Mapping[str, Any]]) -> str:
+def _valid_analysis_dimension_ids(values: Any) -> list[str]:
+    valid = set(ANALYSIS_DIMENSION_ORDER)
+    normalized: list[str] = []
+    for item in _unique_strings(values):
+        dimension = str(item).strip().lower().replace("-", "_").replace(" ", "_")
+        if dimension in valid and dimension not in normalized:
+            normalized.append(dimension)
+    return normalized
+
+
+def _required_dimension_gap_cards(
+    *,
+    required_dimension_ids: list[str],
+    supported_claims: list[dict[str, Any]],
+    counter_driver_cards: list[dict[str, Any]],
+    gap_cards: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    claim_dimension_by_id: dict[str, str] = {}
+    active_dimensions: set[str] = set()
+    for claim in supported_claims:
+        dimension = str(claim.get("analysis_dimension") or _analysis_dimension_for_claim(claim))
+        if dimension and dimension != "thesis_synthesis":
+            active_dimensions.add(dimension)
+        claim_id = str(claim.get("claim_id") or "")
+        if claim_id and dimension:
+            claim_dimension_by_id[claim_id] = dimension
+    for card in counter_driver_cards:
+        if isinstance(card, Mapping):
+            active_dimensions.add(_dimension_for_counter_card(card, claim_dimension_by_id))
+    for gap in gap_cards:
+        if isinstance(gap, Mapping):
+            active_dimensions.add(_dimension_for_gap_card(gap, claim_dimension_by_id))
+
+    required_gaps: list[dict[str, Any]] = []
+    for dimension in required_dimension_ids:
+        if dimension in active_dimensions:
+            continue
+        required_gaps.append(
+            {
+                "gap_id": f"gap_required_dimension_{dimension}",
+                "gap_type": "required_dimension_missing_verified_evidence",
+                "source_claim_id": "",
+                "agent_id": "",
+                "analysis_dimension": dimension,
+                "statement": _required_dimension_gap_statement(dimension),
+                "evidence_refs": [],
+                "claim_boundary": "gap_only_not_supporting_fact",
+            }
+        )
+    return required_gaps
+
+
+def _required_dimension_gap_statement(dimension: str) -> str:
+    title = _analysis_dimension_title(dimension)
+    return (
+        f"The user requested {title}, but no verified ClaimCard or bounded public evidence gap survived "
+        "the current gates for this dimension. Keep it as a visible evidence gap; do not fill it with a proxy fact."
+    )
+
+
+def _dimension_for_counter_card(card: Mapping[str, Any], claim_dimension_by_id: Mapping[str, str]) -> str:
+    source_claim_id = str(card.get("source_claim_id") or "")
+    if source_claim_id and source_claim_id in claim_dimension_by_id:
+        return str(claim_dimension_by_id[source_claim_id])
+    return _dimension_from_agent_or_text(
+        agent_id=str(card.get("agent_id") or ""),
+        memo_slot=str(card.get("memo_slot") or "risk_counterevidence"),
+        text=str(card.get("statement") or card.get("claim") or card.get("reason") or ""),
+        metric_scope=card.get("metric_scope"),
+        default="risk_and_counterevidence",
+    )
+
+
+def _dimension_for_gap_card(gap: Mapping[str, Any], claim_dimension_by_id: Mapping[str, str]) -> str:
+    explicit_dimension = str(gap.get("analysis_dimension") or "").strip()
+    if explicit_dimension:
+        return explicit_dimension
+    source_claim_id = str(gap.get("source_claim_id") or "")
+    if source_claim_id and source_claim_id in claim_dimension_by_id:
+        return str(claim_dimension_by_id[source_claim_id])
+    return _dimension_from_agent_or_text(
+        agent_id=str(gap.get("agent_id") or ""),
+        memo_slot=_agent_expected_memo_slot(str(gap.get("agent_id") or "")),
+        text=str(gap.get("statement") or gap.get("claim") or gap.get("reason") or ""),
+        metric_scope=gap.get("metric_scope"),
+        default="evidence_gap",
+    )
+
+
+def _dimension_from_agent_or_text(
+    *,
+    agent_id: str,
+    memo_slot: str,
+    text: str,
+    metric_scope: Any,
+    default: str,
+) -> str:
+    slot = _normalize_memo_slot(memo_slot) or _agent_expected_memo_slot(agent_id)
+    if slot or text or metric_scope:
+        return _analysis_dimension_for_claim(
+            {
+                "agent_id": agent_id,
+                "memo_slot": slot,
+                "claim": text,
+                "metric_scope": metric_scope,
+            }
+        )
+    return default
+
+
+def _dimension_section_thesis(
+    dimension: str,
+    claims: list[Mapping[str, Any]],
+    *,
+    related_counters: list[Mapping[str, Any]] | None = None,
+    related_gaps: list[Mapping[str, Any]] | None = None,
+) -> str:
     primary = claims[0] if claims else {}
     claim_text = str(primary.get("claim") or "").strip()
     if not claim_text:
+        for item in related_counters or []:
+            text = str(item.get("statement") or item.get("claim") or item.get("reason") or "").strip()
+            if text:
+                return _clean_synthesized_thesis_prefix(text)
+        for item in related_gaps or []:
+            text = str(item.get("statement") or item.get("claim") or item.get("reason") or "").strip()
+            if text:
+                return _clean_synthesized_thesis_prefix(text)
         return _analysis_dimension_lens(dimension)
     return _clean_synthesized_thesis_prefix(claim_text)
 
@@ -2411,6 +2609,7 @@ def _dimension_analyses_from_thesis_driver_pack(pack: Mapping[str, Any]) -> list
                 "counter_read": str(section.get("counter_read") or ""),
                 "claim_ids": _unique_strings(section.get("primary_claim_ids"))[:8],
                 "counter_claim_ids": _unique_strings(section.get("counter_claim_ids"))[:4],
+                "gap_ids": _unique_strings(section.get("gap_ids"))[:5],
                 "evidence_refs": _unique_strings(section.get("evidence_refs"))[:8],
                 "source_boundaries": _unique_strings(section.get("source_boundaries"))[:5],
                 "what_would_change_view": _unique_strings(section.get("what_would_change_view"))[:4],
@@ -2928,17 +3127,32 @@ def _analyst_depth_gate(memo: Mapping[str, Any], judgment: Mapping[str, Any]) ->
     missing_ids = sorted(expected_ids - memo_ids)
     if len(expected_ids) >= 2 and len(missing_ids) >= len(expected_ids):
         errors.append({"type": "analyst_depth_dimension_ids_not_carried", "expected_dimension_ids": sorted(expected_ids)[:6]})
+    required_ids = {
+        str(section.get("dimension_id") or "")
+        for section in expected_sections
+        if bool(section.get("required_by_user")) and str(section.get("dimension_id") or "")
+    }
+    missing_required_ids = sorted(required_ids - memo_ids)
+    if missing_required_ids:
+        errors.append(
+            {
+                "type": "analyst_depth_required_dimensions_not_carried",
+                "missing_dimension_ids": missing_required_ids[:8],
+            }
+        )
 
     for index, section in enumerate(memo_dimensions[: max(required_count, 1)], start=1):
         dimension_id = str(section.get("dimension_id") or "").strip()
         summary = str(section.get("summary") or section.get("section_thesis") or section.get("text") or "").strip()
         refs = _unique_strings(section.get("evidence_refs") or section.get("refs"))
         claim_ids = _unique_strings(section.get("claim_ids") or section.get("primary_claim_ids"))
+        gap_ids = _unique_strings(section.get("gap_ids"))
+        counter_claim_ids = _unique_strings(section.get("counter_claim_ids"))
         if not dimension_id:
             errors.append({"type": "analyst_depth_dimension_missing_id", "index": index})
         if len(summary) < 24:
             errors.append({"type": "analyst_depth_dimension_summary_too_thin", "index": index, "dimension_id": dimension_id})
-        if not refs and not claim_ids:
+        if not refs and not claim_ids and not gap_ids and not counter_claim_ids:
             errors.append({"type": "analyst_depth_dimension_missing_traceability", "index": index, "dimension_id": dimension_id})
         if _dimension_depth_signal_count(section) < 2:
             errors.append({"type": "analyst_depth_dimension_missing_mechanism_bridge", "index": index, "dimension_id": dimension_id})

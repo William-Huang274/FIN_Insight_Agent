@@ -43,6 +43,7 @@ from sec_agent.gate_registry import build_gate_registry_eval_matrix
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
 from sec_agent.metric_product_ontology import build_metric_product_ontology_snapshot
 from sec_agent.multi_agent_contracts import (
+    ANALYSIS_DIMENSION_ORDER,
     aggregate_focused_answer_judgment_plan,
     aggregate_specialist_judgment_plan,
     build_multi_agent_memo_draft,
@@ -83,6 +84,7 @@ from sec_agent.multi_agent_runtime import (
 from sec_agent.provenance_vintage import build_provenance_vintage_layers
 from sec_agent.reconciliation_ledger import build_metric_ontology_and_reconciliation_layers, build_reconciliation_ledger
 from sec_agent.relationship_graph import relationship_plan_from_lookup
+from sec_agent.run_audit_store import materialize_run_audit_store
 from sec_agent.source_capability_router import build_source_capability_router
 from sec_agent.tool_call_ledger import (
     LOOP_BREAK_AGENT_TOOL_BUDGET_EXHAUSTED,
@@ -264,6 +266,7 @@ NATIVE_RESUME_REQUIRED_ARTIFACTS = {
 class SecAgentGraphRuntimeState(TypedDict, total=False):
     user_query: str
     run_id: str
+    case_id: str
     output_dir: str
     query_contract: dict[str, Any]
     multi_agent_context: dict[str, Any]
@@ -338,6 +341,8 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     d_series_database_path: str
     d_series_database_materialization: dict[str, Any]
     d_series_database_materialization_report: dict[str, Any]
+    run_audit_db_path: str
+    run_audit_materialization_report: dict[str, Any]
     d_series_claim_gap_gate_reader_context: dict[str, Any]
     d_series_research_context: dict[str, Any]
     pre_memo_fact_selection: dict[str, Any]
@@ -1891,6 +1896,9 @@ def _node_multi_agent_aggregate_judgment_plan(
         result.get("verified_judgment_plan") or result.get("judgment_plan") or judgment,
         fact_selection,
     )
+    required_dimension_ids = _required_analysis_dimensions_from_state(state)
+    if required_dimension_ids:
+        selected_judgment = {**selected_judgment, "required_dimension_ids": required_dimension_ids}
     selected_judgment = refresh_judgment_plan_after_governance_filter(selected_judgment)
     result["judgment_plan"] = selected_judgment
     result["verified_judgment_plan"] = selected_judgment
@@ -1958,6 +1966,66 @@ def _node_multi_agent_aggregate_judgment_plan(
             "focused_answer_bridge": (judgment.get("focused_answer_bridge") or {}).get("status") if isinstance(judgment, Mapping) else "",
         },
     )
+
+
+def _required_analysis_dimensions_from_state(state: Mapping[str, Any]) -> list[str]:
+    contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    context = state.get("multi_agent_context") if isinstance(state.get("multi_agent_context"), Mapping) else {}
+    explicit = _unique_strings(
+        contract.get("required_dimension_ids")
+        or contract.get("memo_required_dimension_ids")
+        or context.get("required_dimension_ids")
+        or context.get("memo_required_dimension_ids")
+    )
+    if explicit:
+        return _normalize_analysis_dimension_ids(explicit)
+    return _infer_required_analysis_dimensions_from_text(str(state.get("user_query") or ""))
+
+
+def _normalize_analysis_dimension_ids(values: Any) -> list[str]:
+    valid = set(ANALYSIS_DIMENSION_ORDER)
+    normalized: list[str] = []
+    aliases = {
+        "fundamental": "fundamentals",
+        "fundamental_analysis": "fundamentals",
+        "product": "product_and_production",
+        "product_technology": "product_and_production",
+        "production": "product_and_production",
+        "capex": "capital_and_financing",
+        "capital": "capital_and_financing",
+        "capital_financing": "capital_and_financing",
+        "market": "competition_and_market_position",
+        "competition": "competition_and_market_position",
+        "competitive_position": "competition_and_market_position",
+        "industry": "industry_supply_chain",
+        "supply_chain": "industry_supply_chain",
+        "risk": "risk_and_counterevidence",
+        "counterevidence": "risk_and_counterevidence",
+        "gap": "evidence_gap",
+    }
+    for item in _unique_strings(values):
+        key = str(item).strip().lower().replace("-", "_").replace(" ", "_")
+        dimension = aliases.get(key, key)
+        if dimension in valid and dimension not in normalized:
+            normalized.append(dimension)
+    return normalized
+
+
+def _infer_required_analysis_dimensions_from_text(text: str) -> list[str]:
+    lowered = str(text or "").lower()
+    mapping = [
+        ("fundamentals", ("基本面", "fundamental")),
+        ("product_and_production", ("产品", "产线", "production", "product")),
+        ("capital_and_financing", ("投融资", "资本开支", "capex", "capital expenditure", "capital")),
+        ("industry_supply_chain", ("行业供应链", "供应链", "需求传导", "supply chain", "demand transmission")),
+        ("competition_and_market_position", ("竞争位置", "竞争", "market position", "competitive")),
+        ("risk_and_counterevidence", ("风险反证", "反证", "风险", "counterevidence", "risk")),
+    ]
+    required: list[str] = []
+    for dimension, needles in mapping:
+        if any(needle in lowered for needle in needles):
+            required.append(dimension)
+    return required
 
 
 def _claim_card_store_barrier(
@@ -2181,6 +2249,10 @@ def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
     profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
     labels = _memo_render_labels(memo)
     rendered_claim_max = int(profile.get("rendered_claim_max") or (5 if bounded else 8))
+    profile_name = str(profile.get("profile") or "").strip()
+    rendered_dimension_max = int(
+        profile.get("rendered_dimension_max") or (8 if profile_name in {"standard", "expanded", "deep_research"} else 5)
+    )
     if direct:
         parts.append(f"{labels['core_thesis']}:\n{direct}")
 
@@ -2188,12 +2260,14 @@ def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
         memo.get("dimension_analyses") or [],
         ref_label=labels["refs"],
         language=labels["language"],
+        max_items=rendered_dimension_max,
     )
     if not dimension_lines:
         dimension_lines = _render_dimension_analysis_lines(
             (memo.get("thesis_driver_pack") or {}).get("dimension_sections") if isinstance(memo.get("thesis_driver_pack"), Mapping) else [],
             ref_label=labels["refs"],
             language=labels["language"],
+            max_items=rendered_dimension_max,
         )
     if dimension_lines:
         parts.append(f"{labels['dimension_analysis']}:\n" + "\n".join(dimension_lines))
@@ -2701,6 +2775,7 @@ def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) ->
     state_with_materialization = _state_with_d12_1_database_materialization(state_with_analyst_views)
     state_with_closeout_gate = _state_with_d12_database_closeout_gate(state_with_materialization)
     final_state = _record_node(state_with_closeout_gate, "persist_session_state")
+    final_state = _state_with_run_audit_materialization(final_state)
     _write_native_state_artifacts(final_state)
     _write_multi_agent_governance_ledger_artifacts(final_state)
     _write_multi_agent_summary_artifact(final_state)
@@ -2920,6 +2995,49 @@ def _state_with_d12_database_closeout_gate(state: SecAgentGraphRuntimeState) -> 
     if closeout_gate:
         return state
     return {**state, "d_series_database_closeout_gate": build_d_series_database_closeout_gate(state)}
+
+
+def _state_with_run_audit_materialization(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    existing_report = (
+        state.get("run_audit_materialization_report")
+        if isinstance(state.get("run_audit_materialization_report"), dict)
+        else {}
+    )
+    if existing_report:
+        return state
+    db_path = _run_audit_db_path(state)
+    if db_path is None:
+        return state
+    artifact_refs = dict(state.get("artifact_refs") or {})
+    output_dir = str(state.get("output_dir") or "").strip()
+    if output_dir:
+        artifact_refs["run_audit_materialization_report"] = str((Path(output_dir) / "run_audit_materialization_report.json").resolve())
+    artifact_refs["run_audit_db"] = str(db_path.resolve())
+    state_with_refs = {**state, "artifact_refs": artifact_refs}
+    report = materialize_run_audit_store(db_path, state_with_refs)
+    return {**state_with_refs, "run_audit_materialization_report": report}
+
+
+def _run_audit_db_path(state: SecAgentGraphRuntimeState) -> Path | None:
+    contract = state.get("query_contract") if isinstance(state.get("query_contract"), dict) else {}
+    context = state.get("multi_agent_context") if isinstance(state.get("multi_agent_context"), dict) else {}
+    raw_path = (
+        state.get("run_audit_db_path")
+        or state.get("runtime_audit_db_path")
+        or contract.get("run_audit_db_path")
+        or contract.get("runtime_audit_db_path")
+        or context.get("run_audit_db_path")
+        or context.get("runtime_audit_db_path")
+    )
+    if not str(raw_path or "").strip():
+        return None
+    path = Path(str(raw_path))
+    if path.is_absolute():
+        return path
+    output_dir = str(state.get("output_dir") or "").strip()
+    if output_dir:
+        return Path(output_dir) / path
+    return path
 
 
 def _node_plan_query(
@@ -3455,6 +3573,7 @@ def _node_render_answer(
 def _node_persist_session_state(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
     state_before_record = _with_native_artifact_refs({**state, "status": "completed"})
     final_state = _record_node(state_before_record, "persist_session_state")
+    final_state = _state_with_run_audit_materialization(final_state)
     _write_native_state_artifacts(final_state)
     return final_state
 
@@ -3513,6 +3632,16 @@ def _write_native_state_artifacts(state: SecAgentGraphRuntimeState) -> None:
         json.dumps(build_native_summary_artifact_payload(state), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    run_audit_report = (
+        state.get("run_audit_materialization_report")
+        if isinstance(state.get("run_audit_materialization_report"), dict)
+        else {}
+    )
+    if run_audit_report:
+        (output_dir / "run_audit_materialization_report.json").write_text(
+            json.dumps(run_audit_report, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
     _write_memo_surface_artifacts(output_dir, state)
 
 
@@ -3734,6 +3863,16 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     if materialization_report:
         (output_dir / "d_series_database_materialization_report.json").write_text(
             json.dumps(materialization_report, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    run_audit_report = (
+        state.get("run_audit_materialization_report")
+        if isinstance(state.get("run_audit_materialization_report"), dict)
+        else {}
+    )
+    if run_audit_report:
+        (output_dir / "run_audit_materialization_report.json").write_text(
+            json.dumps(run_audit_report, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
 

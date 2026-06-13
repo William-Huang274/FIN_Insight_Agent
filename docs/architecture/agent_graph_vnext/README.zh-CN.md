@@ -17,6 +17,7 @@
 - [08 旧规划文档吸收与数据治理执行计划](08_legacy_planning_docs_absorption_and_data_governance_plan.zh-CN.md)：对 G1-G10 前的三份规划文档做覆盖/缺口映射，并固化 D1-D11 evidence-governed runtime 数据治理序列。
 - [09 Research Lead 常驻监督闭环框架](09_lead_supervised_closed_loop_research_framework.zh-CN.md)：记录 2026-06-14 新讨论，将 Research Lead 升级为 supervising analyst，加入 ResearchObjectiveContract、LeadReviewCheckpoint、TargetedRepairPlan、MemoLogicPlan、role-specific selector、BGE 资源队列和 ModelRouter / AgentCoalescer。
 - [10 后端 / 前端 Runtime 升级框架](10_backend_frontend_runtime_framework.zh-CN.md)：吸收两份后端规划文档，把 FinSight 从本地 agent / Workbench eval 推进到 API、Redis queue、worker pool、SSE、DB persistence、Docker Compose、前端 trace/report viewer 和 Java/Spring Boot 可选外壳。
+- [11 Agent Eval Runtime 闭环框架](11_agent_eval_runtime_framework.zh-CN.md)：审计现有 docs/eval、scripts/eval、fixtures、run_audit_store、LangGraph checkpoint、LLM token/latency 和 model run ledger，设计统一 Eval Registry、Dataset Lifecycle、Node/Chain Evaluators、Failure/Gold 状态机、后端 SQL eval store 和前端 eval dashboard。
 
 ## 总原则
 
@@ -26,3 +27,4 @@
 4. Research Lead 不学习所有行业细节，只学习 meta-planning，并依赖 inventory brief + playbook registry 分配任务。
 5. Specialist 并行消费 frozen evidence bundle，输出 claim cards；memo writer 只消费 verified judgment / claim cards。
 6. Milvus 是 typed semantic recall supplement，不替代 BM25/ObjectBM25/exact ledger，也不成为 exact-value authority。
+7. Eval 是 runtime 的一部分；每次 run 都必须可追溯到 case / dataset / node metrics / context / evidence / claim / gate / failure taxonomy。

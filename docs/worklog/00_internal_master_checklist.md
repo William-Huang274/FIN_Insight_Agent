@@ -634,3 +634,15 @@
 - [ ] B10: Add a ContextEngine facade with resolve/select/compress/inject/write/consolidate/invalidate/retrieve interfaces and config-driven strategy selection.
 - [ ] B11: Add memory governance gates: tenant isolation, injection audit, token budget, memory drilldown parity, evidence boundary, staleness, replay, and frontend visibility.
 - [ ] F1: Add frontend run list, run detail, event timeline, evidence viewer, ClaimCard viewer, gap viewer, report viewer, graph trace, upload center, and admin/config views.
+
+## Agent Eval Runtime and Dataset Governance
+
+- [x] EV0: Document the unified Agent Eval Runtime framework as 11, auditing current eval docs/scripts/fixtures/run-audit/model-run assets and aligning with 09/10.
+- [ ] EV1: Build an Eval Registry catalog for current eval packs, runners, datasets, case families, commands, artifact policy, and status: current / superseded / diagnostic-only / deprecated.
+- [ ] EV2: Extend run audit into SQL-backed eval store tables for eval_case_registry, eval_dataset_version, eval_case_result, eval_node_result, eval_metric_result, eval_failure_event, eval_annotation, eval_gold_promotion, and eval_judge_run.
+- [ ] EV3: Make retrieval/rerank/role-visible evidence audit mandatory for full-chain and node evals, including target-in-candidates, pre-rerank recall, post-rerank hit/precision, role-visible recall, and dropped-row taxonomy.
+- [ ] EV4: Add node evals for ResearchObjectiveContract, LeadReviewCheckpoint, TargetedRepairPlan, MemoLogicPlan, ContextEngine injection plans, and ModelRouter / AgentCoalescer.
+- [ ] EV5: Add failure lifecycle governance: observed -> triaged -> root_caused -> regression_case_added -> fixed -> monitored -> retired.
+- [ ] EV6: Add gold lifecycle governance: candidate -> reviewed -> active_regression -> gold -> stale -> deprecated, with data snapshot, source refs, criteria version, review record, and expiry policy.
+- [ ] EV7: Add LLM-as-judge audit contract for judge prompt digest, rubric version, judge model, input mapping, explanation, latency, token/cost, and human calibration sampling.
+- [ ] EV8: Add backend/frontend eval dashboard surfaces for eval run list, case result, node trace, retrieval audit, failure queue, gold queue, cost/latency trends, and comparison by commit/model/data snapshot.

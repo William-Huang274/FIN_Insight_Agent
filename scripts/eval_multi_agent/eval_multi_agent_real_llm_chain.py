@@ -641,7 +641,7 @@ def _diagnostic_quality_checks(
             product_evidence_present or product_gap_present if case.get("require_product_or_gap_evidence") else True
         ),
         "required_product_fact_terms_present": (
-            all(term.lower() in supported_product_text.lower() for term in required_product_terms)
+            all(_diagnostic_required_term_present(supported_product_text, term) for term in required_product_terms)
             if required_product_terms
             else True
         ),
@@ -874,11 +874,37 @@ def _diagnostic_product_gap_present(gap_rows: list[Mapping[str, Any]]) -> bool:
 
 
 def _diagnostic_row_text(row: Mapping[str, Any]) -> str:
-    return " ".join(
-        _diagnostic_text(value)
-        for value in row.values()
-        if isinstance(value, (str, int, float, bool))
+    values: list[str] = []
+    stack = list(row.values())
+    while stack:
+        value = stack.pop(0)
+        if isinstance(value, (str, int, float, bool)):
+            text = _diagnostic_text(value)
+            if text:
+                values.append(text)
+        elif isinstance(value, Mapping):
+            stack.extend(value.values())
+        elif isinstance(value, (list, tuple, set)):
+            stack.extend(value)
+    return " ".join(values)
+
+
+def _diagnostic_required_term_present(text: str, term: str) -> bool:
+    haystack = _diagnostic_match_text(text)
+    needle = _diagnostic_match_text(term)
+    if not needle:
+        return True
+    if needle in haystack:
+        return True
+    singular = " ".join(
+        token[:-1] if token.endswith("s") and len(token) > 3 else token
+        for token in needle.split()
     )
+    return bool(singular and singular in haystack)
+
+
+def _diagnostic_match_text(value: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[^0-9a-zA-Z\u4e00-\u9fff]+", " ", str(value or "").lower())).strip()
 
 
 def _diagnostic_text(value: Any) -> str:
@@ -1424,7 +1450,7 @@ def _specialist_real_evidence_quality(
     for agent_id in sorted(required_specialists):
         data_view = build_agent_data_view(agent_id, result)
         rows = [dict(row) for row in data_view.get("bounded_evidence_rows") or [] if isinstance(row, Mapping)]
-        known_refs = _known_row_refs(rows)
+        known_refs = _known_data_view_refs(data_view, rows)
         row_by_ref = _row_by_known_ref(rows)
         memolet = memolets.get(agent_id, {})
         validation = validate_specialist_memolet(memolet, known_evidence_refs=known_refs)
@@ -1545,6 +1571,51 @@ def _allowed_specialist_source_families(agent_id: str) -> set[str]:
 
 def _known_row_refs(rows: list[Mapping[str, Any]]) -> set[str]:
     return {ref for row in rows for ref in _row_ref_candidates(row)}
+
+
+def _known_data_view_refs(data_view: Mapping[str, Any], rows: list[Mapping[str, Any]]) -> set[str]:
+    refs = _known_row_refs(rows)
+    for key in (
+        "relationship_summary",
+        "product_spec_pack",
+        "product_spec_pack_ref",
+        "capital_macro_pack",
+        "capital_macro_pack_ref",
+        "fundamental_statement_pack",
+        "fundamental_statement_pack_ref",
+    ):
+        refs.update(_nested_evidence_refs(data_view.get(key)))
+    return refs
+
+
+def _nested_evidence_refs(value: Any) -> set[str]:
+    refs: set[str] = set()
+    if isinstance(value, Mapping):
+        for key in (
+            "evidence_refs",
+            "refs",
+            "supporting_evidence_ids",
+            "evidence_ref",
+            "evidence_id",
+            "source_id",
+            "raw_record_ref",
+            "source_fact_id",
+            "line_item_id",
+            "change_id",
+            "comparison_id",
+            "metric_id",
+            "object_id",
+            "gap_id",
+            "id",
+        ):
+            refs.update(_string_list(value.get(key)))
+        for item in value.values():
+            if isinstance(item, (Mapping, list)):
+                refs.update(_nested_evidence_refs(item))
+    elif isinstance(value, list):
+        for item in value:
+            refs.update(_nested_evidence_refs(item))
+    return {ref for ref in refs if ref}
 
 
 def _row_by_known_ref(rows: list[Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]:

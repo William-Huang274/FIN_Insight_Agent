@@ -6,6 +6,31 @@
 
 它不是按 09、10、11 各自排期，而是按可交付功能切片排期：每一步同时说明 Python agent runtime、后端 / 前端、评测体系如何一起推进，哪些可以并行，哪些必须同步屏障后再进入下一步。
 
+## 2026-06-14 P0-P9 当前落地状态
+
+本节覆盖用户要求的 P0-P9 “真正跑通后再进入 P10”的阶段状态；P10 full-chain 12case regression 暂未执行。
+
+- P0/B0：已落地 JDK-only Java Task Gateway，不是空 shell。支持 task create / status / events / cancel / worker callback。
+- P1：已接 file/JDBC task store、file/Redis queue、task event stream；JDBC 路径补 DB readiness retry。
+- P2：Python worker 可把 Workbench eval summary 和 artifact refs 写入 runtime bridge eval store，并回传给 Java task。
+- P3/P4：保留现有 run audit / context / Workbench artifact 通路；runtime bridge 已能承载 `context_api_smoke` 与 vNext diagnostic eval。
+- P5/P7：已修 ClaimCard 产品 surface：产品收入 / AI server / ISG 事实即使由 fundamental agent 产出，也会进入 `product_technology` 和 `product_and_production`；memo / thesis driver pack 可以看到产品面。
+- P6：工具/输入能力本轮未扩展新 multimodal/document renderer；保持 09/10 的接口规划。
+- P8：Java task lifecycle 可由 API 查询 status / progress / memo / evidence / events；前端 dashboard 尚未新建。
+- P9：已提供资源调度 contract 和 Docker backend smoke：`file+redis`、`jdbc+redis` 均通过；本机真实 vNext diagnostic 仍以 CPU BGE 跑通，CUDA/Milvus 绑定等待资源阶段。
+- 已验证门控：
+  - Java 编译通过。
+  - `smoke_java_python_bridge.py --task-mode local_smoke --store-mode file --queue-mode file` 通过。
+  - Docker Redis/MySQL backend smoke 通过。
+  - Workbench 后端 `agent_graph_vnext_diagnostic_probe --limit 1` real case 通过，run id `runtime_bridge_agent_graph_diag_probe_l1_product_v4`。
+  - 相关单测：runtime bridge、D-series fact selection、multi-agent contracts、real-LLM eval helpers、memo repair 通过。
+
+剩余边界：
+
+- P10 full-chain 12case regression 未跑；不能据此宣称全量线上质量已完成。
+- Milvus 仍为 `unbound_cloud_deferred` semantic supplement，未重建 603 家公司云端 collection。
+- Spring Boot parity、SSE 前端 dashboard、高并发压测仍属于下一阶段后端产品化工作。
+
 ## 核心原则
 
 下一阶段目标不是“多加几个 agent 节点”或“单独做一个 Java 后端”，而是形成一个可审计的投研 Agent Runtime：

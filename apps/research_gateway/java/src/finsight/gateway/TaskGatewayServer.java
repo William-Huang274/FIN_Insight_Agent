@@ -6,9 +6,12 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -64,6 +67,21 @@ public final class TaskGatewayServer {
                 handleCreateTask(exchange);
                 return;
             }
+            if (suffix.startsWith("/") && "POST".equals(method) && suffix.endsWith("/worker-events")) {
+                String taskId = suffix.substring(1, suffix.length() - "/worker-events".length());
+                handleWorkerUpdate(exchange, taskId);
+                return;
+            }
+            if (suffix.startsWith("/") && "GET".equals(method) && suffix.endsWith("/events")) {
+                String taskId = suffix.substring(1, suffix.length() - "/events".length());
+                handleGetTaskEvents(exchange, taskId);
+                return;
+            }
+            if (suffix.startsWith("/") && "POST".equals(method) && suffix.endsWith("/cancel")) {
+                String taskId = suffix.substring(1, suffix.length() - "/cancel".length());
+                handleCancelTask(exchange, taskId);
+                return;
+            }
             if ("GET".equals(method) && suffix.startsWith("/")) {
                 String taskId = suffix.substring(1);
                 if (taskId.contains("/")) {
@@ -71,11 +89,6 @@ public final class TaskGatewayServer {
                     return;
                 }
                 handleGetTask(exchange, taskId);
-                return;
-            }
-            if ("POST".equals(method) && suffix.startsWith("/") && suffix.endsWith("/worker-events")) {
-                String taskId = suffix.substring(1, suffix.length() - "/worker-events".length());
-                handleWorkerUpdate(exchange, taskId);
                 return;
             }
             send(exchange, 404, Map.of("error", "not_found"));
@@ -91,7 +104,14 @@ public final class TaskGatewayServer {
         ResearchTask task = ResearchTask.fromCreateRequest(body);
         store.create(task);
         String callback = callbackBase(exchange) + "/api/research/tasks/" + task.taskId + "/worker-events";
-        queue.publish(task.taskId, JsonUtil.write(task.queuePayload(callback)));
+        try {
+            queue.publish(task.taskId, JsonUtil.write(task.queuePayload(callback)));
+            store.appendEvent(task.taskId, "system", "task accepted and queued via " + config.queueMode, task.traceId);
+        } catch (Exception exc) {
+            store.updateStatus(task.taskId, "FAILED", "queue_publish_failed: " + exc.getMessage());
+            store.appendEvent(task.taskId, "system", "queue publish failed: " + exc.getMessage(), task.traceId);
+            throw exc;
+        }
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("task_id", task.taskId);
         response.put("trace_id", task.traceId);
@@ -110,6 +130,22 @@ public final class TaskGatewayServer {
         send(exchange, 200, task.get().toMap());
     }
 
+    private void handleGetTaskEvents(HttpExchange exchange, String taskId) throws Exception {
+        int afterSequence = intQuery(exchange, "after_sequence", 0, 1_000_000_000);
+        int limit = intQuery(exchange, "limit", 500, 5000);
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (TaskEvent event : store.listEvents(taskId, afterSequence, limit)) {
+            rows.add(event.toMap());
+        }
+        send(exchange, 200, Map.of("task_id", taskId, "events", rows));
+    }
+
+    private void handleCancelTask(HttpExchange exchange, String taskId) throws Exception {
+        ResearchTask task = store.updateStatus(taskId, "CANCEL_REQUESTED", "cancel requested");
+        store.appendEvent(taskId, "system", "cancel requested", task.traceId);
+        send(exchange, 202, task.toMap());
+    }
+
     private void handleWorkerUpdate(HttpExchange exchange, String taskId) throws Exception {
         if (!config.workerToken.isBlank()) {
             String token = exchange.getRequestHeaders().getFirst("X-Worker-Token");
@@ -118,8 +154,37 @@ public final class TaskGatewayServer {
                 return;
             }
         }
-        ResearchTask updated = store.updateFromWorker(taskId, JsonUtil.readObject(readBody(exchange)));
+        Map<String, Object> body = JsonUtil.readObject(readBody(exchange));
+        ResearchTask updated = store.updateFromWorker(taskId, body);
+        store.appendEvent(
+                taskId,
+                "worker",
+                "status=" + updated.status + " progress=" + updated.progress,
+                updated.traceId);
+        for (TaskEvent event : workerEventsFromBody(taskId, updated.traceId, body)) {
+            store.appendEvent(taskId, event.stream, event.message, event.traceId);
+        }
         send(exchange, 200, updated.toMap());
+    }
+
+    private static List<TaskEvent> workerEventsFromBody(String taskId, String traceId, Map<String, Object> body) {
+        Object raw = body.get("events");
+        if (!(raw instanceof List<?> list)) {
+            return List.of();
+        }
+        List<TaskEvent> events = new ArrayList<>();
+        for (Object item : list) {
+            if (!(item instanceof Map<?, ?> map)) {
+                continue;
+            }
+            String stream = text(map.get("stream"));
+            String message = text(map.get("message"));
+            if (message.isBlank()) {
+                continue;
+            }
+            events.add(TaskEvent.create(taskId, 1, firstText(map.get("trace_id"), traceId), stream, message));
+        }
+        return events;
     }
 
     private static String readBody(HttpExchange exchange) throws IOException {
@@ -132,6 +197,37 @@ public final class TaskGatewayServer {
             host = exchange.getLocalAddress().getHostString() + ":" + exchange.getLocalAddress().getPort();
         }
         return "http://" + host;
+    }
+
+    private static int intQuery(HttpExchange exchange, String key, int defaultValue, int maxValue) {
+        String query = exchange.getRequestURI().getRawQuery();
+        if (query == null || query.isBlank()) {
+            return defaultValue;
+        }
+        for (String part : query.split("&")) {
+            int index = part.indexOf('=');
+            String rawKey = index >= 0 ? part.substring(0, index) : part;
+            if (!key.equals(URLDecoder.decode(rawKey, StandardCharsets.UTF_8))) {
+                continue;
+            }
+            String rawValue = index >= 0 ? part.substring(index + 1) : "";
+            try {
+                int value = Integer.parseInt(URLDecoder.decode(rawValue, StandardCharsets.UTF_8));
+                return Math.max(0, Math.min(maxValue, value));
+            } catch (NumberFormatException exc) {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+
+    private static String firstText(Object value, String defaultValue) {
+        String result = text(value);
+        return result.isBlank() ? defaultValue : result;
+    }
+
+    private static String text(Object value) {
+        return value == null ? "" : String.valueOf(value);
     }
 
     private static void send(HttpExchange exchange, int status, Map<String, Object> payload) throws IOException {

@@ -304,3 +304,70 @@ def test_pre_memo_fact_selection_keeps_product_claim_when_financial_facts_crowd_
     assert {"capital_and_financing", "fundamentals", "product_and_production"} <= dimensions
     assert any("AI-optimized servers" in row["claim"] for row in product_claims)
     assert len(deterministic) <= 18
+
+
+def test_pre_memo_fact_selection_prioritizes_query_relevant_product_lines() -> None:
+    candidates = []
+    groups = []
+
+    def add_product(index: int, product: str) -> None:
+        candidate_id = f"product_candidate_{index}"
+        candidates.append({"candidate_id": candidate_id, "evidence_ref": f"product_ref_{index}_{product.lower().replace(' ', '_')}"})
+        groups.append(
+            {
+                "group_id": f"product_group_{index}",
+                "ticker": "DELL",
+                "canonical_metric_id": "product_kpi:product_revenue",
+                "product_or_segment": product,
+                "period_key": "fiscal:2026:Q1:qtd",
+                "resolution_status": "resolved_single_candidate",
+                "candidate_ids": [candidate_id],
+                "preferred_value": {
+                    "candidate_id": candidate_id,
+                    "value": str(1000 + index),
+                    "numeric_value": str(1000 + index),
+                    "unit": "usd_millions",
+                    "source_id": f"sec_product_{index}",
+                    "evidence_ref": f"product_ref_{index}_{product.lower().replace(' ', '_')}",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                    "resolution_rule": "single_exact_authority_candidate",
+                    "confidence": "high",
+                },
+            }
+        )
+
+    for index, product in enumerate(
+        [
+            "Consumer",
+            "Commercial",
+            "Storage",
+            "Traditional servers and networking",
+            "Total ISG net revenue",
+            "AI-optimized servers",
+        ],
+        start=1,
+    ):
+        add_product(index, product)
+
+    selection = build_pre_memo_fact_selection(
+        {
+            "user_query": "Evaluate Dell AI infrastructure demand, server revenue, and ISG exposure.",
+            "reconciliation_ledger": {"candidates": candidates, "reconciliation_groups": groups},
+        }
+    )
+    filtered = apply_pre_memo_fact_selection_to_judgment(
+        {"memo_writer_allowed": True, "supported_claims": [], "unsupported_claims": []},
+        selection,
+    )
+    product_claims = [
+        row
+        for row in filtered["supported_claims"]
+        if row.get("agent_id") == "pre_memo_fact_selector"
+        and row.get("analysis_dimension") == "product_and_production"
+    ]
+    priority_product_text = "\n".join(row.get("claim", "") for row in product_claims[:4])
+
+    assert len(product_claims) >= 4
+    assert "AI-optimized servers" in priority_product_text
+    assert "Total ISG net revenue" in priority_product_text
+    assert any(row.get("selection_relevance_score", 0) > 0 for row in product_claims)

@@ -4,6 +4,15 @@
 
 本文档作为 09 Research Lead closed loop 和 10 后端 / 前端 runtime 之后的评测体系闭环。目标不是再追加一个孤立 eval 脚本，而是把 FinSight 的评测、审计、回放、错误沉淀、gold set 晋级和线上监控统一成一个可持续运转的 Agent Eval Runtime。
 
+## 2026-06-14 P0-P9 实施更新
+
+- Runtime bridge eval 已能从 Java Task Gateway 触发 Python worker，再由 worker 调 Workbench eval runner，最后通过 Java callback 写回 status / memo / evidence / artifact refs / events。
+- `agent_graph_vnext_diagnostic_probe` 已通过 1 个 real case gate：`fin_diag_ai_infra_dell_product_capex_zh`，run id `runtime_bridge_agent_graph_diag_probe_l1_product_v4`。
+- Eval 已修复 specialist real-evidence quality 的 known refs 口径：role-visible `FundamentalStatementPack` / nested pack refs 可作为 specialist 可见证据，避免误判 observation refs unknown。
+- Eval 已修复产品 surface 判断：使用 `analysis_dimension=product_and_production`、`primary_claim_ids` / `evidence_refs`，并对 `AI-optimized servers`、`ai_optimized_servers`、`AI-optimized server revenue` 这类 hyphen / underscore / plural 变体做归一化匹配。
+- 新增 contract gate：即使产品收入事实由 `fundamental_analyst` 提出，只要 metric/evidence 是 `product_revenue` / product KPI / AI server / ISG，ClaimCard 也必须进入 `product_technology` memo slot 和 `product_and_production` dimension。
+- 本轮未跑 P10 12case full-chain regression；P0-P9 的上线前门控当前只覆盖 Java/Python bridge、SQL/Redis backend smoke、Workbench 1case diagnostic、相关 node/eval unit tests。
+
 ## 外部参考
 
 参考成熟 agent / RAG eval 项目的共性做法：

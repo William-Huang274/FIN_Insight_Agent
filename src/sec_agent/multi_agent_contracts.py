@@ -2052,6 +2052,10 @@ def _memo_outline_from_claims(
     blocked_specialist_agents: list[str],
 ) -> list[dict[str, Any]]:
     slots = _expected_memo_slots(source_agent_ids)
+    for claim in claims:
+        claim_slot = _normalize_memo_slot(claim.get("memo_slot"))
+        if claim_slot and claim_slot not in slots:
+            slots.append(claim_slot)
     by_slot: dict[str, list[Mapping[str, Any]]] = {slot: [] for slot in slots}
     for claim in claims:
         slot = _normalize_memo_slot(claim.get("memo_slot"))
@@ -4027,18 +4031,34 @@ def _repair_instruction(errors: list[dict[str, Any]]) -> str:
 def _normalize_observation(payload: Mapping[str, Any]) -> dict[str, Any]:
     source_families = _unique_strings(payload.get("source_families") or payload.get("source_family"))
     raw_claim_type = str(payload.get("claim_type") or "").strip()
+    claim_text = str(payload.get("claim") or "").strip()
+    claim_type = _claim_type_for_source_scope(payload.get("claim_type"), source_families)
+    evidence_refs = _unique_strings(payload.get("evidence_refs") or payload.get("refs"))
+    metric_scope = _unique_strings(payload.get("metric_scope") or payload.get("metrics") or payload.get("metric"))
+    memo_slot = _normalize_memo_slot(payload.get("memo_slot"))
+    if memo_slot == "fundamentals" and _claim_has_product_surface_signal(
+        {
+            "claim": claim_text,
+            "claim_type": claim_type,
+            "raw_claim_type": raw_claim_type,
+            "evidence_refs": evidence_refs,
+            "metric_scope": metric_scope,
+            "source_families": source_families,
+        }
+    ):
+        memo_slot = "product_technology"
     return {
-        "claim": str(payload.get("claim") or "").strip(),
-        "claim_type": _claim_type_for_source_scope(payload.get("claim_type"), source_families),
+        "claim": claim_text,
+        "claim_type": claim_type,
         "raw_claim_type": raw_claim_type,
-        "evidence_refs": _unique_strings(payload.get("evidence_refs") or payload.get("refs")),
+        "evidence_refs": evidence_refs,
         "source_families": source_families,
         "confidence": _normalize_confidence(payload.get("confidence")),
         "unsupported": bool(payload.get("unsupported")),
         "caveats": _unique_strings(payload.get("caveats")),
         "ticker_scope": _unique_upper(payload.get("ticker_scope") or payload.get("tickers") or payload.get("ticker")),
-        "metric_scope": _unique_strings(payload.get("metric_scope") or payload.get("metrics") or payload.get("metric")),
-        "memo_slot": _normalize_memo_slot(payload.get("memo_slot")),
+        "metric_scope": metric_scope,
+        "memo_slot": memo_slot,
         "materiality": _normalize_materiality(payload.get("materiality")),
         "direction": _normalize_direction(payload.get("direction")),
         "missing_confirmations": _unique_strings(payload.get("missing_confirmations")),
@@ -4046,6 +4066,38 @@ def _normalize_observation(payload: Mapping[str, Any]) -> dict[str, Any]:
         "snapshot_id": str(payload.get("snapshot_id") or "").strip(),
         "as_of_date": str(payload.get("as_of_date") or "").strip(),
     }
+
+
+def _claim_has_product_surface_signal(claim: Mapping[str, Any]) -> bool:
+    metrics = " ".join(_unique_strings(claim.get("metric_scope") or claim.get("metrics") or claim.get("metric"))).lower()
+    claim_type = str(claim.get("claim_type") or claim.get("raw_claim_type") or "").lower()
+    evidence_refs = " ".join(_unique_strings(claim.get("evidence_refs") or claim.get("refs"))).lower()
+    text = str(claim.get("claim") or "").lower()
+    product_metric_terms = (
+        "product_revenue",
+        "product revenue",
+        "product_kpi",
+        "segment_revenue",
+        "segment revenue",
+        "backlog",
+        "shipments",
+        "units",
+        "capacity",
+    )
+    product_line_terms = (
+        "ai-optimized",
+        "ai optimized",
+        "ai_optimized",
+        "server",
+        "servers",
+        "isg",
+        "infrastructure solutions group",
+        "product line",
+        "product mix",
+    )
+    return any(term in metrics or term in claim_type or term in evidence_refs for term in product_metric_terms) or any(
+        term in text or term in evidence_refs for term in product_line_terms
+    )
 
 
 def _normalize_relationship(payload: Mapping[str, Any]) -> dict[str, Any]:

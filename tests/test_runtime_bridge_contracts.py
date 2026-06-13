@@ -19,11 +19,14 @@ def test_runtime_bridge_registry_records_storage_and_path_boundaries(tmp_path: P
     assert registry["architecture_policy"]["milvus"] == "semantic_recall_supplement_not_exact_authority"
     assert registry["runtime_paths"]["primary_data_root"].endswith("data_d")
     assert registry["runtime_paths"]["secondary_data_roots"][0].endswith("data_z")
-    assert registry["p_series_capabilities"]["P0"]["status"] == "implemented_minimal"
+    assert registry["p_series_capabilities"]["P0"]["status"] == "implemented_operational"
+    assert "task_event_stream" in registry["p_series_capabilities"]["P1"]["gates"]
     assert registry["p_series_capabilities"]["P9"]["gates"] == [
         "queue_mode_declared",
         "redis_contract",
         "resource_scheduler_policy",
+        "cuda_bge_queue_policy",
+        "token_budget_model_tier_policy",
     ]
 
 

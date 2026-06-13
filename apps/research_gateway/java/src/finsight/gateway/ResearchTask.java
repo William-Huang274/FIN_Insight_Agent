@@ -99,6 +99,25 @@ final class ResearchTask {
                 now);
     }
 
+    ResearchTask withGatewayStatus(String status, String errorMessage) {
+        String now = Instant.now().toString();
+        return new ResearchTask(
+                taskId,
+                traceId,
+                query,
+                userId,
+                caseId,
+                mode,
+                firstText(status, this.status).trim().toUpperCase(),
+                progress,
+                memo,
+                evidence,
+                firstText(errorMessage, this.errorMessage),
+                metadata,
+                createdAt,
+                now);
+    }
+
     Map<String, Object> toMap() {
         Map<String, Object> values = new LinkedHashMap<>();
         values.put("task_id", taskId);

@@ -72,14 +72,44 @@ memo: Runtime bridge smoke passed...
 evidence[0].source_family: runtime_bridge_smoke
 ```
 
+## 2026-06-14 Follow-up Completion
+
+本日志初版记录的是 P0-P9 最小通路；随后按用户要求补到“真实链路可跑通，不是最小闭环”：
+
+- Java gateway 增加 `GET /events`、`POST /cancel`、task event store、JDBC status update/event append/list、DB readiness retry。
+- Python worker 增加 Workbench eval mode，支持 `context_api_smoke`、`context_api_load_smoke`、`agent_graph_vnext_run_audit_smoke`、`agent_graph_vnext_diagnostic_probe`。
+- 新增 Docker backend smoke，覆盖 `file+redis` 与 `jdbc+redis`。
+- 修复 Workbench diagnostic 中的 pack-visible evidence refs 误判。
+- 修复产品收入 / AI server / ISG facts 被归到 fundamentals 的问题：产品事实现在进入 `product_technology` memo slot 与 `product_and_production` dimension。
+- 修复 Windows GBK 下 runtime bridge smoke 输出 JSON 编码问题。
+
+更新后通过门控：
+
+```text
+javac -encoding UTF-8 apps/research_gateway/java/src/**/*.java
+pass
+
+python scripts/runtime_bridge/smoke_java_python_bridge.py --task-mode local_smoke --store-mode file --queue-mode file
+status: SUCCESS
+
+python scripts/runtime_bridge/smoke_java_python_bridge_docker_backends.py
+file+redis: SUCCESS
+jdbc+redis: SUCCESS
+
+python scripts/runtime_bridge/smoke_java_python_bridge.py --task-mode workbench_eval --eval-id agent_graph_vnext_diagnostic_probe --limit 1 --run-id runtime_bridge_agent_graph_diag_probe_l1_product_v4
+Workbench summary: pass
+
+python -m pytest tests/test_multi_agent_contracts.py::test_product_revenue_observation_is_routed_to_product_surface_even_from_fundamental_agent tests/test_d_series_fact_selection.py::test_pre_memo_fact_selection_prioritizes_query_relevant_product_lines tests/test_multi_agent_real_llm_chain_eval.py tests/test_runtime_bridge_contracts.py tests/test_runtime_bridge_java_python_smoke.py -q
+33 passed
+```
+
 ## Remaining Gaps
 
-- 当前 Java gateway 是 JDK-only P0 implementation，不是 Spring Boot 版本；Spring Boot parity 留到 P9。
-- JDBC store 已有代码路径，但本轮未启动真实 MySQL/Postgres，也未放入 JDBC driver jar；后续需要 Docker DB + driver + migration/parity test。
-- Redis queue 已有 Java LPUSH / Python RPOP contract，但本轮 smoke 使用 file adapter；后续需要启动 Redis 后跑真实 queue smoke。
-- Python worker 当前执行 deterministic local smoke，尚未接 Workbench / LangGraph full runtime；下一步应把 queued payload 映射到 Workbench eval/agent command。
-- P3/P5/P6/P7/P8 目前主要是 contract / registry / API surface 级别，尚未完全接入主 graph 和前端 dashboard。
-- Milvus 云端绑定等待用户明天开启云端后再做。
+- 当前 Java gateway 是 JDK-only implementation，不是 Spring Boot parity；Spring Boot / SSE dashboard / auth / tenant 等留到后端产品化阶段。
+- P10 full-chain 12case regression 未跑，本轮只跑 1 个 Workbench real diagnostic case。
+- Milvus 云端绑定等待用户开启云端后再做。
+- 前端 trace / eval dashboard 尚未新建；当前只通过 API / artifact / Workbench 后端验证。
+- CUDA BGE 排队机制已有 contract，真实 GPU scheduler 仍待资源阶段验证。
 
 ## Follow-up
 

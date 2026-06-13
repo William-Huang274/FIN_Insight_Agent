@@ -6,6 +6,22 @@ from typing import Any, Mapping
 
 
 PRE_MEMO_FACT_SELECTION_SCHEMA_VERSION = "sec_agent_pre_memo_fact_selection_v0.1"
+_STOPWORDS = {
+    "and",
+    "are",
+    "for",
+    "from",
+    "how",
+    "into",
+    "the",
+    "this",
+    "that",
+    "with",
+    "是否",
+    "什么",
+    "公司",
+    "研究",
+}
 
 
 def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
@@ -18,6 +34,7 @@ def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
     bounded_gap_register = state.get("bounded_gap_register") if isinstance(state.get("bounded_gap_register"), Mapping) else {}
 
     blocking_gate_index = _blocking_gate_index(gate_matrix)
+    objective_text = _fact_selection_objective_text(state)
     approved_facts: list[dict[str, Any]] = []
     rejected_facts: list[dict[str, Any]] = []
     conflict_gap_links: list[dict[str, Any]] = []
@@ -42,20 +59,23 @@ def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
         }
         if status.startswith("resolved") and preferred and not blocking_gates:
             approved_facts.append(
-                {
-                    **base,
-                    "fact_id": _text(preferred.get("candidate_id")) or group_id,
-                    "value": _text(preferred.get("value")),
-                    "numeric_value": _text(preferred.get("numeric_value")),
-                    "unit": _text(preferred.get("unit")),
-                    "source_id": _text(preferred.get("source_id")),
-                    "evidence_ref": _text(preferred.get("evidence_ref")),
-                    "source_family": _text(preferred.get("source_family")),
-                    "resolution_rule": _text(preferred.get("resolution_rule")),
-                    "resolution_confidence": _text(preferred.get("confidence")),
-                    "selection_status": "approved",
-                    "claim_boundary": "resolved_reconciliation_fact_memo_eligible",
-                }
+                _with_fact_selection_relevance(
+                    {
+                        **base,
+                        "fact_id": _text(preferred.get("candidate_id")) or group_id,
+                        "value": _text(preferred.get("value")),
+                        "numeric_value": _text(preferred.get("numeric_value")),
+                        "unit": _text(preferred.get("unit")),
+                        "source_id": _text(preferred.get("source_id")),
+                        "evidence_ref": _text(preferred.get("evidence_ref")),
+                        "source_family": _text(preferred.get("source_family")),
+                        "resolution_rule": _text(preferred.get("resolution_rule")),
+                        "resolution_confidence": _text(preferred.get("confidence")),
+                        "selection_status": "approved",
+                        "claim_boundary": "resolved_reconciliation_fact_memo_eligible",
+                    },
+                    objective_text=objective_text,
+                )
             )
         else:
             reason = "blocking_gate_failed" if blocking_gates else status or "missing_resolution"
@@ -321,9 +341,17 @@ def _deterministic_fact_claims_from_approved_facts(
                 "claim_rank_score": 95 if canonical_metric in {"financial_metric:revenue", "financial_metric:capex", "product_kpi:product_revenue"} else 88,
                 "claim_rank_bucket": "memo_ready",
                 "memo_readiness": "memo_ready",
-                "claim_rank_reasons": ["approved_reconciliation_fact", "exact_authority_source", "pre_memo_fact_selector"],
+                "claim_rank_reasons": _dedupe_strings(
+                    [
+                        "approved_reconciliation_fact",
+                        "exact_authority_source",
+                        "pre_memo_fact_selector",
+                        *_strings(row.get("selection_relevance_reasons")),
+                    ]
+                ),
                 "claim_boundary": "approved_reconciliation_fact_only",
                 "pre_memo_fact_selection_id": _text(row.get("selection_id")),
+                "selection_relevance_score": row.get("selection_relevance_score", 0),
                 "resolution_rule": _text(row.get("resolution_rule")),
                 "period_key": _text(row.get("period_key")),
                 "product_or_segment": _text(row.get("product_or_segment")),
@@ -414,7 +442,7 @@ def _approved_fact_can_be_claim_card(row: Mapping[str, Any]) -> bool:
     return bool(_text(row.get("value")) and _text(row.get("evidence_ref")))
 
 
-def _approved_fact_priority(row: Mapping[str, Any]) -> tuple[int, int, str, str, str]:
+def _approved_fact_priority(row: Mapping[str, Any]) -> tuple[int, int, int, str, str, str]:
     canonical = _text(row.get("canonical_metric_id"))
     metric_priority = {
         "financial_metric:capex": 0,
@@ -430,8 +458,10 @@ def _approved_fact_priority(row: Mapping[str, Any]) -> tuple[int, int, str, str,
         "product_kpi:backlog": 2,
     }.get(canonical, 50)
     product_penalty = 0 if not _text(row.get("product_or_segment")) else 3
+    relevance = _int(row.get("selection_relevance_score"))
     return (
         metric_priority,
+        -relevance,
         product_penalty,
         _text(row.get("ticker")).upper(),
         _text(row.get("period_key")),
@@ -496,6 +526,146 @@ def _business_mechanism_for_fact(dimension: str) -> str:
     if dimension == "product_and_production":
         return "Company-disclosed product, segment, backlog, or production facts connect real business activity to reported financial lines."
     return "Reported revenue, gross margin, operating income, and cash-flow facts establish the earnings-quality baseline."
+
+
+def _fact_selection_objective_text(state: Mapping[str, Any]) -> str:
+    parts: list[str] = []
+    for key in (
+        "user_query",
+        "research_question",
+        "query",
+        "prompt",
+    ):
+        value = _text(state.get(key))
+        if value:
+            parts.append(value)
+    for key in (
+        "query_contract",
+        "research_objective_contract",
+        "research_objective",
+        "evidence_requirement_plan",
+    ):
+        value = state.get(key)
+        if isinstance(value, Mapping):
+            parts.extend(_mapping_text_values(value, limit=40))
+    return " ".join(parts)
+
+
+def _with_fact_selection_relevance(row: Mapping[str, Any], *, objective_text: str) -> dict[str, Any]:
+    enriched = dict(row)
+    score, reasons = _fact_selection_relevance(row, objective_text=objective_text)
+    enriched["selection_relevance_score"] = score
+    enriched["selection_relevance_reasons"] = reasons
+    return enriched
+
+
+def _fact_selection_relevance(row: Mapping[str, Any], *, objective_text: str) -> tuple[int, list[str]]:
+    canonical = _text(row.get("canonical_metric_id"))
+    product = _text(row.get("product_or_segment"))
+    if not product and not canonical.startswith("product_kpi:"):
+        return (0, [])
+
+    product_terms = _expanded_product_terms(product)
+    objective_terms = _token_set(objective_text)
+    evidence_terms = _token_set(
+        " ".join(
+            [
+                _text(row.get("evidence_ref")),
+                _text(row.get("source_id")),
+                _text(row.get("fact_id")),
+                _text(row.get("canonical_metric_id")),
+            ]
+        )
+    )
+    overlap = sorted(product_terms & objective_terms)
+    evidence_overlap = sorted(evidence_terms & objective_terms)
+    score = 0
+    reasons: list[str] = []
+    if canonical == "product_kpi:product_revenue":
+        score += 4
+        reasons.append("company_reported_product_revenue")
+    elif canonical.startswith("product_kpi:"):
+        score += 2
+        reasons.append("company_reported_product_kpi")
+    if overlap:
+        score += min(18, 6 * len(overlap))
+        reasons.append("product_segment_matches_research_objective")
+    if evidence_overlap:
+        score += min(6, 2 * len(evidence_overlap))
+        reasons.append("evidence_ref_matches_research_objective")
+    if _high_signal_product_terms(product_terms) & (objective_terms | evidence_terms):
+        score += 5
+        reasons.append("high_signal_product_line")
+    return score, _dedupe_strings(reasons)
+
+
+def _expanded_product_terms(product: str) -> set[str]:
+    text = product.lower().replace("_", " ").replace("-", " ")
+    terms = _token_set(text)
+    if "isg" in terms or ("infrastructure" in terms and "solutions" in terms):
+        terms.update({"infrastructure", "server", "servers", "storage", "data", "center"})
+    if "ai" in terms:
+        terms.update({"accelerated", "accelerator", "gpu", "infrastructure", "server", "servers"})
+    if "server" in terms or "servers" in terms:
+        terms.update({"compute", "infrastructure"})
+    if "networking" in terms:
+        terms.update({"network", "infrastructure"})
+    return terms
+
+
+def _high_signal_product_terms(terms: set[str]) -> set[str]:
+    high_signal = {
+        "ai",
+        "accelerated",
+        "accelerator",
+        "gpu",
+        "server",
+        "servers",
+        "infrastructure",
+        "network",
+        "networking",
+        "data",
+        "center",
+        "backlog",
+        "cloud",
+        "compute",
+        "isg",
+    }
+    return terms & high_signal
+
+
+def _token_set(value: str) -> set[str]:
+    tokens: set[str] = set()
+    current: list[str] = []
+    for ch in str(value or "").lower():
+        if ch.isalnum():
+            current.append(ch)
+        elif current:
+            token = "".join(current)
+            if len(token) >= 2 and token not in _STOPWORDS:
+                tokens.add(token)
+            current = []
+    if current:
+        token = "".join(current)
+        if len(token) >= 2 and token not in _STOPWORDS:
+            tokens.add(token)
+    return tokens
+
+
+def _mapping_text_values(value: Mapping[str, Any], *, limit: int) -> list[str]:
+    out: list[str] = []
+    stack: list[Any] = [value]
+    while stack and len(out) < limit:
+        item = stack.pop(0)
+        if isinstance(item, str):
+            text = _text(item)
+            if text:
+                out.append(text)
+        elif isinstance(item, Mapping):
+            stack.extend(item.values())
+        elif isinstance(item, (list, tuple, set)):
+            stack.extend(item)
+    return out
 
 
 def validate_pre_memo_fact_selection(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -597,6 +767,25 @@ def _strings(value: Any) -> list[str]:
     if isinstance(value, (list, tuple, set)):
         return [_text(item) for item in value if _text(item)]
     return [_text(value)] if _text(value) else []
+
+
+def _dedupe_strings(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    out: list[str] = []
+    for value in values:
+        text = _text(value)
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        out.append(text)
+    return out
+
+
+def _int(value: Any) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
 
 
 def _text(value: Any) -> str:

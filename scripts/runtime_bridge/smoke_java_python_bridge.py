@@ -31,50 +31,88 @@ def main() -> None:
     sources = sorted(str(path) for path in JAVA_SRC.rglob("*.java"))
     subprocess.run([javac, "-encoding", "UTF-8", "-d", str(classes_dir), *sources], cwd=REPO_ROOT, check=True)
     port = args.port or free_port()
-    env = os.environ.copy()
-    env.update(
-        {
-            "FINSIGHT_GATEWAY_HOST": "127.0.0.1",
-            "FINSIGHT_GATEWAY_PORT": str(port),
-            "FINSIGHT_GATEWAY_STORE_MODE": "file",
-            "FINSIGHT_GATEWAY_STATE_DIR": str(state_dir),
-            "FINSIGHT_GATEWAY_QUEUE_MODE": "file",
-            "FINSIGHT_GATEWAY_QUEUE_DIR": str(queue_dir),
-        }
-    )
+    env = gateway_env(args, port=port, state_dir=state_dir, queue_dir=queue_dir)
+    classpath = str(classes_dir)
+    if args.jdbc_driver_jar:
+        classpath = os.pathsep.join([classpath, str(Path(args.jdbc_driver_jar).resolve())])
+    gateway_log_path = work_root / "gateway.log"
+    gateway_log = gateway_log_path.open("w", encoding="utf-8")
     gateway = subprocess.Popen(
-        [java, "-cp", str(classes_dir), "finsight.gateway.TaskGatewayServer"],
+        [java, "-cp", classpath, "finsight.gateway.TaskGatewayServer"],
         cwd=REPO_ROOT,
         env=env,
-        stdout=subprocess.DEVNULL,
+        stdout=gateway_log,
         stderr=subprocess.STDOUT,
         text=True,
     )
     try:
-        wait_for_health(port)
+        wait_for_health(port, gateway_log_path=gateway_log_path)
+        payload = {
+            "query": args.query,
+            "user_id": "smoke_user",
+            "mode": args.task_mode,
+            "metadata": {},
+        }
+        if args.task_mode == "workbench_eval" or args.task_mode.startswith("agent_graph_vnext_") or args.task_mode.startswith("context_api_"):
+            payload["metadata"] = {
+                "eval_id": args.eval_id,
+                "limit": args.limit,
+                "run_id": args.run_id or f"runtime_bridge_{args.task_mode}_{int(time.time())}",
+                "token_budget_pressure": args.token_budget_pressure,
+            }
         task = request_json(
             f"http://127.0.0.1:{port}/api/research/tasks",
             method="POST",
-            payload={"query": args.query, "user_id": "smoke_user", "mode": "local_smoke"},
+            payload=payload,
             expected_status=202,
         )
-        subprocess.run(
-            [
-                sys.executable,
-                str(REPO_ROOT / "src" / "sec_agent" / "runtime_bridge" / "task_worker.py"),
-                "--once",
-                "--queue-mode",
-                "file",
-                "--queue-dir",
-                str(queue_dir),
-                "--gateway-url",
-                f"http://127.0.0.1:{port}",
-            ],
-            cwd=REPO_ROOT,
-            check=True,
-        )
+        worker_args = [
+            sys.executable,
+            str(REPO_ROOT / "src" / "sec_agent" / "runtime_bridge" / "task_worker.py"),
+            "--once",
+            "--queue-mode",
+            args.queue_mode,
+            "--gateway-url",
+            f"http://127.0.0.1:{port}",
+            "--run-timeout-s",
+            str(args.worker_run_timeout_s),
+            "--repo-root",
+            str(REPO_ROOT),
+            "--bge-device",
+            args.bge_device,
+        ]
+        if args.queue_mode == "file":
+            worker_args.extend(["--queue-dir", str(queue_dir)])
+        else:
+            worker_args.extend(
+                [
+                    "--redis-host",
+                    args.redis_host,
+                    "--redis-port",
+                    str(args.redis_port),
+                    "--redis-queue-key",
+                    args.redis_queue_key,
+                ]
+            )
+        subprocess.run(worker_args, cwd=REPO_ROOT, check=True)
         completed = request_json(f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}")
-        print(json.dumps({"work_root": str(work_root), "task": completed}, ensure_ascii=False, indent=2))
+        events = request_json(f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}/events?limit=500")
+        if completed["status"] != args.expected_status:
+            raise RuntimeError(f"task status {completed['status']} != expected {args.expected_status}: {completed.get('error_message')}")
+        print(
+            json.dumps(
+                {
+                    "work_root": str(work_root),
+                    "store_mode": args.store_mode,
+                    "queue_mode": args.queue_mode,
+                    "task": completed,
+                    "event_count": len(events.get("events") or []),
+                    "latest_events": (events.get("events") or [])[-5:],
+                },
+                ensure_ascii=True,
+                indent=2,
+            )
+        )
     finally:
         gateway.terminate()
         try:
@@ -82,6 +120,29 @@ def main() -> None:
         except subprocess.TimeoutExpired:
             gateway.kill()
             gateway.wait(timeout=10)
+        gateway_log.close()
+
+
+def gateway_env(args: argparse.Namespace, *, port: int, state_dir: Path, queue_dir: Path) -> dict[str, str]:
+    env = os.environ.copy()
+    env.update(
+        {
+            "FINSIGHT_GATEWAY_HOST": "127.0.0.1",
+            "FINSIGHT_GATEWAY_PORT": str(port),
+            "FINSIGHT_GATEWAY_STORE_MODE": args.store_mode,
+            "FINSIGHT_GATEWAY_STATE_DIR": str(state_dir),
+            "FINSIGHT_GATEWAY_QUEUE_MODE": args.queue_mode,
+            "FINSIGHT_GATEWAY_QUEUE_DIR": str(queue_dir),
+            "FINSIGHT_REDIS_HOST": args.redis_host,
+            "FINSIGHT_REDIS_PORT": str(args.redis_port),
+            "FINSIGHT_REDIS_QUEUE_KEY": args.redis_queue_key,
+        }
+    )
+    if args.store_mode == "jdbc":
+        env["FINSIGHT_JDBC_URL"] = args.jdbc_url or os.environ.get("FINSIGHT_JDBC_URL", "")
+        env["FINSIGHT_JDBC_USER"] = args.jdbc_user or os.environ.get("FINSIGHT_JDBC_USER", "")
+        env["FINSIGHT_JDBC_PASSWORD"] = os.environ.get(args.jdbc_password_env, "")
+    return env
 
 
 def parse_args() -> argparse.Namespace:
@@ -89,6 +150,23 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--query", default="Check NVDA runtime bridge")
     parser.add_argument("--port", type=int, default=0)
     parser.add_argument("--work-root", type=Path, default=None)
+    parser.add_argument("--store-mode", choices=("file", "jdbc"), default="file")
+    parser.add_argument("--queue-mode", choices=("file", "redis"), default="file")
+    parser.add_argument("--redis-host", default="127.0.0.1")
+    parser.add_argument("--redis-port", type=int, default=6379)
+    parser.add_argument("--redis-queue-key", default="finsight:research_tasks")
+    parser.add_argument("--jdbc-url", default="")
+    parser.add_argument("--jdbc-user", default="")
+    parser.add_argument("--jdbc-password-env", default="FINSIGHT_JDBC_PASSWORD")
+    parser.add_argument("--jdbc-driver-jar", type=Path, default=None)
+    parser.add_argument("--task-mode", default="local_smoke")
+    parser.add_argument("--eval-id", default="agent_graph_vnext_run_audit_smoke")
+    parser.add_argument("--limit", type=int, default=1)
+    parser.add_argument("--run-id", default="")
+    parser.add_argument("--worker-run-timeout-s", type=float, default=2400.0)
+    parser.add_argument("--bge-device", default=os.environ.get("BGE_DEVICE", "cpu"))
+    parser.add_argument("--token-budget-pressure", action="store_true")
+    parser.add_argument("--expected-status", choices=("SUCCESS", "FAILED", "CANCELLED"), default="SUCCESS")
     return parser.parse_args()
 
 
@@ -101,15 +179,20 @@ def request_json(url: str, *, method: str = "GET", payload: dict | None = None, 
         return json.loads(response.read().decode("utf-8"))
 
 
-def wait_for_health(port: int) -> None:
-    deadline = time.time() + 10
+def wait_for_health(port: int, *, gateway_log_path: Path) -> None:
+    deadline = time.time() + 20
+    last_error: Exception | None = None
     while time.time() < deadline:
         try:
             if request_json(f"http://127.0.0.1:{port}/api/health")["status"] == "ok":
                 return
-        except Exception:
-            time.sleep(0.1)
-    raise RuntimeError("gateway did not start")
+        except Exception as exc:
+            last_error = exc
+            time.sleep(0.2)
+    log_tail = ""
+    if gateway_log_path.exists():
+        log_tail = gateway_log_path.read_text(encoding="utf-8", errors="replace")[-2000:]
+    raise RuntimeError(f"gateway did not start: {last_error}; gateway_log_tail={log_tail}")
 
 
 def free_port() -> int:

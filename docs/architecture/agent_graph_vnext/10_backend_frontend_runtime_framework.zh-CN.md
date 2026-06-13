@@ -49,10 +49,13 @@ Java Task Gateway / 后续 Spring Boot 承担 API、用户、任务、权限、�
 2026-06-14 实施更新：
 
 - 新增 `apps/research_gateway/java/src/finsight/gateway/TaskGatewayServer.java`，基于 JDK `HttpServer`，不依赖 Maven 即可编译运行。
-- 暴露 `POST /api/research/tasks`、`GET /api/research/tasks/{task_id}`、`POST /api/research/tasks/{task_id}/worker-events`。
-- Java store 支持 `file` local adapter 和 `jdbc` adapter；`jdbc` 通过 `FINSIGHT_JDBC_URL` / `FINSIGHT_JDBC_USER` / `FINSIGHT_JDBC_PASSWORD` 接 MySQL/Postgres，运行时需要对应 JDBC driver jar。
+- 暴露 `POST /api/research/tasks`、`GET /api/research/tasks/{task_id}`、`GET /api/research/tasks/{task_id}/events`、`POST /api/research/tasks/{task_id}/cancel`、`POST /api/research/tasks/{task_id}/worker-events`。
+- Java store 支持 `file` local adapter 和 `jdbc` adapter；`jdbc` 通过 `FINSIGHT_JDBC_URL` / `FINSIGHT_JDBC_USER` / `FINSIGHT_JDBC_PASSWORD` 接 MySQL/Postgres，运行时需要对应 JDBC driver jar，并已补 60s DB readiness retry。
 - Java queue 支持 `file` local adapter 和原生 Redis RESP `LPUSH`，无需 Redis Java SDK。
-- Python worker `src/sec_agent/runtime_bridge/task_worker.py` 支持 file/Redis queue，消费任务后通过 Java callback 回写状态、memo、evidence。
+- Python worker `src/sec_agent/runtime_bridge/task_worker.py` 支持 file/Redis queue，消费任务后通过 Java callback 回写状态、memo、evidence 和 worker event。
+- Python worker 已支持 Workbench eval mode：`context_api_smoke`、`context_api_load_smoke`、`agent_graph_vnext_run_audit_smoke`、`agent_graph_vnext_diagnostic_probe`，并把 eval summary / artifact refs 写回 Java task。
+- Docker backend smoke 已跑通 `file+redis` 与 `jdbc+redis` 路径；本机 Java gateway 不再只是 shell。
+- 当前 P0-P9 不跑 P10 full-chain 12case；已跑 Workbench 后端 1 个 `agent_graph_vnext_diagnostic_probe` real case，并通过 gate。
 - Milvus 当前保持 `unbound_cloud_deferred`，只在 registry 中登记为 semantic supplement，等待云端 runtime 可用后再绑定。
 
 ## 从企业级 RAG / Agent 项目吸收什么

@@ -113,6 +113,44 @@ def test_product_technology_claim_card_uses_product_memo_slot() -> None:
     assert draft["memo_claims"][0]["memo_slot"] == "product_technology"
 
 
+def test_product_revenue_observation_is_routed_to_product_surface_even_from_fundamental_agent() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": (
+                            "DELL's AI-optimized server revenue of $16.1B represents over 55% "
+                            "of total ISG net revenue ($29.0B)."
+                        ),
+                        "claim_type": "business_observation",
+                        "evidence_refs": [
+                            "interactive::DELL::2026::product_revenue::total_value::ai_optimized_servers",
+                            "interactive::DELL::2026::product_revenue::total_value::total_isg_net_revenue",
+                        ],
+                        "source_families": ["company_authored_unaudited_sec_filing"],
+                        "memo_slot": "fundamentals",
+                        "ticker_scope": ["DELL"],
+                        "metric_scope": ["product_revenue"],
+                        "materiality": "high",
+                        "confidence": "high",
+                    }
+                ],
+            }
+        ]
+    )
+    claim = judgment["supported_claims"][0]
+    outline = {row["memo_slot"]: row for row in judgment["memo_outline"]}
+    pack = judgment["thesis_driver_pack"]
+    product_section = next(row for row in pack["dimension_sections"] if row["dimension_id"] == "product_and_production")
+
+    assert claim["memo_slot"] == "product_technology"
+    assert claim["analysis_dimension"] == "product_and_production"
+    assert outline["product_technology"]["status"] == "supported"
+    assert claim["claim_id"] in product_section["primary_claim_ids"]
+
+
 def test_thesis_driver_pack_structures_verified_claims_for_memo_surface() -> None:
     judgment = aggregate_specialist_judgment_plan(
         [

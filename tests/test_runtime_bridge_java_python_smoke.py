@@ -87,6 +87,27 @@ def test_java_gateway_to_python_worker_file_queue_smoke(tmp_path: Path) -> None:
         assert "Runtime bridge smoke passed" in completed["memo"]
         assert completed["evidence"][0]["source_family"] == "runtime_bridge_smoke"
         assert (state_dir / "tasks" / f"{task['task_id']}.json").exists()
+        events = _request_json(f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}/events?limit=50")
+        event_messages = [event["message"] for event in events["events"]]
+        assert any("task accepted and queued" in message for message in event_messages)
+        assert any("task dequeued by Python worker" in message for message in event_messages)
+        assert any("status=SUCCESS progress=100" in message for message in event_messages)
+
+        cancellable = _request_json(
+            f"http://127.0.0.1:{port}/api/research/tasks",
+            method="POST",
+            payload={"query": "Check cancellation surface", "user_id": "pytest_user", "mode": "local_smoke"},
+            expected_status=202,
+        )
+        cancelled = _request_json(
+            f"http://127.0.0.1:{port}/api/research/tasks/{cancellable['task_id']}/cancel",
+            method="POST",
+            payload={},
+            expected_status=202,
+        )
+        assert cancelled["status"] == "CANCEL_REQUESTED"
+        cancel_events = _request_json(f"http://127.0.0.1:{port}/api/research/tasks/{cancellable['task_id']}/events")
+        assert any(event["message"] == "cancel requested" for event in cancel_events["events"])
     finally:
         gateway.terminate()
         try:

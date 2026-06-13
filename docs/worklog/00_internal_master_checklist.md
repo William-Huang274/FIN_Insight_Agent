@@ -604,3 +604,14 @@
 - [ ] Add gold-labeled retrieval/rerank eval cases so recall and rerank precision can be measured directly rather than inferred from budget proxies.
 - [ ] Repair Product / Technology Specialist row visibility and source-selector quotas; R7 diagnostics showed only `4` visible product rows despite hundreds of SEC post-rerank rows.
 - [ ] Add DB-backed materialization for FundamentalStatementPack / JudgmentState if they become stable cross-run memory objects rather than per-run artifacts only.
+
+## Research Lead Closed-loop Supervision vNext
+
+- [x] Record the 2026-06-14 next-stage framework for Research Lead supervising analyst, LeadReviewCheckpoint, MemoLogicPlan, role-specific evidence selector, BGE scheduler, and token/model dynamic scheduling.
+- [ ] L1: Implement ResearchObjectiveContract with core question, required dimensions, minimum evidence requirements, source-family plan, forbidden claims, and mandatory second-pass triggers.
+- [ ] L2: Implement LeadReviewCheckpoint as a synchronous barrier that reads retrieval audit, packs, ClaimCards, gaps, source capability, and run audit store, then classifies each dimension as sufficient / retrievable_gap / bounded_gap / commercial_gap / not_material.
+- [ ] L3: Replace generic second pass with Lead-authored TargetedRepairPlan carrying route, source class, agent, expected claim type, promotion gate, and not-found gap.
+- [ ] L4: Repair role-specific evidence selector and quotas for Product / Technology, Market / Valuation, and Capital / Ownership / Macro so high-candidate retrieval results reach the right specialist.
+- [ ] L5: Add MemoLogicPlan and Memo Surface vNext so Memo Writer writes natural-language judgment with evidence and boundaries, without retrieval / DB / web permissions.
+- [ ] L6: Add BGE / rerank InferenceResourceScheduler with CUDA queue, CPU spillover, route priority, cache, and latency/device audit.
+- [ ] L7: Add ModelRouter / AgentCoalescer to reduce token cost through model-tier routing, deterministic gap cards, specialist skip/merge, and per-claim cost audit.

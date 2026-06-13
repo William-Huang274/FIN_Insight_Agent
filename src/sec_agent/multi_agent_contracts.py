@@ -14,6 +14,7 @@ MEMO_VERIFICATION_SCHEMA_VERSION = "sec_agent_multi_agent_memo_verification_v0.1
 RELATIONSHIP_EDGE_SCHEMA_VERSION = "sec_agent_relationship_edge_v0.3"
 MEMO_THESIS_PACK_SCHEMA_VERSION = "sec_agent_memo_thesis_pack_v0.1"
 THESIS_DRIVER_PACK_SCHEMA_VERSION = "sec_agent_thesis_driver_pack_v0.1"
+ANALYST_DEPTH_GATE_SCHEMA_VERSION = "sec_agent_analyst_depth_gate_v0.1"
 ECONOMIC_LINK_MAP_SCHEMA_VERSION = "sec_agent_economic_link_map_v0.1"
 
 SPECIALIST_AGENT_IDS = {
@@ -38,6 +39,15 @@ ECONOMIC_LINK_TYPES = {
     "unknown",
 }
 ECONOMIC_DIRECTIONS = {"positive", "negative", "mixed", "neutral", "unknown"}
+ANALYSIS_DIMENSION_ORDER = (
+    "fundamentals",
+    "product_and_production",
+    "capital_and_financing",
+    "competition_and_market_position",
+    "industry_supply_chain",
+    "risk_and_counterevidence",
+    "evidence_gap",
+)
 RELATIONSHIP_EVIDENCE_SOURCES = {
     "primary_sec_filing",
     "company_authored_unaudited_sec_filing",
@@ -603,7 +613,7 @@ def aggregate_specialist_judgment_plan(
             if observation["unsupported"]:
                 unsupported_claims.append({"agent_id": agent_id, "claim": observation["claim"], "reason": "marked_unsupported"})
             else:
-                item.update(_claim_card_rank_annotation(item, observation_index))
+                item.update(_claim_card_annotations(item, observation_index))
                 supported_claims.append(item)
         for item in memolet["unsupported_claims"]:
             unsupported_claims.append({"agent_id": agent_id, **item})
@@ -927,16 +937,16 @@ def _focused_answer_supported_claims(
         "claim_id": "focused_answer_synthesizer_thesis_1",
         "synthesis_policy": "focused_answer_claim_cards_from_bounded_rows_v0_1",
     }
-    thesis.update(_claim_card_rank_annotation(thesis, -1))
+    thesis.update(_claim_card_annotations(thesis, -1))
 
     claims = [thesis]
     if selected_ledger:
         claim = _focused_ledger_claim(selected_ledger, tickers=tickers, response_language=response_language)
-        claim.update(_claim_card_rank_annotation(claim, 0))
+        claim.update(_claim_card_annotations(claim, 0))
         claims.append(claim)
     if selected_text:
         claim = _focused_context_claim(selected_text, tickers=tickers, response_language=response_language)
-        claim.update(_claim_card_rank_annotation(claim, 1))
+        claim.update(_claim_card_annotations(claim, 1))
         claims.append(claim)
     return _rank_supported_claims(claims)
 
@@ -1233,6 +1243,12 @@ def _focused_source_family(row: Mapping[str, Any]) -> str:
     return "primary_sec_filing"
 
 
+def _claim_card_annotations(claim: Mapping[str, Any], index: int) -> dict[str, Any]:
+    annotated = dict(_claim_card_rank_annotation(claim, index))
+    annotated.update(_claim_card_depth_annotation({**dict(claim), **annotated}))
+    return annotated
+
+
 def _claim_card_rank_annotation(claim: Mapping[str, Any], index: int) -> dict[str, Any]:
     score = 0
     reasons: list[str] = []
@@ -1336,6 +1352,168 @@ def _claim_card_rank_annotation(claim: Mapping[str, Any], index: int) -> dict[st
         "claim_rank_policy": "specialist_claim_card_ranker_v0_3",
         "claim_rank_input_index": index,
     }
+
+
+def _claim_card_depth_annotation(claim: Mapping[str, Any]) -> dict[str, Any]:
+    dimension = _analysis_dimension_for_claim(claim)
+    source_families = _unique_strings(claim.get("source_families") or claim.get("source_family"))
+    depth = {
+        "schema_version": "sec_agent_claim_card_analyst_depth_v0.1",
+        "analysis_dimension": dimension,
+        "analyst_angle": _analysis_dimension_title(dimension),
+        "analysis_lens": _analysis_dimension_lens(dimension),
+        "evidence_role": _depth_evidence_role(source_families, str(claim.get("claim_type") or "")),
+        "business_mechanism": _business_mechanism_for_dimension(dimension),
+        "financial_bridge": _financial_bridge_for_claim(claim, dimension),
+        "comparison_basis": _comparison_basis_for_claim(claim),
+        "counter_read": _counter_read_for_claim(claim),
+    }
+    return {
+        "analysis_dimension": dimension,
+        "analyst_angle": depth["analyst_angle"],
+        "analyst_depth": depth,
+    }
+
+
+def _claim_analyst_depth(claim: Mapping[str, Any]) -> dict[str, Any]:
+    depth = claim.get("analyst_depth") if isinstance(claim.get("analyst_depth"), Mapping) else None
+    if depth is not None:
+        return dict(depth)
+    annotation = _claim_card_depth_annotation(claim).get("analyst_depth")
+    return dict(annotation) if isinstance(annotation, Mapping) else {}
+
+
+def _analysis_dimension_for_claim(claim: Mapping[str, Any]) -> str:
+    slot = _normalize_memo_slot(claim.get("memo_slot"))
+    metrics = " ".join(_unique_strings(claim.get("metric_scope") or claim.get("metrics") or claim.get("metric"))).lower()
+    claim_type = str(claim.get("claim_type") or "").lower()
+    agent_id = str(claim.get("agent_id") or "").lower()
+    source_families = set(_unique_strings(claim.get("source_families") or claim.get("source_family")))
+    text = f"{metrics} {claim_type} {agent_id} {str(claim.get('claim') or '').lower()}"
+    if slot == "thesis":
+        return "thesis_synthesis"
+    if slot == "product_technology" or any(term in text for term in ("product", "unit", "shipment", "capacity", "backlog", "usage")):
+        return "product_and_production"
+    if any(
+        term in text
+        for term in (
+            "capex",
+            "capital expenditure",
+            "debt",
+            "borrow",
+            "interest",
+            "offering",
+            "financing",
+            "cash flow",
+            "free cash flow",
+            "liquidity",
+        )
+    ):
+        return "capital_and_financing"
+    if slot == "market_valuation" or any(
+        term in text for term in ("valuation", "multiple", "share", "price", "market reaction", "peer", "competitor")
+    ):
+        return "competition_and_market_position"
+    if slot == "industry_relationship" or "industry_snapshot" in source_families or "relationship_graph" in source_families:
+        return "industry_supply_chain"
+    if slot == "risk_counterevidence" or any(term in text for term in ("risk", "counter", "constraint", "decline", "pressure")):
+        return "risk_and_counterevidence"
+    if slot == "evidence_gap":
+        return "evidence_gap"
+    return "fundamentals"
+
+
+def _analysis_dimension_title(dimension: str) -> str:
+    return {
+        "thesis_synthesis": "Synthesis",
+        "fundamentals": "Fundamentals and financial quality",
+        "product_and_production": "Product and production line evidence",
+        "capital_and_financing": "Capital allocation and financing",
+        "competition_and_market_position": "Competition and market position",
+        "industry_supply_chain": "Industry and supply-chain transmission",
+        "risk_and_counterevidence": "Risk and counterevidence",
+        "evidence_gap": "Evidence gap",
+    }.get(str(dimension or "").strip(), "Analyst dimension")
+
+
+def _analysis_dimension_lens(dimension: str) -> str:
+    return {
+        "fundamentals": "Translate reported revenue, margin, cash-flow, and segment facts into earnings-quality support or pressure.",
+        "product_and_production": "Connect product, capacity, unit, backlog, usage, or company-disclosed KPI evidence to the business line under analysis.",
+        "capital_and_financing": "Bridge capex, debt, offering, cash-flow, and balance-sheet facts to reinvestment capacity and financing risk.",
+        "competition_and_market_position": "Use valuation, market reaction, peer, share, and channel context only as market-position evidence within its source boundary.",
+        "industry_supply_chain": "Map industry demand, customer/supplier, macro, and supply-chain proxies to company exposure without treating context as reported company fact.",
+        "risk_and_counterevidence": "Identify what weakens the thesis, where the evidence is mixed, and what confirmation would change the view.",
+        "evidence_gap": "State the missing public evidence that prevents a stronger conclusion.",
+    }.get(str(dimension or "").strip(), "Explain the investment mechanism supported by verified evidence.")
+
+
+def _depth_evidence_role(source_families: list[str], claim_type: str) -> str:
+    families = set(source_families)
+    if "primary_sec_filing" in families:
+        return "reported_company_authority"
+    if "company_product_evidence_graph" in families:
+        return "company_product_authority"
+    if "company_authored_unaudited_sec_filing" in families:
+        return "management_commentary_context"
+    if families & {"market_snapshot", "industry_snapshot"}:
+        return "external_context_or_proxy"
+    if families & {"public_source_context", "live_public_web_context", "milvus_semantic"}:
+        return "public_proxy_or_recall_context"
+    if "relationship_graph" in families or claim_type == "relationship_hypothesis":
+        return "relationship_scope_hypothesis"
+    return "verified_claim_card_context"
+
+
+def _business_mechanism_for_dimension(dimension: str) -> str:
+    return {
+        "fundamentals": "The evidence supports or pressures earnings power through reported growth, margin, cash conversion, or segment mix.",
+        "product_and_production": "The evidence links product adoption, capacity, units, backlog, usage, or product mix to the operating line being evaluated.",
+        "capital_and_financing": "The evidence links reinvestment, leverage, issuance, or cash generation to future capacity and balance-sheet flexibility.",
+        "competition_and_market_position": "The evidence frames relative positioning, market expectations, valuation debate, or competitive pressure.",
+        "industry_supply_chain": "The evidence traces external demand or supply-chain exposure to the company's relevant products, segments, or counterparties.",
+        "risk_and_counterevidence": "The evidence defines what could offset the thesis or lower confidence in the main business bridge.",
+        "evidence_gap": "The evidence is insufficient for a stronger operating or financial conclusion.",
+    }.get(str(dimension or "").strip(), "The evidence must be connected to a clear business mechanism before it supports the memo.")
+
+
+def _financial_bridge_for_claim(claim: Mapping[str, Any], dimension: str) -> str:
+    metrics = _unique_strings(claim.get("metric_scope") or claim.get("metrics") or claim.get("metric"))
+    metric_text = ", ".join(metrics[:5])
+    direction = _normalize_direction(claim.get("direction"))
+    if metric_text:
+        return f"Bridge the claim through {metric_text}; direction={direction}; do not infer unverified sales, share, or forecast values."
+    if dimension == "product_and_production":
+        return "Bridge product evidence to revenue, margin, inventory, capacity, or backlog only when the verified ClaimCard states the metric."
+    if dimension == "capital_and_financing":
+        return "Bridge capital evidence to capex, leverage, liquidity, interest burden, or issuance only when the verified ClaimCard states the metric."
+    return "Financial bridge is qualitative unless verified metric_scope or numeric evidence is present."
+
+
+def _comparison_basis_for_claim(claim: Mapping[str, Any]) -> str:
+    tickers = _unique_upper(claim.get("ticker_scope") or claim.get("tickers") or claim.get("ticker"))
+    metrics = _unique_strings(claim.get("metric_scope") or claim.get("metrics") or claim.get("metric"))
+    period = str(claim.get("period_role") or claim.get("as_of_date") or "").strip()
+    parts = []
+    if tickers:
+        parts.append(f"tickers={','.join(tickers[:6])}")
+    if metrics:
+        parts.append(f"metrics={','.join(metrics[:5])}")
+    if period:
+        parts.append(f"period={period}")
+    return "; ".join(parts) if parts else "No explicit peer, metric, or period comparison basis supplied."
+
+
+def _counter_read_for_claim(claim: Mapping[str, Any]) -> str:
+    missing = _unique_strings(claim.get("missing_confirmations"))
+    caveats = _unique_strings(claim.get("caveats"))
+    if missing:
+        return "Missing confirmation: " + "; ".join(missing[:2])
+    if caveats:
+        return "Caveat: " + "; ".join(caveats[:2])
+    if _normalize_direction(claim.get("direction")) == "negative":
+        return "This claim is counterevidence or risk evidence rather than support for the thesis."
+    return "No explicit counter-read supplied; verifier must preserve source boundary."
 
 
 def _agent_expected_memo_slot(agent_id: str) -> str:
@@ -1569,7 +1747,7 @@ def _with_synthesized_thesis_claim(claims: list[dict[str, Any]]) -> tuple[list[d
         "derived_from_claim_ids": source_claim_ids,
         "synthesis_policy": "no_new_facts_combine_existing_supported_claim_cards_only",
     }
-    thesis_claim.update(_claim_card_rank_annotation(thesis_claim, -1))
+    thesis_claim.update(_claim_card_annotations(thesis_claim, -1))
     synthesis = {
         "status": "synthesized",
         "claim_id": claim_id,
@@ -1926,18 +2104,25 @@ def _thesis_driver_pack_from_claims(
             "what_would_change_the_view": _thesis_pack_view_change(counter_driver_cards, gap_cards),
         }
     ]
+    dimension_sections = _dimension_sections_from_claims(
+        supported_claims=supported_claims,
+        counter_driver_cards=counter_driver_cards,
+        gap_cards=gap_cards,
+        source_boundary_notes=source_boundary_notes,
+    )
     return {
         "schema_version": THESIS_DRIVER_PACK_SCHEMA_VERSION,
         "status": status,
         "present": bool(supported_claims),
         "thesis_cards": thesis_cards if thesis_text else [],
+        "dimension_sections": dimension_sections,
         "driver_cards": driver_cards[:8],
         "counter_driver_cards": counter_driver_cards[:6],
         "gap_cards": gap_cards[:10],
         "source_boundary_cards": _thesis_source_boundary_cards(supported_claims, source_boundary_notes),
         "evidence_ref_count": len(evidence_refs),
         "source_claim_refs": evidence_refs[:12],
-        "pack_policy": "deterministic_driver_pack_from_verified_claim_cards_no_new_facts_v0_1",
+        "pack_policy": "deterministic_dimension_driver_pack_from_verified_claim_cards_no_new_facts_v0_2",
     }
 
 
@@ -1959,6 +2144,9 @@ def _thesis_driver_card(claim: Mapping[str, Any], *, index: int) -> dict[str, An
         "ticker_scope": _unique_upper(claim.get("ticker_scope"))[:6],
         "evidence_refs": _unique_strings(claim.get("evidence_refs") or claim.get("refs"))[:6],
         "source_families": _unique_strings(claim.get("source_families") or claim.get("source_family"))[:5],
+        "analysis_dimension": str(claim.get("analysis_dimension") or _analysis_dimension_for_claim(claim)),
+        "analyst_angle": str(claim.get("analyst_angle") or _analysis_dimension_title(_analysis_dimension_for_claim(claim))),
+        "analyst_depth": _claim_analyst_depth(claim),
         "claim_boundary": SOURCE_FAMILY_CLAIM_SCOPE.get(
             (_unique_strings(claim.get("source_families") or claim.get("source_family")) or [""])[0],
             "verified_claim_card_scope",
@@ -1974,6 +2162,163 @@ def _driver_type_for_memo_slot(slot: str) -> str:
         "market_valuation": "market_or_valuation_context_driver",
         "risk_counterevidence": "risk_or_counter_driver",
     }.get(slot, "supporting_driver")
+
+
+def _dimension_sections_from_claims(
+    *,
+    supported_claims: list[dict[str, Any]],
+    counter_driver_cards: list[dict[str, Any]],
+    gap_cards: list[dict[str, Any]],
+    source_boundary_notes: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for claim in supported_claims:
+        slot = _normalize_memo_slot(claim.get("memo_slot"))
+        if slot == "thesis":
+            continue
+        dimension = str(claim.get("analysis_dimension") or _analysis_dimension_for_claim(claim))
+        if dimension == "thesis_synthesis":
+            continue
+        grouped.setdefault(dimension, []).append(claim)
+
+    dimensions = [item for item in ANALYSIS_DIMENSION_ORDER if item in grouped]
+    dimensions.extend(sorted(dimension for dimension in grouped if dimension not in set(dimensions)))
+    sections: list[dict[str, Any]] = []
+    for dimension in dimensions:
+        claims = grouped.get(dimension) or []
+        if not claims:
+            continue
+        primary = claims[0]
+        claim_ids = _unique_strings([str(claim.get("claim_id") or "") for claim in claims])[:8]
+        claim_id_set = set(claim_ids)
+        related_gaps = [
+            gap
+            for gap in gap_cards
+            if isinstance(gap, Mapping) and (str(gap.get("source_claim_id") or "") in claim_id_set or dimension == "evidence_gap")
+        ]
+        related_counters = [
+            card
+            for card in counter_driver_cards
+            if isinstance(card, Mapping)
+            and (str(card.get("source_claim_id") or "") in claim_id_set or dimension == "risk_and_counterevidence")
+        ]
+        evidence_refs = _unique_strings([ref for claim in claims for ref in _unique_strings(claim.get("evidence_refs") or claim.get("refs"))])
+        primary_depth = primary.get("analyst_depth") if isinstance(primary.get("analyst_depth"), Mapping) else {}
+        section_thesis = _dimension_section_thesis(dimension, claims)
+        comparison_basis = []
+        for claim in claims:
+            depth = claim.get("analyst_depth") if isinstance(claim.get("analyst_depth"), Mapping) else {}
+            comparison_basis.append(str(depth.get("comparison_basis") or ""))
+        sections.append(
+            {
+                "dimension_id": dimension,
+                "dimension_title": _analysis_dimension_title(dimension),
+                "status": "supported",
+                "section_thesis": section_thesis,
+                "analysis_lens": str(primary_depth.get("analysis_lens") or _analysis_dimension_lens(dimension)),
+                "business_mechanism": str(primary_depth.get("business_mechanism") or _business_mechanism_for_dimension(dimension)),
+                "financial_bridge": str(primary_depth.get("financial_bridge") or _financial_bridge_for_claim(primary, dimension)),
+                "comparison_basis": _unique_strings(comparison_basis)[:4],
+                "competitive_read": _dimension_competitive_read(dimension, claims),
+                "primary_claim_ids": claim_ids,
+                "counter_claim_ids": _unique_strings([str(card.get("source_claim_id") or "") for card in related_counters])[:4],
+                "gap_ids": _unique_strings([str(gap.get("gap_id") or "") for gap in related_gaps])[:5],
+                "evidence_refs": evidence_refs[:8],
+                "source_families": _unique_strings(
+                    [
+                        family
+                        for claim in claims
+                        for family in _unique_strings(claim.get("source_families") or claim.get("source_family"))
+                    ]
+                )[:6],
+                "source_boundaries": _dimension_source_boundaries(claims, source_boundary_notes),
+                "counter_read": _dimension_counter_read(claims, related_counters, related_gaps),
+                "what_would_change_view": _dimension_view_change(claims, related_counters, related_gaps),
+                "depth_status": "analysis_ready" if len(claim_ids) >= 1 and evidence_refs else "insufficient_evidence",
+            }
+        )
+    return sections[:8]
+
+
+def _dimension_section_thesis(dimension: str, claims: list[Mapping[str, Any]]) -> str:
+    primary = claims[0] if claims else {}
+    claim_text = str(primary.get("claim") or "").strip()
+    if not claim_text:
+        return _analysis_dimension_lens(dimension)
+    return _clean_synthesized_thesis_prefix(claim_text)
+
+
+def _dimension_source_boundaries(
+    claims: list[Mapping[str, Any]],
+    source_boundary_notes: list[dict[str, Any]],
+) -> list[str]:
+    boundaries: list[str] = []
+    for claim in claims:
+        for family in _unique_strings(claim.get("source_families") or claim.get("source_family")):
+            scope = SOURCE_FAMILY_CLAIM_SCOPE.get(family)
+            if scope:
+                boundaries.append(f"{family}: {scope}")
+    for note in source_boundary_notes[:2]:
+        reason = str(note.get("reason") or note.get("note") or "").strip()
+        if reason:
+            boundaries.append(reason)
+    return _unique_strings(boundaries)[:5]
+
+
+def _dimension_competitive_read(dimension: str, claims: list[Mapping[str, Any]]) -> str:
+    tickers = _unique_upper([ticker for claim in claims for ticker in _unique_upper(claim.get("ticker_scope"))])
+    metrics = _unique_strings([metric for claim in claims for metric in _unique_strings(claim.get("metric_scope"))])
+    if dimension == "competition_and_market_position":
+        basis = []
+        if tickers:
+            basis.append("ticker scope " + ", ".join(tickers[:6]))
+        if metrics:
+            basis.append("metrics " + ", ".join(metrics[:4]))
+        return "Competitive or market-position read is bounded to " + ("; ".join(basis) if basis else "the verified market/valuation evidence")
+    if len(tickers) >= 2:
+        return "Peer comparison is available only across the verified ticker scope: " + ", ".join(tickers[:6])
+    return "No direct competitive comparison was verified for this dimension."
+
+
+def _dimension_counter_read(
+    claims: list[Mapping[str, Any]],
+    related_counters: list[Mapping[str, Any]],
+    related_gaps: list[Mapping[str, Any]],
+) -> str:
+    for card in related_counters:
+        text = str(card.get("statement") or "").strip()
+        if text:
+            return text
+    for claim in claims:
+        depth = claim.get("analyst_depth") if isinstance(claim.get("analyst_depth"), Mapping) else {}
+        text = str(depth.get("counter_read") or "").strip()
+        if text and not text.startswith("No explicit"):
+            return text
+    for gap in related_gaps:
+        text = str(gap.get("statement") or "").strip()
+        if text:
+            return text
+    return "No direct counterevidence in this dimension; keep the stated source boundary."
+
+
+def _dimension_view_change(
+    claims: list[Mapping[str, Any]],
+    related_counters: list[Mapping[str, Any]],
+    related_gaps: list[Mapping[str, Any]],
+) -> list[str]:
+    items: list[str] = []
+    for card in related_counters[:2]:
+        text = str(card.get("statement") or "").strip()
+        if text:
+            items.append(f"Counterevidence becomes more material: {text}")
+    for gap in related_gaps[:2]:
+        text = str(gap.get("statement") or "").strip()
+        if text:
+            items.append(f"Missing public confirmation resolves against the thesis: {text}")
+    for claim in claims:
+        for missing in _unique_strings(claim.get("missing_confirmations"))[:2]:
+            items.append(f"Missing public confirmation resolves against the thesis: {missing}")
+    return _unique_strings(items)[:4]
 
 
 def _thesis_pack_view_change(counter_driver_cards: list[dict[str, Any]], gap_cards: list[dict[str, Any]]) -> list[str]:
@@ -2039,7 +2384,40 @@ def _memo_pack_claim(claim: Mapping[str, Any]) -> dict[str, Any]:
         "missing_confirmations": _unique_strings(claim.get("missing_confirmations"))[:3],
         "claim_rank_score": _bounded_int(claim.get("claim_rank_score"), default=0, minimum=0, maximum=100),
         "claim_rank_bucket": str(claim.get("claim_rank_bucket") or ""),
+        "analysis_dimension": str(claim.get("analysis_dimension") or _analysis_dimension_for_claim(claim)),
+        "analyst_angle": str(claim.get("analyst_angle") or _analysis_dimension_title(_analysis_dimension_for_claim(claim))),
+        "analyst_depth": _claim_analyst_depth(claim),
     }
+
+
+def _dimension_analyses_from_thesis_driver_pack(pack: Mapping[str, Any]) -> list[dict[str, Any]]:
+    analyses: list[dict[str, Any]] = []
+    for section in pack.get("dimension_sections") or []:
+        if not isinstance(section, Mapping):
+            continue
+        dimension_id = str(section.get("dimension_id") or "").strip()
+        if not dimension_id:
+            continue
+        analyses.append(
+            {
+                "dimension_id": dimension_id,
+                "title": str(section.get("dimension_title") or _analysis_dimension_title(dimension_id)),
+                "summary": str(section.get("section_thesis") or ""),
+                "analysis_lens": str(section.get("analysis_lens") or ""),
+                "business_mechanism": str(section.get("business_mechanism") or ""),
+                "financial_bridge": str(section.get("financial_bridge") or ""),
+                "comparison_basis": _unique_strings(section.get("comparison_basis"))[:4],
+                "competitive_read": str(section.get("competitive_read") or ""),
+                "counter_read": str(section.get("counter_read") or ""),
+                "claim_ids": _unique_strings(section.get("primary_claim_ids"))[:8],
+                "counter_claim_ids": _unique_strings(section.get("counter_claim_ids"))[:4],
+                "evidence_refs": _unique_strings(section.get("evidence_refs"))[:8],
+                "source_boundaries": _unique_strings(section.get("source_boundaries"))[:5],
+                "what_would_change_view": _unique_strings(section.get("what_would_change_view"))[:4],
+                "status": str(section.get("status") or ""),
+            }
+        )
+    return analyses[:8]
 
 
 def _memo_thesis_pack_watch_items(
@@ -2200,6 +2578,7 @@ def build_multi_agent_memo_draft(
     consumed_views = ["verified_judgment_plan", "verified_summary"]
     if isinstance(judgment.get("pre_memo_fact_selection"), Mapping):
         consumed_views.append("pre_memo_fact_selection")
+    thesis_driver_pack = dict(judgment.get("thesis_driver_pack") or {}) if isinstance(judgment.get("thesis_driver_pack"), Mapping) else {}
     common = {
         "schema_version": MEMO_DRAFT_SCHEMA_VERSION,
         "memo_writer_allowed": allowed,
@@ -2216,7 +2595,8 @@ def build_multi_agent_memo_draft(
         "memo_outline": [dict(item) for item in judgment.get("memo_outline") or [] if isinstance(item, Mapping)],
         "memo_thesis_plan": dict(judgment.get("memo_thesis_plan") or {}) if isinstance(judgment.get("memo_thesis_plan"), Mapping) else {},
         "memo_thesis_pack": dict(judgment.get("memo_thesis_pack") or {}) if isinstance(judgment.get("memo_thesis_pack"), Mapping) else {},
-        "thesis_driver_pack": dict(judgment.get("thesis_driver_pack") or {}) if isinstance(judgment.get("thesis_driver_pack"), Mapping) else {},
+        "thesis_driver_pack": thesis_driver_pack,
+        "dimension_analyses": _dimension_analyses_from_thesis_driver_pack(thesis_driver_pack),
         "claim_card_stats": dict(judgment.get("claim_card_stats") or {}),
         "pre_memo_fact_selection": dict(judgment.get("pre_memo_fact_selection") or {})
         if isinstance(judgment.get("pre_memo_fact_selection"), Mapping)
@@ -2262,6 +2642,9 @@ def verify_multi_agent_memo_draft(
     quality_errors, quality_warnings = _memo_quality_gate_findings(memo, judgment)
     errors.extend(quality_errors)
     warnings.extend(quality_warnings)
+    analyst_depth_gate = _analyst_depth_gate(memo, judgment)
+    errors.extend(analyst_depth_gate["errors"])
+    warnings.extend(analyst_depth_gate["warnings"])
 
     rendered_text = _rendered_memo_text(memo)
     for item in judgment.get("unsupported_claims") or []:
@@ -2375,9 +2758,10 @@ def verify_multi_agent_memo_draft(
         "unsupported_claim_count": len([item for item in errors if item.get("type") == "unsupported_claim_entered_memo"]),
         "errors": errors,
         "warnings": warnings,
+        "analyst_depth_gate": analyst_depth_gate,
         "repair_instruction": repair_instruction,
         "bounded_answer_allowed": bool(errors),
-        "policy": "verifier_quality_gate_v0_2_inspect_only_no_new_facts_no_retrieval",
+        "policy": "verifier_quality_gate_v0_3_analyst_depth_inspect_only_no_new_facts_no_retrieval",
     }
 
 
@@ -2505,6 +2889,127 @@ def _memo_quality_gate_findings(
     return errors, warnings
 
 
+def _analyst_depth_gate(memo: Mapping[str, Any], judgment: Mapping[str, Any]) -> dict[str, Any]:
+    errors: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+    answer_status = str(memo.get("answer_status") or "")
+    if answer_status.startswith("blocked_"):
+        return _analyst_depth_gate_result(errors, warnings)
+
+    memo_profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
+    profile_name = str(memo_profile.get("profile") or "compact")
+    if profile_name == "compact":
+        return _analyst_depth_gate_result(errors, warnings)
+
+    expected_sections = _judgment_dimension_sections(judgment)
+    supported_claims = [dict(item) for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)]
+    if not supported_claims:
+        return _analyst_depth_gate_result(errors, warnings)
+    if not expected_sections:
+        warnings.append({"type": "analyst_depth_pack_missing_dimension_sections"})
+        return _analyst_depth_gate_result(errors, warnings)
+
+    if "dimension_analyses" in memo:
+        memo_dimensions = [dict(item) for item in memo.get("dimension_analyses") or [] if isinstance(item, Mapping)]
+    else:
+        memo_dimensions = _memo_dimension_analyses(memo)
+    required_count = min(3 if profile_name == "deep_research" else 2, len(expected_sections))
+    if len(memo_dimensions) < required_count:
+        errors.append(
+            {
+                "type": "analyst_depth_missing_dimension_analyses",
+                "minimum_dimension_count": required_count,
+                "actual_dimension_count": len(memo_dimensions),
+            }
+        )
+
+    expected_ids = {str(section.get("dimension_id") or "") for section in expected_sections if str(section.get("dimension_id") or "")}
+    memo_ids = {str(section.get("dimension_id") or "") for section in memo_dimensions if str(section.get("dimension_id") or "")}
+    missing_ids = sorted(expected_ids - memo_ids)
+    if len(expected_ids) >= 2 and len(missing_ids) >= len(expected_ids):
+        errors.append({"type": "analyst_depth_dimension_ids_not_carried", "expected_dimension_ids": sorted(expected_ids)[:6]})
+
+    for index, section in enumerate(memo_dimensions[: max(required_count, 1)], start=1):
+        dimension_id = str(section.get("dimension_id") or "").strip()
+        summary = str(section.get("summary") or section.get("section_thesis") or section.get("text") or "").strip()
+        refs = _unique_strings(section.get("evidence_refs") or section.get("refs"))
+        claim_ids = _unique_strings(section.get("claim_ids") or section.get("primary_claim_ids"))
+        if not dimension_id:
+            errors.append({"type": "analyst_depth_dimension_missing_id", "index": index})
+        if len(summary) < 24:
+            errors.append({"type": "analyst_depth_dimension_summary_too_thin", "index": index, "dimension_id": dimension_id})
+        if not refs and not claim_ids:
+            errors.append({"type": "analyst_depth_dimension_missing_traceability", "index": index, "dimension_id": dimension_id})
+        if _dimension_depth_signal_count(section) < 2:
+            errors.append({"type": "analyst_depth_dimension_missing_mechanism_bridge", "index": index, "dimension_id": dimension_id})
+
+    generic_fields = _generic_template_language_fields(memo)
+    if generic_fields:
+        errors.append({"type": "analyst_depth_generic_template_language", "fields": generic_fields[:8]})
+
+    direct_answer = str(memo.get("direct_answer") or "").strip()
+    if profile_name in {"expanded", "deep_research"} and len(direct_answer) < 120:
+        warnings.append({"type": "analyst_depth_direct_answer_may_be_too_thin", "actual_chars": len(direct_answer)})
+
+    return _analyst_depth_gate_result(errors, warnings)
+
+
+def _analyst_depth_gate_result(errors: list[dict[str, Any]], warnings: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "schema_version": ANALYST_DEPTH_GATE_SCHEMA_VERSION,
+        "status": "fail" if errors else "pass",
+        "errors": errors,
+        "warnings": warnings,
+        "policy": "dimension_led_mechanism_bridge_traceability_gate_v0_1",
+    }
+
+
+def _judgment_dimension_sections(judgment: Mapping[str, Any]) -> list[dict[str, Any]]:
+    pack = judgment.get("thesis_driver_pack") if isinstance(judgment.get("thesis_driver_pack"), Mapping) else {}
+    return [dict(item) for item in pack.get("dimension_sections") or [] if isinstance(item, Mapping)]
+
+
+def _memo_dimension_analyses(memo: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows = [dict(item) for item in memo.get("dimension_analyses") or [] if isinstance(item, Mapping)]
+    if rows:
+        return rows
+    pack = memo.get("thesis_driver_pack") if isinstance(memo.get("thesis_driver_pack"), Mapping) else {}
+    return _dimension_analyses_from_thesis_driver_pack(pack)
+
+
+def _dimension_depth_signal_count(section: Mapping[str, Any]) -> int:
+    count = 0
+    for key in ("business_mechanism", "financial_bridge", "competitive_read", "counter_read", "analysis_lens"):
+        if len(str(section.get(key) or "").strip()) >= 24:
+            count += 1
+    return count
+
+
+def _generic_template_language_fields(memo: Mapping[str, Any]) -> list[str]:
+    generic_phrases = (
+        "把已验证的核心论据作为当前判断依据",
+        "用该补充论据交叉验证核心判断",
+        "keep this claim in the memo as a bounded verified observation",
+        "use the verified core claim as the current judgment basis",
+        "use the supporting claim to cross-check the core thesis",
+    )
+    offenders: list[str] = []
+    fields: list[tuple[str, Any]] = [("direct_answer", memo.get("direct_answer"))]
+    for key in ("investment_implications", "what_would_change_view", "monitoring_items", "evidence_gaps_but_actionable"):
+        for index, item in enumerate(memo.get(key) or [], start=1):
+            if isinstance(item, Mapping):
+                fields.append((f"{key}[{index}]", item.get("text") or item.get("claim") or item.get("reason")))
+            else:
+                fields.append((f"{key}[{index}]", item))
+    for index, item in enumerate(_memo_dimension_analyses(memo), start=1):
+        fields.append((f"dimension_analyses[{index}].summary", item.get("summary") or item.get("section_thesis")))
+    for field, value in fields:
+        text = str(value or "").lower()
+        if any(phrase.lower() in text for phrase in generic_phrases):
+            offenders.append(field)
+    return offenders
+
+
 def _duplicate_direct_answer_sentences(value: str) -> list[str]:
     seen: set[str] = set()
     duplicates: list[str] = []
@@ -2555,6 +3060,11 @@ def _memo_non_chinese_user_facing_fields(memo: Mapping[str, Any]) -> list[str]:
     for index, claim in enumerate(_memo_claims(memo), start=1):
         if isinstance(claim, Mapping):
             fields.append((f"memo_claims[{index}].claim", claim.get("claim") or claim.get("text")))
+    for index, item in enumerate(_memo_dimension_analyses(memo), start=1):
+        fields.append((f"dimension_analyses[{index}].summary", item.get("summary") or item.get("section_thesis")))
+        fields.append((f"dimension_analyses[{index}].business_mechanism", item.get("business_mechanism")))
+        fields.append((f"dimension_analyses[{index}].financial_bridge", item.get("financial_bridge")))
+        fields.append((f"dimension_analyses[{index}].counter_read", item.get("counter_read")))
     for key in (
         "investment_implications",
         "what_would_change_view",
@@ -2971,6 +3481,9 @@ def _memo_claim_from_supported_claim(item: Mapping[str, Any]) -> dict[str, Any]:
         "period_role": str(item.get("period_role") or ""),
         "derived_from_claim_ids": _unique_strings(item.get("derived_from_claim_ids")),
         "synthesis_policy": str(item.get("synthesis_policy") or ""),
+        "analysis_dimension": str(item.get("analysis_dimension") or _analysis_dimension_for_claim(item)),
+        "analyst_angle": str(item.get("analyst_angle") or _analysis_dimension_title(_analysis_dimension_for_claim(item))),
+        "analyst_depth": _claim_analyst_depth(item),
     }
 
 
@@ -3026,6 +3539,18 @@ def _rendered_memo_text(memo: Mapping[str, Any]) -> str:
                 parts.append(item.get("text"))
             else:
                 parts.append(str(item or ""))
+    for item in memo.get("dimension_analyses") or []:
+        if isinstance(item, Mapping):
+            parts.extend(
+                [
+                    item.get("title"),
+                    item.get("summary"),
+                    item.get("business_mechanism"),
+                    item.get("financial_bridge"),
+                    item.get("competitive_read"),
+                    item.get("counter_read"),
+                ]
+            )
     return "\n".join(str(item or "") for item in parts)
 
 
@@ -3055,6 +3580,8 @@ def _repair_instruction(errors: list[dict[str, Any]]) -> str:
         "memo_profile_missing_monitoring_items",
     }:
         return "Fill the required memo profile fields: investment_implications, what_would_change_view, and monitoring_items using only verified memo claims."
+    if any(str(item).startswith("analyst_depth_") for item in types):
+        return "Regenerate as a dimension-led analyst memo: include dimension_analyses with summary, business mechanism, financial bridge, counter-read, claim_ids/evidence_refs, and avoid generic template language."
     return "Regenerate memo within verified judgment plan constraints."
 
 

@@ -403,6 +403,17 @@ def test_renderer_uses_chinese_headings_for_chinese_memo() -> None:
                 "answer_status": "draft",
                 "response_language": {"language": "zh-CN"},
                 "direct_answer": "这是一个有边界的中文投研结论。",
+                "dimension_analyses": [
+                    {
+                        "dimension_id": "fundamentals",
+                        "title": "基本面与财务质量",
+                        "summary": "已验证证据支持该维度的业务判断。",
+                        "business_mechanism": "该证据通过收入和利润率影响基本面质量。",
+                        "financial_bridge": "财务桥接到 revenue 和 margin。",
+                        "counter_read": "反证仍需后续披露确认。",
+                        "evidence_refs": ["ref_1"],
+                    }
+                ],
                 "memo_claims": [{"claim": "已验证证据支持该判断。", "evidence_refs": ["ref_1"]}],
                 "investment_implications": [{"text": "把该结论作为有证据边界的正向信号。"}],
                 "source_boundary": "仅限已验证 judgment plan；不包含原始检索行。",
@@ -412,6 +423,8 @@ def test_renderer_uses_chinese_headings_for_chinese_memo() -> None:
 
     rendered = result["rendered_answer"]
     assert "核心判断:" in rendered
+    assert "分维度分析:" in rendered
+    assert "基本面与财务质量" in rendered
     assert "关键论据:" in rendered
     assert "证据=ref_1" in rendered
     assert "投资含义:" in rendered

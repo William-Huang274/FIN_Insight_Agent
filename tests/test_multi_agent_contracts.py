@@ -167,7 +167,64 @@ def test_thesis_driver_pack_structures_verified_claims_for_memo_surface() -> Non
     assert any(card["memo_slot"] == "product_technology" for card in pack["driver_cards"])
     assert pack["counter_driver_cards"][0]["memo_slot"] == "risk_counterevidence"
     assert any(card["gap_type"] == "missing_confirmation" for card in pack["gap_cards"])
+    assert {row["dimension_id"] for row in pack["dimension_sections"]} >= {
+        "fundamentals",
+        "product_and_production",
+        "risk_and_counterevidence",
+    }
     assert draft["thesis_driver_pack"]["source_claim_refs"]
+    assert draft["dimension_analyses"]
+    assert draft["dimension_analyses"][0]["business_mechanism"]
+
+
+def test_analyst_depth_gate_requires_dimension_analyses_for_standard_memo() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": "Revenue growth supports the fundamental setup.",
+                        "claim_type": "company_reported_financial_fact",
+                        "evidence_refs": ["fund_ref_1"],
+                        "source_families": ["primary_sec_filing"],
+                        "memo_slot": "fundamentals",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["revenue"],
+                        "materiality": "high",
+                        "confidence": "high",
+                    }
+                ],
+            },
+            {
+                "agent_id": "product_technology_analyst",
+                "observations": [
+                    {
+                        "claim": "Product evidence supports the accelerator platform read-through.",
+                        "claim_type": "company_disclosed_product_kpi",
+                        "evidence_refs": ["product_ref_1"],
+                        "source_families": ["company_product_evidence_graph"],
+                        "memo_slot": "product_technology",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["accelerator_product"],
+                        "materiality": "high",
+                        "confidence": "high",
+                    }
+                ],
+            },
+        ]
+    )
+    memo = build_multi_agent_memo_draft(judgment)
+    memo["memo_profile"] = {"profile": "standard", "memo_claims_min_when_thesis_ready": 3}
+    memo["investment_implications"] = [{"text": "Revenue and product evidence jointly support the thesis."}]
+    memo["what_would_change_view"] = [{"text": "Opposite same-scope filings would reduce conviction."}]
+    memo["monitoring_items"] = [{"text": "Track revenue and product evidence in the next filing."}]
+    memo["dimension_analyses"] = []
+
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+
+    assert verification["analyst_depth_gate"]["status"] == "fail"
+    assert any(error["type"] == "analyst_depth_missing_dimension_analyses" for error in verification["errors"])
 
 
 def test_verifier_enforces_profile_minimum_claim_count_when_thesis_ready() -> None:

@@ -273,6 +273,8 @@ def _score_case(
     judgment_thesis_plan = judgment.get("memo_thesis_plan") if isinstance(judgment, Mapping) and isinstance(judgment.get("memo_thesis_plan"), Mapping) else {}
     thesis_driver_pack = judgment.get("thesis_driver_pack") if isinstance(judgment, Mapping) and isinstance(judgment.get("thesis_driver_pack"), Mapping) else {}
     memo_thesis_driver_pack = memo.get("thesis_driver_pack") if isinstance(memo.get("thesis_driver_pack"), Mapping) else {}
+    memo_dimension_analyses = [row for row in memo.get("dimension_analyses") or [] if isinstance(row, Mapping)]
+    analyst_depth_gate = claim_verification.get("analyst_depth_gate") if isinstance(claim_verification.get("analyst_depth_gate"), Mapping) else {}
     supported_claim_count = len(judgment.get("supported_claims") or []) if isinstance(judgment, Mapping) else 0
     minimum_memo_claim_count = _minimum_memo_claim_count(memo_profile, supported_claim_count)
     direct_answer_chars = len(str(memo.get("direct_answer") or ""))
@@ -290,7 +292,10 @@ def _score_case(
         else False,
         "thesis_driver_pack_present": bool(thesis_driver_pack),
         "thesis_driver_pack_usable": _thesis_driver_pack_usable(thesis_driver_pack, supported_claim_count),
+        "thesis_driver_pack_dimension_sections_present": bool(thesis_driver_pack.get("dimension_sections")),
         "memo_carries_thesis_driver_pack": bool(memo_thesis_driver_pack),
+        "memo_dimension_analyses_present": bool(memo_dimension_analyses),
+        "memo_dimension_analyses_traceable": _dimension_analyses_traceable(memo_dimension_analyses),
         "memo_writer_allowed": bool((judgment or {}).get("memo_writer_allowed", True)) if isinstance(judgment, Mapping) else False,
         "memo_route_pass": str(memo_route.get("status") or "") == "pass",
         "memo_not_fallback": str(memo.get("llm_route_source") or "").endswith("+deterministic_fallback") is False,
@@ -311,6 +316,7 @@ def _score_case(
         "memo_response_language_matches_query": response_language == expected_response_language,
         "memo_user_facing_language_ok": _memo_user_facing_language_ok(memo, expected_response_language),
         "verifier_pass": str(claim_verification.get("status") or "") == "pass",
+        "analyst_depth_gate_pass": str(analyst_depth_gate.get("status") or "") in {"", "pass"},
     }
     return {
         "case_id": case.get("case_id"),
@@ -515,6 +521,12 @@ def _judgment_metrics(judgment: Any) -> dict[str, Any]:
         "memo_thesis_pack_counterargument_count": len(pack.get("counterarguments") or []),
         "thesis_driver_pack_status": driver_pack.get("status") or "",
         "thesis_driver_pack_thesis_count": len(driver_pack.get("thesis_cards") or []),
+        "thesis_driver_pack_dimension_count": len(driver_pack.get("dimension_sections") or []),
+        "thesis_driver_pack_dimensions": [
+            str(row.get("dimension_id") or "")
+            for row in driver_pack.get("dimension_sections") or []
+            if isinstance(row, Mapping)
+        ],
         "thesis_driver_pack_driver_count": len(driver_pack.get("driver_cards") or []),
         "thesis_driver_pack_counter_driver_count": len(driver_pack.get("counter_driver_cards") or []),
         "thesis_driver_pack_gap_count": len(driver_pack.get("gap_cards") or []),
@@ -530,17 +542,33 @@ def _thesis_driver_pack_usable(pack: Mapping[str, Any], supported_claim_count: i
     return status in {"ready", "partial"} and has_thesis and has_driver_or_counter
 
 
+def _dimension_analyses_traceable(rows: list[Mapping[str, Any]]) -> bool:
+    if not rows:
+        return False
+    checked = 0
+    for row in rows[:3]:
+        summary = str(row.get("summary") or row.get("section_thesis") or "").strip()
+        refs = [str(ref) for ref in row.get("evidence_refs") or row.get("refs") or [] if str(ref or "").strip()]
+        claim_ids = [str(item) for item in row.get("claim_ids") or row.get("primary_claim_ids") or [] if str(item or "").strip()]
+        if summary and (refs or claim_ids):
+            checked += 1
+    return checked >= min(2, len(rows))
+
+
 def _memo_metrics(memo: Mapping[str, Any]) -> dict[str, Any]:
     claims = [row for row in memo.get("memo_claims") or [] if isinstance(row, Mapping)]
     refs = sorted({str(ref) for row in claims for ref in row.get("evidence_refs") or [] if str(ref or "").strip()})
     profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
     driver_pack = memo.get("thesis_driver_pack") if isinstance(memo.get("thesis_driver_pack"), Mapping) else {}
+    dimensions = [row for row in memo.get("dimension_analyses") or [] if isinstance(row, Mapping)]
     return {
         "answer_status": memo.get("answer_status") or "",
         "memo_profile": profile.get("profile") or "",
         "response_language": _memo_response_language(memo),
         "direct_answer_chars": len(str(memo.get("direct_answer") or "")),
         "memo_claim_count": len(claims),
+        "dimension_analysis_count": len(dimensions),
+        "dimension_analysis_ids": [str(row.get("dimension_id") or "") for row in dimensions],
         "memo_claim_evidence_ref_count": len(refs),
         "investment_implication_count": len(memo.get("investment_implications") or []),
         "what_would_change_view_count": len(memo.get("what_would_change_view") or []),

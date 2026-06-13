@@ -449,6 +449,11 @@ def _normalize_memo_llm_output(
     )
     memo.setdefault("memo_thesis_pack", base.get("memo_thesis_pack") or {})
     memo.setdefault("thesis_driver_pack", base.get("thesis_driver_pack") or {})
+    memo["dimension_analyses"] = _normalize_output_dimension_analyses(
+        memo.get("dimension_analyses"),
+        base.get("dimension_analyses") or [],
+        max_items=6 if profile.profile in {"expanded", "deep_research"} else 4,
+    )
     memo.setdefault("claim_card_stats", base.get("claim_card_stats") or {})
     memo.setdefault("bounded_answer_allowed", False)
     if str(memo.get("answer_status") or "draft") == "draft":
@@ -548,6 +553,7 @@ def _localize_memo_user_text(memo: Mapping[str, Any], *, response_language: str)
             localized["response_language_normalized_user_text"] = True
         memo_claims.append(row)
     localized["memo_claims"] = memo_claims
+    localized["dimension_analyses"] = _localize_dimension_analyses(localized.get("dimension_analyses"))
 
     for key in (
         "investment_implications",
@@ -716,6 +722,97 @@ def _normalize_output_memo_claims(
     return normalized
 
 
+def _normalize_output_dimension_analyses(value: Any, fallback: Any, *, max_items: int) -> list[dict[str, Any]]:
+    fallback_rows = [dict(item) for item in (fallback if isinstance(fallback, list) else []) if isinstance(item, Mapping)]
+    fallback_by_id = {str(item.get("dimension_id") or ""): item for item in fallback_rows if str(item.get("dimension_id") or "")}
+    rows = [dict(item) for item in (value if isinstance(value, list) else []) if isinstance(item, Mapping)]
+    if not rows:
+        rows = fallback_rows
+    normalized: list[dict[str, Any]] = []
+    for row in rows[: max(1, max_items)]:
+        dimension_id = str(row.get("dimension_id") or row.get("id") or "").strip()
+        fallback_row = fallback_by_id.get(dimension_id, {})
+        if not dimension_id:
+            dimension_id = str(fallback_row.get("dimension_id") or "").strip()
+        merged = {**fallback_row, **row}
+        summary = str(merged.get("summary") or merged.get("section_thesis") or merged.get("text") or "").strip()
+        normalized.append(
+            {
+                "dimension_id": dimension_id,
+                "title": _truncate(str(merged.get("title") or merged.get("dimension_title") or _dimension_title_for_id(dimension_id)), 90),
+                "summary": _truncate(summary, 420),
+                "analysis_lens": _truncate(str(merged.get("analysis_lens") or ""), 260),
+                "business_mechanism": _truncate(str(merged.get("business_mechanism") or ""), 260),
+                "financial_bridge": _truncate(str(merged.get("financial_bridge") or ""), 260),
+                "comparison_basis": _string_list(merged.get("comparison_basis"))[:4],
+                "competitive_read": _truncate(str(merged.get("competitive_read") or ""), 240),
+                "counter_read": _truncate(str(merged.get("counter_read") or ""), 260),
+                "claim_ids": _string_list(merged.get("claim_ids") or merged.get("primary_claim_ids"))[:8],
+                "counter_claim_ids": _string_list(merged.get("counter_claim_ids"))[:4],
+                "evidence_refs": _string_list(merged.get("evidence_refs") or merged.get("refs"))[:8],
+                "source_boundaries": [_truncate(str(item), 160) for item in _string_list(merged.get("source_boundaries"))[:5]],
+                "what_would_change_view": [
+                    _truncate(str(item), 180) for item in _string_list(merged.get("what_would_change_view"))[:4]
+                ],
+                "status": str(merged.get("status") or ""),
+            }
+        )
+    return [row for row in normalized if row.get("dimension_id") or row.get("summary")]
+
+
+def _dimension_title_for_id(value: str) -> str:
+    return {
+        "fundamentals": "Fundamentals and financial quality",
+        "product_and_production": "Product and production line evidence",
+        "capital_and_financing": "Capital allocation and financing",
+        "competition_and_market_position": "Competition and market position",
+        "industry_supply_chain": "Industry and supply-chain transmission",
+        "risk_and_counterevidence": "Risk and counterevidence",
+        "evidence_gap": "Evidence gap",
+    }.get(str(value or "").strip(), "Analyst dimension")
+
+
+def _localize_dimension_analyses(value: Any) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for item in value if isinstance(value, list) else []:
+        if not isinstance(item, Mapping):
+            continue
+        row = dict(item)
+        dimension_id = str(row.get("dimension_id") or "")
+        if not _contains_cjk(str(row.get("title") or "")):
+            row["title"] = _zh_dimension_title(dimension_id, row.get("title"))
+        for key in ("summary", "analysis_lens", "business_mechanism", "financial_bridge", "competitive_read", "counter_read"):
+            row[key] = _normalize_zh_punctuation(row.get(key))
+            if _needs_zh_wrapper(row.get(key)):
+                row[key] = _zh_wrapped_user_text(str(row.get(key) or ""), kind=f"dimension_{key}")
+                row["response_language_normalized_user_text"] = True
+        row["source_boundaries"] = [
+            _localize_source_boundary_for_zh(item) if not _contains_cjk(str(item or "")) else _normalize_zh_punctuation(item)
+            for item in _string_list(row.get("source_boundaries"))[:5]
+        ]
+        row["what_would_change_view"] = [
+            _zh_wrapped_user_text(str(item), kind="what_would_change_view")
+            if _needs_zh_wrapper(item)
+            else _normalize_zh_punctuation(item)
+            for item in _string_list(row.get("what_would_change_view"))[:4]
+        ]
+        rows.append(row)
+    return rows
+
+
+def _zh_dimension_title(dimension_id: str, fallback: Any) -> str:
+    labels = {
+        "fundamentals": "基本面与财务质量",
+        "product_and_production": "产品与产线",
+        "capital_and_financing": "投融资与资本开支",
+        "competition_and_market_position": "竞争格局与市场位置",
+        "industry_supply_chain": "行业与供应链传导",
+        "risk_and_counterevidence": "风险与反证",
+        "evidence_gap": "证据缺口",
+    }
+    return labels.get(str(dimension_id or "").strip(), str(fallback or "分析维度"))
+
+
 def _normalize_memo_action_items(value: Any, *, max_items: int, max_chars: int) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for item in value if isinstance(value, list) else []:
@@ -744,16 +841,19 @@ def _default_profile_action_items(
     first = memo_claims[0] if memo_claims and isinstance(memo_claims[0], Mapping) else {}
     claim_id = str(first.get("claim_id") or "")
     refs = _string_list(first.get("evidence_refs") or first.get("refs"))[:3]
+    dimension = str(first.get("analysis_dimension") or first.get("memo_slot") or "verified evidence").replace("_", " ")
+    metrics = ", ".join(_string_list(first.get("metric_scope"))[:3])
+    bridge = f"{dimension}" + (f" / {metrics}" if metrics else "")
     zh = _normalize_response_language(response_language) == "zh-CN"
     templates_zh = {
-        "investment_implications": "把已验证的核心论据作为当前判断依据，但置信度和结论强度必须受证据边界约束。",
-        "what_would_change_view": "如果后续披露推翻核心论据对应的指标方向、管理层解释或市场反应，需要重新评估当前判断。",
-        "monitoring_items": "继续跟踪下一期10-Q/8-K中与核心论据相同的指标和证据缺口，确认当前判断是否仍成立。",
+        "investment_implications": f"投资判断应先落在 {bridge} 这条已验证证据链上，再决定是否能外推到收入、利润率或现金流。",
+        "what_would_change_view": f"如果后续披露削弱 {bridge} 的指标方向、管理层解释或证据边界，需要下调当前结论强度。",
+        "monitoring_items": f"后续优先跟踪 {bridge} 的同口径披露、反证风险和缺失确认项，而不是新增未验证叙事。",
     }
     templates_en = {
-        "investment_implications": "Use the verified core claim as the current view anchor while sizing confidence to the evidence boundary.",
-        "what_would_change_view": "Reassess the view if later filings contradict the core claim's metric direction, management explanation, or market reaction.",
-        "monitoring_items": "Track the same metrics and evidence gaps in the next 10-Q/8-K to confirm whether the current view still holds.",
+        "investment_implications": f"Anchor the investment read on the verified {bridge} evidence chain before extending it to revenue, margin, or cash-flow implications.",
+        "what_would_change_view": f"Reduce conviction if later disclosures weaken the {bridge} metric direction, management explanation, or evidence boundary.",
+        "monitoring_items": f"Track same-scope {bridge} disclosures, counterevidence, and missing confirmations before adding any unverified narrative.",
     }
     text = (templates_zh if zh else templates_en).get(kind, "")
     return [{"text": text, "claim_id": claim_id, "evidence_refs": refs}] if text else []
@@ -1235,16 +1335,18 @@ def _memo_messages(
         "Write one MemoDraft JSON object from compact verified ClaimCard inputs only. "
         "Use shared_memo_context only for scope, coverage, Specialist route status, and source-boundary framing, never as factual evidence. "
         f"Set response_language.language exactly to {response_language}; user-facing prose must be {response_language_name}. "
-        "For zh-CN, translate/synthesize direct_answer, memo_claims.claim, caveats, source_boundary_notes, investment_implications, what_would_change_view, monitoring_items, and evidence_gaps_but_actionable into Simplified Chinese; keep tickers, metric IDs, form names, numbers, units, claim_id, and evidence_refs unchanged. "
+        "For zh-CN, translate/synthesize direct_answer, dimension_analyses prose fields, memo_claims.claim, caveats, source_boundary_notes, investment_implications, what_would_change_view, monitoring_items, and evidence_gaps_but_actionable into Simplified Chinese; keep tickers, metric IDs, form names, numbers, units, claim_id, and evidence_refs unchanged. "
         "For zh-CN, any memo_claim.claim that is mostly English prose is invalid; do not quote English ClaimCard text, do not add 'original text' wrappers, and do not say the English text is preserved for traceability. "
-        "Use thesis_driver_pack first for the conclusion-driver-counterargument-gap structure, memo_thesis_pack as the supporting writing brief, memo_thesis_plan as the order, and memo_outline only as fallback. "
-        "Write a thesis-led memo paragraph that connects business drivers to the investment implication, not a row recap or schema recap; do not copy internal phrases such as 'Synthesized thesis', 'ClaimCard', pipe-delimited joined claims, driver_id, gap_id, or repeated claim text into direct_answer. "
+        "Use thesis_driver_pack.dimension_sections first for dimension-led analysis, then memo_thesis_pack as the supporting writing brief, memo_thesis_plan as the order, and memo_outline only as fallback. "
+        "Write direct_answer as a dense executive synthesis across the strongest dimensions, not a driver-by-driver list, row recap, or schema recap. The opening must connect evidence to business mechanism, financial bridge, competitive/risk context, and evidence boundary. "
+        "Emit dimension_analyses for the supported dimensions actually present in thesis_driver_pack.dimension_sections. Each dimension_analyses item must include dimension_id, title, summary, business_mechanism, financial_bridge, competitive_read or counter_read, claim_ids, and evidence_refs copied exactly. "
+        "Do not copy internal phrases such as 'Synthesized thesis', 'ClaimCard', pipe-delimited joined claims, driver_id, gap_id, or repeated claim text into direct_answer. "
         "Preserve numeric values exactly as written; do not recalculate, invent, round, or change units. "
         "Do not request tools, consume raw rows, or add facts beyond verified claim cards.\n\n"
         f"Profile caps: memo_profile={memo_profile.profile}; direct_answer should be {memo_profile.direct_answer_min_chars}-{memo_profile.direct_answer_max_chars} characters when supported and direct_answer <= {memo_profile.direct_answer_max_chars} characters; "
         f"memo_claims {memo_profile.memo_claims_min_when_thesis_ready}-{memo_profile.memo_claims_max} when memo_thesis_pack or memo_thesis_plan is ready; each memo_claim.claim <= {memo_profile.memo_claim_max_chars} characters; "
         f"caveats <= {memo_profile.caveats_max}; unsupported_claims_excluded <= {memo_profile.unsupported_claims_excluded_max}; source_boundary_notes <= {memo_profile.source_boundary_notes_max}. "
-        "For standard/expanded/deep_research, include non-empty investment_implications, what_would_change_view, and monitoring_items. "
+        "For standard/expanded/deep_research, include at least two dimension_analyses when supported plus non-empty investment_implications, what_would_change_view, and monitoring_items. "
         "Set memo_generation_policy exactly to thesis_led_claim_cards_v0_1. "
         "Emit compact memo_thesis_plan only; do_not_emit_supported_claims=true; do not emit thesis_driver_pack, memo_thesis_pack, memo_outline, analysis traces, source tables, or copied judgment_plan. "
         "Emit memo_claims synthesized from supported claims with claim_id and evidence_refs copied exactly. Return JSON only.\n\n"
@@ -1271,7 +1373,7 @@ def _memo_messages(
                 "For zh-CN, translate or synthesize every user-facing claim/section into Simplified Chinese; copy only claim_id, evidence_refs, tickers, metric IDs, numbers, and units. "
                 "For zh-CN, do not quote English claim text or wrap it as original/source text; rewrite the investment meaning in Chinese. "
                 "Do not copy internal phrases like 'Synthesized thesis' or 'ClaimCards' into direct_answer, do not use pipe-delimited claim concatenation, and do not repeat the same sentence twice. "
-                "For standard/expanded/deep_research, include non-empty investment_implications, what_would_change_view, and monitoring_items. "
+                "For standard/expanded/deep_research, include dimension_analyses with mechanism, financial bridge, counter-read, claim_ids, and evidence_refs, plus non-empty investment_implications, what_would_change_view, and monitoring_items. "
                 "Do not emit supported_claims, memo_thesis_pack, or memo_outline. No markdown, no prose, no row-by-row recap."
             )
         else:
@@ -1284,9 +1386,9 @@ def _memo_messages(
                 f"memo_profile must stay {memo_profile.profile}. "
                 f"response_language.language must stay {response_language}; user-facing prose must be {response_language_name}. "
                 "Rewrite direct_answer as a natural user-facing investment paragraph without internal labels or pipe-delimited claim joins. "
-                "For zh-CN, translate or synthesize every user-facing claim/section into Simplified Chinese; copy only claim_id, evidence_refs, tickers, metric IDs, numbers, and units. "
+                "For zh-CN, translate or synthesize every user-facing claim/section and dimension_analyses prose field into Simplified Chinese; copy only claim_id, evidence_refs, tickers, metric IDs, numbers, and units. "
                 "For zh-CN, do not quote English claim text or wrap it as original/source text; rewrite the investment meaning in Chinese. "
-                "Remove repeated sentences, and for standard/expanded/deep_research include non-empty investment_implications, what_would_change_view, and monitoring_items. "
+                "Remove repeated sentences, and for standard/expanded/deep_research include dimension_analyses plus non-empty investment_implications, what_would_change_view, and monitoring_items. "
                 "Set memo_generation_policy exactly to thesis_led_claim_cards_v0_1, preserve numeric values exactly, and do not emit memo_thesis_pack or memo_outline."
             )
     return [
@@ -1311,6 +1413,17 @@ def _memo_output_contract(profile: MemoProfileSpec) -> dict[str, Any]:
             "primary_thesis",
             "thesis_direction",
         ],
+        "dimension_analyses_shape": [
+            "dimension_id",
+            "title",
+            "summary",
+            "business_mechanism",
+            "financial_bridge",
+            "competitive_read",
+            "counter_read",
+            "claim_ids",
+            "evidence_refs",
+        ],
         "do_not_emit_supported_claims": True,
         "do_not_emit_thesis_driver_pack": True,
         "do_not_emit_memo_thesis_pack": True,
@@ -1322,6 +1435,7 @@ def _memo_output_contract(profile: MemoProfileSpec) -> dict[str, Any]:
             "direct_answer",
             "response_language",
             "memo_profile",
+            "dimension_analyses",
             "memo_claims",
             "investment_implications",
             "what_would_change_view",
@@ -1430,6 +1544,7 @@ def _compact_memo_payload_for_repair(payload: Mapping[str, Any], *, length_repai
             "direct_answer": "compact bounded answer",
             "response_language": response_language or {"language": "zh-CN | en-US"},
             "memo_profile": {"profile": profile.profile},
+            "dimension_analyses": [],
             "memo_claims": [],
             "investment_implications": [],
             "what_would_change_view": [],
@@ -1640,19 +1755,23 @@ def _salvage_action_items(
 ) -> list[dict[str, Any]]:
     refs = _string_list(selected_claims[0].get("evidence_refs"))[:2] if selected_claims else []
     claim_id = str(selected_claims[0].get("claim_id") or "") if selected_claims else ""
+    first = selected_claims[0] if selected_claims else {}
+    dimension = str(first.get("analysis_dimension") or first.get("memo_slot") or "verified evidence").replace("_", " ")
+    metrics = ", ".join(_string_list(first.get("metric_scope"))[:3])
+    bridge = f"{dimension}" + (f" / {metrics}" if metrics else "")
     if response_language == "zh-CN":
         templates = {
-            "investment_implications": "把已验证的高权重论据作为当前判断核心，仓位或排序需受证据边界约束。",
-            "what_would_change_view": "若后续披露无法验证当前关键驱动，或出现相反的订单、利润率、估值或风险证据，应下调结论强度。",
-            "monitoring_items": "继续跟踪下一轮财报、订单/积压、利润率、资本开支、估值和关系图谱中对应节点的证据更新。",
-            "evidence_gaps": "当前仍有部分传导链或外部确认缺口，但已有证据足以形成带边界的研究 memo。",
+            "investment_implications": f"先围绕 {bridge} 判断业务机制是否能传导到收入、利润率或现金流，再决定结论强度。",
+            "what_would_change_view": f"若后续披露或外部证据削弱 {bridge}，应下调该维度对整体 thesis 的支撑权重。",
+            "monitoring_items": f"继续跟踪 {bridge} 的同口径披露、反证风险、外部确认和来源边界变化。",
+            "evidence_gaps": f"{bridge} 仍有公开证据缺口，当前 memo 只能给出带边界的研究结论。",
         }
     else:
         templates = {
-            "investment_implications": "Use the highest-ranked verified claims as the core view while sizing confidence to the evidence boundary.",
-            "what_would_change_view": "Reduce confidence if the next filings or market/industry evidence fail to confirm the key driver, valuation, or risk link.",
-            "monitoring_items": "Track the next filing, backlog/order, margin, capex, valuation, and relationship-graph updates tied to the cited claims.",
-            "evidence_gaps": "Some transmission links still need external confirmation, but the verified cards support a bounded research memo.",
+            "investment_implications": f"Start with the verified {bridge} mechanism before extending the view to revenue, margin, or cash-flow implications.",
+            "what_would_change_view": f"Reduce the dimension weight if later filings or external evidence weaken the verified {bridge} bridge.",
+            "monitoring_items": f"Track same-scope {bridge} disclosures, counterevidence, external confirmation, and source-boundary changes.",
+            "evidence_gaps": f"The {bridge} bridge still has public-evidence gaps, so the memo remains bounded.",
         }
     items = [{"text": templates.get(kind, templates["investment_implications"]), "claim_id": claim_id, "evidence_refs": refs}]
     for claim in selected_claims[1:max_items]:
@@ -1702,8 +1821,25 @@ def _compact_claim_card(item: Mapping[str, Any]) -> dict[str, Any]:
         "confidence": str(item.get("confidence") or ""),
         "claim_rank_score": int(item.get("claim_rank_score") or 0),
         "claim_rank_bucket": str(item.get("claim_rank_bucket") or ""),
+        "analysis_dimension": str(item.get("analysis_dimension") or ""),
+        "analyst_angle": str(item.get("analyst_angle") or ""),
+        "analyst_depth": _compact_analyst_depth(item.get("analyst_depth") or {}),
         "caveats": [_truncate(str(part), 100) for part in _string_list(item.get("caveats"))[:1]],
         "missing_confirmations": [_truncate(str(part), 100) for part in _string_list(item.get("missing_confirmations"))[:1]],
+    }
+
+
+def _compact_analyst_depth(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    return {
+        "analysis_dimension": str(value.get("analysis_dimension") or ""),
+        "analysis_lens": _truncate(str(value.get("analysis_lens") or ""), 120),
+        "business_mechanism": _truncate(str(value.get("business_mechanism") or ""), 140),
+        "financial_bridge": _truncate(str(value.get("financial_bridge") or ""), 140),
+        "comparison_basis": _truncate(str(value.get("comparison_basis") or ""), 100),
+        "counter_read": _truncate(str(value.get("counter_read") or ""), 120),
+        "evidence_role": str(value.get("evidence_role") or ""),
     }
 
 
@@ -1811,6 +1947,11 @@ def _compact_thesis_driver_pack(value: Any) -> dict[str, Any]:
         "status": str(value.get("status") or ""),
         "present": bool(value.get("present")),
         "thesis_cards": thesis_cards,
+        "dimension_sections": [
+            _compact_dimension_section(row)
+            for row in value.get("dimension_sections") or []
+            if isinstance(row, Mapping)
+        ][:6],
         "driver_cards": [
             _compact_driver_pack_card(row)
             for row in value.get("driver_cards") or []
@@ -1844,6 +1985,28 @@ def _compact_thesis_driver_pack(value: Any) -> dict[str, Any]:
         "evidence_ref_count": int(value.get("evidence_ref_count") or 0),
         "source_claim_refs": _string_list(value.get("source_claim_refs"))[:8],
         "pack_policy": str(value.get("pack_policy") or ""),
+    }
+
+
+def _compact_dimension_section(value: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "dimension_id": str(value.get("dimension_id") or ""),
+        "dimension_title": str(value.get("dimension_title") or value.get("title") or ""),
+        "section_thesis": _truncate(str(value.get("section_thesis") or value.get("summary") or ""), 240),
+        "analysis_lens": _truncate(str(value.get("analysis_lens") or ""), 160),
+        "business_mechanism": _truncate(str(value.get("business_mechanism") or ""), 170),
+        "financial_bridge": _truncate(str(value.get("financial_bridge") or ""), 170),
+        "comparison_basis": _string_list(value.get("comparison_basis"))[:3],
+        "competitive_read": _truncate(str(value.get("competitive_read") or ""), 150),
+        "counter_read": _truncate(str(value.get("counter_read") or ""), 150),
+        "primary_claim_ids": _string_list(value.get("primary_claim_ids") or value.get("claim_ids"))[:5],
+        "counter_claim_ids": _string_list(value.get("counter_claim_ids"))[:3],
+        "evidence_refs": _string_list(value.get("evidence_refs"))[:5],
+        "source_boundaries": [_truncate(str(item), 100) for item in _string_list(value.get("source_boundaries"))[:3]],
+        "what_would_change_view": [
+            _truncate(str(item), 120) for item in _string_list(value.get("what_would_change_view"))[:3]
+        ],
+        "depth_status": str(value.get("depth_status") or ""),
     }
 
 
@@ -2070,6 +2233,11 @@ def _compact_memo_for_verifier(value: Any) -> dict[str, Any]:
         "direct_answer": _truncate(str(value.get("direct_answer") or ""), 1200),
         "response_language": dict(value.get("response_language") or {}) if isinstance(value.get("response_language"), Mapping) else {},
         "memo_profile": dict(value.get("memo_profile") or {}) if isinstance(value.get("memo_profile"), Mapping) else {},
+        "dimension_analyses": [
+            _compact_dimension_analysis_for_verifier(item)
+            for item in value.get("dimension_analyses") or []
+            if isinstance(item, Mapping)
+        ][:8],
         "memo_claims": [_compact_memo_claim_for_verifier(item) for item in value.get("memo_claims") or [] if isinstance(item, Mapping)][:10],
         "supported_claims": [_compact_memo_claim_for_verifier(item) for item in value.get("supported_claims") or [] if isinstance(item, Mapping)][:10],
         "investment_implications": _compact_loose_items_for_verifier(value.get("investment_implications") or [], max_items=8),
@@ -2082,6 +2250,20 @@ def _compact_memo_for_verifier(value: Any) -> dict[str, Any]:
         "consumed_input_views": _string_list(value.get("consumed_input_views"))[:6],
         "raw_rows_consumed": bool(value.get("raw_rows_consumed")),
         "tool_calls_requested": list(value.get("tool_calls_requested") or [])[:3] if isinstance(value.get("tool_calls_requested"), list) else [],
+    }
+
+
+def _compact_dimension_analysis_for_verifier(item: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "dimension_id": str(item.get("dimension_id") or ""),
+        "title": _truncate(str(item.get("title") or item.get("dimension_title") or ""), 80),
+        "summary": _truncate(str(item.get("summary") or item.get("section_thesis") or ""), 220),
+        "business_mechanism": _truncate(str(item.get("business_mechanism") or ""), 160),
+        "financial_bridge": _truncate(str(item.get("financial_bridge") or ""), 160),
+        "competitive_read": _truncate(str(item.get("competitive_read") or ""), 140),
+        "counter_read": _truncate(str(item.get("counter_read") or ""), 140),
+        "claim_ids": _string_list(item.get("claim_ids") or item.get("primary_claim_ids"))[:6],
+        "evidence_refs": _string_list(item.get("evidence_refs") or item.get("refs"))[:8],
     }
 
 

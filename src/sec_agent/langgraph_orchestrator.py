@@ -2184,13 +2184,27 @@ def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
     if direct:
         parts.append(f"{labels['core_thesis']}:\n{direct}")
 
-    thesis_chain_lines = _render_thesis_driver_chain_lines(
-        memo.get("thesis_driver_pack") or {},
+    dimension_lines = _render_dimension_analysis_lines(
+        memo.get("dimension_analyses") or [],
         ref_label=labels["refs"],
         language=labels["language"],
     )
-    if thesis_chain_lines:
-        parts.append(f"{labels['evidence_to_thesis']}:\n" + "\n".join(thesis_chain_lines))
+    if not dimension_lines:
+        dimension_lines = _render_dimension_analysis_lines(
+            (memo.get("thesis_driver_pack") or {}).get("dimension_sections") if isinstance(memo.get("thesis_driver_pack"), Mapping) else [],
+            ref_label=labels["refs"],
+            language=labels["language"],
+        )
+    if dimension_lines:
+        parts.append(f"{labels['dimension_analysis']}:\n" + "\n".join(dimension_lines))
+    else:
+        thesis_chain_lines = _render_thesis_driver_chain_lines(
+            memo.get("thesis_driver_pack") or {},
+            ref_label=labels["refs"],
+            language=labels["language"],
+        )
+        if thesis_chain_lines:
+            parts.append(f"{labels['evidence_to_thesis']}:\n" + "\n".join(thesis_chain_lines))
 
     claim_lines = _render_memo_claim_lines(
         memo.get("memo_claims") or memo.get("supported_claims") or [],
@@ -2244,6 +2258,7 @@ def _memo_render_labels(memo: Mapping[str, Any]) -> dict[str, str]:
         return {
             "language": "zh-CN",
             "core_thesis": "核心判断",
+            "dimension_analysis": "分维度分析",
             "evidence_to_thesis": "证据到结论链条",
             "claims": "关键论据",
             "investment_implications": "投资含义",
@@ -2259,6 +2274,7 @@ def _memo_render_labels(memo: Mapping[str, Any]) -> dict[str, str]:
     return {
         "language": "en-US",
         "core_thesis": "Core thesis",
+        "dimension_analysis": "Dimension analysis",
         "evidence_to_thesis": "Evidence-to-thesis chain",
         "claims": "Key memo claims",
         "investment_implications": "Investment implications",
@@ -2271,6 +2287,77 @@ def _memo_render_labels(memo: Mapping[str, Any]) -> dict[str, str]:
         "bounded_note": "Bounded evidence note: verifier accepted the thesis-led memo claims under the current source boundary.",
         "refs": "refs",
     }
+
+
+def _render_dimension_analysis_lines(
+    value: Any,
+    *,
+    ref_label: str,
+    language: str,
+    max_items: int = 5,
+) -> list[str]:
+    lines: list[str] = []
+    for index, row in enumerate(value if isinstance(value, list) else [], start=1):
+        if not isinstance(row, Mapping):
+            continue
+        title = str(row.get("title") or row.get("dimension_title") or _dimension_render_title(row.get("dimension_id"), language)).strip()
+        summary = str(row.get("summary") or row.get("section_thesis") or row.get("text") or "").strip()
+        if not summary:
+            continue
+        mechanism = str(row.get("business_mechanism") or "").strip()
+        bridge = str(row.get("financial_bridge") or "").strip()
+        competitive = str(row.get("competitive_read") or "").strip()
+        counter = str(row.get("counter_read") or "").strip()
+        refs = [str(ref) for ref in row.get("evidence_refs") or row.get("refs") or [] if str(ref or "").strip()]
+        if language == "zh-CN":
+            parts = [f"{index}. {title}：{summary}"]
+            if mechanism:
+                parts.append(f"机制：{mechanism}")
+            if bridge:
+                parts.append(f"财务桥：{bridge}")
+            if competitive and "No direct" not in competitive:
+                parts.append(f"竞争/位置：{competitive}")
+            if counter:
+                parts.append(f"反证/边界：{counter}")
+        else:
+            parts = [f"{index}. {title}: {summary}"]
+            if mechanism:
+                parts.append(f"mechanism: {mechanism}")
+            if bridge:
+                parts.append(f"financial bridge: {bridge}")
+            if competitive and "No direct" not in competitive:
+                parts.append(f"competition/position: {competitive}")
+            if counter:
+                parts.append(f"counter/boundary: {counter}")
+        if refs:
+            parts.append(f"{ref_label}={', '.join(refs[:4])}")
+        lines.append(" | ".join(parts))
+        if len(lines) >= max_items:
+            break
+    return lines
+
+
+def _dimension_render_title(value: Any, language: str) -> str:
+    key = str(value or "").strip()
+    if language == "zh-CN":
+        return {
+            "fundamentals": "基本面与财务质量",
+            "product_and_production": "产品与产线",
+            "capital_and_financing": "投融资与资本开支",
+            "competition_and_market_position": "竞争格局与市场位置",
+            "industry_supply_chain": "行业与供应链传导",
+            "risk_and_counterevidence": "风险与反证",
+            "evidence_gap": "证据缺口",
+        }.get(key, "分析维度")
+    return {
+        "fundamentals": "Fundamentals and financial quality",
+        "product_and_production": "Product and production line evidence",
+        "capital_and_financing": "Capital allocation and financing",
+        "competition_and_market_position": "Competition and market position",
+        "industry_supply_chain": "Industry and supply-chain transmission",
+        "risk_and_counterevidence": "Risk and counterevidence",
+        "evidence_gap": "Evidence gap",
+    }.get(key, "Analyst dimension")
 
 
 def _render_thesis_driver_chain_lines(

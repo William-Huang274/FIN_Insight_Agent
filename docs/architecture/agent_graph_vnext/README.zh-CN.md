@@ -16,6 +16,7 @@
 - [07 投研工作流知识图谱升级框架](07_investment_research_workflow_knowledge_graph_framework.zh-CN.md)：按投研问题驱动图谱重整业务经营图谱、资本/持仓/融资图谱、source hierarchy、产品规格/公开采购视角、次级 agent 和 K1-K8 落地顺序。
 - [08 旧规划文档吸收与数据治理执行计划](08_legacy_planning_docs_absorption_and_data_governance_plan.zh-CN.md)：对 G1-G10 前的三份规划文档做覆盖/缺口映射，并固化 D1-D11 evidence-governed runtime 数据治理序列。
 - [09 Research Lead 常驻监督闭环框架](09_lead_supervised_closed_loop_research_framework.zh-CN.md)：记录 2026-06-14 新讨论，将 Research Lead 升级为 supervising analyst，加入 ResearchObjectiveContract、LeadReviewCheckpoint、TargetedRepairPlan、MemoLogicPlan、role-specific selector、BGE 资源队列和 ModelRouter / AgentCoalescer。
+- [10 后端 / 前端 Runtime 升级框架](10_backend_frontend_runtime_framework.zh-CN.md)：吸收两份后端规划文档，把 FinSight 从本地 agent / Workbench eval 推进到 API、Redis queue、worker pool、SSE、DB persistence、Docker Compose、前端 trace/report viewer 和 Java/Spring Boot 可选外壳。
 
 ## 总原则
 

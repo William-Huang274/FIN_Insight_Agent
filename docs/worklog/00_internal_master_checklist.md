@@ -617,3 +617,17 @@
 - [ ] L7: Add ModelRouter / AgentCoalescer to reduce token cost through model-tier routing, deterministic gap cards, specialist skip/merge, and per-claim cost audit.
 - [ ] L8: Add Tool Capability Registry covering data retrieval, input parsing, analysis artifacts, output rendering, and multimodal preprocess with per-agent permissions.
 - [ ] L9: Add Document & Multimodal Input Pipeline for PDF/DOCX/Excel/Markdown/PPT/image/video parsing into provenance-gated UserProvidedEvidencePack artifacts.
+
+## Backend / Frontend Runtime Productization
+
+- [x] Absorb backend upgrade route and enterprise RAG/Agent backend experience docs into a new 10 framework document.
+- [ ] B0: Decide whether backend P0 uses FastAPI only, Spring Boot shell + Python worker, or FastAPI first with later Spring Boot parity.
+- [ ] B1: Implement Run Manager API: create, inspect, events, report, cancel, resume.
+- [ ] B2: Add Redis runtime for task queue, status cache, SSE stream, rate limit, LLM/BGE semaphores, and retry/backoff state.
+- [ ] B3: Add backend DB schema for research_runs, graph_checkpoints, retrieval_tasks, tool_calls, evidence_items, claim_cards, gap_cards, gate_results, reflection_events, repair_tasks, reports, artifacts, audit_logs, uploaded_files, parsed_input_artifacts, model_calls, and resource_usage.
+- [ ] B4: Add worker pool that executes current LangGraph / Workbench runtime from queued run payloads.
+- [ ] B5: Standardize run event types and expose SSE / event replay.
+- [ ] B6: Add timeout, cancel, retry/backoff, worker heartbeat, stuck-run recovery, and idempotency key.
+- [ ] B7: Add Docker Compose for API, worker, DB, Redis, Milvus, and optional MinIO.
+- [ ] B8: Add load testing over exact value, focused memo, deep research, and batch graph jobs with p95 latency, queue wait, success rate, error rate, token cost, and LLM/BGE concurrency.
+- [ ] F1: Add frontend run list, run detail, event timeline, evidence viewer, ClaimCard viewer, gap viewer, report viewer, graph trace, upload center, and admin/config views.

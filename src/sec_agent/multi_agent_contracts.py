@@ -13,6 +13,7 @@ MEMO_DRAFT_SCHEMA_VERSION = "sec_agent_multi_agent_memo_draft_v0.1"
 MEMO_VERIFICATION_SCHEMA_VERSION = "sec_agent_multi_agent_memo_verification_v0.1"
 RELATIONSHIP_EDGE_SCHEMA_VERSION = "sec_agent_relationship_edge_v0.3"
 MEMO_THESIS_PACK_SCHEMA_VERSION = "sec_agent_memo_thesis_pack_v0.1"
+THESIS_DRIVER_PACK_SCHEMA_VERSION = "sec_agent_thesis_driver_pack_v0.1"
 ECONOMIC_LINK_MAP_SCHEMA_VERSION = "sec_agent_economic_link_map_v0.1"
 
 SPECIALIST_AGENT_IDS = {
@@ -638,6 +639,14 @@ def aggregate_specialist_judgment_plan(
         unsupported_claims=unsupported_claims,
         source_boundary_notes=source_boundary_notes,
     )
+    thesis_driver_pack = _thesis_driver_pack_from_claims(
+        supported_claims=supported_claims,
+        memo_thesis_pack=memo_thesis_pack,
+        memo_thesis_plan=memo_thesis_plan,
+        conflicts=conflicts,
+        unsupported_claims=unsupported_claims,
+        source_boundary_notes=source_boundary_notes,
+    )
     memo_constraints = _memo_constraints(
         validation_errors=errors,
         supported_claims=supported_claims,
@@ -664,6 +673,7 @@ def aggregate_specialist_judgment_plan(
         "memo_outline": memo_outline,
         "memo_thesis_plan": memo_thesis_plan,
         "memo_thesis_pack": memo_thesis_pack,
+        "thesis_driver_pack": thesis_driver_pack,
         "claim_card_stats": _claim_card_stats(supported_claims, memo_outline),
         "thesis_synthesis": thesis_synthesis,
         "unsupported_claim_policy": {
@@ -729,6 +739,14 @@ def aggregate_focused_answer_judgment_plan(
         unsupported_claims=unsupported_claims,
         source_boundary_notes=source_boundary_notes,
     )
+    thesis_driver_pack = _thesis_driver_pack_from_claims(
+        supported_claims=supported_claims,
+        memo_thesis_pack=memo_thesis_pack,
+        memo_thesis_plan=memo_thesis_plan,
+        conflicts=conflicts,
+        unsupported_claims=unsupported_claims,
+        source_boundary_notes=source_boundary_notes,
+    )
     memo_constraints = _memo_constraints(
         validation_errors=errors,
         supported_claims=supported_claims,
@@ -755,6 +773,7 @@ def aggregate_focused_answer_judgment_plan(
         "memo_outline": memo_outline,
         "memo_thesis_plan": memo_thesis_plan,
         "memo_thesis_pack": memo_thesis_pack,
+        "thesis_driver_pack": thesis_driver_pack,
         "claim_card_stats": _claim_card_stats(supported_claims, memo_outline),
         "thesis_synthesis": {
             "status": "focused_bridge",
@@ -834,6 +853,14 @@ def refresh_judgment_plan_after_governance_filter(judgment_plan: Mapping[str, An
         unsupported_claims=unsupported_claims,
         source_boundary_notes=source_boundary_notes,
     )
+    thesis_driver_pack = _thesis_driver_pack_from_claims(
+        supported_claims=supported_claims,
+        memo_thesis_pack=memo_thesis_pack,
+        memo_thesis_plan=memo_thesis_plan,
+        conflicts=conflicts,
+        unsupported_claims=unsupported_claims,
+        source_boundary_notes=source_boundary_notes,
+    )
     thesis_synthesis = dict(judgment.get("thesis_synthesis") or {}) if isinstance(judgment.get("thesis_synthesis"), Mapping) else {}
     if thesis_synthesis:
         thesis_synthesis["supported_claim_count"] = len(supported_claims)
@@ -843,6 +870,7 @@ def refresh_judgment_plan_after_governance_filter(judgment_plan: Mapping[str, An
         "memo_outline": memo_outline,
         "memo_thesis_plan": memo_thesis_plan,
         "memo_thesis_pack": memo_thesis_pack,
+        "thesis_driver_pack": thesis_driver_pack,
         "claim_card_stats": _claim_card_stats(supported_claims, memo_outline),
         "thesis_synthesis": thesis_synthesis,
         "governance_filter_refresh_policy": "refresh_memo_pack_after_pre_memo_fact_selection_v0_1",
@@ -1781,6 +1809,220 @@ def _memo_thesis_pack_from_claims(
     }
 
 
+def _thesis_driver_pack_from_claims(
+    *,
+    supported_claims: list[dict[str, Any]],
+    memo_thesis_pack: Mapping[str, Any],
+    memo_thesis_plan: Mapping[str, Any],
+    conflicts: list[dict[str, Any]],
+    unsupported_claims: list[dict[str, Any]],
+    source_boundary_notes: list[dict[str, Any]],
+) -> dict[str, Any]:
+    thesis_claim = _primary_thesis_claim(supported_claims) or {}
+    driver_cards: list[dict[str, Any]] = []
+    counter_driver_cards: list[dict[str, Any]] = []
+    gap_cards: list[dict[str, Any]] = []
+
+    for index, claim in enumerate(supported_claims, start=1):
+        slot = _normalize_memo_slot(claim.get("memo_slot"))
+        if slot == "thesis":
+            continue
+        card = _thesis_driver_card(claim, index=index)
+        if slot == "risk_counterevidence":
+            counter_driver_cards.append({**card, "counter_driver_id": f"counter_{card['driver_id']}"})
+        else:
+            driver_cards.append(card)
+        for missing in _unique_strings(claim.get("missing_confirmations"))[:2]:
+            gap_cards.append(
+                {
+                    "gap_id": f"gap_missing_{str(claim.get('claim_id') or index)}_{len(gap_cards) + 1}",
+                    "gap_type": "missing_confirmation",
+                    "source_claim_id": str(claim.get("claim_id") or ""),
+                    "statement": missing,
+                    "evidence_refs": _unique_strings(claim.get("evidence_refs"))[:4],
+                    "claim_boundary": "gap_only_not_supporting_fact",
+                }
+            )
+
+    for index, conflict in enumerate(conflicts[:4], start=1):
+        counter_driver_cards.append(
+            {
+                "counter_driver_id": f"counter_conflict_{index}",
+                "driver_id": "",
+                "source_claim_id": "",
+                "memo_slot": "risk_counterevidence",
+                "driver_type": "conflict_or_counterevidence",
+                "statement": str(conflict.get("claim") or conflict.get("reason") or ""),
+                "direction": "negative",
+                "materiality": "medium",
+                "confidence": "medium",
+                "metric_scope": _unique_strings(conflict.get("metric_scope"))[:6],
+                "ticker_scope": _unique_upper(conflict.get("ticker_scope"))[:6],
+                "evidence_refs": _unique_strings(conflict.get("evidence_refs"))[:6],
+                "source_families": _unique_strings(conflict.get("source_families"))[:5],
+                "claim_boundary": "counterevidence_or_conflict_only",
+            }
+        )
+
+    for index, unsupported in enumerate(unsupported_claims[:6], start=1):
+        gap_cards.append(
+            {
+                "gap_id": f"gap_unsupported_{index}",
+                "gap_type": "unsupported_claim_excluded",
+                "source_claim_id": str(unsupported.get("claim_id") or ""),
+                "agent_id": str(unsupported.get("agent_id") or ""),
+                "statement": str(unsupported.get("reason") or unsupported.get("claim") or ""),
+                "evidence_refs": _unique_strings(unsupported.get("evidence_refs"))[:4],
+                "claim_boundary": "excluded_from_memo_support",
+            }
+        )
+    for index, note in enumerate(source_boundary_notes[:6], start=1):
+        gap_cards.append(
+            {
+                "gap_id": f"gap_boundary_{index}",
+                "gap_type": "source_boundary",
+                "source_claim_id": "",
+                "agent_id": str(note.get("agent_id") or ""),
+                "source_family": str(note.get("source_family") or ""),
+                "statement": str(note.get("reason") or note.get("note") or note.get("source_family") or ""),
+                "evidence_refs": _unique_strings(note.get("evidence_refs"))[:4],
+                "claim_boundary": "source_boundary_not_supporting_fact",
+            }
+        )
+
+    evidence_refs = _unique_strings(
+        [
+            ref
+            for claim in supported_claims
+            for ref in _unique_strings(claim.get("evidence_refs") or claim.get("refs"))
+        ]
+    )
+    status = str(memo_thesis_pack.get("status") or memo_thesis_plan.get("status") or "")
+    if not status:
+        status = "ready" if thesis_claim and driver_cards else "partial" if supported_claims else "blocked"
+    driver_ids = [str(card.get("driver_id") or "") for card in driver_cards if str(card.get("driver_id") or "")]
+    counter_ids = [
+        str(card.get("counter_driver_id") or "")
+        for card in counter_driver_cards
+        if str(card.get("counter_driver_id") or "")
+    ]
+    gap_ids = [str(card.get("gap_id") or "") for card in gap_cards if str(card.get("gap_id") or "")]
+    core_thesis = memo_thesis_pack.get("core_thesis") if isinstance(memo_thesis_pack.get("core_thesis"), Mapping) else {}
+    thesis_text = _clean_synthesized_thesis_prefix(str(core_thesis.get("claim") or thesis_claim.get("claim") or ""))
+    if not thesis_text and supported_claims:
+        thesis_text = _direct_answer_from_supported_claims(supported_claims)
+    thesis_cards = [
+        {
+            "thesis_id": "thesis_1",
+            "source_claim_id": str(thesis_claim.get("claim_id") or memo_thesis_plan.get("primary_thesis_claim_id") or ""),
+            "core_thesis": thesis_text,
+            "stance": _normalize_direction(thesis_claim.get("direction") or memo_thesis_plan.get("thesis_direction")),
+            "confidence": _synthesized_confidence(supported_claims),
+            "supporting_driver_ids": driver_ids[:8],
+            "counter_driver_ids": counter_ids[:6],
+            "gap_ids": gap_ids[:8],
+            "evidence_refs": _unique_strings(thesis_claim.get("evidence_refs") or memo_thesis_plan.get("thesis_evidence_refs") or evidence_refs)[:8],
+            "source_claim_ids": _unique_strings([str(claim.get("claim_id") or "") for claim in supported_claims])[:12],
+            "what_would_change_the_view": _thesis_pack_view_change(counter_driver_cards, gap_cards),
+        }
+    ]
+    return {
+        "schema_version": THESIS_DRIVER_PACK_SCHEMA_VERSION,
+        "status": status,
+        "present": bool(supported_claims),
+        "thesis_cards": thesis_cards if thesis_text else [],
+        "driver_cards": driver_cards[:8],
+        "counter_driver_cards": counter_driver_cards[:6],
+        "gap_cards": gap_cards[:10],
+        "source_boundary_cards": _thesis_source_boundary_cards(supported_claims, source_boundary_notes),
+        "evidence_ref_count": len(evidence_refs),
+        "source_claim_refs": evidence_refs[:12],
+        "pack_policy": "deterministic_driver_pack_from_verified_claim_cards_no_new_facts_v0_1",
+    }
+
+
+def _thesis_driver_card(claim: Mapping[str, Any], *, index: int) -> dict[str, Any]:
+    slot = _normalize_memo_slot(claim.get("memo_slot"))
+    claim_id = str(claim.get("claim_id") or f"claim_{index}")
+    return {
+        "driver_id": f"driver_{claim_id}",
+        "source_claim_id": claim_id,
+        "agent_id": str(claim.get("agent_id") or ""),
+        "memo_slot": slot,
+        "driver_type": _driver_type_for_memo_slot(slot),
+        "statement": str(claim.get("claim") or ""),
+        "claim_type": str(claim.get("claim_type") or ""),
+        "direction": _normalize_direction(claim.get("direction")),
+        "materiality": _normalize_materiality(claim.get("materiality")),
+        "confidence": _normalize_confidence(claim.get("confidence")),
+        "metric_scope": _unique_strings(claim.get("metric_scope"))[:6],
+        "ticker_scope": _unique_upper(claim.get("ticker_scope"))[:6],
+        "evidence_refs": _unique_strings(claim.get("evidence_refs") or claim.get("refs"))[:6],
+        "source_families": _unique_strings(claim.get("source_families") or claim.get("source_family"))[:5],
+        "claim_boundary": SOURCE_FAMILY_CLAIM_SCOPE.get(
+            (_unique_strings(claim.get("source_families") or claim.get("source_family")) or [""])[0],
+            "verified_claim_card_scope",
+        ),
+    }
+
+
+def _driver_type_for_memo_slot(slot: str) -> str:
+    return {
+        "fundamentals": "fundamental_driver",
+        "product_technology": "product_or_technology_driver",
+        "industry_relationship": "industry_or_relationship_context_driver",
+        "market_valuation": "market_or_valuation_context_driver",
+        "risk_counterevidence": "risk_or_counter_driver",
+    }.get(slot, "supporting_driver")
+
+
+def _thesis_pack_view_change(counter_driver_cards: list[dict[str, Any]], gap_cards: list[dict[str, Any]]) -> list[str]:
+    items: list[str] = []
+    for card in counter_driver_cards[:2]:
+        text = str(card.get("statement") or "").strip()
+        if text:
+            items.append(f"Counterevidence strengthens or invalidates the thesis: {text}")
+    for card in gap_cards[:2]:
+        text = str(card.get("statement") or "").strip()
+        if text:
+            items.append(f"Missing confirmation is resolved against the thesis: {text}")
+    return items[:4]
+
+
+def _thesis_source_boundary_cards(
+    supported_claims: list[dict[str, Any]],
+    source_boundary_notes: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    by_family: dict[str, dict[str, Any]] = {}
+    for claim in supported_claims:
+        for family in _unique_strings(claim.get("source_families") or claim.get("source_family")):
+            row = by_family.setdefault(
+                family,
+                {
+                    "source_family": family,
+                    "claim_count": 0,
+                    "claim_scope": SOURCE_FAMILY_CLAIM_SCOPE.get(family, "verified_claim_card_scope"),
+                    "claim_ids": [],
+                },
+            )
+            row["claim_count"] += 1
+            claim_id = str(claim.get("claim_id") or "")
+            if claim_id and len(row["claim_ids"]) < 8:
+                row["claim_ids"].append(claim_id)
+    cards = list(by_family.values())[:8]
+    for note in source_boundary_notes[:4]:
+        cards.append(
+            {
+                "source_family": str(note.get("source_family") or ""),
+                "claim_count": 0,
+                "claim_scope": "boundary_note",
+                "note": str(note.get("reason") or note.get("note") or ""),
+                "agent_id": str(note.get("agent_id") or ""),
+            }
+        )
+    return cards[:10]
+
+
 def _memo_pack_claim(claim: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "claim_id": str(claim.get("claim_id") or ""),
@@ -1974,6 +2216,7 @@ def build_multi_agent_memo_draft(
         "memo_outline": [dict(item) for item in judgment.get("memo_outline") or [] if isinstance(item, Mapping)],
         "memo_thesis_plan": dict(judgment.get("memo_thesis_plan") or {}) if isinstance(judgment.get("memo_thesis_plan"), Mapping) else {},
         "memo_thesis_pack": dict(judgment.get("memo_thesis_pack") or {}) if isinstance(judgment.get("memo_thesis_pack"), Mapping) else {},
+        "thesis_driver_pack": dict(judgment.get("thesis_driver_pack") or {}) if isinstance(judgment.get("thesis_driver_pack"), Mapping) else {},
         "claim_card_stats": dict(judgment.get("claim_card_stats") or {}),
         "pre_memo_fact_selection": dict(judgment.get("pre_memo_fact_selection") or {})
         if isinstance(judgment.get("pre_memo_fact_selection"), Mapping)
@@ -2206,8 +2449,26 @@ def _memo_quality_gate_findings(
             errors.append({"type": "memo_profile_missing_what_would_change_view", "profile": profile})
         if not _memo_loose_items(memo.get("monitoring_items")):
             errors.append({"type": "memo_profile_missing_monitoring_items", "profile": profile})
-    minimum_claim_count = 3 if len(supported_claims) >= 3 else 1
-    actual_claim_count = len(_memo_claims(memo))
+    thesis_ready = (
+        isinstance(judgment.get("memo_thesis_pack"), Mapping)
+        and str((judgment.get("memo_thesis_pack") or {}).get("status") or "") == "ready"
+    ) or (
+        isinstance(judgment.get("memo_thesis_plan"), Mapping)
+        and str((judgment.get("memo_thesis_plan") or {}).get("status") or "") == "ready"
+    )
+    profile_min = _bounded_int(
+        memo_profile.get("memo_claims_min_when_thesis_ready"),
+        default=3,
+        minimum=1,
+        maximum=8,
+    )
+    profile_name = str(memo_profile.get("profile") or "compact")
+    if profile_name == "compact":
+        minimum_claim_count = 3 if len(supported_claims) >= 3 else 1
+    else:
+        minimum_claim_count = min(profile_min, len(supported_claims)) if thesis_ready else 3 if len(supported_claims) >= 3 else 1
+    explicit_memo_claims = [dict(item) for item in memo.get("memo_claims") or [] if isinstance(item, Mapping)]
+    actual_claim_count = len(explicit_memo_claims) if explicit_memo_claims else len(_memo_claims(memo))
     if answer_status == "draft" and minimum_claim_count > 1 and actual_claim_count < minimum_claim_count:
         errors.append(
             {

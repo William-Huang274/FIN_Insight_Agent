@@ -61,6 +61,8 @@ def test_relationship_graph_business_observation_is_normalized_to_hypothesis() -
             }
         ]
     )
+    judgment["memo_thesis_plan"]["status"] = "ready"
+    judgment["memo_thesis_pack"]["status"] = "ready"
     memo = build_multi_agent_memo_draft(judgment)
     verification = verify_multi_agent_memo_draft(memo, judgment)
 
@@ -98,6 +100,106 @@ def test_product_technology_claim_card_uses_product_memo_slot() -> None:
     assert judgment["supported_claims"][0]["memo_slot"] == "product_technology"
     assert outline["product_technology"]["status"] == "supported"
     assert draft["memo_claims"][0]["memo_slot"] == "product_technology"
+
+
+def test_thesis_driver_pack_structures_verified_claims_for_memo_surface() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": "Revenue growth and margin expansion support the core thesis.",
+                        "claim_type": "company_reported_financial_fact",
+                        "evidence_refs": ["fund_ref_1"],
+                        "source_families": ["primary_sec_filing"],
+                        "memo_slot": "fundamentals",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["revenue", "gross_margin"],
+                        "materiality": "high",
+                        "confidence": "high",
+                    }
+                ],
+            },
+            {
+                "agent_id": "product_technology_analyst",
+                "observations": [
+                    {
+                        "claim": "Company product evidence supports demand for the accelerator platform.",
+                        "claim_type": "company_disclosed_product_kpi",
+                        "evidence_refs": ["product_ref_1"],
+                        "source_families": ["company_product_evidence_graph"],
+                        "memo_slot": "product_technology",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["accelerator_product"],
+                        "materiality": "high",
+                        "confidence": "medium",
+                        "missing_confirmations": ["Commercial tracker sell-through remains unavailable."],
+                    }
+                ],
+            },
+            {
+                "agent_id": "risk_counterevidence_analyst",
+                "observations": [
+                    {
+                        "claim": "Supply concentration remains a constraint on confidence.",
+                        "claim_type": "risk_factor",
+                        "evidence_refs": ["risk_ref_1"],
+                        "source_families": ["primary_sec_filing"],
+                        "memo_slot": "risk_counterevidence",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["supply_risk"],
+                        "materiality": "medium",
+                        "confidence": "medium",
+                    }
+                ],
+            },
+        ],
+        source_gaps=[{"source_family": "commercial_market_tracker", "reason": "Sell-through unavailable from public sources."}],
+    )
+    draft = build_multi_agent_memo_draft(judgment)
+    pack = judgment["thesis_driver_pack"]
+
+    assert pack["schema_version"] == "sec_agent_thesis_driver_pack_v0.1"
+    assert pack["status"] == "ready"
+    assert pack["thesis_cards"]
+    assert any(card["memo_slot"] == "fundamentals" for card in pack["driver_cards"])
+    assert any(card["memo_slot"] == "product_technology" for card in pack["driver_cards"])
+    assert pack["counter_driver_cards"][0]["memo_slot"] == "risk_counterevidence"
+    assert any(card["gap_type"] == "missing_confirmation" for card in pack["gap_cards"])
+    assert draft["thesis_driver_pack"]["source_claim_refs"]
+
+
+def test_verifier_enforces_profile_minimum_claim_count_when_thesis_ready() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": f"Supported financial claim {index}.",
+                        "claim_type": "company_reported_financial_fact",
+                        "evidence_refs": [f"fund_ref_{index}"],
+                        "source_families": ["primary_sec_filing"],
+                        "memo_slot": "fundamentals",
+                        "materiality": "high",
+                        "confidence": "high",
+                    }
+                    for index in range(5)
+                ],
+            }
+        ]
+    )
+    judgment["memo_thesis_plan"]["status"] = "ready"
+    judgment["memo_thesis_pack"]["status"] = "ready"
+    memo = build_multi_agent_memo_draft(judgment)
+    memo["memo_profile"] = {"profile": "expanded", "memo_claims_min_when_thesis_ready": 5}
+    memo["memo_claims"] = memo["memo_claims"][:3]
+
+    verification = verify_multi_agent_memo_draft(memo, judgment)
+
+    assert verification["status"] == "fail"
+    assert any(error["type"] == "memo_too_few_claims_for_ready_thesis_pack" for error in verification["errors"])
 
 
 def test_governance_filter_refresh_rebuilds_memo_pack_without_blocked_claims() -> None:
@@ -152,9 +254,12 @@ def test_governance_filter_refresh_rebuilds_memo_pack_without_blocked_claims() -
 
     refreshed = refresh_judgment_plan_after_governance_filter(filtered)
     packed_text = str(refreshed["memo_thesis_pack"])
+    driver_packed_text = str(refreshed["thesis_driver_pack"])
 
     assert "19,799" not in packed_text
+    assert "19,799" not in driver_packed_text
     assert refreshed["memo_thesis_pack"]["core_thesis"]["claim_id"] == "claim_context"
+    assert refreshed["thesis_driver_pack"]["thesis_cards"][0]["source_claim_id"] == "claim_context"
     assert refreshed["claim_card_stats"]["supported_claim_count"] == 1
 
 

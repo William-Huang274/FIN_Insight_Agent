@@ -154,10 +154,18 @@ def test_graph_renderer_surfaces_memo_claims_and_evidence_refs(tmp_path) -> None
     )
 
     rendered = result["rendered_answer"]
+    assert "Core thesis:" in rendered
     assert "Key memo claims:" in rendered
     assert "refs=capex_ref" in rendered
     assert "Caveats:" in rendered
     assert "Source boundary: verified ClaimCards only" in rendered
+    rendered_ref = result["artifact_refs"]["rendered_answer"].replace("\\", "/")
+    assert rendered_ref.endswith("qwen/rendered_answer.md")
+    assert (tmp_path / "qwen" / "rendered_answer.md").exists()
+    assert (tmp_path / "memo_answer.json").exists()
+    assert (tmp_path / "verified_judgment_plan.json").exists()
+    assert (tmp_path / "claim_cards.json").exists()
+    assert (tmp_path / "thesis_driver_pack.json").exists()
 
 
 def test_memo_writer_llm_accepts_valid_memo_json() -> None:
@@ -179,6 +187,8 @@ def test_memo_writer_llm_accepts_valid_memo_json() -> None:
     assert "memo_outline" in fake.calls[0]["messages"][1]["content"]
     assert "memo_thesis_plan" in fake.calls[0]["messages"][1]["content"]
     assert "memo_thesis_pack" in fake.calls[0]["messages"][1]["content"]
+    assert "thesis_driver_pack" in fake.calls[0]["messages"][1]["content"]
+    assert result["memo_answer"]["thesis_driver_pack"]["schema_version"] == "sec_agent_thesis_driver_pack_v0.1"
     assert "memo_writer_data_view" not in fake.calls[0]["messages"][1]["content"]
     assert "shared_memo_context" in fake.calls[0]["messages"][1]["content"]
     assert "memo_writer_v0_6_profiled_thesis_led_claim_cards" in fake.calls[0]["messages"][1]["content"]
@@ -897,6 +907,30 @@ def test_memo_writer_prompt_uses_thesis_pack_as_projection_not_extra_payload() -
             "supporting_drivers": [{"memo_slot": "fundamentals", "driver": claims[1], "supporting_claim_count": 6}],
             "source_claim_refs": ["ref_0", "ref_1"],
         },
+        "thesis_driver_pack": {
+            "schema_version": "sec_agent_thesis_driver_pack_v0.1",
+            "status": "ready",
+            "present": True,
+            "thesis_cards": [
+                {
+                    "thesis_id": "thesis_1",
+                    "core_thesis": "Supported claim 0.",
+                    "supporting_driver_ids": ["driver_claim_1"],
+                    "evidence_refs": ["ref_0"],
+                }
+            ],
+            "driver_cards": [
+                {
+                    "driver_id": "driver_claim_1",
+                    "source_claim_id": "claim_1",
+                    "memo_slot": "fundamentals",
+                    "statement": "Supported claim 1.",
+                    "evidence_refs": ["ref_1"],
+                    "source_families": ["primary_sec_filing"],
+                }
+            ],
+            "source_claim_refs": ["ref_0", "ref_1"],
+        },
         "memo_writer_allowed": True,
     }
     fake = _FakeChat(
@@ -946,6 +980,9 @@ def test_memo_writer_prompt_uses_thesis_pack_as_projection_not_extra_payload() -
     compact = payload["verified_judgment_plan"]
     assert result["memo_route_result"]["status"] == "pass"
     assert compact["memo_thesis_pack"]["schema_version"] == "sec_agent_memo_thesis_pack_v0.1"
+    assert compact["thesis_driver_pack"]["schema_version"] == "sec_agent_thesis_driver_pack_v0.1"
+    assert payload["memo_output_contract"]["do_not_emit_thesis_driver_pack"] is True
+    assert result["memo_answer"]["thesis_driver_pack"]["driver_cards"][0]["source_claim_id"] == "claim_1"
     assert len(compact["supported_claims"]) == 0
 
 

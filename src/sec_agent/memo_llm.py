@@ -419,6 +419,7 @@ def _normalize_memo_llm_output(
         "context_rows",
         "analysis_trace",
         "reasoning",
+        "thesis_driver_pack",
     ):
         memo.pop(forbidden_key, None)
     base = build_multi_agent_memo_draft(judgment if isinstance(judgment, Mapping) else {})
@@ -447,6 +448,7 @@ def _normalize_memo_llm_output(
         memo.get("memo_thesis_plan") if isinstance(memo.get("memo_thesis_plan"), Mapping) else base.get("memo_thesis_plan") or {}
     )
     memo.setdefault("memo_thesis_pack", base.get("memo_thesis_pack") or {})
+    memo.setdefault("thesis_driver_pack", base.get("thesis_driver_pack") or {})
     memo.setdefault("claim_card_stats", base.get("claim_card_stats") or {})
     memo.setdefault("bounded_answer_allowed", False)
     if str(memo.get("answer_status") or "draft") == "draft":
@@ -1235,8 +1237,8 @@ def _memo_messages(
         f"Set response_language.language exactly to {response_language}; user-facing prose must be {response_language_name}. "
         "For zh-CN, translate/synthesize direct_answer, memo_claims.claim, caveats, source_boundary_notes, investment_implications, what_would_change_view, monitoring_items, and evidence_gaps_but_actionable into Simplified Chinese; keep tickers, metric IDs, form names, numbers, units, claim_id, and evidence_refs unchanged. "
         "For zh-CN, any memo_claim.claim that is mostly English prose is invalid; do not quote English ClaimCard text, do not add 'original text' wrappers, and do not say the English text is preserved for traceability. "
-        "Use memo_thesis_pack as the primary writing brief, memo_thesis_plan as the order, and memo_outline only as fallback. "
-        "Write a thesis-led memo paragraph, not a row recap or schema recap; do not copy internal phrases such as 'Synthesized thesis', 'ClaimCard', pipe-delimited joined claims, or repeated claim text into direct_answer. "
+        "Use thesis_driver_pack first for the conclusion-driver-counterargument-gap structure, memo_thesis_pack as the supporting writing brief, memo_thesis_plan as the order, and memo_outline only as fallback. "
+        "Write a thesis-led memo paragraph that connects business drivers to the investment implication, not a row recap or schema recap; do not copy internal phrases such as 'Synthesized thesis', 'ClaimCard', pipe-delimited joined claims, driver_id, gap_id, or repeated claim text into direct_answer. "
         "Preserve numeric values exactly as written; do not recalculate, invent, round, or change units. "
         "Do not request tools, consume raw rows, or add facts beyond verified claim cards.\n\n"
         f"Profile caps: memo_profile={memo_profile.profile}; direct_answer should be {memo_profile.direct_answer_min_chars}-{memo_profile.direct_answer_max_chars} characters when supported and direct_answer <= {memo_profile.direct_answer_max_chars} characters; "
@@ -1244,7 +1246,7 @@ def _memo_messages(
         f"caveats <= {memo_profile.caveats_max}; unsupported_claims_excluded <= {memo_profile.unsupported_claims_excluded_max}; source_boundary_notes <= {memo_profile.source_boundary_notes_max}. "
         "For standard/expanded/deep_research, include non-empty investment_implications, what_would_change_view, and monitoring_items. "
         "Set memo_generation_policy exactly to thesis_led_claim_cards_v0_1. "
-        "Emit compact memo_thesis_plan only; do_not_emit_supported_claims=true; do not emit memo_thesis_pack, memo_outline, analysis traces, source tables, or copied judgment_plan. "
+        "Emit compact memo_thesis_plan only; do_not_emit_supported_claims=true; do not emit thesis_driver_pack, memo_thesis_pack, memo_outline, analysis traces, source tables, or copied judgment_plan. "
         "Emit memo_claims synthesized from supported claims with claim_id and evidence_refs copied exactly. Return JSON only.\n\n"
         f"Input JSON:\n{_json_for_prompt(user_payload)}"
     )
@@ -1310,6 +1312,7 @@ def _memo_output_contract(profile: MemoProfileSpec) -> dict[str, Any]:
             "thesis_direction",
         ],
         "do_not_emit_supported_claims": True,
+        "do_not_emit_thesis_driver_pack": True,
         "do_not_emit_memo_thesis_pack": True,
         "do_not_emit_memo_outline": True,
         "must_copy_claim_id_and_evidence_refs_from_input": True,
@@ -1342,6 +1345,7 @@ def _compact_judgment_for_memo(value: Any, *, memo_profile: MemoProfileSpec | No
     profile = memo_profile or MEMO_PROFILE_SPECS["compact"]
     supported = [_compact_claim_card(item) for item in value.get("supported_claims") or [] if isinstance(item, Mapping)]
     thesis_pack = _compact_memo_thesis_pack(value.get("memo_thesis_pack") or {})
+    thesis_driver_pack = _compact_thesis_driver_pack(value.get("thesis_driver_pack") or {})
     supported_claim_cap = profile.supported_claim_cap_with_thesis_pack if thesis_pack else MEMO_SUPPORTED_CLAIM_CAP
     memo_outline_cap = 4 if thesis_pack and profile.profile == "compact" else 8
     unsupported = [
@@ -1372,6 +1376,7 @@ def _compact_judgment_for_memo(value: Any, *, memo_profile: MemoProfileSpec | No
         "memo_outline": [dict(item) for item in value.get("memo_outline") or [] if isinstance(item, Mapping)][:memo_outline_cap],
         "memo_thesis_plan": _compact_memo_thesis_plan(value.get("memo_thesis_plan") or {}),
         "memo_thesis_pack": thesis_pack,
+        "thesis_driver_pack": thesis_driver_pack,
         "claim_card_stats": dict(value.get("claim_card_stats") or {}),
         "memo_constraints": _compact_memo_constraints(value.get("memo_constraints") or {}),
         "memo_writer_allowed": bool(value.get("memo_writer_allowed", True)),
@@ -1383,6 +1388,7 @@ def _compact_memo_payload_for_repair(payload: Mapping[str, Any], *, length_repai
     judgment = payload.get("verified_judgment_plan") if isinstance(payload.get("verified_judgment_plan"), Mapping) else {}
     compact_judgment = dict(judgment)
     thesis_pack = _compact_memo_thesis_pack(judgment.get("memo_thesis_pack") or {})
+    thesis_driver_pack = _compact_thesis_driver_pack(judgment.get("thesis_driver_pack") or {})
     output_contract = payload.get("memo_output_contract") if isinstance(payload.get("memo_output_contract"), Mapping) else {}
     shared_context = payload.get("shared_memo_context") if isinstance(payload.get("shared_memo_context"), Mapping) else {}
     response_language = (
@@ -1405,6 +1411,7 @@ def _compact_memo_payload_for_repair(payload: Mapping[str, Any], *, length_repai
     compact_judgment["conflicts"] = [dict(item) for item in judgment.get("conflicts") or [] if isinstance(item, Mapping)][:MEMO_CONFLICT_CAP]
     compact_judgment["source_boundary_notes"] = [dict(item) for item in judgment.get("source_boundary_notes") or [] if isinstance(item, Mapping)][:4]
     compact_judgment["memo_thesis_pack"] = {} if length_repair else thesis_pack
+    compact_judgment["thesis_driver_pack"] = {} if length_repair else thesis_driver_pack
     if length_repair:
         compact_judgment["memo_outline"] = [
             dict(item) for item in judgment.get("memo_outline") or [] if isinstance(item, Mapping)
@@ -1772,6 +1779,90 @@ def _compact_memo_thesis_pack(value: Any) -> dict[str, Any]:
         "source_boundary": _truncate(str(value.get("source_boundary") or ""), 160),
         "source_claim_refs": _string_list(value.get("source_claim_refs"))[:6],
         "pack_policy": str(value.get("pack_policy") or ""),
+    }
+
+
+def _compact_thesis_driver_pack(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or not value:
+        return {}
+    thesis_cards = []
+    for row in value.get("thesis_cards") or []:
+        if not isinstance(row, Mapping):
+            continue
+        thesis_cards.append(
+            {
+                "thesis_id": str(row.get("thesis_id") or ""),
+                "core_thesis": _truncate(str(row.get("core_thesis") or ""), 220),
+                "stance": str(row.get("stance") or ""),
+                "confidence": str(row.get("confidence") or ""),
+                "supporting_driver_ids": _string_list(row.get("supporting_driver_ids"))[:6],
+                "counter_driver_ids": _string_list(row.get("counter_driver_ids"))[:4],
+                "gap_ids": _string_list(row.get("gap_ids"))[:5],
+                "evidence_refs": _string_list(row.get("evidence_refs"))[:5],
+                "what_would_change_the_view": [
+                    _truncate(str(item), 140) for item in _string_list(row.get("what_would_change_the_view"))[:3]
+                ],
+            }
+        )
+        if len(thesis_cards) >= 1:
+            break
+    return {
+        "schema_version": str(value.get("schema_version") or ""),
+        "status": str(value.get("status") or ""),
+        "present": bool(value.get("present")),
+        "thesis_cards": thesis_cards,
+        "driver_cards": [
+            _compact_driver_pack_card(row)
+            for row in value.get("driver_cards") or []
+            if isinstance(row, Mapping)
+        ][:5],
+        "counter_driver_cards": [
+            _compact_driver_pack_card(row)
+            for row in value.get("counter_driver_cards") or []
+            if isinstance(row, Mapping)
+        ][:4],
+        "gap_cards": [
+            {
+                "gap_id": str(row.get("gap_id") or ""),
+                "gap_type": str(row.get("gap_type") or ""),
+                "source_claim_id": str(row.get("source_claim_id") or ""),
+                "statement": _truncate(str(row.get("statement") or ""), 140),
+                "claim_boundary": str(row.get("claim_boundary") or ""),
+            }
+            for row in value.get("gap_cards") or []
+            if isinstance(row, Mapping)
+        ][:5],
+        "source_boundary_cards": [
+            {
+                "source_family": str(row.get("source_family") or ""),
+                "claim_scope": str(row.get("claim_scope") or ""),
+                "claim_count": int(row.get("claim_count") or 0),
+            }
+            for row in value.get("source_boundary_cards") or []
+            if isinstance(row, Mapping)
+        ][:6],
+        "evidence_ref_count": int(value.get("evidence_ref_count") or 0),
+        "source_claim_refs": _string_list(value.get("source_claim_refs"))[:8],
+        "pack_policy": str(value.get("pack_policy") or ""),
+    }
+
+
+def _compact_driver_pack_card(value: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "driver_id": str(value.get("driver_id") or value.get("counter_driver_id") or ""),
+        "counter_driver_id": str(value.get("counter_driver_id") or ""),
+        "source_claim_id": str(value.get("source_claim_id") or ""),
+        "memo_slot": str(value.get("memo_slot") or ""),
+        "driver_type": str(value.get("driver_type") or ""),
+        "statement": _truncate(str(value.get("statement") or ""), 170),
+        "direction": str(value.get("direction") or ""),
+        "materiality": str(value.get("materiality") or ""),
+        "confidence": str(value.get("confidence") or ""),
+        "metric_scope": _string_list(value.get("metric_scope"))[:4],
+        "ticker_scope": _string_list(value.get("ticker_scope"))[:4],
+        "evidence_refs": _string_list(value.get("evidence_refs"))[:4],
+        "source_families": _string_list(value.get("source_families"))[:4],
+        "claim_boundary": str(value.get("claim_boundary") or ""),
     }
 
 

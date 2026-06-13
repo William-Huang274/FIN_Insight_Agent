@@ -2182,7 +2182,15 @@ def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
     labels = _memo_render_labels(memo)
     rendered_claim_max = int(profile.get("rendered_claim_max") or (5 if bounded else 8))
     if direct:
-        parts.append(direct)
+        parts.append(f"{labels['core_thesis']}:\n{direct}")
+
+    thesis_chain_lines = _render_thesis_driver_chain_lines(
+        memo.get("thesis_driver_pack") or {},
+        ref_label=labels["refs"],
+        language=labels["language"],
+    )
+    if thesis_chain_lines:
+        parts.append(f"{labels['evidence_to_thesis']}:\n" + "\n".join(thesis_chain_lines))
 
     claim_lines = _render_memo_claim_lines(
         memo.get("memo_claims") or memo.get("supported_claims") or [],
@@ -2234,6 +2242,9 @@ def _memo_render_labels(memo: Mapping[str, Any]) -> dict[str, str]:
         language = str(response_language)
     if language.lower() in {"zh", "zh-cn", "zh_hans"}:
         return {
+            "language": "zh-CN",
+            "core_thesis": "核心判断",
+            "evidence_to_thesis": "证据到结论链条",
             "claims": "关键论据",
             "investment_implications": "投资含义",
             "what_would_change_view": "什么会改变判断",
@@ -2246,6 +2257,9 @@ def _memo_render_labels(memo: Mapping[str, Any]) -> dict[str, str]:
             "refs": "证据",
         }
     return {
+        "language": "en-US",
+        "core_thesis": "Core thesis",
+        "evidence_to_thesis": "Evidence-to-thesis chain",
         "claims": "Key memo claims",
         "investment_implications": "Investment implications",
         "what_would_change_view": "What would change the view",
@@ -2257,6 +2271,85 @@ def _memo_render_labels(memo: Mapping[str, Any]) -> dict[str, str]:
         "bounded_note": "Bounded evidence note: verifier accepted the thesis-led memo claims under the current source boundary.",
         "refs": "refs",
     }
+
+
+def _render_thesis_driver_chain_lines(
+    value: Any,
+    *,
+    ref_label: str,
+    language: str,
+    max_items: int = 5,
+) -> list[str]:
+    if not isinstance(value, Mapping):
+        return []
+    drivers = [row for row in value.get("driver_cards") or [] if isinstance(row, Mapping)]
+    counters = [row for row in value.get("counter_driver_cards") or [] if isinstance(row, Mapping)]
+    gaps = [row for row in value.get("gap_cards") or [] if isinstance(row, Mapping)]
+    lines: list[str] = []
+
+    def add(prefix: str, row: Mapping[str, Any]) -> None:
+        if len(lines) >= max_items:
+            return
+        slot = str(row.get("memo_slot") or row.get("gap_type") or "").strip()
+        claim_id = str(row.get("source_claim_id") or row.get("claim_id") or "").strip()
+        refs = [str(ref) for ref in row.get("evidence_refs") or [] if str(ref or "").strip()]
+        if language == "zh-CN":
+            slot_label = _zh_thesis_chain_slot(slot)
+            text = f"{prefix}{slot_label}"
+            if claim_id:
+                text += f" [{claim_id}]"
+            if refs:
+                text += f" {ref_label}={', '.join(refs[:3])}"
+        else:
+            slot_label = _en_thesis_chain_slot(slot)
+            text = f"{prefix}{slot_label}"
+            if claim_id:
+                text += f" [{claim_id}]"
+            if refs:
+                text += f" {ref_label}={', '.join(refs[:3])}"
+        lines.append(f"{len(lines) + 1}. {text}")
+
+    if language == "zh-CN":
+        for row in drivers[:3]:
+            add("支撑：", row)
+        for row in counters[:1]:
+            add("反证/风险：", row)
+        for row in gaps[:1]:
+            add("缺口：", row)
+    else:
+        for row in drivers[:3]:
+            add("Support: ", row)
+        for row in counters[:1]:
+            add("Counter/risk: ", row)
+        for row in gaps[:1]:
+            add("Gap: ", row)
+    return lines
+
+
+def _zh_thesis_chain_slot(slot: str) -> str:
+    return {
+        "fundamentals": "基本面驱动",
+        "product_technology": "产品/技术驱动",
+        "industry_relationship": "行业/关系背景",
+        "market_valuation": "市场/估值背景",
+        "risk_counterevidence": "风险或反证",
+        "missing_confirmation": "待补确认",
+        "unsupported_claim_excluded": "已排除未证实说法",
+        "source_boundary": "证据边界",
+    }.get(str(slot or "").strip(), "已验证论据")
+
+
+def _en_thesis_chain_slot(slot: str) -> str:
+    return {
+        "fundamentals": "fundamental driver",
+        "product_technology": "product/technology driver",
+        "industry_relationship": "industry/relationship context",
+        "market_valuation": "market/valuation context",
+        "risk_counterevidence": "risk or counterevidence",
+        "missing_confirmation": "missing confirmation",
+        "unsupported_claim_excluded": "excluded unsupported claim",
+        "source_boundary": "source boundary",
+    }.get(str(slot or "").strip(), "verified claim")
 
 
 def _render_memo_claim_lines(value: Any, *, max_items: int = 5, ref_label: str = "refs") -> list[str]:
@@ -3295,6 +3388,11 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
     if output_dir:
         output_dir.mkdir(parents=True, exist_ok=True)
         refs = dict(state.get("artifact_refs") or {})
+        refs["rendered_answer"] = str((output_dir / "qwen" / "rendered_answer.md").resolve())
+        refs["memo_answer"] = str((output_dir / "memo_answer.json").resolve())
+        refs["verified_judgment_plan"] = str((output_dir / "verified_judgment_plan.json").resolve())
+        refs["claim_cards"] = str((output_dir / "claim_cards.json").resolve())
+        refs["thesis_driver_pack"] = str((output_dir / "thesis_driver_pack.json").resolve())
         refs["multi_agent_summary"] = str((output_dir / "multi_agent_summary.json").resolve())
         refs["claim_evidence_ledger"] = str((output_dir / "claim_evidence_ledger.json").resolve())
         refs["typed_gap_ledger"] = str((output_dir / "typed_gap_ledger.json").resolve())
@@ -3328,6 +3426,50 @@ def _write_native_state_artifacts(state: SecAgentGraphRuntimeState) -> None:
         json.dumps(build_native_summary_artifact_payload(state), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    _write_memo_surface_artifacts(output_dir, state)
+
+
+def _write_memo_surface_artifacts(output_dir: Path, state: SecAgentGraphRuntimeState) -> None:
+    rendered_answer = str(state.get("rendered_answer") or "").strip()
+    if rendered_answer:
+        rendered_dir = output_dir / "qwen"
+        rendered_dir.mkdir(parents=True, exist_ok=True)
+        (rendered_dir / "rendered_answer.md").write_text(rendered_answer + "\n", encoding="utf-8")
+    memo = state.get("memo_answer") if isinstance(state.get("memo_answer"), dict) else {}
+    if memo:
+        (output_dir / "memo_answer.json").write_text(json.dumps(memo, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    judgment = (
+        state.get("verified_judgment_plan")
+        if isinstance(state.get("verified_judgment_plan"), dict)
+        else state.get("judgment_plan") if isinstance(state.get("judgment_plan"), dict) else {}
+    )
+    if judgment:
+        (output_dir / "verified_judgment_plan.json").write_text(
+            json.dumps(judgment, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        claim_cards = {
+            "schema_version": "sec_agent_claim_cards_artifact_v0.1",
+            "supported_claims": [dict(item) for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)],
+            "unsupported_claims": [dict(item) for item in judgment.get("unsupported_claims") or [] if isinstance(item, Mapping)],
+            "conflicts": [dict(item) for item in judgment.get("conflicts") or [] if isinstance(item, Mapping)],
+            "claim_card_stats": dict(judgment.get("claim_card_stats") or {})
+            if isinstance(judgment.get("claim_card_stats"), Mapping)
+            else {},
+            "artifact_policy": "memo_surface_claim_cards_from_verified_judgment_plan_v0_1",
+        }
+        (output_dir / "claim_cards.json").write_text(
+            json.dumps(claim_cards, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        thesis_driver_pack = (
+            judgment.get("thesis_driver_pack") if isinstance(judgment.get("thesis_driver_pack"), Mapping) else {}
+        )
+        if thesis_driver_pack:
+            (output_dir / "thesis_driver_pack.json").write_text(
+                json.dumps(thesis_driver_pack, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
 
 
 def _write_multi_agent_summary_artifact(state: SecAgentGraphRuntimeState) -> None:
@@ -4049,6 +4191,7 @@ def _judgment_plan_quality_summary(value: Any) -> dict[str, Any]:
     stats = value.get("claim_card_stats") if isinstance(value.get("claim_card_stats"), Mapping) else {}
     outline = [row for row in value.get("memo_outline") or [] if isinstance(row, Mapping)]
     thesis_pack = value.get("memo_thesis_pack") if isinstance(value.get("memo_thesis_pack"), Mapping) else {}
+    thesis_driver_pack = value.get("thesis_driver_pack") if isinstance(value.get("thesis_driver_pack"), Mapping) else {}
     return {
         "claim_card_stats": {
             "supported_claim_count": int(stats.get("supported_claim_count") or 0),
@@ -4068,6 +4211,15 @@ def _judgment_plan_quality_summary(value: Any) -> dict[str, Any]:
             "counterargument_count": len(thesis_pack.get("counterarguments") or []),
             "watch_item_count": len(thesis_pack.get("watch_items") or []),
             "source_claim_ref_count": len(thesis_pack.get("source_claim_refs") or []),
+        },
+        "thesis_driver_pack": {
+            "present": bool(thesis_driver_pack),
+            "status": str(thesis_driver_pack.get("status") or ""),
+            "thesis_card_count": len(thesis_driver_pack.get("thesis_cards") or []),
+            "driver_count": len(thesis_driver_pack.get("driver_cards") or []),
+            "counter_driver_count": len(thesis_driver_pack.get("counter_driver_cards") or []),
+            "gap_count": len(thesis_driver_pack.get("gap_cards") or []),
+            "source_boundary_card_count": len(thesis_driver_pack.get("source_boundary_cards") or []),
         },
         "unsupported_claim_policy": dict(value.get("unsupported_claim_policy") or {}) if isinstance(value.get("unsupported_claim_policy"), Mapping) else {},
         "memo_outline": [

@@ -271,6 +271,8 @@ def _score_case(
     profile_contract = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
     thesis_plan = memo.get("memo_thesis_plan") if isinstance(memo.get("memo_thesis_plan"), Mapping) else {}
     judgment_thesis_plan = judgment.get("memo_thesis_plan") if isinstance(judgment, Mapping) and isinstance(judgment.get("memo_thesis_plan"), Mapping) else {}
+    thesis_driver_pack = judgment.get("thesis_driver_pack") if isinstance(judgment, Mapping) and isinstance(judgment.get("thesis_driver_pack"), Mapping) else {}
+    memo_thesis_driver_pack = memo.get("thesis_driver_pack") if isinstance(memo.get("thesis_driver_pack"), Mapping) else {}
     supported_claim_count = len(judgment.get("supported_claims") or []) if isinstance(judgment, Mapping) else 0
     minimum_memo_claim_count = _minimum_memo_claim_count(memo_profile, supported_claim_count)
     direct_answer_chars = len(str(memo.get("direct_answer") or ""))
@@ -286,6 +288,9 @@ def _score_case(
         "memo_thesis_pack_ready": str(((judgment or {}).get("memo_thesis_pack") or {}).get("status") or "") == "ready"
         if isinstance(judgment, Mapping) and isinstance((judgment or {}).get("memo_thesis_pack"), Mapping)
         else False,
+        "thesis_driver_pack_present": bool(thesis_driver_pack),
+        "thesis_driver_pack_usable": _thesis_driver_pack_usable(thesis_driver_pack, supported_claim_count),
+        "memo_carries_thesis_driver_pack": bool(memo_thesis_driver_pack),
         "memo_writer_allowed": bool((judgment or {}).get("memo_writer_allowed", True)) if isinstance(judgment, Mapping) else False,
         "memo_route_pass": str(memo_route.get("status") or "") == "pass",
         "memo_not_fallback": str(memo.get("llm_route_source") or "").endswith("+deterministic_fallback") is False,
@@ -497,6 +502,7 @@ def _judgment_metrics(judgment: Any) -> dict[str, Any]:
     if not isinstance(judgment, Mapping):
         return {}
     pack = judgment.get("memo_thesis_pack") if isinstance(judgment.get("memo_thesis_pack"), Mapping) else {}
+    driver_pack = judgment.get("thesis_driver_pack") if isinstance(judgment.get("thesis_driver_pack"), Mapping) else {}
     return {
         "status": judgment.get("status") or "",
         "supported_claim_count": len(judgment.get("supported_claims") or []),
@@ -507,13 +513,28 @@ def _judgment_metrics(judgment: Any) -> dict[str, Any]:
         "memo_thesis_pack_status": pack.get("status") or "",
         "memo_thesis_pack_driver_count": len(pack.get("supporting_drivers") or []),
         "memo_thesis_pack_counterargument_count": len(pack.get("counterarguments") or []),
+        "thesis_driver_pack_status": driver_pack.get("status") or "",
+        "thesis_driver_pack_thesis_count": len(driver_pack.get("thesis_cards") or []),
+        "thesis_driver_pack_driver_count": len(driver_pack.get("driver_cards") or []),
+        "thesis_driver_pack_counter_driver_count": len(driver_pack.get("counter_driver_cards") or []),
+        "thesis_driver_pack_gap_count": len(driver_pack.get("gap_cards") or []),
     }
+
+
+def _thesis_driver_pack_usable(pack: Mapping[str, Any], supported_claim_count: int) -> bool:
+    if supported_claim_count <= 0:
+        return True
+    status = str(pack.get("status") or "")
+    has_thesis = bool(pack.get("thesis_cards"))
+    has_driver_or_counter = bool(pack.get("driver_cards") or pack.get("counter_driver_cards"))
+    return status in {"ready", "partial"} and has_thesis and has_driver_or_counter
 
 
 def _memo_metrics(memo: Mapping[str, Any]) -> dict[str, Any]:
     claims = [row for row in memo.get("memo_claims") or [] if isinstance(row, Mapping)]
     refs = sorted({str(ref) for row in claims for ref in row.get("evidence_refs") or [] if str(ref or "").strip()})
     profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
+    driver_pack = memo.get("thesis_driver_pack") if isinstance(memo.get("thesis_driver_pack"), Mapping) else {}
     return {
         "answer_status": memo.get("answer_status") or "",
         "memo_profile": profile.get("profile") or "",
@@ -528,6 +549,8 @@ def _memo_metrics(memo: Mapping[str, Any]) -> dict[str, Any]:
         "caveat_count": len(memo.get("caveats") or []),
         "unsupported_claims_excluded_count": len(memo.get("unsupported_claims_excluded") or []),
         "source_boundary_note_count": len(memo.get("source_boundary_notes") or []),
+        "thesis_driver_pack_status": driver_pack.get("status") or "",
+        "thesis_driver_pack_driver_count": len(driver_pack.get("driver_cards") or []),
         "raw_rows_consumed": bool(memo.get("raw_rows_consumed")),
         "tool_call_count": len(memo.get("tool_calls_requested") or []),
         "llm_route_source": memo.get("llm_route_source") or "",
@@ -585,6 +608,7 @@ def _compact_memo_for_summary(memo: Mapping[str, Any]) -> dict[str, Any]:
         ][:4],
         "source_boundary_notes": [dict(row) if isinstance(row, Mapping) else row for row in memo.get("source_boundary_notes") or []][:4],
         "memo_thesis_plan": dict(memo.get("memo_thesis_plan") or {}) if isinstance(memo.get("memo_thesis_plan"), Mapping) else {},
+        "thesis_driver_pack": dict(memo.get("thesis_driver_pack") or {}) if isinstance(memo.get("thesis_driver_pack"), Mapping) else {},
         "source_boundary": memo.get("source_boundary") or "",
         "llm_route_source": memo.get("llm_route_source") or "",
     }
@@ -612,6 +636,7 @@ def _compact_judgment_for_summary(judgment: Any) -> dict[str, Any]:
         "memo_writer_allowed": bool(judgment.get("memo_writer_allowed", True)),
         "memo_thesis_plan": dict(judgment.get("memo_thesis_plan") or {}) if isinstance(judgment.get("memo_thesis_plan"), Mapping) else {},
         "memo_thesis_pack": dict(judgment.get("memo_thesis_pack") or {}) if isinstance(judgment.get("memo_thesis_pack"), Mapping) else {},
+        "thesis_driver_pack": dict(judgment.get("thesis_driver_pack") or {}) if isinstance(judgment.get("thesis_driver_pack"), Mapping) else {},
         "claim_card_stats": dict(judgment.get("claim_card_stats") or {}),
         "unsupported_claim_policy": dict(judgment.get("unsupported_claim_policy") or {})
         if isinstance(judgment.get("unsupported_claim_policy"), Mapping)

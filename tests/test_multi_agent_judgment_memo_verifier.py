@@ -388,7 +388,8 @@ def test_renderer_keeps_verified_draft_memo_surface_when_bounded() -> None:
         }
     )
 
-    assert result["rendered_answer"].startswith("Thesis-led memo answer.")
+    assert result["rendered_answer"].startswith("Core thesis:")
+    assert "Thesis-led memo answer." in result["rendered_answer"]
     assert "Bounded evidence note" in result["rendered_answer"]
     assert not result["rendered_answer"].startswith("Bounded answer only")
 
@@ -410,6 +411,7 @@ def test_renderer_uses_chinese_headings_for_chinese_memo() -> None:
     )
 
     rendered = result["rendered_answer"]
+    assert "核心判断:" in rendered
     assert "关键论据:" in rendered
     assert "证据=ref_1" in rendered
     assert "投资含义:" in rendered

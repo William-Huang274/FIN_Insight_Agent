@@ -2374,6 +2374,8 @@ def _render_dimension_analysis_lines(
     for index, row in enumerate(value if isinstance(value, list) else [], start=1):
         if not isinstance(row, Mapping):
             continue
+        if not _should_render_dimension_analysis_row(row):
+            continue
         title = str(row.get("title") or row.get("dimension_title") or _dimension_render_title(row.get("dimension_id"), language)).strip()
         summary = str(row.get("summary") or row.get("section_thesis") or row.get("text") or "").strip()
         if not summary:
@@ -2409,6 +2411,17 @@ def _render_dimension_analysis_lines(
         if len(lines) >= max_items:
             break
     return lines
+
+
+def _should_render_dimension_analysis_row(row: Mapping[str, Any]) -> bool:
+    dimension_id = str(row.get("dimension_id") or row.get("id") or "").strip()
+    if dimension_id == "thesis_synthesis":
+        return False
+    title = str(row.get("title") or row.get("dimension_title") or "").strip().lower()
+    summary = str(row.get("summary") or row.get("section_thesis") or row.get("text") or "").strip().lower()
+    if title == "synthesis" and summary in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}:
+        return False
+    return True
 
 
 def _dimension_render_title(value: Any, language: str) -> str:

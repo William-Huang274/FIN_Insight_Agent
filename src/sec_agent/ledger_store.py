@@ -17,6 +17,18 @@ METRIC_FAMILY_ALIASES = {
     "gross_margin": ["margin"],
     "operating_margin": ["margin"],
     "revenue": ["revenues", "net_revenue", "net_sales", "sales_revenue"],
+    "product_revenue": [
+        "ai_optimized_servers",
+        "traditional_servers_and_networking",
+        "storage",
+        "commercial",
+        "consumer",
+        "products",
+        "services",
+        "net_revenue",
+        "segment_revenue",
+    ],
+    "segment_revenue": ["product_revenue", "ai_optimized_servers", "traditional_servers_and_networking", "storage"],
 }
 LEDGER_FACT_COLUMNS = [
     "metric_id_tail",

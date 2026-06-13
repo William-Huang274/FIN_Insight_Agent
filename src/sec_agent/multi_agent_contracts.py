@@ -610,8 +610,17 @@ def aggregate_specialist_judgment_plan(
                 "claim_card_version": "v0.3",
                 "claim_id": f"{agent_id}_claim_{len(supported_claims) + len(unsupported_claims) + 1}",
             }
-            if observation["unsupported"]:
-                unsupported_claims.append({"agent_id": agent_id, "claim": observation["claim"], "reason": "marked_unsupported"})
+            if observation["unsupported"] or _claim_text_is_source_quality_gap(observation["claim"]):
+                unsupported_claims.append(
+                    {
+                        "agent_id": agent_id,
+                        "claim": observation["claim"],
+                        "reason": "source_quality_gap_not_supported_claim"
+                        if _claim_text_is_source_quality_gap(observation["claim"])
+                        else "marked_unsupported",
+                        "evidence_refs": list(observation.get("evidence_refs") or []),
+                    }
+                )
             else:
                 item.update(_claim_card_annotations(item, observation_index))
                 supported_claims.append(item)
@@ -1672,10 +1681,45 @@ def _claim_text_is_gap_like(claim_text: str) -> bool:
             "no bounded evidence",
             "cannot determine",
             "missing evidence",
+            "garbled",
+            "truncated",
+            "nonsensical",
+            "unreadable",
+            "cannot be reliably interpreted",
+            "cannot reliably interpret",
+            "data quality gap",
+            "source quality gap",
+            "parse failure",
+            "parser failed",
             "缺少",
             "未找到",
             "证据不足",
             "无法判断",
+            "乱码",
+            "截断",
+            "无法可靠解读",
+        )
+    )
+
+
+def _claim_text_is_source_quality_gap(claim_text: str) -> bool:
+    text = str(claim_text or "").lower()
+    return any(
+        term in text
+        for term in (
+            "garbled",
+            "truncated",
+            "nonsensical",
+            "unreadable",
+            "cannot be reliably interpreted",
+            "cannot reliably interpret",
+            "data quality gap",
+            "source quality gap",
+            "parse failure",
+            "parser failed",
+            "乱码",
+            "截断",
+            "无法可靠解读",
         )
     )
 
@@ -3346,7 +3390,7 @@ def _numeric_token_details(text: str) -> list[tuple[str, float, str]]:
     tokens: list[tuple[str, float, str]] = []
     expanded_text = _expand_numeric_ranges(str(text or ""))
     for match in re.finditer(
-        r"(?<![A-Za-z0-9])[-+]?\$?\d+(?:,\d{3})*(?:\.\d+)?\s*(?:percentage\s+points?|个百分点|亿美元|百万美元|万美元|%|x|X|倍|M|B|K|bn|mn|million|billion|ppt)?",
+        r"(?<![A-Za-z0-9])[-+]?\$?\d+(?:,\d{3})*(?:\.\d+)?\s*(?:percentage\s+points?|usd[_\s-]?billions?|usd[_\s-]?millions?|usd[_\s-]?thousands?|个百分点|十亿美元|亿美元|百万美元|万美元|billion|million|bn|mn|ppt|%|x|X|倍|M|B|K)?",
         expanded_text,
     ):
         token = match.group(0).strip().lower().replace("$", "").replace(",", "")
@@ -3359,7 +3403,7 @@ def _numeric_token_details(text: str) -> list[tuple[str, float, str]]:
 
 
 def _expand_numeric_ranges(text: str) -> str:
-    unit_pattern = r"(percentage\s+points?|个百分点|亿美元|百万美元|万美元|%|x|X|倍|M|B|K|bn|mn|million|billion|ppt)"
+    unit_pattern = r"(percentage\s+points?|usd[_\s-]?billions?|usd[_\s-]?millions?|usd[_\s-]?thousands?|个百分点|十亿美元|亿美元|百万美元|万美元|billion|million|bn|mn|ppt|%|x|X|倍|M|B|K)"
 
     def _replace(match: re.Match[str]) -> str:
         left = match.group("left")
@@ -3376,12 +3420,12 @@ def _expand_numeric_ranges(text: str) -> str:
 
 
 def _normalize_numeric_value_and_unit(value: float, unit: str) -> tuple[float, str]:
-    normalized = str(unit or "").strip().lower().replace(" ", "")
-    if normalized in {"b", "bn", "billion"}:
+    normalized = str(unit or "").strip().lower().replace(" ", "").replace("_", "").replace("-", "")
+    if normalized in {"b", "bn", "billion", "usdbillion", "usdbillions", "十亿美元"}:
         return value, "b"
-    if normalized in {"m", "mn", "million"}:
+    if normalized in {"m", "mn", "million", "usdmillion", "usdmillions"}:
         return value / 1000.0, "b"
-    if normalized == "k":
+    if normalized in {"k", "usdthousand", "usdthousands"}:
         return value / 1_000_000.0, "b"
     if normalized == "亿美元":
         return value / 10.0, "b"

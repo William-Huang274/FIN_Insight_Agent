@@ -236,7 +236,13 @@ LEDGER_SUPPLEMENT_FAMILY_TERMS = {
     "nonperforming_loans": ("nonperforming loans", "non-performing loans", "nonaccrual loans"),
     "operating_cash_flow": ("operating cash", "cash provided by operating", "net cash provided by operating"),
     "operating_income": ("operating income", "income from operations", "operating profit"),
-    "product_revenue": ("product revenue", "product net sales"),
+    "product_revenue": (
+        "product revenue",
+        "product net sales",
+        "ai-optimized servers",
+        "traditional servers and networking",
+        "operating segments results",
+    ),
     "provision_for_credit_losses": ("provision for credit losses", "credit loss provision", "provision for loan losses"),
     "research_and_development": ("research and development", "r&d"),
     "revenue": ("revenue", "net sales"),
@@ -4444,6 +4450,7 @@ def _build_runtime_ledger_from_store(
             object_ids=object_ids,
             limit=max(1000, len(object_ids) * 8),
         ):
+            row = _normalize_runtime_store_metric_family(row, str(case.get("case_id") or ""))
             context_row = context_by_object_id.get(str(row.get("object_id") or ""))
             if not _ledger_row_allowed(row, query_contract, context_row):
                 continue
@@ -4454,6 +4461,7 @@ def _build_runtime_ledger_from_store(
 
     scoped_rows = _query_ledger_store_scope_rows(case, query_contract, ledger_store_path, limit=max(5000, args.ledger_max_rows * 80))
     for row in scoped_rows:
+        row = _normalize_runtime_store_metric_family(row, str(case.get("case_id") or ""))
         if not _ledger_row_allowed(row, query_contract, None):
             continue
         key = _ledger_dedupe_key(row)
@@ -4469,6 +4477,54 @@ def _build_runtime_ledger_from_store(
     return rows[: args.ledger_max_rows]
 
 
+def _normalize_runtime_store_metric_family(row: dict[str, Any], case_id: str) -> dict[str, Any]:
+    family = str(row.get("metric_family") or "").strip()
+    ticker = str(row.get("ticker") or "").upper()
+    label_text = " ".join(
+        str(row.get(key) or "")
+        for key in ("metric_name", "row_label", "column_label", "table_title", "record_title")
+    ).lower()
+    product_family_aliases = {
+        "ai_optimized_servers",
+        "traditional_servers_and_networking",
+        "storage",
+        "commercial",
+        "consumer",
+        "products",
+        "services",
+    }
+    product_revenue_terms = (
+        "ai-optimized servers",
+        "traditional servers and networking",
+        "total isg net revenue",
+        "total csg net revenue",
+        "storage",
+        "commercial",
+        "consumer",
+    )
+    if family not in product_family_aliases and not (
+        ticker == "DELL"
+        and family in {"revenue", "total_revenue", "segment_revenue"}
+        and any(term in label_text for term in product_revenue_terms)
+    ):
+        return row
+    normalized = dict(row)
+    normalized["source_metric_family"] = family
+    normalized["metric_family"] = "product_revenue"
+    normalized["metric_name"] = str(normalized.get("metric_name") or normalized.get("row_label") or family.replace("_", " ")).strip()
+    normalized["metric_role"] = "total_value" if str(normalized.get("unit") or "").startswith("usd") else str(normalized.get("metric_role") or "")
+    normalized["metric_id"] = _ledger_metric_id(
+        case_id,
+        normalized.get("ticker"),
+        normalized.get("fiscal_year"),
+        "product_revenue",
+        normalized.get("metric_role") or "total_value",
+        period_role=normalized.get("period_role"),
+        suffix=_slug(str(normalized.get("row_label") or normalized.get("metric_name") or family)),
+    )
+    return normalized
+
+
 def _query_ledger_store_scope_rows(
     case: dict[str, Any],
     query_contract: dict[str, Any],
@@ -4477,11 +4533,10 @@ def _query_ledger_store_scope_rows(
     limit: int,
 ) -> list[dict[str, Any]]:
     family_tickers = _contract_required_family_tickers(query_contract)
-    focus = sorted(set().union(*family_tickers.values())) if family_tickers else []
-    if not focus:
-        focus = [str(item).upper() for item in query_contract.get("focus_tickers") or [] if str(item)]
-    if not focus:
-        focus = [str(item).upper() for item in case.get("companies") or [] if str(item)]
+    focus_set: set[str] = set().union(*family_tickers.values()) if family_tickers else set()
+    focus_set.update(str(item).upper() for item in query_contract.get("focus_tickers") or [] if str(item))
+    focus_set.update(str(item).upper() for item in case.get("companies") or [] if str(item))
+    focus = sorted(focus_set)
     years = [int(year) for year in case.get("years") or [] if _int_or_none(year) is not None]
     filing_types = [
         _normalize_form_type(item)
@@ -4561,6 +4616,7 @@ def _ledger_period_role(record: dict[str, Any], cell: dict[str, Any] | None = No
         record.get("title"),
         record.get("text_before"),
         record.get("text_after"),
+        _table_heading_text(record),
     ):
         role = _period_role_from_text(value)
         if role:
@@ -4574,6 +4630,16 @@ def _ledger_period_role(record: dict[str, Any], cell: dict[str, Any] | None = No
     if form_type == "10-Q" and (period_type == "quarterly" or duration == 3):
         return "qtd"
     return None
+
+
+def _table_heading_text(record: dict[str, Any], *, max_rows: int = 4) -> str:
+    if record.get("object_type") != "table":
+        return ""
+    rows = []
+    for raw_row in (record.get("rows") or [])[:max_rows]:
+        if isinstance(raw_row, list):
+            rows.append(" ".join(str(item or "") for item in raw_row if str(item or "").strip()))
+    return " ".join(row for row in rows if row)
 
 
 def _period_role_from_10q_cash_flow_column(record: dict[str, Any], cell: dict[str, Any] | None = None) -> str | None:
@@ -4875,6 +4941,7 @@ def _ledger_growth_rate_rows_from_metric(
 def _ledger_rows_from_table(case_id: str, record: dict[str, Any], years: set[int]) -> list[dict[str, Any]]:
     rows = []
     ticker = str(record.get("ticker") or "").upper()
+    row_groups = _table_row_groups(record)
     for cell in record.get("cells") or []:
         unit = str(cell.get("unit") or "")
         raw = str(cell.get("raw_value") or "")
@@ -4885,12 +4952,14 @@ def _ledger_rows_from_table(case_id: str, record: dict[str, Any], years: set[int
         )
         if unit not in VALID_UNITS or not raw or _is_bad_numeric_raw(raw, unit) or year is None or (years and year not in years):
             continue
-        metric_name = " ".join(str(part) for part in (cell.get("active_group"), cell.get("row_label")) if part)
+        row_group = str(cell.get("active_group") or row_groups.get(_int_or_none(cell.get("row_index")) or -1) or "").strip()
+        metric_name = " ".join(str(part) for part in (row_group, cell.get("row_label")) if part)
         if not metric_name.strip():
             metric_name = str(record.get("title") or "table_metric")
         if _is_low_signal_metric(metric_name, unit):
             continue
         family = _metric_family(metric_name, str(record.get("title") or ""))
+        family = _table_metric_family_override(record, cell, metric_name=metric_name, family=family, row_group=row_group)
         role = _metric_role(metric_name, unit)
         period_role = _ledger_period_role(record, cell)
         value = _normalized_ledger_value(cell.get("value"), raw, family)
@@ -4925,13 +4994,76 @@ def _ledger_rows_from_table(case_id: str, record: dict[str, Any], years: set[int
                 "row_label": cell.get("row_label"),
                 "column_label": cell.get("column_label"),
                 "table_title": record.get("title"),
-                "active_group": cell.get("active_group"),
+                "active_group": row_group or cell.get("active_group"),
                 "cell_kind": cell.get("cell_kind"),
                 "row_index": cell.get("row_index"),
             }
         )
     rows.extend(_ledger_change_rate_rows_from_table(case_id, record, years))
     return rows
+
+
+def _table_row_groups(record: dict[str, Any]) -> dict[int, str]:
+    groups: dict[int, str] = {}
+    current = ""
+    for index, raw_row in enumerate(record.get("rows") or [], start=1):
+        cells = [str(item or "").strip() for item in (raw_row or []) if str(item or "").strip()]
+        if not cells:
+            continue
+        row_text = " ".join(cells)
+        numeric_cells = [cell for cell in cells if re.search(r"\d", cell) or cell in {"$", "%", "—", "-"}]
+        if len(cells) <= 2 and not numeric_cells and row_text.endswith(":"):
+            current = row_text.rstrip(":").strip()
+            groups[index] = current
+            continue
+        if current:
+            groups[index] = current
+    return groups
+
+
+def _table_metric_family_override(
+    record: dict[str, Any],
+    cell: dict[str, Any],
+    *,
+    metric_name: str,
+    family: str,
+    row_group: str,
+) -> str:
+    text = " ".join(
+        str(part or "")
+        for part in (
+            record.get("title"),
+            row_group,
+            metric_name,
+            cell.get("row_label"),
+            cell.get("column_label"),
+        )
+    ).lower()
+    if "operating income" in text or "income from operations" in text:
+        return "operating_income"
+    if any(term in text for term in ("net revenue", "net sales", "revenue")):
+        if any(
+            term in text
+            for term in (
+                "ai-optimized servers",
+                "traditional servers and networking",
+                "storage",
+                "commercial",
+                "commercial client",
+                "consumer",
+                "products",
+                "services",
+                "infrastructure solutions group",
+                "client solutions group",
+                "total isg",
+                "total csg",
+            )
+        ):
+            return "product_revenue"
+        if "total" in text:
+            return "total_revenue"
+        return "revenue"
+    return family
 
 
 def _ledger_change_rate_rows_from_table(case_id: str, record: dict[str, Any], years: set[int]) -> list[dict[str, Any]]:
@@ -5377,19 +5509,23 @@ def _context_row_to_evidence_object(row: dict[str, Any]) -> EvidenceObject | Non
 
 def _is_high_value_segment_metric(row: dict[str, Any]) -> bool:
     family = str(row.get("metric_family") or "")
-    if family not in {"cloud_revenue", "data_center_revenue", "operating_income"}:
+    if family not in {"cloud_revenue", "data_center_revenue", "operating_income", "product_revenue"}:
         return False
     label = " ".join(str(row.get(key) or "") for key in ("metric_name", "row_label", "active_group", "table_title", "source_text")).lower()
     return any(
         term in label
         for term in (
+            "ai-optimized servers",
             "aws",
             "azure",
             "cloud",
             "data center",
             "compute & networking",
+            "infrastructure solutions group",
             "intelligent cloud",
             "server products and cloud services",
+            "total isg net revenue",
+            "traditional servers and networking",
         )
     )
 
@@ -5759,6 +5895,17 @@ def _expand_metric_family_aliases(families: Iterable[str]) -> set[str]:
         "margin": {"gross_margin", "operating_income"},
         "operating_margin": {"operating_income"},
         "segment_revenue": {"segment_revenue", "revenue", "total_revenue", "product_revenue", "data_center_revenue"},
+        "product_revenue": {
+            "product_revenue",
+            "segment_revenue",
+            "ai_optimized_servers",
+            "traditional_servers_and_networking",
+            "storage",
+            "commercial",
+            "consumer",
+            "products",
+            "services",
+        },
         "orders_backlog": {"orders_backlog", "rpo", "deferred_revenue", "arr_or_recurring_proxy"},
         "rpo_deferred_revenue": {"rpo_deferred_revenue", "rpo", "deferred_revenue", "arr_or_recurring_proxy"},
     }
@@ -9389,7 +9536,19 @@ def _has_revenue_measure_signal(family: str, text: str) -> bool:
     if family == "infrastructure_software":
         return has_revenue and _has_any(text, ("infrastructure software", "software", "security", "platform", "软件", "安全"))
     if family == "product_revenue":
-        return has_revenue and _has_any(text, ("product", "产品"))
+        product_revenue_terms = (
+            "ai-optimized servers",
+            "traditional servers and networking",
+            "storage",
+            "commercial",
+            "consumer",
+            "infrastructure solutions group",
+            "client solutions group",
+            "operating segments results",
+            "total isg net revenue",
+            "total csg net revenue",
+        )
+        return _has_any(text, product_revenue_terms) or (has_revenue and _has_any(text, ("product", "产品")))
     if family == "services_revenue":
         return has_revenue and _has_any(text, ("service", "services", "服务"))
     if family == "subscription_revenue":
@@ -9535,6 +9694,8 @@ def _ledger_row_allowed(
         "total_revenue",
     }
     if family in revenue_like_families and row.get("unit") == "percent":
+        if family == "product_revenue":
+            return False
         is_growth_rate = str(row.get("metric_role") or "") == "percentage_rate" and (
             row.get("cell_kind") == "period_change_rate"
             or _contains_any(
@@ -9618,6 +9779,10 @@ def _ledger_row_allowed(
     if family == "gross_margin" and row.get("unit") != "percent":
         return False
     if family == "gross_margin":
+        if not _has_any(source_signal_lower, ("gross margin", "gross profit")):
+            return False
+        if not _has_any(name_lower, ("gross margin", "gross profit")):
+            return False
         if str(row.get("cell_kind") or "").lower() == "change_value":
             return False
         if _is_change_column_label(row.get("column_label")):
@@ -9662,9 +9827,48 @@ def _ledger_row_allowed(
     ):
         return False
     if family == "capital_expenditure_proxy" and row.get("unit") == "percent":
-        raw = str(row.get("raw_value_text") or "").strip()
-        if re.fullmatch(r"-\s*\d+(?:\.\d+)?\s*%", raw):
+        return False
+    if family in {"rpo", "arr_or_recurring_proxy"}:
+        if not _has_any(row_text_lower, ("remaining performance obligation", "rpo", "backlog", "bookings", "order backlog")):
             return False
+        if _has_any(
+            row_text_lower,
+            (
+                "corporate debt securities",
+                "corporate notes",
+                "corporate and other assets",
+                "corporate expense",
+                "corporate expenses",
+                "other corporate",
+                "corporate",
+                "long-term debt",
+                "long term debt",
+                "debt securities",
+                "unamortized discount",
+                "issuance costs",
+                "bonds",
+            ),
+        ):
+            return False
+        if row.get("unit") == "percent":
+            return False
+    if family == "deferred_revenue" and _has_any(
+        row_text_lower,
+        (
+            "unamortized discount",
+            "issuance costs",
+            "corporate notes",
+            "corporate debt securities",
+            "corporate and other assets",
+            "corporate expense",
+            "corporate expenses",
+            "other corporate",
+            "long-term debt",
+            "long term debt",
+            "debt securities",
+        ),
+    ):
+        return False
     if family == "revenue" and any(term in name_lower for term in ("marketing and sales", "general and administrative")):
         return False
     if family == "semiconductor_solutions" and any(term in name_lower for term in ("balance as of", "sales of businesses")):
@@ -9911,9 +10115,10 @@ def _cap_ai_industry_ledger_rows(rows: list[dict[str, Any]], query_contract: dic
         year = str(row.get("fiscal_year") or "")
         object_id = str(row.get("object_id") or "")
         family_ticker_year_key = (family, ticker, year)
-        if family_ticker_year_counts[family_ticker_year_key] >= per_family_ticker_year_limit:
+        force_segment_add = _is_high_value_segment_metric(row)
+        if family_ticker_year_counts[family_ticker_year_key] >= per_family_ticker_year_limit and not force_segment_add:
             return False
-        if ticker_counts[ticker] >= per_ticker_limit:
+        if ticker_counts[ticker] >= per_ticker_limit and not force_segment_add:
             return False
         if family_counts[family] >= per_family_limit:
             return False
@@ -9931,8 +10136,9 @@ def _cap_ai_industry_ledger_rows(rows: list[dict[str, Any]], query_contract: dic
     for families in task_family_groups:
         target = max(2, effective_max // max(1, len(task_family_groups)))
         before = len(selected)
+        family_set = _expand_metric_family_aliases(families)
         for row in rows:
-            if str(row.get("metric_family") or "") in set(families):
+            if str(row.get("metric_family") or "") in family_set:
                 add(row)
             if len(selected) - before >= target or len(selected) >= effective_max:
                 break
@@ -10041,13 +10247,17 @@ def _ledger_metric_id(
 
 
 def _ledger_dedupe_key(row: dict[str, Any]) -> tuple[str, str, str, str]:
+    family = str(row.get("metric_family") or "")
+    discriminator_fields = ["metric_role", "period_role", "period", "raw_value_text"]
+    if family in {"product_revenue", "segment_revenue", "data_center_revenue", "cloud_revenue"}:
+        discriminator_fields.extend(["metric_name", "row_label", "column_label"])
     return (
         str(row.get("ticker") or ""),
         str(row.get("fiscal_year") or ""),
-        str(row.get("metric_family") or ""),
+        family,
         "|".join(
             str(row.get(key) or "")
-            for key in ("metric_role", "period_role", "period", "raw_value_text")
+            for key in discriminator_fields
         ),
     )
 

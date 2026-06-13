@@ -184,24 +184,44 @@ def _candidate_from_row(
     source_family = _source_family(row, channel=channel)
     exact_authority = _exact_value_authority(row, source_family=source_family)
     has_value = raw_value != ""
-    eligible = has_value and exact_authority and source_family not in CONTEXT_ONLY_SOURCE_FAMILIES
     unit = _first_text(row, "unit", "unit_name", "unit_label")
     unit_family = _unit_family(unit=unit, metric=metric)
+    unit_gate_reason = _metric_unit_gate_reason(metric, unit_family=unit_family, unit=unit)
+    semantic_gate_reason = _metric_semantic_gate_reason(row, metric)
+    eligible = (
+        has_value
+        and exact_authority
+        and source_family not in CONTEXT_ONLY_SOURCE_FAMILIES
+        and not unit_gate_reason
+        and not semantic_gate_reason
+    )
     fiscal_year = _first_text(row, "fiscal_year", "year") or _first_text(vintage, "fiscal_year")
     fiscal_period = _first_text(row, "fiscal_period", "period") or _first_text(vintage, "fiscal_period")
     fiscal_period_end = _first_text(row, "fiscal_period_end", "period_end", "source_period_end") or _first_text(vintage, "fiscal_period_end")
     market_as_of = _first_text(row, "market_as_of_date", "as_of_date") or _first_text(vintage, "market_as_of_date")
     macro_vintage = _first_text(row, "macro_vintage_date", "vintage_date") or _first_text(vintage, "macro_vintage_date")
+    period_role = _first_text(row, "period_role", "time_basis")
     period_key = _period_key(
         fiscal_year=fiscal_year,
         fiscal_period=fiscal_period,
         fiscal_period_end=fiscal_period_end,
         market_as_of=market_as_of,
         macro_vintage=macro_vintage,
+        period_role=period_role,
     )
-    product_or_segment = _first_text(row, "product_or_segment", "product", "segment", "business_line")
+    product_or_segment = _product_or_segment_from_row(row, metric=metric)
     candidate_id = _first_text(row, "candidate_id") or _stable_id("reconciliation_candidate", channel, evidence_ref, source_id, raw_value)
-    status = "eligible" if eligible else _candidate_exclusion_reason(has_value=has_value, exact_authority=exact_authority, source_family=source_family)
+    status = (
+        "eligible"
+        if eligible
+        else _candidate_exclusion_reason(
+            has_value=has_value,
+            exact_authority=exact_authority,
+            source_family=source_family,
+            unit_gate_reason=unit_gate_reason,
+            semantic_gate_reason=semantic_gate_reason,
+        )
+    )
     return {
         "candidate_id": candidate_id,
         "candidate_status": status,
@@ -224,11 +244,13 @@ def _candidate_from_row(
         "accepted_date": _first_text(row, "accepted_date", "accepted_at") or _first_text(vintage, "accepted_date"),
         "market_as_of_date": market_as_of,
         "macro_vintage_date": macro_vintage,
-        "time_basis": _first_text(row, "time_basis") or _first_text(vintage, "time_basis"),
+        "time_basis": period_role or _first_text(vintage, "time_basis"),
         "value": raw_value,
         "numeric_value": str(numeric_value) if numeric_value is not None else "",
         "unit": unit,
         "unit_family": unit_family,
+        "unit_gate_reason": unit_gate_reason,
+        "semantic_gate_reason": semantic_gate_reason,
         "source_family": source_family,
         "source_priority_rank": SOURCE_PRIORITY_RANK.get(source_family, 50),
         "exact_value_authority": exact_authority,
@@ -433,20 +455,42 @@ def _source_family(row: Mapping[str, Any], *, channel: str) -> str:
     return "unknown"
 
 
-def _candidate_exclusion_reason(*, has_value: bool, exact_authority: bool, source_family: str) -> str:
+def _candidate_exclusion_reason(
+    *,
+    has_value: bool,
+    exact_authority: bool,
+    source_family: str,
+    unit_gate_reason: str = "",
+    semantic_gate_reason: str = "",
+) -> str:
     if not has_value:
         return "excluded_missing_value"
     if source_family in CONTEXT_ONLY_SOURCE_FAMILIES:
         return "excluded_context_only_source"
     if not exact_authority:
         return "excluded_without_exact_value_authority"
+    if unit_gate_reason:
+        return unit_gate_reason
+    if semantic_gate_reason:
+        return semantic_gate_reason
     return "excluded_unknown"
 
 
 def _unit_family(*, unit: str, metric: Mapping[str, Any]) -> str:
     explicit = str(metric.get("unit_family") or "").strip()
     raw = str(unit or "").strip().lower()
-    if raw in {"usd", "$", "dollars", "usd_millions", "usd millions", "currency"}:
+    if raw in {
+        "usd",
+        "$",
+        "dollars",
+        "usd_millions",
+        "usd millions",
+        "usd_billions",
+        "usd billions",
+        "usd_thousands",
+        "usd thousands",
+        "currency",
+    }:
         return "currency"
     if raw in {"%", "percent", "percentage"}:
         return "percent"
@@ -461,6 +505,73 @@ def _unit_family(*, unit: str, metric: Mapping[str, Any]) -> str:
     return explicit or ("unknown" if raw else "")
 
 
+def _metric_unit_gate_reason(metric: Mapping[str, Any], *, unit_family: str, unit: str) -> str:
+    canonical = str(metric.get("canonical_metric_id") or "")
+    if not canonical or canonical.startswith("unmapped:"):
+        return ""
+    actual = str(unit_family or "").strip()
+    raw_unit = str(unit or "").strip().lower()
+    if canonical in {
+        "financial_metric:revenue",
+        "financial_metric:gross_profit",
+        "financial_metric:cost_of_revenue",
+        "financial_metric:operating_income",
+        "financial_metric:operating_cash_flow",
+        "financial_metric:fcf",
+        "financial_metric:capex",
+        "financial_metric:debt",
+        "financial_metric:cash",
+        "financial_metric:inventory",
+    } and actual != "currency":
+        return "excluded_metric_unit_mismatch"
+    if canonical == "financial_metric:gross_margin" and actual != "percent":
+        return "excluded_metric_unit_mismatch"
+    if canonical == "product_kpi:backlog" and (actual == "percent" or raw_unit in {"%", "percent", "percentage"}):
+        return "excluded_metric_unit_mismatch"
+    return ""
+
+
+def _metric_semantic_gate_reason(row: Mapping[str, Any], metric: Mapping[str, Any]) -> str:
+    canonical = str(metric.get("canonical_metric_id") or "")
+    if canonical != "product_kpi:backlog":
+        return ""
+    text = " ".join(
+        _first_text(row, key)
+        for key in (
+            "metric_name",
+            "row_label",
+            "line_item",
+            "label",
+            "table_title",
+            "record_title",
+            "source_text",
+            "context",
+        )
+    ).lower()
+    if not any(term in text for term in ("remaining performance obligation", "rpo", "backlog", "bookings", "order backlog")):
+        return "excluded_metric_semantic_mismatch"
+    if any(
+        term in text
+        for term in (
+            "corporate debt securities",
+            "corporate notes",
+            "corporate and other assets",
+            "corporate expense",
+            "corporate expenses",
+            "other corporate",
+            "corporate",
+            "long-term debt",
+            "long term debt",
+            "debt securities",
+            "unamortized discount",
+            "issuance costs",
+            "bonds",
+        )
+    ):
+        return "excluded_metric_semantic_mismatch"
+    return ""
+
+
 def _period_key(
     *,
     fiscal_year: str,
@@ -468,16 +579,70 @@ def _period_key(
     fiscal_period_end: str,
     market_as_of: str,
     macro_vintage: str,
+    period_role: str = "",
 ) -> str:
+    role = normalize_metric_alias(period_role)
     if fiscal_year and fiscal_period:
-        return f"fiscal:{fiscal_year}:{fiscal_period}"
+        return f"fiscal:{fiscal_year}:{fiscal_period}:{role}" if role else f"fiscal:{fiscal_year}:{fiscal_period}"
     if fiscal_period_end:
-        return f"period_end:{fiscal_period_end}"
+        return f"period_end:{fiscal_period_end}:{role}" if role else f"period_end:{fiscal_period_end}"
     if market_as_of:
         return f"market_as_of:{market_as_of}"
     if macro_vintage:
         return f"macro_vintage:{macro_vintage}"
     return "__period_unknown__"
+
+
+def _product_or_segment_from_row(row: Mapping[str, Any], *, metric: Mapping[str, Any]) -> str:
+    explicit = _first_text(row, "product_or_segment", "product", "segment", "business_line")
+    if explicit:
+        return explicit
+    canonical = str(metric.get("canonical_metric_id") or "")
+    if canonical not in {
+        "financial_metric:revenue",
+        "financial_metric:gross_profit",
+        "financial_metric:gross_margin",
+        "financial_metric:cost_of_revenue",
+        "product_kpi:product_revenue",
+    }:
+        return ""
+    label = _first_text(row, "metric_name", "line_item", "label")
+    normalized = normalize_metric_alias(label)
+    if not normalized:
+        return ""
+    if canonical == "product_kpi:product_revenue":
+        cleaned = _product_label_from_metric_label(label)
+        if cleaned:
+            return cleaned
+    company_total_labels = {
+        "revenue",
+        "revenues",
+        "net_sales",
+        "total_revenue",
+        "total_revenues",
+        "total_net_sales",
+        "sales",
+        "gross_margin",
+        "gross_margin_percentage",
+        "total_gross_margin",
+        "total_gross_margin_percentage",
+        "gross_profit",
+        "cost_of_revenue",
+        "cost_of_sales",
+        "total_cost_of_sales",
+    }
+    if normalized in company_total_labels:
+        return ""
+    return label
+
+
+def _product_label_from_metric_label(label: str) -> str:
+    text = str(label or "").strip()
+    cleaned = re.sub(r"^(?:net\s+revenue|revenue|product\s+revenue|net\s+sales)\s+[-:–—]?\s*", "", text, flags=re.I).strip()
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    if not cleaned or normalize_metric_alias(cleaned) in {"total", "total_revenue", "total_net_revenue", "total_net_sales"}:
+        return ""
+    return cleaned
 
 
 def _product_key(value: str) -> str:

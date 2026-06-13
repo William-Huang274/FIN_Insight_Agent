@@ -121,9 +121,10 @@ def _query_ledger_with_args(
     filing_types: list[str],
     period_roles: list[str],
 ) -> list[dict[str, Any]]:
-    return query_ledger_facts(
+    case_id = str(args.get("case_id") or "__mcp__")
+    rows = query_ledger_facts(
         db_path,
-        case_id=str(args.get("case_id") or "__mcp__"),
+        case_id=case_id,
         object_ids=_list_arg(args.get("object_ids")),
         tickers=_list_arg(args.get("tickers")),
         years=[int(year) for year in _list_arg(args.get("years")) if str(year).isdigit()],
@@ -133,6 +134,117 @@ def _query_ledger_with_args(
         period_roles=period_roles,
         limit=int(args.get("limit") or 5000),
     )
+    normalized = [_normalize_ledger_tool_metric_family(row, case_id=case_id) for row in rows]
+    return [row for row in normalized if _ledger_tool_row_allowed(row)]
+
+
+def _normalize_ledger_tool_metric_family(row: dict[str, Any], *, case_id: str) -> dict[str, Any]:
+    family = str(row.get("metric_family") or "").strip()
+    ticker = str(row.get("ticker") or "").upper()
+    label_text = " ".join(
+        str(row.get(key) or "")
+        for key in ("metric_name", "row_label", "column_label", "table_title", "record_title")
+    ).lower()
+    product_family_aliases = {
+        "ai_optimized_servers",
+        "traditional_servers_and_networking",
+        "storage",
+        "commercial",
+        "consumer",
+        "products",
+        "services",
+    }
+    product_revenue_terms = (
+        "ai-optimized servers",
+        "traditional servers and networking",
+        "total isg net revenue",
+        "total csg net revenue",
+        "storage",
+        "commercial",
+        "consumer",
+    )
+    if family not in product_family_aliases and not (
+        ticker == "DELL"
+        and family in {"revenue", "total_revenue", "segment_revenue"}
+        and any(term in label_text for term in product_revenue_terms)
+    ):
+        return row
+    normalized = dict(row)
+    normalized["source_metric_family"] = family
+    normalized["metric_family"] = "product_revenue"
+    normalized["metric_name"] = str(normalized.get("metric_name") or normalized.get("row_label") or family.replace("_", " ")).strip()
+    normalized["metric_role"] = "total_value" if str(normalized.get("unit") or "").startswith("usd") else str(normalized.get("metric_role") or "")
+    normalized["metric_id"] = _ledger_tool_metric_id(
+        case_id,
+        normalized.get("ticker"),
+        normalized.get("fiscal_year"),
+        "product_revenue",
+        normalized.get("metric_role") or "total_value",
+        period_role=normalized.get("period_role"),
+        suffix=_slug(str(normalized.get("row_label") or normalized.get("metric_name") or family)),
+    )
+    return normalized
+
+
+def _ledger_tool_row_allowed(row: dict[str, Any]) -> bool:
+    family = str(row.get("metric_family") or "")
+    unit = str(row.get("unit") or "").lower()
+    row_text = " ".join(
+        str(row.get(key) or "")
+        for key in ("metric_name", "row_label", "column_label", "table_title", "record_title", "source_text", "metric_id")
+    ).lower()
+    if family == "product_revenue" and unit == "percent":
+        return False
+    if family in {"rpo", "arr_or_recurring_proxy"}:
+        if not any(term in row_text for term in ("remaining performance obligation", "rpo", "backlog", "bookings", "order backlog")):
+            return False
+        if any(
+            term in row_text
+            for term in (
+                "corporate debt securities",
+                "corporate notes",
+                "corporate and other assets",
+                "corporate_and_other_assets",
+                "long-term debt",
+                "long term debt",
+                "long_term_debt",
+                "debt securities",
+                "debt_securities",
+                "unamortized discount",
+                "unamortized_discount",
+                "issuance costs",
+                "issuance_costs",
+                "bonds",
+            )
+        ):
+            return False
+        if unit == "percent":
+            return False
+    return True
+
+
+def _ledger_tool_metric_id(
+    case_id: str,
+    ticker: Any,
+    fiscal_year: Any,
+    metric_family: Any,
+    metric_role: Any,
+    *,
+    period_role: Any = "",
+    suffix: str = "",
+) -> str:
+    parts = [
+        str(case_id or "__mcp__"),
+        str(ticker or "").upper(),
+        str(fiscal_year or ""),
+        str(metric_family or ""),
+        str(metric_role or ""),
+    ]
+    if period_role:
+        parts.append(str(period_role))
+    if suffix:
+        parts.append(suffix)
+    return "::".join(parts)
 
 
 def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:

@@ -298,6 +298,12 @@ def score_case(
         rendered_has_dimension_section=rendered_has_dimension_section,
         thesis_driver_pack=thesis_driver_pack,
     )
+    diagnostic_quality = _diagnostic_quality_checks(
+        case,
+        result=result,
+        rendered_answer=rendered_answer,
+        memo_dimension_analyses=memo_dimension_analyses,
+    )
 
     layer_checks = {
         "research_lead": {
@@ -366,6 +372,7 @@ def score_case(
         "analyst_depth": analyst_depth["checks"],
         "run_audit": run_audit["checks"],
         "vnext_contract": vnext_contract["checks"],
+        "diagnostic_quality": diagnostic_quality["checks"],
     }
     checks = _flatten_checks(layer_checks)
     hard_gate_status = "pass" if all(checks.values()) and result.get("status") == "completed" else "fail"
@@ -413,6 +420,7 @@ def score_case(
         "analyst_depth_audit": analyst_depth,
         "run_audit": run_audit,
         "vnext_contract_audit": vnext_contract,
+        "diagnostic_quality_audit": diagnostic_quality,
         "layer_checks": layer_checks,
         "checks": checks,
         "agent_audit": _agent_audit(result, summary, tool_calls=tool_calls, specialist_routes=specialist_routes, specialist_quality=specialist_quality),
@@ -528,6 +536,353 @@ def _run_audit_checks(case: Mapping[str, Any], result: Mapping[str, Any]) -> dic
         "required_nonempty_tables": nonempty_tables,
         "checks": checks,
     }
+
+
+def _diagnostic_quality_checks(
+    case: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    rendered_answer: str,
+    memo_dimension_analyses: list[Mapping[str, Any]],
+) -> dict[str, Any]:
+    required_metric_ids = set(_string_list(case.get("required_approved_metric_ids")))
+    required_dimensions = set(_string_list(case.get("required_deterministic_claim_dimensions")))
+    required_product_terms = _string_list(case.get("required_product_fact_terms"))
+    required = any(
+        [
+            required_metric_ids,
+            required_dimensions,
+            required_product_terms,
+            bool(case.get("require_no_internal_synthesis_dimension")),
+            bool(case.get("require_numeric_fact_sanity")),
+            bool(case.get("require_product_or_gap_evidence")),
+            bool(case.get("require_capital_financing_signal")),
+        ]
+    )
+    approved_facts = _diagnostic_approved_facts(result)
+    supported_claims = _diagnostic_supported_claims(result)
+    gap_rows = _diagnostic_gap_rows(result)
+    approved_metric_ids = {
+        _diagnostic_text(row.get("canonical_metric_id"))
+        for row in approved_facts
+        if _diagnostic_text(row.get("canonical_metric_id"))
+    }
+    supported_metric_ids = {
+        metric_id
+        for claim in supported_claims
+        for metric_id in _string_list(claim.get("metric_scope"))
+        if metric_id
+    }
+    deterministic_dimensions = {
+        _diagnostic_text(claim.get("analysis_dimension"))
+        for claim in supported_claims
+        if _diagnostic_text(claim.get("agent_id")) == "pre_memo_fact_selector"
+        and _diagnostic_text(claim.get("analysis_dimension"))
+    }
+    memo_dimension_ids = {
+        _diagnostic_text(row.get("dimension_id"))
+        for row in memo_dimension_analyses
+        if _diagnostic_text(row.get("dimension_id"))
+    }
+    metric_ids_seen = approved_metric_ids | supported_metric_ids
+    product_text = "\n".join(
+        [
+            *(_diagnostic_row_text(row) for row in approved_facts if _diagnostic_row_has_product_signal(row)),
+            *(_diagnostic_row_text(row) for row in supported_claims if _diagnostic_claim_has_product_signal(row)),
+        ]
+    )
+    supported_product_text = "\n".join(
+        [
+            *(_diagnostic_row_text(row) for row in supported_claims if _diagnostic_claim_has_product_signal(row)),
+            *(
+                _diagnostic_row_text(row)
+                for row in memo_dimension_analyses
+                if _diagnostic_text(row.get("dimension_id")) == "product_and_production"
+                and _diagnostic_dimension_has_claim_or_evidence(row)
+            ),
+        ]
+    )
+    product_evidence_present = _diagnostic_product_evidence_present(approved_facts, supported_claims)
+    product_gap_present = _diagnostic_product_gap_present(gap_rows)
+    internal_synthesis_dimension_ids = [
+        _diagnostic_text(row.get("dimension_id"))
+        for row in memo_dimension_analyses
+        if _diagnostic_text(row.get("dimension_id")) == "thesis_synthesis"
+    ]
+    internal_synthesis_rendered = any(
+        marker in rendered_answer
+        for marker in ("thesis_synthesis", "Synthesis: primary_sec_filing", "Synthesis：primary_sec_filing")
+    )
+    numeric_violations = _diagnostic_numeric_sanity_violations(approved_facts)
+    capital_metric_ids = {
+        "financial_metric:capex",
+        "financial_metric:debt",
+        "financial_metric:cash",
+        "financial_metric:fcf",
+        "financial_metric:operating_cash_flow",
+    }
+    capital_dimensions = {
+        _diagnostic_text(claim.get("analysis_dimension"))
+        for claim in supported_claims
+        if _diagnostic_text(claim.get("analysis_dimension"))
+    }
+    checks = {
+        "required_approved_metric_ids_present": required_metric_ids <= metric_ids_seen if required_metric_ids else True,
+        "required_deterministic_claim_dimensions_present": required_dimensions <= deterministic_dimensions
+        if required_dimensions
+        else True,
+        "no_internal_synthesis_dimension": (
+            not internal_synthesis_dimension_ids and not internal_synthesis_rendered
+            if case.get("require_no_internal_synthesis_dimension")
+            else True
+        ),
+        "numeric_fact_sanity": not numeric_violations if case.get("require_numeric_fact_sanity") else True,
+        "product_or_bounded_gap_evidence_present": (
+            product_evidence_present or product_gap_present if case.get("require_product_or_gap_evidence") else True
+        ),
+        "required_product_fact_terms_present": (
+            all(term.lower() in supported_product_text.lower() for term in required_product_terms)
+            if required_product_terms
+            else True
+        ),
+        "capital_financing_signal_present": (
+            bool(metric_ids_seen & capital_metric_ids) or "capital_and_financing" in capital_dimensions
+            if case.get("require_capital_financing_signal")
+            else True
+        ),
+    }
+    return {
+        "schema_version": "sec_agent_diagnostic_quality_eval_check_v0.1",
+        "required": required,
+        "approved_metric_ids": sorted(approved_metric_ids),
+        "supported_metric_ids": sorted(supported_metric_ids),
+        "required_metric_ids": sorted(required_metric_ids),
+        "deterministic_dimensions": sorted(deterministic_dimensions),
+        "memo_dimension_ids": sorted(memo_dimension_ids),
+        "required_dimensions": sorted(required_dimensions),
+        "required_product_terms": required_product_terms,
+        "product_evidence_present": product_evidence_present,
+        "product_gap_present": product_gap_present,
+        "supported_product_terms_surface_present": bool(supported_product_text.strip()),
+        "numeric_violations": numeric_violations,
+        "gap_count": len(gap_rows),
+        "supported_claim_count": len(supported_claims),
+        "approved_fact_count": len(approved_facts),
+        "checks": checks,
+    }
+
+
+def _diagnostic_approved_facts(result: Mapping[str, Any]) -> list[dict[str, Any]]:
+    fact_selection = result.get("pre_memo_fact_selection") if isinstance(result.get("pre_memo_fact_selection"), Mapping) else {}
+    rows = [dict(row) for row in fact_selection.get("approved_facts") or [] if isinstance(row, Mapping)]
+    gates = result.get("deterministic_gates") if isinstance(result.get("deterministic_gates"), Mapping) else {}
+    nested = gates.get("pre_memo_fact_selection") if isinstance(gates.get("pre_memo_fact_selection"), Mapping) else {}
+    rows.extend(dict(row) for row in nested.get("approved_facts") or [] if isinstance(row, Mapping))
+    return _dedupe_diagnostic_rows(rows, keys=("selection_id", "fact_id", "evidence_ref"))
+
+
+def _diagnostic_supported_claims(result: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    judgment = result.get("verified_judgment_plan") if isinstance(result.get("verified_judgment_plan"), Mapping) else {}
+    rows.extend(dict(row) for row in judgment.get("supported_claims") or [] if isinstance(row, Mapping))
+    claim_store = result.get("claim_card_store") if isinstance(result.get("claim_card_store"), Mapping) else {}
+    rows.extend(dict(row) for row in claim_store.get("supported_claims") or [] if isinstance(row, Mapping))
+    rows.extend(dict(row) for row in claim_store.get("claim_cards") or [] if isinstance(row, Mapping))
+    for output in result.get("specialist_outputs") or []:
+        if not isinstance(output, Mapping):
+            continue
+        for observation in output.get("observations") or []:
+            if isinstance(observation, Mapping) and not bool(observation.get("unsupported")):
+                rows.append(dict(observation))
+    return _dedupe_diagnostic_rows(rows, keys=("claim_id", "claim", "evidence_refs"))
+
+
+def _diagnostic_gap_rows(result: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    register = result.get("bounded_gap_register") if isinstance(result.get("bounded_gap_register"), Mapping) else {}
+    rows.extend(dict(row) for row in register.get("gaps") or [] if isinstance(row, Mapping))
+    fact_selection = result.get("pre_memo_fact_selection") if isinstance(result.get("pre_memo_fact_selection"), Mapping) else {}
+    rows.extend(dict(row) for row in fact_selection.get("bounded_gap_links") or [] if isinstance(row, Mapping))
+    judgment = result.get("verified_judgment_plan") if isinstance(result.get("verified_judgment_plan"), Mapping) else {}
+    constraints = judgment.get("memo_constraints") if isinstance(judgment.get("memo_constraints"), Mapping) else {}
+    rows.extend(dict(row) for row in constraints.get("missing_evidence") or [] if isinstance(row, Mapping))
+    memo = result.get("memo_answer") if isinstance(result.get("memo_answer"), Mapping) else {}
+    rows.extend(dict(row) for row in memo.get("missing_evidence") or [] if isinstance(row, Mapping))
+    return _dedupe_diagnostic_rows(rows, keys=("gap_id", "gap_type", "reason"))
+
+
+def _dedupe_diagnostic_rows(rows: list[dict[str, Any]], *, keys: tuple[str, ...]) -> list[dict[str, Any]]:
+    seen: set[str] = set()
+    deduped: list[dict[str, Any]] = []
+    for row in rows:
+        key = "|".join(json.dumps(row.get(item), sort_keys=True, ensure_ascii=False, default=str) for item in keys)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(row)
+    return deduped
+
+
+def _diagnostic_numeric_sanity_violations(approved_facts: list[Mapping[str, Any]]) -> list[dict[str, str]]:
+    currency_metrics = {
+        "financial_metric:revenue",
+        "financial_metric:gross_profit",
+        "financial_metric:cost_of_revenue",
+        "financial_metric:operating_income",
+        "financial_metric:operating_cash_flow",
+        "financial_metric:fcf",
+        "financial_metric:capex",
+        "financial_metric:debt",
+        "financial_metric:cash",
+        "financial_metric:inventory",
+        "product_kpi:product_revenue",
+    }
+    violations: list[dict[str, str]] = []
+    for row in approved_facts:
+        metric = _diagnostic_text(row.get("canonical_metric_id"))
+        unit = _diagnostic_text(row.get("unit")).lower()
+        text = _diagnostic_row_text(row).lower()
+        unit_family = _diagnostic_unit_family(unit)
+        if metric in currency_metrics and unit_family and unit_family != "currency":
+            violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "currency_metric_non_currency_unit", "metric": metric, "unit": unit})
+        if metric == "financial_metric:gross_margin" and unit_family and unit_family != "percent":
+            violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "gross_margin_non_percent_unit", "metric": metric, "unit": unit})
+        if metric == "product_kpi:backlog":
+            if unit_family == "percent":
+                violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "backlog_percent_unit", "metric": metric, "unit": unit})
+            if any(
+                term in text
+                for term in (
+                    "corporate debt securities",
+                    "corporate notes",
+                    "corporate and other assets",
+                    "corporate_and_other_assets",
+                    "long-term debt",
+                    "long term debt",
+                    "long_term_debt",
+                    "debt securities",
+                    "debt_securities",
+                    "unamortized discount",
+                    "unamortized_discount",
+                    "issuance costs",
+                    "issuance_costs",
+                    "bonds",
+                )
+            ):
+                violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "backlog_debt_semantic_noise", "metric": metric, "unit": unit})
+    return violations
+
+
+def _diagnostic_unit_family(unit: str) -> str:
+    raw = str(unit or "").strip().lower()
+    if not raw:
+        return ""
+    if raw in {
+        "usd",
+        "$",
+        "dollars",
+        "usd_millions",
+        "usd millions",
+        "usd_billions",
+        "usd billions",
+        "usd_thousands",
+        "usd thousands",
+        "currency",
+    }:
+        return "currency"
+    if raw in {"%", "percent", "percentage"}:
+        return "percent"
+    if raw in {"shares", "share"}:
+        return "shares"
+    if raw in {"units", "vehicles", "devices", "systems"}:
+        return "units"
+    if "per share" in raw:
+        return "currency_per_share"
+    return "other"
+
+
+def _diagnostic_product_evidence_present(
+    approved_facts: list[Mapping[str, Any]],
+    supported_claims: list[Mapping[str, Any]],
+) -> bool:
+    return any(_diagnostic_row_has_product_signal(row) for row in approved_facts) or any(
+        _diagnostic_claim_has_product_signal(row) for row in supported_claims
+    )
+
+
+def _diagnostic_row_has_product_signal(row: Mapping[str, Any]) -> bool:
+    metric = _diagnostic_text(row.get("canonical_metric_id"))
+    if metric.startswith("product_kpi:"):
+        return True
+    return bool(_diagnostic_text(row.get("product_or_segment")))
+
+
+def _diagnostic_claim_has_product_signal(row: Mapping[str, Any]) -> bool:
+    if _diagnostic_text(row.get("analysis_dimension")) == "product_and_production":
+        return True
+    if _diagnostic_text(row.get("memo_slot")) == "product_and_production":
+        return True
+    if any(str(metric).startswith("product_kpi:") for metric in _string_list(row.get("metric_scope"))):
+        return True
+    return bool(_diagnostic_text(row.get("product_or_segment")))
+
+
+def _diagnostic_dimension_has_claim_or_evidence(row: Mapping[str, Any]) -> bool:
+    return bool(
+        _string_list(row.get("claim_ids"))
+        or _string_list(row.get("primary_claim_ids"))
+        or _string_list(row.get("evidence_refs"))
+        or _string_list(row.get("refs"))
+    )
+
+
+def _diagnostic_product_gap_present(gap_rows: list[Mapping[str, Any]]) -> bool:
+    product_gap_terms = (
+        "product",
+        "产品",
+        "asp",
+        "unit",
+        "shipment",
+        "sell-through",
+        "sales",
+        "channel",
+        "inventory",
+        "tracker",
+        "commercial",
+        "idc",
+        "counterpoint",
+        "gartner",
+        "iqvia",
+        "symphony",
+        "prescription",
+        "clinical",
+        "trial",
+        "approval",
+        "订单",
+        "销量",
+        "份额",
+        "库存",
+        "处方",
+        "临床",
+        "监管",
+    )
+    for row in gap_rows:
+        text = _diagnostic_row_text(row).lower()
+        if any(term in text for term in product_gap_terms):
+            return True
+    return False
+
+
+def _diagnostic_row_text(row: Mapping[str, Any]) -> str:
+    return " ".join(
+        _diagnostic_text(value)
+        for value in row.values()
+        if isinstance(value, (str, int, float, bool))
+    )
+
+
+def _diagnostic_text(value: Any) -> str:
+    return str(value or "").strip()
 
 
 def _budgeted_tool_call_count(tool_calls: list[Mapping[str, Any]]) -> int:

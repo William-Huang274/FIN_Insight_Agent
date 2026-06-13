@@ -145,6 +145,24 @@ def test_build_run_audit_full_chain_smoke_eval_command(tmp_path: Path) -> None:
     assert not any(str(arg).startswith("sk-") for arg in spec.args)
 
 
+def test_build_diagnostic_probe_eval_command_is_non_strict(tmp_path: Path) -> None:
+    spec = build_eval_command(
+        repo_root=tmp_path,
+        eval_id="agent_graph_vnext_diagnostic_probe",
+        job_id="diagnostic_fixture",
+    )
+
+    assert spec.label == "eval:agent_graph_vnext_diagnostic_probe"
+    assert "tests/fixtures/fin_agent_vnext_diagnostic_probe_cases_v0_1.jsonl" in spec.args
+    assert "eval/sec_cases/outputs/multi_agent_vnext_diagnostic_probe_eval" in spec.args
+    assert "--run-audit-db-path" in spec.args
+    assert "--limit" in spec.args
+    assert spec.args[spec.args.index("--limit") + 1] == "2"
+    assert "--strict" not in spec.args
+    assert spec.env_overrides["BGE_DEVICE"] == "cpu"
+    assert not any(str(arg).startswith("sk-") for arg in spec.args)
+
+
 def test_build_agent_ask_command_can_target_wsl(tmp_path: Path) -> None:
     profile = WorkbenchProfile(
         profile_id="wsl_demo",

@@ -212,6 +212,12 @@ def apply_pre_memo_fact_selection_to_judgment(
         else:
             filtered_supported.append(claim)
 
+    deterministic_fact_claims = _deterministic_fact_claims_from_approved_facts(
+        fact_selection.get("approved_facts") or [],
+        existing_supported_claims=filtered_supported,
+    )
+    filtered_supported.extend(deterministic_fact_claims)
+
     constraints = dict(judgment.get("memo_constraints") or {}) if isinstance(judgment.get("memo_constraints"), Mapping) else {}
     missing_evidence = [dict(row) for row in constraints.get("missing_evidence") or [] if isinstance(row, Mapping)]
     for row in fact_selection.get("bounded_gap_links") or []:
@@ -234,6 +240,7 @@ def apply_pre_memo_fact_selection_to_judgment(
     stats = dict(judgment.get("claim_card_stats") or {}) if isinstance(judgment.get("claim_card_stats"), Mapping) else {}
     stats["supported_claim_count"] = len(filtered_supported)
     stats["pre_memo_blocked_claim_count"] = len(moved_to_unsupported)
+    stats["pre_memo_deterministic_fact_claim_count"] = len(deterministic_fact_claims)
     stats["approved_fact_count"] = len(approved_fact_ids)
     stats["approved_derived_metric_count"] = len(approved_derived_ids)
 
@@ -248,12 +255,247 @@ def apply_pre_memo_fact_selection_to_judgment(
             "approved_fact_ids": sorted(approved_fact_ids),
             "approved_derived_metric_ids": sorted(approved_derived_ids),
             "blocked_claims": moved_to_unsupported,
+            "deterministic_fact_claim_ids": [row["claim_id"] for row in deterministic_fact_claims],
             "bounded_gap_links": [dict(row) for row in fact_selection.get("bounded_gap_links") or [] if isinstance(row, Mapping)],
             "summary": dict(fact_selection.get("summary") or {}) if isinstance(fact_selection.get("summary"), Mapping) else {},
         },
         "memo_writer_allowed": bool(judgment.get("memo_writer_allowed", True)) and not (moved_to_unsupported and not filtered_supported),
         "governance_filter_policy": "pre_memo_governance_filtered_claim_cards_v0_1",
     }
+
+
+def _deterministic_fact_claims_from_approved_facts(
+    approved_facts: Any,
+    *,
+    existing_supported_claims: list[dict[str, Any]],
+    max_claims: int = 18,
+) -> list[dict[str, Any]]:
+    existing_refs = {
+        ref
+        for claim in existing_supported_claims
+        for ref in _strings(claim.get("evidence_refs") or claim.get("supporting_evidence_ids"))
+    }
+    rows = [
+        dict(row)
+        for row in approved_facts
+        if isinstance(row, Mapping) and _approved_fact_can_be_claim_card(row)
+    ]
+    rows = sorted(rows, key=_approved_fact_priority)
+    rows = _select_dimension_balanced_fact_rows(rows, max_claims=max_claims, existing_refs=existing_refs)
+    claims: list[dict[str, Any]] = []
+    seen_keys: set[tuple[str, str, str, str]] = set()
+    for row in rows:
+        evidence_ref = _text(row.get("evidence_ref"))
+        key = (
+            _text(row.get("ticker")).upper(),
+            _text(row.get("canonical_metric_id")),
+            _text(row.get("product_or_segment")),
+            _text(row.get("period_key")),
+        )
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        claim_id = _stable_id("pre_memo_fact_claim", row.get("selection_id"), row.get("fact_id"), evidence_ref)
+        canonical_metric = _text(row.get("canonical_metric_id"))
+        dimension = _analysis_dimension_for_fact(canonical_metric)
+        claims.append(
+            {
+                "claim_id": claim_id,
+                "agent_id": "pre_memo_fact_selector",
+                "claim": _approved_fact_claim_text(row),
+                "claim_type": _claim_type_for_fact(canonical_metric),
+                "ticker_scope": [_text(row.get("ticker")).upper()] if _text(row.get("ticker")) else [],
+                "metric_scope": [canonical_metric] if canonical_metric else [],
+                "memo_slot": "product_technology" if dimension == "product_and_production" else "fundamentals",
+                "analysis_dimension": dimension,
+                "materiality": "high" if canonical_metric in {"financial_metric:revenue", "financial_metric:capex", "product_kpi:product_revenue"} else "medium",
+                "direction": "unknown",
+                "evidence_refs": [evidence_ref] if evidence_ref else [],
+                "fact_ids": [_text(row.get("fact_id"))] if _text(row.get("fact_id")) else [],
+                "source_families": [_text(row.get("source_family"))] if _text(row.get("source_family")) else [],
+                "confidence": _text(row.get("resolution_confidence")) or "high",
+                "unsupported": False,
+                "caveats": ["deterministic fact card from approved reconciliation/pre-memo selection"],
+                "missing_confirmations": [],
+                "claim_card_version": "v0.3",
+                "claim_rank_score": 95 if canonical_metric in {"financial_metric:revenue", "financial_metric:capex", "product_kpi:product_revenue"} else 88,
+                "claim_rank_bucket": "memo_ready",
+                "memo_readiness": "memo_ready",
+                "claim_rank_reasons": ["approved_reconciliation_fact", "exact_authority_source", "pre_memo_fact_selector"],
+                "claim_boundary": "approved_reconciliation_fact_only",
+                "pre_memo_fact_selection_id": _text(row.get("selection_id")),
+                "resolution_rule": _text(row.get("resolution_rule")),
+                "period_key": _text(row.get("period_key")),
+                "product_or_segment": _text(row.get("product_or_segment")),
+                "analyst_depth": {
+                    "schema_version": "sec_agent_claim_card_analyst_depth_v0.1",
+                    "analysis_dimension": dimension,
+                    "analyst_angle": _analysis_dimension_title_for_fact(dimension),
+                    "analysis_lens": "Use approved reconciled financial facts as the numeric backbone before adding thesis interpretation.",
+                    "evidence_role": "reported_company_authority",
+                    "business_mechanism": _business_mechanism_for_fact(dimension),
+                    "financial_bridge": "This ClaimCard is a reconciled numeric fact; any thesis must bridge it to revenue, margin, capex, cash-flow, or financing mechanism explicitly.",
+                    "comparison_basis": "Compare only against facts with the same ticker, metric, period_role, and product/segment key.",
+                    "counter_read": "If the fact conflicts with another approved row or the period/product key changes, expose the conflict instead of averaging.",
+                },
+            }
+        )
+    return claims
+
+
+def _select_dimension_balanced_fact_rows(
+    rows: list[dict[str, Any]],
+    *,
+    max_claims: int,
+    existing_refs: set[str],
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    seen_keys: set[tuple[str, str, str, str]] = set()
+
+    def add(row: Mapping[str, Any]) -> bool:
+        if len(selected) >= max_claims:
+            return False
+        evidence_ref = _text(row.get("evidence_ref"))
+        if evidence_ref and evidence_ref in existing_refs:
+            return False
+        key = (
+            _text(row.get("ticker")).upper(),
+            _text(row.get("canonical_metric_id")),
+            _text(row.get("product_or_segment")),
+            _text(row.get("period_key")),
+        )
+        if key in seen_keys:
+            return False
+        selected.append(dict(row))
+        seen_keys.add(key)
+        return True
+
+    # Reserve room for product and capital facts before the general revenue base
+    # can consume the compact memo prompt budget.
+    dimension_limits = (
+        ("product_and_production", 4),
+        ("capital_and_financing", 6),
+        ("fundamentals", 6),
+    )
+    for dimension, limit in dimension_limits:
+        added = 0
+        for row in rows:
+            if _analysis_dimension_for_fact(_text(row.get("canonical_metric_id"))) != dimension:
+                continue
+            if add(row):
+                added += 1
+            if added >= limit:
+                break
+    for row in rows:
+        add(row)
+    return selected
+
+
+def _approved_fact_can_be_claim_card(row: Mapping[str, Any]) -> bool:
+    if _text(row.get("selection_status")) != "approved":
+        return False
+    canonical = _text(row.get("canonical_metric_id"))
+    if canonical not in {
+        "financial_metric:revenue",
+        "financial_metric:gross_margin",
+        "financial_metric:gross_profit",
+        "financial_metric:operating_income",
+        "financial_metric:operating_cash_flow",
+        "financial_metric:fcf",
+        "financial_metric:capex",
+        "financial_metric:debt",
+        "financial_metric:cash",
+        "product_kpi:product_revenue",
+        "product_kpi:backlog",
+    }:
+        return False
+    if _text(row.get("source_family")) in {"public_source_context", "live_public_web_context", "market_snapshot", "industry_snapshot", "relationship_graph", "milvus_semantic"}:
+        return False
+    return bool(_text(row.get("value")) and _text(row.get("evidence_ref")))
+
+
+def _approved_fact_priority(row: Mapping[str, Any]) -> tuple[int, int, str, str, str]:
+    canonical = _text(row.get("canonical_metric_id"))
+    metric_priority = {
+        "financial_metric:capex": 0,
+        "financial_metric:revenue": 1,
+        "financial_metric:gross_margin": 2,
+        "financial_metric:gross_profit": 3,
+        "financial_metric:operating_income": 4,
+        "financial_metric:operating_cash_flow": 5,
+        "financial_metric:fcf": 6,
+        "financial_metric:debt": 7,
+        "financial_metric:cash": 8,
+        "product_kpi:product_revenue": 1,
+        "product_kpi:backlog": 2,
+    }.get(canonical, 50)
+    product_penalty = 0 if not _text(row.get("product_or_segment")) else 3
+    return (
+        metric_priority,
+        product_penalty,
+        _text(row.get("ticker")).upper(),
+        _text(row.get("period_key")),
+        _text(row.get("selection_id")),
+    )
+
+
+def _approved_fact_claim_text(row: Mapping[str, Any]) -> str:
+    ticker = _text(row.get("ticker")).upper() or "The company"
+    metric = _metric_label(_text(row.get("canonical_metric_id")))
+    product = _text(row.get("product_or_segment"))
+    value = _text(row.get("value"))
+    unit = _text(row.get("unit"))
+    period = _text(row.get("period_key"))
+    product_part = f" for {product}" if product else ""
+    unit_part = f" {unit}" if unit and unit.lower() not in value.lower() else ""
+    period_part = f" in {period}" if period else ""
+    return f"{ticker} reported {metric}{product_part} of {value}{unit_part}{period_part}."
+
+
+def _metric_label(canonical_metric_id: str) -> str:
+    return {
+        "financial_metric:revenue": "revenue",
+        "financial_metric:gross_margin": "gross margin",
+        "financial_metric:gross_profit": "gross profit",
+        "financial_metric:operating_income": "operating income",
+        "financial_metric:operating_cash_flow": "operating cash flow",
+        "financial_metric:fcf": "free cash flow",
+        "financial_metric:capex": "capital expenditures",
+        "financial_metric:debt": "debt",
+        "financial_metric:cash": "cash",
+        "product_kpi:product_revenue": "product revenue",
+        "product_kpi:backlog": "product backlog",
+    }.get(canonical_metric_id, canonical_metric_id or "metric")
+
+
+def _claim_type_for_fact(canonical_metric_id: str) -> str:
+    if canonical_metric_id.startswith("product_kpi:"):
+        return "company_reported_product_operating_fact"
+    return "company_reported_financial_fact"
+
+
+def _analysis_dimension_for_fact(canonical_metric_id: str) -> str:
+    if canonical_metric_id.startswith("product_kpi:"):
+        return "product_and_production"
+    if canonical_metric_id in {"financial_metric:capex", "financial_metric:debt", "financial_metric:cash", "financial_metric:fcf"}:
+        return "capital_and_financing"
+    return "fundamentals"
+
+
+def _analysis_dimension_title_for_fact(dimension: str) -> str:
+    return {
+        "capital_and_financing": "Capital allocation and financing",
+        "fundamentals": "Fundamentals and financial quality",
+        "product_and_production": "Product lines and production evidence",
+    }.get(dimension, "Analyst dimension")
+
+
+def _business_mechanism_for_fact(dimension: str) -> str:
+    if dimension == "capital_and_financing":
+        return "Capital spending, cash generation, debt, and liquidity shape reinvestment capacity and financing risk."
+    if dimension == "product_and_production":
+        return "Company-disclosed product, segment, backlog, or production facts connect real business activity to reported financial lines."
+    return "Reported revenue, gross margin, operating income, and cash-flow facts establish the earnings-quality baseline."
 
 
 def validate_pre_memo_fact_selection(payload: Mapping[str, Any]) -> dict[str, Any]:

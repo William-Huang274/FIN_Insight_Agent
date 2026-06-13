@@ -8,6 +8,9 @@ from sec_agent.memo_llm import (
     MEMO_ROUTE_SOURCE,
     MEMO_ROUTER_ENV,
     MemoLLMConfig,
+    _select_memo_supported_claims,
+    _salvage_action_items,
+    _unknown_numeric_tokens as _memo_unknown_numeric_tokens,
     build_shared_memo_context,
     extract_json_object,
     memo_writer_from_env,
@@ -32,6 +35,65 @@ def test_zh_punctuation_normalization_separates_concatenated_ticker_sentence() -
 
     assert "增长TGT" not in normalized
     assert "增长；TGT" in normalized
+
+
+def test_memo_numeric_fidelity_accepts_chinese_usd_yi_converted_from_usd_millions() -> None:
+    unknown = _memo_unknown_numeric_tokens(
+        "AMZN capex 为 -1510.03亿美元，DELL ISG 产品收入为 290.09亿美元。",
+        "AMZN reported capital expenditures of -151003.0 usd_millions; DELL Total ISG net revenue was 29009.0 usd_millions.",
+    )
+
+    assert "-1510.03亿美元" not in unknown
+    assert "290.09亿美元" not in unknown
+
+
+def test_memo_supported_claim_selection_keeps_product_dimension_under_claim_cap() -> None:
+    claims = [
+        {
+            "claim_id": f"capex_{index}",
+            "memo_slot": "fundamentals",
+            "analysis_dimension": "capital_and_financing",
+            "claim": f"Capex fact {index}",
+        }
+        for index in range(5)
+    ]
+    claims.append(
+        {
+            "claim_id": "product_fact",
+            "memo_slot": "product_technology",
+            "analysis_dimension": "product_and_production",
+            "claim": "DELL AI-optimized servers product revenue fact.",
+        }
+    )
+
+    selected = _select_memo_supported_claims(
+        claims,
+        [{"memo_slot": "fundamentals", "status": "supported"}],
+        max_claims=3,
+    )
+
+    assert "product_fact" in {row["claim_id"] for row in selected}
+
+
+def test_salvage_action_items_are_dimension_specific_not_generic_template() -> None:
+    items = _salvage_action_items(
+        [
+            {
+                "claim_id": "product_fact",
+                "analysis_dimension": "product_and_production",
+                "ticker_scope": ["DELL"],
+                "metric_scope": ["product_kpi:product_revenue"],
+                "evidence_refs": ["dell_product_ref"],
+            }
+        ],
+        response_language="zh-CN",
+        kind="monitoring_items",
+        max_items=1,
+    )
+
+    assert "用该补充论据交叉验证核心判断" not in items[0]["text"]
+    assert "DELL" in items[0]["text"]
+    assert "产品与产线" in items[0]["text"]
 
 
 def test_zh_gap_only_dimension_localization_avoids_english_fallback_template() -> None:
@@ -81,6 +143,34 @@ def test_standard_memo_renderer_surfaces_more_than_five_dimensions() -> None:
     rendered = _render_memo_answer(memo, bounded=False)
 
     assert "6. 风险" in rendered
+
+
+def test_memo_renderer_filters_internal_thesis_synthesis_dimension() -> None:
+    memo = {
+        "response_language": {"language": "zh-CN"},
+        "memo_profile": {"profile": "standard"},
+        "direct_answer": "有边界的核心判断。",
+        "dimension_analyses": [
+            {
+                "dimension_id": "thesis_synthesis",
+                "title": "Synthesis",
+                "summary": "primary_sec_filing",
+                "claim_ids": ["internal_claim"],
+            },
+            {
+                "dimension_id": "fundamentals",
+                "title": "基本面",
+                "summary": "基本面事实有可追踪证据。",
+                "evidence_refs": ["ref_1"],
+            },
+        ],
+    }
+
+    rendered = _render_memo_answer(memo, bounded=False)
+
+    assert "Synthesis" not in rendered
+    assert "primary_sec_filing" not in rendered
+    assert "基本面事实" in rendered
 
 
 def test_repair_multi_agent_memo_removes_raw_tool_and_bad_claims() -> None:
@@ -262,6 +352,17 @@ def test_memo_writer_llm_infers_chinese_response_language_from_query() -> None:
                 "source_families": ["primary_sec_filing"],
             }
         ],
+        "dimension_analyses": [
+            {
+                "dimension_id": "fundamentals",
+                "status": "supported",
+                "summary": "已验证 capex 证据构成当前判断的可追溯基本面约束。",
+                "business_mechanism": "资本开支事实限定再投资强度和业务扩张判断。",
+                "financial_bridge": "仅通过已验证 capex ClaimCard 桥接到投资判断。",
+                "claim_ids": ["fundamental_analyst_claim_1"],
+                "evidence_refs": ["capex_ref"],
+            }
+        ],
         "source_boundary": "仅限已验证 judgment plan；不包含原始检索行。",
     }
     fake = _FakeChat([json.dumps(memo, ensure_ascii=False)])
@@ -299,6 +400,17 @@ def test_memo_writer_llm_wraps_english_claims_for_chinese_response_gate() -> Non
                 "claim": "Supported capex evidence constrains the current investment view.",
                 "evidence_refs": ["capex_ref"],
                 "source_families": ["primary_sec_filing"],
+            }
+        ],
+        "dimension_analyses": [
+            {
+                "dimension_id": "fundamentals",
+                "status": "supported",
+                "summary": "Supported capex evidence constrains the current investment view.",
+                "business_mechanism": "Capex evidence bounds the reinvestment mechanism.",
+                "financial_bridge": "Bridge only through the verified capex ClaimCard.",
+                "claim_ids": ["fundamental_analyst_claim_1"],
+                "evidence_refs": ["capex_ref"],
             }
         ],
     }

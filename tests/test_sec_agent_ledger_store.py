@@ -76,6 +76,45 @@ def test_ledger_store_expands_common_metric_family_aliases(tmp_path: Path) -> No
     assert rows[0]["metric_family"] == "capital_expenditure_proxy"
 
 
+def test_ledger_store_product_revenue_alias_matches_dell_ai_server_rows(tmp_path: Path) -> None:
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                ticker="DELL",
+                metric_family="ai_optimized_servers",
+                metric_id="store_case::DELL::2026::ai_optimized_servers::total_value::qtd",
+                metric_name="AI-optimized servers",
+                row_label="AI-optimized servers",
+                raw_value_text="$16,132",
+                display_value_zh="16,132（百万美元）",
+                value=16132.0,
+                source_type="8-K",
+                form_type="8-K",
+                source_tier="company_authored_unaudited_sec_filing",
+                object_id="dell_ai_servers_8k",
+                source_text="Net revenue: AI-optimized servers $16,132 million.",
+            )
+        ],
+        store_path,
+    )
+
+    rows = query_ledger_facts(
+        store_path,
+        case_id="case_live",
+        tickers=["DELL"],
+        years=[2026],
+        filing_types=["8-K"],
+        source_tiers=["company_authored_unaudited_sec_filing"],
+        metric_families=["product_revenue"],
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["metric_family"] == "ai_optimized_servers"
+    assert rows[0]["value"] == 16132.0
+
+
 def test_ledger_store_margin_alias_matches_gross_margin_rows(tmp_path: Path) -> None:
     store_path = tmp_path / "ledger.duckdb"
     write_ledger_store(
@@ -315,6 +354,69 @@ def test_mcp_ledger_query_relaxes_filing_type_when_metric_row_exists(tmp_path: P
     assert result["fallback_trace"][-1]["type"] == "relaxed_filing_type_and_period_role"
 
 
+def test_mcp_ledger_query_normalizes_product_revenue_aliases(tmp_path: Path) -> None:
+    from sec_agent.mcp_tool_registry import invoke_mcp_tool
+
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                ticker="DELL",
+                metric_family="ai_optimized_servers",
+                metric_id="store_case::DELL::2026::ai_optimized_servers::total_value::qtd",
+                metric_name="AI-optimized servers",
+                row_label="AI-optimized servers",
+                raw_value_text="$16,132",
+                display_value_zh="16,132（百万美元）",
+                value=16132.0,
+                source_type="8-K",
+                form_type="8-K",
+                source_tier="company_authored_unaudited_sec_filing",
+                source_text="Net revenue: AI-optimized servers $16,132 million.",
+            ),
+            _fact_row(
+                case_id="store_case",
+                ticker="DELL",
+                metric_family="ai_optimized_servers",
+                metric_id="store_case::DELL::2026::ai_optimized_servers::percentage_rate::qtd",
+                metric_name="AI-optimized servers",
+                row_label="AI-optimized servers",
+                raw_value_text="757%",
+                display_value_zh="757%",
+                value=757.0,
+                unit="percent",
+                source_type="8-K",
+                form_type="8-K",
+                source_tier="company_authored_unaudited_sec_filing",
+                source_text="Net revenue: AI-optimized servers increased 757%.",
+            ),
+        ],
+        store_path,
+    )
+
+    result = invoke_mcp_tool(
+        "sec_query_exact_value_ledger",
+        {
+            "ledger_store_path": str(store_path),
+            "tickers": ["DELL"],
+            "years": [2026],
+            "filing_types": ["8-K"],
+            "source_tiers": ["company_authored_unaudited_sec_filing"],
+            "metric_families": ["product_revenue"],
+            "limit": 10,
+        },
+    )
+
+    assert result["status"] == "ok"
+    assert result["row_count"] == 1
+    row = result["ledger_rows"][0]
+    assert row["metric_family"] == "product_revenue"
+    assert row["source_metric_family"] == "ai_optimized_servers"
+    assert row["unit"] == "usd_millions"
+    assert row["value"] == 16132.0
+
+
 def test_runtime_ledger_uses_duckdb_store_without_object_records(tmp_path: Path) -> None:
     interactive = _load_interactive_module()
     store_path = tmp_path / "ledger.duckdb"
@@ -348,6 +450,124 @@ def test_runtime_ledger_uses_duckdb_store_without_object_records(tmp_path: Path)
     assert len(rows) == 1
     assert rows[0]["metric_id"].startswith("case_live::")
     assert rows[0]["object_id"] == "obj_nvda_revenue"
+
+
+def test_runtime_ledger_normalizes_store_product_family_aliases(tmp_path: Path) -> None:
+    interactive = _load_interactive_module()
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                ticker="DELL",
+                metric_family="ai_optimized_servers",
+                metric_id="store_case::DELL::2026::ai_optimized_servers::total_value::qtd",
+                metric_name="AI-optimized servers",
+                row_label="AI-optimized servers",
+                raw_value_text="$16,132",
+                display_value_zh="16,132（百万美元）",
+                value=16132.0,
+                source_type="8-K",
+                form_type="8-K",
+                source_tier="company_authored_unaudited_sec_filing",
+                object_id="dell_ai_servers_8k",
+                source_text="Net revenue: AI-optimized servers $16,132 million.",
+            )
+        ],
+        store_path,
+    )
+    case = {
+        "case_id": "case_live",
+        "years": [2026],
+        "filing_types": ["8-K"],
+        "source_tiers": ["company_authored_unaudited_sec_filing"],
+        "query_contract": {
+            "focus_tickers": ["DELL"],
+            "search_scope_tickers": ["DELL"],
+            "years": [2026],
+            "filing_types": ["8-K"],
+            "source_tiers": ["company_authored_unaudited_sec_filing"],
+            "metric_families": ["product_revenue"],
+            "ledger_rules": {
+                "allowed_metric_families": ["product_revenue"],
+                "prefer_focus_tickers": True,
+            },
+        },
+    }
+    args = Namespace(ledger_store_path=str(store_path), object_bm25_index_dir="missing", ledger_max_rows=10)
+
+    rows = interactive._build_runtime_ledger(case, [], args)
+
+    assert len(rows) == 1
+    assert rows[0]["metric_family"] == "product_revenue"
+    assert rows[0]["source_metric_family"] == "ai_optimized_servers"
+    assert rows[0]["metric_id"].startswith("case_live::DELL::2026::product_revenue::total_value")
+    assert rows[0]["value"] == 16132.0
+
+
+def test_runtime_ledger_scope_query_preserves_focus_tickers_missing_from_task_bindings(tmp_path: Path) -> None:
+    interactive = _load_interactive_module()
+    store_path = tmp_path / "ledger.duckdb"
+    write_ledger_store(
+        [
+            _fact_row(
+                case_id="store_case",
+                ticker="NVDA",
+                metric_family="data_center_revenue",
+                metric_id="store_case::NVDA::2026::data_center_revenue::total_value::qtd",
+                metric_name="Data center revenue",
+                row_label="Revenue",
+                value=57006.0,
+            ),
+            _fact_row(
+                case_id="store_case",
+                ticker="DELL",
+                metric_family="ai_optimized_servers",
+                metric_id="store_case::DELL::2026::ai_optimized_servers::total_value::qtd",
+                metric_name="AI-optimized servers",
+                row_label="AI-optimized servers",
+                raw_value_text="$16,132",
+                display_value_zh="16,132（百万美元）",
+                value=16132.0,
+                source_type="8-K",
+                form_type="8-K",
+                source_tier="company_authored_unaudited_sec_filing",
+                object_id="dell_ai_servers_8k",
+                source_text="Net revenue: AI-optimized servers $16,132 million.",
+            ),
+        ],
+        store_path,
+    )
+    case = {
+        "case_id": "case_live",
+        "companies": ["NVDA", "DELL"],
+        "years": [2026],
+        "filing_types": ["10-Q", "8-K"],
+        "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+        "query_contract": {
+            "task_type": "ai_industry_financial_trend",
+            "focus_tickers": ["NVDA", "DELL"],
+            "search_scope_tickers": ["NVDA", "DELL"],
+            "years": [2026],
+            "filing_types": ["10-Q", "8-K"],
+            "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+            "metric_families": ["data_center_revenue", "product_revenue"],
+            "decomposed_tasks": [
+                {
+                    "task_id": "planner_missed_dell_product",
+                    "required_tickers": ["NVDA"],
+                    "required_metric_families": ["data_center_revenue"],
+                }
+            ],
+        },
+    }
+    args = Namespace(ledger_store_path=str(store_path), object_bm25_index_dir="missing", ledger_max_rows=3)
+
+    rows = interactive._build_runtime_ledger(case, [], args)
+
+    product_rows = [row for row in rows if row["ticker"] == "DELL" and row["metric_family"] == "product_revenue"]
+    assert product_rows
+    assert product_rows[0]["value"] == 16132.0
 
 
 def test_runtime_ledger_extracts_metrics_from_context_evidence_rows(tmp_path: Path) -> None:

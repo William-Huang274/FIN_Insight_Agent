@@ -9,7 +9,13 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
 from sec_agent.llm_gateway import chat_completion
-from sec_agent.multi_agent_contracts import SPECIALIST_AGENT_IDS, normalize_specialist_memolet, validate_specialist_memolet
+from sec_agent.multi_agent_contracts import (
+    SPECIALIST_AGENT_IDS,
+    _is_material_numeric_token,
+    _unknown_numeric_tokens,
+    normalize_specialist_memolet,
+    validate_specialist_memolet,
+)
 from sec_agent.multi_agent_runtime import active_specialists_for_state, build_agent_data_view, specialist_activation_decisions
 from sec_agent.research_skills import research_skill_prompt
 
@@ -393,13 +399,25 @@ def route_specialist_memolet_llm(
                 request,
                 known_evidence_refs=evidence_refs,
             )
-            effective_validation = product_validation or temporal_validation or salvaged_validation
+            numeric_validation = _salvage_numeric_fidelity_violations(
+                product_validation or temporal_validation or salvaged_validation,
+                request,
+                known_evidence_refs=evidence_refs,
+            )
+            effective_validation = numeric_validation or product_validation or temporal_validation or salvaged_validation
             capped_memolet = _apply_specialist_output_contract_caps(effective_validation["memolet"], request)
             capped_validation = validate_specialist_memolet(capped_memolet, known_evidence_refs=evidence_refs)
             capped_validation["warnings"] = [
                 *list(effective_validation.get("warnings") or []),
                 *list(capped_validation.get("warnings") or []),
             ]
+            salvage_policy = "drop_supported_observations_with_missing_or_unknown_evidence_refs"
+            if temporal_validation is not None:
+                salvage_policy = "demote_single_ref_temporal_observations"
+            if product_validation is not None:
+                salvage_policy = "demote_product_kpi_without_exact_authority"
+            if numeric_validation is not None:
+                salvage_policy = "demote_numeric_claim_without_cited_row_support"
             return {
                 "schema_version": ROUTE_SCHEMA_VERSION,
                 "source": ROUTE_SOURCE,
@@ -411,7 +429,7 @@ def route_specialist_memolet_llm(
                     "attempt_count": len(model_calls),
                     "repair_attempts": attempt_index,
                     "known_evidence_ref_count": len(evidence_refs),
-                    "salvage_policy": "drop_supported_observations_with_missing_or_unknown_evidence_refs",
+                    "salvage_policy": salvage_policy,
                 },
                 "model_diagnostics": _aggregate_model_calls(model_calls),
                 "failure_reason": "",
@@ -427,7 +445,12 @@ def route_specialist_memolet_llm(
                 request,
                 known_evidence_refs=evidence_refs,
             )
-            effective_validation = product_validation or temporal_validation or validation
+            numeric_validation = _salvage_numeric_fidelity_violations(
+                product_validation or temporal_validation or validation,
+                request,
+                known_evidence_refs=evidence_refs,
+            )
+            effective_validation = numeric_validation or product_validation or temporal_validation or validation
             capped_memolet = _apply_specialist_output_contract_caps(effective_validation["memolet"], request)
             capped_validation = validate_specialist_memolet(capped_memolet, known_evidence_refs=evidence_refs)
             capped_validation["warnings"] = [
@@ -443,6 +466,8 @@ def route_specialist_memolet_llm(
                 routing_trace["salvage_policy"] = "demote_single_ref_temporal_observations"
             if product_validation is not None:
                 routing_trace["salvage_policy"] = "demote_product_kpi_without_exact_authority"
+            if numeric_validation is not None:
+                routing_trace["salvage_policy"] = "demote_numeric_claim_without_cited_row_support"
             return {
                 "schema_version": ROUTE_SCHEMA_VERSION,
                 "source": ROUTE_SOURCE,
@@ -1456,6 +1481,90 @@ def _row_has_product_kpi_exact_authority(row: Mapping[str, Any]) -> bool:
         and str(row.get("promotion_status") or "").strip() == "runtime_fact_allowed"
         and bool(row.get("exact_value_authority"))
         and not bool(row.get("context_only"))
+    )
+
+
+def _salvage_numeric_fidelity_violations(
+    validation: Mapping[str, Any],
+    request: Mapping[str, Any],
+    *,
+    known_evidence_refs: set[str],
+) -> dict[str, Any] | None:
+    memolet = dict(validation.get("memolet") or {})
+    row_by_ref = _row_by_known_ref_from_request(request)
+    if not row_by_ref:
+        return None
+    observations = [dict(item) for item in memolet.get("observations") or [] if isinstance(item, Mapping)]
+    kept: list[dict[str, Any]] = []
+    removed: list[dict[str, Any]] = []
+    for observation in observations:
+        refs = _string_list(observation.get("evidence_refs") or observation.get("refs"))
+        if not refs or sorted(set(refs) - known_evidence_refs):
+            kept.append(observation)
+            continue
+        source_text = " ".join(_row_numeric_scope_text(row_by_ref.get(ref) or {}) for ref in refs)
+        if not source_text.strip():
+            kept.append(observation)
+            continue
+        unknown = sorted(_unknown_numeric_tokens(str(observation.get("claim") or ""), source_text))
+        hard_unknown = [token for token in unknown if _is_material_numeric_token(token)]
+        if not hard_unknown:
+            kept.append(observation)
+            continue
+        removed.append(
+            {
+                "claim": _truncate(str(observation.get("claim") or "Unsupported numeric specialist observation."), 260),
+                "reason": "demoted_numeric_claim_without_cited_row_support",
+                "evidence_refs": refs,
+                "numeric_tokens": hard_unknown[:8],
+            }
+        )
+    if not removed:
+        return None
+    repaired = dict(memolet)
+    repaired["status"] = "partial"
+    repaired["observations"] = kept
+    repaired["unsupported_claims"] = [
+        *[dict(item) for item in memolet.get("unsupported_claims") or [] if isinstance(item, Mapping)],
+        *removed,
+    ]
+    metadata = dict(repaired.get("metadata") or {})
+    metadata["salvage_policy"] = "demote_numeric_claim_without_cited_row_support_v0_1"
+    metadata["salvaged_observation_count"] = int(metadata.get("salvaged_observation_count") or 0) + len(removed)
+    repaired["metadata"] = metadata
+    salvaged = validate_specialist_memolet(repaired, known_evidence_refs=known_evidence_refs)
+    if salvaged.get("status") != "pass":
+        return None
+    salvaged["warnings"] = [
+        *list(validation.get("warnings") or []),
+        *list(salvaged.get("warnings") or []),
+        {
+            "type": "numeric_observation_demoted",
+            "removed_count": len(removed),
+            "policy": "supported_numeric_claims_must_match_cited_bounded_rows",
+        },
+    ]
+    return salvaged
+
+
+def _row_numeric_scope_text(row: Mapping[str, Any]) -> str:
+    return " ".join(
+        str(row.get(key) or "")
+        for key in (
+            "value",
+            "numeric_value",
+            "display_value",
+            "unit",
+            "metric",
+            "metric_name",
+            "metric_family",
+            "summary",
+            "text",
+            "snippet",
+            "as_of_date",
+            "period_role",
+            "period",
+        )
     )
 
 

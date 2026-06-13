@@ -1218,6 +1218,45 @@ def test_product_specialist_keeps_product_kpi_with_exact_authority() -> None:
     assert "salvage_policy" not in result["routing_trace"]
 
 
+def test_specialist_demotes_numeric_claim_when_cited_row_has_different_number() -> None:
+    memolet = _memolet("market_valuation_analyst", source_family="market_snapshot", evidence_ref="dell_market_ref")
+    memolet["observations"][0].update(
+        {
+            "claim": "DELL returned 1.8% over the 3-month period.",
+            "claim_type": "market_context",
+            "memo_slot": "market_valuation",
+            "metric_scope": ["return_3m"],
+        }
+    )
+    fake = _FakeChat([json.dumps(memolet)])
+    request = {
+        "user_query": "Analyze DELL market reaction.",
+        "known_evidence_refs": ["dell_market_ref"],
+        "bounded_evidence_rows": [
+            {
+                "evidence_ref": "dell_market_ref",
+                "source_family": "market_snapshot",
+                "metric": "return_3m",
+                "value": "176.4%",
+                "summary": "DELL 3-month return was 176.4% as of 2026-05-29.",
+                "as_of_date": "2026-05-29",
+            }
+        ],
+    }
+
+    result = route_specialist_memolet_llm(
+        "market_valuation_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["memolet"]["observations"] == []
+    assert result["memolet"]["unsupported_claims"][0]["reason"] == "demoted_numeric_claim_without_cited_row_support"
+    assert result["routing_trace"]["salvage_policy"] == "demote_numeric_claim_without_cited_row_support"
+
+
 def test_shared_specialist_context_compacts_common_scope() -> None:
     context = build_shared_specialist_context(
         {

@@ -89,6 +89,11 @@ _EVAL_RUNNERS = {
         "description": "Runs 1-2 full-chain activation cases with SQL run audit, analyst-depth, and dimension-led memo gates.",
         "timeout_hint_s": 2400,
     },
+    "agent_graph_vnext_diagnostic_probe": {
+        "label": "Agent Graph vNext diagnostic probe",
+        "description": "Runs 2 diagnostic full-chain cases for product/capex, numeric sanity, bounded gaps, and memo surface quality.",
+        "timeout_hint_s": 3600,
+    },
 }
 _ACTIVE_PROCESSES: dict[str, subprocess.Popen[str]] = {}
 _CANCEL_REQUESTED: set[str] = set()
@@ -174,18 +179,24 @@ def build_eval_command(
             "--output-path",
             str(output_path),
         ]
-    elif eval_id in {"agent_graph_vnext_g11_full_chain", "agent_graph_vnext_run_audit_smoke"}:
+    elif eval_id in {
+        "agent_graph_vnext_g11_full_chain",
+        "agent_graph_vnext_run_audit_smoke",
+        "agent_graph_vnext_diagnostic_probe",
+    }:
         env_overrides["BGE_DEVICE"] = "cpu"
-        cases_path = (
-            "tests/fixtures/fin_agent_vnext_run_audit_full_chain_cases_v0_1.jsonl"
-            if eval_id == "agent_graph_vnext_run_audit_smoke"
-            else "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl"
-        )
-        output_dir = (
-            "eval/sec_cases/outputs/multi_agent_vnext_run_audit_smoke_eval"
-            if eval_id == "agent_graph_vnext_run_audit_smoke"
-            else "eval/sec_cases/outputs/multi_agent_vnext_g11_full_chain_eval"
-        )
+        cases_path_by_eval = {
+            "agent_graph_vnext_g11_full_chain": "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl",
+            "agent_graph_vnext_run_audit_smoke": "tests/fixtures/fin_agent_vnext_run_audit_full_chain_cases_v0_1.jsonl",
+            "agent_graph_vnext_diagnostic_probe": "tests/fixtures/fin_agent_vnext_diagnostic_probe_cases_v0_1.jsonl",
+        }
+        output_dir_by_eval = {
+            "agent_graph_vnext_g11_full_chain": "eval/sec_cases/outputs/multi_agent_vnext_g11_full_chain_eval",
+            "agent_graph_vnext_run_audit_smoke": "eval/sec_cases/outputs/multi_agent_vnext_run_audit_smoke_eval",
+            "agent_graph_vnext_diagnostic_probe": "eval/sec_cases/outputs/multi_agent_vnext_diagnostic_probe_eval",
+        }
+        cases_path = cases_path_by_eval[eval_id]
+        output_dir = output_dir_by_eval[eval_id]
         run_audit_db_path = Path("data") / "workbench_private" / "run_audit" / f"{job_id}_run_audit.sqlite"
         args = [
             sys.executable,
@@ -216,9 +227,12 @@ def build_eval_command(
             "1200",
             "--summary-output-path",
             str(output_path),
-            "--strict",
         ]
+        if eval_id != "agent_graph_vnext_diagnostic_probe":
+            args.append("--strict")
         if eval_id == "agent_graph_vnext_run_audit_smoke":
+            args.extend(["--limit", "2"])
+        if eval_id == "agent_graph_vnext_diagnostic_probe":
             args.extend(["--limit", "2"])
     else:
         args = [

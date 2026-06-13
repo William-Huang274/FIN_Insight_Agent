@@ -12,6 +12,9 @@ VNEXT_G11_FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_g11
 VNEXT_RUN_AUDIT_FIXTURE_PATH = (
     REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_run_audit_full_chain_cases_v0_1.jsonl"
 )
+VNEXT_DIAGNOSTIC_FIXTURE_PATH = (
+    REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_diagnostic_probe_cases_v0_1.jsonl"
+)
 SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent" / "eval_multi_agent_real_llm_chain.py"
 
 
@@ -92,6 +95,19 @@ def test_fin_agent_vnext_run_audit_full_chain_fixture_schema() -> None:
     )
 
 
+def test_fin_agent_vnext_diagnostic_probe_fixture_schema() -> None:
+    rows = _read_jsonl(VNEXT_DIAGNOSTIC_FIXTURE_PATH)
+
+    assert len(rows) == 2
+    assert all(row["case_id"].startswith("fin_diag_") for row in rows)
+    assert {row["category"] for row in rows} == {"diagnostic_probe"}
+    assert all(row.get("require_no_internal_synthesis_dimension") for row in rows)
+    assert all(row.get("require_numeric_fact_sanity") for row in rows)
+    assert all(row.get("require_product_or_gap_evidence") for row in rows)
+    assert any(row.get("require_capital_financing_signal") for row in rows)
+    assert any("product_kpi:product_revenue" in row.get("required_approved_metric_ids", []) for row in rows)
+
+
 def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
     module = _load_script_module()
     case = _read_jsonl(FIXTURE_PATH)[0]
@@ -144,6 +160,190 @@ def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
     assert all(score["checks"].values())
     assert score["agent_audit"]["research_lead"]["validation_status"] == "pass"
     assert score["agent_audit"]["verifier"]["input_projection"]["projected_claim_count"] == 2
+
+
+def test_real_llm_chain_diagnostic_quality_accepts_product_and_capex_facts() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "diagnostic_quality_unit",
+        "category": "diagnostic_probe",
+        "required_approved_metric_ids": ["financial_metric:capex", "product_kpi:product_revenue"],
+        "required_deterministic_claim_dimensions": ["capital_and_financing", "product_and_production"],
+        "required_product_fact_terms": ["AI-optimized servers"],
+        "require_no_internal_synthesis_dimension": True,
+        "require_numeric_fact_sanity": True,
+        "require_product_or_gap_evidence": True,
+        "require_capital_financing_signal": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {},
+        "agent_activation_validation": {"status": "pass"},
+        "pre_memo_fact_selection": {
+            "approved_facts": [
+                {
+                    "selection_id": "fact_capex",
+                    "fact_id": "capex_ref",
+                    "ticker": "MSFT",
+                    "canonical_metric_id": "financial_metric:capex",
+                    "value": "9.1",
+                    "unit": "usd_billions",
+                    "evidence_ref": "capex_ref",
+                },
+                {
+                    "selection_id": "fact_dell_ai_servers",
+                    "fact_id": "dell_product_ref",
+                    "ticker": "DELL",
+                    "canonical_metric_id": "product_kpi:product_revenue",
+                    "product_or_segment": "AI-optimized servers",
+                    "value": "16132",
+                    "unit": "usd_millions",
+                    "evidence_ref": "dell_product_ref",
+                },
+            ]
+        },
+        "verified_judgment_plan": {
+            "supported_claims": [
+                {
+                    "claim_id": "claim_capex",
+                    "agent_id": "pre_memo_fact_selector",
+                    "analysis_dimension": "capital_and_financing",
+                    "metric_scope": ["financial_metric:capex"],
+                    "evidence_refs": ["capex_ref"],
+                },
+                {
+                    "claim_id": "claim_product",
+                    "agent_id": "pre_memo_fact_selector",
+                    "analysis_dimension": "product_and_production",
+                    "metric_scope": ["product_kpi:product_revenue"],
+                    "product_or_segment": "AI-optimized servers",
+                    "evidence_refs": ["dell_product_ref"],
+                },
+            ]
+        },
+        "memo_answer": {
+            "answer_status": "draft",
+            "dimension_analyses": [
+                {"dimension_id": "capital_and_financing", "summary": "Capex fact.", "evidence_refs": ["capex_ref"]},
+                {"dimension_id": "product_and_production", "summary": "AI-optimized servers fact.", "evidence_refs": ["dell_product_ref"]},
+            ],
+        },
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": "分维度分析:\n- 产品产线：DELL AI-optimized servers 有公司披露收入。\n关键论据:\n1. capex fact 证据=capex_ref",
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "pass"
+    assert all(score["layer_checks"]["diagnostic_quality"].values())
+    assert score["diagnostic_quality_audit"]["product_evidence_present"] is True
+
+
+def test_real_llm_chain_diagnostic_quality_rejects_product_fact_not_promoted_to_claim() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "diagnostic_quality_product_not_promoted",
+        "category": "diagnostic_probe",
+        "required_approved_metric_ids": ["product_kpi:product_revenue"],
+        "required_deterministic_claim_dimensions": ["product_and_production"],
+        "required_product_fact_terms": ["AI-optimized servers"],
+        "require_product_or_gap_evidence": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {},
+        "agent_activation_validation": {"status": "pass"},
+        "pre_memo_fact_selection": {
+            "approved_facts": [
+                {
+                    "selection_id": "fact_dell_ai_servers",
+                    "fact_id": "dell_product_ref",
+                    "ticker": "DELL",
+                    "canonical_metric_id": "product_kpi:product_revenue",
+                    "product_or_segment": "AI-optimized servers",
+                    "value": "16132",
+                    "unit": "usd_millions",
+                    "evidence_ref": "dell_product_ref",
+                }
+            ]
+        },
+        "verified_judgment_plan": {
+            "supported_claims": [
+                {
+                    "claim_id": "claim_capex",
+                    "agent_id": "pre_memo_fact_selector",
+                    "analysis_dimension": "capital_and_financing",
+                    "metric_scope": ["financial_metric:capex"],
+                    "evidence_refs": ["capex_ref"],
+                }
+            ]
+        },
+        "memo_answer": {
+            "answer_status": "draft",
+            "dimension_analyses": [
+                {
+                    "dimension_id": "product_and_production",
+                    "status": "gap_or_counterevidence",
+                    "summary": "当前产品/产线维度只有公开证据缺口。",
+                    "gap_ids": ["gap_product"],
+                }
+            ],
+        },
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": "分维度分析:\n- 产品产线：当前产品/产线维度只有公开证据缺口。\n关键论据:\n1. capex fact 证据=capex_ref",
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "fail"
+    assert score["layer_checks"]["diagnostic_quality"]["required_deterministic_claim_dimensions_present"] is False
+    assert score["layer_checks"]["diagnostic_quality"]["required_product_fact_terms_present"] is False
+    assert score["diagnostic_quality_audit"]["product_evidence_present"] is True
+
+
+def test_real_llm_chain_diagnostic_quality_rejects_bad_numeric_and_internal_synthesis() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "diagnostic_quality_bad_unit",
+        "category": "diagnostic_probe",
+        "require_no_internal_synthesis_dimension": True,
+        "require_numeric_fact_sanity": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {},
+        "agent_activation_validation": {"status": "pass"},
+        "pre_memo_fact_selection": {
+            "approved_facts": [
+                {
+                    "selection_id": "bad_revenue",
+                    "fact_id": "bad_revenue_ref",
+                    "ticker": "GOOGL",
+                    "canonical_metric_id": "financial_metric:revenue",
+                    "value": "19",
+                    "unit": "%",
+                    "evidence_ref": "bad_revenue_ref",
+                }
+            ]
+        },
+        "memo_answer": {
+            "answer_status": "draft",
+            "dimension_analyses": [
+                {"dimension_id": "thesis_synthesis", "summary": "Internal synthesis should not render.", "evidence_refs": ["bad_revenue_ref"]}
+            ],
+        },
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": "Synthesis: primary_sec_filing should not be rendered.",
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "fail"
+    assert score["layer_checks"]["diagnostic_quality"]["numeric_fact_sanity"] is False
+    assert score["layer_checks"]["diagnostic_quality"]["no_internal_synthesis_dimension"] is False
 
 
 def test_real_llm_chain_scoring_accepts_run_audit_and_dimension_depth() -> None:

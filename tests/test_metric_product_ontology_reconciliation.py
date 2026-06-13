@@ -26,12 +26,20 @@ def test_metric_product_ontology_maps_financial_and_product_metrics_without_prox
     )
     revenue = resolve_metric_for_row({"metric_family": "revenue"}, ontology)
     deliveries = resolve_metric_for_row({"metric_family": "deliveries"}, ontology)
+    capex_proxy = resolve_metric_for_row({"metric_family": "capital_expenditure_proxy"}, ontology)
+    ai_servers = resolve_metric_for_row({"metric_family": "ai_optimized_servers"}, ontology)
+    gross_margin = resolve_metric_for_row({"metric_family": "gross_margin", "unit": "percent"}, ontology)
+    gross_profit = resolve_metric_for_row({"metric_family": "gross_margin", "unit": "usd_millions"}, ontology)
     rejected = resolve_metric_for_row({"metric_family": "revenue growth"}, ontology)
 
     assert ontology["schema_version"] == METRIC_PRODUCT_ONTOLOGY_SCHEMA_VERSION
     assert ontology["validation"]["status"] == "pass"
     assert revenue["canonical_metric_id"] == "financial_metric:revenue"
     assert deliveries["canonical_metric_id"] == "product_kpi:deliveries"
+    assert capex_proxy["canonical_metric_id"] == "financial_metric:capex"
+    assert ai_servers["canonical_metric_id"] == "product_kpi:product_revenue"
+    assert gross_margin["canonical_metric_id"] == "financial_metric:gross_margin"
+    assert gross_profit["canonical_metric_id"] == "financial_metric:gross_profit"
     assert "public_source_context" in deliveries["cannot_infer_from"]
     assert "market_snapshot" not in deliveries["exact_authority_source_families"]
     assert rejected["match_status"] == "rejected_alias"
@@ -120,7 +128,7 @@ def test_reconciliation_resolves_source_priority_and_blocks_unit_and_taxonomy_co
                     "ticker": "MSFT",
                     "metric_family": "capex",
                     "value": "10",
-                    "unit": "USD",
+                    "unit": "usd_billions",
                     "fiscal_year": 2025,
                     "fiscal_period": "FY",
                     "source_family": "primary_sec_filing",
@@ -170,12 +178,201 @@ def test_reconciliation_resolves_source_priority_and_blocks_unit_and_taxonomy_co
     assert revenue["resolution_status"] == "resolved_by_rule"
     assert revenue["preferred_value"]["source_family"] == "primary_sec_filing"
     assert revenue["preferred_value"]["resolution_rule"] == "source_priority_highest_authority_wins"
-    assert capex["resolution_status"] == "unresolved_conflict"
-    assert "unit_conflict" in capex["conflict_types"]
+    assert capex["resolution_status"] == "resolved_single_candidate"
+    assert capex["preferred_value"]["unit_family"] == "currency"
+    assert {row["evidence_ref"]: row["candidate_status"] for row in ledger["excluded_candidates"]}["capex_shares"] == "excluded_metric_unit_mismatch"
     assert any("taxonomy_conflict" in row["conflict_types"] for row in ledger["reconciliation_groups"])
-    assert ledger["summary"]["unresolved_conflict_count"] == 2
-    assert ledger["excluded_candidate_count"] == 1
-    assert ledger["conflict_gap_count"] == 2
+    assert ledger["summary"]["unresolved_conflict_count"] == 1
+    assert ledger["excluded_candidate_count"] == 2
+    assert ledger["conflict_gap_count"] == 1
+
+
+def test_reconciliation_splits_period_role_and_segment_labels_for_sec_table_rows() -> None:
+    ontology = build_metric_product_ontology_snapshot({})
+    ledger = build_reconciliation_ledger(
+        {
+            "run_id": "unit-period-role",
+            "metric_product_ontology_snapshot": ontology,
+            "runtime_ledger_rows": [
+                {
+                    "evidence_ref": "aapl_total_ytd",
+                    "source_id": "sec-aapl",
+                    "ticker": "AAPL",
+                    "metric_family": "revenue",
+                    "metric_name": "Total net sales",
+                    "value": "254940",
+                    "unit": "usd_millions",
+                    "fiscal_year": 2026,
+                    "fiscal_period": "Q2",
+                    "period_role": "ytd",
+                    "source_family": "primary_sec_filing",
+                },
+                {
+                    "evidence_ref": "aapl_iphone_qtd",
+                    "source_id": "sec-aapl",
+                    "ticker": "AAPL",
+                    "metric_family": "revenue",
+                    "metric_name": "iPhone",
+                    "value": "95359",
+                    "unit": "usd_millions",
+                    "fiscal_year": 2026,
+                    "fiscal_period": "Q2",
+                    "period_role": "qtd",
+                    "source_family": "primary_sec_filing",
+                },
+                {
+                    "evidence_ref": "aapl_services_qtd",
+                    "source_id": "sec-aapl",
+                    "ticker": "AAPL",
+                    "metric_family": "revenue",
+                    "metric_name": "Services",
+                    "value": "26645",
+                    "unit": "usd_millions",
+                    "fiscal_year": 2026,
+                    "fiscal_period": "Q2",
+                    "period_role": "qtd",
+                    "source_family": "primary_sec_filing",
+                },
+            ],
+        }
+    )
+    by_key = {
+        (
+            row["canonical_metric_id"],
+            row["product_or_segment"],
+            row["period_key"],
+        ): row
+        for row in ledger["reconciliation_groups"]
+    }
+
+    assert ledger["validation"]["status"] == "pass"
+    assert by_key[("financial_metric:revenue", "", "fiscal:2026:Q2:ytd")]["resolution_status"] == "resolved_single_candidate"
+    assert by_key[("financial_metric:revenue", "iPhone", "fiscal:2026:Q2:qtd")]["resolution_status"] == "resolved_single_candidate"
+    assert by_key[("financial_metric:revenue", "Services", "fiscal:2026:Q2:qtd")]["resolution_status"] == "resolved_single_candidate"
+
+
+def test_reconciliation_excludes_metric_unit_and_rpo_semantic_mismatches() -> None:
+    ontology = build_metric_product_ontology_snapshot({})
+    ledger = build_reconciliation_ledger(
+        {
+            "run_id": "unit-metric-unit-gates",
+            "metric_product_ontology_snapshot": ontology,
+            "runtime_ledger_rows": [
+                {
+                    "evidence_ref": "googl_revenue_growth_not_revenue",
+                    "source_id": "googl-8k",
+                    "ticker": "GOOGL",
+                    "metric_family": "revenue",
+                    "metric_name": "revenue",
+                    "value": "19",
+                    "unit": "percent",
+                    "fiscal_year": 2026,
+                    "fiscal_period": "Q1",
+                    "period_role": "qtd",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                },
+                {
+                    "evidence_ref": "msft_rpo_debt_noise",
+                    "source_id": "msft-10q",
+                    "ticker": "MSFT",
+                    "metric_family": "rpo",
+                    "metric_name": "Total face value of long-term debt",
+                    "row_label": "Total face value of long-term debt",
+                    "source_text": "Remaining performance obligation query hit a debt table: total face value of long-term debt.",
+                    "value": "10652",
+                    "unit": "usd_millions",
+                    "fiscal_year": 2026,
+                    "fiscal_period": "Q3",
+                    "period_role": "qtd",
+                    "source_family": "primary_sec_filing",
+                },
+                {
+                    "evidence_ref": "msft_rpo_valid",
+                    "source_id": "msft-10q-rpo",
+                    "ticker": "MSFT",
+                    "metric_family": "rpo",
+                    "metric_name": "Remaining performance obligations",
+                    "row_label": "Remaining performance obligations",
+                    "source_text": "Remaining performance obligations expected to be recognized as revenue.",
+                    "value": "305000",
+                    "unit": "usd_millions",
+                    "fiscal_year": 2026,
+                    "fiscal_period": "Q3",
+                    "period_role": "instant",
+                    "source_family": "primary_sec_filing",
+                },
+                {
+                    "evidence_ref": "dell_rpo_corporate_expense_noise",
+                    "source_id": "dell-8k-rpo-noise",
+                    "ticker": "DELL",
+                    "metric_family": "rpo",
+                    "metric_name": "Other corporate expenses",
+                    "row_label": "Other corporate expenses",
+                    "source_text": "Remaining performance obligation query hit other corporate expenses.",
+                    "value": "288",
+                    "unit": "usd_millions",
+                    "fiscal_year": 2026,
+                    "fiscal_period": "Q1",
+                    "period_role": "qtd",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                },
+                {
+                    "evidence_ref": "amzn_rpo_corporate_noise",
+                    "source_id": "amzn-10q-rpo-noise",
+                    "ticker": "AMZN",
+                    "metric_family": "rpo",
+                    "metric_name": "Corporate",
+                    "row_label": "Corporate",
+                    "source_text": "Remaining performance obligation query hit a corporate table row.",
+                    "value": "299692",
+                    "unit": "usd_millions",
+                    "fiscal_year": 2026,
+                    "fiscal_period": "Q1",
+                    "period_role": "qtd",
+                    "source_family": "primary_sec_filing",
+                },
+            ],
+        }
+    )
+    excluded = {row["evidence_ref"]: row["candidate_status"] for row in ledger["excluded_candidates"]}
+    groups = {row["canonical_metric_id"]: row for row in ledger["reconciliation_groups"]}
+
+    assert excluded["googl_revenue_growth_not_revenue"] == "excluded_metric_unit_mismatch"
+    assert excluded["msft_rpo_debt_noise"] == "excluded_metric_semantic_mismatch"
+    assert excluded["dell_rpo_corporate_expense_noise"] == "excluded_metric_semantic_mismatch"
+    assert excluded["amzn_rpo_corporate_noise"] == "excluded_metric_semantic_mismatch"
+    assert groups["product_kpi:backlog"]["resolution_status"] == "resolved_single_candidate"
+
+
+def test_reconciliation_product_revenue_strips_metric_prefix_from_product_label() -> None:
+    ontology = build_metric_product_ontology_snapshot({})
+    ledger = build_reconciliation_ledger(
+        {
+            "run_id": "unit-product-revenue-label",
+            "metric_product_ontology_snapshot": ontology,
+            "runtime_ledger_rows": [
+                {
+                    "evidence_ref": "dell_ai_server_revenue",
+                    "source_id": "dell-8k",
+                    "ticker": "DELL",
+                    "metric_family": "product_revenue",
+                    "metric_name": "Net revenue AI-optimized servers",
+                    "value": "16132",
+                    "unit": "usd_millions",
+                    "fiscal_year": 2026,
+                    "fiscal_period": "Q1",
+                    "period_role": "qtd",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                },
+            ],
+        }
+    )
+    group = ledger["reconciliation_groups"][0]
+
+    assert group["canonical_metric_id"] == "product_kpi:product_revenue"
+    assert group["product_or_segment"] == "AI-optimized servers"
+    assert group["period_key"] == "fiscal:2026:Q1:qtd"
+    assert group["resolution_status"] == "resolved_single_candidate"
 
 
 def test_graph_persists_metric_product_ontology_and_reconciliation_ledger(tmp_path: Path) -> None:
@@ -256,10 +453,11 @@ def test_graph_persists_metric_product_ontology_and_reconciliation_ledger(tmp_pa
     assert result["artifact_refs"]["reconciliation_ledger"].endswith("reconciliation_ledger.json")
     assert ontology_artifact["validation"]["status"] == "pass"
     assert reconciliation_artifact["validation"]["status"] == "pass"
-    assert reconciliation_artifact["summary"]["unit_conflict_count"] == 1
-    assert reconciliation_artifact["conflict_gap_count"] == 1
+    assert reconciliation_artifact["summary"]["unit_conflict_count"] == 0
+    assert reconciliation_artifact["excluded_candidate_count"] == 1
+    assert reconciliation_artifact["conflict_gap_count"] == 0
     assert summary["metric_product_ontology_snapshot"]["schema_version"] == METRIC_PRODUCT_ONTOLOGY_SCHEMA_VERSION
     assert summary["reconciliation_ledger"]["schema_version"] == RECONCILIATION_LEDGER_SCHEMA_VERSION
-    assert summary["reconciliation_ledger"]["unresolved_conflict_count"] == 1
+    assert summary["reconciliation_ledger"]["unresolved_conflict_count"] == 0
     assert recoverable_summary["metric_product_ontology_metric_count"] == ontology_artifact["metric_count"]
     assert recoverable_summary["reconciliation_conflict_gap_count"] == reconciliation_artifact["conflict_gap_count"]

@@ -530,6 +530,7 @@
   - [x] Add G11-specific 12-case fixture and vNext scoring audit for graph barriers, bounded gaps, Milvus runtime, semantic exact-authority misuse, private handle exposure, and weak proxy fallback.
   - [x] Run initial real smoke for exact MSFT, focused LLY, and standard NVDA/AMD product/market cases: `3/3` pass across three single-case runs.
   - [x] Run the full 12-case G11 gate through Workbench backend with DeepSeek and repair only root causes or expose bounded gaps; final run `20260613_agent_graph_vnext_g11_full_chain_workbench_deepseek_v0_10` reached `12/12` pass.
+  - [x] Run 2-case vNext diagnostic probe after memo-depth feedback and tighten gates so product facts must reach deterministic ClaimCards / memo surface; final run `20260613_vnext_diagnostic_probe_r7` reached `2/2` pass after DELL product revenue and capex evidence repairs.
 
 ## Knowledge Graph / Sub-agent / Product Edge vNext
 

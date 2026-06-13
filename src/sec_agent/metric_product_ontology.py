@@ -171,6 +171,7 @@ def resolve_metric_for_row(row: Mapping[str, Any], ontology: Mapping[str, Any]) 
         entry = alias_index.get(normalized) if isinstance(alias_index.get(normalized), Mapping) else {}
         if entry:
             canonical_id = str(entry.get("canonical_metric_id") or "")
+            canonical_id = _contextual_canonical_metric_id(row, canonical_id=canonical_id, normalized_alias=normalized)
             metric = metrics.get(canonical_id, {})
             return _resolution_from_metric(
                 metric,
@@ -180,7 +181,17 @@ def resolve_metric_for_row(row: Mapping[str, Any], ontology: Mapping[str, Any]) 
             )
         direct = _direct_metric(metrics, text)
         if direct:
-            return _resolution_from_metric(direct, raw_metric_text=text, matched_alias=normalize_metric_alias(text), match_status="mapped")
+            direct_id = _contextual_canonical_metric_id(
+                row,
+                canonical_id=str(direct.get("canonical_metric_id") or ""),
+                normalized_alias=normalize_metric_alias(text),
+            )
+            return _resolution_from_metric(
+                metrics.get(direct_id, direct),
+                raw_metric_text=text,
+                matched_alias=normalize_metric_alias(text),
+                match_status="mapped",
+            )
     raw_text = next((text for text in _metric_text_candidates(row) if normalize_metric_alias(text)), "")
     if raw_text:
         return {
@@ -209,6 +220,19 @@ def resolve_metric_for_row(row: Mapping[str, Any], ontology: Mapping[str, Any]) 
         "cannot_infer_from": sorted(CONTEXT_ONLY_SOURCE_FAMILIES),
         "required_gates": ["metric_required"],
     }
+
+
+def _contextual_canonical_metric_id(row: Mapping[str, Any], *, canonical_id: str, normalized_alias: str) -> str:
+    unit = str(row.get("unit") or row.get("unit_name") or row.get("unit_label") or "").strip().lower()
+    metric_name = normalize_metric_alias(row.get("metric_name") or row.get("label") or row.get("line_item") or "")
+    if canonical_id == "financial_metric:gross_margin":
+        if unit in {"usd", "$", "dollars", "usd_millions", "usd millions", "currency"}:
+            return "financial_metric:gross_profit"
+        if any(token in metric_name for token in ("gross_profit", "gross_margin_dollars")):
+            return "financial_metric:gross_profit"
+    if normalized_alias in {"gross_margin", "gross_margin_percentage", "gross_margin_rate"} and unit in {"%", "percent", "percentage"}:
+        return "financial_metric:gross_margin"
+    return canonical_id
 
 
 def normalize_metric_alias(value: Any) -> str:
@@ -241,6 +265,18 @@ def _default_metric_definitions() -> list[dict[str, Any]]:
             ["gross profit", "gross margin dollars"],
             rejected_aliases=["gross margin", "gross margin percentage"],
             unit_family="currency",
+            period_rule="fiscal_period_required",
+            allowed_source_families=common_financial_sources,
+            exact_authority_source_families=common_financial_sources,
+            cannot_infer_from=common_financial_cannot_infer,
+        ),
+        _metric(
+            "financial_metric:gross_margin",
+            "financial_metric",
+            "gross_margin",
+            ["gross margin", "gross margin percentage", "gross margin rate"],
+            rejected_aliases=["gross profit", "gross margin dollars"],
+            unit_family="percent",
             period_rule="fiscal_period_required",
             allowed_source_families=common_financial_sources,
             exact_authority_source_families=common_financial_sources,
@@ -311,7 +347,18 @@ def _default_metric_definitions() -> list[dict[str, Any]]:
             "financial_metric:capex",
             "financial_metric",
             "capex",
-            ["capex", "capital expenditures", "capital expenditure", "payments for property and equipment"],
+            [
+                "capex",
+                "capital expenditures",
+                "capital expenditure",
+                "capital_expenditure_proxy",
+                "capital expenditure proxy",
+                "capital_expenditures",
+                "payments for property and equipment",
+                "purchases of property and equipment",
+                "additions to property and equipment",
+                "purchase of property and equipment",
+            ],
             rejected_aliases=["capital intensity"],
             unit_family="currency",
             period_rule="fiscal_period_required",
@@ -388,7 +435,24 @@ def _product_metric_definitions_from_config(config: Mapping[str, Any]) -> list[d
     definitions = [
         _product_metric(
             "product_revenue",
-            ["product revenue", "segment revenue", "segment net sales", "revenue by product category", "product sales"],
+            [
+                "product revenue",
+                "segment revenue",
+                "segment net sales",
+                "revenue by product category",
+                "product sales",
+                "ai_optimized_servers",
+                "ai-optimized servers",
+                "traditional_servers_and_networking",
+                "traditional servers and networking",
+                "storage",
+                "commercial",
+                "consumer",
+                "products",
+                "services",
+                "total isg net revenue",
+                "total csg net revenue",
+            ],
             unit_family="currency",
             source_config=metric_families.get("product_revenue") if isinstance(metric_families.get("product_revenue"), Mapping) else {},
             cannot_infer_from=cannot_infer,

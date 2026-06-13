@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from sec_agent.multi_agent_contracts import (
+    _unknown_numeric_tokens as _contracts_unknown_numeric_tokens,
     aggregate_focused_answer_judgment_plan,
     aggregate_specialist_judgment_plan,
     build_multi_agent_memo_draft,
@@ -12,6 +13,16 @@ from sec_agent.multi_agent_contracts import (
     verify_multi_agent_memo_draft,
     verify_specialist_outputs_for_memo,
 )
+
+
+def test_numeric_fidelity_accepts_chinese_usd_yi_converted_from_usd_millions() -> None:
+    unknown = _contracts_unknown_numeric_tokens(
+        "AMZN capex 为 -1510.03亿美元，DELL ISG 产品收入为 290.09亿美元。",
+        "AMZN reported capital expenditures of -151003.0 usd_millions; DELL Total ISG net revenue was 29009.0 usd_millions.",
+    )
+
+    assert "-1510.03亿美元" not in unknown
+    assert "290.09亿美元" not in unknown
 
 
 def test_specialist_memolet_requires_evidence_refs_for_supported_claims() -> None:
@@ -955,6 +966,29 @@ def test_verifier_blocks_unsupported_specialist_claims_before_memo_writer() -> N
     assert report["status"] == "fail"
     assert report["memo_writer_allowed"] is False
     assert report["unsupported_claim_count"] == 1
+
+
+def test_source_quality_gap_observation_is_not_promoted_to_supported_claim() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": "DELL 8-K segment rows are garbled and cannot be reliably interpreted as revenue or margin.",
+                        "claim_type": "company_reported_financial_fact",
+                        "memo_slot": "fundamentals",
+                        "evidence_refs": ["dell_8k_ref"],
+                        "source_families": ["company_authored_unaudited_sec_filing"],
+                        "confidence": "medium",
+                    }
+                ],
+            }
+        ]
+    )
+
+    assert judgment["supported_claims"] == []
+    assert judgment["unsupported_claims"][0]["reason"] == "source_quality_gap_not_supported_claim"
 
 
 def test_required_dimensions_become_visible_gap_only_sections_after_refresh() -> None:

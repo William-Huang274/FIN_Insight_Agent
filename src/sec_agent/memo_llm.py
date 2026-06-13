@@ -759,16 +759,31 @@ def _normalize_output_dimension_analyses(value: Any, fallback: Any, *, max_items
         }
 
     for row in rows[: max(1, max_items)]:
-        normalized.append(normalize_row(row))
+        normalized_row = normalize_row(row)
+        if _memo_dimension_analysis_renderable(normalized_row):
+            normalized.append(normalized_row)
     seen_dimension_ids = {str(row.get("dimension_id") or "") for row in normalized if str(row.get("dimension_id") or "")}
     for fallback_row in fallback_rows:
         dimension_id = str(fallback_row.get("dimension_id") or "").strip()
         if len(normalized) >= max(1, max_items):
             break
         if dimension_id and dimension_id not in seen_dimension_ids:
-            normalized.append(normalize_row(fallback_row))
-            seen_dimension_ids.add(dimension_id)
+            normalized_row = normalize_row(fallback_row)
+            if _memo_dimension_analysis_renderable(normalized_row):
+                normalized.append(normalized_row)
+                seen_dimension_ids.add(dimension_id)
     return [row for row in normalized if row.get("dimension_id") or row.get("summary")]
+
+
+def _memo_dimension_analysis_renderable(row: Mapping[str, Any]) -> bool:
+    dimension_id = str(row.get("dimension_id") or "").strip()
+    if dimension_id == "thesis_synthesis":
+        return False
+    title = str(row.get("title") or "").strip().lower()
+    summary = str(row.get("summary") or "").strip().lower()
+    if title == "synthesis" and summary in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}:
+        return False
+    return True
 
 
 def _dimension_title_for_id(value: str) -> str:
@@ -1027,7 +1042,7 @@ def _numeric_token_details(text: str) -> list[tuple[str, float, str]]:
     tokens: list[tuple[str, float, str]] = []
     expanded_text = _expand_numeric_ranges(str(text or ""))
     for match in re.finditer(
-        r"(?<![A-Za-z0-9])[-+]?\$?\d+(?:,\d{3})*(?:\.\d+)?\s*(?:percentage\s+points?|个百分点|亿美元|百万美元|万美元|%|x|X|倍|M|B|K|bn|mn|million|billion|ppt)?",
+        r"(?<![A-Za-z0-9])[-+]?\$?\d+(?:,\d{3})*(?:\.\d+)?\s*(?:percentage\s+points?|usd[_\s-]?billions?|usd[_\s-]?millions?|usd[_\s-]?thousands?|个百分点|十亿美元|亿美元|百万美元|万美元|billion|million|bn|mn|ppt|%|x|X|倍|M|B|K)?",
         expanded_text,
     ):
         original = match.group(0).strip()
@@ -1041,7 +1056,7 @@ def _numeric_token_details(text: str) -> list[tuple[str, float, str]]:
 
 
 def _expand_numeric_ranges(text: str) -> str:
-    unit_pattern = r"(percentage\s+points?|个百分点|亿美元|百万美元|万美元|%|x|X|倍|M|B|K|bn|mn|million|billion|ppt)"
+    unit_pattern = r"(percentage\s+points?|usd[_\s-]?billions?|usd[_\s-]?millions?|usd[_\s-]?thousands?|个百分点|十亿美元|亿美元|百万美元|万美元|billion|million|bn|mn|ppt|%|x|X|倍|M|B|K)"
 
     def _replace(match: re.Match[str]) -> str:
         left = match.group("left")
@@ -1058,12 +1073,12 @@ def _expand_numeric_ranges(text: str) -> str:
 
 
 def _normalize_numeric_value_and_unit(value: float, unit: str) -> tuple[float, str]:
-    normalized = str(unit or "").strip().lower().replace(" ", "")
-    if normalized in {"b", "bn", "billion"}:
+    normalized = str(unit or "").strip().lower().replace(" ", "").replace("_", "").replace("-", "")
+    if normalized in {"b", "bn", "billion", "usdbillion", "usdbillions", "十亿美元"}:
         return value, "b"
-    if normalized in {"m", "mn", "million"}:
+    if normalized in {"m", "mn", "million", "usdmillion", "usdmillions"}:
         return value / 1000.0, "b"
-    if normalized == "k":
+    if normalized in {"k", "usdthousand", "usdthousands"}:
         return value / 1_000_000.0, "b"
     if normalized == "亿美元":
         return value / 10.0, "b"
@@ -1818,50 +1833,54 @@ def _salvage_action_items(
     kind: str,
     max_items: int,
 ) -> list[dict[str, Any]]:
-    refs = _string_list(selected_claims[0].get("evidence_refs"))[:2] if selected_claims else []
-    claim_id = str(selected_claims[0].get("claim_id") or "") if selected_claims else ""
-    first = selected_claims[0] if selected_claims else {}
-    dimension = str(first.get("analysis_dimension") or first.get("memo_slot") or "verified evidence").replace("_", " ")
-    metrics = ", ".join(_string_list(first.get("metric_scope"))[:3])
-    bridge = f"{dimension}" + (f" / {metrics}" if metrics else "")
-    if response_language == "zh-CN":
-        templates = {
-            "investment_implications": f"先围绕 {bridge} 判断业务机制是否能传导到收入、利润率或现金流，再决定结论强度。",
-            "what_would_change_view": f"若后续披露或外部证据削弱 {bridge}，应下调该维度对整体 thesis 的支撑权重。",
-            "monitoring_items": f"继续跟踪 {bridge} 的同口径披露、反证风险、外部确认和来源边界变化。",
-            "evidence_gaps": f"{bridge} 仍有公开证据缺口，当前 memo 只能给出带边界的研究结论。",
-        }
-    else:
-        templates = {
-            "investment_implications": f"Start with the verified {bridge} mechanism before extending the view to revenue, margin, or cash-flow implications.",
-            "what_would_change_view": f"Reduce the dimension weight if later filings or external evidence weaken the verified {bridge} bridge.",
-            "monitoring_items": f"Track same-scope {bridge} disclosures, counterevidence, external confirmation, and source-boundary changes.",
-            "evidence_gaps": f"The {bridge} bridge still has public-evidence gaps, so the memo remains bounded.",
-        }
-    items = [{"text": templates.get(kind, templates["investment_implications"]), "claim_id": claim_id, "evidence_refs": refs}]
-    for claim in selected_claims[1:max_items]:
+    items: list[dict[str, Any]] = []
+    for claim in selected_claims[:max_items]:
         claim_refs = _string_list(claim.get("evidence_refs"))[:2]
         if not claim_refs:
             continue
-        if response_language == "zh-CN":
-            items.append(
-                {
-                    "text": "用该补充论据交叉验证核心判断，不把它扩展为未证实的新事实。",
-                    "claim_id": str(claim.get("claim_id") or ""),
-                    "evidence_refs": claim_refs,
-                }
-            )
-        else:
-            items.append(
-                {
-                    "text": "Use this supporting claim as a cross-check without extending beyond the cited source boundary.",
-                    "claim_id": str(claim.get("claim_id") or ""),
-                    "evidence_refs": claim_refs,
-                }
-            )
-        if len(items) >= max_items:
-            break
+        items.append(
+            {
+                "text": _salvage_action_item_text(claim, response_language=response_language, kind=kind),
+                "claim_id": str(claim.get("claim_id") or ""),
+                "evidence_refs": claim_refs,
+            }
+        )
     return items[:max_items]
+
+
+def _salvage_action_item_text(claim: Mapping[str, Any], *, response_language: str, kind: str) -> str:
+    dimension = str(claim.get("analysis_dimension") or claim.get("memo_slot") or "verified_evidence").strip()
+    metrics = _string_list(claim.get("metric_scope"))[:3]
+    tickers = _string_list(claim.get("ticker_scope"))[:3]
+    bridge_parts = [part for part in ["/".join(tickers), _zh_dimension_label(dimension) if response_language == "zh-CN" else dimension.replace("_", " "), "/".join(metrics)] if part]
+    bridge = " / ".join(bridge_parts) or "verified evidence"
+    if response_language == "zh-CN":
+        templates = {
+            "investment_implications": f"{bridge} 是当前可引用的证据锚点；投资判断只能沿这条链条讨论收入、利润率或资本开支影响。",
+            "what_would_change_view": f"如果后续同口径披露削弱 {bridge} 的数值方向或证据边界，应降低该维度对结论的权重。",
+            "monitoring_items": f"后续优先跟踪 {bridge} 的同口径更新、反证风险和缺失确认项。",
+            "evidence_gaps": f"{bridge} 之外仍缺少可提权证据；缺口应保留在 memo 边界内而不是外推。",
+        }
+    else:
+        templates = {
+            "investment_implications": f"{bridge} is the cited evidence anchor; investment implications must stay within that revenue, margin, or capex bridge.",
+            "what_would_change_view": f"Reduce this dimension's weight if later same-scope disclosures weaken {bridge}'s value direction or source boundary.",
+            "monitoring_items": f"Track same-scope updates, counterevidence, and missing confirmations for {bridge}.",
+            "evidence_gaps": f"Evidence outside {bridge} remains unavailable for promotion and should stay as a bounded memo gap.",
+        }
+    return templates.get(kind, templates["investment_implications"])
+
+
+def _zh_dimension_label(value: str) -> str:
+    return {
+        "fundamentals": "基本面",
+        "product_and_production": "产品与产线",
+        "capital_and_financing": "投融资与资本开支",
+        "industry_supply_chain": "行业与供应链",
+        "competition_and_market_position": "竞争与市场位置",
+        "risk_and_counterevidence": "风险与反证",
+        "thesis_synthesis": "综合判断",
+    }.get(str(value or "").strip(), str(value or "").replace("_", " "))
 
 
 def _clean_internal_thesis_text(value: str) -> str:
@@ -2155,6 +2174,19 @@ def _select_memo_supported_claims(
     for slot in outline_slots:
         for claim in claims:
             if str(claim.get("memo_slot") or "") == slot:
+                add(claim)
+                break
+
+    for dimension in (
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence",
+    ):
+        for claim in claims:
+            if str(claim.get("analysis_dimension") or "") == dimension:
                 add(claim)
                 break
 

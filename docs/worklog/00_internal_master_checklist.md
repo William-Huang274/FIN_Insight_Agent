@@ -615,3 +615,5 @@
 - [ ] L5: Add MemoLogicPlan and Memo Surface vNext so Memo Writer writes natural-language judgment with evidence and boundaries, without retrieval / DB / web permissions.
 - [ ] L6: Add BGE / rerank InferenceResourceScheduler with CUDA queue, CPU spillover, route priority, cache, and latency/device audit.
 - [ ] L7: Add ModelRouter / AgentCoalescer to reduce token cost through model-tier routing, deterministic gap cards, specialist skip/merge, and per-claim cost audit.
+- [ ] L8: Add Tool Capability Registry covering data retrieval, input parsing, analysis artifacts, output rendering, and multimodal preprocess with per-agent permissions.
+- [ ] L9: Add Document & Multimodal Input Pipeline for PDF/DOCX/Excel/Markdown/PPT/image/video parsing into provenance-gated UserProvidedEvidencePack artifacts.

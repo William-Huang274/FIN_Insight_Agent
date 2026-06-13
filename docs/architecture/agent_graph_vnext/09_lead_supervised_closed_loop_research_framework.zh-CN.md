@@ -396,12 +396,78 @@ Research Lead 生成写作逻辑，Memo Writer 只负责自然语言和文件生
 - 轻量 case 能合并 market/capital 或跳过不 material 的 agent。
 - 不因降模型破坏 source boundary 和 claim verification。
 
+### L8 Tool Capability Registry
+
+把当前“查数 / 检索 / 调数据库”工具扩展为完整工具能力注册表，并把每类工具的 agent 权限写入 graph contract。
+
+工具分类：
+
+- `data_retrieval`：SEC filing search、exact ledger、SQL / DuckDB / SQLite、market snapshot、industry snapshot、public source、relationship graph、Milvus / embedding / rerank。
+- `input_parsing`：PDF、DOCX、Excel / CSV、Markdown、PPT、HTML、图片 OCR、图表识别、视频抽帧 / ASR / OCR。
+- `analysis_artifact`：财务模型 workbook、可比公司表、产品规格矩阵、事件时间线、ClaimCard table、Gap table、知识图谱 / 关系图中间表示。
+- `output_rendering`：Markdown、PDF、DOCX、Excel、PPT、HTML、Mermaid、Graphviz、思维导图、知识图谱线条图。
+- `multimodal_preprocess`：图片/视频/音频解析模型适配、frame selection、OCR confidence、视觉表格抽取、source classification。
+
+权限原则：
+
+- Research Lead 可请求 `input_parsing`、artifact inspect、DB 查询、targeted retrieval / web repair，但不直接写最终事实。
+- Evidence Operators 执行 data retrieval / input parsing / multimodal preprocess，输出可审计 rows / artifacts / provenance。
+- Specialist 默认不能直接调工具，只消费 bounded packs；若发现缺口，只能向 LeadReviewCheckpoint 请求 repair。
+- Memo Writer 只允许 `output_rendering`，以及受控的 report asset assembly；不允许检索、DB、联网、输入解析或新增事实。
+- Verifier 只允许 inspect rendered artifact、citation、provenance、claim/gap stores；不得取新证据。
+
+通过条件：
+
+- 每个工具有 `capability_type`、`allowed_agents`、`execution_permission`、`source_boundary`、`artifact_outputs`、`provenance_required`、`secret_policy`。
+- Memo Writer 拿不到 retrieval / DB / web / parsing 工具。
+- Input parsing 输出必须进入 provenance / gate，不能直接变成 ClaimCard。
+- 可视化和文档生成工具只能消费 verified ClaimCards / JudgmentState / MemoLogicPlan / GapRegister。
+
+### L9 Document & Multimodal Input Pipeline
+
+企业场景不能只接受对话输入。用户上传研报、公司公告、产品手册、合同、报价单、Excel 模型、截图、图片、视频或会议录音时，系统必须先解析，再进入 evidence governance。
+
+输入管线：
+
+```text
+User File / URL / Image / Video
+ -> InputParserOperator
+ -> ParsedInputArtifact
+ -> ArtifactProvenance
+ -> UserProvidedEvidencePack
+ -> Source / Authority / Citation Gate
+ -> Evidence Fusion / Lead Review
+```
+
+文件解析对象：
+
+- `ParsedTextBlock`：文本块、页码、段落、heading、坐标或 cell range。
+- `ExtractedTable`：表格、sheet name、cell range、header mapping、unit / period hints。
+- `ExtractedFigure`：图表、图片说明、OCR 文本、视觉分类。
+- `ExtractedSlide`：PPT slide text、speaker notes、figure refs。
+- `ExtractedMediaSegment`：视频/音频时间戳、ASR、关键帧、OCR、source frame refs。
+- `UserProvidedEvidencePack`：将上述对象统一包装成用户提供证据，但默认不等于 authoritative company fact。
+
+多模态模型接口保留：
+
+- 当前 DeepSeek 主链不支持多模态时，可先用 deterministic parser / OCR / ASR / local vision parser。
+- `ModelRouter` 需保留 `vision_model`、`document_ocr_model`、`video_parser_model`、`table_extraction_model` 的接口槽位。
+- 当换成支持多模态的模型时，graph contract 不变，只替换 parser backend。
+
+通过条件：
+
+- PDF / DOCX / XLSX / CSV / Markdown 至少能生成可引用 `ParsedInputArtifact`。
+- 图片输入至少能生成 OCR text、image provenance、confidence 和 unsupported/low-confidence gate。
+- 视频输入至少支持抽帧 / ASR / timestamp provenance 的占位 contract；未实现时必须显式 blocked，不可假装解析。
+- 用户上传文件不能绕过 source boundary；每个引用必须能回到页码、sheet/cell、slide、frame 或 timestamp。
+- Report generation 可把 memo 输出为 MD / DOCX / PDF / Excel / PPT / Mermaid / Graphviz，但只消费 verified facts。
+
 ## 当前明确边界
 
 - 本文档是下一阶段框架，不代表 runtime 已完成这些能力。
 - FundamentalStatementPack / JudgmentState 已有初版 runtime 接入；LeadReviewCheckpoint 对它们的一等节点使用仍待实现。
 - BGE scheduler / ModelRouter / AgentCoalescer 尚未实现。
 - Memo Surface vNext 尚未替换当前渲染，只确定方向。
+- Tool Capability Registry、Document / Multimodal Input Pipeline 尚未实现；当前工具仍主要覆盖检索、查数、artifact inspect 和 markdown 渲染。
 - Web repair 仍必须遵守 02 文档的 allowlist / source class / claim scope。
 - Milvus 仍是 typed semantic recall supplement，不是 exact-value authority。
-

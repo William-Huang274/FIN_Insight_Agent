@@ -646,3 +646,18 @@
 - [ ] EV6: Add gold lifecycle governance: candidate -> reviewed -> active_regression -> gold -> stale -> deprecated, with data snapshot, source refs, criteria version, review record, and expiry policy.
 - [ ] EV7: Add LLM-as-judge audit contract for judge prompt digest, rubric version, judge model, input mapping, explanation, latency, token/cost, and human calibration sampling.
 - [ ] EV8: Add backend/frontend eval dashboard surfaces for eval run list, case result, node trace, retrieval audit, failure queue, gold queue, cost/latency trends, and comparison by commit/model/data snapshot.
+
+## Integrated 09-11 Execution Plan
+
+- [x] P0-plan: Document the integrated P0-P10 execution plan after 09/10/11 so Python agent, backend/frontend, and eval work advance by functional slice rather than by separate documents.
+- [ ] P0: Freeze baseline and build Eval Registry / B0 backend route decision.
+- [ ] P1: Implement Run / Audit Foundation before major graph changes.
+- [ ] P2: Add Eval Store and failure/gold skeleton.
+- [ ] P3: Add Context Runtime v0 and context injection replay gate.
+- [ ] P4: Add retrieval/rerank/role-visible ledgers plus BGE/resource/model scheduler gates.
+- [ ] P5: Implement ResearchObjectiveContract, LeadReviewCheckpoint, TargetedRepairPlan, and repair delta audit.
+- [ ] P6: Implement Tool Capability Registry and Document / Multimodal Input Pipeline with parser/provenance gates.
+- [ ] P7: Implement MemoLogicPlan, dimension-first memo surface, and verifier loop boundaries.
+- [ ] P8: Add frontend / Workbench trace and eval dashboard surfaces.
+- [ ] P9: Add Redis queue, worker pool, SSE, cancel/resume, load tests, and optional Spring Boot API shell.
+- [ ] P10: Add full-chain regression, online eval, failure lifecycle, and gold lifecycle governance.

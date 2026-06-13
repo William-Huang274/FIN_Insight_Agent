@@ -18,6 +18,7 @@
 - [09 Research Lead 常驻监督闭环框架](09_lead_supervised_closed_loop_research_framework.zh-CN.md)：记录 2026-06-14 新讨论，将 Research Lead 升级为 supervising analyst，加入 ResearchObjectiveContract、LeadReviewCheckpoint、TargetedRepairPlan、MemoLogicPlan、role-specific selector、BGE 资源队列和 ModelRouter / AgentCoalescer。
 - [10 后端 / 前端 Runtime 升级框架](10_backend_frontend_runtime_framework.zh-CN.md)：吸收两份后端规划文档，把 FinSight 从本地 agent / Workbench eval 推进到 API、Redis queue、worker pool、SSE、DB persistence、Docker Compose、前端 trace/report viewer 和 Java/Spring Boot 可选外壳。
 - [11 Agent Eval Runtime 闭环框架](11_agent_eval_runtime_framework.zh-CN.md)：审计现有 docs/eval、scripts/eval、fixtures、run_audit_store、LangGraph checkpoint、LLM token/latency 和 model run ledger，设计统一 Eval Registry、Dataset Lifecycle、Node/Chain Evaluators、Failure/Gold 状态机、后端 SQL eval store 和前端 eval dashboard。
+- [12 09-11 闭环后一体化执行计划](12_integrated_execution_plan.zh-CN.md)：不按 09/10/11 分别排期，而是按 P0-P10 功能切片把 Python agent、后端/前端、Eval Runtime、同步/异步协作、Java shell 可选路线和通过门控编排成下一阶段执行顺序。
 
 ## 总原则
 

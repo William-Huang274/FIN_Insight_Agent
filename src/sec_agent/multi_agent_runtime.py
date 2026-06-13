@@ -9,6 +9,10 @@ from urllib.parse import urlparse
 
 from sec_agent.agent_registry import agent_registry_by_id
 from sec_agent.capital_macro_pack import build_capital_macro_pack, compact_capital_macro_pack
+from sec_agent.financial_statement_analysis import (
+    build_fundamental_statement_pack,
+    compact_fundamental_statement_pack,
+)
 from sec_agent.industry_playbooks import selected_playbook_policy
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
 from sec_agent.multi_agent_contracts import evidence_requirements_from_universe_relationship_plan
@@ -36,7 +40,7 @@ EVIDENCE_OPERATOR_FANOUT_PLAN_SCHEMA_VERSION = "sec_agent_evidence_operator_fano
 FANOUT_BARRIER_SCHEMA_VERSION = "sec_agent_fanout_barrier_v0.1"
 AGENT_DATA_VIEW_MAX_ROWS = 16
 AGENT_DATA_VIEW_STANDARD_MEMO_MAX_ROWS = 24
-AGENT_DATA_VIEW_DEEP_RESEARCH_MAX_ROWS = 32
+AGENT_DATA_VIEW_DEEP_RESEARCH_MAX_ROWS = 48
 AGENT_DATA_VIEW_SUPPORTING_DEEP_RESEARCH_MAX_ROWS = 20
 AGENT_DATA_VIEW_SUPPORTING_STANDARD_MEMO_MAX_ROWS = 16
 AGENT_DATA_VIEW_CONDITIONAL_MAX_ROWS = 12
@@ -2077,6 +2081,17 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
             if (capital_macro_pack.get("summary") or {}).get("input_row_count"):
                 view["capital_macro_pack"] = capital_macro_pack
                 view["capital_macro_pack_ref"] = compact_capital_macro_pack(capital_macro_pack)
+        if entry["agent_id"] == "fundamental_analyst":
+            fundamental_statement_pack = build_fundamental_statement_pack(
+                state,
+                max_items=max(16, min(80, _data_view_max_rows_for_agent(entry["agent_id"], state) * 2)),
+            )
+            if (fundamental_statement_pack.get("summary") or {}).get("line_item_count"):
+                view["fundamental_statement_pack"] = fundamental_statement_pack
+                view["fundamental_statement_pack_ref"] = compact_fundamental_statement_pack(
+                    fundamental_statement_pack,
+                    max_line_items=max(12, min(24, _data_view_max_rows_for_agent(entry["agent_id"], state))),
+                )
     if "coverage_summary" in allowed:
         view["coverage_summary"] = _coverage_summary_view(state)
     if "tool_trace_summary" in allowed:
@@ -2122,6 +2137,7 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
             "source_family_bundle": view.get("source_family_bundle") or {},
             "product_spec_pack_ref": view.get("product_spec_pack_ref") or {},
             "capital_macro_pack_ref": view.get("capital_macro_pack_ref") or {},
+            "fundamental_statement_pack_ref": view.get("fundamental_statement_pack_ref") or {},
             "assigned_task_card": view.get("assigned_task_card") or {},
             "required_claim_slots": view.get("required_claim_slots") or [],
             "bounded_gap_refs": view.get("bounded_gap_refs") or [],
@@ -2235,6 +2251,16 @@ def _role_context_for_agent_data_view(
                 {
                     "capital_macro_pack_allowed": True,
                     "capital_macro_pack_policy": "capital_ownership_and_macro_edges_require_parser_gates_13f_lag_and_exposure_bridge",
+                }
+            )
+        if agent_id == "fundamental_analyst":
+            base.update(
+                {
+                    "fundamental_statement_pack_required": True,
+                    "fundamental_statement_pack_policy": (
+                        "three_statement_peer_industry_focus_pack_from_reconciled_public_rows; "
+                        "peer comparisons require same metric, period, and unit; proxy rows stay gaps or context"
+                    ),
                 }
             )
     elif agent_id == "memo_writer":
@@ -2519,21 +2545,51 @@ def _required_claim_slots_for_specialist(
         return [
             _claim_slot(
                 agent_id,
-                slot_id="fundamentals_reported_fact",
+                slot_id="fundamentals_three_statement_quality",
                 memo_slot="fundamentals",
                 target_claim_count=target,
                 claim_type_allowlist=["company_reported_financial_fact", "reported_financial_fact", "business_observation"],
                 required_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing"],
-                instruction="Select the most decision-useful filed metric or company-authored commentary and state the investment implication, preserving period role.",
+                instruction=(
+                    "Use the FundamentalStatementPack first: connect income statement, balance sheet, and cash flow rows into one financial quality ClaimCard. "
+                    "Preserve period role and cite filed/ledger refs only."
+                ),
             ),
             _claim_slot(
                 agent_id,
-                slot_id="fundamentals_quality_or_pressure",
+                slot_id="fundamentals_peer_comparison",
                 memo_slot="fundamentals",
                 target_claim_count="0-2",
                 claim_type_allowlist=["business_observation"],
                 required_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing"],
-                instruction="Explain whether the bounded facts imply growth quality, margin pressure, capital intensity, liquidity, or demand strength.",
+                instruction=(
+                    "When same metric/period/unit peer rows exist in FundamentalStatementPack.peer_comparisons, state how the focus company compares. "
+                    "If peer rows are missing or incompatible, expose the peer-comparison gap instead of making a relative claim."
+                ),
+            ),
+            _claim_slot(
+                agent_id,
+                slot_id="fundamentals_industry_focus_metric",
+                memo_slot="fundamentals",
+                target_claim_count="1-2" if mode == "deep_research" else "0-1",
+                claim_type_allowlist=["company_reported_financial_fact", "business_observation"],
+                required_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                instruction=(
+                    "Use FundamentalStatementPack.industry_focus_policy and industry_focus_coverage to prioritize the financial metrics that matter for this sector. "
+                    "Do not treat unavailable tracker/proxy data as a filed financial fact."
+                ),
+            ),
+            _claim_slot(
+                agent_id,
+                slot_id="fundamentals_product_or_capital_bridge",
+                memo_slot="fundamentals",
+                target_claim_count="0-2",
+                claim_type_allowlist=["business_observation", "company_reported_financial_fact"],
+                required_source_families=["primary_sec_filing", "company_authored_unaudited_sec_filing", "company_product_evidence_graph"],
+                instruction=(
+                    "Bridge financial statement rows to product/segment performance, working capital, capex, liquidity, or capital structure only when the pack exposes compatible rows. "
+                    "Otherwise state the missing confirmation."
+                ),
             ),
         ]
     if agent_id == "product_technology_analyst":

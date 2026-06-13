@@ -508,7 +508,7 @@ def test_build_specialist_request_from_state_sanitizes_rows() -> None:
         },
     )
 
-    assert request["known_evidence_refs"] == ["ledger_ref_1"]
+    assert "ledger_ref_1" in request["known_evidence_refs"]
     assert request["bounded_evidence_rows"][0]["evidence_ref"] == "ledger_ref_1"
     assert "private_path" not in request["bounded_evidence_rows"][0]
     assert len(request["bounded_evidence_rows"][0]["summary"]) <= 400
@@ -849,11 +849,11 @@ def test_build_specialist_request_from_state_uses_deep_research_prompt_budget() 
     )
 
     assert request["execution_mode"] == "deep_research"
-    assert len(request["bounded_evidence_rows"]) == 16
-    assert request["input_budget"]["prompt_bounded_evidence_row_budget"] == 16
-    assert request["input_budget"]["data_view_bounded_evidence_row_budget"] == 32
+    assert len(request["bounded_evidence_rows"]) == 24
+    assert request["input_budget"]["prompt_bounded_evidence_row_budget"] == 24
+    assert request["input_budget"]["data_view_bounded_evidence_row_budget"] == 48
     assert request["input_budget"]["prompt_summary_char_policy"] == "source_family_tiered_v0_2_compact"
-    assert "ledger_ref_16" in request["known_evidence_refs"]
+    assert "ledger_ref_24" in request["known_evidence_refs"]
 
 
 def test_build_specialist_request_from_state_uses_supporting_priority_prompt_budget() -> None:
@@ -1030,7 +1030,7 @@ def test_build_specialist_request_from_state_includes_task_card_and_claim_slots(
     assert task_card["schema_version"] == "sec_agent_specialist_task_card_v0.1"
     assert task_card["assigned_memo_slot"] == "fundamentals"
     assert task_card["relevant_requirements"][0]["requirement_id"] == "req_revenue"
-    assert request["required_claim_slots"][0]["slot_id"] == "fundamentals_reported_fact"
+    assert request["required_claim_slots"][0]["slot_id"] == "fundamentals_three_statement_quality"
     assert request["counterclaim_slots"][0]["slot_kind"] == "counterclaim_or_gap"
 
 

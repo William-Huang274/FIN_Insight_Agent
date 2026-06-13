@@ -16,6 +16,7 @@ MEMO_THESIS_PACK_SCHEMA_VERSION = "sec_agent_memo_thesis_pack_v0.1"
 THESIS_DRIVER_PACK_SCHEMA_VERSION = "sec_agent_thesis_driver_pack_v0.1"
 ANALYST_DEPTH_GATE_SCHEMA_VERSION = "sec_agent_analyst_depth_gate_v0.1"
 ECONOMIC_LINK_MAP_SCHEMA_VERSION = "sec_agent_economic_link_map_v0.1"
+JUDGMENT_STATE_SCHEMA_VERSION = "sec_agent_judgment_state_v0.1"
 
 SPECIALIST_AGENT_IDS = {
     "fundamental_analyst",
@@ -896,6 +897,184 @@ def refresh_judgment_plan_after_governance_filter(judgment_plan: Mapping[str, An
         "claim_card_stats": _claim_card_stats(supported_claims, memo_outline),
         "thesis_synthesis": thesis_synthesis,
         "governance_filter_refresh_policy": "refresh_memo_pack_after_pre_memo_fact_selection_v0_1",
+    }
+
+
+def attach_judgment_state(
+    judgment_plan: Mapping[str, Any],
+    *,
+    fundamental_statement_pack: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    judgment = dict(judgment_plan or {})
+    judgment["judgment_state"] = build_judgment_state(
+        judgment,
+        fundamental_statement_pack=fundamental_statement_pack or {},
+    )
+    return judgment
+
+
+def build_judgment_state(
+    judgment_plan: Mapping[str, Any],
+    *,
+    fundamental_statement_pack: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    judgment = dict(judgment_plan or {})
+    pack = judgment.get("thesis_driver_pack") if isinstance(judgment.get("thesis_driver_pack"), Mapping) else {}
+    thesis_cards = [dict(item) for item in pack.get("thesis_cards") or [] if isinstance(item, Mapping)]
+    dimensions = _dimension_analyses_from_thesis_driver_pack(pack)
+    supported_claims = [dict(item) for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)]
+    unsupported_claims = [dict(item) for item in judgment.get("unsupported_claims") or [] if isinstance(item, Mapping)]
+    gaps = [dict(item) for item in pack.get("gap_cards") or [] if isinstance(item, Mapping)]
+    financial_pack = dict(fundamental_statement_pack or {})
+    financial_summary = financial_pack.get("summary") if isinstance(financial_pack.get("summary"), Mapping) else {}
+    industry_focus = (
+        financial_pack.get("industry_focus_policy")
+        if isinstance(financial_pack.get("industry_focus_policy"), Mapping)
+        else {}
+    )
+    dimension_states = []
+    for section in dimensions:
+        dimension_id = str(section.get("dimension_id") or "")
+        related_claim_ids = _unique_strings(section.get("claim_ids"))
+        related_claims = [claim for claim in supported_claims if str(claim.get("claim_id") or "") in set(related_claim_ids)]
+        dimension_states.append(
+            {
+                "dimension_id": dimension_id,
+                "title": str(section.get("title") or _analysis_dimension_title(dimension_id)),
+                "stance": _dimension_judgment_stance(related_claims, section),
+                "support_level": _dimension_support_level(related_claims, section),
+                "summary": str(section.get("summary") or ""),
+                "business_mechanism": str(section.get("business_mechanism") or ""),
+                "financial_bridge": str(section.get("financial_bridge") or ""),
+                "counter_read": str(section.get("counter_read") or ""),
+                "claim_ids": related_claim_ids[:8],
+                "evidence_refs": _unique_strings(section.get("evidence_refs"))[:8],
+                "gap_ids": _unique_strings(section.get("gap_ids"))[:6],
+                "what_would_change_view": _unique_strings(section.get("what_would_change_view"))[:4],
+            }
+        )
+    fundamental_state = _fundamental_judgment_state(financial_pack)
+    if fundamental_state and not any(item.get("dimension_id") == "fundamentals" for item in dimension_states):
+        dimension_states.insert(0, fundamental_state)
+    state = {
+        "schema_version": JUDGMENT_STATE_SCHEMA_VERSION,
+        "status": "ready" if thesis_cards and dimension_states else "partial" if supported_claims else "blocked",
+        "core_thesis": str((thesis_cards[0] if thesis_cards else {}).get("core_thesis") or ""),
+        "stance": str((thesis_cards[0] if thesis_cards else {}).get("stance") or "unknown"),
+        "confidence": str((thesis_cards[0] if thesis_cards else {}).get("confidence") or _synthesized_confidence(supported_claims)),
+        "dimension_judgments": dimension_states[:8],
+        "fundamental_statement_summary": {
+            "schema_version": financial_pack.get("schema_version") or "",
+            "pack_status": financial_summary.get("pack_status") or "",
+            "line_item_count": financial_summary.get("line_item_count") or 0,
+            "period_change_count": financial_summary.get("period_change_count") or 0,
+            "peer_comparison_count": financial_summary.get("peer_comparison_count") or 0,
+            "priority_metric_available_count": financial_summary.get("priority_metric_available_count") or 0,
+            "priority_metric_missing_count": financial_summary.get("priority_metric_missing_count") or 0,
+            "industry_id": industry_focus.get("industry_id") or "",
+        },
+        "gap_state": {
+            "unsupported_claim_count": len(unsupported_claims),
+            "gap_card_count": len(gaps),
+            "public_or_commercial_gap_count": len(
+                [
+                    gap
+                    for gap in [*gaps, *unsupported_claims]
+                    if "gap" in str(gap.get("gap_type") or gap.get("claim_type") or gap.get("reason") or "").lower()
+                    or "commercial" in str(gap.get("reason") or gap.get("statement") or "").lower()
+                ]
+            ),
+            "top_gaps": [
+                {
+                    "gap_id": str(item.get("gap_id") or item.get("claim_id") or ""),
+                    "statement": str(item.get("statement") or item.get("reason") or item.get("claim") or "")[:240],
+                    "claim_boundary": str(item.get("claim_boundary") or ""),
+                }
+                for item in [*gaps, *unsupported_claims][:8]
+            ],
+        },
+        "memo_writer_policy": "write_from_dimension_judgments_first_then_claim_cards_no_new_facts_v0_1",
+    }
+    state["validation"] = _validate_judgment_state(state)
+    return state
+
+
+def _fundamental_judgment_state(fundamental_statement_pack: Mapping[str, Any]) -> dict[str, Any]:
+    if not fundamental_statement_pack:
+        return {}
+    summary = fundamental_statement_pack.get("summary") if isinstance(fundamental_statement_pack.get("summary"), Mapping) else {}
+    industry_focus = (
+        fundamental_statement_pack.get("industry_focus_policy")
+        if isinstance(fundamental_statement_pack.get("industry_focus_policy"), Mapping)
+        else {}
+    )
+    line_items = [dict(item) for item in fundamental_statement_pack.get("statement_line_items") or [] if isinstance(item, Mapping)]
+    bridges = [dict(item) for item in fundamental_statement_pack.get("integration_bridges") or [] if isinstance(item, Mapping)]
+    gaps = [dict(item) for item in fundamental_statement_pack.get("analysis_gaps") or [] if isinstance(item, Mapping)]
+    if not line_items and not gaps:
+        return {}
+    return {
+        "dimension_id": "fundamentals",
+        "title": _analysis_dimension_title("fundamentals"),
+        "stance": "mixed" if gaps else "supported",
+        "support_level": "high" if int(summary.get("line_item_count") or 0) >= 4 else "medium" if line_items else "gap",
+        "summary": (
+            f"FundamentalStatementPack has {summary.get('line_item_count') or 0} line items, "
+            f"{summary.get('period_change_count') or 0} period changes, and "
+            f"{summary.get('peer_comparison_count') or 0} peer comparisons for "
+            f"{industry_focus.get('industry_id') or 'general'} focus."
+        ),
+        "business_mechanism": "three_statement_quality_peer_context_and_product_or_capital_bridge",
+        "financial_bridge": "income_statement_balance_sheet_cash_flow_statement",
+        "counter_read": "missing_priority_metrics_or_peer_rows_limit_the_strength_of_the_financial_judgment" if gaps else "",
+        "claim_ids": [],
+        "evidence_refs": _unique_strings([ref for item in line_items[:8] for ref in _unique_strings(item.get("evidence_refs"))])[:8],
+        "gap_ids": _unique_strings([str(item.get("gap_id") or "") for item in gaps])[:6],
+        "what_would_change_view": [
+            "Same-period peer rows for priority metrics",
+            "Company-disclosed product/segment rows tied to financial statement metrics",
+        ][: 1 + bool(bridges)],
+    }
+
+
+def _dimension_judgment_stance(claims: list[Mapping[str, Any]], section: Mapping[str, Any]) -> str:
+    directions = {_normalize_direction(claim.get("direction")) for claim in claims}
+    directions.discard("unknown")
+    if "negative" in directions and "positive" in directions:
+        return "mixed"
+    if directions:
+        return sorted(directions)[0]
+    status = str(section.get("status") or "")
+    return "supported" if status == "supported" else "gap_or_counter"
+
+
+def _dimension_support_level(claims: list[Mapping[str, Any]], section: Mapping[str, Any]) -> str:
+    if not claims:
+        return "gap"
+    scores = [_bounded_int(claim.get("claim_rank_score"), default=0, minimum=0, maximum=100) for claim in claims]
+    if max(scores or [0]) >= 80 or len(claims) >= 3:
+        return "high"
+    if max(scores or [0]) >= 55 or len(claims) >= 2:
+        return "medium"
+    return "low"
+
+
+def _validate_judgment_state(payload: Mapping[str, Any]) -> dict[str, Any]:
+    errors: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+    if str(payload.get("schema_version") or "") != JUDGMENT_STATE_SCHEMA_VERSION:
+        errors.append({"type": "unexpected_schema_version", "schema_version": payload.get("schema_version")})
+    dimensions = [dict(item) for item in payload.get("dimension_judgments") or [] if isinstance(item, Mapping)]
+    if not dimensions and str(payload.get("status") or "") != "blocked":
+        warnings.append({"type": "judgment_state_without_dimension_judgments"})
+    for index, item in enumerate(dimensions):
+        if not str(item.get("dimension_id") or ""):
+            errors.append({"type": "dimension_id_required", "index": index})
+    return {
+        "schema_version": "sec_agent_judgment_state_validation_v0.1",
+        "status": "fail" if errors else "pass",
+        "errors": errors,
+        "warnings": warnings,
     }
 
 
@@ -2822,6 +3001,7 @@ def build_multi_agent_memo_draft(
     if isinstance(judgment.get("pre_memo_fact_selection"), Mapping):
         consumed_views.append("pre_memo_fact_selection")
     thesis_driver_pack = dict(judgment.get("thesis_driver_pack") or {}) if isinstance(judgment.get("thesis_driver_pack"), Mapping) else {}
+    judgment_state = dict(judgment.get("judgment_state") or {}) if isinstance(judgment.get("judgment_state"), Mapping) else {}
     common = {
         "schema_version": MEMO_DRAFT_SCHEMA_VERSION,
         "memo_writer_allowed": allowed,
@@ -2839,6 +3019,7 @@ def build_multi_agent_memo_draft(
         "memo_thesis_plan": dict(judgment.get("memo_thesis_plan") or {}) if isinstance(judgment.get("memo_thesis_plan"), Mapping) else {},
         "memo_thesis_pack": dict(judgment.get("memo_thesis_pack") or {}) if isinstance(judgment.get("memo_thesis_pack"), Mapping) else {},
         "thesis_driver_pack": thesis_driver_pack,
+        "judgment_state": judgment_state,
         "dimension_analyses": _dimension_analyses_from_thesis_driver_pack(thesis_driver_pack),
         "claim_card_stats": dict(judgment.get("claim_card_stats") or {}),
         "pre_memo_fact_selection": dict(judgment.get("pre_memo_fact_selection") or {})

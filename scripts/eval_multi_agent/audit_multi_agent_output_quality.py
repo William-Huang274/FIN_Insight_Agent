@@ -44,6 +44,7 @@ def audit_case(case: Mapping[str, Any], *, artifact_root: Path | None = None) ->
     tools = _tool_stats(agent_audit)
     tokens = _token_stats(agent_audit)
     specialists = _specialist_stats(agent_audit, sidecar)
+    retrieval_budget = _retrieval_budget_audit(case, agent_audit=agent_audit, tools=tools, specialists=specialists)
     cost_quality = _cost_quality_stats(case, agent_audit=agent_audit, tokens=tokens, specialists=specialists)
     preview = str(case.get("rendered_answer_preview") or "")
     second_pass_attempts = _nested_int(sidecar, ("second_pass", "attempts"), default=0)
@@ -70,6 +71,7 @@ def audit_case(case: Mapping[str, Any], *, artifact_root: Path | None = None) ->
         "token_stats": tokens,
         "cost_quality_stats": cost_quality,
         "tool_stats": tools,
+        "retrieval_budget_audit": retrieval_budget,
         "specialist_stats": specialists,
         "second_pass_attempts": second_pass_attempts,
         "rendered_preview_chars": len(preview),
@@ -121,6 +123,31 @@ def render_markdown(audit: Mapping[str, Any]) -> str:
                 flags=flags,
             )
         )
+    lines.extend(
+        [
+            "",
+            "## Retrieval Budget Audit",
+            "",
+            "| Case | Pre-rerank | Sent to BGE | Post-rerank proxy | Max specialist rows | Route budget hits | Flags |",
+            "| --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        ]
+    )
+    for case in audit.get("cases") or []:
+        if not isinstance(case, Mapping):
+            continue
+        retrieval = case.get("retrieval_budget_audit") if isinstance(case.get("retrieval_budget_audit"), Mapping) else {}
+        metrics = retrieval.get("proxy_metrics") if isinstance(retrieval.get("proxy_metrics"), Mapping) else {}
+        lines.append(
+            "| {case_id} | {pre} | {bge} | {post} | {spec_rows} | {hits} | {flags} |".format(
+                case_id=case.get("case_id") or "",
+                pre=metrics.get("sec_candidate_row_count_pre_rerank") or 0,
+                bge=metrics.get("sec_candidate_sent_to_bge") or 0,
+                post=metrics.get("sec_candidate_after_rerank_proxy") or 0,
+                spec_rows=metrics.get("max_specialist_visible_rows") or 0,
+                hits=metrics.get("route_budget_hit_count") or 0,
+                flags=", ".join(retrieval.get("quality_flags") or []) or "none",
+            )
+        )
     lines.extend(["", "## Run Hypotheses", ""])
     for item in audit.get("run_hypotheses") or []:
         lines.append(f"- {item}")
@@ -158,6 +185,131 @@ def _tool_stats(agent_audit: Mapping[str, Any]) -> dict[str, Any]:
         "sec_pre_rerank_candidates": sec_pre_rerank_candidates,
         "sec_bge_candidates": sec_bge_candidates,
     }
+
+
+def _retrieval_budget_audit(
+    case: Mapping[str, Any],
+    *,
+    agent_audit: Mapping[str, Any],
+    tools: Mapping[str, Any],
+    specialists: Mapping[str, Any],
+) -> dict[str, Any]:
+    evidence = agent_audit.get("evidence_operators") if isinstance(agent_audit.get("evidence_operators"), Mapping) else {}
+    calls = [row for row in evidence.get("tool_calls") or [] if isinstance(row, Mapping)]
+    route_rows: list[dict[str, Any]] = []
+    candidate_pre_rerank = 0
+    candidate_sent_to_bge = 0
+    candidate_after_rerank = 0
+    candidate_budget_total = 0
+    rerank_budget_total = 0
+    route_budget_hits = 0
+    for call in calls:
+        runtime = call.get("runtime_summary") if isinstance(call.get("runtime_summary"), Mapping) else {}
+        counts = runtime.get("candidate_counts") if isinstance(runtime.get("candidate_counts"), Mapping) else {}
+        arguments = call.get("arguments") if isinstance(call.get("arguments"), Mapping) else {}
+        argument_summary = call.get("argument_summary") if isinstance(call.get("argument_summary"), Mapping) else {}
+        route_name = str(call.get("retrieval_route") or argument_summary.get("retrieval_route") or arguments.get("retrieval_route") or "")
+        pre = _nested_int(counts, ("candidate_row_count_pre_rerank",), default=0)
+        sent = _nested_int(counts, ("candidate_sent_to_bge",), default=0)
+        post = _first_positive_int(
+            counts.get("candidate_row_count_post_rerank"),
+            counts.get("reranked_row_count"),
+            counts.get("selected_context_row_count"),
+            call.get("row_count"),
+        )
+        cand_budget = _first_positive_int(
+            arguments.get("candidate_budget"),
+            argument_summary.get("candidate_budget"),
+            counts.get("candidate_budget"),
+            runtime.get("candidate_budget"),
+        )
+        rerank_budget = _first_positive_int(
+            arguments.get("rerank_budget"),
+            argument_summary.get("rerank_budget"),
+            counts.get("rerank_budget"),
+            runtime.get("rerank_budget"),
+        )
+        candidate_pre_rerank += pre
+        candidate_sent_to_bge += sent
+        candidate_after_rerank += post
+        candidate_budget_total += cand_budget
+        rerank_budget_total += rerank_budget
+        if cand_budget and pre >= cand_budget:
+            route_budget_hits += 1
+        route_rows.append(
+            {
+                "tool_name": str(call.get("tool_name") or ""),
+                "agent_id": str(call.get("agent_id") or ""),
+                "retrieval_route": route_name,
+                "row_count": int(call.get("row_count") or 0),
+                "candidate_row_count_pre_rerank": pre,
+                "candidate_sent_to_bge": sent,
+                "candidate_row_count_after_rerank_proxy": post,
+                "candidate_budget": cand_budget,
+                "rerank_budget": rerank_budget,
+                "candidate_budget_hit": bool(cand_budget and pre >= cand_budget),
+            }
+        )
+    specialist_inputs = {
+        str(agent_id): int(row_count or 0)
+        for agent_id, row_count in (specialists.get("input_rows_by_agent") or {}).items()
+    }
+    max_specialist_input = max(specialist_inputs.values() or [0])
+    min_specialist_input = min(specialist_inputs.values() or [0]) if specialist_inputs else 0
+    quality_flags = []
+    if candidate_pre_rerank == 0 and any(str(row.get("tool_name") or "") == "sec_search_filings" for row in route_rows):
+        quality_flags.append("sec_retrieval_candidate_counts_missing")
+    if candidate_pre_rerank and candidate_sent_to_bge == 0:
+        quality_flags.append("rerank_not_observed_for_sec_candidates")
+    if route_budget_hits:
+        quality_flags.append("candidate_budget_ceiling_hit")
+    if max_specialist_input and max_specialist_input <= 16:
+        quality_flags.append("specialist_visible_rows_tightly_capped")
+    if str(case.get("execution_mode") or "") == "deep_research" and min_specialist_input and min_specialist_input <= 4:
+        quality_flags.append("some_specialist_inputs_tightly_capped")
+    if int(specialist_inputs.get("product_technology_analyst") or 0) <= 4 and str(case.get("execution_mode") or "") == "deep_research":
+        quality_flags.append("product_specialist_visible_rows_too_low")
+    if int(specialist_inputs.get("fundamental_analyst") or 0) <= 16 and str(case.get("execution_mode") or "") == "deep_research":
+        quality_flags.append("fundamental_specialist_visible_rows_too_low")
+    if int(tools.get("row_count_total") or 0) >= 64 and max_specialist_input and max_specialist_input <= 16:
+        quality_flags.append("retrieved_rows_not_reaching_specialists")
+    if candidate_pre_rerank >= 240 and int(tools.get("row_count_total") or 0) <= 24:
+        quality_flags.append("rerank_or_merge_surface_too_narrow")
+    return {
+        "schema_version": "sec_agent_retrieval_budget_audit_v0.1",
+        "case_id": str(case.get("case_id") or ""),
+        "diagnostic_only": True,
+        "strict_recall_or_precision_available": False,
+        "strict_metric_reason": "no gold relevant-document labels or target-in-candidate labels are present in saved artifacts",
+        "proxy_metrics": {
+            "sec_candidate_row_count_pre_rerank": candidate_pre_rerank,
+            "sec_candidate_sent_to_bge": candidate_sent_to_bge,
+            "sec_candidate_after_rerank_proxy": candidate_after_rerank,
+            "candidate_budget_total_observed": candidate_budget_total,
+            "rerank_budget_total_observed": rerank_budget_total,
+            "bge_candidate_share_of_pre_rerank": _safe_ratio(candidate_sent_to_bge, candidate_pre_rerank, precision=5),
+            "post_rerank_share_of_pre_rerank_proxy": _safe_ratio(candidate_after_rerank, candidate_pre_rerank, precision=5),
+            "max_specialist_visible_rows": max_specialist_input,
+            "min_specialist_visible_rows": min_specialist_input,
+            "retrieved_rows_to_max_specialist_visible_rows": _safe_ratio(max_specialist_input, int(tools.get("row_count_total") or 0), precision=5),
+            "route_budget_hit_count": route_budget_hits,
+        },
+        "specialist_input_rows_by_agent": specialist_inputs,
+        "route_audits": route_rows[:20],
+        "quality_flags": quality_flags,
+        "audit_policy": "candidate_rerank_visibility_proxy_until_gold_recall_labels_exist_v0_1",
+    }
+
+
+def _first_positive_int(*values: Any) -> int:
+    for value in values:
+        try:
+            parsed = int(value or 0)
+        except (TypeError, ValueError):
+            continue
+        if parsed > 0:
+            return parsed
+    return 0
 
 
 def _token_stats(agent_audit: Mapping[str, Any]) -> dict[str, Any]:
@@ -355,6 +507,26 @@ def _has_nonuniform_specialist_priorities(specialists: Mapping[str, Any]) -> boo
 
 def _run_hypotheses(cases: list[Mapping[str, Any]]) -> list[str]:
     hypotheses: list[str] = []
+    retrieval_flags = {
+        flag
+        for case in cases
+        for flag in (
+            (
+                case.get("retrieval_budget_audit") if isinstance(case.get("retrieval_budget_audit"), Mapping) else {}
+            ).get("quality_flags")
+            or []
+        )
+    }
+    if "candidate_budget_ceiling_hit" in retrieval_flags:
+        hypotheses.append("At least one route hit the candidate budget ceiling; audit target-in-candidates before blaming downstream specialists or Memo Writer.")
+    if "retrieved_rows_not_reaching_specialists" in retrieval_flags:
+        hypotheses.append("Retrieval produced rows, but specialist visible rows stayed narrow; inspect row selector budgets and source quotas before adding more retrieval.")
+    if "product_specialist_visible_rows_too_low" in retrieval_flags:
+        hypotheses.append("Product / technology specialist receives very few visible rows in deep research; product evidence sourcing or row selector quotas likely constrain product-line analysis.")
+    if "some_specialist_inputs_tightly_capped" in retrieval_flags:
+        hypotheses.append("At least one specialist receives only a small slice of available evidence; inspect role-specific budgets rather than only global retrieval top-K.")
+    if "rerank_not_observed_for_sec_candidates" in retrieval_flags:
+        hypotheses.append("SEC candidates were observed without BGE rerank evidence; inspect reranker availability and route runtime summaries.")
     if any("specialist_inputs_tightly_capped" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Specialist data views are safe but too narrow for sector-depth multi-company synthesis; increase budget by execution mode and source quota, not globally.")
     if any("high_total_token_cost" in case.get("quality_flags", []) for case in cases):

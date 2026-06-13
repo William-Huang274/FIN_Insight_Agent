@@ -243,12 +243,18 @@ def build_specialist_request_from_state(
     )
     product_spec_pack = data_view.get("product_spec_pack") if isinstance(data_view.get("product_spec_pack"), Mapping) else {}
     capital_macro_pack = data_view.get("capital_macro_pack") if isinstance(data_view.get("capital_macro_pack"), Mapping) else {}
+    fundamental_statement_pack = (
+        data_view.get("fundamental_statement_pack_ref")
+        if isinstance(data_view.get("fundamental_statement_pack_ref"), Mapping)
+        else data_view.get("fundamental_statement_pack") if isinstance(data_view.get("fundamental_statement_pack"), Mapping) else {}
+    )
     refs = _known_evidence_refs_from_request(
         {
             "bounded_evidence_rows": rows,
             "relationship_summary": relationship_summary,
             "product_spec_pack": product_spec_pack,
             "capital_macro_pack": capital_macro_pack,
+            "fundamental_statement_pack": fundamental_statement_pack,
         }
     )
     input_budget = _specialist_input_budget(agent_id, execution_mode, data_view, priority=priority)
@@ -276,6 +282,7 @@ def build_specialist_request_from_state(
         "capital_macro_pack": capital_macro_pack
         if agent_id in {"fundamental_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"}
         else {},
+        "fundamental_statement_pack": fundamental_statement_pack if agent_id == "fundamental_analyst" else {},
         "input_coverage_summary": _specialist_input_coverage_summary(agent_id, rows, state),
         "relationship_summary": relationship_summary,
         "coverage_summary": data_view.get("coverage_summary") or state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {},
@@ -539,6 +546,7 @@ def _build_messages(
         "source_family_bundle": request.get("source_family_bundle") or {},
         "product_spec_pack": request.get("product_spec_pack") or {},
         "capital_macro_pack": request.get("capital_macro_pack") or {},
+        "fundamental_statement_pack": request.get("fundamental_statement_pack") or {},
         "input_coverage_summary": request.get("input_coverage_summary") or {},
         "relationship_summary": relationship_summary,
         "coverage_summary": {} if shared_context else request.get("coverage_summary") or {},
@@ -562,6 +570,7 @@ def _build_messages(
         "Use source_family_bundle to enforce selected source families, context-only families, semantic-supplement limits, and forbidden claim scopes before writing any observation. "
         "If product_spec_pack is present, use it as the parser-gated ProductSpecPack for product taxonomy, model/spec, channel offer, field inquiry, and commercial-gap boundaries. "
         "If capital_macro_pack is present, use it as the parser-gated capital, ownership, macro exposure, and vertical official object boundary; 13F is lagged context and macro drivers need exposure bridges. "
+        "If fundamental_statement_pack is present, use it as the parser-gated three-statement, period-change, peer-comparison, industry-focus financial analysis pack; peer claims require same metric, unit, and period in that pack. "
         "Use assigned_task_card as your only role task brief; use required_claim_slots and counterclaim_slots to decide what to write. "
         "Inspect bounded_evidence_rows selectively: start with rows whose ticker, metric, source_family, or summary match a required_claim_slot; ignore irrelevant rows even if present. "
         "Treat each observation as a ClaimCard v0.3: include ticker_scope, metric_scope, memo_slot, materiality, direction, evidence_refs, source_families, caveats, and missing_confirmations. "
@@ -634,7 +643,7 @@ def _system_prompt(agent_id: str) -> str:
             research_skill_prompt(agent_id, max_chars=4500),
             "Return exactly one JSON object. Do not wrap it in prose. Do not call tools.",
             "Keep output compact enough to fit within max_tokens; prefer role-prioritized observations over exhaustive notes.",
-            "You may only use bounded evidence rows, product_spec_pack, capital_macro_pack, relationship summaries, and shared summaries in the input.",
+            "You may only use bounded evidence rows, product_spec_pack, capital_macro_pack, fundamental_statement_pack, relationship summaries, and shared summaries in the input.",
             "Every supported observation must cite evidence_refs from known_evidence_refs.",
             "If a named fact, relationship, number, or causal claim is not supported by bounded evidence, put it in unsupported_claims.",
             f"SpecialistMemolet schema hint:\n{_json_for_prompt(schema_hint)}",
@@ -704,6 +713,24 @@ def _known_evidence_refs_from_request(request: Mapping[str, Any]) -> set[str]:
                     continue
                 refs.update(_string_list(item.get("evidence_refs")))
                 for ref_key in ("evidence_ref", "source_id"):
+                    value = str(item.get(ref_key) or "").strip()
+                    if value:
+                        refs.add(value)
+    fundamental_statement_pack = request.get("fundamental_statement_pack")
+    if isinstance(fundamental_statement_pack, Mapping):
+        for key in (
+            "statement_line_items",
+            "period_changes",
+            "peer_comparisons",
+            "industry_focus_coverage",
+            "integration_bridges",
+            "analysis_gaps",
+        ):
+            for item in fundamental_statement_pack.get(key) or []:
+                if not isinstance(item, Mapping):
+                    continue
+                refs.update(_string_list(item.get("evidence_refs")))
+                for ref_key in ("evidence_ref", "source_id", "source_fact_id", "line_item_id", "change_id", "comparison_id"):
                     value = str(item.get(ref_key) or "").strip()
                     if value:
                         refs.add(value)
@@ -789,6 +816,9 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
         "source_family_bundle": payload.get("source_family_bundle") or {},
         "product_spec_pack": _compact_product_spec_pack_for_repair(payload.get("product_spec_pack")),
         "capital_macro_pack": _compact_capital_macro_pack_for_repair(payload.get("capital_macro_pack")),
+        "fundamental_statement_pack": _compact_fundamental_statement_pack_for_repair(
+            payload.get("fundamental_statement_pack")
+        ),
         "relationship_summary": compact_relationship_summary,
         "output_contract": payload.get("output_contract") or _specialist_output_contract(str(payload.get("agent_id") or ""), str(payload.get("execution_mode") or "")),
         "known_evidence_refs": {
@@ -849,6 +879,27 @@ def _compact_capital_macro_pack_for_repair(value: Any) -> dict[str, Any]:
         "company_exposure_edges",
         "vertical_official_objects",
         "rejected_objects",
+    ):
+        compact[key] = [dict(item) for item in value.get(key) or [] if isinstance(item, Mapping)][:4]
+    return compact
+
+
+def _compact_fundamental_statement_pack_for_repair(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    compact = {
+        "schema_version": value.get("schema_version") or "",
+        "industry_focus_policy": value.get("industry_focus_policy") or {},
+        "summary": value.get("summary") or {},
+        "source_boundary": value.get("source_boundary") or {},
+    }
+    for key in (
+        "statement_line_items",
+        "period_changes",
+        "peer_comparisons",
+        "industry_focus_coverage",
+        "integration_bridges",
+        "analysis_gaps",
     ):
         compact[key] = [dict(item) for item in value.get(key) or [] if isinstance(item, Mapping)][:4]
     return compact
@@ -1894,7 +1945,12 @@ def _specialist_input_max_rows(execution_mode: str, *, priority: str = "", agent
             default=8,
         )
     elif mode == "deep_research":
-        default = 18 if agent_id == "industry_supply_chain_analyst" else 16
+        if agent_id in {"fundamental_analyst", "product_technology_analyst"}:
+            default = 24
+        elif agent_id == "industry_supply_chain_analyst":
+            default = 20
+        else:
+            default = 16
         value = _int_env(os.environ.get("SPECIALIST_DEEP_RESEARCH_INPUT_MAX_ROWS") or generic, default=default)
     elif mode == "standard_memo" and normalized_priority == "supporting":
         value = _int_env(
@@ -1904,7 +1960,8 @@ def _specialist_input_max_rows(execution_mode: str, *, priority: str = "", agent
             default=8,
         )
     elif mode == "standard_memo":
-        value = _int_env(os.environ.get("SPECIALIST_STANDARD_MEMO_INPUT_MAX_ROWS") or generic, default=12)
+        default = 16 if agent_id in {"fundamental_analyst", "product_technology_analyst"} else 12
+        value = _int_env(os.environ.get("SPECIALIST_STANDARD_MEMO_INPUT_MAX_ROWS") or generic, default=default)
     else:
         value = _int_env(generic, default=10)
     return max(1, value)
@@ -2018,11 +2075,12 @@ def _specialist_output_contract(agent_id: str, execution_mode: str) -> dict[str,
         }
     if agent_id == "fundamental_analyst" and mode == "deep_research":
         return {
-            "policy": "fundamental_compact_claim_cards_v0_3",
-            "supported_observation_target": "2-4",
+            "policy": "fundamental_statement_pack_claim_cards_v0_4",
+            "supported_observation_target": "3-5",
             "unsupported_claim_cap": 1,
             "conflict_cap": 2,
-            "memo_ready_requirement": "prioritize investment implications over row summaries",
+            "required_structured_inputs": ["FundamentalStatementPack"],
+            "memo_ready_requirement": "connect three statements, peer context, industry priority metrics, and product/capital bridges when supported",
         }
     return {
         "policy": "role_specific_claim_cards_v0_3",

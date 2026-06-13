@@ -594,3 +594,13 @@
 - [x] D12.1d: Move entity/source/vintage/reconciliation/ontology/source-policy/derived/memory cross-run reads into DB-default readers where runtime nodes actually consume prior-run state, with stale/supersession rules.
 - [x] D-series runtime closeout: validate D12.1d + D6.1/D7.1/D8.1/D9.1/D10.1 + D3/D4/D5 runtime closeout slices with D-series and multi-agent merged regression before moving to full P/K and agent graph/skill upgrade.
 - [ ] D-series DB hardening follow-up: after full P/K planning, revisit D3/D4/D5 true SQL resolver/object-store/vintage-history implementation and D11 vector/graph memory parity so the database layer is not forgotten.
+
+## Fundamental Statement / Memo Depth / Retrieval Diagnostics
+
+- [x] Add parser-gated FinancialStatementTaxonomy and IndustryFinancialFocusPolicy so fundamental analysis can reason over income statement, balance sheet, cash flow, derived metrics, peer comparisons, and industry-specific focus metrics.
+- [x] Build FundamentalStatementPack from reconciled/derived rows and wire it into fundamental analyst ClaimCard slots, graph artifacts, checkpoint summaries, and memo governance.
+- [x] Add deterministic JudgmentState between adjudication and Memo Writer so memos write from dimension judgments first, then ClaimCards/thesis-driver evidence, with no model-generated judgment state trusted as final.
+- [x] Add retrieval budget proxy diagnostics to the multi-agent output quality audit, including pre-rerank candidates, BGE candidates, post-rerank proxy rows, observed route budgets, specialist-visible rows, and cap flags.
+- [ ] Add gold-labeled retrieval/rerank eval cases so recall and rerank precision can be measured directly rather than inferred from budget proxies.
+- [ ] Repair Product / Technology Specialist row visibility and source-selector quotas; R7 diagnostics showed only `4` visible product rows despite hundreds of SEC post-rerank rows.
+- [ ] Add DB-backed materialization for FundamentalStatementPack / JudgmentState if they become stable cross-run memory objects rather than per-run artifacts only.

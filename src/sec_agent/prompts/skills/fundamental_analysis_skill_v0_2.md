@@ -13,19 +13,23 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 - `assigned_task_card`: the analyst lens, memo slot, relevant evidence requirements, tickers, and source boundaries for this run.
 - `required_claim_slots`: the specific fundamental ClaimCard slots to fill when bounded evidence supports them.
 - `counterclaim_slots`: the material gap or caveat slots to use when a required claim slot is not supported.
+- `fundamental_statement_pack`: parser-gated three-statement, period-change, peer-comparison, industry-focus, and product/capital bridge pack built from reconciled public facts and derived metrics.
 
 ## Analysis Steps
 
 1. Start from `assigned_task_card.relevant_requirements` and the `required_claim_slots`; ignore rows outside that role task unless they directly support a slot.
-2. Identify company-reported facts first: revenue, segment revenue, margin, cost, cash flow, capex, backlog, deposits, credit metrics, or balance-sheet items.
-3. Preserve period role: annual, QTD, YTD, TTM, or instant. Do not compare values unless the period basis is explicit and compatible.
-4. Separate filed financial facts from management commentary. Use 8-K commentary only for explanation, guidance, demand, orders, or narrative context.
-5. Convert each supported fact into an investment implication: growth quality, margin pressure, capital intensity, demand signal, liquidity, or operating leverage.
-6. If a required slot lacks bounded support, write one material missing confirmation or unsupported claim; do not enumerate generic absent metrics.
+2. Use `fundamental_statement_pack` before free-form row reading. Build each ClaimCard around one of these lenses: three-statement quality, peer comparison, industry priority metric, or product/capital bridge.
+3. Identify company-reported facts first: revenue, segment revenue, margin, cost, cash flow, capex, backlog, deposits, credit metrics, or balance-sheet items.
+4. Preserve period role: annual, QTD, YTD, TTM, or instant. Do not compare values unless the period basis is explicit and compatible.
+5. Compare peers only when `peer_comparisons` shows the same metric, unit, and period key; otherwise expose a peer-comparison gap.
+6. Separate filed financial facts from management commentary. Use 8-K commentary only for explanation, guidance, demand, orders, or narrative context.
+7. Convert each supported fact into an investment implication: growth quality, margin pressure, capital intensity, demand signal, liquidity, operating leverage, or peer-relative strength/weakness.
+8. If a required slot lacks bounded support, write one material missing confirmation or unsupported claim; do not enumerate generic absent metrics.
 
 ## Evidence Selection Discipline
 
 - Do not scan or summarize every candidate row. Start from the required claim slot, then read rows whose ticker, metric, source family, period role, or summary directly matches that slot.
+- Use the financial statement pack as a structured index: line items establish accounting facts; period changes establish compatible trend; peer comparisons establish relative context; industry focus coverage establishes what matters and what is missing.
 - Once a slot has sufficient direct support, stop adding adjacent rows unless they change the investment implication or reveal a caveat.
 - Prefer one precise filed fact plus one material caveat over a long list of weakly related facts.
 
@@ -49,6 +53,7 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 ## Quality Rubric
 
 - Pass: cites known refs, keeps period-role language, distinguishes filed facts from commentary, and states an investment implication.
+- Strong pass: connects at least two of three-statement evidence, peer context, industry priority metric, product/segment rows, or capital/cash-flow bridge when the pack supports them.
 - Partial: bounded evidence exists but is incomplete, mixed-period, or only indirectly relevant.
 - Fail: adds numbers/customers/news from memory, cites unknown refs, treats market or industry context as company-filed facts, or omits evidence refs.
 
@@ -57,3 +62,4 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 - Do not call tools, request retrieval, or infer missing ledger values.
 - Do not add customers, suppliers, products, prices, or news from memory.
 - Do not turn 8-K management commentary into audited company facts.
+- Do not make peer-relative, YoY/QoQ, margin, liquidity, or capex-intensity claims unless the pack or cited rows provide compatible inputs.

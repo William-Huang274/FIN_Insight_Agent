@@ -38,6 +38,7 @@ from sec_agent.d_series_fact_selection import (
     build_pre_memo_fact_selection,
 )
 from sec_agent.derived_metric_layer import build_derived_metric_layer
+from sec_agent.financial_statement_analysis import build_fundamental_statement_pack
 from sec_agent.entity_master import build_entity_security_master
 from sec_agent.gate_registry import build_gate_registry_eval_matrix
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
@@ -46,6 +47,7 @@ from sec_agent.multi_agent_contracts import (
     ANALYSIS_DIMENSION_ORDER,
     aggregate_focused_answer_judgment_plan,
     aggregate_specialist_judgment_plan,
+    attach_judgment_state,
     build_multi_agent_memo_draft,
     ledger_metric_display_value,
     build_stub_specialist_memolets,
@@ -165,6 +167,7 @@ CHECKPOINT_STATE_KEYS = (
     "reconciliation_ledger",
     "gate_registry_eval_matrix",
     "derived_metric_layer",
+    "fundamental_statement_pack",
     "analyst_view_research_memory",
     "d_series_database_materialization",
     "d_series_database_materialization_report",
@@ -231,6 +234,7 @@ CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "reconciliation_ledger",
     "gate_registry_eval_matrix",
     "derived_metric_layer",
+    "fundamental_statement_pack",
     "analyst_view_research_memory",
     "d_series_database_materialization_report",
     "d_series_research_context",
@@ -336,6 +340,7 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     reconciliation_ledger: dict[str, Any]
     gate_registry_eval_matrix: dict[str, Any]
     derived_metric_layer: dict[str, Any]
+    fundamental_statement_pack: dict[str, Any]
     analyst_view_research_memory: dict[str, Any]
     d_series_governance_db_path: str
     d_series_database_path: str
@@ -1891,6 +1896,7 @@ def _node_multi_agent_aggregate_judgment_plan(
     governance_state = _state_with_d6_d7_layers(governance_state)
     governance_state = _state_with_d9_gate_matrix(governance_state)
     governance_state = _state_with_d10_derived_metric_layer(governance_state)
+    governance_state = _state_with_fundamental_statement_pack(governance_state)
     fact_selection = build_pre_memo_fact_selection(governance_state)
     selected_judgment = apply_pre_memo_fact_selection_to_judgment(
         result.get("verified_judgment_plan") or result.get("judgment_plan") or judgment,
@@ -1900,6 +1906,12 @@ def _node_multi_agent_aggregate_judgment_plan(
     if required_dimension_ids:
         selected_judgment = {**selected_judgment, "required_dimension_ids": required_dimension_ids}
     selected_judgment = refresh_judgment_plan_after_governance_filter(selected_judgment)
+    selected_judgment = attach_judgment_state(
+        selected_judgment,
+        fundamental_statement_pack=governance_state.get("fundamental_statement_pack")
+        if isinstance(governance_state.get("fundamental_statement_pack"), Mapping)
+        else {},
+    )
     result["judgment_plan"] = selected_judgment
     result["verified_judgment_plan"] = selected_judgment
     governance_ledgers = build_evidence_governance_ledgers(
@@ -1922,6 +1934,7 @@ def _node_multi_agent_aggregate_judgment_plan(
                 "reconciliation_ledger",
                 "gate_registry_eval_matrix",
                 "derived_metric_layer",
+                "fundamental_statement_pack",
             )
             if key in governance_state
         },
@@ -2784,7 +2797,8 @@ def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) ->
     state_with_reconciliation = _state_with_d6_d7_layers(state_with_layers)
     state_with_gates = _state_with_d9_gate_matrix(state_with_reconciliation)
     state_with_derived_metrics = _state_with_d10_derived_metric_layer(state_with_gates)
-    state_with_analyst_views = _state_with_d11_analyst_view_layer(state_with_derived_metrics)
+    state_with_fundamental_pack = _state_with_fundamental_statement_pack(state_with_derived_metrics)
+    state_with_analyst_views = _state_with_d11_analyst_view_layer(state_with_fundamental_pack)
     state_with_materialization = _state_with_d12_1_database_materialization(state_with_analyst_views)
     state_with_closeout_gate = _state_with_d12_database_closeout_gate(state_with_materialization)
     final_state = _record_node(state_with_closeout_gate, "persist_session_state")
@@ -2845,6 +2859,13 @@ def _state_with_d10_derived_metric_layer(state: SecAgentGraphRuntimeState) -> Se
     if derived_layer:
         return state
     return {**state, "derived_metric_layer": build_derived_metric_layer(state)}
+
+
+def _state_with_fundamental_statement_pack(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    pack = state.get("fundamental_statement_pack") if isinstance(state.get("fundamental_statement_pack"), dict) else {}
+    if pack:
+        return state
+    return {**state, "fundamental_statement_pack": build_fundamental_statement_pack(state)}
 
 
 def _state_with_d11_analyst_view_layer(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
@@ -3612,6 +3633,7 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["verified_judgment_plan"] = str((output_dir / "verified_judgment_plan.json").resolve())
         refs["claim_cards"] = str((output_dir / "claim_cards.json").resolve())
         refs["thesis_driver_pack"] = str((output_dir / "thesis_driver_pack.json").resolve())
+        refs["judgment_state"] = str((output_dir / "judgment_state.json").resolve())
         refs["multi_agent_summary"] = str((output_dir / "multi_agent_summary.json").resolve())
         refs["claim_evidence_ledger"] = str((output_dir / "claim_evidence_ledger.json").resolve())
         refs["typed_gap_ledger"] = str((output_dir / "typed_gap_ledger.json").resolve())
@@ -3623,6 +3645,7 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["reconciliation_ledger"] = str((output_dir / "reconciliation_ledger.json").resolve())
         refs["gate_registry_eval_matrix"] = str((output_dir / "gate_registry_eval_matrix.json").resolve())
         refs["derived_metric_layer"] = str((output_dir / "derived_metric_layer.json").resolve())
+        refs["fundamental_statement_pack"] = str((output_dir / "fundamental_statement_pack.json").resolve())
         refs["pre_memo_fact_selection"] = str((output_dir / "pre_memo_fact_selection.json").resolve())
         refs["analyst_view_research_memory"] = str((output_dir / "analyst_view_research_memory.json").resolve())
         refs["d_series_database_closeout_gate"] = str((output_dir / "d_series_database_closeout_gate.json").resolve())
@@ -3699,6 +3722,12 @@ def _write_memo_surface_artifacts(output_dir: Path, state: SecAgentGraphRuntimeS
                 json.dumps(thesis_driver_pack, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
+        judgment_state = judgment.get("judgment_state") if isinstance(judgment.get("judgment_state"), Mapping) else {}
+        if judgment_state:
+            (output_dir / "judgment_state.json").write_text(
+                json.dumps(judgment_state, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
 
 
 def _write_multi_agent_summary_artifact(state: SecAgentGraphRuntimeState) -> None:
@@ -3727,6 +3756,7 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     reconciliation = state.get("reconciliation_ledger") if isinstance(state.get("reconciliation_ledger"), dict) else {}
     gate_matrix = state.get("gate_registry_eval_matrix") if isinstance(state.get("gate_registry_eval_matrix"), dict) else {}
     derived_layer = state.get("derived_metric_layer") if isinstance(state.get("derived_metric_layer"), dict) else {}
+    fundamental_pack = state.get("fundamental_statement_pack") if isinstance(state.get("fundamental_statement_pack"), dict) else {}
     pre_memo_selection = state.get("pre_memo_fact_selection") if isinstance(state.get("pre_memo_fact_selection"), dict) else {}
     analyst_views = (
         state.get("analyst_view_research_memory")
@@ -3784,6 +3814,16 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
                 "gate_registry_eval_matrix": gate_matrix,
             }
         )
+    if not fundamental_pack:
+        fundamental_pack = build_fundamental_statement_pack(
+            {
+                **state,
+                "metric_product_ontology_snapshot": ontology,
+                "reconciliation_ledger": reconciliation,
+                "gate_registry_eval_matrix": gate_matrix,
+                "derived_metric_layer": derived_layer,
+            }
+        )
     if not pre_memo_selection:
         pre_memo_selection = build_pre_memo_fact_selection(
             {
@@ -3793,6 +3833,7 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
                 "reconciliation_ledger": reconciliation,
                 "gate_registry_eval_matrix": gate_matrix,
                 "derived_metric_layer": derived_layer,
+                "fundamental_statement_pack": fundamental_pack,
             }
         )
     if not analyst_views:
@@ -3859,6 +3900,10 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     )
     (output_dir / "derived_metric_layer.json").write_text(
         json.dumps(derived_layer, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "fundamental_statement_pack.json").write_text(
+        json.dumps(fundamental_pack, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     (output_dir / "pre_memo_fact_selection.json").write_text(
@@ -3947,6 +3992,16 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
     derived_layer = state.get("derived_metric_layer") if isinstance(state.get("derived_metric_layer"), dict) else {}
     derived_layer_summary = derived_layer.get("summary") if isinstance(derived_layer.get("summary"), dict) else {}
     derived_layer_validation = derived_layer.get("validation") if isinstance(derived_layer.get("validation"), dict) else {}
+    fundamental_pack = state.get("fundamental_statement_pack") if isinstance(state.get("fundamental_statement_pack"), dict) else {}
+    fundamental_pack_summary = fundamental_pack.get("summary") if isinstance(fundamental_pack.get("summary"), dict) else {}
+    fundamental_pack_validation = (
+        fundamental_pack.get("validation") if isinstance(fundamental_pack.get("validation"), dict) else {}
+    )
+    fundamental_industry_policy = (
+        fundamental_pack.get("industry_focus_policy")
+        if isinstance(fundamental_pack.get("industry_focus_policy"), dict)
+        else {}
+    )
     analyst_views = (
         state.get("analyst_view_research_memory")
         if isinstance(state.get("analyst_view_research_memory"), dict)
@@ -4153,6 +4208,18 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
             "by_gate_status": dict(derived_layer_summary.get("by_gate_status") or {}),
             "blocked_derivation_count": derived_layer_summary.get("blocked_derivation_count") or 0,
             "validation_status": derived_layer_validation.get("status") or "",
+        },
+        "fundamental_statement_pack": {
+            "schema_version": fundamental_pack.get("schema_version") or "",
+            "pack_status": fundamental_pack_summary.get("pack_status") or "",
+            "line_item_count": fundamental_pack_summary.get("line_item_count") or 0,
+            "period_change_count": fundamental_pack_summary.get("period_change_count") or 0,
+            "peer_comparison_count": fundamental_pack_summary.get("peer_comparison_count") or 0,
+            "priority_metric_available_count": fundamental_pack_summary.get("priority_metric_available_count") or 0,
+            "priority_metric_missing_count": fundamental_pack_summary.get("priority_metric_missing_count") or 0,
+            "gap_count": fundamental_pack_summary.get("gap_count") or 0,
+            "industry_id": fundamental_industry_policy.get("industry_id") or "",
+            "validation_status": fundamental_pack_validation.get("status") or "",
         },
         "analyst_view_research_memory": {
             "schema_version": analyst_views.get("schema_version") or "",
@@ -4431,6 +4498,7 @@ def _judgment_plan_quality_summary(value: Any) -> dict[str, Any]:
     outline = [row for row in value.get("memo_outline") or [] if isinstance(row, Mapping)]
     thesis_pack = value.get("memo_thesis_pack") if isinstance(value.get("memo_thesis_pack"), Mapping) else {}
     thesis_driver_pack = value.get("thesis_driver_pack") if isinstance(value.get("thesis_driver_pack"), Mapping) else {}
+    judgment_state = value.get("judgment_state") if isinstance(value.get("judgment_state"), Mapping) else {}
     return {
         "claim_card_stats": {
             "supported_claim_count": int(stats.get("supported_claim_count") or 0),
@@ -4459,6 +4527,21 @@ def _judgment_plan_quality_summary(value: Any) -> dict[str, Any]:
             "counter_driver_count": len(thesis_driver_pack.get("counter_driver_cards") or []),
             "gap_count": len(thesis_driver_pack.get("gap_cards") or []),
             "source_boundary_card_count": len(thesis_driver_pack.get("source_boundary_cards") or []),
+        },
+        "judgment_state": {
+            "present": bool(judgment_state),
+            "status": str(judgment_state.get("status") or ""),
+            "dimension_judgment_count": len(judgment_state.get("dimension_judgments") or []),
+            "fundamental_line_item_count": (
+                (judgment_state.get("fundamental_statement_summary") or {}).get("line_item_count")
+                if isinstance(judgment_state.get("fundamental_statement_summary"), Mapping)
+                else 0
+            ),
+            "fundamental_peer_comparison_count": (
+                (judgment_state.get("fundamental_statement_summary") or {}).get("peer_comparison_count")
+                if isinstance(judgment_state.get("fundamental_statement_summary"), Mapping)
+                else 0
+            ),
         },
         "unsupported_claim_policy": dict(value.get("unsupported_claim_policy") or {}) if isinstance(value.get("unsupported_claim_policy"), Mapping) else {},
         "memo_outline": [
@@ -4764,6 +4847,10 @@ def hydrate_native_state_from_checkpoint_artifact(path: str | Path) -> dict[str,
         if isinstance(rows, list):
             state["runtime_ledger_rows"] = [row for row in rows if isinstance(row, dict)]
 
+    fundamental_statement_pack = _load_json_ref(refs.get("fundamental_statement_pack"))
+    if isinstance(fundamental_statement_pack, dict):
+        state["fundamental_statement_pack"] = fundamental_statement_pack
+
     coverage = _load_json_ref(refs.get("evidence_coverage_matrix"))
     if isinstance(coverage, dict):
         state["coverage_matrix"] = coverage
@@ -5056,6 +5143,12 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     reconciliation = state.get("reconciliation_ledger") or {}
     gate_matrix = state.get("gate_registry_eval_matrix") or {}
     derived_layer = state.get("derived_metric_layer") or {}
+    fundamental_pack = state.get("fundamental_statement_pack") or {}
+    fundamental_pack_summary = (
+        fundamental_pack.get("summary")
+        if isinstance(fundamental_pack, dict) and isinstance(fundamental_pack.get("summary"), dict)
+        else {}
+    )
     analyst_views = state.get("analyst_view_research_memory") or {}
     closeout_gate = state.get("d_series_database_closeout_gate") or {}
     materialization_report = state.get("d_series_database_materialization_report") or {}
@@ -5131,6 +5224,15 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
         "derived_metric_skipped_count": derived_layer.get("skipped_derivation_count") if isinstance(derived_layer, dict) else 0,
         "derived_metric_validation_status": (derived_layer.get("validation") or {}).get("status")
         if isinstance(derived_layer, dict) and isinstance(derived_layer.get("validation"), dict)
+        else "",
+        "fundamental_statement_line_item_count": fundamental_pack_summary.get("line_item_count")
+        if isinstance(fundamental_pack_summary, dict)
+        else 0,
+        "fundamental_statement_peer_comparison_count": fundamental_pack_summary.get("peer_comparison_count")
+        if isinstance(fundamental_pack_summary, dict)
+        else 0,
+        "fundamental_statement_validation_status": (fundamental_pack.get("validation") or {}).get("status")
+        if isinstance(fundamental_pack, dict) and isinstance(fundamental_pack.get("validation"), dict)
         else "",
         "analyst_view_count": analyst_views.get("view_count") if isinstance(analyst_views, dict) else 0,
         "research_memory_entry_count": analyst_views.get("memory_entry_count") if isinstance(analyst_views, dict) else 0,

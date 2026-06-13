@@ -67,7 +67,60 @@ def test_output_quality_audit_flags_high_cost_and_gap_without_second_pass() -> N
     assert case["quality_risk_level"] == "high"
     assert "source_gaps_without_second_pass" in case["quality_flags"]
     assert "specialist_inputs_tightly_capped" in case["quality_flags"]
+    assert case["retrieval_budget_audit"]["proxy_metrics"]["sec_candidate_row_count_pre_rerank"] == 16
     assert audit["issue_counts"]["memo_writer_high_token_cost"] == 1
+
+
+def test_output_quality_audit_reports_retrieval_budget_proxy_flags() -> None:
+    module = _load_script()
+    summary = {
+        "run_id": "unit_retrieval_budget",
+        "cases": [
+            {
+                "case_id": "case_budget",
+                "execution_mode": "deep_research",
+                "agent_audit": {
+                    "evidence_operators": {
+                        "tool_calls": [
+                            {
+                                "agent_id": "sec_operator",
+                                "tool_name": "sec_search_filings",
+                                "row_count": 12,
+                                "runtime_summary": {
+                                    "candidate_counts": {
+                                        "candidate_row_count_pre_rerank": 120,
+                                        "candidate_sent_to_bge": 120,
+                                        "reranked_row_count": 12,
+                                        "candidate_budget": 120,
+                                        "rerank_budget": 48,
+                                    }
+                                },
+                            }
+                        ]
+                    },
+                    "specialists": {
+                        "real_evidence_quality": {
+                            "details": {
+                                "fundamental_analyst": {"input_row_count": 12, "input_source_families": ["primary_sec_filing"]},
+                                "product_technology_analyst": {"input_row_count": 10, "input_source_families": ["company_product_evidence_graph"]},
+                            }
+                        }
+                    },
+                },
+            }
+        ],
+    }
+
+    audit = module.audit_summary(summary)
+    retrieval = audit["cases"][0]["retrieval_budget_audit"]
+    rendered = module.render_markdown(audit)
+
+    assert retrieval["strict_recall_or_precision_available"] is False
+    assert retrieval["proxy_metrics"]["route_budget_hit_count"] == 1
+    assert "candidate_budget_ceiling_hit" in retrieval["quality_flags"]
+    assert "specialist_visible_rows_tightly_capped" in retrieval["quality_flags"]
+    assert "Retrieval Budget Audit" in rendered
+    assert any("candidate budget ceiling" in item for item in audit["run_hypotheses"])
 
 
 def test_output_quality_audit_markdown_contains_case_table() -> None:

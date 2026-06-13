@@ -420,6 +420,7 @@ def _normalize_memo_llm_output(
         "analysis_trace",
         "reasoning",
         "thesis_driver_pack",
+        "judgment_state",
     ):
         memo.pop(forbidden_key, None)
     base = build_multi_agent_memo_draft(judgment if isinstance(judgment, Mapping) else {})
@@ -449,6 +450,7 @@ def _normalize_memo_llm_output(
     )
     memo.setdefault("memo_thesis_pack", base.get("memo_thesis_pack") or {})
     memo.setdefault("thesis_driver_pack", base.get("thesis_driver_pack") or {})
+    memo.setdefault("judgment_state", base.get("judgment_state") or {})
     memo["dimension_analyses"] = _normalize_output_dimension_analyses(
         memo.get("dimension_analyses"),
         base.get("dimension_analyses") or [],
@@ -1417,9 +1419,9 @@ def _memo_messages(
         f"Set response_language.language exactly to {response_language}; user-facing prose must be {response_language_name}. "
         "For zh-CN, translate/synthesize direct_answer, dimension_analyses prose fields, memo_claims.claim, caveats, source_boundary_notes, investment_implications, what_would_change_view, monitoring_items, and evidence_gaps_but_actionable into Simplified Chinese; keep tickers, metric IDs, form names, numbers, units, claim_id, and evidence_refs unchanged. "
         "For zh-CN, any memo_claim.claim that is mostly English prose is invalid; do not quote English ClaimCard text, do not add 'original text' wrappers, and do not say the English text is preserved for traceability. "
-        "Use thesis_driver_pack.dimension_sections first for dimension-led analysis, then memo_thesis_pack as the supporting writing brief, memo_thesis_plan as the order, and memo_outline only as fallback. "
+        "Use judgment_state.dimension_judgments first for dimension-led analysis, then thesis_driver_pack.dimension_sections, memo_thesis_pack, memo_thesis_plan, and memo_outline as fallbacks. "
         "Write direct_answer as a dense executive synthesis across the strongest dimensions, not a driver-by-driver list, row recap, or schema recap. The opening must connect evidence to business mechanism, financial bridge, competitive/risk context, and evidence boundary. "
-        "Emit dimension_analyses for the supported dimensions actually present in thesis_driver_pack.dimension_sections. Each dimension_analyses item must include dimension_id, title, summary, business_mechanism, financial_bridge, competitive_read or counter_read, claim_ids, and evidence_refs copied exactly. "
+        "Emit dimension_analyses for the supported dimensions actually present in judgment_state.dimension_judgments or thesis_driver_pack.dimension_sections. Each dimension_analyses item must include dimension_id, title, summary, business_mechanism, financial_bridge, competitive_read or counter_read, claim_ids, and evidence_refs copied exactly. "
         "Do not copy internal phrases such as 'Synthesized thesis', 'ClaimCard', pipe-delimited joined claims, driver_id, gap_id, or repeated claim text into direct_answer. "
         "Preserve numeric values exactly as written; do not recalculate, invent, round, or change units. "
         "Do not request tools, consume raw rows, or add facts beyond verified claim cards.\n\n"
@@ -1428,7 +1430,7 @@ def _memo_messages(
         f"caveats <= {memo_profile.caveats_max}; unsupported_claims_excluded <= {memo_profile.unsupported_claims_excluded_max}; source_boundary_notes <= {memo_profile.source_boundary_notes_max}. "
         "For standard/expanded/deep_research, include at least two dimension_analyses when supported plus non-empty investment_implications, what_would_change_view, and monitoring_items. "
         "Set memo_generation_policy exactly to thesis_led_claim_cards_v0_1. "
-        "Emit compact memo_thesis_plan only; do_not_emit_supported_claims=true; do not emit thesis_driver_pack, memo_thesis_pack, memo_outline, analysis traces, source tables, or copied judgment_plan. "
+        "Emit compact memo_thesis_plan only; do_not_emit_supported_claims=true; do not emit judgment_state, thesis_driver_pack, memo_thesis_pack, memo_outline, analysis traces, source tables, or copied judgment_plan. "
         "Emit memo_claims synthesized from supported claims with claim_id and evidence_refs copied exactly. Return JSON only.\n\n"
         f"Input JSON:\n{_json_for_prompt(user_payload)}"
     )
@@ -1540,6 +1542,7 @@ def _compact_judgment_for_memo(value: Any, *, memo_profile: MemoProfileSpec | No
     supported = [_compact_claim_card(item) for item in value.get("supported_claims") or [] if isinstance(item, Mapping)]
     thesis_pack = _compact_memo_thesis_pack(value.get("memo_thesis_pack") or {})
     thesis_driver_pack = _compact_thesis_driver_pack(value.get("thesis_driver_pack") or {})
+    judgment_state = _compact_judgment_state(value.get("judgment_state") or {})
     supported_claim_cap = profile.supported_claim_cap_with_thesis_pack if thesis_pack else MEMO_SUPPORTED_CLAIM_CAP
     memo_outline_cap = 4 if thesis_pack and profile.profile == "compact" else 8
     unsupported = [
@@ -1571,6 +1574,7 @@ def _compact_judgment_for_memo(value: Any, *, memo_profile: MemoProfileSpec | No
         "memo_thesis_plan": _compact_memo_thesis_plan(value.get("memo_thesis_plan") or {}),
         "memo_thesis_pack": thesis_pack,
         "thesis_driver_pack": thesis_driver_pack,
+        "judgment_state": judgment_state,
         "claim_card_stats": dict(value.get("claim_card_stats") or {}),
         "memo_constraints": _compact_memo_constraints(value.get("memo_constraints") or {}),
         "memo_writer_allowed": bool(value.get("memo_writer_allowed", True)),
@@ -1583,6 +1587,7 @@ def _compact_memo_payload_for_repair(payload: Mapping[str, Any], *, length_repai
     compact_judgment = dict(judgment)
     thesis_pack = _compact_memo_thesis_pack(judgment.get("memo_thesis_pack") or {})
     thesis_driver_pack = _compact_thesis_driver_pack(judgment.get("thesis_driver_pack") or {})
+    judgment_state = _compact_judgment_state(judgment.get("judgment_state") or {})
     output_contract = payload.get("memo_output_contract") if isinstance(payload.get("memo_output_contract"), Mapping) else {}
     shared_context = payload.get("shared_memo_context") if isinstance(payload.get("shared_memo_context"), Mapping) else {}
     response_language = (
@@ -1606,6 +1611,7 @@ def _compact_memo_payload_for_repair(payload: Mapping[str, Any], *, length_repai
     compact_judgment["source_boundary_notes"] = [dict(item) for item in judgment.get("source_boundary_notes") or [] if isinstance(item, Mapping)][:4]
     compact_judgment["memo_thesis_pack"] = {} if length_repair else thesis_pack
     compact_judgment["thesis_driver_pack"] = {} if length_repair else thesis_driver_pack
+    compact_judgment["judgment_state"] = {} if length_repair else judgment_state
     if length_repair:
         compact_judgment["memo_outline"] = [
             dict(item) for item in judgment.get("memo_outline") or [] if isinstance(item, Mapping)
@@ -2069,6 +2075,53 @@ def _compact_thesis_driver_pack(value: Any) -> dict[str, Any]:
         "evidence_ref_count": int(value.get("evidence_ref_count") or 0),
         "source_claim_refs": _string_list(value.get("source_claim_refs"))[:8],
         "pack_policy": str(value.get("pack_policy") or ""),
+    }
+
+
+def _compact_judgment_state(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or not value:
+        return {}
+    return {
+        "schema_version": str(value.get("schema_version") or ""),
+        "status": str(value.get("status") or ""),
+        "core_thesis": _truncate(str(value.get("core_thesis") or ""), 260),
+        "stance": str(value.get("stance") or ""),
+        "confidence": str(value.get("confidence") or ""),
+        "dimension_judgments": [
+            {
+                "dimension_id": str(row.get("dimension_id") or ""),
+                "title": str(row.get("title") or ""),
+                "stance": str(row.get("stance") or ""),
+                "support_level": str(row.get("support_level") or ""),
+                "summary": _truncate(str(row.get("summary") or ""), 260),
+                "business_mechanism": _truncate(str(row.get("business_mechanism") or ""), 180),
+                "financial_bridge": _truncate(str(row.get("financial_bridge") or ""), 180),
+                "counter_read": _truncate(str(row.get("counter_read") or ""), 180),
+                "claim_ids": _string_list(row.get("claim_ids"))[:6],
+                "evidence_refs": _string_list(row.get("evidence_refs"))[:6],
+                "gap_ids": _string_list(row.get("gap_ids"))[:5],
+                "what_would_change_view": [_truncate(str(item), 140) for item in _string_list(row.get("what_would_change_view"))[:3]],
+            }
+            for row in value.get("dimension_judgments") or []
+            if isinstance(row, Mapping)
+        ][:6],
+        "fundamental_statement_summary": dict(value.get("fundamental_statement_summary") or {})
+        if isinstance(value.get("fundamental_statement_summary"), Mapping)
+        else {},
+        "gap_state": {
+            "unsupported_claim_count": int(((value.get("gap_state") or {}) if isinstance(value.get("gap_state"), Mapping) else {}).get("unsupported_claim_count") or 0),
+            "gap_card_count": int(((value.get("gap_state") or {}) if isinstance(value.get("gap_state"), Mapping) else {}).get("gap_card_count") or 0),
+            "top_gaps": [
+                {
+                    "gap_id": str(row.get("gap_id") or ""),
+                    "statement": _truncate(str(row.get("statement") or ""), 160),
+                    "claim_boundary": str(row.get("claim_boundary") or ""),
+                }
+                for row in (((value.get("gap_state") or {}) if isinstance(value.get("gap_state"), Mapping) else {}).get("top_gaps") or [])
+                if isinstance(row, Mapping)
+            ][:5],
+        },
+        "memo_writer_policy": str(value.get("memo_writer_policy") or ""),
     }
 
 

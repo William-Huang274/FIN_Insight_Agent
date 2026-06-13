@@ -5,18 +5,19 @@ Use this skill only after Coverage / Reflection and Verifier constraints allow a
 ## Required Input Fields
 
 - `verified_judgment_plan`: the only source of supported claim cards, caveats, conflicts, missing evidence, source boundaries, and memo outline.
+- `judgment_state`: compact dimension-level adjudication state inside `verified_judgment_plan`; use it before raw driver lists when present.
 - `specialist_verification`: whether the memo writer is allowed to write a full memo or must stay bounded.
 - `shared_memo_context`: common scope, coverage, Specialist route status, and source-boundary context. It must not be treated as evidence for a factual claim.
 - `memo_writer_data_view`: deprecated summary-only data view. If present, it must not contain raw rows.
 
 ## ClaimCard Handling
 
-- Treat `thesis_driver_pack.dimension_sections` as the primary writing brief when present. Use `memo_thesis_pack` and `memo_thesis_plan` to order and bound the memo.
+- Treat `judgment_state.dimension_judgments` as the primary writing brief when present. Use `thesis_driver_pack.dimension_sections`, `memo_thesis_pack`, and `memo_thesis_plan` to order and bound the memo.
 - Treat `supported_claims` as fallback verified ClaimCard observations only when a thesis pack is absent.
 - If `memo_thesis_pack.status` or `memo_thesis_plan.status` is `ready`, return `answer_status=draft` with non-empty `memo_claims`. Use `blocked_by_judgment_plan` only when no verified memo-ready thesis or driver claim exists.
 - Follow `memo_outline` when present. Each supported section should cite the relevant claim cards.
 - Emit `memo_generation_policy=thesis_led_claim_cards_v0_1`. Emit only a compact `memo_thesis_plan` carrying status, primary thesis id, primary thesis, and direction; do not copy the full plan or thesis pack.
-- Emit `dimension_analyses` when dimension sections are present. Each item needs `dimension_id`, `title`, `summary`, `business_mechanism`, `financial_bridge`, `competitive_read` or `counter_read`, `claim_ids`, and `evidence_refs`.
+- Emit `dimension_analyses` when judgment-state dimensions or thesis-driver dimension sections are present. Each item needs `dimension_id`, `title`, `summary`, `business_mechanism`, `financial_bridge`, `competitive_read` or `counter_read`, `claim_ids`, and `evidence_refs`.
 - Preserve `ticker_scope`, `metric_scope`, `memo_slot`, `materiality`, `direction`, `evidence_refs`, `source_families`, `caveats`, and `missing_confirmations`.
 - Preserve numeric values exactly as written in ClaimCards. Do not recalculate, invent, round, or change units; if a sentence must be shortened, omit a number instead of altering it.
 - Do not turn relationship, market, or industry context into company-reported financial facts.

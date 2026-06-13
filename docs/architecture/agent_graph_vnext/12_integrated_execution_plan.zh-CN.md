@@ -27,6 +27,33 @@
 - 后端契约先行：Run / Event / Artifact / Eval schema 先稳定，再决定 FastAPI-only、Spring Boot shell 或双轨。
 - 同步屏障清楚：Research Lead checkpoint、Evidence Fusion、LeadReview、MemoLogicPlan、Verifier 都是同步屏障；retrieval / specialist / tool calls 可以异步扇出。
 - 不用弱兜底：找不到公开数据时暴露 bounded / commercial gap，不用 web snippet、memory 或 proxy 冒充事实。
+- 企业级存储默认：SQL、ObjectStore、Redis、Milvus 等底座按企业级 Agent 平台的审计和扩展方式设计；“最小”只表示首批字段 / 首批接口 / 首批 runner，不表示 toy store、弱化 schema 或长期 SQLite-only 路线。
+- 根因优先：遇到失败、慢任务或数据缺口时，先定位 parser、schema、算法复杂度、批处理、并发、索引、资源调度和数据写入方式的真实问题；只有确认本机资源或公开数据边界确实挡住后，才记录受限方案或 gap。
+
+## 执行纪律：资源、存储、根因和数据质量
+
+本节是 P0-P10 的共同门控，优先级高于单个任务里的“最小版”“fallback”“smoke”等表述。
+
+### 企业级存储默认
+
+- SQL 是 run audit、eval、claim/gap/gate、context、artifact index、source provenance、vintage 和业务事实表的默认审计源；JSONL 只作为导入导出、兼容旧 runner 或可读 artifact，不作为最终审计源。
+- ObjectStore 保存原始文件、大型解析产物、报告产物、表格抽取快照和 before/after diff；数据库保存 URI、checksum、parser version、data snapshot、row counts、schema version 和 provenance。
+- Redis 只做队列、锁、semaphore、working-set cache 和异步协作状态；不能替代最终 SQL 审计源。
+- Milvus / vector store 是 passage-level semantic recall supplement，默认不承担 exact-value authority；向量库改动必须有 collection schema、snapshot、embedding model/version、rebuild/backfill/parity 记录。
+- 只有在经过资源调度、内存/CPU/GPU 使用优化、脚本算法优化、批量/流式写入优化、索引/分区/去重/缓存优化之后仍无法在本机完成时，才允许记录 `resource_blocked_scale_up`，说明本机资源、已尝试优化、需要的云端规格和降级风险，并提示用户是否切到云端。
+
+### 根因优先和慢任务处理
+
+- 不把 fallback 当第一反应。fallback 只能是产品定义的有界行为、诊断保护，或带 removal condition 的临时 workaround；通过 fallback 产出的指标不能被提升为 mainline。
+- 对 5 分钟级小任务、10 分钟级中任务、30-60 分钟以上长任务，如果慢是因为串行保守写法、重复加载模型、N+1 查询、低效 pandas/object loop、未批处理、未建索引、GPU/CPU/IO 低利用率或过早 CPU fallback，必须先做 profile 和算法/IO/并发优化，而不是被动等待。
+- 慢任务优化记录至少包含：瓶颈类型、输入规模、当前复杂度或吞吐、改动策略、改动前后耗时、剩余资源约束。
+- 因本机资源无法解决的问题要暴露为 `resource_blocked`；因公开免费源不可得的问题要暴露为 bounded/commercial gap；二者不能混写。
+
+### 数据处理质量进入 eval
+
+- Eval 不只看最终 memo。P4/P6/P10 必须覆盖前置数据质量：chunk 切分规则、chunk 边界、截断策略、表格 start/end、row/column/cell 保真、结构化抽取 schema validity、value/unit/period/product/entity 绑定、source/provenance/vintage、以及这些错误对 retrieval / rerank / ClaimCard 的下游影响。
+- 对 SEC、上传文件、公开网页、宏观/行业官方源和 KG pack，必须保留 parser version、chunker version、input checksum、output row count、dropped reason、truncation reason 和可复跑命令。
+- 如果 chunk 截断、表格抽取或结构化抽取导致检索看不到关键事实，failure taxonomy 归因到 parser/chunker/extractor，不得只归因到 reranker、Research Lead 或 Memo Writer。
 
 ## 工作流总图
 
@@ -72,6 +99,8 @@ Backend：
 - 决定 B0：默认建议 `FastAPI first + Python worker + later Spring Boot parity`。
 - 若用户明确要 Java P0，则 Spring Boot 实现 Run Manager API，Python worker 通过 Redis / DB payload 执行。
 - 定义 run/event/artifact/eval schema 草案，不先上复杂微服务。
+- 冻结存储路线：默认按 SQL + ObjectStore + Redis + Milvus supplement 的企业级组合设计；SQLite 只能作为本机开发 adapter 或临时兼容层，不是最终 D/P/Eval 主库。
+- 建立 `resource_blocked_scale_up` 记录格式，后续只有完成资源/脚本/写入优化审计后才能触发。
 
 Eval：
 
@@ -88,6 +117,8 @@ Eval：
 
 - E0 / EV1：Eval Registry 能回答每类能力对应跑哪个 eval。
 - 文档和 registry 均能定位 09/10/11/12 的职责。
+- B0 能说明 SQL/ObjectStore/Redis/Milvus 的职责边界、落地顺序、迁移 / backfill / parity 策略，以及哪些路径只是 local adapter。
+- 对任何“本机跑不动所以最小化”的判断，必须先有资源优化审计记录；否则不允许进入 P1 实现。
 - `git status` 清洁；docs-only 不要求 runtime tests。
 
 不通过处理：
@@ -120,7 +151,8 @@ Backend：
   - `GET /api/runs/{run_id}`
   - `GET /api/runs/{run_id}/events`
   - `GET /api/runs/{run_id}/artifacts`
-- 先允许本地 SQLite/Postgres 二选一；生产方向以 MySQL/Postgres 为主库。
+- 以 Postgres/MySQL 级 SQL 主库契约为默认；本地 SQLite 只允许作为兼容 / 开发 adapter，必须保持 schema parity、migration path 和 parity test，不得作为长期主线替代。
+- ObjectStore URI / checksum / parser version / before-after diff 必须可从 run audit 追溯。
 
 Eval：
 
@@ -140,6 +172,8 @@ Eval：
 
 - E1：single-run exact lookup / focused memo 都能写入 audit DB。
 - E11：给定 `run_id` 能重建 node order、elapsed_ms、model token、artifact refs。
+- 关键审计表以 SQL-backed store 为主；JSON artifact 与 SQL projection 有 parity check。
+- 没有隐藏 fallback：写入失败必须暴露为 audit failure，不允许静默只落 JSON。
 - 无 private path / secret 泄漏到用户输出。
 
 不通过处理：
@@ -148,7 +182,7 @@ Eval：
 
 ## P2：Eval Store 与 Failure / Gold 骨架
 
-目标：把 11 的 Eval Runtime 从文档推进到最小 SQL / artifact contract，使后续每一步都有统一 gate。
+目标：把 11 的 Eval Runtime 从文档推进到 SQL-backed eval store / artifact contract，使后续每一步都有统一 gate。
 
 Python Agent / Eval：
 
@@ -161,6 +195,7 @@ Python Agent / Eval：
   - `eval_failure_event`
   - `eval_gold_promotion`
 - 写 `eval_run_manifest.json`、`eval_case_results.jsonl`、`eval_node_results.jsonl`、`eval_metric_results.jsonl`、`failure_events.jsonl`。
+- JSONL 是导入导出和旧 runner adapter；主审计以 eval SQL rows 为准。
 - 先把现有 S1-S10 / G11 / retrieval A/B / SEC benchmark 的 summary 归一成 eval rows，不重写全部 runner。
 
 Backend：
@@ -178,6 +213,7 @@ Eval：
 - E11：一个已有 G11 run 能转换成 eval case/node/metric rows。
 - Failure event 至少能记录 failure_type、node、expected、actual、artifact_refs。
 - Gold candidate 不能直接变 gold，必须有 criteria_version / data_snapshot / review method。
+- Eval store 能记录 parser/chunker/table/structured-extraction 类型 failure，不只记录最终 memo failure。
 
 不通过处理：
 
@@ -273,6 +309,12 @@ Eval：
 - E4 Retrieval / Rerank / Role Visibility Eval。
 - E1 resource/SLA smoke。
 - 新增 `retrieval_role_visible_recall_v0_1`。
+- 新增 parser/chunker/extractor data-quality eval：
+  - chunk boundary correctness
+  - truncation and dropped-row reason
+  - table row/column/cell integrity
+  - structured extraction value/unit/period/product/entity binding
+  - parser error to retrieval miss attribution
 
 可并行：
 
@@ -284,10 +326,13 @@ Eval：
 - Product case 不再出现“全局候选很多，但 product specialist 只看到 4 行且无明确 dropped reason”。
 - BGE device、queue wait、cache hit 可审计。
 - Token/cost warning 能定位到 node / agent / claim。
+- 发现召回差时能区分 query / candidate cap / rerank / role quota / chunk truncation / parser table loss / source unavailable。
+- 如果 evidence 在原始文件中存在但没有进入 role-visible rows，必须生成 retrievable gap 或 upstream parser/chunker failure，不允许直接 bounded。
 
 不通过处理：
 
 - 如果输出浅，先看 E4；E4 失败时不得只改 Memo Writer。
+- 如果任务慢，先 profile retrieval、rerank、embedding、DB read/write、parser/chunker 和 fan-out 阶段；不得因为慢而直接压低证据预算或转弱模型。
 
 ## P5：Research Lead Supervised Loop
 
@@ -384,6 +429,7 @@ Eval：
 - E5 Evidence Operator / Tool Eval。
 - E2 Context / Memory Eval。
 - E10 Safety / Boundary Eval。
+- E5 必须包含 input parser eval：PDF/DOCX/Excel/PPT/HTML/MD 的 page/table/cell refs、checksum、parser version、truncation reason 和 extraction accuracy。
 
 前端：
 
@@ -393,6 +439,7 @@ Eval：
 
 - 文件输入不能绕过 source policy。
 - 文档解析结果有 page/table/cell/source refs。
+- 表格抽取和结构化抽取至少有抽样正确率 / schema validity / dropped-row audit；无法解析时要定位到具体 parser/chunker failure。
 - Memo Writer 仍不能调用检索工具，只能调用渲染工具。
 - Web search 结果必须 snapshot-first / parser-gated，不直接 promoted。
 
@@ -510,6 +557,13 @@ Backend：
   - 若 P0 决定 FastAPI first，则此阶段补 Spring Boot API parity / shell。
   - Java 负责 REST API、Redis、MySQL/Postgres、SSE、rate limit、thread pool、auth/admin。
   - Python worker 继续负责 LangGraph / parser / evidence gate / report generation。
+- 存储 / 写入优化：
+  - bulk insert / upsert
+  - migration batch
+  - index and partition review
+  - object-store streaming writes
+  - DB reader pagination
+  - vector rebuild/backfill batch profile
 
 Python Agent：
 
@@ -532,10 +586,13 @@ Eval：
 - cancel 和 resume 有真实 case。
 - retry 不重试 source boundary / commercial gap / deterministic parser fail。
 - Java shell 不重写 Python research runtime。
+- 任何 SLA 失败都有资源归因：queue、worker、provider、BGE、DB、object store、parser/chunker、writer 或 vector rebuild。
+- 降模型、降证据预算、跳过 Milvus/SQL/object-store 写入之前，必须有优化审计或 `resource_blocked_scale_up` 记录。
 
 不通过处理：
 
 - 如果 SLA 失败，先看 queue/worker/provider/BGE/DB 分项，不直接降模型质量。
+- 如果本机资源确实不足，记录云端资源需求和预期收益，再由用户决定是否切换云端。
 
 ## P10：Full-chain Regression、Online Eval 和持续治理
 
@@ -548,6 +605,7 @@ Python Agent / Eval：
 - EV7 LLM-as-judge audit contract。
 - E11 Full-chain / Multi-turn Eval。
 - E12 Online Eval / Production Monitoring。
+- 把数据处理/清洗质量纳入长期样本集：chunk boundary、truncation、table extraction、structured extraction、row/column/cell refs、value/unit/period/product binding、source/vintage parity。
 
 Backend / Frontend：
 
@@ -569,6 +627,7 @@ Backend / Frontend：
 - 好结果晋级 gold 必须有 data snapshot、criteria version、review record、expiry policy。
 - LLM-as-judge 只评价表达和 reasoning quality，不替代 deterministic financial gates。
 - 一次 run 可以完整复盘到 case / dataset / node metrics / context / evidence / claim / gate / failure taxonomy。
+- 数据处理失败也能进入 regression/failure lifecycle，而不是只在最终报告质量差时才记录。
 
 不通过处理：
 
@@ -584,6 +643,8 @@ Backend / Frontend：
 - P6 Tool/Input pipeline 与 P7 Memo surface 的接口设计。
 - P8 前端 trace skeleton 与 P9 Java shell contract。
 - D3/D4/D5/D11 DB hardening 与 K5 remaining raw-material hardening。
+- 数据处理 eval 设计可以从 P2 开始并行，不必等 P6 文件输入全部完成。
+- 资源调度 / 写入优化 profile 可以和 P4/P9 并行，但不能绕过 P1 audit。
 
 必须串行：
 
@@ -592,6 +653,8 @@ Backend / Frontend：
 - P4 未通过前，不判断 Memo Writer 是否主要负责输出浅。
 - P5 未通过前，不进入 P7 full memo surface gate。
 - P7 未通过前，不做 P10 批量 full-chain gold promotion。
+- B0/P1 未明确存储主线、local adapter 边界和 resource-blocked 例外规则前，不做大规模 DB/Milvus 重建。
+- parser/chunker/table/structured-extraction 质量未进入 eval store 前，不把 retrieval / writer 失败单独归因到模型。
 
 ## 推荐首轮实施顺序
 
@@ -599,8 +662,8 @@ Backend / Frontend：
 
 1. P0：Eval Registry + B0 技术路线。
 2. P1：Run / Audit Foundation 扩展。
-3. P2：Eval Store 最小 SQL / JSONL adapter。
-4. P4：Retrieval / role-visible ledger，因为这是当前已知根因风险最高的区域。
+3. P2：SQL-backed Eval Store + JSONL import/export adapter。
+4. P4：Retrieval / role-visible ledger + parser/chunker/table/structured-extraction data-quality eval，因为这是当前已知根因风险最高的区域。
 5. P3：Context Runtime v0，可以和 P4 schema 并行，但默认注入要等 gate。
 6. P5：Research Lead Objective / Review / Repair。
 7. P7：MemoLogicPlan 和 Memo Surface。
@@ -610,6 +673,7 @@ Backend / Frontend：
 
 - 先补审计和 eval，否则后续改动无法判断质量。
 - 先补 retrieval/role-visible，否则输出浅会误判为 writer 问题。
+- 同时补 parser/chunker/table/structured-extraction eval，否则“检索没召回”可能只是上游截断或抽取失败。
 - 再补 Lead supervised loop，让反思和 second pass 真正回到研究目标。
 - 最后补 writer、前端、并发和 Java shell，避免产品层放大未治理的上游缺口。
 
@@ -619,7 +683,10 @@ Backend / Frontend：
 
 - API / worker 可以创建并执行 research run。
 - SQL / artifact 能复盘 run、node、context、retrieval、evidence、claim、gap、gate、model call。
+- SQL/ObjectStore/Redis/Milvus 职责边界清楚；local SQLite / JSONL 仅作为 adapter 或 export，不被当作最终审计源。
+- 如果出现本机资源无法完成的 DB / SQL / Milvus / parser / vector rebuild 任务，必须有 `resource_blocked_scale_up` 记录，列明已尝试的资源和算法优化。
 - Eval Registry 能定位当前应该跑的 node / chain eval。
+- Eval Store 能记录 chunk、truncation、table extraction、structured extraction、source/provenance/vintage 的 node-level failure。
 - Research Lead 产出 ResearchObjectiveContract，并在 LeadReviewCheckpoint 做 sufficient / gap 分类。
 - Retrieval audit 能解释 target 是否进入 candidates、rerank、role-visible rows。
 - TargetedRepairPlan 有 delta audit。

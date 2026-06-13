@@ -1,5 +1,14 @@
 # Internal Master Checklist
 
+## Integrated 09-12 Execution Governance
+
+- [x] Harden 12 integrated execution plan with enterprise-grade SQL/ObjectStore/Redis/Milvus storage discipline.
+- [x] Add root-cause-first and no-weak-fallback policy for P0-P10 tasks.
+- [x] Add parser/chunker/table/structured-extraction data-quality eval requirements to the P-series plan.
+- [x] Update project-worklog skill with stage-aware subfolder and `NNN_<phase_id>_<topic>` naming rules.
+- [ ] P0: freeze storage route, local adapter boundaries, and `resource_blocked_scale_up` record schema before P1 implementation.
+- [ ] P2/P4: implement data-processing eval rows for chunk boundaries, truncation, table extraction, structured extraction, and downstream retrieval attribution.
+
 ## Repository Foundation
 
 - [x] Initialize local Git repository with `main`.

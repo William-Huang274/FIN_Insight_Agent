@@ -2,6 +2,8 @@
 
 Durable engineering notes for FinSight-Agent.
 
+- `integrated_execution_p_series/`: stage-aware worklogs for the 09/10/11/12 integrated execution phase; new entries use `NNN_<phase_id>_<topic>.md` naming.
+
 - `00_internal_master_checklist.md`: current implementation checklist.
 - `10_engineering_phase1_foundation.md`: Phase 1 setup and smoke-test notes.
 - `20_agent_memory_evaluation_plan.md`: Qwen agent-memory eval plan and run results.
@@ -208,4 +210,5 @@ Durable engineering notes for FinSight-Agent.
 - `313_backend_context_management_absorption.md`: 2026-06-14 Backend context management absorption；扩展 `agent_graph_vnext/10_backend_frontend_runtime_framework.zh-CN.md`，吸收 RAGFlow / MaxKB / Flowise / Hermes 的企业级 memory / context engine 做法，并对齐现有 `SecAgentContextManager`、shared specialist context、D-series analyst memory、D-series DB reader 和 Research Lead closed loop；新增 FinSight Context Taxonomy、ContextEngine facade、节点注入规则、SQL/Redis/ObjectStore/Milvus 存储边界、memory 状态机和 B9-B11 context runtime 任务；docs-only，未改 runtime。
 - `314_agent_eval_runtime_framework.md`: 2026-06-14 Agent Eval Runtime framework；新增 `agent_graph_vnext/11_agent_eval_runtime_framework.zh-CN.md`，审计当前 docs/eval、scripts/eval、fixtures、eval_sets、run_audit_store、LangGraph checkpoints、LLM token/latency 和 model run ledger，明确现有 eval 资产强但分散；吸收 LangSmith / OpenAI Evals / Phoenix / Ragas 的 dataset + evaluator + experiment + trace + feedback loop 做法，定义 E0-E12 分层 eval、Eval SQL 草案、failure/gold 生命周期、failure taxonomy、LLM-as-judge 边界、前端 eval dashboard 和 EV0-EV8 待办；docs-only，未改 runtime。
 - `315_integrated_09_11_execution_plan.md`: 2026-06-14 Integrated 09-11 execution plan；新增 `agent_graph_vnext/12_integrated_execution_plan.zh-CN.md`，把 09/10/11 编排成 P0-P10 功能切片，逐步推进 Eval Registry、Run/Audit Foundation、Eval Store、Context Runtime、retrieval/rerank/role-visible ledger、Research Lead supervised loop、Tool/Input、Memo/Verifier、Frontend dashboard、Concurrency/SLA/Java shell 和 full-chain/online eval governance；每步都列出 Python agent、后端/前端、eval gate、同步屏障、并行项、通过条件和失败处理；docs-only，未改 runtime。
+- `integrated_execution_p_series/316_p0_p10_execution_policy_hardening.md`: 2026-06-14 P0-P10 执行纪律加固；把企业级存储默认、resource-blocked 例外、慢任务主动优化、root-cause first、parser/chunker/table/structured-extraction eval 下探和阶段化 worklog 命名规则固化到 12 文档与 project-worklog skill；docs-only，未改 runtime。
 - Model run output appendix for the same A/B: `reports/model_runs/20260521_sec_agent_full30_qwen9b_deepseek_ab_outputs.md`.

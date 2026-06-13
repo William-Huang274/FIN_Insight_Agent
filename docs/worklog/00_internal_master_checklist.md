@@ -630,4 +630,7 @@
 - [ ] B6: Add timeout, cancel, retry/backoff, worker heartbeat, stuck-run recovery, and idempotency key.
 - [ ] B7: Add Docker Compose for API, worker, DB, Redis, Milvus, and optional MinIO.
 - [ ] B8: Add load testing over exact value, focused memo, deep research, and batch graph jobs with p95 latency, queue wait, success rate, error rate, token cost, and LLM/BGE concurrency.
+- [ ] B9: Add Context Runtime: context snapshots, context events, context injection plans, prompt packs, context artifact refs, memory consolidation jobs, and context visibility in run trace.
+- [ ] B10: Add a ContextEngine facade with resolve/select/compress/inject/write/consolidate/invalidate/retrieve interfaces and config-driven strategy selection.
+- [ ] B11: Add memory governance gates: tenant isolation, injection audit, token budget, memory drilldown parity, evidence boundary, staleness, replay, and frontend visibility.
 - [ ] F1: Add frontend run list, run detail, event timeline, evidence viewer, ClaimCard viewer, gap viewer, report viewer, graph trace, upload center, and admin/config views.

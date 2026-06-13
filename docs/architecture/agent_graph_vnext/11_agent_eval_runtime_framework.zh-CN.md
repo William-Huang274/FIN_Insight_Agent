@@ -660,6 +660,7 @@ Judge 本身必须被审计：
 - 在 `run_audit_store` 外新增 eval tables，或新建 `eval_audit_store`。
 - 关联 `run_id`、`case_id`、`code_commit`、`data_snapshot_id`、`artifact_uri`。
 - 把现有 `chain_performance_summary`、`quality_audit`、`retrieval_ab`、`sec_benchmark_post_gates` 归一到 eval result rows。
+- 2026-06-14 已落最小 SQL-backed eval store：`src/sec_agent/runtime_bridge/eval_store.py`，包含 `eval_case_registry`、`eval_dataset_version`、`eval_case_result`、`eval_node_result`、`eval_metric_result`、`eval_failure_event`、`eval_gold_promotion`；当前是 local SQLite adapter，用于 schema/parity smoke，不替代后续 MySQL/Postgres 主库。
 
 通过条件：
 
@@ -670,6 +671,7 @@ Judge 本身必须被审计：
 - 每次检索写 `retrieval_candidate_ledger`、`rerank_ledger`、`role_visible_evidence_ledger`。
 - 增加 gold-labeled retrieval/rerank eval cases。
 - 让 `target_in_candidates`、`post_rerank_hit`、`role_visible_recall` 成为默认指标。
+- 数据处理质量已进入最小 eval contract：`src/sec_agent/runtime_bridge/data_quality.py`，先覆盖 chunk boundary、truncation reason、table row/column/cell refs、structured value/unit/period/entity/product binding，并把 parser/chunker/table failure 暴露为 failure event。
 
 通过条件：
 
@@ -680,6 +682,7 @@ Judge 本身必须被审计：
 - 为 ResearchObjectiveContract、LeadReviewCheckpoint、TargetedRepairPlan、MemoLogicPlan 加 node-only eval。
 - 为 ContextEngine 和 context injection plan 加 replay eval。
 - 为 ModelRouter / AgentCoalescer 加成本质量 eval。
+- 2026-06-14 已落 ModelRouter / resource scheduler 的 deterministic unit gate：`src/sec_agent/runtime_bridge/resource_scheduler.py`；LeadReviewCheckpoint / MemoLogicPlan node eval 仍待接主 graph。
 
 通过条件：
 

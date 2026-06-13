@@ -6,8 +6,12 @@
 - [x] Add root-cause-first and no-weak-fallback policy for P0-P10 tasks.
 - [x] Add parser/chunker/table/structured-extraction data-quality eval requirements to the P-series plan.
 - [x] Update project-worklog skill with stage-aware subfolder and `NNN_<phase_id>_<topic>` naming rules.
-- [ ] P0: freeze storage route, local adapter boundaries, and `resource_blocked_scale_up` record schema before P1 implementation.
+- [x] P0/P1 bridge: add JDK-only Java Task Gateway and Python worker callback smoke for `POST task -> queue -> worker -> GET task`.
+- [x] P2/P4/P9 minimal contracts: add SQL-backed eval store skeleton, data-processing quality eval, runtime path registry, and deterministic resource scheduler.
+- [x] P0: freeze storage route, local adapter boundaries, and `resource_blocked_scale_up` record schema before P1 implementation.
 - [ ] P2/P4: implement data-processing eval rows for chunk boundaries, truncation, table extraction, structured extraction, and downstream retrieval attribution.
+- [ ] Bridge DB/queue hardening: run Java gateway against real Docker MySQL/Postgres and Redis, with JDBC driver, migrations, and parity tests.
+- [ ] Bridge runtime hardening: map queued Java tasks to Workbench/LangGraph command execution instead of deterministic smoke only.
 
 ## Repository Foundation
 

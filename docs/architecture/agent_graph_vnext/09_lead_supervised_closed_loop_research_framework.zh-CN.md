@@ -466,7 +466,8 @@ User File / URL / Image / Video
 
 - 本文档是下一阶段框架，不代表 runtime 已完成这些能力。
 - FundamentalStatementPack / JudgmentState 已有初版 runtime 接入；LeadReviewCheckpoint 对它们的一等节点使用仍待实现。
-- BGE scheduler / ModelRouter / AgentCoalescer 尚未实现。
+- BGE scheduler / ModelRouter / AgentCoalescer 已有最小 deterministic resource scheduler：`src/sec_agent/runtime_bridge/resource_scheduler.py`，能做 CUDA BGE slot、CPU spillover 和 token 压力下低成本模型路由审计；尚未接入主 graph 和 Redis semaphore。
+- Java Task Gateway / Python worker 通路已建立最小 smoke：`apps/research_gateway/java/src/finsight/gateway/TaskGatewayServer.java` + `src/sec_agent/runtime_bridge/task_worker.py`；当前只验证后端任务生命周期，不代表 LeadReviewCheckpoint 已接入。
 - Memo Surface vNext 尚未替换当前渲染，只确定方向。
 - Tool Capability Registry、Document / Multimodal Input Pipeline 尚未实现；当前工具仍主要覆盖检索、查数、artifact inspect 和 markdown 渲染。
 - Web repair 仍必须遵守 02 文档的 allowlist / source class / claim scope。

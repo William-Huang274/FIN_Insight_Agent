@@ -24,7 +24,7 @@
 
 - Eval 先行：任何新 agent 能力必须有 node-level eval，不等 full-chain 后才发现问题。
 - 审计先行：任何模型调用、检索、repair、writer 输出都必须能回放输入、context、artifact refs 和 gate。
-- 后端契约先行：Run / Event / Artifact / Eval schema 先稳定，再决定 FastAPI-only、Spring Boot shell 或双轨。
+- 后端契约先行：Run / Event / Artifact / Eval schema 先稳定；P0 先打通 Java Task Gateway -> queue -> Python worker -> callback 通路，不把 Java 做成不可用 shell。
 - 同步屏障清楚：Research Lead checkpoint、Evidence Fusion、LeadReview、MemoLogicPlan、Verifier 都是同步屏障；retrieval / specialist / tool calls 可以异步扇出。
 - 不用弱兜底：找不到公开数据时暴露 bounded / commercial gap，不用 web snippet、memory 或 proxy 冒充事实。
 - 企业级存储默认：SQL、ObjectStore、Redis、Milvus 等底座按企业级 Agent 平台的审计和扩展方式设计；“最小”只表示首批字段 / 首批接口 / 首批 runner，不表示 toy store、弱化 schema 或长期 SQLite-only 路线。
@@ -79,7 +79,7 @@ flowchart TD
 | 泳道 | 范围 | 默认技术 |
 | --- | --- | --- |
 | Python Agent Runtime | LangGraph、Research Lead、retrieval、specialists、ClaimCards、MemoLogicPlan、Verifier | Python |
-| Backend Runtime | Run Manager、API、DB、Redis、SSE、worker pool、rate limit、cancel/resume | FastAPI first；Spring Boot shell 可并行或后补 |
+| Backend Runtime | Java Task Gateway、Run Manager、API、DB、Redis、SSE、worker pool、rate limit、cancel/resume | P0 轻量 Java gateway；后续 Spring Boot parity |
 | Eval Runtime | Eval Registry、node eval、chain eval、failure/gold lifecycle、judge audit | Python + SQL |
 | Data / KG / Store | D-series SQL hardening、P/K registry、object store、Milvus semantic supplement | Python + SQL/ObjectStore/Milvus |
 | Frontend / Workbench | run list、trace、evidence、context、claim/gap、report、eval dashboard | 现有 Workbench / 后续 Web UI |
@@ -96,10 +96,11 @@ Python Agent：
 
 Backend：
 
-- 决定 B0：默认建议 `FastAPI first + Python worker + later Spring Boot parity`。
-- 若用户明确要 Java P0，则 Spring Boot 实现 Run Manager API，Python worker 通过 Redis / DB payload 执行。
-- 定义 run/event/artifact/eval schema 草案，不先上复杂微服务。
+- B0 不再是 FastAPI / Java 二选一：P0 就采用 `Java Task Gateway + Python worker`，后续再升级 Spring Boot parity。
+- Java P0 必须可用：`POST /api/research/tasks` 创建 task，写 store，投递 Redis/MQ 或 local file queue；Python worker 消费后通过 callback 回写状态、memo、evidence。
+- 定义 run/event/artifact/eval schema 草案，不先上复杂微服务，不一开始引入 Spring Cloud / Kafka / K8s。
 - 冻结存储路线：默认按 SQL + ObjectStore + Redis + Milvus supplement 的企业级组合设计；SQLite 只能作为本机开发 adapter 或临时兼容层，不是最终 D/P/Eval 主库。
+- 路径兼容：D 盘代码 / 数据、Z 盘扩展数据、云端 Milvus 必须通过 registry / env 配置，不允许把路径统一迁移写死到单一路径导致链路断裂。
 - 建立 `resource_blocked_scale_up` 记录格式，后续只有完成资源/脚本/写入优化审计后才能触发。
 
 Eval：
@@ -118,6 +119,7 @@ Eval：
 - E0 / EV1：Eval Registry 能回答每类能力对应跑哪个 eval。
 - 文档和 registry 均能定位 09/10/11/12 的职责。
 - B0 能说明 SQL/ObjectStore/Redis/Milvus 的职责边界、落地顺序、迁移 / backfill / parity 策略，以及哪些路径只是 local adapter。
+- Java gateway smoke 能证明 `POST task -> queue -> Python worker -> callback -> GET task` 通路可用。
 - 对任何“本机跑不动所以最小化”的判断，必须先有资源优化审计记录；否则不允许进入 P1 实现。
 - `git status` 清洁；docs-only 不要求 runtime tests。
 
@@ -147,10 +149,10 @@ Backend：
 
 - 实现 B1/B3 最小 Run Manager schema。
 - API 最小接口：
-  - `POST /api/runs`
-  - `GET /api/runs/{run_id}`
-  - `GET /api/runs/{run_id}/events`
-  - `GET /api/runs/{run_id}/artifacts`
+  - `POST /api/research/tasks`
+  - `GET /api/research/tasks/{task_id}`
+  - `POST /api/research/tasks/{task_id}/worker-events`
+  - 后续扩展 `GET /api/research/tasks/{task_id}/events`
 - 以 Postgres/MySQL 级 SQL 主库契约为默认；本地 SQLite 只允许作为兼容 / 开发 adapter，必须保持 schema parity、migration path 和 parity test，不得作为长期主线替代。
 - ObjectStore URI / checksum / parser version / before-after diff 必须可从 run audit 追溯。
 
@@ -172,6 +174,7 @@ Eval：
 
 - E1：single-run exact lookup / focused memo 都能写入 audit DB。
 - E11：给定 `run_id` 能重建 node order、elapsed_ms、model token、artifact refs。
+- 给定 `task_id` 能查询 Java gateway 中的 status、progress、memo、evidence 和 error。
 - 关键审计表以 SQL-backed store 为主；JSON artifact 与 SQL projection 有 parity check。
 - 没有隐藏 fallback：写入失败必须暴露为 audit failure，不允许静默只落 JSON。
 - 无 private path / secret 泄漏到用户输出。
@@ -533,14 +536,15 @@ Eval：
 
 - 给定一个失败 case，前端能 drill down 到 node、context、retrieval、claim、gate、model call、failure type。
 - 给定一个报告 claim，前端能 drill down 到 ClaimCard -> evidence/provenance/vintage。
+- P0/P1 阶段至少 Java gateway `GET /api/research/tasks/{task_id}` 能返回 status、progress、memo、evidence、error，作为正式 dashboard 前的 API surface。
 
 不通过处理：
 
 - UI 可先简陋，但数据链路不能缺。
 
-## P9：Concurrency / SLA / Java Shell
+## P9：Concurrency / SLA / Java Gateway / Spring Boot Parity
 
-目标：在 P1-P8 结构稳定后补并发、恢复、限流和 Java 后端表达。
+目标：在 P1-P8 结构稳定后补并发、恢复、限流，并把 P0 轻量 Java gateway 升级为 Spring Boot parity，而不是才开始做 Java 壳子。
 
 Backend：
 
@@ -554,7 +558,8 @@ Backend：
   - Docker Compose
   - load testing
 - Java / Spring Boot 路线：
-  - 若 P0 决定 FastAPI first，则此阶段补 Spring Boot API parity / shell。
+  - P0 轻量 Java gateway 继续保留为无 Maven/JDK-only smoke 路线。
+  - Spring Boot 在此阶段实现同一 API / queue / store contract 的 parity。
   - Java 负责 REST API、Redis、MySQL/Postgres、SSE、rate limit、thread pool、auth/admin。
   - Python worker 继续负责 LangGraph / parser / evidence gate / report generation。
 - 存储 / 写入优化：
@@ -585,7 +590,7 @@ Eval：
 - p95 queue wait / node elapsed / provider latency / BGE wait 可观测。
 - cancel 和 resume 有真实 case。
 - retry 不重试 source boundary / commercial gap / deterministic parser fail。
-- Java shell 不重写 Python research runtime。
+- Java gateway / Spring Boot 不重写 Python research runtime。
 - 任何 SLA 失败都有资源归因：queue、worker、provider、BGE、DB、object store、parser/chunker、writer 或 vector rebuild。
 - 降模型、降证据预算、跳过 Milvus/SQL/object-store 写入之前，必须有优化审计或 `resource_blocked_scale_up` 记录。
 
@@ -641,7 +646,7 @@ Backend / Frontend：
 - P1 Run/Audit schema 与 P2 eval store adapter。
 - P3 Context Runtime 与 P4 retrieval ledgers 的 schema 设计。
 - P6 Tool/Input pipeline 与 P7 Memo surface 的接口设计。
-- P8 前端 trace skeleton 与 P9 Java shell contract。
+- P8 前端 trace skeleton 与 P9 Java gateway / Spring Boot parity contract。
 - D3/D4/D5/D11 DB hardening 与 K5 remaining raw-material hardening。
 - 数据处理 eval 设计可以从 P2 开始并行，不必等 P6 文件输入全部完成。
 - 资源调度 / 写入优化 profile 可以和 P4/P9 并行，但不能绕过 P1 audit。
@@ -661,13 +666,13 @@ Backend / Frontend：
 第一批真正开工建议：
 
 1. P0：Eval Registry + B0 技术路线。
-2. P1：Run / Audit Foundation 扩展。
+2. P1：Run / Audit Foundation 扩展，并验证 Java gateway -> Python worker task lifecycle。
 3. P2：SQL-backed Eval Store + JSONL import/export adapter。
 4. P4：Retrieval / role-visible ledger + parser/chunker/table/structured-extraction data-quality eval，因为这是当前已知根因风险最高的区域。
 5. P3：Context Runtime v0，可以和 P4 schema 并行，但默认注入要等 gate。
 6. P5：Research Lead Objective / Review / Repair。
 7. P7：MemoLogicPlan 和 Memo Surface。
-8. P8/P9/P10：前端、并发、Java shell、full-chain governance。
+8. P8/P9/P10：前端、并发、Spring Boot parity、full-chain governance。
 
 这个顺序的理由：
 
@@ -675,13 +680,14 @@ Backend / Frontend：
 - 先补 retrieval/role-visible，否则输出浅会误判为 writer 问题。
 - 同时补 parser/chunker/table/structured-extraction eval，否则“检索没召回”可能只是上游截断或抽取失败。
 - 再补 Lead supervised loop，让反思和 second pass 真正回到研究目标。
-- 最后补 writer、前端、并发和 Java shell，避免产品层放大未治理的上游缺口。
+- 最后补 writer、前端、并发和 Spring Boot parity，避免产品层放大未治理的上游缺口。
 
 ## 最小通过定义
 
 下一阶段第一轮可宣称闭环完成时，应满足：
 
 - API / worker 可以创建并执行 research run。
+- Java Task Gateway 可以创建 research task，Python worker 可以消费任务并回写状态、memo、evidence。
 - SQL / artifact 能复盘 run、node、context、retrieval、evidence、claim、gap、gate、model call。
 - SQL/ObjectStore/Redis/Milvus 职责边界清楚；local SQLite / JSONL 仅作为 adapter 或 export，不被当作最终审计源。
 - 如果出现本机资源无法完成的 DB / SQL / Milvus / parser / vector rebuild 任务，必须有 `resource_blocked_scale_up` 记录，列明已尝试的资源和算法优化。
@@ -695,4 +701,4 @@ Backend / Frontend：
 - Failure / Gold lifecycle 至少以 SQL/JSONL 形式存在。
 - 新 1-2 个 full-chain case 通过 E1/E2/E3/E4/E6/E8/E9/E10/E11 核心 gates。
 
-这时再扩全量 P/K、Java 后端完整化和更大规模 full-chain regression，才是稳的。
+这时再扩全量 P/K、Spring Boot 后端完整化和更大规模 full-chain regression，才是稳的。

@@ -37,14 +37,23 @@ FinSight-Agent 下一阶段不应理解为“把 Agent 改成 Java”，而应�
 升级成可部署、可并发、可观测、可恢复、可限流、可审计、可前端交互的投研 Agent Runtime。
 ```
 
-Java / Spring Boot 是企业后端表达和就业场景加分项，但不是核心 agent runtime 的替代品。当前最现实的工程路径是：
+Java / Spring Boot 是企业后端表达和就业场景加分项，但不是核心 agent runtime 的替代品。当前路线不再把 `FastAPI` 和 `Java` 做二选一；Java 从 P0 开始承担可用的 task gateway/frontdoor，Python worker 继续承担研究执行：
 
 ```text
 Python / LangGraph / parser / evidence gate / worker runtime 继续承担研究执行
-FastAPI 或 Spring Boot 承担 API、用户、任务、权限、队列、事件流、结果持久化和前端集成
+Java Task Gateway / 后续 Spring Boot 承担 API、用户、任务、权限、队列、事件流、结果持久化和前端集成
 ```
 
-先把后端主链路跑通，再做并发稳定性，最后再决定是否补 Java / Spring Boot API 版本。
+执行顺序是：先用轻量 Java gateway 打通真实 `POST task -> queue -> Python worker -> status/memo/evidence callback -> GET task` 链路；再补真实 MySQL/Redis/worker pool/SSE/前端；最后在资源允许时把 Java gateway 升级为 Spring Boot 版本，而不是先做一个不可用的壳。
+
+2026-06-14 实施更新：
+
+- 新增 `apps/research_gateway/java/src/finsight/gateway/TaskGatewayServer.java`，基于 JDK `HttpServer`，不依赖 Maven 即可编译运行。
+- 暴露 `POST /api/research/tasks`、`GET /api/research/tasks/{task_id}`、`POST /api/research/tasks/{task_id}/worker-events`。
+- Java store 支持 `file` local adapter 和 `jdbc` adapter；`jdbc` 通过 `FINSIGHT_JDBC_URL` / `FINSIGHT_JDBC_USER` / `FINSIGHT_JDBC_PASSWORD` 接 MySQL/Postgres，运行时需要对应 JDBC driver jar。
+- Java queue 支持 `file` local adapter 和原生 Redis RESP `LPUSH`，无需 Redis Java SDK。
+- Python worker `src/sec_agent/runtime_bridge/task_worker.py` 支持 file/Redis queue，消费任务后通过 Java callback 回写状态、memo、evidence。
+- Milvus 当前保持 `unbound_cloud_deferred`，只在 registry 中登记为 semantic supplement，等待云端 runtime 可用后再绑定。
 
 ## 从企业级 RAG / Agent 项目吸收什么
 
@@ -93,7 +102,7 @@ FastAPI 或 Spring Boot 承担 API、用户、任务、权限、队列、事件�
 
 ```text
 Frontend / Workbench
- -> API Gateway / Backend Service
+ -> Java Task Gateway / Backend Service
  -> Run Manager
  -> DB: research_runs / evidence / claims / gaps / gates / reports / audit
  -> Redis: queue / status / event stream / locks / rate limit / semaphores
@@ -128,9 +137,9 @@ ResearchObjectiveContract
 
 ```text
 用户提交研报任务
- -> API 创建 run_id
- -> 写入 research_runs
- -> 放入 Redis queue
+ -> Java Task Gateway 创建 task_id / run_id
+ -> 写入 research_tasks / research_runs
+ -> 放入 Redis queue / MQ
  -> Worker 取任务
  -> 执行 LangGraph
  -> 运行中写 run events / node events / tool events
@@ -149,7 +158,7 @@ ResearchObjectiveContract
 核心模块：
 
 - Run Manager：创建、更新、取消、恢复 research run。
-- API service：接收请求、参数校验、权限校验、返回 run_id。
+- Java Task Gateway / API service：接收请求、参数校验、权限校验、返回 task_id / run_id。
 - Redis queue：长任务排队。
 - Research Worker：执行 LangGraph / Agent Runtime。
 - SSE event stream：前端实时进度。
@@ -159,8 +168,9 @@ ResearchObjectiveContract
 阶段 1 完成条件：
 
 - 能通过 API 创建研报任务并返回 `run_id`。
-- 任务能进入 Redis queue。
-- Worker 能取任务并执行当前 LangGraph runtime。
+- 能通过 Java API 创建研报任务并返回 `task_id`；本地/云端 smoke 请求必须通过。
+- 任务能进入 Redis queue；本地资源不足或 Redis 未启动时只允许使用 file adapter 做 smoke，并记录 adapter 边界。
+- Worker 能取任务并执行当前 LangGraph runtime；当前 P0 smoke 先验证 deterministic worker，后续再接 Workbench/LangGraph command。
 - 运行过程能输出标准化事件。
 - 最终报告、核心 artifacts 和错误能持久化。
 - 前端能看到任务状态、事件流和报告。
@@ -236,17 +246,17 @@ online users -> active users -> concurrent short requests -> limited concurrent 
 
 建议：
 
-- 先用 FastAPI 打通完整 runtime。
-- 再做一个 Spring Boot API shell 或替代 API service。
+- P0 先使用轻量 Java Task Gateway 打通完整任务通路，避免 Java 只做 shell。
+- 后续再把 Java gateway 升级为 Spring Boot API service，而不是推翻 Python research runtime。
 - Python worker 继续执行 LangGraph。
 - Java 负责 API、用户、权限、任务、Redis、MySQL、SSE、限流、线程池、任务调度。
 
-Spring Boot 最小接口可对齐阶段 1：
+Java / Spring Boot 最小接口可对齐阶段 1：
 
-- `POST /api/runs`
-- `GET /api/runs/{run_id}`
-- `GET /api/runs/{run_id}/events`
-- `POST /api/runs/{run_id}/cancel`
+- `POST /api/research/tasks`
+- `GET /api/research/tasks/{task_id}`
+- `POST /api/research/tasks/{task_id}/worker-events`
+- 后续扩展：`GET /api/research/tasks/{task_id}/events`、`POST /api/research/tasks/{task_id}/cancel`
 - `POST /api/runs/{run_id}/resume`
 - `GET /api/runs/{run_id}/report`
 - `GET /api/runs/{run_id}/evidence`
@@ -559,8 +569,8 @@ candidate -> reviewed -> active -> stale -> superseded / revoked
 
 ## 最现实执行顺序
 
-1. FastAPI + Redis + DB 跑通 run lifecycle。
-2. Worker 执行当前 LangGraph / Workbench runtime。
+1. Java Task Gateway + Redis/file queue + JDBC/file store 跑通 task lifecycle。
+2. Worker 执行 deterministic smoke，随后接当前 LangGraph / Workbench runtime。
 3. SSE 输出标准事件流。
 4. DB 保存 evidence / claim / gap / gate / report。
 5. 补 Context Runtime v0：context snapshots、context events、injection plans、prompt packs、research memory entries。
@@ -569,7 +579,7 @@ candidate -> reviewed -> active -> stale -> superseded / revoked
 8. 失败重试、超时、取消、worker heartbeat。
 9. 压测并写报告。
 10. 前端补 run list、run detail、event timeline、context/evidence/claim/gap/report viewer。
-11. 再补 Spring Boot API 版本或 Java shell。
+11. 再把轻量 Java gateway 升级为 Spring Boot API 版本。
 
 ## 对外表达
 

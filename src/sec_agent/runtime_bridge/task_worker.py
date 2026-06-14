@@ -32,6 +32,10 @@ REAL_EVAL_IDS = {
     "context_api_load_smoke",
     "agent_graph_vnext_run_audit_smoke",
     "agent_graph_vnext_diagnostic_probe",
+    "agent_graph_vnext_g11_full_chain",
+    "agent_graph_vnext_r12_successor_12",
+    "agent_graph_vnext_broader_release_20",
+    "agent_graph_vnext_load_mix_15",
 }
 
 
@@ -185,6 +189,7 @@ def _run_workbench_eval(payload: Mapping[str, Any], config: WorkerConfig, *, cal
         raise ValueError(f"unsupported_workbench_eval_id: {eval_id}")
     run_id = _safe_id(str(metadata.get("run_id") or f"{task_id}_{eval_id}"))
     limit = _optional_int(metadata.get("limit"))
+    selected_case_ids = _metadata_case_ids(metadata)
     output_path = config.repo_root / "reports" / "quality" / "workbench_eval" / f"{run_id}_{eval_id}.json"
     eval_store_path = _resolve_path(metadata.get("eval_store_path"), default=config.eval_store_path, repo_root=config.repo_root)
 
@@ -193,6 +198,8 @@ def _run_workbench_eval(payload: Mapping[str, Any], config: WorkerConfig, *, cal
     args[0] = config.python_executable
     if limit is not None and eval_id.startswith("agent_graph_vnext_"):
         args = _replace_or_append_arg(args, "--limit", str(limit))
+    if selected_case_ids and eval_id.startswith("agent_graph_vnext_"):
+        args = _append_repeatable_args(args, "--case-id", selected_case_ids)
     if "--summary-output-path" in args:
         args[args.index("--summary-output-path") + 1] = str(output_path)
     if "--bge-device" in args:
@@ -251,7 +258,7 @@ def _run_workbench_eval(payload: Mapping[str, Any], config: WorkerConfig, *, cal
         eval_store_path,
         {
             "eval_id": eval_id,
-            "case_id": str(payload.get("case_id") or metadata.get("case_id") or task_id),
+            "case_id": ",".join(selected_case_ids) if selected_case_ids else str(payload.get("case_id") or metadata.get("case_id") or task_id),
             "run_id": run_id,
             "status": "pass" if status == "SUCCESS" else "fail",
             "score": 1.0 if status == "SUCCESS" else 0.0,
@@ -645,6 +652,26 @@ def _replace_or_append_arg(args: list[str], key: str, value: str) -> list[str]:
         return updated
     updated.extend([key, value])
     return updated
+
+
+def _append_repeatable_args(args: list[str], key: str, values: list[str]) -> list[str]:
+    updated = list(args)
+    for value in values:
+        updated.extend([key, value])
+    return updated
+
+
+def _metadata_case_ids(metadata: Mapping[str, Any]) -> list[str]:
+    raw = metadata.get("case_ids")
+    if raw is None:
+        raw = metadata.get("case_id")
+    if raw is None:
+        return []
+    if isinstance(raw, str):
+        return [part.strip() for part in raw.split(",") if part.strip()]
+    if isinstance(raw, (list, tuple, set)):
+        return [str(item).strip() for item in raw if str(item).strip()]
+    return [str(raw).strip()]
 
 
 def _load_env_file_secrets(path: Path, env: dict[str, str], *, allowed_keys: set[str]) -> None:

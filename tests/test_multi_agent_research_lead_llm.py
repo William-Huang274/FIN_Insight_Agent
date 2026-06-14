@@ -417,7 +417,9 @@ def test_research_lead_llm_promotes_relationship_source_to_deep_research() -> No
     assert "relationship_graph" in result["activation_plan"]["allowed_source_families"]
     assert result["activation_plan"]["relationship_scope_rationale"]
     assert result["activation_plan"]["agent_priorities"]["industry_supply_chain_analyst"] == "primary"
-    assert "risk_counterevidence_analyst" not in result["activation_plan"]["activate_agents"]
+    assert "risk_counterevidence_analyst" in result["activation_plan"]["activate_agents"]
+    assert result["activation_plan"]["agent_priorities"]["risk_counterevidence_analyst"] == "supporting"
+    assert result["activation_plan"]["model_policy_hint"]["risk_counterevidence_analyst"] == "strong"
 
 
 def test_research_lead_llm_fails_closed_after_repair_budget_without_fallback() -> None:

@@ -1234,15 +1234,44 @@ def _case_requires_milvus_runtime_contract(case: Mapping[str, Any]) -> bool:
 
 def _milvus_runtime_context_from_env(case: Mapping[str, Any]) -> dict[str, Any]:
     runtime = case.get("milvus_runtime") if isinstance(case.get("milvus_runtime"), Mapping) else {}
+    config_runtime = _milvus_runtime_from_config_env()
+    merged_runtime = {**config_runtime, **dict(runtime)}
     context = {
-        "milvus_runtime": dict(runtime),
+        "milvus_runtime": merged_runtime,
         "milvus_uri": os.environ.get("MILVUS_URI") or os.environ.get("ZILLIZ_URI") or "",
-        "milvus_db_path": os.environ.get("MILVUS_DB_PATH") or "",
+        "milvus_db_path": os.environ.get("MILVUS_DB_PATH") or str(merged_runtime.get("db_path") or ""),
         "milvus_collection_name": os.environ.get("MILVUS_COLLECTION_NAME")
         or os.environ.get("MILVUS_COLLECTION")
-        or str(runtime.get("collection") or ""),
+        or str(merged_runtime.get("collection") or merged_runtime.get("collection_name") or ""),
     }
     return context
+
+
+def _milvus_runtime_from_config_env() -> dict[str, Any]:
+    config_path = os.environ.get("FINSIGHT_MILVUS_RUNTIME_CONFIG")
+    if not config_path:
+        return {}
+    path = Path(config_path)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    if not path.exists():
+        return {}
+    try:
+        config = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    if not isinstance(config, Mapping):
+        return {}
+    return {
+        "status": config.get("status"),
+        "location": "local" if str(config.get("location") or "").startswith("local") else config.get("location"),
+        "db_path": config.get("db_path"),
+        "collection_name": config.get("collection_name"),
+        "vector_count": config.get("vector_count"),
+        "vector_kinds": config.get("vector_kinds"),
+        "claim_boundary": config.get("claim_boundary"),
+        "fallback_routes": config.get("fallback_routes") or ["bm25", "object_bm25", "exact_value_ledger"],
+    }
 
 
 def _public_milvus_runtime_for_eval(capability: Mapping[str, Any]) -> dict[str, Any]:
@@ -1542,7 +1571,7 @@ def _specialist_real_evidence_quality(
         row_source_families = {str(row.get("source_family") or "") for row in rows if str(row.get("source_family") or "").strip()}
         route_row = route_by_agent.get(agent_id) or {}
         comparative_primary_gate_required = _comparative_primary_gate_required(case, agent_id)
-        comparative_primary_gate = _comparative_primary_visibility_gate(case, rows, result)
+        comparative_primary_gate = _comparative_primary_visibility_gate(case, rows, result, route_row=route_row)
         relationship_gate_required = _industry_relationship_gate_required(case, agent_id)
         relationship_refs = {
             str(row.get("evidence_ref") or "")
@@ -1590,6 +1619,7 @@ def _specialist_real_evidence_quality(
             "comparative_primary_gate_required": comparative_primary_gate_required,
             "focus_ticker_primary_visible": comparative_primary_gate["visible_tickers"],
             "focus_ticker_primary_source_gaps": comparative_primary_gate["gap_tickers"],
+            "focus_ticker_primary_source_gap_reasons": comparative_primary_gate["gap_reasons"],
             "focus_ticker_primary_missing": comparative_primary_gate["missing_tickers"],
             "relationship_evidence_refs_available": sorted(relationship_refs),
             "relationship_evidence_refs_cited": sorted(cited_relationship_refs),
@@ -1895,29 +1925,47 @@ def _comparative_primary_visibility_gate(
     case: Mapping[str, Any],
     rows: list[Mapping[str, Any]],
     result: Mapping[str, Any],
+    *,
+    route_row: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     focus = set(_focus_tickers_from_case(case))
     if len(focus) < 2:
-        return {"status": True, "visible_tickers": sorted(focus), "gap_tickers": [], "missing_tickers": []}
+        return {"status": True, "visible_tickers": sorted(focus), "gap_tickers": [], "gap_reasons": {}, "missing_tickers": []}
     visible = {
         str(row.get("ticker") or "").upper()
         for row in rows
         if str(row.get("source_family") or "") in {"", "primary_sec_filing", "company_authored_unaudited_sec_filing"}
         and str(row.get("ticker") or "").strip()
     }
-    gap_tickers = {
-        str(gap.get("ticker") or "").upper()
-        for gap in result.get("source_gaps") or []
-        if isinstance(gap, Mapping)
-        and str(gap.get("source_family") or "") == "primary_sec_filing"
-        and str(gap.get("reason_code") or gap.get("quality_gap_type") or "")
-    }
+    gap_reasons: dict[str, list[str]] = {}
+    for gap in result.get("source_gaps") or []:
+        if not isinstance(gap, Mapping):
+            continue
+        if str(gap.get("source_family") or "") != "primary_sec_filing":
+            continue
+        ticker = str(gap.get("ticker") or "").upper().strip()
+        reason = str(gap.get("reason_code") or gap.get("quality_gap_type") or "").strip()
+        if ticker and reason:
+            gap_reasons.setdefault(ticker, []).append(reason)
+    coverage = route_row.get("input_coverage_summary") if isinstance(route_row, Mapping) else {}
+    coverage_gap_reasons = (
+        coverage.get("focus_ticker_source_gap_reasons")
+        if isinstance(coverage, Mapping) and isinstance(coverage.get("focus_ticker_source_gap_reasons"), Mapping)
+        else {}
+    )
+    for ticker_value, reasons_value in dict(coverage_gap_reasons or {}).items():
+        ticker = str(ticker_value or "").upper().strip()
+        reasons = [str(reason or "").strip() for reason in _string_list(reasons_value) if str(reason or "").strip()]
+        if ticker and reasons:
+            gap_reasons.setdefault(ticker, []).extend(reasons)
+    gap_tickers = set(gap_reasons)
     covered = visible | gap_tickers
     missing = sorted(focus - covered)
     return {
         "status": not missing,
         "visible_tickers": sorted(visible & focus),
         "gap_tickers": sorted(gap_tickers & focus),
+        "gap_reasons": {ticker: sorted(set(reasons)) for ticker, reasons in sorted(gap_reasons.items()) if ticker in focus},
         "missing_tickers": missing,
     }
 

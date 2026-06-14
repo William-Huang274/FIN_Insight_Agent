@@ -60,6 +60,8 @@ def main() -> None:
                 "run_id": args.run_id or f"runtime_bridge_{args.task_mode}_{int(time.time())}",
                 "token_budget_pressure": args.token_budget_pressure,
             }
+            if args.case_id:
+                payload["metadata"]["case_ids"] = args.case_id
         task = request_json(
             f"http://127.0.0.1:{port}/api/research/tasks",
             method="POST",
@@ -184,6 +186,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--jdbc-driver-jar", type=Path, default=None)
     parser.add_argument("--task-mode", default="local_smoke")
     parser.add_argument("--eval-id", default="agent_graph_vnext_run_audit_smoke")
+    parser.add_argument("--case-id", action="append", default=[], help="Filter Workbench eval to one case_id. Repeatable.")
     parser.add_argument("--limit", type=int, default=1)
     parser.add_argument("--run-id", default="")
     parser.add_argument("--worker-run-timeout-s", type=float, default=2400.0)

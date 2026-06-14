@@ -144,6 +144,40 @@ def test_multi_agent_real_llm_chain_dry_run_resolves_catalog_subset(tmp_path: Pa
     assert all(row["expected_execution_mode"] == "deep_research" for row in expanded)
 
 
+def test_multi_agent_real_llm_chain_reads_milvus_runtime_config_env(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    module = _load_script_module()
+    config_path = tmp_path / "milvus_runtime.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "status": "available",
+                "location": "local_windows_milvus_lite",
+                "db_path": "Z:/demo/milvus_lite.db",
+                "collection_name": "demo_collection",
+                "vector_count": 10,
+                "vector_kinds": ["narrative_chunk"],
+                "claim_boundary": "semantic_recall_supplement_not_exact_value_authority",
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("FINSIGHT_MILVUS_RUNTIME_CONFIG", str(config_path))
+    monkeypatch.delenv("MILVUS_DB_PATH", raising=False)
+    monkeypatch.delenv("MILVUS_COLLECTION_NAME", raising=False)
+    monkeypatch.delenv("MILVUS_COLLECTION", raising=False)
+
+    context = module._milvus_runtime_context_from_env({})
+
+    assert context["milvus_db_path"] == "Z:/demo/milvus_lite.db"
+    assert context["milvus_collection_name"] == "demo_collection"
+    assert context["milvus_runtime"]["status"] == "available"
+    assert context["milvus_runtime"]["location"] == "local"
+    assert context["milvus_runtime"]["fallback_routes"] == ["bm25", "object_bm25", "exact_value_ledger"]
+
+
 def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
     module = _load_script_module()
     case = _read_jsonl(FIXTURE_PATH)[0]
@@ -1026,6 +1060,69 @@ def test_real_llm_chain_specialist_quality_requires_comparative_primary_rows_or_
     assert detail["comparative_primary_gate_required"] is True
     assert detail["focus_ticker_primary_missing"] == ["NVDA"]
     assert detail["checks"]["comparative_focus_ticker_primary_visible_or_gap"] is False
+
+
+def test_real_llm_chain_specialist_quality_accepts_route_coverage_source_gap() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "comparative_primary_route_gap_gate",
+        "focus_tickers": ["ASML", "AMAT"],
+        "category": "sector_depth",
+    }
+    result = {
+        "specialist_route_results": [
+            {
+                "agent_id": "fundamental_analyst",
+                "status": "pass",
+                "prompt_row_distribution": {
+                    "by_ticker": {"AMAT": 1},
+                    "by_source_family": {"primary_sec_filing": 1},
+                },
+                "input_coverage_summary": {
+                    "focus_ticker_primary_row_counts": {"ASML": 0, "AMAT": 1},
+                    "focus_ticker_source_gap_reasons": {
+                        "ASML": ["not_in_manifest_for_mcp_route_scope"],
+                    },
+                    "coverage_policy": "comparative_focus_tickers_must_have_visible_primary_rows_or_ticker_source_gap",
+                },
+            }
+        ],
+        "specialist_outputs": [
+            {
+                "agent_id": "fundamental_analyst",
+                "status": "pass",
+                "evidence_boundary": "bounded_rows_only",
+                "summary": "AMAT primary evidence and ASML bounded source gap.",
+                "observations": [
+                    {
+                        "claim": "AMAT has bounded revenue evidence, while ASML is a source-gap ticker for primary SEC rows.",
+                        "claim_type": "business_observation",
+                        "ticker_scope": ["AMAT", "ASML"],
+                        "metric_scope": ["revenue"],
+                        "memo_slot": "fundamentals",
+                        "evidence_refs": ["amat_ref"],
+                        "source_families": ["primary_sec_filing"],
+                        "confidence": "medium",
+                        "unsupported": False,
+                    }
+                ],
+                "unsupported_claims": [],
+                "conflicts": [],
+            }
+        ],
+        "runtime_ledger_rows": [
+            {"metric_id": "amat_ref", "source_family": "primary_sec_filing", "ticker": "AMAT", "metric": "revenue"}
+        ],
+    }
+
+    quality = module._specialist_real_evidence_quality(case, result, {"fundamental_analyst"}, required=True)
+    detail = quality["details"]["fundamental_analyst"]
+
+    assert quality["quality_pass"] is True
+    assert detail["checks"]["comparative_focus_ticker_primary_visible_or_gap"] is True
+    assert detail["focus_ticker_primary_source_gaps"] == ["ASML"]
+    assert detail["focus_ticker_primary_source_gap_reasons"] == {"ASML": ["not_in_manifest_for_mcp_route_scope"]}
+    assert detail["focus_ticker_primary_missing"] == []
 
 
 def test_real_llm_chain_specialist_quality_rejects_single_ref_temporal_inference() -> None:

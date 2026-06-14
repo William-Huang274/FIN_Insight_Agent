@@ -18,6 +18,7 @@ from sec_agent.runtime_bridge.eval_store import (
 )
 from sec_agent.runtime_bridge.object_store import put_json_object
 from sec_agent.runtime_bridge.resource_scheduler import InferenceTask, coalesce_agent_tasks, schedule_inference_tasks, schedule_inference_tasks_with_audit
+from sec_agent.runtime_bridge.task_worker import REAL_EVAL_IDS, _append_repeatable_args, _metadata_case_ids
 from sec_agent.runtime_readiness import run_r0_r11_readiness
 from sec_agent.tool_capability_registry import default_tool_capability_registry, validate_tool_invocation
 from sec_agent.user_input_pipeline import parse_user_input_file
@@ -182,6 +183,21 @@ def test_resource_scheduler_audit_and_agent_coalescer() -> None:
     queued = [item for item in audit.scheduled_tasks if item["lane"] == "queued_bge_cuda"]
     assert queued and queued[0]["queue_position"] == 1
     assert audit.lane_counts["bge_cuda"] == 1
+
+
+def test_task_worker_supports_catalog_eval_ids_and_case_id_filters() -> None:
+    assert {
+        "agent_graph_vnext_r12_successor_12",
+        "agent_graph_vnext_broader_release_20",
+        "agent_graph_vnext_load_mix_15",
+    } <= REAL_EVAL_IDS
+
+    assert _metadata_case_ids({"case_ids": ["case_a", "case_b"]}) == ["case_a", "case_b"]
+    assert _metadata_case_ids({"case_ids": "case_a, case_b"}) == ["case_a", "case_b"]
+    assert _metadata_case_ids({"case_id": "case_single"}) == ["case_single"]
+
+    args = _append_repeatable_args(["python", "runner.py"], "--case-id", ["case_a", "case_b"])
+    assert args[-4:] == ["--case-id", "case_a", "--case-id", "case_b"]
 
 
 def test_runtime_baseline_object_store_context_tool_input_and_lead_contracts(tmp_path: Path) -> None:

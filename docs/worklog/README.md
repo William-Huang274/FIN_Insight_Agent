@@ -3,7 +3,7 @@
 Durable engineering notes for FinSight-Agent.
 
 - `integrated_execution_p_series/`: stage-aware worklogs for the 09/10/11/12 integrated execution phase; new entries use `NNN_<phase_id>_<topic>.md` naming.
-  - Latest: `324_r12_catalog_runner_subset_integration.md` records the CLI/Workbench subset runner integration for the 50-case R12 eval catalog.
+  - Latest: `325_r12_full_chain_targeted_repair_and_two_case_gate.md` records the R12 two-case full-chain failure root cause, targeted repair, and Workbench rerun passing `2/2`.
 
 - `00_internal_master_checklist.md`: current implementation checklist.
 - `10_engineering_phase1_foundation.md`: Phase 1 setup and smoke-test notes.

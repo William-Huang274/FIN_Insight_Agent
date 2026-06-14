@@ -1426,6 +1426,8 @@ def _route_request_requires_risk_lens(route_request: MultiAgentRouteRequest, act
     if _route_request_mentions_risk_or_counterevidence(route_request):
         return True
     mode = str(activation_plan.get("execution_mode") or "").strip()
+    if mode == "deep_research":
+        return True
     if mode != "standard_memo":
         return False
     return _route_request_standard_memo_shape(route_request) and _standard_memo_balance_intent(route_request)

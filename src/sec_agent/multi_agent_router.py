@@ -261,6 +261,7 @@ def _deep_research_plan(
         "coverage_reflection",
         "fundamental_analyst",
         "industry_supply_chain_analyst",
+        "risk_counterevidence_analyst",
         "judgment_plan_aggregator",
         "memo_writer",
         "verifier",
@@ -274,13 +275,11 @@ def _deep_research_plan(
         for family in ("company_product_evidence_graph", "public_source_context", "live_public_web_context")
     ):
         active.insert(active.index("judgment_plan_aggregator"), "product_technology_analyst")
-    if _risk_or_counterevidence_intent(request):
-        active.insert(active.index("judgment_plan_aggregator"), "risk_counterevidence_analyst")
     scope_tickers = search_scope_tickers or focus_tickers
     return _plan(
         execution_mode="deep_research",
         activate_agents=active,
-        skip_reason="Cost-aware deep research keeps relationship and industry primary, while market/risk lenses run only when requested or sourced.",
+        skip_reason="Deep research keeps relationship, industry, and risk/counterevidence lenses active; market remains conditional on request or source availability.",
         allowed_source_families=[
             "primary_sec_filing",
             "company_authored_unaudited_sec_filing",
@@ -298,7 +297,7 @@ def _deep_research_plan(
             **({"product_technology_analyst": "balanced"} if "product_technology_analyst" in active else {}),
             "industry_supply_chain_analyst": "balanced",
             **({"market_valuation_analyst": "balanced"} if "market_valuation_analyst" in active else {}),
-            **({"risk_counterevidence_analyst": "strong"} if "risk_counterevidence_analyst" in active else {}),
+            "risk_counterevidence_analyst": "strong",
             "memo_writer": "strong",
             "verifier": "strong",
             "renderer": "none",

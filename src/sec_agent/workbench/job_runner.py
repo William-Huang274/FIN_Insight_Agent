@@ -94,6 +94,21 @@ _EVAL_RUNNERS = {
         "description": "Runs 2 diagnostic full-chain cases for product/capex, numeric sanity, bounded gaps, and memo surface quality.",
         "timeout_hint_s": 3600,
     },
+    "agent_graph_vnext_r12_successor_12": {
+        "label": "Agent Graph vNext R12 successor 12-case gate",
+        "description": "Runs the catalog-defined 12 deep-research successor cases for R12 full-chain regression.",
+        "timeout_hint_s": 14400,
+    },
+    "agent_graph_vnext_broader_release_20": {
+        "label": "Agent Graph vNext broader 20-case release gate",
+        "description": "Runs the catalog-defined 12 deep-research plus 8 gap-boundary cases before release readiness.",
+        "timeout_hint_s": 21600,
+    },
+    "agent_graph_vnext_load_mix_15": {
+        "label": "Agent Graph vNext load-mix 15-case gate",
+        "description": "Runs the catalog-defined light/deep/runtime mix for backend queue, SSE, trace, and eval-store validation.",
+        "timeout_hint_s": 7200,
+    },
 }
 _ACTIVE_PROCESSES: dict[str, subprocess.Popen[str]] = {}
 _CANCEL_REQUESTED: set[str] = set()
@@ -183,6 +198,9 @@ def build_eval_command(
         "agent_graph_vnext_g11_full_chain",
         "agent_graph_vnext_run_audit_smoke",
         "agent_graph_vnext_diagnostic_probe",
+        "agent_graph_vnext_r12_successor_12",
+        "agent_graph_vnext_broader_release_20",
+        "agent_graph_vnext_load_mix_15",
     }:
         bge_device = env_overrides.get("BGE_DEVICE") or os.environ.get("BGE_DEVICE") or "auto"
         env_overrides["BGE_DEVICE"] = bge_device
@@ -191,20 +209,25 @@ def build_eval_command(
             "agent_graph_vnext_run_audit_smoke": "tests/fixtures/fin_agent_vnext_run_audit_full_chain_cases_v0_1.jsonl",
             "agent_graph_vnext_diagnostic_probe": "tests/fixtures/fin_agent_vnext_diagnostic_probe_cases_v0_1.jsonl",
         }
+        catalog_subset_by_eval = {
+            "agent_graph_vnext_r12_successor_12": "r12_successor_12",
+            "agent_graph_vnext_broader_release_20": "broader_release_20",
+            "agent_graph_vnext_load_mix_15": "load_mix_15",
+        }
         output_dir_by_eval = {
             "agent_graph_vnext_g11_full_chain": "eval/sec_cases/outputs/multi_agent_vnext_g11_full_chain_eval",
             "agent_graph_vnext_run_audit_smoke": "eval/sec_cases/outputs/multi_agent_vnext_run_audit_smoke_eval",
             "agent_graph_vnext_diagnostic_probe": "eval/sec_cases/outputs/multi_agent_vnext_diagnostic_probe_eval",
+            "agent_graph_vnext_r12_successor_12": "eval/sec_cases/outputs/multi_agent_vnext_r12_successor_12_eval",
+            "agent_graph_vnext_broader_release_20": "eval/sec_cases/outputs/multi_agent_vnext_broader_release_20_eval",
+            "agent_graph_vnext_load_mix_15": "eval/sec_cases/outputs/multi_agent_vnext_load_mix_15_eval",
         }
-        cases_path = cases_path_by_eval[eval_id]
         output_dir = output_dir_by_eval[eval_id]
         run_audit_db_path = Path("data") / "workbench_private" / "run_audit" / f"{job_id}_run_audit.sqlite"
         args = [
             sys.executable,
             "-u",
             "scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py",
-            "--cases-path",
-            cases_path,
             "--output-dir",
             output_dir,
             "--run-id",
@@ -229,6 +252,17 @@ def build_eval_command(
             "--summary-output-path",
             str(output_path),
         ]
+        if eval_id in catalog_subset_by_eval:
+            args.extend(
+                [
+                    "--case-catalog-path",
+                    "tests/fixtures/fin_agent_vnext_50_case_catalog_v0_1.json",
+                    "--case-subset",
+                    catalog_subset_by_eval[eval_id],
+                ]
+            )
+        else:
+            args.extend(["--cases-path", cases_path_by_eval[eval_id]])
         if eval_id != "agent_graph_vnext_diagnostic_probe":
             args.append("--strict")
         if eval_id == "agent_graph_vnext_run_audit_smoke":

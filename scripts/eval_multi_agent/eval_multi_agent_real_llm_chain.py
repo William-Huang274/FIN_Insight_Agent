@@ -19,6 +19,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
 
 from sec_agent.agent_registry import agent_registry_by_id  # noqa: E402
+from sec_agent.eval_case_catalog import expand_case_catalog, load_case_catalog  # noqa: E402
 from sec_agent.multi_agent_contracts import validate_specialist_memolet  # noqa: E402
 from sec_agent.multi_agent_runtime import build_agent_data_view, milvus_runtime_capability  # noqa: E402
 from sec_agent.langgraph_orchestrator import (  # noqa: E402
@@ -28,6 +29,7 @@ from sec_agent.langgraph_orchestrator import (  # noqa: E402
 
 
 DEFAULT_CASES_PATH = REPO_ROOT / "tests" / "fixtures" / "multi_agent_real_llm_chain_cases_v0_1.jsonl"
+DEFAULT_CASE_CATALOG_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_50_case_catalog_v0_1.json"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "eval" / "sec_cases" / "outputs" / "multi_agent_real_llm_chain_eval"
 DEFAULT_SECTOR_DEPTH_MANIFEST = REPO_ROOT / "data" / "processed_private" / "manifests" / "sector_depth_full238_us_v0_2_mixed_with_8k_manifest_fy2023_2027.jsonl"
 DEFAULT_SECTOR_DEPTH_BM25 = REPO_ROOT / "data" / "indexes" / "bm25" / "sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027"
@@ -69,6 +71,16 @@ def _path_env_or_default(name: str, default: Path) -> Path:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run real-LLM multi-agent full-chain diagnostics.")
     parser.add_argument("--cases-path", type=Path, default=DEFAULT_CASES_PATH)
+    parser.add_argument(
+        "--case-catalog-path",
+        type=Path,
+        default=None,
+        help="Optional vNext case catalog JSON. When set, cases are expanded from the catalog instead of --cases-path.",
+    )
+    parser.add_argument("--case-subset", default="", help="Optional release subset id inside --case-catalog-path.")
+    parser.add_argument("--case-family", action="append", default=[], help="Optional catalog case_family filter. Repeatable.")
+    parser.add_argument("--dump-expanded-cases-path", type=Path, default=None, help="Write resolved cases as JSONL before running.")
+    parser.add_argument("--dry-run-cases", action="store_true", help="Resolve cases and exit without invoking the graph.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--run-id", default="")
     parser.add_argument("--case-id", action="append", default=[], help="Run only selected case_id values. Repeatable.")
@@ -118,10 +130,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    cases = _selected_cases(_read_jsonl(args.cases_path), args)
+    cases = _load_cases(args)
     run_id = args.run_id or _default_run_id(args)
     output_dir = args.output_dir / run_id
     output_dir.mkdir(parents=True, exist_ok=True)
+    if args.dump_expanded_cases_path:
+        args.dump_expanded_cases_path.parent.mkdir(parents=True, exist_ok=True)
+        _write_jsonl(args.dump_expanded_cases_path, cases)
+    if args.dry_run_cases:
+        summary = _dry_run_case_summary(args=args, cases=cases, run_id=run_id, output_dir=output_dir)
+        if args.summary_output_path:
+            args.summary_output_path.parent.mkdir(parents=True, exist_ok=True)
+            args.summary_output_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
+        return 0
 
     env = _graph_env(args)
     graph = build_multi_agent_orchestration_graph_from_env(env=env, use_checkpointer=False)
@@ -960,6 +982,54 @@ def _selected_cases(rows: list[dict[str, Any]], args: argparse.Namespace) -> lis
     if args.limit > 0:
         cases = cases[: args.limit]
     return cases
+
+
+def _load_cases(args: argparse.Namespace) -> list[dict[str, Any]]:
+    if args.case_catalog_path:
+        catalog = load_case_catalog(args.case_catalog_path)
+        cases = expand_case_catalog(catalog, subset=args.case_subset or None)
+        if args.case_family:
+            selected_families = {str(family) for family in args.case_family}
+            cases = [case for case in cases if str(case.get("catalog_case_family") or "") in selected_families]
+        setattr(
+            args,
+            "_resolved_case_catalog",
+            {
+                "catalog_path": str(args.case_catalog_path.resolve()),
+                "catalog_id": str(catalog.get("catalog_id") or ""),
+                "schema_version": str(catalog.get("schema_version") or ""),
+                "case_subset": str(args.case_subset or ""),
+                "case_family_filter": list(args.case_family or []),
+            },
+        )
+        return _selected_cases(cases, args)
+    setattr(args, "_resolved_case_catalog", {})
+    return _selected_cases(_read_jsonl(args.cases_path), args)
+
+
+def _dry_run_case_summary(
+    *,
+    args: argparse.Namespace,
+    cases: list[Mapping[str, Any]],
+    run_id: str,
+    output_dir: Path,
+) -> dict[str, Any]:
+    catalog = getattr(args, "_resolved_case_catalog", {}) or {}
+    return {
+        "schema_version": "sec_agent_multi_agent_real_llm_chain_case_resolution_v0.1",
+        "run_id": run_id,
+        "status": "pass",
+        "dry_run_cases": True,
+        "case_count": len(cases),
+        "cases_path": str(args.cases_path.resolve()) if not args.case_catalog_path else "",
+        "case_catalog": catalog,
+        "output_dir": str(output_dir.resolve()),
+        "case_ids": [str(case.get("case_id") or "") for case in cases],
+        "case_families": {
+            family: sum(1 for case in cases if str(case.get("catalog_case_family") or "") == family)
+            for family in sorted({str(case.get("catalog_case_family") or "") for case in cases if case.get("catalog_case_family")})
+        },
+    }
 
 
 def _vnext_contract_audit(
@@ -2153,7 +2223,8 @@ def _aggregate(
         "elapsed_ms": elapsed_ms,
         "diagnostic_only": True,
         "gate_status": "pass" if failed == 0 and scores else "fail",
-        "cases_path": str(args.cases_path.resolve()),
+        "cases_path": str(args.cases_path.resolve()) if not args.case_catalog_path else "",
+        "case_catalog": getattr(args, "_resolved_case_catalog", {}) or {},
         "output_dir": str(output_dir.resolve()),
         "model_config": {
             "llm_backend": args.llm_backend,

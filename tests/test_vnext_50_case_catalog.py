@@ -1,9 +1,16 @@
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from sec_agent.eval_case_catalog import expand_case_catalog, load_case_catalog  # noqa: E402
+
 CATALOG_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_50_case_catalog_v0_1.json"
 
 
@@ -108,3 +115,34 @@ def test_vnext_50_case_catalog_runtime_stress_cases_are_load_ready() -> None:
         assert case["load_scenario"]["task_count"] >= case["load_scenario"]["concurrency"]
         assert case["load_scenario"]["cancel_count"] <= case["load_scenario"]["task_count"]
         assert case["load_scenario"]["resume_count"] <= case["load_scenario"]["task_count"]
+
+
+def test_vnext_50_case_catalog_expands_r12_successor_to_runner_cases() -> None:
+    catalog = load_case_catalog(CATALOG_PATH)
+    cases = expand_case_catalog(catalog, subset="r12_successor_12")
+
+    assert len(cases) == 12
+    assert all(case["category"] == "sector_depth" for case in cases)
+    assert all(case["expected_execution_mode"] == "deep_research" for case in cases)
+    assert all(case["require_vnext_contract"] for case in cases)
+    assert all(case["require_milvus_runtime_contract"] for case in cases)
+    assert all(case["require_run_audit_store"] for case in cases)
+    assert all("product_technology_analyst" in case["expected_specialist_agents"] for case in cases)
+    assert all("relationship_graph_lookup" in case["expected_tool_names"] for case in cases)
+    assert all(case["catalog_id"] == catalog["catalog_id"] for case in cases)
+    assert all("r12_successor_12" in case["catalog_release_subsets"] for case in cases)
+
+
+def test_vnext_50_case_catalog_expands_load_mix_stress_cases() -> None:
+    catalog = load_case_catalog(CATALOG_PATH)
+    cases = expand_case_catalog(catalog, subset="load_mix_15")
+    stress_cases = [case for case in cases if case["catalog_case_family"] == "L6_backend_runtime_stress"]
+
+    assert len(cases) == 15
+    assert len(stress_cases) == 4
+    assert {case["expected_execution_mode"] for case in stress_cases} == {
+        "focused_answer",
+        "standard_memo",
+        "deep_research",
+    }
+    assert all(case["require_run_audit_store"] for case in stress_cases)

@@ -15,6 +15,7 @@ VNEXT_RUN_AUDIT_FIXTURE_PATH = (
 VNEXT_DIAGNOSTIC_FIXTURE_PATH = (
     REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_diagnostic_probe_cases_v0_1.jsonl"
 )
+VNEXT_50_CASE_CATALOG_PATH = REPO_ROOT / "tests" / "fixtures" / "fin_agent_vnext_50_case_catalog_v0_1.json"
 SCRIPT_PATH = REPO_ROOT / "scripts" / "eval_multi_agent" / "eval_multi_agent_real_llm_chain.py"
 
 
@@ -106,6 +107,41 @@ def test_fin_agent_vnext_diagnostic_probe_fixture_schema() -> None:
     assert all(row.get("require_product_or_gap_evidence") for row in rows)
     assert any(row.get("require_capital_financing_signal") for row in rows)
     assert any("product_kpi:product_revenue" in row.get("required_approved_metric_ids", []) for row in rows)
+
+
+def test_multi_agent_real_llm_chain_dry_run_resolves_catalog_subset(tmp_path: Path) -> None:
+    module = _load_script_module()
+    summary_path = tmp_path / "summary.json"
+    expanded_path = tmp_path / "expanded_cases.jsonl"
+
+    exit_code = module.main(
+        [
+            "--case-catalog-path",
+            str(VNEXT_50_CASE_CATALOG_PATH),
+            "--case-subset",
+            "r12_successor_12",
+            "--dry-run-cases",
+            "--dump-expanded-cases-path",
+            str(expanded_path),
+            "--summary-output-path",
+            str(summary_path),
+            "--output-dir",
+            str(tmp_path / "outputs"),
+            "--run-id",
+            "catalog_dry_run_fixture",
+        ]
+    )
+
+    assert exit_code == 0
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    expanded = _read_jsonl(expanded_path)
+    assert summary["schema_version"] == "sec_agent_multi_agent_real_llm_chain_case_resolution_v0.1"
+    assert summary["case_count"] == 12
+    assert summary["case_catalog"]["case_subset"] == "r12_successor_12"
+    assert summary["case_families"] == {"L3_deep_research": 12}
+    assert len(expanded) == 12
+    assert all(row["require_vnext_contract"] for row in expanded)
+    assert all(row["expected_execution_mode"] == "deep_research" for row in expanded)
 
 
 def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:

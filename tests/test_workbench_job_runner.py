@@ -121,8 +121,8 @@ def test_build_g11_full_chain_eval_command_targets_vnext_fixture(tmp_path: Path)
     assert "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl" in spec.args
     assert "eval/sec_cases/outputs/multi_agent_vnext_g11_full_chain_eval" in spec.args
     assert "--real-evidence-operators" in spec.args
-    assert spec.args[spec.args.index("--bge-device") + 1] == "cpu"
-    assert spec.env_overrides["BGE_DEVICE"] == "cpu"
+    assert spec.args[spec.args.index("--bge-device") + 1] == "auto"
+    assert spec.env_overrides["BGE_DEVICE"] == "auto"
     assert "--summary-output-path" in spec.args
     assert "--run-audit-db-path" in spec.args
     assert "--strict" in spec.args
@@ -159,8 +159,47 @@ def test_build_diagnostic_probe_eval_command_is_non_strict(tmp_path: Path) -> No
     assert "--limit" in spec.args
     assert spec.args[spec.args.index("--limit") + 1] == "2"
     assert "--strict" not in spec.args
-    assert spec.env_overrides["BGE_DEVICE"] == "cpu"
+    assert spec.env_overrides["BGE_DEVICE"] == "auto"
     assert not any(str(arg).startswith("sk-") for arg in spec.args)
+
+
+def test_build_r12_successor_eval_command_targets_case_catalog_subset(tmp_path: Path) -> None:
+    spec = build_eval_command(
+        repo_root=tmp_path,
+        eval_id="agent_graph_vnext_r12_successor_12",
+        job_id="r12_successor_fixture",
+    )
+
+    assert spec.label == "eval:agent_graph_vnext_r12_successor_12"
+    assert "scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py" in spec.args
+    assert "--case-catalog-path" in spec.args
+    assert "tests/fixtures/fin_agent_vnext_50_case_catalog_v0_1.json" in spec.args
+    assert "--case-subset" in spec.args
+    assert spec.args[spec.args.index("--case-subset") + 1] == "r12_successor_12"
+    assert "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl" not in spec.args
+    assert "--strict" in spec.args
+    assert "--summary-output-path" in spec.args
+    assert not any(str(arg).startswith("sk-") for arg in spec.args)
+
+
+def test_build_broader_release_and_load_mix_eval_commands_target_catalog_subsets(tmp_path: Path) -> None:
+    broader = build_eval_command(
+        repo_root=tmp_path,
+        eval_id="agent_graph_vnext_broader_release_20",
+        job_id="broader_fixture",
+    )
+    load_mix = build_eval_command(
+        repo_root=tmp_path,
+        eval_id="agent_graph_vnext_load_mix_15",
+        job_id="load_mix_fixture",
+    )
+
+    assert broader.args[broader.args.index("--case-subset") + 1] == "broader_release_20"
+    assert load_mix.args[load_mix.args.index("--case-subset") + 1] == "load_mix_15"
+    assert "eval/sec_cases/outputs/multi_agent_vnext_broader_release_20_eval" in broader.args
+    assert "eval/sec_cases/outputs/multi_agent_vnext_load_mix_15_eval" in load_mix.args
+    assert "--strict" in broader.args
+    assert "--strict" in load_mix.args
 
 
 def test_build_agent_ask_command_can_target_wsl(tmp_path: Path) -> None:

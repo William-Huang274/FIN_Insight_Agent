@@ -19,6 +19,15 @@
 
 - `tests/test_vnext_50_case_catalog.py`
 
+Runner / Workbench 接入：
+
+- `src/sec_agent/eval_case_catalog.py`
+- `scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py --case-catalog-path ... --case-subset ...`
+- Workbench eval ids:
+  - `agent_graph_vnext_r12_successor_12`
+  - `agent_graph_vnext_broader_release_20`
+  - `agent_graph_vnext_load_mix_15`
+
 ## 设计原则
 
 第一版不追求把 50 个 case 全部一次性跑完，而是先把用例边界和评测合同固化。
@@ -160,15 +169,15 @@ Catalog 层通过门控：
 
 Runner 层通过门控（下一步）：
 
-- 可以把 catalog 展开成当前 runner 可消费的 JSONL case。
+- 可以把 catalog 展开成当前 runner 可消费的 case。
 - 可以按 subset 选择 `r12_successor_12`、`broader_release_20`、`load_mix_15`。
-- Eval Store 记录 catalog id、case id、subset id、criteria version、code commit、data snapshot id。
+- Eval summary 记录 catalog id、schema version、catalog path、subset id 和 case family filter。
 - Workbench trace 能从 case result 下钻到 node、retrieval audit、ClaimCards、typed gaps、gate matrix、memo、rendered report。
 
 ## 下一步
 
-1. 给 R12 runner 增加 catalog loader 和 subset selector。
-2. 把当前 2-case diagnostic probe 映射到 catalog 的 #23/#24，保留旧 fixture 作为 diagnostic-only。
+1. 把当前 2-case diagnostic probe 映射到 catalog 的 #23/#24，保留旧 fixture 作为 diagnostic-only。
+2. 先用 `--dry-run-cases` 检查 `r12_successor_12`、`broader_release_20`、`load_mix_15` 的 resolved case 合同。
 3. 先跑 `r12_successor_12` 的 artifact-reuse / node replay gate，确认不消耗过多 token。
 4. 再跑 2-3 个新增 full-chain live case，观察 LeadReview、role-visible retrieval、product/capital selector、MemoLogicPlan 和 Verifier 是否有新瓶颈。
 5. 最后再讨论 full50 的 nightly/release 分层和 50-case gold/failure 生命周期。

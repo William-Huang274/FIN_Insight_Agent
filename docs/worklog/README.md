@@ -3,7 +3,7 @@
 Durable engineering notes for FinSight-Agent.
 
 - `integrated_execution_p_series/`: stage-aware worklogs for the 09/10/11/12 integrated execution phase; new entries use `NNN_<phase_id>_<topic>.md` naming.
-  - Latest: `323_r12_vnext_50_case_catalog_design.md` records the first machine-readable 50-case R12 eval catalog and release/load subsets.
+  - Latest: `324_r12_catalog_runner_subset_integration.md` records the CLI/Workbench subset runner integration for the 50-case R12 eval catalog.
 
 - `00_internal_master_checklist.md`: current implementation checklist.
 - `10_engineering_phase1_foundation.md`: Phase 1 setup and smoke-test notes.

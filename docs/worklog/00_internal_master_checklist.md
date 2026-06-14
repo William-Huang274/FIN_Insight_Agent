@@ -684,5 +684,5 @@
 - [x] R11: Build frontend / Workbench trace, report, context, evidence, ClaimCard, gap, and eval dashboard surfaces.
 - [x] R12 activation: Run 1-2 full-chain diagnostic cases through Workbench backend, online eval store, failure/quality queue, gold candidate promotion, and Workbench trace inspection.
 - [x] R12 case catalog v0.1: Design and validate a 50-case catalog covering focused, standard memo, deep research, gap boundary, non-US supply chain, and backend/runtime stress cases, with 12-case successor, 20-case broader gate, and load-mix subsets.
-- [ ] R12 catalog runner integration: Add catalog loader / subset selector so Workbench and CLI runners can execute `r12_successor_12`, `broader_release_20`, and `load_mix_15` directly from the 50-case catalog.
+- [x] R12 catalog runner integration: Add catalog loader / subset selector so Workbench and CLI runners can execute `r12_successor_12`, `broader_release_20`, and `load_mix_15` directly from the 50-case catalog.
 - [ ] R12 broader release: Run 12-case successor, 10-20 case broader gate, and release readiness report after current quality/cost issues are triaged.

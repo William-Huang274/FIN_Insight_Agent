@@ -184,7 +184,8 @@ def build_eval_command(
         "agent_graph_vnext_run_audit_smoke",
         "agent_graph_vnext_diagnostic_probe",
     }:
-        env_overrides["BGE_DEVICE"] = "cpu"
+        bge_device = env_overrides.get("BGE_DEVICE") or os.environ.get("BGE_DEVICE") or "auto"
+        env_overrides["BGE_DEVICE"] = bge_device
         cases_path_by_eval = {
             "agent_graph_vnext_g11_full_chain": "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl",
             "agent_graph_vnext_run_audit_smoke": "tests/fixtures/fin_agent_vnext_run_audit_full_chain_cases_v0_1.jsonl",
@@ -220,7 +221,7 @@ def build_eval_command(
             "--reranker-top-k",
             "10",
             "--bge-device",
-            "cpu",
+            bge_device,
             "--memo-max-tokens",
             "4200",
             "--verifier-max-tokens",

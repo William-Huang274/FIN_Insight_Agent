@@ -34,7 +34,9 @@ def build_runtime_baseline_report(*, repo_root: str | Path | None = None) -> dic
         "runtime_bridge_registry": runtime_bridge_registry(repo_root=str(root)),
         "cloud_handoff": {
             "milvus_mode": paths.milvus_mode,
-            "milvus_required_for_r3_cloud_parity": paths.milvus_mode in {"unbound_cloud_deferred", "unavailable", ""},
+            "milvus_required_for_r3_cloud_parity": paths.milvus_mode in {"unbound_cloud_deferred", "unavailable", ""}
+            or not bool(paths.milvus_db_path and paths.milvus_collection_name),
+            "milvus_runtime_bound": bool(paths.milvus_db_path and paths.milvus_collection_name),
             "gpu_scheduler_required_for_r5_cloud_smoke": True,
             "full_chain_large_gate_deferred_until_cloud": True,
         },

@@ -6,7 +6,10 @@ import importlib.util
 import json
 import os
 import re
+import sys
+import time
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable
@@ -20,6 +23,8 @@ from sec_agent.workbench.artifacts import inspect_run_artifacts
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_MILVUS_DEPS_PATH = Path("Z:/FIN_Insight_Agent_artifacts/python_deps/milvus_lite")
+DEFAULT_MILVUS_EMBEDDING_MODEL = Path("D:/hf_cache/hub/models--BAAI--bge-m3/snapshots/5617a9f61b028005a4858fdac845db406aefb181")
 _INTERACTIVE_MODULE: ModuleType | None = None
 _BANKING_MCP_METRIC_FAMILIES = {
     "allowance_for_credit_losses",
@@ -319,23 +324,136 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
 def _invoke_milvus_semantic(args: dict[str, Any]) -> dict[str, Any]:
     vector_kinds = _list_arg(args.get("vector_kinds"))
     if not vector_kinds:
-        vector_kinds = ["narrative_chunk", "table_chunk", "paraphrase_context"]
+        vector_kinds = ["narrative_chunk", "table_chunk", "paraphrase_context", "relationship_context"]
     db_path = str(args.get("milvus_db_path") or args.get("milvus_uri") or "").strip()
     collection_name = str(args.get("milvus_collection_name") or "").strip()
+    embedding_model = str(args.get("embedding_model") or os.environ.get("MILVUS_EMBEDDING_MODEL") or DEFAULT_MILVUS_EMBEDDING_MODEL).strip()
     missing = []
     if not db_path:
         missing.append("milvus_db_path")
     if not collection_name:
         missing.append("milvus_collection_name")
+    if not embedding_model:
+        missing.append("embedding_model")
     if not bool(args.get("typed_filter_required", True)):
         missing.append("typed_filter_required")
+    if db_path and not Path(db_path).exists():
+        missing.append("milvus_db_path_exists")
+    if embedding_model and not Path(embedding_model).exists():
+        missing.append("embedding_model_exists")
+    if missing:
+        return _milvus_unavailable_result(
+            args,
+            reason_code="milvus_semantic_config_missing",
+            missing=missing,
+            vector_kinds=vector_kinds,
+            collection_name=collection_name,
+        )
+
+    started = time.monotonic()
+    query = str(args.get("query") or args.get("prompt") or "").strip()
+    if not query:
+        return _milvus_unavailable_result(
+            args,
+            reason_code="milvus_semantic_query_missing",
+            missing=["query"],
+            vector_kinds=vector_kinds,
+            collection_name=collection_name,
+        )
+
+    top_k = _bounded_int(args.get("milvus_top_k") or args.get("limit") or args.get("top_k"), default=40, minimum=1, maximum=200)
+    try:
+        client = _milvus_client(db_path, collection_name)
+        model = _milvus_embedding_model(embedding_model, _milvus_embedding_device(args))
+        embedding = model.encode(
+            [query],
+            batch_size=1,
+            normalize_embeddings=True,
+            convert_to_numpy=True,
+            show_progress_bar=False,
+        )[0]
+        output_fields = _milvus_output_fields(include_typed=True)
+        try:
+            raw_results = client.search(
+                collection_name=collection_name,
+                data=[[float(item) for item in embedding.tolist()]],
+                anns_field="embedding",
+                limit=top_k,
+                filter=_milvus_filter_expr(args, vector_kinds),
+                output_fields=output_fields,
+            )
+        except Exception as exc:
+            if not any(field in str(exc) for field in ("vector_role", "semantic_scope", "relationship_role", "intent_tags")):
+                raise
+            raw_results = client.search(
+                collection_name=collection_name,
+                data=[[float(item) for item in embedding.tolist()]],
+                anns_field="embedding",
+                limit=top_k,
+                filter=_milvus_filter_expr(args, vector_kinds),
+                output_fields=_milvus_output_fields(include_typed=False),
+            )
+        rows = _milvus_context_rows(raw_results[0] if raw_results else [], args=args)
+        vector_kind_counts: dict[str, int] = {}
+        for row in rows:
+            kind = str(row.get("vector_kind") or "")
+            if kind:
+                vector_kind_counts[kind] = vector_kind_counts.get(kind, 0) + 1
+        stats: dict[str, Any] = {}
+        try:
+            stats = dict(client.get_collection_stats(collection_name) or {})
+        except Exception:
+            stats = {}
+        return {
+            "status": "ok",
+            "schema_version": "sec_agent_milvus_semantic_search_result_v0_1",
+            "context_rows": rows,
+            "row_count": len(rows),
+            "vector_kind_counts": vector_kind_counts,
+            "collection_name": collection_name,
+            "collection_stats": stats,
+            "typed_filter_required": True,
+            "semantic_route_role": "semantic_recall_supplement",
+            "exact_value_authority": False,
+            "elapsed_ms": int((time.monotonic() - started) * 1000),
+            "artifact_refs": [
+                {
+                    "artifact_id": "milvus_semantic_collection",
+                    "path": db_path,
+                    "collection_name": collection_name,
+                    "digest": "",
+                    "row_count": int(stats.get("row_count") or 0),
+                }
+            ],
+            "source_gaps": [],
+        }
+    except Exception as exc:  # noqa: BLE001
+        return _milvus_unavailable_result(
+            args,
+            reason_code="milvus_semantic_runtime_error",
+            missing=[],
+            vector_kinds=vector_kinds,
+            collection_name=collection_name,
+            error=f"{type(exc).__name__}: {exc}",
+        )
+
+
+def _milvus_unavailable_result(
+    args: dict[str, Any],
+    *,
+    reason_code: str,
+    missing: list[str],
+    vector_kinds: list[str],
+    collection_name: str,
+    error: str = "",
+) -> dict[str, Any]:
     gap = {
         "source_family": "primary_sec_filing",
         "retrieval_route": "milvus_semantic",
-        "reason_code": "milvus_semantic_runtime_not_bound" if not missing else "milvus_semantic_config_missing",
+        "reason_code": reason_code,
         "reason": (
-            "Milvus semantic route is registered as a typed recall supplement, but the runtime search handler "
-            "is not bound in this process."
+            error
+            or "Milvus semantic route is registered as a typed recall supplement, but the runtime search handler is not available."
         ),
         "missing": missing,
         "vector_kinds": vector_kinds,
@@ -353,6 +471,143 @@ def _invoke_milvus_semantic(args: dict[str, Any]) -> dict[str, Any]:
         "artifact_refs": [],
         "source_gaps": [gap],
     }
+
+
+@lru_cache(maxsize=4)
+def _milvus_client(db_path: str, collection_name: str) -> Any:
+    _install_milvus_import_paths()
+    from pymilvus import MilvusClient  # noqa: PLC0415
+
+    client = MilvusClient(uri=db_path)
+    client.load_collection(collection_name)
+    return client
+
+
+@lru_cache(maxsize=2)
+def _milvus_embedding_model(model_path: str, device: str) -> Any:
+    os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+    os.environ.setdefault("TQDM_DISABLE", "1")
+    from sentence_transformers import SentenceTransformer  # noqa: PLC0415
+
+    return SentenceTransformer(model_path, device=device)
+
+
+def _install_milvus_import_paths() -> None:
+    deps = Path(os.environ.get("MILVUS_DEPS_PATH") or os.environ.get("FINSIGHT_MILVUS_DEPS_PATH") or DEFAULT_MILVUS_DEPS_PATH)
+    for path in (deps,):
+        if path.exists() and str(path) not in sys.path:
+            sys.path.insert(0, str(path))
+
+
+def _milvus_embedding_device(args: dict[str, Any]) -> str:
+    requested = str(args.get("embedding_device") or os.environ.get("MILVUS_EMBEDDING_DEVICE") or "").strip().lower()
+    if requested and requested not in {"auto", "default"}:
+        return requested
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            return "cuda"
+    except Exception:
+        pass
+    return "cpu"
+
+
+def _milvus_output_fields(*, include_typed: bool) -> list[str]:
+    fields = [
+        "vector_id",
+        "evidence_id",
+        "ticker",
+        "fiscal_year",
+        "form_type",
+        "source_tier",
+        "item_code",
+        "category_slug",
+        "period_type",
+        "contains_table",
+        "vector_kind",
+        "object_type",
+        "preview",
+    ]
+    if include_typed:
+        fields.extend(["vector_role", "semantic_scope", "intent_tags", "relationship_role"])
+    return fields
+
+
+def _milvus_filter_expr(args: dict[str, Any], vector_kinds: list[str]) -> str:
+    clauses: list[str] = []
+    tickers = [str(item).upper() for item in _list_arg(args.get("tickers")) if str(item).strip()]
+    years = [int(item) for item in _list_arg(args.get("years")) if str(item).strip().isdigit()]
+    forms = [_normalize_sec_form_type(item) for item in _list_arg(args.get("filing_types")) if str(item).strip()]
+    source_tiers = [str(item) for item in _list_arg(args.get("source_tiers")) if str(item).strip() and str(item) != "milvus_semantic"]
+    if tickers:
+        clauses.append(_milvus_in_clause("ticker", tickers))
+    if years:
+        clauses.append("fiscal_year in [" + ", ".join(str(year) for year in years) + "]")
+    if forms:
+        clauses.append(_milvus_in_clause("form_type", forms))
+    if source_tiers:
+        clauses.append(_milvus_in_clause("source_tier", source_tiers))
+    if vector_kinds:
+        clauses.append(_milvus_in_clause("vector_kind", vector_kinds))
+    return " and ".join(clauses)
+
+
+def _milvus_in_clause(field: str, values: list[str]) -> str:
+    clean = []
+    for value in values:
+        escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
+        if escaped not in clean:
+            clean.append(escaped)
+    return f"{field} in [" + ", ".join(f'"{value}"' for value in clean) + "]"
+
+
+def _normalize_sec_form_type(value: Any) -> str:
+    text = str(value or "").upper().replace(" ", "").replace("_", "-")
+    return text.replace("10K", "10-K").replace("10Q", "10-Q").replace("8K", "8-K").replace("20F", "20-F").replace("40F", "40-F").replace("6K", "6-K")
+
+
+def _milvus_context_rows(hits: list[Any], *, args: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    route_id = str(args.get("route_id") or args.get("task_id") or "milvus_semantic")
+    for rank, hit in enumerate(hits, start=1):
+        entity = dict(hit.get("entity") or {})
+        evidence_id = str(entity.get("evidence_id") or entity.get("vector_id") or "")
+        if not evidence_id:
+            continue
+        rows.append(
+            {
+                "evidence_ref": evidence_id,
+                "evidence_id": evidence_id,
+                "source_family": "milvus_semantic",
+                "original_source_family": "primary_sec_filing",
+                "source_tier": entity.get("source_tier") or "",
+                "retrieval_route": "milvus_semantic",
+                "selection_route_id": route_id,
+                "selection_route_ids": [route_id],
+                "ticker": entity.get("ticker") or "",
+                "fiscal_year": entity.get("fiscal_year"),
+                "form_type": entity.get("form_type") or "",
+                "item_code": entity.get("item_code") or "",
+                "category_slug": entity.get("category_slug") or "",
+                "period_type": entity.get("period_type") or "",
+                "contains_table": bool(entity.get("contains_table")),
+                "vector_kind": entity.get("vector_kind") or "",
+                "vector_role": entity.get("vector_role") or "",
+                "semantic_scope": entity.get("semantic_scope") or "",
+                "intent_tags": entity.get("intent_tags") or "",
+                "relationship_role": entity.get("relationship_role") or "",
+                "object_type": entity.get("object_type") or "",
+                "preview": entity.get("preview") or "",
+                "text": entity.get("preview") or "",
+                "rank": rank,
+                "score": float(hit.get("distance") or 0.0),
+                "semantic_route_role": "semantic_recall_supplement",
+                "authority_boundary": "semantic_recall_supplement_not_exact_value_authority",
+                "exact_value_authority": False,
+            }
+        )
+    return rows
 
 
 def _invoke_market(args: dict[str, Any]) -> dict[str, Any]:

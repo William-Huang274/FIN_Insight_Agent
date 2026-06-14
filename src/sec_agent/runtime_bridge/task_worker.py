@@ -21,7 +21,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from sec_agent.runtime_bridge.data_quality import evaluate_data_processing_quality
-from sec_agent.runtime_bridge.eval_store import record_eval_case_result
+from sec_agent.runtime_bridge.eval_store import record_eval_case_result, record_eval_gold_promotion
 from sec_agent.runtime_bridge.resource_scheduler import InferenceTask, schedule_inference_tasks
 from sec_agent.workbench.job_runner import build_eval_command
 
@@ -95,14 +95,17 @@ def _pop_file_task(queue_dir: Path) -> dict[str, Any] | None:
     inflight.mkdir(parents=True, exist_ok=True)
     done.mkdir(parents=True, exist_ok=True)
     files = sorted(path for path in pending.glob("*.json") if path.is_file())
-    if not files:
-        return None
-    source = files[0]
-    target = inflight / source.name
-    shutil.move(str(source), str(target))
-    payload = json.loads(target.read_text(encoding="utf-8"))
-    shutil.move(str(target), str(done / target.name))
-    return payload
+    for source in files:
+        target = inflight / source.name
+        try:
+            shutil.move(str(source), str(target))
+        except (FileNotFoundError, PermissionError, OSError):
+            # Another local worker may have claimed this file after glob().
+            continue
+        payload = json.loads(target.read_text(encoding="utf-8"))
+        shutil.move(str(target), str(done / target.name))
+        return payload
+    return None
 
 
 def _process_payload(payload: dict[str, Any], config: WorkerConfig) -> None:
@@ -259,6 +262,12 @@ def _run_workbench_eval(payload: Mapping[str, Any], config: WorkerConfig, *, cal
             "artifact_refs": _artifact_refs(summary, output_path=output_path),
         },
     )
+    gold_promotion_record = _record_gold_candidates(
+        eval_store_path,
+        eval_id=eval_id,
+        run_id=run_id,
+        summary=summary,
+    )
     evidence = [
         {
             "evidence_id": f"runtime_bridge_workbench_eval_{run_id}",
@@ -272,6 +281,7 @@ def _run_workbench_eval(payload: Mapping[str, Any], config: WorkerConfig, *, cal
             "failure_count": summary.get("failure_count") or summary.get("metrics", {}).get("failed") if isinstance(summary.get("metrics"), Mapping) else summary.get("failure_count"),
             "artifact_refs": _artifact_refs(summary, output_path=output_path),
             "eval_store": eval_record,
+            "gold_promotion": gold_promotion_record,
             "data_quality": data_quality,
             "resource_schedule": [row.__dict__ for row in scheduler_rows],
         }
@@ -462,15 +472,96 @@ def _node_results_from_eval(
     ]
     for case in summary.get("cases") or []:
         if isinstance(case, Mapping):
+            metrics = _case_eval_metrics(case)
             nodes.append(
                 {
                     "node": f"case:{case.get('case_id') or 'unknown'}",
                     "status": "pass" if case.get("gate_status") == "pass" else "fail",
-                    "metric_count": 1,
+                    "metric_count": len(metrics),
+                    "metrics": metrics,
                     "payload": dict(case),
                 }
             )
     return nodes
+
+
+def _case_eval_metrics(case: Mapping[str, Any]) -> list[dict[str, Any]]:
+    metrics: list[dict[str, Any]] = []
+    numeric_fields = (
+        "elapsed_ms",
+        "tool_call_count",
+        "budgeted_tool_call_count",
+        "cached_tool_call_count",
+        "rendered_answer_chars",
+        "memo_claim_count",
+        "memo_dimension_analysis_count",
+    )
+    for field in numeric_fields:
+        value = _number(case.get(field))
+        if value is not None:
+            metrics.append({"name": field, "value": value})
+    total_tokens = _case_total_tokens(case)
+    if total_tokens is not None:
+        metrics.append({"name": "total_tokens", "value": total_tokens})
+        rendered_chars = _number(case.get("rendered_answer_chars")) or 0.0
+        if total_tokens > 0 and rendered_chars > 0:
+            metrics.append({"name": "chars_per_token", "value": rendered_chars / total_tokens})
+    return metrics
+
+
+def _case_total_tokens(case: Mapping[str, Any]) -> float | None:
+    values: list[float] = []
+    audit = case.get("agent_audit")
+    if not isinstance(audit, Mapping):
+        return None
+    for row in audit.values():
+        if not isinstance(row, Mapping):
+            continue
+        diagnostics = row.get("diagnostics")
+        if not isinstance(diagnostics, Mapping):
+            continue
+        value = _number(diagnostics.get("total_tokens"))
+        if value is not None:
+            values.append(value)
+    return sum(values) if values else None
+
+
+def _number(value: Any) -> float | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, bool):
+        return float(int(value))
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        return float(str(value))
+    except ValueError:
+        return None
+
+
+def _record_gold_candidates(db_path: Path, *, eval_id: str, run_id: str, summary: Mapping[str, Any]) -> dict[str, Any]:
+    promoted = 0
+    for case in summary.get("cases") or []:
+        if not isinstance(case, Mapping) or case.get("gate_status") != "pass":
+            continue
+        case_id = str(case.get("case_id") or "").strip()
+        if not case_id:
+            continue
+        record_eval_gold_promotion(
+            db_path,
+            {
+                "eval_id": eval_id,
+                "case_id": case_id,
+                "state": "candidate",
+                "criteria_version": "p0_p9_runtime_bridge_eval_v0_2",
+                "review_method": "automatic_candidate_from_r12_pass_requires_human_review",
+                "run_id": run_id,
+                "gate_status": case.get("gate_status"),
+                "artifact_refs": case.get("artifact_refs") or [],
+            },
+        )
+        promoted += 1
+    return {"status": "pass", "candidate_count": promoted}
 
 
 def _failure_events_from_eval(summary: Mapping[str, Any], *, command_result: Mapping[str, Any]) -> list[dict[str, Any]]:

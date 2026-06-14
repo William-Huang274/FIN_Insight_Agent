@@ -306,6 +306,63 @@ def test_pre_memo_fact_selection_keeps_product_claim_when_financial_facts_crowd_
     assert len(deterministic) <= 18
 
 
+def test_pre_memo_fact_selection_promotes_product_segment_revenue_dimension() -> None:
+    candidates = []
+    groups = []
+
+    def add_revenue_group(index: int, product: str) -> None:
+        candidate_id = f"healthcare_candidate_{index}"
+        candidates.append({"candidate_id": candidate_id, "evidence_ref": f"healthcare_ref_{index}"})
+        groups.append(
+            {
+                "group_id": f"healthcare_group_{index}",
+                "ticker": "AMGN",
+                "canonical_metric_id": "financial_metric:revenue",
+                "product_or_segment": product,
+                "period_key": "fiscal:2026:Q1:qtd",
+                "resolution_status": "resolved_single_candidate",
+                "candidate_ids": [candidate_id],
+                "preferred_value": {
+                    "candidate_id": candidate_id,
+                    "value": str(700 + index),
+                    "numeric_value": str(700 + index),
+                    "unit": "usd_millions",
+                    "source_id": f"amgn_product_{index}",
+                    "evidence_ref": f"healthcare_ref_{index}",
+                    "source_family": "primary_sec_filing",
+                    "resolution_rule": "single_exact_authority_candidate",
+                    "confidence": "high",
+                },
+            }
+        )
+
+    add_revenue_group(1, "Total Prolia")
+    add_revenue_group(2, "EVENITY — U.S.")
+    add_revenue_group(3, "Other revenues")
+
+    selection = build_pre_memo_fact_selection(
+        {
+            "user_query": "Analyze AMGN product revenue, Prolia, EVENITY, and product performance.",
+            "reconciliation_ledger": {"candidates": candidates, "reconciliation_groups": groups},
+        }
+    )
+    filtered = apply_pre_memo_fact_selection_to_judgment(
+        {"memo_writer_allowed": True, "supported_claims": [], "unsupported_claims": []},
+        selection,
+    )
+    deterministic = [
+        row
+        for row in filtered["supported_claims"]
+        if row.get("agent_id") == "pre_memo_fact_selector"
+    ]
+    by_product = {row.get("product_or_segment"): row for row in deterministic}
+
+    assert by_product["Total Prolia"]["analysis_dimension"] == "product_and_production"
+    assert by_product["Total Prolia"]["memo_slot"] == "product_technology"
+    assert by_product["EVENITY — U.S."]["analysis_dimension"] == "product_and_production"
+    assert by_product["Other revenues"]["analysis_dimension"] == "fundamentals"
+
+
 def test_pre_memo_fact_selection_prioritizes_query_relevant_product_lines() -> None:
     candidates = []
     groups = []

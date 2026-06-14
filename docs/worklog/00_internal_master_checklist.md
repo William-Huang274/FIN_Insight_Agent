@@ -671,15 +671,16 @@
 - [x] R1: Finish SQL / Redis / ObjectStore audit foundation so run, node, tool, model, evidence, claim, gap, gate, context, artifact, and eval rows are replayable without per-run JSON fallback.
 - [x] R2: Implement Eval Registry, dataset versioning, failure lifecycle, gold lifecycle, and LLM-as-judge audit tables.
 - [x] R3 local: Implement data/index/parser/chunker/table quality gates and retrieval quality audit.
-- [ ] R3 cloud: Run Milvus 603-company collection stats, schema parity, coverage, and query smoke after the server is opened.
+- [x] R3 runtime: Bind accepted 603-company Milvus Lite DB into runtime path registry and pass parity/query smoke through `sec_milvus_semantic_search`.
 - [x] R4: Implement ContextEngine / Memory Runtime with replayable injection plans, memory state governance, and memory-to-ledger drilldown parity.
 - [x] R5 local: Implement retrieval/rerank/role-visible quality gates, role-specific quotas, CUDA BGE queue audit, CPU spillover policy, and AgentCoalescer baseline.
-- [ ] R5 cloud: Run GPU BGE queue / high-concurrency scheduler smoke after cloud resources are available.
+- [x] R5 local/cloud-ready smoke: Run GPU BGE queue / scheduler smoke with CUDA slots, CPU spillover, cache-hit proxy, failure reason audit, and token-budget tier routing.
 - [x] R6: Implement Tool Capability Registry plus document/multimodal input pipeline and renderer/tool permission boundaries.
 - [x] R7: Implement ResearchObjectiveContract, LeadReviewCheckpoint, TargetedRepairPlan, and targeted repair delta audit.
 - [x] R8: Implement specialist packs and role-specific evidence selectors for fundamental, product/technology, market/valuation, capital/ownership/macro, and risk/counter-thesis.
 - [x] R9: Implement JudgmentState / MemoLogicPlan / Memo Writer / Verifier release-grade surface and gates.
 - [x] R10 local: Productize Java shell API, queue bridge, SSE, cancel/resume, worker callback, and resume/SSE smoke.
-- [ ] R10 cloud/load: Run higher-concurrency worker pool / SLA tests after cloud resources are available.
+- [x] R10 load smoke: Run Java gateway / queue / worker callback / SSE / resume / run_audit / ObjectStore SLA smoke with 8 tasks and 3 workers.
 - [x] R11: Build frontend / Workbench trace, report, context, evidence, ClaimCard, gap, and eval dashboard surfaces.
-- [ ] R12: Run full-chain regression, online eval skeleton, failure/gold promotion flow, and release readiness report after R1-R11 gates pass.
+- [x] R12 activation: Run 1-2 full-chain diagnostic cases through Workbench backend, online eval store, failure/quality queue, gold candidate promotion, and Workbench trace inspection.
+- [ ] R12 broader release: Run 12-case successor, 10-20 case broader gate, and release readiness report after current quality/cost issues are triaged.

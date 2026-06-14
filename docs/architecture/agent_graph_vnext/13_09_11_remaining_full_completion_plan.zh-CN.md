@@ -17,47 +17,50 @@
 
 这不等于 `09`、`10`、`11` 全部完成。完整完成必须通过本文 `R0-R12` 的所有门控。
 
-## 2026-06-14 R0-R11 本地落地状态
+## 2026-06-14 R0-R12 当前落地状态
 
-本轮按本文 `R0-R11` 执行到本地可验收状态，并新增 `scripts/runtime_bridge/run_r0_r11_readiness_gate.py` 作为统一门控。最新本地报告：
+本轮按本文 `R0-R12` 推进到 1-2 个真实 full-chain 激活 case 可验收状态。`scripts/runtime_bridge/run_r0_r11_readiness_gate.py` 继续作为 R0-R11 统一门控，R12 使用 Workbench 后端链路、Eval Store 和 Workbench artifact inspector 做真实 case 验收。最新本地报告：
 
-- `reports/quality/r0_r11_readiness_local/r0_r11_readiness_report.json`
-- status: `pass_with_cloud_gaps`
-- gate count: `12`
+- `reports/quality/r0_r11_readiness_local_milvus_bound/r0_r11_readiness_report.json`
+- status: `pass`
+- gate count: `13`
 - failed gate count: `0`
-- cloud gap count: `1`
+- cloud gap count: `0`
 
 已落地范围：
 
 - R0：baseline / runtime path / cloud handoff registry 可生成；报告只记录环境变量名，不保存 key。
 - R1：`run_audit_store` 扩展为 SQL 审计源，覆盖 run、node、artifact、retrieval、tool、evidence、ClaimCard、gap、gate、reflection、repair、model、resource、report、context、upload、parsed input 等表；新增 content-addressed object store ref。
-- R2：Eval Store 扩展到 registry、case membership、eval run、node/metric result、failure/gold/annotation/judge/dashboard snapshot。
-- R3：本地 data-processing / index asset / retrieval quality gates 已可执行；Milvus 603 家云端 collection 未开，保持显式 cloud gap。
+- R2：Eval Store 扩展到 registry、case membership、eval run、node/metric result、failure/gold/annotation/judge/dashboard snapshot；R12 真实 case 已写入 case result、latency/cost metric、failure/quality queue、gold candidate 和 dashboard snapshot。
+- R3：本地 data-processing / index asset / retrieval quality gates 已可执行；603 家 Milvus 已从云端 parquet export 重建到 Windows-native Milvus Lite，并通过 runtime path registry、`sec_milvus_semantic_search` 真实查询和 R3 parity/query smoke。该库只作为 typed semantic recall supplement，不作为 exact-value authority。
 - R4：新增 `ContextEngine`，支持 resolve / select / compress / inject / write_memory，并带 memory 状态和 no-direct-fact-authority gate。
-- R5：新增 retrieval quality audit、CUDA BGE queue / CPU spillover scheduler audit、agent coalescer 基础策略。
+- R5：新增 retrieval quality audit、CUDA BGE queue / CPU spillover scheduler audit、agent coalescer 基础策略；本机 RTX 4060 Laptop GPU 已验证 bge-m3 CUDA 加载和 3-slot queue + CPU spillover。
 - R6：新增 Tool Capability Registry、writer 工具权限 gate、文档输入解析到 provenance-gated artifact；多模态接口保留为 capability，不假装当前 DeepSeek 已支持。
 - R7：新增 ResearchObjectiveContract、LeadReviewCheckpoint、TargetedRepairPlan，second pass 固定为 Lead 指定 targeted repair。
 - R8：新增 role-specific evidence selector，按 fundamental、product/technology、market、capital/macro、risk 配额选择证据并输出 dropped taxonomy / cap reason。
 - R9：新增 MemoLogicPlan 和 writer-no-new-facts validation，Memo Writer 只消费 verified inputs，不查 DB、不联网、不新增事实。
-- R10：Java gateway 补齐 cancel/resume/SSE/worker callback；resume 会清空旧 memo/evidence/error 并重置 progress；Java -> queue -> Python worker -> callback smoke 覆盖 resume/SSE。
-- R11：Workbench 后端新增 eval dashboard endpoint，React 前端新增 EvalDashboardPanel，Vite React entry 可生产构建。
+- R10：Java gateway 补齐 cancel/resume/SSE/worker callback；resume 会清空旧 memo/evidence/error 并重置 progress；Java -> queue -> Python worker -> callback smoke 覆盖 resume/SSE；R10 load smoke 覆盖 8 task / 3 worker / SSE / resume / run_audit / object store 压力，p95 约 2.1s。
+- R11：Workbench 后端新增 eval dashboard endpoint，React 前端新增 EvalDashboardPanel，Vite React entry 可生产构建；artifact inspector 已识别 R12 vNext multi-case eval root，可从 eval root 下钻到 case score、memo、ClaimCards、typed gaps、gate matrix、run_audit、context memory、checkpoints 和 rendered answer。
+- R12：已跑 2 个 diagnostic full-chain 激活 case，覆盖 AI infrastructure 和 healthcare product/regulatory gap，走 Java gateway -> Python worker -> Workbench eval -> Eval Store。首轮暴露 healthcare product revenue deterministic dimension 误归 fundamentals，已修复 `financial_metric:revenue + product_or_segment` 的产品/业务线维度绑定并重跑通过。
 
 本轮验证：
 
-- `pytest tests/test_runtime_bridge_contracts.py tests/test_run_audit_store.py tests/test_runtime_bridge_java_python_smoke.py tests/test_workbench_backend.py -q`：`42 passed`
-- `python scripts/runtime_bridge/smoke_java_python_bridge.py --task-mode local_smoke --store-mode file --queue-mode file --check-resume-sse`：通过，包含 requeue 与 SSE 事件。
-- `python scripts/runtime_bridge/run_r0_r11_readiness_gate.py --output-dir reports/quality/r0_r11_readiness_local`：`pass_with_cloud_gaps`
-- `node node_modules/typescript/bin/tsc -p tsconfig.json && node node_modules/vite/bin/vite.js build --config vite.config.ts`：通过。
-
-仍暴露的非本地缺口：
-
-- `R3.cloud_milvus_parity`：云端 Milvus collection 未打开/未绑定。云端开后必须核对 `collection_stats`、`schema_parity`、`603_company_coverage`、`query_smoke`，再决定是否进入 R12。
+- `python -m pytest tests/test_d_series_fact_selection.py tests/test_multi_agent_real_llm_chain_eval.py -q`：`32 passed`
+- `python -m pytest tests/test_workbench_artifacts.py tests/test_workbench_backend.py::test_workbench_backend_lists_and_starts_controlled_eval_runner tests/test_workbench_backend.py::test_workbench_backend_starts_diagnostic_probe_eval_runner_without_strict -q`：`8 passed`
+- `python scripts/runtime_bridge/run_r0_r11_readiness_gate.py --include-cloud-gates --output-dir reports/quality/r0_r11_readiness_local_milvus_bound`：`pass`
+- `python scripts/runtime_bridge/run_r5_gpu_bge_scheduler_smoke.py --cuda-slots 3 --task-count 6 --device auto --run-model-smoke --require-cuda --output-dir reports/quality/r5_gpu_bge_scheduler_smoke`：`pass`
+- `python scripts/runtime_bridge/run_r10_backend_load_sla_smoke.py --tasks 8 --workers 3 --audit-rows 24 --output-dir reports/quality/r10_backend_load_sla_smoke`：`pass`
+- `python scripts/runtime_bridge/smoke_java_python_bridge.py --task-mode workbench_eval --eval-id agent_graph_vnext_diagnostic_probe --limit 2 --run-id r12_activation_diagnostic_probe_milvus_bound_20260614_r2 --bge-device cuda --worker-run-timeout-s 3600`：`SUCCESS`，Workbench summary `2/2 pass`
+- `python scripts/runtime_bridge/run_r12_eval_runtime_loop_gate.py --workbench-summary reports/quality/workbench_eval/r12_activation_diagnostic_probe_milvus_bound_20260614_r2_agent_graph_vnext_diagnostic_probe.json --output-path reports/quality/r12_eval_runtime_loop_gate/r12_eval_runtime_loop_gate_report.json`：`pass`
+- Workbench artifact inspection summary: `reports/quality/r12_workbench_trace_verification/r12_workbench_artifact_inspection_summary.json`，status `pass`
+- R11 前端构建在上一轮已通过；本轮仅补 Workbench vNext eval artifact inspector 与相关后端/测试，未重跑 Vite build。
 
 仍不属于本轮完成的部分：
 
-- R12 full-chain regression / online eval / release report 尚未执行。
-- 更高并发的 GPU BGE / worker pool / SLA 压测需要云端资源后执行。
-- Milvus 仍只能作为 typed semantic recall supplement，不能作为 exact-value authority。
+- R12 只完成 1-2 个 full-chain 激活 case；12-case successor、10-20 case broader release gate 和最终 release readiness report 尚未执行。
+- R5/R10 当前是本地高并发 smoke，不等于云端/生产级 SLA load test；后续仍需按真实 worker pool、provider latency、token/cost、DB/ObjectStore 写入压力和失败恢复做 broader gate。
+- Milvus 已 runtime 可用，但仍只能作为 typed semantic recall supplement，不能作为 exact-value authority。
+- R12 输出质量审计仍提示高 token 成本、Memo Writer/Verifier 成本高、product specialist visible rows 偏少；这些进入 eval failure/quality queue，作为下一轮质量/成本优化，而不是本轮 release gate 阻断项。
 
 ## 编号映射
 

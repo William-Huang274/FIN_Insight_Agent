@@ -33,6 +33,7 @@ from sec_agent.runtime_bridge.resource_scheduler import (
     coalesce_agent_tasks,
     schedule_inference_tasks_with_audit,
 )
+from sec_agent.mcp_tool_registry import invoke_mcp_tool
 from sec_agent.tool_capability_registry import default_tool_capability_registry, validate_tool_invocation
 from sec_agent.user_input_pipeline import parse_user_input_file
 
@@ -69,8 +70,8 @@ def run_r0_r11_readiness(
     gate("R0.baseline_freeze", lambda: _r0(root, baseline_path))
     gate("R1.sql_object_store_audit", lambda: _r1(run_audit_db, object_store_root))
     gate("R2.eval_registry_lifecycle", lambda: _r2(eval_db))
-    gate("R3.local_data_parser_index_gates", lambda: _r3_local())
-    if paths.milvus_mode in {"unbound_cloud_deferred", "unavailable", ""}:
+    gate("R3.local_data_parser_index_gates", lambda: _r3_local(paths))
+    if paths.milvus_mode in {"unbound_cloud_deferred", "unavailable", ""} and not (paths.milvus_db_path and paths.milvus_collection_name):
         cloud_gaps.append(
             {
                 "gate_id": "R3.cloud_milvus_parity",
@@ -80,7 +81,7 @@ def run_r0_r11_readiness(
             }
         )
     elif include_cloud_gates:
-        gate("R3.cloud_milvus_parity", lambda: {"status": "manual_required", "milvus_mode": paths.milvus_mode})
+        gate("R3.cloud_milvus_parity", lambda: _r3_milvus_runtime(paths))
     gate("R4.context_engine_memory", lambda: _r4())
     gate("R5.scheduler_retrieval_quality", lambda: _r5())
     gate("R6.tool_document_input", lambda: _r6(out, object_store_root))
@@ -179,7 +180,7 @@ def _r2(eval_db: Path) -> dict[str, Any]:
     return {"status": "fail" if missing or zero else "pass", "db_path": str(eval_db), "counts": result["counts"], "missing_tables": missing, "zero_required_tables": zero}
 
 
-def _r3_local() -> dict[str, Any]:
+def _r3_local(paths: Any) -> dict[str, Any]:
     data_quality = evaluate_data_processing_quality(
         [{"chunk_id": "chunk_ok", "text": "Revenue table", "record_type": "table", "table_id": "t1", "row_index": 1}]
     )
@@ -190,7 +191,51 @@ def _r3_local() -> dict[str, Any]:
         [{"task_id": "ret1", "target_in_candidates": True, "pre_rerank_count": 10, "post_rerank_count": 4, "role_visible_count": 2}]
     )
     results = [data_quality, index_quality, retrieval_quality]
+    milvus_runtime = {}
+    if paths.milvus_db_path and paths.milvus_collection_name:
+        milvus_runtime = _r3_milvus_runtime(paths)
+        results.append({"status": milvus_runtime.get("status") or "fail", "milvus_runtime": milvus_runtime})
     return {"status": "pass" if all(item["status"] == "pass" for item in results) else "fail", "results": results}
+
+
+def _r3_milvus_runtime(paths: Any) -> dict[str, Any]:
+    if not paths.milvus_db_path or not paths.milvus_collection_name:
+        return {"status": "fail", "error": "milvus_runtime_not_bound", "runtime_paths": paths.as_dict()}
+    result = invoke_mcp_tool(
+        "sec_milvus_semantic_search",
+        {
+            "query": "AI infrastructure capex cloud data center demand",
+            "tickers": ["MSFT", "AMZN", "NVDA"],
+            "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+            "milvus_db_path": str(paths.milvus_db_path),
+            "milvus_collection_name": paths.milvus_collection_name,
+            "embedding_model": paths.milvus_embedding_model,
+            "vector_kinds": list(paths.milvus_vector_kinds or ["narrative_chunk", "table_chunk", "paraphrase_context", "relationship_context"]),
+            "milvus_top_k": 5,
+            "typed_filter_required": True,
+        },
+    )
+    row_count = int(result.get("row_count") or 0)
+    stats = result.get("collection_stats") if isinstance(result.get("collection_stats"), dict) else {}
+    expected_count = paths.milvus_vector_count
+    errors = []
+    if result.get("status") != "ok":
+        errors.append({"type": "milvus_search_failed", "error": result.get("error")})
+    if row_count <= 0:
+        errors.append({"type": "milvus_query_no_hits"})
+    if expected_count is not None and int(stats.get("row_count") or 0) != int(expected_count):
+        errors.append({"type": "milvus_row_count_mismatch", "expected": int(expected_count), "actual": int(stats.get("row_count") or 0)})
+    return {
+        "status": "fail" if errors else "pass",
+        "milvus_mode": paths.milvus_mode,
+        "milvus_db_path": str(paths.milvus_db_path),
+        "collection_name": paths.milvus_collection_name,
+        "expected_vector_count": expected_count,
+        "query_row_count": row_count,
+        "collection_stats": stats,
+        "errors": errors,
+        "sample_rows": (result.get("context_rows") or [])[:3],
+    }
 
 
 def _r4() -> dict[str, Any]:

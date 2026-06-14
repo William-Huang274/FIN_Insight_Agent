@@ -1,0 +1,31 @@
+{
+  "schema_version": "finsight_milvus_runtime_config_v0_1",
+  "mode": "local",
+  "status": "available",
+  "location": "local_windows_milvus_lite",
+  "db_path": "Z:/FIN_Insight_Agent_artifacts/milvus/20260614_tier1_tier2_603_milvus_streaming_semantic_fp16_batch1024_local_rebuild_from_parquet_r1/milvus_lite.db",
+  "collection_name": "fin_ab_20260614_tier1_tier2_603_milvus_streaming_semantic_fp16_batch1024_local_rebuild_from_parquet_r1_1781435345",
+  "embedding_model": "D:/hf_cache/hub/models--BAAI--bge-m3/snapshots/5617a9f61b028005a4858fdac845db406aefb181",
+  "embedding_dim": 1024,
+  "vector_count": 662908,
+  "company_count_declared": 603,
+  "ticker_count_indexed": 581,
+  "vector_kinds": [
+    "narrative_chunk",
+    "table_chunk",
+    "paraphrase_context",
+    "relationship_context"
+  ],
+  "source_tiers": [
+    "primary_sec_filing",
+    "company_authored_unaudited_sec_filing"
+  ],
+  "claim_boundary": "semantic_recall_supplement_not_exact_value_authority",
+  "lineage": {
+    "cloud_run_id": "20260614_tier1_tier2_603_milvus_streaming_semantic_fp16_batch1024_r2",
+    "local_rebuild_run_id": "20260614_tier1_tier2_603_milvus_streaming_semantic_fp16_batch1024_local_rebuild_from_parquet_r1",
+    "parquet_export_dir": "Z:/FIN_Insight_Agent_artifacts/milvus_exports/20260614_tier1_tier2_603_milvus_streaming_semantic_fp16_batch1024_r2_linux_parquet/data",
+    "summary_path": "eval/sec_cases/outputs/milvus_retrieval_ab/20260614_tier1_tier2_603_milvus_streaming_semantic_fp16_batch1024_local_rebuild_from_parquet_r1/milvus_parquet_rebuild_summary.json"
+  },
+  "note": "Accepted 603-company Milvus Lite rebuild from cloud parquet export. Use as typed semantic recall supplement only; do not use for exact-value authority."
+}

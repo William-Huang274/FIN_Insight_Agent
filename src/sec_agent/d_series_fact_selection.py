@@ -317,7 +317,7 @@ def _deterministic_fact_claims_from_approved_facts(
         seen_keys.add(key)
         claim_id = _stable_id("pre_memo_fact_claim", row.get("selection_id"), row.get("fact_id"), evidence_ref)
         canonical_metric = _text(row.get("canonical_metric_id"))
-        dimension = _analysis_dimension_for_fact(canonical_metric)
+        dimension = _analysis_dimension_for_fact(canonical_metric, row=row)
         claims.append(
             {
                 "claim_id": claim_id,
@@ -408,7 +408,7 @@ def _select_dimension_balanced_fact_rows(
     for dimension, limit in dimension_limits:
         added = 0
         for row in rows:
-            if _analysis_dimension_for_fact(_text(row.get("canonical_metric_id"))) != dimension:
+            if _analysis_dimension_for_fact(_text(row.get("canonical_metric_id")), row=row) != dimension:
                 continue
             if add(row):
                 added += 1
@@ -504,12 +504,61 @@ def _claim_type_for_fact(canonical_metric_id: str) -> str:
     return "company_reported_financial_fact"
 
 
-def _analysis_dimension_for_fact(canonical_metric_id: str) -> str:
+def _analysis_dimension_for_fact(canonical_metric_id: str, *, row: Mapping[str, Any] | None = None) -> str:
     if canonical_metric_id.startswith("product_kpi:"):
+        return "product_and_production"
+    if canonical_metric_id == "financial_metric:revenue" and row is not None and _is_product_or_segment_revenue_fact(row):
         return "product_and_production"
     if canonical_metric_id in {"financial_metric:capex", "financial_metric:debt", "financial_metric:cash", "financial_metric:fcf"}:
         return "capital_and_financing"
     return "fundamentals"
+
+
+def _is_product_or_segment_revenue_fact(row: Mapping[str, Any]) -> bool:
+    product = _text(row.get("product_or_segment"))
+    if not product:
+        return False
+    normalized = " ".join(product.lower().replace("—", " ").replace("-", " ").split())
+    if not normalized:
+        return False
+    generic_or_adjustment_labels = {
+        "revenue",
+        "revenues",
+        "total revenue",
+        "total revenues",
+        "net revenue",
+        "net revenues",
+        "total net revenue",
+        "total net revenues",
+        "net sales",
+        "total net sales",
+        "sales",
+        "total sales",
+        "other revenue",
+        "other revenues",
+        "other income",
+        "accrued sales incentives and allowance",
+        "sales incentives and allowance",
+        "allowance",
+    }
+    if normalized in generic_or_adjustment_labels:
+        return False
+    geographic_only = {
+        "u s",
+        "us",
+        "united states",
+        "row",
+        "rest of world",
+        "international",
+        "north america",
+        "europe",
+        "asia",
+        "china",
+        "japan",
+    }
+    if normalized in geographic_only:
+        return False
+    return True
 
 
 def _analysis_dimension_title_for_fact(dimension: str) -> str:

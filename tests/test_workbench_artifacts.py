@@ -94,6 +94,49 @@ def test_inspect_run_artifacts_summarizes_multi_agent_trace(tmp_path: Path) -> N
     assert index.state_summary["multi_agent"]["loop_break_reason"] == "no_incremental_evidence"
 
 
+def test_inspect_run_artifacts_summarizes_vnext_multi_case_eval_trace(tmp_path: Path) -> None:
+    run_dir = tmp_path / "vnext_eval"
+    case_id = "fin_diag_fixture"
+    case_dir = run_dir / case_id
+    (case_dir / "qwen").mkdir(parents=True)
+    _write_json(
+        run_dir / "real_chain_eval_summary.json",
+        {
+            "run_id": "vnext_fixture",
+            "gate_status": "pass",
+            "elapsed_ms": 123,
+            "cases": [{"case_id": case_id, "gate_status": "pass", "elapsed_ms": 120}],
+        },
+    )
+    _write_json(run_dir / "multi_agent_output_quality_audit.json", {"status": "pass"})
+    (run_dir / "multi_agent_output_quality_audit.md").write_text("# audit", encoding="utf-8")
+    _write_json(case_dir / "real_chain_case_score.json", {"case_id": case_id, "gate_status": "pass"})
+    _write_json(case_dir / "memo_answer.json", {"answer_status": "draft"})
+    _write_json(
+        case_dir / "claim_cards.json",
+        {"supported_claims": [{"claim_id": "claim1", "analysis_dimension": "product_and_production"}]},
+    )
+    _write_json(case_dir / "typed_gap_ledger.json", {"gap_count": 1, "gaps": [{"gap_id": "gap1"}]})
+    _write_json(case_dir / "gate_registry_eval_matrix.json", {"gate_history": [{"gate_id": "g1"}]})
+    _write_json(case_dir / "run_audit_materialization_report.json", {"status": "pass", "db_path": "audit.sqlite"})
+    _write_json(case_dir / "analyst_view_research_memory.json", {"analyst_views": [{"view_id": "view1"}]})
+    _write_json(case_dir / "langgraph_node_checkpoints.json", {"checkpoint_count": 2})
+    _write_json(case_dir / "pre_memo_fact_selection.json", {"approved_facts": [{"selection_id": "fact1"}]})
+    (case_dir / "qwen" / "rendered_answer.md").write_text("rendered memo", encoding="utf-8")
+
+    index = inspect_run_artifacts(run_dir)
+    by_id = {artifact.artifact_id: artifact for artifact in index.artifacts}
+
+    assert index.status == "pass"
+    assert index.state_summary["eval_output_type"] == "multi_agent_vnext_real_chain"
+    assert index.state_summary["case_count"] == 1
+    assert index.state_summary["cases"][0]["supported_claim_count"] == 1
+    assert index.state_summary["cases"][0]["gap_count"] == 1
+    assert index.state_summary["cases"][0]["run_audit_status"] == "pass"
+    assert by_id[f"{case_id}:claim_cards"].exists is True
+    assert by_id[f"{case_id}:rendered_answer"].preview == "rendered memo"
+
+
 def test_run_job_records_artifact_status(tmp_path: Path) -> None:
     index = inspect_run_artifacts(_write_saved_run_fixture(tmp_path))
 

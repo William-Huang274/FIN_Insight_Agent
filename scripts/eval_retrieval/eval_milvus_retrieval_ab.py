@@ -69,6 +69,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--embedding-max-seq-length", type=int, default=512)
     parser.add_argument("--vector-text-max-chars", type=int, default=1800)
     parser.add_argument("--insert-batch-size", type=int, default=256)
+    parser.add_argument("--progress-interval", type=int, default=512)
+    parser.add_argument("--fp16", action="store_true", help="Use fp16 model weights for CUDA embedding builds.")
+    parser.add_argument(
+        "--defer-index-build",
+        action="store_true",
+        help="Insert vectors before building the Milvus vector index. Useful for full-scale collection builds.",
+    )
     parser.add_argument("--disable-object-vectors", action="store_true")
     parser.add_argument(
         "--disable-object-baseline",
@@ -107,6 +114,11 @@ def main(argv: list[str] | None = None) -> int:
     from sentence_transformers import SentenceTransformer
     import torch
 
+    if hasattr(torch, "set_float32_matmul_precision"):
+        try:
+            torch.set_float32_matmul_precision("high")
+        except Exception:
+            pass
     bm25_cls = None
     object_bm25_cls = None
     if not args.milvus_build_only:
@@ -191,6 +203,9 @@ def main(argv: list[str] | None = None) -> int:
             pass
         device = "cpu"
         model = SentenceTransformer(str(args.embedding_model), device=device)
+    embedding_fp16_enabled = False
+    if args.fp16 and device == "cuda":
+        embedding_fp16_enabled = _enable_model_fp16(model)
     if int(args.embedding_max_seq_length or 0) > 0:
         model.max_seq_length = int(args.embedding_max_seq_length)
     probe_embedding = model.encode(
@@ -211,7 +226,14 @@ def main(argv: list[str] | None = None) -> int:
         collection_name = _collection_name(run_id)
         build_client = MilvusClient(uri=str(milvus_db))
         try:
-            _create_collection(build_client, collection_name, dim, DataType, MilvusClient)
+            _create_collection(
+                build_client,
+                collection_name,
+                dim,
+                DataType,
+                MilvusClient,
+                defer_index_build=bool(args.defer_index_build),
+            )
             _insert_vector_rows(
                 client=build_client,
                 collection_name=collection_name,
@@ -219,7 +241,10 @@ def main(argv: list[str] | None = None) -> int:
                 rows=vector_rows,
                 batch_size=args.embedding_batch_size,
                 insert_batch_size=args.insert_batch_size,
+                progress_interval=args.progress_interval,
             )
+            if args.defer_index_build:
+                _create_embedding_index(build_client, collection_name, MilvusClient)
             _load_collection_for_search(build_client, collection_name)
         finally:
             _close_milvus_client(build_client)
@@ -294,6 +319,11 @@ def main(argv: list[str] | None = None) -> int:
             "collection_name": collection_name,
             "embedding_model": str(args.embedding_model),
             "embedding_device": device,
+            "embedding_fp16_enabled": embedding_fp16_enabled,
+            "defer_index_build": bool(args.defer_index_build),
+            "embedding_batch_size": int(args.embedding_batch_size),
+            "insert_batch_size": int(args.insert_batch_size),
+            "progress_interval": int(args.progress_interval),
             "collection_rows": int(args.reuse_milvus_collection_rows or 0) if reusing_milvus else len(vector_rows),
             "evidence_rows": len(evidence_rows),
             "object_vector_rows": len(object_vector_rows),
@@ -324,6 +354,29 @@ def _install_import_paths(milvus_deps_path: Path) -> None:
         text = str(path)
         if text not in sys.path:
             sys.path.insert(0, text)
+
+
+def _enable_model_fp16(model: Any) -> bool:
+    half = getattr(model, "half", None)
+    if callable(half):
+        try:
+            half()
+            return True
+        except Exception:
+            pass
+    try:
+        first_module = model._first_module()
+    except Exception:
+        first_module = None
+    auto_model = getattr(first_module, "auto_model", None)
+    half = getattr(auto_model, "half", None)
+    if callable(half):
+        try:
+            half()
+            return True
+        except Exception:
+            return False
+    return False
 
 
 def _load_cases(path: Path) -> list[dict[str, Any]]:
@@ -595,7 +648,15 @@ def _object_vector_record(row: Mapping[str, Any], *, max_chars: int) -> dict[str
     }
 
 
-def _create_collection(client: Any, collection_name: str, dim: int, data_type: Any, milvus_client_cls: Any) -> None:
+def _create_collection(
+    client: Any,
+    collection_name: str,
+    dim: int,
+    data_type: Any,
+    milvus_client_cls: Any,
+    *,
+    defer_index_build: bool = False,
+) -> None:
     schema = milvus_client_cls.create_schema(auto_id=False, enable_dynamic_field=True)
     schema.add_field(field_name="vector_id", datatype=data_type.VARCHAR, is_primary=True, max_length=512)
     schema.add_field(field_name="embedding", datatype=data_type.FLOAT_VECTOR, dim=dim)
@@ -615,9 +676,25 @@ def _create_collection(client: Any, collection_name: str, dim: int, data_type: A
     schema.add_field(field_name="relationship_role", datatype=data_type.VARCHAR, max_length=64)
     schema.add_field(field_name="object_type", datatype=data_type.VARCHAR, max_length=32)
     schema.add_field(field_name="preview", datatype=data_type.VARCHAR, max_length=4096)
+    if defer_index_build:
+        client.create_collection(collection_name=collection_name, schema=schema)
+        return
+    index_params = _embedding_index_params(milvus_client_cls)
+    client.create_collection(collection_name=collection_name, schema=schema, index_params=index_params)
+
+
+def _embedding_index_params(milvus_client_cls: Any) -> Any:
     index_params = milvus_client_cls.prepare_index_params()
     index_params.add_index(field_name="embedding", metric_type="COSINE", index_type="FLAT")
-    client.create_collection(collection_name=collection_name, schema=schema, index_params=index_params)
+    return index_params
+
+
+def _create_embedding_index(client: Any, collection_name: str, milvus_client_cls: Any) -> None:
+    index_params = _embedding_index_params(milvus_client_cls)
+    try:
+        client.create_index(collection_name=collection_name, index_params=index_params)
+    except TypeError:
+        client.create_index(collection_name, index_params)
 
 
 def _load_collection_for_search(client: Any, collection_name: str) -> None:
@@ -660,11 +737,13 @@ def _insert_vector_rows(
     rows: list[dict[str, Any]],
     batch_size: int,
     insert_batch_size: int,
+    progress_interval: int,
 ) -> None:
     pending: list[dict[str, Any]] = []
+    progress_interval = max(1, int(progress_interval or 1))
     for start in range(0, len(rows), max(1, int(batch_size))):
         batch = rows[start : start + max(1, int(batch_size))]
-        if start == 0 or start % 512 == 0:
+        if start == 0 or start % progress_interval == 0:
             print(
                 json.dumps(
                     {"milvus_insert_progress": start, "total": len(rows)},
@@ -686,7 +765,7 @@ def _insert_vector_rows(
                 {
                     "vector_id": str(row.get("vector_id") or ""),
                     "evidence_id": str(row.get("evidence_id")),
-                    "embedding": [float(item) for item in embedding.tolist()],
+                    "embedding": embedding.tolist(),
                     "ticker": str(row.get("ticker") or "").upper(),
                     "fiscal_year": int(row.get("fiscal_year") or 0),
                     "form_type": _normalize_form_type(row.get("form_type") or row.get("source_type")),

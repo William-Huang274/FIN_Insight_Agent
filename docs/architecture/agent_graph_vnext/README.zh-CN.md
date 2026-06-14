@@ -20,6 +20,7 @@
 - [11 Agent Eval Runtime 闭环框架](11_agent_eval_runtime_framework.zh-CN.md)：审计现有 docs/eval、scripts/eval、fixtures、run_audit_store、LangGraph checkpoint、LLM token/latency 和 model run ledger，设计统一 Eval Registry、Dataset Lifecycle、Node/Chain Evaluators、Failure/Gold 状态机、后端 SQL eval store 和前端 eval dashboard。
 - [12 09-11 闭环后一体化执行计划](12_integrated_execution_plan.zh-CN.md)：不按 09/10/11 分别排期，而是按 P0-P10 功能切片把 Python agent、后端/前端、Eval Runtime、同步/异步协作、Java shell 可选路线和通过门控编排成下一阶段执行顺序。
 - [13 09-11 剩余工作全量拆分与完成合同](13_09_11_remaining_full_completion_plan.zh-CN.md)：把 09/10/11 尚未完全落地的 L/B/F/EV/P 项合并成 R0-R12 可执行步骤，明确 SQL/Redis/ObjectStore、Eval Runtime、Milvus/Data Gates、ContextEngine、Lead supervised loop、specialist packs、Memo/Verifier、后端/前端和 full-chain release gate 的通过条件、云端依赖和禁止降级规则。
+- [14 vNext 50-Case Eval Catalog](14_vnext_50_case_eval_catalog.zh-CN.md)：把 R12 后续评测从临时挑 case 升级为 50-case catalog，覆盖 focused、standard memo、deep research、gap boundary、non-US supply chain 和 backend/runtime stress，并定义 12-case successor、20-case broader gate 与 load-mix subset。
 
 ## 总原则
 

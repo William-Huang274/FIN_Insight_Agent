@@ -409,6 +409,10 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
     def list_evals():
         return {"evals": eval_runner_catalog()}
 
+    @app.get("/api/evals/dashboard")
+    def eval_dashboard(limit: int = Query(default=50, ge=1, le=500)):
+        return store.eval_dashboard(limit=limit)
+
     @app.get("/api/data-build/steps")
     def list_data_build_steps():
         return {"steps": data_build_catalog()}

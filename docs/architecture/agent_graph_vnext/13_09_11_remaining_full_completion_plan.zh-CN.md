@@ -8,7 +8,7 @@
 
 ## 当前真实状态
 
-已经完成的是 P0-P9 的运行桥接和部分 runtime gate：
+上一轮完成的是 P0-P9 的运行桥接和部分 runtime gate：
 
 - Java Task Gateway / Python bridge worker 已能跑通创建任务、队列、worker 执行、回写状态、Docker file/Redis 与 JDBC/Redis smoke。
 - Workbench backend diagnostic case 已能触发当前 Python graph。
@@ -16,6 +16,48 @@
 - 初版 SQL eval store、path registry、resource scheduler 已存在，但不是完整企业级运行底座。
 
 这不等于 `09`、`10`、`11` 全部完成。完整完成必须通过本文 `R0-R12` 的所有门控。
+
+## 2026-06-14 R0-R11 本地落地状态
+
+本轮按本文 `R0-R11` 执行到本地可验收状态，并新增 `scripts/runtime_bridge/run_r0_r11_readiness_gate.py` 作为统一门控。最新本地报告：
+
+- `reports/quality/r0_r11_readiness_local/r0_r11_readiness_report.json`
+- status: `pass_with_cloud_gaps`
+- gate count: `12`
+- failed gate count: `0`
+- cloud gap count: `1`
+
+已落地范围：
+
+- R0：baseline / runtime path / cloud handoff registry 可生成；报告只记录环境变量名，不保存 key。
+- R1：`run_audit_store` 扩展为 SQL 审计源，覆盖 run、node、artifact、retrieval、tool、evidence、ClaimCard、gap、gate、reflection、repair、model、resource、report、context、upload、parsed input 等表；新增 content-addressed object store ref。
+- R2：Eval Store 扩展到 registry、case membership、eval run、node/metric result、failure/gold/annotation/judge/dashboard snapshot。
+- R3：本地 data-processing / index asset / retrieval quality gates 已可执行；Milvus 603 家云端 collection 未开，保持显式 cloud gap。
+- R4：新增 `ContextEngine`，支持 resolve / select / compress / inject / write_memory，并带 memory 状态和 no-direct-fact-authority gate。
+- R5：新增 retrieval quality audit、CUDA BGE queue / CPU spillover scheduler audit、agent coalescer 基础策略。
+- R6：新增 Tool Capability Registry、writer 工具权限 gate、文档输入解析到 provenance-gated artifact；多模态接口保留为 capability，不假装当前 DeepSeek 已支持。
+- R7：新增 ResearchObjectiveContract、LeadReviewCheckpoint、TargetedRepairPlan，second pass 固定为 Lead 指定 targeted repair。
+- R8：新增 role-specific evidence selector，按 fundamental、product/technology、market、capital/macro、risk 配额选择证据并输出 dropped taxonomy / cap reason。
+- R9：新增 MemoLogicPlan 和 writer-no-new-facts validation，Memo Writer 只消费 verified inputs，不查 DB、不联网、不新增事实。
+- R10：Java gateway 补齐 cancel/resume/SSE/worker callback；resume 会清空旧 memo/evidence/error 并重置 progress；Java -> queue -> Python worker -> callback smoke 覆盖 resume/SSE。
+- R11：Workbench 后端新增 eval dashboard endpoint，React 前端新增 EvalDashboardPanel，Vite React entry 可生产构建。
+
+本轮验证：
+
+- `pytest tests/test_runtime_bridge_contracts.py tests/test_run_audit_store.py tests/test_runtime_bridge_java_python_smoke.py tests/test_workbench_backend.py -q`：`42 passed`
+- `python scripts/runtime_bridge/smoke_java_python_bridge.py --task-mode local_smoke --store-mode file --queue-mode file --check-resume-sse`：通过，包含 requeue 与 SSE 事件。
+- `python scripts/runtime_bridge/run_r0_r11_readiness_gate.py --output-dir reports/quality/r0_r11_readiness_local`：`pass_with_cloud_gaps`
+- `node node_modules/typescript/bin/tsc -p tsconfig.json && node node_modules/vite/bin/vite.js build --config vite.config.ts`：通过。
+
+仍暴露的非本地缺口：
+
+- `R3.cloud_milvus_parity`：云端 Milvus collection 未打开/未绑定。云端开后必须核对 `collection_stats`、`schema_parity`、`603_company_coverage`、`query_smoke`，再决定是否进入 R12。
+
+仍不属于本轮完成的部分：
+
+- R12 full-chain regression / online eval / release report 尚未执行。
+- 更高并发的 GPU BGE / worker pool / SLA 压测需要云端资源后执行。
+- Milvus 仍只能作为 typed semantic recall supplement，不能作为 exact-value authority。
 
 ## 编号映射
 

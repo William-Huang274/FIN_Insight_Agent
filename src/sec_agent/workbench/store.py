@@ -83,6 +83,18 @@ class TraceInspectionReport(BaseModel):
     latest_event_at: str | None = None
 
 
+class EvalDashboardReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = "finsight_workbench_eval_dashboard_v0_1"
+    status: str
+    eval_job_count: int
+    status_counts: dict[str, int]
+    recent_eval_jobs: list[StoredRunJobSummary]
+    event_count: int
+    latest_event_at: str | None = None
+
+
 class StoreHealthReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -562,6 +574,27 @@ class WorkbenchStore:
             status_counts=status_counts,
             first_event_at=event_times[0] if event_times else None,
             latest_event_at=event_times[-1] if event_times else None,
+        )
+
+    def eval_dashboard(self, *, limit: int = 50) -> EvalDashboardReport:
+        jobs = self.list_run_jobs(job_type="eval_run", limit=limit)
+        status_counts: dict[str, int] = {}
+        event_count = 0
+        latest_event_at: str | None = None
+        for job in jobs:
+            status_counts[job.status] = status_counts.get(job.status, 0) + 1
+            events = self.list_run_events(job.job_id, limit=5000)
+            event_count += len(events)
+            for event in events:
+                if latest_event_at is None or event.created_at > latest_event_at:
+                    latest_event_at = event.created_at
+        return EvalDashboardReport(
+            status="ok",
+            eval_job_count=len(jobs),
+            status_counts=status_counts,
+            recent_eval_jobs=jobs,
+            event_count=event_count,
+            latest_event_at=latest_event_at,
         )
 
     def inspect_health(self) -> StoreHealthReport:

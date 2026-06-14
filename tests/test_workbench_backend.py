@@ -677,6 +677,12 @@ def test_workbench_backend_lists_and_starts_controlled_eval_runner(
     spec = captured["spec"]
     assert "scripts/eval_context/evaluate_sec_agent_context_api_smoke.py" in spec.args
     assert "--output-path" in spec.args
+    dashboard_response = client.get("/api/evals/dashboard")
+    assert dashboard_response.status_code == 200
+    dashboard = dashboard_response.json()
+    assert dashboard["eval_job_count"] == 1
+    assert dashboard["status_counts"]["queued"] == 1
+    assert dashboard["recent_eval_jobs"][0]["job_id"] == "eval_fixture"
 
 
 def test_workbench_backend_starts_g11_full_chain_eval_runner_without_secret_args(

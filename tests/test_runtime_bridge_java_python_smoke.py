@@ -7,6 +7,7 @@ import socket
 import subprocess
 import sys
 import time
+from typing import Any
 import urllib.request
 from pathlib import Path
 
@@ -92,6 +93,45 @@ def test_java_gateway_to_python_worker_file_queue_smoke(tmp_path: Path) -> None:
         assert any("task accepted and queued" in message for message in event_messages)
         assert any("task dequeued by Python worker" in message for message in event_messages)
         assert any("status=SUCCESS progress=100" in message for message in event_messages)
+        sse = _request_text(
+            f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}/events?limit=50",
+            accept="text/event-stream",
+        )
+        assert "event: task-event" in sse
+        assert "event: heartbeat" in sse
+
+        resumed = _request_json(
+            f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}/resume",
+            method="POST",
+            payload={},
+            expected_status=202,
+        )
+        assert resumed["status"] == "PENDING"
+        assert resumed["progress"] == 0
+        assert resumed["memo"] == ""
+        assert resumed["evidence"] == []
+        worker_again = subprocess.run(
+            [
+                sys.executable,
+                str(REPO_ROOT / "src" / "sec_agent" / "runtime_bridge" / "task_worker.py"),
+                "--once",
+                "--queue-mode",
+                "file",
+                "--queue-dir",
+                str(queue_dir),
+                "--gateway-url",
+                f"http://127.0.0.1:{port}",
+            ],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        assert '"processed": 1' in worker_again.stdout
+        completed_again = _request_json(f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}")
+        assert completed_again["status"] == "SUCCESS"
+        resume_events = _request_json(f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}/events?limit=100")
+        assert any("resume requested and task re-queued" in event["message"] for event in resume_events["events"])
 
         cancellable = _request_json(
             f"http://127.0.0.1:{port}/api/research/tasks",
@@ -123,6 +163,21 @@ def _request_json(url: str, *, method: str = "GET", payload: dict | None = None,
     with urllib.request.urlopen(request, timeout=10) as response:
         assert response.status == expected_status
         return json.loads(response.read().decode("utf-8"))
+
+
+def _request_text(
+    url: str,
+    *,
+    method: str = "GET",
+    payload: dict[str, Any] | None = None,
+    accept: str = "text/plain",
+    expected_status: int = 200,
+) -> str:
+    data = json.dumps(payload).encode("utf-8") if payload is not None else None
+    request = urllib.request.Request(url, data=data, method=method, headers={"Accept": accept, "Content-Type": "application/json"})
+    with urllib.request.urlopen(request, timeout=10) as response:
+        assert response.status == expected_status
+        return response.read().decode("utf-8")
 
 
 def _wait_for_health(port: int) -> None:

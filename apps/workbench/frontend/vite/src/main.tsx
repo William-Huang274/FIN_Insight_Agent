@@ -226,6 +226,16 @@ type EvalRunner = {
   timeout_hint_s?: number;
 };
 
+type EvalDashboard = {
+  schema_version: string;
+  status: string;
+  eval_job_count: number;
+  status_counts: Record<string, number>;
+  recent_eval_jobs: RunJob[];
+  event_count: number;
+  latest_event_at?: string | null;
+};
+
 type RunInspectionReport = {
   job: RunJob;
   artifact_index?: RunArtifactIndex | null;
@@ -305,6 +315,7 @@ function App() {
   const [sessions, setSessions] = useState<StoredSession[]>([]);
   const [sessionTurns, setSessionTurns] = useState<RunJob[]>([]);
   const [evals, setEvals] = useState<EvalRunner[]>([]);
+  const [evalDashboard, setEvalDashboard] = useState<EvalDashboard | null>(null);
   const [dataBuildSteps, setDataBuildSteps] = useState<DataBuildStep[]>([]);
   const [dataBuildStepId, setDataBuildStepId] = useState("");
   const [dataBuildValues, setDataBuildValues] = useState<Record<string, string | boolean>>({});
@@ -334,6 +345,7 @@ function App() {
     void loadRuns();
     void loadSessions();
     void loadEvals();
+    void loadEvalDashboard();
     void loadDataBuildSteps();
   }, []);
 
@@ -475,6 +487,11 @@ function App() {
     setEvals(payload.evals ?? []);
   }
 
+  async function loadEvalDashboard() {
+    const payload = await requestJson<EvalDashboard>("/api/evals/dashboard");
+    setEvalDashboard(payload);
+  }
+
   async function loadDataBuildSteps() {
     const payload = await requestJson<{ steps: DataBuildStep[] }>("/api/data-build/steps");
     const steps = payload.steps ?? [];
@@ -505,6 +522,7 @@ function App() {
       setJobEvents([]);
       await refreshJob(payload.job.job_id);
       await loadRuns();
+      await loadEvalDashboard();
     });
   }
 
@@ -1013,8 +1031,13 @@ function App() {
               <h2>评测入口</h2>
               <p>运行固定 smoke / eval 任务，检查会话状态、上下文接口和小压测，不开放任意 shell 命令。</p>
             </div>
+            <button type="button" className="secondary" onClick={loadEvalDashboard} disabled={Boolean(busy)}>
+              <RefreshCcw size={16} aria-hidden="true" />
+              刷新评测面板
+            </button>
           </div>
 
+          <EvalDashboardPanel dashboard={evalDashboard} onLoadRun={loadRun} />
           <EvalRunners evals={evals} busy={busy} onRun={startEvalRun} />
         </section>
 
@@ -1463,6 +1486,67 @@ function EvalRunners({
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function EvalDashboardPanel({
+  dashboard,
+  onLoadRun,
+}: {
+  dashboard: EvalDashboard | null;
+  onLoadRun: (jobId: string) => void;
+}) {
+  if (!dashboard) {
+    return (
+      <div className="saved-profiles empty-state">
+        <h3>评测面板</h3>
+        <p>后端还没有返回 eval dashboard。</p>
+      </div>
+    );
+  }
+  return (
+    <div className="eval-dashboard">
+      <div className="summary-grid">
+        <MetricBox label="Eval jobs" value={numberText(dashboard.eval_job_count)} detail={dashboard.status} />
+        <MetricBox label="Events" value={numberText(dashboard.event_count)} detail={dashboard.latest_event_at ?? "no events"} />
+        <MetricBox label="Status mix" value={compactObject(dashboard.status_counts)} />
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Job</th>
+              <th>Status</th>
+              <th>Trace</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dashboard.recent_eval_jobs.length ? (
+              dashboard.recent_eval_jobs.map((job) => (
+                <tr key={job.job_id}>
+                  <td>
+                    <button type="button" className="link-button" onClick={() => onLoadRun(job.job_id)}>
+                      {job.job_id}
+                    </button>
+                    <div className="mono">{job.job_type}</div>
+                  </td>
+                  <td>
+                    <StatusPill status={jobStatus(job)} label={job.status} />
+                  </td>
+                  <td className="mono">{job.trace_id || "none"}</td>
+                  <td>{job.updated_at}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4}>还没有 eval run。</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

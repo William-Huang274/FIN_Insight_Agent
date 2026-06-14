@@ -99,6 +99,27 @@ def main() -> None:
         events = request_json(f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}/events?limit=500")
         if completed["status"] != args.expected_status:
             raise RuntimeError(f"task status {completed['status']} != expected {args.expected_status}: {completed.get('error_message')}")
+        resume_result = None
+        sse_event_count = 0
+        if args.check_resume_sse:
+            resumed = request_json(
+                f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}/resume",
+                method="POST",
+                expected_status=202,
+            )
+            if resumed["status"] != "PENDING" or int(resumed.get("progress", -1)) != 0:
+                raise RuntimeError(f"resume did not reset task to pending: {resumed}")
+            subprocess.run(worker_args, cwd=REPO_ROOT, check=True)
+            resume_result = request_json(f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}")
+            if resume_result["status"] != args.expected_status:
+                raise RuntimeError(f"resumed task status {resume_result['status']} != expected {args.expected_status}: {resume_result.get('error_message')}")
+            sse = request_text(
+                f"http://127.0.0.1:{port}/api/research/tasks/{task['task_id']}/events?limit=500",
+                accept="text/event-stream",
+            )
+            sse_event_count = sse.count("event: task-event")
+            if "event: heartbeat" not in sse or sse_event_count < 1:
+                raise RuntimeError(f"SSE event stream missing expected events: {sse[:500]}")
         print(
             json.dumps(
                 {
@@ -106,7 +127,9 @@ def main() -> None:
                     "store_mode": args.store_mode,
                     "queue_mode": args.queue_mode,
                     "task": completed,
+                    "resume_task": resume_result,
                     "event_count": len(events.get("events") or []),
+                    "sse_event_count": sse_event_count,
                     "latest_events": (events.get("events") or [])[-5:],
                 },
                 ensure_ascii=True,
@@ -167,6 +190,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--bge-device", default=os.environ.get("BGE_DEVICE", "cpu"))
     parser.add_argument("--token-budget-pressure", action="store_true")
     parser.add_argument("--expected-status", choices=("SUCCESS", "FAILED", "CANCELLED"), default="SUCCESS")
+    parser.add_argument("--check-resume-sse", action="store_true")
     return parser.parse_args()
 
 
@@ -177,6 +201,20 @@ def request_json(url: str, *, method: str = "GET", payload: dict | None = None, 
         if response.status != expected_status:
             raise RuntimeError(f"unexpected_status: {response.status}")
         return json.loads(response.read().decode("utf-8"))
+
+
+def request_text(url: str, *, method: str = "GET", payload: dict | None = None, accept: str = "text/plain", expected_status: int = 200) -> str:
+    data = json.dumps(payload).encode("utf-8") if payload is not None else None
+    request = urllib.request.Request(
+        url,
+        data=data,
+        method=method,
+        headers={"Accept": accept, "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(request, timeout=10) as response:
+        if response.status != expected_status:
+            raise RuntimeError(f"unexpected_status: {response.status}")
+        return response.read().decode("utf-8")
 
 
 def wait_for_health(port: int, *, gateway_log_path: Path) -> None:

@@ -112,6 +112,26 @@
   max-width: none;
 }
 
+.eval-dashboard {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.link-button {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-strong);
+  font-weight: 720;
+  text-align: left;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
 .session-turn-list {
   display: grid;
   gap: 8px;

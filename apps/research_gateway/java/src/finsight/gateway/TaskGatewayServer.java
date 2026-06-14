@@ -82,6 +82,11 @@ public final class TaskGatewayServer {
                 handleCancelTask(exchange, taskId);
                 return;
             }
+            if (suffix.startsWith("/") && "POST".equals(method) && suffix.endsWith("/resume")) {
+                String taskId = suffix.substring(1, suffix.length() - "/resume".length());
+                handleResumeTask(exchange, taskId);
+                return;
+            }
             if ("GET".equals(method) && suffix.startsWith("/")) {
                 String taskId = suffix.substring(1);
                 if (taskId.contains("/")) {
@@ -137,12 +142,26 @@ public final class TaskGatewayServer {
         for (TaskEvent event : store.listEvents(taskId, afterSequence, limit)) {
             rows.add(event.toMap());
         }
+        String accept = exchange.getRequestHeaders().getFirst("Accept");
+        if (accept != null && accept.contains("text/event-stream")) {
+            sendSse(exchange, rows);
+            return;
+        }
         send(exchange, 200, Map.of("task_id", taskId, "events", rows));
     }
 
     private void handleCancelTask(HttpExchange exchange, String taskId) throws Exception {
         ResearchTask task = store.updateStatus(taskId, "CANCEL_REQUESTED", "cancel requested");
         store.appendEvent(taskId, "system", "cancel requested", task.traceId);
+        send(exchange, 202, task.toMap());
+    }
+
+    private void handleResumeTask(HttpExchange exchange, String taskId) throws Exception {
+        ResearchTask existing = store.get(taskId).orElseThrow(() -> new IllegalArgumentException("task_not_found: " + taskId));
+        ResearchTask task = store.updateStatus(taskId, "PENDING", "");
+        String callback = callbackBase(exchange) + "/api/research/tasks/" + task.taskId + "/worker-events";
+        queue.publish(task.taskId, JsonUtil.write(existing.queuePayload(callback)));
+        store.appendEvent(taskId, "system", "resume requested and task re-queued via " + config.queueMode, task.traceId);
         send(exchange, 202, task.toMap());
     }
 
@@ -234,6 +253,23 @@ public final class TaskGatewayServer {
         byte[] bytes = JsonUtil.write(payload).getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(status, bytes.length);
+        try (OutputStream out = exchange.getResponseBody()) {
+            out.write(bytes);
+        }
+    }
+
+    private static void sendSse(HttpExchange exchange, List<Map<String, Object>> events) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        for (Map<String, Object> event : events) {
+            builder.append("event: task-event\n");
+            builder.append("data: ").append(JsonUtil.write(event)).append("\n\n");
+        }
+        builder.append("event: heartbeat\n");
+        builder.append("data: {\"status\":\"ok\"}\n\n");
+        byte[] bytes = builder.toString().getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", "text/event-stream; charset=utf-8");
+        exchange.getResponseHeaders().set("Cache-Control", "no-cache");
+        exchange.sendResponseHeaders(200, bytes.length);
         try (OutputStream out = exchange.getResponseBody()) {
             out.write(bytes);
         }

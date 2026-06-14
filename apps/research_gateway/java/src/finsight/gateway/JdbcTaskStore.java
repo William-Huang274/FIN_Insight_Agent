@@ -139,13 +139,16 @@ final class JdbcTaskStore implements TaskStore {
              PreparedStatement stmt = conn.prepareStatement(
                      """
                      update research_tasks
-                     set status = ?, error_message = ?, updated_at = ?
+                     set status = ?, progress = ?, memo_text = ?, evidence_json = ?, error_message = ?, updated_at = ?
                      where task_id = ?
                      """)) {
             stmt.setString(1, updated.status);
-            stmt.setString(2, updated.errorMessage);
-            stmt.setString(3, updated.updatedAt);
-            stmt.setString(4, updated.taskId);
+            stmt.setInt(2, updated.progress);
+            stmt.setString(3, updated.memo);
+            stmt.setString(4, JsonUtil.write(updated.evidence));
+            stmt.setString(5, updated.errorMessage);
+            stmt.setString(6, updated.updatedAt);
+            stmt.setString(7, updated.taskId);
             stmt.executeUpdate();
         }
         return updated;

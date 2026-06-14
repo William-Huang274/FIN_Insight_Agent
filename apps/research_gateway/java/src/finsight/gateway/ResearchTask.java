@@ -101,6 +101,8 @@ final class ResearchTask {
 
     ResearchTask withGatewayStatus(String status, String errorMessage) {
         String now = Instant.now().toString();
+        String nextStatus = firstText(status, this.status).trim().toUpperCase();
+        boolean resetForResume = "PENDING".equals(nextStatus);
         return new ResearchTask(
                 taskId,
                 traceId,
@@ -108,11 +110,11 @@ final class ResearchTask {
                 userId,
                 caseId,
                 mode,
-                firstText(status, this.status).trim().toUpperCase(),
-                progress,
-                memo,
-                evidence,
-                firstText(errorMessage, this.errorMessage),
+                nextStatus,
+                resetForResume ? 0 : progress,
+                resetForResume ? "" : memo,
+                resetForResume ? List.of() : evidence,
+                resetForResume ? "" : firstText(errorMessage, this.errorMessage),
                 metadata,
                 createdAt,
                 now);

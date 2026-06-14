@@ -19,6 +19,7 @@
 - [10 后端 / 前端 Runtime 升级框架](10_backend_frontend_runtime_framework.zh-CN.md)：吸收两份后端规划文档，把 FinSight 从本地 agent / Workbench eval 推进到 API、Redis queue、worker pool、SSE、DB persistence、Docker Compose、前端 trace/report viewer 和 Java/Spring Boot 可选外壳。
 - [11 Agent Eval Runtime 闭环框架](11_agent_eval_runtime_framework.zh-CN.md)：审计现有 docs/eval、scripts/eval、fixtures、run_audit_store、LangGraph checkpoint、LLM token/latency 和 model run ledger，设计统一 Eval Registry、Dataset Lifecycle、Node/Chain Evaluators、Failure/Gold 状态机、后端 SQL eval store 和前端 eval dashboard。
 - [12 09-11 闭环后一体化执行计划](12_integrated_execution_plan.zh-CN.md)：不按 09/10/11 分别排期，而是按 P0-P10 功能切片把 Python agent、后端/前端、Eval Runtime、同步/异步协作、Java shell 可选路线和通过门控编排成下一阶段执行顺序。
+- [13 09-11 剩余工作全量拆分与完成合同](13_09_11_remaining_full_completion_plan.zh-CN.md)：把 09/10/11 尚未完全落地的 L/B/F/EV/P 项合并成 R0-R12 可执行步骤，明确 SQL/Redis/ObjectStore、Eval Runtime、Milvus/Data Gates、ContextEngine、Lead supervised loop、specialist packs、Memo/Verifier、后端/前端和 full-chain release gate 的通过条件、云端依赖和禁止降级规则。
 
 ## 总原则
 
@@ -29,3 +30,4 @@
 5. Specialist 并行消费 frozen evidence bundle，输出 claim cards；memo writer 只消费 verified judgment / claim cards。
 6. Milvus 是 typed semantic recall supplement，不替代 BM25/ObjectBM25/exact ledger，也不成为 exact-value authority。
 7. Eval 是 runtime 的一部分；每次 run 都必须可追溯到 case / dataset / node metrics / context / evidence / claim / gate / failure taxonomy。
+8. 09-11 的完成口径以 13 文档的 R0-R12 gate 为准；后续新增问题必须归入某个 gate 的失败/补项，不能成为未记录的隐性 backlog。

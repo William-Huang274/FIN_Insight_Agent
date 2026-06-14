@@ -663,14 +663,19 @@
 ## Integrated 09-11 Execution Plan
 
 - [x] P0-plan: Document the integrated P0-P10 execution plan after 09/10/11 so Python agent, backend/frontend, and eval work advance by functional slice rather than by separate documents.
-- [ ] P0: Freeze baseline and build Eval Registry / B0 backend route decision.
-- [ ] P1: Implement Run / Audit Foundation before major graph changes.
-- [ ] P2: Add Eval Store and failure/gold skeleton.
-- [ ] P3: Add Context Runtime v0 and context injection replay gate.
-- [ ] P4: Add retrieval/rerank/role-visible ledgers plus BGE/resource/model scheduler gates.
-- [ ] P5: Implement ResearchObjectiveContract, LeadReviewCheckpoint, TargetedRepairPlan, and repair delta audit.
-- [ ] P6: Implement Tool Capability Registry and Document / Multimodal Input Pipeline with parser/provenance gates.
-- [ ] P7: Implement MemoLogicPlan, dimension-first memo surface, and verifier loop boundaries.
-- [ ] P8: Add frontend / Workbench trace and eval dashboard surfaces.
-- [ ] P9: Add Redis queue, worker pool, SSE, cancel/resume, load tests, and optional Spring Boot API shell.
-- [ ] P10: Add full-chain regression, online eval, failure lifecycle, and gold lifecycle governance.
+- [x] P0-P9 operational bridge slice: complete Java Task Gateway / Python bridge worker / SQL eval store skeleton / resource scheduler / path registry / Workbench bridge smoke to the current P-series gates; this does not equal full 09-11 product completion.
+- [ ] P10 full-chain regression and online eval remain pending and are now governed by R12 below.
+- [x] R-plan: Document the 09-11 remaining full completion contract in `agent_graph_vnext/13_09_11_remaining_full_completion_plan.zh-CN.md`; use R0-R12 as the authoritative no-hidden-backlog checklist.
+- [ ] R0: Freeze baseline / cloud readiness / path registry / resource inventory before cloud handoff.
+- [ ] R1: Finish SQL / Redis / ObjectStore audit foundation so run, node, tool, model, evidence, claim, gap, gate, context, artifact, and eval rows are replayable without per-run JSON fallback.
+- [ ] R2: Implement Eval Registry, dataset versioning, failure lifecycle, gold lifecycle, and LLM-as-judge audit tables.
+- [ ] R3: Implement data/index/Milvus/parser/chunker/table quality gates, including cloud Milvus 603-company parity after the server is opened.
+- [ ] R4: Implement ContextEngine / Memory Runtime with replayable injection plans, memory state governance, and memory-to-ledger drilldown parity.
+- [ ] R5: Implement retrieval/rerank/role-visible ledgers, role-specific quotas, CUDA BGE queue, CPU spillover, ModelRouter, and AgentCoalescer.
+- [ ] R6: Implement Tool Capability Registry plus document/multimodal input pipeline and renderer/tool permission boundaries.
+- [ ] R7: Implement ResearchObjectiveContract, LeadReviewCheckpoint, TargetedRepairPlan, and targeted repair delta audit.
+- [ ] R8: Implement specialist packs and role-specific evidence selectors for fundamental, product/technology, market/valuation, capital/ownership/macro, and risk/counter-thesis.
+- [ ] R9: Implement JudgmentState / MemoLogicPlan / Memo Writer / Verifier release-grade surface and gates.
+- [ ] R10: Productize Java/Spring or Java shell API, Redis queue, worker pool, SSE, cancel/resume/retry/heartbeat, Docker Compose, and SLA/load tests.
+- [ ] R11: Build frontend / Workbench trace, report, context, evidence, ClaimCard, gap, and eval dashboard surfaces.
+- [ ] R12: Run full-chain regression, online eval skeleton, failure/gold promotion flow, and release readiness report after R1-R11 gates pass.

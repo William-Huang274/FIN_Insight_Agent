@@ -31,6 +31,8 @@
 - Milvus 仍为 `unbound_cloud_deferred` semantic supplement，未重建 603 家公司云端 collection。
 - Spring Boot parity、SSE 前端 dashboard、高并发压测仍属于下一阶段后端产品化工作。
 
+后续完成口径已在 [13 09-11 剩余工作全量拆分与完成合同](13_09_11_remaining_full_completion_plan.zh-CN.md) 中收敛为 R0-R12。本文 P0-P10 保留为阶段来源和历史执行顺序；从 2026-06-14 起，09-11 的未完成项、云端依赖和通过门控以 13 文档为准。
+
 ## 核心原则
 
 下一阶段目标不是“多加几个 agent 节点”或“单独做一个 Java 后端”，而是形成一个可审计的投研 Agent Runtime：

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "R53-R60 S0 Unified Backlog DemandTicket",
+  "schema_version": "r53_r60_s0_unified_backlog_v0_1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "demand_id",
+    "slice_id",
+    "capability_domain",
+    "source_docs",
+    "objective",
+    "scope",
+    "non_goals",
+    "dependencies",
+    "blocked_by",
+    "intermediate_gates",
+    "closeout_level",
+    "scope_l4_acceptance",
+    "product_acceptance",
+    "engineering_acceptance",
+    "quality_acceptance",
+    "ops_acceptance",
+    "tests",
+    "gate_artifacts",
+    "rollback",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "Required S0 DemandTicket field: schema_version"
+    },
+    "demand_id": {
+      "description": "Required S0 DemandTicket field: demand_id"
+    },
+    "slice_id": {
+      "description": "Required S0 DemandTicket field: slice_id"
+    },
+    "capability_domain": {
+      "description": "Required S0 DemandTicket field: capability_domain"
+    },
+    "source_docs": {
+      "description": "Required S0 DemandTicket field: source_docs"
+    },
+    "objective": {
+      "description": "Required S0 DemandTicket field: objective"
+    },
+    "scope": {
+      "description": "Required S0 DemandTicket field: scope"
+    },
+    "non_goals": {
+      "description": "Required S0 DemandTicket field: non_goals"
+    },
+    "dependencies": {
+      "description": "Required S0 DemandTicket field: dependencies"
+    },
+    "blocked_by": {
+      "description": "Required S0 DemandTicket field: blocked_by"
+    },
+    "intermediate_gates": {
+      "description": "Required S0 DemandTicket field: intermediate_gates"
+    },
+    "closeout_level": {
+      "description": "Required S0 DemandTicket field: closeout_level"
+    },
+    "scope_l4_acceptance": {
+      "description": "Required S0 DemandTicket field: scope_l4_acceptance"
+    },
+    "product_acceptance": {
+      "description": "Required S0 DemandTicket field: product_acceptance"
+    },
+    "engineering_acceptance": {
+      "description": "Required S0 DemandTicket field: engineering_acceptance"
+    },
+    "quality_acceptance": {
+      "description": "Required S0 DemandTicket field: quality_acceptance"
+    },
+    "ops_acceptance": {
+      "description": "Required S0 DemandTicket field: ops_acceptance"
+    },
+    "tests": {
+      "description": "Required S0 DemandTicket field: tests"
+    },
+    "gate_artifacts": {
+      "description": "Required S0 DemandTicket field: gate_artifacts"
+    },
+    "rollback": {
+      "description": "Required S0 DemandTicket field: rollback"
+    },
+    "status": {
+      "description": "Required S0 DemandTicket field: status"
+    }
+  },
+  "additionalProperties": true,
+  "closeout_rule": {
+    "field": "closeout_level",
+    "required_value": "L4_scope_pass",
+    "intermediate_gates_are_not_closeout": true
+  }
+}

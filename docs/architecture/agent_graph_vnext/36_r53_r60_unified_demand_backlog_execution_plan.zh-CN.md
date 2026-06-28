@@ -168,6 +168,36 @@ Slice closeout：`L4_scope_pass`（backlog / schema / gate matrix 范围）
 
 S0 结束后才开始代码实现。
 
+#### S0 v0.1 implementation closeout
+
+2026-06-29 已把 S0 从规划文本落成 machine-readable backlog / gate artifacts，并达到 S0 范围内的 `L4_scope_pass`。
+
+核心生成物：
+
+- `configs/r53_r60/s0_unified_backlog_schema_v0_1.json`
+- `data/manifests/r53_r60_r_document_inventory_v0_1.jsonl`
+- `data/manifests/r53_r60_demand_map_v0_1.jsonl`
+- `data/manifests/r53_r60_implementation_tasks_v0_1.jsonl`
+- `data/manifests/r53_r60_pass_level_gate_matrix_v0_1.jsonl`
+- `data/manifests/r53_r60_release_board_v0_1.jsonl`
+- `data/manifests/r53_r60_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_unified_backlog_summary_v0_1.json`
+- `data/workbench_private/research_data/r53_r60_unified_backlog_v0_1.sqlite`
+- `docs/internal/vnext_20260610/r53_r60_s0_unified_backlog_l4_scope_pass.zh-CN.md`
+
+本次真实构建结果：
+
+- active source docs：`12/12` 存在；
+- R0-R49 baseline inventory：`99` 条；
+- demand tickets：`61` 条；
+- implementation tasks：`183` 条；
+- release slices：`11` 条；
+- S0 gate rows：`12 pass / 0 fail`；
+- closeout：`S0_L4_scope_pass`；
+- next slice unlocked：`S1`。
+
+边界：S0 只证明 backlog / schema / release board / pass-level matrix / gate artifact 在自身范围达到 enterprise-grade，可被 S1 依赖；不代表全产品达到 `L4_production_pass`。
+
 ### S1 Runtime Task Spine
 
 目标：建立任务主账本，让所有后续功能都有统一 run state、event、artifact、trace anchor。

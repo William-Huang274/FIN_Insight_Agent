@@ -1,0 +1,35 @@
+{
+  "schema_version": "r53_r60_s0_unified_backlog_v0_1",
+  "generated_at": "2026-06-28T17:39:37Z",
+  "status": "pass",
+  "release_decision": "S0_L4_scope_pass",
+  "closeout_level": "L4_scope_pass",
+  "counts": {
+    "active_source_docs": 12,
+    "active_source_docs_missing": 0,
+    "legacy_r0_r49_baseline_docs": 99,
+    "demand_count": 61,
+    "implementation_task_count": 183,
+    "release_slice_count": 11,
+    "gate_count": 12,
+    "gate_fail_count": 0
+  },
+  "outputs": {
+    "schema": "configs/r53_r60/s0_unified_backlog_schema_v0_1.json",
+    "r_document_inventory": "data/manifests/r53_r60_r_document_inventory_v0_1.jsonl",
+    "r_document_demand_map": "data/manifests/r53_r60_demand_map_v0_1.jsonl",
+    "implementation_tasks": "data/manifests/r53_r60_implementation_tasks_v0_1.jsonl",
+    "pass_level_gate_matrix": "data/manifests/r53_r60_pass_level_gate_matrix_v0_1.jsonl",
+    "release_board": "data/manifests/r53_r60_release_board_v0_1.jsonl",
+    "gate_rows": "data/manifests/r53_r60_gate_rows_v0_1.jsonl",
+    "summary": "data/manifests/r53_r60_unified_backlog_summary_v0_1.json",
+    "sqlite_mirror": "data/workbench_private/research_data/r53_r60_unified_backlog_v0_1.sqlite",
+    "closeout_report": "docs/internal/vnext_20260610/r53_r60_s0_unified_backlog_l4_scope_pass.zh-CN.md"
+  },
+  "failed_gates": [],
+  "next_slice_unlocked": "S1",
+  "notes": [
+    "S0 pass means the backlog/gate matrix scope is enterprise-grade; it does not claim full-product production readiness.",
+    "L0/L1/L2/L3 remain intermediate gates only and cannot close a slice."
+  ]
+}

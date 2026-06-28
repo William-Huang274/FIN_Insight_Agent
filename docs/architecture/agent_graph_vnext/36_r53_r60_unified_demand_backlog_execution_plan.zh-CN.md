@@ -264,6 +264,46 @@ Slice closeout：`L4_scope_pass`（tool / sandbox / trace 范围）
 | `U2-D04-tool-invocation-ledger` | R59 / R60 | 工具调用账本 | tool_call_id 能回到 actor、policy、artifact、error |
 | `U2-D05-sandbox-regression` | R60-D13 | 越权/合法工具 deterministic tests | 至少覆盖 forbidden writer fetch、credential/path/network escape |
 
+#### S2 v0.1 implementation closeout
+
+2026-06-29 已把 S2 落成 S1-native `ToolGateway / SandboxPolicy / ApprovalPolicy / ToolInvocationLedger`，并达到 S2 范围内的 `L4_scope_pass`。
+
+核心生成物：
+
+- `src/sec_agent/r53_r60_tool_sandbox_spine.py`
+- `scripts/engineering/build_r53_r60_s2_tool_sandbox_trace_spine.py`
+- `tests/test_r53_r60_tool_sandbox_spine.py`
+- `configs/r53_r60/s2_tool_sandbox_trace_schema_v0_1.json`
+- `data/manifests/r53_r60_s2_tool_sandbox_trace_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_s2_tool_sandbox_trace_summary_v0_1.json`
+- `data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite`
+- `docs/internal/vnext_20260610/r53_r60_s2_tool_sandbox_trace_l4_scope_pass.zh-CN.md`
+
+本次真实构建结果：
+
+- S2 policy tables：`tool_gateway_metadata`、`tool_policy_bindings`、`sandbox_policies`、`approval_policies`、`approval_decisions`、`tool_invocations`；
+- tool policy bindings：`6`；
+- sandbox policies：`5`；
+- approval policies：`6`；
+- S2 dogfood tool invocations：`9`，其中 allowed / blocked 都进入 ledger；
+- approval decisions：`1`；
+- S2 gate rows：`12 pass / 0 fail`；
+- closeout：`S2_L4_scope_pass`；
+- next slice unlocked：`S3`。
+
+本轮 gate 覆盖：
+
+- writer 不能调用 retrieval / web；
+- unknown tool fail closed；
+- public web snapshot 必须 domain allowlist；
+- filesystem path 必须 workspace / artifact scoped；
+- credential-like arguments blocked and redacted；
+- 高风险 local analysis / backtest 类工具必须 human approval；
+- allowed tool call 必须产生 artifact ref；
+- allowed / blocked tool call 都必须写入 S1 event / trace，并可被 progress projection 覆盖。
+
+边界：S2 只证明工具权限、sandbox policy、approval gate 和 tool trace / ledger 在自身范围达到 enterprise-grade；本轮不执行真实 web crawling、document parsing、Python analysis 或 quant backtest。S3 后续把 DB/RAG/retrieval/data lineage 的真实工具接入该 ToolGateway。
+
 ### S3 Data / Retrieval / Evidence Spine
 
 目标：把 DB exact、BM25/ObjectBM25、Milvus、graph、web repair、parser rows 变成可审计 retrieval plan，而不是散装查询。

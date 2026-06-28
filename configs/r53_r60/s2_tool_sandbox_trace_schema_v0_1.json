@@ -1,0 +1,257 @@
+{
+  "approval_policies": [
+    {
+      "approval_policy_id": "auto_allow_low_risk",
+      "approval_required": false,
+      "approver_roles": [],
+      "default_action": "allow",
+      "reason": "read-only exact or retrieval query"
+    },
+    {
+      "approval_policy_id": "auto_allow_allowlisted_web",
+      "approval_required": false,
+      "approver_roles": [],
+      "default_action": "allow",
+      "reason": "allowlisted public web snapshot"
+    },
+    {
+      "approval_policy_id": "auto_allow_workspace_file",
+      "approval_required": false,
+      "approver_roles": [],
+      "default_action": "allow",
+      "reason": "workspace-scoped user input parsing"
+    },
+    {
+      "approval_policy_id": "auto_allow_render_only",
+      "approval_required": false,
+      "approver_roles": [],
+      "default_action": "allow",
+      "reason": "render-only artifact generation"
+    },
+    {
+      "approval_policy_id": "requires_human_for_code_execution",
+      "approval_required": true,
+      "approver_roles": [
+        "human_reviewer"
+      ],
+      "default_action": "block_without_approval",
+      "reason": "bounded local code execution"
+    },
+    {
+      "approval_policy_id": "requires_human_for_quant_backtest",
+      "approval_required": true,
+      "approver_roles": [
+        "human_reviewer"
+      ],
+      "default_action": "block_without_approval",
+      "reason": "quant validation can be compute-heavy and must be reviewed"
+    }
+  ],
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "credential_input_forbidden_by_default": true,
+    "fail_closed": true,
+    "filesystem_paths_workspace_scoped": true,
+    "network_requires_allowlist": true,
+    "redis_or_mq_not_final_audit": true,
+    "unknown_tools_blocked": true,
+    "writer_fact_retrieval_forbidden": true
+  },
+  "sandbox_policies": [
+    {
+      "allowed_domains": [],
+      "allowed_path_roots": [
+        "workspace",
+        "temp",
+        "artifact_store"
+      ],
+      "credential_access": "forbidden",
+      "max_output_bytes": 1000000,
+      "max_timeout_ms": 30000,
+      "network_mode": "none",
+      "path_mode": "no_filesystem",
+      "sandbox_policy_id": "local_db_readonly"
+    },
+    {
+      "allowed_domains": [
+        "sec.gov",
+        "company-ir.example",
+        "nvidia.com",
+        "asml.com",
+        "microsoft.com",
+        "amazon.com"
+      ],
+      "allowed_path_roots": [
+        "artifact_store"
+      ],
+      "credential_access": "forbidden",
+      "max_output_bytes": 1000000,
+      "max_timeout_ms": 30000,
+      "network_mode": "allowlist",
+      "path_mode": "artifact_store_only",
+      "sandbox_policy_id": "allowlisted_public_web"
+    },
+    {
+      "allowed_domains": [],
+      "allowed_path_roots": [
+        "workspace",
+        "temp"
+      ],
+      "credential_access": "forbidden",
+      "max_output_bytes": 1000000,
+      "max_timeout_ms": 30000,
+      "network_mode": "none",
+      "path_mode": "workspace_scoped",
+      "sandbox_policy_id": "workspace_file_readonly"
+    },
+    {
+      "allowed_domains": [],
+      "allowed_path_roots": [
+        "artifact_store",
+        "temp"
+      ],
+      "credential_access": "forbidden",
+      "max_output_bytes": 1000000,
+      "max_timeout_ms": 30000,
+      "network_mode": "none",
+      "path_mode": "artifact_store_only",
+      "sandbox_policy_id": "workspace_artifact_write"
+    },
+    {
+      "allowed_domains": [],
+      "allowed_path_roots": [
+        "workspace",
+        "temp",
+        "artifact_store"
+      ],
+      "credential_access": "forbidden",
+      "max_output_bytes": 1000000,
+      "max_timeout_ms": 30000,
+      "network_mode": "none",
+      "path_mode": "workspace_scoped",
+      "sandbox_policy_id": "local_no_network_workspace_temp"
+    }
+  ],
+  "schema_version": "r53_r60_s2_tool_sandbox_trace_spine_v0_1",
+  "status_values": [
+    "allowed",
+    "blocked",
+    "executed",
+    "error"
+  ],
+  "tables": [
+    "tool_gateway_metadata",
+    "tool_policy_bindings",
+    "sandbox_policies",
+    "approval_policies",
+    "approval_decisions",
+    "tool_invocations"
+  ],
+  "tool_definitions": [
+    {
+      "allowed_actors": [
+        "research_lead",
+        "evidence_operator",
+        "fundamental_specialist",
+        "product_specialist",
+        "market_specialist"
+      ],
+      "approval_policy_id": "auto_allow_low_risk",
+      "artifact_type": "tool_result_database_query",
+      "category": "db_rag",
+      "credential_access_allowed": false,
+      "filesystem_required": false,
+      "input_schema": "sql_query_request_v0_1",
+      "network_required": false,
+      "output_schema": "sql_result_artifact_v0_1",
+      "sandbox_policy_id": "local_db_readonly",
+      "source_boundary": "query_results_keep_original_source_authority",
+      "tool_id": "database_query"
+    },
+    {
+      "allowed_actors": [
+        "research_lead",
+        "evidence_operator"
+      ],
+      "approval_policy_id": "auto_allow_allowlisted_web",
+      "artifact_type": "tool_result_web_snapshot",
+      "category": "crawler_browser",
+      "credential_access_allowed": false,
+      "filesystem_required": false,
+      "input_schema": "allowlisted_web_snapshot_request_v0_1",
+      "network_required": true,
+      "output_schema": "web_snapshot_artifact_v0_1",
+      "sandbox_policy_id": "allowlisted_public_web",
+      "source_boundary": "context_only_until_parser_authority_gate",
+      "tool_id": "live_web_snapshot"
+    },
+    {
+      "allowed_actors": [
+        "input_parser",
+        "research_lead"
+      ],
+      "approval_policy_id": "auto_allow_workspace_file",
+      "artifact_type": "tool_result_document_parser",
+      "category": "parser_render",
+      "credential_access_allowed": false,
+      "filesystem_required": true,
+      "input_schema": "uploaded_file_ref_v0_1",
+      "network_required": false,
+      "output_schema": "parsed_document_artifact_v0_1",
+      "sandbox_policy_id": "workspace_file_readonly",
+      "source_boundary": "user_provided_context_until_parser_gate",
+      "tool_id": "document_parser"
+    },
+    {
+      "allowed_actors": [
+        "memo_writer",
+        "report_renderer",
+        "deliverable_composer"
+      ],
+      "approval_policy_id": "auto_allow_render_only",
+      "artifact_type": "tool_result_report_renderer",
+      "category": "deliverable_renderer",
+      "credential_access_allowed": false,
+      "filesystem_required": true,
+      "input_schema": "verified_memo_payload_v0_1",
+      "network_required": false,
+      "output_schema": "rendered_report_artifact_v0_1",
+      "sandbox_policy_id": "workspace_artifact_write",
+      "source_boundary": "render_only_no_new_facts",
+      "tool_id": "report_renderer"
+    },
+    {
+      "allowed_actors": [
+        "research_lead",
+        "quant_worker"
+      ],
+      "approval_policy_id": "requires_human_for_code_execution",
+      "artifact_type": "tool_result_python_analysis",
+      "category": "analysis_runtime",
+      "credential_access_allowed": false,
+      "filesystem_required": true,
+      "input_schema": "bounded_python_analysis_request_v0_1",
+      "network_required": false,
+      "output_schema": "analysis_artifact_v0_1",
+      "sandbox_policy_id": "local_no_network_workspace_temp",
+      "source_boundary": "analysis_on_verified_inputs_only",
+      "tool_id": "python_analysis"
+    },
+    {
+      "allowed_actors": [
+        "quant_worker"
+      ],
+      "approval_policy_id": "requires_human_for_quant_backtest",
+      "artifact_type": "tool_result_backtest_runner",
+      "category": "quant_runtime",
+      "credential_access_allowed": false,
+      "filesystem_required": true,
+      "input_schema": "factor_backtest_plan_v0_1",
+      "network_required": false,
+      "output_schema": "backtest_result_artifact_v0_1",
+      "sandbox_policy_id": "local_no_network_workspace_temp",
+      "source_boundary": "research_to_quant_validation_only_no_trading",
+      "tool_id": "backtest_runner"
+    }
+  ]
+}

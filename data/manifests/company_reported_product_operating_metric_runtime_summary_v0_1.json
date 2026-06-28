@@ -1,0 +1,34 @@
+{
+  "claim_boundary": "Rows may support company-disclosed product KPI facts only for the disclosed product/segment, metric, period, unit, value, and cited filing span. They do not prove market share, channel inventory, sell-through, undisclosed SKU economics, or commercial tracker estimates.",
+  "coverage_gate_status": "pass",
+  "exact_runtime_row_count": 6199,
+  "generated_at": "2026-06-19T08:31:32Z",
+  "input_fact_count": 6199,
+  "metric_family_counts": {
+    "backlog_or_orders": 6,
+    "product_revenue": 5905,
+    "production_or_throughput": 239,
+    "subscribers_or_arpu": 2,
+    "unit_sales_or_deliveries": 47
+  },
+  "outputs": {
+    "coverage_gate": "D:\\FIN_Insight_Agent\\data\\manifests\\company_reported_product_operating_metric_runtime_coverage_gate_v0_1.json",
+    "rejections": "D:\\FIN_Insight_Agent\\data\\manifests\\company_reported_product_operating_metric_runtime_rejections_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\company_reported_product_operating_metric_runtime_rows_v0_1.jsonl"
+  },
+  "rejection_count": 0,
+  "rejection_reason_counts": {},
+  "repair_promotion_status_counts": {
+    "baseline_parser_verified": 5922,
+    "monotonic_repair_promoted": 268,
+    "operating_metric_repair_promoted": 9
+  },
+  "requirement_statuses": {
+    "official_product_surface": "pass",
+    "primary_company_disclosure": "pass"
+  },
+  "runtime_row_count": 6199,
+  "runtime_ticker_count": 214,
+  "schema_version": "fin_agent_company_reported_product_operating_metric_runtime_summary_v0_1",
+  "status": "pass"
+}

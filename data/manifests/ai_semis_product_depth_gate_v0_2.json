@@ -1,0 +1,53 @@
+{
+  "company_count": 53,
+  "depth_status_counts": {
+    "pass": 53
+  },
+  "gap_queue_count": 0,
+  "gap_reason_counts": {
+    "customer_deployment_adoption:no_public_runtime_row": 10,
+    "customer_deployment_adoption:route_or_seed_available_but_no_runtime_row": 1,
+    "product_kpi_exact:route_or_seed_available_but_no_runtime_row": 13,
+    "product_performance_proxy:no_public_runtime_row": 1,
+    "product_performance_proxy:route_or_seed_available_but_no_runtime_row": 26,
+    "product_spec_architecture:no_public_runtime_row": 7,
+    "product_spec_architecture:route_or_seed_available_but_no_runtime_row": 16
+  },
+  "gate_policy": {
+    "main_depth_pass": "profile plus at least two independent non-profile evidence roles, or profile-depth plus exact KPI when public sources expose product/business performance but not specs/deployment.",
+    "memo_boundary": "Memo may use non-financial product evidence for bounded thesis drivers, not exact financial promotion.",
+    "route_gate_boundary": "route-only, seed-only, and not-materialized roles never count as evidence depth.",
+    "strict_depth_pass": "profile plus at least four evidence roles and a relationship/adoption/proxy path; exact Product-KPI remains a separate strict row."
+  },
+  "generated_at": "2026-06-27T06:50:04Z",
+  "layer_status_counts": {
+    "customer_deployment_adoption": {
+      "absent": 11,
+      "evidence_ready": 42
+    },
+    "product_kpi_exact": {
+      "absent": 13,
+      "exact_or_operating_metric_ready": 40
+    },
+    "product_performance_proxy": {
+      "absent": 27,
+      "evidence_ready": 26
+    },
+    "product_profile": {
+      "detailed_profile_ready": 53
+    },
+    "product_relationship_graph": {
+      "evidence_ready": 53
+    },
+    "product_spec_architecture": {
+      "absent": 23,
+      "evidence_ready": 30
+    }
+  },
+  "representative_gap_tickers": [],
+  "schema_version": "finsight_ai_semis_product_depth_gate_v0_2",
+  "status": "pass",
+  "strict_depth_status_counts": {
+    "pass": 53
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "case_id": "app_marketplace_context_backfill_smoke",
+  "exact_authority_violations": [],
+  "gaps": [],
+  "generated_at": "2026-06-17T09:55:19Z",
+  "industry_schema": "software_saas",
+  "phase": "runtime_case",
+  "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+  "requested_industry_schema": "software_saas",
+  "requirements": [
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "not_bound": 11
+        },
+        "issuer_binding_status": {
+          "issuer_mentioned_in_snapshot": 11
+        },
+        "product_binding_status": {
+          "product_mentioned_in_snapshot": 11
+        }
+      },
+      "by_source_status": {
+        "runtime_ready_context": 1
+      },
+      "claim_boundary": "App rank/review/download proxy only; not app revenue or company market share.",
+      "dimension": "product_and_production",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 11,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L3"
+      ],
+      "next_action": "Resolve app-to-issuer mapping and snapshot ranking/review metadata.",
+      "observed_row_count": 11,
+      "observed_source_classes": [
+        "official_app_store_or_marketplace"
+      ],
+      "observed_structured_context_types": [
+        "app_store_marketplace_context"
+      ],
+      "parser_row_count": 11,
+      "phase": "runtime_case",
+      "ready_source_count": 1,
+      "requirement_id": "app_rank_store_proxy",
+      "route_candidate_source_count": 1,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "app_store_rankings"
+      ],
+      "source_profile_count": 1,
+      "specialist_roles": [
+        "product_technology_analyst",
+        "market_valuation_analyst"
+      ],
+      "specialist_visible_row_count": 22,
+      "status": "pass"
+    }
+  ],
+  "schema_version": "finsight_source_coverage_gate_v0_1",
+  "status": "pass",
+  "summary": {
+    "by_dimension": {
+      "product_and_production": 1
+    },
+    "by_status": {
+      "pass": 1
+    },
+    "exact_authority_violation_count": 0,
+    "fail_requirement_count": 0,
+    "gap_requirement_count": 0,
+    "pass_requirement_count": 1,
+    "requirement_count": 1
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+    "status": "pass"
+  }
+}

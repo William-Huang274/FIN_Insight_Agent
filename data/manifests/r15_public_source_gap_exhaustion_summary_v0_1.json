@@ -1,0 +1,37 @@
+{
+  "by_stage": {
+    "r15_1": 108,
+    "r15_2": 139,
+    "r15_3": 238
+  },
+  "by_terminal_state": {
+    "final_public_boundary": 246,
+    "not_applicable": 1,
+    "rerouted": 238
+  },
+  "generated_at": "2026-06-20T18:06:29Z",
+  "open_gap_by_cluster": {},
+  "open_gap_by_stage": {},
+  "open_gap_count": 0,
+  "outputs": {
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\vertical_lanes\\r15_public_source_gap_exhaustion.zh-CN.md",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\r15_public_source_gap_exhaustion_ledger_v0_1.jsonl"
+  },
+  "pending_gap_by_cluster": {},
+  "pending_gap_by_stage": {},
+  "pending_gap_count": 0,
+  "product_kpi_row_count": 377,
+  "r15_1_open_gap_count": 0,
+  "r15_1_pending_gap_count": 0,
+  "r15_2_open_gap_count": 0,
+  "r15_2_pending_gap_count": 0,
+  "r15_3_open_gap_count": 0,
+  "r15_3_pending_gap_count": 0,
+  "r15_4_open_gap_count": 0,
+  "r15_4_pending_gap_count": 0,
+  "row_count": 485,
+  "schema_version": "finsight_r15_public_source_gap_exhaustion_summary_v0_1",
+  "source_role_open_gap_without_attempt_count": 0,
+  "source_role_row_count": 108,
+  "status": "pass"
+}

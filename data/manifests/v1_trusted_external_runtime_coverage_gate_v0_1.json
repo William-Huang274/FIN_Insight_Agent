@@ -1,0 +1,86 @@
+{
+  "case_id": "v1_trusted_external_industry_association_backfill",
+  "exact_authority_violations": [],
+  "gaps": [],
+  "generated_at": "2026-06-17T11:56:17Z",
+  "industry_schema": "semiconductors_hardware",
+  "phase": "runtime_case",
+  "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+  "requested_industry_schema": "semiconductors_hardware",
+  "requirements": [
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "not_bound": 30
+        },
+        "issuer_binding_status": {
+          "lane_context_not_issuer_bound": 30
+        },
+        "product_binding_status": {
+          "product_mentioned_in_snapshot": 30
+        }
+      },
+      "by_source_status": {
+        "not_registered": 2,
+        "runtime_ready_context": 1
+      },
+      "claim_boundary": "Trusted event, management-statement, and industry context only; not company exact values unless independently authoritative.",
+      "dimension": "competition_and_market_position",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 30,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L2"
+      ],
+      "next_action": "Use trusted publisher or official association routes before declaring external context unavailable.",
+      "observed_row_count": 30,
+      "observed_source_classes": [
+        "industry_association_dataset"
+      ],
+      "observed_structured_context_types": [
+        "market_proxy_context",
+        "trusted_industry_association_context"
+      ],
+      "parser_row_count": 30,
+      "phase": "runtime_case",
+      "ready_source_count": 1,
+      "requirement_id": "trusted_external_context",
+      "route_candidate_source_count": 1,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "mainstream_financial_news",
+        "industry_association_reports",
+        "official_social_accounts"
+      ],
+      "source_profile_count": 3,
+      "specialist_roles": [
+        "market_valuation_analyst",
+        "risk_counterevidence_analyst",
+        "industry_supply_chain_analyst"
+      ],
+      "specialist_visible_row_count": 90,
+      "status": "pass"
+    }
+  ],
+  "schema_version": "finsight_source_coverage_gate_v0_1",
+  "status": "pass",
+  "summary": {
+    "by_dimension": {
+      "competition_and_market_position": 1
+    },
+    "by_status": {
+      "pass": 1
+    },
+    "exact_authority_violation_count": 0,
+    "fail_requirement_count": 0,
+    "gap_requirement_count": 0,
+    "pass_requirement_count": 1,
+    "requirement_count": 1
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+    "status": "pass"
+  }
+}

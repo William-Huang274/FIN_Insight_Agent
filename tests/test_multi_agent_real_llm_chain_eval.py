@@ -142,6 +142,7 @@ def test_multi_agent_real_llm_chain_dry_run_resolves_catalog_subset(tmp_path: Pa
     assert len(expanded) == 12
     assert all(row["require_vnext_contract"] for row in expanded)
     assert all(row["expected_execution_mode"] == "deep_research" for row in expanded)
+    assert all(row["require_investment_memo_quality"] for row in expanded)
 
 
 def test_multi_agent_real_llm_chain_reads_milvus_runtime_config_env(
@@ -176,6 +177,261 @@ def test_multi_agent_real_llm_chain_reads_milvus_runtime_config_env(
     assert context["milvus_runtime"]["status"] == "available"
     assert context["milvus_runtime"]["location"] == "local"
     assert context["milvus_runtime"]["fallback_routes"] == ["bm25", "object_bm25", "exact_value_ledger"]
+
+
+def test_real_llm_chain_resource_policy_serializes_local_cuda_fanout() -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--bge-device", "cuda", "--context-runner", "in_process"])
+
+    policy = module._evidence_operator_resource_policy(args)
+
+    assert module._resolved_evidence_operator_fanout_workers(args) == 1
+    assert policy["policy_name"] == "local_cuda_serial_bge_queue"
+    assert policy["evidence_operator_fanout_workers"] == 1
+
+
+def test_real_llm_chain_resource_policy_queues_auto_subprocess_bge_fanout() -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--bge-device", "auto", "--context-runner", "subprocess"])
+
+    policy = module._evidence_operator_resource_policy(args)
+
+    assert module._resolved_evidence_operator_fanout_workers(args) == 2
+    assert policy["policy_name"] == "local_bge_subprocess_queue"
+    assert policy["evidence_operator_fanout_workers"] == 2
+
+
+def test_real_llm_chain_resource_policy_honors_explicit_fanout_workers() -> None:
+    module = _load_script_module()
+    args = module.parse_args(
+        [
+            "--bge-device",
+            "cuda",
+            "--context-runner",
+            "in_process",
+            "--evidence-operator-fanout-workers",
+            "3",
+        ]
+    )
+
+    policy = module._evidence_operator_resource_policy(args)
+
+    assert module._resolved_evidence_operator_fanout_workers(args) == 3
+    assert policy["policy_name"] == "explicit"
+    assert policy["requested_evidence_operator_fanout_workers"] == 3
+
+
+def test_supervising_analyst_pack_gate_required_for_deep_investment_cases() -> None:
+    module = _load_script_module()
+    case = {
+        "expected_execution_mode": "deep_research",
+        "require_investment_memo_quality": True,
+    }
+    result = {
+        "supervising_analyst_pack": {
+            "validation": {"status": "pass"},
+            "financial_analysis_model": {"key_line_items": [{"ticker": "DELL"}]},
+            "product_bridge_pack": {"company_disclosed_product_kpis": [{"ticker": "DELL"}]},
+            "capital_transmission_graph": {"edges": [{"source": "GOOGL", "target": "AI infrastructure demand pool"}]},
+            "research_lead_synthesis_plan": {
+                "core_judgment": "Qualified positive readthrough.",
+                "writer_directives": ["Open with judgment."],
+            },
+        },
+        "multi_agent_summary": {"supervising_analyst_pack": {"status": "pass"}},
+    }
+
+    audit = module._supervising_analyst_pack_checks(case, result=result)
+
+    assert audit["required"] is True
+    assert audit["status"] == "pass"
+    assert all(audit["checks"].values())
+
+
+def test_source_layer_capability_gate_accepts_visible_l2_l3_l4_audit() -> None:
+    module = _load_script_module()
+    case = {"require_source_layer_capability_audit": True}
+    result = {
+        "source_layer_capability_audit": {
+            "schema_version": "finsight_source_layer_capability_audit_v0_1",
+            "status": "loaded",
+            "rows": [
+                {
+                    "source_id": "company_product_pages",
+                    "layer_id": "L2",
+                    "evidence_graph_status": "structured_not_promoted",
+                    "context_or_proxy_allowed": True,
+                    "exact_value_authority_ready": False,
+                    "can_support_company_exact_fact": False,
+                },
+                {
+                    "source_id": "ecommerce_major_platforms",
+                    "layer_id": "L3",
+                    "evidence_graph_status": "not_registered",
+                    "context_or_proxy_allowed": False,
+                    "exact_value_authority_ready": False,
+                    "can_support_company_exact_fact": False,
+                },
+                {
+                    "source_id": "unverified_self_media_forums",
+                    "layer_id": "L4",
+                    "evidence_graph_status": "blocked_by_auth_or_policy",
+                    "context_or_proxy_allowed": False,
+                    "exact_value_authority_ready": False,
+                    "can_support_company_exact_fact": False,
+                },
+            ],
+            "summary": {
+                "source_count": 3,
+                "context_or_proxy_allowed_count": 1,
+                "expected_missing_count": 1,
+                "exact_authority_ready_count": 0,
+                "by_layer": {"L2": {"count": 1}, "L3": {"count": 1}, "L4": {"count": 1}},
+                "by_evidence_graph_status": {
+                    "structured_not_promoted": 1,
+                    "not_registered": 1,
+                    "blocked_by_auth_or_policy": 1,
+                },
+            },
+            "validation": {"status": "pass"},
+        }
+    }
+
+    audit = module._source_layer_capability_checks(case, result=result, summary={})
+
+    assert audit["status"] == "pass"
+    assert audit["checks"]["required_layers_visible"] is True
+    assert audit["metrics"]["layer_counts"] == {"L2": 1, "L3": 1, "L4": 1}
+
+
+def test_source_layer_capability_gate_rejects_l3_exact_authority_promotion() -> None:
+    module = _load_script_module()
+    case = {"require_l2_l3_l4_source_audit": True}
+    result = {
+        "source_layer_capability_audit": {
+            "rows": [
+                {
+                    "source_id": "company_product_pages",
+                    "layer_id": "L2",
+                    "evidence_graph_status": "structured_not_promoted",
+                    "context_or_proxy_allowed": True,
+                    "exact_value_authority_ready": False,
+                    "can_support_company_exact_fact": False,
+                },
+                {
+                    "source_id": "ecommerce_major_platforms",
+                    "layer_id": "L3",
+                    "evidence_graph_status": "runtime_ready_context",
+                    "context_or_proxy_allowed": True,
+                    "exact_value_authority_ready": True,
+                    "can_support_company_exact_fact": True,
+                },
+                {
+                    "source_id": "unverified_self_media_forums",
+                    "layer_id": "L4",
+                    "evidence_graph_status": "not_registered",
+                    "context_or_proxy_allowed": False,
+                    "exact_value_authority_ready": False,
+                    "can_support_company_exact_fact": False,
+                },
+            ],
+            "summary": {
+                "source_count": 3,
+                "context_or_proxy_allowed_count": 2,
+                "expected_missing_count": 1,
+                "by_layer": {"L2": {"count": 1}, "L3": {"count": 1}, "L4": {"count": 1}},
+                "by_evidence_graph_status": {"structured_not_promoted": 1, "runtime_ready_context": 1, "not_registered": 1},
+            },
+            "validation": {"status": "fail"},
+        }
+    }
+
+    audit = module._source_layer_capability_checks(case, result=result, summary={})
+
+    assert audit["status"] == "fail"
+    assert audit["checks"]["non_l1_exact_authority_absent"] is False
+    assert audit["metrics"]["non_l1_exact_violation_sources"] == ["ecommerce_major_platforms"]
+
+
+def test_role_source_layer_distribution_gate_accepts_explicit_selector_gap() -> None:
+    module = _load_script_module()
+    case = {
+        "require_role_source_layer_distribution": True,
+        "expected_specialist_agents": ["product_technology_analyst"],
+    }
+    result = {
+        "specialist_fanout_barrier": {
+            "source_layer_distribution": {
+                "schema_version": "finsight_role_source_layer_distribution_v0_1",
+                "status": "gap",
+                "role_count": 1,
+                "failed_roles": [],
+                "gap_roles": ["product_technology_analyst"],
+                "roles": {
+                    "product_technology_analyst": {
+                        "coverage_status": "gap",
+                        "candidate_count": 3,
+                        "selected_count": 2,
+                        "repairable_candidate_count": 2,
+                        "not_registered_count": 1,
+                        "selected_by_layer": {"L1": 1, "L2": 1},
+                        "selected_missing_required_layers": ["L3"],
+                        "exact_authority_violation_sources": [],
+                    }
+                },
+            }
+        },
+        "specialist_route_results": [
+            {
+                "agent_id": "product_technology_analyst",
+                "status": "pass",
+                "source_layer_distribution": {"coverage_status": "gap"},
+            }
+        ],
+    }
+
+    audit = module._role_source_layer_distribution_checks(case, result=result, summary={})
+
+    assert audit["status"] == "pass"
+    assert audit["selector_gap_roles"] == ["product_technology_analyst"]
+    assert audit["checks"]["gap_status_allowed"] is True
+
+
+def test_role_source_layer_distribution_gate_rejects_proxy_exact_promotion() -> None:
+    module = _load_script_module()
+    case = {
+        "require_role_source_layer_distribution": True,
+        "expected_specialist_agents": ["market_valuation_analyst"],
+    }
+    result = {
+        "specialist_fanout_barrier": {
+            "source_layer_distribution": {
+                "schema_version": "finsight_role_source_layer_distribution_v0_1",
+                "status": "fail",
+                "role_count": 1,
+                "failed_roles": ["market_valuation_analyst"],
+                "gap_roles": [],
+                "roles": {
+                    "market_valuation_analyst": {
+                        "coverage_status": "fail",
+                        "candidate_count": 1,
+                        "selected_count": 1,
+                        "repairable_candidate_count": 1,
+                        "not_registered_count": 0,
+                        "selected_by_layer": {"L3": 1},
+                        "selected_missing_required_layers": [],
+                        "exact_authority_violation_sources": ["channel_pricing_quotations"],
+                    }
+                },
+            }
+        }
+    }
+
+    audit = module._role_source_layer_distribution_checks(case, result=result, summary={})
+
+    assert audit["status"] == "fail"
+    assert audit["checks"]["exact_authority_violation_absent"] is False
+    assert audit["exact_authority_violation_roles"] == ["market_valuation_analyst"]
 
 
 def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
@@ -310,6 +566,168 @@ def test_real_llm_chain_diagnostic_quality_accepts_product_and_capex_facts() -> 
     assert score["diagnostic_quality_audit"]["product_evidence_present"] is True
 
 
+def test_real_llm_chain_investment_quality_rejects_gap_ledger_surface() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "investment_quality_gap_ledger",
+        "category": "sector_depth",
+        "response_language": "zh-CN",
+        "require_investment_memo_quality": True,
+        "require_dimension_memo_surface": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {},
+        "agent_activation_validation": {"status": "pass"},
+        "memo_answer": {
+            "answer_status": "draft",
+            "dimension_analyses": [
+                {"dimension_id": "fundamentals", "summary": "云收入和 RPO 支撑需求判断。", "evidence_refs": ["capex_cloud_rpo"]},
+                {"dimension_id": "product_and_production", "summary": "DELL AI server 收入支撑产品传导。", "evidence_refs": ["dell_ai_servers"]},
+            ],
+        },
+        "claim_verification": {"status": "pass"},
+        "verified_judgment_plan": {
+            "thesis_driver_pack": {
+                "dimension_sections": [
+                    {"dimension_id": "fundamentals"},
+                    {"dimension_id": "product_and_production"},
+                ]
+            }
+        },
+        "rendered_answer": (
+            "核心判断:\n当前数据不足，无法判断。缺口在 ASML、产品、订单、capex 和竞争位置。无法给出投资含义。\n\n"
+            "分维度分析:\n1. 产品产线：当前缺口较多，不能判断。[C1]\n2. 投融资：公开数据不足，不能判断。[C2]\n\n"
+            "关键论据:\n1. 该声明为已核对财务事实，不得推断未验证。[C1]\n\n"
+            "投资含义:\n- 数据缺口较多，无法判断。\n\n"
+            "什么会改变判断:\n- 如果补到数据。\n\n"
+            "后续跟踪:\n- 跟踪更多数据。\n\n"
+            "可行动的证据缺口:\n- 缺口很多，当前不能判断，公开数据不足，商业 tracker 缺口。"
+        ),
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "fail"
+    assert score["layer_checks"]["memo_verifier"]["investment_memo_quality_pass"] is False
+    quality_checks = score["investment_quality"]["checks"]
+    assert quality_checks["gap_budget_ok"] is False
+    assert quality_checks["internal_gate_prose_absent"] is False
+
+
+def test_real_llm_chain_investment_quality_rejects_fake_product_financial_lines_and_metadata() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "investment_quality_fake_product_line",
+        "category": "sector_depth",
+        "response_language": "zh-CN",
+        "require_investment_memo_quality": True,
+        "require_dimension_memo_surface": True,
+        "require_rendered_evidence_refs": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {},
+        "agent_activation_validation": {"status": "pass"},
+        "memo_answer": {
+            "answer_status": "draft",
+            "dimension_analyses": [
+                {"dimension_id": "fundamentals", "summary": "收入证据可用。", "evidence_refs": ["rev_ref"]},
+                {"dimension_id": "product_and_production", "summary": "产品证据可用。", "evidence_refs": ["bad_product_ref"]},
+                {"dimension_id": "capital_and_financing", "summary": "资本开支证据可用。", "evidence_refs": ["capex_ref"]},
+            ],
+        },
+        "claim_verification": {"status": "pass"},
+        "verified_judgment_plan": {
+            "thesis_driver_pack": {
+                "dimension_sections": [
+                    {"dimension_id": "fundamentals"},
+                    {"dimension_id": "product_and_production"},
+                    {"dimension_id": "capital_and_financing"},
+                ]
+            }
+        },
+        "rendered_answer": (
+            "核心判断:\n半导体设备周期需要同时看订单、收入和资本开支传导。[C1]\n\n"
+            "分维度分析:\n"
+            "1. 基本面：ASML 收入和订单是判断周期的锚点。[C1]\n"
+            "2. 产品产线：AMAT 的 Proceeds from sales and maturities of investments 被写成产品收入证据，KLAC 的 Receivables sold under factoring agreements 和 Costs of revenues 被写成产品表现证据。[C2]\n"
+            "3. 投融资/资本开支：资本开支影响供应链收入和现金流回报。[C3]\n"
+            "5. 风险反证：若订单不跟随收入改善，周期判断要下修。[C4]\n\n"
+            "关键论据:\n1. 产品段落混入投资收益和成本行。[C2]\n\n"
+            "投资含义:\n- 投资判断应先落在 fundamentals / financial_metric:revenue 这条已验证证据链上，再判断周期。\n\n"
+            "什么会改变判断:\n- 如果订单和收入背离，意味着需求传导失败。\n\n"
+            "后续跟踪:\n- 跟踪订单、积压、客户和产能证据。\n\n"
+            "证据索引:\n- [C1] revenue\n- [C2] bad product financial line\n- [C3] capex\n- [C4] order risk"
+        ),
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "fail"
+    assert score["layer_checks"]["memo_verifier"]["surface.no_internal_field_labels"] is False
+    quality_checks = score["investment_quality"]["checks"]
+    assert quality_checks["product_section_not_fake_financial_line"] is False
+    assert quality_checks["dimension_number_sequence_ok"] is False
+    assert quality_checks["decision_sections_actionable"] is False
+    assert quality_checks["internal_gate_prose_absent"] is False
+
+
+def test_real_llm_chain_investment_quality_accepts_decision_useful_surface() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "investment_quality_pass",
+        "category": "sector_depth",
+        "response_language": "zh-CN",
+        "require_investment_memo_quality": True,
+        "require_dimension_memo_surface": True,
+        "require_rendered_evidence_refs": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {},
+        "agent_activation_validation": {"status": "pass"},
+        "memo_answer": {
+            "answer_status": "draft",
+            "dimension_analyses": [
+                {"dimension_id": "fundamentals", "summary": "云收入和 RPO 支撑需求判断。", "evidence_refs": ["capex_cloud_rpo"]},
+                {"dimension_id": "product_and_production", "summary": "DELL AI server 收入支撑产品传导。", "evidence_refs": ["dell_ai_servers"]},
+            ],
+        },
+        "claim_verification": {"status": "pass"},
+        "verified_judgment_plan": {
+            "thesis_driver_pack": {
+                "dimension_sections": [
+                    {"dimension_id": "fundamentals"},
+                    {"dimension_id": "product_and_production"},
+                ]
+            }
+        },
+        "rendered_answer": (
+            "核心判断:\nAI infra 需求仍然更像资本开支传导到供应链收入的中期主线，而不是单一季度订单交易。"
+            "MSFT/AMZN/GOOGL 的 capex 与云收入/RPO 同时扩张，意味着需求端还在释放算力预算；DELL AI-optimized servers 收入对应到供应端，支撑服务器环节已经把预算转化为产品收入。[C1][C2]\n\n"
+            "分维度分析:\n1. 基本面：云收入和 RPO 的增长说明需求不只停留在叙事层，现金流和资本开支共同决定回报压力。[C1]\n"
+            "2. 产品产线：DELL AI-optimized servers 收入把 hyperscaler capex 传导到供应商产品线，支撑产品维度的可验证性。[C2]\n"
+            "3. 投融资/资本开支：capex 扩张会压制短期 FCF，但如果云收入和 RPO 延续，回报周期可以被收入增长吸收。[C1]\n\n"
+            "关键论据:\n1. hyperscaler capex 与云/RPO 同向改善。[C1]\n2. DELL AI server 产品收入已披露。[C2]\n\n"
+            "投资含义:\n- 组合判断应把 capex 压力和供应链收入放在一起看：如果供应商产品收入继续跟随 hyperscaler capex，AI 需求对基本面的支撑强于单纯费用化叙事。\n\n"
+            "什么会改变判断:\n- 如果 capex 继续上行但云收入/RPO 放缓，意味着投入回报被拉长，供应链订单质量也要下调。\n\n"
+            "后续跟踪:\n- 跟踪 MSFT/AMZN/GOOGL 下一季 capex、云收入/RPO 和 DELL AI server 收入口径，验证预算到产品收入的传导是否延续。\n\n"
+            "可行动的证据缺口:\n- 真实客户订单拆分仍需要公司披露或商业 tracker，不能用公开 proxy 替代。\n\n"
+            "证据索引:\n- [C1] capex cloud rpo\n- [C2] dell ai servers"
+        ),
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "pass"
+    assert score["layer_checks"]["memo_verifier"]["investment_memo_quality_pass"] is True
+    assert score["investment_quality"]["metrics"]["insight_sentence_count"] >= 3
+
+
 def test_real_llm_chain_diagnostic_quality_rejects_product_fact_not_promoted_to_claim() -> None:
     module = _load_script_module()
     case = {
@@ -395,6 +813,25 @@ def test_real_llm_chain_diagnostic_quality_rejects_bad_numeric_and_internal_synt
                     "value": "19",
                     "unit": "%",
                     "evidence_ref": "bad_revenue_ref",
+                },
+                {
+                    "selection_id": "bad_gross_margin",
+                    "fact_id": "bad_gross_margin_ref",
+                    "ticker": "DELL",
+                    "canonical_metric_id": "financial_metric:gross_margin",
+                    "product_or_segment": "Cash flow from operations",
+                    "value": "65.0",
+                    "unit": "percent",
+                    "evidence_ref": "bad_gross_margin_ref",
+                },
+                {
+                    "selection_id": "bad_deferred_revenue",
+                    "fact_id": "bad_deferred_revenue_ref",
+                    "ticker": "LRCX",
+                    "canonical_metric_id": "financial_metric:revenue",
+                    "value": "300.0",
+                    "unit": "usd_millions",
+                    "evidence_ref": "INTERACTIVE::LRCX::2026::deferred_revenue::total_value::qtd",
                 }
             ]
         },
@@ -414,6 +851,9 @@ def test_real_llm_chain_diagnostic_quality_rejects_bad_numeric_and_internal_synt
     assert score["gate_status"] == "fail"
     assert score["layer_checks"]["diagnostic_quality"]["numeric_fact_sanity"] is False
     assert score["layer_checks"]["diagnostic_quality"]["no_internal_synthesis_dimension"] is False
+    reasons = {row.get("reason") for row in score["diagnostic_quality_audit"]["numeric_violations"]}
+    assert "profitability_metric_semantic_noise" in reasons
+    assert "revenue_metric_semantic_noise" in reasons
 
 
 def test_real_llm_chain_scoring_accepts_run_audit_and_dimension_depth() -> None:
@@ -477,7 +917,7 @@ def test_real_llm_chain_scoring_accepts_run_audit_and_dimension_depth() -> None:
                 "model_call": 1,
             },
         },
-        "rendered_answer": "分维度分析:\n- 基本面：可追溯到 ref_1。\n- 产品产线：可追溯到 claim_2。\n关键论据:\n1. 支持性论据。证据=ref_1",
+        "rendered_answer": "分维度分析:\n- 基本面：可追溯到已验证证据。[C1]\n- 产品产线：可追溯到 claim_2。\n关键论据:\n1. 支持性论据。[C1]\n\n证据索引:\n- [C1] ref 1",
     }
     summary = {"payload_policy": {"raw_evidence": "not_included"}}
 
@@ -489,6 +929,30 @@ def test_real_llm_chain_scoring_accepts_run_audit_and_dimension_depth() -> None:
     assert score["memo_dimension_analysis_count"] == 3
     assert score["analyst_depth_gate_status"] == "pass"
     assert score["run_audit"]["table_counts"]["model_call"] == 1
+
+
+def test_initial_state_adds_default_case_run_audit_path_when_required(tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--run-id", "unit_audit_default"])
+    case = {
+        "case_id": "case_audit_default",
+        "prompt": "Run audit required case",
+        "focus_tickers": ["LLY"],
+        "search_scope_tickers": ["LLY"],
+        "require_run_audit_store": True,
+    }
+
+    state = module._initial_state(
+        case,
+        tmp_path / "case_audit_default",
+        run_id="unit_audit_default",
+        previous_turn_summary=None,
+        args=args,
+    )
+
+    expected = Path("data") / "workbench_private" / "run_audit" / "unit_audit_default.sqlite"
+    assert state["run_audit_db_path"] == str(expected)
+    assert state["multi_agent_context"]["run_audit_db_path"] == str(expected)
 
 
 def test_real_llm_chain_scoring_accepts_vnext_contract_summary() -> None:
@@ -862,7 +1326,7 @@ def test_real_llm_chain_scoring_accepts_chinese_rendered_claim_refs_and_language
         },
         "memo_route_result": {"status": "pass", "attempt_count": 1},
         "claim_verification": {"status": "pass"},
-        "rendered_answer": "这是中文投研结论，包含足够中文正文用于语言门控，并说明基本面、市场反应、估值风险和证据边界都已经被综合。关键论据:\n1. 中文支持性论据。 证据=ref_1",
+        "rendered_answer": "这是中文投研结论，包含足够中文正文用于语言门控，并说明基本面、市场反应、估值风险和证据边界都已经被综合。关键论据:\n1. 中文支持性论据。 [C1]\n\n证据索引:\n- [C1] ref 1",
     }
     summary = {
         "payload_policy": {"raw_evidence": "not_included"},
@@ -881,6 +1345,63 @@ def test_real_llm_chain_scoring_accepts_chinese_rendered_claim_refs_and_language
     assert score["checks"]["memo_verifier.rendered_answer_has_evidence_refs"] is True
     assert score["checks"]["memo_verifier.response_language_matches_query"] is True
     assert score["checks"]["memo_verifier.rendered_user_language_ok"] is True
+
+
+def test_real_llm_chain_surface_gate_rejects_internal_renderer_dump() -> None:
+    module = _load_script_module()
+    case = {
+        **_read_jsonl(FULL_CHAIN_MULTITURN_FIXTURE_PATH)[4],
+        "require_rendered_memo_claims": True,
+        "require_rendered_evidence_refs": True,
+        "require_response_language_match": True,
+        "require_dimension_memo_surface": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {
+            "execution_mode": "standard_memo",
+            "activate_agents": [
+                "research_lead",
+                "fundamental_analyst",
+                "memo_writer",
+                "verifier",
+                "renderer",
+            ],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "specialist_route_results": [{"agent_id": "fundamental_analyst", "status": "pass"}],
+        "specialist_verification": {"status": "pass"},
+        "memo_answer": {
+            "answer_status": "draft",
+            "response_language": {"language": "zh-CN"},
+            "memo_claims": [{"claim": "中文支持性论据。", "evidence_refs": ["ref_1"]}],
+            "dimension_analyses": [{"dimension_id": "fundamentals", "summary": "中文分析", "evidence_refs": ["ref_1"]}],
+        },
+        "memo_route_result": {"status": "pass", "attempt_count": 1},
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": (
+            "核心判断:\n这是中文投研结论，中文长度足够用于语言门控。\n\n"
+            "分维度分析:\n1. 基本面：中文分析 | 机制：Bridge the claim through revenue | 财务桥：margin "
+            "证据=INTERACTIVE_MSFT_2026_10K::MSFT::2026\n\n"
+            "关键论据:\n1. 中文支持性论据。 证据=ref_1"
+        ),
+    }
+    summary = {
+        "payload_policy": {"raw_evidence": "not_included"},
+        "llm_routes": {
+            "research_lead": {"diagnostics": _ok_diag()},
+            "specialist": {"diagnostics": _ok_diag()},
+            "memo_writer": {"diagnostics": _ok_diag()},
+            "verifier": {"diagnostics": _ok_diag()},
+        },
+    }
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=12)
+
+    assert score["gate_status"] == "fail"
+    assert score["checks"]["memo_verifier.surface_readability_pass"] is False
+    assert score["checks"]["memo_verifier.surface.no_internal_field_labels"] is False
+    assert score["checks"]["memo_verifier.surface.no_raw_interactive_refs"] is False
 
 
 def test_real_llm_chain_specialist_quality_requires_industry_relationship_ref_for_sector_depth() -> None:
@@ -1216,6 +1737,36 @@ def test_real_llm_chain_exact_lookup_accepts_runtime_ledger_as_real_retrieval() 
     assert checks["sec_search_bm25_candidates_present"] is True
     assert checks["sec_search_bge_rerank_present"] is True
     assert checks["sec_search_runtime_ledger_rows_present"] is True
+
+
+def test_real_operator_checks_treat_source_gap_as_coverage_gap_not_runtime_error() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "source_gap_sec_scope",
+        "expected_tool_names": ["sec_search_filings"],
+        "require_real_retrieval_pass": True,
+    }
+    result = {
+        "context_rows": [{"evidence_ref": "AMAT_2026_8K"}],
+        "runtime_ledger_rows": [],
+    }
+    tool_calls = [
+        {"agent_id": "eight_k_operator", "tool_name": "sec_search_filings", "status": "ok", "row_count": 4},
+        {
+            "agent_id": "eight_k_operator",
+            "tool_name": "sec_search_filings",
+            "status": "source_gap",
+            "row_count": 0,
+            "source_gap_count": 1,
+            "error": "not_in_manifest_for_mcp_route_scope",
+        },
+    ]
+
+    checks = module._real_operator_checks(case, result, tool_calls, required=True)
+
+    assert checks["sec_search_not_dry_run"] is True
+    assert checks["sec_search_errors_absent"] is True
+    assert checks["sec_search_context_rows_present"] is True
 
 
 def test_real_llm_chain_specialist_quality_allows_single_ref_yoy_row_with_raw_value() -> None:

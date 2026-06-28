@@ -5,8 +5,10 @@ from pathlib import Path
 from sec_agent.runtime_bridge.contracts import runtime_bridge_registry
 from sec_agent.context_engine import ContextEngine
 from sec_agent.lead_supervision import build_lead_review_checkpoint, build_research_objective_contract, build_targeted_repair_plan
+from sec_agent.langgraph_orchestrator import _issuer_coverage_gaps_from_state, _lead_targeted_repair_context_claims
 from sec_agent.memo_logic_plan import build_memo_logic_plan
-from sec_agent.role_evidence_selector import select_role_evidence
+from sec_agent.official_issuer_repair import execute_official_issuer_repair_plan
+from sec_agent.role_evidence_selector import build_role_source_layer_distribution, select_role_evidence
 from sec_agent.runtime_bridge.baseline import build_runtime_baseline_report
 from sec_agent.runtime_bridge.data_quality import evaluate_data_processing_quality, evaluate_index_asset_quality, evaluate_retrieval_quality
 from sec_agent.runtime_bridge.eval_store import (
@@ -44,6 +46,52 @@ def test_runtime_bridge_registry_records_storage_and_path_boundaries(tmp_path: P
         "cuda_bge_queue_policy",
         "token_budget_model_tier_policy",
     ]
+
+
+def test_role_source_layer_distribution_exposes_selector_gap_without_exact_promotion() -> None:
+    distribution = build_role_source_layer_distribution(
+        {
+            "rows": [
+                {
+                    "source_id": "company_ir_reports",
+                    "layer_id": "L1",
+                    "evidence_graph_status": "staging_parser_gate_pending",
+                    "specialist_slots": ["product_technology"],
+                    "context_or_proxy_allowed": True,
+                    "exact_value_authority_ready": False,
+                    "can_support_company_exact_fact": False,
+                },
+                {
+                    "source_id": "company_product_pages",
+                    "layer_id": "L2",
+                    "evidence_graph_status": "structured_not_promoted",
+                    "specialist_slots": ["product_technology"],
+                    "context_or_proxy_allowed": True,
+                    "exact_value_authority_ready": False,
+                    "can_support_company_exact_fact": False,
+                },
+                {
+                    "source_id": "ecommerce_major_platforms",
+                    "layer_id": "L3",
+                    "evidence_graph_status": "not_registered",
+                    "specialist_slots": ["product_technology"],
+                    "context_or_proxy_allowed": False,
+                    "exact_value_authority_ready": False,
+                    "can_support_company_exact_fact": False,
+                },
+            ]
+        },
+        roles=["product_technology_analyst"],
+    )
+
+    product = distribution["roles"]["product_technology_analyst"]
+    assert distribution["status"] == "gap"
+    assert distribution["gap_roles"] == ["product_technology_analyst"]
+    assert product["candidate_count"] == 3
+    assert product["selected_by_layer"] == {"L1": 1, "L2": 1}
+    assert product["selected_missing_required_layers"] == ["L3"]
+    assert product["not_registered_count"] == 1
+    assert product["exact_authority_violation_sources"] == []
 
 
 def test_eval_store_records_case_node_and_failure_rows(tmp_path: Path) -> None:
@@ -252,6 +300,141 @@ def test_runtime_baseline_object_store_context_tool_input_and_lead_contracts(tmp
     assert repair["status"] == "ready"
     assert selector["selected_count"] >= 1
     assert memo_plan["validation"]["status"] == "pass"
+
+
+def test_lead_supervision_routes_non_us_issuer_scope_gap_to_official_source_repair() -> None:
+    contract = build_research_objective_contract(
+        query="分析 ASML 的订单、产品和财务质量",
+        required_dimensions=["fundamentals", "product_and_production"],
+    )
+    checkpoint = build_lead_review_checkpoint(
+        objective_contract=contract,
+        gaps=[
+            {
+                "gap_id": "gap_asml_route_scope",
+                "ticker": "ASML",
+                "analysis_dimension": "fundamentals",
+                "gap_type": "issuer_official_source_probe_required",
+                "reason_code": "not_in_manifest_for_mcp_route_scope",
+                "reason": "ASML is outside local SEC/MCP route scope; official issuer filings should be probed.",
+            }
+        ],
+        source_capability={"live_public_web_context": {"status": "available"}},
+    )
+    repair = build_targeted_repair_plan(checkpoint)
+
+    issuer_reviews = checkpoint["issuer_coverage_reviews"]
+    assert issuer_reviews
+    assert issuer_reviews[0]["ticker"] == "ASML"
+    assert issuer_reviews[0]["status"] == "retrievable_gap"
+    official_repairs = [row for row in repair["repairs"] if row.get("route") == "official_issuer_disclosure_repair"]
+    assert official_repairs
+    asml_repair = official_repairs[0]
+    assert asml_repair["ticker"] == "ASML"
+    assert asml_repair["web_search_allowed"] is True
+    assert asml_repair["source_probe_order"][:2] == ["sec_fpi_filings_20f_6k", "company_ir_reports"]
+    assert {"company_ir", "local_exchange_filings", "regulator_filings", "sec_fpi_filings"} <= set(
+        asml_repair["official_source_classes"]
+    )
+    assert asml_repair["not_found_gap"]["gap_type"] == "bounded_gap_after_official_issuer_source_probe"
+    assert repair["validation"]["status"] == "pass"
+    assert checkpoint["memo_directive"]["issuer_targeted_repair_required"] is True
+    assert checkpoint["memo_directive"]["gap_budget_policy"]["max_gap_share_in_user_memo"] == 0.25
+
+
+def test_official_issuer_repair_materializes_asml_sec_context_without_promoting_exact_fact() -> None:
+    contract = build_research_objective_contract(
+        query="分析 ASML 的订单、产品和财务质量",
+        required_dimensions=["fundamentals", "product_and_production"],
+    )
+    checkpoint = build_lead_review_checkpoint(
+        objective_contract=contract,
+        gaps=[
+            {
+                "gap_id": "gap_asml_route_scope",
+                "ticker": "ASML",
+                "analysis_dimension": "fundamentals",
+                "gap_type": "issuer_official_source_probe_required",
+                "reason_code": "not_in_manifest_for_mcp_route_scope",
+            }
+        ],
+        source_capability={"live_public_web_context": {"status": "available"}},
+    )
+    repair = build_targeted_repair_plan(checkpoint)
+
+    def fake_fetch(url: str) -> tuple[int, str, str]:
+        assert "data.sec.gov/submissions/CIK0000937966.json" in url
+        return (
+            200,
+            "application/json",
+            '{"name":"ASML Holding N.V.","filings":{"recent":{"form":["6-K","20-F","144"],"filingDate":["2026-04-16","2026-02-12","2026-01-01"],"accessionNumber":["0001","0002","0003"]}}}',
+        )
+
+    execution = execute_official_issuer_repair_plan(repair, fetch=fake_fetch, max_probes_per_issuer=1)
+
+    assert execution["status"] == "pass"
+    assert execution["attempted_count"] == 1
+    assert execution["success_count"] >= 1
+    issuer_rows = [
+        row
+        for row in execution["context_rows"]
+        if isinstance(row, dict) and str(row.get("evidence_ref") or "").startswith("official_")
+        and ":product_surface:" not in str(row.get("evidence_ref") or "")
+    ]
+    assert issuer_rows
+    row = issuer_rows[0]
+    assert row["ticker"] == "ASML"
+    assert row["source_family"] == "live_public_web_context"
+    assert row["context_only"] is True
+    assert row["exact_value_authority"] is False
+    assert "20-F" in row["preview"]
+    structured_rows = [
+        row
+        for row in execution["context_rows"]
+        if row.get("structured_fact_status") == "bounded_context_fact_materialized"
+    ]
+    assert any(row.get("structured_context_type") == "official_filing_presence_context" for row in structured_rows)
+    assert all(row["exact_value_authority"] is False for row in structured_rows)
+    assert execution["tool_observations"][0]["tool_name"] == "web_evidence_snapshot"
+    product_rows = [
+        row
+        for row in execution["context_rows"]
+        if isinstance(row, dict) and str(row.get("product_family") or "").strip()
+    ]
+    assert product_rows
+    assert any(row["product_family"] == "EUV lithography systems" for row in product_rows)
+    assert all(row["context_only"] is True and row["exact_value_authority"] is False for row in product_rows)
+    assert all("no exact orders/backlog/sales/share authority" in row["claim_boundary"] for row in product_rows)
+    claims = _lead_targeted_repair_context_claims(execution)
+    assert claims
+    assert claims[0]["agent_id"] == "research_lead"
+    assert claims[0]["claim_type"] == "product_taxonomy_context"
+    assert claims[0]["analysis_dimension"] == "product_and_production"
+    assert "EUV lithography systems" in claims[0]["claim"]
+    assert "does not promote exact sales" in claims[0]["claim"]
+    assert claims[0]["source_families"] == ["live_public_web_context"]
+
+
+def test_research_lead_proactively_routes_known_non_us_issuer_to_official_probe() -> None:
+    gaps = _issuer_coverage_gaps_from_state(
+        {
+            "user_query": "分析 ASML、AMAT、LRCX、KLAC 的半导体设备周期",
+            "agent_activation_plan": {
+                "focus_tickers": ["ASML", "AMAT"],
+                "search_scope_tickers": ["ASML", "AMAT", "LRCX"],
+            },
+            "context_rows": [{"ticker": "AMAT", "source_family": "primary_sec_filing"}],
+            "runtime_ledger_rows": [],
+            "source_gaps": [],
+            "specialist_route_results": [],
+        }
+    )
+
+    asml_gaps = [row for row in gaps if row.get("ticker") == "ASML"]
+    assert asml_gaps
+    assert asml_gaps[0]["gap_type"] == "issuer_official_source_probe_required"
+    assert asml_gaps[0]["repairability"] == "retrievable_gap"
+    assert asml_gaps[0]["source"] == "lead_known_issuer_profile"
 
 
 def test_r0_r11_readiness_runner_passes_with_cloud_gap(tmp_path: Path) -> None:

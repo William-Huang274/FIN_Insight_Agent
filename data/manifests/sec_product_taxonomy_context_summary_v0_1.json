@@ -1,0 +1,35 @@
+{
+  "boundary": "SEC taxonomy rows satisfy official product surface only as product taxonomy context, not sales/share/ASP/inventory/sell-through authority.",
+  "context_row_count": 1965,
+  "family_count": 74,
+  "generated_at": "2026-06-18T13:08:14Z",
+  "input_slot_count": 6454,
+  "outputs": {
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\sec_product_taxonomy_context_rows_v0_1.jsonl"
+  },
+  "rows_by_family_top20": {
+    "aerospace_defense_industrials": 28,
+    "asset_wealth_management": 23,
+    "banking_credit_deposits": 28,
+    "building_construction_services": 17,
+    "consumer_brands_cpg": 125,
+    "data_observability_security": 31,
+    "industrial_equipment": 27,
+    "lodging_resorts_cruise": 17,
+    "logistics_transportation": 17,
+    "mining_materials_commodities": 26,
+    "networking": 17,
+    "real_estate_infrastructure_reit": 22,
+    "regulated_utility_power": 44,
+    "renewable_power_solar_hydrogen": 23,
+    "semicap_equipment": 18,
+    "v3_general_software_cloud": 117,
+    "v4_general_healthcare": 309,
+    "v6_general_financials": 405,
+    "v7_general_energy_industrials": 203,
+    "v8_general_retail_cpg": 133
+  },
+  "schema_version": "finsight_sec_product_taxonomy_context_summary_v0_1",
+  "status": "pass",
+  "ticker_count": 445
+}

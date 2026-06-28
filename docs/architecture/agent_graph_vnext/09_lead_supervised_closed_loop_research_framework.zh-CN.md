@@ -1,6 +1,6 @@
 # Research Lead 常驻监督闭环框架
 
-更新时间：2026-06-14
+更新时间：2026-06-15
 
 本文档记录 2026-06-14 关于下一阶段 Agent Graph / 反思机制 / Memo Surface / 检索与模型资源调度的新增讨论。后续继续讨论时直接在本文档上增补或修订，避免后续设计漂移。
 
@@ -14,6 +14,7 @@
 - Memo surface 初版升级：ClaimCards -> thesis_driver_pack -> analyst_depth_gate -> dimension memo。
 - FundamentalStatementPack / JudgmentState：三大表、派生指标、同行同口径、行业重点财务指标进入 fundamental analyst 和 memo governance。
 - R7 诊断发现：全局 SEC candidate / rerank budget 不是主要瓶颈，product specialist 两个 deep case 都只看到 `4` 行，是 role-specific evidence visibility 问题。
+- 2026-06-15 已落地 `supervising_analyst_pack`：Research Lead 在 `Memo Writer` 前新增 deterministic supervision layer，把 approved facts / ClaimCards / FundamentalStatementPack 重新组织为 `FinancialAnalysisModel`、`ProductBridgePack`、`CapitalTransmissionGraph` 和 `ResearchLeadSynthesisPlan`，供写作器按判断优先而不是 ClaimCard 拼贴来写。
 
 当前新问题不是“没有反思”，而是反思仍偏 gate/checklist。它能防弱证据乱提权、能发现 source boundary，但没有充分回到 Research Lead 最初制定的研究目标审计：
 
@@ -34,6 +35,7 @@ Plan
  -> Lead Review
  -> Targeted Repair
  -> JudgmentState
+ -> SupervisingAnalystPack
  -> Lead MemoLogicPlan
  -> Memo Writer
  -> Verifier
@@ -89,7 +91,8 @@ flowchart TD
   LR --> J["Thesis / Counter-thesis Adjudicator"]
   BG --> J
   J --> JS["JudgmentState"]
-  JS --> MLP["Research Lead: MemoLogicPlan"]
+  JS --> SAP["Research Lead: SupervisingAnalystPack"]
+  SAP --> MLP["Research Lead: MemoLogicPlan"]
 
   MLP --> W["Memo Writer / Report Renderer"]
   W --> V["Verifier / Editor"]
@@ -242,13 +245,21 @@ R7 诊断证明：全局检索候选和 rerank surface 不是主要瓶颈，问�
 
 Memo Writer 的输入从“自己理解 ClaimCards”改为：
 
+- `ResearchLeadSynthesisPlan` / `supervising_analyst_pack`
 - `MemoLogicPlan`
 - `JudgmentState`
 - verified `ClaimCards`
 - `BoundedGapRegister`
 - 格式要求
 
-Memo Writer 不再负责检索、补证据或事实判断。它只负责自然语言表达、报告结构、表格和文件制品。唯一允许的工具是 PDF / MD / DOCX / Excel 等文件生成器或渲染器。
+`supervising_analyst_pack` 是 Research Lead 在写作前的主控对象，当前 runtime 已包含：
+
+- `financial_analysis_model`：三大表、同行同口径、期间变化、派生比例、numeric display reconciler。
+- `product_bridge_pack`：公司披露产品 KPI、产品 mix、官方产品 context、产品缺口。
+- `capital_transmission_graph`：buyer capex demand signal、supplier product revenue readthrough、relationship hypothesis、supplier own capex proxy 等边。
+- `research_lead_synthesis_plan`：核心判断、论证顺序、proven / supported inference / not proven、writer directives。
+
+Memo Writer 不再负责检索、补证据或事实判断。它只负责自然语言表达、报告结构、表格和文件制品。唯一允许的工具是 PDF / MD / DOCX / Excel 等文件生成器或渲染器。写作优先级是 `ResearchLeadSynthesisPlan -> MemoLogicPlan -> JudgmentState / ThesisDriverPack -> verified ClaimCards`，不得把 ClaimCards 逐条拼成命题作文。
 
 下一版输出风格参考 2026-06-14 讨论截图：不是模板报告，也不是纯聊天，而是自然语言 + 带证据的分点推理 + 总结 + 建议。
 
@@ -353,6 +364,7 @@ RerankRequest
 - repair plan 记录 source、route、agent、claim type、promotion gate、not-found gap。
 - 无 authority-bearing delta 时停止。
 - repair 不会绕过 source boundary。
+- 对 ASML 这类本地 SEC/MCP route scope 未覆盖、但公司 IR / 当地交易所 / 当地监管 / SEC FPI `20-F`/`6-K` 理论可公开查询的 issuer，先标记为 `issuer_official_source_probe_required` 的 `retrievable_gap`，生成 official-only targeted repair；只有官方源探测后仍找不到，才暴露 `bounded_gap_after_official_issuer_source_probe`。
 
 ### L4 Role-specific Evidence Selector
 
@@ -371,8 +383,11 @@ Research Lead 生成写作逻辑，Memo Writer 只负责自然语言和文件生
 通过条件：
 
 - 用户可见输出不再机械暴露内部 schema 字段。
+- Renderer 不再把 `business_mechanism` / `financial_bridge` / `counter_read` 直译成“机制 / 财务桥 / 反证边界”，而是把它们合成自然语言因果链。
+- Renderer 使用短 citation（如 `[C1]`）和底部证据索引；正文不暴露 `INTERACTIVE_*` / raw artifact ref。
 - 每个分点有判断、证据和边界。
 - Memo Writer 无检索 / DB / web 权限。
+- Eval 必须有 surface readability gate，拦截内部字段、pipe-joined dump、重复 wrapper、过长原始 citation 和语言混杂。
 
 ### L6 InferenceResourceScheduler
 
@@ -464,11 +479,14 @@ User File / URL / Image / Video
 
 ## 当前明确边界
 
-- 本文档是下一阶段框架，不代表 runtime 已完成这些能力。
-- FundamentalStatementPack / JudgmentState 已有初版 runtime 接入；LeadReviewCheckpoint 对它们的一等节点使用仍待实现。
+- 本文档仍是下一阶段框架，但 2026-06-14 已把 L2/L3/L5 的关键 runtime 骨架接入主 graph：aggregate 后生成 `ResearchObjectiveContract`、`LeadReviewCheckpoint`、`TargetedRepairPlan`、`MemoLogicPlan`，并写入 checkpoint / run audit 可见状态。
+- FundamentalStatementPack / JudgmentState 已有 runtime 接入；LeadReviewCheckpoint 现在能读取 JudgmentState / ClaimCards / gaps / source capability，但 targeted repair 的真实执行器仍需按 source adapter 继续补。
+- 2026-06-15 已新增 `supervising_analyst_pack` runtime：Research Lead 在 `memo_writer` 前把已验证事实组织成 `FinancialAnalysisModel`、`ProductBridgePack`、`CapitalTransmissionGraph` 和 `ResearchLeadSynthesisPlan`，并持久化 `supervising_analyst_pack.json`；Memo Writer prompt 已改为 ResearchLeadSynthesisPlan-first。
+- 2026-06-27 已新增 `DimensionEvidencePortfolio` runtime contract：Research Lead 读取按维度组织的证据地图，而不是只读 source inventory / query contract。该 portfolio 把 `FundamentalStatementPack`、`ProductIntelligenceGraph`、`ProductEvidencePack`、`CapitalMacroPack`、source authority 和 gap ledger 压成可审计 pack refs；specialist data view 只拿 role-scoped ref；LeadReviewCheckpoint 会把“有 pack 但没有 ClaimCard 承接”的维度标为 `retrievable_gap`，要求 Research Lead targeted repair 或重新激活 specialist，而不是直接暴露 bounded gap。
 - BGE scheduler / ModelRouter / AgentCoalescer 已有最小 deterministic resource scheduler：`src/sec_agent/runtime_bridge/resource_scheduler.py`，能做 CUDA BGE slot、CPU spillover 和 token 压力下低成本模型路由审计；尚未接入主 graph 和 Redis semaphore。
 - Java Task Gateway / Python worker 通路已建立最小 smoke：`apps/research_gateway/java/src/finsight/gateway/TaskGatewayServer.java` + `src/sec_agent/runtime_bridge/task_worker.py`；当前只验证后端任务生命周期，不代表 LeadReviewCheckpoint 已接入。
-- Memo Surface vNext 尚未替换当前渲染，只确定方向。
+- Memo Surface vNext 已替换主 renderer 的核心格式：短引用、证据索引、MemoLogicPlan section order 和内部字段隐藏已接入；writer 仍需在更多真实 full-chain case 上继续调 prompt 和 evidence-to-thesis 表达质量。
+- 非美 issuer coverage policy 已进入 Lead targeted repair contract：本地库/SEC route 缺失时先走 official-only source probe，再决定 bounded gap。
 - Tool Capability Registry、Document / Multimodal Input Pipeline 尚未实现；当前工具仍主要覆盖检索、查数、artifact inspect 和 markdown 渲染。
 - Web repair 仍必须遵守 02 文档的 allowlist / source class / claim scope。
 - Milvus 仍是 typed semantic recall supplement，不是 exact-value authority。

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import math
 import re
@@ -11,6 +12,8 @@ from typing import Any, Iterable
 
 
 SCHEMA_VERSION = "sec_agent_market_snapshot_v0.1"
+MARKET_LIQUIDITY_CONTEXT_SCHEMA_VERSION = "finsight_market_liquidity_driver_context_row_v0_1"
+MARKET_LIQUIDITY_CONTEXT_SUMMARY_SCHEMA_VERSION = "finsight_market_liquidity_driver_context_summary_v0_1"
 SOURCE_TIER = "market_snapshot"
 DEFAULT_CURRENCY = "USD"
 TRADING_DAY_WINDOWS = {
@@ -47,6 +50,7 @@ def normalize_market_snapshot_fixture(
     tickers: Iterable[str] | None = None,
     benchmark_tickers: Iterable[str] | None = None,
     currency: str = DEFAULT_CURRENCY,
+    per_ticker_as_of: bool = False,
 ) -> dict[str, Any]:
     """Normalize an offline market fixture into private JSONL/parquet artifacts."""
     output_root = Path(output_root)
@@ -150,6 +154,7 @@ def normalize_market_snapshot_fixture(
         latest = latest_by_ticker.get(ticker)
         if not latest:
             continue
+        snapshot_as_of_date = str(latest.get("date") or as_of.isoformat()) if per_ticker_as_of else as_of.isoformat()
         close_price = latest.get("adjusted_close")
         field_status = {
             field: "provided" if _snapshot_field_value(latest, field) is not None else "missing_not_provided"
@@ -161,7 +166,8 @@ def normalize_market_snapshot_fixture(
                 "snapshot_id": snapshot_id,
                 "source_tier": SOURCE_TIER,
                 "ticker": ticker,
-                "as_of_date": as_of.isoformat(),
+                "as_of_date": snapshot_as_of_date,
+                "requested_as_of_date": as_of.isoformat(),
                 "provider": str(latest.get("provider") or provider),
                 "currency": str(latest.get("currency") or currency or DEFAULT_CURRENCY),
                 "close_price": close_price,
@@ -172,7 +178,7 @@ def normalize_market_snapshot_fixture(
                 "ev_ebitda_ttm": latest.get("ev_ebitda_ttm"),
                 "field_status": field_status,
                 "field_definitions": _default_field_definitions(),
-                "source_boundary": f"market_snapshot; non-real-time; as_of_date={as_of.isoformat()}",
+                "source_boundary": f"market_snapshot; non-real-time; as_of_date={snapshot_as_of_date}",
             }
         )
 
@@ -190,6 +196,7 @@ def normalize_market_snapshot_fixture(
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "target_tickers": target_tickers,
         "benchmark_tickers": sorted(benchmark_set),
+        "per_ticker_as_of": per_ticker_as_of,
         "input_path": str(Path(input_path)),
         "bars_jsonl": str(paths["bars_jsonl"]),
         "snapshot_jsonl": str(paths["snapshot_jsonl"]),
@@ -376,6 +383,149 @@ def build_market_evidence_pack(
         "row_count": len(rows),
         "tickers": [row["ticker"] for row in rows],
     }
+
+
+def build_market_liquidity_driver_context_rows(
+    *,
+    market_evidence_path: str | Path,
+    output_path: str | Path,
+    summary_path: str | Path | None = None,
+    max_rows: int | None = None,
+) -> dict[str, Any]:
+    """Project market evidence packs into L3 market-liquidity driver rows."""
+
+    evidence_rows = _read_jsonl(market_evidence_path)
+    rows: list[dict[str, Any]] = []
+    rejections: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in evidence_rows:
+        ticker = _ticker(item.get("ticker"))
+        as_of_date = str(item.get("as_of_date") or "")
+        snapshot_id = str(item.get("snapshot_id") or "")
+        if not ticker:
+            rejections.append({"reason": "missing_ticker", "evidence_id": item.get("evidence_id")})
+            continue
+        market_reaction = item.get("market_reaction") if isinstance(item.get("market_reaction"), dict) else {}
+        if not _has_any_market_liquidity_value(market_reaction):
+            rejections.append({"ticker": ticker, "reason": "missing_market_reaction_metrics"})
+            continue
+        row_id = _market_liquidity_row_id(snapshot_id=snapshot_id, ticker=ticker, as_of_date=as_of_date)
+        if row_id in seen:
+            continue
+        seen.add(row_id)
+        source_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+        field_refs = item.get("field_refs") if isinstance(item.get("field_refs"), list) else []
+        valuation_context = item.get("valuation_context") if isinstance(item.get("valuation_context"), dict) else {}
+        text = str(item.get("text") or "").strip()
+        rows.append(
+            {
+                "schema_version": MARKET_LIQUIDITY_CONTEXT_SCHEMA_VERSION,
+                "evidence_ref": row_id,
+                "evidence_id": row_id,
+                "fact_id": row_id,
+                "ticker": ticker,
+                "source_layer_id": "L3",
+                "source_family": "market_price_snapshot",
+                "runtime_source_family": "public_source_context",
+                "source_id": "yahoo_chart_price_volume_snapshot",
+                "underlying_source_id": "yahoo_chart",
+                "source_role": "market_liquidity_driver",
+                "source_url": source_url,
+                "citation": {"url": source_url, "title": f"{ticker} Yahoo chart price/volume snapshot"},
+                "parser_status": "market_evidence_pack_projector_pass",
+                "source_specific_parser": "market_evidence_pack_to_liquidity_driver_projector_v0_1",
+                "structured_context_type": "market_liquidity_driver",
+                "structured_fact_status": "bounded_context_fact_materialized",
+                "exact_value_authority": False,
+                "can_support_company_exact_fact": False,
+                "bounded_structured_context": True,
+                "provider": item.get("provider"),
+                "snapshot_id": snapshot_id,
+                "as_of_date": as_of_date,
+                "period": as_of_date,
+                "window": item.get("window"),
+                "metric_family": "price_volume_liquidity",
+                "metric_name": "market_liquidity_driver",
+                "market_reaction": market_reaction,
+                "valuation_context": valuation_context,
+                "derived_signals": item.get("derived_signals") or [],
+                "field_refs": field_refs,
+                "missing_fields": item.get("missing_fields") or [],
+                "claim_types": ["market_liquidity_driver", "market_reaction_context", "positioning_context"],
+                "allowed_claims": ["market_liquidity_driver", "market_reaction_context", "valuation_context_if_present"],
+                "forbidden_claims": [
+                    "company_operating_performance",
+                    "product_revenue",
+                    "market_share",
+                    "fundamental_improvement",
+                    "current_fund_flow_without_flow_source",
+                    "investment_recommendation",
+                ],
+                "claim_boundary": (
+                    "Public market price/volume snapshot; non-real-time market-liquidity and reaction context only. "
+                    "It cannot prove company operating performance, product demand, current fund flow, or valuation truth."
+                ),
+                "source_boundary": item.get("source_boundary")
+                or f"market_snapshot; non-real-time; as_of_date={as_of_date}",
+                "text": text or _market_liquidity_context_text(item),
+            }
+        )
+        if max_rows is not None and len(rows) >= max_rows:
+            break
+
+    output_path = Path(output_path)
+    _write_jsonl(output_path, rows)
+    summary = {
+        "schema_version": MARKET_LIQUIDITY_CONTEXT_SUMMARY_SCHEMA_VERSION,
+        "status": "pass" if rows else "fail",
+        "market_evidence_path": str(market_evidence_path),
+        "output_path": str(output_path),
+        "row_count": len(rows),
+        "ticker_count": len({row["ticker"] for row in rows}),
+        "rejection_count": len(rejections),
+        "rejections_sample": rejections[:20],
+        "source_boundary": (
+            "Rows are L3 market-liquidity/positioning context. They support price/volume reaction, volatility, "
+            "drawdown, relative return, and available valuation snapshot discussion only."
+        ),
+    }
+    if summary_path:
+        _write_json(Path(summary_path), summary)
+    return summary
+
+
+def _has_any_market_liquidity_value(market_reaction: dict[str, Any]) -> bool:
+    for field in (
+        "return_1d",
+        "return_5d",
+        "return_1m",
+        "return_3m",
+        "relative_return_vs_benchmark_3m",
+        "max_drawdown_3m",
+        "volatility_3m",
+    ):
+        if market_reaction.get(field) is not None:
+            return True
+    return False
+
+
+def _market_liquidity_row_id(*, snapshot_id: str, ticker: str, as_of_date: str) -> str:
+    digest = hashlib.sha1(f"{snapshot_id}|{ticker}|{as_of_date}|market_liquidity_driver".encode("utf-8")).hexdigest()[:16]
+    return f"market_liquidity_driver:{digest}"
+
+
+def _market_liquidity_context_text(item: dict[str, Any]) -> str:
+    ticker = str(item.get("ticker") or "")
+    as_of_date = str(item.get("as_of_date") or "")
+    reaction = item.get("market_reaction") if isinstance(item.get("market_reaction"), dict) else {}
+    parts = [f"{ticker} market-liquidity snapshot as of {as_of_date}"]
+    for field in ("return_3m", "relative_return_vs_benchmark_3m", "max_drawdown_3m", "volatility_3m"):
+        if reaction.get(field) is not None:
+            parts.append(f"{field}={_format_number(reaction[field])}")
+    signals = item.get("derived_signals") if isinstance(item.get("derived_signals"), list) else []
+    if signals:
+        parts.append("signals=" + ",".join(str(signal) for signal in signals[:4]))
+    return "; ".join(parts) + "."
 
 
 def validate_market_snapshot(

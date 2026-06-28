@@ -1,0 +1,190 @@
+{
+  "by_status": {
+    "pass": 8
+  },
+  "lane_count": 8,
+  "lanes": [
+    {
+      "by_closeout_status": {
+        "pass": 10
+      },
+      "commercial_gap_count": 15,
+      "industry_schema": "semiconductors_hardware",
+      "lane_id": "V1",
+      "lane_name": "Semiconductors / AI Infrastructure",
+      "observed_primary_ticker_count": 15,
+      "observed_runtime_row_count": 475,
+      "pass_requirement_count": 10,
+      "primary_ticker_count": 43,
+      "requirement_count": 10,
+      "source_gap_requirement_count": 0,
+      "status": "pass"
+    },
+    {
+      "by_closeout_status": {
+        "pass": 8
+      },
+      "commercial_gap_count": 16,
+      "industry_schema": "consumer_electronics",
+      "lane_id": "V2",
+      "lane_name": "Consumer Electronics / Hardware Devices",
+      "observed_primary_ticker_count": 4,
+      "observed_runtime_row_count": 250,
+      "pass_requirement_count": 8,
+      "primary_ticker_count": 9,
+      "requirement_count": 8,
+      "source_gap_requirement_count": 0,
+      "status": "pass"
+    },
+    {
+      "by_closeout_status": {
+        "pass": 9
+      },
+      "commercial_gap_count": 16,
+      "industry_schema": "software_saas",
+      "lane_id": "V3",
+      "lane_name": "SaaS / Cloud / Developer Products",
+      "observed_primary_ticker_count": 31,
+      "observed_runtime_row_count": 687,
+      "pass_requirement_count": 9,
+      "primary_ticker_count": 94,
+      "requirement_count": 9,
+      "source_gap_requirement_count": 0,
+      "status": "pass"
+    },
+    {
+      "by_closeout_status": {
+        "pass": 8
+      },
+      "commercial_gap_count": 6,
+      "industry_schema": "healthcare_pharma_medtech",
+      "lane_id": "V4",
+      "lane_name": "Pharma / Biotech / Medtech",
+      "observed_primary_ticker_count": 28,
+      "observed_runtime_row_count": 939,
+      "pass_requirement_count": 8,
+      "primary_ticker_count": 68,
+      "requirement_count": 8,
+      "source_gap_requirement_count": 0,
+      "status": "pass"
+    },
+    {
+      "by_closeout_status": {
+        "pass": 9
+      },
+      "commercial_gap_count": 15,
+      "industry_schema": "auto_mobility",
+      "lane_id": "V5",
+      "lane_name": "Auto / Mobility / Transport Platforms",
+      "observed_primary_ticker_count": 7,
+      "observed_runtime_row_count": 376,
+      "pass_requirement_count": 9,
+      "primary_ticker_count": 17,
+      "requirement_count": 9,
+      "source_gap_requirement_count": 0,
+      "status": "pass"
+    },
+    {
+      "by_closeout_status": {
+        "pass": 4
+      },
+      "commercial_gap_count": 7,
+      "industry_schema": "financials_banks",
+      "lane_id": "V6",
+      "lane_name": "Banks / Financials / Capital Markets",
+      "observed_primary_ticker_count": 30,
+      "observed_runtime_row_count": 632,
+      "pass_requirement_count": 4,
+      "primary_ticker_count": 77,
+      "requirement_count": 4,
+      "source_gap_requirement_count": 0,
+      "status": "pass"
+    },
+    {
+      "by_closeout_status": {
+        "pass": 7
+      },
+      "commercial_gap_count": 16,
+      "industry_schema": "energy_utilities",
+      "lane_id": "V7",
+      "lane_name": "Energy / Utilities / Industrials",
+      "observed_primary_ticker_count": 77,
+      "observed_runtime_row_count": 2514,
+      "pass_requirement_count": 7,
+      "primary_ticker_count": 216,
+      "requirement_count": 7,
+      "source_gap_requirement_count": 0,
+      "status": "pass"
+    },
+    {
+      "by_closeout_status": {
+        "pass": 7
+      },
+      "commercial_gap_count": 10,
+      "industry_schema": "retail_cpg",
+      "lane_id": "V8",
+      "lane_name": "Retail / CPG / Restaurants / Travel",
+      "observed_primary_ticker_count": 29,
+      "observed_runtime_row_count": 921,
+      "pass_requirement_count": 7,
+      "primary_ticker_count": 79,
+      "requirement_count": 7,
+      "source_gap_requirement_count": 0,
+      "status": "pass"
+    }
+  ],
+  "observed_paths": [
+    "data\\manifests\\company_reported_product_operating_metric_runtime_rows_v0_1.jsonl",
+    "data\\manifests\\official_product_surface_context_rows_v0_1.jsonl",
+    "data\\manifests\\public_official_api_context_rows_v0_1.jsonl",
+    "data\\manifests\\developer_ecosystem_context_rows_v0_1.jsonl",
+    "data\\manifests\\app_marketplace_context_rows_v0_1.jsonl",
+    "data\\manifests\\hiring_capacity_context_rows_v0_1.jsonl",
+    "data\\manifests\\public_contract_award_context_rows_v0_1.jsonl",
+    "data\\manifests\\channel_offer_context_rows_v0_1.jsonl",
+    "data\\manifests\\v1_trusted_external_context_rows_v0_1.jsonl",
+    "data\\manifests\\v1_openalex_technology_research_context_rows_v0_1.jsonl",
+    "data\\manifests\\v1_macro_official_exposure_context_rows_v0_1.jsonl",
+    "data\\manifests\\vertical_lane_public_context_rows_v0_1.jsonl"
+  ],
+  "outputs": {
+    "V1": {
+      "closeout": "data\\manifests\\v1_semiconductors_ai_infrastructure_source_closeout_v0_1.json",
+      "report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v1_semiconductors_ai_infrastructure_source_closeout.zh-CN.md"
+    },
+    "V2": {
+      "closeout": "data\\manifests\\v2_consumer_hardware_devices_source_closeout_v0_1.json",
+      "report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v2_consumer_hardware_devices_source_closeout.zh-CN.md"
+    },
+    "V3": {
+      "closeout": "data\\manifests\\v3_software_cloud_developer_products_source_closeout_v0_1.json",
+      "report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v3_software_cloud_developer_products_source_closeout.zh-CN.md"
+    },
+    "V4": {
+      "closeout": "data\\manifests\\v4_pharma_biotech_medtech_source_closeout_v0_1.json",
+      "report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v4_pharma_biotech_medtech_source_closeout.zh-CN.md"
+    },
+    "V5": {
+      "closeout": "data\\manifests\\v5_auto_mobility_transport_source_closeout_v0_1.json",
+      "report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v5_auto_mobility_transport_source_closeout.zh-CN.md"
+    },
+    "V6": {
+      "closeout": "data\\manifests\\v6_banks_financials_capital_markets_source_closeout_v0_1.json",
+      "report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v6_banks_financials_capital_markets_source_closeout.zh-CN.md"
+    },
+    "V7": {
+      "closeout": "data\\manifests\\v7_energy_utilities_industrials_materials_source_closeout_v0_1.json",
+      "report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v7_energy_utilities_industrials_materials_source_closeout.zh-CN.md"
+    },
+    "V8": {
+      "closeout": "data\\manifests\\v8_retail_cpg_restaurants_travel_source_closeout_v0_1.json",
+      "report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v8_retail_cpg_restaurants_travel_source_closeout.zh-CN.md"
+    }
+  },
+  "schema_version": "finsight_vertical_lane_source_closeout_summary_v0_1",
+  "status": "pass",
+  "validation": {
+    "errors": [],
+    "status": "pass"
+  }
+}

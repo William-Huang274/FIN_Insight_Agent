@@ -262,8 +262,33 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
 
     interactive = _load_interactive_module()
     runtime_args = _interactive_args_for_sec_search(args)
-    plan = interactive.build_query_plan_for_graph(runtime_args, query)
+    try:
+        plan = interactive.build_query_plan_for_graph(runtime_args, query)
+    except RuntimeError as exc:
+        if "No available SEC filings matched inferred scope" not in str(exc):
+            raise
+        query_contract = _minimal_sec_search_contract_from_args(args, query)
+        gaps = _sec_search_requested_scope_gaps(
+            query_contract,
+            reason_code="no_available_sec_filings_matched_inferred_scope",
+            reason="Interactive SEC planning found no available filings for the requested ticker/year/form/tier scope.",
+            source="mcp_sec_search_filings",
+        )
+        return _sec_search_source_gap_result(
+            query_contract=query_contract,
+            selected_tickers=query_contract.get("search_scope_tickers") or [],
+            selected_years=query_contract.get("years") or [],
+            gaps=gaps,
+        )
     query_contract = _overlay_sec_search_contract(plan.get("query_contract") or {}, args, query)
+    coverage_gaps = [gap for gap in query_contract.get("source_coverage_gaps") or [] if isinstance(gap, dict)]
+    if coverage_gaps and not query_contract.get("evidence_requirements"):
+        return _sec_search_source_gap_result(
+            query_contract=query_contract,
+            selected_tickers=query_contract.get("search_scope_tickers") or plan.get("selected_tickers") or [],
+            selected_years=query_contract.get("years") or plan.get("selected_years") or [],
+            gaps=coverage_gaps,
+        )
     output_dir = str(args.get("output_dir") or "").strip()
     if output_dir:
         resolved_output_dir = Path(output_dir).resolve()
@@ -279,7 +304,25 @@ def _invoke_sec_search(args: dict[str, Any]) -> dict[str, Any]:
     }
     if isinstance(args.get("retrieval_plan"), dict):
         graph_state["retrieval_plan"] = dict(args.get("retrieval_plan") or {})
-    result = interactive.retrieve_context_for_graph(runtime_args, graph_state)
+    try:
+        result = interactive.retrieve_context_for_graph(runtime_args, graph_state)
+    except RuntimeError as exc:
+        if "No available SEC filings matched inferred scope" not in str(exc):
+            raise
+        gaps = [gap for gap in query_contract.get("source_coverage_gaps") or [] if isinstance(gap, dict)]
+        if not gaps or not any(str(gap.get("reason_code") or "").strip() for gap in gaps):
+            gaps = _sec_search_requested_scope_gaps(
+                query_contract,
+                reason_code="no_available_sec_filings_matched_inferred_scope",
+                reason="Interactive SEC retrieval found no available filings for the requested ticker/year/form/tier scope.",
+                source="mcp_sec_search_filings",
+            )
+        return _sec_search_source_gap_result(
+            query_contract=query_contract,
+            selected_tickers=graph_state["selected_tickers"],
+            selected_years=graph_state["selected_years"],
+            gaps=gaps,
+        )
     rows = [row for row in result.get("context_rows") or [] if isinstance(row, dict)]
     trace = result.get("retrieval_trace") if isinstance(result.get("retrieval_trace"), dict) else {}
     ledger_rows: list[dict[str, Any]] = []
@@ -860,6 +903,58 @@ def _overlay_sec_search_contract(contract: dict[str, Any], args: dict[str, Any],
     return clean
 
 
+def _minimal_sec_search_contract_from_args(args: dict[str, Any], query: str) -> dict[str, Any]:
+    tickers = [str(ticker).upper() for ticker in _list_arg(args.get("tickers"))]
+    years = [int(year) for year in _list_arg(args.get("years")) if str(year).isdigit()]
+    filing_types = [_normalize_form_type(form) for form in _list_arg(args.get("filing_types")) if _normalize_form_type(form)]
+    source_tiers = [str(tier) for tier in _list_arg(args.get("source_tiers")) if str(tier).strip()]
+    metric_families = [str(family) for family in _list_arg(args.get("metric_families")) if str(family).strip()]
+    period_roles = [str(role).upper() for role in _list_arg(args.get("period_roles")) if str(role).strip()]
+    return {
+        "task_type": "sec_search_source_gap",
+        "question": query,
+        "search_scope_tickers": tickers,
+        "focus_tickers": tickers,
+        "years": years,
+        "filing_types": filing_types,
+        "source_tiers": source_tiers,
+        "metric_families": metric_families,
+        "period_roles": period_roles,
+    }
+
+
+def _sec_search_source_gap_result(
+    *,
+    query_contract: dict[str, Any],
+    selected_tickers: list[Any],
+    selected_years: list[Any],
+    gaps: list[dict[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "status": "source_gap",
+        "error": str(gaps[0].get("reason_code") or "sec_search_source_gap") if gaps else "sec_search_source_gap",
+        "context_rows": [],
+        "runtime_ledger_rows": [],
+        "row_count": 0,
+        "runtime_ledger_row_count": 0,
+        "query_contract": query_contract,
+        "selected_tickers": selected_tickers,
+        "selected_years": selected_years,
+        "retrieval_trace": {},
+        "context_runtime": {},
+        "candidate_counts": {
+            "context_row_count": 0,
+            "summary_context_row_count": 0,
+            "candidate_row_count_pre_rerank": 0,
+            "candidate_sent_to_bge": 0,
+            "route_candidate_stats": [],
+            "timing_ms": {},
+        },
+        "artifact_refs": [],
+        "source_gaps": gaps,
+    }
+
+
 def _evidence_requirements_from_args(args: dict[str, Any], contract: dict[str, Any], query: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     compiled = _compile_available_sec_requirements(args, contract, query)
     if compiled:
@@ -941,9 +1036,6 @@ def _compile_available_sec_requirements(
         available_groups.setdefault((year, form, tier, route), set()).add(ticker)
         available_keys.add((ticker, year, form, tier))
 
-    if not available_groups:
-        return None
-
     candidate_budget = _bounded_int(args.get("candidate_budget"), default=0, minimum=0, maximum=2000)
     rerank_budget = _bounded_int(args.get("rerank_budget"), default=0, minimum=0, maximum=500)
     requirements: list[dict[str, Any]] = []
@@ -988,6 +1080,8 @@ def _compile_available_sec_requirements(
                             "status": "missing",
                         }
                     )
+    if not available_groups and source_gaps:
+        return [], source_gaps
     return requirements, source_gaps
 
 
@@ -1209,6 +1303,45 @@ def _sec_search_source_gaps(contract: dict[str, Any], rows: list[dict[str, Any]]
             "source_tiers": contract.get("source_tiers") or [],
         }
     ]
+
+
+def _sec_search_requested_scope_gaps(
+    contract: dict[str, Any],
+    *,
+    reason_code: str,
+    reason: str,
+    source: str,
+) -> list[dict[str, Any]]:
+    tickers = [
+        str(item).upper()
+        for item in contract.get("search_scope_tickers") or contract.get("focus_tickers") or []
+        if str(item).strip()
+    ]
+    years = [int(item) for item in contract.get("years") or [] if str(item).isdigit()]
+    forms = [_normalize_form_type(item) for item in contract.get("filing_types") or [] if _normalize_form_type(item)]
+    tiers = [str(item) for item in contract.get("source_tiers") or [] if str(item).strip()]
+    tickers = tickers or [""]
+    years = years or [0]
+    forms = forms or [""]
+    gaps: list[dict[str, Any]] = []
+    for ticker in tickers:
+        for year in years:
+            for form in forms:
+                scoped_tiers = _tiers_for_requested_form(form, tiers) if form else (tiers or [""])
+                for tier in scoped_tiers:
+                    gap = {
+                        "ticker": ticker,
+                        "form_type": form,
+                        "source_tier": tier,
+                        "reason_code": reason_code,
+                        "reason": reason,
+                        "source": source,
+                        "status": "missing",
+                    }
+                    if year:
+                        gap["year"] = year
+                    gaps.append(gap)
+    return gaps
 
 
 _HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {

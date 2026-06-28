@@ -1,0 +1,60 @@
+{
+  "candidate_count": 52,
+  "candidate_ticker_count": 15,
+  "claim_boundary": "Rows are L1 company/local-exchange disclosed exact product or segment metrics. Percentage-only, region-only, stale document, and text-only product descriptions remain rejected attempts.",
+  "covered_target_ticker_count": 11,
+  "generated_at": "2026-06-20T17:57:39Z",
+  "metric_family_counts": {
+    "backlog_or_orders": 2,
+    "product_gross_margin": 8,
+    "product_revenue": 18,
+    "segment_revenue": 26,
+    "segment_sales": 6,
+    "shipment_value": 1,
+    "shipments": 9
+  },
+  "outputs": {
+    "rejections": "D:\\FIN_Insight_Agent\\data\\manifests\\non_us_product_kpi_local_disclosure_runtime_rejections_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\vertical_lanes\\non_us_product_kpi_local_disclosure_runtime.zh-CN.md",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\non_us_product_kpi_local_disclosure_runtime_rows_v0_1.jsonl"
+  },
+  "product_node_type_counts": {
+    "business_line": 32,
+    "product_family": 38
+  },
+  "rejection_count": 26,
+  "rejection_reason_counts": {
+    "geographic_or_region_only_no_product_kpi": 10,
+    "no_product_kpi_exact_table_pattern": 1,
+    "percentage_or_mix_only_no_exact_product_value": 13,
+    "product_or_segment_description_without_exact_value_row": 1,
+    "stale_document_year_mismatch": 1
+  },
+  "runtime_row_count": 70,
+  "runtime_ticker_count": 11,
+  "schema_version": "finsight_non_us_product_kpi_local_disclosure_runtime_summary_v0_1",
+  "source_specific_parser_counts": {
+    "eu_annual_report_segment_revenue_table_parser_v0_1": 10,
+    "hkex_operating_segment_external_revenue_table_parser_v0_1": 2,
+    "jp_ir_disco_shipment_value_sentence_parser_v0_1": 1,
+    "jp_ir_integrated_report_advantest_segment_sales_panel_parser_v0_1": 2,
+    "jp_ir_integrated_report_segment_sales_panel_parser_v0_1": 4,
+    "kr_dart_major_product_sales_table_parser_v0_1": 12,
+    "kr_dart_semiconductor_business_segment_table_parser_v0_1": 2,
+    "official_company_news_lges_product_order_backlog_parser_v0_1": 2,
+    "szse_cninfo_product_revenue_cost_margin_table_parser_v0_1": 8,
+    "szse_cninfo_product_revenue_table_parser_v0_1": 8,
+    "tw_mops_product_sales_volume_value_table_parser_v0_1": 16,
+    "tw_mops_quanta_notebook_shipment_sentence_parser_v0_1": 3
+  },
+  "status": "pass",
+  "target_ticker_count": 15,
+  "unclassified_rejection_count": 0,
+  "uncovered_target_ticker_count": 4,
+  "uncovered_target_tickers": [
+    "2308.TW",
+    "2317.TW",
+    "6723.T",
+    "8035.T"
+  ]
+}

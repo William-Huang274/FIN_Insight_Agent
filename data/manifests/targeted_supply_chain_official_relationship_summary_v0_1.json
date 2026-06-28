@@ -1,0 +1,52 @@
+{
+  "attempt_count": 33,
+  "attempt_status_counts": {
+    "fetch_failed": 3,
+    "materialized": 29,
+    "official_page_missing_required_aliases": 1
+  },
+  "boundary": "Targeted official relationship rows are L2/L3 supply-chain context only and cannot prove shipment, allocation, order volume, revenue, or share.",
+  "generated_at": "2026-06-23T18:38:09Z",
+  "outputs": {
+    "attempts": "D:\\FIN_Insight_Agent\\data\\manifests\\targeted_supply_chain_official_relationship_attempts_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\vertical_lanes\\targeted_supply_chain_official_relationship.zh-CN.md",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\targeted_supply_chain_official_relationship_context_rows_v0_1.jsonl"
+  },
+  "remaining_targeted_gap_tickers": [],
+  "row_count": 29,
+  "row_tickers": [
+    "1211.HK",
+    "2317.TW",
+    "2382.TW",
+    "3231.TW",
+    "6752.T",
+    "8035.T",
+    "AEHR",
+    "AMKR",
+    "ASML",
+    "BILL",
+    "CAMT",
+    "CCJ",
+    "CRDO",
+    "CSIQ",
+    "DNN",
+    "DQ",
+    "ENLT",
+    "ENPH",
+    "FORM",
+    "JKS",
+    "NXT",
+    "OKLO",
+    "PCAR",
+    "RUN",
+    "SEDG",
+    "SHOP",
+    "SMCI",
+    "SMR",
+    "UROY"
+  ],
+  "schema_version": "finsight_targeted_supply_chain_official_relationship_summary_v0_1",
+  "status": "pass",
+  "success_ticker_count": 29,
+  "targeted_gap_ticker_count": 0
+}

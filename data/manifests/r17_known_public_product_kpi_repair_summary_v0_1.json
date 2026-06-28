@@ -1,0 +1,16 @@
+{
+  "brands": [
+    "HOKA",
+    "Other brands",
+    "UGG"
+  ],
+  "generated_at": "2026-06-22T14:33:23Z",
+  "outputs": {
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\r17_known_public_product_kpi_repair_runtime_rows_v0_1.jsonl"
+  },
+  "policy": "R17 known-public repair rows are company-disclosed L1 Product-KPI exact rows only within cited brand/metric/period boundaries.",
+  "runtime_row_count": 3,
+  "schema_version": "finsight_r17_known_public_product_kpi_repair_summary_v0_1",
+  "status": "pass",
+  "ticker_count": 1
+}

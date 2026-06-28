@@ -1,0 +1,81 @@
+{
+  "case_id": "v1_openalex_technology_research_context_backfill",
+  "exact_authority_violations": [],
+  "gaps": [],
+  "generated_at": "2026-06-23T17:50:41Z",
+  "industry_schema": "semiconductors_hardware",
+  "phase": "runtime_case",
+  "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+  "requested_industry_schema": "semiconductors_hardware",
+  "requirements": [
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "not_bound": 48
+        },
+        "issuer_binding_status": {
+          "issuer_mentioned_in_snapshot": 48
+        },
+        "product_binding_status": {
+          "technology_topic_bound": 48
+        }
+      },
+      "by_source_status": {
+        "structured_not_promoted": 2
+      },
+      "claim_boundary": "Research/IP signal only; not product launch, sales, or durable moat proof.",
+      "dimension": "product_and_production",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 48,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L3"
+      ],
+      "next_action": "Resolve assignee/institution/topic to issuer/product and keep proxy boundary explicit.",
+      "observed_row_count": 48,
+      "observed_source_classes": [
+        "openalex_api"
+      ],
+      "observed_structured_context_types": [
+        "technology_research_proxy_context"
+      ],
+      "parser_row_count": 48,
+      "phase": "runtime_case",
+      "ready_source_count": 0,
+      "requirement_id": "technology_research_proxy",
+      "route_candidate_source_count": 2,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "openalex_api",
+        "patentsview_api"
+      ],
+      "source_profile_count": 2,
+      "specialist_roles": [
+        "product_technology_analyst"
+      ],
+      "specialist_visible_row_count": 48,
+      "status": "pass"
+    }
+  ],
+  "schema_version": "finsight_source_coverage_gate_v0_1",
+  "status": "pass",
+  "summary": {
+    "by_dimension": {
+      "product_and_production": 1
+    },
+    "by_status": {
+      "pass": 1
+    },
+    "exact_authority_violation_count": 0,
+    "fail_requirement_count": 0,
+    "gap_requirement_count": 0,
+    "pass_requirement_count": 1,
+    "requirement_count": 1
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+    "status": "pass"
+  }
+}

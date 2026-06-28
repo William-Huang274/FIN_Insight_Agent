@@ -1,0 +1,31 @@
+{
+  "attempt_count": 349,
+  "attempt_status_counts": {
+    "http_429": 31,
+    "materialized": 214,
+    "no_bound_records": 104
+  },
+  "boundary": "Only seller-bound iTunes app rows are promoted; app marketplace rows cannot prove revenue, downloads, share, sales, or moat.",
+  "generated_at": "2026-06-23T07:40:40Z",
+  "outputs": {
+    "attempts": "D:\\FIN_Insight_Agent\\data\\manifests\\broad_app_store_platform_attempts_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\broad_app_store_platform_context_rows_v0_1.jsonl"
+  },
+  "required_ticker_count": 81,
+  "row_count": 628,
+  "row_source_counts": {
+    "app_store_rankings": 282,
+    "platform_reviews_rankings_downloads": 346
+  },
+  "schema_version": "finsight_broad_app_store_platform_context_summary_v0_1",
+  "status": "pass",
+  "success_ticker_count": 190,
+  "unmaterialized_ticker_count": 5,
+  "unmaterialized_tickers": [
+    "FIVN",
+    "GTLB",
+    "OMC",
+    "ROST",
+    "TTD"
+  ]
+}

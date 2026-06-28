@@ -1,0 +1,186 @@
+{
+  "cases": [
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V4_pharma_biotech_medtech",
+      "case_id": "v4_pharma_biotech_medtech_financial_product_bridge_001",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "IQVIA/Symphony scripts",
+        "prescription share",
+        "procedure volumes",
+        "hospital channel sell-through"
+      ],
+      "focus_tickers": [
+        "LLY",
+        "NVO"
+      ],
+      "prompt": "分析 LLY, NVO 在 Pharma / Biotech / Medtech lane 中的产品/服务、财务三表、公开 KPI、资本投入、竞争位置和风险反证，要求区分 L1 强事实与 L2/L3 proxy。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V4"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "official_product_surface",
+        "regulated_product_context",
+        "trusted_external_context",
+        "technology_research_proxy",
+        "public_order_proxy",
+        "hiring_capacity_proxy",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "AMGN",
+        "BSX",
+        "ISRG",
+        "JNJ",
+        "LLY",
+        "MRK",
+        "NVO",
+        "PFE"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V4_pharma_biotech_medtech",
+      "case_id": "v4_pharma_biotech_medtech_external_source_repair_boundary_002",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required",
+        "targeted_repair_before_bounded_gap"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "IQVIA/Symphony scripts",
+        "prescription share",
+        "procedure volumes",
+        "hospital channel sell-through"
+      ],
+      "focus_tickers": [
+        "PFE",
+        "AMGN",
+        "MRK"
+      ],
+      "prompt": "针对 PFE, AMGN, MRK 检查当前公开源是否足以补齐产品、监管/行业、供应链或渠道 proxy；找不到时必须写出 retrievable/parser/bounded/commercial gap。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V4"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "official_product_surface",
+        "regulated_product_context",
+        "trusted_external_context",
+        "technology_research_proxy",
+        "public_order_proxy",
+        "hiring_capacity_proxy",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "AMGN",
+        "BSX",
+        "ISRG",
+        "JNJ",
+        "LLY",
+        "MRK",
+        "NVO",
+        "PFE",
+        "SYK",
+        "ZTS"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V4_pharma_biotech_medtech",
+      "case_id": "v4_pharma_biotech_medtech_proxy_no_promotion_003",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required",
+        "proxy_cannot_prove_sales_share_or_margin"
+      ],
+      "execution_mode": "standard_memo",
+      "expected_commercial_gaps": [
+        "IQVIA/Symphony scripts",
+        "prescription share",
+        "procedure volumes",
+        "hospital channel sell-through"
+      ],
+      "focus_tickers": [
+        "JNJ",
+        "ISRG",
+        "BSX"
+      ],
+      "prompt": "比较 JNJ, ISRG, BSX 的公开 proxy 信号如何补充但不能替代公司披露；输出应包含判断、依据、反证、缺口和触发条件。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V4"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "official_product_surface",
+        "regulated_product_context",
+        "trusted_external_context",
+        "technology_research_proxy",
+        "public_order_proxy",
+        "hiring_capacity_proxy",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "AMGN",
+        "BSX",
+        "ISRG",
+        "JNJ",
+        "LLY",
+        "MRK",
+        "NVO",
+        "PFE"
+      ]
+    }
+  ],
+  "lane_id": "V4",
+  "schema_version": "finsight_vertical_lane_cases_v0_1"
+}

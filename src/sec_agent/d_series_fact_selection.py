@@ -57,7 +57,8 @@ def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
             "blocking_gate_result_ids": [_text(row.get("gate_result_id")) for row in blocking_gates],
             "source_layer": "reconciliation_ledger",
         }
-        if status.startswith("resolved") and preferred and not blocking_gates:
+        memo_reject_reason = _resolved_group_memo_reject_reason(group, preferred)
+        if status.startswith("resolved") and preferred and not blocking_gates and not memo_reject_reason:
             approved_facts.append(
                 _with_fact_selection_relevance(
                     {
@@ -78,7 +79,7 @@ def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
                 )
             )
         else:
-            reason = "blocking_gate_failed" if blocking_gates else status or "missing_resolution"
+            reason = memo_reject_reason or ("blocking_gate_failed" if blocking_gates else status or "missing_resolution")
             rejected_facts.append(
                 {
                     **base,
@@ -335,7 +336,7 @@ def _deterministic_fact_claims_from_approved_facts(
                 "source_families": [_text(row.get("source_family"))] if _text(row.get("source_family")) else [],
                 "confidence": _text(row.get("resolution_confidence")) or "high",
                 "unsupported": False,
-                "caveats": ["deterministic fact card from approved reconciliation/pre-memo selection"],
+                "caveats": _fact_caveats(row),
                 "missing_confirmations": [],
                 "claim_card_version": "v0.3",
                 "claim_rank_score": 95 if canonical_metric in {"financial_metric:revenue", "financial_metric:capex", "product_kpi:product_revenue"} else 88,
@@ -364,7 +365,8 @@ def _deterministic_fact_claims_from_approved_facts(
                     "business_mechanism": _business_mechanism_for_fact(dimension),
                     "financial_bridge": "This ClaimCard is a reconciled numeric fact; any thesis must bridge it to revenue, margin, capex, cash-flow, or financing mechanism explicitly.",
                     "comparison_basis": "Compare only against facts with the same ticker, metric, period_role, and product/segment key.",
-                    "counter_read": "If the fact conflicts with another approved row or the period/product key changes, expose the conflict instead of averaging.",
+                    "counter_read": "若同口径事实反向变化，或产品/期间口径发生切换，该维度权重需要下调并单独暴露冲突。",
+                    "analyst_depth_gate": "period_product_unit_conflict_must_not_be_averaged",
                 },
             }
         )
@@ -437,6 +439,10 @@ def _approved_fact_can_be_claim_card(row: Mapping[str, Any]) -> bool:
         "product_kpi:backlog",
     }:
         return False
+    if canonical == "financial_metric:revenue" and not _revenue_fact_label_is_claim_card_safe(row):
+        return False
+    if canonical in {"financial_metric:gross_margin", "financial_metric:gross_profit"} and not _profitability_fact_label_is_claim_card_safe(row):
+        return False
     if _text(row.get("source_family")) in {"public_source_context", "live_public_web_context", "market_snapshot", "industry_snapshot", "relationship_graph", "milvus_semantic"}:
         return False
     return bool(_text(row.get("value")) and _text(row.get("evidence_ref")))
@@ -471,7 +477,8 @@ def _approved_fact_priority(row: Mapping[str, Any]) -> tuple[int, int, int, str,
 
 def _approved_fact_claim_text(row: Mapping[str, Any]) -> str:
     ticker = _text(row.get("ticker")).upper() or "The company"
-    metric = _metric_label(_text(row.get("canonical_metric_id")))
+    canonical_metric = _text(row.get("canonical_metric_id"))
+    metric = _metric_label(canonical_metric)
     product = _text(row.get("product_or_segment"))
     value = _text(row.get("value"))
     unit = _text(row.get("unit"))
@@ -479,7 +486,24 @@ def _approved_fact_claim_text(row: Mapping[str, Any]) -> str:
     product_part = f" for {product}" if product else ""
     unit_part = f" {unit}" if unit and unit.lower() not in value.lower() else ""
     period_part = f" in {period}" if period else ""
+    numeric_value = _float_or_none(row.get("numeric_value") or value)
+    if canonical_metric == "financial_metric:capex" and numeric_value is not None and numeric_value < 0:
+        magnitude = str(abs(numeric_value)).rstrip("0").rstrip(".")
+        magnitude_part = f"{magnitude}{unit_part}"
+        return (
+            f"{ticker} reported capital expenditure cash outflow/proxy of {magnitude_part}{period_part} "
+            f"(cash-flow sign convention: reported value {value}{unit_part})."
+        )
     return f"{ticker} reported {metric}{product_part} of {value}{unit_part}{period_part}."
+
+
+def _fact_caveats(row: Mapping[str, Any]) -> list[str]:
+    caveats = ["deterministic fact card from approved reconciliation/pre-memo selection"]
+    canonical_metric = _text(row.get("canonical_metric_id"))
+    numeric_value = _float_or_none(row.get("numeric_value") or row.get("value"))
+    if canonical_metric == "financial_metric:capex" and numeric_value is not None and numeric_value < 0:
+        caveats.append("negative sign reflects cash-flow convention; use outflow magnitude and verify exact capex line item before inferring investment growth")
+    return caveats
 
 
 def _metric_label(canonical_metric_id: str) -> str:
@@ -543,6 +567,8 @@ def _is_product_or_segment_revenue_fact(row: Mapping[str, Any]) -> bool:
     }
     if normalized in generic_or_adjustment_labels:
         return False
+    if _revenue_label_is_adjustment_or_cost(normalized):
+        return False
     geographic_only = {
         "u s",
         "us",
@@ -559,6 +585,134 @@ def _is_product_or_segment_revenue_fact(row: Mapping[str, Any]) -> bool:
     if normalized in geographic_only:
         return False
     return True
+
+
+def _revenue_fact_label_is_claim_card_safe(row: Mapping[str, Any]) -> bool:
+    label_text = " ".join(
+        _text(row.get(key))
+        for key in (
+            "product_or_segment",
+            "metric_name",
+            "row_label",
+            "evidence_ref",
+            "source_id",
+            "fact_id",
+        )
+    )
+    if not label_text.strip():
+        return True
+    normalized = " ".join(label_text.lower().replace("—", " ").replace("-", " ").replace("_", " ").split())
+    if not normalized:
+        return True
+    return not _revenue_label_is_adjustment_or_cost(normalized)
+
+
+def _revenue_label_is_adjustment_or_cost(normalized_label: str) -> bool:
+    text = f" {str(normalized_label or '').lower()} "
+    bad_exact = {
+        "cost of revenue",
+        "costs of revenue",
+        "cost of revenues",
+        "costs of revenues",
+        "cost of sales",
+        "costs of sales",
+        "realized gain on sales and dividends",
+        "proceeds from sales and maturities of investments",
+    }
+    if text.strip() in bad_exact:
+        return True
+    bad_phrases = (
+        "proceeds from sales",
+        "maturities of investments",
+        "sales and maturities of investments",
+        "proceeds",
+        "realized gain",
+        "realized loss",
+        "unrealized gain",
+        "unrealized loss",
+        "gain on sales",
+        "loss on sales",
+        "dividends",
+        "interest income",
+        "investment income",
+        "deferred",
+        "receivable",
+        "receivables",
+        "rpo",
+        "remaining performance obligation",
+        "factoring",
+        "letter of credit",
+        "letters of credit",
+        "customer financing",
+        "financing receivable",
+        "contract asset",
+        "cost of revenue",
+        "costs of revenue",
+        "cost of revenues",
+        "costs of revenues",
+        "cost of sales",
+        "costs of sales",
+        "deferred revenue",
+        "contract liabilities",
+        "sales incentives",
+        "sales allowance",
+        "allowance for",
+    )
+    return any(phrase in text for phrase in bad_phrases)
+
+
+def _resolved_group_memo_reject_reason(group: Mapping[str, Any], preferred: Mapping[str, Any]) -> str:
+    canonical = _text(group.get("canonical_metric_id"))
+    if canonical == "financial_metric:revenue":
+        if not _revenue_fact_label_is_claim_card_safe({**dict(group), **dict(preferred)}):
+            return "revenue_label_not_memo_eligible"
+        numeric_value = _float_or_none(preferred.get("numeric_value") or preferred.get("value"))
+        if numeric_value is not None and numeric_value < 0:
+            return "negative_revenue_adjustment_not_memo_eligible"
+    if canonical in {"financial_metric:gross_margin", "financial_metric:gross_profit"} and not _profitability_fact_label_is_claim_card_safe(group):
+        return "profitability_label_not_memo_eligible"
+    return ""
+
+
+def _profitability_fact_label_is_claim_card_safe(row: Mapping[str, Any]) -> bool:
+    text = " ".join(
+        _text(row.get(key))
+        for key in (
+            "product_or_segment",
+            "metric_name",
+            "row_label",
+            "group_key",
+            "evidence_ref",
+        )
+    ).lower()
+    if not text:
+        return True
+    bad_phrases = (
+        "cash flow",
+        "cash_flow",
+        "cash provided by",
+        "cash from operations",
+        "operating activities",
+        "operating_activities",
+        "financing activities",
+        "investing activities",
+        "earnings per share",
+        "earnings_per_share",
+        "diluted",
+        "basic",
+        "eps",
+    )
+    return not any(phrase in text for phrase in bad_phrases)
+
+
+def _float_or_none(value: Any) -> float | None:
+    text = str(value or "").replace(",", "").strip()
+    if not text:
+        return None
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return None
 
 
 def _analysis_dimension_title_for_fact(dimension: str) -> str:

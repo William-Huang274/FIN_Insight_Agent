@@ -1,0 +1,1212 @@
+{
+  "boundary": "V8 source closeout resolves the registry/package ambiguity by checking real materialized rows. A pass means the lane has at least one primary V8 ticker with parser-backed coverage for that requirement. It does not mean every V8 issuer or every product has complete coverage.",
+  "commercial_gap_ledger": [
+    {
+      "claim_boundary": "public sources cannot fill this as company sales/share/order/inventory authority",
+      "description": "Circana/NielsenIQ POS",
+      "gap_id": "V8_COMMERCIAL_GAP::EXPECTED::1",
+      "gap_type": "commercial_gap",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "commercial market tracker"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "public sources cannot fill this as company sales/share/order/inventory authority",
+      "description": "scanner/panel data",
+      "gap_id": "V8_COMMERCIAL_GAP::EXPECTED::2",
+      "gap_type": "commercial_gap",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "commercial market tracker"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "public sources cannot fill this as company sales/share/order/inventory authority",
+      "description": "traffic trackers",
+      "gap_id": "V8_COMMERCIAL_GAP::EXPECTED::3",
+      "gap_type": "commercial_gap",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "IDC",
+        "Counterpoint",
+        "Omdia",
+        "Gartner"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "public sources cannot fill this as company sales/share/order/inventory authority",
+      "description": "private booking conversion",
+      "gap_id": "V8_COMMERCIAL_GAP::EXPECTED::4",
+      "gap_type": "commercial_gap",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "commercial market tracker"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "public sources cannot fill this as company sales/share/order/inventory authority",
+      "description": "promotion/channel inventory",
+      "gap_id": "V8_COMMERCIAL_GAP::EXPECTED::5",
+      "gap_type": "commercial_gap",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "channel inventory tracker",
+        "retail/POS tracker"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "must remain bounded/commercial gap unless licensed tracker data is added",
+      "description": "Circana appears in product evidence graph commercial gap ledger for 385 V8-related missing product/market metrics.",
+      "gap_id": "V8_COMMERCIAL_GAP::PRODUCT_GRAPH::Circana",
+      "gap_type": "commercial_gap_from_product_evidence_graph",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "Circana"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "must remain bounded/commercial gap unless licensed tracker data is added",
+      "description": "NielsenIQ appears in product evidence graph commercial gap ledger for 385 V8-related missing product/market metrics.",
+      "gap_id": "V8_COMMERCIAL_GAP::PRODUCT_GRAPH::NielsenIQ",
+      "gap_type": "commercial_gap_from_product_evidence_graph",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "NielsenIQ"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "must remain bounded/commercial gap unless licensed tracker data is added",
+      "description": "Sensor Tower appears in product evidence graph commercial gap ledger for 10 V8-related missing product/market metrics.",
+      "gap_id": "V8_COMMERCIAL_GAP::PRODUCT_GRAPH::Sensor Tower",
+      "gap_type": "commercial_gap_from_product_evidence_graph",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "Sensor Tower"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "must remain bounded/commercial gap unless licensed tracker data is added",
+      "description": "Similarweb appears in product evidence graph commercial gap ledger for 10 V8-related missing product/market metrics.",
+      "gap_id": "V8_COMMERCIAL_GAP::PRODUCT_GRAPH::Similarweb",
+      "gap_type": "commercial_gap_from_product_evidence_graph",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "Similarweb"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "must remain bounded/commercial gap unless licensed tracker data is added",
+      "description": "data.ai appears in product evidence graph commercial gap ledger for 10 V8-related missing product/market metrics.",
+      "gap_id": "V8_COMMERCIAL_GAP::PRODUCT_GRAPH::data.ai",
+      "gap_type": "commercial_gap_from_product_evidence_graph",
+      "lane_id": "V8",
+      "required_commercial_sources": [
+        "data.ai"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    }
+  ],
+  "generated_at": "2026-06-17T12:27:43Z",
+  "inclusive_ticker_coverage": {
+    "by_source": {
+      "channel_pricing_quotations": {
+        "row_count": 1,
+        "sample_tickers": [
+          "SBUX"
+        ],
+        "ticker_count": 1
+      },
+      "company_product_kpi_facts_structured_metric_parser": {
+        "row_count": 901,
+        "sample_tickers": [
+          "ABNB",
+          "ADM",
+          "APTV",
+          "BBY",
+          "DRI",
+          "EXPE",
+          "HD",
+          "HRL",
+          "HSY",
+          "KMB",
+          "KO",
+          "KVUE",
+          "LEN",
+          "LOW",
+          "MCD",
+          "MGM",
+          "MNST",
+          "MO",
+          "NKE",
+          "ROST"
+        ],
+        "ticker_count": 26
+      },
+      "company_reported_product_operating_metrics": {
+        "row_count": 901,
+        "sample_tickers": [
+          "ABNB",
+          "ADM",
+          "APTV",
+          "BBY",
+          "DRI",
+          "EXPE",
+          "HD",
+          "HRL",
+          "HSY",
+          "KMB",
+          "KO",
+          "KVUE",
+          "LEN",
+          "LOW",
+          "MCD",
+          "MGM",
+          "MNST",
+          "MO",
+          "NKE",
+          "ROST"
+        ],
+        "ticker_count": 26
+      },
+      "fred_api": {
+        "row_count": 4,
+        "sample_tickers": [
+          "COST",
+          "HD",
+          "TGT",
+          "WMT"
+        ],
+        "ticker_count": 4
+      },
+      "industry_association_reports": {
+        "row_count": 4,
+        "sample_tickers": [
+          "COST",
+          "HD",
+          "TGT",
+          "WMT"
+        ],
+        "ticker_count": 4
+      },
+      "job_postings_hiring_signals": {
+        "row_count": 10,
+        "sample_tickers": [
+          "ABNB",
+          "DASH"
+        ],
+        "ticker_count": 2
+      },
+      "platform_reviews_rankings_downloads": {
+        "row_count": 1,
+        "sample_tickers": [
+          "ABNB"
+        ],
+        "ticker_count": 1
+      }
+    },
+    "covered_ticker_count": 30,
+    "covered_tickers": [
+      "ABNB",
+      "ADM",
+      "APTV",
+      "BBY",
+      "COST",
+      "DASH",
+      "DRI",
+      "EXPE",
+      "HD",
+      "HRL",
+      "HSY",
+      "KMB",
+      "KO",
+      "KVUE",
+      "LEN",
+      "LOW",
+      "MCD",
+      "MGM",
+      "MNST",
+      "MO",
+      "NKE",
+      "ROST",
+      "SBUX",
+      "STZ",
+      "TGT",
+      "TSN",
+      "UBER",
+      "ULTA",
+      "WMT",
+      "WSM"
+    ],
+    "missing_tickers": [
+      "BF-B",
+      "BG",
+      "BKNG",
+      "CAG",
+      "CASY",
+      "CCL",
+      "CHD",
+      "CL",
+      "CLX",
+      "CPB",
+      "CVNA",
+      "DECK",
+      "DG",
+      "DHI",
+      "DLTR",
+      "DPZ",
+      "EBAY",
+      "EL",
+      "GIS",
+      "GRMN",
+      "HAS",
+      "HLT",
+      "HST",
+      "KDP",
+      "KHC",
+      "KR",
+      "LULU",
+      "LVS",
+      "MAR",
+      "MDLZ",
+      "MELI",
+      "MKC",
+      "NCLH",
+      "NVR",
+      "PEP",
+      "PG",
+      "PHM",
+      "PM",
+      "POOL",
+      "RCL",
+      "RL",
+      "RUN",
+      "SJM",
+      "SYY",
+      "TAP",
+      "TJX",
+      "TPR",
+      "TSCO",
+      "WYNN",
+      "YUM"
+    ],
+    "schema_version": "finsight_vertical_lane_ticker_coverage_summary_v0_1",
+    "ticker_count": 80
+  },
+  "industry_schema": "retail_cpg",
+  "lane_id": "V8",
+  "lane_name": "Retail / CPG / Restaurants / Travel",
+  "primary_ticker_coverage": {
+    "by_source": {
+      "channel_pricing_quotations": {
+        "row_count": 1,
+        "sample_tickers": [
+          "SBUX"
+        ],
+        "ticker_count": 1
+      },
+      "company_product_kpi_facts_structured_metric_parser": {
+        "row_count": 818,
+        "sample_tickers": [
+          "ABNB",
+          "ADM",
+          "APTV",
+          "BBY",
+          "DRI",
+          "EXPE",
+          "HD",
+          "HRL",
+          "HSY",
+          "KMB",
+          "KO",
+          "KVUE",
+          "LEN",
+          "LOW",
+          "MCD",
+          "MGM",
+          "MNST",
+          "MO",
+          "NKE",
+          "ROST"
+        ],
+        "ticker_count": 25
+      },
+      "company_reported_product_operating_metrics": {
+        "row_count": 818,
+        "sample_tickers": [
+          "ABNB",
+          "ADM",
+          "APTV",
+          "BBY",
+          "DRI",
+          "EXPE",
+          "HD",
+          "HRL",
+          "HSY",
+          "KMB",
+          "KO",
+          "KVUE",
+          "LEN",
+          "LOW",
+          "MCD",
+          "MGM",
+          "MNST",
+          "MO",
+          "NKE",
+          "ROST"
+        ],
+        "ticker_count": 25
+      },
+      "fred_api": {
+        "row_count": 4,
+        "sample_tickers": [
+          "COST",
+          "HD",
+          "TGT",
+          "WMT"
+        ],
+        "ticker_count": 4
+      },
+      "industry_association_reports": {
+        "row_count": 4,
+        "sample_tickers": [
+          "COST",
+          "HD",
+          "TGT",
+          "WMT"
+        ],
+        "ticker_count": 4
+      },
+      "job_postings_hiring_signals": {
+        "row_count": 10,
+        "sample_tickers": [
+          "ABNB",
+          "DASH"
+        ],
+        "ticker_count": 2
+      },
+      "platform_reviews_rankings_downloads": {
+        "row_count": 1,
+        "sample_tickers": [
+          "ABNB"
+        ],
+        "ticker_count": 1
+      }
+    },
+    "covered_ticker_count": 29,
+    "covered_tickers": [
+      "ABNB",
+      "ADM",
+      "APTV",
+      "BBY",
+      "COST",
+      "DASH",
+      "DRI",
+      "EXPE",
+      "HD",
+      "HRL",
+      "HSY",
+      "KMB",
+      "KO",
+      "KVUE",
+      "LEN",
+      "LOW",
+      "MCD",
+      "MGM",
+      "MNST",
+      "MO",
+      "NKE",
+      "ROST",
+      "SBUX",
+      "STZ",
+      "TGT",
+      "TSN",
+      "ULTA",
+      "WMT",
+      "WSM"
+    ],
+    "missing_tickers": [
+      "BF-B",
+      "BG",
+      "BKNG",
+      "CAG",
+      "CASY",
+      "CCL",
+      "CHD",
+      "CL",
+      "CLX",
+      "CPB",
+      "CVNA",
+      "DECK",
+      "DG",
+      "DHI",
+      "DLTR",
+      "DPZ",
+      "EBAY",
+      "EL",
+      "GIS",
+      "GRMN",
+      "HAS",
+      "HLT",
+      "HST",
+      "KDP",
+      "KHC",
+      "KR",
+      "LULU",
+      "LVS",
+      "MAR",
+      "MDLZ",
+      "MELI",
+      "MKC",
+      "NCLH",
+      "NVR",
+      "PEP",
+      "PG",
+      "PHM",
+      "PM",
+      "POOL",
+      "RCL",
+      "RL",
+      "RUN",
+      "SJM",
+      "SYY",
+      "TAP",
+      "TJX",
+      "TPR",
+      "TSCO",
+      "WYNN",
+      "YUM"
+    ],
+    "schema_version": "finsight_vertical_lane_ticker_coverage_summary_v0_1",
+    "ticker_count": 79
+  },
+  "registry_gate_status": "gap",
+  "requirement_closeouts": [
+    {
+      "claim_boundary": "Company-disclosed financial, filing, and product operating facts only after parser/period/unit/citation gates.",
+      "closeout_reason": "parser-backed primary V8 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "fundamentals",
+      "inclusive_entity_bound_row_count": 901,
+      "inclusive_entity_bound_ticker_count": 26,
+      "inclusive_parser_row_count": 901,
+      "inclusive_row_count": 901,
+      "inclusive_ticker_covered_count": 26,
+      "lane_id": "V8",
+      "next_action": "Use SEC/FSD for US issuers and official IR/local filing route for non-US issuers before exposing a filing gap.",
+      "primary_entity_bound_row_count": 818,
+      "primary_entity_bound_ticker_count": 25,
+      "primary_parser_row_count": 818,
+      "primary_row_count": 818,
+      "primary_ticker_covered_count": 25,
+      "registry_status": "pass",
+      "requirement_id": "primary_company_disclosure",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "ABNB",
+        "ADM",
+        "APTV",
+        "BBY",
+        "DRI",
+        "EXPE",
+        "HD",
+        "HRL",
+        "HSY",
+        "KMB",
+        "KO",
+        "KVUE"
+      ],
+      "sample_primary_tickers": [
+        "ABNB",
+        "ADM",
+        "APTV",
+        "BBY",
+        "DRI",
+        "EXPE",
+        "HD",
+        "HRL",
+        "HSY",
+        "KMB",
+        "KO",
+        "KVUE"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "sec_edgar_apis",
+        "sec_financial_statement_data_sets",
+        "company_ir_reports",
+        "company_reported_product_operating_metrics"
+      ]
+    },
+    {
+      "claim_boundary": "Official product existence, specs, positioning, and company-disclosed product KPIs; no inferred sales/share.",
+      "closeout_reason": "parser-backed primary V8 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "product_and_production",
+      "inclusive_entity_bound_row_count": 901,
+      "inclusive_entity_bound_ticker_count": 26,
+      "inclusive_parser_row_count": 901,
+      "inclusive_row_count": 901,
+      "inclusive_ticker_covered_count": 26,
+      "lane_id": "V8",
+      "next_action": "Fetch official product/IR pages, parse product/spec rows, and bind issuer/product before product section judgment.",
+      "primary_entity_bound_row_count": 818,
+      "primary_entity_bound_ticker_count": 25,
+      "primary_parser_row_count": 818,
+      "primary_row_count": 818,
+      "primary_ticker_covered_count": 25,
+      "registry_status": "gap",
+      "requirement_id": "official_product_surface",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "ABNB",
+        "ADM",
+        "APTV",
+        "BBY",
+        "DRI",
+        "EXPE",
+        "HD",
+        "HRL",
+        "HSY",
+        "KMB",
+        "KO",
+        "KVUE"
+      ],
+      "sample_primary_tickers": [
+        "ABNB",
+        "ADM",
+        "APTV",
+        "BBY",
+        "DRI",
+        "EXPE",
+        "HD",
+        "HRL",
+        "HSY",
+        "KMB",
+        "KO",
+        "KVUE"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "company_product_pages",
+        "company_reported_product_operating_metrics"
+      ]
+    },
+    {
+      "claim_boundary": "Trusted event, management-statement, and industry context only; not company exact values unless independently authoritative.",
+      "closeout_reason": "parser-backed primary V8 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "competition_and_market_position",
+      "inclusive_entity_bound_row_count": 4,
+      "inclusive_entity_bound_ticker_count": 4,
+      "inclusive_parser_row_count": 4,
+      "inclusive_row_count": 4,
+      "inclusive_ticker_covered_count": 4,
+      "lane_id": "V8",
+      "next_action": "Use trusted publisher or official association routes before declaring external context unavailable.",
+      "primary_entity_bound_row_count": 4,
+      "primary_entity_bound_ticker_count": 4,
+      "primary_parser_row_count": 4,
+      "primary_row_count": 4,
+      "primary_ticker_covered_count": 4,
+      "registry_status": "pass",
+      "requirement_id": "trusted_external_context",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "COST",
+        "HD",
+        "TGT",
+        "WMT"
+      ],
+      "sample_primary_tickers": [
+        "COST",
+        "HD",
+        "TGT",
+        "WMT"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "mainstream_financial_news",
+        "industry_association_reports",
+        "official_social_accounts"
+      ]
+    },
+    {
+      "claim_boundary": "Public channel price/configuration/availability proxy only; no ASP, sell-through, inventory, or market-share inference.",
+      "closeout_reason": "parser-backed primary V8 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "product_and_production",
+      "inclusive_entity_bound_row_count": 1,
+      "inclusive_entity_bound_ticker_count": 1,
+      "inclusive_parser_row_count": 1,
+      "inclusive_row_count": 1,
+      "inclusive_ticker_covered_count": 1,
+      "lane_id": "V8",
+      "next_action": "Route e-commerce/channel snapshots through offer parser and SKU/product resolver.",
+      "primary_entity_bound_row_count": 1,
+      "primary_entity_bound_ticker_count": 1,
+      "primary_parser_row_count": 1,
+      "primary_row_count": 1,
+      "primary_ticker_covered_count": 1,
+      "registry_status": "pass",
+      "requirement_id": "channel_offer_proxy",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "SBUX"
+      ],
+      "sample_primary_tickers": [
+        "SBUX"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "ecommerce_major_platforms",
+        "channel_pricing_quotations"
+      ]
+    },
+    {
+      "claim_boundary": "Public review/ranking/download context only; directional attention signal, not sales proof.",
+      "closeout_reason": "parser-backed primary V8 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "product_and_production",
+      "inclusive_entity_bound_row_count": 1,
+      "inclusive_entity_bound_ticker_count": 1,
+      "inclusive_parser_row_count": 1,
+      "inclusive_row_count": 1,
+      "inclusive_ticker_covered_count": 1,
+      "lane_id": "V8",
+      "next_action": "Parse platform ranking/review pages with timestamp and entity/product binding.",
+      "primary_entity_bound_row_count": 1,
+      "primary_entity_bound_ticker_count": 1,
+      "primary_parser_row_count": 1,
+      "primary_row_count": 1,
+      "primary_ticker_covered_count": 1,
+      "registry_status": "pass",
+      "requirement_id": "platform_review_proxy",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "ABNB"
+      ],
+      "sample_primary_tickers": [
+        "ABNB"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "platform_reviews_rankings_downloads"
+      ]
+    },
+    {
+      "claim_boundary": "Hiring/capacity/geography signal only; weak directional evidence unless corroborated.",
+      "closeout_reason": "parser-backed primary V8 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "product_and_production",
+      "inclusive_entity_bound_row_count": 10,
+      "inclusive_entity_bound_ticker_count": 2,
+      "inclusive_parser_row_count": 10,
+      "inclusive_row_count": 10,
+      "inclusive_ticker_covered_count": 2,
+      "lane_id": "V8",
+      "next_action": "Parse company/job-board postings and role taxonomy; bind issuer/product/geography.",
+      "primary_entity_bound_row_count": 10,
+      "primary_entity_bound_ticker_count": 2,
+      "primary_parser_row_count": 10,
+      "primary_row_count": 10,
+      "primary_ticker_covered_count": 2,
+      "registry_status": "pass",
+      "requirement_id": "hiring_capacity_proxy",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "ABNB",
+        "DASH"
+      ],
+      "sample_primary_tickers": [
+        "ABNB",
+        "DASH"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "job_postings_hiring_signals"
+      ]
+    },
+    {
+      "claim_boundary": "Official macro/industry context and demand proxy only; no issuer revenue or share inference.",
+      "closeout_reason": "parser-backed primary V8 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "macro_and_industry",
+      "inclusive_entity_bound_row_count": 4,
+      "inclusive_entity_bound_ticker_count": 4,
+      "inclusive_parser_row_count": 4,
+      "inclusive_row_count": 4,
+      "inclusive_ticker_covered_count": 4,
+      "lane_id": "V8",
+      "next_action": "Resolve industry driver/source mapping and keep company exposure bridge explicit.",
+      "primary_entity_bound_row_count": 4,
+      "primary_entity_bound_ticker_count": 4,
+      "primary_parser_row_count": 4,
+      "primary_row_count": 4,
+      "primary_ticker_covered_count": 4,
+      "registry_status": "pass",
+      "requirement_id": "macro_official_context",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "COST",
+        "HD",
+        "TGT",
+        "WMT"
+      ],
+      "sample_primary_tickers": [
+        "COST",
+        "HD",
+        "TGT",
+        "WMT"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "fred_api",
+        "fred_graph_csv",
+        "bls_public_api",
+        "bea_data_api",
+        "census_data_api",
+        "eia_open_data"
+      ]
+    }
+  ],
+  "runtime_gate": {
+    "case_id": "",
+    "exact_authority_violations": [],
+    "gaps": [],
+    "generated_at": "2026-06-17T12:27:43Z",
+    "industry_schema": "retail_cpg",
+    "phase": "runtime_case",
+    "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+    "requested_industry_schema": "retail_cpg",
+    "requirements": [
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 901
+          },
+          "issuer_binding_status": {
+            "issuer_mentioned_in_snapshot": 901
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 901
+          }
+        },
+        "by_source_status": {
+          "exact_authority_ready": 1,
+          "staging_parser_gate_pending": 1,
+          "structured_not_promoted": 2
+        },
+        "claim_boundary": "Company-disclosed financial, filing, and product operating facts only after parser/period/unit/citation gates.",
+        "dimension": "fundamentals",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 901,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L1"
+        ],
+        "next_action": "Use SEC/FSD for US issuers and official IR/local filing route for non-US issuers before exposing a filing gap.",
+        "observed_row_count": 901,
+        "observed_source_classes": [
+          "company_reported_product_operating_metric"
+        ],
+        "observed_structured_context_types": [
+          "company_reported_product_operating_metric_fact"
+        ],
+        "parser_row_count": 901,
+        "phase": "runtime_case",
+        "ready_source_count": 1,
+        "requirement_id": "primary_company_disclosure",
+        "route_candidate_source_count": 4,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "sec_edgar_apis",
+          "sec_financial_statement_data_sets",
+          "company_ir_reports",
+          "company_reported_product_operating_metrics"
+        ],
+        "source_profile_count": 4,
+        "specialist_roles": [
+          "fundamental_analyst",
+          "product_technology_analyst",
+          "capital_ownership_macro_analyst"
+        ],
+        "specialist_visible_row_count": 3604,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 901
+          },
+          "issuer_binding_status": {
+            "issuer_mentioned_in_snapshot": 901
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 901
+          }
+        },
+        "by_source_status": {
+          "structured_not_promoted": 2
+        },
+        "claim_boundary": "Official product existence, specs, positioning, and company-disclosed product KPIs; no inferred sales/share.",
+        "dimension": "product_and_production",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 901,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L1",
+          "L2"
+        ],
+        "next_action": "Fetch official product/IR pages, parse product/spec rows, and bind issuer/product before product section judgment.",
+        "observed_row_count": 901,
+        "observed_source_classes": [
+          "company_reported_product_operating_metric"
+        ],
+        "observed_structured_context_types": [
+          "company_reported_product_operating_metric_fact"
+        ],
+        "parser_row_count": 901,
+        "phase": "runtime_case",
+        "ready_source_count": 0,
+        "requirement_id": "official_product_surface",
+        "route_candidate_source_count": 2,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "company_product_pages",
+          "company_reported_product_operating_metrics"
+        ],
+        "source_profile_count": 2,
+        "specialist_roles": [
+          "product_technology_analyst"
+        ],
+        "specialist_visible_row_count": 1802,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 4
+          },
+          "issuer_binding_status": {
+            "lane_context_not_issuer_bound": 4
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 4
+          }
+        },
+        "by_source_status": {
+          "not_registered": 2,
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Trusted event, management-statement, and industry context only; not company exact values unless independently authoritative.",
+        "dimension": "competition_and_market_position",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 4,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Use trusted publisher or official association routes before declaring external context unavailable.",
+        "observed_row_count": 4,
+        "observed_source_classes": [
+          "industry_association_dataset"
+        ],
+        "observed_structured_context_types": [
+          "trusted_external_context"
+        ],
+        "parser_row_count": 4,
+        "phase": "runtime_case",
+        "ready_source_count": 1,
+        "requirement_id": "trusted_external_context",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "mainstream_financial_news",
+          "industry_association_reports",
+          "official_social_accounts"
+        ],
+        "source_profile_count": 3,
+        "specialist_roles": [
+          "market_valuation_analyst",
+          "risk_counterevidence_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 4,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 1
+          },
+          "issuer_binding_status": {
+            "issuer_mentioned_in_snapshot": 1
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 1
+          }
+        },
+        "by_source_status": {
+          "not_registered": 1,
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Public channel price/configuration/availability proxy only; no ASP, sell-through, inventory, or market-share inference.",
+        "dimension": "product_and_production",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 1,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L3"
+        ],
+        "next_action": "Route e-commerce/channel snapshots through offer parser and SKU/product resolver.",
+        "observed_row_count": 1,
+        "observed_source_classes": [
+          "channel_pricing_snapshot"
+        ],
+        "observed_structured_context_types": [
+          "channel_offer_context"
+        ],
+        "parser_row_count": 1,
+        "phase": "runtime_case",
+        "ready_source_count": 1,
+        "requirement_id": "channel_offer_proxy",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "ecommerce_major_platforms",
+          "channel_pricing_quotations"
+        ],
+        "source_profile_count": 2,
+        "specialist_roles": [
+          "product_technology_analyst",
+          "market_valuation_analyst"
+        ],
+        "specialist_visible_row_count": 2,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 1
+          },
+          "issuer_binding_status": {
+            "issuer_mentioned_in_snapshot": 1
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 1
+          }
+        },
+        "by_source_status": {
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Public review/ranking/download context only; directional attention signal, not sales proof.",
+        "dimension": "product_and_production",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 1,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L3"
+        ],
+        "next_action": "Parse platform ranking/review pages with timestamp and entity/product binding.",
+        "observed_row_count": 1,
+        "observed_source_classes": [
+          "platform_review_or_ranking_snapshot"
+        ],
+        "observed_structured_context_types": [
+          "platform_review_context"
+        ],
+        "parser_row_count": 1,
+        "phase": "runtime_case",
+        "ready_source_count": 1,
+        "requirement_id": "platform_review_proxy",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "platform_reviews_rankings_downloads"
+        ],
+        "source_profile_count": 1,
+        "specialist_roles": [
+          "product_technology_analyst",
+          "market_valuation_analyst",
+          "risk_counterevidence_analyst"
+        ],
+        "specialist_visible_row_count": 1,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 10
+          },
+          "issuer_binding_status": {
+            "issuer_mentioned_in_snapshot": 10
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 10
+          }
+        },
+        "by_source_status": {
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Hiring/capacity/geography signal only; weak directional evidence unless corroborated.",
+        "dimension": "product_and_production",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 10,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L3"
+        ],
+        "next_action": "Parse company/job-board postings and role taxonomy; bind issuer/product/geography.",
+        "observed_row_count": 10,
+        "observed_source_classes": [
+          "job_posting_snapshot"
+        ],
+        "observed_structured_context_types": [
+          "hiring_signal_context"
+        ],
+        "parser_row_count": 10,
+        "phase": "runtime_case",
+        "ready_source_count": 1,
+        "requirement_id": "hiring_capacity_proxy",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "job_postings_hiring_signals"
+        ],
+        "source_profile_count": 1,
+        "specialist_roles": [
+          "product_technology_analyst",
+          "industry_supply_chain_analyst",
+          "risk_counterevidence_analyst"
+        ],
+        "specialist_visible_row_count": 20,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 4
+          },
+          "issuer_binding_status": {
+            "macro_exposure_bridge_context": 4
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 4
+          }
+        },
+        "by_source_status": {
+          "runtime_ready_context": 1,
+          "structured_not_promoted": 5
+        },
+        "claim_boundary": "Official macro/industry context and demand proxy only; no issuer revenue or share inference.",
+        "dimension": "macro_and_industry",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 4,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Resolve industry driver/source mapping and keep company exposure bridge explicit.",
+        "observed_row_count": 4,
+        "observed_source_classes": [
+          "fred_api"
+        ],
+        "observed_structured_context_types": [
+          "macro_official_context"
+        ],
+        "parser_row_count": 4,
+        "phase": "runtime_case",
+        "ready_source_count": 1,
+        "requirement_id": "macro_official_context",
+        "route_candidate_source_count": 6,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "fred_api",
+          "fred_graph_csv",
+          "bls_public_api",
+          "bea_data_api",
+          "census_data_api",
+          "eia_open_data"
+        ],
+        "source_profile_count": 6,
+        "specialist_roles": [
+          "market_valuation_analyst",
+          "capital_ownership_macro_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 12,
+        "status": "pass"
+      }
+    ],
+    "schema_version": "finsight_source_coverage_gate_v0_1",
+    "status": "pass",
+    "summary": {
+      "by_dimension": {
+        "competition_and_market_position": 1,
+        "fundamentals": 1,
+        "macro_and_industry": 1,
+        "product_and_production": 4
+      },
+      "by_status": {
+        "pass": 7
+      },
+      "exact_authority_violation_count": 0,
+      "fail_requirement_count": 0,
+      "gap_requirement_count": 0,
+      "pass_requirement_count": 7,
+      "requirement_count": 7
+    },
+    "validation": {
+      "errors": [],
+      "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+      "status": "pass"
+    }
+  },
+  "runtime_gate_status": "pass",
+  "schema_version": "finsight_vertical_lane_source_coverage_closeout_v0_1",
+  "source_gap_ledger": [],
+  "status": "pass",
+  "summary": {
+    "by_closeout_status": {
+      "pass": 7
+    },
+    "commercial_gap_count": 10,
+    "inclusive_ticker_count": 80,
+    "observed_inclusive_ticker_count": 30,
+    "observed_primary_ticker_count": 29,
+    "observed_runtime_row_count": 921,
+    "pass_requirement_count": 7,
+    "primary_ticker_count": 79,
+    "requirement_count": 7,
+    "source_gap_requirement_count": 0
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_vertical_lane_source_coverage_closeout_validation_v0_1",
+    "status": "pass"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "attempt_count": 293,
+  "attempt_status_counts": {
+    "materialized": 149,
+    "no_bound_records": 144
+  },
+  "boundary": "USAspending rows are individual public-award snapshots only and cannot prove total orders, backlog, revenue, demand, or share.",
+  "generated_at": "2026-06-23T13:47:39Z",
+  "outputs": {
+    "attempts": "D:\\FIN_Insight_Agent\\data\\manifests\\broad_public_contract_award_attempts_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\broad_public_contract_award_context_rows_v0_1.jsonl"
+  },
+  "required_ticker_count": 159,
+  "row_count": 652,
+  "row_requirement_counts": {
+    "public_order_proxy": 585,
+    "supply_chain_official_relationship": 67
+  },
+  "schema_version": "finsight_broad_public_contract_award_context_summary_v0_1",
+  "status": "pass",
+  "success_ticker_count": 133,
+  "unmaterialized_ticker_count": 26,
+  "unmaterialized_tickers": [
+    "1211.HK",
+    "2317.TW",
+    "2382.TW",
+    "3231.TW",
+    "6752.T",
+    "8035.T",
+    "AEHR",
+    "AMKR",
+    "BILL",
+    "CCJ",
+    "CRDO",
+    "CSIQ",
+    "DNN",
+    "DQ",
+    "ENLT",
+    "ENPH",
+    "INTC",
+    "JKS",
+    "NXT",
+    "OKLO",
+    "PCAR",
+    "RUN",
+    "SEDG",
+    "SHOP",
+    "SMR",
+    "UROY"
+  ]
+}

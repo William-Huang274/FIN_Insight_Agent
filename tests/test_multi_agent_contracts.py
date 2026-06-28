@@ -4,6 +4,7 @@ from sec_agent.multi_agent_contracts import (
     _unknown_numeric_tokens as _contracts_unknown_numeric_tokens,
     aggregate_focused_answer_judgment_plan,
     aggregate_specialist_judgment_plan,
+    build_judgment_state,
     build_multi_agent_memo_draft,
     normalize_universe_relationship_plan,
     refresh_judgment_plan_after_governance_filter,
@@ -151,6 +152,97 @@ def test_product_revenue_observation_is_routed_to_product_surface_even_from_fund
     assert claim["claim_id"] in product_section["primary_claim_ids"]
 
 
+def test_judgment_state_keeps_research_lead_official_product_context_in_product_dimension() -> None:
+    judgment_state = build_judgment_state(
+        {
+            "supported_claims": [
+                {
+                    "claim_id": "product_fact_lrcx_china_revenue",
+                    "claim": "LRCX reported revenue for China.",
+                    "claim_type": "company_reported_financial_fact",
+                    "analysis_dimension": "product_and_production",
+                    "memo_slot": "product_technology",
+                    "evidence_refs": ["lrcx_revenue_ref"],
+                    "source_families": ["primary_sec_filing"],
+                    "metric_scope": ["financial_metric:revenue"],
+                },
+                {
+                    "claim_id": "lead_targeted_repair_claim:asml:official",
+                    "agent_id": "research_lead",
+                    "claim": (
+                        "ASML official-source repair reached company/SEC issuer sources and identified "
+                        "product-surface leads including EUV lithography systems, DUV lithography systems, "
+                        "Installed Base Management; official parser targets include net bookings, backlog, systems revenue."
+                    ),
+                    "claim_type": "product_taxonomy_context",
+                    "analysis_dimension": "product_and_production",
+                    "memo_slot": "product_technology",
+                    "ticker_scope": ["ASML"],
+                    "metric_scope": ["product_surface_context", "net bookings", "backlog"],
+                    "evidence_refs": ["official_asml_euv", "official_asml_duv"],
+                    "source_families": ["live_public_web_context"],
+                },
+            ],
+            "thesis_driver_pack": {
+                "thesis_cards": [{"core_thesis": "Semicap cycle evidence is mixed.", "stance": "neutral", "confidence": "medium"}],
+                "dimension_sections": [
+                    {
+                        "dimension_id": "product_and_production",
+                        "title": "Product and production line evidence",
+                        "summary": "LRCX China revenue is visible, but product KPI coverage is incomplete.",
+                        "primary_claim_ids": ["product_fact_lrcx_china_revenue"],
+                        "evidence_refs": ["lrcx_revenue_ref"],
+                    }
+                ],
+            },
+        }
+    )
+
+    product_dimension = next(row for row in judgment_state["dimension_judgments"] if row["dimension_id"] == "product_and_production")
+
+    assert "lead_targeted_repair_claim:asml:official" in product_dimension["claim_ids"]
+    assert "official_asml_euv" in product_dimension["evidence_refs"]
+    assert "ASML official-source repair" in product_dimension["summary"]
+    assert "EUV lithography systems" in product_dimension["summary"]
+    assert "exact orders, backlog, sales" in product_dimension["financial_bridge"]
+    assert "parser-authority facts" in product_dimension["financial_bridge"]
+
+
+def test_capex_only_observation_is_not_routed_to_product_surface_by_provider_wording() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": (
+                            "Supplier capex for DELL, VRT, and ANET is smaller than hyperscaler capex, "
+                            "consistent with their role as equipment providers rather than cloud operators."
+                        ),
+                        "claim_type": "business_observation",
+                        "evidence_refs": ["supplier_capex_ref"],
+                        "source_families": ["company_authored_unaudited_sec_filing"],
+                        "memo_slot": "fundamentals",
+                        "ticker_scope": ["DELL", "VRT", "ANET"],
+                        "metric_scope": ["capex"],
+                        "materiality": "high",
+                        "confidence": "high",
+                    }
+                ],
+            }
+        ]
+    )
+    claim = judgment["supported_claims"][0]
+    pack = judgment["thesis_driver_pack"]
+    product_sections = [row for row in pack["dimension_sections"] if row["dimension_id"] == "product_and_production"]
+    capital_section = next(row for row in pack["dimension_sections"] if row["dimension_id"] == "capital_and_financing")
+
+    assert claim["memo_slot"] == "fundamentals"
+    assert claim["analysis_dimension"] == "capital_and_financing"
+    assert not product_sections
+    assert claim["claim_id"] in capital_section["primary_claim_ids"]
+
+
 def test_thesis_driver_pack_structures_verified_claims_for_memo_surface() -> None:
     judgment = aggregate_specialist_judgment_plan(
         [
@@ -224,6 +316,41 @@ def test_thesis_driver_pack_structures_verified_claims_for_memo_surface() -> Non
     assert draft["thesis_driver_pack"]["source_claim_refs"]
     assert draft["dimension_analyses"]
     assert draft["dimension_analyses"][0]["business_mechanism"]
+
+
+def test_thesis_driver_pack_preserves_non_financial_signal_authority_fields() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "product_technology_analyst",
+                "observations": [
+                    {
+                        "claim": "Official customer deployment evidence supports a bounded accelerator adoption signal.",
+                        "claim_type": "deployment_signal",
+                        "evidence_refs": ["r17_nvda_xai_colossus"],
+                        "source_families": ["public_source_context"],
+                        "memo_slot": "product_technology",
+                        "ticker_scope": ["NVDA"],
+                        "metric_scope": ["deployment_signal"],
+                        "materiality": "high",
+                        "confidence": "medium",
+                        "signal_authority_type": "customer_deployment_signal",
+                        "signal_promotion_level": "thesis_driver_allowed",
+                        "thesis_driver_authority": True,
+                        "allowed_non_financial_claims": ["deployment_signal", "customer_adoption_signal"],
+                        "claim_boundary": "Deployment signal only; not revenue, ASP, sales, share, or order value.",
+                    }
+                ],
+            }
+        ]
+    )
+
+    card = judgment["thesis_driver_pack"]["driver_cards"][0]
+    assert card["signal_authority_type"] == "customer_deployment_signal"
+    assert card["signal_promotion_level"] == "thesis_driver_allowed"
+    assert card["thesis_driver_authority"] is True
+    assert "deployment_signal" in card["allowed_non_financial_claims"]
+    assert "not revenue" in card["claim_boundary"]
 
 
 def test_thesis_driver_pack_keeps_risk_claims_in_risk_dimension_when_they_mention_capex_or_valuation() -> None:

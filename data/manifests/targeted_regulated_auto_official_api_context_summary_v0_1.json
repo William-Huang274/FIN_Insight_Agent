@@ -1,0 +1,30 @@
+{
+  "attempt_count": 140,
+  "attempt_status_counts": {
+    "fetch_failed": 2,
+    "materialized": 84,
+    "no_bound_records": 8,
+    "no_results_or_http_404": 46
+  },
+  "boundary": "Only sponsor/collaborator/applicant-bound ClinicalTrials/openFDA records and configured NHTSA make-model rows are promoted. No approval success, sales, utilization, registrations, share, or profitability claims.",
+  "generated_at": "2026-06-23T07:08:34Z",
+  "outputs": {
+    "attempts": "D:\\FIN_Insight_Agent\\data\\manifests\\targeted_regulated_auto_official_api_attempts_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\targeted_regulated_auto_official_api_context_rows_v0_1.jsonl"
+  },
+  "required_ticker_count": 72,
+  "row_count": 154,
+  "row_source_counts": {
+    "clinicaltrials_api": 99,
+    "fda_animal_drugs_api": 3,
+    "nhtsa_vpic_api": 21,
+    "openfda_api": 31
+  },
+  "schema_version": "finsight_targeted_regulated_auto_official_api_context_summary_v0_1",
+  "status": "pass",
+  "success_ticker_count": 71,
+  "unmaterialized_ticker_count": 1,
+  "unmaterialized_tickers": [
+    "XPEV"
+  ]
+}

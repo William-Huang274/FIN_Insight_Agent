@@ -1,0 +1,90 @@
+{
+  "case_id": "official_product_surface_context_backfill_smoke",
+  "exact_authority_violations": [],
+  "gaps": [],
+  "generated_at": "2026-06-17T19:24:06Z",
+  "industry_schema": "generic_public_research",
+  "phase": "runtime_case",
+  "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+  "requested_industry_schema": "generic_public_research",
+  "requirements": [
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "counterparty_keyword_context_candidate": 83,
+          "not_bound": 1706
+        },
+        "issuer_binding_status": {
+          "company_domain_bound": 718,
+          "issuer_mentioned_in_snapshot": 1071
+        },
+        "product_binding_status": {
+          "not_bound": 964,
+          "product_mentioned_in_snapshot": 825
+        }
+      },
+      "by_source_status": {
+        "structured_not_promoted": 2
+      },
+      "claim_boundary": "Official product existence, specs, positioning, and company-disclosed product KPIs; no inferred sales/share.",
+      "dimension": "product_and_production",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 825,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L1",
+        "L2"
+      ],
+      "next_action": "Fetch official product/IR pages, parse product/spec rows, and bind issuer/product before product section judgment.",
+      "observed_row_count": 1789,
+      "observed_source_classes": [
+        "company_product_page"
+      ],
+      "observed_structured_context_types": [
+        "channel_offer_context",
+        "official_product_taxonomy_context",
+        "platform_review_ranking_context",
+        "product_spec_context",
+        "product_surface_table_context",
+        "public_tender_contract_context"
+      ],
+      "parser_row_count": 1789,
+      "phase": "runtime_case",
+      "ready_source_count": 0,
+      "requirement_id": "official_product_surface",
+      "route_candidate_source_count": 2,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "company_product_pages",
+        "company_reported_product_operating_metrics"
+      ],
+      "source_profile_count": 2,
+      "specialist_roles": [
+        "product_technology_analyst"
+      ],
+      "specialist_visible_row_count": 1789,
+      "status": "pass"
+    }
+  ],
+  "schema_version": "finsight_source_coverage_gate_v0_1",
+  "status": "pass",
+  "summary": {
+    "by_dimension": {
+      "product_and_production": 1
+    },
+    "by_status": {
+      "pass": 1
+    },
+    "exact_authority_violation_count": 0,
+    "fail_requirement_count": 0,
+    "gap_requirement_count": 0,
+    "pass_requirement_count": 1,
+    "requirement_count": 1
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+    "status": "pass"
+  }
+}

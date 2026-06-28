@@ -1,0 +1,83 @@
+{
+  "case_id": "hiring_capacity_context_backfill_smoke",
+  "exact_authority_violations": [],
+  "gaps": [],
+  "generated_at": "2026-06-17T11:45:07Z",
+  "industry_schema": "software_saas",
+  "phase": "runtime_case",
+  "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+  "requested_industry_schema": "software_saas",
+  "requirements": [
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "counterparty_keyword_context_candidate": 3,
+          "not_bound": 52
+        },
+        "issuer_binding_status": {
+          "issuer_mentioned_in_snapshot": 55
+        },
+        "product_binding_status": {
+          "product_mentioned_in_snapshot": 55
+        }
+      },
+      "by_source_status": {
+        "runtime_ready_context": 1
+      },
+      "claim_boundary": "Hiring/capacity/geography signal only; weak directional evidence unless corroborated.",
+      "dimension": "product_and_production",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 55,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L3"
+      ],
+      "next_action": "Parse company/job-board postings and role taxonomy; bind issuer/product/geography.",
+      "observed_row_count": 55,
+      "observed_source_classes": [
+        "job_posting_snapshot"
+      ],
+      "observed_structured_context_types": [
+        "hiring_signal_context"
+      ],
+      "parser_row_count": 55,
+      "phase": "runtime_case",
+      "ready_source_count": 1,
+      "requirement_id": "hiring_capacity_proxy",
+      "route_candidate_source_count": 1,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "job_postings_hiring_signals"
+      ],
+      "source_profile_count": 1,
+      "specialist_roles": [
+        "product_technology_analyst",
+        "industry_supply_chain_analyst",
+        "risk_counterevidence_analyst"
+      ],
+      "specialist_visible_row_count": 165,
+      "status": "pass"
+    }
+  ],
+  "schema_version": "finsight_source_coverage_gate_v0_1",
+  "status": "pass",
+  "summary": {
+    "by_dimension": {
+      "product_and_production": 1
+    },
+    "by_status": {
+      "pass": 1
+    },
+    "exact_authority_violation_count": 0,
+    "fail_requirement_count": 0,
+    "gap_requirement_count": 0,
+    "pass_requirement_count": 1,
+    "requirement_count": 1
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+    "status": "pass"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "case_id": "developer_ecosystem_context_backfill_smoke",
+  "exact_authority_violations": [],
+  "gaps": [],
+  "generated_at": "2026-06-20T17:38:52Z",
+  "industry_schema": "semiconductors_hardware",
+  "phase": "runtime_case",
+  "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+  "requested_industry_schema": "semiconductors_hardware",
+  "requirements": [
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "not_bound": 126
+        },
+        "issuer_binding_status": {
+          "issuer_mentioned_in_snapshot": 126
+        },
+        "product_binding_status": {
+          "product_mentioned_in_snapshot": 126
+        }
+      },
+      "by_source_status": {
+        "runtime_ready_context": 1
+      },
+      "claim_boundary": "Developer ecosystem activity or technical attention proxy only; not product revenue, sales, or moat proof.",
+      "dimension": "product_and_production",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 126,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L3"
+      ],
+      "next_action": "Route GitHub/npm/PyPI/HuggingFace through source-specific parser and project-to-issuer resolver.",
+      "observed_row_count": 126,
+      "observed_source_classes": [
+        "developer_ecosystem_snapshot"
+      ],
+      "observed_structured_context_types": [
+        "developer_ecosystem_context",
+        "developer_package_context",
+        "market_proxy_context"
+      ],
+      "parser_row_count": 126,
+      "phase": "runtime_case",
+      "ready_source_count": 1,
+      "requirement_id": "developer_ecosystem_proxy",
+      "route_candidate_source_count": 1,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "developer_ecosystem_github_npm_pypi_huggingface"
+      ],
+      "source_profile_count": 1,
+      "specialist_roles": [
+        "product_technology_analyst",
+        "industry_supply_chain_analyst"
+      ],
+      "specialist_visible_row_count": 252,
+      "status": "pass"
+    }
+  ],
+  "schema_version": "finsight_source_coverage_gate_v0_1",
+  "status": "pass",
+  "summary": {
+    "by_dimension": {
+      "product_and_production": 1
+    },
+    "by_status": {
+      "pass": 1
+    },
+    "exact_authority_violation_count": 0,
+    "fail_requirement_count": 0,
+    "gap_requirement_count": 0,
+    "pass_requirement_count": 1,
+    "requirement_count": 1
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+    "status": "pass"
+  }
+}

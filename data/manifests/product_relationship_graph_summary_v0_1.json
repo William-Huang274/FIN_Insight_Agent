@@ -1,0 +1,45 @@
+{
+  "boundary": "Product graph is provenance-backed. Competitive/supply-chain edges are retrieval and analyst-context edges unless an official/source-specific parser promotes them; no market share, sales, ASP, or undisclosed KPI authority is inferred.",
+  "company_count": 603,
+  "edge_count": 25251,
+  "edge_types": {
+    "BELONGS_TO_FAMILY": 6521,
+    "CHANNEL_OR_DISTRIBUTION_CONTEXT": 99,
+    "COMPETES_WITH": 3420,
+    "COMPLEMENTS_WITH": 18,
+    "COMPONENT_INPUT_TO": 18,
+    "ENABLES_PRODUCTION_FOR": 56,
+    "FAMILY_HAS_PRODUCT_SLOT": 6521,
+    "HAS_PRODUCT_FAMILY": 663,
+    "HAS_PRODUCT_SLOT": 6521,
+    "INFRASTRUCTURE_COMPLEMENT_TO": 27,
+    "INFRASTRUCTURE_SUPPLIER_TO": 24,
+    "INPUT_OR_COMPLEMENT_TO": 12,
+    "IN_PRODUCT_FAMILY": 663,
+    "MANUFACTURING_DEPENDENCY_FOR": 46,
+    "OFFICIAL_CUSTOMER_DEPLOYMENT_EVENT": 222,
+    "OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP": 147,
+    "PUBLIC_ORDER_OR_TENDER_CONTEXT": 273
+  },
+  "generated_at": "2026-06-25T03:31:06Z",
+  "node_count": 8187,
+  "parser_backed_relationship_edge_count": 741,
+  "product_family_count": 79,
+  "product_slot_count": 6521,
+  "schema_version": "finsight_product_relationship_graph_summary_v0_1",
+  "slot_status": {
+    "bounded_context_slot": 103,
+    "company_route_needs_family_binding": 4,
+    "filings_taxonomy_slot": 1890,
+    "official_surface_slot": 4392,
+    "product_kpi_exact_slot": 132
+  },
+  "status": "pass",
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_product_relationship_graph_validation_v0_1",
+    "status": "pass"
+  },
+  "with_family_bound_runtime_slot_count": 6517,
+  "with_url_slot_count": 6521
+}

@@ -1,0 +1,24 @@
+{
+  "attempt_count": 56,
+  "attempt_status_counts": {
+    "fetch_failed": 6,
+    "materialized": 16,
+    "unusable_response": 34
+  },
+  "boundary": "Materialized official spec/profile pages are fetch artifacts only. They become runtime evidence only after source-specific parsers emit value/unit/period/product/citation rows.",
+  "generated_at": "2026-06-24T18:49:33Z",
+  "materialized_count": 16,
+  "output_row_count": 260,
+  "route_counts": {
+    "business_asset_profile_spec": 155,
+    "technical_product_spec": 105
+  },
+  "schema_version": "finsight_official_spec_source_pages_materialization_summary_v0_1",
+  "selected_candidate_count": 56,
+  "source_role_counts": {
+    "business_asset_profile_spec": 155,
+    "technical_product_spec": 105
+  },
+  "status": "pass",
+  "ticker_count": 110
+}

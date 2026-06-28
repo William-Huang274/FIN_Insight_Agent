@@ -1,0 +1,20 @@
+{
+  "attempt_count": 7,
+  "attempt_provider_counts": {
+    "hk_open_data_contract_awards": 1,
+    "jp_jetro_procurement": 2,
+    "tw_pcc_eprocurement": 4
+  },
+  "attempt_status_counts": {
+    "fetch_failed": 4,
+    "no_supplier_bound_award_or_no_structured_award_endpoint": 3
+  },
+  "boundary": "Local tender rows require supplier-bound award id, amount, date, agency, and official source URL; portal existence alone stays attempt-only.",
+  "generated_at": "2026-06-20T17:38:30Z",
+  "row_count": 0,
+  "row_ticker_count": 0,
+  "row_tickers": [],
+  "schema_version": "finsight_local_public_tender_summary_v0_1",
+  "status": "pass",
+  "target_ticker_count": 0
+}

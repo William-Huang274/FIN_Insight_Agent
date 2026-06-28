@@ -1,0 +1,73 @@
+{
+  "authority_boundary": "Rows are bounded ProductProfileSlot or BusinessProfileSlot context. They support product/service/asset/operating-profile analysis, but do not prove revenue, ASP, market share, sell-through, inventory, backlog, customer order value, or commercial tracker exactness.",
+  "by_profile_type": {
+    "company_disclosed_operating_profile": 53,
+    "company_disclosed_product_or_segment_metric_profile": 2009,
+    "company_filing_taxonomy_candidate_profile": 4507,
+    "official_product_catalog_profile": 337,
+    "official_product_surface_category_profile": 148,
+    "regulated_product_or_trial_profile": 3,
+    "regulated_vehicle_model_profile": 8,
+    "sec_filings_product_taxonomy_profile": 1815
+  },
+  "by_runtime_contract": {
+    "BusinessProfileSlot": 53,
+    "ProductProfileSlot": 8827
+  },
+  "by_source_role": {
+    "business_service_profile_spec": 53,
+    "official_product_profile_spec": 8827
+  },
+  "diagnostics": {
+    "operating_profile_candidate_count": 3813,
+    "operating_profile_input_count": 7988,
+    "product_profile_candidate_count": 10649,
+    "product_profile_input_count": 25409,
+    "rejected_candidate_count": 2211,
+    "rejection_reasons": {
+      "metric_family_is_kpi_or_revenue_not_profile": 65,
+      "metric_family_not_supported_for_profile": 5,
+      "region_or_aggregate_product_metric_profile_name": 357,
+      "unsupported_product_profile_source": 937,
+      "weak_or_navigation_product_metric_profile_name": 131,
+      "weak_or_navigation_product_profile_name": 716
+    }
+  },
+  "generated_at": "2026-06-24T19:31:52Z",
+  "row_count": 8880,
+  "rows_by_ticker_top30": {
+    "A": 20,
+    "ABBV": 20,
+    "ABT": 20,
+    "ADM": 20,
+    "ADSK": 20,
+    "AMAT": 20,
+    "AMGN": 20,
+    "AMKR": 20,
+    "AON": 20,
+    "APA": 20,
+    "ARM": 20,
+    "ASML": 20,
+    "AVY": 20,
+    "AWK": 20,
+    "AXON": 20,
+    "BA": 20,
+    "BAX": 20,
+    "BBY": 20,
+    "BDX": 20,
+    "BILL": 20,
+    "BLDR": 20,
+    "BMRN": 20,
+    "BMY": 20,
+    "BR": 20,
+    "BSX": 20,
+    "BXP": 20,
+    "CAMT": 20,
+    "CAT": 20,
+    "CBOE": 20,
+    "CDNS": 20
+  },
+  "schema_version": "finsight_company_disclosed_product_profile_context_summary_v0_1",
+  "status": "pass",
+  "ticker_count": 603
+}

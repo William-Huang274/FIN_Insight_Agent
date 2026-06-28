@@ -1,0 +1,110 @@
+{
+  "fail_count": 0,
+  "fail_samples": [],
+  "gate_count": 47,
+  "generated_at": "2026-06-26T18:10:37Z",
+  "group_status_counts": {
+    "cross_authority_consumption": {
+      "pass": 1
+    },
+    "rd1_raw_source_provenance": {
+      "pass": 6,
+      "warn": 1
+    },
+    "rd2_parser_quality": {
+      "pass": 6,
+      "warn": 1
+    },
+    "rd3_gold_fact_signal_mart": {
+      "pass": 6
+    },
+    "rd4_research_graph_store": {
+      "pass": 8,
+      "warn": 1
+    },
+    "rd5_retrieval_index_registry": {
+      "pass": 7,
+      "warn": 2
+    },
+    "rd6_agent_runtime_consumption": {
+      "pass": 8
+    }
+  },
+  "outputs": {
+    "gate_rows": "D:\\FIN_Insight_Agent\\data\\manifests\\data_quality_release_eval_gate_rows_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\rd7_data_quality_release_eval_gate.zh-CN.md",
+    "sqlite": "D:\\FIN_Insight_Agent\\data\\workbench_private\\research_data\\data_quality_release_eval_gate_v0_1.sqlite",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\data_quality_release_eval_gate_summary_v0_1.json"
+  },
+  "pass_count": 42,
+  "policy": "RD7 is a release-eval gate for the data base. Hard failures block runtime promotion; warnings remain visible as replay/cache/parser-depth debt and must not be hidden by downstream agent prompts.",
+  "release_decision": "release_allowed_with_recorded_warnings",
+  "schema_version": "finsight_data_quality_release_gate_summary_v0_1",
+  "severity_counts": {
+    "hard": 42,
+    "soft": 5
+  },
+  "sqlite_gate_row_count": 47,
+  "sqlite_path": "D:\\FIN_Insight_Agent\\data\\workbench_private\\research_data\\data_quality_release_eval_gate_v0_1.sqlite",
+  "status": "pass_with_warnings",
+  "status_counts": {
+    "pass": 42,
+    "warn": 5
+  },
+  "upstream_summary_statuses": {
+    "rd1_raw_source_provenance": "pass",
+    "rd2_parser_quality": "pass_with_recorded_rejections",
+    "rd3_gold_fact_signal_mart": "pass",
+    "rd4_research_graph_store": "pass",
+    "rd5_retrieval_index_registry": "pass",
+    "rd6_agent_runtime_consumption": "pass"
+  },
+  "warn_count": 5,
+  "warn_samples": [
+    {
+      "gate_group": "rd1_raw_source_provenance",
+      "gate_name": "url_only_context_lineage_count",
+      "message": "URL-only rows are traceable but not locally replayable until cached.",
+      "observed_value": "35587",
+      "severity": "soft",
+      "status": "warn",
+      "threshold": "0 preferred"
+    },
+    {
+      "gate_group": "rd2_parser_quality",
+      "gate_name": "parser_status_counts.unknown",
+      "message": "Parser run status has unknown rows; keep as parser-ledger quality debt.",
+      "observed_value": "10",
+      "severity": "soft",
+      "status": "warn",
+      "threshold": "0 preferred"
+    },
+    {
+      "gate_group": "rd4_research_graph_store",
+      "gate_name": "support_status_counts.modelled_relationship_without_direct_evidence_ref",
+      "message": "Modelled relationship edges exist without direct evidence ref; keep bounded and auditable.",
+      "observed_value": "65",
+      "severity": "soft",
+      "status": "warn",
+      "threshold": "0 preferred"
+    },
+    {
+      "gate_group": "rd5_retrieval_index_registry",
+      "gate_name": "record_snapshot_trace_status_counts.record_snapshot_without_verified_raw_trace",
+      "message": "Index records contain a source artifact but not a verified local raw trace.",
+      "observed_value": "1",
+      "severity": "soft",
+      "status": "warn",
+      "threshold": "0 preferred"
+    },
+    {
+      "gate_group": "rd5_retrieval_index_registry",
+      "gate_name": "parser_artifact_link_status_counts.no_parser_artifact_match",
+      "message": "Some index lineage rows do not map to a parser artifact; allowed for Milvus summary/legacy raw-trace rows only.",
+      "observed_value": "3",
+      "severity": "soft",
+      "status": "warn",
+      "threshold": "0 preferred"
+    }
+  ]
+}

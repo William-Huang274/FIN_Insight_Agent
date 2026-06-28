@@ -278,6 +278,26 @@ def test_specialist_llm_salvages_single_no_ref_observation_when_supported_claims
     assert result["validation"]["warnings"][-1]["type"] == "supported_observation_dropped_missing_or_unknown_evidence_refs"
 
 
+def test_specialist_llm_demotes_all_no_ref_risk_observations_to_unsupported() -> None:
+    memolet = _memolet("risk_counterevidence_analyst")
+    for observation in memolet["observations"]:
+        observation["evidence_refs"] = []
+    fake = _FakeChat([json.dumps(memolet)])
+
+    result = route_specialist_memolet_llm(
+        "risk_counterevidence_analyst",
+        _request(),
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["routing_trace"]["salvage_policy"] == "drop_supported_observations_with_missing_or_unknown_evidence_refs"
+    assert result["memolet"]["observations"] == []
+    assert result["memolet"]["unsupported_claims"][0]["reason"] == "dropped_from_supported_observations_missing_or_unknown_evidence_refs"
+    assert result["validation"]["warnings"][-1]["removed_count"] == 1
+
+
 def test_specialist_llm_demotes_single_ref_temporal_observation_without_row_support() -> None:
     memolet = _memolet("fundamental_analyst", evidence_ref="pfe_ref")
     memolet["observations"][0]["claim"] = (
@@ -514,6 +534,102 @@ def test_build_specialist_request_from_state_sanitizes_rows() -> None:
     assert len(request["bounded_evidence_rows"][0]["summary"]) <= 400
     assert "snapshot_id" not in request["bounded_evidence_rows"][0]
     assert "as_of_date" not in request["bounded_evidence_rows"][0]
+
+
+def test_build_specialist_request_includes_role_source_layer_distribution() -> None:
+    request = build_specialist_request_from_state(
+        "product_technology_analyst",
+        {
+            "user_query": "Analyze product evidence.",
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["product_technology_analyst"],
+            },
+            "source_layer_capability_audit": {
+                "rows": [
+                    {
+                        "source_id": "company_ir_reports",
+                        "layer_id": "L1",
+                        "evidence_graph_status": "staging_parser_gate_pending",
+                        "specialist_slots": ["product_technology"],
+                        "context_or_proxy_allowed": True,
+                        "exact_value_authority_ready": False,
+                        "can_support_company_exact_fact": False,
+                    },
+                    {
+                        "source_id": "company_product_pages",
+                        "layer_id": "L2",
+                        "evidence_graph_status": "structured_not_promoted",
+                        "specialist_slots": ["product_technology"],
+                        "context_or_proxy_allowed": True,
+                        "exact_value_authority_ready": False,
+                        "can_support_company_exact_fact": False,
+                    },
+                    {
+                        "source_id": "ecommerce_major_platforms",
+                        "layer_id": "L3",
+                        "evidence_graph_status": "not_registered",
+                        "specialist_slots": ["product_technology"],
+                        "context_or_proxy_allowed": False,
+                        "exact_value_authority_ready": False,
+                        "can_support_company_exact_fact": False,
+                    },
+                ]
+            },
+        },
+    )
+
+    distribution = request["source_layer_distribution"]
+    assert distribution["role"] == "product_technology_analyst"
+    assert distribution["coverage_status"] == "gap"
+    assert distribution["selected_by_layer"] == {"L1": 1, "L2": 1}
+    assert distribution["selected_missing_required_layers"] == ["L3"]
+    assert request["shared_context"]["role_source_layer_distribution"]["gap_roles"] == ["product_technology_analyst"]
+
+
+def test_specialist_prompt_includes_compact_source_layer_distribution() -> None:
+    fake = _FakeChat([json.dumps(_memolet("product_technology_analyst", source_family="company_product_evidence_graph"))])
+    request = _request(source_family="company_product_evidence_graph")
+    request["agent_id"] = "product_technology_analyst"
+    request["source_layer_distribution"] = {
+        "schema_version": "finsight_role_source_layer_selector_v0_1",
+        "role": "product_technology_analyst",
+        "coverage_status": "gap",
+        "candidate_count": 3,
+        "selected_count": 2,
+        "repairable_candidate_count": 2,
+        "not_registered_count": 1,
+        "required_layers": ["L1", "L2", "L3"],
+        "selected_by_layer": {"L1": 1, "L2": 1},
+        "selected_missing_required_layers": ["L3"],
+        "selected_sources": [
+            {
+                "source_id": "company_product_pages",
+                "layer_id": "L2",
+                "evidence_graph_status": "structured_not_promoted",
+                "claim_scope": "product_existence_spec_or_launch_context",
+                "source_entity_role": "product_or_platform_context",
+                "issuer_binding_status": "company_domain_bound",
+                "product_binding_status": "product_mentioned_in_snapshot",
+            }
+        ],
+    }
+
+    result = route_specialist_memolet_llm(
+        "product_technology_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    user_prompt = fake.calls[0]["messages"][1]["content"]
+    payload = json.loads(user_prompt.split("Input JSON:\n", 1)[1])
+    assert result["status"] == "pass"
+    assert payload["source_layer_distribution"]["coverage_status"] == "gap"
+    assert payload["source_layer_distribution"]["selected_missing_required_layers"] == ["L3"]
+    selected_source = payload["source_layer_distribution"]["selected_sources"][0]
+    assert selected_source["source_entity_role"] == "product_or_platform_context"
+    assert selected_source["issuer_binding_status"] == "company_domain_bound"
 
 
 def test_specialist_prompt_uses_compact_json_payload() -> None:
@@ -826,6 +942,54 @@ def test_agent_data_view_routes_product_evidence_and_public_source_context_rows(
 
     risk_families = {row["source_family"] for row in risk["bounded_evidence_rows"]}
     assert {"company_product_evidence_graph", "public_source_context"} <= risk_families
+
+
+def test_specialist_request_preserves_public_web_entity_binding_metadata() -> None:
+    request = build_specialist_request_from_state(
+        "industry_supply_chain_analyst",
+        {
+            "user_query": "Analyze Dell supply-chain relationship context.",
+            "query_contract": {"focus_tickers": ["DELL"]},
+            "agent_activation_plan": {
+                "execution_mode": "standard_memo",
+                "activate_agents": ["industry_supply_chain_analyst"],
+            },
+            "context_rows": [
+                {
+                    "evidence_ref": "public_web_supply_news_dell",
+                    "source_family": "live_public_web_context",
+                    "ticker": "DELL",
+                    "source_class": "supplier_customer_official_news",
+                    "structured_context_type": "official_supply_chain_news_context",
+                    "summary": "Official partner news says Dell was named as supplier for a customer AI server deployment.",
+                    "context_only": True,
+                    "exact_value_authority": False,
+                    "issuer_binding_status": "issuer_mentioned_in_snapshot",
+                    "product_binding_status": "not_bound",
+                    "counterparty_binding_status": "relationship_context_candidate",
+                    "entity_binding_claim_boundary": "Binding metadata does not promote shipment or order-volume authority.",
+                    "entity_binding": {
+                        "issuer_binding_status": "issuer_mentioned_in_snapshot",
+                        "product_binding_status": "not_bound",
+                        "counterparty_binding_status": "relationship_context_candidate",
+                        "source_entity_role": "supplier_customer_or_partner_context",
+                        "issuer_matched_terms": ["DELL"],
+                        "binding_claim_boundary": "Binding metadata does not promote shipment or order-volume authority.",
+                    },
+                }
+            ],
+        },
+    )
+
+    row = next(item for item in request["bounded_evidence_rows"] if item["evidence_ref"] == "public_web_supply_news_dell")
+    distribution = request["prompt_row_distribution"]
+
+    assert row["source_entity_role"] == "supplier_customer_or_partner_context"
+    assert row["issuer_binding_status"] == "issuer_mentioned_in_snapshot"
+    assert row["counterparty_binding_status"] == "relationship_context_candidate"
+    assert row["entity_binding"]["issuer_matched_terms"] == ["DELL"]
+    assert distribution["by_source_entity_role"] == {"supplier_customer_or_partner_context": 1}
+    assert distribution["by_issuer_binding_status"] == {"issuer_mentioned_in_snapshot": 1}
 
 
 def test_build_specialist_request_from_state_uses_deep_research_prompt_budget() -> None:

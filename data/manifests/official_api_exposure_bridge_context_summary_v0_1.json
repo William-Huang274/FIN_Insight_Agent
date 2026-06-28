@@ -1,0 +1,28 @@
+{
+  "boundary": "Bridge rows are bounded exact snapshots of official/API values or research proxy values routed through company/lane/family exposure rules. They cannot support issuer revenue, sales, shipments, market share, margin, commercial uptake, or moat claims.",
+  "company_count": 603,
+  "context_row_count": 1021,
+  "generated_at": "2026-06-18T13:18:06Z",
+  "input_official_row_count": 150,
+  "issuer_binding_status_counts": {
+    "family_assignment_exposure_context": 125,
+    "macro_exposure_bridge_context": 896
+  },
+  "outputs": {
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\official_api_exposure_bridge_context_rows_v0_1.jsonl"
+  },
+  "requirement_counts": {
+    "energy_utility_context": 216,
+    "financial_regulatory_context": 77,
+    "macro_official_context": 603,
+    "technology_research_proxy": 125
+  },
+  "schema_version": "finsight_official_api_exposure_bridge_context_summary_v0_1",
+  "source_id_counts": {
+    "eia_open_data": 216,
+    "fred_api": 680,
+    "openalex_api": 125
+  },
+  "status": "pass",
+  "ticker_count": 603
+}

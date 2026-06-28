@@ -1,0 +1,157 @@
+{
+  "app_rank_store_proxy_requirement": {
+    "entity_bound_row_count": 11,
+    "gaps": [],
+    "observed_row_count": 11,
+    "parser_row_count": 11,
+    "specialist_visible_row_count": 22,
+    "status": "pass"
+  },
+  "attempted_count": 11,
+  "attempts": [
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=375380948",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\aapl_apple_app_store_apple_store.json",
+      "source_url": "https://apps.apple.com/us/app/apple-store/id375380948",
+      "status": "materialized",
+      "ticker": "AAPL",
+      "title": "Apple Store"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=1108187390",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\aapl_apple_app_store_apple_music.json",
+      "source_url": "https://apps.apple.com/us/app/apple-music/id1108187390",
+      "status": "materialized",
+      "ticker": "AAPL",
+      "title": "Apple Music"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=284815942",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\googl_apple_app_store_google.json",
+      "source_url": "https://apps.apple.com/us/app/google/id284815942",
+      "status": "materialized",
+      "ticker": "GOOGL",
+      "title": "Google"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=544007664",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\googl_apple_app_store_youtube.json",
+      "source_url": "https://apps.apple.com/us/app/youtube/id544007664",
+      "status": "materialized",
+      "ticker": "GOOGL",
+      "title": "YouTube"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=585027354",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\googl_apple_app_store_google_maps.json",
+      "source_url": "https://apps.apple.com/us/app/google-maps/id585027354",
+      "status": "materialized",
+      "ticker": "GOOGL",
+      "title": "Google Maps"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=284882215",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\meta_apple_app_store_facebook.json",
+      "source_url": "https://apps.apple.com/us/app/facebook/id284882215",
+      "status": "materialized",
+      "ticker": "META",
+      "title": "Facebook"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=389801252",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\meta_apple_app_store_instagram.json",
+      "source_url": "https://apps.apple.com/us/app/instagram/id389801252",
+      "status": "materialized",
+      "ticker": "META",
+      "title": "Instagram"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=310633997",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\meta_apple_app_store_whatsapp_messenger.json",
+      "source_url": "https://apps.apple.com/us/app/whatsapp-messenger/id310633997",
+      "status": "materialized",
+      "ticker": "META",
+      "title": "WhatsApp Messenger"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=951937596",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\msft_apple_app_store_microsoft_outlook.json",
+      "source_url": "https://apps.apple.com/us/app/microsoft-outlook/id951937596",
+      "status": "materialized",
+      "ticker": "MSFT",
+      "title": "Microsoft Outlook"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=1113153706",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\msft_apple_app_store_microsoft_teams.json",
+      "source_url": "https://apps.apple.com/us/app/microsoft-teams/id1113153706",
+      "status": "materialized",
+      "ticker": "MSFT",
+      "title": "Microsoft Teams"
+    },
+    {
+      "api_url": "https://itunes.apple.com/lookup?id=363590051",
+      "parsed_row_count": 1,
+      "provider": "apple_app_store",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\app_marketplace\\nflx_apple_app_store_netflix.json",
+      "source_url": "https://apps.apple.com/us/app/netflix/id363590051",
+      "status": "materialized",
+      "ticker": "NFLX",
+      "title": "Netflix"
+    }
+  ],
+  "boundary": "L3 app marketplace rows are directional listing/rating/version proxy only and cannot prove downloads, revenue, sales, share, customer adoption, or moat.",
+  "context_row_count": 11,
+  "coverage_gate_status": "pass",
+  "failed_count": 0,
+  "generated_at": "2026-06-17T09:55:19Z",
+  "google_play_gap": "Google Play has no first-party public lookup API wired in this tranche; keep it as an app marketplace coverage gap instead of pretending App Store coverage is full marketplace coverage.",
+  "issuer_binding_status_counts": {
+    "issuer_mentioned_in_snapshot": 11
+  },
+  "materialized_count": 11,
+  "outputs": {
+    "coverage_gate": "D:\\FIN_Insight_Agent\\data\\manifests\\app_marketplace_runtime_coverage_gate_v0_1.json",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\app_marketplace_context_rows_v0_1.jsonl"
+  },
+  "parser_backed_row_count": 11,
+  "product_binding_status_counts": {
+    "product_mentioned_in_snapshot": 11
+  },
+  "provider_counts": {
+    "apple_app_store": 11
+  },
+  "schema_version": "fin_agent_app_marketplace_context_summary_v0_1",
+  "status": "pass",
+  "structured_context_type_counts": {
+    "app_store_marketplace_context": 11
+  },
+  "ticker_count": 5,
+  "tickers": [
+    "AAPL",
+    "GOOGL",
+    "META",
+    "MSFT",
+    "NFLX"
+  ]
+}

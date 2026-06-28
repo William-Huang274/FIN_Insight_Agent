@@ -1,0 +1,912 @@
+{
+  "contract_count": 21,
+  "contracts": [
+    {
+      "allowed_claims": [
+        "company_disclosed_product_kpi",
+        "company_reported_product_operating_fact"
+      ],
+      "any_field_groups": [],
+      "authority_scope": "company_disclosed_exact_fact",
+      "claim_boundary": "Company-disclosed product operating metric with value/unit/period/product/citation parser pass.",
+      "exact_company_fact_allowed": true,
+      "forbidden_claims": [
+        "market_share",
+        "sell_through",
+        "channel_inventory",
+        "undisclosed_product_revenue"
+      ],
+      "layer_ids": [
+        "L1"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "product_or_segment",
+        "metric_name",
+        "value",
+        "unit",
+        "period",
+        "citation_span"
+      ],
+      "requirement_id": "primary_company_disclosure",
+      "slot_kind": "company_reported_product_operating_metric",
+      "source_ids": [
+        "company_reported_product_operating_metrics"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "company_reported_financial_statement_fact",
+        "company_disclosed_fundamental_fact"
+      ],
+      "any_field_groups": [
+        [
+          "filing_type",
+          "source_document_id"
+        ]
+      ],
+      "authority_scope": "company_disclosed_financial_statement_exact_fact",
+      "claim_boundary": "SEC/company-reported structured financial-statement metric with value/unit/period/statement/citation parser pass. It supports consolidated/statement-level fundamentals, not product-level sales unless a product KPI row exists.",
+      "exact_company_fact_allowed": true,
+      "forbidden_claims": [
+        "product_sales_without_product_kpi",
+        "market_share",
+        "sell_through",
+        "channel_inventory",
+        "undisclosed_product_revenue"
+      ],
+      "layer_ids": [
+        "L1"
+      ],
+      "required_binding_kinds": [
+        "issuer"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "metric_name",
+        "value",
+        "unit",
+        "period",
+        "statement_or_section",
+        "citation_span"
+      ],
+      "requirement_id": "primary_company_disclosure",
+      "slot_kind": "company_reported_financial_statement_metric",
+      "source_ids": [
+        "sec_financial_statement_data_sets",
+        "company_ir_reports"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "official_product_surface",
+        "product_taxonomy_context",
+        "product_spec_context"
+      ],
+      "any_field_groups": [
+        [
+          "source_title",
+          "fact_label",
+          "citation_url"
+        ]
+      ],
+      "authority_scope": "official_product_existence_or_spec_context",
+      "claim_boundary": "Official issuer surface can support product existence/spec/taxonomy context only.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "company_sales",
+        "product_revenue",
+        "market_share",
+        "asp",
+        "inventory",
+        "sell_through"
+      ],
+      "layer_ids": [
+        "L1",
+        "L2"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "product_or_segment"
+      ],
+      "requirement_id": "official_product_surface",
+      "slot_kind": "official_product_surface",
+      "source_ids": [
+        "company_product_pages"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "official_product_surface",
+        "product_taxonomy_context"
+      ],
+      "any_field_groups": [
+        [
+          "source_title",
+          "fact_label",
+          "citation_url"
+        ]
+      ],
+      "authority_scope": "company_filing_product_taxonomy_context",
+      "claim_boundary": "SEC/filing product taxonomy can support product existence/taxonomy context only.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "company_sales",
+        "product_revenue",
+        "market_share",
+        "asp",
+        "inventory",
+        "sell_through"
+      ],
+      "layer_ids": [
+        "L1"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "product_or_segment"
+      ],
+      "requirement_id": "official_product_surface",
+      "slot_kind": "sec_product_taxonomy_context",
+      "source_ids": [
+        "sec_product_taxonomy_normalized"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "official_product_surface",
+        "company_disclosed_product_kpi",
+        "company_reported_product_operating_fact"
+      ],
+      "any_field_groups": [],
+      "authority_scope": "company_disclosed_product_kpi_exact_fact",
+      "claim_boundary": "Company-disclosed product KPI also satisfies the official product surface requirement for the disclosed product/segment and metric, with the same product-KPI boundary.",
+      "exact_company_fact_allowed": true,
+      "forbidden_claims": [
+        "market_share",
+        "sell_through",
+        "channel_inventory",
+        "undisclosed_product_revenue"
+      ],
+      "layer_ids": [
+        "L1"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "product_or_segment",
+        "metric_name",
+        "value",
+        "unit",
+        "period",
+        "citation_span"
+      ],
+      "requirement_id": "official_product_surface",
+      "slot_kind": "company_reported_product_kpi_as_official_product_surface",
+      "source_ids": [
+        "company_reported_product_operating_metrics"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "trusted_external_context",
+        "verification_lead",
+        "market_proxy_context"
+      ],
+      "any_field_groups": [
+        [
+          "fact_label",
+          "source_title",
+          "topic"
+        ]
+      ],
+      "authority_scope": "trusted_external_context",
+      "claim_boundary": "Trusted external context can corroborate events or statements but is not company exact-value authority.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "company_exact_value",
+        "sales_volume",
+        "market_share"
+      ],
+      "layer_ids": [
+        "L2"
+      ],
+      "required_binding_kinds": [
+        "issuer"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url"
+      ],
+      "requirement_id": "trusted_external_context",
+      "slot_kind": "trusted_external_event_context",
+      "source_ids": [
+        "mainstream_financial_news",
+        "industry_association_reports",
+        "official_social_accounts"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "macro_driver_context",
+        "official_industry_proxy",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "macro_driver_id",
+          "macro_driver_name",
+          "fact_label",
+          "series_id"
+        ],
+        [
+          "source_url",
+          "api_url",
+          "url"
+        ]
+      ],
+      "authority_scope": "official_macro_proxy_exact_value",
+      "claim_boundary": "Official macro/industry value can support exposure context only, not issuer economics.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "issuer_revenue",
+        "issuer_margin",
+        "market_share",
+        "product_sales"
+      ],
+      "layer_ids": [
+        "L2"
+      ],
+      "required_binding_kinds": [],
+      "required_fields": [
+        "ticker",
+        "value",
+        "unit",
+        "period"
+      ],
+      "requirement_id": "macro_official_context",
+      "slot_kind": "official_macro_driver_value",
+      "source_ids": [
+        "fred_api",
+        "fred_graph_csv",
+        "bls_public_api",
+        "bea_data_api",
+        "census_data_api",
+        "eia_open_data"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "official_supply_chain_relationship_context",
+        "public_tender_contract_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "counterparty",
+          "awarding_agency"
+        ],
+        [
+          "fact_label",
+          "award_id",
+          "topic"
+        ]
+      ],
+      "authority_scope": "official_relationship_or_public_order_proxy",
+      "claim_boundary": "Official relationship or public order existence proxy only.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "total_orders",
+        "backlog",
+        "revenue",
+        "shipment_volume",
+        "market_share"
+      ],
+      "layer_ids": [
+        "L2",
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "counterparty"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url"
+      ],
+      "requirement_id": "supply_chain_official_relationship",
+      "slot_kind": "official_supply_chain_or_order_relationship",
+      "source_ids": [
+        "supplier_customer_official_news",
+        "public_tenders_contracts_orders"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "official_customer_order_or_deployment_event",
+        "customer_deployment_signal",
+        "customer_adoption_signal",
+        "demand_proxy_context",
+        "official_supply_chain_relationship_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "event_date",
+          "period",
+          "as_of_datetime"
+        ],
+        [
+          "event_type",
+          "relationship_label",
+          "topic"
+        ]
+      ],
+      "authority_scope": "official_customer_order_or_deployment_event_fact",
+      "claim_boundary": "Official issuer/customer/supplier announcement can support a bounded customer order, agreement, project, deployment, or production-event fact with cited customer/product/date/scale fields where present. It remains separate from procurement award exact, revenue exact, backlog exact, ASP, shipment volume, sell-through, and market-share authority.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "issuer_revenue",
+        "product_revenue",
+        "total_orders",
+        "backlog",
+        "shipment_volume",
+        "market_share",
+        "asp",
+        "sell_through"
+      ],
+      "layer_ids": [
+        "L2",
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "counterparty",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "counterparty",
+        "product_or_segment",
+        "fact_label"
+      ],
+      "requirement_id": "official_customer_order_or_deployment_event",
+      "slot_kind": "official_customer_order_or_deployment_event",
+      "source_ids": [
+        "supplier_customer_official_news"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "developer_ecosystem_context",
+        "market_proxy_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "stars",
+          "forks",
+          "pushed_at",
+          "latest",
+          "modified",
+          "downloads",
+          "likes"
+        ]
+      ],
+      "authority_scope": "public_developer_proxy_exact_snapshot",
+      "claim_boundary": "Developer ecosystem snapshot is directional technical attention/activity proxy.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "issuer_revenue",
+        "market_share",
+        "sales_volume",
+        "durable_moat_proof"
+      ],
+      "layer_ids": [
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "fact_label"
+      ],
+      "requirement_id": "developer_ecosystem_proxy",
+      "slot_kind": "developer_ecosystem_metric",
+      "source_ids": [
+        "developer_ecosystem_github_npm_pypi_huggingface"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "channel_offer_context",
+        "market_proxy_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [],
+      "authority_scope": "public_channel_offer_exact_snapshot",
+      "claim_boundary": "Public channel offer supports listed SKU/configuration/price/availability snapshot only.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "asp",
+        "channel_inventory",
+        "sell_through",
+        "sales_volume",
+        "revenue",
+        "market_share"
+      ],
+      "layer_ids": [
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "channel_product_name",
+        "channel_product_id",
+        "price",
+        "availability"
+      ],
+      "requirement_id": "channel_offer_proxy",
+      "slot_kind": "public_channel_offer",
+      "source_ids": [
+        "channel_pricing_quotations",
+        "ecommerce_major_platforms"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "channel_distributor_locator_context",
+        "channel_offer_context",
+        "market_proxy_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [],
+      "authority_scope": "public_channel_or_distributor_presence_snapshot",
+      "claim_boundary": "Official or issuer-linked dealer/distributor/store locator supports public channel presence only; it does not prove price, ASP, sell-through, inventory, sales, revenue, or share.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "asp",
+        "price",
+        "channel_inventory",
+        "sell_through",
+        "sales_volume",
+        "revenue",
+        "market_share"
+      ],
+      "layer_ids": [
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "fact_label",
+        "channel_name",
+        "product_or_segment"
+      ],
+      "requirement_id": "channel_offer_proxy",
+      "slot_kind": "public_channel_distributor_locator",
+      "source_ids": [
+        "channel_distributor_locator"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "app_store_marketplace_context",
+        "market_proxy_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "version",
+          "release_date"
+        ]
+      ],
+      "authority_scope": "public_app_marketplace_exact_snapshot",
+      "claim_boundary": "App marketplace listing/rating/version snapshot only; no revenue/download/share promotion.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "app_revenue",
+        "download_count",
+        "market_share",
+        "sales_volume"
+      ],
+      "layer_ids": [
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "fact_label",
+        "rating",
+        "rating_count"
+      ],
+      "requirement_id": "app_rank_store_proxy",
+      "slot_kind": "app_marketplace_listing",
+      "source_ids": [
+        "app_store_rankings"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "platform_review_context",
+        "market_proxy_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "rating",
+          "rating_count",
+          "review_count",
+          "rank",
+          "downloads",
+          "fact_label"
+        ]
+      ],
+      "authority_scope": "public_platform_review_proxy_snapshot",
+      "claim_boundary": "Platform review/ranking/download snapshot is directional proxy only.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "revenue",
+        "sales_volume",
+        "market_share",
+        "durable_moat_proof"
+      ],
+      "layer_ids": [
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url"
+      ],
+      "requirement_id": "platform_review_proxy",
+      "slot_kind": "platform_review_or_ranking",
+      "source_ids": [
+        "platform_reviews_rankings_downloads"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "hiring_signal_context",
+        "market_proxy_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "date",
+          "posted_at",
+          "job_department"
+        ]
+      ],
+      "authority_scope": "public_hiring_proxy_exact_snapshot",
+      "claim_boundary": "Public job posting supports role/geography/focus signal only.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "headcount",
+        "revenue",
+        "order_volume",
+        "production_capacity_fact",
+        "demand_proof"
+      ],
+      "layer_ids": [
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "fact_label",
+        "job_location"
+      ],
+      "requirement_id": "hiring_capacity_proxy",
+      "slot_kind": "public_job_posting",
+      "source_ids": [
+        "job_postings_hiring_signals"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "public_tender_contract_context",
+        "market_proxy_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [],
+      "authority_scope": "public_order_proxy_exact_snapshot",
+      "claim_boundary": "Individual public tender/award snapshot only; no total order/backlog promotion.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "total_orders",
+        "backlog",
+        "issuer_revenue",
+        "market_share"
+      ],
+      "layer_ids": [
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "counterparty"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url",
+        "award_id",
+        "award_amount",
+        "award_start_date",
+        "awarding_agency"
+      ],
+      "requirement_id": "public_order_proxy",
+      "slot_kind": "public_tender_or_award",
+      "source_ids": [
+        "public_tenders_contracts_orders"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "regulated_product_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "trial_id",
+          "application_number",
+          "device_id",
+          "procedure_code",
+          "record_id",
+          "fact_label"
+        ]
+      ],
+      "authority_scope": "official_regulatory_product_record",
+      "claim_boundary": "Regulatory record supports product/trial/application existence and status context only.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "approval_success",
+        "sales",
+        "market_share",
+        "utilization_share"
+      ],
+      "layer_ids": [
+        "L2"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url"
+      ],
+      "requirement_id": "regulated_product_context",
+      "slot_kind": "regulated_product_record",
+      "source_ids": [
+        "clinicaltrials_api",
+        "openfda_api",
+        "cms_public_data",
+        "fda_animal_drugs_api"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "auto_product_identity_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "make",
+          "model",
+          "model_year",
+          "manufacturer",
+          "fact_label"
+        ],
+        [
+          "product_or_segment",
+          "product_family",
+          "fact_value"
+        ]
+      ],
+      "authority_scope": "official_auto_identity_record",
+      "claim_boundary": "NHTSA/vPIC or official issuer model pages support make/model/manufacturer identity context only.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "vehicle_sales",
+        "market_share",
+        "profitability"
+      ],
+      "layer_ids": [
+        "L2"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url"
+      ],
+      "requirement_id": "auto_product_identity_context",
+      "slot_kind": "official_vehicle_identity_record",
+      "source_ids": [
+        "nhtsa_vpic_api",
+        "company_product_pages"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "financial_regulatory_context",
+        "macro_driver_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "value",
+          "institution_id",
+          "rssd_id",
+          "series_id",
+          "macro_driver_id",
+          "fact_label"
+        ]
+      ],
+      "authority_scope": "official_financial_regulatory_context",
+      "claim_boundary": "Bank regulatory or rate context; issuer exact fact only if resolver-specific row exists elsewhere.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "listed_issuer_exact_financials_without_resolver",
+        "market_share",
+        "credit_loss_forecast"
+      ],
+      "layer_ids": [
+        "L2",
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url"
+      ],
+      "requirement_id": "financial_regulatory_context",
+      "slot_kind": "financial_regulatory_or_rate_record",
+      "source_ids": [
+        "fdic_bankfind_api",
+        "fred_api",
+        "fred_graph_csv"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "energy_utility_context",
+        "macro_driver_context",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "source_url",
+          "api_url",
+          "url"
+        ],
+        [
+          "asset_id",
+          "series_id",
+          "macro_driver_id",
+          "fact_label",
+          "macro_driver_name"
+        ]
+      ],
+      "authority_scope": "official_energy_utility_context",
+      "claim_boundary": "Energy/utility official operating context only; no single-company economics promotion.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "issuer_revenue",
+        "issuer_margin",
+        "market_share"
+      ],
+      "layer_ids": [
+        "L2",
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer"
+      ],
+      "required_fields": [
+        "ticker",
+        "value",
+        "unit",
+        "period"
+      ],
+      "requirement_id": "energy_utility_context",
+      "slot_kind": "official_energy_utility_record",
+      "source_ids": [
+        "eia_open_data",
+        "fred_api",
+        "fred_graph_csv"
+      ]
+    },
+    {
+      "allowed_claims": [
+        "technology_research_proxy",
+        "verification_lead"
+      ],
+      "any_field_groups": [
+        [
+          "openalex_work_id",
+          "patent_id",
+          "technical_doc_id",
+          "doi",
+          "value",
+          "cited_by_count",
+          "fact_label"
+        ]
+      ],
+      "authority_scope": "public_research_ip_proxy_snapshot",
+      "claim_boundary": "Research/IP signal only; no launch/sales/moat promotion without stronger evidence.",
+      "exact_company_fact_allowed": false,
+      "forbidden_claims": [
+        "product_sales",
+        "market_share",
+        "durable_moat_proof"
+      ],
+      "layer_ids": [
+        "L3"
+      ],
+      "required_binding_kinds": [
+        "issuer",
+        "product"
+      ],
+      "required_fields": [
+        "ticker",
+        "source_url"
+      ],
+      "requirement_id": "technology_research_proxy",
+      "slot_kind": "public_research_or_ip_signal",
+      "source_ids": [
+        "openalex_api",
+        "patentsview_api",
+        "official_technical_document"
+      ]
+    }
+  ],
+  "generated_at": "2026-06-23T18:53:36Z",
+  "policy": "L1 can support company exact facts only when value/unit/period/product/citation gates pass. L2/L3 slots may be exact snapshots of public records or proxy values, but they remain bounded and cannot be promoted to revenue, share, shipment, or sales claims.",
+  "schema_version": "finsight_exact_slot_contract_registry_v0_1"
+}

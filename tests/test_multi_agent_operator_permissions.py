@@ -797,6 +797,179 @@ def test_evidence_operator_groups_sec_search_routes_for_single_real_execution() 
     assert {record["agent_id"] for record in records} == {"sec_operator", "eight_k_operator"}
 
 
+def test_sec_search_cuda_oom_retries_with_cpu_spillover() -> None:
+    retrieval_plan = {
+        "schema_version": "sec_agent_retrieval_plan_v0.1",
+        "routes": [
+            {
+                "route_id": "cloud_capex::filing_text",
+                "retrieval_route": "filing_text",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+            }
+        ],
+    }
+    calls: list[tuple[str, dict]] = []
+
+    def fake_executor(tool_name: str, args: dict) -> dict:
+        calls.append((tool_name, dict(args)))
+        if str(args.get("bge_device") or "").startswith("cuda"):
+            return {
+                "status": "error",
+                "error": "OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB.",
+                "context_rows": [],
+            }
+        return {
+            "status": "ok",
+            "context_rows": [{"evidence_ref": "msft_capex_cpu", "retrieval_route": "filing_text"}],
+            "runtime_ledger_rows": [],
+            "candidate_counts": {"candidate_sent_to_bge": 4},
+            "context_runtime": {"bge_device": "cpu"},
+        }
+
+    result = execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_cuda_spillover",
+        ledger=ToolCallLedger(),
+        state_context={
+            "user_query": "MSFT cloud capex",
+            "focus_tickers": ["MSFT"],
+            "bge_device": "cuda",
+            "reranker_batch_size": 8,
+        },
+        tool_executor=fake_executor,
+    )
+
+    assert [call[1]["bge_device"] for call in calls] == ["cuda", "cuda", "cpu"]
+    assert calls[1][1]["reranker_batch_size"] == 1
+    assert result["tool_observations"][0]["status"] == "ok"
+    retry = result["tool_observations"][0]["runtime_summary"]["resource_retry"]
+    assert retry["policy"] == "sec_search_cuda_oom_retry_v0_1"
+    assert retry["spillover"] is True
+    assert result["context_rows"][0]["evidence_ref"] == "msft_capex_cpu"
+
+
+def test_sec_search_subprocess_crash_retries_with_cpu_spillover() -> None:
+    retrieval_plan = {
+        "schema_version": "sec_agent_retrieval_plan_v0.1",
+        "routes": [
+            {
+                "route_id": "cloud_capex::filing_text",
+                "retrieval_route": "filing_text",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+            }
+        ],
+    }
+    calls: list[tuple[str, dict]] = []
+
+    def fake_executor(tool_name: str, args: dict) -> dict:
+        calls.append((tool_name, dict(args)))
+        if str(args.get("bge_device") or "").startswith("cuda"):
+            return {
+                "status": "error",
+                "error": "CalledProcessError: Command run_sec_benchmark_eval.py returned non-zero exit status 3221225477.",
+                "context_rows": [],
+            }
+        return {
+            "status": "ok",
+            "context_rows": [{"evidence_ref": "msft_capex_cpu_after_subprocess_crash", "retrieval_route": "filing_text"}],
+            "runtime_ledger_rows": [],
+            "candidate_counts": {"candidate_sent_to_bge": 4},
+            "context_runtime": {"context_runner": "subprocess", "bge_device": "cpu"},
+        }
+
+    result = execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_subprocess_spillover",
+        ledger=ToolCallLedger(),
+        state_context={
+            "user_query": "MSFT cloud capex",
+            "focus_tickers": ["MSFT"],
+            "bge_device": "auto",
+            "context_runner": "subprocess",
+            "reranker_batch_size": 8,
+        },
+        tool_executor=fake_executor,
+    )
+
+    assert [call[1]["bge_device"] for call in calls] == ["cuda", "cuda", "cpu"]
+    assert calls[1][1]["reranker_batch_size"] == 1
+    retry = result["tool_observations"][0]["runtime_summary"]["resource_retry"]
+    assert retry["spillover"] is True
+    assert result["context_rows"][0]["evidence_ref"] == "msft_capex_cpu_after_subprocess_crash"
+
+
+def test_grouped_sec_search_does_not_cache_failed_route_result() -> None:
+    retrieval_plan = {
+        "schema_version": "sec_agent_retrieval_plan_v0.1",
+        "tasks": [{"task_id": "task", "retrieval_routes": ["filing_text", "8k_commentary"]}],
+        "routes": [
+            {
+                "route_id": "task::filing_text",
+                "task_id": "task",
+                "retrieval_route": "filing_text",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "metric_families": ["capex"],
+            },
+            {
+                "route_id": "task::8k_commentary",
+                "task_id": "task",
+                "retrieval_route": "8k_commentary",
+                "tickers": ["MSFT"],
+                "years": [2026],
+                "filing_types": ["8-K"],
+                "source_tiers": ["company_authored_unaudited_sec_filing"],
+                "metric_families": ["capex"],
+            },
+        ],
+    }
+    calls: list[tuple[str, dict]] = []
+
+    def fake_executor(tool_name: str, args: dict) -> dict:
+        calls.append((tool_name, dict(args)))
+        grouped_routes = (args.get("retrieval_plan") or {}).get("routes") or []
+        if len(grouped_routes) > 1:
+            return {"status": "error", "error": "RuntimeError:backend route failed", "context_rows": []}
+        route_label = f"{args.get('retrieval_route')}::{','.join(args.get('filing_types') or [])}"
+        return {
+            "status": "ok",
+            "context_rows": [{"evidence_ref": route_label, "retrieval_route": args.get("retrieval_route")}],
+            "runtime_ledger_rows": [],
+            "artifact_refs": [],
+            "candidate_counts": {"candidate_row_count_pre_rerank": 2, "candidate_sent_to_bge": 1},
+        }
+
+    result = execute_evidence_operator_plan(
+        retrieval_plan,
+        turn_id="turn_grouped_failure_not_cached",
+        ledger=ToolCallLedger(),
+        state_context={"user_query": "MSFT capex", "focus_tickers": ["MSFT"], "build_runtime_ledger": True},
+        tool_executor=fake_executor,
+    )
+
+    assert [
+        "grouped" if len((call[1].get("retrieval_plan") or {}).get("routes") or []) > 1 else f"{call[1].get('retrieval_route')}::{','.join(call[1].get('filing_types') or [])}"
+        for call in calls
+    ] == [
+        "grouped",
+        "8k_commentary::8-K",
+    ]
+    assert [row["status"] for row in result["tool_observations"]] == ["error", "ok"]
+    assert [record["status"] for record in result["tool_call_ledger"]["records"]] == ["error", "ok"]
+    assert len(result["context_rows"]) == 1
+    assert not any(row["status"] == "cached" for row in result["tool_observations"])
+
+
 def test_market_and_industry_boundary_checks_are_explicit() -> None:
     market = validate_tool_observation_boundary("market_get_snapshot", {"snapshot_id": "snap"})
     industry = validate_tool_observation_boundary("industry_get_snapshot", {"industry_rows": []})

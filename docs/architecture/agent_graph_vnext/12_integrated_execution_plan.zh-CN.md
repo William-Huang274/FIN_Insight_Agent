@@ -724,6 +724,8 @@ Backend / Frontend：
 - Retrieval audit 能解释 target 是否进入 candidates、rerank、role-visible rows。
 - TargetedRepairPlan 有 delta audit。
 - Memo Writer 从 MemoLogicPlan 写作，不新增事实。
+- Memo renderer 用短 citation + evidence index 呈现，正文不暴露内部字段、raw artifact ref 或 pipe-joined ClaimCard dump。
+- Local/SEC route scope 未覆盖的非美 issuer 在公开官方源理论可查时，必须先进入 official-only targeted repair，再决定 bounded gap。
 - 前端或 Workbench 能展示至少 run detail、event timeline、evidence/claim/gap/context/eval trace。
 - Failure / Gold lifecycle 至少以 SQL/JSONL 形式存在。
 - 新 1-2 个 full-chain case 通过 E1/E2/E3/E4/E6/E8/E9/E10/E11 核心 gates。

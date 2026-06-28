@@ -1,0 +1,89 @@
+{
+  "companyfacts_external_key_document_count": 588,
+  "exact_authority_lineage_count": 27881,
+  "exact_authority_unresolved_count": 0,
+  "exact_unresolved_samples": [],
+  "fetch_attempt_status_class_counts": {
+    "credential_or_access": 307,
+    "locator_miss": 1581,
+    "parser_miss": 653,
+    "public_boundary": 756,
+    "source_unavailable": 127,
+    "success": 27800,
+    "unknown_status": 3356
+  },
+  "generated_at": "2026-06-26T18:04:09Z",
+  "outputs": {
+    "raw_fetch_attempts": "D:\\FIN_Insight_Agent\\data\\manifests\\raw_fetch_attempts_v0_1.jsonl",
+    "raw_source_documents": "D:\\FIN_Insight_Agent\\data\\manifests\\raw_source_documents_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\rd1_raw_source_provenance_store.zh-CN.md",
+    "runtime_row_source_lineage": "D:\\FIN_Insight_Agent\\data\\manifests\\runtime_row_source_lineage_v0_1.jsonl",
+    "source_snapshots": "D:\\FIN_Insight_Agent\\data\\manifests\\source_snapshots_v0_1.jsonl",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\raw_source_provenance_summary_v0_1.json"
+  },
+  "policy": "RD1 is a Bronze provenance ledger. It creates source-document, fetch-attempt, source-snapshot, and runtime-row lineage rows. URL-only rows are traceable but not replayable until a local/API snapshot is cached; they must not be treated as stronger evidence than their authority gate allows.",
+  "raw_fetch_attempt_count": 34580,
+  "raw_source_document_count": 27720,
+  "repair_mode": "existing_source_documents_runtime_lineage_rebuild",
+  "runtime_lineage_count": 71004,
+  "runtime_lineage_status_counts": {
+    "matched_derived_structured_source_document": 386,
+    "matched_raw_document": 34929,
+    "runtime_declared_source_document": 35689
+  },
+  "runtime_manifest_count": 43,
+  "runtime_manifest_samples": [
+    "data/manifests/app_marketplace_context_rows_v0_1.jsonl",
+    "data/manifests/broad_app_store_platform_context_rows_v0_1.jsonl",
+    "data/manifests/broad_channel_offer_context_rows_v0_1.jsonl",
+    "data/manifests/broad_hiring_capacity_context_rows_v0_1.jsonl",
+    "data/manifests/broad_official_careers_context_rows_v0_1.jsonl",
+    "data/manifests/broad_public_contract_award_context_rows_v0_1.jsonl",
+    "data/manifests/capital_funding_ownership_context_rows_v0_1.jsonl",
+    "data/manifests/channel_offer_context_rows_v0_1.jsonl",
+    "data/manifests/company_disclosed_product_business_mix_runtime_rows_v0_1.jsonl",
+    "data/manifests/company_disclosed_product_profile_context_rows_v0_1.jsonl",
+    "data/manifests/company_reported_product_operating_metric_runtime_rows_v0_1.jsonl",
+    "data/manifests/developer_ecosystem_context_rows_v0_1.jsonl",
+    "data/manifests/family_channel_distributor_context_rows_v0_1.jsonl",
+    "data/manifests/hiring_capacity_context_rows_v0_1.jsonl",
+    "data/manifests/industry_operating_metric_slot_rows_v0_1.jsonl",
+    "data/manifests/local_public_tender_context_rows_v0_1.jsonl",
+    "data/manifests/market_liquidity_driver_context_rows_v0_1.jsonl",
+    "data/manifests/non_us_l1_financial_statement_metric_runtime_rows_v0_1.jsonl",
+    "data/manifests/non_us_product_kpi_local_disclosure_runtime_rows_v0_1.jsonl",
+    "data/manifests/official_api_exposure_bridge_context_rows_v0_1.jsonl",
+    "data/manifests/official_business_asset_profile_context_rows_v0_1.jsonl",
+    "data/manifests/official_customer_deployment_surface_context_rows_v0_1.jsonl",
+    "data/manifests/official_product_catalog_context_rows_v0_1.jsonl",
+    "data/manifests/official_product_spec_context_rows_v0_1.jsonl",
+    "data/manifests/official_product_surface_context_rows_v0_1.jsonl",
+    "data/manifests/public_contract_award_context_rows_v0_1.jsonl",
+    "data/manifests/public_official_api_context_rows_v0_1.jsonl",
+    "data/manifests/r16_product_kpi_deep_repair_runtime_rows_v0_1.jsonl",
+    "data/manifests/r17_known_public_product_kpi_repair_runtime_rows_v0_1.jsonl",
+    "data/manifests/r17_product_family_evidence_runtime_rows_v0_1.jsonl"
+  ],
+  "schema_version": "finsight_raw_source_provenance_summary_v0_1",
+  "source_document_kind_counts": {
+    "raw_file_without_metadata": 3532,
+    "raw_metadata_document": 3514,
+    "runtime_declared_source": 20674
+  },
+  "source_layer_counts": {
+    "L1": 24745,
+    "L2": 1542,
+    "L3": 1433
+  },
+  "source_snapshot_count": 27720,
+  "source_snapshot_storage_counts": {
+    "api_response_cached": 4384,
+    "local_raw_snapshot_available": 3322,
+    "missing_snapshot": 48,
+    "url_only_no_local_snapshot": 19966
+  },
+  "status": "pass",
+  "unresolved_lineage_count": 0,
+  "unresolved_lineage_samples": [],
+  "url_only_context_lineage_count": 35587
+}

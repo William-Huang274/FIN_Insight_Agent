@@ -203,7 +203,20 @@ def build_eval_command(
         "agent_graph_vnext_load_mix_15",
     }:
         bge_device = env_overrides.get("BGE_DEVICE") or os.environ.get("BGE_DEVICE") or "auto"
+        context_runner = (
+            env_overrides.get("SEC_AGENT_CONTEXT_RUNNER")
+            or os.environ.get("SEC_AGENT_CONTEXT_RUNNER")
+            or os.environ.get("CONTEXT_RUNNER")
+            or "subprocess"
+        )
+        evidence_operator_fanout_workers = (
+            env_overrides.get("SEC_AGENT_EVIDENCE_OPERATOR_FANOUT_WORKERS")
+            or os.environ.get("SEC_AGENT_EVIDENCE_OPERATOR_FANOUT_WORKERS")
+            or "0"
+        )
         env_overrides["BGE_DEVICE"] = bge_device
+        env_overrides["SEC_AGENT_CONTEXT_RUNNER"] = context_runner
+        env_overrides["SEC_AGENT_EVIDENCE_OPERATOR_FANOUT_WORKERS"] = evidence_operator_fanout_workers
         cases_path_by_eval = {
             "agent_graph_vnext_g11_full_chain": "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl",
             "agent_graph_vnext_run_audit_smoke": "tests/fixtures/fin_agent_vnext_run_audit_full_chain_cases_v0_1.jsonl",
@@ -245,6 +258,10 @@ def build_eval_command(
             "10",
             "--bge-device",
             bge_device,
+            "--context-runner",
+            context_runner,
+            "--evidence-operator-fanout-workers",
+            evidence_operator_fanout_workers,
             "--memo-max-tokens",
             "4200",
             "--verifier-max-tokens",

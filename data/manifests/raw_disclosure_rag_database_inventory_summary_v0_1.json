@@ -1,0 +1,69 @@
+{
+  "database_by_kind": {
+    "duckdb": 7,
+    "object_store_root": 1,
+    "runtime_private_root": 1,
+    "sqlite": 2
+  },
+  "database_path_exists_count": 10,
+  "database_table_count_total": 18,
+  "generated_at": "2026-06-26T16:27:13+00:00",
+  "missing_optional_configured_path_count": 1,
+  "missing_path_count": 1,
+  "missing_path_samples": [
+    {
+      "artifact_name": "object_store_root",
+      "mainline_status": "configured_root_may_be_empty",
+      "path": "data/object_store"
+    }
+  ],
+  "missing_required_path_count": 0,
+  "outputs": {
+    "rag_index_inventory": "D:\\FIN_Insight_Agent\\data\\manifests\\rag_index_inventory_v0_1.jsonl",
+    "raw_disclosure_data_inventory": "D:\\FIN_Insight_Agent\\data\\manifests\\raw_disclosure_data_inventory_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\rd0_raw_disclosure_rag_database_inventory.zh-CN.md",
+    "runtime_database_inventory": "D:\\FIN_Insight_Agent\\data\\manifests\\runtime_database_inventory_v0_1.jsonl",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\raw_disclosure_rag_database_inventory_summary_v0_1.json"
+  },
+  "policy": "RD0 inventory is a data-base ledger bootstrap. It records physical artifacts, row counts, schema hints, lineage status, and authority boundaries; it does not promote any row to evidence by itself.",
+  "rag_by_index_type": {
+    "dense_embedding_baseline": 2,
+    "milvus_lite_vector_collection": 1,
+    "rank_bm25": 15,
+    "sqlite_fts5": 1
+  },
+  "rag_index_inventory_rows": 19,
+  "rag_records_total": 6386029,
+  "raw_by_data_layer": {
+    "authority_mart": 1,
+    "bronze_raw": 8,
+    "bronze_source_plan": 1,
+    "bronze_to_silver_summary": 1,
+    "gold_fact_mart_candidate": 6,
+    "gold_signal_mart_candidate": 6,
+    "graph_candidate": 3,
+    "quality_gate": 1,
+    "silver_parsed": 3,
+    "silver_staging": 1
+  },
+  "raw_by_inventory_kind": {
+    "coverage_gate_matrix": 1,
+    "graph_edge_row_set": 1,
+    "graph_node_row_set": 1,
+    "processed_disclosure_artifact": 3,
+    "product_graph_node_row_set": 1,
+    "raw_source_dataset": 8,
+    "runtime_event_row_set": 1,
+    "runtime_fact_or_context_row_set": 1,
+    "runtime_fact_row_set": 5,
+    "runtime_signal_row_set": 5,
+    "source_authority_mart": 1,
+    "source_download_summary": 1,
+    "source_route_summary": 1,
+    "staging_dataset": 1
+  },
+  "raw_disclosure_inventory_rows": 31,
+  "runtime_database_inventory_rows": 11,
+  "schema_version": "finsight_raw_disclosure_rag_database_inventory_summary_v0_1",
+  "status": "pass"
+}

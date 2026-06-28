@@ -1,0 +1,68 @@
+{
+  "attempted_count": 3,
+  "attempts": [
+    {
+      "parsed_row_count": 10,
+      "provider": "SIA",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\v1_trusted_external\\sia_42d04f1188b6bddc.html",
+      "status": "materialized",
+      "url": "https://www.semiconductors.org/global-semiconductor-sales-increase-11-month-to-month-in-april/"
+    },
+    {
+      "parsed_row_count": 10,
+      "provider": "SIA",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\v1_trusted_external\\sia_b45467e81b165655.html",
+      "status": "materialized",
+      "url": "https://www.semiconductors.org/new-report-finds-semiconductors-account-for-95-of-an-ai-data-server-racks-value-encompassing-the-full-stack-of-chip-technologies/"
+    },
+    {
+      "parsed_row_count": 10,
+      "provider": "SEMI",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\v1_trusted_external\\semi_0229fd297afe5478.html",
+      "status": "materialized",
+      "url": "https://www.semi.org/en/semi-press-release/semi-reports-global-semiconductor-equipment-billings-increased-14-percent-year-over-year-in-q1-2026"
+    }
+  ],
+  "boundary": "Trusted external rows are V1 lane context only and cannot support issuer revenue, sales, shipment, backlog, market-share, or product KPI claims.",
+  "context_row_count": 30,
+  "coverage_gate_status": "pass",
+  "failed_count": 0,
+  "generated_at": "2026-06-17T11:56:17Z",
+  "materialized_count": 3,
+  "outputs": {
+    "coverage_gate": "D:\\FIN_Insight_Agent\\data\\manifests\\v1_trusted_external_runtime_coverage_gate_v0_1.json",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\v1_trusted_external_context_rows_v0_1.jsonl"
+  },
+  "parser_backed_row_count": 30,
+  "provider_counts": {
+    "SEMI": 10,
+    "SIA": 20
+  },
+  "schema_version": "fin_agent_v1_trusted_external_context_summary_v0_1",
+  "status": "pass",
+  "structured_context_type_counts": {
+    "market_proxy_context": 15,
+    "trusted_industry_association_context": 15
+  },
+  "ticker_count": 10,
+  "tickers": [
+    "AMAT",
+    "AMD",
+    "ASML",
+    "DELL",
+    "HPE",
+    "KLAC",
+    "LRCX",
+    "NVDA",
+    "QCOM",
+    "TSM"
+  ],
+  "trusted_external_context_requirement": {
+    "entity_bound_row_count": 30,
+    "gaps": [],
+    "observed_row_count": 30,
+    "parser_row_count": 30,
+    "specialist_visible_row_count": 90,
+    "status": "pass"
+  }
+}

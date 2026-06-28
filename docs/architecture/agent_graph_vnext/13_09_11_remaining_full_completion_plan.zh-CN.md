@@ -36,7 +36,7 @@
 - R4：新增 `ContextEngine`，支持 resolve / select / compress / inject / write_memory，并带 memory 状态和 no-direct-fact-authority gate。
 - R5：新增 retrieval quality audit、CUDA BGE queue / CPU spillover scheduler audit、agent coalescer 基础策略；本机 RTX 4060 Laptop GPU 已验证 bge-m3 CUDA 加载和 3-slot queue + CPU spillover。
 - R6：新增 Tool Capability Registry、writer 工具权限 gate、文档输入解析到 provenance-gated artifact；多模态接口保留为 capability，不假装当前 DeepSeek 已支持。
-- R7：新增 ResearchObjectiveContract、LeadReviewCheckpoint、TargetedRepairPlan，second pass 固定为 Lead 指定 targeted repair。
+- R7：新增 ResearchObjectiveContract、LeadReviewCheckpoint、TargetedRepairPlan，second pass 固定为 Lead 指定 targeted repair。2026-06-15 追加 scoped public web gap repair：`issuer_official` / `product_surface` / `local_filing` / `market_proxy` / `capital_ownership` / `supply_chain` 六类 gap classifier、allowlisted adapters、真实 web execution、context/ClaimCard/bounded-gap writeback 已通过 fixture/live smoke。
 - R8：新增 role-specific evidence selector，按 fundamental、product/technology、market、capital/macro、risk 配额选择证据并输出 dropped taxonomy / cap reason。
 - R9：新增 MemoLogicPlan 和 writer-no-new-facts validation，Memo Writer 只消费 verified inputs，不查 DB、不联网、不新增事实。
 - R10：Java gateway 补齐 cancel/resume/SSE/worker callback；resume 会清空旧 memo/evidence/error 并重置 progress；Java -> queue -> Python worker -> callback smoke 覆盖 resume/SSE；R10 load smoke 覆盖 8 task / 3 worker / SSE / resume / run_audit / object store 压力，p95 约 2.1s。
@@ -521,6 +521,8 @@
    - 每个关键判断带证据
    - 明确边界和缺口
    - 不把 driver 当清单逐条堆砌
+   - 正文 citation 使用短引用，如 `[C1]`；原始 evidence refs 进入 evidence index / artifact，不直接打断正文
+   - 不把 `business_mechanism`、`financial_bridge`、`counter_read`、`ClaimCard`、`gap_id` 这类内部字段名渲染成用户可见小标题
 5. Verifier 检查：
    - unsupported claim
    - source-boundary misuse
@@ -535,6 +537,7 @@
 - Memo Writer 没有检索、DB、web 工具权限。
 - Verifier 发现核心 thesis unsupported 时必须退回 Lead/Judgment，而不是让 writer 自修事实。
 - 输出风格达到“自然语言 + 证据分点 + 总结 + 建议/边界”的项目标准。
+- Eval surface readability gate 通过：无 raw artifact ref、无 `机制/财务桥` 内部字段 dump、无 pipe-joined schema 拼接、语言与用户请求匹配。
 
 云端依赖：
 

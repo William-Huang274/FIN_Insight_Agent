@@ -1,0 +1,63 @@
+{
+  "claim_boundary": "Official API rows are bounded context/proxy rows. They do not prove company revenue, market share, sales volume, approval success, commercial uptake, or durable moat without source-specific issuer/product resolver and exact-authority gates.",
+  "context_row_count": 150,
+  "context_type_counts": {
+    "clinical_trial_status_context": 5,
+    "energy_utility_official_context": 9,
+    "fda_product_status_context": 5,
+    "financial_institution_reference_context": 5,
+    "healthcare_payer_dataset_context": 50,
+    "macro_official_context": 62,
+    "patent_data_access_metadata_context": 1,
+    "technology_research_proxy_context": 5,
+    "vehicle_model_identity_context": 8
+  },
+  "coverage_status": "gap",
+  "generated_at": "2026-06-16T12:40:48Z",
+  "input_record_count": 404,
+  "issuer_bound_row_count": 10,
+  "outputs": {
+    "coverage_gate": "D:\\FIN_Insight_Agent\\data\\manifests\\public_official_api_context_coverage_gate_v0_1.json",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\public_official_api_context_rows_v0_1.jsonl"
+  },
+  "parser_backed_row_count": 150,
+  "product_bound_row_count": 145,
+  "requirement_statuses": {
+    "auto_mobility:auto_product_identity_context": "pass",
+    "energy_utilities:energy_utility_context": "gap",
+    "financials_banks:financial_regulatory_context": "gap",
+    "generic_public_research:macro_official_context": "pass",
+    "healthcare_pharma_medtech:regulated_product_context": "pass",
+    "semiconductors_hardware:technology_research_proxy": "gap"
+  },
+  "resolver_reason_counts": {
+    "eia_snapshot_has_driver_or_series_but_no_utility_or_asset_issuer_field": 9,
+    "issuer_and_product_or_topic_resolved_from_snapshot": 10,
+    "macro_series_has_no_issuer_binding_requirement": 62,
+    "no_strong_issuer_product_or_topic_binding_fields": 5,
+    "product_or_identifier_present_but_issuer_unresolved": 58,
+    "technology_topic_present_but_no_issuer_or_assignee_binding": 6
+  },
+  "resolver_status_counts": {
+    "driver_only": 9,
+    "issuer_product_bound": 10,
+    "macro_driver_only": 62,
+    "product_bound_issuer_unresolved": 58,
+    "topic_only": 6,
+    "unresolved": 5
+  },
+  "schema_version": "fin_agent_public_official_api_context_summary_v0_1",
+  "source_counts": {
+    "clinicaltrials_api": 5,
+    "cms_public_data": 50,
+    "eia_open_data": 9,
+    "fdic_bankfind_api": 5,
+    "fred_api": 12,
+    "fred_graph_csv": 50,
+    "nhtsa_vpic_api": 8,
+    "openalex_api": 5,
+    "openfda_api": 5,
+    "patentsview_api": 1
+  },
+  "status": "pass"
+}

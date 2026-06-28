@@ -1,0 +1,34 @@
+{
+  "authority_boundary": "Rows support company-disclosed product/business revenue-mix percentages or verifier-approved product/business-line revenue amounts only. They do not prove ASP, shipment volume, market share, sell-through, backlog, order value, or commercial tracker estimates.",
+  "generated_at": "2026-06-25T15:30:15Z",
+  "input_verifier_row_count": 21838,
+  "outputs": {
+    "rejections": "D:\\FIN_Insight_Agent\\data\\manifests\\company_disclosed_product_business_mix_rejections_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\company_disclosed_product_business_mix_runtime_rows_v0_1.jsonl"
+  },
+  "rejection_count": 20652,
+  "rejection_reason_counts": {
+    "change_or_growth_percentage_not_revenue_mix_level": 5008,
+    "channel_or_customer_mix_not_product_business_mix": 716,
+    "missing_exact_product_or_segment_row_binding": 649,
+    "non_product_or_margin_percent_context": 2481,
+    "not_product_revenue_metric_family": 2376,
+    "not_revenue_mix_percent_context": 5664,
+    "not_structured_metric_parser_row": 327,
+    "percent_value_out_of_bounds": 306,
+    "region_or_geography_mix_not_product_business_mix": 2286,
+    "total_or_non_product_mix_row": 831,
+    "unsupported_product_node_type_for_mix_metric": 8
+  },
+  "runtime_contract_counts": {
+    "company_disclosed_product_business_mix_percent_fact": 1174,
+    "company_disclosed_product_business_revenue_amount_fact": 12
+  },
+  "runtime_row_count": 1186,
+  "runtime_ticker_count": 71,
+  "schema_version": "finsight_company_disclosed_product_business_mix_summary_v0_1",
+  "source_role_counts": {
+    "company_disclosed_product_kpi": 1186
+  },
+  "status": "pass"
+}

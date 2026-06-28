@@ -1,0 +1,42 @@
+{
+  "business_segment_metric_ready_ticker_count": 151,
+  "closeout_by_requirement": {
+    "public_order_proxy": 25
+  },
+  "closeout_class_counts": {
+    "public_source_exhausted_gap": 25
+  },
+  "closeout_reason_counts": {
+    "hk_local_tender_no_supplier_bound_award_or_no_structured_award_endpoint": 1,
+    "jp_local_tender_no_supplier_bound_award_or_no_structured_award_endpoint": 2,
+    "non_us_fpi_or_adr_local_tender_no_supplier_bound_award_or_no_structured_award_endpoint": 7,
+    "non_us_possible_local_tender_no_supplier_bound_award_or_no_structured_award_endpoint": 1,
+    "tw_local_tender_no_supplier_bound_award_or_no_structured_award_endpoint": 3,
+    "usaspending_no_recipient_bound_award_or_api_fetch_gap": 11
+  },
+  "closeout_row_count": 25,
+  "company_count": 603,
+  "exact_gap_count": 25,
+  "generated_at": "2026-06-25T03:11:08Z",
+  "geographic_or_non_product_metric_only_ticker_count": 152,
+  "outputs": {
+    "closeout": "D:\\FIN_Insight_Agent\\data\\manifests\\exact_slot_gap_closeout_v0_1.jsonl",
+    "product_kpi": "D:\\FIN_Insight_Agent\\data\\manifests\\product_kpi_exact_slot_closeout_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\vertical_lanes\\exact_slot_gap_closeout.zh-CN.md"
+  },
+  "policy": "Every remaining L1/L2/L3 exact-slot gap is classified with attempts or source-boundary reason. Closeout rows are not evidence rows and must not be promoted by Research Lead, specialists, Memo Writer, or Verifier.",
+  "product_kpi_company_count": 603,
+  "product_kpi_exact_ready_ticker_count": 129,
+  "product_kpi_gap_count": 171,
+  "product_kpi_status_counts": {
+    "business_segment_metric_ready": 151,
+    "geographic_or_non_product_metric_only": 152,
+    "product_kpi_exact_gap": 171,
+    "product_kpi_exact_ready": 129
+  },
+  "product_or_business_kpi_ready_ticker_count": 280,
+  "runtime_product_kpi_ticker_count": 432,
+  "schema_version": "finsight_exact_slot_gap_closeout_summary_v0_1",
+  "status": "pass",
+  "unclassified_closeout_count": 0
+}

@@ -1,0 +1,32 @@
+{
+  "attempt_count": 561,
+  "attempt_status_counts": {
+    "discovered": 163,
+    "materialized": 15,
+    "skipped_product_mismatch": 383
+  },
+  "boundary": "Only parsed public channel SKU/price/availability rows are promoted; no ASP, inventory, sell-through, sales, or share claims.",
+  "generated_at": "2026-06-23T13:48:59Z",
+  "outputs": {
+    "attempts": "D:\\FIN_Insight_Agent\\data\\manifests\\broad_channel_offer_attempts_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\broad_channel_offer_context_rows_v0_1.jsonl"
+  },
+  "required_ticker_count": 6,
+  "row_count": 16,
+  "row_source_counts": {
+    "channel_pricing_quotations": 15,
+    "platform_reviews_rankings_downloads": 1
+  },
+  "schema_version": "finsight_broad_channel_offer_context_summary_v0_1",
+  "status": "pass",
+  "success_ticker_count": 6,
+  "unmaterialized_ticker_count": 6,
+  "unmaterialized_tickers": [
+    "AZO",
+    "CASY",
+    "DG",
+    "GPC",
+    "HD",
+    "MNST"
+  ]
+}

@@ -377,6 +377,156 @@ def test_mcp_registry_compiles_mixed_sec_scope_to_available_route_requirements(t
     assert result["source_gaps"] == result["query_contract"]["source_coverage_gaps"]
 
 
+def test_mcp_registry_returns_source_gap_when_manifest_scope_has_no_available_filings(
+    tmp_path: Path, monkeypatch
+) -> None:
+    manifest_path = tmp_path / "manifest.jsonl"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "ticker": "AMAT",
+                "fiscal_year": 2026,
+                "form_type": "8-K",
+                "source_tier": "company_authored_unaudited_sec_filing",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    def fake_build_query_plan_for_graph(runtime_args, query):
+        return {
+            "query_contract": {
+                "task_type": "company_single",
+                "search_scope_tickers": ["ASML"],
+                "focus_tickers": ["ASML"],
+                "years": [2026],
+                "filing_types": ["8-K"],
+                "source_tiers": ["company_authored_unaudited_sec_filing"],
+                "metric_families": ["orders_backlog"],
+            },
+            "selected_tickers": ["ASML"],
+            "selected_years": [2026],
+        }
+
+    def fake_retrieve_context_for_graph(runtime_args, graph_state):
+        raise AssertionError("unavailable SEC scope should be returned as source_gap before retrieval")
+
+    fake_interactive = SimpleNamespace(
+        build_query_plan_for_graph=fake_build_query_plan_for_graph,
+        retrieve_context_for_graph=fake_retrieve_context_for_graph,
+    )
+    monkeypatch.setattr("sec_agent.mcp_tool_registry._load_interactive_module", lambda: fake_interactive)
+
+    result = invoke_mcp_tool(
+        "sec_search_filings",
+        {
+            "query": "Find ASML latest order backlog commentary",
+            "tickers": ["ASML"],
+            "years": [2026],
+            "filing_types": ["8-K"],
+            "source_tiers": ["company_authored_unaudited_sec_filing"],
+            "metric_families": ["orders_backlog"],
+            "retrieval_route": "8k_commentary",
+            "manifest_path": str(manifest_path),
+            "output_dir": str(tmp_path),
+        },
+    )
+
+    assert result["status"] == "source_gap"
+    assert result["error"] == "not_in_manifest_for_mcp_route_scope"
+    assert result["context_rows"] == []
+    assert result["source_gaps"]
+    assert result["source_gaps"][0]["ticker"] == "ASML"
+    assert result["source_gaps"][0]["reason_code"] == "not_in_manifest_for_mcp_route_scope"
+
+
+def test_mcp_registry_converts_interactive_no_available_filings_error_to_source_gap(
+    tmp_path: Path, monkeypatch
+) -> None:
+    def fake_build_query_plan_for_graph(runtime_args, query):
+        return {
+            "query_contract": {
+                "task_type": "company_single",
+                "search_scope_tickers": ["ASML"],
+                "focus_tickers": ["ASML"],
+                "years": [2026],
+                "filing_types": ["10-Q", "8-K"],
+                "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                "metric_families": ["revenue"],
+            },
+            "selected_tickers": ["ASML"],
+            "selected_years": [2026],
+        }
+
+    def fake_retrieve_context_for_graph(runtime_args, graph_state):
+        raise RuntimeError("No available SEC filings matched inferred scope. Use /scope TICKERS YEARS.")
+
+    fake_interactive = SimpleNamespace(
+        build_query_plan_for_graph=fake_build_query_plan_for_graph,
+        retrieve_context_for_graph=fake_retrieve_context_for_graph,
+    )
+    monkeypatch.setattr("sec_agent.mcp_tool_registry._load_interactive_module", lambda: fake_interactive)
+
+    result = invoke_mcp_tool(
+        "sec_search_filings",
+        {
+            "query": "Find ASML 10-Q or 8-K revenue evidence",
+            "tickers": ["ASML"],
+            "years": [2026],
+            "filing_types": ["10-Q", "8-K"],
+            "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+            "metric_families": ["revenue"],
+            "retrieval_route": "filing_text",
+            "output_dir": str(tmp_path),
+        },
+    )
+
+    assert result["status"] == "source_gap"
+    assert result["error"] == "no_available_sec_filings_matched_inferred_scope"
+    assert {gap["form_type"] for gap in result["source_gaps"]} == {"10-Q", "8-K"}
+    assert {gap["source_tier"] for gap in result["source_gaps"]} == {
+        "primary_sec_filing",
+        "company_authored_unaudited_sec_filing",
+    }
+
+
+def test_mcp_registry_converts_planner_no_available_filings_error_to_source_gap(
+    tmp_path: Path, monkeypatch
+) -> None:
+    def fake_build_query_plan_for_graph(runtime_args, query):
+        raise RuntimeError("No available SEC filings matched inferred scope. Use /scope TICKERS YEARS.")
+
+    def fake_retrieve_context_for_graph(runtime_args, graph_state):
+        raise AssertionError("planner source gap should not run retrieval")
+
+    fake_interactive = SimpleNamespace(
+        build_query_plan_for_graph=fake_build_query_plan_for_graph,
+        retrieve_context_for_graph=fake_retrieve_context_for_graph,
+    )
+    monkeypatch.setattr("sec_agent.mcp_tool_registry._load_interactive_module", lambda: fake_interactive)
+
+    result = invoke_mcp_tool(
+        "sec_search_filings",
+        {
+            "query": "Find ASML 8-K commentary",
+            "tickers": ["ASML"],
+            "years": [2026],
+            "filing_types": ["8-K"],
+            "source_tiers": ["company_authored_unaudited_sec_filing"],
+            "metric_families": ["orders_backlog"],
+            "retrieval_route": "8k_commentary",
+            "output_dir": str(tmp_path),
+        },
+    )
+
+    assert result["status"] == "source_gap"
+    assert result["error"] == "no_available_sec_filings_matched_inferred_scope"
+    assert result["selected_tickers"] == ["ASML"]
+    assert result["source_gaps"][0]["ticker"] == "ASML"
+    assert result["source_gaps"][0]["form_type"] == "8-K"
+
+
 def test_mcp_registry_infers_available_scope_from_evidence_ids_without_form_type(tmp_path: Path, monkeypatch) -> None:
     manifest_path = tmp_path / "evidence.jsonl"
     manifest_rows = [

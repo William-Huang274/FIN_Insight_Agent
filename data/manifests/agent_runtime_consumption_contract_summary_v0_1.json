@@ -1,0 +1,45 @@
+{
+  "companies_without_any_evidence_pack_sample": [],
+  "company_brief_count": 603,
+  "company_without_any_evidence_pack_count": 0,
+  "expected_role_evidence_pack_count": 3618,
+  "gap_ref_count": 25,
+  "generated_at": "2026-06-26T17:52:42+00:00",
+  "invalid_selected_gap_row_count": 0,
+  "invalid_selected_gap_row_samples": [],
+  "memo_writer_input_contract": {
+    "allowed_inputs": [
+      "JudgmentState",
+      "MemoLogicPlan",
+      "verified ClaimCards",
+      "bounded gaps",
+      "role_evidence_pack_refs"
+    ],
+    "forbidden_inputs": [
+      "raw retrieval rows",
+      "tool observations",
+      "unverified web snippets",
+      "planning_or_gap_only rows as evidence"
+    ]
+  },
+  "outputs": {
+    "agent_runtime_data_briefs": "D:\\FIN_Insight_Agent\\data\\manifests\\agent_runtime_data_brief_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\rd6_agent_runtime_consumption_contract.zh-CN.md",
+    "role_specific_evidence_pack_registry": "D:\\FIN_Insight_Agent\\data\\manifests\\role_specific_evidence_pack_registry_v0_1.jsonl",
+    "sqlite": "D:\\FIN_Insight_Agent\\data\\workbench_private\\research_data\\agent_runtime_consumption_contract_v0_1.sqlite",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\agent_runtime_consumption_contract_summary_v0_1.json"
+  },
+  "pack_role_gap_counts": {},
+  "pack_status_counts": {
+    "pass": 3618
+  },
+  "policy": "Research Lead consumes compact data briefs; specialists consume role-specific evidence packs; Memo Writer consumes verified judgment inputs only.",
+  "role_count": 6,
+  "role_evidence_pack_count": 3618,
+  "schema_version": "finsight_agent_runtime_consumption_contract_summary_v0_1",
+  "selected_ref_count": 80656,
+  "sqlite_brief_count": 603,
+  "sqlite_pack_count": 3618,
+  "sqlite_path": "D:\\FIN_Insight_Agent\\data\\workbench_private\\research_data\\agent_runtime_consumption_contract_v0_1.sqlite",
+  "status": "pass"
+}

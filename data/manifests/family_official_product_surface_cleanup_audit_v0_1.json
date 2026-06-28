@@ -1,0 +1,567 @@
+{
+  "dropped_count": 97,
+  "dropped_sample": [
+    {
+      "domain": "abbott.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "ABT",
+      "title": "Our Products | Full Products and Solutions List | Abbott U.S.",
+      "url": "https://www.abbott.com/products"
+    },
+    {
+      "domain": "adobeinc.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "ADBE",
+      "title": "Services | Adobe Associates, Inc.",
+      "url": "https://www.adobeinc.com/services"
+    },
+    {
+      "domain": "automatic.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "ADP",
+      "title": "Automattic – Making the web a better place",
+      "url": "https://www.automatic.com/products"
+    },
+    {
+      "domain": "automatic.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "ADP",
+      "title": "Automattic – Making the web a better place",
+      "url": "https://www.automatic.com/products-and-services"
+    },
+    {
+      "domain": "automatic.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "ADP",
+      "title": "Automattic – Making the web a better place",
+      "url": "https://www.automatic.com/services"
+    },
+    {
+      "domain": "arthur.jp",
+      "reason": "domain_not_company_verified",
+      "ticker": "AJG",
+      "title": "ARTHUR FASHION WORLD",
+      "url": "https://www.arthur.jp/"
+    },
+    {
+      "domain": "aligntech.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "ALGN",
+      "title": "Align Technology",
+      "url": "https://www.aligntech.com/solutions"
+    },
+    {
+      "domain": "alnylam.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "ALNY",
+      "title": "The Leading RNAi Therapeutics Company | Alnylam",
+      "url": "https://alnylam.com/"
+    },
+    {
+      "domain": "alnylam.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "ALNY",
+      "title": "The Leading RNAi Therapeutics Company | Alnylam",
+      "url": "https://www.alnylam.com/"
+    },
+    {
+      "domain": "apollo.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "APO",
+      "title": "Home | Apollo Global Management",
+      "url": "https://apollo.com/"
+    },
+    {
+      "domain": "apollo.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "APO",
+      "title": "Home | Apollo Global Management",
+      "url": "https://www.apollo.com/"
+    },
+    {
+      "domain": "apollo.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "APO",
+      "title": "Investment Products | Apollo Wealth",
+      "url": "https://www.apollo.com/products"
+    },
+    {
+      "domain": "biomarin.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "BMRN",
+      "title": "BioMarin Pharmaceutical | Global Biotechnology Company",
+      "url": "https://biomarin.com/"
+    },
+    {
+      "domain": "biomarin.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "BMRN",
+      "title": "BioMarin Pharmaceutical | Global Biotechnology Company",
+      "url": "https://www.biomarin.com/"
+    },
+    {
+      "domain": "bristol.ac.uk",
+      "reason": "domain_not_company_verified",
+      "ticker": "BMY",
+      "title": "Homepage | University of Bristol",
+      "url": "https://bristol.ac.uk/"
+    },
+    {
+      "domain": "bristol.ac.uk",
+      "reason": "domain_not_company_verified",
+      "ticker": "BMY",
+      "title": "Homepage | University of Bristol",
+      "url": "https://www.bristol.ac.uk/"
+    },
+    {
+      "domain": "broadridge-ir.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "BR",
+      "title": "Broadridge Financial Solutions, Inc. - Investor Relations",
+      "url": "https://broadridge-ir.com/"
+    },
+    {
+      "domain": "broadridge-ir.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "BR",
+      "title": "Broadridge Financial Solutions, Inc. - Investor Relations",
+      "url": "https://www.broadridge-ir.com/"
+    },
+    {
+      "domain": "berkshire.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "BRK-B",
+      "title": "Services - Berkshire Corporation",
+      "url": "https://www.berkshire.com/services"
+    },
+    {
+      "domain": "cadence.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "CDNS",
+      "title": "Products | Cadence",
+      "url": "https://www.cadence.com/products"
+    },
+    {
+      "domain": "cadence.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "CDNS",
+      "title": "Services | Cadence",
+      "url": "https://www.cadence.com/services"
+    },
+    {
+      "domain": "churchdwight.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "CHD",
+      "title": "Church and Dwight | Consumer Goods | Home and Personal Care Products",
+      "url": "https://www.churchdwight.com/"
+    },
+    {
+      "domain": "chipotle.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "CMG",
+      "title": "Mexican Food - Restaurant & Catering - Chipotle Mexican Grill",
+      "url": "https://chipotle.com/"
+    },
+    {
+      "domain": "chipotle.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "CMG",
+      "title": "Mexican Food - Restaurant & Catering - Chipotle Mexican Grill",
+      "url": "https://www.chipotle.com/"
+    },
+    {
+      "domain": "cooperstandard.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "COO",
+      "title": "Products | Cooper Standard",
+      "url": "https://www.cooperstandard.com/products"
+    },
+    {
+      "domain": "cooperstandard.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "COO",
+      "title": "Solutions | Cooper Standard",
+      "url": "https://www.cooperstandard.com/solutions"
+    },
+    {
+      "domain": "camdenliving.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "CPT",
+      "title": "Luxury Apartments for Rent - camdenliving.com",
+      "url": "https://camdenliving.com/"
+    },
+    {
+      "domain": "camdenliving.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "CPT",
+      "title": "Luxury Apartments for Rent - camdenliving.com",
+      "url": "https://www.camdenliving.com/"
+    },
+    {
+      "domain": "charlesproxy.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "CRL",
+      "title": "Charles Web Debugging Proxy • HTTP Monitor / HTTP Proxy / HTTPS & SSL Proxy / Reverse Proxy",
+      "url": "https://www.charlesproxy.com/"
+    },
+    {
+      "domain": "est-e.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "EL",
+      "title": "有限会社エスト | 東京都板橋区の光触媒・コーティング・ハウスクリーニング・リフォームなら有限会社エストにお任せください。",
+      "url": "https://www.est-e.com/"
+    },
+    {
+      "domain": "emcore.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "EME",
+      "title": "Products - Emcore",
+      "url": "https://www.emcore.com/products"
+    },
+    {
+      "domain": "emcore.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "EME",
+      "title": "Solutions - Emcore",
+      "url": "https://www.emcore.com/solutions"
+    },
+    {
+      "domain": "essex-property.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "ESS",
+      "title": "Essex Property – Full rental service for landlords and private sector.",
+      "url": "https://essex-property.com/"
+    },
+    {
+      "domain": "edwards-mrtr.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "EW",
+      "title": "Welcome to the Edwards live portal, showcasing the latest on transcatheter mitral & tricuspid therapies | Edwards Lifesciences",
+      "url": "https://edwards-mrtr.com/"
+    },
+    {
+      "domain": "edwards-mrtr.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "EW",
+      "title": "Welcome to the Edwards live portal, showcasing the latest on transcatheter mitral & tricuspid therapies | Edwards Lifesciences",
+      "url": "https://www.edwards-mrtr.com/"
+    },
+    {
+      "domain": "freeport-ueno.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "FCX",
+      "title": "Freeport �������Į�Υ��쥯�ȥ���å�",
+      "url": "https://freeport-ueno.com/"
+    },
+    {
+      "domain": "fair.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "FICO",
+      "title": "FICO official product surface",
+      "url": "https://fair.com/"
+    },
+    {
+      "domain": "fair.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "FICO",
+      "title": "FICO official product surface",
+      "url": "https://www.fair.com/"
+    },
+    {
+      "domain": "federalrealty.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "FRT",
+      "title": "Federal Realty Investment Trust | FRT",
+      "url": "https://federalrealty.com/"
+    },
+    {
+      "domain": "federalrealty.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "FRT",
+      "title": "Federal Realty Investment Trust | FRT",
+      "url": "https://www.federalrealty.com/"
+    },
+    {
+      "domain": "generalww.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "GD",
+      "title": "GENERAL | GENERAL Inc. - Creating a Life Conditioner",
+      "url": "https://www.generalww.com/"
+    },
+    {
+      "domain": "ge-vernova.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "GEV",
+      "title": "GE Vernova | The Energy of Change",
+      "url": "https://www.ge-vernova.com/"
+    },
+    {
+      "domain": "ge-vernova.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "GEV",
+      "title": "GE Vernova | The Energy of Change",
+      "url": "https://www.ge-vernova.com/products"
+    },
+    {
+      "domain": "ge-vernova.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "GEV",
+      "title": "GE Vernova | The Energy of Change",
+      "url": "https://www.ge-vernova.com/products-and-services"
+    },
+    {
+      "domain": "ge-vernova.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "GEV",
+      "title": "GE Vernova | The Energy of Change",
+      "url": "https://www.ge-vernova.com/solutions"
+    },
+    {
+      "domain": "gilead.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "GILD",
+      "title": "Gilead Sciences",
+      "url": "https://www.gilead.com/"
+    },
+    {
+      "domain": "honda.co.jp",
+      "reason": "domain_not_company_verified",
+      "ticker": "HMC",
+      "title": "事業 | Honda 企業情報サイト",
+      "url": "https://www.honda.co.jp/products"
+    },
+    {
+      "domain": "robinhood.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "HOOD",
+      "title": "Robinhood: 24/5 Commission-Free Stock Trading & Investing",
+      "url": "https://robinhood.com/"
+    },
+    {
+      "domain": "robinhood.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "HOOD",
+      "title": "Robinhood: 24/5 Commission-Free Stock Trading & Investing",
+      "url": "https://www.robinhood.com/"
+    },
+    {
+      "domain": "hormel.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "HRL",
+      "title": "HORMEL® brand",
+      "url": "https://www.hormel.com/"
+    },
+    {
+      "domain": "hormel.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "HRL",
+      "title": "Products - HORMEL® brand",
+      "url": "https://www.hormel.com/products"
+    },
+    {
+      "domain": "idexx.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "IDXX",
+      "title": "Home - IDEXX US",
+      "url": "https://idexx.com/"
+    },
+    {
+      "domain": "flavors.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "IFF",
+      "title": "flavors.com — Premium Domain For Sale | Atom",
+      "url": "https://flavors.com/"
+    },
+    {
+      "domain": "flavors.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "IFF",
+      "title": "flavors.com — Premium Domain For Sale | Atom",
+      "url": "https://www.flavors.com/"
+    },
+    {
+      "domain": "jinkosolar.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "JKS",
+      "title": "晶科能源 | 全球领先的清洁能源解决方案供应商",
+      "url": "https://jinkosolar.com/"
+    },
+    {
+      "domain": "jinkosolar.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "JKS",
+      "title": "晶科能源 | 全球领先的清洁能源解决方案供应商",
+      "url": "https://www.jinkosolar.com/"
+    },
+    {
+      "domain": "keurigdrpepper.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "KDP",
+      "title": "Keurig Dr Pepper | Leading Beverage Company in United States | Official Website",
+      "url": "https://www.keurigdrpepper.com/"
+    },
+    {
+      "domain": "krystal.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "KRYS",
+      "title": "Home | Krystal Restaurants",
+      "url": "https://krystal.com/"
+    },
+    {
+      "domain": "krystal.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "KRYS",
+      "title": "Home | Krystal Restaurants",
+      "url": "https://www.krystal.com/"
+    },
+    {
+      "domain": "lucidchart.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "LCID",
+      "title": "Lucidchart | Diagramming Powered By Intelligence",
+      "url": "https://lucidchart.com/"
+    },
+    {
+      "domain": "lucidchart.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "LCID",
+      "title": "Lucidchart | Diagramming Powered By Intelligence",
+      "url": "https://www.lucidchart.com/"
+    },
+    {
+      "domain": "lowe-s.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "LOW",
+      "title": "LOWE'S VISUALS | Artist Photographer | Caribbean & Europe",
+      "url": "https://www.lowe-s.com/"
+    },
+    {
+      "domain": "mascomabank.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "MAS",
+      "title": "Mascoma Bank Serving the Financial Needs of Northern New England",
+      "url": "https://www.mascomabank.com/"
+    },
+    {
+      "domain": "moodys.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "MCO",
+      "title": "Moody's - credit ratings, research, and data for global capital markets",
+      "url": "https://www.moodys.com/products"
+    },
+    {
+      "domain": "martinclubjp.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "MLM",
+      "title": "Martin Club Japan | マーティンクラブジャパン",
+      "url": "https://martinclubjp.com/"
+    },
+    {
+      "domain": "macom.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "MTSI",
+      "title": "Products",
+      "url": "https://www.macom.com/products"
+    },
+    {
+      "domain": "occidental.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "OXY",
+      "title": "Union Hotel Occidental - Italian Dining, Wedding Receptions",
+      "url": "https://occidental.com/"
+    },
+    {
+      "domain": "occidental.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "OXY",
+      "title": "Union Hotel Occidental - Italian Dining, Wedding Receptions",
+      "url": "https://www.occidental.com/"
+    },
+    {
+      "domain": "packagingcorp.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "PKG",
+      "title": "Packaging Solutions | Packaging Corporation of America",
+      "url": "https://www.packagingcorp.com/products"
+    },
+    {
+      "domain": "packagingcorp.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "PKG",
+      "title": "Corrugated Packaging Services | PCA",
+      "url": "https://www.packagingcorp.com/services"
+    },
+    {
+      "domain": "pinnaclewest.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "PNW",
+      "title": "Pinnacle West Capital Corp. - Home",
+      "url": "https://www.pinnaclewest.com/"
+    },
+    {
+      "domain": "regeneron.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "REGN",
+      "title": "Regeneron U.S. FDA-Approved Medicines",
+      "url": "https://www.regeneron.com/products"
+    },
+    {
+      "domain": "rivian.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "RIVN",
+      "title": "Rivian: Electric Vehicles Designed For Adventure",
+      "url": "https://rivian.com/"
+    },
+    {
+      "domain": "southernallstars.jp",
+      "reason": "domain_not_company_verified",
+      "ticker": "SCCO",
+      "title": "サザンオールスターズ Official Site",
+      "url": "https://southernallstars.jp/"
+    },
+    {
+      "domain": "southernallstars.jp",
+      "reason": "domain_not_company_verified",
+      "ticker": "SCCO",
+      "title": "サザンオールスターズ Official Site",
+      "url": "https://www.southernallstars.jp/"
+    },
+    {
+      "domain": "charlesproxy.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "SCHW",
+      "title": "Charles Web Debugging Proxy • HTTP Monitor / HTTP Proxy / HTTPS & SSL Proxy / Reverse Proxy",
+      "url": "https://charlesproxy.com/"
+    },
+    {
+      "domain": "charlesproxy.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "SCHW",
+      "title": "Charles Web Debugging Proxy • HTTP Monitor / HTTP Proxy / HTTPS & SSL Proxy / Reverse Proxy",
+      "url": "https://www.charlesproxy.com/"
+    },
+    {
+      "domain": "simon.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "SPG",
+      "title": "Simon: Shopping, Dining and Entertainment Destinations Near You",
+      "url": "https://www.simon.com/"
+    },
+    {
+      "domain": "molsoncoors.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "TAP",
+      "title": "Home | Molson Coors",
+      "url": "https://www.molsoncoors.com/"
+    },
+    {
+      "domain": "tenable.com",
+      "reason": "domain_not_company_verified",
+      "ticker": "TENB",
+      "title": "Tenable One exposure management platform and products | Tenable®",
+      "url": "https://www.tenable.com/products"
+    }
+  ],
+  "input_count": 623,
+  "kept_count": 526
+}

@@ -222,6 +222,57 @@ def test_market_snapshot_fixture_duckdb_analytics_and_evidence(tmp_path: Path) -
     assert validation["error_count"] == 0
 
 
+def test_market_snapshot_normalize_can_preserve_per_ticker_as_of_dates(tmp_path: Path) -> None:
+    fixture_path = tmp_path / "market_fixture.csv"
+    output_root = tmp_path / "processed_market"
+    with fixture_path.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=["ticker", "date", "close", "adjusted_close", "volume", "currency", "provider"],
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "ticker": "A",
+                "date": "2026-06-20",
+                "close": "10",
+                "adjusted_close": "10",
+                "volume": "100",
+                "currency": "USD",
+                "provider": "unit_fixture",
+            }
+        )
+        writer.writerow(
+            {
+                "ticker": "B",
+                "date": "2026-06-24",
+                "close": "20",
+                "adjusted_close": "20",
+                "volume": "200",
+                "currency": "USD",
+                "provider": "unit_fixture",
+            }
+        )
+
+    normalize_market_snapshot_fixture(
+        input_path=fixture_path,
+        output_root=output_root,
+        snapshot_id="unit_per_ticker_as_of",
+        as_of_date="2026-06-24",
+        provider="unit_fixture",
+        tickers=["A", "B"],
+        per_ticker_as_of=True,
+    )
+    snapshots = {
+        row["ticker"]: row
+        for row in _jsonl_rows(output_root / "snapshots" / "unit_per_ticker_as_of_snapshot.jsonl")
+    }
+
+    assert snapshots["A"]["as_of_date"] == "2026-06-20"
+    assert snapshots["A"]["requested_as_of_date"] == "2026-06-24"
+    assert snapshots["B"]["as_of_date"] == "2026-06-24"
+
+
 def test_market_snapshot_fixture_rejects_duplicate_ticker_date(tmp_path: Path) -> None:
     fixture_path = tmp_path / "duplicate_fixture.csv"
     rows = [

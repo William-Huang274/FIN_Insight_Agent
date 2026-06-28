@@ -1,0 +1,305 @@
+{
+  "attempt_count": 23,
+  "attempt_status_counts": {
+    "materialized": 23
+  },
+  "attempts": [
+    {
+      "content_type": "text/html; charset=utf-8",
+      "lane_id": "V2",
+      "provider": "CTA",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\trusted_external\\v2_cta_839ecdcc899a23d0.raw",
+      "source_id": "industry_association_reports",
+      "status": "materialized",
+      "ticker": null,
+      "url": "https://www.cta.tech/"
+    },
+    {
+      "content_type": "text/html; charset=UTF-8",
+      "lane_id": "V3",
+      "provider": "CNCF",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\trusted_external\\v3_cncf_2be89d8df351b581.raw",
+      "source_id": "industry_association_reports",
+      "status": "materialized",
+      "ticker": null,
+      "url": "https://www.cncf.io/reports/"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "lane_id": "V4",
+      "provider": "PhRMA",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\trusted_external\\v4_phrma_e3d0e54ca9eccbdb.raw",
+      "source_id": "industry_association_reports",
+      "status": "materialized",
+      "ticker": null,
+      "url": "https://phrma.org/"
+    },
+    {
+      "content_type": "text/html; charset=UTF-8",
+      "lane_id": "V5",
+      "provider": "Alliance for Automotive Innovation",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\trusted_external\\v5_alliance_for_automotive_innovation_f4292f6ffd6f0312.raw",
+      "source_id": "industry_association_reports",
+      "status": "materialized",
+      "ticker": null,
+      "url": "https://www.autosinnovate.org/"
+    },
+    {
+      "content_type": "application/json",
+      "lane_id": "V6",
+      "provider": "SIFMA",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\trusted_external\\v6_sifma_7f90cb224ec5605b.raw",
+      "source_id": "industry_association_reports",
+      "status": "materialized",
+      "ticker": null,
+      "url": "https://www.sifma.org/resources/research/"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "lane_id": "V7",
+      "provider": "Edison Electric Institute",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\trusted_external\\v7_edison_electric_institute_48274a1d249fd4a9.raw",
+      "source_id": "industry_association_reports",
+      "status": "materialized",
+      "ticker": null,
+      "url": "https://www.eei.org/"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "lane_id": "V8",
+      "provider": "NRF",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\trusted_external\\v8_nrf_ae7c5ee777e3c6de.raw",
+      "source_id": "industry_association_reports",
+      "status": "materialized",
+      "ticker": null,
+      "url": "https://nrf.com/research-insights"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "lane_id": "V2",
+      "provider": "Apple Jobs",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\web_proxy\\v2_apple_jobs_080a8bad22bf41a8.raw",
+      "source_id": "job_postings_hiring_signals",
+      "status": "materialized",
+      "ticker": "AAPL",
+      "url": "https://jobs.apple.com/en-us/search?team=hardware-HRDWR"
+    },
+    {
+      "content_type": "text/javascript; charset=utf-8",
+      "lane_id": "V3",
+      "provider": "Apple Lookup",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\web_proxy\\v3_apple_lookup_da5b0d2193c993e9.raw",
+      "source_id": "platform_reviews_rankings_downloads",
+      "status": "materialized",
+      "ticker": "MSFT",
+      "url": "https://itunes.apple.com/lookup?id=1113153706"
+    },
+    {
+      "content_type": "text/html; charset=UTF-8",
+      "lane_id": "V4",
+      "provider": "Pfizer Careers",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\web_proxy\\v4_pfizer_careers_69f9caa63db65899.raw",
+      "source_id": "job_postings_hiring_signals",
+      "status": "materialized",
+      "ticker": "PFE",
+      "url": "https://www.pfizer.com/about/careers"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "lane_id": "V5",
+      "provider": "Uber Careers",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\web_proxy\\v5_uber_careers_25f3837b630e8bb8.raw",
+      "source_id": "job_postings_hiring_signals",
+      "status": "materialized",
+      "ticker": "UBER",
+      "url": "https://www.uber.com/us/en/careers/list/"
+    },
+    {
+      "content_type": "text/html;charset=utf-8",
+      "lane_id": "V5",
+      "provider": "Chevrolet Official Model Page",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\web_proxy\\v5_chevrolet_official_model_page_3b5cbe474f5ca5ba.raw",
+      "source_id": "channel_pricing_quotations",
+      "status": "materialized",
+      "ticker": "GM",
+      "url": "https://www.chevrolet.com/electric/equinox-ev"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "lane_id": "V7",
+      "provider": "GE Vernova Careers",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\web_proxy\\v7_ge_vernova_careers_4cd69aea0c33cd9a.raw",
+      "source_id": "job_postings_hiring_signals",
+      "status": "materialized",
+      "ticker": "GE",
+      "url": "https://careers.gevernova.com/jobs"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "lane_id": "V8",
+      "provider": "Starbucks Menu",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\web_proxy\\v8_starbucks_menu_90c258e11bbf84b1.raw",
+      "source_id": "channel_pricing_quotations",
+      "status": "materialized",
+      "ticker": "SBUX",
+      "url": "https://www.starbucks.com/menu"
+    },
+    {
+      "content_type": "text/javascript; charset=utf-8",
+      "lane_id": "V8",
+      "provider": "Apple Lookup",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\web_proxy\\v8_apple_lookup_160b814600b0ec37.raw",
+      "source_id": "platform_reviews_rankings_downloads",
+      "status": "materialized",
+      "ticker": "ABNB",
+      "url": "https://itunes.apple.com/lookup?id=401626263"
+    },
+    {
+      "content_type": "application/json",
+      "lane_id": "V4",
+      "provider": "OpenAlex",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\openalex\\v4_openalex_80b158b1f5055d39.raw",
+      "source_id": "openalex_api",
+      "status": "materialized",
+      "ticker": "LLY",
+      "url": "https://api.openalex.org/works?search=Eli+Lilly+tirzepatide+GLP-1+diabetes+obesity&per-page=3"
+    },
+    {
+      "content_type": "application/json",
+      "lane_id": "V4",
+      "provider": "OpenAlex",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\openalex\\v4_openalex_b6a1ab722ef61e83.raw",
+      "source_id": "openalex_api",
+      "status": "materialized",
+      "ticker": "NVO",
+      "url": "https://api.openalex.org/works?search=Novo+Nordisk+semaglutide+GLP-1+obesity+diabetes&per-page=3"
+    },
+    {
+      "content_type": "application/json",
+      "lane_id": "V4",
+      "provider": "OpenAlex",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\openalex\\v4_openalex_621dc4b260101c1b.raw",
+      "source_id": "openalex_api",
+      "status": "materialized",
+      "ticker": "PFE",
+      "url": "https://api.openalex.org/works?search=Pfizer+vaccine+oncology+drug+research&per-page=3"
+    },
+    {
+      "lane_id": "V4",
+      "parsed_row_count": 3,
+      "provider": null,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\contracts\\pfe_usaspending.json",
+      "source_id": null,
+      "status": "materialized",
+      "ticker": "PFE",
+      "url": "https://api.usaspending.gov/api/v2/search/spending_by_award/"
+    },
+    {
+      "lane_id": "V4",
+      "parsed_row_count": 3,
+      "provider": null,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\contracts\\jnj_usaspending.json",
+      "source_id": null,
+      "status": "materialized",
+      "ticker": "JNJ",
+      "url": "https://api.usaspending.gov/api/v2/search/spending_by_award/"
+    },
+    {
+      "lane_id": "V5",
+      "parsed_row_count": 3,
+      "provider": null,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\contracts\\gm_usaspending.json",
+      "source_id": null,
+      "status": "materialized",
+      "ticker": "GM",
+      "url": "https://api.usaspending.gov/api/v2/search/spending_by_award/"
+    },
+    {
+      "lane_id": "V5",
+      "parsed_row_count": 3,
+      "provider": null,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\contracts\\f_usaspending.json",
+      "source_id": null,
+      "status": "materialized",
+      "ticker": "F",
+      "url": "https://api.usaspending.gov/api/v2/search/spending_by_award/"
+    },
+    {
+      "lane_id": "V5",
+      "parsed_row_count": 3,
+      "provider": null,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\vertical_lanes\\contracts\\tsla_usaspending.json",
+      "source_id": null,
+      "status": "materialized",
+      "ticker": "TSLA",
+      "url": "https://api.usaspending.gov/api/v2/search/spending_by_award/"
+    }
+  ],
+  "boundary": "Rows are lane-scoped bounded context/proxy only. They cannot support issuer exact financial facts, sales/share, market tracker metrics, or core thesis without L1/company disclosure.",
+  "context_row_count": 77,
+  "generated_at": "2026-06-17T12:26:19Z",
+  "lane_counts": {
+    "V2": 7,
+    "V3": 9,
+    "V4": 18,
+    "V5": 15,
+    "V6": 8,
+    "V7": 10,
+    "V8": 10
+  },
+  "outputs": {
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\vertical_lane_public_context_rows_v0_1.jsonl"
+  },
+  "parser_backed_row_count": 77,
+  "schema_version": "fin_agent_vertical_lane_public_context_summary_v0_1",
+  "source_id_counts": {
+    "channel_pricing_quotations": 2,
+    "eia_open_data": 5,
+    "fred_api": 22,
+    "industry_association_reports": 26,
+    "job_postings_hiring_signals": 4,
+    "openalex_api": 6,
+    "platform_reviews_rankings_downloads": 2,
+    "public_tenders_contracts_orders": 10
+  },
+  "status": "pass",
+  "ticker_count": 36,
+  "tickers": [
+    "AAPL",
+    "ABNB",
+    "AMGN",
+    "AMZN",
+    "BAC",
+    "C",
+    "COST",
+    "CRM",
+    "CVX",
+    "DUK",
+    "F",
+    "GE",
+    "GM",
+    "GOOGL",
+    "GS",
+    "HD",
+    "HPQ",
+    "JNJ",
+    "JPM",
+    "LLY",
+    "MRK",
+    "MS",
+    "MSFT",
+    "NEE",
+    "NVO",
+    "PFE",
+    "SBUX",
+    "SO",
+    "SONY",
+    "TGT",
+    "TSLA",
+    "UBER",
+    "WFC",
+    "WMT",
+    "XEL",
+    "XOM"
+  ]
+}

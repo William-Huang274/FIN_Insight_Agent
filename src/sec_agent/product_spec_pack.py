@@ -13,6 +13,8 @@ PRODUCT_SPEC_CLAIM_SCOPE = "parser_gated_product_spec_context"
 PRODUCT_TAXONOMY_CLAIM_SCOPE = "product_taxonomy_context"
 COMPETITIVE_COMPARABLE_CLAIM_SCOPE = "competitive_comparable_context_only"
 GENERATION_EDGE_CLAIM_SCOPE = "product_generation_context_only"
+CUSTOMER_DEPLOYMENT_CLAIM_SCOPE = "official_customer_deployment_context_only"
+SUPPLY_CHAIN_SIGNAL_CLAIM_SCOPE = "supply_chain_context_only"
 
 CHANNEL_SOURCE_CLASSES = {
     "commerce_product_surface",
@@ -46,6 +48,25 @@ FIELD_INQUIRY_FORBIDDEN_CLAIMS = [
     "company_ASP",
     "channel_inventory",
 ]
+DEPLOYMENT_SIGNAL_FORBIDDEN_CLAIMS = [
+    "company_sales",
+    "market_share",
+    "sell_through",
+    "company_ASP",
+    "channel_inventory",
+    "order_value",
+    "backlog",
+]
+SUPPLY_CHAIN_SIGNAL_FORBIDDEN_CLAIMS = [
+    "shipments",
+    "allocation",
+    "company_sales",
+    "market_share",
+    "sell_through",
+    "company_ASP",
+    "channel_inventory",
+    "customer_concentration",
+]
 
 
 def build_product_spec_pack(state: Mapping[str, Any], *, max_items: int = 24) -> dict[str, Any]:
@@ -58,6 +79,8 @@ def build_product_spec_pack(state: Mapping[str, Any], *, max_items: int = 24) ->
     comparable_edges: list[dict[str, Any]] = []
     channel_offers: list[dict[str, Any]] = []
     field_inquiry_notes: list[dict[str, Any]] = []
+    customer_deployment_signals: list[dict[str, Any]] = []
+    supply_chain_signals: list[dict[str, Any]] = []
     commercial_gaps: list[dict[str, Any]] = []
     rejected_objects: list[dict[str, Any]] = []
 
@@ -126,6 +149,23 @@ def build_product_spec_pack(state: Mapping[str, Any], *, max_items: int = 24) ->
                 if model:
                     _merge_object(product_models, model, "product_model_id")
 
+        if _is_customer_deployment_candidate(row, source_class=source_class):
+            signal, rejection = _customer_deployment_signal_from_row(row, ref=ref)
+            if rejection:
+                rejected_objects.append(rejection)
+            elif signal:
+                customer_deployment_signals.append(signal)
+                model = _product_model_from_row(row, ref=ref, allow_family_fallback=True)
+                if model:
+                    _merge_object(product_models, model, "product_model_id")
+
+        if _is_supply_chain_signal_candidate(row):
+            signal, rejection = _supply_chain_signal_from_row(row, ref=ref)
+            if rejection:
+                rejected_objects.append(rejection)
+            elif signal:
+                supply_chain_signals.append(signal)
+
     product_families_list = _cap_objects(product_families.values(), max_items=max_items)
     product_models_list = _cap_objects(product_models.values(), max_items=max_items)
     pack = {
@@ -140,6 +180,10 @@ def build_product_spec_pack(state: Mapping[str, Any], *, max_items: int = 24) ->
             "field_inquiry_claim_scope": FIELD_INQUIRY_CLAIM_SCOPE,
             "field_inquiry_allowed_claims": FIELD_INQUIRY_ALLOWED_CLAIMS,
             "field_inquiry_forbidden_claims": FIELD_INQUIRY_FORBIDDEN_CLAIMS,
+            "customer_deployment_claim_scope": CUSTOMER_DEPLOYMENT_CLAIM_SCOPE,
+            "customer_deployment_forbidden_claims": DEPLOYMENT_SIGNAL_FORBIDDEN_CLAIMS,
+            "supply_chain_signal_claim_scope": SUPPLY_CHAIN_SIGNAL_CLAIM_SCOPE,
+            "supply_chain_signal_forbidden_claims": SUPPLY_CHAIN_SIGNAL_FORBIDDEN_CLAIMS,
             "public_proxy_financial_promotion": "forbidden",
         },
         "product_families": product_families_list,
@@ -150,6 +194,8 @@ def build_product_spec_pack(state: Mapping[str, Any], *, max_items: int = 24) ->
         "competitive_comparable_edges": _cap_objects(comparable_edges, max_items=max_items),
         "channel_offers": _cap_objects(channel_offers, max_items=max_items),
         "field_inquiry_notes": _cap_objects(field_inquiry_notes, max_items=max_items),
+        "customer_deployment_signals": _cap_objects(customer_deployment_signals, max_items=max_items),
+        "supply_chain_signals": _cap_objects(supply_chain_signals, max_items=max_items),
         "commercial_gaps": _cap_objects(commercial_gaps, max_items=max_items),
         "rejected_objects": _cap_objects(rejected_objects, max_items=max_items),
     }
@@ -232,6 +278,24 @@ def validate_product_spec_pack(payload: Mapping[str, Any]) -> dict[str, Any]:
         if "authority_fact" not in _strings(note.get("forbidden_claims")):
             errors.append({"type": "field_inquiry_authority_boundary_missing", "index": index})
 
+    for index, signal in enumerate(_mapping_items(payload.get("customer_deployment_signals")), start=1):
+        missing = _missing_fields(signal, ["deployment_signal_id", "ticker", "source_id", "claim_scope", "claim_boundary"])
+        if missing:
+            errors.append({"type": "customer_deployment_signal_required_fields_missing", "index": index, "missing_fields": missing})
+        if bool(signal.get("exact_value_authority")):
+            errors.append({"type": "customer_deployment_signal_exact_authority_forbidden", "index": index})
+        if not set(DEPLOYMENT_SIGNAL_FORBIDDEN_CLAIMS) <= set(_strings(signal.get("forbidden_claims"))):
+            errors.append({"type": "customer_deployment_signal_forbidden_claims_incomplete", "index": index})
+
+    for index, signal in enumerate(_mapping_items(payload.get("supply_chain_signals")), start=1):
+        missing = _missing_fields(signal, ["supply_chain_signal_id", "relationship_type", "source_id", "claim_scope", "claim_boundary"])
+        if missing:
+            errors.append({"type": "supply_chain_signal_required_fields_missing", "index": index, "missing_fields": missing})
+        if bool(signal.get("exact_value_authority")):
+            errors.append({"type": "supply_chain_signal_exact_authority_forbidden", "index": index})
+        if not set(SUPPLY_CHAIN_SIGNAL_FORBIDDEN_CLAIMS) <= set(_strings(signal.get("forbidden_claims"))):
+            errors.append({"type": "supply_chain_signal_forbidden_claims_incomplete", "index": index})
+
     return {
         "schema_version": "sec_agent_product_spec_pack_validation_v0.1",
         "status": "pass" if not errors else "fail",
@@ -256,6 +320,7 @@ def _candidate_rows(state: Mapping[str, Any]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     rows.extend(_mapping_items(state.get("product_evidence_rows")))
     rows.extend(_mapping_items(state.get("public_source_context_rows")))
+    rows.extend(_mapping_items(state.get("product_intelligence_context_rows")))
     rows.extend(
         row
         for row in _mapping_items(state.get("context_rows"))
@@ -523,6 +588,64 @@ def _field_inquiry_note_from_row(
     )
 
 
+def _customer_deployment_signal_from_row(row: Mapping[str, Any], *, ref: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    if _forbidden_promotion_attempt(row, DEPLOYMENT_SIGNAL_FORBIDDEN_CLAIMS):
+        return None, _rejection(row, ref=ref, object_type="CustomerDeploymentSignal", reason="customer_deployment_forbidden_promotion_attempt")
+    ticker = _first_text(row, "ticker", "company_ticker")
+    product = _first_text(row, "product_or_segment", "product_family", "product", "model_name")
+    source_id = _source_id(row, ref=ref)
+    if not ticker or not source_id:
+        return None, _rejection(row, ref=ref, object_type="CustomerDeploymentSignal", reason="customer_deployment_required_fields_missing", missing_fields=["ticker", "source_id"])
+    return (
+        {
+            "deployment_signal_id": _first_text(row, "deployment_signal_id") or _stable_id("CustomerDeploymentSignal", [ticker, product, source_id]),
+            "ticker": ticker,
+            "product_model_id": _first_text(row, "product_model_id") or _stable_id("ProductModel", [ticker, product or "product_context"]),
+            "product_or_segment": product or "not_disclosed",
+            "counterparty": _first_text(row, "counterparty", "customer", "recipient") or "not_disclosed",
+            "deployment_signal": _first_text(row, "deployment_signal", "summary", "metric", "metric_name") or "official deployment/order context",
+            "period": _first_text(row, "period", "observed_at", "as_of_date", "source_date") or "not_disclosed",
+            "region": _region(row),
+            "source_id": source_id,
+            "source_family": _source_family(row),
+            "claim_scope": CUSTOMER_DEPLOYMENT_CLAIM_SCOPE,
+            "claim_boundary": _first_text(row, "claim_boundary") or "deployment context only; no revenue, sales, ASP, share, backlog, or order-value authority",
+            "forbidden_claims": DEPLOYMENT_SIGNAL_FORBIDDEN_CLAIMS,
+            "evidence_refs": [ref],
+            "exact_value_authority": False,
+            "context_only": True,
+        },
+        None,
+    )
+
+
+def _supply_chain_signal_from_row(row: Mapping[str, Any], *, ref: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    if _forbidden_promotion_attempt(row, SUPPLY_CHAIN_SIGNAL_FORBIDDEN_CLAIMS):
+        return None, _rejection(row, ref=ref, object_type="ProductSupplyChainSignal", reason="supply_chain_forbidden_promotion_attempt")
+    relationship_type = _first_text(row, "relationship_type", "edge_type", "authority_type")
+    source_id = _source_id(row, ref=ref)
+    if not relationship_type or not source_id:
+        return None, _rejection(row, ref=ref, object_type="ProductSupplyChainSignal", reason="supply_chain_required_fields_missing", missing_fields=["relationship_type", "source_id"])
+    return (
+        {
+            "supply_chain_signal_id": _first_text(row, "supply_chain_signal_id") or _stable_id("ProductSupplyChainSignal", [relationship_type, source_id]),
+            "ticker": _first_text(row, "ticker", "company_ticker"),
+            "relationship_type": relationship_type,
+            "from_product_node_id": _first_text(row, "from_product_node_id", "from_node_id", "product_model_id"),
+            "to_product_node_id": _first_text(row, "to_product_node_id", "to_node_id", "competitor_product_model_id"),
+            "source_id": source_id,
+            "source_family": _source_family(row),
+            "claim_scope": SUPPLY_CHAIN_SIGNAL_CLAIM_SCOPE,
+            "claim_boundary": _first_text(row, "claim_boundary") or "supply-chain context only; no shipment, allocation, revenue, customer-concentration, or order-volume authority",
+            "forbidden_claims": SUPPLY_CHAIN_SIGNAL_FORBIDDEN_CLAIMS,
+            "evidence_refs": [ref],
+            "exact_value_authority": False,
+            "context_only": True,
+        },
+        None,
+    )
+
+
 def _commercial_gap_from_row(row: Mapping[str, Any], *, ref: str) -> dict[str, Any]:
     return {
         "gap_id": _first_text(row, "gap_id") or _stable_id("CommercialGap", [ref, _first_text(row, "missing_metric", "metric")]),
@@ -568,6 +691,8 @@ def _summary(pack: Mapping[str, Any], *, input_row_count: int) -> dict[str, Any]
         "competitive_comparable_edge_count": len(pack.get("competitive_comparable_edges") or []),
         "channel_offer_count": len(pack.get("channel_offers") or []),
         "field_inquiry_note_count": len(pack.get("field_inquiry_notes") or []),
+        "customer_deployment_signal_count": len(pack.get("customer_deployment_signals") or []),
+        "supply_chain_signal_count": len(pack.get("supply_chain_signals") or []),
         "commercial_gap_count": len(pack.get("commercial_gaps") or []),
         "rejected_object_count": len(pack.get("rejected_objects") or []),
     }
@@ -656,6 +781,32 @@ def _is_field_inquiry_candidate(row: Mapping[str, Any], *, source_class: str) ->
     if _row_type(row) == "fieldinquirynote":
         return True
     return bool(_first_text(row, "provider_role", "inquiry_target", "inquiry_time", "raw_record_ref"))
+
+
+def _is_customer_deployment_candidate(row: Mapping[str, Any], *, source_class: str) -> bool:
+    if source_class in {"official_customer_deployment_event", "public_order_or_tender_context"}:
+        return True
+    if _row_type(row) in {"customerdeploymentsignal", "officialcustomerdeploymentevent"}:
+        return True
+    claim_scope = _first_text(row, "claim_scope")
+    if claim_scope == CUSTOMER_DEPLOYMENT_CLAIM_SCOPE:
+        return True
+    return bool(_first_text(row, "deployment_signal", "counterparty", "customer")) and _text_has_any(
+        " ".join([source_class, claim_scope, _first_text(row, "source_class")]),
+        ["deployment", "customer", "order", "tender"],
+    )
+
+
+def _is_supply_chain_signal_candidate(row: Mapping[str, Any]) -> bool:
+    if _row_type(row) in {"productsupplychainsignal", "supplychainsignal"}:
+        return True
+    if _first_text(row, "claim_scope") == SUPPLY_CHAIN_SIGNAL_CLAIM_SCOPE:
+        return True
+    authority = _first_text(row, "authority_type")
+    return authority == "supply_chain_signal" or _text_has_any(
+        " ".join([_first_text(row, "relationship_type", "edge_type"), _first_text(row, "summary")]),
+        ["supply", "supplier", "component_input", "enables_production", "manufacturing_dependency"],
+    )
 
 
 def _is_commercial_gap_row(row: Mapping[str, Any]) -> bool:

@@ -1,0 +1,63 @@
+{
+  "authority_boundary": "Rows support bounded business/asset capacity or profile context for asset-heavy companies. They do not prove revenue, backlog, order value, shipments, ASP, utilization, or market share.",
+  "business_asset_profile_row_count": 56,
+  "diagnostics": {
+    "candidate_count": 85,
+    "page_count": 563,
+    "rejected_candidate_count": 133,
+    "rejection_reasons": {
+      "bed_count_requires_healthcare_facility_adapter": 1,
+      "commercial_or_site_noise": 22,
+      "distance_without_asset_network_context": 14,
+      "missing_asset_profile_context": 29,
+      "unit_not_asset_profile_unit": 63,
+      "year_like_asset_count": 2,
+      "zero_asset_count": 2
+    }
+  },
+  "generated_at": "2026-06-24T18:59:01Z",
+  "input_page_count": 1231,
+  "metric_counts": {
+    "asset_capacity_or_power_rating": 5,
+    "cooling_or_thermal_capacity": 1,
+    "generation_capacity": 3,
+    "land_area": 9,
+    "network_or_pipeline_length": 12,
+    "rentable_or_facility_area": 16,
+    "room_count": 5,
+    "site_or_property_count": 3,
+    "store_or_location_count": 2
+  },
+  "rows_by_ticker_top30": {
+    "AES": 1,
+    "BKR": 1,
+    "BXP": 1,
+    "CEG": 2,
+    "CMS": 1,
+    "CRH": 1,
+    "DTE": 1,
+    "EVRG": 2,
+    "FRT": 1,
+    "HST": 1,
+    "KIM": 3,
+    "MLM": 1,
+    "NEE": 2,
+    "NEM": 1,
+    "O": 2,
+    "PLD": 1,
+    "REG": 1,
+    "SHW": 1,
+    "TECK": 2,
+    "TSCO": 1,
+    "UROY": 1,
+    "VICI": 8,
+    "VRT": 1,
+    "VST": 2,
+    "WAB": 1,
+    "WY": 8,
+    "WYNN": 8
+  },
+  "schema_version": "finsight_official_business_asset_profile_context_summary_v0_1",
+  "status": "pass",
+  "ticker_count": 27
+}

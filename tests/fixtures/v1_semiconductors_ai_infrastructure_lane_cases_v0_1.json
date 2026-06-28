@@ -1,0 +1,172 @@
+{
+  "cases": [
+    {
+      "allowed_secondary_lane_ids": [
+        "V2",
+        "V3",
+        "V7"
+      ],
+      "case_family": "V1_semiconductors_ai_infrastructure",
+      "case_id": "v1_ai_infra_demand_transmission_nvda_dell_hyperscaler_001",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "hyperscaler exact purchase orders",
+        "allocation",
+        "channel inventory",
+        "IDC/Counterpoint/Omdia/Gartner shipments/share/forecast"
+      ],
+      "focus_tickers": [
+        "NVDA",
+        "DELL"
+      ],
+      "prompt": "分析 NVDA、DELL 与 hyperscaler capex/AI server 需求传导：需要同时覆盖基本面、产品/产线、资本开支/投融资、供应链、竞争位置和风险反证。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V1"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "official_product_surface",
+        "supply_chain_official_relationship",
+        "channel_offer_proxy",
+        "hiring_capacity_proxy",
+        "public_order_proxy"
+      ],
+      "search_scope_tickers": [
+        "NVDA",
+        "DELL",
+        "ANET",
+        "VRT",
+        "SMCI",
+        "HPE",
+        "MSFT",
+        "AMZN",
+        "GOOGL"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V1_semiconductors_ai_infrastructure",
+      "case_id": "v1_semicap_nonus_local_filing_asml_tsm_amat_lrcx_002",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "non_us_official_filing_repair_before_bounded_gap"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "tool shipment/share tracker",
+        "customer-specific allocation",
+        "private order book detail"
+      ],
+      "focus_tickers": [
+        "ASML",
+        "TSM"
+      ],
+      "prompt": "分析 ASML、TSM、AMAT、LRCX、KLAC 在先进制程和 AI capex 周期中的设备/产能/订单线索；非美公司优先走 20-F/6-K、当地交易所或公司 IR 公开文件。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V1"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "official_product_surface",
+        "trusted_external_context",
+        "macro_official_context",
+        "technology_research_proxy"
+      ],
+      "search_scope_tickers": [
+        "ASML",
+        "TSM",
+        "AMAT",
+        "LRCX",
+        "KLAC",
+        "NVDA",
+        "AMD"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [
+        "V2"
+      ],
+      "case_family": "V1_semiconductors_ai_infrastructure",
+      "case_id": "v1_ai_server_channel_proxy_boundary_dell_hpe_smci_anet_003",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "channel_offer_cannot_prove_sell_through_or_inventory"
+      ],
+      "execution_mode": "standard_memo",
+      "expected_commercial_gaps": [
+        "sell-through",
+        "ASP",
+        "inventory",
+        "server shipment share"
+      ],
+      "focus_tickers": [
+        "DELL",
+        "HPE"
+      ],
+      "prompt": "比较 DELL、HPE、SMCI、ANET 的 AI server/networking 产品线、公开渠道/招聘/合同 proxy 和财务支撑，明确哪些只能作为方向性线索。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V1"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "official_product_surface",
+        "channel_offer_proxy",
+        "public_order_proxy",
+        "hiring_capacity_proxy"
+      ],
+      "search_scope_tickers": [
+        "DELL",
+        "HPE",
+        "SMCI",
+        "ANET",
+        "NVDA"
+      ]
+    }
+  ],
+  "schema_version": "finsight_v1_lane_cases_v0_1"
+}

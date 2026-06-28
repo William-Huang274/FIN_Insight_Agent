@@ -1,0 +1,1634 @@
+{
+  "boundary": "Fetch audit checks whether family-scoped source routes already have runtime/parser rows or materialized source pages; it does not promote L2/L3 proxies to company exact facts.",
+  "generated_at": "2026-06-24T19:32:31Z",
+  "route_count": 4431,
+  "schema_version": "finsight_family_source_fetch_audit_v0_1",
+  "status": "gap",
+  "summary": {
+    "by_lane": {
+      "V1": {
+        "materialized_only": 0,
+        "missing": 207,
+        "route_count": 437,
+        "runtime_family_ready": 159,
+        "seed_only": 0
+      },
+      "V2": {
+        "materialized_only": 0,
+        "missing": 7,
+        "route_count": 40,
+        "runtime_family_ready": 15,
+        "seed_only": 0
+      },
+      "V3": {
+        "materialized_only": 0,
+        "missing": 361,
+        "route_count": 687,
+        "runtime_family_ready": 205,
+        "seed_only": 0
+      },
+      "V4": {
+        "materialized_only": 0,
+        "missing": 278,
+        "route_count": 501,
+        "runtime_family_ready": 115,
+        "seed_only": 0
+      },
+      "V5": {
+        "materialized_only": 0,
+        "missing": 45,
+        "route_count": 115,
+        "runtime_family_ready": 48,
+        "seed_only": 0
+      },
+      "V6": {
+        "materialized_only": 0,
+        "missing": 246,
+        "route_count": 451,
+        "runtime_family_ready": 144,
+        "seed_only": 0
+      },
+      "V7": {
+        "materialized_only": 0,
+        "missing": 1000,
+        "route_count": 1627,
+        "runtime_family_ready": 445,
+        "seed_only": 0
+      },
+      "V8": {
+        "materialized_only": 0,
+        "missing": 328,
+        "route_count": 573,
+        "runtime_family_ready": 195,
+        "seed_only": 0
+      }
+    },
+    "by_route_status": {
+      "not_materialized": 2472,
+      "runtime_company_row_available": 633,
+      "runtime_family_row_available": 1326
+    },
+    "family_assignment_count": 663,
+    "materialized_fetch_available_route_count": 0,
+    "not_materialized_route_count": 2472,
+    "runtime_family_ready_route_count": 1326,
+    "seed_available_not_materialized_route_count": 0,
+    "ticker_count": 603
+  },
+  "top_missing_routes": [
+    {
+      "family_id": "memory",
+      "next_action": "discover_allowed_source_for_macro_official_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "DRAM",
+        "NAND",
+        "HBM",
+        "memory",
+        "SSD"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "macro_official_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "000660.KS"
+    },
+    {
+      "family_id": "memory",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "DRAM",
+        "NAND",
+        "HBM",
+        "memory",
+        "SSD"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "000660.KS"
+    },
+    {
+      "family_id": "memory",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "DRAM",
+        "NAND",
+        "HBM",
+        "memory",
+        "SSD"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "000660.KS"
+    },
+    {
+      "family_id": "memory",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "DRAM",
+        "NAND",
+        "HBM",
+        "memory",
+        "SSD"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "000660.KS"
+    },
+    {
+      "family_id": "foundry",
+      "next_action": "discover_allowed_source_for_macro_official_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "foundry",
+        "wafer",
+        "process technology",
+        "advanced packaging",
+        "capacity"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "macro_official_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "005930.KS"
+    },
+    {
+      "family_id": "foundry",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "foundry",
+        "wafer",
+        "process technology",
+        "advanced packaging",
+        "capacity"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "005930.KS"
+    },
+    {
+      "family_id": "foundry",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "foundry",
+        "wafer",
+        "process technology",
+        "advanced packaging",
+        "capacity"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "005930.KS"
+    },
+    {
+      "family_id": "foundry",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "foundry",
+        "wafer",
+        "process technology",
+        "advanced packaging",
+        "capacity"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "005930.KS"
+    },
+    {
+      "family_id": "memory",
+      "next_action": "discover_allowed_source_for_macro_official_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "DRAM",
+        "NAND",
+        "HBM",
+        "memory",
+        "SSD"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "macro_official_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "005930.KS"
+    },
+    {
+      "family_id": "memory",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "DRAM",
+        "NAND",
+        "HBM",
+        "memory",
+        "SSD"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "005930.KS"
+    },
+    {
+      "family_id": "memory",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "DRAM",
+        "NAND",
+        "HBM",
+        "memory",
+        "SSD"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "005930.KS"
+    },
+    {
+      "family_id": "memory",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "DRAM",
+        "NAND",
+        "HBM",
+        "memory",
+        "SSD"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "005930.KS"
+    },
+    {
+      "family_id": "battery_charging_autonomy",
+      "next_action": "discover_allowed_source_for_business_service_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "charging",
+        "autonomy"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_service_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "1211.HK"
+    },
+    {
+      "family_id": "battery_charging_autonomy",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "charging",
+        "autonomy"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "1211.HK"
+    },
+    {
+      "family_id": "battery_charging_autonomy",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "charging",
+        "autonomy"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "1211.HK"
+    },
+    {
+      "family_id": "ev_vehicle_platform",
+      "next_action": "discover_allowed_source_for_business_service_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "EV",
+        "electric vehicle",
+        "vehicle model"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_service_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "1211.HK"
+    },
+    {
+      "family_id": "ev_vehicle_platform",
+      "next_action": "discover_allowed_source_for_channel_offer_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "EV",
+        "electric vehicle",
+        "vehicle model"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "channel_offer_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "1211.HK"
+    },
+    {
+      "family_id": "ev_vehicle_platform",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "EV",
+        "electric vehicle",
+        "vehicle model"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "1211.HK"
+    },
+    {
+      "family_id": "ev_vehicle_platform",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "EV",
+        "electric vehicle",
+        "vehicle model"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "1211.HK"
+    },
+    {
+      "family_id": "power_cooling",
+      "next_action": "discover_allowed_source_for_hiring_capacity_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "datacenter power",
+        "cooling",
+        "thermal management",
+        "UPS",
+        "liquid cooling"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "hiring_capacity_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_cooling",
+      "next_action": "discover_allowed_source_for_macro_official_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "datacenter power",
+        "cooling",
+        "thermal management",
+        "UPS",
+        "liquid cooling"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "macro_official_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_cooling",
+      "next_action": "discover_allowed_source_for_primary_company_disclosure_then_fetch_parse_resolve",
+      "query_terms": [
+        "datacenter power",
+        "cooling",
+        "thermal management",
+        "UPS",
+        "liquid cooling"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "primary_company_disclosure",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_cooling",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "datacenter power",
+        "cooling",
+        "thermal management",
+        "UPS",
+        "liquid cooling"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_cooling",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "datacenter power",
+        "cooling",
+        "thermal management",
+        "UPS",
+        "liquid cooling"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_cooling",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "datacenter power",
+        "cooling",
+        "thermal management",
+        "UPS",
+        "liquid cooling"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_grid_cooling",
+      "next_action": "discover_allowed_source_for_business_asset_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "power grid",
+        "datacenter cooling",
+        "electrical infrastructure"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_asset_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_grid_cooling",
+      "next_action": "discover_allowed_source_for_business_service_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "power grid",
+        "datacenter cooling",
+        "electrical infrastructure"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_service_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_grid_cooling",
+      "next_action": "discover_allowed_source_for_energy_utility_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "power grid",
+        "datacenter cooling",
+        "electrical infrastructure"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "energy_utility_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_grid_cooling",
+      "next_action": "discover_allowed_source_for_hiring_capacity_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "power grid",
+        "datacenter cooling",
+        "electrical infrastructure"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "hiring_capacity_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_grid_cooling",
+      "next_action": "discover_allowed_source_for_primary_company_disclosure_then_fetch_parse_resolve",
+      "query_terms": [
+        "power grid",
+        "datacenter cooling",
+        "electrical infrastructure"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "primary_company_disclosure",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_grid_cooling",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "power grid",
+        "datacenter cooling",
+        "electrical infrastructure"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "power_grid_cooling",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "power grid",
+        "datacenter cooling",
+        "electrical infrastructure"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2308.TW"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_primary_company_disclosure_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "primary_company_disclosure",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2317.TW"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2317.TW"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2317.TW"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2317.TW"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2382.TW"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2382.TW"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "2382.TW"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_business_asset_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_asset_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "300750.SZ"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_business_service_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_service_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "300750.SZ"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_energy_utility_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "energy_utility_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "300750.SZ"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "300750.SZ"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "300750.SZ"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "300750.SZ"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "3231.TW"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "3231.TW"
+    },
+    {
+      "family_id": "electronics_manufacturing_services",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "electronics manufacturing",
+        "ODM",
+        "EMS",
+        "contract manufacturing",
+        "assembly"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "3231.TW"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_business_asset_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_asset_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "373220.KS"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_business_service_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_service_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "373220.KS"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_energy_utility_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "energy_utility_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "373220.KS"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_primary_company_disclosure_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "primary_company_disclosure",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "373220.KS"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "373220.KS"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "373220.KS"
+    },
+    {
+      "family_id": "battery_energy_storage_components",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "battery",
+        "energy storage",
+        "lithium",
+        "cells",
+        "modules"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "373220.KS"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_primary_company_disclosure_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "primary_company_disclosure",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6146.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6146.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_supply_chain_official_relationship_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "supply_chain_official_relationship",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6146.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6146.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6146.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6146.T"
+    },
+    {
+      "family_id": "analog_embedded_semiconductors",
+      "next_action": "discover_allowed_source_for_primary_company_disclosure_then_fetch_parse_resolve",
+      "query_terms": [
+        "analog semiconductor",
+        "embedded processing",
+        "microcontroller",
+        "automotive semiconductor"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "primary_company_disclosure",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6723.T"
+    },
+    {
+      "family_id": "analog_embedded_semiconductors",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "analog semiconductor",
+        "embedded processing",
+        "microcontroller",
+        "automotive semiconductor"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6723.T"
+    },
+    {
+      "family_id": "analog_embedded_semiconductors",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "analog semiconductor",
+        "embedded processing",
+        "microcontroller",
+        "automotive semiconductor"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6723.T"
+    },
+    {
+      "family_id": "industrial_equipment",
+      "next_action": "discover_allowed_source_for_business_asset_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "industrial equipment",
+        "machinery",
+        "engine"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_asset_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6752.T"
+    },
+    {
+      "family_id": "industrial_equipment",
+      "next_action": "discover_allowed_source_for_business_service_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "industrial equipment",
+        "machinery",
+        "engine"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_service_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6752.T"
+    },
+    {
+      "family_id": "industrial_equipment",
+      "next_action": "discover_allowed_source_for_channel_offer_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "industrial equipment",
+        "machinery",
+        "engine"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "channel_offer_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6752.T"
+    },
+    {
+      "family_id": "industrial_equipment",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "industrial equipment",
+        "machinery",
+        "engine"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6752.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6857.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_supply_chain_official_relationship_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "supply_chain_official_relationship",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6857.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6857.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6857.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "6857.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_primary_company_disclosure_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "primary_company_disclosure",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "8035.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "8035.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "8035.T"
+    },
+    {
+      "family_id": "semicap_equipment",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "EUV",
+        "lithography",
+        "etch",
+        "deposition",
+        "metrology",
+        "inspection",
+        "semiconductor equipment"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "8035.T"
+    },
+    {
+      "family_id": "life_science_tools_diagnostics",
+      "next_action": "discover_allowed_source_for_regulated_product_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "life science tools",
+        "diagnostics",
+        "reagents",
+        "assays"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "regulated_product_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "A"
+    },
+    {
+      "family_id": "life_science_tools_diagnostics",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "life science tools",
+        "diagnostics",
+        "reagents",
+        "assays"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "A"
+    },
+    {
+      "family_id": "life_science_tools_diagnostics",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "life science tools",
+        "diagnostics",
+        "reagents",
+        "assays"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "A"
+    },
+    {
+      "family_id": "life_science_tools_diagnostics",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "life science tools",
+        "diagnostics",
+        "reagents",
+        "assays"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "A"
+    },
+    {
+      "family_id": "medtech_devices",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "medical device",
+        "procedure",
+        "robotic surgery"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "A"
+    },
+    {
+      "family_id": "medtech_devices",
+      "next_action": "discover_allowed_source_for_regulated_product_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "medical device",
+        "procedure",
+        "robotic surgery"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "regulated_product_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "A"
+    },
+    {
+      "family_id": "medtech_devices",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "medical device",
+        "procedure",
+        "robotic surgery"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "A"
+    },
+    {
+      "family_id": "medtech_devices",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "medical device",
+        "procedure",
+        "robotic surgery"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "A"
+    },
+    {
+      "family_id": "pcs_peripherals",
+      "next_action": "discover_allowed_source_for_platform_review_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "PC",
+        "laptop",
+        "notebook",
+        "desktop",
+        "printer"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "platform_review_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "AAPL"
+    },
+    {
+      "family_id": "wearables_devices",
+      "next_action": "discover_allowed_source_for_platform_review_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "wearable",
+        "smart device",
+        "watch"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "platform_review_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "AAPL"
+    },
+    {
+      "family_id": "oncology_immunology",
+      "next_action": "discover_allowed_source_for_regulated_product_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "oncology",
+        "immunology",
+        "clinical trial"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "regulated_product_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABBV"
+    },
+    {
+      "family_id": "oncology_immunology",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "oncology",
+        "immunology",
+        "clinical trial"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABBV"
+    },
+    {
+      "family_id": "oncology_immunology",
+      "next_action": "discover_allowed_source_for_technology_research_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "oncology",
+        "immunology",
+        "clinical trial"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technology_research_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABBV"
+    },
+    {
+      "family_id": "travel_marketplace",
+      "next_action": "discover_allowed_source_for_app_rank_store_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "travel",
+        "booking",
+        "lodging"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "app_rank_store_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABNB"
+    },
+    {
+      "family_id": "travel_marketplace",
+      "next_action": "discover_allowed_source_for_business_asset_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "travel",
+        "booking",
+        "lodging"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_asset_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABNB"
+    },
+    {
+      "family_id": "travel_marketplace",
+      "next_action": "discover_allowed_source_for_business_service_profile_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "travel",
+        "booking",
+        "lodging"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "business_service_profile_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABNB"
+    },
+    {
+      "family_id": "travel_marketplace",
+      "next_action": "discover_allowed_source_for_primary_company_disclosure_then_fetch_parse_resolve",
+      "query_terms": [
+        "travel",
+        "booking",
+        "lodging"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "primary_company_disclosure",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABNB"
+    },
+    {
+      "family_id": "medtech_devices",
+      "next_action": "discover_allowed_source_for_primary_company_disclosure_then_fetch_parse_resolve",
+      "query_terms": [
+        "medical device",
+        "procedure",
+        "robotic surgery"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "primary_company_disclosure",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABT"
+    },
+    {
+      "family_id": "medtech_devices",
+      "next_action": "discover_allowed_source_for_public_order_proxy_then_fetch_parse_resolve",
+      "query_terms": [
+        "medical device",
+        "procedure",
+        "robotic surgery"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "public_order_proxy",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABT"
+    },
+    {
+      "family_id": "medtech_devices",
+      "next_action": "discover_allowed_source_for_regulated_product_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "medical device",
+        "procedure",
+        "robotic surgery"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "regulated_product_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABT"
+    },
+    {
+      "family_id": "medtech_devices",
+      "next_action": "discover_allowed_source_for_technical_product_spec_then_fetch_parse_resolve",
+      "query_terms": [
+        "medical device",
+        "procedure",
+        "robotic surgery"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "technical_product_spec",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABT"
+    },
+    {
+      "family_id": "medtech_devices",
+      "next_action": "discover_allowed_source_for_trusted_external_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "medical device",
+        "procedure",
+        "robotic surgery"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "trusted_external_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ABT"
+    },
+    {
+      "family_id": "v6_general_financials",
+      "next_action": "discover_allowed_source_for_financial_regulatory_context_then_fetch_parse_resolve",
+      "query_terms": [
+        "financial services"
+      ],
+      "repair_seed_source_ids": [],
+      "route_id": "financial_regulatory_context",
+      "route_status": "not_materialized",
+      "sample_repair_seed_refs": [],
+      "ticker": "ACGL"
+    }
+  ],
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_family_source_route_plan_validation_v0_1",
+    "status": "pass"
+  }
+}

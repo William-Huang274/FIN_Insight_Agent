@@ -96,6 +96,34 @@ def test_evidence_requirement_validation_allows_context_only_product_sources_wit
     assert result["errors"] == []
 
 
+def test_evidence_requirement_validation_allows_compatible_sec_exact_source_families() -> None:
+    result = validate_multi_agent_evidence_requirement_plan(
+        {
+            "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+            "requirements": [
+                {
+                    "requirement_id": "req_sec_exact_context",
+                    "evidence_routes": ["filing_text"],
+                    "source_families": [
+                        "primary_sec_filing",
+                        "company_authored_unaudited_sec_filing",
+                    ],
+                    "operator_owners": ["sec_operator"],
+                }
+            ],
+        },
+        activation_plan={
+            "allowed_source_families": [
+                "primary_sec_filing",
+                "company_authored_unaudited_sec_filing",
+            ]
+        },
+    )
+
+    assert result["status"] == "pass"
+    assert result["errors"] == []
+
+
 def test_run_artifact_evidence_route_maps_to_coverage_reflection() -> None:
     result = validate_multi_agent_evidence_requirement_plan(
         {

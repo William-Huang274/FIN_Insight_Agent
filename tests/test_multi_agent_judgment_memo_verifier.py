@@ -390,7 +390,7 @@ def test_renderer_keeps_verified_draft_memo_surface_when_bounded() -> None:
 
     assert result["rendered_answer"].startswith("Core thesis:")
     assert "Thesis-led memo answer." in result["rendered_answer"]
-    assert "Bounded evidence note" in result["rendered_answer"]
+    assert "Bounded evidence note" not in result["rendered_answer"]
     assert not result["rendered_answer"].startswith("Bounded answer only")
 
 
@@ -416,7 +416,7 @@ def test_renderer_uses_chinese_headings_for_chinese_memo() -> None:
                 ],
                 "memo_claims": [{"claim": "已验证证据支持该判断。", "evidence_refs": ["ref_1"]}],
                 "investment_implications": [{"text": "把该结论作为有证据边界的正向信号。"}],
-                "source_boundary": "仅限已验证 judgment plan；不包含原始检索行。",
+                "source_boundary": "仅使用共享备忘录上下文、紧凑验证判断计划和专家验证中的证据。未使用原始行或检索请求。",
             },
         }
     )
@@ -426,10 +426,86 @@ def test_renderer_uses_chinese_headings_for_chinese_memo() -> None:
     assert "分维度分析:" in rendered
     assert "基本面与财务质量" in rendered
     assert "关键论据:" in rendered
-    assert "证据=ref_1" in rendered
+    assert "[C1]" in rendered
+    assert "证据=ref_1" not in rendered
+    assert "机制：" not in rendered
+    assert "财务桥：" not in rendered
+    assert " | " not in rendered
     assert "投资含义:" in rendered
-    assert "证据边界:" in rendered
-    assert "边界说明" in rendered
+    assert "证据边界:" not in rendered
+    assert "证据索引:" in rendered
+    assert "边界说明" not in rendered
+
+
+def test_renderer_shortens_long_refs_and_hides_internal_dimension_fields() -> None:
+    long_ref = "INTERACTIVE_MSFT_2026_10K::MSFT::2026::cloud_revenue::total_value::fy"
+    result = _node_multi_agent_renderer(
+        {
+            "bounded_answer_allowed": False,
+            "claim_verification": {"status": "pass"},
+            "memo_logic_plan": {
+                "sections": [
+                    {"section_id": "fundamentals", "order": 1},
+                    {"section_id": "product_and_production", "order": 2},
+                ]
+            },
+            "memo_answer": {
+                "answer_status": "draft",
+                "response_language": {"language": "zh-CN"},
+                "direct_answer": "AI 基础设施判断需要把收入、产品和资本开支放在同一条证据链里看。",
+                "dimension_analyses": [
+                    {
+                        "dimension_id": "product_and_production",
+                        "title": "产品与产线",
+                        "summary": (
+                            "产品证据只支持存在性和披露口径；证据引用为 "
+                            f"{long_ref}；该表述仅限已验证 ClaimCard 与引用证据范围，不外推未证实事实。"
+                        ),
+                        "business_mechanism": "机制：产品采用会影响收入组合。",
+                        "financial_bridge": "财务桥：桥接到 product revenue。",
+                        "competitive_read": "该声明卡为范围假设，方向中性，不提供数值桥接。证据引用仅指向行业深度包。",
+                        "counter_read": "Bridge the claim through product row.",
+                        "evidence_refs": [long_ref],
+                    },
+                    {
+                        "dimension_id": "fundamentals",
+                        "title": "基本面与财务质量",
+                        "summary": "基本面证据优先解释收入和现金流质量。",
+                        "evidence_refs": ["fundamental_ref"],
+                    },
+                ],
+                "memo_claims": [
+                    {
+                        "claim": f"基本面论据可进入判断。证据={long_ref}",
+                        "evidence_refs": ["fundamental_ref", long_ref],
+                    },
+                    {
+                        "claim": (
+                            "行业关系只能作为背景。证据引用为 "
+                            "sector_depth_pack:technology_ai_infrastructure_depth:DELL"
+                        ),
+                        "evidence_refs": ["sector_depth_pack:technology_ai_infrastructure_depth:DELL"],
+                    }
+                ],
+                "source_boundary": "仅使用共享备忘录上下文、紧凑验证判断计划和专家验证中的证据。未使用原始行或检索请求。",
+            },
+        }
+    )
+
+    rendered = result["rendered_answer"]
+    assert rendered.index("基本面与财务质量") < rendered.index("产品与产线")
+    assert "[C1]" in rendered
+    assert "[C2]" in rendered
+    assert "INTERACTIVE_" not in rendered
+    assert "证据引用为" not in rendered
+    assert "该表述仅限已验证 ClaimCard" not in rendered
+    assert "该声明卡" not in rendered
+    assert "范围假设，方向中性" not in rendered
+    assert "紧凑验证判断计划" not in rendered
+    assert "证据边界:" not in rendered
+    assert "机制：" not in rendered
+    assert "财务桥：" not in rendered
+    assert "Bridge the claim" not in rendered
 
 
 def test_graph_step13_keeps_verified_plan_and_verifier_constraints(tmp_path) -> None:

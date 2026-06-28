@@ -1,0 +1,134 @@
+{
+  "case_id": "channel_offer_context_backfill_smoke",
+  "exact_authority_violations": [],
+  "gaps": [],
+  "generated_at": "2026-06-17T10:32:35Z",
+  "industry_schema": "consumer_electronics",
+  "phase": "runtime_case",
+  "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+  "requested_industry_schema": "consumer_electronics",
+  "requirements": [
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "counterparty_keyword_context_candidate": 2,
+          "not_bound": 9
+        },
+        "issuer_binding_status": {
+          "issuer_mentioned_in_snapshot": 11
+        },
+        "product_binding_status": {
+          "product_mentioned_in_snapshot": 11
+        }
+      },
+      "by_source_status": {
+        "not_registered": 1,
+        "runtime_ready_context": 1
+      },
+      "claim_boundary": "Public channel price/configuration/availability proxy only; no ASP, sell-through, inventory, or market-share inference.",
+      "dimension": "product_and_production",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 11,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L3"
+      ],
+      "next_action": "Route e-commerce/channel snapshots through offer parser and SKU/product resolver.",
+      "observed_row_count": 11,
+      "observed_source_classes": [
+        "channel_pricing_snapshot"
+      ],
+      "observed_structured_context_types": [
+        "channel_offer_context"
+      ],
+      "parser_row_count": 11,
+      "phase": "runtime_case",
+      "ready_source_count": 1,
+      "requirement_id": "channel_offer_proxy",
+      "route_candidate_source_count": 1,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "ecommerce_major_platforms",
+        "channel_pricing_quotations"
+      ],
+      "source_profile_count": 2,
+      "specialist_roles": [
+        "product_technology_analyst",
+        "market_valuation_analyst"
+      ],
+      "specialist_visible_row_count": 22,
+      "status": "pass"
+    },
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "not_bound": 1
+        },
+        "issuer_binding_status": {
+          "issuer_mentioned_in_snapshot": 1
+        },
+        "product_binding_status": {
+          "product_mentioned_in_snapshot": 1
+        }
+      },
+      "by_source_status": {
+        "runtime_ready_context": 1
+      },
+      "claim_boundary": "Public review/ranking/download context only; directional attention signal, not sales proof.",
+      "dimension": "product_and_production",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 1,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L3"
+      ],
+      "next_action": "Parse platform ranking/review pages with timestamp and entity/product binding.",
+      "observed_row_count": 1,
+      "observed_source_classes": [
+        "platform_review_or_ranking_snapshot"
+      ],
+      "observed_structured_context_types": [
+        "platform_review_ranking_context"
+      ],
+      "parser_row_count": 1,
+      "phase": "runtime_case",
+      "ready_source_count": 1,
+      "requirement_id": "platform_review_proxy",
+      "route_candidate_source_count": 1,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "platform_reviews_rankings_downloads"
+      ],
+      "source_profile_count": 1,
+      "specialist_roles": [
+        "product_technology_analyst",
+        "market_valuation_analyst",
+        "risk_counterevidence_analyst"
+      ],
+      "specialist_visible_row_count": 3,
+      "status": "pass"
+    }
+  ],
+  "schema_version": "finsight_source_coverage_gate_v0_1",
+  "status": "pass",
+  "summary": {
+    "by_dimension": {
+      "product_and_production": 2
+    },
+    "by_status": {
+      "pass": 2
+    },
+    "exact_authority_violation_count": 0,
+    "fail_requirement_count": 0,
+    "gap_requirement_count": 0,
+    "pass_requirement_count": 2,
+    "requirement_count": 2
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+    "status": "pass"
+  }
+}

@@ -1,0 +1,302 @@
+{
+  "attempted_count": 22,
+  "attempts": [
+    {
+      "content_type": "text/html; charset=utf-8",
+      "discovered_count": 6,
+      "provider": "cdw_search",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\aapl_cdw_search_apple_macbook_pro_m4_cdw.html",
+      "status": "discovered",
+      "ticker": "AAPL",
+      "url": "https://www.cdw.com/search/?key=apple%20macbook%20pro%20m4%20cdw"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "Apple MacBook Pro - 14in - M4 Pro - 24 GB RAM - 1 TB SSD - Space Black",
+      "product_price": "2329.99",
+      "product_stock_status": "In Stock",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\aapl_cdw_product_f3c1701527ef784b.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "AAPL",
+      "url": "https://www.cdw.com/product/apple-macbook-pro-14-m4-pro-24-gb-ram-1-tb-ssd-space-black/8132835"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "Apple MacBook Pro - 14in - M4 Pro - 24 GB RAM - 512 GB SSD - Silver",
+      "product_price": "2021.99",
+      "product_stock_status": "Item Backordered",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\aapl_cdw_product_654de442333d1836.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "AAPL",
+      "url": "https://www.cdw.com/product/apple-macbook-pro-14-m4-pro-24-gb-ram-512-gb-ssd-silver/8132880"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "discovered_count": 6,
+      "provider": "cdw_search",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\msft_cdw_search_microsoft_surface_laptop_7_cdw.html",
+      "status": "discovered",
+      "ticker": "MSFT",
+      "url": "https://www.cdw.com/search/?key=microsoft%20surface%20laptop%207%20cdw"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "Microsoft Surface Laptop for Business - 7th Edition - Copilot+ PC - 15in - I",
+      "product_price": "2026.99",
+      "product_stock_status": "In Stock",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\msft_cdw_product_2b3c45bac83beae2.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "MSFT",
+      "url": "https://www.cdw.com/product/microsoft-surface-laptop-for-business-7th-edition-copilot-pc-15-i/8247513"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "Microsoft Surface Laptop for Business - 7th Edition - Copilot+ PC - 15in - I",
+      "product_price": "2119.99",
+      "product_stock_status": "In Stock",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\msft_cdw_product_48b0854d83bbfcc1.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "MSFT",
+      "url": "https://www.cdw.com/product/microsoft-surface-laptop-for-business-7th-edition-copilot-pc-15-i/8247535"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "discovered_count": 6,
+      "provider": "cdw_search",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\nvda_cdw_search_nvidia_rtx_4000_ada_cdw.html",
+      "status": "discovered",
+      "ticker": "NVDA",
+      "url": "https://www.cdw.com/search/?key=nvidia%20rtx%204000%20ada%20cdw"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "NVIDIA RTX 4000 ADA - graphics card - RTX 4000 Ada - 20 GB",
+      "product_price": "0",
+      "product_stock_status": "4-6+ Weeks",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\nvda_cdw_product_d26bc69a11b102ba.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "NVDA",
+      "url": "https://www.cdw.com/product/nvidia-rtx-4000-ada-graphics-card-rtx-4000-ada-20-gb/7920346"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "NVIDIA RTX - graphics card - NVIDIA RTX 2000 Ada - 16 GB",
+      "product_price": "0",
+      "product_stock_status": "4-6+ Weeks",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\nvda_cdw_product_9109ff65b67b4c22.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "NVDA",
+      "url": "https://www.cdw.com/product/nvidia-rtx-graphics-card-nvidia-rtx-2000-ada-16-gb/8491532"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "discovered_count": 6,
+      "provider": "cdw_search",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\hpq_cdw_search_hp_elitebook_cdw.html",
+      "status": "discovered",
+      "ticker": "HPQ",
+      "url": "https://www.cdw.com/search/?key=hp%20elitebook%20cdw"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "HP EliteBook 6 G1a 16in Notebook - WUXGA - 60 Hz - AMD Ryzen 5 230 - 16 GB -",
+      "product_price": "1439.99",
+      "product_stock_status": "In Stock",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\hpq_cdw_product_3a3514eeebd38955.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "HPQ",
+      "url": "https://www.cdw.com/product/hp-elitebook-6-g1a-16-notebook-wuxga-60-hz-amd-ryzen-5-230-16-gb/8361979"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 2,
+      "product_name": "HP EliteBook 8 G1a 16in Touchscreen Copilot+ PC Notebook - WUXGA - AMD Ryzen",
+      "product_price": "2129.99",
+      "product_stock_status": "In Stock",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\hpq_cdw_product_f86a774a5d10972f.html",
+      "review_rows": 1,
+      "status": "materialized",
+      "ticker": "HPQ",
+      "url": "https://www.cdw.com/product/hp-elitebook-8-g1a-16-touchscreen-copilot-pc-notebook-wuxga-amd-ryzen/8361975"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "discovered_count": 6,
+      "provider": "cdw_search",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\dell_cdw_search_dell_poweredge_server_cdw.html",
+      "status": "discovered",
+      "ticker": "DELL",
+      "url": "https://www.cdw.com/search/?key=dell%20poweredge%20server%20cdw"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "Dell PowerEdge R450 - rack-mountable - Xeon Silver 4310 2.1 GHz - 32 GB",
+      "product_price": "8137.99",
+      "product_stock_status": "Item Backordered",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\dell_cdw_product_923c1d5f2df16b00.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "DELL",
+      "url": "https://www.cdw.com/product/dell-poweredge-r450-rack-mountable-xeon-silver-4310-2.1-ghz-32-gb/6835487"
+    },
+    {
+      "product_name": "Kingston - DDR4 - 32 GB - DIMM 288-pin - registered",
+      "product_root_brand_name": "Kingston",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\dell_cdw_product_f81057fc1a9b0469.html",
+      "status": "skipped_product_mismatch",
+      "ticker": "DELL",
+      "url": "https://www.cdw.com/product/kingston-ddr4-32-gb-dimm-288-pin-registered/5843897"
+    },
+    {
+      "product_name": "Kingston - DDR4 - 64 GB - DIMM 288-pin - registered",
+      "product_root_brand_name": "Kingston",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\dell_cdw_product_6eed45fab82c790f.html",
+      "status": "skipped_product_mismatch",
+      "ticker": "DELL",
+      "url": "https://www.cdw.com/product/kingston-ddr4-64-gb-dimm-288-pin-registered/5924690"
+    },
+    {
+      "product_name": "Axiom - DDR5 - module - 32 GB - DIMM 288-pin - 5600 MHz / PC5-44800 - regis",
+      "product_root_brand_name": "Axiom",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\dell_cdw_product_e940edf18205cb01.html",
+      "status": "skipped_product_mismatch",
+      "ticker": "DELL",
+      "url": "https://www.cdw.com/product/axiom-ddr5-module-32-gb-dimm-288-pin-5600-mhz-pc5-44800-regis/8475048"
+    },
+    {
+      "product_name": "Total Micro Memory, Dell PowerEdge M820, R620, R820, T620 - 16GB",
+      "product_root_brand_name": "Total Micro",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\dell_cdw_product_3aeff890c09229d7.html",
+      "status": "skipped_product_mismatch",
+      "ticker": "DELL",
+      "url": "https://www.cdw.com/product/total-micro-memory-dell-poweredge-m820-r620-r820-t620-16gb/2968104"
+    },
+    {
+      "product_name": "Axiom AX - DDR4 - module - 32 GB - DIMM 288-pin - 2933 MHz / PC4-23466 - re",
+      "product_root_brand_name": "Axiom",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\dell_cdw_product_17dd5572e99ba3eb.html",
+      "status": "skipped_product_mismatch",
+      "ticker": "DELL",
+      "url": "https://www.cdw.com/product/axiom-ax-ddr4-module-32-gb-dimm-288-pin-2933-mhz-pc4-23466-re/6043890"
+    },
+    {
+      "content_type": "text/html; charset=utf-8",
+      "discovered_count": 6,
+      "provider": "cdw_search",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\lnvgy_cdw_search_lenovo_thinkpad_cdw.html",
+      "status": "discovered",
+      "ticker": "LNVGY",
+      "url": "https://www.cdw.com/search/?key=lenovo%20thinkpad%20cdw"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "Lenovo ThinkPad T14s 2-in-1 Gen 1 - AI PC - 14in - Intel Core Ultra 7 - 265U",
+      "product_price": "3291.99",
+      "product_stock_status": "In Stock",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\lnvgy_cdw_product_73daa8129040eab0.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "LNVGY",
+      "url": "https://www.cdw.com/product/lenovo-thinkpad-t14s-2-in-1-gen-1-ai-pc-14-intel-core-ultra-7-265u/8446111"
+    },
+    {
+      "channel_offer_rows": 1,
+      "parsed_row_count": 1,
+      "product_name": "Lenovo ThinkPad E16 Gen 3 - 16in - Intel Core 5 - 210H - 16 GB RAM - 256 GB",
+      "product_price": "1311.99",
+      "product_stock_status": "In Stock",
+      "provider": "cdw_product",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\channel_offers\\lnvgy_cdw_product_2ee1d65eacc543ee.html",
+      "review_rows": 0,
+      "status": "materialized",
+      "ticker": "LNVGY",
+      "url": "https://www.cdw.com/product/lenovo-thinkpad-e16-gen-3-16-intel-core-5-210h-16-gb-ram-256-gb/8445385"
+    }
+  ],
+  "boundary": "L3 public channel/review rows support product listing, configuration, price, availability, and review proxy only; they cannot prove ASP, sell-through, sales, channel inventory, revenue, share, or demand.",
+  "channel_offer_proxy_requirement": {
+    "entity_bound_row_count": 11,
+    "gaps": [],
+    "observed_row_count": 11,
+    "parser_row_count": 11,
+    "specialist_visible_row_count": 22,
+    "status": "pass"
+  },
+  "channel_offer_row_count": 11,
+  "context_row_count": 12,
+  "coverage_gate_status": "pass",
+  "failed_count": 0,
+  "generated_at": "2026-06-17T10:32:35Z",
+  "issuer_binding_status_counts": {
+    "issuer_mentioned_in_snapshot": 12
+  },
+  "major_ecommerce_gap": "Major consumer ecommerce platforms such as Amazon/BestBuy/Walmart commonly returned robot or blocking pages in smoke probes; CDW public reseller pages are materialized here, while blocked platforms remain source gaps until compliant access is available.",
+  "materialized_count": 11,
+  "outputs": {
+    "coverage_gate": "D:\\FIN_Insight_Agent\\data\\manifests\\channel_offer_runtime_coverage_gate_v0_1.json",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\channel_offer_context_rows_v0_1.jsonl"
+  },
+  "parser_backed_row_count": 12,
+  "platform_review_proxy_requirement": {
+    "entity_bound_row_count": 1,
+    "gaps": [],
+    "observed_row_count": 1,
+    "parser_row_count": 1,
+    "specialist_visible_row_count": 3,
+    "status": "pass"
+  },
+  "platform_review_row_count": 1,
+  "product_binding_status_counts": {
+    "product_mentioned_in_snapshot": 12
+  },
+  "schema_version": "fin_agent_channel_offer_context_summary_v0_1",
+  "source_id_counts": {
+    "channel_pricing_quotations": 11,
+    "platform_reviews_rankings_downloads": 1
+  },
+  "status": "pass",
+  "structured_context_type_counts": {
+    "channel_offer_context": 11,
+    "platform_review_ranking_context": 1
+  },
+  "ticker_count": 6,
+  "tickers": [
+    "AAPL",
+    "DELL",
+    "HPQ",
+    "LNVGY",
+    "MSFT",
+    "NVDA"
+  ]
+}

@@ -12,22 +12,22 @@ from typing import Any, Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-SUMMARY_SCHEMA_VERSION = "fin_agent_product_kpi_repair_promotion_summary_v0.4"
-REJECTION_SCHEMA_VERSION = "fin_agent_product_kpi_repair_promotion_rejection_v0.4"
+SUMMARY_SCHEMA_VERSION = "fin_agent_product_kpi_repair_promotion_summary_v0.5"
+REJECTION_SCHEMA_VERSION = "fin_agent_product_kpi_repair_promotion_rejection_v0.5"
 
 DEFAULT_BASELINE_FACTS = Path(
     "Z:/FIN_Insight_Agent/data/manifests/product_evidence_v0_1/company_product_kpi_facts_parser_verified_with_structured_v0_1.jsonl"
 )
 DEFAULT_REPAIR_FACTS = Path(
-    "Z:/FIN_Insight_Agent/data/manifests/product_evidence_v0_1/company_product_kpi_facts_parser_verified_targeted_repair_strict_sentence_v0_1.jsonl"
+    "Z:/FIN_Insight_Agent/data/manifests/product_evidence_v0_1/company_product_kpi_facts_parser_verified_targeted_repair_strict_v0_1.jsonl"
 )
 DEFAULT_OUTPUT_DIR = Path("Z:/FIN_Insight_Agent/data/manifests/product_evidence_v0_1")
-DEFAULT_COMBINED_FACTS_OUTPUT = DEFAULT_OUTPUT_DIR / "company_product_kpi_facts_parser_verified_with_monotonic_repair_v0_4.jsonl"
-DEFAULT_PROMOTED_FACTS_OUTPUT = DEFAULT_OUTPUT_DIR / "company_product_kpi_facts_monotonic_repair_promoted_v0_4.jsonl"
-DEFAULT_REJECTIONS_OUTPUT = DEFAULT_OUTPUT_DIR / "company_product_kpi_facts_monotonic_repair_rejections_v0_4.jsonl"
-DEFAULT_SUMMARY_OUTPUT = DEFAULT_OUTPUT_DIR / "company_product_kpi_monotonic_repair_promotion_summary_v0_4.json"
+DEFAULT_COMBINED_FACTS_OUTPUT = DEFAULT_OUTPUT_DIR / "company_product_kpi_facts_parser_verified_with_monotonic_repair_v0_5.jsonl"
+DEFAULT_PROMOTED_FACTS_OUTPUT = DEFAULT_OUTPUT_DIR / "company_product_kpi_facts_monotonic_repair_promoted_v0_5.jsonl"
+DEFAULT_REJECTIONS_OUTPUT = DEFAULT_OUTPUT_DIR / "company_product_kpi_facts_monotonic_repair_rejections_v0_5.jsonl"
+DEFAULT_SUMMARY_OUTPUT = DEFAULT_OUTPUT_DIR / "company_product_kpi_monotonic_repair_promotion_summary_v0_5.json"
 DEFAULT_REPORT_OUTPUT = Path(
-    "Z:/FIN_Insight_Agent/docs/internal/vnext_20260610/product_kpi_monotonic_repair_promotion_v0_4_execution.zh-CN.md"
+    "Z:/FIN_Insight_Agent/docs/internal/vnext_20260610/product_kpi_monotonic_repair_promotion_v0_5_execution.zh-CN.md"
 )
 
 REVENUE_TABLE_CONTEXT_RE = re.compile(
@@ -61,8 +61,42 @@ GENERIC_OR_BAD_ROW_LABEL_RE = re.compile(
 )
 
 GEOGRAPHIC_SEGMENT_RE = re.compile(
-    r"^(north america|international|europe|asia|americas|united states|u\.s\.|"
-    r"canada|latin america|emea|apac)$",
+    r"^(north america|latin america|emea|apac|asia(?:-pacific)?|europe|africa|"
+    r"americas?|international|domestic|united states|u\.s\.|us|canada|mexico|"
+    r"china|japan|korea|india|brazil|germany|western europe|other americas|"
+    r"other countries|rest of world|key emerging markets)(?:\s*\([^)]*\))?$",
+    re.IGNORECASE,
+)
+
+CUSTOMER_CHANNEL_OR_NON_PRODUCT_ROW_LABEL_RE = re.compile(
+    r"^(direct customers?|indirect customers?|distributors?|resellers?|"
+    r"total healthcare insurers?|healthcare insurers?|capitated|"
+    r"pricing|volume|price|currency exchange rates?|acquisitions?\s*/\s*divestitures?|"
+    r"lease rates?|concessions? and other discounts?|uncollectible lease revenue.*|rent relief|"
+    r"deliveries(?:\s*\([^)]*\))?|shipments?|gross profit|total gross profit|"
+    r"operating income|operating profit|general and administrative|research and development|"
+    r"sales and marketing)$",
+    re.IGNORECASE,
+)
+
+PRODUCT_CATEGORY_REVENUE_CONTEXT_RE = re.compile(
+    r"("
+    r"(?:revenues?|net\s+sales|sales)\s+(?:by|from|disaggregated\s+by)\s+"
+    r"(?:major\s+)?(?:product|products|product\s+categor(?:y|ies)|category|categories|"
+    r"brand|brands|product\s+line|product\s+lines)|"
+    r"(?:product|products|product\s+categor(?:y|ies)|product\s+line|product\s+lines|"
+    r"revenue\s+categor(?:y|ies))\s+(?:revenue|revenues|sales|net\s+sales)|"
+    r"disaggregates?\s+(?:the\s+company['’]s\s+)?(?:net\s+)?revenue\s+by\s+category|"
+    r"revenue\s+categories\s+used\s+by\s+management|"
+    r"sales\s+of\s+principal\s+products"
+    r")",
+    re.IGNORECASE,
+)
+
+PRODUCT_CATEGORY_FINANCIAL_CONTEXT_ALLOW_RE = re.compile(
+    r"revenues?\s+by\s+product\s+categor|revenue\s+by\s+category|"
+    r"net\s+revenue\s+by\s+category|sales\s+of\s+principal\s+products|"
+    r"revenues?\s+by\s+product\s+line|net\s+sales\s+by\s+product",
     re.IGNORECASE,
 )
 
@@ -110,6 +144,7 @@ PRE_PROMOTION_REASONS = frozenset(
         "pre_promote_restaurant_sales_table",
         "pre_promote_hubb_net_sales_segment_table",
         "pre_promote_es_customer_contract_revenue_table",
+        "pre_promote_product_category_revenue_table",
     }
 )
 MIXED_SALES_TABLE_PRE_PROMOTION_REASONS = frozenset(
@@ -124,7 +159,7 @@ MAX_SALES_VALUE_PRE_PROMOTION_REASONS = frozenset(
     }
 )
 
-PROMOTION_GATE_VERSION = "structured_table_currency_revenue_row_bound_v0_4"
+PROMOTION_GATE_VERSION = "structured_table_currency_revenue_row_bound_v0_5"
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -207,6 +242,8 @@ def promote_repair_candidates(
             promoted["repair_promotion_generated_at"] = generated_at
             promoted["repair_claim_scope"] = claim_scope(row)
             promoted["runtime_use_boundary"] = runtime_boundary_for_scope(promoted["repair_claim_scope"])
+            if promoted["repair_claim_scope"] == "company_disclosed_product_category_revenue":
+                promoted["product_node_type"] = "category_or_brand_family"
             if str(promoted.get("fact_id") or "") in baseline_fact_ids:
                 promoted["fact_id"] = stable_id("PRODUCTKPIREPAIR", *fact_key(promoted))
             promoted_rows.append(promoted)
@@ -253,17 +290,19 @@ def pre_promotion_rejection_reason(row: dict[str, Any], baseline_claim_keys: set
         return "change_or_growth_column"
     if GENERIC_OR_BAD_ROW_LABEL_RE.match(row_label):
         return "generic_or_bad_row_label"
+    if CUSTOMER_CHANNEL_OR_NON_PRODUCT_ROW_LABEL_RE.match(row_label):
+        return "customer_channel_or_non_product_row_label"
     is_geographic = is_geographic_segment(row)
-    if is_geographic and not re.search(r"geographic|region|country|location|domicile", citation, re.IGNORECASE):
-        return "geographic_segment_without_geographic_revenue_context"
+    if is_geographic:
+        return "geographic_segment_requires_region_dimension"
     source_specific_reason = source_specific_table_layout_promotion_reason(row)
     if source_specific_reason:
         return source_specific_reason
+    if product_category_revenue_table_promotion_reason(row):
+        return "pre_promote_product_category_revenue_table"
     if FORBIDDEN_FINANCIAL_CONTEXT_RE.search(citation):
         return "forbidden_financial_statement_context"
-    if not REVENUE_TABLE_CONTEXT_RE.search(citation):
-        return "missing_strong_revenue_table_context"
-    return "pre_promote_geographic" if is_geographic else "pre_promote_product_or_segment"
+    return "missing_product_category_or_source_specific_revenue_table_context"
 
 
 def select_promotable_fact_keys(
@@ -385,9 +424,10 @@ def build_summary(
         "promotion_boundary": [
             "Baseline parser-verified facts are preserved unchanged.",
             "Repair candidates are added only when they are semantic additions, table-derived, row-label-bound, currency revenue facts with strong revenue table context.",
+            "Product/category/product-line revenue tables are promoted only when row label, value, unit, period, source table context, and issuer/product binding all pass.",
             "Source-specific table layouts are allowed only for audited principal-product sales tables, total-sales/percentage mix tables, LOW merchandising-table continuation spans, TSN segment sales/operating-income tables, DRI restaurant sales tables, HUBB net-sales segment tables, and ES customer-contract revenue tables; non-sales cells remain rejected.",
             "Sentence-derived repair candidates are not promoted in this pass.",
-            "Geographic segment revenue can be promoted only as geographic segment revenue, not product performance.",
+            "Geographic revenue candidates remain rejected until a region dimension/versioned schema is added; they cannot fill product KPI exact slots.",
             "If baseline already covers a ticker/product/metric/period/unit claim, the repair candidate is rejected for manual audit instead of replacing baseline.",
         ],
     }
@@ -442,6 +482,15 @@ def source_specific_table_layout_promotion_reason(row: dict[str, Any]) -> str | 
     if SALES_OF_PRINCIPAL_PRODUCTS_RE.search(citation):
         return "pre_promote_sales_of_principal_products"
     return None
+
+
+def product_category_revenue_table_promotion_reason(row: dict[str, Any]) -> str | None:
+    citation = str(row.get("citation_span") or "")
+    if not PRODUCT_CATEGORY_REVENUE_CONTEXT_RE.search(citation):
+        return None
+    if FORBIDDEN_FINANCIAL_CONTEXT_RE.search(citation) and not PRODUCT_CATEGORY_FINANCIAL_CONTEXT_ALLOW_RE.search(citation):
+        return None
+    return "pre_promote_product_category_revenue_table"
 
 
 def is_tsn_segment_sales_operating_income_table(row: dict[str, Any]) -> bool:
@@ -513,6 +562,10 @@ def is_high_confidence_segment_sales_value(row: dict[str, Any]) -> bool:
 
 
 def claim_scope(row: dict[str, Any]) -> str:
+    if row.get("repair_promotion_gate") == PROMOTION_GATE_VERSION and row.get("repair_claim_scope"):
+        return str(row.get("repair_claim_scope") or "")
+    if product_category_revenue_table_promotion_reason(row):
+        return "company_disclosed_product_category_revenue"
     if is_geographic_segment(row):
         return "company_disclosed_geographic_segment_revenue"
     return "company_disclosed_product_or_segment_revenue"
@@ -523,6 +576,11 @@ def runtime_boundary_for_scope(scope: str) -> str:
         return (
             "May support company-disclosed geographic revenue disaggregation; "
             "must not be described as product demand, product market share, or SKU economics."
+        )
+    if scope == "company_disclosed_product_category_revenue":
+        return (
+            "May support company-disclosed product/category/product-line revenue for the cited row only; "
+            "does not prove SKU demand, market share, channel inventory, sell-through, or undisclosed ASP."
         )
     return (
         "May support company-disclosed product or operating segment revenue; "

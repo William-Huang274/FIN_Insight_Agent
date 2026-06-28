@@ -619,6 +619,70 @@ def test_runtime_ledger_extracts_metrics_from_context_evidence_rows(tmp_path: Pa
     assert all(row["ledger_extraction_source"] == "context_evidence_object_structured_extractor" for row in rows)
 
 
+def test_runtime_ledger_extracts_dell_8k_product_revenue_bullets(tmp_path: Path) -> None:
+    interactive = _load_interactive_module()
+    case = {
+        "case_id": "dell_bullet_context_case",
+        "years": [2026],
+        "filing_types": ["8-K"],
+        "source_tiers": ["company_authored_unaudited_sec_filing"],
+        "query_contract": {
+            "task_type": "ai_industry_financial_trend",
+            "focus_tickers": ["DELL"],
+            "search_scope_tickers": ["DELL"],
+            "years": [2026],
+            "filing_types": ["8-K"],
+            "source_tiers": ["company_authored_unaudited_sec_filing"],
+            "metric_families": ["supplier_revenue"],
+            "decomposed_tasks": [
+                {
+                    "task_id": "supplier_product_revenue",
+                    "required_tickers": ["DELL"],
+                    "required_metric_families": ["supplier_revenue"],
+                }
+            ],
+        },
+    }
+    context_rows = [
+        {
+            "source_kind": "evidence_object",
+            "evidence_id": "8K_EARNINGS::DELL::Q1FY27::BLOCK_0002",
+            "ticker": "DELL",
+            "fiscal_year": 2026,
+            "source_type": "8-K",
+            "form_type": "8-K",
+            "source_tier": "company_authored_unaudited_sec_filing",
+            "period_end": "2026-05-28",
+            "period_type": "current_report",
+            "section": "Exhibit 99.1 Earnings Release",
+            "text": (
+                "(ISG)\n"
+                "•\n"
+                "Record revenue: $29.0 billion, up 181% year over year\n"
+                "•\n"
+                "Record AI-Optimized Servers revenue: $16.1 billion, up 757% year over year\n"
+                "•\n"
+                "Record Traditional Servers and Networking revenue: $8.5 billion, up 92% year over year\n"
+                "•\n"
+                "Record first-quarter Storage revenue: $4.3 billion, up 8% year over year"
+            ),
+        }
+    ]
+    args = Namespace(ledger_store_path="", object_bm25_index_dir=str(tmp_path / "missing"), ledger_max_rows=10)
+
+    rows = interactive._build_runtime_ledger(case, context_rows, args)
+
+    product_rows = [row for row in rows if row["ticker"] == "DELL" and row["metric_family"] == "product_revenue"]
+    by_name = {row["metric_name"]: row for row in product_rows}
+    assert by_name["AI-optimized servers revenue"]["value"] == 16.1
+    assert by_name["AI-optimized servers revenue"]["unit"] == "usd_billions"
+    assert by_name["AI-optimized servers revenue"]["period_role"] == "qtd"
+    assert by_name["AI-optimized servers revenue"]["ledger_extraction_source"] == "context_product_revenue_bullet_parser"
+    assert by_name["Total ISG net revenue"]["value"] == 29.0
+    assert all(row["metric_role"] == "total_value" for row in product_rows)
+    assert not any(row["unit"] == "percent" for row in product_rows)
+
+
 def test_runtime_ledger_keeps_banking_rows_when_context_table_has_income_tax(tmp_path: Path) -> None:
     interactive = _load_interactive_module()
     case = {

@@ -1,0 +1,72 @@
+{
+  "boundary": "Industry operating metric exact slots are separate from Product-KPI exact. They may support business mix, capacity, backlog, deliveries, subscribers, ARPU/ARR/RPO, same-store growth, or financial-services operating metrics only when company-disclosed value/unit/period/citation are present.",
+  "generated_at": "2026-06-25T15:20:33Z",
+  "lane_counts": {
+    "V1": 217,
+    "V2": 55,
+    "V3": 295,
+    "V4": 188,
+    "V5": 46,
+    "V6": 279,
+    "V7": 694,
+    "V8": 149
+  },
+  "outputs": {
+    "rejections": "D:\\FIN_Insight_Agent\\data\\manifests\\industry_operating_metric_slot_rejections_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\vertical_lanes\\industry_operating_metric_slot.zh-CN.md",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\industry_operating_metric_slot_rows_v0_1.jsonl"
+  },
+  "rejection_count": 7876,
+  "rejection_reason_counts": {
+    "arpu_unit_or_scale_ambiguous": 30,
+    "backlog_metric_without_backlog_or_order_context": 853,
+    "business_segment_metric_not_currency_revenue_or_generic_row": 1184,
+    "business_segment_metric_without_exact_period_column_binding": 593,
+    "cash_flow_table_not_industry_operating_slot": 45,
+    "conflict_resolved_non_aggregate_sibling": 314,
+    "conflicting_values_for_industry_operating_claim": 1754,
+    "currency_or_acquisition_bridge_not_operating_slot": 104,
+    "duplicate_industry_operating_claim": 1968,
+    "expense_table_not_industry_operating_slot": 112,
+    "mislabeled_operating_metric_without_exact_period_column_binding": 3,
+    "non_positive_value": 98,
+    "production_metric_without_capacity_or_throughput_context": 441,
+    "production_payment_obligation_not_production_volume": 2,
+    "region_only_not_industry_operating_slot": 156,
+    "same_store_metric_without_comparable_store_context": 59,
+    "shipment_metric_without_shipment_context": 9,
+    "subscriber_metric_without_subscriber_arr_arpu_context": 7,
+    "tax_or_non_gaap_bridge_not_industry_operating_slot": 102,
+    "unit_sales_metric_without_unit_delivery_context": 42
+  },
+  "runtime_row_count": 1923,
+  "runtime_ticker_count": 186,
+  "schema_version": "finsight_industry_operating_metric_slot_summary_v0_1",
+  "slot_counts": {
+    "airline_tickets": 1,
+    "aum": 2,
+    "backlog_or_orders": 22,
+    "business_segment_revenue": 1730,
+    "capacity_utilization_or_production_volume": 62,
+    "marketplace_gross_order_value": 3,
+    "payment_transactions_per_active_account": 5,
+    "rental_car_days": 1,
+    "revenue_per_occupied_square_foot": 2,
+    "room_nights": 1,
+    "same_store_revenue_growth_component": 8,
+    "same_store_sales_growth": 22,
+    "segment_revenue_growth": 34,
+    "shipments": 11,
+    "tpv_mix_percent": 8,
+    "unit_sales_or_deliveries": 11
+  },
+  "source_verifier_class_counts": {
+    "business_segment_metric": 1740,
+    "business_segment_mixed_table_needs_column_group": 4,
+    "operating_metric_defer_step2": 120,
+    "percentage_or_change": 54,
+    "sentence_relation_insufficient": 5
+  },
+  "status": "pass",
+  "unclassified_rejection_count": 0
+}

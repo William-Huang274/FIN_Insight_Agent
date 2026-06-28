@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from sec_agent.langgraph_orchestrator import _multi_agent_specialists_active
 from sec_agent.multi_agent_runtime import build_agent_data_view
+from sec_agent.product_intelligence_runtime import product_intelligence_context_rows_for_state
 from sec_agent.product_spec_pack import PRODUCT_SPEC_PACK_SCHEMA_VERSION, build_product_spec_pack, validate_product_spec_pack
 from sec_agent.specialist_llm import build_specialist_request_from_state
 
@@ -134,6 +135,86 @@ def _product_pack_state() -> dict:
     }
 
 
+def _product_intelligence_pack() -> dict:
+    return {
+        "schema_version": "finsight_product_intelligence_company_pack_v0_1",
+        "ticker": "NVDA",
+        "company_name": "NVIDIA Corporation",
+        "status": "pass_with_gaps",
+        "representative_product_slots": [
+            {
+                "product_slot_id": "pig_slot:nvda_gpu",
+                "family_id": "gpu_accelerator",
+                "family_name": "GPU / Accelerator",
+                "product_slot_name": "Blackwell GPU",
+                "claim_boundary": "official product slot only; no sales/share/ASP authority",
+            }
+        ],
+        "representative_exact_kpis": [
+            {
+                "source_row_id": "pig_exact:nvda_data_center_revenue",
+                "ticker": "NVDA",
+                "product_family": "Data Center",
+                "product_or_segment": "Data Center",
+                "metric_name": "segment revenue",
+                "fact_type": "product_kpi:segment_revenue",
+                "value": "115.2",
+                "unit": "USD billions",
+                "period": "FY2026",
+                "source_layer": "L1",
+                "claim_boundary": "company disclosed segment revenue only",
+            }
+        ],
+        "representative_product_profile_or_specs": [
+            {
+                "source_row_id": "pig_spec:blackwell_memory",
+                "ticker": "NVDA",
+                "product_family": "GPU / Accelerator",
+                "product_or_segment": "Blackwell GPU",
+                "metric_name": "memory_capacity",
+                "value": "192",
+                "unit": "GB",
+                "period": "2025",
+                "source_layer": "L2",
+                "claim_boundary": "official spec context only; no sales/share/ASP authority",
+            }
+        ],
+        "representative_deployment_rows": [
+            {
+                "source_row_id": "pig_deploy:nvda_cloud_blackwell",
+                "ticker": "NVDA",
+                "product_family": "GPU / Accelerator",
+                "product_or_segment": "Blackwell GPU",
+                "counterparty": "major cloud customer",
+                "metric_name": "official deployment announcement",
+                "period": "2026",
+                "claim_boundary": "official customer deployment context only; no order value or backlog authority",
+            }
+        ],
+        "representative_relationship_edges": [
+            {
+                "edge_id": "pig_edge:nvda_amd_competes",
+                "authority_type": "competitive_context_candidate",
+                "can_enter_evidence_bundle": True,
+                "edge_type": "COMPETES_WITH",
+                "from_node_id": "company_product_family:NVDA:gpu_accelerator",
+                "to_node_id": "company_product_family:AMD:gpu_accelerator",
+                "claim_boundary": "same product family comparable candidate only",
+            },
+            {
+                "edge_id": "pig_edge:nvda_server_supply",
+                "authority_type": "supply_chain_signal",
+                "can_enter_evidence_bundle": True,
+                "edge_type": "COMPONENT_INPUT_TO",
+                "from_node_id": "company_product_family:NVDA:gpu_accelerator",
+                "to_node_id": "company_product_family:DELL:server_oem",
+                "claim_boundary": "supply chain context only; no shipment or allocation authority",
+            },
+        ],
+        "gap_ids": ["pig_gap:nvda_sku_revenue"],
+    }
+
+
 def test_product_spec_pack_builds_gated_product_objects_and_rejections() -> None:
     pack = build_product_spec_pack(_product_pack_state())
 
@@ -186,6 +267,43 @@ def test_product_agent_data_view_and_specialist_request_carry_product_spec_pack(
     assert "ProductSpecPack" in request["output_contract"]["required_outputs"]
     assert "commerce_h100_offer" in request["known_evidence_refs"]
     assert "field_inquiry_h100_lead_time" in request["known_evidence_refs"]
+
+
+def test_product_intelligence_pack_flows_into_product_spec_pack_and_specialist_refs() -> None:
+    state = {
+        "run_id": "unit_pig_runtime",
+        "focus_tickers": ["NVDA"],
+        "query_contract": {"focus_tickers": ["NVDA"]},
+        "agent_activation_plan": {
+            "execution_mode": "standard_memo",
+            "activate_agents": ["product_technology_analyst"],
+            "agent_priorities": {"product_technology_analyst": "primary"},
+        },
+        "product_intelligence_company_pack": _product_intelligence_pack(),
+    }
+
+    rows = product_intelligence_context_rows_for_state(state, tickers=["NVDA"])
+    pack = build_product_spec_pack({**state, "product_intelligence_context_rows": rows})
+    view = build_agent_data_view("product_technology_analyst", state)
+    request = build_specialist_request_from_state("product_technology_analyst", state)
+
+    assert {row["source_class"] for row in rows} >= {
+        "product_intelligence_exact_product_kpi",
+        "official_customer_deployment_event",
+        "product_intelligence_relationship_edge",
+    }
+    assert pack["status"] == "pass"
+    assert pack["summary"]["product_kpi_ref_count"] == 1
+    assert pack["summary"]["product_spec_count"] == 1
+    assert pack["summary"]["customer_deployment_signal_count"] == 1
+    assert pack["summary"]["supply_chain_signal_count"] == 1
+    assert pack["summary"]["competitive_comparable_edge_count"] == 1
+    assert pack["customer_deployment_signals"][0]["exact_value_authority"] is False
+    assert "order_value" in pack["customer_deployment_signals"][0]["forbidden_claims"]
+    assert view["product_intelligence_pack_ref"]["pack_count"] == 1
+    assert request["product_spec_pack"]["summary"]["supply_chain_signal_count"] == 1
+    assert "pig_deploy:nvda_cloud_blackwell" in request["known_evidence_refs"]
+    assert "pig_edge:nvda_server_supply" in request["known_evidence_refs"]
 
 
 def test_product_only_activation_counts_as_specialist_subgraph_active() -> None:

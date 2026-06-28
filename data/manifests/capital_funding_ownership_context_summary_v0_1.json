@@ -1,0 +1,26 @@
+{
+  "by_object_type": {
+    "CapitalStructure": 386,
+    "CreditFacility": 1715,
+    "DebtInstrument": 855,
+    "OwnershipPosition": 5000,
+    "WorkingCapitalLiquidityMetric": 5229
+  },
+  "by_rejection": {},
+  "by_source_id": {
+    "sec_annual_debt_footnote_chunk": 2570,
+    "sec_financial_statement_data_sets": 5615,
+    "sec_ownership_and_13f": 5000
+  },
+  "by_source_role": {
+    "capital_structure_disclosure": 2956,
+    "lagged_ownership_context": 5000,
+    "working_capital_liquidity": 5229
+  },
+  "generated_at": "2026-06-23T19:33:19Z",
+  "policy": "Capital/ownership rows are parser-backed context rows. Company-disclosed capital structure rows may support capital facts; working-capital rows may support liquidity/cash-conversion analysis; 13F/ownership rows are lagged context only and must not be promoted to realtime flow.",
+  "rejected_count": 0,
+  "row_count": 13185,
+  "schema_version": "finsight_capital_funding_ownership_context_summary_v0_1",
+  "status": "pass"
+}

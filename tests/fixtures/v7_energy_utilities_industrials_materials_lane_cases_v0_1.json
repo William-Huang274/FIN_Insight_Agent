@@ -1,0 +1,183 @@
+{
+  "cases": [
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V7_energy_utilities_industrials_materials",
+      "case_id": "v7_energy_utilities_industrials_materials_financial_product_bridge_001",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "asset-level utilization where not disclosed",
+        "dealer sell-through",
+        "private project economics",
+        "equipment order pipeline"
+      ],
+      "focus_tickers": [
+        "XOM",
+        "CVX"
+      ],
+      "prompt": "分析 XOM, CVX 在 Energy / Utilities / Industrials lane 中的产品/服务、财务三表、公开 KPI、资本投入、竞争位置和风险反证，要求区分 L1 强事实与 L2/L3 proxy。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V7"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "energy_utility_context",
+        "trusted_external_context",
+        "supply_chain_official_relationship",
+        "public_order_proxy",
+        "hiring_capacity_proxy",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "COP",
+        "CVX",
+        "DUK",
+        "NEE",
+        "SLB",
+        "SO",
+        "XEL",
+        "XOM"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V7_energy_utilities_industrials_materials",
+      "case_id": "v7_energy_utilities_industrials_materials_external_source_repair_boundary_002",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required",
+        "targeted_repair_before_bounded_gap"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "asset-level utilization where not disclosed",
+        "dealer sell-through",
+        "private project economics",
+        "equipment order pipeline"
+      ],
+      "focus_tickers": [
+        "COP",
+        "SLB",
+        "NEE"
+      ],
+      "prompt": "针对 COP, SLB, NEE 检查当前公开源是否足以补齐产品、监管/行业、供应链或渠道 proxy；找不到时必须写出 retrievable/parser/bounded/commercial gap。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V7"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "energy_utility_context",
+        "trusted_external_context",
+        "supply_chain_official_relationship",
+        "public_order_proxy",
+        "hiring_capacity_proxy",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "COP",
+        "CVX",
+        "DUK",
+        "ED",
+        "GE",
+        "NEE",
+        "SLB",
+        "SO",
+        "XEL",
+        "XOM"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V7_energy_utilities_industrials_materials",
+      "case_id": "v7_energy_utilities_industrials_materials_proxy_no_promotion_003",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required",
+        "proxy_cannot_prove_sales_share_or_margin"
+      ],
+      "execution_mode": "standard_memo",
+      "expected_commercial_gaps": [
+        "asset-level utilization where not disclosed",
+        "dealer sell-through",
+        "private project economics",
+        "equipment order pipeline"
+      ],
+      "focus_tickers": [
+        "DUK",
+        "SO",
+        "XEL"
+      ],
+      "prompt": "比较 DUK, SO, XEL 的公开 proxy 信号如何补充但不能替代公司披露；输出应包含判断、依据、反证、缺口和触发条件。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V7"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "energy_utility_context",
+        "trusted_external_context",
+        "supply_chain_official_relationship",
+        "public_order_proxy",
+        "hiring_capacity_proxy",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "COP",
+        "CVX",
+        "DUK",
+        "NEE",
+        "SLB",
+        "SO",
+        "XEL",
+        "XOM"
+      ]
+    }
+  ],
+  "lane_id": "V7",
+  "schema_version": "finsight_vertical_lane_cases_v0_1"
+}

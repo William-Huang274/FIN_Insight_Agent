@@ -1,0 +1,43 @@
+{
+  "boundary": "Macro exposure bridge rows connect official macro drivers to V1 lane exposure only; they cannot support issuer exact financial, sales, demand, shipment, margin, or share claims.",
+  "context_row_count": 16,
+  "coverage_gate_status": "pass",
+  "generated_at": "2026-06-17T11:58:59Z",
+  "input_row_count": 150,
+  "macro_driver_counts": {
+    "EIA_OPEN_DATA": 6,
+    "FEDFUNDS": 10
+  },
+  "macro_official_context_requirement": {
+    "entity_bound_row_count": 16,
+    "gaps": [],
+    "observed_row_count": 16,
+    "parser_row_count": 16,
+    "specialist_visible_row_count": 48,
+    "status": "pass"
+  },
+  "outputs": {
+    "coverage_gate": "D:\\FIN_Insight_Agent\\data\\manifests\\v1_macro_official_exposure_runtime_coverage_gate_v0_1.json",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\v1_macro_official_exposure_context_rows_v0_1.jsonl"
+  },
+  "parser_backed_row_count": 16,
+  "schema_version": "fin_agent_v1_macro_official_exposure_context_summary_v0_1",
+  "source_id_counts": {
+    "eia_open_data": 6,
+    "fred_api": 10
+  },
+  "status": "pass",
+  "ticker_count": 10,
+  "tickers": [
+    "AMAT",
+    "AMD",
+    "ASML",
+    "DELL",
+    "HPE",
+    "KLAC",
+    "LRCX",
+    "NVDA",
+    "QCOM",
+    "TSM"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "case_id": "v1_macro_official_exposure_bridge",
+  "exact_authority_violations": [],
+  "gaps": [],
+  "generated_at": "2026-06-17T11:58:59Z",
+  "industry_schema": "semiconductors_hardware",
+  "phase": "runtime_case",
+  "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+  "requested_industry_schema": "semiconductors_hardware",
+  "requirements": [
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "not_bound": 16
+        },
+        "issuer_binding_status": {
+          "macro_exposure_bridge_context": 16
+        },
+        "product_binding_status": {
+          "product_mentioned_in_snapshot": 16
+        }
+      },
+      "by_source_status": {
+        "runtime_ready_context": 1,
+        "structured_not_promoted": 5
+      },
+      "claim_boundary": "Official macro/industry context and demand proxy only; no issuer revenue or share inference.",
+      "dimension": "macro_and_industry",
+      "effective_ready_source_count": 2,
+      "entity_bound_row_count": 16,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L2"
+      ],
+      "next_action": "Resolve industry driver/source mapping and keep company exposure bridge explicit.",
+      "observed_row_count": 16,
+      "observed_source_classes": [
+        "eia_open_data",
+        "fred_api"
+      ],
+      "observed_structured_context_types": [
+        "macro_official_context"
+      ],
+      "parser_row_count": 16,
+      "phase": "runtime_case",
+      "ready_source_count": 1,
+      "requirement_id": "macro_official_context",
+      "route_candidate_source_count": 6,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "fred_api",
+        "fred_graph_csv",
+        "bls_public_api",
+        "bea_data_api",
+        "census_data_api",
+        "eia_open_data"
+      ],
+      "source_profile_count": 6,
+      "specialist_roles": [
+        "market_valuation_analyst",
+        "capital_ownership_macro_analyst",
+        "industry_supply_chain_analyst"
+      ],
+      "specialist_visible_row_count": 48,
+      "status": "pass"
+    }
+  ],
+  "schema_version": "finsight_source_coverage_gate_v0_1",
+  "status": "pass",
+  "summary": {
+    "by_dimension": {
+      "macro_and_industry": 1
+    },
+    "by_status": {
+      "pass": 1
+    },
+    "exact_authority_violation_count": 0,
+    "fail_requirement_count": 0,
+    "gap_requirement_count": 0,
+    "pass_requirement_count": 1,
+    "requirement_count": 1
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+    "status": "pass"
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "boundary": "The docket operationalizes remaining company gaps. It does not promote evidence. A gap can become final only after its listed source ladder and pass condition are exhausted in an attempt ledger.",
+  "by_cluster": {
+    "app_marketplace_seller_alias_adapter": {
+      "company_count": 4,
+      "completion_state": "needs_marketplace_alias_adapter_or_boundary_audit",
+      "docket_count": 4,
+      "priority": "medium"
+    },
+    "auto_product_identity_regulatory_boundary_audit": {
+      "company_count": 1,
+      "completion_state": "attempt_backed_public_boundary_or_make_alias_repair",
+      "docket_count": 1,
+      "priority": "low"
+    },
+    "channel_offer_distributor_marketplace_adapter": {
+      "company_count": 8,
+      "completion_state": "needs_adapter_batch",
+      "docket_count": 8,
+      "priority": "high"
+    },
+    "developer_ecosystem_official_seed_locator": {
+      "company_count": 13,
+      "completion_state": "needs_verified_seed_locator",
+      "docket_count": 13,
+      "priority": "high"
+    },
+    "hiring_capacity_site_specific_public_jobs_adapter": {
+      "company_count": 36,
+      "completion_state": "needs_site_specific_parser_or_boundary_audit",
+      "docket_count": 36,
+      "priority": "medium"
+    },
+    "platform_review_seller_alias_adapter": {
+      "company_count": 3,
+      "completion_state": "needs_marketplace_alias_adapter_or_boundary_audit",
+      "docket_count": 3,
+      "priority": "medium"
+    },
+    "product_kpi_business_segment_boundary": {
+      "company_count": 107,
+      "completion_state": "route_to_business_mix_or_remain_product_kpi_gap",
+      "docket_count": 107,
+      "priority": "medium"
+    },
+    "product_kpi_column_group_schema_verifier": {
+      "company_count": 18,
+      "completion_state": "needs_column_group_schema",
+      "docket_count": 18,
+      "priority": "high"
+    },
+    "product_kpi_industry_operating_metric_slot_router": {
+      "company_count": 32,
+      "completion_state": "needs_industry_operating_metric_slot_mapping",
+      "docket_count": 32,
+      "priority": "medium"
+    },
+    "product_kpi_ir_deck_annual_report_locator": {
+      "company_count": 101,
+      "completion_state": "needs_locator_before_final_gap",
+      "docket_count": 101,
+      "priority": "medium"
+    },
+    "product_kpi_non_product_total_rejection_gate": {
+      "company_count": 12,
+      "completion_state": "reject_or_find_product_family_table",
+      "docket_count": 12,
+      "priority": "low"
+    },
+    "product_kpi_non_us_ir_local_exchange_parser": {
+      "company_count": 4,
+      "completion_state": "needs_non_us_disclosure_adapter",
+      "docket_count": 4,
+      "priority": "high"
+    },
+    "product_kpi_percentage_change_rejection_gate": {
+      "company_count": 72,
+      "completion_state": "reject_or_pair_with_currency_level_value",
+      "docket_count": 72,
+      "priority": "medium"
+    },
+    "product_kpi_period_version_schema_verifier": {
+      "company_count": 7,
+      "completion_state": "needs_period_version_reconciliation",
+      "docket_count": 7,
+      "priority": "high"
+    },
+    "product_kpi_region_dimension_or_rejection_gate": {
+      "company_count": 15,
+      "completion_state": "region_exposure_only_or_needs_product_table",
+      "docket_count": 15,
+      "priority": "low"
+    },
+    "product_kpi_sentence_relation_verifier": {
+      "company_count": 9,
+      "completion_state": "needs_local_relation_verifier",
+      "docket_count": 9,
+      "priority": "high"
+    },
+    "public_order_local_tender_and_recipient_adapter": {
+      "company_count": 19,
+      "completion_state": "needs_jurisdiction_adapter_or_recipient_boundary_audit",
+      "docket_count": 19,
+      "priority": "high"
+    },
+    "public_order_non_us_local_tender_adapter": {
+      "company_count": 6,
+      "completion_state": "attempt_backed_public_boundary_after_local_tender_attempt",
+      "docket_count": 6,
+      "priority": "high"
+    },
+    "supply_chain_official_relationship_resolver": {
+      "company_count": 1,
+      "completion_state": "needs_official_relationship_adapter_or_boundary_audit",
+      "docket_count": 1,
+      "priority": "high"
+    },
+    "technology_research_patents_assignee_resolver": {
+      "company_count": 17,
+      "completion_state": "needs_adapter_batch",
+      "docket_count": 17,
+      "priority": "medium"
+    }
+  },
+  "by_completion_state": {
+    "attempt_backed_public_boundary_after_local_tender_attempt": 6,
+    "attempt_backed_public_boundary_or_make_alias_repair": 1,
+    "needs_adapter_batch": 25,
+    "needs_column_group_schema": 18,
+    "needs_industry_operating_metric_slot_mapping": 32,
+    "needs_jurisdiction_adapter_or_recipient_boundary_audit": 19,
+    "needs_local_relation_verifier": 9,
+    "needs_locator_before_final_gap": 101,
+    "needs_marketplace_alias_adapter_or_boundary_audit": 7,
+    "needs_non_us_disclosure_adapter": 4,
+    "needs_official_relationship_adapter_or_boundary_audit": 1,
+    "needs_period_version_reconciliation": 7,
+    "needs_site_specific_parser_or_boundary_audit": 36,
+    "needs_verified_seed_locator": 13,
+    "region_exposure_only_or_needs_product_table": 15,
+    "reject_or_find_product_family_table": 12,
+    "reject_or_pair_with_currency_level_value": 72,
+    "route_to_business_mix_or_remain_product_kpi_gap": 107
+  },
+  "by_docket_type": {
+    "product_kpi": 377,
+    "source_role": 108
+  },
+  "by_priority": {
+    "high": 85,
+    "low": 28,
+    "medium": 372
+  },
+  "by_requirement": {
+    "app_rank_store_proxy": 4,
+    "auto_product_identity_context": 1,
+    "channel_offer_proxy": 8,
+    "developer_ecosystem_proxy": 13,
+    "hiring_capacity_proxy": 36,
+    "platform_review_proxy": 3,
+    "product_kpi_exact_slot": 377,
+    "public_order_proxy": 25,
+    "supply_chain_official_relationship": 1,
+    "technology_research_proxy": 17
+  },
+  "cluster_count": 20,
+  "docket_count": 485,
+  "generated_at": "2026-06-20T18:03:00Z",
+  "outputs": {
+    "clusters": "D:\\FIN_Insight_Agent\\data\\manifests\\company_gap_adapter_cluster_queue_v0_1.jsonl",
+    "docket": "D:\\FIN_Insight_Agent\\data\\manifests\\company_gap_docket_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\vertical_lanes\\company_gap_docket.zh-CN.md"
+  },
+  "product_kpi_gap_docket_count": 377,
+  "schema_version": "finsight_company_gap_docket_summary_v0_1",
+  "source_role_gap_docket_count": 108,
+  "status": "pass",
+  "top_lanes": {
+    "V1": 37,
+    "V2": 10,
+    "V3": 115,
+    "V4": 34,
+    "V5": 16,
+    "V6": 51,
+    "V7": 162,
+    "V8": 60
+  },
+  "unclassified_docket_count": 0,
+  "unique_gap_company_count": 407
+}

@@ -3,19 +3,33 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Mapping
 from urllib.parse import urlparse
 
+from evidence.schema import EvidenceObject
+from evidence.structured_extractor import extract_structured_objects
 from sec_agent.agent_registry import agent_registry_by_id
 from sec_agent.capital_macro_pack import build_capital_macro_pack, compact_capital_macro_pack
+from sec_agent.dimension_evidence_portfolio import (
+    build_dimension_evidence_portfolio,
+    compact_dimension_evidence_portfolio,
+)
 from sec_agent.financial_statement_analysis import (
+    build_fundamental_peer_statement_panel,
     build_fundamental_statement_pack,
+    compact_fundamental_peer_statement_panel,
     compact_fundamental_statement_pack,
 )
 from sec_agent.industry_playbooks import selected_playbook_policy
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
 from sec_agent.multi_agent_contracts import evidence_requirements_from_universe_relationship_plan
+from sec_agent.product_intelligence_runtime import (
+    compact_product_intelligence_pack_refs,
+    product_intelligence_context_rows_for_state,
+)
+from sec_agent.product_intelligence_depth import compact_ai_semis_product_evidence_pack_refs
 from sec_agent.product_spec_pack import build_product_spec_pack, compact_product_spec_pack
 from sec_agent.project_inventory import inventory_brief
 from sec_agent.retrieval_plan import EVIDENCE_REQUIREMENT_SCHEMA_VERSION, build_evidence_requirement_plan, build_retrieval_plan
@@ -93,6 +107,9 @@ CONTEXT_ONLY_REQUIREMENT_SOURCE_FAMILIES = {
     "company_product_evidence_graph",
     "public_source_context",
 }
+ROUTE_BACKED_SOURCE_FAMILY_COMPATIBILITY_GROUPS: tuple[frozenset[str], ...] = (
+    frozenset({"primary_sec_filing", "company_authored_unaudited_sec_filing"}),
+)
 
 ROUTE_COST_TIER: dict[str, str] = {
     "ledger_first": "low",
@@ -260,6 +277,29 @@ def default_web_source_scope_registry() -> dict[str, Any]:
             ],
             "claim_boundary": "company_domains_must_be_preverified_in_request_or_inventory_before_use",
             "requires_verified_company_domain": True,
+        },
+        "official_issuer_disclosure": {
+            "policy_id": "official_issuer_disclosure",
+            "source_classes": ["company_ir_material", "government_dataset_endpoint", "official_regulatory_page"],
+            "allowed_domains": [
+                "sec.gov",
+                "www.sec.gov",
+                "data.sec.gov",
+                "asml.com",
+                "www.asml.com",
+                "tsmc.com",
+                "www.tsmc.com",
+                "novonordisk.com",
+                "www.novonordisk.com",
+            ],
+            "allowed_claim_types": [
+                "annual_report_context",
+                "company_ir_context",
+                "issuer_filing_presence",
+                "official_disclosure_context",
+                "regulatory_filing_context",
+            ],
+            "claim_boundary": "official_issuer_sources_support_coverage_and_context_until_parser_authority_gate_promotes_exact_facts",
         },
     }
     return {
@@ -438,6 +478,21 @@ def _primary_requirement_index(requirements: list[Mapping[str, Any]]) -> int:
     return 0
 
 
+def _route_backed_source_families_compatible(explicit_sources: set[str], expected_sources: set[str]) -> bool:
+    if not explicit_sources or not expected_sources:
+        return True
+    return all(_route_backed_source_family_compatible(source, expected_sources) for source in explicit_sources)
+
+
+def _route_backed_source_family_compatible(source: str, expected_sources: set[str]) -> bool:
+    if source in expected_sources:
+        return True
+    for group in ROUTE_BACKED_SOURCE_FAMILY_COMPATIBILITY_GROUPS:
+        if source in group and expected_sources.intersection(group):
+            return True
+    return False
+
+
 def validate_multi_agent_evidence_requirement_plan(
     plan: Mapping[str, Any],
     *,
@@ -499,7 +554,11 @@ def validate_multi_agent_evidence_requirement_plan(
         )
         context_only_sources = explicit_sources & CONTEXT_ONLY_REQUIREMENT_SOURCE_FAMILIES
         route_backed_explicit_sources = explicit_sources - CONTEXT_ONLY_REQUIREMENT_SOURCE_FAMILIES
-        if route_backed_explicit_sources and expected_sources and not route_backed_explicit_sources.issubset(expected_sources):
+        if (
+            route_backed_explicit_sources
+            and expected_sources
+            and not _route_backed_source_families_compatible(route_backed_explicit_sources, expected_sources)
+        ):
             errors.append(
                 {
                     "type": "source_family_mismatch",
@@ -519,7 +578,7 @@ def validate_multi_agent_evidence_requirement_plan(
                 }
             )
         if allowed_sources:
-            disallowed = sorted((expected_sources | context_only_sources) - allowed_sources)
+            disallowed = sorted((expected_sources | context_only_sources | route_backed_explicit_sources) - allowed_sources)
             if disallowed:
                 errors.append(
                     {
@@ -2007,13 +2066,22 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
     entry = dict(registry.get(str(agent_id or "")) or {})
     global_context = _global_context_for_agent_data_view(state)
     global_context_ref = _global_context_ref(global_context)
+    dimension_portfolio = build_dimension_evidence_portfolio(
+        state,
+        tickers=_focus_tickers_from_state(state),
+        repo_root=os.getcwd(),
+        autoload=bool(state.get("product_intelligence_runtime_autoload")),
+    )
+    state_for_view = {**dict(state), "_dimension_evidence_portfolio": dimension_portfolio}
+    dimension_portfolio_ref = compact_dimension_evidence_portfolio(dimension_portfolio, agent_id=str(agent_id or ""))
     if not entry:
         failed = {
             "schema_version": AGENT_DATA_VIEW_SCHEMA_VERSION,
             "status": "fail",
             "agent_id": str(agent_id or ""),
             "global_context_ref": global_context_ref,
-            "role_context": _role_context_for_agent_data_view(str(agent_id or ""), {}, state, [], {}, [], []),
+            "dimension_evidence_portfolio_ref": dimension_portfolio_ref,
+            "role_context": _role_context_for_agent_data_view(str(agent_id or ""), {}, state_for_view, [], {}, [], []),
             "bounded_evidence_rows": [],
             "source_family_bundle": {},
             "assigned_task_card": {},
@@ -2033,6 +2101,10 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
         "agent_id": entry["agent_id"],
         "allowed_data_views": allowed_views,
         "global_context_ref": global_context_ref,
+        "dimension_evidence_portfolio_ref": compact_dimension_evidence_portfolio(
+            dimension_portfolio,
+            agent_id=entry["agent_id"],
+        ),
         "role_context": {},
         "private_context_policy": "private_operator_context_excluded",
         "payload_policy": {
@@ -2067,12 +2139,31 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
         source_family_bundle = _source_family_bundle_for_agent(entry["agent_id"], bounded_rows, state)
         view["source_family_bundle"] = source_family_bundle
         if entry["agent_id"] == "product_technology_analyst":
-            product_spec_pack = build_product_spec_pack(
+            product_intelligence_rows = product_intelligence_context_rows_for_state(
                 state,
+                tickers=_focus_tickers_from_state(state),
+                repo_root=os.getcwd(),
+                max_rows=max(32, _data_view_max_rows_for_agent(entry["agent_id"], state) * 3),
+                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+            )
+            product_spec_pack = build_product_spec_pack(
+                {**dict(state), "product_intelligence_context_rows": product_intelligence_rows},
                 max_items=max(8, min(32, _data_view_max_rows_for_agent(entry["agent_id"], state))),
             )
             view["product_spec_pack"] = product_spec_pack
             view["product_spec_pack_ref"] = compact_product_spec_pack(product_spec_pack)
+            view["product_intelligence_pack_ref"] = compact_product_intelligence_pack_refs(
+                state,
+                tickers=_focus_tickers_from_state(state),
+                repo_root=os.getcwd(),
+                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+            )
+            view["product_evidence_pack_ref"] = compact_ai_semis_product_evidence_pack_refs(
+                state,
+                tickers=_focus_tickers_from_state(state),
+                repo_root=os.getcwd(),
+                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+            )
         if entry["agent_id"] in {"fundamental_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"}:
             capital_macro_pack = build_capital_macro_pack(
                 state,
@@ -2091,6 +2182,15 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
                 view["fundamental_statement_pack_ref"] = compact_fundamental_statement_pack(
                     fundamental_statement_pack,
                     max_line_items=max(12, min(24, _data_view_max_rows_for_agent(entry["agent_id"], state))),
+                )
+                fundamental_peer_statement_panel = build_fundamental_peer_statement_panel(
+                    {**dict(state), "fundamental_statement_pack": fundamental_statement_pack},
+                    max_items=max(16, min(80, _data_view_max_rows_for_agent(entry["agent_id"], state) * 2)),
+                )
+                view["fundamental_peer_statement_panel"] = fundamental_peer_statement_panel
+                view["fundamental_peer_statement_panel_ref"] = compact_fundamental_peer_statement_panel(
+                    fundamental_peer_statement_panel,
+                    max_items=max(8, min(16, _data_view_max_rows_for_agent(entry["agent_id"], state))),
                 )
     if "coverage_summary" in allowed:
         view["coverage_summary"] = _coverage_summary_view(state)
@@ -2121,7 +2221,7 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
     view["role_context"] = _role_context_for_agent_data_view(
         entry["agent_id"],
         entry,
-        state,
+        state_for_view,
         bounded_rows,
         source_family_bundle,
         task_card,
@@ -2132,12 +2232,16 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
             "schema_version": view["schema_version"],
             "agent_id": view["agent_id"],
             "global_context_ref": view["global_context_ref"],
+            "dimension_evidence_portfolio_ref": view.get("dimension_evidence_portfolio_ref") or {},
             "role_context": view["role_context"],
             "bounded_row_distribution": view.get("bounded_row_distribution") or {},
             "source_family_bundle": view.get("source_family_bundle") or {},
             "product_spec_pack_ref": view.get("product_spec_pack_ref") or {},
+            "product_intelligence_pack_ref": view.get("product_intelligence_pack_ref") or {},
+            "product_evidence_pack_ref": view.get("product_evidence_pack_ref") or {},
             "capital_macro_pack_ref": view.get("capital_macro_pack_ref") or {},
             "fundamental_statement_pack_ref": view.get("fundamental_statement_pack_ref") or {},
+            "fundamental_peer_statement_panel_ref": view.get("fundamental_peer_statement_panel_ref") or {},
             "assigned_task_card": view.get("assigned_task_card") or {},
             "required_claim_slots": view.get("required_claim_slots") or [],
             "bounded_gap_refs": view.get("bounded_gap_refs") or [],
@@ -2210,6 +2314,16 @@ def _role_context_for_agent_data_view(
     required_claim_slots: list[Mapping[str, Any]],
 ) -> dict[str, Any]:
     allowed_views = _string_list(entry.get("allowed_data_views"))
+    dimension_portfolio = (
+        state.get("_dimension_evidence_portfolio")
+        if isinstance(state.get("_dimension_evidence_portfolio"), Mapping)
+        else build_dimension_evidence_portfolio(
+            state,
+            tickers=_focus_tickers_from_state(state),
+            repo_root=os.getcwd(),
+            autoload=bool(state.get("product_intelligence_runtime_autoload")),
+        )
+    )
     base = {
         "schema_version": "sec_agent_role_context_v0.3",
         "agent_id": str(agent_id or ""),
@@ -2223,6 +2337,7 @@ def _role_context_for_agent_data_view(
         "exact_value_authority_source_families": _string_list(source_family_bundle.get("exact_value_authority_source_families"))[:16],
         "forbidden_claim_scopes": _string_list(source_family_bundle.get("forbidden_claim_scopes"))[:32],
         "bounded_gap_refs": _bounded_gap_refs_for_agent_data_view(state, rows)[:16],
+        "dimension_evidence_portfolio_ref": compact_dimension_evidence_portfolio(dimension_portfolio, agent_id=agent_id),
     }
     if agent_id in SPECIALIST_EXECUTION_ORDER:
         base.update(
@@ -2244,6 +2359,13 @@ def _role_context_for_agent_data_view(
                     "product_spec_pack_required": True,
                     "product_spec_pack_policy": "parser_gated_product_objects_and_boundaries_only_no_public_proxy_financial_promotion",
                     "product_spec_pack_output_required": True,
+                    "product_intelligence_graph_allowed": True,
+                    "product_intelligence_graph_policy": "company_pack_may_seed taxonomy/spec/deployment/supply-chain/comparable context, but only exact product KPI rows carry exact-value authority",
+                    "product_evidence_pack_required": True,
+                    "product_evidence_pack_policy": (
+                        "ProductEvidencePack v0.2 is the first product-analysis input: specs, deployment/adoption, "
+                        "performance proxy, KPI exact, and relationship graph stay separate with source boundaries."
+                    ),
                 }
             )
         if agent_id in {"fundamental_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"}:
@@ -2274,7 +2396,16 @@ def _role_context_for_agent_data_view(
     elif agent_id == "research_lead":
         base.update(
             {
-                "planning_inputs": ["source_inventory_brief", "playbook_candidates", "source_boundary_registry", "query_contract"],
+                "planning_inputs": [
+                    "source_inventory_brief",
+                    "playbook_candidates",
+                    "source_boundary_registry",
+                    "query_contract",
+                    "dimension_evidence_portfolio_ref",
+                ],
+                "supervising_analyst_role": True,
+                "lead_review_checkpoint_required": True,
+                "targeted_repair_policy": "only retrievable dimension gaps get targeted repair; bounded/commercial gaps stay explicit",
                 "raw_rows_visible": False,
             }
         )
@@ -2945,6 +3076,7 @@ def _specialist_required_source_families(agent_id: str) -> list[str]:
             "relationship_graph",
             "company_product_evidence_graph",
             "public_source_context",
+            "live_public_web_context",
         ],
         "market_valuation_analyst": ["market_snapshot"],
         "risk_counterevidence_analyst": [
@@ -3108,6 +3240,7 @@ def execute_evidence_operator_plan(
                     agent_id,
                     tool_name,
                     "cached",
+                    error=str(cached_result.get("error") or cached_result.get("failure_reason") or "")[:500],
                     arguments=arguments,
                     row_count=len(rows_for_route),
                     source_gap_count=len(gaps),
@@ -3211,7 +3344,7 @@ def execute_evidence_operator_plan(
         if not decision["allowed"]:
             observations.append(_observation(route, agent_id, tool_name, "blocked", error=decision["reason"], arguments=arguments))
             continue
-        result = _dry_run_result(tool_name, route) if dry_run else executor(tool_name, arguments)
+        result = _dry_run_result(tool_name, route) if dry_run else _execute_tool_with_resource_retry(tool_name, arguments, executor)
         boundary = validate_tool_observation_boundary(tool_name, result)
         rows = _rows_from_result(tool_name, result)
         runtime_summary = _tool_runtime_summary(tool_name, result)
@@ -3244,6 +3377,7 @@ def execute_evidence_operator_plan(
                 agent_id,
                 tool_name,
                 str(result.get("status") or "ok"),
+                error=str(result.get("error") or result.get("failure_reason") or "")[:500],
                 arguments=arguments,
                 row_count=len(rows),
                 source_gap_count=len(gaps),
@@ -3266,9 +3400,21 @@ def execute_evidence_operator_plan(
             context_rows.extend(rows)
         source_gaps.extend(gaps)
         artifact_refs.extend(refs)
-        if sec_group_member and sec_group_member.get("is_first") and tool_name == "sec_search_filings":
+        if (
+            sec_group_member
+            and sec_group_member.get("is_first")
+            and tool_name == "sec_search_filings"
+            and _sec_search_result_cacheable_for_group(result)
+        ):
             sec_group_cache["result"] = result
             sec_group_cache["executed_route_id"] = original_route.get("route_id") or route.get("route_id") or ""
+
+    ledger_rows = _merge_runtime_ledger_rows(
+        [
+            *ledger_rows,
+            *_runtime_ledger_rows_from_sec_context(context_rows, state_context=context),
+        ]
+    )
 
     source_gaps.extend(
         _ledger_missing_despite_context_gaps(
@@ -4325,6 +4471,132 @@ def _route_output_dir(base_output_dir: str, route_id: str) -> str:
     return f"{base}/mcp_retrieval/{suffix}"
 
 
+def _execute_tool_with_resource_retry(tool_name: str, arguments: Mapping[str, Any], executor: ToolExecutor) -> dict[str, Any]:
+    args = dict(arguments or {})
+    if tool_name != "sec_search_filings":
+        result = executor(tool_name, args)
+        if isinstance(result, Mapping):
+            return dict(result)
+        return {"status": "error", "error": f"invalid_tool_result:{type(result).__name__}", "tool_name": tool_name}
+
+    result = _call_tool_executor(tool_name, args, executor)
+    if not _tool_result_is_sec_search_bge_resource_failure(result, args):
+        return result
+
+    attempts = [_resource_retry_attempt("initial", args, result)]
+    final_result = result
+    retry_policy = "sec_search_cuda_oom_retry_v0_1"
+
+    if _sec_search_arg_device_is_cuda(args) and int(args.get("reranker_batch_size") or 0) > 1:
+        cuda_retry_args = dict(args)
+        cuda_retry_args["reranker_batch_size"] = 1
+        final_result = _call_tool_executor(tool_name, cuda_retry_args, executor)
+        attempts.append(_resource_retry_attempt("cuda_batch_size_1", cuda_retry_args, final_result))
+
+    if _tool_result_is_sec_search_bge_resource_failure(final_result, args):
+        cpu_retry_args = dict(args)
+        cpu_retry_args["bge_device"] = "cpu"
+        cpu_retry_args["bge_first"] = True
+        cpu_retry_args["reranker_batch_size"] = min(max(1, int(args.get("reranker_batch_size") or 1)), 4)
+        final_result = _call_tool_executor(tool_name, cpu_retry_args, executor)
+        attempts.append(_resource_retry_attempt("cpu_spillover_after_cuda_oom", cpu_retry_args, final_result))
+
+    return _attach_resource_retry_summary(
+        final_result,
+        retry_policy=retry_policy,
+        attempts=attempts,
+        original_error=_tool_result_error_text(result),
+    )
+
+
+def _call_tool_executor(tool_name: str, arguments: Mapping[str, Any], executor: ToolExecutor) -> dict[str, Any]:
+    try:
+        result = executor(tool_name, dict(arguments or {}))
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "error", "error": f"{type(exc).__name__}:{exc}", "tool_name": tool_name}
+    if isinstance(result, Mapping):
+        return dict(result)
+    return {"status": "error", "error": f"invalid_tool_result:{type(result).__name__}", "tool_name": tool_name}
+
+
+def _attach_resource_retry_summary(
+    result: Mapping[str, Any],
+    *,
+    retry_policy: str,
+    attempts: list[dict[str, Any]],
+    original_error: str,
+) -> dict[str, Any]:
+    clean = dict(result or {})
+    clean["resource_retry"] = {
+        "schema_version": "sec_agent_tool_resource_retry_v0.1",
+        "policy": retry_policy,
+        "retried": len(attempts) > 1,
+        "attempt_count": len(attempts),
+        "attempts": attempts,
+        "original_error": original_error[:500],
+        "final_status": str(clean.get("status") or ""),
+        "final_error": _tool_result_error_text(clean)[:500],
+        "spillover": any(str(item.get("stage") or "") == "cpu_spillover_after_cuda_oom" for item in attempts),
+    }
+    context_runtime = clean.get("context_runtime") if isinstance(clean.get("context_runtime"), Mapping) else {}
+    clean["context_runtime"] = {
+        **dict(context_runtime),
+        "resource_retry_policy": retry_policy,
+        "resource_retry_attempt_count": len(attempts),
+        "resource_retry_spillover": clean["resource_retry"]["spillover"],
+    }
+    return clean
+
+
+def _resource_retry_attempt(stage: str, arguments: Mapping[str, Any], result: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "stage": stage,
+        "status": str(result.get("status") or ""),
+        "error": _tool_result_error_text(result)[:240],
+        "bge_device": str(arguments.get("bge_device") or ""),
+        "reranker_batch_size": int(arguments.get("reranker_batch_size") or 0),
+        "row_count": len(result.get("context_rows") or []),
+    }
+
+
+def _tool_result_error_text(result: Mapping[str, Any]) -> str:
+    return str(result.get("error") or result.get("failure_reason") or "")
+
+
+def _tool_result_is_cuda_oom(result: Mapping[str, Any]) -> bool:
+    text = _tool_result_error_text(result).lower()
+    return "cuda out of memory" in text or "outofmemoryerror" in text
+
+
+def _tool_result_is_sec_search_bge_resource_failure(result: Mapping[str, Any], arguments: Mapping[str, Any]) -> bool:
+    if _tool_result_is_cuda_oom(result):
+        return True
+    text = _tool_result_error_text(result).lower()
+    if not text:
+        return False
+    device = str(arguments.get("bge_device") or "").strip().lower()
+    if device not in {"auto", "cuda"} and not device.startswith("cuda"):
+        return False
+    subprocess_crash_markers = (
+        "calledprocesserror",
+        "non-zero exit status 3221225477",
+        "0xc0000005",
+        "access violation",
+    )
+    return any(marker in text for marker in subprocess_crash_markers)
+
+
+def _sec_search_arg_device_is_cuda(arguments: Mapping[str, Any]) -> bool:
+    return str(arguments.get("bge_device") or "").strip().lower().startswith("cuda")
+
+
+def _sec_search_result_cacheable_for_group(result: Mapping[str, Any]) -> bool:
+    status = str(result.get("status") or "ok").strip().lower()
+    if status in {"", "ok", "partial"}:
+        return not _tool_result_error_text(result)
+    return False
+
+
 def _tool_runtime_summary(tool_name: str, result: Mapping[str, Any]) -> dict[str, Any]:
     summary: dict[str, Any] = {"tool_name": tool_name}
     if tool_name == "sec_search_filings":
@@ -4338,6 +4610,8 @@ def _tool_runtime_summary(tool_name: str, result: Mapping[str, Any]) -> dict[str
                 "context_runtime": _sanitize_runtime_mapping(context_runtime),
             }
         )
+        if isinstance(result.get("resource_retry"), Mapping):
+            summary["resource_retry"] = _sanitize_runtime_mapping(result.get("resource_retry") or {})
     elif tool_name == "sec_milvus_semantic_search":
         summary.update(
             {
@@ -4498,6 +4772,7 @@ def _specialist_evidence_signal(agent_id: str, state: Mapping[str, Any]) -> dict
         count = (
             len(state.get("industry_snapshot_rows") or [])
             + len(state.get("public_source_context_rows") or [])
+            + len([row for row in _row_dicts(state.get("context_rows")) if _row_source_family(row) == "live_public_web_context"])
             + len(
                 [
                     row
@@ -5668,6 +5943,285 @@ def _source_family_gap_items(missing: Mapping[str, Any]) -> list[dict[str, Any]]
     ]
 
 
+def _runtime_ledger_rows_from_sec_context(
+    context_rows: list[dict[str, Any]],
+    *,
+    state_context: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    scan_limit = _env_int("MULTI_AGENT_SEC_CONTEXT_LEDGER_SCAN_LIMIT", default=80, minimum=0, maximum=500)
+    row_limit = _env_int("MULTI_AGENT_SEC_CONTEXT_LEDGER_ROW_LIMIT", default=160, minimum=0, maximum=1000)
+    if scan_limit <= 0 or row_limit <= 0:
+        return []
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str, str]] = set()
+    for context_row in context_rows[:scan_limit]:
+        evidence = _context_row_to_runtime_evidence_object(context_row)
+        if evidence is None:
+            continue
+        try:
+            extraction = extract_structured_objects(evidence)
+        except Exception:  # noqa: BLE001 - extraction is supplemental and must not break retrieval.
+            continue
+        for metric in extraction.metrics:
+            record = metric.model_dump(mode="json")
+            if record.get("extraction_method") != "table_row_heuristic":
+                continue
+            if _runtime_metric_is_change_column(record):
+                continue
+            ledger_row = _runtime_ledger_row_from_metric(record, context_row=context_row, state_context=state_context)
+            if not ledger_row:
+                continue
+            key = _runtime_ledger_dedupe_key(ledger_row)
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append(ledger_row)
+            if len(rows) >= row_limit:
+                return rows
+    return rows
+
+
+def _context_row_to_runtime_evidence_object(row: Mapping[str, Any]) -> EvidenceObject | None:
+    text = str(row.get("text") or row.get("summary") or row.get("preview") or row.get("content") or "").strip()
+    if not text or "[TABLE_START" not in text:
+        return None
+    source_family = _sec_context_source_family(row)
+    if source_family not in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}:
+        return None
+    source_type = _sec_context_form_type(row, source_family=source_family)
+    evidence_id = str(row.get("evidence_id") or row.get("evidence_ref") or row.get("id") or "").strip()
+    if not evidence_id:
+        evidence_id = "context_evidence::" + hashlib.sha1(text[:2000].encode("utf-8", errors="ignore")).hexdigest()[:12]
+    fiscal_year = _year_from_any(row.get("fiscal_year") or row.get("year"))
+    return EvidenceObject(
+        evidence_id=evidence_id,
+        source_type=source_type,  # type: ignore[arg-type]
+        source_tier=source_family,  # type: ignore[arg-type]
+        ticker=str(row.get("ticker") or row.get("symbol") or "").upper(),
+        company=str(row.get("company") or row.get("company_name") or "") or None,
+        fiscal_year=fiscal_year,
+        period_end=str(row.get("period_end") or row.get("fiscal_period_end") or "") or None,
+        period_type=str(row.get("period_type") or "") or None,
+        duration_months=_int_or_none(row.get("duration_months")),
+        fiscal_period=str(row.get("fiscal_period") or "") or None,
+        publication_date=str(row.get("publication_date") or row.get("filing_date") or row.get("accepted_date") or "") or None,
+        section=str(row.get("section") or row.get("item") or "") or None,
+        subsection=str(row.get("subsection") or row.get("title") or "") or None,
+        evidence_type=str(row.get("evidence_type") or row.get("source_kind") or "filing_text"),
+        text=text,
+        source_url=str(row.get("source_url") or row.get("filing_url") or "") or None,
+        local_path=None,
+        metadata={
+            "form_type": source_type,
+            "source_tier": source_family,
+            "period_end": str(row.get("period_end") or row.get("fiscal_period_end") or "") or None,
+            "period_type": str(row.get("period_type") or "") or None,
+            "duration_months": _int_or_none(row.get("duration_months")),
+            "fiscal_period": str(row.get("fiscal_period") or "") or None,
+            "block_id": row.get("block_id"),
+            "context_evidence_ref": evidence_id,
+        },
+    )
+
+
+def _runtime_ledger_row_from_metric(
+    record: Mapping[str, Any],
+    *,
+    context_row: Mapping[str, Any],
+    state_context: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    value = record.get("value")
+    if value is None:
+        return None
+    unit = str(record.get("unit") or "").strip()
+    if not unit:
+        return None
+    source_family = _sec_context_source_family(context_row)
+    if source_family not in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}:
+        return None
+    metric_family = _runtime_metric_family(record, context_row=context_row)
+    fiscal_year = _runtime_metric_year(record, context_row=context_row)
+    fiscal_period = _runtime_metric_fiscal_period(record, context_row=context_row)
+    evidence_ref = str(record.get("source_evidence_id") or "")
+    object_id = str(record.get("object_id") or "")
+    if object_id:
+        evidence_ref = f"{evidence_ref}::{object_id}" if evidence_ref else object_id
+    product_or_segment = _runtime_metric_product_or_segment(record, metric_family=metric_family)
+    return {
+        "source_id": str(record.get("source_evidence_id") or context_row.get("source_id") or context_row.get("document_id") or ""),
+        "evidence_ref": evidence_ref,
+        "ticker": str(record.get("ticker") or context_row.get("ticker") or "").upper(),
+        "metric_family": metric_family,
+        "metric_name": str(record.get("metric_name") or record.get("row_label") or ""),
+        "row_label": str(record.get("row_label") or ""),
+        "label": str(record.get("metric_name") or record.get("row_label") or ""),
+        "product_or_segment": product_or_segment,
+        "value": str(value),
+        "numeric_value": str(value),
+        "raw_value_text": str(record.get("raw_value") or ""),
+        "unit": unit,
+        "fiscal_year": str(fiscal_year or ""),
+        "fiscal_period": fiscal_period,
+        "period": str(record.get("period") or ""),
+        "period_role": str(record.get("period_role") or ""),
+        "fiscal_period_end": _runtime_metric_period_end(fiscal_year=fiscal_year, fiscal_period=fiscal_period, context_row=context_row),
+        "source_family": source_family,
+        "form_type": _sec_context_form_type(context_row, source_family=source_family),
+        "document_id": str(context_row.get("document_id") or context_row.get("accession_number") or ""),
+        "filing_date": str(context_row.get("filing_date") or context_row.get("publication_date") or ""),
+        "accepted_date": str(context_row.get("accepted_date") or context_row.get("accepted_at") or ""),
+        "source_text": str(record.get("context") or "")[:500],
+        "exact_value_authority": True,
+        "parser_version": "multi_agent_sec_context_table_structured_extractor_v0_1",
+        "ledger_extraction_source": "multi_agent_sec_context_table_structured_extractor",
+        "run_id": str(state_context.get("run_id") or ""),
+    }
+
+
+def _runtime_metric_is_change_column(record: Mapping[str, Any]) -> bool:
+    metadata = record.get("metadata") if isinstance(record.get("metadata"), Mapping) else {}
+    if str(metadata.get("cell_kind") or "") == "change_value":
+        return True
+    column = str(record.get("column_label") or "").lower()
+    return "% change" in column or "percent change" in column or "change" == column.strip()
+
+
+def _runtime_metric_family(record: Mapping[str, Any], *, context_row: Mapping[str, Any]) -> str:
+    row_label = str(record.get("row_label") or record.get("metric_name") or "")
+    label = _norm_text(row_label)
+    context = _norm_text(" ".join(str(record.get(key) or "") for key in ("context", "metric_name", "row_label")))
+    product_revenue_context = (
+        "selected revenue highlights" in context
+        or "selected products" in context
+        or "net product revenue" in label
+        or "product revenue" in label
+        or "product sales" in label
+    )
+    if product_revenue_context and "revenue" not in label and label not in {"revenue", "total revenue"}:
+        return "product_revenue"
+    if product_revenue_context and ("product" in label or label not in {"revenue", "revenues", "total revenue"}):
+        return "product_revenue"
+    return ""
+
+
+def _runtime_metric_product_or_segment(record: Mapping[str, Any], *, metric_family: str) -> str:
+    if metric_family != "product_revenue":
+        return str(record.get("segment") or "")
+    label = str(record.get("row_label") or record.get("metric_name") or "").strip()
+    normalized = _norm_text(label)
+    if normalized in {"net product revenue", "product revenue", "products", "revenue", "total revenue"}:
+        return ""
+    return label
+
+
+def _runtime_metric_year(record: Mapping[str, Any], *, context_row: Mapping[str, Any]) -> int | None:
+    for value in (record.get("period"), record.get("column_label"), record.get("fiscal_year"), context_row.get("fiscal_year"), context_row.get("year")):
+        year = _year_from_any(value)
+        if year is not None:
+            return year
+    return None
+
+
+def _runtime_metric_fiscal_period(record: Mapping[str, Any], *, context_row: Mapping[str, Any]) -> str:
+    explicit = str(record.get("fiscal_period") or context_row.get("fiscal_period") or "").strip()
+    if explicit:
+        return explicit
+    text = _norm_text(" ".join(str(value or "") for value in (context_row.get("text"), record.get("context"), record.get("column_label"))))
+    if "first quarter" in text or "first-quarter" in text or "three months ended march 31" in text:
+        return "Q1"
+    if "six months ended june 30" in text:
+        return "Q2_YTD"
+    if "nine months ended september 30" in text:
+        return "Q3_YTD"
+    if "year ended december 31" in text or "twelve months ended december 31" in text:
+        return "FY"
+    return ""
+
+
+def _runtime_metric_period_end(*, fiscal_year: int | None, fiscal_period: str, context_row: Mapping[str, Any]) -> str:
+    explicit = str(context_row.get("period_end") or context_row.get("fiscal_period_end") or "").strip()
+    if explicit:
+        return explicit
+    if not fiscal_year:
+        return ""
+    return {
+        "Q1": f"{fiscal_year}-03-31",
+        "Q2_YTD": f"{fiscal_year}-06-30",
+        "Q3_YTD": f"{fiscal_year}-09-30",
+        "FY": f"{fiscal_year}-12-31",
+    }.get(fiscal_period, "")
+
+
+def _sec_context_source_family(row: Mapping[str, Any]) -> str:
+    family = str(row.get("source_family") or row.get("source_tier") or "").strip()
+    if family == "primary_filing":
+        return "primary_sec_filing"
+    form_type = _sec_context_form_type(row, source_family=family)
+    if not family and form_type == "8-K":
+        return "company_authored_unaudited_sec_filing"
+    return family
+
+
+def _sec_context_form_type(row: Mapping[str, Any], *, source_family: str) -> str:
+    form_type = str(row.get("form_type") or row.get("source_type") or "").strip().upper()
+    if form_type in {"10-K", "10-Q", "8-K", "20-F", "40-F"}:
+        return form_type
+    return "8-K" if source_family == "company_authored_unaudited_sec_filing" else "10-Q"
+
+
+def _merge_runtime_ledger_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    merged: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str, str]] = set()
+    for row in rows:
+        key = _runtime_ledger_dedupe_key(row)
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(row)
+    return merged
+
+
+def _runtime_ledger_dedupe_key(row: Mapping[str, Any]) -> tuple[str, str, str, str, str]:
+    return (
+        str(row.get("ticker") or ""),
+        str(row.get("metric_family") or row.get("metric_name") or ""),
+        str(row.get("product_or_segment") or ""),
+        str(row.get("fiscal_year") or row.get("period") or ""),
+        str(row.get("raw_value_text") or row.get("value") or ""),
+    )
+
+
+def _year_from_any(value: Any) -> int | None:
+    match = re.search(r"\b(19\d{2}|20\d{2})\b", str(value or ""))
+    if not match:
+        return None
+    try:
+        return int(match.group(1))
+    except ValueError:
+        return None
+
+
+def _int_or_none(value: Any) -> int | None:
+    if value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _env_int(name: str, *, default: int, minimum: int, maximum: int) -> int:
+    try:
+        value = int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, min(maximum, value))
+
+
+def _norm_text(value: Any) -> str:
+    return re.sub(r"\s+", " ", str(value or "").replace("\u2011", "-").replace("\u2013", "-").lower()).strip()
+
+
 def _rows_from_result(tool_name: str, result: Mapping[str, Any]) -> list[dict[str, Any]]:
     keys = {
         "sec_search_filings": "context_rows",
@@ -5810,6 +6364,15 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
             for row in _row_dicts(state.get("context_rows"))
             if _row_source_family(row) in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
         )
+        rows.extend(
+            product_intelligence_context_rows_for_state(
+                state,
+                tickers=focus_tickers,
+                repo_root=os.getcwd(),
+                max_rows=max(32, max_rows * 3),
+                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+            )
+        )
         if not any(_row_source_family(row) in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"} for row in rows):
             rows.extend(_product_source_gap_rows_for_agent_data_view(state))
         rows = _balanced_rows_by_source(
@@ -5825,6 +6388,24 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
         rows.extend(_row_dicts(state.get("industry_snapshot_rows")))
         rows.extend(
             row
+            for row in product_intelligence_context_rows_for_state(
+                state,
+                tickers=focus_tickers,
+                repo_root=os.getcwd(),
+                max_rows=max(24, max_rows * 2),
+                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+            )
+            if _row_source_family(row) in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+            and _contains_any(
+                " ".join(
+                    str(row.get(key) or "")
+                    for key in ("authority_type", "relationship_type", "edge_type", "source_class", "claim_scope", "summary")
+                ),
+                ("supply", "supplier", "component", "deployment", "customer", "competitive", "competes", "relationship"),
+            )
+        )
+        rows.extend(
+            row
             for row in _row_dicts(state.get("product_evidence_rows"))
             if _product_evidence_promotion_status(row) in {"runtime_fact_allowed", "runtime_context_taxonomy_only", "context_or_lead_available", "gap_exposed_not_fallback"}
         )
@@ -5833,7 +6414,7 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
             row
             for row in _row_dicts(state.get("context_rows"))
             if _row_source_family(row)
-            in {"industry_snapshot", "relationship_graph", "company_product_evidence_graph", "public_source_context"}
+            in {"industry_snapshot", "relationship_graph", "company_product_evidence_graph", "public_source_context", "live_public_web_context"}
         )
         rows.extend(_relationship_rows_from_state(state))
         rows = _balanced_industry_relationship_rows(
@@ -6014,6 +6595,38 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
     source_id = str(row.get("source_id") or "").strip()
     if source_id:
         bounded["source_id"] = source_id
+    for key in (
+        "source_class",
+        "structured_context_type",
+        "product_family",
+        "product_or_segment",
+        "issuer_binding_status",
+        "product_binding_status",
+        "counterparty_binding_status",
+        "entity_binding_claim_boundary",
+    ):
+        value = str(row.get(key) or "").strip()
+        if value:
+            bounded[key] = value
+    entity_binding = row.get("entity_binding") if isinstance(row.get("entity_binding"), Mapping) else {}
+    if entity_binding:
+        source_entity_role = str(entity_binding.get("source_entity_role") or row.get("source_entity_role") or "").strip()
+        if source_entity_role:
+            bounded["source_entity_role"] = source_entity_role
+        bounded["entity_binding"] = _sanitize_payload(
+            {
+                "issuer_binding_status": row.get("issuer_binding_status") or entity_binding.get("issuer_binding_status") or "",
+                "product_binding_status": row.get("product_binding_status") or entity_binding.get("product_binding_status") or "",
+                "counterparty_binding_status": row.get("counterparty_binding_status") or entity_binding.get("counterparty_binding_status") or "",
+                "source_entity_role": source_entity_role,
+                "issuer_matched_terms": _string_list(entity_binding.get("issuer_matched_terms"))[:6],
+                "product_matched_terms": _string_list(entity_binding.get("product_matched_terms"))[:6],
+                "counterparty_matched_terms": _string_list(entity_binding.get("counterparty_matched_terms"))[:6],
+                "binding_claim_boundary": entity_binding.get("binding_claim_boundary") or row.get("entity_binding_claim_boundary") or "",
+            }
+        )
+    elif str(row.get("source_entity_role") or "").strip():
+        bounded["source_entity_role"] = str(row.get("source_entity_role") or "").strip()
     retrieval_route = str(row.get("retrieval_route") or "").strip()
     if retrieval_route:
         bounded["retrieval_route"] = retrieval_route
@@ -6761,6 +7374,10 @@ def _bounded_row_distribution(rows: list[Mapping[str, Any]]) -> dict[str, Any]:
         "by_ticker_source_family": _count_by_composite(rows, ("ticker", "source_family")),
         "by_form_type": _count_by_key(rows, "form_type"),
         "by_metric": _count_by_key(rows, "metric"),
+        "by_source_entity_role": _count_by_key(rows, "source_entity_role"),
+        "by_issuer_binding_status": _count_by_key(rows, "issuer_binding_status"),
+        "by_product_binding_status": _count_by_key(rows, "product_binding_status"),
+        "by_counterparty_binding_status": _count_by_key(rows, "counterparty_binding_status"),
     }
 
 

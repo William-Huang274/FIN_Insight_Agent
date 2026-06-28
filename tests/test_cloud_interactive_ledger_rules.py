@@ -138,7 +138,7 @@ def test_rpo_debt_noise_and_capex_percent_are_blocked_by_ledger_gate() -> None:
 
 def test_gross_margin_gate_blocks_non_margin_percent_noise() -> None:
     module = _load_interactive_module()
-    for name in ("Operating expenses", "Net income"):
+    for name in ("Operating expenses", "Net income", "Gross margin Cash flow from operations", "Gross margin Earnings per share diluted"):
         row = {
             "metric_family": "gross_margin",
             "metric_name": name,
@@ -170,6 +170,17 @@ def test_product_revenue_gate_allows_specific_product_line_without_revenue_word(
     }
 
     assert module._ledger_row_allowed(row, {"metric_families": ["product_revenue"]}, None)
+
+
+def test_supplier_revenue_contract_expands_to_product_revenue() -> None:
+    module = _load_interactive_module()
+
+    expanded = module._expand_metric_family_aliases({"supplier_revenue"})
+
+    assert "supplier_revenue" in expanded
+    assert "product_revenue" in expanded
+    assert "segment_revenue" in expanded
+    assert "ai_optimized_servers" in expanded
 
 
 def test_ai_ledger_cap_keeps_multiple_high_value_product_rows_after_ticker_cap() -> None:

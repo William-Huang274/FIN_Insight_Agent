@@ -1,0 +1,40 @@
+{
+  "boundary": "This verifier classifies strict Product-KPI repair candidates before promotion. Only product/category/product-line currency revenue rows with product-table context are promotable as Product-KPI exact. Business segment rows are classified for Step 2 and are not product-family KPI proof.",
+  "business_segment_metric_candidate_count": 7468,
+  "candidate_count": 21838,
+  "candidate_ticker_count": 272,
+  "generated_at": "2026-06-25T15:20:10Z",
+  "operating_metric_defer_step2_candidate_count": 2236,
+  "outputs": {
+    "promotable_rows": "D:\\FIN_Insight_Agent\\data\\manifests\\product_kpi_source_specific_verifier_promotable_rows_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\vertical_lanes\\product_kpi_source_specific_verifier.zh-CN.md",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\product_kpi_source_specific_verifier_v0_1.jsonl",
+    "ticker_summary": "D:\\FIN_Insight_Agent\\data\\manifests\\product_kpi_source_specific_verifier_ticker_summary_v0_1.jsonl"
+  },
+  "percentage_or_change_candidate_count": 5608,
+  "promotable_product_metric_count": 12,
+  "promotable_product_metric_ticker_count": 1,
+  "region_only_candidate_count": 1653,
+  "schema_version": "finsight_product_kpi_source_specific_verifier_summary_v0_1",
+  "sentence_relation_insufficient_candidate_count": 988,
+  "status": "pass",
+  "target_ticker_count": 272,
+  "ticker_summary_count": 272,
+  "unclassified_candidate_count": 0,
+  "verifier_class_counts": {
+    "business_segment_metric": 7468,
+    "business_segment_mixed_table_needs_column_group": 1454,
+    "non_product_or_total": 2035,
+    "operating_metric_defer_step2": 2236,
+    "percentage_or_change": 5608,
+    "period_or_version_conflict": 384,
+    "promotable_product_category_or_product_line_metric": 12,
+    "region_only": 1653,
+    "sentence_relation_insufficient": 988
+  },
+  "verifier_decision_counts": {
+    "classify_only": 13799,
+    "promote": 12,
+    "reject": 8027
+  }
+}

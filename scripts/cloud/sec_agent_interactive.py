@@ -3205,11 +3205,13 @@ def _index_dir_fingerprint(path: Path) -> dict[str, Any]:
     metadata_path = path / "metadata.json"
     records_path = path / "records.jsonl"
     bm25_path = path / "bm25.pkl"
+    sqlite_path = path / "records.sqlite"
     payload["metadata"] = _read_json(metadata_path) if metadata_path.exists() else {}
     payload["files"] = {
         "metadata": _path_fingerprint(metadata_path),
         "records": _path_fingerprint(records_path, kind="large_file"),
         "bm25": _path_fingerprint(bm25_path, kind="large_file"),
+        "sqlite": _path_fingerprint(sqlite_path, kind="large_file"),
     }
     return payload
 
@@ -3665,6 +3667,7 @@ def _index_cache_token(path: Path) -> tuple[Any, ...]:
         _file_cache_token(path / "metadata.json"),
         _file_cache_token(path / "records.jsonl"),
         _file_cache_token(path / "bm25.pkl"),
+        _file_cache_token(path / "records.sqlite"),
     )
 
 
@@ -4420,6 +4423,7 @@ def _build_runtime_ledger(
     _supplement_ai_focus_ledger(case, scoped_records, rows, seen, query_contract)
     _supplement_contract_metric_family_ledger(case, scoped_records, rows, seen, query_contract)
     _supplement_context_evidence_object_ledger(case, context_rows, rows, seen, query_contract)
+    _supplement_context_product_revenue_bullet_ledger(case, context_rows, rows, seen, query_contract)
     _supplement_banking_context_ledger(case, context_rows, rows, seen, query_contract)
     _supplement_free_cash_flow_proxy(case, rows, seen, query_contract)
     rows.sort(key=lambda row: _ledger_row_rank(row, query_contract, context_by_object_id.get(str(row.get("object_id") or ""))), reverse=True)
@@ -4470,6 +4474,7 @@ def _build_runtime_ledger_from_store(
             seen.add(key)
 
     _supplement_banking_context_ledger(case, context_rows, rows, seen, query_contract)
+    _supplement_context_product_revenue_bullet_ledger(case, context_rows, rows, seen, query_contract)
     _supplement_free_cash_flow_proxy(case, rows, seen, query_contract)
     rows.sort(key=lambda row: _ledger_row_rank(row, query_contract, context_by_object_id.get(str(row.get("object_id") or ""))), reverse=True)
     rows = _cap_ledger_rows(rows, query_contract, args.ledger_max_rows)
@@ -5445,6 +5450,8 @@ def _supplement_context_evidence_object_ledger(
                 family = str(row.get("metric_family") or "")
                 if desired_families and family not in desired_families:
                     continue
+                if family == "revenue" and _is_dell_product_revenue_bullet_context(context_row):
+                    continue
                 if not _ledger_row_allowed(row, query_contract, context_row):
                     continue
                 key = _ledger_dedupe_key(row)
@@ -5504,6 +5511,243 @@ def _context_row_to_evidence_object(row: dict[str, Any]) -> EvidenceObject | Non
             "block_id": row.get("block_id"),
             "context_evidence_ref": evidence_id,
         },
+    )
+
+
+def _supplement_context_product_revenue_bullet_ledger(
+    case: dict[str, Any],
+    context_rows: list[dict[str, Any]],
+    rows: list[dict[str, Any]],
+    seen: set[tuple[str, str, str, str]],
+    query_contract: dict[str, Any],
+) -> None:
+    desired_families = _contract_required_metric_families(query_contract)
+    if desired_families and "product_revenue" not in desired_families:
+        return
+    years = {int(year) for year in case.get("years") or [] if _int_or_none(year) is not None}
+    existing_product_keys = _existing_product_revenue_keys(rows)
+    added = 0
+    limit = int(os.environ.get("PRODUCT_REVENUE_BULLET_LEDGER_ROW_LIMIT", "24"))
+    for context_row in context_rows:
+        for row in _product_revenue_bullet_rows_from_context(case, context_row):
+            row_year = _int_or_none(row.get("fiscal_year"))
+            if years and row_year not in years:
+                continue
+            product_key = _product_revenue_row_key(row)
+            if product_key and product_key in existing_product_keys:
+                continue
+            if not _ledger_row_allowed(row, query_contract, context_row):
+                continue
+            key = _ledger_dedupe_key(row)
+            if key in seen:
+                continue
+            rows.append(row)
+            seen.add(key)
+            if product_key:
+                existing_product_keys.add(product_key)
+            added += 1
+            if added >= limit:
+                return
+
+
+def _existing_product_revenue_keys(rows: list[dict[str, Any]]) -> set[tuple[str, str, str]]:
+    keys: set[tuple[str, str, str]] = set()
+    for row in rows:
+        if str(row.get("metric_family") or "") != "product_revenue":
+            continue
+        key = _product_revenue_row_key(row)
+        if key:
+            keys.add(key)
+    return keys
+
+
+def _product_revenue_row_key(row: dict[str, Any]) -> tuple[str, str, str] | None:
+    ticker = str(row.get("ticker") or "").upper()
+    year = str(row.get("fiscal_year") or "")
+    label = _canonical_product_revenue_label(row)
+    if not ticker or not year or not label:
+        return None
+    return ticker, year, label
+
+
+def _canonical_product_revenue_label(row: dict[str, Any]) -> str:
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in ("metric_name", "row_label", "active_group")
+        if str(row.get(key) or "").strip()
+    ).lower()
+    replacements = {
+        "ai-optimized servers": "ai_optimized_servers",
+        "ai optimized servers": "ai_optimized_servers",
+        "traditional servers and networking": "traditional_servers_and_networking",
+        "storage": "storage",
+        "total isg net revenue": "total_isg_net_revenue",
+        "infrastructure solutions group net revenue": "total_isg_net_revenue",
+        "commercial client": "commercial_client",
+        "consumer": "consumer",
+        "total csg revenue": "total_csg_revenue",
+        "client solutions group revenue": "total_csg_revenue",
+    }
+    for needle, canonical in replacements.items():
+        if needle in text:
+            return canonical
+    return _slug(re.sub(r"\brevenue\b", "", text)).strip("_")
+
+
+def _product_revenue_bullet_rows_from_context(
+    case: dict[str, Any],
+    context_row: dict[str, Any],
+) -> list[dict[str, Any]]:
+    ticker = str(context_row.get("ticker") or "").upper()
+    text = str(context_row.get("text") or context_row.get("summary") or context_row.get("preview") or "")
+    if ticker != "DELL" or not text:
+        return []
+    source_type = _normalize_form_type(context_row.get("source_type") or context_row.get("form_type") or "")
+    source_tier = str(context_row.get("source_tier") or context_row.get("source_family") or "").strip()
+    if source_type != "8-K" or source_tier != "company_authored_unaudited_sec_filing":
+        return []
+    if not _is_dell_product_revenue_bullet_context(context_row):
+        return []
+
+    fiscal_year = _int_or_none(context_row.get("fiscal_year") or context_row.get("year"))
+    period_role = _period_role_from_text(text) or "qtd"
+    normalized = re.sub(r"\n\s*[•\-]\s*\n", "\n• ", text)
+    normalized = re.sub(r"\n\s*[•\-]\s*", "\n• ", normalized)
+    lines = [re.sub(r"\s+", " ", line).strip() for line in normalized.splitlines() if line.strip()]
+    rows: list[dict[str, Any]] = []
+    active_group = ""
+    for line in lines:
+        markerless = line.lstrip("•- ").strip()
+        lower = markerless.lower()
+        if lower in {"(isg)", "isg"} or "infrastructure solutions group" in lower:
+            active_group = "ISG"
+            continue
+        if lower in {"(csg)", "csg"} or "client solutions group" in lower:
+            active_group = "CSG"
+            continue
+        match = re.search(
+            r"^(?:record\s+)?(?P<label>[A-Za-z][A-Za-z0-9&,\-\s()]{2,100}?revenue)\s*:\s*\$\s*(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>billion|million)\b",
+            markerless,
+            flags=re.I,
+        )
+        if not match:
+            continue
+        label = _clean_product_revenue_bullet_label(match.group("label"), active_group=active_group)
+        if not _is_dell_product_revenue_bullet_label(label):
+            continue
+        value = float(match.group("value"))
+        unit_word = match.group("unit").lower()
+        unit = "usd_billions" if unit_word.startswith("billion") else "usd_millions"
+        raw_value = f"${match.group('value')} {unit_word}"
+        metric_name = f"{label} revenue" if not label.lower().endswith("revenue") else label
+        suffix = _slug(label)
+        row = {
+            "metric_id": _ledger_metric_id(
+                str(case.get("case_id") or ""),
+                ticker,
+                fiscal_year,
+                "product_revenue",
+                "total_value",
+                period_role=period_role,
+                suffix=suffix,
+            ),
+            "case_id": str(case.get("case_id") or ""),
+            "ticker": ticker,
+            "fiscal_year": fiscal_year,
+            "source_fiscal_year": fiscal_year,
+            "period": str(fiscal_year or ""),
+            "period_role": period_role,
+            "source_type": source_type,
+            "form_type": source_type,
+            "source_tier": source_tier,
+            "period_end": context_row.get("period_end"),
+            "period_type": context_row.get("period_type"),
+            "duration_months": context_row.get("duration_months"),
+            "fiscal_period": context_row.get("fiscal_period"),
+            "metric_family": "product_revenue",
+            "metric_role": "total_value",
+            "metric_name": metric_name,
+            "raw_value_text": raw_value,
+            "display_value_zh": _display_value_zh(raw_value, unit),
+            "value": value,
+            "unit": unit,
+            "object_id": context_row.get("object_id"),
+            "source_evidence_id": context_row.get("evidence_id") or context_row.get("evidence_ref") or context_row.get("id"),
+            "section": context_row.get("section"),
+            "row_label": metric_name,
+            "column_label": "current quarter",
+            "table_title": "Dell earnings release product revenue bullets",
+            "active_group": active_group,
+            "source_text": markerless,
+            "record_title": "Dell 8-K earnings release product revenue bullet",
+            "ledger_extraction_source": "context_product_revenue_bullet_parser",
+        }
+        rows.append(row)
+    return rows
+
+
+def _clean_product_revenue_bullet_label(value: str, *, active_group: str) -> str:
+    label = re.sub(r"\s+", " ", str(value or "")).strip(" :-")
+    label = re.sub(r"^(?:record\s+)?(?:first[-\s]quarter\s+)?", "", label, flags=re.I).strip()
+    if re.fullmatch(r"revenue", label, flags=re.I) and active_group == "ISG":
+        return "Total ISG net revenue"
+    if re.fullmatch(r"revenue", label, flags=re.I) and active_group == "CSG":
+        return "Total CSG revenue"
+    label = re.sub(r"\s+revenue$", "", label, flags=re.I).strip()
+    replacements = {
+        "ai optimized servers": "AI-optimized servers",
+        "ai-optimized servers": "AI-optimized servers",
+        "traditional servers and networking": "Traditional Servers and Networking",
+        "storage": "Storage",
+        "commercial client": "Commercial Client",
+        "consumer": "Consumer",
+    }
+    return replacements.get(label.lower(), label)
+
+
+def _is_dell_product_revenue_bullet_label(label: str) -> bool:
+    lower = str(label or "").lower()
+    return any(
+        term in lower
+        for term in (
+            "ai-optimized servers",
+            "traditional servers and networking",
+            "storage",
+            "total isg",
+            "total csg",
+            "commercial client",
+            "consumer",
+        )
+    )
+
+
+def _is_dell_product_revenue_bullet_context(context_row: dict[str, Any]) -> bool:
+    ticker = str(context_row.get("ticker") or "").upper()
+    source_type = _normalize_form_type(context_row.get("source_type") or context_row.get("form_type") or "")
+    source_tier = str(context_row.get("source_tier") or context_row.get("source_family") or "").strip()
+    text = str(context_row.get("text") or context_row.get("summary") or context_row.get("preview") or "")
+    return (
+        ticker == "DELL"
+        and source_type == "8-K"
+        and source_tier == "company_authored_unaudited_sec_filing"
+        and "revenue" in text.lower()
+        and bool(
+            re.search(
+                r"\bAI[-\s]Optimized Servers\b|\bTraditional Servers and Networking\b|\bStorage revenue\b",
+                text,
+                flags=re.I,
+            )
+        )
+    )
+
+
+def _is_official_product_revenue_bullet_row(row: dict[str, Any]) -> bool:
+    return (
+        str(row.get("metric_family") or "") == "product_revenue"
+        and str(row.get("ledger_extraction_source") or "") == "context_product_revenue_bullet_parser"
+        and str(row.get("source_tier") or "") == "company_authored_unaudited_sec_filing"
+        and str(row.get("form_type") or row.get("source_type") or "").upper() == "8-K"
+        and str(row.get("ticker") or "").upper() == "DELL"
     )
 
 
@@ -5895,6 +6139,19 @@ def _expand_metric_family_aliases(families: Iterable[str]) -> set[str]:
         "margin": {"gross_margin", "operating_income"},
         "operating_margin": {"operating_income"},
         "segment_revenue": {"segment_revenue", "revenue", "total_revenue", "product_revenue", "data_center_revenue"},
+        "supplier_revenue": {
+            "supplier_revenue",
+            "product_revenue",
+            "segment_revenue",
+            "data_center_revenue",
+            "ai_optimized_servers",
+            "traditional_servers_and_networking",
+            "storage",
+            "commercial",
+            "consumer",
+            "products",
+            "services",
+        },
         "product_revenue": {
             "product_revenue",
             "segment_revenue",
@@ -9617,7 +9874,7 @@ def _ledger_row_allowed(
         return False
     if rules.get("drop_human_capital_tables") and _is_human_capital_ledger_topic(row_text_lower):
         return False
-    if _is_excluded_ledger_topic(family, row_text_lower):
+    if _is_excluded_ledger_topic(family, row_text_lower) and not _is_official_product_revenue_bullet_row(row):
         return False
     if any(term in column_label_lower for term in (" over ", " vs ", " versus ")):
         return False
@@ -9779,6 +10036,21 @@ def _ledger_row_allowed(
     if family == "gross_margin" and row.get("unit") != "percent":
         return False
     if family == "gross_margin":
+        if _has_any(
+            name_lower,
+            (
+                "cash flow",
+                "cash flows",
+                "cash provided by",
+                "cash from operations",
+                "operating activities",
+                "earnings per share",
+                "diluted",
+                "basic",
+                "eps",
+            ),
+        ):
+            return False
         if not _has_any(source_signal_lower, ("gross margin", "gross profit")):
             return False
         if not _has_any(name_lower, ("gross margin", "gross profit")):

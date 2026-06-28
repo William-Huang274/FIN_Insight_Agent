@@ -1,0 +1,27 @@
+# Product Documentation Index
+
+This folder is the product-management source of truth for FinSight-Agent.
+
+Product docs answer:
+
+- Who is the user?
+- What problem are we solving?
+- What workflow should the product support?
+- What value should the user perceive?
+- What should be in scope or out of scope?
+- What acceptance criteria matter from the user's perspective?
+
+Product docs should not be implementation plans. Technical contracts, APIs, schemas, runtime design, parser plans, eval runners, and delivery notes belong in `docs/architecture/`, `docs/eval/`, `docs/deployment/`, or a future `docs/engineering/` area.
+
+## Current Product Docs
+
+- [PRODUCT 2026-06-28 FinSight ToB / ToC Positioning And Product Line](PRODUCT_20260628_finsight_tob_toc_positioning_and_product_line.zh-CN.md)
+- [PRD 2026-06-28 B2B Financial Research Workbench](PRD_20260628_b2b_financial_research_workbench.zh-CN.md)
+
+## Governance
+
+- Product docs own product direction, user workflows, packaging, and business-facing acceptance criteria.
+- Technical docs own implementation contracts, runtime architecture, database/API/data-source details, eval gates, and delivery decisions.
+- Worklogs own factual execution records: what changed, what ran, what passed, what failed, and what remains.
+- Mixed discussions should first be summarized into a product doc, then translated into separate technical requirements or delivery docs.
+- Historical mixed docs should not be bulk-moved only for cleanup; new and touched docs should follow this split.

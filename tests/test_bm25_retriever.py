@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import pickle
+import sqlite3
 from pathlib import Path
 
+import retrieval.bm25_retriever as bm25_module
 from retrieval.bm25_retriever import BM25Retriever
 from retrieval.object_bm25_retriever import ObjectBM25Retriever
 
@@ -142,6 +144,86 @@ def test_bm25_filters_infer_8k_form_type_from_legacy_evidence_id(tmp_path: Path)
     assert [row["evidence_id"] for row in hits] == ["8K_EARNINGS::AAA::000000::EX991HTM::BLOCK_0001::CHUNK_0001"]
     assert retriever.bm25.full_calls == 0
     assert retriever.bm25.batch_calls == 1
+
+
+def test_bm25_prefers_sqlite_fts_when_present(tmp_path: Path) -> None:
+    tmp_path.mkdir(exist_ok=True)
+    records = [
+        {
+            "evidence_id": "a1",
+            "ticker": "AAA",
+            "fiscal_year": 2026,
+            "section": "Item 2",
+            "evidence_type": "mda",
+            "text": "alpha capex cloud demand",
+            "metadata": {"form_type": "10-Q", "source_tier": "primary_sec_filing"},
+        },
+        {
+            "evidence_id": "b1",
+            "ticker": "BBB",
+            "fiscal_year": 2026,
+            "section": "Item 2",
+            "evidence_type": "mda",
+            "text": "beta capex cloud demand",
+            "metadata": {"form_type": "10-Q", "source_tier": "primary_sec_filing"},
+        },
+    ]
+    con = sqlite3.connect(str(tmp_path / "records.sqlite"))
+    try:
+        con.execute("create table bm25_index_metadata (payload_json text not null)")
+        con.execute("create table bm25_records (idx integer primary key, evidence_id text, ticker text, fiscal_year integer, form_type text, source_type text, source_tier text, section text, evidence_type text, record_json text not null)")
+        con.execute("create virtual table bm25_records_fts using fts5(text, content='bm25_records', content_rowid='idx')")
+        con.execute("insert into bm25_index_metadata values (?)", (json.dumps({"records": len(records)}),))
+        for idx, record in enumerate(records, start=1):
+            con.execute(
+                "insert into bm25_records values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    idx,
+                    record["evidence_id"],
+                    record["ticker"],
+                    record["fiscal_year"],
+                    record["metadata"]["form_type"],
+                    record["metadata"]["form_type"],
+                    record["metadata"]["source_tier"],
+                    record["section"],
+                    record["evidence_type"],
+                    json.dumps(record),
+                ),
+            )
+            con.execute("insert into bm25_records_fts(rowid, text) values (?, ?)", (idx, record["text"]))
+        con.commit()
+    finally:
+        con.close()
+
+    retriever = BM25Retriever(tmp_path)
+    hits = retriever.search(
+        "cloud capex",
+        top_k=5,
+        filters={"ticker": "AAA", "fiscal_year": 2026, "filing_type": "10-Q", "source_tier": "primary_sec_filing"},
+    )
+
+    assert retriever.bm25 is None
+    assert [row["evidence_id"] for row in hits] == ["a1"]
+
+
+def test_bm25_memory_error_uses_streaming_jsonl_candidate_generation(tmp_path: Path, monkeypatch) -> None:
+    _write_index(tmp_path)
+
+    def _raise_memory_error(_handle):
+        raise MemoryError
+
+    monkeypatch.setattr(bm25_module.pickle, "load", _raise_memory_error)
+
+    retriever = BM25Retriever(tmp_path)
+    hits = retriever.search(
+        "quarterly revenue",
+        top_k=2,
+        filters={"ticker": "AAA", "fiscal_year": 2026, "filing_type": "10-Q", "source_tier": "primary_sec_filing"},
+    )
+
+    assert retriever.storage_mode == "streaming_jsonl_lexical"
+    assert retriever.bm25 is None
+    assert [row["evidence_id"] for row in hits] == ["a2"]
 
 
 def _write_object_index(path: Path) -> None:

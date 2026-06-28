@@ -695,7 +695,13 @@ def _record_matches(record: dict[str, Any], filters: dict[str, Any]) -> bool:
 
 def _record_filter_value(record: dict[str, Any], metadata: dict[str, Any], key: str) -> Any:
     if key in {"form_type", "source_type", "filing_type"}:
-        value = metadata.get(key, record.get(key))
+        value = (
+            metadata.get(key)
+            or record.get(key)
+            or metadata.get("form_type")
+            or record.get("form_type")
+            or record.get("source_type")
+        )
         if value:
             return value
         return _form_type_from_source_id(record.get("source_evidence_id") or record.get("evidence_id") or record.get("object_id"))

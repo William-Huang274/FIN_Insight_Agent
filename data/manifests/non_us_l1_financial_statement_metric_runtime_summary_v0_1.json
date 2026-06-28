@@ -1,0 +1,34 @@
+{
+  "candidate_count": 50,
+  "candidate_ticker_count": 15,
+  "claim_boundary": "Non-US official disclosure rows support consolidated/company financial statement exact facts only.",
+  "covered_target_ticker_count": 16,
+  "generated_at": "2026-06-18T20:38:41Z",
+  "metric_family_counts": {
+    "assets": 14,
+    "equity": 8,
+    "gross_profit": 11,
+    "liabilities": 13,
+    "net_income": 11,
+    "operating_income": 16,
+    "revenue": 15
+  },
+  "outputs": {
+    "rejections": "D:\\FIN_Insight_Agent\\data\\manifests\\non_us_l1_financial_statement_metric_runtime_rejections_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\non_us_l1_financial_statement_metric_runtime_rows_v0_1.jsonl"
+  },
+  "rejection_count": 3,
+  "rejection_reason_counts": {
+    "no_value_unit_period_financial_metric_parsed": 3
+  },
+  "row_source_counts": {
+    "company_ir_reports": 87,
+    "company_reported_product_operating_metrics": 1
+  },
+  "runtime_row_count": 88,
+  "schema_version": "finsight_non_us_l1_financial_statement_metric_runtime_summary_v0_1",
+  "status": "pass",
+  "target_ticker_count": 16,
+  "uncovered_target_ticker_count": 0,
+  "uncovered_target_tickers": []
+}

@@ -1,0 +1,49 @@
+{
+  "by_index_family": {
+    "bm25_lexical": 10,
+    "dense_embedding": 2,
+    "milvus_semantic": 1,
+    "object_bm25_or_fts": 7,
+    "sqlite_fts_object": 2
+  },
+  "by_index_type": {
+    "dense_numpy_cosine": 2,
+    "milvus_lite_vector_collection": 1,
+    "rank_bm25": 16,
+    "sqlite_fts5": 3
+  },
+  "generated_at": "2026-06-26T17:44:04+00:00",
+  "index_snapshot_count": 22,
+  "missing_record_file_samples": [],
+  "missing_record_file_snapshot_count": 0,
+  "missing_source_artifact_count": 0,
+  "missing_source_artifact_samples": [],
+  "outputs": {
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\rd5_retrieval_index_registry.zh-CN.md",
+    "retrieval_index_snapshots": "D:\\FIN_Insight_Agent\\data\\manifests\\retrieval_index_snapshot_registry_v0_1.jsonl",
+    "retrieval_index_source_lineage": "D:\\FIN_Insight_Agent\\data\\manifests\\retrieval_index_source_lineage_v0_1.jsonl",
+    "sqlite": "D:\\FIN_Insight_Agent\\data\\workbench_private\\research_data\\retrieval_index_registry_v0_1.sqlite",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\retrieval_index_registry_summary_v0_1.json"
+  },
+  "parser_artifact_link_status_counts": {
+    "matched_parser_artifact": 20,
+    "no_parser_artifact_match": 3
+  },
+  "policy": "RD5 records retrieval index snapshots and source-artifact lineage. It does not promote retrieval hits into facts; BM25/ObjectBM25/SQLite/Dense/Milvus remain recall layers and must route back through parser/authority gates.",
+  "record_snapshot_trace_status_counts": {
+    "no_records_jsonl_snapshot": 5,
+    "record_snapshot_has_raw_trace": 17,
+    "record_snapshot_without_verified_raw_trace": 1
+  },
+  "schema_version": "finsight_retrieval_index_registry_summary_v0_1",
+  "source_artifact_status_counts": {
+    "source_artifact_exists": 22,
+    "source_artifact_missing_but_record_snapshot_has_raw_trace": 1
+  },
+  "source_lineage_count": 23,
+  "sqlite_lineage_count": 23,
+  "sqlite_path": "D:\\FIN_Insight_Agent\\data\\workbench_private\\research_data\\retrieval_index_registry_v0_1.sqlite",
+  "sqlite_snapshot_count": 22,
+  "status": "pass",
+  "total_declared_records": 12584655
+}

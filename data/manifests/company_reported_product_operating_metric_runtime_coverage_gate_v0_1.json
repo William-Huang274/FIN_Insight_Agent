@@ -1,0 +1,138 @@
+{
+  "case_id": "company_reported_product_operating_metric_runtime_smoke",
+  "exact_authority_violations": [],
+  "gaps": [],
+  "generated_at": "2026-06-19T08:31:32Z",
+  "industry_schema": "generic_public_research",
+  "phase": "runtime_case",
+  "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+  "requested_industry_schema": "generic_public_research",
+  "requirements": [
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "not_bound": 6199
+        },
+        "issuer_binding_status": {
+          "issuer_mentioned_in_snapshot": 6199
+        },
+        "product_binding_status": {
+          "product_mentioned_in_snapshot": 6199
+        }
+      },
+      "by_source_status": {
+        "exact_authority_ready": 1,
+        "staging_parser_gate_pending": 1,
+        "structured_not_promoted": 2
+      },
+      "claim_boundary": "Company-disclosed financial, filing, and product operating facts only after parser/period/unit/citation gates.",
+      "dimension": "fundamentals",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 6199,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L1"
+      ],
+      "next_action": "Use SEC/FSD for US issuers and official IR/local filing route for non-US issuers before exposing a filing gap.",
+      "observed_row_count": 6199,
+      "observed_source_classes": [
+        "company_reported_product_operating_metric"
+      ],
+      "observed_structured_context_types": [
+        "company_reported_product_operating_metric_fact"
+      ],
+      "parser_row_count": 6199,
+      "phase": "runtime_case",
+      "ready_source_count": 1,
+      "requirement_id": "primary_company_disclosure",
+      "route_candidate_source_count": 4,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "sec_edgar_apis",
+        "sec_financial_statement_data_sets",
+        "company_ir_reports",
+        "company_reported_product_operating_metrics"
+      ],
+      "source_profile_count": 4,
+      "specialist_roles": [
+        "fundamental_analyst",
+        "product_technology_analyst",
+        "capital_ownership_macro_analyst"
+      ],
+      "specialist_visible_row_count": 12448,
+      "status": "pass"
+    },
+    {
+      "binding_status_distribution": {
+        "counterparty_binding_status": {
+          "not_bound": 6199
+        },
+        "issuer_binding_status": {
+          "issuer_mentioned_in_snapshot": 6199
+        },
+        "product_binding_status": {
+          "product_mentioned_in_snapshot": 6199
+        }
+      },
+      "by_source_status": {
+        "structured_not_promoted": 2
+      },
+      "claim_boundary": "Official product existence, specs, positioning, and company-disclosed product KPIs; no inferred sales/share.",
+      "dimension": "product_and_production",
+      "effective_ready_source_count": 1,
+      "entity_bound_row_count": 6199,
+      "exact_authority_violation_sources": [],
+      "gaps": [],
+      "layer_ids": [
+        "L1",
+        "L2"
+      ],
+      "next_action": "Fetch official product/IR pages, parse product/spec rows, and bind issuer/product before product section judgment.",
+      "observed_row_count": 6199,
+      "observed_source_classes": [
+        "company_reported_product_operating_metric"
+      ],
+      "observed_structured_context_types": [
+        "company_reported_product_operating_metric_fact"
+      ],
+      "parser_row_count": 6199,
+      "phase": "runtime_case",
+      "ready_source_count": 0,
+      "requirement_id": "official_product_surface",
+      "route_candidate_source_count": 2,
+      "schema_version": "finsight_source_coverage_requirement_v0_1",
+      "source_ids": [
+        "company_product_pages",
+        "company_reported_product_operating_metrics"
+      ],
+      "source_profile_count": 2,
+      "specialist_roles": [
+        "product_technology_analyst"
+      ],
+      "specialist_visible_row_count": 6199,
+      "status": "pass"
+    }
+  ],
+  "schema_version": "finsight_source_coverage_gate_v0_1",
+  "status": "pass",
+  "summary": {
+    "by_dimension": {
+      "fundamentals": 1,
+      "product_and_production": 1
+    },
+    "by_status": {
+      "pass": 2
+    },
+    "exact_authority_violation_count": 0,
+    "fail_requirement_count": 0,
+    "gap_requirement_count": 0,
+    "pass_requirement_count": 2,
+    "requirement_count": 2
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+    "status": "pass"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "market_evidence_path": "data/processed_private/market/evidence_packs/20260624_market_yahoo_chart_603_3m_v1_3m_market_evidence.jsonl",
+  "output_path": "D:\\FIN_Insight_Agent\\data\\manifests\\market_liquidity_driver_context_rows_v0_1.jsonl",
+  "rejection_count": 0,
+  "rejections_sample": [],
+  "row_count": 603,
+  "schema_version": "finsight_market_liquidity_driver_context_summary_v0_1",
+  "source_boundary": "Rows are L3 market-liquidity/positioning context. They support price/volume reaction, volatility, drawdown, relative return, and available valuation snapshot discussion only.",
+  "status": "pass",
+  "ticker_count": 603
+}

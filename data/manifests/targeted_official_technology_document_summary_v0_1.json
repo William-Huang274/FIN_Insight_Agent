@@ -1,0 +1,27 @@
+{
+  "attempt_count": 4,
+  "attempt_status_counts": {
+    "materialized": 4
+  },
+  "boundary": "Official technology documents are L3 bounded technology signals only; they cannot support product sales, revenue, ASP, share, order value, or durable moat claims.",
+  "fetch_transport_counts": {
+    "browser_rendered": 1,
+    "direct": 3
+  },
+  "generated_at": "2026-06-23T18:03:03Z",
+  "outputs": {
+    "attempts": "D:\\FIN_Insight_Agent\\data\\manifests\\targeted_official_technology_document_attempts_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\targeted_official_technology_document_context_rows_v0_1.jsonl"
+  },
+  "row_count": 4,
+  "schema_version": "finsight_targeted_official_technology_document_summary_v0_1",
+  "status": "pass",
+  "success_ticker_count": 4,
+  "target_ticker_count": 4,
+  "tickers": [
+    "300750.SZ",
+    "373220.KS",
+    "MPWR",
+    "PLTR"
+  ]
+}

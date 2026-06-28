@@ -5,6 +5,8 @@ from pathlib import Path
 
 from sec_agent.langgraph_orchestrator import (
     _render_deterministic_lookup_answer,
+    _node_research_lead_plan,
+    _node_validate_activation_plan,
     _route_after_multi_agent_reflection,
     build_multi_agent_summary_artifact_payload,
     build_multi_agent_orchestration_graph,
@@ -12,7 +14,7 @@ from sec_agent.langgraph_orchestrator import (
     make_multi_agent_smoke_state,
     multi_agent_node_order,
 )
-from sec_agent.multi_agent_runtime import compile_multi_agent_retrieval_plan, tool_arguments_from_route
+from sec_agent.multi_agent_runtime import build_agent_data_view, compile_multi_agent_retrieval_plan, tool_arguments_from_route
 from sec_agent.tool_call_ledger import ToolCallLedger
 
 
@@ -120,6 +122,129 @@ def test_multi_agent_graph_runs_evidence_fusion_before_coverage(tmp_path: Path) 
     assert summary["bounded_gap_register"]["commercial_tracker_gap_count"] == 1
 
 
+def test_multi_agent_graph_first_pass_merges_product_and_public_source_rows(tmp_path: Path) -> None:
+    def injected_execute(state: dict) -> dict:
+        return {
+            "tool_observations": [],
+            "tool_call_ledger": state.get("tool_call_ledger") or ToolCallLedger().to_dict(),
+            "product_evidence_rows": [
+                {
+                    "evidence_ref": "aapl_services_product_kpi",
+                    "source_family": "company_product_evidence_graph",
+                    "ticker": "AAPL",
+                    "product_or_segment": "Services",
+                    "metric_family": "product_revenue",
+                    "promotion_status": "runtime_fact_allowed",
+                    "exact_value_authority": True,
+                    "value": "96.2 billion USD",
+                }
+            ],
+            "public_source_context_rows": [
+                {
+                    "evidence_ref": "aapl_iphone_official_surface",
+                    "source_family": "live_public_web_context",
+                    "runtime_source_family": "public_source_context",
+                    "source_id": "company_product_pages",
+                    "source_layer_id": "L2",
+                    "ticker": "AAPL",
+                    "product_or_segment": "iPhone",
+                    "structured_context_type": "product_spec_context",
+                    "context_only": True,
+                    "exact_value_authority": False,
+                }
+            ],
+        }
+
+    graph = build_multi_agent_orchestration_graph(
+        execute_evidence_operators=injected_execute,
+        stop_after_node="evidence_fusion_selector",
+    )
+    initial = make_multi_agent_smoke_state(
+        user_query="分析 AAPL 产品收入和产品线证据。",
+        output_dir=tmp_path,
+        query_contract=_query_contract(["AAPL"], source_tiers=["company_product_evidence_graph", "public_source_context"]),
+        focus_tickers=["AAPL"],
+        search_scope_tickers=["AAPL"],
+    )
+
+    result = graph.invoke(initial, config={"configurable": {"thread_id": "unit-first-pass-product-public-rows"}})
+    product_view = build_agent_data_view("product_technology_analyst", result)
+
+    assert result["evidence_fusion_bundle"]["summary"]["product_runtime_fact_count"] == 1
+    assert result["evidence_fusion_bundle"]["summary"]["public_exact_authority_violation_count"] == 0
+    assert {row["evidence_ref"] for row in result["product_evidence_rows"]} == {"aapl_services_product_kpi"}
+    assert {row["evidence_ref"] for row in result["public_source_context_rows"]} == {"aapl_iphone_official_surface"}
+    product_refs = {row["evidence_ref"] for row in product_view["bounded_evidence_rows"]}
+    assert {"aapl_services_product_kpi", "aapl_iphone_official_surface"} <= product_refs
+
+
+def test_multi_agent_graph_attaches_runtime_source_context_store_from_state_config(tmp_path: Path) -> None:
+    product_path = tmp_path / "runtime_product_rows.jsonl"
+    public_path = tmp_path / "runtime_public_rows.jsonl"
+    _write_jsonl(
+        product_path,
+        [
+            {
+                "evidence_ref": "nvda_data_center_product_kpi",
+                "source_family": "company_product_evidence_graph",
+                "runtime_source_family": "company_product_evidence_graph",
+                "source_id": "company_reported_product_operating_metrics",
+                "source_layer_id": "L1",
+                "ticker": "NVDA",
+                "fiscal_year": 2025,
+                "product_or_segment": "Data Center",
+                "metric_family": "product_revenue",
+                "promotion_status": "runtime_fact_allowed",
+                "exact_value_authority": True,
+                "value": "115.2 billion USD",
+            }
+        ],
+    )
+    _write_jsonl(
+        public_path,
+        [
+            {
+                "evidence_ref": "nvda_blackwell_official_surface",
+                "source_family": "live_public_web_context",
+                "runtime_source_family": "public_source_context",
+                "source_id": "company_product_pages",
+                "source_layer_id": "L2",
+                "ticker": "NVDA",
+                "product_or_segment": "Blackwell",
+                "structured_context_type": "product_spec_context",
+                "context_only": True,
+                "exact_value_authority": False,
+            }
+        ],
+    )
+    graph = build_multi_agent_orchestration_graph(stop_after_node="evidence_fusion_selector")
+    initial = make_multi_agent_smoke_state(
+        user_query="分析 NVDA 产品线证据。",
+        output_dir=tmp_path,
+        query_contract=_query_contract(["NVDA"], source_tiers=["company_product_evidence_graph", "public_source_context"]),
+        focus_tickers=["NVDA"],
+        search_scope_tickers=["NVDA"],
+    )
+    initial["multi_agent_context"] = {
+        "runtime_source_context": {
+            "enabled": True,
+            "paths": {"product": str(product_path), "public": str(public_path)},
+            "max_product_rows_per_ticker": 4,
+            "max_public_rows_per_ticker": 4,
+            "max_unbound_public_rows": 0,
+        }
+    }  # type: ignore[literal-required]
+
+    result = graph.invoke(initial, config={"configurable": {"thread_id": "unit-runtime-source-context-store"}})
+    product_view = build_agent_data_view("product_technology_analyst", result)
+
+    assert result["runtime_source_context_store"]["summary"]["selected_row_count"] == 2
+    assert result["evidence_fusion_bundle"]["summary"]["product_runtime_fact_count"] == 1
+    assert result["evidence_fusion_bundle"]["summary"]["public_exact_authority_violation_count"] == 0
+    product_refs = {row["evidence_ref"] for row in product_view["bounded_evidence_rows"]}
+    assert {"nvda_data_center_product_kpi", "nvda_blackwell_official_surface"} <= product_refs
+
+
 def test_multi_agent_graph_records_evidence_fanout_barrier_when_enabled(tmp_path: Path) -> None:
     graph = build_multi_agent_orchestration_graph(stop_after_node="evidence_fusion_selector")
     initial = make_multi_agent_smoke_state(
@@ -187,6 +312,79 @@ def test_multi_agent_graph_standard_path_runs_specialists(tmp_path: Path) -> Non
     assert summary["judgment_plan"]["memo_thesis_pack"]["present"] is True
     assert summary["graph_barriers"]["specialist_fanout"]["schema_version"] == "sec_agent_specialist_fanout_barrier_v0.1"
     assert summary["graph_barriers"]["claim_card_store"]["schema_version"] == "sec_agent_claim_card_store_barrier_v0.1"
+
+
+def test_research_lead_enables_product_intelligence_runtime_for_product_lane() -> None:
+    planned = _node_research_lead_plan(
+        {
+            "run_id": "unit-product-intelligence-autoload",
+            "user_query": "Compare NVDA Blackwell GPU specs, AMD MI300 competitive positioning, and AI server customer deployments.",
+            "query_contract": {
+                "focus_tickers": ["NVDA"],
+                "search_scope_tickers": ["NVDA", "AMD", "DELL"],
+                "metric_families": ["product_spec", "customer_deployment", "supply_chain"],
+                "source_tiers": ["primary_sec_filing", "company_product_evidence_graph"],
+            },
+        }
+    )
+    validated = _node_validate_activation_plan(planned)
+
+    assert "product_technology_analyst" in validated["agent_activation_plan"]["activate_agents"]
+    assert "company_product_evidence_graph" in validated["agent_activation_plan"]["allowed_source_families"]
+    assert validated["product_intelligence_runtime_autoload"] is True
+    assert validated["product_intelligence_runtime_policy"]["status"] == "enabled"
+    assert "product_specialist_active" in validated["product_intelligence_runtime_policy"]["reason_codes"]
+    assert validated["multi_agent_routing_trace"]["product_intelligence_runtime"]["status"] == "enabled"
+
+
+def test_research_lead_respects_product_intelligence_runtime_override() -> None:
+    planned = _node_research_lead_plan(
+        {
+            "run_id": "unit-product-intelligence-autoload-disabled",
+            "user_query": "Compare NVDA Blackwell GPU specs and customer deployment evidence.",
+            "query_contract": {
+                "focus_tickers": ["NVDA"],
+                "search_scope_tickers": ["NVDA", "AMD"],
+                "metric_families": ["product_spec", "customer_deployment"],
+                "source_tiers": ["primary_sec_filing", "company_product_evidence_graph"],
+            },
+            "product_intelligence_runtime_autoload": False,
+        }
+    )
+    validated = _node_validate_activation_plan(planned)
+
+    assert "product_technology_analyst" in validated["agent_activation_plan"]["activate_agents"]
+    assert validated["product_intelligence_runtime_autoload"] is False
+    assert validated["product_intelligence_runtime_policy"]["decision_source"] == "operator_override"
+    assert validated["product_intelligence_runtime_policy"]["status"] == "disabled"
+
+
+def test_validate_activation_plan_respects_direct_product_intelligence_runtime_override() -> None:
+    planned = _node_research_lead_plan(
+        {
+            "run_id": "unit-product-intelligence-direct-override-seed",
+            "user_query": "Compare NVDA Blackwell GPU specs and customer deployment evidence.",
+            "query_contract": {
+                "focus_tickers": ["NVDA"],
+                "search_scope_tickers": ["NVDA", "AMD"],
+                "metric_families": ["product_spec", "customer_deployment"],
+                "source_tiers": ["primary_sec_filing", "company_product_evidence_graph"],
+            },
+        }
+    )
+    validated = _node_validate_activation_plan(
+        {
+            "run_id": "unit-product-intelligence-direct-override",
+            "user_query": planned["user_query"],
+            "query_contract": planned["query_contract"],
+            "agent_activation_plan": planned["agent_activation_plan"],
+            "product_intelligence_runtime_autoload": False,
+        }
+    )
+
+    assert validated["agent_activation_validation"]["status"] == "pass"
+    assert validated["product_intelligence_runtime_autoload"] is False
+    assert validated["product_intelligence_runtime_policy"]["decision_source"] == "operator_override"
 
 
 def test_multi_agent_summary_preserves_specialist_prompt_diagnostics() -> None:
@@ -897,3 +1095,7 @@ def _query_contract(tickers: list[str], *, source_tiers: list[str] | None = None
             }
         ],
     }
+
+
+def _write_jsonl(path: Path, rows: list[dict]) -> None:
+    path.write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in rows) + "\n", encoding="utf-8")

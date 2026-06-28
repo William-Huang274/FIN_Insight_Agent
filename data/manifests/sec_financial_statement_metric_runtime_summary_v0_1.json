@@ -1,0 +1,66 @@
+{
+  "claim_boundary": "Rows are SEC CompanyFacts/company-reported structured financial statement facts. They can support consolidated fundamental analysis, but cannot stand in for product KPI, product sales, market share, ASP, channel inventory, or sell-through.",
+  "form_type_counts": {
+    "10-K": 9529,
+    "10-Q": 170,
+    "20-F": 390,
+    "40-F": 57
+  },
+  "generated_at": "2026-06-23T19:32:14Z",
+  "input_facts": "D:\\FIN_Insight_Agent\\data\\staging\\structured_financial_facts\\sec_companyfacts_financial_fact_rows_v0_1.jsonl",
+  "metric_family_counts": {
+    "accounts_payable": 472,
+    "accounts_receivable": 456,
+    "assets": 587,
+    "capital_expenditure_proxy": 518,
+    "cash_and_equivalents": 564,
+    "current_assets": 485,
+    "current_liabilities": 485,
+    "deferred_revenue": 383,
+    "equity": 587,
+    "financing_cash_flow": 587,
+    "gross_profit": 258,
+    "inventory": 343,
+    "investing_cash_flow": 587,
+    "liabilities": 443,
+    "net_income": 586,
+    "operating_cash_flow": 584,
+    "operating_income": 482,
+    "r_and_d": 297,
+    "revenue": 572,
+    "shares_outstanding": 518,
+    "short_term_debt": 352
+  },
+  "outputs": {
+    "rejections": "D:\\FIN_Insight_Agent\\data\\manifests\\sec_financial_statement_metric_runtime_rejections_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\sec_financial_statement_metric_runtime_rows_v0_1.jsonl"
+  },
+  "rejection_reason_counts": {
+    "concept_not_in_canonical_statement_focus": 2000
+  },
+  "rejection_sample_count": 2000,
+  "runtime_row_count": 10146,
+  "runtime_ticker_count": 587,
+  "schema_version": "finsight_sec_financial_statement_metric_runtime_summary_v0_1",
+  "status": "pass",
+  "uncovered_ticker_count": 16,
+  "uncovered_tickers": [
+    "000660.KS",
+    "005930.KS",
+    "1211.HK",
+    "2308.TW",
+    "2317.TW",
+    "2382.TW",
+    "300750.SZ",
+    "3231.TW",
+    "373220.KS",
+    "6146.T",
+    "6723.T",
+    "6752.T",
+    "6857.T",
+    "8035.T",
+    "FDXF",
+    "IFX.DE"
+  ],
+  "universe_ticker_count": 603
+}

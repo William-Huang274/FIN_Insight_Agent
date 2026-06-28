@@ -56,7 +56,7 @@ def test_promotes_monotonic_row_bound_currency_revenue() -> None:
             product_or_segment="Data Center",
             row_label="Data Centers",
             value=924.8,
-            citation="Segment Revenue Growth Revenue [TABLE_START] Data Centers | $ | 924.8",
+            citation="Revenue by product category [TABLE_START] Data Centers | $ | 924.8",
         )
     ]
 
@@ -69,12 +69,13 @@ def test_promotes_monotonic_row_bound_currency_revenue() -> None:
     assert len(combined) == 1
     assert len(promoted) == 1
     assert not rejected
-    assert promoted[0]["repair_claim_scope"] == "company_disclosed_product_or_segment_revenue"
+    assert promoted[0]["repair_claim_scope"] == "company_disclosed_product_category_revenue"
     assert promoted[0]["repair_promotion_status"] == "monotonic_repair_promoted"
+    assert promoted[0]["product_node_type"] == "category_or_brand_family"
     assert summary["promoted_fact_count"] == 1
 
 
-def test_promotes_geographic_revenue_with_geographic_boundary() -> None:
+def test_rejects_geographic_revenue_without_region_dimension() -> None:
     repair_rows = [
         _fact(
             ticker="ABNB",
@@ -86,15 +87,15 @@ def test_promotes_geographic_revenue_with_geographic_boundary() -> None:
         )
     ]
 
-    _, promoted, _, summary = MODULE.promote_repair_candidates(
+    _, promoted, rejected, summary = MODULE.promote_repair_candidates(
         baseline_rows=[],
         repair_rows=repair_rows,
         generated_at="2026-06-11T00:00:00+00:00",
     )
 
-    assert promoted[0]["repair_claim_scope"] == "company_disclosed_geographic_segment_revenue"
-    assert "must not be described as product demand" in promoted[0]["runtime_use_boundary"]
-    assert summary["promoted_claim_scope_counts"] == {"company_disclosed_geographic_segment_revenue": 1}
+    assert not promoted
+    assert {row["rejection_reason"] for row in rejected} == {"geographic_segment_requires_region_dimension"}
+    assert summary["promoted_claim_scope_counts"] == {}
 
 
 def test_rejects_sentence_candidates_baseline_claims_and_conflicts() -> None:
@@ -118,8 +119,18 @@ def test_rejects_sentence_candidates_baseline_claims_and_conflicts() -> None:
             source_id="company_product_kpi_facts_structured_sentence_metric_parser",
             value=50.0,
         ),
-        _fact(ticker="CONFLICT", product_node_id="PRODUCTNODE::CONFLICT::segment::cloud", value=200.0),
-        _fact(ticker="CONFLICT", product_node_id="PRODUCTNODE::CONFLICT::segment::cloud", value=201.0),
+        _fact(
+            ticker="CONFLICT",
+            product_node_id="PRODUCTNODE::CONFLICT::segment::cloud",
+            value=200.0,
+            citation="Revenue by product category [TABLE_START] Cloud | $ | 200",
+        ),
+        _fact(
+            ticker="CONFLICT",
+            product_node_id="PRODUCTNODE::CONFLICT::segment::cloud",
+            value=201.0,
+            citation="Revenue by product category [TABLE_START] Cloud | $ | 201",
+        ),
     ]
 
     _, promoted, rejected, summary = MODULE.promote_repair_candidates(
@@ -238,8 +249,8 @@ def test_promotes_sales_of_principal_products_table_without_generic_revenue_cont
 
     assert len(promoted) == 1
     assert not rejected
-    assert promoted[0]["repair_claim_scope"] == "company_disclosed_product_or_segment_revenue"
-    assert summary["promotion_gate"] == "structured_table_currency_revenue_row_bound_v0_4"
+    assert promoted[0]["repair_claim_scope"] == "company_disclosed_product_category_revenue"
+    assert summary["promotion_gate"] == "structured_table_currency_revenue_row_bound_v0_5"
 
 
 def test_promotes_low_merchandising_continuation_span_when_header_is_truncated() -> None:
@@ -405,7 +416,9 @@ def test_promotes_dri_restaurant_sales_block_only() -> None:
 
     assert len(promoted) == 1
     assert promoted[0]["value"] == 2_612_300_000.0
-    assert {row["rejection_reason"] for row in rejected} == {"missing_strong_revenue_table_context"}
+    assert {row["rejection_reason"] for row in rejected} == {
+        "missing_product_category_or_source_specific_revenue_table_context"
+    }
 
 
 def test_promotes_hubb_net_sales_segment_table() -> None:

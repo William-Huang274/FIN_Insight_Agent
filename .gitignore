@@ -23,6 +23,24 @@
 /data/manifests/non_us_supply_chain_primary_disclosure_coverage_v0_1.jsonl
 /data/manifests/public_source_extended_materialization_v0_1.jsonl
 /data/manifests/tier2_global_public_disclosure_*_download_clean_v0_1.jsonl
+/data/manifests/_tmp_*
+/data/manifests/run_logs/
+/data/manifests/*_attempts*.jsonl
+/data/manifests/*_rows_v*.jsonl
+/data/manifests/*_rejections_v*.jsonl
+/data/manifests/*_ledger_v*.jsonl
+/data/manifests/*_nodes_v*.jsonl
+/data/manifests/*_edges_v*.jsonl
+/data/manifests/*_support_v*.jsonl
+/data/manifests/*_documents_v*.jsonl
+/data/manifests/*_snapshots_v*.jsonl
+/data/manifests/*_lineage_v*.jsonl
+/data/manifests/*_inventory_v*.jsonl
+/data/manifests/*_queue_v*.jsonl
+/data/manifests/*_docket_v*.jsonl
+/data/manifests/*_closeout_v*.jsonl
+/data/manifests/*_candidates_v*.jsonl
+/data/manifests/*.jsonl
 
 # Runtime and evaluation outputs
 /eval/

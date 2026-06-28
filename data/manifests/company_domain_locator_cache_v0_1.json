@@ -1,0 +1,8026 @@
+{
+  "000660.KS": {
+    "company_name": "SK hynix Inc.",
+    "domains": [
+      "skhynix.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "skhynix.com"
+      ]
+    },
+    "ticker": "000660.KS"
+  },
+  "005930.KS": {
+    "company_name": "Samsung Electronics Co., Ltd.",
+    "domains": [
+      "samsung.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "samsung.com"
+      ]
+    },
+    "ticker": "005930.KS"
+  },
+  "1211.HK": {
+    "company_name": "BYD Company Limited",
+    "domains": [
+      "byd.com",
+      "bydbatterybox.com",
+      "bydglobal.com",
+      "en.byd.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "byd.com",
+        "bydbatterybox.com",
+        "bydglobal.com",
+        "en.byd.com"
+      ]
+    },
+    "ticker": "1211.HK"
+  },
+  "2308.TW": {
+    "company_name": "Delta Electronics, Inc.",
+    "domains": [
+      "deltaww.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "deltaww.com"
+      ]
+    },
+    "ticker": "2308.TW"
+  },
+  "2317.TW": {
+    "company_name": "Hon Hai Precision Industry Co., Ltd.",
+    "domains": [
+      "foxconn.com",
+      "honhai.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "foxconn.com",
+        "honhai.com"
+      ]
+    },
+    "ticker": "2317.TW"
+  },
+  "2382.TW": {
+    "company_name": "Quanta Computer Inc.",
+    "domains": [
+      "quantatw.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "quantatw.com"
+      ]
+    },
+    "ticker": "2382.TW"
+  },
+  "300750.SZ": {
+    "company_name": "Contemporary Amperex Technology Co., Limited",
+    "domains": [
+      "catl.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "catl.com"
+      ]
+    },
+    "ticker": "300750.SZ"
+  },
+  "3231.TW": {
+    "company_name": "Wistron Corporation",
+    "domains": [
+      "wistron.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "wistron.com"
+      ]
+    },
+    "ticker": "3231.TW"
+  },
+  "373220.KS": {
+    "company_name": "LG Energy Solution, Ltd.",
+    "domains": [
+      "lgensol.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "lgensol.com"
+      ]
+    },
+    "ticker": "373220.KS"
+  },
+  "6146.T": {
+    "company_name": "DISCO Corporation",
+    "domains": [
+      "disco.co.jp"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "disco.co.jp"
+      ]
+    },
+    "ticker": "6146.T"
+  },
+  "6723.T": {
+    "company_name": "Renesas Electronics Corporation",
+    "domains": [
+      "renesas.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "renesas.com"
+      ]
+    },
+    "ticker": "6723.T"
+  },
+  "6752.T": {
+    "company_name": "Panasonic Holdings Corporation",
+    "domains": [
+      "na.industrial.panasonic.com",
+      "panasonic.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "na.industrial.panasonic.com",
+        "panasonic.com"
+      ]
+    },
+    "ticker": "6752.T"
+  },
+  "6857.T": {
+    "company_name": "Advantest Corporation",
+    "domains": [
+      "advantest.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "advantest.com"
+      ]
+    },
+    "ticker": "6857.T"
+  },
+  "8035.T": {
+    "company_name": "Tokyo Electron Limited",
+    "domains": [
+      "tel.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "tel.com"
+      ]
+    },
+    "ticker": "8035.T"
+  },
+  "A": {
+    "company_name": "Agilent Technologies",
+    "domains": [
+      "agilent.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "agilent.com"
+      ]
+    },
+    "ticker": "A"
+  },
+  "ABBV": {
+    "company_name": "AbbVie",
+    "domains": [
+      "abbvie.com",
+      "abbvie-care.de",
+      "abbvie.jobs"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "abbvie.com",
+        "abbvie.jobs",
+        "abbvie-care.de"
+      ]
+    },
+    "ticker": "ABBV"
+  },
+  "ABNB": {
+    "company_name": "Airbnb",
+    "domains": [
+      "airbnb.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "airbnb.com"
+      ]
+    },
+    "ticker": "ABNB"
+  },
+  "ABT": {
+    "company_name": "Abbott Laboratories",
+    "domains": [
+      "abbott.com",
+      "abbott.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "abbott.co.jp",
+        "abbott.com",
+        "cardiovascular.abbott",
+        "globalpointofcare.abbott"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "ABT"
+  },
+  "ACGL": {
+    "company_name": "Arch Capital Group",
+    "domains": [
+      "arch-capital.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "arch-capital.com"
+      ]
+    },
+    "ticker": "ACGL"
+  },
+  "ACLS": {
+    "company_name": "AXCELIS TECHNOLOGIES INC",
+    "domains": [
+      "axcelis.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "axcelis.com"
+      ]
+    },
+    "ticker": "ACLS"
+  },
+  "ACN": {
+    "company_name": "Accenture",
+    "domains": [
+      "accenture.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "accenture.com"
+      ]
+    },
+    "ticker": "ACN"
+  },
+  "ADBE": {
+    "company_name": "Adobe Inc.",
+    "domains": [
+      "adobe.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "adobe.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "ADBE"
+  },
+  "ADI": {
+    "company_name": "Analog Devices",
+    "domains": [
+      "analog.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "analog.com"
+      ]
+    },
+    "ticker": "ADI"
+  },
+  "ADM": {
+    "company_name": "Archer Daniels Midland",
+    "domains": [
+      "adm.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "adm.com"
+      ]
+    },
+    "ticker": "ADM"
+  },
+  "ADP": {
+    "company_name": "Automatic Data Processing",
+    "domains": [
+      "automatic.com",
+      "automaticdataprocessing.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "automatic.com",
+        "automaticdataprocessing.com"
+      ]
+    },
+    "ticker": "ADP"
+  },
+  "ADSK": {
+    "company_name": "Autodesk",
+    "domains": [
+      "autodesk.com",
+      "autodeskjournal.com",
+      "autodesktlv.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "autodesk.com",
+        "autodeskjournal.com",
+        "autodesktlv.com"
+      ]
+    },
+    "ticker": "ADSK"
+  },
+  "AEE": {
+    "company_name": "Ameren",
+    "domains": [
+      "ameren.com",
+      "amereninvestors.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "ameren.com",
+        "amereninvestors.com"
+      ]
+    },
+    "ticker": "AEE"
+  },
+  "AEHR": {
+    "company_name": "AEHR TEST SYSTEMS",
+    "domains": [
+      "aehr.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "aehr.com"
+      ]
+    },
+    "ticker": "AEHR"
+  },
+  "AEP": {
+    "company_name": "American Electric Power",
+    "domains": [
+      "aep.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "aep.com"
+      ]
+    },
+    "ticker": "AEP"
+  },
+  "AES": {
+    "company_name": "AES Corporation",
+    "domains": [
+      "aes.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "aes.com"
+      ]
+    },
+    "ticker": "AES"
+  },
+  "AFL": {
+    "company_name": "Aflac",
+    "domains": [
+      "aflac.com",
+      "aflaca.org.au"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "aflac.com",
+        "aflaca.org.au",
+        "1a-flachwitze.de"
+      ]
+    },
+    "ticker": "AFL"
+  },
+  "AIG": {
+    "company_name": "American International Group",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "AIG"
+  },
+  "AIZ": {
+    "company_name": "Assurant",
+    "domains": [
+      "assurant.com",
+      "assurantbpo.net",
+      "assuranteam.be"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "assurant.com",
+        "assurantbpo.net",
+        "assuranteam.be"
+      ]
+    },
+    "ticker": "AIZ"
+  },
+  "AJG": {
+    "company_name": "Arthur J. Gallagher & Co.",
+    "domains": [
+      "ajg.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "ajg.com"
+      ]
+    },
+    "ticker": "AJG"
+  },
+  "AKAM": {
+    "company_name": "Akamai Technologies",
+    "domains": [
+      "akamai.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "akamai.com"
+      ]
+    },
+    "ticker": "AKAM"
+  },
+  "ALB": {
+    "company_name": "Albemarle Corporation",
+    "domains": [
+      "albemarle.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "albemarle.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "ALB"
+  },
+  "ALGN": {
+    "company_name": "Align Technology",
+    "domains": [
+      "aligntechnology.com",
+      "aligntechnology.in"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "aligntechnology.com",
+        "aligntechnology.in"
+      ]
+    },
+    "ticker": "ALGN"
+  },
+  "ALL": {
+    "company_name": "Allstate",
+    "domains": [
+      "allstate.com",
+      "allstate.jobs"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "allstate.com",
+        "allstate.jobs"
+      ]
+    },
+    "ticker": "ALL"
+  },
+  "ALLE": {
+    "company_name": "Allegion",
+    "domains": [
+      "allegion.com",
+      "allegion.com.au"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "allegion.com",
+        "allegion.com.au"
+      ]
+    },
+    "ticker": "ALLE"
+  },
+  "ALNY": {
+    "company_name": "ALNYLAM PHARMACEUTICALS, INC.",
+    "domains": [
+      "alnylam.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "alnylam.com"
+      ]
+    },
+    "ticker": "ALNY"
+  },
+  "AMAT": {
+    "company_name": "Applied Materials",
+    "domains": [
+      "appliedmaterials.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "appliedmaterials.com"
+      ]
+    },
+    "ticker": "AMAT"
+  },
+  "AMCR": {
+    "company_name": "Amcor",
+    "domains": [
+      "amcor.com",
+      "amcork.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "amcor.com",
+        "amcork.com"
+      ]
+    },
+    "ticker": "AMCR"
+  },
+  "AME": {
+    "company_name": "Ametek",
+    "domains": [
+      "ametek.com",
+      "ameteksi.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "ametek.com",
+        "ameteksi.com"
+      ]
+    },
+    "ticker": "AME"
+  },
+  "AMGN": {
+    "company_name": "Amgen",
+    "domains": [
+      "amgen.com",
+      "amgeneral.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "amgen.com",
+        "amgeneral.com"
+      ]
+    },
+    "ticker": "AMGN"
+  },
+  "AMKR": {
+    "company_name": "AMKOR TECHNOLOGY, INC.",
+    "domains": [
+      "amkor.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "amkor.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "AMKR"
+  },
+  "AMP": {
+    "company_name": "Ameriprise Financial",
+    "domains": [
+      "ameriprise.com",
+      "ameripriseadvisors.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "ameriprise.com",
+        "ameripriseadvisors.com"
+      ]
+    },
+    "ticker": "AMP"
+  },
+  "AMT": {
+    "company_name": "American Tower",
+    "domains": [
+      "americantower.com",
+      "americantower.com.gh",
+      "americantower.com.mx"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "americantower.com",
+        "americantower.com.mx",
+        "americantower.com.gh"
+      ]
+    },
+    "ticker": "AMT"
+  },
+  "AMZN": {
+    "company_name": "Amazon",
+    "domains": [
+      "amazon.com",
+      "amazon.jobs"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "amazon.com",
+        "amazon.jobs"
+      ]
+    },
+    "ticker": "AMZN"
+  },
+  "ANET": {
+    "company_name": "Arista Networks",
+    "domains": [
+      "arista.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "arista.com"
+      ]
+    },
+    "ticker": "ANET"
+  },
+  "AON": {
+    "company_name": "Aon plc",
+    "domains": [
+      "aon.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "aon.com",
+        "aonjapan.co.jp",
+        "a-onstore.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "AON"
+  },
+  "AOS": {
+    "company_name": "A. O. Smith",
+    "domains": [
+      "aosmith.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "aosmith.com"
+      ]
+    },
+    "ticker": "AOS"
+  },
+  "APA": {
+    "company_name": "APA Corporation",
+    "domains": [
+      "apa.co.jp",
+      "apa.org"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "apahotel.com",
+        "apa.co.jp",
+        "apa.org"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "APA"
+  },
+  "APD": {
+    "company_name": "Air Products",
+    "domains": [
+      "airproducts.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "airproducts.com"
+      ]
+    },
+    "ticker": "APD"
+  },
+  "APH": {
+    "company_name": "Amphenol",
+    "domains": [
+      "amphenol-cs.com",
+      "amphenol-ns.com",
+      "amphenol.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "amphenol.com",
+        "amphenol-cs.com",
+        "amphenol-ns.com"
+      ]
+    },
+    "ticker": "APH"
+  },
+  "APO": {
+    "company_name": "Apollo Global Management",
+    "domains": [
+      "apollo.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "apollo.com"
+      ]
+    },
+    "ticker": "APO"
+  },
+  "APP": {
+    "company_name": "AppLovin",
+    "domains": [
+      "applovin.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "applovin.com"
+      ]
+    },
+    "ticker": "APP"
+  },
+  "APTV": {
+    "company_name": "Aptiv",
+    "domains": [
+      "aptiv.com",
+      "aptivaa.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "goaptive.com",
+        "aptiv.com",
+        "aptivaa.com"
+      ]
+    },
+    "ticker": "APTV"
+  },
+  "ARE": {
+    "company_name": "Alexandria Real Estate Equities",
+    "domains": [
+      "are.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "are.com"
+      ]
+    },
+    "ticker": "ARE"
+  },
+  "ARES": {
+    "company_name": "Ares Management",
+    "domains": [
+      "ares.com",
+      "aresmanagement.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "ares.com",
+        "aresmanagement.com"
+      ]
+    },
+    "ticker": "ARES"
+  },
+  "ARGX": {
+    "company_name": "ARGENX SE",
+    "domains": [
+      "argenx.com",
+      "argenx.jp"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "argenx.com",
+        "argenx.jp"
+      ]
+    },
+    "ticker": "ARGX"
+  },
+  "ARM": {
+    "company_name": "ARM HOLDINGS PLC /UK",
+    "domains": [
+      "arm.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "arm.com",
+        "armuk.com"
+      ]
+    },
+    "ticker": "ARM"
+  },
+  "ARRY": {
+    "company_name": "Array Technologies, Inc.",
+    "domains": [
+      "array.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "array.com"
+      ]
+    },
+    "ticker": "ARRY"
+  },
+  "ATO": {
+    "company_name": "Atmos Energy",
+    "domains": [
+      "atmosenergy.com",
+      "atmosenergy.com.br"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "atmosenergy.com",
+        "atmosenergy.com.br"
+      ]
+    },
+    "ticker": "ATO"
+  },
+  "AVB": {
+    "company_name": "AvalonBay Communities",
+    "domains": [
+      "avalonbay.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "avalonbay.com"
+      ]
+    },
+    "ticker": "AVB"
+  },
+  "AVGO": {
+    "company_name": "Broadcom",
+    "domains": [
+      "broadcom.com",
+      "broadcom.cn"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "broadcom.com",
+        "broadcom.cn"
+      ]
+    },
+    "ticker": "AVGO"
+  },
+  "AVY": {
+    "company_name": "Avery Dennison",
+    "domains": [
+      "averydennison.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "averydennison.com"
+      ]
+    },
+    "ticker": "AVY"
+  },
+  "AWK": {
+    "company_name": "American Water Works",
+    "domains": [
+      "american-waterworks.com",
+      "americanwaterworks.net"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "american-waterworks.com",
+        "americanwaterworks.net"
+      ]
+    },
+    "ticker": "AWK"
+  },
+  "AXON": {
+    "company_name": "Axon Enterprise",
+    "domains": [
+      "axon-enterprises.co.uk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "axon-enterprises.co.uk"
+      ]
+    },
+    "ticker": "AXON"
+  },
+  "AXP": {
+    "company_name": "American Express",
+    "domains": [
+      "americanexpress.com",
+      "americanexpress.co.il"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "americanexpress.com",
+        "americanexpress.co.il"
+      ]
+    },
+    "ticker": "AXP"
+  },
+  "AZN": {
+    "company_name": "ASTRAZENECA PLC",
+    "domains": [
+      "astrazeneca-us.com",
+      "astrazeneca.com",
+      "astrazeneca.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "astrazeneca.com",
+        "astrazeneca.co.jp",
+        "astrazeneca-us.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "AZN"
+  },
+  "AZO": {
+    "company_name": "AutoZone",
+    "domains": [
+      "autozone.com",
+      "autozonepro.com",
+      "autozone.com.mx"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "autozone.com",
+        "autozonepro.com",
+        "autozone.com.mx"
+      ]
+    },
+    "ticker": "AZO"
+  },
+  "BA": {
+    "company_name": "Boeing",
+    "domains": [
+      "boeing.com",
+      "boeingstore.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "boeing.com",
+        "boeingstore.com",
+        "boeingdistribution.com"
+      ]
+    },
+    "ticker": "BA"
+  },
+  "BALL": {
+    "company_name": "Ball Corporation",
+    "domains": [
+      "ball.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "ball.com"
+      ]
+    },
+    "ticker": "BALL"
+  },
+  "BAX": {
+    "company_name": "Baxter International",
+    "domains": [
+      "baxter.com",
+      "baxter.com.tr",
+      "baxter.fr"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "baxter.com",
+        "baxter.fr",
+        "baxter.com.tr"
+      ]
+    },
+    "ticker": "BAX"
+  },
+  "BBY": {
+    "company_name": "Best Buy",
+    "domains": [
+      "best.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "best.com"
+      ]
+    },
+    "ticker": "BBY"
+  },
+  "BDX": {
+    "company_name": "Becton Dickinson",
+    "domains": [
+      "bd.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "bd.com"
+      ]
+    },
+    "ticker": "BDX"
+  },
+  "BE": {
+    "company_name": "Bloom Energy Corp",
+    "domains": [
+      "bloom.co.jp",
+      "bloomonline.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "bloom.co.jp",
+        "bloomonline.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "BE"
+  },
+  "BEN": {
+    "company_name": "Franklin Resources",
+    "domains": [
+      "franklinresources.com",
+      "franklinresourcesllc.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "franklinresources.com",
+        "franklinresourcesllc.com"
+      ]
+    },
+    "ticker": "BEN"
+  },
+  "BF-B": {
+    "company_name": "Brown–Forman",
+    "domains": [
+      "brown-forman.com",
+      "brownformanfoundation.org"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "brown-forman.com",
+        "brownformanfoundation.org"
+      ]
+    },
+    "ticker": "BF-B"
+  },
+  "BG": {
+    "company_name": "Bunge Global",
+    "domains": [
+      "bunge.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "bunge.com",
+        "bungeproducts.com",
+        "yahoo.co.jp",
+        "bungeag.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "BG"
+  },
+  "BHP": {
+    "company_name": "BHP Group Ltd",
+    "domains": [
+      "bhp.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "bhp.com"
+      ]
+    },
+    "ticker": "BHP"
+  },
+  "BIIB": {
+    "company_name": "Biogen",
+    "domains": [
+      "biogen.com",
+      "biogena.com",
+      "biogents.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "biogen.com",
+        "biogents.com",
+        "biogena.com"
+      ]
+    },
+    "ticker": "BIIB"
+  },
+  "BILL": {
+    "company_name": "BILL Holdings, Inc.",
+    "domains": [
+      "bill.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "bill.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "BILL"
+  },
+  "BK": {
+    "company_name": "BNY Mellon",
+    "domains": [
+      "bnymellon.com",
+      "bnymellonim.com",
+      "bnymellonwealth.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "bnymellon.com",
+        "bnymellonwealth.com",
+        "bnymellonim.com"
+      ]
+    },
+    "ticker": "BK"
+  },
+  "BKNG": {
+    "company_name": "Booking Holdings",
+    "domains": [
+      "bookingholdings.com",
+      "bookingholdings-coe.com"
+    ],
+    "ticker": "BKNG"
+  },
+  "BKR": {
+    "company_name": "Baker Hughes",
+    "domains": [
+      "bakerhughes.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "bakerhughes.com",
+        "shopbakerhughes.com"
+      ]
+    },
+    "ticker": "BKR"
+  },
+  "BLDR": {
+    "company_name": "Builders FirstSource",
+    "domains": [
+      "builders.com",
+      "buildersfirstsource.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "builders.com",
+        "buildersfirstsource.com"
+      ]
+    },
+    "ticker": "BLDR"
+  },
+  "BLK": {
+    "company_name": "BlackRock",
+    "domains": [
+      "blackrock.com",
+      "blackrocket.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "blackrock.com",
+        "blackrockgalleries.com",
+        "blackrocket.com"
+      ]
+    },
+    "ticker": "BLK"
+  },
+  "BMRN": {
+    "company_name": "BIOMARIN PHARMACEUTICAL INC",
+    "domains": [
+      "biomarin.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "biomarin.com"
+      ]
+    },
+    "ticker": "BMRN"
+  },
+  "BMY": {
+    "company_name": "Bristol Myers Squibb",
+    "domains": [
+      "bms.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "bms.com"
+      ]
+    },
+    "ticker": "BMY"
+  },
+  "BNTX": {
+    "company_name": "BioNTech SE",
+    "domains": [
+      "biontech.com",
+      "biontech.de"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "biontech.com",
+        "biontech.de"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "BNTX"
+  },
+  "BR": {
+    "company_name": "Broadridge Financial Solutions",
+    "domains": [
+      "broadridge-ir.com",
+      "broadridge.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "broadridge.com",
+        "broadridge-ir.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "BR"
+  },
+  "BRK-B": {
+    "company_name": "Berkshire Hathaway",
+    "domains": [
+      "berkshire.com",
+      "berkshirehathaway.com",
+      "berkshire.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "berkshire.co.jp",
+        "berkshire.com",
+        "berkshirehathaway.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "BRK-B"
+  },
+  "BRO": {
+    "company_name": "Brown & Brown",
+    "domains": [
+      "brown.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "brown.com"
+      ]
+    },
+    "ticker": "BRO"
+  },
+  "BSX": {
+    "company_name": "Boston Scientific",
+    "domains": [
+      "bostonscientific.com",
+      "bostonscientific-sbhci2025.com.br",
+      "bostonscientific.cn"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "bostonscientific.com",
+        "bostonscientific.cn",
+        "bostonscientific-sbhci2025.com.br"
+      ]
+    },
+    "ticker": "BSX"
+  },
+  "BWXT": {
+    "company_name": "BWX Technologies, Inc.",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "BWXT"
+  },
+  "BX": {
+    "company_name": "Blackstone Inc.",
+    "domains": [
+      "blackstoneinc.net"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "blackstoneinc.net",
+        "blackstoneincorporated.com"
+      ]
+    },
+    "ticker": "BX"
+  },
+  "BXP": {
+    "company_name": "BXP, Inc.",
+    "domains": [
+      "bxp.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "bxp.com"
+      ]
+    },
+    "ticker": "BXP"
+  },
+  "C": {
+    "company_name": "Citigroup",
+    "domains": [
+      "citigroup.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "citigroup.com"
+      ]
+    },
+    "ticker": "C"
+  },
+  "CAG": {
+    "company_name": "Conagra Brands",
+    "domains": [
+      "conagrabrands.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "conagrabrands.com"
+      ]
+    },
+    "ticker": "CAG"
+  },
+  "CAH": {
+    "company_name": "Cardinal Health",
+    "domains": [
+      "cardinalhealth.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "cardinalhealth.com"
+      ]
+    },
+    "ticker": "CAH"
+  },
+  "CAMT": {
+    "company_name": "CAMTEK LTD",
+    "domains": [
+      "camtek.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "camtek.com"
+      ]
+    },
+    "ticker": "CAMT"
+  },
+  "CARR": {
+    "company_name": "Carrier Global",
+    "domains": [
+      "carrier.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "carrier.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "CARR"
+  },
+  "CASY": {
+    "company_name": "Casey's",
+    "domains": [
+      "caseys.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "caseys.com"
+      ]
+    },
+    "ticker": "CASY"
+  },
+  "CAT": {
+    "company_name": "Caterpillar Inc.",
+    "domains": [
+      "caterpillar.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "caterpillar.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "CAT"
+  },
+  "CB": {
+    "company_name": "Chubb Limited",
+    "domains": [
+      "chubb.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "chubb.com",
+        "chubbtravelinsurance.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "CB"
+  },
+  "CBOE": {
+    "company_name": "Cboe Global Markets",
+    "domains": [
+      "cboe.com",
+      "cboe.asia"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cboe.com",
+        "cboe.asia"
+      ]
+    },
+    "ticker": "CBOE"
+  },
+  "CBRE": {
+    "company_name": "CBRE Group",
+    "domains": [
+      "cbre.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cbre.com"
+      ]
+    },
+    "ticker": "CBRE"
+  },
+  "CCI": {
+    "company_name": "Crown Castle",
+    "domains": [
+      "crowncastle.com",
+      "crowncastlemortgagerealty.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "crowncastle.com",
+        "crowncastlemortgagerealty.com",
+        "crownbouncycastlehire.co.uk"
+      ]
+    },
+    "ticker": "CCI"
+  },
+  "CCJ": {
+    "company_name": "CAMECO CORP",
+    "domains": [
+      "cameco.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "cameco.com"
+      ]
+    },
+    "ticker": "CCJ"
+  },
+  "CCL": {
+    "company_name": "Carnival Corporation",
+    "domains": [
+      "carnivalcorporation.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "carnivalcorporation.com"
+      ]
+    },
+    "ticker": "CCL"
+  },
+  "CDNS": {
+    "company_name": "Cadence Design Systems",
+    "domains": [
+      "cadence.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cadence.com"
+      ]
+    },
+    "ticker": "CDNS"
+  },
+  "CDW": {
+    "company_name": "CDW Corporation",
+    "domains": [
+      "cdw.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "cdw.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "CDW"
+  },
+  "CE": {
+    "company_name": "Celanese Corp",
+    "domains": [
+      "celanese.com",
+      "celanese.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "celanese.com",
+        "celanese.co.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "CE"
+  },
+  "CEG": {
+    "company_name": "Constellation Energy",
+    "domains": [
+      "constellationenergy.com",
+      "constellationenergypartners.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "constellationenergy.com",
+        "constellationenergypartners.com"
+      ]
+    },
+    "ticker": "CEG"
+  },
+  "CF": {
+    "company_name": "CF Industries",
+    "domains": [
+      "cfindustries.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cfindustries.com"
+      ]
+    },
+    "ticker": "CF"
+  },
+  "CFG": {
+    "company_name": "Citizens Financial Group",
+    "domains": [
+      "citizens-financial.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "citizens-financial.com"
+      ]
+    },
+    "ticker": "CFG"
+  },
+  "CHD": {
+    "company_name": "Church & Dwight",
+    "domains": [
+      "churchdwight.com",
+      "churchdwight.com.au",
+      "churchdwight.de"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "churchdwight.com",
+        "churchdwight.com.au",
+        "churchdwight.de"
+      ]
+    },
+    "ticker": "CHD"
+  },
+  "CHRW": {
+    "company_name": "C.H. Robinson",
+    "domains": [
+      "c-h.com",
+      "ch.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "ch.com",
+        "c-h.com"
+      ]
+    },
+    "ticker": "CHRW"
+  },
+  "CHTR": {
+    "company_name": "Charter Communications",
+    "domains": [
+      "charter.com",
+      "corporate.charter.com",
+      "spectrum.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "charter.com",
+        "corporate.charter.com",
+        "spectrum.com"
+      ]
+    },
+    "ticker": "CHTR"
+  },
+  "CI": {
+    "company_name": "Cigna",
+    "domains": [
+      "cigna.com",
+      "cignaglobal.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cigna.com",
+        "cignahealthbenefits.com",
+        "cignaglobal.com"
+      ]
+    },
+    "ticker": "CI"
+  },
+  "CIEN": {
+    "company_name": "Ciena",
+    "domains": [
+      "ciena.com",
+      "cienaguas.org"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "ciena.com",
+        "cienaguas.org"
+      ]
+    },
+    "ticker": "CIEN"
+  },
+  "CINF": {
+    "company_name": "Cincinnati Financial",
+    "domains": [
+      "cincinnati-art2026.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "cincinnati-art2026.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "CINF"
+  },
+  "CL": {
+    "company_name": "Colgate-Palmolive",
+    "domains": [
+      "colgate.com",
+      "colgatepalmolive.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "colgate.com",
+        "colgatepalmolive.com"
+      ]
+    },
+    "ticker": "CL"
+  },
+  "CLX": {
+    "company_name": "Clorox",
+    "domains": [
+      "clorox.com",
+      "cloroxpool.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "clorox.com",
+        "cloroxpool.com",
+        "cloroxabudawoodjvs.com"
+      ]
+    },
+    "ticker": "CLX"
+  },
+  "CMCSA": {
+    "company_name": "Comcast",
+    "domains": [
+      "comcast.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "comcast.com",
+        "comcasttechnologysolutions.com"
+      ]
+    },
+    "ticker": "CMCSA"
+  },
+  "CME": {
+    "company_name": "CME Group",
+    "domains": [
+      "cmegroup.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cmegroup.com",
+        "cmesportslighting.com.au",
+        "cmegrp.com"
+      ]
+    },
+    "ticker": "CME"
+  },
+  "CMG": {
+    "company_name": "Chipotle Mexican Grill",
+    "domains": [
+      "chipotle.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "chipotle.com"
+      ]
+    },
+    "ticker": "CMG"
+  },
+  "CMI": {
+    "company_name": "Cummins",
+    "domains": [
+      "cummins-law.com",
+      "cummins.com",
+      "cumminscpa.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cummins.com",
+        "cummins-law.com",
+        "cumminscpa.com"
+      ]
+    },
+    "ticker": "CMI"
+  },
+  "CMS": {
+    "company_name": "CMS Energy",
+    "domains": [
+      "cmsenergy.com",
+      "cmsenergyadvisors.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cmsenergy.com",
+        "cmsenergyadvisors.com"
+      ]
+    },
+    "ticker": "CMS"
+  },
+  "CNC": {
+    "company_name": "Centene Corporation",
+    "domains": [
+      "centene.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "centene.com"
+      ]
+    },
+    "ticker": "CNC"
+  },
+  "CNP": {
+    "company_name": "CenterPoint Energy",
+    "domains": [
+      "centerpointenergy.com",
+      "centerpointenergymnshop.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "centerpointenergy.com",
+        "centerpointenergymnshop.com"
+      ]
+    },
+    "ticker": "CNP"
+  },
+  "COF": {
+    "company_name": "Capital One",
+    "domains": [
+      "capitalone.com",
+      "capitaloneshopping.com",
+      "capitalonetravel.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "capitalone.com",
+        "capitaloneshopping.com",
+        "capitalonetravel.com"
+      ]
+    },
+    "ticker": "COF"
+  },
+  "COHR": {
+    "company_name": "Coherent Corp.",
+    "domains": [
+      "coherent.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "coherent.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "COHR"
+  },
+  "COIN": {
+    "company_name": "Coinbase",
+    "domains": [
+      "coinbase.com",
+      "coinbaseshop.com",
+      "coinbase.net"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "coinbase.com",
+        "coinbase.net",
+        "coinbaseshop.com"
+      ]
+    },
+    "ticker": "COIN"
+  },
+  "COO": {
+    "company_name": "Cooper Companies (The)",
+    "domains": [
+      "cooper.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "cooper.com"
+      ]
+    },
+    "ticker": "COO"
+  },
+  "COP": {
+    "company_name": "ConocoPhillips",
+    "domains": [
+      "conocophillips.com",
+      "conocophillipsalaska.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "conocophillips.com",
+        "conocophillipsalaska.com"
+      ]
+    },
+    "ticker": "COP"
+  },
+  "COR": {
+    "company_name": "Cencora",
+    "domains": [
+      "cencora.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "cencora.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "COR"
+  },
+  "COST": {
+    "company_name": "Costco",
+    "domains": [
+      "costco.com",
+      "costcotravel.com"
+    ],
+    "ticker": "COST"
+  },
+  "CPAY": {
+    "company_name": "Corpay",
+    "domains": [
+      "corpay.com",
+      "corpayone.com",
+      "corpayone.dk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "corpayone.com",
+        "corpay.com",
+        "corpayone.dk"
+      ]
+    },
+    "ticker": "CPAY"
+  },
+  "CPB": {
+    "company_name": "Campbell's Company (The)",
+    "domains": [
+      "campbellsci.co.jp",
+      "campbellsoup.co.jp",
+      "campbellsoup.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "campbellsoup.co.jp",
+        "campbellsoup.jp",
+        "campbellsci.co.jp",
+        "model-campbell.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "CPB"
+  },
+  "CPRT": {
+    "company_name": "Copart",
+    "domains": [
+      "copart.com",
+      "copart.co.uk",
+      "copart.com.br"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "copart.com",
+        "copart.co.uk",
+        "copart.com.br"
+      ]
+    },
+    "ticker": "CPRT"
+  },
+  "CPT": {
+    "company_name": "Camden Property Trust",
+    "domains": [
+      "camdenliving.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "camdenliving.com"
+      ]
+    },
+    "ticker": "CPT"
+  },
+  "CRDO": {
+    "company_name": "Credo Technology Group Holding Ltd",
+    "domains": [
+      "credosemi.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "credosemi.com"
+      ]
+    },
+    "ticker": "CRDO"
+  },
+  "CRH": {
+    "company_name": "CRH plc",
+    "domains": [
+      "crh.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "crh.com"
+      ]
+    },
+    "ticker": "CRH"
+  },
+  "CRL": {
+    "company_name": "Charles River Laboratories",
+    "domains": [
+      "criver.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "criver.com"
+      ]
+    },
+    "ticker": "CRL"
+  },
+  "CRWD": {
+    "company_name": "CrowdStrike",
+    "domains": [
+      "crowdstrike.com",
+      "crowdstrikeracing.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "crowdstrike.com",
+        "crowdstrikeracing.com"
+      ]
+    },
+    "ticker": "CRWD"
+  },
+  "CSCO": {
+    "company_name": "Cisco",
+    "domains": [
+      "cisco.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cisco.com"
+      ]
+    },
+    "ticker": "CSCO"
+  },
+  "CSGP": {
+    "company_name": "CoStar Group",
+    "domains": [
+      "costargroup.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "costargroup.com"
+      ]
+    },
+    "ticker": "CSGP"
+  },
+  "CSIQ": {
+    "company_name": "Canadian Solar Inc.",
+    "domains": [
+      "canadiansolar.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "canadiansolar.com"
+      ]
+    },
+    "ticker": "CSIQ"
+  },
+  "CSX": {
+    "company_name": "CSX Corporation",
+    "domains": [
+      "csx.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "csx.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "CSX"
+  },
+  "CTAS": {
+    "company_name": "Cintas",
+    "domains": [
+      "cintascove.com",
+      "cintasdecorrer.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cintasdecorrer.com",
+        "cintascove.com",
+        "cintasfoundation.org"
+      ]
+    },
+    "ticker": "CTAS"
+  },
+  "CTRA": {
+    "company_name": "Coterra Energy Inc.",
+    "domains": [
+      "coterra.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "coterra.com"
+      ]
+    },
+    "ticker": "CTRA"
+  },
+  "CTSH": {
+    "company_name": "Cognizant",
+    "domains": [
+      "cognizant.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cognizant.com",
+        "cognizantcommunication.com"
+      ]
+    },
+    "ticker": "CTSH"
+  },
+  "CTVA": {
+    "company_name": "Corteva",
+    "domains": [
+      "corteva.com",
+      "corteva.de",
+      "corteva.us"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "corteva.com",
+        "corteva.us",
+        "corteva.de"
+      ]
+    },
+    "ticker": "CTVA"
+  },
+  "CVNA": {
+    "company_name": "Carvana",
+    "domains": [
+      "carvana.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "carvana.com"
+      ]
+    },
+    "ticker": "CVNA"
+  },
+  "CVS": {
+    "company_name": "CVS Health",
+    "domains": [
+      "cvshealth.com",
+      "cvshealth2024inreview.com",
+      "cvshealthcharityclassic.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "cvshealth.com",
+        "cvshealthcharityclassic.com",
+        "cvshealth2024inreview.com"
+      ]
+    },
+    "ticker": "CVS"
+  },
+  "CVX": {
+    "company_name": "Chevron Corporation",
+    "domains": [
+      "chevron.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "chevron.com"
+      ]
+    },
+    "ticker": "CVX"
+  },
+  "D": {
+    "company_name": "Dominion Energy",
+    "domains": [
+      "dominionenergy.com",
+      "dominionenergykits.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "dominionenergy.com",
+        "dominionenergykits.com"
+      ]
+    },
+    "ticker": "D"
+  },
+  "DAL": {
+    "company_name": "Delta Air Lines",
+    "domains": [
+      "delta.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "delta.com"
+      ]
+    },
+    "ticker": "DAL"
+  },
+  "DASH": {
+    "company_name": "DoorDash",
+    "domains": [
+      "doordash.com",
+      "doordashstore.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "doordash.com",
+        "doordashstore.com",
+        "doordashaustraliastore.com"
+      ]
+    },
+    "ticker": "DASH"
+  },
+  "DD": {
+    "company_name": "DuPont",
+    "domains": [
+      "dupont.com",
+      "dupontregistry.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "dupontregistry.com",
+        "dupont.com"
+      ]
+    },
+    "ticker": "DD"
+  },
+  "DDOG": {
+    "company_name": "Datadog",
+    "domains": [
+      "datadoghq.com",
+      "datadogs.nl"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "datadoghq.com",
+        "datadogs.nl"
+      ]
+    },
+    "ticker": "DDOG"
+  },
+  "DE": {
+    "company_name": "Deere & Company",
+    "domains": [
+      "deere.com",
+      "deere.asia"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "deere.com",
+        "deere.asia"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "DE"
+  },
+  "DECK": {
+    "company_name": "Deckers Brands",
+    "domains": [
+      "deckers.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "deckers.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "DECK"
+  },
+  "DG": {
+    "company_name": "Dollar General",
+    "domains": [
+      "dollargeneral.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "dollargeneral.com"
+      ]
+    },
+    "ticker": "DG"
+  },
+  "DGX": {
+    "company_name": "Quest Diagnostics",
+    "domains": [
+      "questdiagnostics.com",
+      "questdiagnostics.com.mx"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "questdiagnostics.com",
+        "questdiagnostics.com.mx"
+      ]
+    },
+    "ticker": "DGX"
+  },
+  "DHI": {
+    "company_name": "D. R. Horton",
+    "domains": [
+      "drhorton.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "drhorton.com"
+      ]
+    },
+    "ticker": "DHI"
+  },
+  "DHR": {
+    "company_name": "Danaher Corporation",
+    "domains": [
+      "danaher.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "danaher.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "DHR"
+  },
+  "DIOD": {
+    "company_name": "DIODES INC /DEL/",
+    "domains": [
+      "diodes.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "diodes.com"
+      ]
+    },
+    "ticker": "DIOD"
+  },
+  "DIS": {
+    "company_name": "Walt Disney Company (The)",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "DIS"
+  },
+  "DLR": {
+    "company_name": "Digital Realty",
+    "domains": [
+      "digitalrealty.com",
+      "digitalrealty.nl"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "digitalrealty.com",
+        "digitalrealty.nl"
+      ]
+    },
+    "ticker": "DLR"
+  },
+  "DLTR": {
+    "company_name": "Dollar Tree",
+    "domains": [
+      "dollartree.com",
+      "dollartreecanada.com",
+      "dollartreegroup.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "dollartree.com",
+        "dollartreecanada.com",
+        "dollartreegroup.com"
+      ]
+    },
+    "ticker": "DLTR"
+  },
+  "DNN": {
+    "company_name": "DENISON MINES CORP.",
+    "domains": [
+      "denison-mines.com",
+      "denisonmines.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "denisonmines.com",
+        "denison-mines.com"
+      ]
+    },
+    "ticker": "DNN"
+  },
+  "DOC": {
+    "company_name": "Healthpeak Properties",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "DOC"
+  },
+  "DOV": {
+    "company_name": "Dover Corporation",
+    "domains": [
+      "dover.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "dover.co.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "DOV"
+  },
+  "DOW": {
+    "company_name": "Dow Inc.",
+    "domains": [
+      "dow.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "dow.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "DOW"
+  },
+  "DPZ": {
+    "company_name": "Domino's",
+    "domains": [
+      "dominos.com",
+      "dominos.co.uk",
+      "dominos.jp"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "dominos.com",
+        "dominos.jp",
+        "dominos.co.uk"
+      ]
+    },
+    "ticker": "DPZ"
+  },
+  "DQ": {
+    "company_name": "DAQO NEW ENERGY CORP.",
+    "domains": [
+      "daqo.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "daqo.com"
+      ]
+    },
+    "ticker": "DQ"
+  },
+  "DRI": {
+    "company_name": "Darden Restaurants",
+    "domains": [
+      "darden.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "darden.com",
+        "krowddarden.xyz",
+        "franchisedarden.com"
+      ]
+    },
+    "ticker": "DRI"
+  },
+  "DTE": {
+    "company_name": "DTE Energy",
+    "domains": [
+      "dteenergy.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "dteenergy.com",
+        "dtemarketplace.com",
+        "dtecleanenergy.com"
+      ]
+    },
+    "ticker": "DTE"
+  },
+  "DUK": {
+    "company_name": "Duke Energy",
+    "domains": [
+      "duke-energy.com",
+      "dukeenergyupdates.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "duke-energy.com",
+        "dukeenergyupdates.com"
+      ]
+    },
+    "ticker": "DUK"
+  },
+  "DVA": {
+    "company_name": "DaVita",
+    "domains": [
+      "davita.com",
+      "davita.de",
+      "davitamebel.ru"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "davita.com",
+        "davitamebel.ru",
+        "davita.de"
+      ]
+    },
+    "ticker": "DVA"
+  },
+  "DVN": {
+    "company_name": "Devon Energy",
+    "domains": [
+      "devonenergy.com",
+      "devonenergyassessor.co.uk",
+      "devonenergypartnership.co.uk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "devonenergy.com",
+        "devonenergypartnership.co.uk",
+        "devonenergyassessor.co.uk"
+      ]
+    },
+    "ticker": "DVN"
+  },
+  "DXCM": {
+    "company_name": "Dexcom",
+    "domains": [
+      "dexcom.com",
+      "dexcomprovider.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "dexcom.com",
+        "dexcomprovider.com"
+      ]
+    },
+    "ticker": "DXCM"
+  },
+  "EA": {
+    "company_name": "Electronic Arts",
+    "domains": [
+      "electronicarts.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "electronicarts.com"
+      ]
+    },
+    "ticker": "EA"
+  },
+  "EBAY": {
+    "company_name": "eBay Inc.",
+    "domains": [
+      "ebay.com",
+      "ebay.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "ebay.com",
+        "ebay.co.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "EBAY"
+  },
+  "ECL": {
+    "company_name": "Ecolab",
+    "domains": [
+      "ecolab.com",
+      "ecolabelindex.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "ecolab.com",
+        "ecolabelindex.com"
+      ]
+    },
+    "ticker": "ECL"
+  },
+  "ED": {
+    "company_name": "Consolidated Edison",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "ED"
+  },
+  "EFX": {
+    "company_name": "Equifax",
+    "domains": [
+      "equifax.com",
+      "equifax.ca",
+      "equifax.cl"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "equifax.com",
+        "equifax.ca",
+        "equifax.cl"
+      ]
+    },
+    "ticker": "EFX"
+  },
+  "EG": {
+    "company_name": "Everest Group",
+    "domains": [
+      "everestblowers.com",
+      "everestgroup.com",
+      "everestgrp.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "everestgrp.com",
+        "everestblowers.com",
+        "everestgroup.com"
+      ]
+    },
+    "ticker": "EG"
+  },
+  "EIX": {
+    "company_name": "Edison International",
+    "domains": [
+      "edison.com",
+      "edisonresponse.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "edison.com",
+        "edisonresponse.com"
+      ]
+    },
+    "ticker": "EIX"
+  },
+  "EL": {
+    "company_name": "Estée Lauder Companies (The)",
+    "domains": [
+      "elcompanies.com",
+      "esteelauder.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "elcompanies.com",
+        "esteelauder.com"
+      ]
+    },
+    "ticker": "EL"
+  },
+  "ELV": {
+    "company_name": "Elevance Health",
+    "domains": [
+      "elevancehealth.com",
+      "elevancehealth.foundation"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "elevancehealth.com",
+        "elevancehealth.foundation"
+      ]
+    },
+    "ticker": "ELV"
+  },
+  "EME": {
+    "company_name": "Emcor",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "EME"
+  },
+  "EMR": {
+    "company_name": "Emerson Electric",
+    "domains": [
+      "emerson.com",
+      "emerson.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "emerson.co.jp",
+        "emerson.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "EMR"
+  },
+  "ENLT": {
+    "company_name": "Enlight Renewable Energy Ltd.",
+    "domains": [
+      "enlightenergy.co.il"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "enlightenergy.co.il"
+      ]
+    },
+    "ticker": "ENLT"
+  },
+  "ENPH": {
+    "company_name": "Enphase Energy, Inc.",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "ENPH"
+  },
+  "EOG": {
+    "company_name": "EOG Resources",
+    "domains": [
+      "eogresources.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "eogresources.com"
+      ]
+    },
+    "ticker": "EOG"
+  },
+  "EQIX": {
+    "company_name": "Equinix",
+    "domains": [
+      "equinix.com",
+      "equinix.com.br",
+      "equinix.se"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "equinix.com",
+        "equinix.se",
+        "equinix.com.br"
+      ]
+    },
+    "ticker": "EQIX"
+  },
+  "EQR": {
+    "company_name": "Equity Residential",
+    "domains": [
+      "equity-residential.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "equityapartments.com",
+        "equity-residential.com"
+      ]
+    },
+    "ticker": "EQR"
+  },
+  "EQT": {
+    "company_name": "EQT Corporation",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "EQT"
+  },
+  "ERIE": {
+    "company_name": "Erie Indemnity",
+    "domains": [
+      "erie.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "erie.com"
+      ]
+    },
+    "ticker": "ERIE"
+  },
+  "ES": {
+    "company_name": "Eversource Energy",
+    "domains": [
+      "eversource.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "eversource.com"
+      ]
+    },
+    "ticker": "ES"
+  },
+  "ESS": {
+    "company_name": "Essex Property Trust",
+    "domains": [
+      "essexapartmenthomes.com",
+      "essexpropertytrust.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "essexapartmenthomes.com",
+        "essexpropertytrust.com"
+      ]
+    },
+    "ticker": "ESS"
+  },
+  "ESTC": {
+    "company_name": "Elastic N.V.",
+    "domains": [
+      "elastic.co"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "elastic.co"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "ESTC"
+  },
+  "ETN": {
+    "company_name": "Eaton Corporation",
+    "domains": [
+      "eaton.com",
+      "eaton-daitron.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "eaton.com",
+        "eaton-daitron.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "ETN"
+  },
+  "ETR": {
+    "company_name": "Entergy",
+    "domains": [
+      "entergy.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "entergy.com",
+        "entergy-mississippi.com",
+        "entergy-louisiana.com"
+      ]
+    },
+    "ticker": "ETR"
+  },
+  "EVRG": {
+    "company_name": "Evergy",
+    "domains": [
+      "evergy.com",
+      "evergyfitness.com",
+      "evergym.de"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "evergy.com",
+        "evergyfitness.com",
+        "evergym.de"
+      ]
+    },
+    "ticker": "EVRG"
+  },
+  "EW": {
+    "company_name": "Edwards Lifesciences",
+    "domains": [
+      "edwards.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "edwards.com"
+      ]
+    },
+    "ticker": "EW"
+  },
+  "EXC": {
+    "company_name": "Exelon",
+    "domains": [
+      "exelonbd.com",
+      "exeloncorp.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "exeloncorp.com",
+        "exelonfoundation.org",
+        "exelonbd.com"
+      ]
+    },
+    "ticker": "EXC"
+  },
+  "EXE": {
+    "company_name": "Expand Energy",
+    "domains": [
+      "expandenergy.com",
+      "expandenergycorp.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "expandenergy.com",
+        "expandenergycorp.com"
+      ]
+    },
+    "ticker": "EXE"
+  },
+  "EXPD": {
+    "company_name": "Expeditors International",
+    "domains": [
+      "expeditors.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "expeditors.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "EXPD"
+  },
+  "EXPE": {
+    "company_name": "Expedia Group",
+    "domains": [
+      "expediagroup.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "expediagroup.com",
+        "join-expediataap.com"
+      ]
+    },
+    "ticker": "EXPE"
+  },
+  "EXR": {
+    "company_name": "Extra Space Storage",
+    "domains": [
+      "extra.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "extra.com"
+      ]
+    },
+    "ticker": "EXR"
+  },
+  "F": {
+    "company_name": "Ford Motor Company",
+    "domains": [
+      "ford.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "ford.com"
+      ]
+    },
+    "ticker": "F"
+  },
+  "FANG": {
+    "company_name": "Diamondback Energy",
+    "domains": [
+      "diamondbackenergy.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "diamondbackenergy.com"
+      ]
+    },
+    "ticker": "FANG"
+  },
+  "FAST": {
+    "company_name": "Fastenal",
+    "domains": [
+      "fastenal.com",
+      "fastenal.ca",
+      "fastenal.mx"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "fastenal.com",
+        "fastenal.ca",
+        "fastenal.mx"
+      ]
+    },
+    "ticker": "FAST"
+  },
+  "FCX": {
+    "company_name": "Freeport-McMoRan",
+    "domains": [
+      "fcx.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "fcx.com"
+      ]
+    },
+    "ticker": "FCX"
+  },
+  "FDS": {
+    "company_name": "FactSet",
+    "domains": [
+      "factset.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "factset.com"
+      ]
+    },
+    "ticker": "FDS"
+  },
+  "FDX": {
+    "company_name": "FedEx",
+    "domains": [
+      "fedex.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "fedex.com"
+      ]
+    },
+    "ticker": "FDX"
+  },
+  "FDXF": {
+    "company_name": "FedEx Freight",
+    "domains": [
+      "fedex.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "fedex.com"
+      ]
+    },
+    "ticker": "FDXF"
+  },
+  "FE": {
+    "company_name": "FirstEnergy",
+    "domains": [
+      "firstenergycorp.com",
+      "firstenergy.eco.br",
+      "firstenergy.lk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "firstenergycorp.com",
+        "firstenergy.lk",
+        "firstenergy.eco.br"
+      ]
+    },
+    "ticker": "FE"
+  },
+  "FFIV": {
+    "company_name": "F5, Inc.",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "FFIV"
+  },
+  "FICO": {
+    "company_name": "Fair Isaac",
+    "domains": [
+      "fair.com",
+      "fairisaac.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "fair.com",
+        "fairisaac.com"
+      ]
+    },
+    "ticker": "FICO"
+  },
+  "FIS": {
+    "company_name": "Fidelity National Information Services",
+    "domains": [
+      "fidelity.com",
+      "fidelity.co.jp",
+      "fidelity.jp",
+      "fidelityclothing.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "fidelity.co.jp",
+        "fidelity.com",
+        "fidelity.jp",
+        "fidelityclothing.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "FIS"
+  },
+  "FISV": {
+    "company_name": "Fiserv",
+    "domains": [
+      "fiserv.com",
+      "fiservforum.com",
+      "fiservi.es"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "fiserv.com",
+        "fiservforum.com",
+        "fiservi.es"
+      ]
+    },
+    "ticker": "FISV"
+  },
+  "FITB": {
+    "company_name": "Fifth Third Bancorp",
+    "domains": [
+      "53.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "53.com"
+      ]
+    },
+    "ticker": "FITB"
+  },
+  "FIVN": {
+    "company_name": "Five9, Inc.",
+    "domains": [
+      "five9.com",
+      "five9.co",
+      "five9.eu"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "five9.com",
+        "five9.co",
+        "five9.eu"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "FIVN"
+  },
+  "FIX": {
+    "company_name": "Comfort Systems USA",
+    "domains": [
+      "comfortsystemsusa.com",
+      "comfortsystemsusakentucky.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "comfortsystemsusa.com",
+        "comfortsystemsusakentucky.com"
+      ]
+    },
+    "ticker": "FIX"
+  },
+  "FLNC": {
+    "company_name": "Fluence Energy, Inc.",
+    "domains": [
+      "fluenceenergy.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "fluenceenergy.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "FLNC"
+  },
+  "FN": {
+    "company_name": "Fabrinet",
+    "domains": [
+      "fabrinet.com",
+      "fabrinet.co.th"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "fabrinet.co.th",
+        "fabrinet.com"
+      ]
+    },
+    "ticker": "FN"
+  },
+  "FORM": {
+    "company_name": "FORMFACTOR INC",
+    "domains": [
+      "formfactor.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "formfactor.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "FORM"
+  },
+  "FOXA": {
+    "company_name": "Fox Corporation (Class A)",
+    "domains": [
+      "fox.com",
+      "foxa.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "fox.com",
+        "foxa.com"
+      ]
+    },
+    "ticker": "FOXA"
+  },
+  "FRT": {
+    "company_name": "Federal Realty Investment Trust",
+    "domains": [
+      "federalrealty.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "federalrealty.com"
+      ]
+    },
+    "ticker": "FRT"
+  },
+  "FSLR": {
+    "company_name": "First Solar",
+    "domains": [
+      "firstsolar.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "firstsolar.com"
+      ]
+    },
+    "ticker": "FSLR"
+  },
+  "FTNT": {
+    "company_name": "Fortinet",
+    "domains": [
+      "fortinet.com",
+      "fortinetguru.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "fortinet.com",
+        "fortinetguru.com"
+      ]
+    },
+    "ticker": "FTNT"
+  },
+  "FTV": {
+    "company_name": "Fortive",
+    "domains": [
+      "fortive.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "fortive.com"
+      ]
+    },
+    "ticker": "FTV"
+  },
+  "GD": {
+    "company_name": "General Dynamics",
+    "domains": [
+      "generaldynamics.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "generaldynamics.com"
+      ]
+    },
+    "ticker": "GD"
+  },
+  "GDDY": {
+    "company_name": "GoDaddy",
+    "domains": [
+      "godaddy.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "godaddy.com"
+      ]
+    },
+    "ticker": "GDDY"
+  },
+  "GE": {
+    "company_name": "GE Aerospace",
+    "domains": [
+      "ge.com",
+      "geaerospace.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "ge.com",
+        "geaerospace.com"
+      ]
+    },
+    "ticker": "GE"
+  },
+  "GEHC": {
+    "company_name": "GE HealthCare",
+    "domains": [
+      "gehealthcare.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "gehealthcare.com"
+      ]
+    },
+    "ticker": "GEHC"
+  },
+  "GEN": {
+    "company_name": "Gen Digital",
+    "domains": [
+      "gendigital.es",
+      "gendigital.mx"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "4gendigital.com",
+        "gendigital.mx",
+        "gendigital.es"
+      ]
+    },
+    "ticker": "GEN"
+  },
+  "GEV": {
+    "company_name": "GE Vernova",
+    "domains": [
+      "gevernova.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "gevernova.com"
+      ]
+    },
+    "ticker": "GEV"
+  },
+  "GFS": {
+    "company_name": "GLOBALFOUNDRIES Inc.",
+    "domains": [
+      "gf.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "gf.com"
+      ]
+    },
+    "ticker": "GFS"
+  },
+  "GILD": {
+    "company_name": "Gilead Sciences",
+    "domains": [
+      "gilead.com",
+      "gileadpharma.us"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "gilead.com",
+        "gileadclinicaltrials.com",
+        "gileadpharma.us"
+      ]
+    },
+    "ticker": "GILD"
+  },
+  "GIS": {
+    "company_name": "General Mills",
+    "domains": [
+      "generalmills.com",
+      "generalmillscf.com",
+      "generalmills.de"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "generalmills.com",
+        "generalmillscf.com",
+        "generalmills.de"
+      ]
+    },
+    "ticker": "GIS"
+  },
+  "GL": {
+    "company_name": "Globe Life",
+    "domains": [
+      "globelifeinsurance.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "globelifeinsurance.com",
+        "startglobelife.com"
+      ]
+    },
+    "ticker": "GL"
+  },
+  "GLW": {
+    "company_name": "Corning Inc.",
+    "domains": [
+      "corning.com",
+      "corning.com.cn"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "corning.com",
+        "corning.com.cn"
+      ]
+    },
+    "ticker": "GLW"
+  },
+  "GM": {
+    "company_name": "General Motors",
+    "domains": [
+      "general-motors.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "general-motors.com"
+      ]
+    },
+    "ticker": "GM"
+  },
+  "GNRC": {
+    "company_name": "Generac",
+    "domains": [
+      "generac.com",
+      "generacionxbox.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "generac.com",
+        "generacionxbox.com"
+      ]
+    },
+    "ticker": "GNRC"
+  },
+  "GOOGL": {
+    "company_name": "Alphabet Inc. (Class A)",
+    "domains": [
+      "alphabeta.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "alphabeta.com"
+      ]
+    },
+    "ticker": "GOOGL"
+  },
+  "GPC": {
+    "company_name": "Genuine Parts Company",
+    "domains": [
+      "genuine-parts.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "genuine-parts.com"
+      ]
+    },
+    "ticker": "GPC"
+  },
+  "GPN": {
+    "company_name": "Global Payments",
+    "domains": [
+      "globalpaymentsinc.com",
+      "globalpaymentsintegrated.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "globalpaymentsintegrated.com",
+        "globalpaymentsinc.com"
+      ]
+    },
+    "ticker": "GPN"
+  },
+  "GRMN": {
+    "company_name": "Garmin",
+    "domains": [
+      "garmin.com",
+      "garmin.co.jp",
+      "garmin.com.tw"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "garmin.com",
+        "garmin.com.tw",
+        "garmin.co.jp"
+      ]
+    },
+    "ticker": "GRMN"
+  },
+  "GSK": {
+    "company_name": "GSK plc",
+    "domains": [
+      "gsk.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "gsk.com",
+        "gskpro.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "GSK"
+  },
+  "GTLB": {
+    "company_name": "Gitlab Inc.",
+    "domains": [
+      "gitlab.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "gitlab.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "GTLB"
+  },
+  "GWW": {
+    "company_name": "W. W. Grainger",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "GWW"
+  },
+  "HAL": {
+    "company_name": "Halliburton",
+    "domains": [
+      "halliburton.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "halliburton.com",
+        "halliburtonfamilydentistry.com"
+      ]
+    },
+    "ticker": "HAL"
+  },
+  "HAS": {
+    "company_name": "Hasbro",
+    "domains": [
+      "hasbro.com",
+      "shop.hasbro.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "hasbro.com",
+        "shop.hasbro.com"
+      ]
+    },
+    "ticker": "HAS"
+  },
+  "HBAN": {
+    "company_name": "Huntington Bancshares",
+    "domains": [
+      "huntington.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "huntington.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "HBAN"
+  },
+  "HCA": {
+    "company_name": "HCA Healthcare",
+    "domains": [
+      "hcahealthcare.com",
+      "hcahealthcareshowsup.com",
+      "hcahealthcare.co.uk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "hcahealthcare.com",
+        "hcahealthcare.co.uk",
+        "hcahealthcareshowsup.com"
+      ]
+    },
+    "ticker": "HCA"
+  },
+  "HD": {
+    "company_name": "Home Depot (The)",
+    "domains": [
+      "home.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "home.com"
+      ]
+    },
+    "ticker": "HD"
+  },
+  "HIG": {
+    "company_name": "Hartford (The)",
+    "domains": [
+      "hartford-theater.com",
+      "hartfordtheatre.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "hartfordtheatre.com",
+        "hartford-theater.com"
+      ]
+    },
+    "ticker": "HIG"
+  },
+  "HII": {
+    "company_name": "Huntington Ingalls Industries",
+    "domains": [
+      "hii.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "hii.com"
+      ]
+    },
+    "ticker": "HII"
+  },
+  "HLT": {
+    "company_name": "Hilton Worldwide",
+    "domains": [
+      "hilton.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "hilton.com"
+      ]
+    },
+    "ticker": "HLT"
+  },
+  "HMC": {
+    "company_name": "HONDA MOTOR CO LTD",
+    "domains": [
+      "honda.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "honda.co.jp",
+        "hondamobility-kitakanto.co.jp",
+        "hondacars-tochigikeno.co.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "HMC"
+  },
+  "HON": {
+    "company_name": "Honeywell",
+    "domains": [
+      "honeywell.com",
+      "honeywellhome.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "honeywell.com",
+        "honeywellhome.com",
+        "honeywellbuildings.in"
+      ]
+    },
+    "ticker": "HON"
+  },
+  "HOOD": {
+    "company_name": "Robinhood Markets",
+    "domains": [
+      "robinhood.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "robinhood.com"
+      ]
+    },
+    "ticker": "HOOD"
+  },
+  "HPE": {
+    "company_name": "Hewlett Packard Enterprise",
+    "domains": [
+      "hpe.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "hpe.com"
+      ]
+    },
+    "ticker": "HPE"
+  },
+  "HRL": {
+    "company_name": "Hormel Foods",
+    "domains": [
+      "hormel.com",
+      "hormelfoods.com",
+      "hormelfoodsspiritweek.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "hormelfoods.com",
+        "hormel.com",
+        "hormelfoodsspiritweek.com"
+      ]
+    },
+    "ticker": "HRL"
+  },
+  "HSIC": {
+    "company_name": "Henry Schein",
+    "domains": [
+      "henryschein.com",
+      "henryscheinone.com",
+      "henryschein.ca"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "henryschein.com",
+        "henryscheinone.com",
+        "henryschein.ca"
+      ]
+    },
+    "ticker": "HSIC"
+  },
+  "HST": {
+    "company_name": "Host Hotels & Resorts",
+    "domains": [
+      "hosthotels.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "hosthotels.com"
+      ]
+    },
+    "ticker": "HST"
+  },
+  "HSY": {
+    "company_name": "Hershey Company (The)",
+    "domains": [
+      "hershey.jp",
+      "hersheyland.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "hersheyland.jp",
+        "hershey.jp",
+        "thehersheycompany.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "HSY"
+  },
+  "HUBB": {
+    "company_name": "Hubbell Incorporated",
+    "domains": [
+      "hubbell.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "hubbell.com"
+      ]
+    },
+    "ticker": "HUBB"
+  },
+  "HUBS": {
+    "company_name": "HUBSPOT INC",
+    "domains": [
+      "hubspot.com",
+      "hubspot.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "hubspot.jp",
+        "hubspot.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "HUBS"
+  },
+  "HUM": {
+    "company_name": "Humana",
+    "domains": [
+      "humana.com",
+      "humanatic.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "humana.com",
+        "humanatic.com",
+        "humananeighborhoodcenter.com"
+      ]
+    },
+    "ticker": "HUM"
+  },
+  "HWM": {
+    "company_name": "Howmet Aerospace",
+    "domains": [
+      "howmet-aerospace.com",
+      "howmet.com",
+      "howmetaerospace.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "howmet.com",
+        "howmetaerospace.com",
+        "howmet-aerospace.com"
+      ]
+    },
+    "ticker": "HWM"
+  },
+  "IBKR": {
+    "company_name": "Interactive Brokers",
+    "domains": [
+      "interactivebrokers.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "interactivebrokers.com"
+      ]
+    },
+    "ticker": "IBKR"
+  },
+  "IBM": {
+    "company_name": "IBM",
+    "domains": [
+      "ibm.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "ibm.com",
+        "ibmaspera.com"
+      ]
+    },
+    "ticker": "IBM"
+  },
+  "ICE": {
+    "company_name": "Intercontinental Exchange",
+    "domains": [
+      "ice.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "ice.com"
+      ]
+    },
+    "ticker": "ICE"
+  },
+  "IDXX": {
+    "company_name": "Idexx Laboratories",
+    "domains": [
+      "idexx.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "idexx.com"
+      ]
+    },
+    "ticker": "IDXX"
+  },
+  "IEX": {
+    "company_name": "IDEX Corporation",
+    "domains": [
+      "idex.co.jp",
+      "idex.ne.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "idex.co.jp",
+        "idexinc.co.jp",
+        "idex.ne.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "IEX"
+  },
+  "IFF": {
+    "company_name": "International Flavors & Fragrances",
+    "domains": [
+      "flavors.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "flavors.com",
+        "flavorsandfragrances.com"
+      ]
+    },
+    "ticker": "IFF"
+  },
+  "IFX.DE": {
+    "company_name": "Infineon Technologies AG",
+    "domains": [
+      "infineon.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "infineon.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "IFX.DE"
+  },
+  "INCY": {
+    "company_name": "Incyte",
+    "domains": [
+      "incyte.com",
+      "incytemedia.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "incyte.com",
+        "incytemedia.com",
+        "incytestrategies.com"
+      ]
+    },
+    "ticker": "INCY"
+  },
+  "INTC": {
+    "company_name": "Intel",
+    "domains": [
+      "intel.com",
+      "intelichart.com",
+      "intelius.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "intel.com",
+        "intelius.com",
+        "intelichart.com"
+      ]
+    },
+    "ticker": "INTC"
+  },
+  "INTU": {
+    "company_name": "Intuit",
+    "domains": [
+      "intuit.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "intuit.com"
+      ]
+    },
+    "ticker": "INTU"
+  },
+  "INVH": {
+    "company_name": "Invitation Homes",
+    "domains": [
+      "invh.com",
+      "invitationhomes.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "invh.com",
+        "invitationhomes.com"
+      ]
+    },
+    "ticker": "INVH"
+  },
+  "IOT": {
+    "company_name": "Samsara Inc.",
+    "domains": [
+      "samsara.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "samsara.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "IOT"
+  },
+  "IP": {
+    "company_name": "International Paper",
+    "domains": [
+      "internationalpaper.com",
+      "papersizes.org"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "internationalpaper.com",
+        "papersizes.org"
+      ]
+    },
+    "ticker": "IP"
+  },
+  "IQV": {
+    "company_name": "IQVIA",
+    "domains": [
+      "iqvia.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "iqvia.com",
+        "iqviamedicalsalescareers.com"
+      ]
+    },
+    "ticker": "IQV"
+  },
+  "IR": {
+    "company_name": "Ingersoll Rand",
+    "domains": [
+      "ingersollrand.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "ingersollrand.com"
+      ]
+    },
+    "ticker": "IR"
+  },
+  "IRM": {
+    "company_name": "Iron Mountain",
+    "domains": [
+      "ironmountain.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "ironmountain.com"
+      ]
+    },
+    "ticker": "IRM"
+  },
+  "ISRG": {
+    "company_name": "Intuitive Surgical",
+    "domains": [
+      "intuitive.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "intuitive.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "ISRG"
+  },
+  "IT": {
+    "company_name": "Gartner",
+    "domains": [
+      "gartner.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "gartner.com"
+      ]
+    },
+    "ticker": "IT"
+  },
+  "ITW": {
+    "company_name": "Illinois Tool Works",
+    "domains": [
+      "illinois.gov"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "illinois.gov",
+        "enjoyillinois.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "ITW"
+  },
+  "IVZ": {
+    "company_name": "Invesco",
+    "domains": [
+      "invesco.com",
+      "invescollc.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "invesco.com",
+        "invescomutualfund.com",
+        "invescollc.com"
+      ]
+    },
+    "ticker": "IVZ"
+  },
+  "J": {
+    "company_name": "Jacobs Solutions",
+    "domains": [
+      "jacobssolutions.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "jacobssolutions.com"
+      ]
+    },
+    "ticker": "J"
+  },
+  "JBHT": {
+    "company_name": "J.B. Hunt",
+    "domains": [
+      "jb.com",
+      "jbhunt.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "jb.com",
+        "jbhunt.com"
+      ]
+    },
+    "ticker": "JBHT"
+  },
+  "JBL": {
+    "company_name": "Jabil",
+    "domains": [
+      "jabil.com",
+      "jabilakemall.com",
+      "jabillipp.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "jabil.com",
+        "jabilakemall.com",
+        "jabillipp.com"
+      ]
+    },
+    "ticker": "JBL"
+  },
+  "JCI": {
+    "company_name": "Johnson Controls",
+    "domains": [
+      "johnsoncontrols.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "johnsoncontrols.com"
+      ]
+    },
+    "ticker": "JCI"
+  },
+  "JKHY": {
+    "company_name": "Jack Henry & Associates",
+    "domains": [
+      "jackhenry.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "jackhenry.com"
+      ]
+    },
+    "ticker": "JKHY"
+  },
+  "JKS": {
+    "company_name": "JinkoSolar Holding Co., Ltd.",
+    "domains": [
+      "jinkosolar.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "jinkosolar.com"
+      ]
+    },
+    "ticker": "JKS"
+  },
+  "JNJ": {
+    "company_name": "Johnson & Johnson",
+    "domains": [
+      "johnsonjapan.com",
+      "johnson.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "johnson.co.jp",
+        "johnsonjapan.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "JNJ"
+  },
+  "JPM": {
+    "company_name": "JPMorgan Chase",
+    "domains": [
+      "jpmorganchase.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "jpmorganchase.com"
+      ]
+    },
+    "ticker": "JPM"
+  },
+  "KDP": {
+    "company_name": "Keurig Dr Pepper",
+    "domains": [
+      "keurigdrpepper.com",
+      "keurigdrpepper.ca"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "keuriggreenmountain.com",
+        "keurigdrpepper.com",
+        "keurigdrpepper.ca"
+      ]
+    },
+    "ticker": "KDP"
+  },
+  "KEY": {
+    "company_name": "KeyCorp",
+    "domains": [
+      "keycorpmultimedia.com",
+      "key.cw"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "key.cw",
+        "keycorpmultimedia.com"
+      ]
+    },
+    "ticker": "KEY"
+  },
+  "KEYS": {
+    "company_name": "Keysight Technologies",
+    "domains": [
+      "keysight.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "keysight.com"
+      ]
+    },
+    "ticker": "KEYS"
+  },
+  "KHC": {
+    "company_name": "Kraft Heinz",
+    "domains": [
+      "kraftheinz.com",
+      "kraftheinzcompany.com",
+      "kraftheinzprojectplay.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "kraftheinz.com",
+        "kraftheinzcompany.com",
+        "kraftheinzprojectplay.com"
+      ]
+    },
+    "ticker": "KHC"
+  },
+  "KIM": {
+    "company_name": "Kimco Realty",
+    "domains": [
+      "kimcorealty.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "kimcorealty.com",
+        "kimcolifestylecollection.com"
+      ]
+    },
+    "ticker": "KIM"
+  },
+  "KKR": {
+    "company_name": "KKR & Co.",
+    "domains": [
+      "kkr.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "kkr.com",
+        "1kkr.com"
+      ]
+    },
+    "ticker": "KKR"
+  },
+  "KLAC": {
+    "company_name": "KLA Corporation",
+    "domains": [
+      "kla.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "kla.com"
+      ]
+    },
+    "ticker": "KLAC"
+  },
+  "KMB": {
+    "company_name": "Kimberly-Clark",
+    "domains": [
+      "kimberly-clark.com",
+      "kimberly-clark.com.mx"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "kimberly-clark.com",
+        "kimberly-clark.com.mx"
+      ]
+    },
+    "ticker": "KMB"
+  },
+  "KMI": {
+    "company_name": "Kinder Morgan",
+    "domains": [
+      "kindermorgan.com",
+      "kindermorgancanadalimited.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "kindermorgan.com",
+        "kindermorgancanadalimited.com"
+      ]
+    },
+    "ticker": "KMI"
+  },
+  "KO": {
+    "company_name": "Coca-Cola Company (The)",
+    "domains": [
+      "coca-cola.com",
+      "coca.com",
+      "cocacola.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "coca.com",
+        "cocacola.com",
+        "coca-cola.com"
+      ]
+    },
+    "ticker": "KO"
+  },
+  "KR": {
+    "company_name": "Kroger",
+    "domains": [
+      "kroger.com",
+      "thekrogerco.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "kroger.com",
+        "thekrogerco.com"
+      ]
+    },
+    "ticker": "KR"
+  },
+  "KRYS": {
+    "company_name": "Krystal Biotech, Inc.",
+    "domains": [
+      "krystal.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "krystal.com"
+      ]
+    },
+    "ticker": "KRYS"
+  },
+  "KVUE": {
+    "company_name": "Kenvue",
+    "domains": [
+      "kenvue.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "kenvue.com"
+      ]
+    },
+    "ticker": "KVUE"
+  },
+  "L": {
+    "company_name": "Loews Corporation",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "L"
+  },
+  "LAC": {
+    "company_name": "LITHIUM AMERICAS CORP.",
+    "domains": [
+      "lithium-americas.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "lithium-americas.com"
+      ]
+    },
+    "ticker": "LAC"
+  },
+  "LCID": {
+    "company_name": "Lucid Group, Inc.",
+    "domains": [
+      "lucidmotors.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "lucidmotors.com"
+      ]
+    },
+    "ticker": "LCID"
+  },
+  "LDOS": {
+    "company_name": "Leidos",
+    "domains": [
+      "leidos.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "leidos.com"
+      ]
+    },
+    "ticker": "LDOS"
+  },
+  "LEN": {
+    "company_name": "Lennar",
+    "domains": [
+      "lennar.com",
+      "lennarmortgage.com",
+      "lennartitle.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "lennar.com",
+        "lennarmortgage.com",
+        "lennartitle.com"
+      ]
+    },
+    "ticker": "LEN"
+  },
+  "LEU": {
+    "company_name": "CENTRUS ENERGY CORP",
+    "domains": [
+      "centrusenergy.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "centrusenergy.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "LEU"
+  },
+  "LH": {
+    "company_name": "Labcorp",
+    "domains": [
+      "labcorp.com",
+      "labcorpindia.com",
+      "labcorporativo.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "labcorp.com",
+        "labcorpindia.com",
+        "labcorporativo.com"
+      ]
+    },
+    "ticker": "LH"
+  },
+  "LHX": {
+    "company_name": "L3Harris",
+    "domains": [
+      "l3harris.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "l3harris.com",
+        "l3harrisgeospatial.com",
+        "l3harrisairlineacademy.com"
+      ]
+    },
+    "ticker": "LHX"
+  },
+  "LI": {
+    "company_name": "Li Auto Inc.",
+    "domains": [
+      "lixiang.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "lixiang.com"
+      ]
+    },
+    "ticker": "LI"
+  },
+  "LII": {
+    "company_name": "Lennox International",
+    "domains": [
+      "lennoxint.com",
+      "lennoxnas.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "lennoxnas.com",
+        "lennoxint.com"
+      ]
+    },
+    "ticker": "LII"
+  },
+  "LIN": {
+    "company_name": "Linde plc",
+    "domains": [
+      "linde.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "linde.com"
+      ]
+    },
+    "ticker": "LIN"
+  },
+  "LITE": {
+    "company_name": "Lumentum",
+    "domains": [
+      "lumentum.com",
+      "lumentumllc.com",
+      "lumentum.co.jp"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "lumentum.com",
+        "lumentum.co.jp",
+        "lumentumllc.com"
+      ]
+    },
+    "ticker": "LITE"
+  },
+  "LLY": {
+    "company_name": "Lilly (Eli)",
+    "domains": [
+      "lilly.com",
+      "lillyoncologypipeline.com",
+      "medical.lilly.com",
+      "trials.lilly.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "lilly.com",
+        "lillyoncologypipeline.com",
+        "medical.lilly.com",
+        "trials.lilly.com"
+      ]
+    },
+    "ticker": "LLY"
+  },
+  "LMT": {
+    "company_name": "Lockheed Martin",
+    "domains": [
+      "lockheed-martin.com",
+      "lockheed.com",
+      "lockheedmartin.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "lockheed.com",
+        "lockheedmartin.com",
+        "lockheed-martin.com"
+      ]
+    },
+    "ticker": "LMT"
+  },
+  "LNG": {
+    "company_name": "Cheniere Energy, Inc.",
+    "domains": [
+      "cheniere.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "cheniere.com"
+      ]
+    },
+    "ticker": "LNG"
+  },
+  "LNT": {
+    "company_name": "Alliant Energy",
+    "domains": [
+      "alliantenergy.com",
+      "alliantenergyretirees.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "alliantenergy.com",
+        "alliantenergyretirees.com"
+      ]
+    },
+    "ticker": "LNT"
+  },
+  "LOW": {
+    "company_name": "Lowe's",
+    "domains": [
+      "lowe-s.com",
+      "lowes.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "lowes.com",
+        "lowe-s.com"
+      ]
+    },
+    "ticker": "LOW"
+  },
+  "LSCC": {
+    "company_name": "LATTICE SEMICONDUCTOR CORP",
+    "domains": [
+      "latticesemi.com",
+      "lattice.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "latticesemi.com",
+        "lattice.co.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "LSCC"
+  },
+  "LULU": {
+    "company_name": "Lululemon Athletica",
+    "domains": [
+      "lululemon.com",
+      "shop.lululemon.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "lululemon.com",
+        "shop.lululemon.com"
+      ]
+    },
+    "ticker": "LULU"
+  },
+  "LUV": {
+    "company_name": "Southwest Airlines",
+    "domains": [
+      "southwest.com",
+      "southwestairlinesinvestorrelations.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "southwest.com",
+        "southwestairlinesinvestorrelations.com"
+      ]
+    },
+    "ticker": "LUV"
+  },
+  "LVS": {
+    "company_name": "Las Vegas Sands",
+    "domains": [
+      "sands.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "sands.com"
+      ]
+    },
+    "ticker": "LVS"
+  },
+  "LYB": {
+    "company_name": "LyondellBasell",
+    "domains": [
+      "lyondellbasell.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "lyondellbasell.com"
+      ]
+    },
+    "ticker": "LYB"
+  },
+  "LYV": {
+    "company_name": "Live Nation Entertainment",
+    "domains": [
+      "livenationentertainment.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "livenationentertainment.com"
+      ]
+    },
+    "ticker": "LYV"
+  },
+  "MA": {
+    "company_name": "Mastercard",
+    "domains": [
+      "mastercard.com.au",
+      "mastercard.us"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "mastercard.com.au",
+        "mastercard.us"
+      ]
+    },
+    "ticker": "MA"
+  },
+  "MAA": {
+    "company_name": "Mid-America Apartment Communities",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "MAA"
+  },
+  "MAR": {
+    "company_name": "Marriott International",
+    "domains": [
+      "marriott.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "marriott.com"
+      ]
+    },
+    "ticker": "MAR"
+  },
+  "MAS": {
+    "company_name": "Masco",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "MAS"
+  },
+  "MCD": {
+    "company_name": "McDonald's",
+    "domains": [
+      "mcdonalds.com",
+      "mcdonalds.co.jp",
+      "mcdonalds.fr"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "mcdonalds.com",
+        "mcdonalds.co.jp",
+        "mcdonalds.fr"
+      ]
+    },
+    "ticker": "MCD"
+  },
+  "MCHP": {
+    "company_name": "Microchip Technology",
+    "domains": [
+      "microchip.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "microchip.com"
+      ]
+    },
+    "ticker": "MCHP"
+  },
+  "MCK": {
+    "company_name": "McKesson Corporation",
+    "domains": [
+      "mckesson.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "mckesson.com"
+      ]
+    },
+    "ticker": "MCK"
+  },
+  "MCO": {
+    "company_name": "Moody's Corporation",
+    "domains": [
+      "moodys.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "moodys.com"
+      ]
+    },
+    "ticker": "MCO"
+  },
+  "MDB": {
+    "company_name": "MongoDB, Inc.",
+    "domains": [
+      "mongodb.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "mongodb.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "MDB"
+  },
+  "MDLZ": {
+    "company_name": "Mondelez International",
+    "domains": [
+      "mondelezinternational.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "mondelezinternational.com"
+      ]
+    },
+    "ticker": "MDLZ"
+  },
+  "MDT": {
+    "company_name": "Medtronic",
+    "domains": [
+      "medtronic-diabetes.com",
+      "medtronic.com",
+      "medtronicdiabetes.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "medtronic.com",
+        "medtronicdiabetes.com",
+        "medtronic-diabetes.com"
+      ]
+    },
+    "ticker": "MDT"
+  },
+  "MELI": {
+    "company_name": "MERCADOLIBRE INC",
+    "domains": [
+      "mercadolibre.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "mercadolibre.com"
+      ]
+    },
+    "ticker": "MELI"
+  },
+  "MET": {
+    "company_name": "MetLife",
+    "domains": [
+      "metlife.com",
+      "metlifestadium.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "metlife.com",
+        "metlifestadium.com"
+      ]
+    },
+    "ticker": "MET"
+  },
+  "META": {
+    "company_name": "Meta Platforms",
+    "domains": [
+      "meta.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "meta.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "META"
+  },
+  "MGM": {
+    "company_name": "MGM Resorts",
+    "domains": [
+      "mgmresorts.com",
+      "mgmresortsevents.com",
+      "mgmresorts.co.jp"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "mgmresorts.com",
+        "mgmresortsevents.com",
+        "mgmresorts.co.jp"
+      ]
+    },
+    "ticker": "MGM"
+  },
+  "MKC": {
+    "company_name": "McCormick & Company",
+    "domains": [
+      "mccormick.com",
+      "mccormickcorporation.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "mccormick.com",
+        "mccormickcorporation.com"
+      ]
+    },
+    "ticker": "MKC"
+  },
+  "MLM": {
+    "company_name": "Martin Marietta Materials",
+    "domains": [
+      "martinmarietta.com",
+      "martinmariettamaterials.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "martinmarietta.com",
+        "martinmariettamaterials.com"
+      ]
+    },
+    "ticker": "MLM"
+  },
+  "MMM": {
+    "company_name": "3M",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "MMM"
+  },
+  "MNST": {
+    "company_name": "Monster Beverage",
+    "domains": [
+      "monsterbeverage.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "monsterbeverage.com"
+      ]
+    },
+    "ticker": "MNST"
+  },
+  "MO": {
+    "company_name": "Altria",
+    "domains": [
+      "altria.com",
+      "altriatheater.com",
+      "altrianimali.it"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "altria.com",
+        "altriatheater.com",
+        "altrianimali.it"
+      ]
+    },
+    "ticker": "MO"
+  },
+  "MOS": {
+    "company_name": "Mosaic Company (The)",
+    "domains": [
+      "mosaic.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "mosaic.com"
+      ]
+    },
+    "ticker": "MOS"
+  },
+  "MP": {
+    "company_name": "MP Materials Corp. / DE",
+    "domains": [
+      "mpmaterials.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "mpmaterials.com"
+      ]
+    },
+    "ticker": "MP"
+  },
+  "MPC": {
+    "company_name": "Marathon Petroleum",
+    "domains": [
+      "marathonpetroleum.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "marathonpetroleum.com"
+      ]
+    },
+    "ticker": "MPC"
+  },
+  "MPWR": {
+    "company_name": "Monolithic Power Systems",
+    "domains": [
+      "monolithicpower.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "monolithicpower.com"
+      ]
+    },
+    "ticker": "MPWR"
+  },
+  "MRK": {
+    "company_name": "Merck & Co.",
+    "domains": [
+      "merck.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "merck.com"
+      ]
+    },
+    "ticker": "MRK"
+  },
+  "MRNA": {
+    "company_name": "Moderna",
+    "domains": [
+      "modern-age.com",
+      "modernatx.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "modernatx.com",
+        "modern-age.com"
+      ]
+    },
+    "ticker": "MRNA"
+  },
+  "MRSH": {
+    "company_name": "Marsh McLennan",
+    "domains": [
+      "marshmclennan.com",
+      "marshmma.com",
+      "marsh.org"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "marshmclennan.com",
+        "marshmma.com",
+        "marsh.org"
+      ]
+    },
+    "ticker": "MRSH"
+  },
+  "MRVL": {
+    "company_name": "Marvell Technology, Inc.",
+    "domains": [
+      "marvell.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "marvell.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "MRVL"
+  },
+  "MS": {
+    "company_name": "Morgan Stanley",
+    "domains": [
+      "morganstanley.com",
+      "morganstanleychina.com",
+      "morganstanleygate.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "morganstanley.com",
+        "morganstanleychina.com",
+        "morganstanleygate.com"
+      ]
+    },
+    "ticker": "MS"
+  },
+  "MSCI": {
+    "company_name": "MSCI Inc.",
+    "domains": [
+      "msci.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "msci.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "MSCI"
+  },
+  "MSFT": {
+    "company_name": "Microsoft",
+    "domains": [
+      "microsoft.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "microsoft.com"
+      ]
+    },
+    "ticker": "MSFT"
+  },
+  "MSI": {
+    "company_name": "Motorola Solutions",
+    "domains": [
+      "motorolasolutions.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "motorolasolutions.com"
+      ]
+    },
+    "ticker": "MSI"
+  },
+  "MTB": {
+    "company_name": "M&T Bank",
+    "domains": [
+      "mtb.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "mtb.com"
+      ]
+    },
+    "ticker": "MTB"
+  },
+  "MTD": {
+    "company_name": "Mettler Toledo",
+    "domains": [
+      "mt.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "mt.com"
+      ]
+    },
+    "ticker": "MTD"
+  },
+  "MTSI": {
+    "company_name": "MACOM Technology Solutions Holdings, Inc.",
+    "domains": [
+      "macom.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "macom.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "MTSI"
+  },
+  "MU": {
+    "company_name": "Micron Technology",
+    "domains": [
+      "micron.com",
+      "microntech.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "micron.com",
+        "microntech.com"
+      ]
+    },
+    "ticker": "MU"
+  },
+  "NCLH": {
+    "company_name": "Norwegian Cruise Line Holdings",
+    "domains": [
+      "norwegian.com",
+      "norwegianreward.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "norwegian.com",
+        "norwegianreward.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "NCLH"
+  },
+  "NDAQ": {
+    "company_name": "Nasdaq, Inc.",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "NDAQ"
+  },
+  "NDSN": {
+    "company_name": "Nordson Corporation",
+    "domains": [
+      "nordson.com",
+      "nordsonmedical.com",
+      "nordson-web.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "nordson.com",
+        "nordson-web.jp",
+        "nordsonmedical.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "NDSN"
+  },
+  "NEE": {
+    "company_name": "NextEra Energy",
+    "domains": [
+      "nexteraenergy.com",
+      "nexteraenergypartners.com",
+      "nexteraenergyresources.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "nexteraenergy.com",
+        "nexteraenergyresources.com",
+        "nexteraenergypartners.com"
+      ]
+    },
+    "ticker": "NEE"
+  },
+  "NEM": {
+    "company_name": "Newmont",
+    "domains": [
+      "newmont.com",
+      "newmontage.nyc"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "newmont.com",
+        "newmontage.nyc"
+      ]
+    },
+    "ticker": "NEM"
+  },
+  "NET": {
+    "company_name": "Cloudflare, Inc.",
+    "domains": [
+      "cloudflare.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "cloudflare.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "NET"
+  },
+  "NFLX": {
+    "company_name": "Netflix",
+    "domains": [
+      "netflix.com",
+      "netflixlife.com",
+      "netflix.shop"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "netflix.com",
+        "netflixlife.com",
+        "netflix.shop"
+      ]
+    },
+    "ticker": "NFLX"
+  },
+  "NI": {
+    "company_name": "NiSource",
+    "domains": [
+      "nisource.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "nisource.com"
+      ]
+    },
+    "ticker": "NI"
+  },
+  "NIO": {
+    "company_name": "NIO Inc.",
+    "domains": [
+      "nio.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "nio.com"
+      ]
+    },
+    "ticker": "NIO"
+  },
+  "NKE": {
+    "company_name": "Nike, Inc.",
+    "domains": [
+      "nike.com",
+      "nike.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "nike.com",
+        "nike.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "NKE"
+  },
+  "NNE": {
+    "company_name": "Nano Nuclear Energy Inc.",
+    "domains": [
+      "nano.com",
+      "nanonuclearenergy.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "nano.com",
+        "nanonuclearenergy.com"
+      ]
+    },
+    "ticker": "NNE"
+  },
+  "NOC": {
+    "company_name": "Northrop Grumman",
+    "domains": [
+      "northropgrumman.com",
+      "northropgrumman-veterans.jobs"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "northropgrumman.com",
+        "northropgrumman-veterans.jobs"
+      ]
+    },
+    "ticker": "NOC"
+  },
+  "NOW": {
+    "company_name": "ServiceNow",
+    "domains": [
+      "servicenow.com",
+      "servicenowguru.com",
+      "servicenow.co.jp"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "servicenow.com",
+        "servicenowguru.com",
+        "servicenow.co.jp"
+      ]
+    },
+    "ticker": "NOW"
+  },
+  "NRG": {
+    "company_name": "NRG Energy",
+    "domains": [
+      "nrg.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "nrg.com"
+      ]
+    },
+    "ticker": "NRG"
+  },
+  "NSC": {
+    "company_name": "Norfolk Southern",
+    "domains": [
+      "norfolksouthern.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "norfolksouthern.com"
+      ]
+    },
+    "ticker": "NSC"
+  },
+  "NTAP": {
+    "company_name": "NetApp",
+    "domains": [
+      "netapp.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "netapp.com",
+        "netapplications.com"
+      ]
+    },
+    "ticker": "NTAP"
+  },
+  "NTRS": {
+    "company_name": "Northern Trust",
+    "domains": [
+      "northerntrust.com",
+      "northerntrustrealestate.com",
+      "northerntrust.co.uk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "northerntrust.com",
+        "northerntrustrealestate.com",
+        "northerntrust.co.uk"
+      ]
+    },
+    "ticker": "NTRS"
+  },
+  "NUE": {
+    "company_name": "Nucor",
+    "domains": [
+      "nucor.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "nucor.com",
+        "nucorbuildingsystems.com",
+        "nucormanagement.com"
+      ]
+    },
+    "ticker": "NUE"
+  },
+  "NVO": {
+    "company_name": "NOVO NORDISK A S",
+    "domains": [
+      "novonordisk.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "novonordisk.com"
+      ]
+    },
+    "ticker": "NVO"
+  },
+  "NVR": {
+    "company_name": "NVR, Inc.",
+    "domains": [
+      "nvrinc.com",
+      "ryanhomes.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "nvrinc.com",
+        "ryanhomes.com"
+      ]
+    },
+    "ticker": "NVR"
+  },
+  "NWSA": {
+    "company_name": "News Corp (Class A)",
+    "domains": [
+      "newscorp.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "newscorp.com"
+      ]
+    },
+    "ticker": "NWSA"
+  },
+  "NXE": {
+    "company_name": "NexGen Energy Ltd.",
+    "domains": [
+      "nexgen.co.jp",
+      "nexgenai.co.jp",
+      "nexgengolf.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "nexgengolf.jp",
+        "nexgen.co.jp",
+        "nexgenai.co.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "NXE"
+  },
+  "NXPI": {
+    "company_name": "NXP Semiconductors",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "NXPI"
+  },
+  "NXT": {
+    "company_name": "Nextpower Inc.",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "NXT"
+  },
+  "O": {
+    "company_name": "Realty Income",
+    "domains": [
+      "realtyincome.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "realtyincome.com"
+      ]
+    },
+    "ticker": "O"
+  },
+  "ODFL": {
+    "company_name": "Old Dominion",
+    "domains": [
+      "odfl.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "odfl.com"
+      ]
+    },
+    "ticker": "ODFL"
+  },
+  "OKE": {
+    "company_name": "Oneok",
+    "domains": [
+      "oneok.com",
+      "oneokrock.com",
+      "one-ok-rock-blog.jp"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "oneokrock.com",
+        "oneok.com",
+        "one-ok-rock-blog.jp"
+      ]
+    },
+    "ticker": "OKE"
+  },
+  "OKLO": {
+    "company_name": "Oklo Inc.",
+    "domains": [
+      "oklo.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "oklo.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "OKLO"
+  },
+  "OLED": {
+    "company_name": "UNIVERSAL DISPLAY CORP \\PA\\",
+    "domains": [
+      "universaldisplay.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "universaldisplay.com"
+      ]
+    },
+    "ticker": "OLED"
+  },
+  "OMC": {
+    "company_name": "Omnicom Group",
+    "domains": [
+      "omnicomgroup.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "omnicomgroup.com"
+      ]
+    },
+    "ticker": "OMC"
+  },
+  "ON": {
+    "company_name": "ON Semiconductor",
+    "domains": [
+      "onsemi.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "onsemi.com"
+      ]
+    },
+    "ticker": "ON"
+  },
+  "ONTO": {
+    "company_name": "ONTO INNOVATION INC.",
+    "domains": [
+      "ontoinnovation.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "ontoinnovation.com"
+      ]
+    },
+    "ticker": "ONTO"
+  },
+  "ORCL": {
+    "company_name": "Oracle Corporation",
+    "domains": [
+      "oracle.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "oracle.com"
+      ]
+    },
+    "ticker": "ORCL"
+  },
+  "ORLY": {
+    "company_name": "O’Reilly Automotive",
+    "domains": [
+      "oreillyauto.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "oreillyauto.com"
+      ]
+    },
+    "ticker": "ORLY"
+  },
+  "OTIS": {
+    "company_name": "Otis Worldwide",
+    "domains": [
+      "otis.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "otis.com"
+      ]
+    },
+    "ticker": "OTIS"
+  },
+  "OXY": {
+    "company_name": "Occidental Petroleum",
+    "domains": [
+      "oxy.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "oxy.com"
+      ]
+    },
+    "ticker": "OXY"
+  },
+  "PANW": {
+    "company_name": "Palo Alto Networks",
+    "domains": [
+      "paloaltonetworks.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "paloaltonetworks.com"
+      ]
+    },
+    "ticker": "PANW"
+  },
+  "PATH": {
+    "company_name": "UiPath, Inc.",
+    "domains": [
+      "uipath.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "uipath.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "PATH"
+  },
+  "PAYX": {
+    "company_name": "Paychex",
+    "domains": [
+      "paychex.com",
+      "paychexng.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "paychex.com",
+        "paychexng.com"
+      ]
+    },
+    "ticker": "PAYX"
+  },
+  "PCAR": {
+    "company_name": "Paccar",
+    "domains": [
+      "paccar.com",
+      "paccar.com.au"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "paccar.com",
+        "paccarfinancial.com",
+        "paccar.com.au"
+      ]
+    },
+    "ticker": "PCAR"
+  },
+  "PCG": {
+    "company_name": "PG&E Corporation",
+    "domains": [
+      "pge.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "pge.com"
+      ]
+    },
+    "ticker": "PCG"
+  },
+  "PCOR": {
+    "company_name": "PROCORE TECHNOLOGIES, INC.",
+    "domains": [
+      "procore.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "procore.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "PCOR"
+  },
+  "PEG": {
+    "company_name": "Public Service Enterprise Group",
+    "domains": [
+      "public-service.com",
+      "public.com",
+      "publicservice.com",
+      "publicserviceenterprise.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "public.com",
+        "publicservice.com",
+        "public-service.com",
+        "publicserviceenterprise.com"
+      ]
+    },
+    "ticker": "PEG"
+  },
+  "PEP": {
+    "company_name": "PepsiCo",
+    "domains": [
+      "pepsico.com",
+      "pepsicopartners.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "pepsico.com",
+        "pepsicopartners.com"
+      ]
+    },
+    "ticker": "PEP"
+  },
+  "PFG": {
+    "company_name": "Principal Financial Group",
+    "domains": [
+      "principal-advocacy.com",
+      "principal.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "principal.com",
+        "principal-advocacy.com"
+      ]
+    },
+    "ticker": "PFG"
+  },
+  "PG": {
+    "company_name": "Procter & Gamble",
+    "domains": [
+      "pg.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "pg.com"
+      ]
+    },
+    "ticker": "PG"
+  },
+  "PGR": {
+    "company_name": "Progressive Corporation",
+    "domains": [
+      "progressive.com",
+      "progressiveagent.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "progressive.com",
+        "progressivecommercial.com",
+        "progressiveagent.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "PGR"
+  },
+  "PH": {
+    "company_name": "Parker Hannifin",
+    "domains": [
+      "parker.com",
+      "parkerid.com",
+      "parkerstore.com.br"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "parker.com",
+        "parkerid.com",
+        "parkerstore.com.br"
+      ]
+    },
+    "ticker": "PH"
+  },
+  "PHM": {
+    "company_name": "PulteGroup",
+    "domains": [
+      "pultegroup.com",
+      "pultegroupinc.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "pultegroupinc.com",
+        "pultegroup.com"
+      ]
+    },
+    "ticker": "PHM"
+  },
+  "PKG": {
+    "company_name": "Packaging Corporation of America",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "PKG"
+  },
+  "PLD": {
+    "company_name": "Prologis",
+    "domains": [
+      "prologis.com",
+      "prologistix.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "prologis.com",
+        "prologistix.com"
+      ]
+    },
+    "ticker": "PLD"
+  },
+  "PLTR": {
+    "company_name": "Palantir Technologies",
+    "domains": [
+      "palantir.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "palantir.com"
+      ]
+    },
+    "ticker": "PLTR"
+  },
+  "PLUG": {
+    "company_name": "PLUG POWER INC",
+    "domains": [
+      "plugpower.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "plugpower.com"
+      ]
+    },
+    "ticker": "PLUG"
+  },
+  "PM": {
+    "company_name": "Philip Morris International",
+    "domains": [
+      "pmi.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "pmi.com"
+      ]
+    },
+    "ticker": "PM"
+  },
+  "PNC": {
+    "company_name": "PNC Financial Services",
+    "domains": [
+      "pnc.com",
+      "pn-c.jp",
+      "pnc.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "pnc.com",
+        "pnc.jp",
+        "pn-c.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "PNC"
+  },
+  "PNR": {
+    "company_name": "Pentair",
+    "domains": [
+      "pentair.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "pentair.com",
+        "pentairpooleurope.com"
+      ]
+    },
+    "ticker": "PNR"
+  },
+  "PNW": {
+    "company_name": "Pinnacle West Capital",
+    "domains": [
+      "pinnacle.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "pinnacle.com"
+      ]
+    },
+    "ticker": "PNW"
+  },
+  "PODD": {
+    "company_name": "Insulet Corporation",
+    "domains": [
+      "insulet.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "insulet.com"
+      ]
+    },
+    "ticker": "PODD"
+  },
+  "POOL": {
+    "company_name": "Pool Corporation",
+    "domains": [
+      "pool.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "pool.com"
+      ]
+    },
+    "ticker": "POOL"
+  },
+  "PPG": {
+    "company_name": "PPG Industries",
+    "domains": [
+      "ppg.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "ppg.com"
+      ]
+    },
+    "ticker": "PPG"
+  },
+  "PPL": {
+    "company_name": "PPL Corporation",
+    "domains": [
+      "pplweb.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "pplweb.com"
+      ]
+    },
+    "ticker": "PPL"
+  },
+  "PRU": {
+    "company_name": "Prudential Financial",
+    "domains": [
+      "prudential.com",
+      "prudentialfinancial.co.uk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "prudential.com",
+        "prudential-investofficial.com",
+        "prudentialfinancial.co.uk"
+      ]
+    },
+    "ticker": "PRU"
+  },
+  "PSA": {
+    "company_name": "Public Storage",
+    "domains": [
+      "publicstorage.com",
+      "publicstoragecanada.com",
+      "publicstoragejobs.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "publicstorage.com",
+        "publicstoragecanada.com",
+        "publicstoragejobs.com"
+      ]
+    },
+    "ticker": "PSA"
+  },
+  "PSKY": {
+    "company_name": "Paramount Skydance Corporation",
+    "domains": [
+      "paramount.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "paramount.com"
+      ]
+    },
+    "ticker": "PSKY"
+  },
+  "PSX": {
+    "company_name": "Phillips 66",
+    "domains": [
+      "phillips.com",
+      "phillips66.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "phillips.com",
+        "phillips66.com"
+      ]
+    },
+    "ticker": "PSX"
+  },
+  "PTC": {
+    "company_name": "PTC Inc.",
+    "domains": [
+      "ptc.com",
+      "p-tc.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "ptc.com",
+        "p-tc.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "PTC"
+  },
+  "PWR": {
+    "company_name": "Quanta Services",
+    "domains": [
+      "quantaservices.com",
+      "quantaservicesaustralia.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "quantaservices.com",
+        "quataservices.com",
+        "quantaservicesaustralia.com"
+      ]
+    },
+    "ticker": "PWR"
+  },
+  "PYPL": {
+    "company_name": "PayPal",
+    "domains": [
+      "paypal.com",
+      "paypalbenefits.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "paypal.com",
+        "paypalbenefits.com"
+      ]
+    },
+    "ticker": "PYPL"
+  },
+  "Q": {
+    "company_name": "Qnity Electronics",
+    "domains": [
+      "qnityelectronics.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "qnityelectronics.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "Q"
+  },
+  "QCOM": {
+    "company_name": "Qualcomm",
+    "domains": [
+      "qualcomm.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "qualcomm.com"
+      ]
+    },
+    "ticker": "QCOM"
+  },
+  "RCL": {
+    "company_name": "Royal Caribbean Group",
+    "domains": [
+      "royalcaribbeangroup.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "royalcaribbeangroup.com"
+      ]
+    },
+    "ticker": "RCL"
+  },
+  "REG": {
+    "company_name": "Regency Centers",
+    "domains": [
+      "regencycenters.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "regencycenters.com"
+      ]
+    },
+    "ticker": "REG"
+  },
+  "REGN": {
+    "company_name": "Regeneron Pharmaceuticals",
+    "domains": [
+      "regeneron.com",
+      "regeneron.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "regeneron.com",
+        "regeneron.co.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "REGN"
+  },
+  "RF": {
+    "company_name": "Regions Financial Corporation",
+    "domains": [
+      "regions.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "regions.com"
+      ]
+    },
+    "ticker": "RF"
+  },
+  "RIO": {
+    "company_name": "RIO TINTO PLC",
+    "domains": [
+      "riotinto.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "riotinto.com"
+      ]
+    },
+    "ticker": "RIO"
+  },
+  "RIVN": {
+    "company_name": "Rivian Automotive, Inc. / DE",
+    "domains": [
+      "rivian.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "rivian.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "RIVN"
+  },
+  "RJF": {
+    "company_name": "Raymond James Financial",
+    "domains": [
+      "raymond-james.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "raymond-james.com"
+      ]
+    },
+    "ticker": "RJF"
+  },
+  "RL": {
+    "company_name": "Ralph Lauren Corporation",
+    "domains": [
+      "ralphlauren.com",
+      "ralphlauren.co.jp",
+      "ralphlauren.global"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "ralphlauren.co.jp",
+        "ralphlauren.com",
+        "ralphlauren.global"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "RL"
+  },
+  "RMBS": {
+    "company_name": "RAMBUS INC",
+    "domains": [
+      "rambus.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "rambus.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "RMBS"
+  },
+  "RMD": {
+    "company_name": "ResMed",
+    "domains": [
+      "resmed.com",
+      "resmed.co.in",
+      "resmed.com.au"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "resmed.com",
+        "resmed.co.in",
+        "resmed.com.au"
+      ]
+    },
+    "ticker": "RMD"
+  },
+  "ROK": {
+    "company_name": "Rockwell Automation",
+    "domains": [
+      "rockwellautomation.com",
+      "rockwellautomation.at",
+      "rockwellautomation.ch"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "rockwellautomation.com",
+        "rockwellautomation.ch",
+        "rockwellautomation.at"
+      ]
+    },
+    "ticker": "ROK"
+  },
+  "ROL": {
+    "company_name": "Rollins, Inc.",
+    "domains": [
+      "rollins.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "rollins.com"
+      ]
+    },
+    "ticker": "ROL"
+  },
+  "ROP": {
+    "company_name": "Roper Technologies",
+    "domains": [
+      "ropertech.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "ropertech.com"
+      ]
+    },
+    "ticker": "ROP"
+  },
+  "ROST": {
+    "company_name": "Ross Stores",
+    "domains": [
+      "rossstores.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "rossstores.com"
+      ]
+    },
+    "ticker": "ROST"
+  },
+  "RSG": {
+    "company_name": "Republic Services",
+    "domains": [
+      "republicservices.com",
+      "republicservicesees.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "republicservices.com",
+        "republicservicesees.com"
+      ]
+    },
+    "ticker": "RSG"
+  },
+  "RTX": {
+    "company_name": "RTX Corporation",
+    "domains": [
+      "rtx.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "rtx.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "RTX"
+  },
+  "RUN": {
+    "company_name": "Sunrun Inc.",
+    "domains": [
+      "sunrun.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "sunrun.com"
+      ]
+    },
+    "ticker": "RUN"
+  },
+  "RVTY": {
+    "company_name": "Revvity",
+    "domains": [
+      "revvity.com",
+      "revvitysignals.com",
+      "revvity.cn",
+      "revvity.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "revvity.com",
+        "revvity.co.jp",
+        "revvity.cn",
+        "revvitysignals.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "RVTY"
+  },
+  "S": {
+    "company_name": "SentinelOne, Inc.",
+    "domains": [
+      "sentinelone.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "sentinelone.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "S"
+  },
+  "SATS": {
+    "company_name": "EchoStar",
+    "domains": [
+      "echostar.com",
+      "echostarmaker.com",
+      "echostarmobile.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "echostar.com",
+        "echostarmobile.com",
+        "echostarmaker.com"
+      ]
+    },
+    "ticker": "SATS"
+  },
+  "SBAC": {
+    "company_name": "SBA Communications",
+    "domains": [
+      "sbasite.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "sbasite.com"
+      ]
+    },
+    "ticker": "SBAC"
+  },
+  "SCCO": {
+    "company_name": "SOUTHERN COPPER CORP/",
+    "domains": [
+      "southern.com",
+      "southerncopper.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "southern.com",
+        "southerncopper.com"
+      ]
+    },
+    "ticker": "SCCO"
+  },
+  "SCHW": {
+    "company_name": "Charles Schwab Corporation",
+    "domains": [
+      "charles.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "charles.com"
+      ]
+    },
+    "ticker": "SCHW"
+  },
+  "SE": {
+    "company_name": "Sea Ltd",
+    "domains": [
+      "sea.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "sea.com"
+      ]
+    },
+    "ticker": "SE"
+  },
+  "SEDG": {
+    "company_name": "SOLAREDGE TECHNOLOGIES, INC.",
+    "domains": [
+      "solaredge.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "solaredge.com"
+      ]
+    },
+    "ticker": "SEDG"
+  },
+  "SHOP": {
+    "company_name": "SHOPIFY INC.",
+    "domains": [
+      "shopify.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "shopify.com"
+      ]
+    },
+    "ticker": "SHOP"
+  },
+  "SHW": {
+    "company_name": "Sherwin-Williams",
+    "domains": [
+      "sherwin-williams.com",
+      "sherwinca.com",
+      "sherwin.com.ar"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "sherwin-williams.com",
+        "sherwinca.com",
+        "sherwin.com.ar"
+      ]
+    },
+    "ticker": "SHW"
+  },
+  "SJM": {
+    "company_name": "J.M. Smucker Company (The)",
+    "domains": [
+      "jmsmucker.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "jmsmucker.com"
+      ]
+    },
+    "ticker": "SJM"
+  },
+  "SLB": {
+    "company_name": "Schlumberger",
+    "domains": [
+      "schlumberger.de"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "schlumberger.de"
+      ]
+    },
+    "ticker": "SLB"
+  },
+  "SMCI": {
+    "company_name": "Supermicro",
+    "domains": [
+      "supermicro.com",
+      "supermicrogreens.com",
+      "supermicrostock.ru"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "supermicro.com",
+        "supermicrostock.ru",
+        "supermicrogreens.com"
+      ]
+    },
+    "ticker": "SMCI"
+  },
+  "SMR": {
+    "company_name": "NUSCALE POWER Corp",
+    "domains": [
+      "nuscalepower.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "nuscalepower.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "SMR"
+  },
+  "SNA": {
+    "company_name": "Snap-on",
+    "domains": [
+      "snapon.com",
+      "snapone.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "snapon.com",
+        "snapone.com"
+      ]
+    },
+    "ticker": "SNA"
+  },
+  "SNDK": {
+    "company_name": "Sandisk",
+    "domains": [
+      "sandisk.com",
+      "sandisksd.com",
+      "sandisk.co"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "sandisk.com",
+        "sandisk.co",
+        "sandisksd.com"
+      ]
+    },
+    "ticker": "SNDK"
+  },
+  "SNOW": {
+    "company_name": "Snowflake Inc.",
+    "domains": [
+      "snowflake.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "snowflake.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "SNOW"
+  },
+  "SNPS": {
+    "company_name": "Synopsys",
+    "domains": [
+      "synopsys.com",
+      "synop-sys.ch",
+      "synopsys.ma"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "synopsys.com",
+        "synopsys.ma",
+        "synop-sys.ch"
+      ]
+    },
+    "ticker": "SNPS"
+  },
+  "SNY": {
+    "company_name": "Sanofi",
+    "domains": [
+      "sanofi.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "sanofi.com"
+      ]
+    },
+    "ticker": "SNY"
+  },
+  "SO": {
+    "company_name": "Southern Company",
+    "domains": [
+      "southerncompany.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "southerncompany.com"
+      ]
+    },
+    "ticker": "SO"
+  },
+  "SOLV": {
+    "company_name": "Solventum",
+    "domains": [
+      "solventum.com",
+      "solventumenerji.com",
+      "solventum.de"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "solventumenerji.com",
+        "solventum.de",
+        "solventum.com"
+      ]
+    },
+    "ticker": "SOLV"
+  },
+  "SPG": {
+    "company_name": "Simon Property Group",
+    "domains": [
+      "simon.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "simon.com"
+      ]
+    },
+    "ticker": "SPG"
+  },
+  "SPGI": {
+    "company_name": "S&P Global",
+    "domains": [
+      "s-and.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "s-and.com"
+      ]
+    },
+    "ticker": "SPGI"
+  },
+  "SQM": {
+    "company_name": "CHEMICAL & MINING CO OF CHILE INC",
+    "domains": [
+      "sqm.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "sqm.com"
+      ]
+    },
+    "ticker": "SQM"
+  },
+  "SRE": {
+    "company_name": "Sempra",
+    "domains": [
+      "sempra.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "sempra.com",
+        "sempraemployeegiving.org",
+        "semprafracksourfuture.org"
+      ]
+    },
+    "ticker": "SRE"
+  },
+  "STE": {
+    "company_name": "Steris",
+    "domains": [
+      "steris-ast.com",
+      "steris.com",
+      "sterisaco.ro"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "steris.com",
+        "sterisaco.ro",
+        "steris-ast.com"
+      ]
+    },
+    "ticker": "STE"
+  },
+  "STLD": {
+    "company_name": "Steel Dynamics",
+    "domains": [
+      "steeldynamics.com",
+      "steel-dynamics.co.uk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "steeldynamics.com",
+        "steel-dynamics.co.uk",
+        "roanokesteel.com"
+      ]
+    },
+    "ticker": "STLD"
+  },
+  "STT": {
+    "company_name": "State Street Corporation",
+    "domains": [
+      "statestreetco.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "statestreetco.com"
+      ]
+    },
+    "ticker": "STT"
+  },
+  "STX": {
+    "company_name": "Seagate Technology",
+    "domains": [
+      "seagate.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "seagate.com"
+      ]
+    },
+    "ticker": "STX"
+  },
+  "STZ": {
+    "company_name": "Constellation Brands",
+    "domains": [
+      "constellation-brands.com",
+      "constellation.com",
+      "constellationbrands.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "constellation.com",
+        "constellationbrands.com",
+        "constellation-brands.com"
+      ]
+    },
+    "ticker": "STZ"
+  },
+  "SW": {
+    "company_name": "Smurfit Westrock",
+    "domains": [
+      "smurfitwestrock.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "smurfitwestrock.com"
+      ]
+    },
+    "ticker": "SW"
+  },
+  "SWK": {
+    "company_name": "Stanley Black & Decker",
+    "domains": [
+      "stanleyblackanddecker.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "stanleyblackanddecker.com"
+      ]
+    },
+    "ticker": "SWK"
+  },
+  "SWKS": {
+    "company_name": "Skyworks Solutions",
+    "domains": [
+      "skyworksinc.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "skyworksinc.com"
+      ]
+    },
+    "ticker": "SWKS"
+  },
+  "SYF": {
+    "company_name": "Synchrony Financial",
+    "domains": [
+      "synchrony.com",
+      "synchronybank.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "synchrony.com",
+        "synchronybank.com",
+        "mysynchrony.com",
+        "synchronymastercard.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "SYF"
+  },
+  "SYK": {
+    "company_name": "Stryker Corporation",
+    "domains": [
+      "stryker-aed.com",
+      "stryker.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "stryker.com",
+        "stryker-aed.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "SYK"
+  },
+  "SYY": {
+    "company_name": "Sysco",
+    "domains": [
+      "sysco.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "sysco.com"
+      ]
+    },
+    "ticker": "SYY"
+  },
+  "T": {
+    "company_name": "AT&T",
+    "domains": [
+      "att.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "att.com"
+      ]
+    },
+    "ticker": "T"
+  },
+  "TAP": {
+    "company_name": "Molson Coors Beverage Company",
+    "domains": [
+      "molsoncoors.com",
+      "molsongroup.com",
+      "molson.ca"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "molsoncoors.com",
+        "molsongroup.com",
+        "molson.ca"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TAP"
+  },
+  "TDG": {
+    "company_name": "TransDigm Group",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "TDG"
+  },
+  "TDY": {
+    "company_name": "Teledyne Technologies",
+    "domains": [
+      "teledyne.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "teledyne.com"
+      ]
+    },
+    "ticker": "TDY"
+  },
+  "TEAM": {
+    "company_name": "Atlassian Corp",
+    "domains": [
+      "atlassian.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "atlassian.com",
+        "japan-atlassian.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TEAM"
+  },
+  "TECH": {
+    "company_name": "Bio-Techne",
+    "domains": [
+      "bio-techne.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "bio-techne.com"
+      ]
+    },
+    "ticker": "TECH"
+  },
+  "TECK": {
+    "company_name": "TECK RESOURCES LTD",
+    "domains": [
+      "teck.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "teck.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TECK"
+  },
+  "TEL": {
+    "company_name": "TE Connectivity",
+    "domains": [
+      "te.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "te.com"
+      ]
+    },
+    "ticker": "TEL"
+  },
+  "TENB": {
+    "company_name": "Tenable Holdings, Inc.",
+    "domains": [
+      "tenable.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "tenable.com"
+      ]
+    },
+    "ticker": "TENB"
+  },
+  "TER": {
+    "company_name": "Teradyne",
+    "domains": [
+      "teradyne.com",
+      "teradyne.cn"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "teradyne.com",
+        "teradyne.cn"
+      ]
+    },
+    "ticker": "TER"
+  },
+  "TFC": {
+    "company_name": "Truist Financial",
+    "domains": [
+      "truist.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "truist.com"
+      ]
+    },
+    "ticker": "TFC"
+  },
+  "TGT": {
+    "company_name": "Target Corporation",
+    "domains": [
+      "target.com",
+      "target-darts.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "target.com",
+        "target-darts.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TGT"
+  },
+  "TJX": {
+    "company_name": "TJX Companies",
+    "domains": [
+      "tjx.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "tjx.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TJX"
+  },
+  "TKO": {
+    "company_name": "TKO Group Holdings",
+    "domains": [
+      "tko.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "tko.com"
+      ]
+    },
+    "ticker": "TKO"
+  },
+  "TLN": {
+    "company_name": "Talen Energy Corp",
+    "domains": [
+      "talen.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "talen.com"
+      ]
+    },
+    "ticker": "TLN"
+  },
+  "TM": {
+    "company_name": "TOYOTA MOTOR CORP/",
+    "domains": [
+      "global.toyota"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "global.toyota"
+      ]
+    },
+    "ticker": "TM"
+  },
+  "TMO": {
+    "company_name": "Thermo Fisher Scientific",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "TMO"
+  },
+  "TMUS": {
+    "company_name": "T-Mobile US",
+    "domains": [
+      "t-mobile.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "t-mobile.com"
+      ]
+    },
+    "ticker": "TMUS"
+  },
+  "TOST": {
+    "company_name": "Toast, Inc.",
+    "domains": [
+      "toast.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "toast.com"
+      ]
+    },
+    "ticker": "TOST"
+  },
+  "TPL": {
+    "company_name": "Texas Pacific Land Corporation",
+    "domains": [
+      "texas.gov"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "texas.gov"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TPL"
+  },
+  "TPR": {
+    "company_name": "Tapestry, Inc.",
+    "domains": [
+      "tapestry.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "tapestry.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TPR"
+  },
+  "TRGP": {
+    "company_name": "Targa Resources",
+    "domains": [
+      "targaresources.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "targaresources.com"
+      ]
+    },
+    "ticker": "TRGP"
+  },
+  "TRMB": {
+    "company_name": "Trimble Inc.",
+    "domains": [
+      "trimble.com",
+      "trimble-ibaraki.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "nikon-trimble.co.jp",
+        "trimble.com",
+        "trimble-ibaraki.co.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TRMB"
+  },
+  "TROW": {
+    "company_name": "T. Rowe Price",
+    "domains": [
+      "troweprice.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "troweprice.com"
+      ]
+    },
+    "ticker": "TROW"
+  },
+  "TRV": {
+    "company_name": "Travelers Companies (The)",
+    "domains": [
+      "travelers-company.com",
+      "travelers.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "travelers.com",
+        "travelers-company.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TRV"
+  },
+  "TSCO": {
+    "company_name": "Tractor Supply",
+    "domains": [
+      "corporate.tractorsupply.com",
+      "tractorsupply.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "corporate.tractorsupply.com",
+        "tractorsupply.com"
+      ]
+    },
+    "ticker": "TSCO"
+  },
+  "TSLA": {
+    "company_name": "Tesla, Inc.",
+    "domains": [
+      "tesla.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "tesla.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TSLA"
+  },
+  "TSM": {
+    "company_name": "TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD",
+    "domains": [
+      "tsmc.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "tsmc.com"
+      ]
+    },
+    "ticker": "TSM"
+  },
+  "TSN": {
+    "company_name": "Tyson Foods",
+    "domains": [
+      "tyson.com",
+      "tysonfoods.com",
+      "tysonfoodservice.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "tyson.com",
+        "tysonfoods.com",
+        "tysonfoodservice.com"
+      ]
+    },
+    "ticker": "TSN"
+  },
+  "TT": {
+    "company_name": "Trane Technologies",
+    "domains": [
+      "trane.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "trane.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TT"
+  },
+  "TTD": {
+    "company_name": "Trade Desk (The)",
+    "domains": [
+      "trade-desk.com",
+      "trade.com",
+      "tradedesk.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "trade.com",
+        "tradedesk.com",
+        "trade-desk.com"
+      ]
+    },
+    "ticker": "TTD"
+  },
+  "TTWO": {
+    "company_name": "Take-Two Interactive",
+    "domains": [
+      "take2games.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "take2games.com"
+      ]
+    },
+    "ticker": "TTWO"
+  },
+  "TXN": {
+    "company_name": "Texas Instruments",
+    "domains": [
+      "texas.gov"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "texas.gov"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "TXN"
+  },
+  "TXT": {
+    "company_name": "Textron",
+    "domains": [
+      "textron.com",
+      "textronline.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "textron.com",
+        "textronline.com"
+      ]
+    },
+    "ticker": "TXT"
+  },
+  "TYL": {
+    "company_name": "Tyler Technologies",
+    "domains": [
+      "tyler.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "tyler.com"
+      ]
+    },
+    "ticker": "TYL"
+  },
+  "U": {
+    "company_name": "Unity Software Inc.",
+    "domains": [
+      "unity.com",
+      "unityroom.com",
+      "unity3d.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "unity.com",
+        "unityroom.com",
+        "unity3d.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "U"
+  },
+  "UAL": {
+    "company_name": "United Airlines Holdings",
+    "domains": [],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": []
+    },
+    "ticker": "UAL"
+  },
+  "UDR": {
+    "company_name": "UDR, Inc.",
+    "domains": [
+      "udr.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "udr.com"
+      ]
+    },
+    "ticker": "UDR"
+  },
+  "UHS": {
+    "company_name": "Universal Health Services",
+    "domains": [
+      "ir.uhs.com",
+      "uhs.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "ir.uhs.com",
+        "uhs.com"
+      ]
+    },
+    "ticker": "UHS"
+  },
+  "ULTA": {
+    "company_name": "Ulta Beauty",
+    "domains": [
+      "ulta.com",
+      "ultabeautyhours.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "ulta.com",
+        "ultabeautyhours.com"
+      ]
+    },
+    "ticker": "ULTA"
+  },
+  "UNH": {
+    "company_name": "UnitedHealth Group",
+    "domains": [
+      "unitedhealthgroup.com",
+      "unitedhealthgroup.co"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "unitedhealthgroup.com",
+        "unitedhealthgroup.co"
+      ]
+    },
+    "ticker": "UNH"
+  },
+  "UNP": {
+    "company_name": "Union Pacific Corporation",
+    "domains": [
+      "up.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "up.com"
+      ]
+    },
+    "ticker": "UNP"
+  },
+  "UPS": {
+    "company_name": "United Parcel Service",
+    "domains": [
+      "unitedparcel.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "unitedparcel.com"
+      ]
+    },
+    "ticker": "UPS"
+  },
+  "URI": {
+    "company_name": "United Rentals",
+    "domains": [
+      "unitedrentals.com",
+      "unitedrentalsystem.co.uk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "unitedrentals.com",
+        "unitedrentalsystem.co.uk"
+      ]
+    },
+    "ticker": "URI"
+  },
+  "UROY": {
+    "company_name": "Uranium Royalty Corp.",
+    "domains": [
+      "uraniumroyalty.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "uraniumroyalty.com"
+      ]
+    },
+    "ticker": "UROY"
+  },
+  "USB": {
+    "company_name": "U.S. Bancorp",
+    "domains": [
+      "u-s.com",
+      "us.com",
+      "usbancorp.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "us.com",
+        "u-s.com",
+        "usbancorp.com"
+      ]
+    },
+    "ticker": "USB"
+  },
+  "V": {
+    "company_name": "Visa Inc.",
+    "domains": [
+      "visa.co.jp"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "visa.co.jp"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "V"
+  },
+  "VALE": {
+    "company_name": "Vale S.A.",
+    "domains": [
+      "vale.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "vale.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "VALE"
+  },
+  "VEEV": {
+    "company_name": "Veeva Systems",
+    "domains": [
+      "veeva.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "veeva.com"
+      ]
+    },
+    "ticker": "VEEV"
+  },
+  "VICI": {
+    "company_name": "Vici Properties",
+    "domains": [
+      "viciproperties.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "viciproperties.com",
+        "vicireitproperties.com"
+      ]
+    },
+    "ticker": "VICI"
+  },
+  "VLO": {
+    "company_name": "Valero Energy",
+    "domains": [
+      "valero.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "valero.com",
+        "investorvalero.com",
+        "energievalero.ca"
+      ]
+    },
+    "ticker": "VLO"
+  },
+  "VLTO": {
+    "company_name": "Veralto",
+    "domains": [
+      "veralto.com",
+      "veralto.it"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "veralto.it",
+        "veralto.com"
+      ]
+    },
+    "ticker": "VLTO"
+  },
+  "VMC": {
+    "company_name": "Vulcan Materials Company",
+    "domains": [
+      "vulcanmaterials.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "vulcanmaterials.com"
+      ]
+    },
+    "ticker": "VMC"
+  },
+  "VRSK": {
+    "company_name": "Verisk Analytics",
+    "domains": [
+      "verisk.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "verisk.com"
+      ]
+    },
+    "ticker": "VRSK"
+  },
+  "VRSN": {
+    "company_name": "Verisign",
+    "domains": [
+      "verisign.com",
+      "verisigned.com",
+      "verisign.co.jp"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "verisign.com",
+        "verisigned.com",
+        "verisign.co.jp"
+      ]
+    },
+    "ticker": "VRSN"
+  },
+  "VRT": {
+    "company_name": "Vertiv",
+    "domains": [
+      "vertiv.com",
+      "vertivegies.farm"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "vertiv.com",
+        "vertivegies.farm"
+      ]
+    },
+    "ticker": "VRT"
+  },
+  "VRTX": {
+    "company_name": "Vertex Pharmaceuticals",
+    "domains": [
+      "vrtx.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "vrtx.com"
+      ]
+    },
+    "ticker": "VRTX"
+  },
+  "VST": {
+    "company_name": "Vistra Corp .",
+    "domains": [
+      "vistracorp.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "vistracorp.com"
+      ]
+    },
+    "ticker": "VST"
+  },
+  "VTR": {
+    "company_name": "Ventas",
+    "domains": [
+      "ventasreit.com",
+      "ventasbalss.lv"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "ventasbalss.lv",
+        "ventasreit.com",
+        "ventasdeseguridad.com"
+      ]
+    },
+    "ticker": "VTR"
+  },
+  "VTRS": {
+    "company_name": "Viatris",
+    "domains": [
+      "viatris.com",
+      "viatris.bg",
+      "viatris.se"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "viatris.com",
+        "viatris.bg",
+        "viatris.se"
+      ]
+    },
+    "ticker": "VTRS"
+  },
+  "VZ": {
+    "company_name": "Verizon",
+    "domains": [
+      "verizon.com",
+      "verizonconnect.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "verizon.com",
+        "verizonconnect.com",
+        "verizonarchitects.com"
+      ]
+    },
+    "ticker": "VZ"
+  },
+  "WAB": {
+    "company_name": "Wabtec",
+    "domains": [
+      "wabteccorp.com",
+      "wab-technique.ch"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "wabteccorp.com",
+        "wabtecuniversity.com",
+        "wab-technique.ch"
+      ]
+    },
+    "ticker": "WAB"
+  },
+  "WAT": {
+    "company_name": "Waters Corporation",
+    "domains": [
+      "waters.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "waters.com"
+      ]
+    },
+    "ticker": "WAT"
+  },
+  "WBD": {
+    "company_name": "Warner Bros. Discovery",
+    "domains": [
+      "warner-access.com",
+      "warnerbrosdiscoveryinc.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "warner-access.com",
+        "warnerbrosdiscoveryinc.com"
+      ]
+    },
+    "ticker": "WBD"
+  },
+  "WDAY": {
+    "company_name": "Workday, Inc.",
+    "domains": [
+      "workday.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "workday.com",
+        "myworkday.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "WDAY"
+  },
+  "WDC": {
+    "company_name": "Western Digital",
+    "domains": [
+      "westerndigital.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "westerndigital.com"
+      ]
+    },
+    "ticker": "WDC"
+  },
+  "WEC": {
+    "company_name": "WEC Energy Group",
+    "domains": [
+      "wecenergygroup.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "wecenergygroup.com"
+      ]
+    },
+    "ticker": "WEC"
+  },
+  "WELL": {
+    "company_name": "Welltower",
+    "domains": [
+      "welltower.com",
+      "welltowerinc.com",
+      "welltower.uk"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "welltower.com",
+        "welltower.uk",
+        "welltowerinc.com"
+      ]
+    },
+    "ticker": "WELL"
+  },
+  "WFC": {
+    "company_name": "Wells Fargo",
+    "domains": [
+      "wellsfargo.com",
+      "wellsfargoadvisors.com",
+      "wellsfargojobs.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "wellsfargo.com",
+        "wellsfargoadvisors.com",
+        "wellsfargojobs.com"
+      ]
+    },
+    "ticker": "WFC"
+  },
+  "WM": {
+    "company_name": "Waste Management",
+    "domains": [
+      "waste-management.com",
+      "waste.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "waste.com",
+        "waste-management.com"
+      ]
+    },
+    "ticker": "WM"
+  },
+  "WMB": {
+    "company_name": "Williams Companies",
+    "domains": [
+      "williams.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "williams.com"
+      ]
+    },
+    "ticker": "WMB"
+  },
+  "WMT": {
+    "company_name": "Walmart",
+    "domains": [
+      "walmart.com",
+      "walmartcontacts.com",
+      "walmart.ca"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "walmart.com",
+        "walmart.ca",
+        "walmartcontacts.com"
+      ]
+    },
+    "ticker": "WMT"
+  },
+  "WOLF": {
+    "company_name": "WOLFSPEED, INC.",
+    "domains": [
+      "wolfspeed.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "wolfspeed.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "WOLF"
+  },
+  "WRB": {
+    "company_name": "W. R. Berkley Corporation",
+    "domains": [
+      "wrberkley.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [],
+      "clearbit_autocomplete": [],
+      "company_name_domain_guess": [
+        "wrberkley.com"
+      ]
+    },
+    "ticker": "WRB"
+  },
+  "WSM": {
+    "company_name": "Williams-Sonoma, Inc.",
+    "domains": [
+      "williams-sonomainc.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "williams-sonomainc.com"
+      ]
+    },
+    "ticker": "WSM"
+  },
+  "WST": {
+    "company_name": "West Pharmaceutical Services",
+    "domains": [
+      "westpharma.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "westpharma.com"
+      ]
+    },
+    "ticker": "WST"
+  },
+  "WTW": {
+    "company_name": "Willis Towers Watson",
+    "domains": [
+      "wtwco.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "wtwco.com"
+      ]
+    },
+    "ticker": "WTW"
+  },
+  "WY": {
+    "company_name": "Weyerhaeuser",
+    "domains": [
+      "weyerhaeuser.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "weyerhaeuser.com"
+      ]
+    },
+    "ticker": "WY"
+  },
+  "WYNN": {
+    "company_name": "Wynn Resorts",
+    "domains": [
+      "wynnresorts.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "wynnresorts.com"
+      ]
+    },
+    "ticker": "WYNN"
+  },
+  "XEL": {
+    "company_name": "Xcel Energy",
+    "domains": [
+      "xcelenergy.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "xcelenergy.com"
+      ]
+    },
+    "ticker": "XEL"
+  },
+  "XOM": {
+    "company_name": "ExxonMobil",
+    "domains": [
+      "exxonmobil.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "exxonmobil.com"
+      ]
+    },
+    "ticker": "XOM"
+  },
+  "XPEV": {
+    "company_name": "XPENG INC.",
+    "domains": [
+      "xpeng.com"
+    ],
+    "resolver_sources": {
+      "bing_official_website_locator": [
+        "xpeng.com"
+      ],
+      "clearbit_autocomplete": []
+    },
+    "ticker": "XPEV"
+  },
+  "XYL": {
+    "company_name": "Xylem Inc.",
+    "domains": [
+      "xylem.com"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "xylem.com"
+      ]
+    },
+    "ticker": "XYL"
+  },
+  "XYZ": {
+    "company_name": "Block, Inc.",
+    "domains": [
+      "block.xyz"
+    ],
+    "resolver_sources": {
+      "domain_override": [
+        "block.xyz"
+      ]
+    },
+    "ticker": "XYZ"
+  },
+  "YUM": {
+    "company_name": "Yum! Brands",
+    "domains": [
+      "yum.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "yum.com",
+        "yumcsr.com"
+      ]
+    },
+    "ticker": "YUM"
+  },
+  "ZBH": {
+    "company_name": "Zimmer Biomet",
+    "domains": [
+      "zimmerbiomet.com",
+      "zimmerbiomet.jp"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "zimmerbiomet.com",
+        "zimmerbiomet.jp"
+      ]
+    },
+    "ticker": "ZBH"
+  },
+  "ZBRA": {
+    "company_name": "Zebra Technologies",
+    "domains": [
+      "zebra.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "zebra.com",
+        "zebrainventory.com"
+      ]
+    },
+    "ticker": "ZBRA"
+  },
+  "ZTS": {
+    "company_name": "Zoetis",
+    "domains": [
+      "zoetis.com",
+      "zoetispetcare.com",
+      "zoetisus.com"
+    ],
+    "resolver_sources": {
+      "clearbit_autocomplete": [
+        "zoetispetcare.com",
+        "zoetis.com",
+        "zoetisus.com"
+      ]
+    },
+    "ticker": "ZTS"
+  }
+}

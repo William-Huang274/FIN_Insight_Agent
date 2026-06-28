@@ -953,6 +953,7 @@ def build_judgment_state(
                 "what_would_change_view": _unique_strings(section.get("what_would_change_view"))[:4],
             }
         )
+    dimension_states = _merge_context_only_claims_into_dimension_states(dimension_states, supported_claims)
     fundamental_state = _fundamental_judgment_state(financial_pack)
     if fundamental_state and not any(item.get("dimension_id") == "fundamentals" for item in dimension_states):
         dimension_states.insert(0, fundamental_state)
@@ -997,6 +998,88 @@ def build_judgment_state(
     }
     state["validation"] = _validate_judgment_state(state)
     return state
+
+
+def _merge_context_only_claims_into_dimension_states(
+    dimension_states: list[dict[str, Any]],
+    supported_claims: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    context_claims = [claim for claim in supported_claims if _is_context_only_dimension_claim(claim)]
+    if not context_claims:
+        return dimension_states
+    by_dimension = {str(row.get("dimension_id") or ""): row for row in dimension_states}
+    for claim in context_claims:
+        dimension_id = _analysis_dimension_for_claim(claim)
+        if not dimension_id:
+            continue
+        state = by_dimension.get(dimension_id)
+        if state is None:
+            state = {
+                "dimension_id": dimension_id,
+                "title": _analysis_dimension_title(dimension_id),
+                "stance": "context_supported",
+                "support_level": "medium",
+                "summary": "",
+                "business_mechanism": _business_mechanism_for_dimension(dimension_id),
+                "financial_bridge": "",
+                "counter_read": "",
+                "claim_ids": [],
+                "evidence_refs": [],
+                "gap_ids": [],
+                "what_would_change_view": [],
+            }
+            dimension_states.append(state)
+            by_dimension[dimension_id] = state
+        claim_id = str(claim.get("claim_id") or "")
+        refs = _unique_strings(claim.get("evidence_refs"))
+        if claim_id and claim_id not in state["claim_ids"]:
+            state["claim_ids"] = _unique_strings([*state.get("claim_ids", []), claim_id])[:8]
+        state["evidence_refs"] = _unique_strings([*state.get("evidence_refs", []), *refs])[:8]
+        summary = _context_only_claim_dimension_summary(claim)
+        if summary and summary.lower() not in str(state.get("summary") or "").lower():
+            existing = str(state.get("summary") or "").strip()
+            state["summary"] = f"{existing} {summary}".strip()[:900]
+        if dimension_id == "product_and_production":
+            bridge = str(state.get("financial_bridge") or "").strip()
+            context_bridge = (
+                "Official product-surface context can support product taxonomy and verification targets; "
+                "exact orders, backlog, sales, ASP, share, or shipments still require parser-authority facts or commercial trackers."
+            )
+            state["financial_bridge"] = f"{bridge} {context_bridge}".strip()[:900]
+    return dimension_states
+
+
+def _is_context_only_dimension_claim(claim: Mapping[str, Any]) -> bool:
+    claim_type = str(claim.get("claim_type") or claim.get("raw_claim_type") or "").lower()
+    scope = " ".join(_unique_strings(claim.get("metric_scope") or claim.get("metrics") or claim.get("metric"))).lower()
+    families = set(_unique_strings(claim.get("source_families")))
+    text = str(claim.get("claim") or "").lower()
+    return (
+        claim_type in {"product_taxonomy_context", "product_surface_context", "official_product_surface"}
+        or "product_surface_context" in scope
+        or ("live_public_web_context" in families and "official-source repair" in text)
+    )
+
+
+def _context_only_claim_dimension_summary(claim: Mapping[str, Any]) -> str:
+    ticker = "/".join(_unique_upper(claim.get("ticker_scope") or claim.get("tickers") or claim.get("ticker")))
+    text = str(claim.get("claim") or "").strip()
+    products = _official_product_surface_terms(text)
+    if products:
+        prefix = f"{ticker} official-source repair" if ticker else "Official-source repair"
+        return (
+            f"{prefix} identified product-surface context for {', '.join(products[:4])}; "
+            "this supports product taxonomy and verification-path analysis, while exact orders/backlog/sales values remain bounded until parser promotion."
+        )
+    return text[:360]
+
+
+def _official_product_surface_terms(text: str) -> list[str]:
+    match = re.search(r"product-surface leads including (.*?)(?:;|\.| official parser targets)", text, flags=re.I)
+    if not match:
+        return []
+    raw = match.group(1)
+    return _unique_strings([part.strip(" .;") for part in raw.split(",") if part.strip(" .;")])
 
 
 def _fundamental_judgment_state(fundamental_statement_pack: Mapping[str, Any]) -> dict[str, Any]:
@@ -1587,6 +1670,8 @@ def _analysis_dimension_for_claim(claim: Mapping[str, Any]) -> str:
         return "risk_and_counterevidence"
     if slot == "industry_relationship":
         return "industry_supply_chain"
+    if _claim_is_capital_only(claim):
+        return "capital_and_financing"
     if slot == "product_technology" or any(term in text for term in ("product", "unit", "shipment", "capacity", "backlog", "usage")):
         return "product_and_production"
     if any(
@@ -1616,6 +1701,41 @@ def _analysis_dimension_for_claim(claim: Mapping[str, Any]) -> str:
     if slot == "evidence_gap":
         return "evidence_gap"
     return "fundamentals"
+
+
+def _claim_is_capital_only(claim: Mapping[str, Any]) -> bool:
+    metrics = {item.lower().strip() for item in _unique_strings(claim.get("metric_scope") or claim.get("metrics") or claim.get("metric"))}
+    if not metrics:
+        return False
+    capital_metrics = {
+        "capex",
+        "capital expenditure",
+        "capital expenditures",
+        "capital_expenditure",
+        "financial_metric:capex",
+        "capital expenditure proxy",
+    }
+    if not metrics <= capital_metrics:
+        return False
+    product_terms = (
+        "product_revenue",
+        "product revenue",
+        "product_kpi",
+        "segment revenue",
+        "backlog",
+        "shipments",
+        "units",
+        "capacity",
+        "usage",
+    )
+    text = " ".join(
+        [
+            str(claim.get("claim") or ""),
+            str(claim.get("claim_type") or ""),
+            " ".join(_unique_strings(claim.get("evidence_refs") or claim.get("refs"))),
+        ]
+    ).lower()
+    return not any(term in text for term in product_terms)
 
 
 def _analysis_dimension_title(dimension: str) -> str:
@@ -2393,10 +2513,15 @@ def _thesis_driver_card(claim: Mapping[str, Any], *, index: int) -> dict[str, An
         "ticker_scope": _unique_upper(claim.get("ticker_scope"))[:6],
         "evidence_refs": _unique_strings(claim.get("evidence_refs") or claim.get("refs"))[:6],
         "source_families": _unique_strings(claim.get("source_families") or claim.get("source_family"))[:5],
+        "signal_authority_type": str(claim.get("signal_authority_type") or ""),
+        "signal_promotion_level": str(claim.get("signal_promotion_level") or ""),
+        "thesis_driver_authority": bool(claim.get("thesis_driver_authority")),
+        "allowed_non_financial_claims": _unique_strings(claim.get("allowed_non_financial_claims"))[:6],
         "analysis_dimension": str(claim.get("analysis_dimension") or _analysis_dimension_for_claim(claim)),
         "analyst_angle": str(claim.get("analyst_angle") or _analysis_dimension_title(_analysis_dimension_for_claim(claim))),
         "analyst_depth": _claim_analyst_depth(claim),
-        "claim_boundary": SOURCE_FAMILY_CLAIM_SCOPE.get(
+        "claim_boundary": str(claim.get("claim_boundary") or claim.get("authority_boundary") or "")
+        or SOURCE_FAMILY_CLAIM_SCOPE.get(
             (_unique_strings(claim.get("source_families") or claim.get("source_family")) or [""])[0],
             "verified_claim_card_scope",
         ),
@@ -4062,6 +4187,11 @@ def _normalize_observation(payload: Mapping[str, Any]) -> dict[str, Any]:
         "materiality": _normalize_materiality(payload.get("materiality")),
         "direction": _normalize_direction(payload.get("direction")),
         "missing_confirmations": _unique_strings(payload.get("missing_confirmations")),
+        "signal_authority_type": str(payload.get("signal_authority_type") or "").strip(),
+        "signal_promotion_level": str(payload.get("signal_promotion_level") or "").strip(),
+        "thesis_driver_authority": bool(payload.get("thesis_driver_authority")),
+        "allowed_non_financial_claims": _unique_strings(payload.get("allowed_non_financial_claims")),
+        "claim_boundary": str(payload.get("claim_boundary") or payload.get("authority_boundary") or "").strip(),
         "period_role": str(payload.get("period_role") or "").strip(),
         "snapshot_id": str(payload.get("snapshot_id") or "").strip(),
         "as_of_date": str(payload.get("as_of_date") or "").strip(),

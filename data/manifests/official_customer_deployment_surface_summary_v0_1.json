@@ -1,0 +1,40 @@
+{
+  "attempt_count": 2227,
+  "attempt_status_counts": {
+    "action_gap_without_official_product_surface_seed": 63,
+    "fetch_failed": 85,
+    "fetched_no_customer_or_partner_signal": 189,
+    "http_307": 12,
+    "http_400": 3,
+    "http_401": 6,
+    "http_403": 128,
+    "http_404": 1317,
+    "http_406": 6,
+    "http_429": 16,
+    "http_464": 6,
+    "http_500": 6,
+    "http_503": 2,
+    "http_567": 6,
+    "materialized": 336,
+    "no_verified_official_host_seed": 45,
+    "unsupported_content_type": 1
+  },
+  "boundary": "Issuer-official customer/deployment/partner surface context only; no revenue/order/backlog/sales/share promotion.",
+  "generated_at": "2026-06-24T20:55:01Z",
+  "outputs": {
+    "attempts": "D:\\FIN_Insight_Agent\\data\\manifests\\official_customer_deployment_surface_attempts_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\official_customer_deployment_surface_context_rows_v0_1.jsonl"
+  },
+  "row_count": 336,
+  "schema_version": "finsight_official_customer_deployment_surface_summary_v0_1",
+  "source_role_counts": {
+    "official_customer_order_or_deployment_event": 214,
+    "supply_chain_official_relationship": 122
+  },
+  "status": "pass",
+  "structured_context_type_counts": {
+    "official_customer_deployment_surface": 214,
+    "official_partner_ecosystem_surface": 122
+  },
+  "success_ticker_count": 126
+}

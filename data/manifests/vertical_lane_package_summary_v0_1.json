@@ -1,0 +1,128 @@
+{
+  "lane_count": 7,
+  "lanes": [
+    {
+      "case_count": 3,
+      "inclusive_ticker_count": 12,
+      "industry_schema": "consumer_electronics",
+      "lane_id": "V2",
+      "lane_name": "Consumer Electronics / Hardware Devices",
+      "primary_ticker_count": 9,
+      "registry_source_coverage_status": "gap",
+      "validation_status": "pass"
+    },
+    {
+      "case_count": 3,
+      "inclusive_ticker_count": 97,
+      "industry_schema": "software_saas",
+      "lane_id": "V3",
+      "lane_name": "SaaS / Cloud / Developer Products",
+      "primary_ticker_count": 94,
+      "registry_source_coverage_status": "gap",
+      "validation_status": "pass"
+    },
+    {
+      "case_count": 3,
+      "inclusive_ticker_count": 68,
+      "industry_schema": "healthcare_pharma_medtech",
+      "lane_id": "V4",
+      "lane_name": "Pharma / Biotech / Medtech",
+      "primary_ticker_count": 68,
+      "registry_source_coverage_status": "gap",
+      "validation_status": "pass"
+    },
+    {
+      "case_count": 3,
+      "inclusive_ticker_count": 17,
+      "industry_schema": "auto_mobility",
+      "lane_id": "V5",
+      "lane_name": "Auto / Mobility / Transport Platforms",
+      "primary_ticker_count": 17,
+      "registry_source_coverage_status": "gap",
+      "validation_status": "pass"
+    },
+    {
+      "case_count": 3,
+      "inclusive_ticker_count": 77,
+      "industry_schema": "financials_banks",
+      "lane_id": "V6",
+      "lane_name": "Banks / Financials / Capital Markets",
+      "primary_ticker_count": 77,
+      "registry_source_coverage_status": "gap",
+      "validation_status": "pass"
+    },
+    {
+      "case_count": 3,
+      "inclusive_ticker_count": 219,
+      "industry_schema": "energy_utilities",
+      "lane_id": "V7",
+      "lane_name": "Energy / Utilities / Industrials",
+      "primary_ticker_count": 216,
+      "registry_source_coverage_status": "gap",
+      "validation_status": "pass"
+    },
+    {
+      "case_count": 3,
+      "inclusive_ticker_count": 80,
+      "industry_schema": "retail_cpg",
+      "lane_id": "V8",
+      "lane_name": "Retail / CPG / Restaurants / Travel",
+      "primary_ticker_count": 79,
+      "registry_source_coverage_status": "gap",
+      "validation_status": "pass"
+    }
+  ],
+  "outputs": {
+    "V2": {
+      "analyst_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v2_consumer_hardware_devices_analyst_playbook.zh-CN.md",
+      "coverage": "data\\manifests\\v2_consumer_hardware_devices_lane_coverage_v0_1.json",
+      "coverage_report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v2_consumer_hardware_devices_lane_coverage_report.zh-CN.md",
+      "representative_cases": "tests\\fixtures\\v2_consumer_hardware_devices_lane_cases_v0_1.json",
+      "source_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v2_consumer_hardware_devices_source_playbook.zh-CN.md"
+    },
+    "V3": {
+      "analyst_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v3_software_cloud_developer_products_analyst_playbook.zh-CN.md",
+      "coverage": "data\\manifests\\v3_software_cloud_developer_products_lane_coverage_v0_1.json",
+      "coverage_report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v3_software_cloud_developer_products_lane_coverage_report.zh-CN.md",
+      "representative_cases": "tests\\fixtures\\v3_software_cloud_developer_products_lane_cases_v0_1.json",
+      "source_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v3_software_cloud_developer_products_source_playbook.zh-CN.md"
+    },
+    "V4": {
+      "analyst_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v4_pharma_biotech_medtech_analyst_playbook.zh-CN.md",
+      "coverage": "data\\manifests\\v4_pharma_biotech_medtech_lane_coverage_v0_1.json",
+      "coverage_report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v4_pharma_biotech_medtech_lane_coverage_report.zh-CN.md",
+      "representative_cases": "tests\\fixtures\\v4_pharma_biotech_medtech_lane_cases_v0_1.json",
+      "source_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v4_pharma_biotech_medtech_source_playbook.zh-CN.md"
+    },
+    "V5": {
+      "analyst_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v5_auto_mobility_transport_analyst_playbook.zh-CN.md",
+      "coverage": "data\\manifests\\v5_auto_mobility_transport_lane_coverage_v0_1.json",
+      "coverage_report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v5_auto_mobility_transport_lane_coverage_report.zh-CN.md",
+      "representative_cases": "tests\\fixtures\\v5_auto_mobility_transport_lane_cases_v0_1.json",
+      "source_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v5_auto_mobility_transport_source_playbook.zh-CN.md"
+    },
+    "V6": {
+      "analyst_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v6_banks_financials_capital_markets_analyst_playbook.zh-CN.md",
+      "coverage": "data\\manifests\\v6_banks_financials_capital_markets_lane_coverage_v0_1.json",
+      "coverage_report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v6_banks_financials_capital_markets_lane_coverage_report.zh-CN.md",
+      "representative_cases": "tests\\fixtures\\v6_banks_financials_capital_markets_lane_cases_v0_1.json",
+      "source_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v6_banks_financials_capital_markets_source_playbook.zh-CN.md"
+    },
+    "V7": {
+      "analyst_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v7_energy_utilities_industrials_materials_analyst_playbook.zh-CN.md",
+      "coverage": "data\\manifests\\v7_energy_utilities_industrials_materials_lane_coverage_v0_1.json",
+      "coverage_report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v7_energy_utilities_industrials_materials_lane_coverage_report.zh-CN.md",
+      "representative_cases": "tests\\fixtures\\v7_energy_utilities_industrials_materials_lane_cases_v0_1.json",
+      "source_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v7_energy_utilities_industrials_materials_source_playbook.zh-CN.md"
+    },
+    "V8": {
+      "analyst_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v8_retail_cpg_restaurants_travel_analyst_playbook.zh-CN.md",
+      "coverage": "data\\manifests\\v8_retail_cpg_restaurants_travel_lane_coverage_v0_1.json",
+      "coverage_report": "docs\\internal\\vnext_20260610\\vertical_lanes\\v8_retail_cpg_restaurants_travel_lane_coverage_report.zh-CN.md",
+      "representative_cases": "tests\\fixtures\\v8_retail_cpg_restaurants_travel_lane_cases_v0_1.json",
+      "source_playbook": "docs\\internal\\vnext_20260610\\vertical_lanes\\v8_retail_cpg_restaurants_travel_source_playbook.zh-CN.md"
+    }
+  },
+  "schema_version": "finsight_vertical_lane_package_summary_v0_1",
+  "status": "pass"
+}

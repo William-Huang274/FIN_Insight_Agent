@@ -1,0 +1,616 @@
+{
+  "gates": [
+    {
+      "case_id": "public_official_api_context:generic_public_research:macro_official_context",
+      "exact_authority_violations": [],
+      "gaps": [],
+      "generated_at": "2026-06-16T12:40:48Z",
+      "industry_schema": "generic_public_research",
+      "phase": "runtime_case",
+      "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+      "requested_industry_schema": "generic_public_research",
+      "requirements": [
+        {
+          "binding_status_distribution": {
+            "counterparty_binding_status": {
+              "not_bound": 71
+            },
+            "issuer_binding_status": {
+              "regulatory_entity_unresolved": 71
+            },
+            "product_binding_status": {
+              "product_mentioned_in_snapshot": 71
+            }
+          },
+          "by_source_status": {
+            "runtime_ready_context": 1,
+            "structured_not_promoted": 5
+          },
+          "claim_boundary": "Official macro/industry context and demand proxy only; no issuer revenue or share inference.",
+          "dimension": "macro_and_industry",
+          "effective_ready_source_count": 3,
+          "entity_bound_row_count": 71,
+          "exact_authority_violation_sources": [],
+          "gaps": [],
+          "layer_ids": [
+            "L2"
+          ],
+          "next_action": "Resolve industry driver/source mapping and keep company exposure bridge explicit.",
+          "observed_row_count": 71,
+          "observed_source_classes": [
+            "eia_open_data",
+            "fred_api",
+            "fred_graph_csv"
+          ],
+          "observed_structured_context_types": [
+            "energy_utility_official_context",
+            "macro_official_context"
+          ],
+          "parser_row_count": 71,
+          "phase": "runtime_case",
+          "ready_source_count": 1,
+          "requirement_id": "macro_official_context",
+          "route_candidate_source_count": 6,
+          "schema_version": "finsight_source_coverage_requirement_v0_1",
+          "source_ids": [
+            "fred_api",
+            "fred_graph_csv",
+            "bls_public_api",
+            "bea_data_api",
+            "census_data_api",
+            "eia_open_data"
+          ],
+          "source_profile_count": 6,
+          "specialist_roles": [
+            "market_valuation_analyst",
+            "capital_ownership_macro_analyst",
+            "industry_supply_chain_analyst"
+          ],
+          "specialist_visible_row_count": 213,
+          "status": "pass"
+        }
+      ],
+      "schema_version": "finsight_source_coverage_gate_v0_1",
+      "status": "pass",
+      "summary": {
+        "by_dimension": {
+          "macro_and_industry": 1
+        },
+        "by_status": {
+          "pass": 1
+        },
+        "exact_authority_violation_count": 0,
+        "fail_requirement_count": 0,
+        "gap_requirement_count": 0,
+        "pass_requirement_count": 1,
+        "requirement_count": 1
+      },
+      "validation": {
+        "errors": [],
+        "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+        "status": "pass"
+      }
+    },
+    {
+      "case_id": "public_official_api_context:auto_mobility:auto_product_identity_context",
+      "exact_authority_violations": [],
+      "gaps": [],
+      "generated_at": "2026-06-16T12:40:48Z",
+      "industry_schema": "auto_mobility",
+      "phase": "runtime_case",
+      "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+      "requested_industry_schema": "auto_mobility",
+      "requirements": [
+        {
+          "binding_status_distribution": {
+            "counterparty_binding_status": {
+              "not_bound": 8
+            },
+            "issuer_binding_status": {
+              "issuer_mentioned_in_snapshot": 8
+            },
+            "product_binding_status": {
+              "product_mentioned_in_snapshot": 8
+            }
+          },
+          "by_source_status": {
+            "structured_not_promoted": 1
+          },
+          "claim_boundary": "Vehicle manufacturer/make/model/VIN identity context only; no sales volume or profitability proof.",
+          "dimension": "product_and_production",
+          "effective_ready_source_count": 1,
+          "entity_bound_row_count": 8,
+          "exact_authority_violation_sources": [],
+          "gaps": [],
+          "layer_ids": [
+            "L2"
+          ],
+          "next_action": "Resolve manufacturer/make/model-year to issuer/product.",
+          "observed_row_count": 8,
+          "observed_source_classes": [
+            "nhtsa_vpic_api"
+          ],
+          "observed_structured_context_types": [
+            "vehicle_model_identity_context"
+          ],
+          "parser_row_count": 8,
+          "phase": "runtime_case",
+          "ready_source_count": 0,
+          "requirement_id": "auto_product_identity_context",
+          "route_candidate_source_count": 1,
+          "schema_version": "finsight_source_coverage_requirement_v0_1",
+          "source_ids": [
+            "nhtsa_vpic_api"
+          ],
+          "source_profile_count": 1,
+          "specialist_roles": [
+            "product_technology_analyst",
+            "risk_counterevidence_analyst"
+          ],
+          "specialist_visible_row_count": 16,
+          "status": "pass"
+        }
+      ],
+      "schema_version": "finsight_source_coverage_gate_v0_1",
+      "status": "pass",
+      "summary": {
+        "by_dimension": {
+          "product_and_production": 1
+        },
+        "by_status": {
+          "pass": 1
+        },
+        "exact_authority_violation_count": 0,
+        "fail_requirement_count": 0,
+        "gap_requirement_count": 0,
+        "pass_requirement_count": 1,
+        "requirement_count": 1
+      },
+      "validation": {
+        "errors": [],
+        "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+        "status": "pass"
+      }
+    },
+    {
+      "case_id": "public_official_api_context:healthcare_pharma_medtech:regulated_product_context",
+      "exact_authority_violations": [],
+      "gaps": [],
+      "generated_at": "2026-06-16T12:40:48Z",
+      "industry_schema": "healthcare_pharma_medtech",
+      "phase": "runtime_case",
+      "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+      "requested_industry_schema": "healthcare_pharma_medtech",
+      "requirements": [
+        {
+          "binding_status_distribution": {
+            "counterparty_binding_status": {
+              "not_bound": 60
+            },
+            "issuer_binding_status": {
+              "issuer_mentioned_in_snapshot": 2,
+              "regulatory_entity_unresolved": 58
+            },
+            "product_binding_status": {
+              "product_mentioned_in_snapshot": 60
+            }
+          },
+          "by_source_status": {
+            "structured_not_promoted": 3
+          },
+          "claim_boundary": "Healthcare regulatory, trial, payer, and procedure context only; not approval success, utilization share, or sales proof.",
+          "dimension": "product_and_production",
+          "effective_ready_source_count": 3,
+          "entity_bound_row_count": 2,
+          "exact_authority_violation_sources": [],
+          "gaps": [],
+          "layer_ids": [
+            "L2"
+          ],
+          "next_action": "Resolve sponsor/product/condition/application/procedure before promotion to healthcare context.",
+          "observed_row_count": 60,
+          "observed_source_classes": [
+            "clinicaltrials_api",
+            "cms_public_data",
+            "openfda_api"
+          ],
+          "observed_structured_context_types": [
+            "clinical_trial_status_context",
+            "fda_product_status_context",
+            "healthcare_payer_dataset_context"
+          ],
+          "parser_row_count": 60,
+          "phase": "runtime_case",
+          "ready_source_count": 0,
+          "requirement_id": "regulated_product_context",
+          "route_candidate_source_count": 3,
+          "schema_version": "finsight_source_coverage_requirement_v0_1",
+          "source_ids": [
+            "clinicaltrials_api",
+            "openfda_api",
+            "cms_public_data"
+          ],
+          "source_profile_count": 3,
+          "specialist_roles": [
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "risk_counterevidence_analyst"
+          ],
+          "specialist_visible_row_count": 180,
+          "status": "pass"
+        }
+      ],
+      "schema_version": "finsight_source_coverage_gate_v0_1",
+      "status": "pass",
+      "summary": {
+        "by_dimension": {
+          "product_and_production": 1
+        },
+        "by_status": {
+          "pass": 1
+        },
+        "exact_authority_violation_count": 0,
+        "fail_requirement_count": 0,
+        "gap_requirement_count": 0,
+        "pass_requirement_count": 1,
+        "requirement_count": 1
+      },
+      "validation": {
+        "errors": [],
+        "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+        "status": "pass"
+      }
+    },
+    {
+      "case_id": "public_official_api_context:financials_banks:financial_regulatory_context",
+      "exact_authority_violations": [],
+      "gaps": [
+        {
+          "claim_boundary": "Bank regulatory and macro context only until institution-to-listed-issuer resolver passes.",
+          "detail": "entity_bound_rows=0, required=1, kinds=issuer",
+          "dimension": "macro_and_industry",
+          "gap_type": "runtime_case_entity_binding_missing",
+          "next_action": "Resolve FDIC institution/subsidiary to listed issuer and keep rate/credit context separated from company-reported facts.",
+          "requirement_id": "financial_regulatory_context",
+          "source_ids": [
+            "fdic_bankfind_api",
+            "fred_api",
+            "fred_graph_csv"
+          ]
+        }
+      ],
+      "generated_at": "2026-06-16T12:40:48Z",
+      "industry_schema": "financials_banks",
+      "phase": "runtime_case",
+      "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+      "requested_industry_schema": "financials_banks",
+      "requirements": [
+        {
+          "binding_status_distribution": {
+            "counterparty_binding_status": {
+              "not_bound": 67
+            },
+            "issuer_binding_status": {
+              "regulatory_entity_unresolved": 67
+            },
+            "product_binding_status": {
+              "not_bound": 5,
+              "product_mentioned_in_snapshot": 62
+            }
+          },
+          "by_source_status": {
+            "structured_not_promoted": 3
+          },
+          "claim_boundary": "Bank regulatory and macro context only until institution-to-listed-issuer resolver passes.",
+          "dimension": "macro_and_industry",
+          "effective_ready_source_count": 3,
+          "entity_bound_row_count": 0,
+          "exact_authority_violation_sources": [],
+          "gaps": [
+            {
+              "claim_boundary": "Bank regulatory and macro context only until institution-to-listed-issuer resolver passes.",
+              "detail": "entity_bound_rows=0, required=1, kinds=issuer",
+              "dimension": "macro_and_industry",
+              "gap_type": "runtime_case_entity_binding_missing",
+              "next_action": "Resolve FDIC institution/subsidiary to listed issuer and keep rate/credit context separated from company-reported facts.",
+              "requirement_id": "financial_regulatory_context",
+              "source_ids": [
+                "fdic_bankfind_api",
+                "fred_api",
+                "fred_graph_csv"
+              ]
+            }
+          ],
+          "layer_ids": [
+            "L2"
+          ],
+          "next_action": "Resolve FDIC institution/subsidiary to listed issuer and keep rate/credit context separated from company-reported facts.",
+          "observed_row_count": 67,
+          "observed_source_classes": [
+            "fdic_bankfind_api",
+            "fred_api",
+            "fred_graph_csv"
+          ],
+          "observed_structured_context_types": [
+            "financial_institution_reference_context",
+            "macro_official_context"
+          ],
+          "parser_row_count": 67,
+          "phase": "runtime_case",
+          "ready_source_count": 0,
+          "requirement_id": "financial_regulatory_context",
+          "route_candidate_source_count": 3,
+          "schema_version": "finsight_source_coverage_requirement_v0_1",
+          "source_ids": [
+            "fdic_bankfind_api",
+            "fred_api",
+            "fred_graph_csv"
+          ],
+          "source_profile_count": 3,
+          "specialist_roles": [
+            "fundamental_analyst",
+            "capital_ownership_macro_analyst",
+            "industry_supply_chain_analyst"
+          ],
+          "specialist_visible_row_count": 201,
+          "status": "gap"
+        }
+      ],
+      "schema_version": "finsight_source_coverage_gate_v0_1",
+      "status": "gap",
+      "summary": {
+        "by_dimension": {
+          "macro_and_industry": 1
+        },
+        "by_status": {
+          "gap": 1
+        },
+        "exact_authority_violation_count": 0,
+        "fail_requirement_count": 0,
+        "gap_requirement_count": 1,
+        "pass_requirement_count": 0,
+        "requirement_count": 1
+      },
+      "validation": {
+        "errors": [],
+        "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+        "status": "pass"
+      }
+    },
+    {
+      "case_id": "public_official_api_context:energy_utilities:energy_utility_context",
+      "exact_authority_violations": [],
+      "gaps": [
+        {
+          "claim_boundary": "Energy/utility official operating context only; no single-company revenue or margin inference.",
+          "detail": "entity_bound_rows=0, required=1, kinds=issuer,product",
+          "dimension": "macro_and_industry",
+          "gap_type": "runtime_case_entity_binding_missing",
+          "next_action": "Resolve route/series/asset mapping and company exposure bridge before using EIA/FRED context.",
+          "requirement_id": "energy_utility_context",
+          "source_ids": [
+            "eia_open_data",
+            "fred_api",
+            "fred_graph_csv"
+          ]
+        }
+      ],
+      "generated_at": "2026-06-16T12:40:48Z",
+      "industry_schema": "energy_utilities",
+      "phase": "runtime_case",
+      "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+      "requested_industry_schema": "energy_utilities",
+      "requirements": [
+        {
+          "binding_status_distribution": {
+            "counterparty_binding_status": {
+              "not_bound": 71
+            },
+            "issuer_binding_status": {
+              "regulatory_entity_unresolved": 71
+            },
+            "product_binding_status": {
+              "product_mentioned_in_snapshot": 71
+            }
+          },
+          "by_source_status": {
+            "structured_not_promoted": 3
+          },
+          "claim_boundary": "Energy/utility official operating context only; no single-company revenue or margin inference.",
+          "dimension": "macro_and_industry",
+          "effective_ready_source_count": 3,
+          "entity_bound_row_count": 0,
+          "exact_authority_violation_sources": [],
+          "gaps": [
+            {
+              "claim_boundary": "Energy/utility official operating context only; no single-company revenue or margin inference.",
+              "detail": "entity_bound_rows=0, required=1, kinds=issuer,product",
+              "dimension": "macro_and_industry",
+              "gap_type": "runtime_case_entity_binding_missing",
+              "next_action": "Resolve route/series/asset mapping and company exposure bridge before using EIA/FRED context.",
+              "requirement_id": "energy_utility_context",
+              "source_ids": [
+                "eia_open_data",
+                "fred_api",
+                "fred_graph_csv"
+              ]
+            }
+          ],
+          "layer_ids": [
+            "L2"
+          ],
+          "next_action": "Resolve route/series/asset mapping and company exposure bridge before using EIA/FRED context.",
+          "observed_row_count": 71,
+          "observed_source_classes": [
+            "eia_open_data",
+            "fred_api",
+            "fred_graph_csv"
+          ],
+          "observed_structured_context_types": [
+            "energy_utility_official_context",
+            "macro_official_context"
+          ],
+          "parser_row_count": 71,
+          "phase": "runtime_case",
+          "ready_source_count": 0,
+          "requirement_id": "energy_utility_context",
+          "route_candidate_source_count": 3,
+          "schema_version": "finsight_source_coverage_requirement_v0_1",
+          "source_ids": [
+            "eia_open_data",
+            "fred_api",
+            "fred_graph_csv"
+          ],
+          "source_profile_count": 3,
+          "specialist_roles": [
+            "industry_supply_chain_analyst",
+            "capital_ownership_macro_analyst",
+            "product_technology_analyst"
+          ],
+          "specialist_visible_row_count": 213,
+          "status": "gap"
+        }
+      ],
+      "schema_version": "finsight_source_coverage_gate_v0_1",
+      "status": "gap",
+      "summary": {
+        "by_dimension": {
+          "macro_and_industry": 1
+        },
+        "by_status": {
+          "gap": 1
+        },
+        "exact_authority_violation_count": 0,
+        "fail_requirement_count": 0,
+        "gap_requirement_count": 1,
+        "pass_requirement_count": 0,
+        "requirement_count": 1
+      },
+      "validation": {
+        "errors": [],
+        "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+        "status": "pass"
+      }
+    },
+    {
+      "case_id": "public_official_api_context:semiconductors_hardware:technology_research_proxy",
+      "exact_authority_violations": [],
+      "gaps": [
+        {
+          "claim_boundary": "Research/IP signal only; not product launch, sales, or durable moat proof.",
+          "detail": "entity_bound_rows=0, required=1, kinds=issuer,product",
+          "dimension": "product_and_production",
+          "gap_type": "runtime_case_entity_binding_missing",
+          "next_action": "Resolve assignee/institution/topic to issuer/product and keep proxy boundary explicit.",
+          "requirement_id": "technology_research_proxy",
+          "source_ids": [
+            "openalex_api",
+            "patentsview_api"
+          ]
+        }
+      ],
+      "generated_at": "2026-06-16T12:40:48Z",
+      "industry_schema": "semiconductors_hardware",
+      "phase": "runtime_case",
+      "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+      "requested_industry_schema": "semiconductors_hardware",
+      "requirements": [
+        {
+          "binding_status_distribution": {
+            "counterparty_binding_status": {
+              "not_bound": 6
+            },
+            "issuer_binding_status": {
+              "regulatory_entity_unresolved": 6
+            },
+            "product_binding_status": {
+              "technology_topic_bound": 6
+            }
+          },
+          "by_source_status": {
+            "structured_not_promoted": 2
+          },
+          "claim_boundary": "Research/IP signal only; not product launch, sales, or durable moat proof.",
+          "dimension": "product_and_production",
+          "effective_ready_source_count": 2,
+          "entity_bound_row_count": 0,
+          "exact_authority_violation_sources": [],
+          "gaps": [
+            {
+              "claim_boundary": "Research/IP signal only; not product launch, sales, or durable moat proof.",
+              "detail": "entity_bound_rows=0, required=1, kinds=issuer,product",
+              "dimension": "product_and_production",
+              "gap_type": "runtime_case_entity_binding_missing",
+              "next_action": "Resolve assignee/institution/topic to issuer/product and keep proxy boundary explicit.",
+              "requirement_id": "technology_research_proxy",
+              "source_ids": [
+                "openalex_api",
+                "patentsview_api"
+              ]
+            }
+          ],
+          "layer_ids": [
+            "L3"
+          ],
+          "next_action": "Resolve assignee/institution/topic to issuer/product and keep proxy boundary explicit.",
+          "observed_row_count": 6,
+          "observed_source_classes": [
+            "openalex_api",
+            "patentsview_api"
+          ],
+          "observed_structured_context_types": [
+            "patent_data_access_metadata_context",
+            "technology_research_proxy_context"
+          ],
+          "parser_row_count": 6,
+          "phase": "runtime_case",
+          "ready_source_count": 0,
+          "requirement_id": "technology_research_proxy",
+          "route_candidate_source_count": 2,
+          "schema_version": "finsight_source_coverage_requirement_v0_1",
+          "source_ids": [
+            "openalex_api",
+            "patentsview_api"
+          ],
+          "source_profile_count": 2,
+          "specialist_roles": [
+            "product_technology_analyst"
+          ],
+          "specialist_visible_row_count": 6,
+          "status": "gap"
+        }
+      ],
+      "schema_version": "finsight_source_coverage_gate_v0_1",
+      "status": "gap",
+      "summary": {
+        "by_dimension": {
+          "product_and_production": 1
+        },
+        "by_status": {
+          "gap": 1
+        },
+        "exact_authority_violation_count": 0,
+        "fail_requirement_count": 0,
+        "gap_requirement_count": 1,
+        "pass_requirement_count": 0,
+        "requirement_count": 1
+      },
+      "validation": {
+        "errors": [],
+        "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+        "status": "pass"
+      }
+    }
+  ],
+  "generated_at": "2026-06-16T12:40:48Z",
+  "requirement_statuses": {
+    "auto_mobility:auto_product_identity_context": "pass",
+    "energy_utilities:energy_utility_context": "gap",
+    "financials_banks:financial_regulatory_context": "gap",
+    "generic_public_research:macro_official_context": "pass",
+    "healthcare_pharma_medtech:regulated_product_context": "pass",
+    "semiconductors_hardware:technology_research_proxy": "gap"
+  },
+  "schema_version": "fin_agent_public_official_api_context_coverage_smoke_v0_1",
+  "status": "gap"
+}

@@ -204,6 +204,9 @@ def _run_workbench_eval(payload: Mapping[str, Any], config: WorkerConfig, *, cal
         args[args.index("--summary-output-path") + 1] = str(output_path)
     if "--bge-device" in args:
         args = _replace_or_append_arg(args, "--bge-device", config.bge_device)
+    fanout_workers = _optional_int(metadata.get("evidence_operator_fanout_workers"))
+    if fanout_workers is not None:
+        args = _replace_or_append_arg(args, "--evidence-operator-fanout-workers", str(fanout_workers))
 
     env = os.environ.copy()
     env.update({key: str(value) for key, value in spec.env_overrides.items() if value is not None})

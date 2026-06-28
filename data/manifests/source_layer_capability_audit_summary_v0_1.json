@@ -1,0 +1,112 @@
+{
+  "generated_at": "2026-06-23T19:48:04Z",
+  "layer_definitions": {
+    "L1": {
+      "label": "strong_fact_authority",
+      "memo_usage": "can_support_precise_facts_after_parser_period_unit_citation_gate"
+    },
+    "L2": {
+      "label": "trusted_context_supplement",
+      "memo_usage": "can_support_context_proxy_relationship_or_regulatory_background_with_boundary"
+    },
+    "L3": {
+      "label": "market_proxy_signal",
+      "memo_usage": "can_support_directional_market_or_channel_signal_not_company_exact_fact"
+    },
+    "L4": {
+      "label": "weak_signal_or_exclusion",
+      "memo_usage": "discovery_or_exclusion_only_not_core_thesis_evidence"
+    }
+  },
+  "policy": "normal_trusted_sources_enter_evidence_graph_as_bounded_context_or_proxy_never_exact_without_parser_gate_v0_1",
+  "schema_version": "finsight_source_layer_capability_audit_v0_1",
+  "summary": {
+    "by_acquisition_status": {
+      "app_store_lookup_api_materialized": 1,
+      "blocked_by_auth_or_policy": 1,
+      "collector_implemented": 7,
+      "developer_api_fetch_materialized": 1,
+      "live_probe_pass": 14,
+      "materialized_downloaded": 5,
+      "not_connected": 5,
+      "official_ats_api_materialized": 1,
+      "public_award_api_materialized": 1,
+      "public_reseller_page_materialized": 1,
+      "public_reseller_review_metadata_materialized": 1,
+      "scoped_url_fetch_gate_available": 2,
+      "sec_submissions_metadata_materialized": 4,
+      "structured_api_available": 4
+    },
+    "by_evidence_graph_status": {
+      "blocked_by_auth_or_policy": 2,
+      "exact_authority_ready": 1,
+      "not_registered": 4,
+      "runtime_ready_context": 16,
+      "staging_parser_gate_pending": 4,
+      "structured_not_promoted": 21
+    },
+    "by_layer": {
+      "L1": {
+        "count": 13,
+        "missing_route_count": 0,
+        "parser_gate_pending_count": 4,
+        "runtime_ready_count": 6
+      },
+      "L2": {
+        "count": 18,
+        "missing_route_count": 2,
+        "parser_gate_pending_count": 0,
+        "runtime_ready_count": 3
+      },
+      "L3": {
+        "count": 13,
+        "missing_route_count": 1,
+        "parser_gate_pending_count": 0,
+        "runtime_ready_count": 8
+      },
+      "L4": {
+        "count": 4,
+        "missing_route_count": 1,
+        "parser_gate_pending_count": 0,
+        "runtime_ready_count": 0
+      }
+    },
+    "by_parser_status": {
+      "app_store_lookup_parser_pass": 1,
+      "article_parser_smoke_pass": 2,
+      "ats_jobposting_jsonld_parser_pass": 1,
+      "cdw_offer_microdata_parser_pass": 1,
+      "cdw_review_microdata_parser_pass": 1,
+      "developer_ecosystem_parser_pass": 1,
+      "field_parser_pass": 11,
+      "not_registered": 4,
+      "not_started": 10,
+      "parser_blocked": 1,
+      "parser_gate_passed": 1,
+      "parser_gate_pending": 5,
+      "partial_parser_or_clean_text_available": 4,
+      "sec_beneficial_ownership_filing_event_metadata_parser_pass": 1,
+      "sec_insider_filing_event_metadata_parser_pass": 1,
+      "sec_offering_filing_event_metadata_parser_pass": 1,
+      "sec_proxy_governance_filing_event_metadata_parser_pass": 1,
+      "usaspending_award_jsonld_parser_pass": 1
+    },
+    "context_or_proxy_allowed_count": 40,
+    "exact_authority_ready_count": 1,
+    "expected_missing_count": 4,
+    "inputs": {
+      "availability_audit": "data/manifests/public_source_full_availability_audit_v0_1.jsonl",
+      "coverage_config": "configs/data_sources/public_source_coverage_v0_1.yaml",
+      "inventory_summary": "data/manifests/public_source_inventory_adapter_summary_v0_1.json",
+      "materialization_matrix": "data/manifests/public_source_strength_materialization_matrix_v0_1.jsonl"
+    },
+    "runtime_ready_count": 17,
+    "source_count": 48
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_source_layer_capability_audit_validation_v0_1",
+    "status": "pass",
+    "warnings": []
+  }
+}

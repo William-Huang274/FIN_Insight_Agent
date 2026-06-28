@@ -75,6 +75,42 @@ def test_memo_supported_claim_selection_keeps_product_dimension_under_claim_cap(
     assert "product_fact" in {row["claim_id"] for row in selected}
 
 
+def test_memo_supported_claim_selection_prioritizes_official_product_context_over_gap_claim() -> None:
+    claims = [
+        {
+            "claim_id": "product_gap",
+            "memo_slot": "product_technology",
+            "analysis_dimension": "product_and_production",
+            "claim_type": "source_gap",
+            "claim": "No company product evidence graph rows with runtime_fact_allowed status exist for ASML.",
+            "evidence_refs": ["product_source_gap::ASML::company_product_evidence_graph"],
+            "source_families": ["company_product_evidence_graph"],
+            "claim_rank_score": 95,
+        },
+        {
+            "claim_id": "asml_official_product_context",
+            "memo_slot": "product_technology",
+            "analysis_dimension": "product_and_production",
+            "claim_type": "product_taxonomy_context",
+            "claim": "ASML official-source repair reached issuer sources and identified EUV and DUV product-surface leads.",
+            "evidence_refs": ["official_asml:product_surface:euv"],
+            "source_families": ["live_public_web_context"],
+            "metric_scope": ["product_surface_context", "net bookings", "backlog"],
+            "ticker_scope": ["ASML"],
+            "claim_rank_score": 72,
+            "memo_readiness": "memo_ready",
+        },
+    ]
+
+    selected = _select_memo_supported_claims(
+        claims,
+        [{"memo_slot": "product_technology", "status": "supported"}],
+        max_claims=1,
+    )
+
+    assert [row["claim_id"] for row in selected] == ["asml_official_product_context"]
+
+
 def test_salvage_action_items_are_dimension_specific_not_generic_template() -> None:
     items = _salvage_action_items(
         [
@@ -94,6 +130,28 @@ def test_salvage_action_items_are_dimension_specific_not_generic_template() -> N
     assert "用该补充论据交叉验证核心判断" not in items[0]["text"]
     assert "DELL" in items[0]["text"]
     assert "产品与产线" in items[0]["text"]
+
+
+def test_salvage_action_items_do_not_dump_relationship_graph_peer_tickers() -> None:
+    items = _salvage_action_items(
+        [
+            {
+                "claim_id": "relationship_fact",
+                "analysis_dimension": "industry_supply_chain",
+                "ticker_scope": ["ASML", "DELL", "HPE", "SMCI"],
+                "metric_scope": ["capital expenditures", "orders_backlog"],
+                "source_families": ["relationship_graph"],
+                "evidence_refs": ["sector_depth_pack:technology_ai_infrastructure_depth:LRCX"],
+            }
+        ],
+        response_language="zh-CN",
+        kind="investment_implications",
+        max_items=1,
+    )
+
+    assert "ASML 相关行业关系图" in items[0]["text"]
+    assert "DELL" not in items[0]["text"]
+    assert "HPE" not in items[0]["text"]
 
 
 def test_zh_gap_only_dimension_localization_avoids_english_fallback_template() -> None:
@@ -171,6 +229,39 @@ def test_memo_renderer_filters_internal_thesis_synthesis_dimension() -> None:
     assert "Synthesis" not in rendered
     assert "primary_sec_filing" not in rendered
     assert "基本面事实" in rendered
+
+
+def test_memo_renderer_drops_english_template_sentences_in_chinese_surface() -> None:
+    memo = {
+        "response_language": {"language": "zh-CN"},
+        "memo_profile": {"profile": "standard"},
+        "direct_answer": "结论先落在已披露链条上：DELL 产品收入支撑 AI 服务器需求传导。",
+        "dimension_analyses": [
+            {
+                "dimension_id": "product_and_production",
+                "title": "产品与产线",
+                "summary": "DELL AI 优化服务器收入可作为产品传导的公司披露锚点。",
+                "business_mechanism": "The evidence supports or pressures earnings power through reported growth.",
+                "financial_bridge": "Caveat: Non-GAAP measure; GAAP gross margin not directly provided.",
+                "counter_read": "Missing confirmation: company-reported orders/backlog are absent.",
+                "evidence_refs": ["dell_product_ref"],
+            }
+        ],
+        "memo_claims": [
+            {
+                "claim": "DELL AI 优化服务器收入可作为产品传导的公司披露锚点。",
+                "evidence_refs": ["dell_product_ref"],
+            }
+        ],
+    }
+
+    rendered = _render_memo_answer(memo, bounded=False)
+
+    assert "DELL AI 优化服务器收入" in rendered
+    assert "The evidence supports" not in rendered
+    assert "Caveat:" not in rendered
+    assert "Missing confirmation:" not in rendered
+    assert "[C1]" in rendered
 
 
 def test_repair_multi_agent_memo_removes_raw_tool_and_bad_claims() -> None:
@@ -296,7 +387,9 @@ def test_graph_renderer_surfaces_memo_claims_and_evidence_refs(tmp_path) -> None
     rendered = result["rendered_answer"]
     assert "Core thesis:" in rendered
     assert "Key memo claims:" in rendered
-    assert "refs=capex_ref" in rendered
+    assert "[C1]" in rendered
+    assert "refs=capex_ref" not in rendered
+    assert "Evidence index:" in rendered
     assert "Caveats:" in rendered
     assert "Source boundary: verified ClaimCards only" in rendered
     rendered_ref = result["artifact_refs"]["rendered_answer"].replace("\\", "/")
@@ -331,7 +424,7 @@ def test_memo_writer_llm_accepts_valid_memo_json() -> None:
     assert result["memo_answer"]["thesis_driver_pack"]["schema_version"] == "sec_agent_thesis_driver_pack_v0.1"
     assert "memo_writer_data_view" not in fake.calls[0]["messages"][1]["content"]
     assert "shared_memo_context" in fake.calls[0]["messages"][1]["content"]
-    assert "memo_writer_v0_6_profiled_thesis_led_claim_cards" in fake.calls[0]["messages"][1]["content"]
+    assert "memo_writer_v0_8_supervising_analyst_plan_first_readable_surface" in fake.calls[0]["messages"][1]["content"]
     assert "do_not_emit_supported_claims" in fake.calls[0]["messages"][1]["content"]
 
 
@@ -383,6 +476,95 @@ def test_memo_writer_llm_infers_chinese_response_language_from_query() -> None:
     assert result["memo_answer"]["response_language"]["language"] == "zh-CN"
     assert "response_language.language exactly to zh-CN" in prompt
     assert "Simplified Chinese" in prompt
+
+
+def test_memo_writer_llm_rewrites_template_gap_first_chinese_opening() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "product_technology_analyst",
+                "observations": [
+                    {
+                        "claim": "DELL AI optimized server product revenue was $16.1B.",
+                        "claim_type": "reported_product_kpi",
+                        "ticker_scope": ["DELL"],
+                        "metric_scope": ["product revenue"],
+                        "analysis_dimension": "product_and_production",
+                        "memo_slot": "product_and_production",
+                        "direction": "positive",
+                        "evidence_refs": ["dell_product_ref"],
+                        "source_families": ["company_authored_unaudited_sec_filing"],
+                    },
+                ],
+            },
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": "GOOGL capital expenditures were $5.1B.",
+                        "claim_type": "reported_financial_fact",
+                        "ticker_scope": ["GOOGL"],
+                        "metric_scope": ["capex"],
+                        "analysis_dimension": "capital_and_financing",
+                        "memo_slot": "capital_and_financing",
+                        "direction": "neutral",
+                        "evidence_refs": ["googl_capex_ref"],
+                        "source_families": ["primary_sec_filing"],
+                    },
+                ],
+            },
+        ]
+    )
+    memo = {
+        "answer_status": "draft",
+        "direct_answer": "当前证据更适合形成一份谨慎的分维度判断：产品与产线上，DELL / product revenue / $16.1B 指向正向影响；缺失的订单、份额或商业 tracker 只作为后续验证项。",
+        "memo_generation_policy": "thesis_led_claim_cards_v0_1",
+        "raw_rows_consumed": False,
+        "tool_calls_requested": [],
+        "memo_claims": [
+            {
+                "claim": "DELL AI 优化服务器收入为 $16.1B。",
+                "evidence_refs": ["dell_product_ref"],
+                "source_families": ["company_authored_unaudited_sec_filing"],
+            },
+            {
+                "claim": "GOOGL 资本开支为 $5.1B。",
+                "evidence_refs": ["googl_capex_ref"],
+                "source_families": ["primary_sec_filing"],
+            },
+        ],
+        "dimension_analyses": [
+            {
+                "dimension_id": "product_and_production",
+                "summary": "DELL AI 优化服务器收入为 $16.1B，可作为产品传导锚点。",
+                "evidence_refs": ["dell_product_ref"],
+            },
+            {
+                "dimension_id": "capital_and_financing",
+                "summary": "GOOGL 资本开支为 $5.1B，约束云资本开支判断。",
+                "evidence_refs": ["googl_capex_ref"],
+            },
+        ],
+    }
+    fake = _FakeChat([json.dumps(memo, ensure_ascii=False)])
+
+    result = route_memo_writer_llm(
+        {
+            "user_query": "请分析 AI 基础设施 capex 和供应链传导。",
+            "verified_judgment_plan": judgment,
+            "judgment_plan": judgment,
+            "specialist_verification": {"memo_writer_allowed": True},
+        },
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    direct = result["memo_answer"]["direct_answer"]
+    assert result["memo_route_result"]["status"] == "pass"
+    assert "当前证据更适合形成一份谨慎的分维度判断" not in direct
+    assert "缺失的订单、份额或商业 tracker" not in direct
+    assert "已披露事实给出的主线" in direct
+    assert "产品收入" in direct
 
 
 def test_memo_writer_llm_wraps_english_claims_for_chinese_response_gate() -> None:
@@ -950,6 +1132,11 @@ def test_memo_writer_salvages_repeated_length_failures_as_verifiable_memo() -> N
     assert verification["status"] == "pass"
     assert "supported_claims" not in memo
     assert 1 <= len(memo["memo_claims"]) <= 5
+    rendered = _render_memo_answer(memo, bounded=True, state={"memo_logic_plan": {}})
+    assert "证据锚点" not in rendered
+    assert "投资判断只能沿" not in rendered
+    assert "If the fact conflicts with another approved row" not in rendered
+    assert "ClaimCard" not in rendered
 
 
 def test_memo_writer_prompt_uses_slot_balanced_v0_3_caps() -> None:
@@ -1031,7 +1218,8 @@ def test_memo_writer_prompt_uses_slot_balanced_v0_3_caps() -> None:
     compact = payload["verified_judgment_plan"]
     assert result["memo_route_result"]["status"] == "pass"
     assert len(compact["supported_claims"]) == 5
-    assert compact["supported_claims"][0]["claim_type"] == "investment_thesis_synthesis"
+    assert compact["supported_claims"][0]["claim_type"] == "company_reported_financial_fact"
+    assert "investment_thesis_synthesis" in {row["claim_type"] for row in compact["supported_claims"]}
     assert len(compact["unsupported_claims"]) == 2
     assert len(compact["conflicts"]) == 2
     assert "memo_thesis_plan" in compact
@@ -1300,7 +1488,13 @@ def test_shared_memo_context_carries_scope_without_raw_rows() -> None:
     assert context["source_boundaries"]["private_operator_context_excluded"] is True
     assert context["bounded_gap_register"]["gap_refs"][0]["gap_id"] == "gap_channel_inventory"
     assert context["bounded_gap_register"]["claim_policy"] == "bounded_gaps_may_be_disclosed_as_missing_evidence_but_not_used_as_supporting_facts"
-    assert context["prompt_policy"]["allowed_input_views"] == ["shared_memo_context", "verified_judgment_plan", "specialist_verification"]
+    assert context["prompt_policy"]["allowed_input_views"] == [
+        "shared_memo_context",
+        "supervising_analyst_pack",
+        "memo_logic_plan",
+        "verified_judgment_plan",
+        "specialist_verification",
+    ]
     assert context["prompt_policy"]["bounded_evidence_rows"] == "excluded"
     assert context["specialist_routes"]["passed_agents"] == ["fundamental_analyst"]
     assert context["specialist_routes"]["failed_agents"] == ["risk_counterevidence_analyst"]

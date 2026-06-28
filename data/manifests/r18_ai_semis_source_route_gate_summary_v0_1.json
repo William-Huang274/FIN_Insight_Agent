@@ -1,0 +1,53 @@
+{
+  "action_required_assignment_count": 0,
+  "assignment_count": 56,
+  "by_family_status": {
+    "analog_embedded_semiconductors": {
+      "pass": 10
+    },
+    "eda_ip": {
+      "pass": 4
+    },
+    "electronics_manufacturing_services": {
+      "pass": 4
+    },
+    "foundry": {
+      "pass": 4
+    },
+    "gpu_accelerator": {
+      "pass": 3
+    },
+    "memory": {
+      "pass": 3
+    },
+    "networking": {
+      "pass": 6
+    },
+    "power_cooling": {
+      "pass": 4
+    },
+    "semicap_equipment": {
+      "pass": 14
+    },
+    "server_oem": {
+      "pass": 3
+    },
+    "v1_general_ai_infrastructure": {
+      "pass": 1
+    }
+  },
+  "by_missing_group": {},
+  "family_count": 11,
+  "generated_at": "2026-06-22T18:16:07Z",
+  "hard_gate": {
+    "action_required_assignment_count": 0,
+    "forbidden_claim_violation_count": 0,
+    "unregistered_required_source_role_count": 0,
+    "url_or_snippet_promoted_count": 0
+  },
+  "pass_assignment_count": 56,
+  "policy": "AI/Semis first-tranche source-route gate requires registered roles plus parser-backed source authority rows; gaps remain action_required, not public-boundary closeout.",
+  "schema_version": "finsight_r18_ai_semis_source_route_gate_v0_1",
+  "status": "pass",
+  "ticker_count": 53
+}

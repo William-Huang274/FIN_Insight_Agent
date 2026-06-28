@@ -60,6 +60,7 @@
       "require_judgment_state": true,
       "require_memo_logic_plan": true,
       "require_dimension_memo_surface": true,
+      "require_investment_memo_quality": true,
       "require_no_writer_new_facts": true,
       "require_response_language_match": true,
       "require_workbench_trace": true,

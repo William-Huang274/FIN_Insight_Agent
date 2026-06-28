@@ -170,6 +170,7 @@ def expand_catalog_case(
             "require_rendered_memo_claims": require_depth_surface,
             "require_rendered_evidence_refs": require_depth_surface,
             "require_dimension_memo_surface": require_depth_surface,
+            "require_investment_memo_quality": bool(case.get("require_investment_memo_quality", require_depth_surface)),
             "require_analyst_depth_gate": require_depth_surface,
             "require_run_audit_store": True,
             "required_run_audit_tables": DEFAULT_RUN_AUDIT_TABLES,

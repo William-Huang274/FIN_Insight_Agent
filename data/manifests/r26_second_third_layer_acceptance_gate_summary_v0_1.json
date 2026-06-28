@@ -1,0 +1,162 @@
+{
+  "fundamental_peer_panel_summary": {},
+  "gates": {
+    "second_layer": true,
+    "third_layer": true
+  },
+  "schema_version": "finsight_r26_second_third_layer_acceptance_gate_v0_1",
+  "second_layer_summary": {
+    "failures": [],
+    "metrics": {
+      "product_kpi_closeout_row_count": 603,
+      "product_kpi_closeout_status_counts": {
+        "business_segment_metric_ready": 52,
+        "geographic_or_non_product_metric_only": 10,
+        "product_kpi_exact_gap": 368,
+        "product_kpi_exact_ready": 173
+      },
+      "product_kpi_diagnostic_gap_classes": {
+        "non_us_local_or_ir_parser_required": 4,
+        "product_surface_or_taxonomy_available_no_company_kpi_candidate": 100,
+        "verifier_business_segment_column_group_required": 13,
+        "verifier_business_segment_only_candidates": 107,
+        "verifier_non_product_or_total_candidates": 12,
+        "verifier_operating_metric_requires_industry_slot": 32,
+        "verifier_percentage_or_change_only_candidates": 72,
+        "verifier_period_or_version_conflict": 5,
+        "verifier_region_or_geography_only_candidates": 15,
+        "verifier_sentence_relation_insufficient": 8
+      },
+      "product_kpi_diagnostic_status_counts": {
+        "business_segment_metric_ready": 90,
+        "geographic_or_non_product_metric_only": 10,
+        "product_kpi_exact_gap": 368,
+        "product_kpi_exact_ready": 135
+      },
+      "product_slot_count": 6454,
+      "product_slot_ticker_count": 603,
+      "r17_nonfinancial_boundary_violation_count": 0,
+      "r17_product_family_evidence_row_count": 24,
+      "r17_source_role_counts": {
+        "business_mix_operating_metric": 1,
+        "customer_deployment_proxy": 2,
+        "industry_operating_metric": 7,
+        "product_benchmark_proxy": 2,
+        "product_ecosystem_deployment_context": 1,
+        "product_generation_edge": 1,
+        "technical_product_spec": 10
+      },
+      "r17_summary_status": "pass",
+      "relationship_coverage": {
+        "benchmark_signal": 2,
+        "competes_with": 3358,
+        "customer_deployment_signal": 2,
+        "generation_successor_signal": 1,
+        "supplier_or_input_edge": 156,
+        "technical_spec_signal": 10
+      },
+      "relationship_edge_count": 24237,
+      "relationship_edge_type_counts": {
+        "BELONGS_TO_FAMILY": 6454,
+        "COMPETES_WITH": 3358,
+        "COMPLEMENTS_WITH": 18,
+        "COMPONENT_INPUT_TO": 18,
+        "ENABLES_PRODUCTION_FOR": 56,
+        "FAMILY_HAS_PRODUCT_SLOT": 6454,
+        "HAS_PRODUCT_FAMILY": 658,
+        "HAS_PRODUCT_SLOT": 6454,
+        "INFRASTRUCTURE_COMPLEMENT_TO": 27,
+        "INFRASTRUCTURE_SUPPLIER_TO": 24,
+        "INPUT_OR_COMPLEMENT_TO": 12,
+        "IN_PRODUCT_FAMILY": 658,
+        "MANUFACTURING_DEPENDENCY_FOR": 46
+      },
+      "slot_status_counts": {
+        "bounded_context_slot": 9,
+        "filings_taxonomy_slot": 1899,
+        "official_surface_slot": 4432,
+        "product_kpi_exact_slot": 114
+      }
+    },
+    "status": "pass"
+  },
+  "status": "pass",
+  "third_layer_summary": {
+    "failures": [],
+    "metrics": {
+      "capital_context_by_source_role": {
+        "capital_structure_disclosure": 2956,
+        "lagged_ownership_context": 5000,
+        "working_capital_liquidity": 5229
+      },
+      "capital_context_row_count": 13185,
+      "financial_statement_metric_family_counts": {
+        "accounts_payable": 472,
+        "accounts_receivable": 456,
+        "assets": 587,
+        "capital_expenditure_proxy": 518,
+        "cash_and_equivalents": 564,
+        "current_assets": 485,
+        "current_liabilities": 485,
+        "deferred_revenue": 383,
+        "equity": 587,
+        "financing_cash_flow": 587,
+        "gross_profit": 258,
+        "inventory": 343,
+        "investing_cash_flow": 587,
+        "liabilities": 443,
+        "net_income": 586,
+        "operating_cash_flow": 584,
+        "operating_income": 482,
+        "r_and_d": 297,
+        "revenue": 572,
+        "shares_outstanding": 518,
+        "short_term_debt": 352
+      },
+      "non_us_l1_financial_covered_target_ticker_count": 16,
+      "r18_authority_mart_by_source_role": {
+        "app_rank_store_proxy": 56,
+        "auto_product_identity_context": 20,
+        "beneficial_ownership_filing_event": 247,
+        "capital_structure_disclosure": 914,
+        "channel_offer_proxy": 66,
+        "customer_deployment_proxy": 1,
+        "developer_ecosystem_proxy": 64,
+        "energy_utility_context": 215,
+        "financial_regulatory_context": 77,
+        "hiring_capacity_proxy": 66,
+        "insider_transaction_filing_event": 246,
+        "lagged_ownership_context": 409,
+        "macro_official_context": 374,
+        "official_customer_order_or_deployment_event": 26,
+        "official_product_surface": 1066,
+        "platform_review_proxy": 58,
+        "primary_company_disclosure": 837,
+        "product_benchmark_proxy": 1,
+        "product_generation_edge": 1,
+        "proxy_governance_filing_event": 239,
+        "public_order_proxy": 159,
+        "regulated_product_context": 72,
+        "securities_offering_filing_event": 236,
+        "supply_chain_official_relationship": 25,
+        "technical_product_spec": 1,
+        "technology_research_proxy": 78,
+        "trusted_external_context": 453,
+        "working_capital_liquidity": 1174
+      },
+      "r18_authority_mart_row_count": 7181,
+      "r18_registry_source_role_count": 28,
+      "sec_capital_event_boundary_missing_count": 0,
+      "sec_capital_event_by_source_role": {
+        "beneficial_ownership_filing_event": 1965,
+        "insider_transaction_filing_event": 1969,
+        "proxy_governance_filing_event": 1892,
+        "securities_offering_filing_event": 1758
+      },
+      "sec_capital_event_exact_violation_count": 0,
+      "sec_capital_event_row_count": 7584,
+      "sec_financial_statement_ticker_count": 587
+    },
+    "status": "pass"
+  }
+}

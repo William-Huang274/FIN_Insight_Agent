@@ -1,0 +1,28 @@
+{
+  "admitted_row_count": 9,
+  "admitted_ticker_count": 8,
+  "admitted_tickers": [
+    "005930.KS",
+    "2308.TW",
+    "2317.TW",
+    "ACLS",
+    "ETN",
+    "LSCC",
+    "MCHP",
+    "TXN"
+  ],
+  "attempt_count_by_status": {
+    "verified_public_html_text": 8,
+    "verified_public_pdf_text": 1
+  },
+  "failed_target_count": 0,
+  "failed_targets": [],
+  "generated_at": "2026-06-27T06:49:14Z",
+  "row_count_by_layer": {
+    "customer_deployment_adoption": 1,
+    "product_performance_proxy": 1,
+    "product_spec_architecture": 7
+  },
+  "schema_version": "finsight_ai_semis_product_depth_followup_summary_v0_1",
+  "target_count": 9
+}

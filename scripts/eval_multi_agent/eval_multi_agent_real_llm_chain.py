@@ -63,6 +63,16 @@ DEFAULT_MARKET_SNAPSHOT_ID = "20260530_market_yahoo_chart_full238_6m_bars_3m_fmp
 DEFAULT_MARKET_AS_OF_DATE = "2026-05-29"
 
 
+def _int_env_or_default(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if value in (None, ""):
+        return default
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def _path_env_or_default(name: str, default: Path) -> Path:
     value = os.environ.get(name)
     return Path(value) if value else default
@@ -110,6 +120,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--bge-model", type=Path, default=Path(os.environ.get("BGE_MODEL", str(DEFAULT_BGE_MODEL))))
     parser.add_argument("--bge-device", default=os.environ.get("BGE_DEVICE", "auto"))
     parser.add_argument("--context-runner", default=os.environ.get("SEC_AGENT_CONTEXT_RUNNER", os.environ.get("CONTEXT_RUNNER", "in_process")))
+    parser.add_argument(
+        "--evidence-operator-fanout-workers",
+        type=int,
+        default=_int_env_or_default("SEC_AGENT_EVIDENCE_OPERATOR_FANOUT_WORKERS", 0),
+        help=(
+            "Max parallel evidence-operator shards. 0 uses a resource-aware default: "
+            "local CUDA/in-process runs serialize BGE-backed shards; CPU/subprocess/cloud profiles keep wider fanout."
+        ),
+    )
     parser.add_argument("--evidence-top-k", type=int, default=int(os.environ.get("EVIDENCE_TOP_K", "0")))
     parser.add_argument("--object-top-k", type=int, default=int(os.environ.get("OBJECT_TOP_K", "0")))
     parser.add_argument("--reranker-candidate-limit", type=int, default=int(os.environ.get("RERANKER_CANDIDATE_LIMIT", "0")))
@@ -302,6 +321,8 @@ def score_case(
     rendered_has_claim_section = _rendered_has_claim_section(rendered_answer)
     rendered_has_evidence_refs = _rendered_has_evidence_refs(rendered_answer)
     rendered_has_dimension_section = _rendered_has_dimension_section(rendered_answer)
+    surface_readability = _rendered_surface_readability_checks(rendered_answer, expected_response_language)
+    investment_quality = _rendered_investment_quality_checks(rendered_answer, expected_response_language)
     memo_dimension_analyses = [row for row in memo.get("dimension_analyses") or [] if isinstance(row, Mapping)]
     analyst_depth_gate = claim_verification.get("analyst_depth_gate") if isinstance(claim_verification.get("analyst_depth_gate"), Mapping) else {}
     thesis_driver_pack = (
@@ -326,6 +347,9 @@ def score_case(
         rendered_answer=rendered_answer,
         memo_dimension_analyses=memo_dimension_analyses,
     )
+    supervising_analyst = _supervising_analyst_pack_checks(case, result=result)
+    source_layer_capability = _source_layer_capability_checks(case, result=result, summary=summary)
+    role_source_layer_distribution = _role_source_layer_distribution_checks(case, result=result, summary=summary)
 
     layer_checks = {
         "research_lead": {
@@ -385,6 +409,26 @@ def score_case(
                 if case.get("require_response_language_match")
                 else True
             ),
+            "surface_readability_pass": (
+                surface_readability["status"] == "pass"
+                if case.get("require_dimension_memo_surface") or case.get("require_rendered_evidence_refs")
+                else True
+            ),
+            "investment_memo_quality_pass": (
+                investment_quality["status"] == "pass"
+                if case.get("require_investment_memo_quality")
+                else True
+            ),
+            **{
+                f"surface.{key}": value
+                for key, value in surface_readability.get("checks", {}).items()
+                if case.get("require_dimension_memo_surface") or case.get("require_rendered_evidence_refs")
+            },
+            **{
+                f"quality.{key}": value
+                for key, value in investment_quality.get("checks", {}).items()
+                if case.get("require_investment_memo_quality")
+            },
         },
         "payload_safety": {
             "raw_payload_not_in_summary": (summary.get("payload_policy") or {}).get("raw_evidence") == "not_included",
@@ -395,6 +439,9 @@ def score_case(
         "run_audit": run_audit["checks"],
         "vnext_contract": vnext_contract["checks"],
         "diagnostic_quality": diagnostic_quality["checks"],
+        "supervising_analyst": supervising_analyst["checks"],
+        "source_layer_capability": source_layer_capability["checks"],
+        "role_source_layer_distribution": role_source_layer_distribution["checks"],
     }
     checks = _flatten_checks(layer_checks)
     hard_gate_status = "pass" if all(checks.values()) and result.get("status") == "completed" else "fail"
@@ -429,6 +476,8 @@ def score_case(
         "rendered_answer_has_claim_section": rendered_has_claim_section,
         "rendered_answer_has_evidence_refs": rendered_has_evidence_refs,
         "rendered_answer_has_dimension_section": rendered_has_dimension_section,
+        "surface_readability": surface_readability,
+        "investment_quality": investment_quality,
         "claim_verification": claim_verification.get("status") or "",
         "specialist_verification": specialist_verification.get("status") or "",
         "universe_validation": universe_validation.get("status") or ("skipped" if "universe_relationship" not in active_agents else ""),
@@ -443,6 +492,9 @@ def score_case(
         "run_audit": run_audit,
         "vnext_contract_audit": vnext_contract,
         "diagnostic_quality_audit": diagnostic_quality,
+        "supervising_analyst_audit": supervising_analyst,
+        "source_layer_capability_audit": source_layer_capability,
+        "role_source_layer_distribution_audit": role_source_layer_distribution,
         "layer_checks": layer_checks,
         "checks": checks,
         "agent_audit": _agent_audit(result, summary, tool_calls=tool_calls, specialist_routes=specialist_routes, specialist_quality=specialist_quality),
@@ -460,12 +512,478 @@ def _rendered_has_claim_section(rendered_answer: str) -> bool:
 
 def _rendered_has_evidence_refs(rendered_answer: str) -> bool:
     text = str(rendered_answer or "")
-    return "refs=" in text or "证据=" in text
+    return "refs=" in text or "证据=" in text or bool(re.search(r"\[C\d+\]", text))
 
 
 def _rendered_has_dimension_section(rendered_answer: str) -> bool:
     text = str(rendered_answer or "")
     return "Dimension analysis:" in text or "分维度分析:" in text
+
+
+def _rendered_surface_readability_checks(rendered_answer: str, expected_language: str) -> dict[str, Any]:
+    text = str(rendered_answer or "")
+    internal_markers = [
+        "机制：",
+        "财务桥：",
+        "mechanism:",
+        "financial bridge:",
+        "Bridge the claim",
+        "This ClaimCard",
+        "source_boundary_notes",
+        "driver_id",
+        "gap_id",
+        "reconciliation_candidate:",
+        "If the fact conflicts with another approved row",
+        "证据锚点",
+        "投资判断只能沿",
+        "financial_metric:",
+        "product_kpi:",
+        "source_family",
+        "memo_slot",
+    ]
+    checks = {
+        "no_internal_field_labels": not any(marker.lower() in text.lower() for marker in internal_markers),
+        "no_raw_interactive_refs": "INTERACTIVE_" not in text and "__mcp__::" not in text,
+        "no_pipe_joined_dimension_dump": text.count(" | ") <= 1,
+        "short_citations_present": bool(re.search(r"\[C\d+\]", text)) if _rendered_has_evidence_refs(text) else True,
+        "boilerplate_wrapper_not_repeated": text.count("基于已验证证据并在当前证据边界内") <= 1,
+        "language_mix_ok": _rendered_user_language_ok(text, expected_language),
+        "no_english_template_prose": (
+            not _rendered_has_english_template_prose(text) if expected_language == "zh-CN" else True
+        ),
+        "opening_not_template_salvage": not _rendered_opening_is_template_salvage(text, expected_language),
+    }
+    return {
+        "schema_version": "sec_agent_rendered_surface_readability_gate_v0.1",
+        "status": "pass" if all(checks.values()) else "fail",
+        "checks": checks,
+        "policy": "memo_surface_short_citations_no_internal_fields_v0_1",
+    }
+
+
+def _rendered_investment_quality_checks(rendered_answer: str, expected_language: str) -> dict[str, Any]:
+    text = str(rendered_answer or "").strip()
+    sentences = _memo_sentences(text)
+    non_gap_sentences = [sentence for sentence in sentences if not _sentence_is_gap_dominant(sentence)]
+    gap_sentences = [sentence for sentence in sentences if _sentence_is_gap_dominant(sentence)]
+    opening = _opening_section_text(text, expected_language) or text[:520]
+    gap_ratio = (len(gap_sentences) / max(1, len(sentences))) if sentences else 1.0
+    insight_sentences = [sentence for sentence in non_gap_sentences if _sentence_has_investment_mechanism(sentence)]
+    citation_backed_insights = [sentence for sentence in insight_sentences if bool(re.search(r"\[C\d+\]", sentence))]
+    citation_backed_insight_lines = [
+        line
+        for line in str(text or "").splitlines()
+        if bool(re.search(r"\[C\d+\]", line)) and _sentence_has_investment_mechanism(line)
+    ]
+    decision_sections = _decision_section_texts(text, expected_language)
+    decision_section_nonempty = all(len(value.strip()) >= 24 for value in decision_sections.values()) if decision_sections else False
+    decision_section_not_gap_only = all(not _text_is_gap_dominant(value) for value in decision_sections.values()) if decision_sections else False
+    decision_sections_actionable = all(_decision_text_has_actionable_mechanism(value) for value in decision_sections.values()) if decision_sections else False
+    gap_section_chars = len(_extract_gap_section(text, expected_language))
+    gap_term_count = _gap_term_count(text)
+    dimension_number_sequence_ok = _dimension_number_sequence_ok(text, expected_language)
+    product_section_not_fake_financial_line = not _product_section_has_fake_financial_line(text, expected_language)
+    checks = {
+        "thesis_not_gap_first": not _text_is_gap_dominant(opening),
+        "gap_budget_ok": (
+            gap_ratio <= 0.30
+            and gap_section_chars <= max(360, int(len(text) * 0.20))
+            and gap_term_count <= max(8, int(max(1, len(sentences)) * 0.55))
+        ),
+        "opening_information_dense": _opening_has_information_density(opening, expected_language),
+        "insight_density_ok": len(insight_sentences) >= 3,
+        "citation_backed_insight_ok": (
+            len({*citation_backed_insights, *citation_backed_insight_lines}) >= 2
+            if _rendered_has_evidence_refs(text)
+            else True
+        ),
+        "decision_sections_present": decision_section_nonempty,
+        "decision_sections_not_gap_only": decision_section_not_gap_only,
+        "decision_sections_actionable": decision_sections_actionable,
+        "internal_gate_prose_absent": not _contains_internal_gate_prose(text),
+        "not_claimcard_or_driver_dump": text.lower().count("claimcard") == 0 and text.lower().count("driver_id") == 0 and text.count(" | ") <= 1,
+        "dimension_number_sequence_ok": dimension_number_sequence_ok,
+        "product_section_not_fake_financial_line": product_section_not_fake_financial_line,
+    }
+    return {
+        "schema_version": "sec_agent_rendered_investment_quality_gate_v0.1",
+        "status": "pass" if all(checks.values()) else "fail",
+        "checks": checks,
+        "metrics": {
+            "sentence_count": len(sentences),
+            "gap_sentence_count": len(gap_sentences),
+            "gap_sentence_ratio": round(gap_ratio, 4),
+            "gap_term_count": gap_term_count,
+            "insight_sentence_count": len(insight_sentences),
+            "citation_backed_insight_count": len(citation_backed_insights),
+            "citation_backed_insight_line_count": len(citation_backed_insight_lines),
+            "gap_section_chars": gap_section_chars,
+            "dimension_number_sequence_ok": dimension_number_sequence_ok,
+            "product_section_fake_financial_line_count": _product_section_fake_financial_line_count(text, expected_language),
+        },
+        "policy": "analyst_memo_must_be_decision_useful_not_gap_ledger_v0_2",
+    }
+
+
+def _memo_sentences(text: str) -> list[str]:
+    parts = re.split(r"(?<=[。！？.!?])\s+|\n+|(?<=；)\s*", str(text or ""))
+    return [part.strip(" -*\t") for part in parts if len(part.strip(" -*\t")) >= 12]
+
+
+def _sentence_is_gap_dominant(sentence: str) -> bool:
+    return _text_is_gap_dominant(sentence)
+
+
+def _text_is_gap_dominant(text: str) -> bool:
+    value = str(text or "").lower()
+    if not value.strip():
+        return False
+    gap_terms = (
+        "缺口",
+        "缺乏",
+        "缺少",
+        "缺失",
+        "不足",
+        "无法",
+        "不能",
+        "未披露",
+        "尚未",
+        "找不到",
+        "未找到",
+        "没有直接",
+        "不支持",
+        "受限",
+        "仅能确认",
+        "需等待",
+        "口径不匹配",
+        "边界",
+        "gap",
+        "insufficient",
+        "not available",
+        "not disclosed",
+        "cannot",
+        "could not",
+        "missing",
+        "limited",
+        "not yet",
+        "bounded",
+        "commercial tracker",
+    )
+    hits = sum(value.count(term) for term in gap_terms)
+    if hits >= 2:
+        return True
+    return hits >= 1 and len(value) <= 120
+
+
+def _sentence_has_investment_mechanism(sentence: str) -> bool:
+    value = str(sentence or "").lower()
+    mechanism_terms = (
+        "因为",
+        "意味着",
+        "传导",
+        "支撑",
+        "压制",
+        "改善",
+        "恶化",
+        "验证",
+        "反映",
+        "对应",
+        "回报",
+        "现金流",
+        "毛利",
+        "订单",
+        "积压",
+        "capex",
+        "margin",
+        "cash flow",
+        "backlog",
+        "demand",
+        "supplier",
+        "therefore",
+        "because",
+        "implies",
+        "supports",
+        "pressures",
+        "transmission",
+        "read-through",
+    )
+    weak_gap_terms = ("无法", "不能", "缺口", "not available", "cannot", "insufficient")
+    return any(term in value for term in mechanism_terms) and not all(term in value for term in weak_gap_terms[:3])
+
+
+def _decision_text_has_actionable_mechanism(text: str) -> bool:
+    value = str(text or "").lower()
+    if _text_is_gap_dominant(value):
+        return False
+    metadata_markers = (
+        "financial_metric:",
+        "product_kpi:",
+        "fundamentals /",
+        "product_and_production",
+        "这条已验证证据链",
+        "证据链上",
+        "claimcard",
+        "driver_id",
+        "source_family",
+    )
+    if any(marker in value for marker in metadata_markers):
+        return False
+    mechanism_terms = (
+        "如果",
+        "若",
+        "因为",
+        "意味着",
+        "传导",
+        "验证",
+        "吸收",
+        "压制",
+        "支撑",
+        "回报",
+        "收入",
+        "毛利",
+        "现金流",
+        "订单",
+        "积压",
+        "客户",
+        "产能",
+        "capex",
+        "margin",
+        "cash flow",
+        "orders",
+        "backlog",
+        "demand",
+        "supplier",
+        "if",
+        "because",
+        "implies",
+        "supports",
+        "pressure",
+        "validate",
+    )
+    return any(term in value for term in mechanism_terms)
+
+
+def _decision_section_texts(text: str, expected_language: str) -> dict[str, str]:
+    labels = (
+        ("投资含义", "什么会改变判断", "后续跟踪")
+        if expected_language == "zh-CN"
+        else ("Investment implications", "What would change the view", "Monitoring items")
+    )
+    stop_labels = (
+        ("投资含义", "什么会改变判断", "后续跟踪", "可行动的证据缺口", "限制与注意事项", "证据边界", "证据索引", "关键论据", "分维度分析")
+        if expected_language == "zh-CN"
+        else (
+            "Investment implications",
+            "What would change the view",
+            "Monitoring items",
+            "Evidence gaps but actionable",
+            "Caveats",
+            "Source boundary",
+            "Evidence index",
+            "Key memo claims",
+            "Dimension analysis",
+        )
+    )
+    sections: dict[str, str] = {}
+    for label in labels:
+        other_labels = [item for item in stop_labels if item != label]
+        pattern = re.escape(label) + r"\s*[:：]\s*(.*?)(?=\n\n(?:%s)\s*[:：]|\Z)" % "|".join(re.escape(item) for item in other_labels)
+        match = re.search(pattern, text, flags=re.S | re.I)
+        if match:
+            sections[label] = match.group(1).strip()
+    return sections
+
+
+def _opening_section_text(text: str, expected_language: str) -> str:
+    label = "核心判断" if expected_language == "zh-CN" else "Core thesis"
+    stop_labels = (
+        ("分维度分析", "关键论据", "投资含义", "什么会改变判断", "后续跟踪")
+        if expected_language == "zh-CN"
+        else ("Dimension analysis", "Key memo claims", "Investment implications", "What would change the view", "Monitoring items")
+    )
+    return _extract_labeled_section(text, label, stop_labels)
+
+
+def _dimension_number_sequence_ok(text: str, expected_language: str) -> bool:
+    section = _extract_dimension_section(text, expected_language)
+    if not section:
+        return True
+    numbers: list[int] = []
+    for line in section.splitlines():
+        match = re.match(r"\s*(?:[-*]\s*)?(\d+)[.、]\s+", line)
+        if match:
+            numbers.append(int(match.group(1)))
+    if len(numbers) < 2:
+        return True
+    return numbers == list(range(1, len(numbers) + 1))
+
+
+def _extract_dimension_section(text: str, expected_language: str) -> str:
+    label = "分维度分析" if expected_language == "zh-CN" else "Dimension analysis"
+    stop_labels = (
+        ("关键论据", "投资含义", "什么会改变判断", "后续跟踪", "可行动的证据缺口", "证据索引")
+        if expected_language == "zh-CN"
+        else ("Key memo claims", "Investment implications", "What would change the view", "Monitoring items", "Evidence gaps", "Evidence index")
+    )
+    return _extract_labeled_section(text, label, stop_labels)
+
+
+def _extract_labeled_section(text: str, label: str, stop_labels: tuple[str, ...]) -> str:
+    stop_pattern = "|".join(re.escape(item) for item in stop_labels)
+    pattern = re.escape(label) + r"\s*[:：]\s*(.*?)(?=\n\n(?:%s)\s*[:：]|\Z)" % stop_pattern
+    match = re.search(pattern, str(text or ""), flags=re.S | re.I)
+    return match.group(1).strip() if match else ""
+
+
+def _product_section_has_fake_financial_line(text: str, expected_language: str) -> bool:
+    return _product_section_fake_financial_line_count(text, expected_language) > 0
+
+
+def _product_section_fake_financial_line_count(text: str, expected_language: str) -> int:
+    section = _extract_dimension_section(text, expected_language)
+    if not section:
+        return 0
+    bad_phrases = (
+        "proceeds from sales",
+        "maturities of investments",
+        "sales and maturities of investments",
+        "realized gain",
+        "unrealized gain",
+        "gain on sales",
+        "dividends",
+        "cost of revenue",
+        "costs of revenue",
+        "cost of revenues",
+        "costs of revenues",
+        "cost of sales",
+        "costs of sales",
+        "deferred revenue",
+        "deferred system revenue",
+        "receivables sold",
+        "accounts receivable",
+        "factoring",
+        "letter of credit",
+        "proceeds from sales of lc",
+        "contract liabilities",
+        "投资到期",
+        "出售投资",
+        "投资收益",
+        "递延",
+        "收入成本",
+        "销售成本",
+    )
+    product_markers = ("产品", "产线", "product", "production")
+    count = 0
+    for line in section.splitlines():
+        value = line.lower()
+        if any(marker in value for marker in product_markers) and any(phrase in value for phrase in bad_phrases):
+            count += 1
+    return count
+
+
+def _extract_gap_section(text: str, expected_language: str) -> str:
+    labels = ("可行动的证据缺口", "限制与注意事项", "证据边界") if expected_language == "zh-CN" else ("Evidence gaps but actionable", "Caveats", "Source boundary")
+    chunks: list[str] = []
+    for label in labels:
+        match = re.search(re.escape(label) + r"\s*[:：]\s*(.*?)(?=\n\n\S|$)", text, flags=re.S | re.I)
+        if match:
+            chunks.append(match.group(1).strip())
+    return "\n".join(chunks)
+
+
+def _contains_internal_gate_prose(text: str) -> bool:
+    value = str(text or "").lower()
+    markers = (
+        "该声明为已核对",
+        "该声明卡为",
+        "不得推断未验证",
+        "reported revenue",
+        "company-disclosed product",
+        "the evidence traces",
+        "peer comparison is available only",
+        "no direct competitive comparison",
+        "source_boundary_notes",
+        "bridge the claim",
+        "if the fact conflicts with another approved row",
+        "证据锚点",
+        "投资判断只能沿",
+        "financial_metric:",
+        "product_kpi:",
+        "source_family",
+        "这条已验证证据链",
+        "证据链上",
+        "投资判断应先围绕",
+        "而不是只复述披露条目",
+    )
+    return any(marker in value for marker in markers)
+
+
+def _gap_term_count(text: str) -> int:
+    value = str(text or "").lower()
+    terms = (
+        "缺口",
+        "缺乏",
+        "缺少",
+        "缺失",
+        "无法",
+        "不能",
+        "不足",
+        "未披露",
+        "尚未",
+        "没有直接",
+        "不支持",
+        "受限",
+        "仅能确认",
+        "需等待",
+        "口径不匹配",
+        "边界",
+        "gap",
+        "missing",
+        "insufficient",
+        "not available",
+        "not disclosed",
+        "cannot",
+        "limited",
+        "not yet",
+        "bounded",
+        "commercial tracker",
+    )
+    return sum(value.count(term) for term in terms)
+
+
+def _opening_has_information_density(opening: str, expected_language: str) -> bool:
+    value = str(opening or "").lower()
+    if not value.strip():
+        return False
+    if _rendered_opening_is_template_salvage(value, expected_language):
+        return False
+    thesis_terms = (
+        "收入",
+        "毛利",
+        "利润",
+        "现金流",
+        "资本开支",
+        "订单",
+        "积压",
+        "产品",
+        "客户",
+        "供应链",
+        "估值",
+        "竞争",
+        "revenue",
+        "margin",
+        "earnings",
+        "cash flow",
+        "capex",
+        "orders",
+        "backlog",
+        "product",
+        "customer",
+        "supplier",
+        "valuation",
+    )
+    numeric_or_ticker = bool(re.search(r"\b[A-Z]{2,6}\b|\$?\d", opening))
+    return numeric_or_ticker and sum(value.count(term) for term in thesis_terms) >= 2
 
 
 def _analyst_depth_checks(
@@ -694,6 +1212,231 @@ def _diagnostic_quality_checks(
     }
 
 
+def _supervising_analyst_pack_checks(case: Mapping[str, Any], *, result: Mapping[str, Any]) -> dict[str, Any]:
+    expected_mode = str(case.get("expected_execution_mode") or "")
+    required = bool(
+        case.get("require_supervising_analyst_pack")
+        or (case.get("require_investment_memo_quality") and expected_mode == "deep_research")
+    )
+    pack = result.get("supervising_analyst_pack") if isinstance(result.get("supervising_analyst_pack"), Mapping) else {}
+    summary = result.get("multi_agent_summary") if isinstance(result.get("multi_agent_summary"), Mapping) else {}
+    summary_pack = summary.get("supervising_analyst_pack") if isinstance(summary.get("supervising_analyst_pack"), Mapping) else {}
+    financial = pack.get("financial_analysis_model") if isinstance(pack.get("financial_analysis_model"), Mapping) else {}
+    product = pack.get("product_bridge_pack") if isinstance(pack.get("product_bridge_pack"), Mapping) else {}
+    graph = pack.get("capital_transmission_graph") if isinstance(pack.get("capital_transmission_graph"), Mapping) else {}
+    synthesis = pack.get("research_lead_synthesis_plan") if isinstance(pack.get("research_lead_synthesis_plan"), Mapping) else {}
+    validation = pack.get("validation") if isinstance(pack.get("validation"), Mapping) else {}
+    key_line_items = [row for row in financial.get("key_line_items") or [] if isinstance(row, Mapping)]
+    product_kpis = [row for row in product.get("company_disclosed_product_kpis") or [] if isinstance(row, Mapping)]
+    product_context = [row for row in product.get("official_product_context") or [] if isinstance(row, Mapping)]
+    edges = [row for row in graph.get("edges") or [] if isinstance(row, Mapping)]
+    writer_directives = _string_list(synthesis.get("writer_directives"))
+    checks = {
+        "pack_present": bool(pack) if required else True,
+        "validation_pass": (validation.get("status") == "pass") if required and pack else True,
+        "financial_analysis_model_present": bool(key_line_items) if required else True,
+        "product_bridge_present": (bool(product_kpis) or bool(product_context)) if required else True,
+        "capital_transmission_graph_present": bool(edges) if required else True,
+        "research_lead_synthesis_plan_present": bool(str(synthesis.get("core_judgment") or "").strip()) if required else True,
+        "writer_directives_present": bool(writer_directives) if required else True,
+        "summary_tracks_pack": bool(summary_pack) if required else True,
+    }
+    return {
+        "schema_version": "sec_agent_supervising_analyst_pack_eval_check_v0.1",
+        "required": required,
+        "status": "pass" if all(checks.values()) else "fail",
+        "checks": checks,
+        "metrics": {
+            "key_line_item_count": len(key_line_items),
+            "product_kpi_count": len(product_kpis),
+            "product_context_count": len(product_context),
+            "capital_edge_count": len(edges),
+            "writer_directive_count": len(writer_directives),
+        },
+        "summary": dict(summary_pack) if isinstance(summary_pack, Mapping) else {},
+        "policy": "deep_research_requires_research_lead_supervising_analyst_pack_v0_1",
+    }
+
+
+def _source_layer_capability_checks(
+    case: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    summary: Mapping[str, Any],
+) -> dict[str, Any]:
+    required_layers = _string_list(case.get("required_source_layers"))
+    required = bool(
+        case.get("require_source_layer_capability_audit")
+        or case.get("require_l2_l3_l4_source_audit")
+        or required_layers
+    )
+    if required and not required_layers:
+        required_layers = ["L2", "L3", "L4"]
+
+    audit = result.get("source_layer_capability_audit") if isinstance(result.get("source_layer_capability_audit"), Mapping) else {}
+    summary_audit = summary.get("source_layer_capability_audit") if isinstance(summary.get("source_layer_capability_audit"), Mapping) else {}
+    if not audit and summary_audit:
+        audit = summary_audit
+
+    rows = [dict(row) for row in audit.get("rows") or [] if isinstance(row, Mapping)]
+    audit_summary = audit.get("summary") if isinstance(audit.get("summary"), Mapping) else {}
+    if not audit_summary and summary_audit:
+        audit_summary = summary_audit
+    by_layer = audit_summary.get("by_layer") if isinstance(audit_summary.get("by_layer"), Mapping) else {}
+    by_status = (
+        audit_summary.get("by_evidence_graph_status")
+        if isinstance(audit_summary.get("by_evidence_graph_status"), Mapping)
+        else {}
+    )
+    validation = audit.get("validation") if isinstance(audit.get("validation"), Mapping) else {}
+    validation_status = str(validation.get("status") or audit.get("validation_status") or summary_audit.get("validation_status") or "")
+    source_count = int(audit_summary.get("source_count") or len(rows) or 0)
+    context_or_proxy_allowed_count = int(
+        audit_summary.get("context_or_proxy_allowed_count")
+        or sum(1 for row in rows if bool(row.get("context_or_proxy_allowed")))
+        or 0
+    )
+    expected_missing_count = int(
+        audit_summary.get("expected_missing_count")
+        or int(by_status.get("not_registered") or 0)
+        or sum(1 for row in rows if str(row.get("evidence_graph_status") or "") == "not_registered")
+        or 0
+    )
+    exact_authority_ready_count = int(
+        audit_summary.get("exact_authority_ready_count")
+        or sum(1 for row in rows if bool(row.get("exact_value_authority_ready")))
+        or 0
+    )
+    layer_counts = {
+        layer: _source_layer_count(layer, by_layer=by_layer, rows=rows)
+        for layer in required_layers
+    }
+    non_l1_exact_violations = [
+        str(row.get("source_id") or "")
+        for row in rows
+        if str(row.get("layer_id") or "") in {"L2", "L3", "L4"}
+        and (bool(row.get("can_support_company_exact_fact")) or bool(row.get("exact_value_authority_ready")))
+    ]
+    checks = {
+        "audit_present": source_count > 0 if required else True,
+        "validation_pass": validation_status == "pass" if required and validation_status else True,
+        "required_layers_visible": all(count > 0 for count in layer_counts.values()) if required_layers else True,
+        "context_or_proxy_allowed_present": context_or_proxy_allowed_count > 0 if required else True,
+        "evidence_graph_status_distribution_present": bool(by_status) if required else True,
+        "expected_missing_sources_exposed": expected_missing_count > 0 if required else True,
+        "non_l1_exact_authority_absent": not non_l1_exact_violations,
+    }
+    return {
+        "schema_version": "sec_agent_source_layer_capability_eval_check_v0.1",
+        "required": required,
+        "status": "pass" if all(checks.values()) else "fail",
+        "required_layers": required_layers,
+        "metrics": {
+            "source_count": source_count,
+            "context_or_proxy_allowed_count": context_or_proxy_allowed_count,
+            "expected_missing_count": expected_missing_count,
+            "exact_authority_ready_count": exact_authority_ready_count,
+            "layer_counts": layer_counts,
+            "by_evidence_graph_status": dict(by_status),
+            "validation_status": validation_status,
+            "non_l1_exact_violation_sources": non_l1_exact_violations,
+        },
+        "checks": checks,
+        "policy": "l2_l3_l4_sources_must_be_visible_and_bounded_before_gap_or_memo_use_v0_1",
+    }
+
+
+def _source_layer_count(layer_id: str, *, by_layer: Mapping[str, Any], rows: list[Mapping[str, Any]]) -> int:
+    layer = by_layer.get(layer_id) if isinstance(by_layer.get(layer_id), Mapping) else {}
+    if layer:
+        return int(layer.get("count") or 0)
+    return sum(1 for row in rows if str(row.get("layer_id") or "") == layer_id)
+
+
+def _role_source_layer_distribution_checks(
+    case: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    summary: Mapping[str, Any],
+) -> dict[str, Any]:
+    required = bool(case.get("require_role_source_layer_distribution") or case.get("require_role_visible_source_layer_audit"))
+    expected_roles = set(_string_list(case.get("expected_specialist_agents")))
+    barrier = result.get("specialist_fanout_barrier") if isinstance(result.get("specialist_fanout_barrier"), Mapping) else {}
+    summary_barriers = summary.get("graph_barriers") if isinstance(summary.get("graph_barriers"), Mapping) else {}
+    summary_specialist = (
+        summary_barriers.get("specialist_fanout")
+        if isinstance(summary_barriers.get("specialist_fanout"), Mapping)
+        else {}
+    )
+    distribution = barrier.get("source_layer_distribution") if isinstance(barrier.get("source_layer_distribution"), Mapping) else {}
+    if not distribution and isinstance(summary_specialist.get("source_layer_distribution"), Mapping):
+        distribution = summary_specialist.get("source_layer_distribution") or {}
+    route_results = [dict(row) for row in result.get("specialist_route_results") or [] if isinstance(row, Mapping)]
+    route_distribution_roles = {
+        str(row.get("agent_id") or "")
+        for row in route_results
+        if isinstance(row.get("source_layer_distribution"), Mapping) and row.get("source_layer_distribution")
+    }
+    roles = distribution.get("roles") if isinstance(distribution.get("roles"), Mapping) else {}
+    available_roles = set(str(role) for role in roles) | route_distribution_roles
+    if not expected_roles:
+        expected_roles = {
+            str(row.get("agent_id") or "")
+            for row in route_results
+            if str(row.get("agent_id") or "") and str(row.get("status") or "") != "skipped"
+        }
+    exact_violation_roles = [
+        str(role)
+        for role, row in roles.items()
+        if isinstance(row, Mapping) and row.get("exact_authority_violation_sources")
+    ]
+    gap_roles = set(_string_list(distribution.get("gap_roles")))
+    selected_missing_roles = {
+        str(role)
+        for role, row in roles.items()
+        if isinstance(row, Mapping) and row.get("selected_missing_required_layers")
+    }
+    selector_gap_roles = sorted(gap_roles | selected_missing_roles)
+    missing_expected_roles = sorted(role for role in expected_roles if role and role not in available_roles)
+    checks = {
+        "distribution_present": bool(distribution) if required else True,
+        "expected_roles_present": not missing_expected_roles if required and expected_roles else True,
+        "exact_authority_violation_absent": not exact_violation_roles,
+        "selector_gaps_are_explicit": (
+            all(role in selector_gap_roles or role in available_roles for role in expected_roles)
+            if required and expected_roles
+            else True
+        ),
+        "gap_status_allowed": (
+            str(distribution.get("status") or "") in {"pass", "gap"}
+            if required and distribution
+            else True
+        ),
+        "no_silent_empty_role_distribution": (
+            all(int((roles.get(role) or {}).get("candidate_count") or 0) > 0 or role in selector_gap_roles for role in expected_roles if role in roles)
+            if required and roles
+            else True
+        ),
+    }
+    if case.get("fail_on_role_source_layer_gaps"):
+        checks["no_selector_gap_roles"] = not selector_gap_roles
+    else:
+        checks["no_selector_gap_roles"] = True
+    return {
+        "schema_version": "sec_agent_role_source_layer_distribution_eval_check_v0.1",
+        "required": required,
+        "status": "pass" if all(checks.values()) else "fail",
+        "expected_roles": sorted(expected_roles),
+        "available_roles": sorted(available_roles),
+        "missing_expected_roles": missing_expected_roles,
+        "selector_gap_roles": selector_gap_roles,
+        "exact_authority_violation_roles": exact_violation_roles,
+        "distribution_status": distribution.get("status") or "",
+        "checks": checks,
+        "policy": "role_source_layer_distribution_must_be_visible_with_explicit_selector_gaps_v0_1",
+    }
+
+
 def _diagnostic_approved_facts(result: Mapping[str, Any]) -> list[dict[str, Any]]:
     fact_selection = result.get("pre_memo_fact_selection") if isinstance(result.get("pre_memo_fact_selection"), Mapping) else {}
     rows = [dict(row) for row in fact_selection.get("approved_facts") or [] if isinstance(row, Mapping)]
@@ -767,8 +1510,12 @@ def _diagnostic_numeric_sanity_violations(approved_facts: list[Mapping[str, Any]
         unit_family = _diagnostic_unit_family(unit)
         if metric in currency_metrics and unit_family and unit_family != "currency":
             violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "currency_metric_non_currency_unit", "metric": metric, "unit": unit})
+        if metric == "financial_metric:revenue" and _diagnostic_revenue_label_is_noise(text):
+            violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "revenue_metric_semantic_noise", "metric": metric, "unit": unit})
         if metric == "financial_metric:gross_margin" and unit_family and unit_family != "percent":
             violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "gross_margin_non_percent_unit", "metric": metric, "unit": unit})
+        if metric in {"financial_metric:gross_margin", "financial_metric:gross_profit"} and _diagnostic_profitability_label_is_noise(text):
+            violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "profitability_metric_semantic_noise", "metric": metric, "unit": unit})
         if metric == "product_kpi:backlog":
             if unit_family == "percent":
                 violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "backlog_percent_unit", "metric": metric, "unit": unit})
@@ -793,6 +1540,51 @@ def _diagnostic_numeric_sanity_violations(approved_facts: list[Mapping[str, Any]
             ):
                 violations.append({"fact_id": _diagnostic_text(row.get("fact_id")), "reason": "backlog_debt_semantic_noise", "metric": metric, "unit": unit})
     return violations
+
+
+def _diagnostic_revenue_label_is_noise(text: str) -> bool:
+    raw = str(text or "").lower().replace("_", " ")
+    return any(
+        term in raw
+        for term in (
+            "deferred revenue",
+            "deferred system revenue",
+            "remaining performance obligation",
+            " rpo ",
+            "contract liability",
+            "contract liabilities",
+            "cost of revenue",
+            "costs of revenue",
+            "cost of sales",
+            "proceeds from sales",
+            "realized gain",
+            "receivables sold",
+            "factoring",
+            "letter of credit",
+        )
+    )
+
+
+def _diagnostic_profitability_label_is_noise(text: str) -> bool:
+    raw = str(text or "").lower()
+    return any(
+        term in raw
+        for term in (
+            "cash flow",
+            "cash_flow",
+            "cash provided by",
+            "cash from operations",
+            "operating activities",
+            "operating_activities",
+            "financing activities",
+            "investing activities",
+            "earnings per share",
+            "earnings_per_share",
+            "diluted",
+            "basic",
+            "eps",
+        )
+    )
 
 
 def _diagnostic_unit_family(unit: str) -> str:
@@ -966,9 +1758,47 @@ def _rendered_user_language_ok(rendered_answer: str, expected_language: str) -> 
     if not text.strip():
         return False
     cjk_count = len(re.findall(r"[\u4e00-\u9fff]", text))
-    latin_text = re.sub(r"\b(?:[A-Z]{1,8}|10-[KQ]|8-K|GAAP|SEC|FY\d{2,4}|Q[1-4])\b", " ", text)
+    latin_text = re.sub(
+        r"\b(?:[A-Z]{1,8}|10-[KQ]|20-F|6-K|8-K|S-[13]|GAAP|SEC|FY\d{2,4}|Q[1-4]|AI|EV|GPU|CPU|API|SaaS)\b",
+        " ",
+        text,
+    )
     latin_words = len(re.findall(r"[A-Za-z]{3,}", latin_text))
-    return cjk_count >= 40 and cjk_count >= latin_words
+    return cjk_count >= 60 and latin_words <= max(28, cjk_count // 5)
+
+
+def _rendered_has_english_template_prose(rendered_answer: str) -> bool:
+    value = str(rendered_answer or "").lower()
+    markers = (
+        "the evidence supports",
+        "the evidence frames",
+        "the evidence links",
+        "caveat:",
+        "missing confirmation:",
+        "period changes compare",
+        "not strictly same-period",
+        "non-gaap measure",
+        "gaap gross margin",
+        "company-reported orders/backlog",
+    )
+    return any(marker in value for marker in markers)
+
+
+def _rendered_opening_is_template_salvage(rendered_answer: str, expected_language: str) -> bool:
+    text = str(rendered_answer or "")
+    opening = (_opening_section_text(text, expected_language) or text[:700]).lower()
+    markers = (
+        "当前证据更适合形成一份谨慎的分维度判断",
+        "当前证据不足以支持强方向结论",
+        "缺失的订单、份额或商业 tracker",
+        "缺少的订单、份额或商业 tracker",
+        "available evidence supports a cautious",
+        "available evidence does not support a strong directional",
+        "missing orders, share, and commercial tracker",
+    )
+    if any(marker.lower() in opening for marker in markers):
+        return True
+    return False
 
 
 def _selected_cases(rows: list[dict[str, Any]], args: argparse.Namespace) -> list[dict[str, Any]]:
@@ -1291,6 +2121,50 @@ def _public_milvus_runtime_for_eval(capability: Mapping[str, Any]) -> dict[str, 
     }
 
 
+def _resolved_evidence_operator_fanout_workers(args: argparse.Namespace) -> int:
+    requested = int(getattr(args, "evidence_operator_fanout_workers", 0) or 0)
+    if requested > 0:
+        return requested
+    bge_device = str(getattr(args, "bge_device", "") or "").strip().lower()
+    context_runner = str(getattr(args, "context_runner", "") or "").strip().lower()
+    if bge_device in {"auto", "cuda"} or bge_device.startswith("cuda"):
+        if context_runner in {"", "auto", "in_process"}:
+            return 1
+        if context_runner == "subprocess":
+            return 2
+    return 4
+
+
+def _evidence_operator_resource_policy(args: argparse.Namespace) -> dict[str, Any]:
+    workers = _resolved_evidence_operator_fanout_workers(args)
+    bge_device = str(getattr(args, "bge_device", "") or "")
+    context_runner = str(getattr(args, "context_runner", "") or "")
+    requested = int(getattr(args, "evidence_operator_fanout_workers", 0) or 0)
+    return {
+        "schema_version": "sec_agent_evidence_operator_resource_policy_v0.1",
+        "policy_name": (
+            "explicit"
+            if requested > 0
+            else ("local_cuda_serial_bge_queue" if workers == 1 else "local_bge_subprocess_queue" if workers == 2 else "default_parallel_fanout")
+        ),
+        "evidence_operator_fanout_workers": workers,
+        "requested_evidence_operator_fanout_workers": requested,
+        "bge_device": bge_device,
+        "context_runner": context_runner,
+        "reason": (
+            "explicit_cli_or_env"
+            if requested > 0
+            else (
+                "serialize local CUDA in-process BGE-backed evidence routes to avoid duplicate model-load pressure"
+                if workers == 1
+                else "queue local auto/CUDA subprocess BGE-backed evidence routes to avoid duplicate model-load pressure"
+                if workers == 2
+                else "non-local-CUDA profile can keep default parallel fanout"
+            )
+        ),
+    }
+
+
 def _graph_env(args: argparse.Namespace) -> dict[str, str]:
     env = dict(os.environ)
     env.update(
@@ -1318,6 +2192,7 @@ def _graph_env(args: argparse.Namespace) -> dict[str, str]:
             "BGE_MODEL": str(args.bge_model),
             "BGE_DEVICE": args.bge_device,
             "SEC_AGENT_CONTEXT_RUNNER": args.context_runner,
+            "SEC_AGENT_EVIDENCE_OPERATOR_FANOUT_WORKERS": str(_resolved_evidence_operator_fanout_workers(args)),
             "RESEARCH_LEAD_MAX_TOKENS": str(args.research_lead_max_tokens),
             "SPECIALIST_MAX_TOKENS": str(args.specialist_max_tokens),
             "UNIVERSE_MAX_TOKENS": str(args.universe_max_tokens),
@@ -1349,8 +2224,9 @@ def _initial_state(
     )
     state["run_id"] = f"{run_id}_{case.get('case_id')}"
     state["case_id"] = str(case.get("case_id") or "")
-    if args.run_audit_db_path:
-        state["run_audit_db_path"] = str(args.run_audit_db_path)
+    run_audit_db_path = _run_audit_db_path_for_case(args=args, case=case, run_id=run_id)
+    if run_audit_db_path:
+        state["run_audit_db_path"] = str(run_audit_db_path)
     inventory_companies = _string_list(case.get("source_inventory_companies"))
     project_inventory: dict[str, Any] = {
         "source_families": _string_list(case.get("source_tiers")),
@@ -1366,6 +2242,7 @@ def _initial_state(
     response_language = str(case.get("response_language") or case.get("output_language") or "").strip()
     if response_language:
         state["response_language"] = response_language
+    evidence_operator_resource_policy = _evidence_operator_resource_policy(args)
     context = {
         "evidence_operator_mode": "real" if args.real_evidence_operators else "dry_run",
         "build_runtime_ledger": bool(args.real_evidence_operators),
@@ -1384,6 +2261,8 @@ def _initial_state(
         "bge_model": str(args.bge_model),
         "bge_device": args.bge_device,
         "context_runner": args.context_runner,
+        "evidence_operator_fanout_workers": evidence_operator_resource_policy["evidence_operator_fanout_workers"],
+        "evidence_operator_resource_policy": evidence_operator_resource_policy,
         "evidence_top_k": args.evidence_top_k,
         "object_top_k": args.object_top_k,
         "reranker_candidate_limit": args.reranker_candidate_limit,
@@ -1397,8 +2276,8 @@ def _initial_state(
         "turn_index": int(case.get("turn_index") or 0),
         "previous_turn_summary": dict(previous_turn_summary or {}),
     }
-    if args.run_audit_db_path:
-        context["run_audit_db_path"] = str(args.run_audit_db_path)
+    if run_audit_db_path:
+        context["run_audit_db_path"] = str(run_audit_db_path)
     if _case_requires_milvus_runtime_contract(case):
         context.update(_milvus_runtime_context_from_env(case))
         context["milvus_runtime"] = project_inventory.get("milvus_runtime") or {}
@@ -1406,6 +2285,14 @@ def _initial_state(
         context["response_language"] = response_language
     state["multi_agent_context"] = context
     return state
+
+
+def _run_audit_db_path_for_case(*, args: argparse.Namespace, case: Mapping[str, Any], run_id: str) -> Path | None:
+    if args.run_audit_db_path:
+        return Path(args.run_audit_db_path)
+    if not bool(case.get("require_run_audit_store")):
+        return None
+    return Path("data") / "workbench_private" / "run_audit" / f"{run_id}.sqlite"
 
 
 def _query_contract(case: Mapping[str, Any]) -> dict[str, Any]:
@@ -2289,6 +3176,8 @@ def _aggregate(
             "context_runner": args.context_runner,
             "bge_device": args.bge_device,
             "bge_model_ref": _model_ref(args.bge_model),
+            "evidence_operator_fanout_workers": _resolved_evidence_operator_fanout_workers(args),
+            "evidence_operator_resource_policy": _evidence_operator_resource_policy(args),
             "reranker_candidate_limit": args.reranker_candidate_limit,
             "reranker_top_k": args.reranker_top_k,
             "reranker_batch_size": args.reranker_batch_size,

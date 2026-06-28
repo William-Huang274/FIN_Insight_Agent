@@ -1,0 +1,35 @@
+{
+  "boundary": "Industry/trusted source rows are exact source locator snapshots routed by company-family assignment; no company exact values or market-share/sales promotion.",
+  "company_count": 603,
+  "context_row_count": 603,
+  "generated_at": "2026-06-18T13:29:54Z",
+  "lane_fetch_status": {
+    "V1": "reachable",
+    "V2": "reachable",
+    "V3": "reachable",
+    "V4": "reachable",
+    "V5": "reachable",
+    "V6": "reachable",
+    "V7": "reachable",
+    "V8": "reachable"
+  },
+  "lane_status_codes": {
+    "V1": 200,
+    "V2": 200,
+    "V3": 200,
+    "V4": 200,
+    "V5": 200,
+    "V6": 200,
+    "V7": 200,
+    "V8": 200
+  },
+  "outputs": {
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\trusted_external_family_context_rows_v0_1.jsonl"
+  },
+  "schema_version": "finsight_trusted_external_family_context_summary_v0_1",
+  "source_id_counts": {
+    "industry_association_reports": 603
+  },
+  "status": "pass",
+  "ticker_count": 603
+}

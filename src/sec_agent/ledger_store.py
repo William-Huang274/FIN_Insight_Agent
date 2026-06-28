@@ -29,6 +29,18 @@ METRIC_FAMILY_ALIASES = {
         "segment_revenue",
     ],
     "segment_revenue": ["product_revenue", "ai_optimized_servers", "traditional_servers_and_networking", "storage"],
+    "supplier_revenue": [
+        "product_revenue",
+        "segment_revenue",
+        "data_center_revenue",
+        "ai_optimized_servers",
+        "traditional_servers_and_networking",
+        "storage",
+        "commercial",
+        "consumer",
+        "products",
+        "services",
+    ],
 }
 LEDGER_FACT_COLUMNS = [
     "metric_id_tail",

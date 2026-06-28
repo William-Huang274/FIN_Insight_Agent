@@ -1,0 +1,19 @@
+{
+  "attempt_count": 17,
+  "attempt_status_counts": {
+    "missing_patentsview_api_key": 17
+  },
+  "boundary": "PatentsView rows are L3 assignee/topic IP proxy only and cannot support product launch, sales, revenue, share, or durable moat claims.",
+  "context_row_count": 0,
+  "generated_at": "2026-06-23T17:50:41Z",
+  "outputs": {
+    "attempts": "D:\\FIN_Insight_Agent\\data\\manifests\\v1_patentsview_technology_research_attempts_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\v1_patentsview_technology_research_context_rows_v0_1.jsonl"
+  },
+  "row_source_counts": {},
+  "schema_version": "finsight_v1_patentsview_technology_research_summary_v0_1",
+  "status": "gap",
+  "target_ticker_count": 4,
+  "ticker_count": 0,
+  "tickers": []
+}

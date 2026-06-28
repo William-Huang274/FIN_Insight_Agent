@@ -1,0 +1,1318 @@
+{
+  "contracts": [
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "App listing, ranking, store metadata, or bounded marketplace signal; no downloads, revenue, share, or retention exact.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses",
+        "product_binding_statuses"
+      ],
+      "fetcher": "itunes_google_play_public_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "app_marketplace_listing_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "app_store_rankings"
+      ],
+      "parser": "app_marketplace_metadata_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "AppMarketplaceProxyRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "app_marketplace_signal",
+      "source_layers": [
+        "L3"
+      ],
+      "source_role": "app_rank_store_proxy",
+      "support_surface": "app_marketplace_review_proxy",
+      "verifier": "seller_app_issuer_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Vehicle manufacturer, make, model, or VIN identity context; no registration, sales volume, or profitability proof.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "product_binding_statuses"
+      ],
+      "fetcher": "nhtsa_vpic_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "auto_product_identity_api_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "company_product_pages",
+        "nhtsa_vpic_api"
+      ],
+      "parser": "vehicle_make_model_identity_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "AutoProductIdentityContextRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "auto_product_identity_signal",
+      "source_layers": [
+        "L2"
+      ],
+      "source_role": "auto_product_identity_context",
+      "support_surface": "regulated_product_identity",
+      "verifier": "manufacturer_model_issuer_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "SEC submissions metadata proving Schedule 13D/13G filing-event existence and timing only.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses"
+      ],
+      "fetcher": "sec_submissions_metadata_fetcher",
+      "forbidden_claim_types": [
+        "beneficial_ownership_percentage_without_schedule_parser",
+        "activist_thesis_without_text_parser",
+        "current_buying_pressure",
+        "complete_ownership"
+      ],
+      "locator": "sec_submissions_schedule_13d_13g_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "sec_schedule_13d_13g_metadata"
+      ],
+      "parser": "sec_beneficial_ownership_filing_event_metadata_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "BeneficialOwnershipFilingEventRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "beneficial_ownership_event_signal",
+      "source_layers": [
+        "L1"
+      ],
+      "source_role": "beneficial_ownership_filing_event",
+      "support_surface": "capital_funding_ownership_market_liquidity",
+      "verifier": "issuer_form_accession_filing_date_verifier"
+    },
+    {
+      "authority_mapper": "exact_fact_authority_mapper",
+      "authority_mode": "exact_company_fact_authority",
+      "claim_scope": "Company-disclosed debt, credit facility, cash/debt/net-debt, lease, convertible, or offering context from SEC/FSD/IR sources.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses"
+      ],
+      "fetcher": "sec_filing_fsd_fetcher",
+      "forbidden_claim_types": [
+        "undisclosed_financing_terms",
+        "market_implied_credit_spread_without_market_source",
+        "realtime_refinancing_access_without_source"
+      ],
+      "locator": "sec_debt_credit_offering_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "sec_annual_debt_footnote_chunk",
+        "sec_financial_statement_data_sets"
+      ],
+      "parser": "capital_structure_debt_credit_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "CapitalStructureDisclosureRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "capital_structure_fact",
+      "source_layers": [
+        "L1"
+      ],
+      "source_role": "capital_structure_disclosure",
+      "support_surface": "capital_funding_ownership_market_liquidity",
+      "verifier": "issuer_period_amount_maturity_rate_citation_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Channel, distributor, ecommerce, or authorized store availability/offer proxy; no ASP, inventory, sell-through, revenue, or share.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "product_binding_statuses"
+      ],
+      "fetcher": "channel_ecommerce_browser_or_api_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "channel_distributor_offer_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "channel_distributor_locator",
+        "channel_pricing_quotations"
+      ],
+      "parser": "channel_offer_sku_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "ChannelOfferProxyRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "channel_presence_signal",
+      "source_layers": [
+        "L3"
+      ],
+      "source_role": "channel_offer_proxy",
+      "support_surface": "channel_offer_availability_proxy",
+      "verifier": "issuer_product_sku_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Official customer deployment/project context; supports bounded deployment and demand-visibility signals only.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "counterparty_binding_statuses",
+        "product_binding_statuses"
+      ],
+      "fetcher": "official_customer_supplier_news_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "official_customer_deployment_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "official_nvidia_customer_deployment_news"
+      ],
+      "parser": "customer_deployment_context_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "CustomerDeploymentProxyRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "customer_deployment_signal",
+      "source_layers": [
+        "L2",
+        "L3"
+      ],
+      "source_role": "customer_deployment_proxy",
+      "support_surface": "official_customer_deployment_signal",
+      "verifier": "issuer_counterparty_product_deployment_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Official docs, GitHub, package, model, or developer ecosystem signal; no revenue, share, or enterprise adoption exact.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses",
+        "product_binding_statuses"
+      ],
+      "fetcher": "github_npm_pypi_huggingface_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "developer_official_seed_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "developer_ecosystem_github_npm_pypi_huggingface"
+      ],
+      "parser": "developer_ecosystem_artifact_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "DeveloperEcosystemProxyRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "developer_ecosystem_signal",
+      "source_layers": [
+        "L3"
+      ],
+      "source_role": "developer_ecosystem_proxy",
+      "support_surface": "developer_ecosystem_proxy",
+      "verifier": "official_seed_publisher_issuer_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Energy, utility, capacity, demand, fuel, and power-market context for company or industry exposure.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "industry_schema"
+      ],
+      "fetcher": "eia_fred_utility_regulatory_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "energy_utility_official_api_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "eia_open_data",
+        "fred_api"
+      ],
+      "parser": "energy_utility_context_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "EnergyUtilityContextRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "energy_utility_signal",
+      "source_layers": [
+        "L2"
+      ],
+      "source_role": "energy_utility_context",
+      "support_surface": "macro_industry_driver",
+      "verifier": "utility_or_industry_exposure_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Regulatory financial context such as banking, credit, rate, or financial-sector exposure; not issuer financial facts unless directly disclosed.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "industry_schema"
+      ],
+      "fetcher": "fdic_fred_regulatory_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "financial_regulatory_api_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "fred_api"
+      ],
+      "parser": "financial_regulatory_context_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "FinancialRegulatoryContextRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "financial_regulatory_signal",
+      "source_layers": [
+        "L2"
+      ],
+      "source_role": "financial_regulatory_context",
+      "support_surface": "capital_funding_ownership_market_liquidity",
+      "verifier": "issuer_or_sector_exposure_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Issuer-bound public job postings or careers signal; no headcount, revenue, order, or demand exact.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses"
+      ],
+      "fetcher": "greenhouse_lever_workday_ats_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "official_careers_ats_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "job_postings_hiring_signals"
+      ],
+      "parser": "job_posting_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "HiringCapacityProxyRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "hiring_capacity_signal",
+      "source_layers": [
+        "L3"
+      ],
+      "source_role": "hiring_capacity_proxy",
+      "support_surface": "hiring_capacity_proxy",
+      "verifier": "issuer_job_taxonomy_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "SEC submissions metadata proving Form 3/4/5/144 insider filing-event existence and timing only.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses"
+      ],
+      "fetcher": "sec_submissions_metadata_fetcher",
+      "forbidden_claim_types": [
+        "insider_share_count_without_xml",
+        "transaction_price_without_xml",
+        "management_intent_inference",
+        "realtime_flow"
+      ],
+      "locator": "sec_submissions_insider_form_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "sec_form_3_4_5_metadata"
+      ],
+      "parser": "sec_insider_filing_event_metadata_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "InsiderTransactionFilingEventRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "insider_transaction_event_signal",
+      "source_layers": [
+        "L1"
+      ],
+      "source_role": "insider_transaction_filing_event",
+      "support_surface": "capital_funding_ownership_market_liquidity",
+      "verifier": "issuer_form_accession_filing_date_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Lagged 13F/ownership filing context only; not real-time money flow, current buying pressure, or complete ownership.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses"
+      ],
+      "fetcher": "sec_13f_bulk_fetcher",
+      "forbidden_claim_types": [
+        "realtime_flow",
+        "current_buying_pressure",
+        "complete_ownership",
+        "intraday_positioning",
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "sec_13f_ownership_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "sec_ownership_and_13f"
+      ],
+      "parser": "ownership_position_lagged_context_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "LaggedOwnershipContextRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "lagged_ownership_signal",
+      "source_layers": [
+        "L3"
+      ],
+      "source_role": "lagged_ownership_context",
+      "support_surface": "capital_funding_ownership_market_liquidity",
+      "verifier": "issuer_security_report_period_lag_policy_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Official macro, industry, demand, price, trade, and rates context via exposure bridge.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "industry_schema"
+      ],
+      "fetcher": "fred_eia_bls_bea_census_fdic_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "macro_official_api_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "eia_open_data",
+        "fred_api"
+      ],
+      "parser": "macro_official_api_context_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "MacroIndustryDriverRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "macro_driver_signal",
+      "source_layers": [
+        "L2"
+      ],
+      "source_role": "macro_official_context",
+      "support_surface": "macro_industry_driver",
+      "verifier": "industry_exposure_bridge_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Official issuer/customer/supplier customer order, agreement, project, deployment, production, or customer-story event. Supports bounded event facts and thesis drivers, not revenue, backlog, ASP, shipment volume, sell-through, share, or complete order book.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "counterparty_binding_statuses",
+        "product_binding_statuses"
+      ],
+      "fetcher": "official_news_customer_contract_ir_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "official_customer_order_deployment_event_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "supplier_customer_official_news"
+      ],
+      "parser": "official_customer_order_deployment_event_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "OfficialCustomerOrderDeploymentEventRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "customer_order_or_deployment_event_signal",
+      "source_layers": [
+        "L2",
+        "L3"
+      ],
+      "source_role": "official_customer_order_or_deployment_event",
+      "support_surface": "official_customer_order_deployment_event",
+      "verifier": "issuer_counterparty_product_event_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Official product existence, taxonomy, specifications, positioning, and company-disclosed product facts.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "product_family",
+        "product_binding_statuses"
+      ],
+      "fetcher": "official_product_surface_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "official_product_surface_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "company_product_pages",
+        "company_reported_product_operating_metrics",
+        "sec_product_taxonomy_normalized"
+      ],
+      "parser": "official_product_page_datasheet_catalog_parser",
+      "required_fields": [
+        "ticker",
+        "company_name",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "ProductSpecOrOfficialProductContextRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "technical_fact",
+      "source_layers": [
+        "L1",
+        "L2"
+      ],
+      "source_role": "official_product_surface",
+      "support_surface": "product_and_technology",
+      "verifier": "issuer_product_binding_and_forbidden_exact_claim_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Platform review/rating/listing context; no app revenue, downloads, market share, or retention exact.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "product_binding_statuses"
+      ],
+      "fetcher": "public_platform_review_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "platform_review_listing_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "platform_reviews_rankings_downloads"
+      ],
+      "parser": "platform_review_metadata_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "PlatformReviewProxyRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "platform_review_signal",
+      "source_layers": [
+        "L3"
+      ],
+      "source_role": "platform_review_proxy",
+      "support_surface": "app_marketplace_review_proxy",
+      "verifier": "issuer_product_platform_binding_verifier"
+    },
+    {
+      "authority_mapper": "exact_fact_authority_mapper",
+      "authority_mode": "exact_company_fact_authority",
+      "claim_scope": "Company-disclosed financial statement, filing, and product/operating metrics after period/unit/citation gates.",
+      "commercial_gap_boundary": "If company does not disclose a metric, do not fill it with public proxy or commercial tracker unless explicitly licensed.",
+      "entity_binding_keys": [
+        "ticker",
+        "company_name"
+      ],
+      "fetcher": "sec_edgar_fsd_ir_local_exchange_fetcher",
+      "forbidden_claim_types": [],
+      "locator": "sec_fsd_company_ir_local_exchange_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "company_ir_reports",
+        "company_reported_product_operating_metrics",
+        "sec_edgar_apis",
+        "sec_financial_statement_data_sets"
+      ],
+      "parser": "financial_statement_and_company_disclosure_parser",
+      "required_fields": [
+        "ticker",
+        "company_name",
+        "source_id",
+        "sample_urls_or_refs",
+        "exact_slot_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "ExactFactRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "company_disclosure_fact",
+      "source_layers": [
+        "L1"
+      ],
+      "source_role": "primary_company_disclosure",
+      "support_surface": "fundamental_company_disclosure",
+      "verifier": "period_unit_currency_citation_exact_fact_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Benchmark/performance proxy for product capability comparison; no revenue, share, adoption, or sales exact.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "product_binding_statuses"
+      ],
+      "fetcher": "official_product_benchmark_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "official_or_trusted_benchmark_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "official_nvidia_product_page"
+      ],
+      "parser": "benchmark_metric_product_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "ProductBenchmarkProxyRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "product_benchmark_signal",
+      "source_layers": [
+        "L2",
+        "L3"
+      ],
+      "source_role": "product_benchmark_proxy",
+      "support_surface": "product_spec_and_capability",
+      "verifier": "issuer_product_benchmark_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Official product-generation or architecture transition edge; supports capability-cycle analysis, not demand or revenue exact.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "product_binding_statuses"
+      ],
+      "fetcher": "official_product_page_datasheet_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "official_product_generation_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "official_nvidia_product_page"
+      ],
+      "parser": "product_generation_edge_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "ProductGenerationEdge",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "product_generation_signal",
+      "source_layers": [
+        "L2"
+      ],
+      "source_role": "product_generation_edge",
+      "support_surface": "product_spec_and_capability",
+      "verifier": "issuer_product_generation_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "SEC submissions metadata proving proxy/governance filing-event existence and timing only.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses"
+      ],
+      "fetcher": "sec_submissions_metadata_fetcher",
+      "forbidden_claim_types": [
+        "actual_repurchase_without_company_disclosure",
+        "compensation_outcome_without_proxy_table_parser",
+        "voting_result_without_text_parser"
+      ],
+      "locator": "sec_submissions_proxy_form_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "sec_proxy_governance_metadata"
+      ],
+      "parser": "sec_proxy_governance_filing_event_metadata_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "ProxyGovernanceFilingEventRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "proxy_governance_event_signal",
+      "source_layers": [
+        "L1"
+      ],
+      "source_role": "proxy_governance_filing_event",
+      "support_surface": "capital_funding_ownership_market_liquidity",
+      "verifier": "issuer_form_accession_filing_date_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Public tender, award, or order-existence proxy; no total company sales, backlog, or revenue inference.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "counterparty_binding_statuses",
+        "product_binding_statuses"
+      ],
+      "fetcher": "usaspending_local_tender_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "public_order_tender_award_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "public_tenders_contracts_orders"
+      ],
+      "parser": "public_order_award_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "PublicOrderProxyRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "public_order_signal",
+      "source_layers": [
+        "L3"
+      ],
+      "source_role": "public_order_proxy",
+      "support_surface": "public_order_supply_chain_proxy",
+      "verifier": "recipient_supplier_product_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Regulatory product, trial, approval, recall, safety, or product-existence context; no sales, prescriptions, or share.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "product_binding_statuses"
+      ],
+      "fetcher": "clinicaltrials_openfda_nhtsa_cms_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "regulated_product_api_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "clinicaltrials_api",
+        "fda_animal_drugs_api",
+        "openfda_api"
+      ],
+      "parser": "regulated_product_context_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "RegulatedProductContextRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "regulatory_signal",
+      "source_layers": [
+        "L2"
+      ],
+      "source_role": "regulated_product_context",
+      "support_surface": "regulated_product_context",
+      "verifier": "sponsor_applicant_product_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "SEC submissions metadata proving securities offering or registration filing-event existence and timing only.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses"
+      ],
+      "fetcher": "sec_submissions_metadata_fetcher",
+      "forbidden_claim_types": [
+        "offering_amount_without_filing_text_or_xml",
+        "security_terms_without_filing_text_or_xml",
+        "dilution_without_share_count_parser"
+      ],
+      "locator": "sec_submissions_offering_form_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "sec_offering_filing_metadata"
+      ],
+      "parser": "sec_offering_filing_event_metadata_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "SecuritiesOfferingFilingEventRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "capital_market_event_signal",
+      "source_layers": [
+        "L1"
+      ],
+      "source_role": "securities_offering_filing_event",
+      "support_surface": "capital_funding_ownership_market_liquidity",
+      "verifier": "issuer_form_accession_filing_date_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Official supplier/customer/partner relationship signal; not revenue dependency, order value, or share.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "counterparty_binding_statuses",
+        "product_binding_statuses"
+      ],
+      "fetcher": "official_news_contract_ir_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "supplier_customer_official_relationship_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "public_tenders_contracts_orders",
+        "supplier_customer_official_news"
+      ],
+      "parser": "supplier_customer_relationship_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "SupplyChainRelationshipRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "supply_chain_signal",
+      "source_layers": [
+        "L2",
+        "L3"
+      ],
+      "source_role": "supply_chain_official_relationship",
+      "support_surface": "supply_chain_relationship",
+      "verifier": "issuer_counterparty_product_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Official product specification, architecture, configuration, feature, model, or version facts for product comparison.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "product_binding_statuses"
+      ],
+      "fetcher": "official_product_page_datasheet_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "official_product_datasheet_spec_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "official_nvidia_product_page"
+      ],
+      "parser": "product_spec_slot_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "ProductSpecSlot",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "technical_fact",
+      "source_layers": [
+        "L2"
+      ],
+      "source_role": "technical_product_spec",
+      "support_surface": "product_spec_and_capability",
+      "verifier": "issuer_product_spec_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Research, patent, standards, or paper signal; not product launch, moat proof, sales, or market share.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "product_family",
+        "issuer_binding_statuses"
+      ],
+      "fetcher": "openalex_patentsview_uspto_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "technology_research_assignee_topic_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "official_technical_document",
+        "openalex_api"
+      ],
+      "parser": "technology_research_context_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "TechnologyResearchProxyRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "technology_research_signal",
+      "source_layers": [
+        "L3"
+      ],
+      "source_role": "technology_research_proxy",
+      "support_surface": "technology_research_ip",
+      "verifier": "assignee_topic_product_family_binding_verifier"
+    },
+    {
+      "authority_mapper": "non_financial_signal_authority_mapper",
+      "authority_mode": "bounded_thesis_driver_authority",
+      "claim_scope": "Trusted publisher, association, or official event context; not company exact values unless separately authoritative.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "industry_schema",
+        "product_binding_statuses"
+      ],
+      "fetcher": "trusted_external_source_fetcher",
+      "forbidden_claim_types": [
+        "ASP",
+        "backlog",
+        "channel_inventory",
+        "customer_order_value",
+        "inventory",
+        "market_share",
+        "order_value",
+        "product_revenue",
+        "product_sales",
+        "sell_through",
+        "shipments",
+        "sku_revenue",
+        "unit_sales"
+      ],
+      "locator": "trusted_external_source_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "industry_association_reports"
+      ],
+      "parser": "trusted_external_context_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "TrustedExternalContextRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "market_or_industry_context_signal",
+      "source_layers": [
+        "L2"
+      ],
+      "source_role": "trusted_external_context",
+      "support_surface": "industry_competition_market_context",
+      "verifier": "issuer_product_or_industry_binding_verifier"
+    },
+    {
+      "authority_mapper": "exact_fact_authority_mapper",
+      "authority_mode": "exact_company_fact_authority",
+      "claim_scope": "Company-reported working-capital and liquidity statement facts including AR, inventory, AP, deferred revenue, current assets/liabilities, short-term debt, cash, CFO, capex, and financing cash flow.",
+      "commercial_gap_boundary": "",
+      "entity_binding_keys": [
+        "ticker",
+        "issuer_binding_statuses"
+      ],
+      "fetcher": "sec_companyfacts_or_fsd_fetcher",
+      "forbidden_claim_types": [
+        "product_sales_without_product_kpi",
+        "market_share",
+        "asp",
+        "channel_inventory",
+        "sell_through",
+        "undisclosed_financing_terms",
+        "realtime_refinancing_access_without_source"
+      ],
+      "locator": "sec_companyfacts_financial_statement_locator",
+      "not_applicable_rules": [],
+      "observed_source_ids": [
+        "sec_companyfacts_api",
+        "sec_financial_statement_data_sets"
+      ],
+      "parser": "working_capital_liquidity_metric_parser",
+      "required_fields": [
+        "ticker",
+        "source_id",
+        "sample_urls_or_refs",
+        "parser_row_count",
+        "claim_boundary"
+      ],
+      "runtime_row_type": "WorkingCapitalLiquidityRow",
+      "schema_version": "finsight_source_route_registry_v2_0",
+      "signal_authority_type": "working_capital_liquidity_fact",
+      "source_layers": [
+        "L1"
+      ],
+      "source_role": "working_capital_liquidity",
+      "support_surface": "capital_funding_ownership_market_liquidity",
+      "verifier": "issuer_period_value_unit_statement_metric_verifier"
+    }
+  ],
+  "generated_at": "2026-06-23T19:48:23Z",
+  "schema_version": "finsight_source_route_registry_v2_0",
+  "source_role_count": 28
+}

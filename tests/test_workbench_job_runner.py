@@ -122,7 +122,9 @@ def test_build_g11_full_chain_eval_command_targets_vnext_fixture(tmp_path: Path)
     assert "eval/sec_cases/outputs/multi_agent_vnext_g11_full_chain_eval" in spec.args
     assert "--real-evidence-operators" in spec.args
     assert spec.args[spec.args.index("--bge-device") + 1] == "auto"
+    assert spec.args[spec.args.index("--evidence-operator-fanout-workers") + 1] == "0"
     assert spec.env_overrides["BGE_DEVICE"] == "auto"
+    assert spec.env_overrides["SEC_AGENT_EVIDENCE_OPERATOR_FANOUT_WORKERS"] == "0"
     assert "--summary-output-path" in spec.args
     assert "--run-audit-db-path" in spec.args
     assert "--strict" in spec.args
@@ -160,6 +162,8 @@ def test_build_diagnostic_probe_eval_command_is_non_strict(tmp_path: Path) -> No
     assert spec.args[spec.args.index("--limit") + 1] == "2"
     assert "--strict" not in spec.args
     assert spec.env_overrides["BGE_DEVICE"] == "auto"
+    assert spec.env_overrides["SEC_AGENT_CONTEXT_RUNNER"] == "subprocess"
+    assert spec.args[spec.args.index("--context-runner") + 1] == "subprocess"
     assert not any(str(arg).startswith("sk-") for arg in spec.args)
 
 
@@ -179,6 +183,9 @@ def test_build_r12_successor_eval_command_targets_case_catalog_subset(tmp_path: 
     assert "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl" not in spec.args
     assert "--strict" in spec.args
     assert "--summary-output-path" in spec.args
+    assert "--evidence-operator-fanout-workers" in spec.args
+    assert spec.args[spec.args.index("--context-runner") + 1] == "subprocess"
+    assert spec.env_overrides["SEC_AGENT_CONTEXT_RUNNER"] == "subprocess"
     assert not any(str(arg).startswith("sk-") for arg in spec.args)
 
 
@@ -200,6 +207,8 @@ def test_build_broader_release_and_load_mix_eval_commands_target_catalog_subsets
     assert "eval/sec_cases/outputs/multi_agent_vnext_load_mix_15_eval" in load_mix.args
     assert "--strict" in broader.args
     assert "--strict" in load_mix.args
+    assert broader.args[broader.args.index("--context-runner") + 1] == "subprocess"
+    assert load_mix.args[load_mix.args.index("--context-runner") + 1] == "subprocess"
 
 
 def test_build_agent_ask_command_can_target_wsl(tmp_path: Path) -> None:

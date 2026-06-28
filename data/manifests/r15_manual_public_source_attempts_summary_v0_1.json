@@ -1,0 +1,20 @@
+{
+  "by_requirement": {
+    "public_order_proxy": 8,
+    "technology_research_proxy": 17
+  },
+  "by_status": {
+    "no_supplier_bound_award_or_no_structured_award_endpoint": 8,
+    "public_api_key_required_not_configured": 17
+  },
+  "generated_at": "2026-06-20T18:04:18Z",
+  "outputs": {
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\vertical_lanes\\r15_source_role_boundary_attempts.zh-CN.md",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\r15_manual_public_source_attempts_v0_1.jsonl"
+  },
+  "pending_without_boundary_count": 0,
+  "row_count": 25,
+  "schema_version": "finsight_r15_source_role_boundary_attempt_summary_v0_1",
+  "status": "pass",
+  "terminal_boundary_row_count": 25
+}

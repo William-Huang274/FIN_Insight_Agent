@@ -13,8 +13,10 @@ from sec_agent.derived_metric_layer import build_derived_metric_layer
 FINANCIAL_STATEMENT_TAXONOMY_SCHEMA_VERSION = "sec_agent_financial_statement_taxonomy_v0.1"
 INDUSTRY_FINANCIAL_FOCUS_POLICY_SCHEMA_VERSION = "sec_agent_industry_financial_focus_policy_v0.1"
 FUNDAMENTAL_STATEMENT_PACK_SCHEMA_VERSION = "sec_agent_fundamental_statement_pack_v0.1"
+FUNDAMENTAL_PEER_STATEMENT_PANEL_SCHEMA_VERSION = "sec_agent_fundamental_peer_statement_panel_v0.1"
 
 COMPANY_TOTAL_KEYS = {"", "__company_total__", "company_total", "total_company", "consolidated"}
+PERIOD_CHANGE_EXCLUDED_METRICS = {"yoy_growth"}
 
 STATEMENT_TAXONOMY: dict[str, dict[str, str]] = {
     "financial_metric:revenue": {
@@ -462,6 +464,153 @@ def compact_fundamental_statement_pack(payload: Mapping[str, Any], *, max_line_i
     }
 
 
+def build_fundamental_peer_statement_panel(state: Mapping[str, Any], *, max_items: int = 80) -> dict[str, Any]:
+    pack = (
+        state.get("fundamental_statement_pack")
+        if isinstance(state.get("fundamental_statement_pack"), Mapping)
+        else build_fundamental_statement_pack(state, max_items=max_items)
+    )
+    line_items = [dict(item) for item in pack.get("statement_line_items") or [] if isinstance(item, Mapping)]
+    period_changes = [dict(item) for item in pack.get("period_changes") or [] if isinstance(item, Mapping)]
+    peer_comparisons = [dict(item) for item in pack.get("peer_comparisons") or [] if isinstance(item, Mapping)]
+    integration_bridges = [dict(item) for item in pack.get("integration_bridges") or [] if isinstance(item, Mapping)]
+    industry_coverage = [dict(item) for item in pack.get("industry_focus_coverage") or [] if isinstance(item, Mapping)]
+    statement_types = {"income_statement", "balance_sheet", "cash_flow_statement"}
+    peer_scope_requested = len(_unique_strings(pack.get("search_scope_tickers"))) > len(_unique_strings(pack.get("focus_tickers")))
+    product_bridges = [row for row in integration_bridges if str(row.get("bridge_type") or "") in {"product_financial_bridge", "product_demand_quality_bridge"}]
+    capital_bridges = [row for row in integration_bridges if str(row.get("bridge_type") or "") == "capital_financing_bridge"]
+    derived_rows = [
+        row
+        for row in line_items
+        if str(row.get("source_layer") or "") == "derived_metric"
+        or str(row.get("canonical_metric_id") or "") in DERIVED_METRIC_TAXONOMY
+    ]
+    panel = {
+        "schema_version": FUNDAMENTAL_PEER_STATEMENT_PANEL_SCHEMA_VERSION,
+        "policy": "three_statement_peer_product_capital_bridge_panel_from_fundamental_statement_pack_v0_1",
+        "run_id": str(pack.get("run_id") or state.get("run_id") or ""),
+        "focus_tickers": _unique_strings(pack.get("focus_tickers")),
+        "search_scope_tickers": _unique_strings(pack.get("search_scope_tickers")),
+        "industry_financial_focus_policy": pack.get("industry_focus_policy") or {},
+        "three_statement_metric_panel": _three_statement_metric_panel(line_items, period_changes),
+        "peer_comparable_metric_panel": {
+            "peer_scope_requested": peer_scope_requested,
+            "comparison_count": len(peer_comparisons),
+            "comparisons": peer_comparisons[: max(8, min(24, max_items // 3))],
+            "claim_boundary": "same_metric_period_unit_peer_rows_only",
+        },
+        "industry_priority_metric_panel": {
+            "available_count": len([row for row in industry_coverage if row.get("available")]),
+            "missing_count": len([row for row in industry_coverage if not row.get("available")]),
+            "coverage": industry_coverage[: max(8, min(24, max_items // 3))],
+        },
+        "derived_metric_panel": {
+            "derived_metric_count": len(derived_rows),
+            "rows": derived_rows[: max(8, min(20, max_items // 4))],
+            "claim_boundary": "derived metrics require visible source inputs and gate_status pass_or_warn",
+        },
+        "product_financial_bridge": {
+            "available": bool(product_bridges),
+            "bridges": product_bridges[:8],
+            "claim_boundary": "product bridge supports product/segment-to-financial analysis only when company-disclosed rows exist",
+        },
+        "capital_funding_bridge": {
+            "available": bool(capital_bridges),
+            "bridges": capital_bridges[:8],
+            "claim_boundary": "capital bridge supports cash/capex/debt/FCF analysis from public financial rows",
+        },
+        "statement_anomaly_detector": _statement_anomaly_detector(period_changes, peer_comparisons),
+        "analysis_gates": {
+            "three_statement_coverage": statement_types <= {str(row.get("statement_type") or "") for row in line_items},
+            "peer_comparison_ready": bool(peer_comparisons) if peer_scope_requested else True,
+            "industry_focus_ready": bool(pack.get("industry_focus_policy")),
+            "period_change_ready": bool(period_changes),
+            "derived_metric_ready": bool(derived_rows),
+            "product_financial_bridge_available": bool(product_bridges),
+            "capital_funding_bridge_available": bool(capital_bridges),
+        },
+        "analysis_gaps": [dict(item) for item in pack.get("analysis_gaps") or [] if isinstance(item, Mapping)][:12],
+        "source_boundary": pack.get("source_boundary") or {},
+        "summary": {
+            "line_item_count": len(line_items),
+            "statement_type_counts": dict(sorted(Counter(str(row.get("statement_type") or "") for row in line_items).items())),
+            "period_change_count": len(period_changes),
+            "peer_comparison_count": len(peer_comparisons),
+            "derived_metric_count": len(derived_rows),
+            "product_bridge_count": len(product_bridges),
+            "capital_bridge_count": len(capital_bridges),
+            "anomaly_count": 0,
+        },
+    }
+    panel["summary"]["anomaly_count"] = len(panel["statement_anomaly_detector"].get("items") or [])
+    panel["validation"] = validate_fundamental_peer_statement_panel(panel)
+    return _jsonable(panel)
+
+
+def compact_fundamental_peer_statement_panel(payload: Mapping[str, Any], *, max_items: int = 12) -> dict[str, Any]:
+    if not isinstance(payload, Mapping) or not payload:
+        return {}
+    compact = {
+        "schema_version": payload.get("schema_version") or "",
+        "industry_financial_focus_policy": payload.get("industry_financial_focus_policy") or {},
+        "summary": payload.get("summary") or {},
+        "analysis_gates": payload.get("analysis_gates") or {},
+        "source_boundary": payload.get("source_boundary") or {},
+    }
+    three_statement = payload.get("three_statement_metric_panel") if isinstance(payload.get("three_statement_metric_panel"), Mapping) else {}
+    compact["three_statement_metric_panel"] = {
+        "statement_type_counts": three_statement.get("statement_type_counts") or {},
+        "statements": [dict(item) for item in three_statement.get("statements") or [] if isinstance(item, Mapping)][:3],
+    }
+    for key in (
+        "peer_comparable_metric_panel",
+        "industry_priority_metric_panel",
+        "derived_metric_panel",
+        "product_financial_bridge",
+        "capital_funding_bridge",
+    ):
+        value = payload.get(key) if isinstance(payload.get(key), Mapping) else {}
+        clean = dict(value)
+        for row_key in ("comparisons", "coverage", "rows", "bridges"):
+            if isinstance(clean.get(row_key), list):
+                clean[row_key] = [dict(item) for item in clean.get(row_key) if isinstance(item, Mapping)][:max_items]
+        compact[key] = clean
+    detector = payload.get("statement_anomaly_detector") if isinstance(payload.get("statement_anomaly_detector"), Mapping) else {}
+    compact["statement_anomaly_detector"] = {
+        "threshold_policy": detector.get("threshold_policy") or "",
+        "items": [dict(item) for item in detector.get("items") or [] if isinstance(item, Mapping)][:max_items],
+    }
+    compact["analysis_gaps"] = [dict(item) for item in payload.get("analysis_gaps") or [] if isinstance(item, Mapping)][:max_items]
+    return compact
+
+
+def validate_fundamental_peer_statement_panel(payload: Mapping[str, Any]) -> dict[str, Any]:
+    errors: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+    if str(payload.get("schema_version") or "") != FUNDAMENTAL_PEER_STATEMENT_PANEL_SCHEMA_VERSION:
+        errors.append({"type": "unexpected_schema_version", "schema_version": payload.get("schema_version")})
+    summary = payload.get("summary") if isinstance(payload.get("summary"), Mapping) else {}
+    gates = payload.get("analysis_gates") if isinstance(payload.get("analysis_gates"), Mapping) else {}
+    if int(summary.get("line_item_count") or 0) <= 0:
+        errors.append({"type": "line_items_required"})
+    if not gates.get("three_statement_coverage"):
+        warnings.append({"type": "three_statement_coverage_incomplete"})
+    if not gates.get("peer_comparison_ready"):
+        warnings.append({"type": "peer_comparison_not_ready"})
+    if not gates.get("period_change_ready"):
+        warnings.append({"type": "period_change_not_ready"})
+    if not gates.get("product_financial_bridge_available"):
+        warnings.append({"type": "product_financial_bridge_not_available"})
+    if not gates.get("capital_funding_bridge_available"):
+        warnings.append({"type": "capital_funding_bridge_not_available"})
+    return {
+        "schema_version": "sec_agent_fundamental_peer_statement_panel_validation_v0.1",
+        "status": "fail" if errors else "pass",
+        "errors": errors,
+        "warnings": warnings,
+    }
+
+
 def validate_fundamental_statement_pack(payload: Mapping[str, Any]) -> dict[str, Any]:
     errors: list[dict[str, Any]] = []
     warnings: list[dict[str, Any]] = []
@@ -495,6 +644,87 @@ def validate_fundamental_statement_pack(payload: Mapping[str, Any]) -> dict[str,
         "status": "fail" if errors else "pass",
         "errors": errors,
         "warnings": warnings,
+    }
+
+
+def _three_statement_metric_panel(line_items: list[dict[str, Any]], period_changes: list[dict[str, Any]]) -> dict[str, Any]:
+    period_change_by_line_item: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for change in period_changes:
+        for line_item_id in _unique_strings(change.get("line_item_ids")):
+            period_change_by_line_item[line_item_id].append(change)
+    statements: list[dict[str, Any]] = []
+    for statement_type in ("income_statement", "balance_sheet", "cash_flow_statement"):
+        rows = [row for row in line_items if str(row.get("statement_type") or "") == statement_type]
+        metric_counts = Counter(str(row.get("canonical_metric_id") or row.get("metric_family") or "") for row in rows)
+        latest_rows = sorted(
+            rows,
+            key=lambda row: (str(row.get("ticker") or ""), str(row.get("period_sort_key") or ""), str(row.get("canonical_metric_id") or "")),
+            reverse=True,
+        )[:12]
+        statements.append(
+            {
+                "statement_type": statement_type,
+                "line_item_count": len(rows),
+                "metric_counts": dict(sorted(metric_counts.items())),
+                "latest_rows": latest_rows,
+                "period_change_count": sum(len(period_change_by_line_item.get(str(row.get("line_item_id") or ""), [])) for row in rows),
+                "claim_boundary": "statement panel rows are public fact/derived metric rows only",
+            }
+        )
+    return {
+        "statement_type_counts": dict(sorted(Counter(str(row.get("statement_type") or "") for row in line_items).items())),
+        "statements": statements,
+    }
+
+
+def _statement_anomaly_detector(
+    period_changes: list[dict[str, Any]],
+    peer_comparisons: list[dict[str, Any]],
+    *,
+    threshold_pct: Decimal = Decimal("20"),
+) -> dict[str, Any]:
+    items: list[dict[str, Any]] = []
+    for row in period_changes:
+        pct = _decimal_value(row.get("pct_change"))
+        if pct is None or abs(pct) < threshold_pct:
+            continue
+        items.append(
+            {
+                "anomaly_id": _stable_id("statement_anomaly", row.get("change_id"), row.get("pct_change")),
+                "anomaly_type": "period_change_magnitude",
+                "ticker": row.get("ticker"),
+                "canonical_metric_id": row.get("canonical_metric_id"),
+                "period_key": row.get("current_period_key"),
+                "value": row.get("pct_change"),
+                "unit": "percent",
+                "direction": "positive" if pct > 0 else "negative",
+                "evidence_refs": _unique_strings(row.get("evidence_refs"))[:8],
+                "line_item_ids": _unique_strings(row.get("line_item_ids"))[:6],
+                "claim_boundary": "requires analyst interpretation; detector only flags magnitude",
+            }
+        )
+    for row in peer_comparisons:
+        rel = _decimal_value(row.get("relative_to_peer_average"))
+        if rel is None or abs(rel) < threshold_pct:
+            continue
+        items.append(
+            {
+                "anomaly_id": _stable_id("statement_anomaly", row.get("comparison_id"), row.get("relative_to_peer_average")),
+                "anomaly_type": "peer_average_deviation",
+                "ticker": row.get("ticker"),
+                "canonical_metric_id": row.get("canonical_metric_id"),
+                "period_key": row.get("period_key"),
+                "value": row.get("relative_to_peer_average"),
+                "unit": "percent",
+                "direction": "above_peer_average" if rel > 0 else "below_peer_average",
+                "evidence_refs": _unique_strings(row.get("evidence_refs"))[:8],
+                "line_item_ids": _unique_strings(row.get("line_item_ids"))[:6],
+                "claim_boundary": "same metric/period/unit peer comparison; detector only flags deviation",
+            }
+        )
+    return {
+        "threshold_policy": f"abs(period_change_or_peer_deviation_pct)>={threshold_pct}",
+        "items": items[:24],
     }
 
 
@@ -626,6 +856,10 @@ def _period_change_items(
     focus_set = set(focus_tickers)
     for item in line_items:
         if focus_set and str(item.get("ticker") or "") not in focus_set:
+            continue
+        if str(item.get("canonical_metric_id") or "") in PERIOD_CHANGE_EXCLUDED_METRICS:
+            continue
+        if str(item.get("metric_family") or "") in PERIOD_CHANGE_EXCLUDED_METRICS:
             continue
         key = (
             str(item.get("ticker") or ""),
@@ -933,12 +1167,20 @@ def _infer_industry_id(state: Mapping[str, Any]) -> tuple[str, list[str]]:
     text_parts: list[str] = []
     query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
     activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    activation_metadata = activation.get("metadata") if isinstance(activation.get("metadata"), Mapping) else {}
     text_parts.extend(
         [
             str(state.get("user_query") or ""),
+            str(state.get("industry_schema") or ""),
+            str(state.get("sector") or ""),
             str(query_contract.get("sector") or ""),
+            str(query_contract.get("industry_schema") or ""),
+            str(query_contract.get("industry") or ""),
+            str(activation_metadata.get("industry_schema") or ""),
+            str(activation.get("industry_schema") or ""),
             " ".join(_unique_strings(query_contract.get("selected_playbook_ids") or query_contract.get("playbook_ids"))),
             " ".join(_unique_strings(activation.get("selected_playbook_ids") or activation.get("playbook_ids"))),
+            " ".join(_unique_strings(activation_metadata.get("selected_playbook_ids") or activation_metadata.get("playbook_ids"))),
             " ".join(_unique_strings(query_contract.get("metric_families"))),
             " ".join(_unique_strings(query_contract.get("focus_tickers") or query_contract.get("search_scope_tickers"))),
         ]
@@ -948,11 +1190,26 @@ def _infer_industry_id(state: Mapping[str, Any]) -> tuple[str, list[str]]:
     for industry_id, policy in INDUSTRY_FOCUS_POLICIES.items():
         for alias in _unique_strings(policy.get("aliases")):
             alias_text = alias.lower().replace("_", " ")
-            if alias_text and alias_text in text:
+            if _industry_alias_matches(alias_text, text):
                 matches.append((industry_id, alias))
     if matches:
         return matches[0][0], [f"{industry}:{alias}" for industry, alias in matches[:12]]
     return "general_industrial", []
+
+
+def _industry_alias_matches(alias_text: str, text: str) -> bool:
+    alias_norm = _industry_signal_text(alias_text)
+    if not alias_norm:
+        return False
+    text_norm = _industry_signal_text(text)
+    if not text_norm:
+        return False
+    pattern = rf"(?<![a-z0-9]){re.escape(alias_norm)}(?![a-z0-9])"
+    return re.search(pattern, text_norm) is not None
+
+
+def _industry_signal_text(value: Any) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
 
 
 def _focus_tickers(state: Mapping[str, Any], line_items: list[dict[str, Any]]) -> list[str]:

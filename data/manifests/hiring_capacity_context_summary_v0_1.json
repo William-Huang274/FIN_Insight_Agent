@@ -1,0 +1,175 @@
+{
+  "attempted_count": 11,
+  "attempts": [
+    {
+      "api_url": "https://boards-api.greenhouse.io/v1/boards/datadog/jobs?content=true",
+      "parsed_row_count": 5,
+      "provider": "greenhouse",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\ddog_greenhouse_datadog.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "DDOG",
+      "total_job_count": 402
+    },
+    {
+      "api_url": "https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs?content=true",
+      "parsed_row_count": 5,
+      "provider": "greenhouse",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\net_greenhouse_cloudflare.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "NET",
+      "total_job_count": 191
+    },
+    {
+      "api_url": "https://api.lever.co/v0/postings/palantir?mode=json",
+      "parsed_row_count": 5,
+      "provider": "lever",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\pltr_lever_palantir.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "PLTR",
+      "total_job_count": 235
+    },
+    {
+      "api_url": "https://boards-api.greenhouse.io/v1/boards/coinbase/jobs?content=true",
+      "parsed_row_count": 5,
+      "provider": "greenhouse",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\coin_greenhouse_coinbase.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "COIN",
+      "total_job_count": 94
+    },
+    {
+      "api_url": "https://boards-api.greenhouse.io/v1/boards/roblox/jobs?content=true",
+      "parsed_row_count": 5,
+      "provider": "greenhouse",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\rblx_greenhouse_roblox.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "RBLX",
+      "total_job_count": 228
+    },
+    {
+      "api_url": "https://boards-api.greenhouse.io/v1/boards/doordashusa/jobs?content=true",
+      "parsed_row_count": 5,
+      "provider": "greenhouse",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\dash_greenhouse_doordashusa.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "DASH",
+      "total_job_count": 445
+    },
+    {
+      "api_url": "https://boards-api.greenhouse.io/v1/boards/airbnb/jobs?content=true",
+      "parsed_row_count": 5,
+      "provider": "greenhouse",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\abnb_greenhouse_airbnb.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "ABNB",
+      "total_job_count": 224
+    },
+    {
+      "api_url": "https://boards-api.greenhouse.io/v1/boards/lyft/jobs?content=true",
+      "parsed_row_count": 5,
+      "provider": "greenhouse",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\lyft_greenhouse_lyft.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "LYFT",
+      "total_job_count": 145
+    },
+    {
+      "api_url": "https://boards-api.greenhouse.io/v1/boards/asana/jobs?content=true",
+      "parsed_row_count": 5,
+      "provider": "greenhouse",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\asan_greenhouse_asana.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "ASAN",
+      "total_job_count": 138
+    },
+    {
+      "api_url": "https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/jobs",
+      "parsed_row_count": 5,
+      "provider": "workday",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\nvda_workday_unknown.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "NVDA",
+      "total_job_count": 20
+    },
+    {
+      "api_url": "https://hpe.wd5.myworkdayjobs.com/wday/cxs/hpe/Jobsathpe/jobs",
+      "parsed_row_count": 5,
+      "provider": "workday",
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\hiring_capacity\\hpe_workday_unknown.json",
+      "selected_job_count": 5,
+      "source_url": "",
+      "status": "materialized",
+      "ticker": "HPE",
+      "total_job_count": 20
+    }
+  ],
+  "boundary": "L3 hiring rows are directional public ATS proxy only and cannot prove headcount, demand, revenue, order volume, production capacity, or margins.",
+  "context_row_count": 55,
+  "coverage_gate_status": "pass",
+  "failed_count": 0,
+  "generated_at": "2026-06-17T11:45:07Z",
+  "hiring_capacity_proxy_requirement": {
+    "entity_bound_row_count": 55,
+    "gaps": [],
+    "observed_row_count": 55,
+    "parser_row_count": 55,
+    "specialist_visible_row_count": 165,
+    "status": "pass"
+  },
+  "issuer_binding_status_counts": {
+    "issuer_mentioned_in_snapshot": 55
+  },
+  "materialized_count": 11,
+  "outputs": {
+    "coverage_gate": "D:\\FIN_Insight_Agent\\data\\manifests\\hiring_capacity_runtime_coverage_gate_v0_1.json",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\hiring_capacity_context_rows_v0_1.jsonl"
+  },
+  "parser_backed_row_count": 55,
+  "product_binding_status_counts": {
+    "product_mentioned_in_snapshot": 55
+  },
+  "provider_counts": {
+    "greenhouse": 40,
+    "lever": 5,
+    "workday": 10
+  },
+  "schema_version": "fin_agent_hiring_capacity_context_summary_v0_1",
+  "status": "pass",
+  "structured_context_type_counts": {
+    "hiring_signal_context": 55
+  },
+  "ticker_count": 11,
+  "tickers": [
+    "ABNB",
+    "ASAN",
+    "COIN",
+    "DASH",
+    "DDOG",
+    "HPE",
+    "LYFT",
+    "NET",
+    "NVDA",
+    "PLTR",
+    "RBLX"
+  ]
+}

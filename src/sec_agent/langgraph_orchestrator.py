@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -38,10 +39,17 @@ from sec_agent.d_series_fact_selection import (
     build_pre_memo_fact_selection,
 )
 from sec_agent.derived_metric_layer import build_derived_metric_layer
+from sec_agent.dimension_evidence_portfolio import build_dimension_evidence_portfolio
 from sec_agent.financial_statement_analysis import build_fundamental_statement_pack
 from sec_agent.entity_master import build_entity_security_master
 from sec_agent.gate_registry import build_gate_registry_eval_matrix
+from sec_agent.lead_supervision import (
+    build_lead_review_checkpoint,
+    build_research_objective_contract,
+    build_targeted_repair_plan,
+)
 from sec_agent.mcp_tool_registry import invoke_mcp_tool
+from sec_agent.memo_logic_plan import build_memo_logic_plan
 from sec_agent.metric_product_ontology import build_metric_product_ontology_snapshot
 from sec_agent.multi_agent_contracts import (
     ANALYSIS_DIMENSION_ORDER,
@@ -59,6 +67,8 @@ from sec_agent.multi_agent_contracts import (
     verify_specialist_outputs_for_memo,
 )
 from sec_agent.multi_agent_router import route_multi_agent_activation
+from sec_agent.official_issuer_repair import execute_official_issuer_repair_plan, issuer_has_official_profile
+from sec_agent.supervising_analyst import build_supervising_analyst_pack
 from sec_agent.multi_agent_runtime import (
     active_specialists_for_state,
     audit_second_pass_delta,
@@ -87,7 +97,9 @@ from sec_agent.provenance_vintage import build_provenance_vintage_layers
 from sec_agent.reconciliation_ledger import build_metric_ontology_and_reconciliation_layers, build_reconciliation_ledger
 from sec_agent.relationship_graph import relationship_plan_from_lookup
 from sec_agent.run_audit_store import materialize_run_audit_store
+from sec_agent.runtime_source_context_store import attach_runtime_source_context_rows, runtime_source_context_enabled
 from sec_agent.source_capability_router import build_source_capability_router
+from sec_agent.source_authority_coverage import load_source_authority_coverage
 from sec_agent.tool_call_ledger import (
     LOOP_BREAK_AGENT_TOOL_BUDGET_EXHAUSTED,
     LOOP_BREAK_NO_INCREMENTAL_EVIDENCE,
@@ -161,6 +173,9 @@ CHECKPOINT_STATE_KEYS = (
     "bounded_gap_register",
     "entity_security_master",
     "source_capability_router",
+    "runtime_source_context_store",
+    "source_layer_capability_audit",
+    "source_authority_coverage",
     "raw_source_provenance_store",
     "asof_vintage_layer",
     "metric_product_ontology_snapshot",
@@ -183,6 +198,11 @@ CHECKPOINT_STATE_KEYS = (
     "second_pass_repair_plan",
     "second_pass_hard_gate",
     "second_pass_delta_audit",
+    "research_objective_contract",
+    "lead_review_checkpoint",
+    "targeted_repair_plan",
+    "memo_logic_plan",
+    "supervising_analyst_pack",
     "judgment_plan",
     "verified_judgment_plan",
     "memo_answer",
@@ -211,11 +231,74 @@ CHECKPOINT_STATE_KEYS = (
     "research_lead_validation",
     "research_lead_rejected_plan",
     "research_lead_model_diagnostics",
+    "product_intelligence_runtime_autoload",
+    "product_intelligence_runtime_policy",
     "universe_relationship_model_diagnostics",
     "universe_relationship_routing_trace",
     "specialist_route_results",
     "memo_route_result",
     "multi_agent_summary",
+)
+
+PRODUCT_INTELLIGENCE_RUNTIME_POLICY_SCHEMA_VERSION = "sec_agent_product_intelligence_runtime_policy_v0.1"
+PRODUCT_INTELLIGENCE_AUTOLOAD_AGENT_IDS = {
+    "product_technology_analyst",
+}
+PRODUCT_INTELLIGENCE_RELATIONSHIP_AGENT_IDS = {
+    "industry_supply_chain_analyst",
+    "universe_relationship",
+}
+PRODUCT_INTELLIGENCE_AUTOLOAD_SOURCE_FAMILIES = {
+    "company_product_evidence_graph",
+    "public_source_context",
+    "live_public_web_context",
+}
+PRODUCT_INTELLIGENCE_QUERY_TERMS = (
+    "product",
+    "product kpi",
+    "product spec",
+    "spec",
+    "sku",
+    "architecture",
+    "benchmark",
+    "generation",
+    "gpu",
+    "accelerator",
+    "ai server",
+    "server oem",
+    "data center gpu",
+    "blackwell",
+    "hopper",
+    "h100",
+    "h200",
+    "b200",
+    "gb200",
+    "mi300",
+    "tpu",
+    "customer deployment",
+    "deployment",
+    "supply chain",
+    "supplier",
+    "competitor",
+    "competitive",
+    "产品",
+    "产品线",
+    "产品指标",
+    "产品规格",
+    "规格",
+    "架构",
+    "代际",
+    "基准测试",
+    "显卡",
+    "加速卡",
+    "加速器",
+    "服务器",
+    "客户部署",
+    "部署",
+    "供应链",
+    "供应商",
+    "竞品",
+    "竞争",
 )
 CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "context_rows",
@@ -228,6 +311,7 @@ CHECKPOINT_LARGE_PAYLOAD_CHANNELS = {
     "bounded_gap_register",
     "entity_security_master",
     "source_capability_router",
+    "source_authority_coverage",
     "raw_source_provenance_store",
     "asof_vintage_layer",
     "metric_product_ontology_snapshot",
@@ -299,6 +383,11 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     second_pass_repair_plan: dict[str, Any]
     second_pass_hard_gate: dict[str, Any]
     second_pass_delta_audit: dict[str, Any]
+    research_objective_contract: dict[str, Any]
+    lead_review_checkpoint: dict[str, Any]
+    targeted_repair_plan: dict[str, Any]
+    memo_logic_plan: dict[str, Any]
+    supervising_analyst_pack: dict[str, Any]
     judgment_plan: dict[str, Any]
     verified_judgment_plan: dict[str, Any]
     memo_answer: dict[str, Any]
@@ -321,6 +410,8 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     research_lead_failure_reason: str
     research_lead_validation: dict[str, Any]
     research_lead_rejected_plan: dict[str, Any]
+    product_intelligence_runtime_autoload: bool
+    product_intelligence_runtime_policy: dict[str, Any]
     tool_call_ledger: dict[str, Any]
     loop_budget_state: dict[str, Any]
     agent_trace: list[dict[str, Any]]
@@ -334,6 +425,9 @@ class SecAgentGraphRuntimeState(TypedDict, total=False):
     bounded_gap_register: dict[str, Any]
     entity_security_master: dict[str, Any]
     source_capability_router: dict[str, Any]
+    runtime_source_context_store: dict[str, Any]
+    source_layer_capability_audit: dict[str, Any]
+    source_authority_coverage: dict[str, Any]
     raw_source_provenance_store: dict[str, Any]
     asof_vintage_layer: dict[str, Any]
     metric_product_ontology_snapshot: dict[str, Any]
@@ -908,6 +1002,127 @@ def _node_load_session_state(state: SecAgentGraphRuntimeState) -> SecAgentGraphR
     )
 
 
+def _product_intelligence_runtime_autoload_decision(
+    state: Mapping[str, Any],
+    activation_plan: Mapping[str, Any] | None,
+    *,
+    allow_state_override: bool = False,
+) -> tuple[bool, dict[str, Any]]:
+    plan = dict(activation_plan or {})
+    contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    active_agents = set(_unique_strings(plan.get("activate_agents")))
+    source_families = set(_unique_strings(plan.get("allowed_source_families")))
+    focus_tickers = _unique_upper(
+        plan.get("focus_tickers")
+        or contract.get("focus_tickers")
+        or state.get("focus_tickers")
+        or state.get("selected_tickers")
+        or []
+    )
+    search_scope_tickers = _unique_upper(
+        plan.get("search_scope_tickers")
+        or contract.get("search_scope_tickers")
+        or state.get("search_scope_tickers")
+        or state.get("selected_tickers")
+        or focus_tickers
+    )
+    ticker_scope = _unique_upper([*focus_tickers, *search_scope_tickers])
+    query_text = _product_intelligence_policy_query_text(state, contract)
+
+    if allow_state_override and "product_intelligence_runtime_autoload" in state:
+        enabled = _boolish(state.get("product_intelligence_runtime_autoload"))
+        return enabled, {
+            "schema_version": PRODUCT_INTELLIGENCE_RUNTIME_POLICY_SCHEMA_VERSION,
+            "status": "enabled" if enabled else "disabled",
+            "decision_source": "operator_override",
+            "reason_codes": ["state_override"],
+            "active_agents": sorted(active_agents),
+            "allowed_source_families": sorted(source_families),
+            "focus_tickers": focus_tickers,
+            "search_scope_tickers": search_scope_tickers,
+        }
+
+    trigger_agents = sorted(active_agents & PRODUCT_INTELLIGENCE_AUTOLOAD_AGENT_IDS)
+    relationship_agents = sorted(active_agents & PRODUCT_INTELLIGENCE_RELATIONSHIP_AGENT_IDS)
+    trigger_sources = sorted(source_families & PRODUCT_INTELLIGENCE_AUTOLOAD_SOURCE_FAMILIES)
+    trigger_terms = sorted({term for term in PRODUCT_INTELLIGENCE_QUERY_TERMS if term.lower() in query_text})
+    reason_codes: list[str] = []
+    if trigger_agents:
+        reason_codes.append("product_specialist_active")
+    if trigger_sources:
+        reason_codes.append("product_source_family_allowed")
+    if relationship_agents and (trigger_sources or trigger_terms):
+        reason_codes.append("relationship_lane_with_product_context")
+    if trigger_terms and not (trigger_agents or trigger_sources or relationship_agents):
+        reason_codes.append("product_intent_without_specialist")
+    if not ticker_scope:
+        return False, {
+            "schema_version": PRODUCT_INTELLIGENCE_RUNTIME_POLICY_SCHEMA_VERSION,
+            "status": "disabled",
+            "decision_source": "research_lead_lane_policy",
+            "reason_codes": ["no_ticker_scope"],
+            "active_agents": sorted(active_agents),
+            "allowed_source_families": sorted(source_families),
+            "trigger_terms": trigger_terms[:12],
+            "focus_tickers": focus_tickers,
+            "search_scope_tickers": search_scope_tickers,
+        }
+
+    enabled = bool(reason_codes)
+    return enabled, {
+        "schema_version": PRODUCT_INTELLIGENCE_RUNTIME_POLICY_SCHEMA_VERSION,
+        "status": "enabled" if enabled else "disabled",
+        "decision_source": "research_lead_lane_policy",
+        "reason_codes": reason_codes or ["no_product_or_relationship_lane"],
+        "active_agents": sorted(active_agents),
+        "allowed_source_families": sorted(source_families),
+        "trigger_agents": trigger_agents,
+        "relationship_agents": relationship_agents,
+        "trigger_source_families": trigger_sources,
+        "trigger_terms": trigger_terms[:12],
+        "focus_tickers": focus_tickers,
+        "search_scope_tickers": search_scope_tickers,
+    }
+
+
+def _product_intelligence_policy_query_text(state: Mapping[str, Any], contract: Mapping[str, Any]) -> str:
+    fragments: list[str] = [str(state.get("user_query") or "")]
+    for key in (
+        "question",
+        "task",
+        "intent",
+        "research_objective",
+        "answer_type",
+        "requested_dimensions",
+        "metric_families",
+        "source_tiers",
+        "source_families",
+        "evidence_requirements",
+    ):
+        value = contract.get(key)
+        if isinstance(value, (str, int, float)):
+            fragments.append(str(value))
+        elif isinstance(value, Mapping):
+            fragments.extend(str(item) for item in value.values())
+        elif isinstance(value, (list, tuple, set)):
+            fragments.extend(str(item) for item in value)
+    context = state.get("multi_agent_context")
+    if isinstance(context, Mapping):
+        for key in ("intent", "requested_dimensions", "source_families", "evidence_requirements"):
+            value = context.get(key)
+            if isinstance(value, (str, int, float)):
+                fragments.append(str(value))
+            elif isinstance(value, (list, tuple, set)):
+                fragments.extend(str(item) for item in value)
+    return " ".join(fragment.lower() for fragment in fragments if fragment)
+
+
+def _boolish(value: Any) -> bool:
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on", "enabled", "enable"}
+    return bool(value)
+
+
 def _node_research_lead_plan(
     state: SecAgentGraphRuntimeState,
     *,
@@ -927,6 +1142,13 @@ def _node_research_lead_plan(
     else:
         result = route_activation(state)
     plan = result.get("activation_plan") if isinstance(result.get("activation_plan"), dict) else result
+    product_intelligence_autoload, product_intelligence_policy = _product_intelligence_runtime_autoload_decision(
+        state,
+        plan if isinstance(plan, Mapping) else {},
+        allow_state_override=True,
+    )
+    routing_trace = dict(result.get("routing_trace") or {}) if isinstance(result.get("routing_trace"), dict) else {}
+    routing_trace["product_intelligence_runtime"] = product_intelligence_policy
     next_state: SecAgentGraphRuntimeState = {
         **state,
         "agent_activation_plan": dict(plan or {}),
@@ -935,6 +1157,8 @@ def _node_research_lead_plan(
         "research_lead_failure_reason": result.get("failure_reason") or "",
         "research_lead_validation": dict(result.get("validation") or {}) if isinstance(result.get("validation"), dict) else {},
         "research_lead_rejected_plan": dict(result.get("rejected_plan") or {}) if isinstance(result.get("rejected_plan"), dict) else {},
+        "product_intelligence_runtime_autoload": product_intelligence_autoload,
+        "product_intelligence_runtime_policy": product_intelligence_policy,
         "loop_budget_state": dict(result.get("loop_budget") or state.get("loop_budget_state") or LoopBudget().to_dict()),
         "tool_call_ledger": dict(state.get("tool_call_ledger") or ToolCallLedger().to_dict()),
         "agent_trace": [
@@ -944,13 +1168,14 @@ def _node_research_lead_plan(
                 "agent_id": "research_lead",
                 "execution_mode": (plan or {}).get("execution_mode") if isinstance(plan, dict) else "",
                 "source": result.get("source") or "injected",
+                "product_intelligence_runtime_autoload": product_intelligence_autoload,
             },
         ],
     }
     if isinstance(result.get("evidence_requirement_plan"), dict) and result.get("evidence_requirement_plan"):
         next_state["evidence_requirement_plan"] = result["evidence_requirement_plan"]  # type: ignore[literal-required]
-    if isinstance(result.get("routing_trace"), dict):
-        next_state["multi_agent_routing_trace"] = result["routing_trace"]  # type: ignore[literal-required]
+    if routing_trace:
+        next_state["multi_agent_routing_trace"] = routing_trace  # type: ignore[literal-required]
     if isinstance(result.get("model_diagnostics"), dict):
         next_state["research_lead_model_diagnostics"] = result["model_diagnostics"]  # type: ignore[literal-required]
     return _record_node(next_state, "research_lead_plan", metadata={"mode": "injected" if route_activation else "deterministic_mock"})
@@ -964,10 +1189,25 @@ def _node_validate_activation_plan(state: SecAgentGraphRuntimeState) -> SecAgent
         agent_registry=agent_registry_by_id(),
         global_limits=state.get("loop_budget_state") or {},
     )
+    existing_policy = state.get("product_intelligence_runtime_policy")
+    preserve_operator_override = (
+        isinstance(existing_policy, Mapping)
+        and existing_policy.get("decision_source") == "operator_override"
+    ) or ("product_intelligence_runtime_autoload" in state and "product_intelligence_runtime_policy" not in state)
+    product_intelligence_autoload, product_intelligence_policy = _product_intelligence_runtime_autoload_decision(
+        state,
+        validation.get("plan") or state.get("agent_activation_plan") or {},
+        allow_state_override=preserve_operator_override,
+    )
+    routing_trace = dict(state.get("multi_agent_routing_trace") or {})
+    routing_trace["product_intelligence_runtime"] = product_intelligence_policy
     next_state: SecAgentGraphRuntimeState = {
         **state,
         "agent_activation_validation": validation,
         "agent_activation_plan": dict(validation.get("plan") or state.get("agent_activation_plan") or {}),
+        "product_intelligence_runtime_autoload": product_intelligence_autoload,
+        "product_intelligence_runtime_policy": product_intelligence_policy,
+        "multi_agent_routing_trace": routing_trace,
     }
     if validation["status"] != "pass":
         next_state["status"] = "failed"
@@ -1195,11 +1435,104 @@ def _node_compile_evidence_requirements(state: SecAgentGraphRuntimeState) -> Sec
 def _state_with_d3_d8_governance(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
     entity_master = state.get("entity_security_master") if isinstance(state.get("entity_security_master"), dict) else {}
     source_router = state.get("source_capability_router") if isinstance(state.get("source_capability_router"), dict) else {}
+    source_layer_audit = state.get("source_layer_capability_audit") if isinstance(state.get("source_layer_capability_audit"), dict) else {}
+    source_authority = state.get("source_authority_coverage") if isinstance(state.get("source_authority_coverage"), dict) else {}
     if not entity_master:
         entity_master = build_entity_security_master(state)
     if not source_router:
         source_router = build_source_capability_router(state)
-    return {**state, "entity_security_master": entity_master, "source_capability_router": source_router}
+    if not source_layer_audit:
+        source_layer_audit = _load_source_layer_capability_audit(state)
+    if not source_authority:
+        source_authority = _load_source_authority_coverage(state)
+    return {
+        **state,
+        "entity_security_master": entity_master,
+        "source_capability_router": source_router,
+        "source_layer_capability_audit": source_layer_audit,
+        "source_authority_coverage": source_authority,
+    }
+
+
+def _load_source_layer_capability_audit(state: Mapping[str, Any]) -> dict[str, Any]:
+    inventory = state.get("project_inventory") if isinstance(state.get("project_inventory"), Mapping) else {}
+    explicit_path = (
+        state.get("source_layer_capability_audit_path")
+        or inventory.get("source_layer_capability_audit_path")
+        or "data/manifests/source_layer_capability_audit_v0_1.jsonl"
+    )
+    rows_path = Path(str(explicit_path))
+    if not rows_path.exists():
+        return {
+            "schema_version": "finsight_source_layer_capability_audit_v0_1",
+            "status": "not_loaded",
+            "rows": [],
+            "summary": {"source_count": 0, "reason": "source_layer_capability_audit_rows_not_found"},
+        }
+    rows: list[dict[str, Any]] = []
+    for line in rows_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(row, dict):
+            rows.append(row)
+    summary_path = rows_path.with_name("source_layer_capability_audit_summary_v0_1.json")
+    summary_payload: dict[str, Any] = {}
+    validation_payload: dict[str, Any] = {}
+    if summary_path.exists():
+        try:
+            raw_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            raw_summary = {}
+        if isinstance(raw_summary, dict):
+            summary_payload = raw_summary.get("summary") if isinstance(raw_summary.get("summary"), dict) else {}
+            validation_payload = raw_summary.get("validation") if isinstance(raw_summary.get("validation"), dict) else {}
+    return {
+        "schema_version": "finsight_source_layer_capability_audit_v0_1",
+        "status": "loaded",
+        "rows_path": str(rows_path),
+        "rows": rows,
+        "summary": summary_payload or {
+            "source_count": len(rows),
+            "runtime_ready_count": len([row for row in rows if row.get("runtime_ready_context")]),
+            "expected_missing_count": len([row for row in rows if str(row.get("evidence_graph_status") or "") == "not_registered"]),
+        },
+        "validation": validation_payload,
+    }
+
+
+def _load_source_authority_coverage(state: Mapping[str, Any]) -> dict[str, Any]:
+    inventory = state.get("project_inventory") if isinstance(state.get("project_inventory"), Mapping) else {}
+    contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    explicit_path = (
+        state.get("source_authority_coverage_path")
+        or inventory.get("source_authority_coverage_path")
+        or "data/manifests/r18_signal_authority_coverage_matrix_v0_2.jsonl"
+    )
+    focus_tickers = (
+        contract.get("focus_tickers")
+        or state.get("selected_tickers")
+        or []
+    )
+    search_scope_tickers = (
+        contract.get("search_scope_tickers")
+        or contract.get("companies")
+        or []
+    )
+    max_rows = int(
+        state.get("source_authority_coverage_max_rows_per_ticker")
+        or inventory.get("source_authority_coverage_max_rows_per_ticker")
+        or 24
+    )
+    return load_source_authority_coverage(
+        path=explicit_path,
+        focus_tickers=focus_tickers if isinstance(focus_tickers, list) else [],
+        search_scope_tickers=search_scope_tickers if isinstance(search_scope_tickers, list) else [],
+        max_rows_per_ticker=max_rows,
+    )
 
 
 def _node_execute_evidence_operators(
@@ -1255,12 +1588,21 @@ def _node_execute_evidence_operators(
         "runtime_ledger_rows": [*(state.get("runtime_ledger_rows") or []), *(result.get("runtime_ledger_rows") or [])],
         "market_snapshot_rows": [*(state.get("market_snapshot_rows") or []), *(result.get("market_snapshot_rows") or [])],
         "industry_snapshot_rows": [*(state.get("industry_snapshot_rows") or []), *(result.get("industry_snapshot_rows") or [])],
+        "product_evidence_rows": [*(state.get("product_evidence_rows") or []), *(result.get("product_evidence_rows") or [])],
+        "public_source_context_rows": [*(state.get("public_source_context_rows") or []), *(result.get("public_source_context_rows") or [])],
         "source_gaps": [*(state.get("source_gaps") or []), *(result.get("source_gaps") or [])],
         "evidence_operator_fanout_plan": result.get("evidence_operator_fanout_plan") or state.get("evidence_operator_fanout_plan") or {},
         "evidence_operator_fanout_barrier": result.get("fanout_barrier") or state.get("evidence_operator_fanout_barrier") or {},
         "loop_break_reason": str(result.get("loop_break_reason") or state.get("loop_break_reason") or ""),
         "bounded_answer_allowed": bool(result.get("bounded_answer_allowed") or state.get("bounded_answer_allowed") or False),
     }
+    if runtime_source_context_enabled(next_state):
+        next_state = attach_runtime_source_context_rows(next_state)  # type: ignore[assignment]
+    runtime_source_summary = (
+        next_state.get("runtime_source_context_store", {}).get("summary", {})
+        if isinstance(next_state.get("runtime_source_context_store"), dict)
+        else {}
+    )
     return _record_node(
         next_state,
         "execute_evidence_operators",
@@ -1268,6 +1610,9 @@ def _node_execute_evidence_operators(
             "tool_observation_count": len(result.get("tool_observations") or []),
             "evidence_operator_mode": "dry_run" if dry_run else "real",
             "fanout_enabled": bool(result.get("fanout_barrier")),
+            "product_evidence_row_count": len(next_state.get("product_evidence_rows") or []),
+            "public_source_context_row_count": len(next_state.get("public_source_context_rows") or []),
+            "runtime_source_context_selected_row_count": runtime_source_summary.get("selected_row_count") or 0,
         },
     )
 
@@ -1923,6 +2268,15 @@ def _node_multi_agent_aggregate_judgment_plan(
         "judgment_plan": selected_judgment,
         "verified_judgment_plan": selected_judgment,
     }
+    lead_artifacts = _build_lead_supervision_and_memo_logic(governance_state, selected_judgment)
+    governance_state = {**governance_state, **lead_artifacts}
+    governance_state = _state_with_lead_targeted_repair(governance_state, selected_judgment)
+    if isinstance(governance_state.get("verified_judgment_plan"), Mapping):
+        selected_judgment = dict(governance_state.get("verified_judgment_plan") or {})
+        result["judgment_plan"] = selected_judgment
+        result["verified_judgment_plan"] = selected_judgment
+        governance_ledgers = build_evidence_governance_ledgers(governance_state)
+    governance_state = _state_with_supervising_analyst_pack(governance_state)
     governance_state["gate_registry_eval_matrix"] = build_gate_registry_eval_matrix(governance_state)
     result = {
         **{
@@ -1935,6 +2289,12 @@ def _node_multi_agent_aggregate_judgment_plan(
                 "gate_registry_eval_matrix",
                 "derived_metric_layer",
                 "fundamental_statement_pack",
+                "research_objective_contract",
+                "lead_review_checkpoint",
+                "targeted_repair_plan",
+                "memo_logic_plan",
+                "lead_targeted_repair_execution",
+                "supervising_analyst_pack",
             )
             if key in governance_state
         },
@@ -1979,6 +2339,752 @@ def _node_multi_agent_aggregate_judgment_plan(
             "focused_answer_bridge": (judgment.get("focused_answer_bridge") or {}).get("status") if isinstance(judgment, Mapping) else "",
         },
     )
+
+
+def _state_with_supervising_analyst_pack(state: SecAgentGraphRuntimeState) -> SecAgentGraphRuntimeState:
+    pack = build_supervising_analyst_pack(state)
+    return {**state, "supervising_analyst_pack": pack}
+
+
+def _build_lead_supervision_and_memo_logic(
+    state: Mapping[str, Any],
+    selected_judgment: Mapping[str, Any],
+) -> dict[str, Any]:
+    required_dimensions = _required_analysis_dimensions_from_state(state) or [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "competition_and_market_position",
+        "risk_and_counterevidence",
+    ]
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    source_family_plan = {
+        "allowed_source_families": _unique_strings(activation.get("allowed_source_families") or []),
+        "issuer_coverage_policy": {
+            "local_or_sec_route_miss": "official_source_probe_before_bounded_gap",
+            "official_probe_order": [
+                "sec_fpi_filings_20f_6k",
+                "company_ir_reports",
+                "local_exchange_filings",
+                "regulator_filings",
+            ],
+            "forbidden_sources": ["social_media_unofficial", "marketing_blog", "forum_or_unverified_post"],
+        },
+    }
+    contract = build_research_objective_contract(
+        query=str(state.get("user_query") or ""),
+        required_dimensions=required_dimensions,
+        source_family_plan=source_family_plan,
+        mandatory_second_pass_triggers=["retrievable_gap"],
+    )
+    gaps = _lead_supervision_gaps_from_state(state)
+    retrieval_budget_audit = (
+        (state.get("multi_agent_reflection_report") or {}).get("tool_ledger_summary")
+        if isinstance(state.get("multi_agent_reflection_report"), Mapping)
+        else {}
+    )
+    packs = {
+        key: state.get(key)
+        for key in (
+            "fundamental_statement_pack",
+            "product_spec_pack",
+            "capital_macro_exposure_pack",
+            "relationship_graph_observation",
+            "thesis_driver_pack",
+        )
+        if isinstance(state.get(key), Mapping)
+    }
+    dimension_portfolio = build_dimension_evidence_portfolio(
+        state,
+        tickers=state.get("focus_tickers") if isinstance(state.get("focus_tickers"), list) else None,
+        autoload=bool(state.get("product_intelligence_runtime_autoload")),
+    )
+    if dimension_portfolio:
+        packs["dimension_evidence_portfolio"] = dimension_portfolio
+    claim_cards = [
+        dict(item)
+        for item in selected_judgment.get("supported_claims") or []
+        if isinstance(item, Mapping)
+    ]
+    checkpoint = build_lead_review_checkpoint(
+        objective_contract=contract,
+        retrieval_budget_audit=retrieval_budget_audit if isinstance(retrieval_budget_audit, Mapping) else {},
+        packs=packs,
+        claim_cards=claim_cards,
+        gaps=gaps,
+        source_capability=state.get("source_capability_router")
+        if isinstance(state.get("source_capability_router"), Mapping)
+        else {},
+        source_layer_capability=state.get("source_layer_capability_audit")
+        if isinstance(state.get("source_layer_capability_audit"), Mapping)
+        else {},
+        source_authority_coverage=state.get("source_authority_coverage")
+        if isinstance(state.get("source_authority_coverage"), Mapping)
+        else {},
+        run_audit={
+            "run_id": state.get("run_id") or "",
+            "node_trace_count": len(state.get("node_trace") or []),
+            "artifact_refs": state.get("artifact_refs") if isinstance(state.get("artifact_refs"), Mapping) else {},
+        },
+    )
+    repair_plan = build_targeted_repair_plan(checkpoint)
+    judgment_state = selected_judgment.get("judgment_state") if isinstance(selected_judgment.get("judgment_state"), Mapping) else {}
+    memo_logic_plan = build_memo_logic_plan(
+        judgment_state=judgment_state,
+        lead_review_checkpoint=checkpoint,
+        memo_intent=str(contract.get("memo_intent") or "investment_research_memo"),
+    )
+    return {
+        "research_objective_contract": contract,
+        "lead_review_checkpoint": checkpoint,
+        "targeted_repair_plan": repair_plan,
+        "memo_logic_plan": memo_logic_plan,
+    }
+
+
+def _state_with_lead_targeted_repair(
+    state: SecAgentGraphRuntimeState,
+    selected_judgment: Mapping[str, Any],
+) -> SecAgentGraphRuntimeState:
+    repair_plan = state.get("targeted_repair_plan") if isinstance(state.get("targeted_repair_plan"), Mapping) else {}
+    if not repair_plan or str(repair_plan.get("status") or "") == "no_retrievable_gap":
+        return state
+    execution = execute_official_issuer_repair_plan(repair_plan)
+    if int(execution.get("attempted_count") or 0) <= 0:
+        return state
+    ledger = ToolCallLedger.from_dict(state.get("tool_call_ledger") or {"budget": state.get("loop_budget_state") or {}})
+    turn_id = f"{state.get('run_id') or 'multi_agent_turn'}:lead_targeted_repair"
+    for observation in execution.get("tool_observations") or []:
+        if not isinstance(observation, Mapping):
+            continue
+        arguments = observation.get("arguments") if isinstance(observation.get("arguments"), Mapping) else {}
+        runtime_summary = observation.get("runtime_summary") if isinstance(observation.get("runtime_summary"), Mapping) else {}
+        boundary = observation.get("boundary") if isinstance(observation.get("boundary"), Mapping) else {}
+        ledger.record_tool_call(
+            turn_id=turn_id,
+            agent_id="web_evidence_operator",
+            tool_name="web_evidence_snapshot",
+            arguments=arguments,
+            row_count=int(observation.get("row_count") or 0),
+            source_gap_count=int(observation.get("source_gap_count") or 0),
+            elapsed_ms=int(runtime_summary.get("elapsed_ms") or 0),
+            status=str(observation.get("status") or "ok"),
+            metadata={
+                "route_id": observation.get("route_id") or "",
+                "retrieval_route": "live_public_web_context",
+                "triggered_by": "research_lead",
+                "repair_stage": "lead_review_checkpoint_before_memo_writer",
+                "boundary": boundary,
+                "runtime_summary": runtime_summary,
+                "argument_summary": {
+                    key: arguments.get(key)
+                    for key in (
+                        "ticker",
+                        "url",
+                        "source_class",
+                        "web_scope_policy_ids",
+                        "claim_types",
+                        "repair_id",
+                    )
+                    if key in arguments
+                },
+            },
+        )
+    checkpoint = dict(state.get("lead_review_checkpoint") or {}) if isinstance(state.get("lead_review_checkpoint"), Mapping) else {}
+    directive = dict(checkpoint.get("memo_directive") or {}) if isinstance(checkpoint.get("memo_directive"), Mapping) else {}
+    directive["lead_targeted_repair_result"] = {
+        "status": execution.get("status") or "",
+        "attempted_count": int(execution.get("attempted_count") or 0),
+        "success_count": int(execution.get("success_count") or 0),
+        "bounded_gap_count": int(execution.get("bounded_gap_count") or 0),
+        "writer_policy": "use_successful_official_context_to_reduce_false_missing_coverage_but_do_not_promote_exact_facts",
+    }
+    checkpoint["memo_directive"] = directive
+    checkpoint["lead_targeted_repair_execution"] = execution
+    augmented_judgment = _judgment_with_lead_targeted_repair_claims(selected_judgment, execution)
+    if augmented_judgment is not selected_judgment:
+        augmented_judgment = refresh_judgment_plan_after_governance_filter(augmented_judgment)
+        augmented_judgment = attach_judgment_state(
+            augmented_judgment,
+            fundamental_statement_pack=state.get("fundamental_statement_pack")
+            if isinstance(state.get("fundamental_statement_pack"), Mapping)
+            else {},
+        )
+    judgment_state = augmented_judgment.get("judgment_state") if isinstance(augmented_judgment.get("judgment_state"), Mapping) else {}
+    memo_logic_plan = build_memo_logic_plan(
+        judgment_state=judgment_state,
+        lead_review_checkpoint=checkpoint,
+        memo_intent=str((state.get("research_objective_contract") or {}).get("memo_intent") or "investment_research_memo")
+        if isinstance(state.get("research_objective_contract"), Mapping)
+        else "investment_research_memo",
+    )
+    bounded_gap_register = _bounded_gap_register_with_candidates(
+        state.get("bounded_gap_register") if isinstance(state.get("bounded_gap_register"), Mapping) else {},
+        execution.get("source_gaps") or [],
+    )
+    return {
+        **state,
+        "context_rows": [*(state.get("context_rows") or []), *(execution.get("context_rows") or [])],
+        "source_gaps": [*(state.get("source_gaps") or []), *(execution.get("source_gaps") or [])],
+        "bounded_gap_register": bounded_gap_register,
+        "tool_observations": [*(state.get("tool_observations") or []), *(execution.get("tool_observations") or [])],
+        "artifact_refs": _merge_artifact_refs(state.get("artifact_refs"), execution.get("artifact_refs") or []),
+        "tool_call_ledger": ledger.to_dict(),
+        "lead_review_checkpoint": checkpoint,
+        "lead_targeted_repair_execution": execution,
+        "memo_logic_plan": memo_logic_plan,
+        "judgment_plan": augmented_judgment,
+        "verified_judgment_plan": augmented_judgment,
+    }
+
+
+def _judgment_with_lead_targeted_repair_claims(
+    selected_judgment: Mapping[str, Any],
+    execution: Mapping[str, Any],
+) -> Mapping[str, Any]:
+    claims = _lead_targeted_repair_context_claims(execution)
+    if not claims:
+        return selected_judgment
+    judgment = dict(selected_judgment or {})
+    existing = [dict(item) for item in judgment.get("supported_claims") or [] if isinstance(item, Mapping)]
+    existing_ids = {str(item.get("claim_id") or "") for item in existing}
+    new_claims = [claim for claim in claims if str(claim.get("claim_id") or "") not in existing_ids]
+    if not new_claims:
+        return selected_judgment
+    source_agent_ids = list(judgment.get("source_agent_ids") or [])
+    if "research_lead" not in source_agent_ids:
+        source_agent_ids.append("research_lead")
+    stats = dict(judgment.get("claim_card_stats") or {}) if isinstance(judgment.get("claim_card_stats"), Mapping) else {}
+    stats["lead_targeted_repair_claim_count"] = int(stats.get("lead_targeted_repair_claim_count") or 0) + len(new_claims)
+    return {
+        **judgment,
+        "supported_claims": [*existing, *new_claims],
+        "source_agent_ids": source_agent_ids,
+        "claim_card_stats": stats,
+        "lead_targeted_repair_claims": new_claims,
+        "lead_targeted_repair_claim_policy": "official_context_claim_cards_context_only_no_exact_value_promotion_v0_1",
+    }
+
+
+def _lead_targeted_repair_context_claims(execution: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows = [dict(row) for row in execution.get("context_rows") or [] if isinstance(row, Mapping)]
+    if not rows:
+        return []
+    claims: list[dict[str, Any]] = []
+    by_repair_type_ticker: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for row in rows:
+        if not bool(row.get("context_only")):
+            continue
+        ticker = str(row.get("ticker") or "").strip().upper()
+        repair_type = _repair_type_from_context_row(row)
+        if ticker or repair_type in {"market_proxy", "supply_chain"}:
+            by_repair_type_ticker.setdefault((repair_type, ticker or "CONTEXT"), []).append(row)
+    for (repair_type, ticker), ticker_rows in sorted(by_repair_type_ticker.items()):
+        products = _unique_strings(
+            [
+                str(row.get("product_family") or row.get("product_or_segment") or "")
+                for row in ticker_rows
+                if str(row.get("product_family") or row.get("product_or_segment") or "")
+            ]
+        )[:5]
+        topics = _unique_strings(
+            [
+                str(row.get("topic") or row.get("source_title") or row.get("source_class") or "")
+                for row in ticker_rows
+                if str(row.get("topic") or row.get("source_title") or row.get("source_class") or "")
+            ]
+        )[:5]
+        metric_leads = _unique_strings(
+            [
+                str(metric)
+                for row in ticker_rows
+                for metric in (row.get("metric_leads") or [])
+                if str(metric).strip()
+            ]
+        )[:6]
+        structured_facts = _unique_strings(
+            [
+                str(row.get("structured_context_summary") or row.get("fact_value") or "")
+                for row in ticker_rows
+                if str(row.get("structured_context_summary") or row.get("fact_value") or "").strip()
+            ]
+        )[:4]
+        refs = _unique_strings([str(row.get("evidence_ref") or "") for row in ticker_rows if str(row.get("evidence_ref") or "")])[:6]
+        if not refs:
+            continue
+        labels = products or structured_facts or topics or metric_leads or [repair_type]
+        claim_id = f"lead_targeted_repair_claim:{repair_type}:{ticker.lower()}:{hashlib.sha1('|'.join(refs + labels).encode('utf-8')).hexdigest()[:12]}"
+        metric_part = f"; official parser targets include {', '.join(metric_leads)}" if metric_leads else ""
+        if structured_facts:
+            metric_part = f"{metric_part}; bounded parsed context includes {', '.join(structured_facts[:2])}"
+        analysis_dimension = _analysis_dimension_for_repair_type(repair_type, ticker_rows)
+        claim_type = _claim_type_for_repair_type(repair_type)
+        memo_slot = _memo_slot_for_repair_type(repair_type)
+        source_classes = _unique_strings([str(row.get("source_class") or "") for row in ticker_rows if str(row.get("source_class") or "")])[:5]
+        claims.append(
+            {
+                "claim_id": claim_id,
+                "agent_id": "research_lead",
+                "claim": _lead_repair_claim_text(
+                    ticker=ticker,
+                    repair_type=repair_type,
+                    products=products,
+                    topics=topics,
+                    metric_leads=metric_leads,
+                    source_classes=source_classes,
+                    metric_part=metric_part,
+                ),
+                "claim_type": claim_type,
+                "ticker_scope": [ticker] if ticker != "CONTEXT" else [],
+                "metric_scope": [_metric_scope_anchor_for_repair_type(repair_type), *metric_leads[:4]],
+                "memo_slot": memo_slot,
+                "analysis_dimension": analysis_dimension,
+                "materiality": "medium",
+                "direction": "neutral",
+                "evidence_refs": refs,
+                "source_families": ["live_public_web_context"],
+                "confidence": "medium",
+                "unsupported": False,
+                "caveats": [_caveat_for_repair_type(repair_type)],
+                "missing_confirmations": _missing_confirmations_for_repair_type(repair_type),
+                "claim_rank_score": 72,
+                "claim_rank_bucket": "memo_ready",
+                "memo_readiness": "memo_ready",
+                "claim_rank_reasons": _claim_rank_reasons_for_repair_type(repair_type),
+                "claim_boundary": str(ticker_rows[0].get("claim_boundary") or _claim_boundary_for_repair_type(repair_type)),
+                "analyst_depth": {
+                    "schema_version": "sec_agent_claim_card_analyst_depth_v0.1",
+                    "analysis_dimension": analysis_dimension,
+                    "analyst_angle": _analyst_angle_for_repair_type(repair_type),
+                    "analysis_lens": _analysis_lens_for_repair_type(repair_type),
+                    "evidence_role": "public_proxy_or_recall_context",
+                    "business_mechanism": _business_mechanism_for_repair_type(repair_type),
+                    "financial_bridge": _financial_bridge_for_repair_type(repair_type),
+                    "comparison_basis": f"ticker={ticker}; context={','.join(labels[:4])}",
+                    "counter_read": _counter_read_for_repair_type(repair_type),
+                },
+            }
+        )
+    claims.sort(key=lambda claim: _lead_repair_claim_sort_key(claim))
+    return claims
+
+
+def _repair_type_from_context_row(row: Mapping[str, Any]) -> str:
+    claim_types = {str(item) for item in row.get("claim_types") or []}
+    if str(row.get("product_family") or row.get("product_or_segment") or "").strip() or {
+        "official_product_surface",
+        "product_taxonomy_context",
+        "product_spec_context",
+    }.intersection(claim_types):
+        return "product_surface"
+    explicit = str(row.get("repair_type") or "").strip()
+    if explicit:
+        return explicit
+    if {"capital_ownership_context", "offering_or_ownership_parser_lead"}.intersection(claim_types):
+        return "capital_ownership"
+    if {"market_proxy_context", "industry_cycle_context"}.intersection(claim_types):
+        return "market_proxy"
+    if {"supply_chain_context", "customer_supplier_relationship_context"}.intersection(claim_types):
+        return "supply_chain"
+    if {"local_filing_context", "issuer_filing_presence"}.intersection(claim_types):
+        return "local_filing"
+    return "issuer_official"
+
+
+def _lead_repair_claim_sort_key(claim: Mapping[str, Any]) -> tuple[int, str]:
+    priority = {
+        "product_taxonomy_context": 0,
+        "capital_structure_or_ownership_context": 1,
+        "supply_chain_relationship_context": 2,
+        "market_or_competitive_context": 3,
+        "official_disclosure_context": 4,
+        "official_issuer_context": 5,
+    }
+    return (priority.get(str(claim.get("claim_type") or ""), 9), str(claim.get("claim_id") or ""))
+
+
+def _analysis_dimension_for_repair_type(repair_type: str, rows: list[Mapping[str, Any]]) -> str:
+    default_dimension = {
+        "product_surface": "product_and_production",
+        "capital_ownership": "capital_and_financing",
+        "market_proxy": "competition_and_market_position",
+        "supply_chain": "competition_and_market_position",
+        "local_filing": "fundamentals",
+        "issuer_official": "fundamentals",
+    }.get(repair_type, "fundamentals")
+    if repair_type == "product_surface":
+        return default_dimension
+    for row in rows:
+        value = str(row.get("analysis_dimension") or "").strip()
+        if value:
+            return value
+    return default_dimension
+
+
+def _claim_type_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "product_taxonomy_context",
+        "capital_ownership": "capital_structure_or_ownership_context",
+        "market_proxy": "market_or_competitive_context",
+        "supply_chain": "supply_chain_relationship_context",
+        "local_filing": "official_disclosure_context",
+        "issuer_official": "official_issuer_context",
+    }.get(repair_type, "public_source_context")
+
+
+def _memo_slot_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "product_technology",
+        "capital_ownership": "capital_and_financing",
+        "market_proxy": "competition_market",
+        "supply_chain": "industry_supply_chain",
+        "local_filing": "fundamentals",
+        "issuer_official": "fundamentals",
+    }.get(repair_type, "evidence_context")
+
+
+def _metric_scope_anchor_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "product_surface_context",
+        "capital_ownership": "capital_ownership_context",
+        "market_proxy": "market_proxy_context",
+        "supply_chain": "supply_chain_context",
+        "local_filing": "local_filing_context",
+        "issuer_official": "issuer_official_context",
+    }.get(repair_type, "public_context")
+
+
+def _lead_repair_claim_text(
+    *,
+    ticker: str,
+    repair_type: str,
+    products: list[str],
+    topics: list[str],
+    metric_leads: list[str],
+    source_classes: list[str],
+    metric_part: str,
+) -> str:
+    subject = ticker if ticker != "CONTEXT" else "the scoped public source repair"
+    sources = f" via {', '.join(source_classes)}" if source_classes else ""
+    if repair_type == "product_surface":
+        label = ", ".join(products or topics or ["official product surfaces"])
+        return (
+            f"{subject} targeted web repair reached allowed official product/source surfaces{sources} and identified "
+            f"{label}{metric_part}. This supports product taxonomy, spec/context, and follow-up parser targeting, "
+            "but it does not promote exact sales, orders, backlog, shipments, share, ASP, inventory, or sell-through values."
+        )
+    if repair_type == "capital_ownership":
+        label = ", ".join(topics or metric_leads or ["capital and ownership context"])
+        return (
+            f"{subject} targeted web repair reached allowed SEC/company/regulator capital sources{sources} for {label}. "
+            "This supports capital structure, offering, ownership, debt, or insider parser targeting; exact amount, holder, "
+            "security, rate, or maturity claims still require source-specific parser gates."
+        )
+    if repair_type == "market_proxy":
+        label = ", ".join(topics or metric_leads or ["industry and market proxy context"])
+        return (
+            f"{subject} targeted web repair reached allowed public market proxy sources{sources} for {label}. "
+            "This can frame industry cycle or competitive context, but it cannot prove issuer-specific sales, share, orders, "
+            "inventory, or channel metrics."
+        )
+    if repair_type == "supply_chain":
+        label = ", ".join(topics or metric_leads or ["official supply-chain relationship context"])
+        return (
+            f"{subject} targeted web repair reached allowed official relationship sources{sources} for {label}. "
+            "This supports customer/supplier/channel relationship context, not shipment, revenue, allocation, or order-volume claims."
+        )
+    if repair_type == "local_filing":
+        return (
+            f"{subject} targeted web repair reached allowed local filing, regulator, exchange, SEC FPI, or company IR sources{sources}. "
+            "This supports official disclosure coverage and parser targeting; exact financial or operating facts still require period, unit, and citation gates."
+        )
+    return (
+        f"{subject} targeted web repair reached official issuer sources{sources}. This supports issuer coverage and disclosure-path analysis, "
+        "but it does not promote exact sales, orders, backlog, shipments, share, ASP, or inventory values."
+    )
+
+
+def _caveat_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "official product/source surface reached; exact product KPI parser promotion is still required",
+        "capital_ownership": "capital/ownership source reached; exact amount/security/holder parser promotion is still required",
+        "market_proxy": "public proxy source reached; issuer-specific sales/share/order conclusions remain prohibited",
+        "supply_chain": "official relationship source reached; shipment/revenue/order-volume inference remains prohibited",
+        "local_filing": "official filing/source reached; exact values still require source parser gates",
+        "issuer_official": "official source reached; exact value parser promotion still required",
+    }.get(repair_type, "public context reached; exact value promotion still gated")
+
+
+def _missing_confirmations_for_repair_type(repair_type: str) -> list[str]:
+    return {
+        "product_surface": [
+            "exact value parser for orders/backlog/sales/shipments/capacity",
+            "commercial tracker data for market share, sell-through, channel inventory, ASP, or shipment share",
+        ],
+        "capital_ownership": [
+            "source-specific parser for offering amount, debt principal, rate, maturity, holder, or ownership percentage",
+            "filing-period reconciliation for 13F/13D/G/Form 3/4/5 lag",
+        ],
+        "market_proxy": [
+            "company-specific disclosed KPI or licensed market tracker for issuer share/sales/shipments",
+            "period and geography reconciliation between proxy and issuer reporting scope",
+        ],
+        "supply_chain": [
+            "company-disclosed shipment/order/revenue allocation",
+            "customer/supplier concentration or contract parser evidence",
+        ],
+        "local_filing": ["local filing parser output with period, unit, citation, and issuer mapping"],
+        "issuer_official": ["official filing parser output with period, unit, citation, and issuer mapping"],
+    }.get(repair_type, ["source-specific parser output"])
+
+
+def _claim_rank_reasons_for_repair_type(repair_type: str) -> list[str]:
+    return ["lead_targeted_repair_delta", "scoped_public_source_reached", f"{repair_type}_context", "source_boundary_preserved"]
+
+
+def _claim_boundary_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "official product surface context only; no exact product KPI promotion",
+        "capital_ownership": "capital/ownership context only; no exact amount/security/holder promotion",
+        "market_proxy": "public market proxy context only; no issuer-specific sales/share/order promotion",
+        "supply_chain": "official relationship context only; no shipment/revenue/order-volume promotion",
+        "local_filing": "official filing/source context only; no exact value promotion",
+        "issuer_official": "official issuer context only; no exact value promotion",
+    }.get(repair_type, "public context only; no exact value promotion")
+
+
+def _analyst_angle_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "Product lines, specifications, and production evidence",
+        "capital_ownership": "Capital structure, financing, ownership, and insider evidence",
+        "market_proxy": "Industry cycle and competitive position evidence",
+        "supply_chain": "Supply-chain, customer, supplier, and channel relationship evidence",
+        "local_filing": "Official filing coverage and parser targeting",
+        "issuer_official": "Issuer official disclosure coverage",
+    }.get(repair_type, "Public evidence repair context")
+
+
+def _analysis_lens_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "Use official product-surface leads to target parser follow-up without converting them into sales, share, orders, or backlog facts.",
+        "capital_ownership": "Use capital/ownership source leads to target source-specific parsing without converting context into exact financing or holder claims.",
+        "market_proxy": "Use proxy source context to frame industry direction without turning it into issuer-specific market share or sales facts.",
+        "supply_chain": "Use official relationship context to test business exposure without inferring shipment, revenue, allocation, or order volume.",
+        "local_filing": "Use official filing reachability to close issuer/source coverage before exact financial promotion.",
+        "issuer_official": "Use official issuer source reachability to close local route gaps before exact fact promotion.",
+    }.get(repair_type, "Use scoped public context as a repair lead only.")
+
+
+def _business_mechanism_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "Official product surfaces identify which equipment, platform, software, or service lines should be tied to orders, backlog, shipments, capex, and customer demand once exact disclosures are parsed.",
+        "capital_ownership": "Capital and ownership disclosures indicate financing flexibility, dilution, debt maturity pressure, insider alignment, or holder concentration that can affect risk and valuation.",
+        "market_proxy": "Official market proxies help establish whether the industry demand backdrop supports or contradicts company-level growth claims.",
+        "supply_chain": "Official relationship sources help map customer/supplier/channel exposure that can transmit demand, capacity, or concentration risk.",
+        "local_filing": "Official local disclosures close source coverage for issuers outside the local SEC route and identify where exact facts should be parsed.",
+        "issuer_official": "Official issuer sources close disclosure coverage and identify which documents should anchor company-specific facts.",
+    }.get(repair_type, "Scoped public evidence indicates where to test the business mechanism.")
+
+
+def _financial_bridge_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "Bridge to revenue, margin, capex, backlog, or order quality only after an official filing or company disclosure row passes period, unit, and citation gates.",
+        "capital_ownership": "Bridge to interest expense, dilution, cash runway, debt maturity, and ownership overhang only after exact source rows pass parser gates.",
+        "market_proxy": "Bridge to growth, pricing, share, utilization, or inventory only when issuer disclosures or licensed tracker facts confirm the proxy relationship.",
+        "supply_chain": "Bridge to revenue concentration, shipment timing, capex pull-through, or margin pressure only after official issuer or counterparty disclosures provide exact values.",
+        "local_filing": "Bridge to three-statement, segment, or operating KPI analysis only after local filing parser rows pass authority gates.",
+        "issuer_official": "Bridge to company financial, product, and risk claims only after official filing parser rows pass authority gates.",
+    }.get(repair_type, "Bridge to financial judgment only after exact source parser gates pass.")
+
+
+def _counter_read_for_repair_type(repair_type: str) -> str:
+    return {
+        "product_surface": "If exact product KPI rows cannot be parsed, keep this as product taxonomy context and expose the metric gap separately.",
+        "capital_ownership": "If exact holder/offering/debt rows cannot be parsed, keep this as financing context and expose the parser/commercial gap separately.",
+        "market_proxy": "If the proxy cannot be reconciled to issuer scope, use it only as directional industry context.",
+        "supply_chain": "If relationship context cannot be tied to disclosed volumes or revenue, avoid treating it as demand confirmation.",
+        "local_filing": "If the filing cannot be parsed, keep it as source coverage and expose exact-value parser gap.",
+        "issuer_official": "If the official source cannot be parsed, keep it as source coverage and expose exact-value parser gap.",
+    }.get(repair_type, "If source-specific parser gates fail, do not promote the context into a thesis fact.")
+
+
+def _merge_artifact_refs(existing: Any, additions: Any) -> Any:
+    added = [dict(item) for item in additions or [] if isinstance(item, Mapping)]
+    if not added:
+        return existing
+    if isinstance(existing, list):
+        return [*existing, *added]
+    if isinstance(existing, Mapping):
+        merged = dict(existing)
+        for item in added:
+            key = str(item.get("artifact_id") or item.get("id") or hashlib.sha1(json.dumps(item, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:12])
+            merged[key] = item
+        return merged
+    return added
+
+
+def _lead_supervision_gaps_from_state(state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for item in state.get("source_gaps") or []:
+        if isinstance(item, Mapping):
+            rows.append(dict(item))
+    register = state.get("bounded_gap_register") if isinstance(state.get("bounded_gap_register"), Mapping) else {}
+    for item in register.get("gaps") or []:
+        if isinstance(item, Mapping):
+            rows.append(dict(item))
+    rows.extend(_issuer_coverage_gaps_from_state(state))
+    deduped: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in rows:
+        key = str(row.get("gap_id") or row.get("id") or "") or hashlib.sha256(
+            json.dumps(row, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
+        ).hexdigest()[:16]
+        if key in seen:
+            continue
+        seen.add(key)
+        if not row.get("gap_id"):
+            row["gap_id"] = f"gap:{key}"
+        deduped.append(row)
+    return deduped
+
+
+def _issuer_coverage_gaps_from_state(state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    gaps: list[dict[str, Any]] = []
+    route_results = [row for row in state.get("specialist_route_results") or [] if isinstance(row, Mapping)]
+    for route in route_results:
+        summary = route.get("input_coverage_summary") if isinstance(route.get("input_coverage_summary"), Mapping) else {}
+        reasons = summary.get("focus_ticker_source_gap_reasons") or summary.get("ticker_source_gap_reasons") or []
+        for item in reasons if isinstance(reasons, list) else []:
+            if isinstance(item, Mapping):
+                ticker = str(item.get("ticker") or item.get("issuer") or "").strip().upper()
+                reason = str(item.get("reason") or item.get("reason_code") or item.get("message") or "").strip()
+            else:
+                text = str(item or "")
+                ticker_match = re.search(r"\b[A-Z][A-Z0-9.]{1,9}\b", text)
+                ticker = ticker_match.group(0) if ticker_match else ""
+                reason = text
+            if _is_official_issuer_probe_gap(ticker=ticker, reason=reason):
+                gaps.append(_official_issuer_gap(ticker=ticker, reason=reason, source="specialist_route_results"))
+    for item in state.get("source_gaps") or []:
+        if not isinstance(item, Mapping):
+            continue
+        ticker = str(item.get("ticker") or item.get("issuer") or item.get("company") or "").strip().upper()
+        reason = " ".join(
+            str(item.get(key) or "")
+            for key in ("reason_code", "reason", "message", "gap_type")
+            if str(item.get(key) or "").strip()
+        )
+        if _is_official_issuer_probe_gap(ticker=ticker, reason=reason):
+            gaps.append(_official_issuer_gap(ticker=ticker, reason=reason, source="source_gaps"))
+    known_tickers = _known_official_issuer_tickers_from_state(state)
+    already_requested = {str(row.get("ticker") or "").strip().upper() for row in gaps if isinstance(row, Mapping)}
+    for ticker in known_tickers:
+        if ticker in already_requested:
+            continue
+        if _state_has_local_or_live_issuer_authority(state, ticker):
+            continue
+        gaps.append(
+            _official_issuer_gap(
+                ticker=ticker,
+                reason="known official issuer profile has no local authority rows in current run",
+                source="lead_known_issuer_profile",
+            )
+        )
+    return gaps
+
+
+def _known_official_issuer_tickers_from_state(state: Mapping[str, Any]) -> list[str]:
+    candidates: list[str] = []
+    for container_key in ("agent_activation_plan", "query_contract", "multi_agent_context"):
+        container = state.get(container_key) if isinstance(state.get(container_key), Mapping) else {}
+        for key in ("focus_tickers", "search_scope_tickers", "tickers", "ticker_universe"):
+            candidates.extend(str(item).strip().upper() for item in container.get(key) or [] if str(item).strip())
+    query_text = str(state.get("user_query") or "")
+    candidates.extend(match.group(0).upper() for match in re.finditer(r"\b[A-Z][A-Z0-9.]{1,9}\b", query_text))
+    out: list[str] = []
+    seen: set[str] = set()
+    for ticker in candidates:
+        if ticker in seen or not issuer_has_official_profile(ticker):
+            continue
+        seen.add(ticker)
+        out.append(ticker)
+    return out
+
+
+def _state_has_local_or_live_issuer_authority(state: Mapping[str, Any], ticker: str) -> bool:
+    target = str(ticker or "").strip().upper()
+    if not target:
+        return False
+    source_families = {
+        "primary_sec_filing",
+        "company_authored_unaudited_sec_filing",
+        "company_ir_material",
+        "official_issuer_disclosure",
+        "live_public_web_context",
+    }
+    for key in (
+        "runtime_ledger_rows",
+        "context_rows",
+        "product_evidence_rows",
+        "public_source_context_rows",
+        "market_snapshot_rows",
+        "industry_snapshot_rows",
+    ):
+        for row in state.get(key) or []:
+            if not isinstance(row, Mapping):
+                continue
+            row_ticker = str(row.get("ticker") or row.get("issuer") or row.get("company_ticker") or "").strip().upper()
+            if row_ticker != target:
+                continue
+            family = str(row.get("source_family") or row.get("source_class") or row.get("retrieval_route") or "").strip()
+            if family in source_families:
+                return True
+            if bool(row.get("exact_value_authority")):
+                return True
+    return False
+
+
+def _is_official_issuer_probe_gap(*, ticker: str, reason: str) -> bool:
+    text = f"{ticker} {reason}".lower()
+    if not ticker:
+        return False
+    return any(
+        marker in text
+        for marker in (
+            "not_in_manifest",
+            "mcp route scope",
+            "route_scope",
+            "sec/mcp",
+            "local sec",
+            "non-sec",
+            "non_us",
+            "foreign issuer",
+            "fpi",
+            "20-f",
+            "6-k",
+        )
+    )
+
+
+def _official_issuer_gap(*, ticker: str, reason: str, source: str) -> dict[str, Any]:
+    ticker_text = str(ticker or "UNKNOWN").strip().upper()
+    return {
+        "gap_id": f"issuer_coverage:{ticker_text.lower()}:{hashlib.sha256(str(reason or source).encode('utf-8')).hexdigest()[:10]}",
+        "gap_type": "issuer_official_source_probe_required",
+        "analysis_dimension": "fundamentals",
+        "ticker": ticker_text,
+        "reason_code": "local_or_sec_route_scope_missing_official_issuer_probe_required",
+        "reason": str(reason or "issuer is outside local SEC/MCP route scope"),
+        "repairability": "retrievable_gap",
+        "source": source,
+        "official_probe_order": [
+            "sec_fpi_filings_20f_6k",
+            "company_ir_reports",
+            "local_exchange_filings",
+            "regulator_filings",
+        ],
+        "claim_boundary": "official_source_context_only_until_parser_period_unit_citation_gate_passes",
+    }
 
 
 def _required_analysis_dimensions_from_state(state: Mapping[str, Any]) -> list[str]:
@@ -2256,11 +3362,18 @@ def _repair_injected_verifier_failure_once(
     return next_state, {**dict(retry_result), "memo_answer": candidate, "claim_verification": repaired_claim}
 
 
-def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
+def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool, state: Mapping[str, Any] | None = None) -> str:
     parts: list[str] = []
-    direct = str(memo.get("direct_answer") or "No deterministic memo text was generated.").strip()
-    profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
+    if state and isinstance(state.get("memo_logic_plan"), Mapping) and not isinstance(memo.get("memo_logic_plan"), Mapping):
+        memo = {**dict(memo), "memo_logic_plan": state.get("memo_logic_plan")}
+    logic_plan = memo.get("memo_logic_plan") if isinstance(memo.get("memo_logic_plan"), Mapping) else {}
     labels = _memo_render_labels(memo)
+    direct = _clean_user_facing_memo_text_for_render(
+        str(memo.get("direct_answer") or "No deterministic memo text was generated.").strip(),
+        labels["language"],
+    )
+    profile = memo.get("memo_profile") if isinstance(memo.get("memo_profile"), Mapping) else {}
+    citation_map = _build_memo_citation_map(memo)
     rendered_claim_max = int(profile.get("rendered_claim_max") or (5 if bounded else 8))
     profile_name = str(profile.get("profile") or "").strip()
     rendered_dimension_max = int(
@@ -2270,16 +3383,21 @@ def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
         parts.append(f"{labels['core_thesis']}:\n{direct}")
 
     dimension_lines = _render_dimension_analysis_lines(
-        memo.get("dimension_analyses") or [],
+        _dimension_rows_in_logic_plan_order(memo.get("dimension_analyses") or [], logic_plan),
         ref_label=labels["refs"],
         language=labels["language"],
+        citation_map=citation_map,
         max_items=rendered_dimension_max,
     )
     if not dimension_lines:
         dimension_lines = _render_dimension_analysis_lines(
-            (memo.get("thesis_driver_pack") or {}).get("dimension_sections") if isinstance(memo.get("thesis_driver_pack"), Mapping) else [],
+            _dimension_rows_in_logic_plan_order(
+                (memo.get("thesis_driver_pack") or {}).get("dimension_sections") if isinstance(memo.get("thesis_driver_pack"), Mapping) else [],
+                logic_plan,
+            ),
             ref_label=labels["refs"],
             language=labels["language"],
+            citation_map=citation_map,
             max_items=rendered_dimension_max,
         )
     if dimension_lines:
@@ -2289,6 +3407,7 @@ def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
             memo.get("thesis_driver_pack") or {},
             ref_label=labels["refs"],
             language=labels["language"],
+            citation_map=citation_map,
         )
         if thesis_chain_lines:
             parts.append(f"{labels['evidence_to_thesis']}:\n" + "\n".join(thesis_chain_lines))
@@ -2297,40 +3416,46 @@ def _render_memo_answer(memo: Mapping[str, Any], *, bounded: bool) -> str:
         memo.get("memo_claims") or memo.get("supported_claims") or [],
         max_items=rendered_claim_max,
         ref_label=labels["refs"],
+        citation_map=citation_map,
+        language=labels["language"],
     )
     if claim_lines:
         parts.append(f"{labels['claims']}:\n" + "\n".join(claim_lines))
 
-    implications = _render_loose_memo_items(memo.get("investment_implications") or [], max_items=5)
+    implications = _render_loose_memo_items(memo.get("investment_implications") or [], max_items=5, language=labels["language"])
     if implications:
         parts.append(f"{labels['investment_implications']}:\n" + "\n".join(f"- {item}" for item in implications))
 
-    change_view = _render_loose_memo_items(memo.get("what_would_change_view") or [], max_items=4)
+    change_view = _render_loose_memo_items(memo.get("what_would_change_view") or [], max_items=4, language=labels["language"])
     if change_view:
         parts.append(f"{labels['what_would_change_view']}:\n" + "\n".join(f"- {item}" for item in change_view))
 
-    monitoring = _render_loose_memo_items(memo.get("monitoring_items") or [], max_items=5)
+    monitoring = _render_loose_memo_items(memo.get("monitoring_items") or [], max_items=5, language=labels["language"])
     if monitoring:
         parts.append(f"{labels['monitoring_items']}:\n" + "\n".join(f"- {item}" for item in monitoring))
 
-    evidence_gaps = _render_loose_memo_items(memo.get("evidence_gaps_but_actionable") or [], max_items=4)
+    evidence_gaps = _render_loose_memo_items(memo.get("evidence_gaps_but_actionable") or [], max_items=3, language=labels["language"])
     if evidence_gaps:
         parts.append(f"{labels['evidence_gaps']}:\n" + "\n".join(f"- {item}" for item in evidence_gaps))
 
-    caveats = _render_loose_memo_items(memo.get("caveats") or [], max_items=3)
+    caveats = _render_loose_memo_items(memo.get("caveats") or [], max_items=2, language=labels["language"])
     if caveats:
         parts.append(f"{labels['caveats']}:\n" + "\n".join(f"- {item}" for item in caveats))
 
-    excluded = _render_loose_memo_items(memo.get("unsupported_claims_excluded") or [], max_items=2)
+    excluded = _render_loose_memo_items(memo.get("unsupported_claims_excluded") or [], max_items=2, language=labels["language"])
     if excluded:
         parts.append(f"{labels['unsupported_claims_excluded']}:\n" + "\n".join(f"- {item}" for item in excluded))
 
-    boundary = str(memo.get("source_boundary") or "verified judgment plan only").strip()
-    if boundary:
+    boundary = _clean_user_facing_memo_text(str(memo.get("source_boundary") or "").strip())
+    if boundary and not _is_generic_source_boundary_text(boundary):
         parts.append(f"{labels['source_boundary']}: {boundary}")
 
     if bounded and str(memo.get("answer_status") or "") == "draft" and claim_lines:
-        parts.append(labels["bounded_note"])
+        if labels["bounded_note"]:
+            parts.append(labels["bounded_note"])
+    citation_appendix = _render_citation_appendix(citation_map, labels=labels)
+    if citation_appendix:
+        parts.append(citation_appendix)
     return "\n\n".join(part for part in parts if part)
 
 
@@ -2355,7 +3480,8 @@ def _memo_render_labels(memo: Mapping[str, Any]) -> dict[str, str]:
             "caveats": "限制与注意事项",
             "unsupported_claims_excluded": "已排除的未证实说法",
             "source_boundary": "证据边界",
-            "bounded_note": "边界说明：verifier 已在当前证据边界内接受该 thesis-led memo。",
+            "evidence_index": "证据索引",
+            "bounded_note": "",
             "refs": "证据",
         }
     return {
@@ -2371,9 +3497,107 @@ def _memo_render_labels(memo: Mapping[str, Any]) -> dict[str, str]:
         "caveats": "Caveats",
         "unsupported_claims_excluded": "Unsupported claims excluded",
         "source_boundary": "Source boundary",
-        "bounded_note": "Bounded evidence note: verifier accepted the thesis-led memo claims under the current source boundary.",
+        "evidence_index": "Evidence index",
+        "bounded_note": "",
         "refs": "refs",
     }
+
+
+def _dimension_rows_in_logic_plan_order(value: Any, logic_plan: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows = [dict(item) for item in value if isinstance(item, Mapping)] if isinstance(value, list) else []
+    if not rows or not isinstance(logic_plan, Mapping):
+        return rows
+    by_dimension: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        dimension_id = str(row.get("dimension_id") or row.get("id") or "").strip()
+        by_dimension.setdefault(dimension_id, []).append(row)
+    ordered: list[dict[str, Any]] = []
+    seen: set[int] = set()
+    sections = [section for section in logic_plan.get("sections") or [] if isinstance(section, Mapping)]
+    for section in sections:
+        section_id = str(section.get("section_id") or "").strip()
+        for row in by_dimension.get(section_id, []):
+            ordered.append(row)
+            seen.add(id(row))
+    for row in rows:
+        if id(row) not in seen:
+            ordered.append(row)
+    return ordered
+
+
+def _build_memo_citation_map(memo: Mapping[str, Any]) -> dict[str, str]:
+    refs: list[str] = []
+
+    def add_from_rows(rows: Any) -> None:
+        for row in rows if isinstance(rows, list) else []:
+            if not isinstance(row, Mapping):
+                continue
+            for ref in row.get("evidence_refs") or row.get("refs") or []:
+                ref_text = str(ref or "").strip()
+                if ref_text and ref_text not in refs:
+                    refs.append(ref_text)
+
+    add_from_rows(memo.get("dimension_analyses") or [])
+    add_from_rows(memo.get("memo_claims") or memo.get("supported_claims") or [])
+    for key in ("investment_implications", "what_would_change_view", "monitoring_items", "evidence_gaps_but_actionable"):
+        add_from_rows(memo.get(key) or [])
+    return {ref: f"C{index}" for index, ref in enumerate(refs, start=1)}
+
+
+def _short_citation_text(refs: list[str], citation_map: Mapping[str, str], *, max_refs: int = 3) -> str:
+    labels: list[str] = []
+    for ref in refs:
+        label = citation_map.get(ref)
+        if label and label not in labels:
+            labels.append(str(label))
+        if len(labels) >= max_refs:
+            break
+    return (" " + "".join(f"[{label}]" for label in labels)) if labels else ""
+
+
+def _render_citation_appendix(citation_map: Mapping[str, str], *, labels: Mapping[str, str], max_items: int = 12) -> str:
+    if not citation_map:
+        return ""
+    rows = []
+    for raw_ref, label in list(citation_map.items())[:max_items]:
+        rows.append(f"- [{label}] {_compact_citation_ref(raw_ref)}")
+    if not rows:
+        return ""
+    return f"{labels['evidence_index']}:\n" + "\n".join(rows)
+
+
+def _compact_citation_ref(ref: Any) -> str:
+    text = str(ref or "").strip()
+    if not text:
+        return ""
+    if text.upper().startswith("INTERACTIVE_"):
+        text = text[len("INTERACTIVE_") :]
+    if text.startswith("__mcp__::"):
+        text = text[len("__mcp__::") :]
+    if "::" in text:
+        parts = [part for part in text.split("::") if part]
+        if parts:
+            head = parts[0]
+            if head.upper().startswith("INTERACTIVE_"):
+                head_parts = [part for part in head.split("_")[1:] if part]
+                head = " ".join(head_parts[:4]) or "interactive filing"
+            if len(head) > 28:
+                head = head[:28] + "..."
+            tail = [part.replace("_", " ") for part in parts[1:6]]
+            compact = " / ".join([head, *tail])
+            return _truncate_text(compact, 110)
+    if ":" in text:
+        parts = [part for part in text.split(":") if part]
+        if len(parts) >= 3:
+            return _truncate_text(" / ".join(parts[:5]).replace("_", " "), 110)
+    return _truncate_text(text.replace("_", " "), 110)
+
+
+def _truncate_text(text: str, max_chars: int) -> str:
+    value = str(text or "")
+    if len(value) <= max_chars:
+        return value
+    return value[: max(0, max_chars - 1)].rstrip() + "…"
 
 
 def _render_dimension_analysis_lines(
@@ -2381,46 +3605,40 @@ def _render_dimension_analysis_lines(
     *,
     ref_label: str,
     language: str,
+    citation_map: Mapping[str, str] | None = None,
     max_items: int = 5,
 ) -> list[str]:
     lines: list[str] = []
-    for index, row in enumerate(value if isinstance(value, list) else [], start=1):
+    for row in value if isinstance(value, list) else []:
         if not isinstance(row, Mapping):
             continue
         if not _should_render_dimension_analysis_row(row):
             continue
         title = str(row.get("title") or row.get("dimension_title") or _dimension_render_title(row.get("dimension_id"), language)).strip()
-        summary = str(row.get("summary") or row.get("section_thesis") or row.get("text") or "").strip()
+        summary = _clean_user_facing_memo_text_for_render(
+            str(row.get("summary") or row.get("section_thesis") or row.get("text") or "").strip(),
+            language,
+        )
         if not summary:
             continue
-        mechanism = str(row.get("business_mechanism") or "").strip()
-        bridge = str(row.get("financial_bridge") or "").strip()
-        competitive = str(row.get("competitive_read") or "").strip()
-        counter = str(row.get("counter_read") or "").strip()
+        mechanism = _clean_user_facing_memo_text_for_render(str(row.get("business_mechanism") or "").strip(), language)
+        bridge = _clean_user_facing_memo_text_for_render(str(row.get("financial_bridge") or "").strip(), language)
+        competitive = _clean_user_facing_memo_text_for_render(str(row.get("competitive_read") or "").strip(), language)
+        counter = _clean_user_facing_memo_text_for_render(str(row.get("counter_read") or "").strip(), language)
         refs = [str(ref) for ref in row.get("evidence_refs") or row.get("refs") or [] if str(ref or "").strip()]
+        citations = _short_citation_text(refs, citation_map or {})
+        prose_parts = _dimension_prose_without_gap_dominance(
+            _dedupe_user_facing_sentences([summary, mechanism, bridge, competitive, counter]),
+            language=language,
+        )
+        index = len(lines) + 1
         if language == "zh-CN":
-            parts = [f"{index}. {title}：{summary}"]
-            if mechanism:
-                parts.append(f"机制：{mechanism}")
-            if bridge:
-                parts.append(f"财务桥：{bridge}")
-            if competitive and "No direct" not in competitive:
-                parts.append(f"竞争/位置：{competitive}")
-            if counter:
-                parts.append(f"反证/边界：{counter}")
+            line = f"{index}. {title}：" + " ".join(prose_parts)
         else:
-            parts = [f"{index}. {title}: {summary}"]
-            if mechanism:
-                parts.append(f"mechanism: {mechanism}")
-            if bridge:
-                parts.append(f"financial bridge: {bridge}")
-            if competitive and "No direct" not in competitive:
-                parts.append(f"competition/position: {competitive}")
-            if counter:
-                parts.append(f"counter/boundary: {counter}")
-        if refs:
-            parts.append(f"{ref_label}={', '.join(refs[:4])}")
-        lines.append(" | ".join(parts))
+            line = f"{index}. {title}: " + " ".join(prose_parts)
+        if citations:
+            line += citations
+        lines.append(line)
         if len(lines) >= max_items:
             break
     return lines
@@ -2429,6 +3647,10 @@ def _render_dimension_analysis_lines(
 def _should_render_dimension_analysis_row(row: Mapping[str, Any]) -> bool:
     dimension_id = str(row.get("dimension_id") or row.get("id") or "").strip()
     if dimension_id == "thesis_synthesis":
+        return False
+    refs = [str(ref) for ref in row.get("evidence_refs") or row.get("refs") or [] if str(ref or "").strip()]
+    status = str(row.get("status") or row.get("stance") or "").strip().lower()
+    if not refs and any(marker in status for marker in ("gap", "bounded", "unsupported")):
         return False
     title = str(row.get("title") or row.get("dimension_title") or "").strip().lower()
     summary = str(row.get("summary") or row.get("section_thesis") or row.get("text") or "").strip().lower()
@@ -2465,6 +3687,7 @@ def _render_thesis_driver_chain_lines(
     *,
     ref_label: str,
     language: str,
+    citation_map: Mapping[str, str] | None = None,
     max_items: int = 5,
 ) -> list[str]:
     if not isinstance(value, Mapping):
@@ -2478,22 +3701,17 @@ def _render_thesis_driver_chain_lines(
         if len(lines) >= max_items:
             return
         slot = str(row.get("memo_slot") or row.get("gap_type") or "").strip()
-        claim_id = str(row.get("source_claim_id") or row.get("claim_id") or "").strip()
         refs = [str(ref) for ref in row.get("evidence_refs") or [] if str(ref or "").strip()]
         if language == "zh-CN":
             slot_label = _zh_thesis_chain_slot(slot)
             text = f"{prefix}{slot_label}"
-            if claim_id:
-                text += f" [{claim_id}]"
             if refs:
-                text += f" {ref_label}={', '.join(refs[:3])}"
+                text += _short_citation_text(refs, citation_map or {})
         else:
             slot_label = _en_thesis_chain_slot(slot)
             text = f"{prefix}{slot_label}"
-            if claim_id:
-                text += f" [{claim_id}]"
             if refs:
-                text += f" {ref_label}={', '.join(refs[:3])}"
+                text += _short_citation_text(refs, citation_map or {})
         lines.append(f"{len(lines) + 1}. {text}")
 
     if language == "zh-CN":
@@ -2539,36 +3757,244 @@ def _en_thesis_chain_slot(slot: str) -> str:
     }.get(str(slot or "").strip(), "verified claim")
 
 
-def _render_memo_claim_lines(value: Any, *, max_items: int = 5, ref_label: str = "refs") -> list[str]:
+def _render_memo_claim_lines(
+    value: Any,
+    *,
+    max_items: int = 5,
+    ref_label: str = "refs",
+    citation_map: Mapping[str, str] | None = None,
+    language: str = "",
+) -> list[str]:
     lines: list[str] = []
     for index, claim in enumerate(value if isinstance(value, list) else [], start=1):
         if not isinstance(claim, Mapping):
             continue
-        text = str(claim.get("claim") or claim.get("text") or "").strip()
+        text = _clean_user_facing_memo_text_for_render(str(claim.get("claim") or claim.get("text") or "").strip(), language)
         if not text:
             continue
-        claim_id = str(claim.get("claim_id") or "").strip()
         refs = [str(ref) for ref in claim.get("evidence_refs") or claim.get("refs") or [] if str(ref or "").strip()]
-        id_text = f" [{claim_id}]" if claim_id else ""
-        ref_text = f" {ref_label}={', '.join(refs[:4])}" if refs else ""
-        lines.append(f"{index}. {text}{id_text}{ref_text}")
+        ref_text = _short_citation_text(refs, citation_map or {}, max_refs=4)
+        lines.append(f"{len(lines) + 1}. {text}{ref_text}")
         if len(lines) >= max(1, max_items):
             break
     return lines
 
 
-def _render_loose_memo_items(value: Any, *, max_items: int) -> list[str]:
+def _render_loose_memo_items(value: Any, *, max_items: int, language: str = "") -> list[str]:
     items: list[str] = []
     for item in value if isinstance(value, list) else []:
         if isinstance(item, Mapping):
             text = str(item.get("text") or item.get("claim") or item.get("reason") or item.get("type") or "").strip()
         else:
             text = str(item or "").strip()
+        text = _clean_user_facing_memo_text_for_render(text, language)
         if text:
             items.append(text)
         if len(items) >= max_items:
             break
     return items
+
+
+def _clean_user_facing_memo_text(text: str) -> str:
+    clean = str(text or "").strip()
+    if not clean:
+        return ""
+    clean = re.sub(r"基于已验证证据并在当前证据边界内，(?:本段结论|本条论据|此项说明)概括为：", "", clean)
+    clean = clean.replace("以上表述仅对应已列证据引用，不代表超出来源范围的新增事实。", "")
+    clean = clean.replace("以上表述仅对应已列证据引用，不代表超出来源范围的新增事实。", "")
+    clean = re.sub(r"[。；;]?\s*不得推断未验证[^。；;\n]*(?=[。；;\n]|$)", "", clean)
+    clean = re.sub(r"[。；;]?\s*该声明(?:为|卡为)?已核对[^。；;\n]*(?=[。；;\n]|$)", "", clean)
+    clean = re.sub(r"[。；;]?\s*该声明卡[^。；;\n]*(?=[。；;\n]|$)", "", clean)
+    clean = re.sub(r"[。；;]?\s*Reported revenue[^。；;\n]*(?=[。；;\n]|$)", "", clean, flags=re.I)
+    clean = re.sub(r"[。；;]?\s*Company-disclosed product[^。；;\n]*(?=[。；;\n]|$)", "", clean, flags=re.I)
+    clean = re.sub(r"[。；;]?\s*The evidence traces[^。；;\n]*(?=[。；;\n]|$)", "", clean, flags=re.I)
+    clean = re.sub(r"[。；;]?\s*Capital spending, cash generation[^。；;\n]*(?=[。；;\n]|$)", "", clean, flags=re.I)
+    clean = re.sub(r"[。；;]?\s*Competitive or market-position[^。；;\n]*(?=[。；;\n]|$)", "", clean, flags=re.I)
+    clean = re.sub(r"[。；;]?\s*No direct competitive comparison[^。；;\n]*(?=[。；;\n]|$)", "", clean, flags=re.I)
+    clean = re.sub(r"[。；;]?\s*Peer comparison is available only[^。；;\n]*(?=[。；;\n]|$)", "", clean, flags=re.I)
+    clean = re.sub(r"[。；;]?\s*If the fact conflicts with another approved row[^。；;\n]*(?=[。；;\n]|$)", "", clean, flags=re.I)
+    clean = re.sub(r"[；;]?\s*该表述仅限已验证\s*ClaimCard\s*与引用证据范围，不外推未证实事实。?", "", clean, flags=re.I)
+    clean = re.sub(
+        r"[。；;]?\s*该声明卡为(?:已|经)?核对的?(?:数值|财务)?事实[；;，,]?\s*任何论点(?:必须明确桥接至|需将其与)[^。；;\n]*",
+        "",
+        clean,
+    )
+    clean = _remove_inline_raw_evidence_refs(clean)
+    clean = re.sub(r"\b(?:mechanism|financial bridge|competition/position|counter/boundary|source boundary)\s*[:：]\s*", "", clean, flags=re.I)
+    clean = re.sub(r"(?:机制|财务桥|竞争/位置|反证/边界|证据边界)\s*[:：]\s*", "", clean)
+    if _looks_like_internal_surface_instruction(clean):
+        return ""
+    clean = re.sub(r"\b(?:driver_id|gap_id|source_boundary_notes|reconciliation_candidate)\b\s*[:=]\s*[\w:.-]+", "", clean)
+    clean = clean.replace("共享备忘录上下文、紧凑验证判断计划和专家验证中的证据", "已验证的公开披露、行业关系图和市场/行业快照证据")
+    clean = clean.replace("未使用原始行或检索请求", "不包含未经核验的原始检索结果")
+    clean = clean.replace("官方来源修复确认", "官方来源确认")
+    clean = clean.replace("产品表面信息", "产品线信息")
+    clean = clean.replace("产品表面", "产品线")
+    clean = clean.replace("management commentary", "管理层表述")
+    clean = re.sub(r"\s+\|\s+", "；", clean)
+    clean = re.sub(r"\s{2,}", " ", clean).strip(" 。；,，、")
+    return clean
+
+
+def _clean_user_facing_memo_text_for_render(text: str, language: str) -> str:
+    clean = _clean_user_facing_memo_text(text)
+    if not clean:
+        return ""
+    if str(language or "") != "zh-CN":
+        return clean
+    clean = _remove_english_template_sentences(clean)
+    if not clean:
+        return ""
+    if _zh_render_text_is_mostly_english_prose(clean):
+        return ""
+    return clean
+
+
+def _remove_english_template_sentences(text: str) -> str:
+    parts = re.split(r"(?<=[。！？.!?])\s+|(?<=；)\s+|\n+", str(text or ""))
+    kept: list[str] = []
+    for part in parts:
+        value = part.strip()
+        if not value:
+            continue
+        lowered = value.lower()
+        if any(
+            marker in lowered
+            for marker in (
+                "the evidence supports",
+                "the evidence frames",
+                "the evidence links",
+                "caveat:",
+                "missing confirmation:",
+                "if the fact conflicts with another approved row",
+                "period changes compare",
+                "company-reported orders/backlog",
+                "not strictly same-period",
+                "non-gaap measure",
+                "gaap gross margin",
+            )
+        ):
+            continue
+        kept.append(value)
+    return " ".join(kept).strip(" 。；,，、")
+
+
+def _zh_render_text_is_mostly_english_prose(text: str) -> bool:
+    value = str(text or "").strip()
+    if not value:
+        return False
+    cjk_count = len(re.findall(r"[\u4e00-\u9fff]", value))
+    latin_text = re.sub(
+        r"\b(?:[A-Z]{1,8}|10-[KQ]|20-F|6-K|8-K|S-[13]|GAAP|SEC|FY\d{2,4}|Q[1-4]|AI|EV|GPU|CPU|API|SaaS)\b",
+        " ",
+        value,
+    )
+    latin_words = len(re.findall(r"[A-Za-z]{3,}", latin_text))
+    if cjk_count == 0 and latin_words >= 3:
+        return True
+    return latin_words >= max(10, cjk_count)
+
+
+def _is_generic_source_boundary_text(text: str) -> bool:
+    value = str(text or "").strip().lower()
+    return value in {
+        "",
+        "verified judgment plan only",
+        "bounded verified judgment plan only",
+        "仅限已验证 judgment plan；不包含原始检索行",
+        "仅限已验证 judgment plan；不包含原始检索行。",
+        "仅限已验证 judgment plan 和 source_boundary_notes 指定的证据范围；不包含原始检索行",
+        "仅限已验证 judgment plan 和 source_boundary_notes 指定的证据范围；不包含原始检索行。",
+        "仅使用已验证的公开披露、行业关系图和市场/行业快照证据。不包含未经核验的原始检索结果",
+        "仅使用已验证的公开披露、行业关系图和市场/行业快照证据。不包含未经核验的原始检索结果。",
+    }
+
+
+def _remove_inline_raw_evidence_refs(text: str) -> str:
+    clean = str(text or "")
+    # Writer models sometimes echo internal evidence ids in prose. The renderer
+    # appends short citations separately, so these raw ids are not user-facing.
+    clean = re.sub(
+        r"(?:[；;]\s*)?(?:证据引用为|证据\s*[=:：])\s*[^。；;\n]*(?:INTERACTIVE_|__mcp__::|reconciliation_candidate:)[^。；;\n]*(?=[。；;\n]|$)",
+        "",
+        clean,
+        flags=re.I,
+    )
+    clean = re.sub(r"(?:[；;]\s*)?证据引用为\s*.*?(?=\s*(?:\[[Cc]\d+\]|[。；;\n]|$))", "", clean)
+    clean = re.sub(r"INTERACTIVE_[^\s，,；;。)）\]]+", "", clean, flags=re.I)
+    clean = re.sub(r"__mcp__::[^\s，,；;。)）\]]+", "", clean)
+    clean = re.sub(r"reconciliation_candidate:[A-Za-z0-9_.:-]+", "", clean)
+    clean = re.sub(r"(?:证据引用为|证据\s*[=:：])\s*(?:[,，、]\s*)*(?=[。；;]|$)", "", clean)
+    clean = re.sub(r"\s*[,，、]\s*(?=[。；;])", "", clean)
+    return clean
+
+
+def _looks_like_internal_surface_instruction(text: str) -> bool:
+    lowered = str(text or "").lower()
+    return any(
+        marker in lowered
+        for marker in (
+            "bridge the claim through",
+            "this claimcard",
+            "synthesized thesis",
+            "pipe-delimited",
+            "do_not_emit",
+            "source_boundary_notes",
+        )
+    )
+
+
+def _dedupe_user_facing_sentences(parts: list[str]) -> list[str]:
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for part in parts:
+        text = _clean_user_facing_memo_text(part)
+        if not text:
+            continue
+        key = re.sub(r"\W+", "", text.lower())[:120]
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(text)
+    return deduped
+
+
+def _dimension_prose_without_gap_dominance(parts: list[str], *, language: str) -> list[str]:
+    if str(language or "") != "zh-CN":
+        return parts
+    result: list[str] = []
+    for part in parts:
+        trimmed = _trim_gap_tail_from_zh_dimension_text(part)
+        if not trimmed:
+            continue
+        if _zh_dimension_text_is_gap_dominant(trimmed):
+            continue
+        result.append(trimmed)
+        if len(result) >= 3:
+            break
+    return result or parts[:1]
+
+
+def _trim_gap_tail_from_zh_dimension_text(text: str) -> str:
+    value = str(text or "").strip()
+    if not value:
+        return ""
+    for marker in ("但缺乏", "但缺少", "但缺失", "但未", "但无法", "但不能", "但当前"):
+        index = value.find(marker)
+        if index >= 18:
+            return value[:index].rstrip(" ，,；;。")
+    for marker in ("；缺乏", "；缺少", "；缺失", "；未披露", "；无法", "；不能", "。缺乏", "。缺少", "。未披露"):
+        index = value.find(marker)
+        if index >= 18:
+            return value[:index].rstrip(" ，,；;。")
+    return value
+
+
+def _zh_dimension_text_is_gap_dominant(text: str) -> bool:
+    value = str(text or "").lower()
+    terms = ("缺口", "缺乏", "缺少", "缺失", "无法", "不能", "未披露", "尚未", "受限", "仅能确认", "需等待", "口径不匹配")
+    hits = sum(value.count(term) for term in terms)
+    return hits >= 2 or (hits >= 1 and len(value) <= 80)
 
 
 def _render_deterministic_lookup_answer(state: Mapping[str, Any]) -> str:
@@ -2780,14 +4206,14 @@ def _node_multi_agent_renderer(
             result = {"rendered_answer": "Bounded answer only: memo verification failed under current evidence constraints."}
         elif bounded:
             if str(memo.get("answer_status") or "") == "draft" and memo.get("memo_claims"):
-                result = {"rendered_answer": _render_memo_answer(memo, bounded=True)}
+                result = {"rendered_answer": _render_memo_answer(memo, bounded=True, state=state)}
             else:
                 result = {
                     "rendered_answer": "Bounded answer only: "
                     + str(memo.get("direct_answer") or "current evidence constraints block full memo generation.")
                 }
         else:
-            result = {"rendered_answer": _render_memo_answer(memo, bounded=False)}
+            result = {"rendered_answer": _render_memo_answer(memo, bounded=False, state=state)}
     return _record_node({**state, **result}, "renderer", metadata={"mode": "injected" if renderer else "stub"})
 
 
@@ -2803,6 +4229,8 @@ def _node_multi_agent_persist_session_state(state: SecAgentGraphRuntimeState) ->
     state_with_closeout_gate = _state_with_d12_database_closeout_gate(state_with_materialization)
     final_state = _record_node(state_with_closeout_gate, "persist_session_state")
     final_state = _state_with_run_audit_materialization(final_state)
+    summary_payload = build_multi_agent_summary_artifact_payload(final_state)
+    final_state = {**final_state, "multi_agent_summary": summary_payload}
     _write_native_state_artifacts(final_state)
     _write_multi_agent_governance_ledger_artifacts(final_state)
     _write_multi_agent_summary_artifact(final_state)
@@ -3639,6 +5067,8 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["typed_gap_ledger"] = str((output_dir / "typed_gap_ledger.json").resolve())
         refs["entity_security_master"] = str((output_dir / "entity_security_master.json").resolve())
         refs["source_capability_router"] = str((output_dir / "source_capability_router.json").resolve())
+        refs["source_layer_capability_audit"] = str((output_dir / "source_layer_capability_audit.json").resolve())
+        refs["source_authority_coverage"] = str((output_dir / "source_authority_coverage.json").resolve())
         refs["raw_source_provenance_store"] = str((output_dir / "raw_source_provenance_store.json").resolve())
         refs["asof_vintage_layer"] = str((output_dir / "asof_vintage_layer.json").resolve())
         refs["metric_product_ontology_snapshot"] = str((output_dir / "metric_product_ontology_snapshot.json").resolve())
@@ -3647,6 +5077,7 @@ def _with_multi_agent_artifact_refs(state: SecAgentGraphRuntimeState) -> SecAgen
         refs["derived_metric_layer"] = str((output_dir / "derived_metric_layer.json").resolve())
         refs["fundamental_statement_pack"] = str((output_dir / "fundamental_statement_pack.json").resolve())
         refs["pre_memo_fact_selection"] = str((output_dir / "pre_memo_fact_selection.json").resolve())
+        refs["supervising_analyst_pack"] = str((output_dir / "supervising_analyst_pack.json").resolve())
         refs["analyst_view_research_memory"] = str((output_dir / "analyst_view_research_memory.json").resolve())
         refs["d_series_database_closeout_gate"] = str((output_dir / "d_series_database_closeout_gate.json").resolve())
         return {**state, "artifact_refs": refs}
@@ -3728,6 +5159,12 @@ def _write_memo_surface_artifacts(output_dir: Path, state: SecAgentGraphRuntimeS
                 json.dumps(judgment_state, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
+    supervising_pack = state.get("supervising_analyst_pack") if isinstance(state.get("supervising_analyst_pack"), dict) else {}
+    if supervising_pack:
+        (output_dir / "supervising_analyst_pack.json").write_text(
+            json.dumps(supervising_pack, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
 
 def _write_multi_agent_summary_artifact(state: SecAgentGraphRuntimeState) -> None:
@@ -3736,7 +5173,11 @@ def _write_multi_agent_summary_artifact(state: SecAgentGraphRuntimeState) -> Non
         return
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "multi_agent_summary.json"
-    payload = build_multi_agent_summary_artifact_payload(state)
+    payload = (
+        state.get("multi_agent_summary")
+        if isinstance(state.get("multi_agent_summary"), Mapping)
+        else build_multi_agent_summary_artifact_payload(state)
+    )
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
@@ -3750,6 +5191,8 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     gap_ledger = state.get("typed_gap_ledger") if isinstance(state.get("typed_gap_ledger"), dict) else {}
     entity_master = state.get("entity_security_master") if isinstance(state.get("entity_security_master"), dict) else {}
     source_router = state.get("source_capability_router") if isinstance(state.get("source_capability_router"), dict) else {}
+    source_layer_audit = state.get("source_layer_capability_audit") if isinstance(state.get("source_layer_capability_audit"), dict) else {}
+    source_authority = state.get("source_authority_coverage") if isinstance(state.get("source_authority_coverage"), dict) else {}
     provenance_store = state.get("raw_source_provenance_store") if isinstance(state.get("raw_source_provenance_store"), dict) else {}
     vintage_layer = state.get("asof_vintage_layer") if isinstance(state.get("asof_vintage_layer"), dict) else {}
     ontology = state.get("metric_product_ontology_snapshot") if isinstance(state.get("metric_product_ontology_snapshot"), dict) else {}
@@ -3758,6 +5201,7 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
     derived_layer = state.get("derived_metric_layer") if isinstance(state.get("derived_metric_layer"), dict) else {}
     fundamental_pack = state.get("fundamental_statement_pack") if isinstance(state.get("fundamental_statement_pack"), dict) else {}
     pre_memo_selection = state.get("pre_memo_fact_selection") if isinstance(state.get("pre_memo_fact_selection"), dict) else {}
+    supervising_pack = state.get("supervising_analyst_pack") if isinstance(state.get("supervising_analyst_pack"), dict) else {}
     analyst_views = (
         state.get("analyst_view_research_memory")
         if isinstance(state.get("analyst_view_research_memory"), dict)
@@ -3781,6 +5225,10 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
         entity_master = build_entity_security_master(state)
     if not source_router:
         source_router = build_source_capability_router(state)
+    if not source_layer_audit:
+        source_layer_audit = _load_source_layer_capability_audit(state)
+    if not source_authority:
+        source_authority = _load_source_authority_coverage(state)
     if not provenance_store or not vintage_layer:
         layers = build_provenance_vintage_layers(state)
         if not provenance_store:
@@ -3878,6 +5326,14 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
         json.dumps(source_router, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    (output_dir / "source_layer_capability_audit.json").write_text(
+        json.dumps(source_layer_audit, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "source_authority_coverage.json").write_text(
+        json.dumps(source_authority, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
     (output_dir / "raw_source_provenance_store.json").write_text(
         json.dumps(provenance_store, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -3910,6 +5366,11 @@ def _write_multi_agent_governance_ledger_artifacts(state: SecAgentGraphRuntimeSt
         json.dumps(pre_memo_selection, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    if supervising_pack:
+        (output_dir / "supervising_analyst_pack.json").write_text(
+            json.dumps(supervising_pack, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
     (output_dir / "analyst_view_research_memory.json").write_text(
         json.dumps(analyst_views, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -3974,6 +5435,11 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
     source_router = state.get("source_capability_router") if isinstance(state.get("source_capability_router"), dict) else {}
     source_router_summary = source_router.get("summary") if isinstance(source_router.get("summary"), dict) else {}
     source_router_validation = source_router.get("validation") if isinstance(source_router.get("validation"), dict) else {}
+    source_layer_audit = state.get("source_layer_capability_audit") if isinstance(state.get("source_layer_capability_audit"), dict) else {}
+    source_layer_summary = source_layer_audit.get("summary") if isinstance(source_layer_audit.get("summary"), dict) else {}
+    source_layer_validation = source_layer_audit.get("validation") if isinstance(source_layer_audit.get("validation"), dict) else {}
+    source_authority = state.get("source_authority_coverage") if isinstance(state.get("source_authority_coverage"), dict) else {}
+    source_authority_summary = source_authority.get("summary") if isinstance(source_authority.get("summary"), dict) else {}
     provenance_store = state.get("raw_source_provenance_store") if isinstance(state.get("raw_source_provenance_store"), dict) else {}
     provenance_summary = provenance_store.get("summary") if isinstance(provenance_store.get("summary"), dict) else {}
     provenance_validation = provenance_store.get("validation") if isinstance(provenance_store.get("validation"), dict) else {}
@@ -4050,6 +5516,26 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
     adjudicator_barrier = state.get("adjudicator_barrier") if isinstance(state.get("adjudicator_barrier"), dict) else {}
     project_inventory = state.get("project_inventory") if isinstance(state.get("project_inventory"), dict) else {}
     milvus_runtime = project_inventory.get("milvus_runtime") if isinstance(project_inventory.get("milvus_runtime"), dict) else {}
+    lead_checkpoint = state.get("lead_review_checkpoint") if isinstance(state.get("lead_review_checkpoint"), dict) else {}
+    targeted_repair_plan = state.get("targeted_repair_plan") if isinstance(state.get("targeted_repair_plan"), dict) else {}
+    lead_targeted_repair = (
+        state.get("lead_targeted_repair_execution")
+        if isinstance(state.get("lead_targeted_repair_execution"), dict)
+        else lead_checkpoint.get("lead_targeted_repair_execution")
+        if isinstance(lead_checkpoint.get("lead_targeted_repair_execution"), dict)
+        else {}
+    )
+    memo_logic_plan = state.get("memo_logic_plan") if isinstance(state.get("memo_logic_plan"), dict) else {}
+    supervising_pack = state.get("supervising_analyst_pack") if isinstance(state.get("supervising_analyst_pack"), dict) else {}
+    supervising_validation = (
+        supervising_pack.get("validation") if isinstance(supervising_pack.get("validation"), Mapping) else {}
+    )
+    supervising_summary = supervising_pack.get("summary") if isinstance(supervising_pack.get("summary"), Mapping) else {}
+    supervising_synthesis = (
+        supervising_pack.get("research_lead_synthesis_plan")
+        if isinstance(supervising_pack.get("research_lead_synthesis_plan"), Mapping)
+        else {}
+    )
     return {
         "schema_version": "sec_agent_multi_agent_summary_v0.1",
         "run_id": state.get("run_id") or "",
@@ -4063,6 +5549,58 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
         "evidence_requirements": {
             "requirement_count": len(evidence_plan.get("requirements") or []) if isinstance(evidence_plan, dict) else 0,
             "validation_status": evidence_validation.get("status") if isinstance(evidence_validation, dict) else "",
+        },
+        "lead_review_checkpoint": {
+            "status": lead_checkpoint.get("status") or "",
+            "dimension_review_count": len(lead_checkpoint.get("dimension_reviews") or []),
+            "retrievable_gap_count": len(
+                [
+                    item
+                    for item in lead_checkpoint.get("dimension_reviews") or []
+                    if isinstance(item, Mapping) and str(item.get("status") or "") == "retrievable_gap"
+                ]
+            ),
+            "memo_directive": dict(lead_checkpoint.get("memo_directive") or {})
+            if isinstance(lead_checkpoint.get("memo_directive"), Mapping)
+            else {},
+        },
+        "targeted_repair_plan": {
+            "status": targeted_repair_plan.get("status") or "",
+            "repair_count": len(targeted_repair_plan.get("repairs") or []),
+            "routes": [
+                str(item.get("route") or "")
+                for item in targeted_repair_plan.get("repairs") or []
+                if isinstance(item, Mapping)
+            ][:12],
+        },
+        "lead_targeted_repair_execution": {
+            "status": lead_targeted_repair.get("status") or "",
+            "attempted_count": int(lead_targeted_repair.get("attempted_count") or 0),
+            "success_count": int(lead_targeted_repair.get("success_count") or 0),
+            "bounded_gap_count": int(lead_targeted_repair.get("bounded_gap_count") or 0),
+            "official_context_summaries": [
+                dict(item)
+                for item in lead_targeted_repair.get("official_context_summaries") or []
+                if isinstance(item, Mapping)
+            ][:8],
+        },
+        "memo_logic_plan": {
+            "status": (memo_logic_plan.get("validation") or {}).get("status")
+            if isinstance(memo_logic_plan.get("validation"), Mapping)
+            else "",
+            "section_count": len(memo_logic_plan.get("sections") or []),
+            "section_order": list(memo_logic_plan.get("section_order") or [])[:12],
+            "memo_style_contract": dict(memo_logic_plan.get("memo_style_contract") or {})
+            if isinstance(memo_logic_plan.get("memo_style_contract"), Mapping)
+            else {},
+        },
+        "supervising_analyst_pack": {
+            "status": supervising_validation.get("status") or "",
+            "financial_metric_count": supervising_summary.get("financial_metric_count") or 0,
+            "product_kpi_count": supervising_summary.get("product_kpi_count") or 0,
+            "capital_edge_count": supervising_summary.get("capital_edge_count") or 0,
+            "finding_count": supervising_summary.get("finding_count") or 0,
+            "stance": supervising_synthesis.get("stance") or "",
         },
         "plan_reflection": {
             "status": plan_reflection.get("status") or "",
@@ -4144,6 +5682,32 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
             "blocked_decision_count": source_router_summary.get("blocked_decision_count") or 0,
             "gap_decision_count": source_router_summary.get("gap_decision_count") or 0,
             "validation_status": source_router_validation.get("status") or "",
+        },
+        "source_layer_capability_audit": {
+            "schema_version": source_layer_audit.get("schema_version") or "",
+            "status": source_layer_audit.get("status") or "",
+            "source_count": source_layer_summary.get("source_count") or 0,
+            "runtime_ready_count": source_layer_summary.get("runtime_ready_count") or 0,
+            "expected_missing_count": source_layer_summary.get("expected_missing_count") or 0,
+            "exact_authority_ready_count": source_layer_summary.get("exact_authority_ready_count") or 0,
+            "context_or_proxy_allowed_count": source_layer_summary.get("context_or_proxy_allowed_count") or 0,
+            "by_layer": dict(source_layer_summary.get("by_layer") or {}),
+            "by_evidence_graph_status": dict(source_layer_summary.get("by_evidence_graph_status") or {}),
+            "by_acquisition_status": dict(source_layer_summary.get("by_acquisition_status") or {}),
+            "by_parser_status": dict(source_layer_summary.get("by_parser_status") or {}),
+            "validation_status": source_layer_validation.get("status") or "",
+        },
+        "source_authority_coverage": {
+            "schema_version": source_authority.get("schema_version") or "",
+            "status": source_authority.get("status") or "",
+            "scope_tickers": list(source_authority.get("scope_tickers") or [])[:24],
+            "row_count": source_authority.get("row_count") or 0,
+            "selected_row_count": source_authority.get("selected_row_count") or 0,
+            "evidence_bundle_allowed_count": source_authority_summary.get("evidence_bundle_allowed_count") or 0,
+            "exact_company_fact_authority_count": source_authority_summary.get("exact_company_fact_authority_count") or 0,
+            "thesis_driver_authority_count": source_authority_summary.get("thesis_driver_authority_count") or 0,
+            "by_source_role": dict(source_authority_summary.get("by_source_role") or {}),
+            "by_signal_authority_type": dict(source_authority_summary.get("by_signal_authority_type") or {}),
         },
         "raw_source_provenance_store": {
             "schema_version": provenance_store.get("schema_version") or "",
@@ -4313,6 +5877,7 @@ def build_multi_agent_summary_artifact_payload(state: SecAgentGraphRuntimeState)
                 "execution_mode": specialist_fanout_barrier.get("execution_mode") or "",
                 "specialist_count": specialist_fanout_barrier.get("specialist_count") or 0,
                 "failed_route_count": specialist_fanout_barrier.get("failed_route_count") or 0,
+                "source_layer_distribution": dict(specialist_fanout_barrier.get("source_layer_distribution") or {}),
             },
             "claim_card_store": {
                 "schema_version": claim_card_store_barrier.get("schema_version") or "",
@@ -5165,6 +6730,7 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
     second_pass_repair_plan = state.get("second_pass_repair_plan") or {}
     second_pass_hard_gate = state.get("second_pass_hard_gate") or {}
     second_pass_delta_audit = state.get("second_pass_delta_audit") or {}
+    product_intelligence_policy = state.get("product_intelligence_runtime_policy") or {}
     tool_ledger = state.get("tool_call_ledger") or {}
     tool_records = tool_ledger.get("records") if isinstance(tool_ledger, dict) else []
     return {
@@ -5180,6 +6746,8 @@ def _checkpoint_state_summary(state: SecAgentGraphRuntimeState) -> dict[str, Any
         "second_pass_repair_count": second_pass_repair_plan.get("repair_count") if isinstance(second_pass_repair_plan, dict) else 0,
         "second_pass_hard_gate_status": second_pass_hard_gate.get("status") if isinstance(second_pass_hard_gate, dict) else "",
         "second_pass_delta_status": second_pass_delta_audit.get("status") if isinstance(second_pass_delta_audit, dict) else "",
+        "product_intelligence_runtime_autoload": bool(state.get("product_intelligence_runtime_autoload")),
+        "product_intelligence_runtime_status": product_intelligence_policy.get("status") if isinstance(product_intelligence_policy, dict) else "",
         "tool_call_count": len(tool_records or []),
         "loop_break_reason": state.get("loop_break_reason") or (tool_ledger.get("loop_break_reason") if isinstance(tool_ledger, dict) else ""),
         "bounded_answer_allowed": bool(state.get("bounded_answer_allowed") or (tool_ledger.get("bounded_answer_allowed") if isinstance(tool_ledger, dict) else False)),

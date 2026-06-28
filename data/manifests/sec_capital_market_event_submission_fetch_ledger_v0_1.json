@@ -1,0 +1,2077 @@
+{
+  "cached_skip_count": 247,
+  "failure_count": 0,
+  "failures": [],
+  "fetch_limit": 0,
+  "fetched": [
+    {
+      "cik": "0001090872",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001090872.json",
+      "ticker": "A",
+      "url": "https://data.sec.gov/submissions/CIK0001090872.json"
+    },
+    {
+      "cik": "0000947484",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000947484.json",
+      "ticker": "ACGL",
+      "url": "https://data.sec.gov/submissions/CIK0000947484.json"
+    },
+    {
+      "cik": "0001113232",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001113232.json",
+      "ticker": "ACLS",
+      "url": "https://data.sec.gov/submissions/CIK0001113232.json"
+    },
+    {
+      "cik": "0001467373",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001467373.json",
+      "ticker": "ACN",
+      "url": "https://data.sec.gov/submissions/CIK0001467373.json"
+    },
+    {
+      "cik": "0000006281",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000006281.json",
+      "ticker": "ADI",
+      "url": "https://data.sec.gov/submissions/CIK0000006281.json"
+    },
+    {
+      "cik": "0000007084",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000007084.json",
+      "ticker": "ADM",
+      "url": "https://data.sec.gov/submissions/CIK0000007084.json"
+    },
+    {
+      "cik": "0000769397",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000769397.json",
+      "ticker": "ADSK",
+      "url": "https://data.sec.gov/submissions/CIK0000769397.json"
+    },
+    {
+      "cik": "0001002910",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001002910.json",
+      "ticker": "AEE",
+      "url": "https://data.sec.gov/submissions/CIK0001002910.json"
+    },
+    {
+      "cik": "0001040470",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001040470.json",
+      "ticker": "AEHR",
+      "url": "https://data.sec.gov/submissions/CIK0001040470.json"
+    },
+    {
+      "cik": "0000004977",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000004977.json",
+      "ticker": "AFL",
+      "url": "https://data.sec.gov/submissions/CIK0000004977.json"
+    },
+    {
+      "cik": "0000005272",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000005272.json",
+      "ticker": "AIG",
+      "url": "https://data.sec.gov/submissions/CIK0000005272.json"
+    },
+    {
+      "cik": "0001267238",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001267238.json",
+      "ticker": "AIZ",
+      "url": "https://data.sec.gov/submissions/CIK0001267238.json"
+    },
+    {
+      "cik": "0000354190",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000354190.json",
+      "ticker": "AJG",
+      "url": "https://data.sec.gov/submissions/CIK0000354190.json"
+    },
+    {
+      "cik": "0001086222",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001086222.json",
+      "ticker": "AKAM",
+      "url": "https://data.sec.gov/submissions/CIK0001086222.json"
+    },
+    {
+      "cik": "0001097149",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001097149.json",
+      "ticker": "ALGN",
+      "url": "https://data.sec.gov/submissions/CIK0001097149.json"
+    },
+    {
+      "cik": "0000899051",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000899051.json",
+      "ticker": "ALL",
+      "url": "https://data.sec.gov/submissions/CIK0000899051.json"
+    },
+    {
+      "cik": "0001579241",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001579241.json",
+      "ticker": "ALLE",
+      "url": "https://data.sec.gov/submissions/CIK0001579241.json"
+    },
+    {
+      "cik": "0001178670",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001178670.json",
+      "ticker": "ALNY",
+      "url": "https://data.sec.gov/submissions/CIK0001178670.json"
+    },
+    {
+      "cik": "0001748790",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001748790.json",
+      "ticker": "AMCR",
+      "url": "https://data.sec.gov/submissions/CIK0001748790.json"
+    },
+    {
+      "cik": "0001037868",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001037868.json",
+      "ticker": "AME",
+      "url": "https://data.sec.gov/submissions/CIK0001037868.json"
+    },
+    {
+      "cik": "0001047127",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001047127.json",
+      "ticker": "AMKR",
+      "url": "https://data.sec.gov/submissions/CIK0001047127.json"
+    },
+    {
+      "cik": "0000820027",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000820027.json",
+      "ticker": "AMP",
+      "url": "https://data.sec.gov/submissions/CIK0000820027.json"
+    },
+    {
+      "cik": "0000091142",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000091142.json",
+      "ticker": "AOS",
+      "url": "https://data.sec.gov/submissions/CIK0000091142.json"
+    },
+    {
+      "cik": "0001858681",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001858681.json",
+      "ticker": "APO",
+      "url": "https://data.sec.gov/submissions/CIK0001858681.json"
+    },
+    {
+      "cik": "0001751008",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001751008.json",
+      "ticker": "APP",
+      "url": "https://data.sec.gov/submissions/CIK0001751008.json"
+    },
+    {
+      "cik": "0001521332",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001521332.json",
+      "ticker": "APTV",
+      "url": "https://data.sec.gov/submissions/CIK0001521332.json"
+    },
+    {
+      "cik": "0001176948",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001176948.json",
+      "ticker": "ARES",
+      "url": "https://data.sec.gov/submissions/CIK0001176948.json"
+    },
+    {
+      "cik": "0001697862",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001697862.json",
+      "ticker": "ARGX",
+      "url": "https://data.sec.gov/submissions/CIK0001697862.json"
+    },
+    {
+      "cik": "0001820721",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001820721.json",
+      "ticker": "ARRY",
+      "url": "https://data.sec.gov/submissions/CIK0001820721.json"
+    },
+    {
+      "cik": "0000731802",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000731802.json",
+      "ticker": "ATO",
+      "url": "https://data.sec.gov/submissions/CIK0000731802.json"
+    },
+    {
+      "cik": "0000008818",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000008818.json",
+      "ticker": "AVY",
+      "url": "https://data.sec.gov/submissions/CIK0000008818.json"
+    },
+    {
+      "cik": "0001410636",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001410636.json",
+      "ticker": "AWK",
+      "url": "https://data.sec.gov/submissions/CIK0001410636.json"
+    },
+    {
+      "cik": "0001069183",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001069183.json",
+      "ticker": "AXON",
+      "url": "https://data.sec.gov/submissions/CIK0001069183.json"
+    },
+    {
+      "cik": "0000901832",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000901832.json",
+      "ticker": "AZN",
+      "url": "https://data.sec.gov/submissions/CIK0000901832.json"
+    },
+    {
+      "cik": "0000010456",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000010456.json",
+      "ticker": "BAX",
+      "url": "https://data.sec.gov/submissions/CIK0000010456.json"
+    },
+    {
+      "cik": "0000764478",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000764478.json",
+      "ticker": "BBY",
+      "url": "https://data.sec.gov/submissions/CIK0000764478.json"
+    },
+    {
+      "cik": "0001664703",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001664703.json",
+      "ticker": "BE",
+      "url": "https://data.sec.gov/submissions/CIK0001664703.json"
+    },
+    {
+      "cik": "0000038777",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000038777.json",
+      "ticker": "BEN",
+      "url": "https://data.sec.gov/submissions/CIK0000038777.json"
+    },
+    {
+      "cik": "0000014693",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000014693.json",
+      "ticker": "BF-B",
+      "url": "https://data.sec.gov/submissions/CIK0000014693.json"
+    },
+    {
+      "cik": "0001996862",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001996862.json",
+      "ticker": "BG",
+      "url": "https://data.sec.gov/submissions/CIK0001996862.json"
+    },
+    {
+      "cik": "0000811809",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000811809.json",
+      "ticker": "BHP",
+      "url": "https://data.sec.gov/submissions/CIK0000811809.json"
+    },
+    {
+      "cik": "0000875045",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000875045.json",
+      "ticker": "BIIB",
+      "url": "https://data.sec.gov/submissions/CIK0000875045.json"
+    },
+    {
+      "cik": "0001786352",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001786352.json",
+      "ticker": "BILL",
+      "url": "https://data.sec.gov/submissions/CIK0001786352.json"
+    },
+    {
+      "cik": "0001316835",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001316835.json",
+      "ticker": "BLDR",
+      "url": "https://data.sec.gov/submissions/CIK0001316835.json"
+    },
+    {
+      "cik": "0001048477",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001048477.json",
+      "ticker": "BMRN",
+      "url": "https://data.sec.gov/submissions/CIK0001048477.json"
+    },
+    {
+      "cik": "0001776985",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001776985.json",
+      "ticker": "BNTX",
+      "url": "https://data.sec.gov/submissions/CIK0001776985.json"
+    },
+    {
+      "cik": "0001383312",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001383312.json",
+      "ticker": "BR",
+      "url": "https://data.sec.gov/submissions/CIK0001383312.json"
+    },
+    {
+      "cik": "0001067983",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001067983.json",
+      "ticker": "BRK-B",
+      "url": "https://data.sec.gov/submissions/CIK0001067983.json"
+    },
+    {
+      "cik": "0000079282",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000079282.json",
+      "ticker": "BRO",
+      "url": "https://data.sec.gov/submissions/CIK0000079282.json"
+    },
+    {
+      "cik": "0001486957",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001486957.json",
+      "ticker": "BWXT",
+      "url": "https://data.sec.gov/submissions/CIK0001486957.json"
+    },
+    {
+      "cik": "0001037540",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001037540.json",
+      "ticker": "BXP",
+      "url": "https://data.sec.gov/submissions/CIK0001037540.json"
+    },
+    {
+      "cik": "0000023217",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000023217.json",
+      "ticker": "CAG",
+      "url": "https://data.sec.gov/submissions/CIK0000023217.json"
+    },
+    {
+      "cik": "0000721371",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000721371.json",
+      "ticker": "CAH",
+      "url": "https://data.sec.gov/submissions/CIK0000721371.json"
+    },
+    {
+      "cik": "0001109138",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001109138.json",
+      "ticker": "CAMT",
+      "url": "https://data.sec.gov/submissions/CIK0001109138.json"
+    },
+    {
+      "cik": "0000726958",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000726958.json",
+      "ticker": "CASY",
+      "url": "https://data.sec.gov/submissions/CIK0000726958.json"
+    },
+    {
+      "cik": "0001374310",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001374310.json",
+      "ticker": "CBOE",
+      "url": "https://data.sec.gov/submissions/CIK0001374310.json"
+    },
+    {
+      "cik": "0001138118",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001138118.json",
+      "ticker": "CBRE",
+      "url": "https://data.sec.gov/submissions/CIK0001138118.json"
+    },
+    {
+      "cik": "0001051470",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001051470.json",
+      "ticker": "CCI",
+      "url": "https://data.sec.gov/submissions/CIK0001051470.json"
+    },
+    {
+      "cik": "0001009001",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001009001.json",
+      "ticker": "CCJ",
+      "url": "https://data.sec.gov/submissions/CIK0001009001.json"
+    },
+    {
+      "cik": "0000815097",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000815097.json",
+      "ticker": "CCL",
+      "url": "https://data.sec.gov/submissions/CIK0000815097.json"
+    },
+    {
+      "cik": "0001402057",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001402057.json",
+      "ticker": "CDW",
+      "url": "https://data.sec.gov/submissions/CIK0001402057.json"
+    },
+    {
+      "cik": "0000759944",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000759944.json",
+      "ticker": "CFG",
+      "url": "https://data.sec.gov/submissions/CIK0000759944.json"
+    },
+    {
+      "cik": "0001043277",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001043277.json",
+      "ticker": "CHRW",
+      "url": "https://data.sec.gov/submissions/CIK0001043277.json"
+    },
+    {
+      "cik": "0000020286",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000020286.json",
+      "ticker": "CINF",
+      "url": "https://data.sec.gov/submissions/CIK0000020286.json"
+    },
+    {
+      "cik": "0000021076",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000021076.json",
+      "ticker": "CLX",
+      "url": "https://data.sec.gov/submissions/CIK0000021076.json"
+    },
+    {
+      "cik": "0000026172",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000026172.json",
+      "ticker": "CMI",
+      "url": "https://data.sec.gov/submissions/CIK0000026172.json"
+    },
+    {
+      "cik": "0000811156",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000811156.json",
+      "ticker": "CMS",
+      "url": "https://data.sec.gov/submissions/CIK0000811156.json"
+    },
+    {
+      "cik": "0001071739",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001071739.json",
+      "ticker": "CNC",
+      "url": "https://data.sec.gov/submissions/CIK0001071739.json"
+    },
+    {
+      "cik": "0001130310",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001130310.json",
+      "ticker": "CNP",
+      "url": "https://data.sec.gov/submissions/CIK0001130310.json"
+    },
+    {
+      "cik": "0001679788",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001679788.json",
+      "ticker": "COIN",
+      "url": "https://data.sec.gov/submissions/CIK0001679788.json"
+    },
+    {
+      "cik": "0000711404",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000711404.json",
+      "ticker": "COO",
+      "url": "https://data.sec.gov/submissions/CIK0000711404.json"
+    },
+    {
+      "cik": "0001140859",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001140859.json",
+      "ticker": "COR",
+      "url": "https://data.sec.gov/submissions/CIK0001140859.json"
+    },
+    {
+      "cik": "0001175454",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001175454.json",
+      "ticker": "CPAY",
+      "url": "https://data.sec.gov/submissions/CIK0001175454.json"
+    },
+    {
+      "cik": "0000900075",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000900075.json",
+      "ticker": "CPRT",
+      "url": "https://data.sec.gov/submissions/CIK0000900075.json"
+    },
+    {
+      "cik": "0000906345",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000906345.json",
+      "ticker": "CPT",
+      "url": "https://data.sec.gov/submissions/CIK0000906345.json"
+    },
+    {
+      "cik": "0001807794",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001807794.json",
+      "ticker": "CRDO",
+      "url": "https://data.sec.gov/submissions/CIK0001807794.json"
+    },
+    {
+      "cik": "0000849395",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000849395.json",
+      "ticker": "CRH",
+      "url": "https://data.sec.gov/submissions/CIK0000849395.json"
+    },
+    {
+      "cik": "0001100682",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001100682.json",
+      "ticker": "CRL",
+      "url": "https://data.sec.gov/submissions/CIK0001100682.json"
+    },
+    {
+      "cik": "0001057352",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001057352.json",
+      "ticker": "CSGP",
+      "url": "https://data.sec.gov/submissions/CIK0001057352.json"
+    },
+    {
+      "cik": "0001375877",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001375877.json",
+      "ticker": "CSIQ",
+      "url": "https://data.sec.gov/submissions/CIK0001375877.json"
+    },
+    {
+      "cik": "0000277948",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000277948.json",
+      "ticker": "CSX",
+      "url": "https://data.sec.gov/submissions/CIK0000277948.json"
+    },
+    {
+      "cik": "0000723254",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000723254.json",
+      "ticker": "CTAS",
+      "url": "https://data.sec.gov/submissions/CIK0000723254.json"
+    },
+    {
+      "cik": "0001058290",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001058290.json",
+      "ticker": "CTSH",
+      "url": "https://data.sec.gov/submissions/CIK0001058290.json"
+    },
+    {
+      "cik": "0001690820",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001690820.json",
+      "ticker": "CVNA",
+      "url": "https://data.sec.gov/submissions/CIK0001690820.json"
+    },
+    {
+      "cik": "0000064803",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000064803.json",
+      "ticker": "CVS",
+      "url": "https://data.sec.gov/submissions/CIK0000064803.json"
+    },
+    {
+      "cik": "0000027904",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000027904.json",
+      "ticker": "DAL",
+      "url": "https://data.sec.gov/submissions/CIK0000027904.json"
+    },
+    {
+      "cik": "0001792789",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001792789.json",
+      "ticker": "DASH",
+      "url": "https://data.sec.gov/submissions/CIK0001792789.json"
+    },
+    {
+      "cik": "0001561550",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001561550.json",
+      "ticker": "DDOG",
+      "url": "https://data.sec.gov/submissions/CIK0001561550.json"
+    },
+    {
+      "cik": "0000910521",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000910521.json",
+      "ticker": "DECK",
+      "url": "https://data.sec.gov/submissions/CIK0000910521.json"
+    },
+    {
+      "cik": "0001022079",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001022079.json",
+      "ticker": "DGX",
+      "url": "https://data.sec.gov/submissions/CIK0001022079.json"
+    },
+    {
+      "cik": "0000029002",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000029002.json",
+      "ticker": "DIOD",
+      "url": "https://data.sec.gov/submissions/CIK0000029002.json"
+    },
+    {
+      "cik": "0000935703",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000935703.json",
+      "ticker": "DLTR",
+      "url": "https://data.sec.gov/submissions/CIK0000935703.json"
+    },
+    {
+      "cik": "0001063259",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001063259.json",
+      "ticker": "DNN",
+      "url": "https://data.sec.gov/submissions/CIK0001063259.json"
+    },
+    {
+      "cik": "0000765880",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000765880.json",
+      "ticker": "DOC",
+      "url": "https://data.sec.gov/submissions/CIK0000765880.json"
+    },
+    {
+      "cik": "0000029905",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000029905.json",
+      "ticker": "DOV",
+      "url": "https://data.sec.gov/submissions/CIK0000029905.json"
+    },
+    {
+      "cik": "0001751788",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001751788.json",
+      "ticker": "DOW",
+      "url": "https://data.sec.gov/submissions/CIK0001751788.json"
+    },
+    {
+      "cik": "0001286681",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001286681.json",
+      "ticker": "DPZ",
+      "url": "https://data.sec.gov/submissions/CIK0001286681.json"
+    },
+    {
+      "cik": "0001477641",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001477641.json",
+      "ticker": "DQ",
+      "url": "https://data.sec.gov/submissions/CIK0001477641.json"
+    },
+    {
+      "cik": "0000940944",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000940944.json",
+      "ticker": "DRI",
+      "url": "https://data.sec.gov/submissions/CIK0000940944.json"
+    },
+    {
+      "cik": "0000936340",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000936340.json",
+      "ticker": "DTE",
+      "url": "https://data.sec.gov/submissions/CIK0000936340.json"
+    },
+    {
+      "cik": "0000927066",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000927066.json",
+      "ticker": "DVA",
+      "url": "https://data.sec.gov/submissions/CIK0000927066.json"
+    },
+    {
+      "cik": "0001065088",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001065088.json",
+      "ticker": "EBAY",
+      "url": "https://data.sec.gov/submissions/CIK0001065088.json"
+    },
+    {
+      "cik": "0000033185",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000033185.json",
+      "ticker": "EFX",
+      "url": "https://data.sec.gov/submissions/CIK0000033185.json"
+    },
+    {
+      "cik": "0001095073",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001095073.json",
+      "ticker": "EG",
+      "url": "https://data.sec.gov/submissions/CIK0001095073.json"
+    },
+    {
+      "cik": "0000827052",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000827052.json",
+      "ticker": "EIX",
+      "url": "https://data.sec.gov/submissions/CIK0000827052.json"
+    },
+    {
+      "cik": "0000105634",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000105634.json",
+      "ticker": "EME",
+      "url": "https://data.sec.gov/submissions/CIK0000105634.json"
+    },
+    {
+      "cik": "0001922641",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001922641.json",
+      "ticker": "ENLT",
+      "url": "https://data.sec.gov/submissions/CIK0001922641.json"
+    },
+    {
+      "cik": "0001463101",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001463101.json",
+      "ticker": "ENPH",
+      "url": "https://data.sec.gov/submissions/CIK0001463101.json"
+    },
+    {
+      "cik": "0000922621",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000922621.json",
+      "ticker": "ERIE",
+      "url": "https://data.sec.gov/submissions/CIK0000922621.json"
+    },
+    {
+      "cik": "0000072741",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000072741.json",
+      "ticker": "ES",
+      "url": "https://data.sec.gov/submissions/CIK0000072741.json"
+    },
+    {
+      "cik": "0000920522",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000920522.json",
+      "ticker": "ESS",
+      "url": "https://data.sec.gov/submissions/CIK0000920522.json"
+    },
+    {
+      "cik": "0001707753",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001707753.json",
+      "ticker": "ESTC",
+      "url": "https://data.sec.gov/submissions/CIK0001707753.json"
+    },
+    {
+      "cik": "0000065984",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000065984.json",
+      "ticker": "ETR",
+      "url": "https://data.sec.gov/submissions/CIK0000065984.json"
+    },
+    {
+      "cik": "0001711269",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001711269.json",
+      "ticker": "EVRG",
+      "url": "https://data.sec.gov/submissions/CIK0001711269.json"
+    },
+    {
+      "cik": "0000895126",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000895126.json",
+      "ticker": "EXE",
+      "url": "https://data.sec.gov/submissions/CIK0000895126.json"
+    },
+    {
+      "cik": "0000746515",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000746515.json",
+      "ticker": "EXPD",
+      "url": "https://data.sec.gov/submissions/CIK0000746515.json"
+    },
+    {
+      "cik": "0001324424",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001324424.json",
+      "ticker": "EXPE",
+      "url": "https://data.sec.gov/submissions/CIK0001324424.json"
+    },
+    {
+      "cik": "0000815556",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000815556.json",
+      "ticker": "FAST",
+      "url": "https://data.sec.gov/submissions/CIK0000815556.json"
+    },
+    {
+      "cik": "0001013237",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001013237.json",
+      "ticker": "FDS",
+      "url": "https://data.sec.gov/submissions/CIK0001013237.json"
+    },
+    {
+      "cik": "0002082247",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0002082247.json",
+      "ticker": "FDXF",
+      "url": "https://data.sec.gov/submissions/CIK0002082247.json"
+    },
+    {
+      "cik": "0001031296",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001031296.json",
+      "ticker": "FE",
+      "url": "https://data.sec.gov/submissions/CIK0001031296.json"
+    },
+    {
+      "cik": "0001048695",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001048695.json",
+      "ticker": "FFIV",
+      "url": "https://data.sec.gov/submissions/CIK0001048695.json"
+    },
+    {
+      "cik": "0000814547",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000814547.json",
+      "ticker": "FICO",
+      "url": "https://data.sec.gov/submissions/CIK0000814547.json"
+    },
+    {
+      "cik": "0001136893",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001136893.json",
+      "ticker": "FIS",
+      "url": "https://data.sec.gov/submissions/CIK0001136893.json"
+    },
+    {
+      "cik": "0000798354",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000798354.json",
+      "ticker": "FISV",
+      "url": "https://data.sec.gov/submissions/CIK0000798354.json"
+    },
+    {
+      "cik": "0000035527",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000035527.json",
+      "ticker": "FITB",
+      "url": "https://data.sec.gov/submissions/CIK0000035527.json"
+    },
+    {
+      "cik": "0001288847",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001288847.json",
+      "ticker": "FIVN",
+      "url": "https://data.sec.gov/submissions/CIK0001288847.json"
+    },
+    {
+      "cik": "0001035983",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001035983.json",
+      "ticker": "FIX",
+      "url": "https://data.sec.gov/submissions/CIK0001035983.json"
+    },
+    {
+      "cik": "0001868941",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001868941.json",
+      "ticker": "FLNC",
+      "url": "https://data.sec.gov/submissions/CIK0001868941.json"
+    },
+    {
+      "cik": "0001408710",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001408710.json",
+      "ticker": "FN",
+      "url": "https://data.sec.gov/submissions/CIK0001408710.json"
+    },
+    {
+      "cik": "0001039399",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001039399.json",
+      "ticker": "FORM",
+      "url": "https://data.sec.gov/submissions/CIK0001039399.json"
+    },
+    {
+      "cik": "0000034903",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000034903.json",
+      "ticker": "FRT",
+      "url": "https://data.sec.gov/submissions/CIK0000034903.json"
+    },
+    {
+      "cik": "0001274494",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001274494.json",
+      "ticker": "FSLR",
+      "url": "https://data.sec.gov/submissions/CIK0001274494.json"
+    },
+    {
+      "cik": "0001262039",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001262039.json",
+      "ticker": "FTNT",
+      "url": "https://data.sec.gov/submissions/CIK0001262039.json"
+    },
+    {
+      "cik": "0001659166",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001659166.json",
+      "ticker": "FTV",
+      "url": "https://data.sec.gov/submissions/CIK0001659166.json"
+    },
+    {
+      "cik": "0000040533",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000040533.json",
+      "ticker": "GD",
+      "url": "https://data.sec.gov/submissions/CIK0000040533.json"
+    },
+    {
+      "cik": "0001609711",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001609711.json",
+      "ticker": "GDDY",
+      "url": "https://data.sec.gov/submissions/CIK0001609711.json"
+    },
+    {
+      "cik": "0001932393",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001932393.json",
+      "ticker": "GEHC",
+      "url": "https://data.sec.gov/submissions/CIK0001932393.json"
+    },
+    {
+      "cik": "0000849399",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000849399.json",
+      "ticker": "GEN",
+      "url": "https://data.sec.gov/submissions/CIK0000849399.json"
+    },
+    {
+      "cik": "0001996810",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001996810.json",
+      "ticker": "GEV",
+      "url": "https://data.sec.gov/submissions/CIK0001996810.json"
+    },
+    {
+      "cik": "0001709048",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001709048.json",
+      "ticker": "GFS",
+      "url": "https://data.sec.gov/submissions/CIK0001709048.json"
+    },
+    {
+      "cik": "0000320335",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000320335.json",
+      "ticker": "GL",
+      "url": "https://data.sec.gov/submissions/CIK0000320335.json"
+    },
+    {
+      "cik": "0001474735",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001474735.json",
+      "ticker": "GNRC",
+      "url": "https://data.sec.gov/submissions/CIK0001474735.json"
+    },
+    {
+      "cik": "0000040987",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000040987.json",
+      "ticker": "GPC",
+      "url": "https://data.sec.gov/submissions/CIK0000040987.json"
+    },
+    {
+      "cik": "0001123360",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001123360.json",
+      "ticker": "GPN",
+      "url": "https://data.sec.gov/submissions/CIK0001123360.json"
+    },
+    {
+      "cik": "0001121788",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001121788.json",
+      "ticker": "GRMN",
+      "url": "https://data.sec.gov/submissions/CIK0001121788.json"
+    },
+    {
+      "cik": "0001131399",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001131399.json",
+      "ticker": "GSK",
+      "url": "https://data.sec.gov/submissions/CIK0001131399.json"
+    },
+    {
+      "cik": "0001653482",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001653482.json",
+      "ticker": "GTLB",
+      "url": "https://data.sec.gov/submissions/CIK0001653482.json"
+    },
+    {
+      "cik": "0000277135",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000277135.json",
+      "ticker": "GWW",
+      "url": "https://data.sec.gov/submissions/CIK0000277135.json"
+    },
+    {
+      "cik": "0000046080",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000046080.json",
+      "ticker": "HAS",
+      "url": "https://data.sec.gov/submissions/CIK0000046080.json"
+    },
+    {
+      "cik": "0000049196",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000049196.json",
+      "ticker": "HBAN",
+      "url": "https://data.sec.gov/submissions/CIK0000049196.json"
+    },
+    {
+      "cik": "0000874766",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000874766.json",
+      "ticker": "HIG",
+      "url": "https://data.sec.gov/submissions/CIK0000874766.json"
+    },
+    {
+      "cik": "0001501585",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001501585.json",
+      "ticker": "HII",
+      "url": "https://data.sec.gov/submissions/CIK0001501585.json"
+    },
+    {
+      "cik": "0001585689",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001585689.json",
+      "ticker": "HLT",
+      "url": "https://data.sec.gov/submissions/CIK0001585689.json"
+    },
+    {
+      "cik": "0000715153",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000715153.json",
+      "ticker": "HMC",
+      "url": "https://data.sec.gov/submissions/CIK0000715153.json"
+    },
+    {
+      "cik": "0001783879",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001783879.json",
+      "ticker": "HOOD",
+      "url": "https://data.sec.gov/submissions/CIK0001783879.json"
+    },
+    {
+      "cik": "0000047217",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000047217.json",
+      "ticker": "HPQ",
+      "url": "https://data.sec.gov/submissions/CIK0000047217.json"
+    },
+    {
+      "cik": "0000048465",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000048465.json",
+      "ticker": "HRL",
+      "url": "https://data.sec.gov/submissions/CIK0000048465.json"
+    },
+    {
+      "cik": "0001000228",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001000228.json",
+      "ticker": "HSIC",
+      "url": "https://data.sec.gov/submissions/CIK0001000228.json"
+    },
+    {
+      "cik": "0001070750",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001070750.json",
+      "ticker": "HST",
+      "url": "https://data.sec.gov/submissions/CIK0001070750.json"
+    },
+    {
+      "cik": "0000048898",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000048898.json",
+      "ticker": "HUBB",
+      "url": "https://data.sec.gov/submissions/CIK0000048898.json"
+    },
+    {
+      "cik": "0001404655",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001404655.json",
+      "ticker": "HUBS",
+      "url": "https://data.sec.gov/submissions/CIK0001404655.json"
+    },
+    {
+      "cik": "0000004281",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000004281.json",
+      "ticker": "HWM",
+      "url": "https://data.sec.gov/submissions/CIK0000004281.json"
+    },
+    {
+      "cik": "0001381197",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001381197.json",
+      "ticker": "IBKR",
+      "url": "https://data.sec.gov/submissions/CIK0001381197.json"
+    },
+    {
+      "cik": "0000832101",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000832101.json",
+      "ticker": "IEX",
+      "url": "https://data.sec.gov/submissions/CIK0000832101.json"
+    },
+    {
+      "cik": "0000879169",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000879169.json",
+      "ticker": "INCY",
+      "url": "https://data.sec.gov/submissions/CIK0000879169.json"
+    },
+    {
+      "cik": "0001687229",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001687229.json",
+      "ticker": "INVH",
+      "url": "https://data.sec.gov/submissions/CIK0001687229.json"
+    },
+    {
+      "cik": "0001642896",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001642896.json",
+      "ticker": "IOT",
+      "url": "https://data.sec.gov/submissions/CIK0001642896.json"
+    },
+    {
+      "cik": "0000051434",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000051434.json",
+      "ticker": "IP",
+      "url": "https://data.sec.gov/submissions/CIK0000051434.json"
+    },
+    {
+      "cik": "0001478242",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001478242.json",
+      "ticker": "IQV",
+      "url": "https://data.sec.gov/submissions/CIK0001478242.json"
+    },
+    {
+      "cik": "0001699150",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001699150.json",
+      "ticker": "IR",
+      "url": "https://data.sec.gov/submissions/CIK0001699150.json"
+    },
+    {
+      "cik": "0001020569",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001020569.json",
+      "ticker": "IRM",
+      "url": "https://data.sec.gov/submissions/CIK0001020569.json"
+    },
+    {
+      "cik": "0000749251",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000749251.json",
+      "ticker": "IT",
+      "url": "https://data.sec.gov/submissions/CIK0000749251.json"
+    },
+    {
+      "cik": "0000914208",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000914208.json",
+      "ticker": "IVZ",
+      "url": "https://data.sec.gov/submissions/CIK0000914208.json"
+    },
+    {
+      "cik": "0000052988",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000052988.json",
+      "ticker": "J",
+      "url": "https://data.sec.gov/submissions/CIK0000052988.json"
+    },
+    {
+      "cik": "0000728535",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000728535.json",
+      "ticker": "JBHT",
+      "url": "https://data.sec.gov/submissions/CIK0000728535.json"
+    },
+    {
+      "cik": "0000898293",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000898293.json",
+      "ticker": "JBL",
+      "url": "https://data.sec.gov/submissions/CIK0000898293.json"
+    },
+    {
+      "cik": "0000779152",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000779152.json",
+      "ticker": "JKHY",
+      "url": "https://data.sec.gov/submissions/CIK0000779152.json"
+    },
+    {
+      "cik": "0001481513",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001481513.json",
+      "ticker": "JKS",
+      "url": "https://data.sec.gov/submissions/CIK0001481513.json"
+    },
+    {
+      "cik": "0001418135",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001418135.json",
+      "ticker": "KDP",
+      "url": "https://data.sec.gov/submissions/CIK0001418135.json"
+    },
+    {
+      "cik": "0000091576",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000091576.json",
+      "ticker": "KEY",
+      "url": "https://data.sec.gov/submissions/CIK0000091576.json"
+    },
+    {
+      "cik": "0001601046",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001601046.json",
+      "ticker": "KEYS",
+      "url": "https://data.sec.gov/submissions/CIK0001601046.json"
+    },
+    {
+      "cik": "0000879101",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000879101.json",
+      "ticker": "KIM",
+      "url": "https://data.sec.gov/submissions/CIK0000879101.json"
+    },
+    {
+      "cik": "0001404912",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001404912.json",
+      "ticker": "KKR",
+      "url": "https://data.sec.gov/submissions/CIK0001404912.json"
+    },
+    {
+      "cik": "0001711279",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001711279.json",
+      "ticker": "KRYS",
+      "url": "https://data.sec.gov/submissions/CIK0001711279.json"
+    },
+    {
+      "cik": "0001944048",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001944048.json",
+      "ticker": "KVUE",
+      "url": "https://data.sec.gov/submissions/CIK0001944048.json"
+    },
+    {
+      "cik": "0000060086",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000060086.json",
+      "ticker": "L",
+      "url": "https://data.sec.gov/submissions/CIK0000060086.json"
+    },
+    {
+      "cik": "0001966983",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001966983.json",
+      "ticker": "LAC",
+      "url": "https://data.sec.gov/submissions/CIK0001966983.json"
+    },
+    {
+      "cik": "0001811210",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001811210.json",
+      "ticker": "LCID",
+      "url": "https://data.sec.gov/submissions/CIK0001811210.json"
+    },
+    {
+      "cik": "0001336920",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001336920.json",
+      "ticker": "LDOS",
+      "url": "https://data.sec.gov/submissions/CIK0001336920.json"
+    },
+    {
+      "cik": "0001065059",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001065059.json",
+      "ticker": "LEU",
+      "url": "https://data.sec.gov/submissions/CIK0001065059.json"
+    },
+    {
+      "cik": "0000920148",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000920148.json",
+      "ticker": "LH",
+      "url": "https://data.sec.gov/submissions/CIK0000920148.json"
+    },
+    {
+      "cik": "0000202058",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000202058.json",
+      "ticker": "LHX",
+      "url": "https://data.sec.gov/submissions/CIK0000202058.json"
+    },
+    {
+      "cik": "0001791706",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001791706.json",
+      "ticker": "LI",
+      "url": "https://data.sec.gov/submissions/CIK0001791706.json"
+    },
+    {
+      "cik": "0001069202",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001069202.json",
+      "ticker": "LII",
+      "url": "https://data.sec.gov/submissions/CIK0001069202.json"
+    },
+    {
+      "cik": "0001633978",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001633978.json",
+      "ticker": "LITE",
+      "url": "https://data.sec.gov/submissions/CIK0001633978.json"
+    },
+    {
+      "cik": "0000352541",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000352541.json",
+      "ticker": "LNT",
+      "url": "https://data.sec.gov/submissions/CIK0000352541.json"
+    },
+    {
+      "cik": "0000855658",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000855658.json",
+      "ticker": "LSCC",
+      "url": "https://data.sec.gov/submissions/CIK0000855658.json"
+    },
+    {
+      "cik": "0000092380",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000092380.json",
+      "ticker": "LUV",
+      "url": "https://data.sec.gov/submissions/CIK0000092380.json"
+    },
+    {
+      "cik": "0001300514",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001300514.json",
+      "ticker": "LVS",
+      "url": "https://data.sec.gov/submissions/CIK0001300514.json"
+    },
+    {
+      "cik": "0001489393",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001489393.json",
+      "ticker": "LYB",
+      "url": "https://data.sec.gov/submissions/CIK0001489393.json"
+    },
+    {
+      "cik": "0001141391",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001141391.json",
+      "ticker": "MA",
+      "url": "https://data.sec.gov/submissions/CIK0001141391.json"
+    },
+    {
+      "cik": "0000912595",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000912595.json",
+      "ticker": "MAA",
+      "url": "https://data.sec.gov/submissions/CIK0000912595.json"
+    },
+    {
+      "cik": "0000062996",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000062996.json",
+      "ticker": "MAS",
+      "url": "https://data.sec.gov/submissions/CIK0000062996.json"
+    },
+    {
+      "cik": "0000827054",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000827054.json",
+      "ticker": "MCHP",
+      "url": "https://data.sec.gov/submissions/CIK0000827054.json"
+    },
+    {
+      "cik": "0000927653",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000927653.json",
+      "ticker": "MCK",
+      "url": "https://data.sec.gov/submissions/CIK0000927653.json"
+    },
+    {
+      "cik": "0001099590",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001099590.json",
+      "ticker": "MELI",
+      "url": "https://data.sec.gov/submissions/CIK0001099590.json"
+    },
+    {
+      "cik": "0001099219",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001099219.json",
+      "ticker": "MET",
+      "url": "https://data.sec.gov/submissions/CIK0001099219.json"
+    },
+    {
+      "cik": "0000789570",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000789570.json",
+      "ticker": "MGM",
+      "url": "https://data.sec.gov/submissions/CIK0000789570.json"
+    },
+    {
+      "cik": "0000063754",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000063754.json",
+      "ticker": "MKC",
+      "url": "https://data.sec.gov/submissions/CIK0000063754.json"
+    },
+    {
+      "cik": "0000764180",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000764180.json",
+      "ticker": "MO",
+      "url": "https://data.sec.gov/submissions/CIK0000764180.json"
+    },
+    {
+      "cik": "0001801368",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001801368.json",
+      "ticker": "MP",
+      "url": "https://data.sec.gov/submissions/CIK0001801368.json"
+    },
+    {
+      "cik": "0001682852",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001682852.json",
+      "ticker": "MRNA",
+      "url": "https://data.sec.gov/submissions/CIK0001682852.json"
+    },
+    {
+      "cik": "0001408198",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001408198.json",
+      "ticker": "MSCI",
+      "url": "https://data.sec.gov/submissions/CIK0001408198.json"
+    },
+    {
+      "cik": "0000068505",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000068505.json",
+      "ticker": "MSI",
+      "url": "https://data.sec.gov/submissions/CIK0000068505.json"
+    },
+    {
+      "cik": "0000036270",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000036270.json",
+      "ticker": "MTB",
+      "url": "https://data.sec.gov/submissions/CIK0000036270.json"
+    },
+    {
+      "cik": "0001037646",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001037646.json",
+      "ticker": "MTD",
+      "url": "https://data.sec.gov/submissions/CIK0001037646.json"
+    },
+    {
+      "cik": "0001493594",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001493594.json",
+      "ticker": "MTSI",
+      "url": "https://data.sec.gov/submissions/CIK0001493594.json"
+    },
+    {
+      "cik": "0001513761",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001513761.json",
+      "ticker": "NCLH",
+      "url": "https://data.sec.gov/submissions/CIK0001513761.json"
+    },
+    {
+      "cik": "0001120193",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001120193.json",
+      "ticker": "NDAQ",
+      "url": "https://data.sec.gov/submissions/CIK0001120193.json"
+    },
+    {
+      "cik": "0000072331",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000072331.json",
+      "ticker": "NDSN",
+      "url": "https://data.sec.gov/submissions/CIK0000072331.json"
+    },
+    {
+      "cik": "0001477333",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001477333.json",
+      "ticker": "NET",
+      "url": "https://data.sec.gov/submissions/CIK0001477333.json"
+    },
+    {
+      "cik": "0001111711",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001111711.json",
+      "ticker": "NI",
+      "url": "https://data.sec.gov/submissions/CIK0001111711.json"
+    },
+    {
+      "cik": "0001736541",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001736541.json",
+      "ticker": "NIO",
+      "url": "https://data.sec.gov/submissions/CIK0001736541.json"
+    },
+    {
+      "cik": "0001923891",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001923891.json",
+      "ticker": "NNE",
+      "url": "https://data.sec.gov/submissions/CIK0001923891.json"
+    },
+    {
+      "cik": "0000702165",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000702165.json",
+      "ticker": "NSC",
+      "url": "https://data.sec.gov/submissions/CIK0000702165.json"
+    },
+    {
+      "cik": "0001002047",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001002047.json",
+      "ticker": "NTAP",
+      "url": "https://data.sec.gov/submissions/CIK0001002047.json"
+    },
+    {
+      "cik": "0000073124",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000073124.json",
+      "ticker": "NTRS",
+      "url": "https://data.sec.gov/submissions/CIK0000073124.json"
+    },
+    {
+      "cik": "0000906163",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000906163.json",
+      "ticker": "NVR",
+      "url": "https://data.sec.gov/submissions/CIK0000906163.json"
+    },
+    {
+      "cik": "0001564708",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001564708.json",
+      "ticker": "NWSA",
+      "url": "https://data.sec.gov/submissions/CIK0001564708.json"
+    },
+    {
+      "cik": "0001698535",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001698535.json",
+      "ticker": "NXE",
+      "url": "https://data.sec.gov/submissions/CIK0001698535.json"
+    },
+    {
+      "cik": "0001413447",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001413447.json",
+      "ticker": "NXPI",
+      "url": "https://data.sec.gov/submissions/CIK0001413447.json"
+    },
+    {
+      "cik": "0001852131",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001852131.json",
+      "ticker": "NXT",
+      "url": "https://data.sec.gov/submissions/CIK0001852131.json"
+    },
+    {
+      "cik": "0000878927",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000878927.json",
+      "ticker": "ODFL",
+      "url": "https://data.sec.gov/submissions/CIK0000878927.json"
+    },
+    {
+      "cik": "0001849056",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001849056.json",
+      "ticker": "OKLO",
+      "url": "https://data.sec.gov/submissions/CIK0001849056.json"
+    },
+    {
+      "cik": "0001005284",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001005284.json",
+      "ticker": "OLED",
+      "url": "https://data.sec.gov/submissions/CIK0001005284.json"
+    },
+    {
+      "cik": "0001097864",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001097864.json",
+      "ticker": "ON",
+      "url": "https://data.sec.gov/submissions/CIK0001097864.json"
+    },
+    {
+      "cik": "0000704532",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000704532.json",
+      "ticker": "ONTO",
+      "url": "https://data.sec.gov/submissions/CIK0000704532.json"
+    },
+    {
+      "cik": "0001734722",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001734722.json",
+      "ticker": "PATH",
+      "url": "https://data.sec.gov/submissions/CIK0001734722.json"
+    },
+    {
+      "cik": "0000723531",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000723531.json",
+      "ticker": "PAYX",
+      "url": "https://data.sec.gov/submissions/CIK0000723531.json"
+    },
+    {
+      "cik": "0000075362",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000075362.json",
+      "ticker": "PCAR",
+      "url": "https://data.sec.gov/submissions/CIK0000075362.json"
+    },
+    {
+      "cik": "0001004980",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001004980.json",
+      "ticker": "PCG",
+      "url": "https://data.sec.gov/submissions/CIK0001004980.json"
+    },
+    {
+      "cik": "0001611052",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001611052.json",
+      "ticker": "PCOR",
+      "url": "https://data.sec.gov/submissions/CIK0001611052.json"
+    },
+    {
+      "cik": "0001126328",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001126328.json",
+      "ticker": "PFG",
+      "url": "https://data.sec.gov/submissions/CIK0001126328.json"
+    },
+    {
+      "cik": "0000822416",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000822416.json",
+      "ticker": "PHM",
+      "url": "https://data.sec.gov/submissions/CIK0000822416.json"
+    },
+    {
+      "cik": "0001321655",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001321655.json",
+      "ticker": "PLTR",
+      "url": "https://data.sec.gov/submissions/CIK0001321655.json"
+    },
+    {
+      "cik": "0001093691",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001093691.json",
+      "ticker": "PLUG",
+      "url": "https://data.sec.gov/submissions/CIK0001093691.json"
+    },
+    {
+      "cik": "0000077360",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000077360.json",
+      "ticker": "PNR",
+      "url": "https://data.sec.gov/submissions/CIK0000077360.json"
+    },
+    {
+      "cik": "0000764622",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000764622.json",
+      "ticker": "PNW",
+      "url": "https://data.sec.gov/submissions/CIK0000764622.json"
+    },
+    {
+      "cik": "0001145197",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001145197.json",
+      "ticker": "PODD",
+      "url": "https://data.sec.gov/submissions/CIK0001145197.json"
+    },
+    {
+      "cik": "0000945841",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000945841.json",
+      "ticker": "POOL",
+      "url": "https://data.sec.gov/submissions/CIK0000945841.json"
+    },
+    {
+      "cik": "0000922224",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000922224.json",
+      "ticker": "PPL",
+      "url": "https://data.sec.gov/submissions/CIK0000922224.json"
+    },
+    {
+      "cik": "0001137774",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001137774.json",
+      "ticker": "PRU",
+      "url": "https://data.sec.gov/submissions/CIK0001137774.json"
+    },
+    {
+      "cik": "0002041610",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0002041610.json",
+      "ticker": "PSKY",
+      "url": "https://data.sec.gov/submissions/CIK0002041610.json"
+    },
+    {
+      "cik": "0000857005",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000857005.json",
+      "ticker": "PTC",
+      "url": "https://data.sec.gov/submissions/CIK0000857005.json"
+    },
+    {
+      "cik": "0001633917",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001633917.json",
+      "ticker": "PYPL",
+      "url": "https://data.sec.gov/submissions/CIK0001633917.json"
+    },
+    {
+      "cik": "0002058873",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0002058873.json",
+      "ticker": "Q",
+      "url": "https://data.sec.gov/submissions/CIK0002058873.json"
+    },
+    {
+      "cik": "0000910606",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000910606.json",
+      "ticker": "REG",
+      "url": "https://data.sec.gov/submissions/CIK0000910606.json"
+    },
+    {
+      "cik": "0001281761",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001281761.json",
+      "ticker": "RF",
+      "url": "https://data.sec.gov/submissions/CIK0001281761.json"
+    },
+    {
+      "cik": "0000863064",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000863064.json",
+      "ticker": "RIO",
+      "url": "https://data.sec.gov/submissions/CIK0000863064.json"
+    },
+    {
+      "cik": "0001874178",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001874178.json",
+      "ticker": "RIVN",
+      "url": "https://data.sec.gov/submissions/CIK0001874178.json"
+    },
+    {
+      "cik": "0000720005",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000720005.json",
+      "ticker": "RJF",
+      "url": "https://data.sec.gov/submissions/CIK0000720005.json"
+    },
+    {
+      "cik": "0001037038",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001037038.json",
+      "ticker": "RL",
+      "url": "https://data.sec.gov/submissions/CIK0001037038.json"
+    },
+    {
+      "cik": "0000917273",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000917273.json",
+      "ticker": "RMBS",
+      "url": "https://data.sec.gov/submissions/CIK0000917273.json"
+    },
+    {
+      "cik": "0000943819",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000943819.json",
+      "ticker": "RMD",
+      "url": "https://data.sec.gov/submissions/CIK0000943819.json"
+    },
+    {
+      "cik": "0000084839",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000084839.json",
+      "ticker": "ROL",
+      "url": "https://data.sec.gov/submissions/CIK0000084839.json"
+    },
+    {
+      "cik": "0000882835",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000882835.json",
+      "ticker": "ROP",
+      "url": "https://data.sec.gov/submissions/CIK0000882835.json"
+    },
+    {
+      "cik": "0001060391",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001060391.json",
+      "ticker": "RSG",
+      "url": "https://data.sec.gov/submissions/CIK0001060391.json"
+    },
+    {
+      "cik": "0001469367",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001469367.json",
+      "ticker": "RUN",
+      "url": "https://data.sec.gov/submissions/CIK0001469367.json"
+    },
+    {
+      "cik": "0000031791",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000031791.json",
+      "ticker": "RVTY",
+      "url": "https://data.sec.gov/submissions/CIK0000031791.json"
+    },
+    {
+      "cik": "0001583708",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001583708.json",
+      "ticker": "S",
+      "url": "https://data.sec.gov/submissions/CIK0001583708.json"
+    },
+    {
+      "cik": "0001415404",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001415404.json",
+      "ticker": "SATS",
+      "url": "https://data.sec.gov/submissions/CIK0001415404.json"
+    },
+    {
+      "cik": "0001034054",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001034054.json",
+      "ticker": "SBAC",
+      "url": "https://data.sec.gov/submissions/CIK0001034054.json"
+    },
+    {
+      "cik": "0001001838",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001001838.json",
+      "ticker": "SCCO",
+      "url": "https://data.sec.gov/submissions/CIK0001001838.json"
+    },
+    {
+      "cik": "0001703399",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001703399.json",
+      "ticker": "SE",
+      "url": "https://data.sec.gov/submissions/CIK0001703399.json"
+    },
+    {
+      "cik": "0001419612",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001419612.json",
+      "ticker": "SEDG",
+      "url": "https://data.sec.gov/submissions/CIK0001419612.json"
+    },
+    {
+      "cik": "0000091419",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000091419.json",
+      "ticker": "SJM",
+      "url": "https://data.sec.gov/submissions/CIK0000091419.json"
+    },
+    {
+      "cik": "0001822966",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001822966.json",
+      "ticker": "SMR",
+      "url": "https://data.sec.gov/submissions/CIK0001822966.json"
+    },
+    {
+      "cik": "0000091440",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000091440.json",
+      "ticker": "SNA",
+      "url": "https://data.sec.gov/submissions/CIK0000091440.json"
+    },
+    {
+      "cik": "0002023554",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0002023554.json",
+      "ticker": "SNDK",
+      "url": "https://data.sec.gov/submissions/CIK0002023554.json"
+    },
+    {
+      "cik": "0001121404",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001121404.json",
+      "ticker": "SNY",
+      "url": "https://data.sec.gov/submissions/CIK0001121404.json"
+    },
+    {
+      "cik": "0001964738",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001964738.json",
+      "ticker": "SOLV",
+      "url": "https://data.sec.gov/submissions/CIK0001964738.json"
+    },
+    {
+      "cik": "0000909037",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000909037.json",
+      "ticker": "SQM",
+      "url": "https://data.sec.gov/submissions/CIK0000909037.json"
+    },
+    {
+      "cik": "0001757898",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001757898.json",
+      "ticker": "STE",
+      "url": "https://data.sec.gov/submissions/CIK0001757898.json"
+    },
+    {
+      "cik": "0000093751",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000093751.json",
+      "ticker": "STT",
+      "url": "https://data.sec.gov/submissions/CIK0000093751.json"
+    },
+    {
+      "cik": "0001137789",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001137789.json",
+      "ticker": "STX",
+      "url": "https://data.sec.gov/submissions/CIK0001137789.json"
+    },
+    {
+      "cik": "0000016918",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000016918.json",
+      "ticker": "STZ",
+      "url": "https://data.sec.gov/submissions/CIK0000016918.json"
+    },
+    {
+      "cik": "0002005951",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0002005951.json",
+      "ticker": "SW",
+      "url": "https://data.sec.gov/submissions/CIK0002005951.json"
+    },
+    {
+      "cik": "0000093556",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000093556.json",
+      "ticker": "SWK",
+      "url": "https://data.sec.gov/submissions/CIK0000093556.json"
+    },
+    {
+      "cik": "0000004127",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000004127.json",
+      "ticker": "SWKS",
+      "url": "https://data.sec.gov/submissions/CIK0000004127.json"
+    },
+    {
+      "cik": "0001601712",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001601712.json",
+      "ticker": "SYF",
+      "url": "https://data.sec.gov/submissions/CIK0001601712.json"
+    },
+    {
+      "cik": "0000024545",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000024545.json",
+      "ticker": "TAP",
+      "url": "https://data.sec.gov/submissions/CIK0000024545.json"
+    },
+    {
+      "cik": "0001260221",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001260221.json",
+      "ticker": "TDG",
+      "url": "https://data.sec.gov/submissions/CIK0001260221.json"
+    },
+    {
+      "cik": "0001094285",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001094285.json",
+      "ticker": "TDY",
+      "url": "https://data.sec.gov/submissions/CIK0001094285.json"
+    },
+    {
+      "cik": "0000842023",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000842023.json",
+      "ticker": "TECH",
+      "url": "https://data.sec.gov/submissions/CIK0000842023.json"
+    },
+    {
+      "cik": "0000886986",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000886986.json",
+      "ticker": "TECK",
+      "url": "https://data.sec.gov/submissions/CIK0000886986.json"
+    },
+    {
+      "cik": "0001385157",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001385157.json",
+      "ticker": "TEL",
+      "url": "https://data.sec.gov/submissions/CIK0001385157.json"
+    },
+    {
+      "cik": "0001660280",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001660280.json",
+      "ticker": "TENB",
+      "url": "https://data.sec.gov/submissions/CIK0001660280.json"
+    },
+    {
+      "cik": "0000092230",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000092230.json",
+      "ticker": "TFC",
+      "url": "https://data.sec.gov/submissions/CIK0000092230.json"
+    },
+    {
+      "cik": "0001973266",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001973266.json",
+      "ticker": "TKO",
+      "url": "https://data.sec.gov/submissions/CIK0001973266.json"
+    },
+    {
+      "cik": "0001622536",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001622536.json",
+      "ticker": "TLN",
+      "url": "https://data.sec.gov/submissions/CIK0001622536.json"
+    },
+    {
+      "cik": "0001650164",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001650164.json",
+      "ticker": "TOST",
+      "url": "https://data.sec.gov/submissions/CIK0001650164.json"
+    },
+    {
+      "cik": "0001811074",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001811074.json",
+      "ticker": "TPL",
+      "url": "https://data.sec.gov/submissions/CIK0001811074.json"
+    },
+    {
+      "cik": "0001116132",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001116132.json",
+      "ticker": "TPR",
+      "url": "https://data.sec.gov/submissions/CIK0001116132.json"
+    },
+    {
+      "cik": "0000864749",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000864749.json",
+      "ticker": "TRMB",
+      "url": "https://data.sec.gov/submissions/CIK0000864749.json"
+    },
+    {
+      "cik": "0001113169",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001113169.json",
+      "ticker": "TROW",
+      "url": "https://data.sec.gov/submissions/CIK0001113169.json"
+    },
+    {
+      "cik": "0000916365",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000916365.json",
+      "ticker": "TSCO",
+      "url": "https://data.sec.gov/submissions/CIK0000916365.json"
+    },
+    {
+      "cik": "0001466258",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001466258.json",
+      "ticker": "TT",
+      "url": "https://data.sec.gov/submissions/CIK0001466258.json"
+    },
+    {
+      "cik": "0000217346",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000217346.json",
+      "ticker": "TXT",
+      "url": "https://data.sec.gov/submissions/CIK0000217346.json"
+    },
+    {
+      "cik": "0000860731",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000860731.json",
+      "ticker": "TYL",
+      "url": "https://data.sec.gov/submissions/CIK0000860731.json"
+    },
+    {
+      "cik": "0001810806",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001810806.json",
+      "ticker": "U",
+      "url": "https://data.sec.gov/submissions/CIK0001810806.json"
+    },
+    {
+      "cik": "0000100517",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000100517.json",
+      "ticker": "UAL",
+      "url": "https://data.sec.gov/submissions/CIK0000100517.json"
+    },
+    {
+      "cik": "0001543151",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001543151.json",
+      "ticker": "UBER",
+      "url": "https://data.sec.gov/submissions/CIK0001543151.json"
+    },
+    {
+      "cik": "0000074208",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000074208.json",
+      "ticker": "UDR",
+      "url": "https://data.sec.gov/submissions/CIK0000074208.json"
+    },
+    {
+      "cik": "0000352915",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000352915.json",
+      "ticker": "UHS",
+      "url": "https://data.sec.gov/submissions/CIK0000352915.json"
+    },
+    {
+      "cik": "0001711570",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001711570.json",
+      "ticker": "UROY",
+      "url": "https://data.sec.gov/submissions/CIK0001711570.json"
+    },
+    {
+      "cik": "0000917851",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000917851.json",
+      "ticker": "VALE",
+      "url": "https://data.sec.gov/submissions/CIK0000917851.json"
+    },
+    {
+      "cik": "0001393052",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001393052.json",
+      "ticker": "VEEV",
+      "url": "https://data.sec.gov/submissions/CIK0001393052.json"
+    },
+    {
+      "cik": "0001967680",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001967680.json",
+      "ticker": "VLTO",
+      "url": "https://data.sec.gov/submissions/CIK0001967680.json"
+    },
+    {
+      "cik": "0001442145",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001442145.json",
+      "ticker": "VRSK",
+      "url": "https://data.sec.gov/submissions/CIK0001442145.json"
+    },
+    {
+      "cik": "0001014473",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001014473.json",
+      "ticker": "VRSN",
+      "url": "https://data.sec.gov/submissions/CIK0001014473.json"
+    },
+    {
+      "cik": "0000740260",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000740260.json",
+      "ticker": "VTR",
+      "url": "https://data.sec.gov/submissions/CIK0000740260.json"
+    },
+    {
+      "cik": "0001792044",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001792044.json",
+      "ticker": "VTRS",
+      "url": "https://data.sec.gov/submissions/CIK0001792044.json"
+    },
+    {
+      "cik": "0000943452",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000943452.json",
+      "ticker": "WAB",
+      "url": "https://data.sec.gov/submissions/CIK0000943452.json"
+    },
+    {
+      "cik": "0001000697",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001000697.json",
+      "ticker": "WAT",
+      "url": "https://data.sec.gov/submissions/CIK0001000697.json"
+    },
+    {
+      "cik": "0001327811",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001327811.json",
+      "ticker": "WDAY",
+      "url": "https://data.sec.gov/submissions/CIK0001327811.json"
+    },
+    {
+      "cik": "0000106040",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000106040.json",
+      "ticker": "WDC",
+      "url": "https://data.sec.gov/submissions/CIK0000106040.json"
+    },
+    {
+      "cik": "0000783325",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000783325.json",
+      "ticker": "WEC",
+      "url": "https://data.sec.gov/submissions/CIK0000783325.json"
+    },
+    {
+      "cik": "0000823768",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000823768.json",
+      "ticker": "WM",
+      "url": "https://data.sec.gov/submissions/CIK0000823768.json"
+    },
+    {
+      "cik": "0000895419",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000895419.json",
+      "ticker": "WOLF",
+      "url": "https://data.sec.gov/submissions/CIK0000895419.json"
+    },
+    {
+      "cik": "0000011544",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000011544.json",
+      "ticker": "WRB",
+      "url": "https://data.sec.gov/submissions/CIK0000011544.json"
+    },
+    {
+      "cik": "0000719955",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000719955.json",
+      "ticker": "WSM",
+      "url": "https://data.sec.gov/submissions/CIK0000719955.json"
+    },
+    {
+      "cik": "0000105770",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000105770.json",
+      "ticker": "WST",
+      "url": "https://data.sec.gov/submissions/CIK0000105770.json"
+    },
+    {
+      "cik": "0001140536",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001140536.json",
+      "ticker": "WTW",
+      "url": "https://data.sec.gov/submissions/CIK0001140536.json"
+    },
+    {
+      "cik": "0000106535",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000106535.json",
+      "ticker": "WY",
+      "url": "https://data.sec.gov/submissions/CIK0000106535.json"
+    },
+    {
+      "cik": "0001174922",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001174922.json",
+      "ticker": "WYNN",
+      "url": "https://data.sec.gov/submissions/CIK0001174922.json"
+    },
+    {
+      "cik": "0001810997",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001810997.json",
+      "ticker": "XPEV",
+      "url": "https://data.sec.gov/submissions/CIK0001810997.json"
+    },
+    {
+      "cik": "0001524472",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001524472.json",
+      "ticker": "XYL",
+      "url": "https://data.sec.gov/submissions/CIK0001524472.json"
+    },
+    {
+      "cik": "0001512673",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001512673.json",
+      "ticker": "XYZ",
+      "url": "https://data.sec.gov/submissions/CIK0001512673.json"
+    },
+    {
+      "cik": "0001136869",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0001136869.json",
+      "ticker": "ZBH",
+      "url": "https://data.sec.gov/submissions/CIK0001136869.json"
+    },
+    {
+      "cik": "0000877212",
+      "output_path": "D:\\FIN_Insight_Agent\\data\\raw_private\\sec\\_reference\\submissions\\CIK0000877212.json",
+      "ticker": "ZBRA",
+      "url": "https://data.sec.gov/submissions/CIK0000877212.json"
+    }
+  ],
+  "fetched_count": 341,
+  "non_sec_mappable_count": 15,
+  "non_sec_mappable_tickers": [
+    "000660.KS",
+    "005930.KS",
+    "1211.HK",
+    "2308.TW",
+    "2317.TW",
+    "2382.TW",
+    "300750.SZ",
+    "3231.TW",
+    "373220.KS",
+    "6146.T",
+    "6723.T",
+    "6752.T",
+    "6857.T",
+    "8035.T",
+    "IFX.DE"
+  ],
+  "policy": "Only SEC company_tickers-mappable issuers are fetched from data.sec.gov submissions. Non-US/local listings without SEC mapping remain local-exchange/IR parser gaps.",
+  "schema_version": "finsight_sec_submission_fetch_ledger_v0_1",
+  "status": "pass",
+  "target_ticker_count": 603
+}

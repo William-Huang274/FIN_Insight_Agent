@@ -1,0 +1,60 @@
+{
+  "closeout_class_counts": {
+    "bounded_public_gap": 22,
+    "not_promotable_context_gap": 4
+  },
+  "closeout_reason_counts": {
+    "company_disclosed_automotive_rows_not_battery_family_bound": 1,
+    "company_route_rows_not_oncology_family_bound": 1,
+    "company_route_rows_not_product_family_bound": 1,
+    "official_site_access_blocked": 11,
+    "official_site_access_blocked_and_macro_only_rows_not_product_binding": 2,
+    "official_site_access_blocked_or_timeout": 1,
+    "official_site_bot_challenge": 1,
+    "official_site_client_challenge": 1,
+    "official_site_http_567": 1,
+    "official_site_meta_ai_blocked_and_rows_not_family_bound": 1,
+    "official_site_system_down_or_access_blocked": 1,
+    "official_site_timeout_or_dns": 1,
+    "official_site_timeout_or_unstable": 3
+  },
+  "closeout_row_count": 26,
+  "generated_at": "2026-06-17T21:04:47Z",
+  "outputs": {
+    "rows": "data\\manifests\\product_family_runtime_gap_closeout_v0_1.jsonl"
+  },
+  "product_graph_summary": {
+    "company_count": 603,
+    "edge_count": 23963,
+    "edge_types": {
+      "BELONGS_TO_FAMILY": 6442,
+      "COMPETES_WITH": 3133,
+      "COMPLEMENTS_WITH": 18,
+      "COMPONENT_INPUT_TO": 15,
+      "ENABLES_PRODUCTION_FOR": 56,
+      "FAMILY_HAS_PRODUCT_SLOT": 6442,
+      "HAS_PRODUCT_FAMILY": 658,
+      "HAS_PRODUCT_SLOT": 6442,
+      "INFRASTRUCTURE_COMPLEMENT_TO": 27,
+      "INFRASTRUCTURE_SUPPLIER_TO": 24,
+      "INPUT_OR_COMPLEMENT_TO": 5,
+      "IN_PRODUCT_FAMILY": 658,
+      "MANUFACTURING_DEPENDENCY_FOR": 43
+    },
+    "product_family_count": 79,
+    "product_slot_count": 6442,
+    "slot_status": {
+      "bounded_context_slot": 9,
+      "company_route_needs_family_binding": 4,
+      "filings_taxonomy_slot": 1884,
+      "official_surface_slot": 4409,
+      "product_kpi_exact_slot": 114,
+      "seed_needs_locator": 22
+    },
+    "with_family_bound_runtime_slot_count": 6416
+  },
+  "remaining_gap_policy": "Rows are explicit bounded gaps or not-promotable context gaps. They must not be hidden by weak fallback or promoted by Memo Writer.",
+  "schema_version": "finsight_product_family_runtime_gap_closeout_summary_v0_1",
+  "status": "pass",
+  "ticker_count": 24
+}

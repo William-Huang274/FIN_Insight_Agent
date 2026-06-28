@@ -1,0 +1,693 @@
+{
+  "completion_boundary": "This package makes V6 lane planning and deterministic eval cases runtime-ready. Runtime source closeout must still classify each missing route as pass, retrievable/parser gap, bounded public gap, or commercial gap.",
+  "expected_commercial_gaps": [
+    "real-time flows",
+    "private deposit migration",
+    "advisor-channel detail",
+    "consensus revision"
+  ],
+  "gap_summary": {
+    "commercial_gap_count": 5,
+    "commercial_sources_top": {
+      "Rystad": 5,
+      "S&P Global Commodity Insights": 5,
+      "Wood Mackenzie": 5
+    },
+    "gap_types": {
+      "commercial_market_tracker_gap_after_public_source_check": 5,
+      "company_disclosed_product_kpi_not_verified": 53
+    },
+    "missing_metrics_top": {
+      "commodity_volume": 1,
+      "company_disclosed_product_kpi": 53,
+      "production": 1,
+      "project_pipeline": 1,
+      "throughput": 1,
+      "utilization": 1
+    }
+  },
+  "industry_schema": "financials_banks",
+  "l1_company_disclosed_kpi_focus": [
+    "deposits",
+    "loans",
+    "AUM/AUA",
+    "trading metrics",
+    "exchange volumes if disclosed"
+  ],
+  "l1_financial_statement_focus": [
+    "net interest income",
+    "deposit beta",
+    "loan growth",
+    "credit costs",
+    "capital ratios",
+    "AUM",
+    "trading revenue"
+  ],
+  "l1_required_facts": [
+    "deposits",
+    "loans",
+    "NII",
+    "charge-offs",
+    "capital ratios",
+    "AUM",
+    "trading/capital markets revenue"
+  ],
+  "l2_source_requirements": [
+    "call_reports",
+    "company_ir_reports",
+    "company_product_pages",
+    "fdic_bankfind_api",
+    "fred_api",
+    "mainstream_financial_news",
+    "official_exchange_statistics",
+    "regulatory_releases"
+  ],
+  "l3_proxy_requirements": [
+    "app_store_rankings",
+    "market_reaction_context"
+  ],
+  "l4_discovery_rules": [
+    "L4 may only create WeakSignalLead / WeakSignalExclusionNote / L4PromotionAttempt.",
+    "L4 cannot support sales, share, sell-through, product success, customer adoption, or core thesis evidence.",
+    "Search/forum/chart leads must route to L1/L2/L3 official/trusted/proxy repair before memo use."
+  ],
+  "lane_id": "V6",
+  "lane_name": "Banks / Financials / Capital Markets",
+  "lane_source_coverage_gate": {
+    "case_id": "",
+    "exact_authority_violations": [],
+    "gaps": [
+      {
+        "claim_boundary": "Bank regulatory and macro context only until institution-to-listed-issuer resolver passes.",
+        "detail": "ready=0, registry_ready=0, runtime_parser_sources=0, required=1; route_candidates=3",
+        "dimension": "macro_and_industry",
+        "gap_type": "source_parser_or_mapping_not_runtime_ready",
+        "next_action": "Resolve FDIC institution/subsidiary to listed issuer and keep rate/credit context separated from company-reported facts.",
+        "requirement_id": "financial_regulatory_context",
+        "source_ids": [
+          "fdic_bankfind_api",
+          "fred_api",
+          "fred_graph_csv"
+        ]
+      }
+    ],
+    "generated_at": "2026-06-17T11:16:28Z",
+    "industry_schema": "financials_banks",
+    "phase": "registry",
+    "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+    "requested_industry_schema": "financials_banks",
+    "requirements": [
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "exact_authority_ready": 1,
+          "staging_parser_gate_pending": 1,
+          "structured_not_promoted": 2
+        },
+        "claim_boundary": "Company-disclosed financial, filing, and product operating facts only after parser/period/unit/citation gates.",
+        "dimension": "fundamentals",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L1"
+        ],
+        "next_action": "Use SEC/FSD for US issuers and official IR/local filing route for non-US issuers before exposing a filing gap.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 1,
+        "requirement_id": "primary_company_disclosure",
+        "route_candidate_source_count": 4,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "sec_edgar_apis",
+          "sec_financial_statement_data_sets",
+          "company_ir_reports",
+          "company_reported_product_operating_metrics"
+        ],
+        "source_profile_count": 4,
+        "specialist_roles": [
+          "fundamental_analyst",
+          "product_technology_analyst",
+          "capital_ownership_macro_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "structured_not_promoted": 3
+        },
+        "claim_boundary": "Bank regulatory and macro context only until institution-to-listed-issuer resolver passes.",
+        "dimension": "macro_and_industry",
+        "effective_ready_source_count": 0,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [
+          {
+            "claim_boundary": "Bank regulatory and macro context only until institution-to-listed-issuer resolver passes.",
+            "detail": "ready=0, registry_ready=0, runtime_parser_sources=0, required=1; route_candidates=3",
+            "dimension": "macro_and_industry",
+            "gap_type": "source_parser_or_mapping_not_runtime_ready",
+            "next_action": "Resolve FDIC institution/subsidiary to listed issuer and keep rate/credit context separated from company-reported facts.",
+            "requirement_id": "financial_regulatory_context",
+            "source_ids": [
+              "fdic_bankfind_api",
+              "fred_api",
+              "fred_graph_csv"
+            ]
+          }
+        ],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Resolve FDIC institution/subsidiary to listed issuer and keep rate/credit context separated from company-reported facts.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 0,
+        "requirement_id": "financial_regulatory_context",
+        "route_candidate_source_count": 3,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "fdic_bankfind_api",
+          "fred_api",
+          "fred_graph_csv"
+        ],
+        "source_profile_count": 3,
+        "specialist_roles": [
+          "fundamental_analyst",
+          "capital_ownership_macro_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "gap"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "not_registered": 2,
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Trusted event, management-statement, and industry context only; not company exact values unless independently authoritative.",
+        "dimension": "competition_and_market_position",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Use trusted publisher or official association routes before declaring external context unavailable.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 1,
+        "requirement_id": "trusted_external_context",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "mainstream_financial_news",
+          "industry_association_reports",
+          "official_social_accounts"
+        ],
+        "source_profile_count": 3,
+        "specialist_roles": [
+          "market_valuation_analyst",
+          "risk_counterevidence_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "runtime_ready_context": 1,
+          "structured_not_promoted": 5
+        },
+        "claim_boundary": "Official macro/industry context and demand proxy only; no issuer revenue or share inference.",
+        "dimension": "macro_and_industry",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Resolve industry driver/source mapping and keep company exposure bridge explicit.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 1,
+        "requirement_id": "macro_official_context",
+        "route_candidate_source_count": 6,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "fred_api",
+          "fred_graph_csv",
+          "bls_public_api",
+          "bea_data_api",
+          "census_data_api",
+          "eia_open_data"
+        ],
+        "source_profile_count": 6,
+        "specialist_roles": [
+          "market_valuation_analyst",
+          "capital_ownership_macro_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "pass"
+      }
+    ],
+    "schema_version": "finsight_source_coverage_gate_v0_1",
+    "status": "gap",
+    "summary": {
+      "by_dimension": {
+        "competition_and_market_position": 1,
+        "fundamentals": 1,
+        "macro_and_industry": 2
+      },
+      "by_status": {
+        "gap": 1,
+        "pass": 3
+      },
+      "exact_authority_violation_count": 0,
+      "fail_requirement_count": 0,
+      "gap_requirement_count": 1,
+      "pass_requirement_count": 3,
+      "requirement_count": 4
+    },
+    "validation": {
+      "errors": [],
+      "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+      "status": "pass"
+    }
+  },
+  "primary_ticker_count": 77,
+  "primary_ticker_universe": [
+    "ACGL",
+    "AFL",
+    "AIG",
+    "AIZ",
+    "AJG",
+    "ALL",
+    "AMP",
+    "AON",
+    "APO",
+    "ARES",
+    "AXP",
+    "BAC",
+    "BEN",
+    "BK",
+    "BLK",
+    "BR",
+    "BRK-B",
+    "BRO",
+    "BX",
+    "C",
+    "CB",
+    "CBOE",
+    "CFG",
+    "CINF",
+    "CME",
+    "COF",
+    "COIN",
+    "CPAY",
+    "EG",
+    "ERIE",
+    "FDS",
+    "FIS",
+    "FISV",
+    "FITB",
+    "GL",
+    "GPN",
+    "GS",
+    "HBAN",
+    "HIG",
+    "HOOD",
+    "IBKR",
+    "ICE",
+    "IVZ",
+    "JKHY",
+    "JPM",
+    "KEY",
+    "KKR",
+    "L",
+    "MA",
+    "MCO",
+    "MET",
+    "MRSH",
+    "MS",
+    "MSCI",
+    "MTB",
+    "NDAQ",
+    "NTRS",
+    "PFG",
+    "PGR",
+    "PNC",
+    "PRU",
+    "PYPL",
+    "RF",
+    "RJF",
+    "SCHW",
+    "SPGI",
+    "STT",
+    "SYF",
+    "TFC",
+    "TROW",
+    "TRV",
+    "USB",
+    "V",
+    "WFC",
+    "WRB",
+    "WTW",
+    "XYZ"
+  ],
+  "product_coverage_summary": {
+    "official_product_surface_ticker_count": 1,
+    "primary_ticker_count": 77,
+    "product_context_gap_ticker_count": 0,
+    "product_context_node_ticker_count": 77,
+    "product_kpi_ready_ticker_count": 25,
+    "sample_official_product_surface_tickers": [
+      "BR"
+    ],
+    "sample_product_kpi_ready_tickers": [
+      "AFL",
+      "ALL",
+      "AMP",
+      "APO",
+      "BAC",
+      "BLK",
+      "BRK-B",
+      "CBOE",
+      "COF",
+      "COIN",
+      "CPAY",
+      "GPN",
+      "ICE",
+      "KKR",
+      "L",
+      "MA",
+      "MRSH",
+      "MSCI",
+      "PFG",
+      "PNC"
+    ]
+  },
+  "public_data_ceiling": [
+    "FDIC/FRED and market data explain macro/regulatory context, not company revenue or real-time flows unless issuer/official statistics disclose it"
+  ],
+  "registry_digest": "755d7b3dd3fb5798",
+  "representative_cases": [
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V6_banks_financials_capital_markets",
+      "case_id": "v6_banks_financials_capital_markets_financial_product_bridge_001",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "real-time flows",
+        "private deposit migration",
+        "advisor-channel detail",
+        "consensus revision"
+      ],
+      "focus_tickers": [
+        "JPM",
+        "BAC"
+      ],
+      "prompt": "分析 JPM, BAC 在 Banks / Financials / Capital Markets lane 中的产品/服务、财务三表、公开 KPI、资本投入、竞争位置和风险反证，要求区分 L1 强事实与 L2/L3 proxy。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V6"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "financial_regulatory_context",
+        "trusted_external_context",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "BAC",
+        "BLK",
+        "C",
+        "GS",
+        "JPM",
+        "MS",
+        "SCHW",
+        "WFC"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V6_banks_financials_capital_markets",
+      "case_id": "v6_banks_financials_capital_markets_external_source_repair_boundary_002",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required",
+        "targeted_repair_before_bounded_gap"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "real-time flows",
+        "private deposit migration",
+        "advisor-channel detail",
+        "consensus revision"
+      ],
+      "focus_tickers": [
+        "WFC",
+        "C",
+        "GS"
+      ],
+      "prompt": "针对 WFC, C, GS 检查当前公开源是否足以补齐产品、监管/行业、供应链或渠道 proxy；找不到时必须写出 retrievable/parser/bounded/commercial gap。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V6"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "financial_regulatory_context",
+        "trusted_external_context",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "BAC",
+        "BLK",
+        "C",
+        "CBOE",
+        "GS",
+        "JPM",
+        "MS",
+        "SCHW",
+        "WFC"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V6_banks_financials_capital_markets",
+      "case_id": "v6_banks_financials_capital_markets_proxy_no_promotion_003",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required",
+        "proxy_cannot_prove_sales_share_or_margin"
+      ],
+      "execution_mode": "standard_memo",
+      "expected_commercial_gaps": [
+        "real-time flows",
+        "private deposit migration",
+        "advisor-channel detail",
+        "consensus revision"
+      ],
+      "focus_tickers": [
+        "MS",
+        "BLK",
+        "SCHW"
+      ],
+      "prompt": "比较 MS, BLK, SCHW 的公开 proxy 信号如何补充但不能替代公司披露；输出应包含判断、依据、反证、缺口和触发条件。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V6"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "financial_regulatory_context",
+        "trusted_external_context",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "BAC",
+        "BLK",
+        "C",
+        "GS",
+        "JPM",
+        "MS",
+        "SCHW",
+        "WFC"
+      ]
+    }
+  ],
+  "representative_tickers": [
+    "JPM",
+    "BAC",
+    "WFC",
+    "C",
+    "GS",
+    "MS",
+    "BLK",
+    "SCHW",
+    "CBOE"
+  ],
+  "schema_version": "finsight_vertical_lane_coverage_v0_1",
+  "secondary_inclusive_ticker_count": 77,
+  "subvertical": "banks_financials_capital_markets",
+  "ticker_universe": [
+    "ACGL",
+    "AFL",
+    "AIG",
+    "AIZ",
+    "AJG",
+    "ALL",
+    "AMP",
+    "AON",
+    "APO",
+    "ARES",
+    "AXP",
+    "BAC",
+    "BEN",
+    "BK",
+    "BLK",
+    "BR",
+    "BRK-B",
+    "BRO",
+    "BX",
+    "C",
+    "CB",
+    "CBOE",
+    "CFG",
+    "CINF",
+    "CME",
+    "COF",
+    "COIN",
+    "CPAY",
+    "EG",
+    "ERIE",
+    "FDS",
+    "FIS",
+    "FISV",
+    "FITB",
+    "GL",
+    "GPN",
+    "GS",
+    "HBAN",
+    "HIG",
+    "HOOD",
+    "IBKR",
+    "ICE",
+    "IVZ",
+    "JKHY",
+    "JPM",
+    "KEY",
+    "KKR",
+    "L",
+    "MA",
+    "MCO",
+    "MET",
+    "MRSH",
+    "MS",
+    "MSCI",
+    "MTB",
+    "NDAQ",
+    "NTRS",
+    "PFG",
+    "PGR",
+    "PNC",
+    "PRU",
+    "PYPL",
+    "RF",
+    "RJF",
+    "SCHW",
+    "SPGI",
+    "STT",
+    "SYF",
+    "TFC",
+    "TROW",
+    "TRV",
+    "USB",
+    "V",
+    "WFC",
+    "WRB",
+    "WTW",
+    "XYZ"
+  ]
+}

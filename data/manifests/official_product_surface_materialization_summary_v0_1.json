@@ -1,0 +1,162 @@
+{
+  "attempted_count": 19,
+  "attempts": [
+    {
+      "clean_text_char_count": 3019,
+      "status": "materialized",
+      "ticker": "AMZN",
+      "title": "Cloud Services - Build and Scale Securely- AWS",
+      "url": "https://aws.amazon.com/products/"
+    },
+    {
+      "clean_text_char_count": 3431,
+      "status": "materialized",
+      "ticker": "AMZN",
+      "title": "Instance Types",
+      "url": "https://aws.amazon.com/ec2/instance-types/"
+    },
+    {
+      "clean_text_char_count": 4758,
+      "status": "materialized",
+      "ticker": "ASML",
+      "title": "ASML products & services | Supplying the semiconductor industry",
+      "url": "https://www.asml.com/en/products"
+    },
+    {
+      "clean_text_char_count": 11407,
+      "status": "materialized",
+      "ticker": "ASML",
+      "title": "EUV lithography systems – Products | ASML",
+      "url": "https://www.asml.com/en/products/euv-lithography-systems"
+    },
+    {
+      "clean_text_char_count": 8,
+      "reason": "clean_text_too_short:8",
+      "status": "unusable_response",
+      "ticker": "AVGO",
+      "title": "Products",
+      "url": "https://www.broadcom.com/products"
+    },
+    {
+      "clean_text_char_count": 34934,
+      "status": "materialized",
+      "ticker": "CRM",
+      "title": "Complete Salesforce Products & Software Suite | Salesforce",
+      "url": "https://www.salesforce.com/products/"
+    },
+    {
+      "clean_text_char_count": 41468,
+      "status": "materialized",
+      "ticker": "GOOGL",
+      "title": "Products and Services | Google Cloud",
+      "url": "https://cloud.google.com/products"
+    },
+    {
+      "clean_text_char_count": 53170,
+      "status": "materialized",
+      "ticker": "GOOGL",
+      "title": "Gemini Enterprise AI Platform | Google Cloud",
+      "url": "https://cloud.google.com/ai"
+    },
+    {
+      "reason": "http_403",
+      "status": "unusable_response",
+      "ticker": "INTC",
+      "url": "https://www.intel.com/content/www/us/en/products/overview.html"
+    },
+    {
+      "reason": "http_403",
+      "status": "unusable_response",
+      "ticker": "LLY",
+      "url": "https://www.lilly.com/our-medicines"
+    },
+    {
+      "clean_text_char_count": 39253,
+      "status": "materialized",
+      "ticker": "MSFT",
+      "title": "Cloud Products | Microsoft Azure",
+      "url": "https://azure.microsoft.com/en-us/products/"
+    },
+    {
+      "clean_text_char_count": 2098,
+      "reason": "blocked_or_non_content_page",
+      "status": "unusable_response",
+      "ticker": "MSFT",
+      "title": "Your request has been blocked. This could be due to several reasons.",
+      "url": "https://www.microsoft.com/en-us/microsoft-365"
+    },
+    {
+      "reason": "TimeoutError: The read operation timed out",
+      "status": "fetch_failed",
+      "ticker": "NOW",
+      "url": "https://www.servicenow.com/products-by-category.html"
+    },
+    {
+      "clean_text_char_count": 988,
+      "status": "materialized",
+      "ticker": "NVO",
+      "title": "Our products | Novo Nordisk",
+      "url": "https://www.novonordisk.com/our-products.html"
+    },
+    {
+      "clean_text_char_count": 19498,
+      "status": "materialized",
+      "ticker": "PFE",
+      "title": "Our Products: Holding the Promise of a Breakthrough | Pfizer",
+      "url": "https://www.pfizer.com/products"
+    },
+    {
+      "clean_text_char_count": 57,
+      "reason": "clean_text_too_short:57",
+      "status": "unusable_response",
+      "ticker": "QCOM",
+      "title": "All Products and Platforms | Chipsets and SoCs | Qualcomm",
+      "url": "https://www.qualcomm.com/products"
+    },
+    {
+      "reason": "http_403",
+      "status": "unusable_response",
+      "ticker": "TSLA",
+      "url": "https://www.tesla.com/models"
+    },
+    {
+      "reason": "http_403",
+      "status": "unusable_response",
+      "ticker": "TSLA",
+      "url": "https://www.tesla.com/modely"
+    },
+    {
+      "clean_text_char_count": 9131,
+      "status": "materialized",
+      "ticker": "TSM",
+      "title": "Unleash Innovation - Taiwan Semiconductor Manufacturing Company Limited",
+      "url": "https://www.tsmc.com/english/dedicatedFoundry/technology"
+    }
+  ],
+  "blocked_count": 0,
+  "boundary": "Materialized official product pages are bounded product taxonomy/spec context only; no sales/share/ASP/inventory/sell-through authority.",
+  "existing_input_count": 14,
+  "failed_count": 8,
+  "generated_at": "2026-06-16T12:58:22Z",
+  "new_materialized_count": 0,
+  "output_row_count": 14,
+  "pruned_unusable_existing_count": 0,
+  "schema_version": "fin_agent_official_product_surface_materialization_summary_v0_1",
+  "skipped_existing_count": 0,
+  "status": "pass",
+  "ticker_count": 11,
+  "tickers": [
+    "AAPL",
+    "AMD",
+    "AMZN",
+    "ASML",
+    "CRM",
+    "GOOGL",
+    "MSFT",
+    "NVDA",
+    "NVO",
+    "PFE",
+    "TSM"
+  ],
+  "updated_materialized_count": 11
+}

@@ -1,0 +1,38 @@
+{
+  "authority_boundary": "Locator rows are issuer-domain source candidates only. They are not evidence rows and cannot support product specs, product KPIs, revenue, orders, utilization, share, ASP, or demand claims until fetched and parsed into runtime rows.",
+  "candidate_count": 347,
+  "candidate_status_counts": {
+    "candidate_not_fetched": 347
+  },
+  "diagnostics": {
+    "candidate_count_before_cap": 473,
+    "link_count": 63104,
+    "product_page_count": 600,
+    "rejected_link_count": 63135,
+    "rejection_reasons": {
+      "below_locator_score_threshold": 54252,
+      "blocked_static_extension": 16,
+      "link_text_too_long": 5,
+      "non_page_link": 56,
+      "off_domain": 8806
+    },
+    "route_target_count": 445
+  },
+  "generated_at": "2026-06-24T18:49:12Z",
+  "input_product_page_count": 971,
+  "input_route_plan_count": 3459,
+  "outputs": {
+    "candidates": "D:\\FIN_Insight_Agent\\data\\manifests\\official_spec_source_locator_candidates_v0_1.jsonl"
+  },
+  "route_counts": {
+    "business_asset_profile_spec": 192,
+    "technical_product_spec": 155
+  },
+  "schema_version": "finsight_official_spec_source_locator_summary_v0_1",
+  "source_role_counts": {
+    "business_asset_profile_spec": 192,
+    "technical_product_spec": 155
+  },
+  "status": "pass",
+  "ticker_count": 93
+}

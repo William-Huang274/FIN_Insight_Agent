@@ -1,0 +1,78 @@
+{
+  "action_required_parser_run_samples": [],
+  "artifact_kind_counts": {
+    "chunk_rows": 18,
+    "claim_candidates": 8,
+    "context_rows": 9,
+    "coverage_gate_json": 10,
+    "data_mart_rows": 1,
+    "input_evidence_rows": 14,
+    "jsonl_rows": 37,
+    "metric_candidates": 8,
+    "rejection_rows": 6,
+    "report_markdown": 9,
+    "runtime_rows": 35,
+    "summary_json": 54,
+    "table_rows": 8
+  },
+  "artifact_line_count_status_counts": {
+    "counted": 103,
+    "not_counted_large_artifact": 13,
+    "not_counted_large_artifact_summary_declared": 24,
+    "not_jsonl": 77
+  },
+  "generated_at": "2026-06-26T17:09:52+00:00",
+  "large_artifact_not_line_counted_count": 13,
+  "missing_artifact_count": 0,
+  "missing_declared_output_count": 0,
+  "missing_declared_output_samples": [],
+  "outputs": {
+    "parser_output_artifact_ledger": "D:\\FIN_Insight_Agent\\data\\manifests\\parser_output_artifact_ledger_v0_1.jsonl",
+    "parser_rejection_taxonomy": "D:\\FIN_Insight_Agent\\data\\manifests\\parser_rejection_taxonomy_v0_1.jsonl",
+    "parser_run_ledger": "D:\\FIN_Insight_Agent\\data\\manifests\\parser_run_ledger_v0_1.jsonl",
+    "report": "D:\\FIN_Insight_Agent\\docs\\internal\\vnext_20260610\\rd2_parser_chunk_table_metric_ledger.zh-CN.md",
+    "summary": "D:\\FIN_Insight_Agent\\data\\manifests\\parser_quality_summary_v0_1.json"
+  },
+  "owner_stage_counts": {
+    "capital_market_context_parser": 1,
+    "chunk_build": 1,
+    "customer_deployment_context_parser": 1,
+    "financial_statement_runtime_parser": 2,
+    "industry_operating_metric_parser": 1,
+    "manifest_parser_summary": 10,
+    "market_context_parser": 2,
+    "product_kpi_runtime_parser": 6,
+    "product_surface_context_parser": 2,
+    "source_context_parser": 19,
+    "structured_object_extraction": 7
+  },
+  "parser_output_artifact_count": 217,
+  "parser_rejection_taxonomy_row_count": 38,
+  "parser_run_count": 52,
+  "parser_status_counts": {
+    "pass": 42,
+    "unknown": 10
+  },
+  "policy": "RD2 records parser/chunk/table/metric/claim output quality. Large JSONL files are not line-counted when a summary already declares their row counts. Rejection rows are audit evidence and must not be treated as accepted facts.",
+  "rejection_class_counts": {
+    "business_segment_boundary": 2,
+    "conflict_resolution": 2,
+    "financial_statement_not_product_kpi": 3,
+    "not_product_kpi_exact": 5,
+    "other": 10,
+    "outside_canonical_scope": 1,
+    "parser_schema_gap": 1,
+    "percentage_or_change_only": 5,
+    "region_only_or_geography": 3,
+    "value_unit_period_binding": 6
+  },
+  "schema_version": "finsight_parser_quality_summary_v0_1",
+  "status": "pass_with_recorded_rejections",
+  "total_declared_chunks": 161455,
+  "total_declared_claim_candidates": 2459906,
+  "total_declared_context_rows": 6556,
+  "total_declared_metric_candidates": 7974456,
+  "total_declared_runtime_rows": 19715,
+  "total_declared_tables": 374536,
+  "total_rejection_count": 30557
+}

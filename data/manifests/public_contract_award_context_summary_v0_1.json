@@ -1,0 +1,199 @@
+{
+  "attempted_count": 12,
+  "attempts": [
+    {
+      "agencies": [
+        "Department of Health and Human Services",
+        "Department of Homeland Security",
+        "Department of Agriculture"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\pltr_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "PLTR"
+    },
+    {
+      "agencies": [
+        "District of Columbia Courts",
+        "Federal Communications Commission",
+        "Department of Defense"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\msft_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "MSFT"
+    },
+    {
+      "agencies": [
+        "Department of Justice",
+        "Department of Commerce",
+        "Department of Transportation"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\amzn_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "AMZN"
+    },
+    {
+      "agencies": [
+        "Office of Personnel Management",
+        "Department of Transportation",
+        "Federal Communications Commission"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\orcl_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "ORCL"
+    },
+    {
+      "agencies": [
+        "District of Columbia Courts",
+        "Department of the Treasury",
+        "National Aeronautics and Space Administration"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\ibm_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "IBM"
+    },
+    {
+      "agencies": [
+        "Department of Defense"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\ldos_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "LDOS"
+    },
+    {
+      "agencies": [
+        "Department of Health and Human Services",
+        "National Aeronautics and Space Administration",
+        "Department of Defense"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\dell_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "DELL"
+    },
+    {
+      "agencies": [
+        "Department of Defense"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\hpe_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "HPE"
+    },
+    {
+      "agencies": [
+        "Department of Justice",
+        "Department of Health and Human Services",
+        "Department of Commerce"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\nvda_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "NVDA"
+    },
+    {
+      "agencies": [
+        "National Aeronautics and Space Administration"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\intc_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "INTC"
+    },
+    {
+      "agencies": [
+        "Department of Defense"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 1,
+      "parsed_row_count": 1,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\amd_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "AMD"
+    },
+    {
+      "agencies": [
+        "Department of Commerce"
+      ],
+      "api_url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+      "award_count": 3,
+      "parsed_row_count": 3,
+      "raw_path": "Z:\\FIN_Insight_Agent_data\\raw_private\\public_source_extended_materialization\\public_contract_awards\\qcom_usaspending_contract_awards.json",
+      "status": "materialized",
+      "ticker": "QCOM"
+    }
+  ],
+  "boundary": "L3 public contract award rows are individual public-award relationship proxy only and cannot prove total orders, backlog, revenue, sales, demand, or share.",
+  "context_row_count": 34,
+  "counterparty_binding_status_counts": {
+    "counterparty_mentioned_in_snapshot": 34
+  },
+  "coverage_gate_status": "pass",
+  "failed_count": 0,
+  "generated_at": "2026-06-17T11:42:00Z",
+  "issuer_binding_status_counts": {
+    "issuer_mentioned_in_snapshot": 34
+  },
+  "materialized_count": 12,
+  "outputs": {
+    "coverage_gate": "D:\\FIN_Insight_Agent\\data\\manifests\\public_contract_award_runtime_coverage_gate_v0_1.json",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\public_contract_award_context_rows_v0_1.jsonl"
+  },
+  "parser_backed_row_count": 34,
+  "provider_counts": {
+    "usaspending": 34
+  },
+  "public_order_proxy_requirement": {
+    "entity_bound_row_count": 34,
+    "gaps": [],
+    "observed_row_count": 34,
+    "parser_row_count": 34,
+    "specialist_visible_row_count": 102,
+    "status": "pass"
+  },
+  "schema_version": "fin_agent_public_contract_award_context_summary_v0_1",
+  "status": "pass",
+  "structured_context_type_counts": {
+    "public_tender_contract_context": 34
+  },
+  "ticker_count": 12,
+  "tickers": [
+    "AMD",
+    "AMZN",
+    "DELL",
+    "HPE",
+    "IBM",
+    "INTC",
+    "LDOS",
+    "MSFT",
+    "NVDA",
+    "ORCL",
+    "PLTR",
+    "QCOM"
+  ]
+}

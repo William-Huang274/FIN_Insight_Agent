@@ -1,0 +1,863 @@
+{
+  "completion_boundary": "This package makes V8 lane planning and deterministic eval cases runtime-ready. Runtime source closeout must still classify each missing route as pass, retrievable/parser gap, bounded public gap, or commercial gap.",
+  "expected_commercial_gaps": [
+    "Circana/NielsenIQ POS",
+    "scanner/panel data",
+    "traffic trackers",
+    "private booking conversion",
+    "promotion/channel inventory"
+  ],
+  "gap_summary": {
+    "commercial_gap_count": 395,
+    "commercial_sources_top": {
+      "Circana": 385,
+      "NielsenIQ": 385,
+      "Sensor Tower": 10,
+      "Similarweb": 10,
+      "data.ai": 10
+    },
+    "gap_types": {
+      "commercial_market_tracker_gap_after_public_source_check": 395,
+      "company_disclosed_product_kpi_not_verified": 58
+    },
+    "missing_metrics_top": {
+      "POS_sell_through": 77,
+      "active_users": 2,
+      "app_revenue_estimates": 2,
+      "category_rank": 2,
+      "channel_inventory": 77,
+      "company_disclosed_product_kpi": 58,
+      "consumer_panel": 77,
+      "downloads": 2,
+      "price_promotion": 77,
+      "scanner_sales": 77,
+      "web_traffic": 2
+    }
+  },
+  "industry_schema": "retail_cpg",
+  "l1_company_disclosed_kpi_focus": [
+    "same-store sales",
+    "transactions/ticket",
+    "store count",
+    "membership",
+    "bookings/room nights if disclosed"
+  ],
+  "l1_financial_statement_focus": [
+    "comparable sales",
+    "gross margin",
+    "inventory",
+    "traffic/ticket",
+    "advertising/promotion",
+    "working capital",
+    "loyalty/membership"
+  ],
+  "l1_required_facts": [
+    "same-store sales",
+    "transactions",
+    "ticket",
+    "inventory",
+    "gross margin",
+    "advertising/promotional spend when disclosed"
+  ],
+  "l2_source_requirements": [
+    "bls_cpi",
+    "bls_public_api",
+    "census_data_api",
+    "census_retail_sales",
+    "company_ir_reports",
+    "company_official_news",
+    "company_product_pages",
+    "fred_api",
+    "mainstream_financial_news",
+    "official_menu_store_pages"
+  ],
+  "l3_proxy_requirements": [
+    "ecommerce_major_platforms",
+    "app_store_rankings",
+    "platform_reviews_rankings_downloads",
+    "job_postings_hiring_signals"
+  ],
+  "l4_discovery_rules": [
+    "L4 may only create WeakSignalLead / WeakSignalExclusionNote / L4PromotionAttempt.",
+    "L4 cannot support sales, share, sell-through, product success, customer adoption, or core thesis evidence.",
+    "Search/forum/chart leads must route to L1/L2/L3 official/trusted/proxy repair before memo use."
+  ],
+  "lane_id": "V8",
+  "lane_name": "Retail / CPG / Restaurants / Travel",
+  "lane_source_coverage_gate": {
+    "case_id": "",
+    "exact_authority_violations": [],
+    "gaps": [
+      {
+        "claim_boundary": "Official product existence, specs, positioning, and company-disclosed product KPIs; no inferred sales/share.",
+        "detail": "ready=0, registry_ready=0, runtime_parser_sources=0, required=1; route_candidates=2",
+        "dimension": "product_and_production",
+        "gap_type": "source_parser_or_mapping_not_runtime_ready",
+        "next_action": "Fetch official product/IR pages, parse product/spec rows, and bind issuer/product before product section judgment.",
+        "requirement_id": "official_product_surface",
+        "source_ids": [
+          "company_product_pages",
+          "company_reported_product_operating_metrics"
+        ]
+      }
+    ],
+    "generated_at": "2026-06-17T11:16:28Z",
+    "industry_schema": "retail_cpg",
+    "phase": "registry",
+    "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+    "requested_industry_schema": "retail_cpg",
+    "requirements": [
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "exact_authority_ready": 1,
+          "staging_parser_gate_pending": 1,
+          "structured_not_promoted": 2
+        },
+        "claim_boundary": "Company-disclosed financial, filing, and product operating facts only after parser/period/unit/citation gates.",
+        "dimension": "fundamentals",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L1"
+        ],
+        "next_action": "Use SEC/FSD for US issuers and official IR/local filing route for non-US issuers before exposing a filing gap.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 1,
+        "requirement_id": "primary_company_disclosure",
+        "route_candidate_source_count": 4,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "sec_edgar_apis",
+          "sec_financial_statement_data_sets",
+          "company_ir_reports",
+          "company_reported_product_operating_metrics"
+        ],
+        "source_profile_count": 4,
+        "specialist_roles": [
+          "fundamental_analyst",
+          "product_technology_analyst",
+          "capital_ownership_macro_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "structured_not_promoted": 2
+        },
+        "claim_boundary": "Official product existence, specs, positioning, and company-disclosed product KPIs; no inferred sales/share.",
+        "dimension": "product_and_production",
+        "effective_ready_source_count": 0,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [
+          {
+            "claim_boundary": "Official product existence, specs, positioning, and company-disclosed product KPIs; no inferred sales/share.",
+            "detail": "ready=0, registry_ready=0, runtime_parser_sources=0, required=1; route_candidates=2",
+            "dimension": "product_and_production",
+            "gap_type": "source_parser_or_mapping_not_runtime_ready",
+            "next_action": "Fetch official product/IR pages, parse product/spec rows, and bind issuer/product before product section judgment.",
+            "requirement_id": "official_product_surface",
+            "source_ids": [
+              "company_product_pages",
+              "company_reported_product_operating_metrics"
+            ]
+          }
+        ],
+        "layer_ids": [
+          "L1",
+          "L2"
+        ],
+        "next_action": "Fetch official product/IR pages, parse product/spec rows, and bind issuer/product before product section judgment.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 0,
+        "requirement_id": "official_product_surface",
+        "route_candidate_source_count": 2,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "company_product_pages",
+          "company_reported_product_operating_metrics"
+        ],
+        "source_profile_count": 2,
+        "specialist_roles": [
+          "product_technology_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "gap"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "not_registered": 2,
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Trusted event, management-statement, and industry context only; not company exact values unless independently authoritative.",
+        "dimension": "competition_and_market_position",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Use trusted publisher or official association routes before declaring external context unavailable.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 1,
+        "requirement_id": "trusted_external_context",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "mainstream_financial_news",
+          "industry_association_reports",
+          "official_social_accounts"
+        ],
+        "source_profile_count": 3,
+        "specialist_roles": [
+          "market_valuation_analyst",
+          "risk_counterevidence_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "not_registered": 1,
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Public channel price/configuration/availability proxy only; no ASP, sell-through, inventory, or market-share inference.",
+        "dimension": "product_and_production",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L3"
+        ],
+        "next_action": "Route e-commerce/channel snapshots through offer parser and SKU/product resolver.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 1,
+        "requirement_id": "channel_offer_proxy",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "ecommerce_major_platforms",
+          "channel_pricing_quotations"
+        ],
+        "source_profile_count": 2,
+        "specialist_roles": [
+          "product_technology_analyst",
+          "market_valuation_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Public review/ranking/download context only; directional attention signal, not sales proof.",
+        "dimension": "product_and_production",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L3"
+        ],
+        "next_action": "Parse platform ranking/review pages with timestamp and entity/product binding.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 1,
+        "requirement_id": "platform_review_proxy",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "platform_reviews_rankings_downloads"
+        ],
+        "source_profile_count": 1,
+        "specialist_roles": [
+          "product_technology_analyst",
+          "market_valuation_analyst",
+          "risk_counterevidence_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Hiring/capacity/geography signal only; weak directional evidence unless corroborated.",
+        "dimension": "product_and_production",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L3"
+        ],
+        "next_action": "Parse company/job-board postings and role taxonomy; bind issuer/product/geography.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 1,
+        "requirement_id": "hiring_capacity_proxy",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "job_postings_hiring_signals"
+        ],
+        "source_profile_count": 1,
+        "specialist_roles": [
+          "product_technology_analyst",
+          "industry_supply_chain_analyst",
+          "risk_counterevidence_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {},
+          "issuer_binding_status": {},
+          "product_binding_status": {}
+        },
+        "by_source_status": {
+          "runtime_ready_context": 1,
+          "structured_not_promoted": 5
+        },
+        "claim_boundary": "Official macro/industry context and demand proxy only; no issuer revenue or share inference.",
+        "dimension": "macro_and_industry",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 0,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Resolve industry driver/source mapping and keep company exposure bridge explicit.",
+        "observed_row_count": 0,
+        "observed_source_classes": [],
+        "observed_structured_context_types": [],
+        "parser_row_count": 0,
+        "phase": "registry",
+        "ready_source_count": 1,
+        "requirement_id": "macro_official_context",
+        "route_candidate_source_count": 6,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "fred_api",
+          "fred_graph_csv",
+          "bls_public_api",
+          "bea_data_api",
+          "census_data_api",
+          "eia_open_data"
+        ],
+        "source_profile_count": 6,
+        "specialist_roles": [
+          "market_valuation_analyst",
+          "capital_ownership_macro_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 0,
+        "status": "pass"
+      }
+    ],
+    "schema_version": "finsight_source_coverage_gate_v0_1",
+    "status": "gap",
+    "summary": {
+      "by_dimension": {
+        "competition_and_market_position": 1,
+        "fundamentals": 1,
+        "macro_and_industry": 1,
+        "product_and_production": 4
+      },
+      "by_status": {
+        "gap": 1,
+        "pass": 6
+      },
+      "exact_authority_violation_count": 0,
+      "fail_requirement_count": 0,
+      "gap_requirement_count": 1,
+      "pass_requirement_count": 6,
+      "requirement_count": 7
+    },
+    "validation": {
+      "errors": [],
+      "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+      "status": "pass"
+    }
+  },
+  "primary_ticker_count": 79,
+  "primary_ticker_universe": [
+    "ABNB",
+    "ADM",
+    "APTV",
+    "BBY",
+    "BF-B",
+    "BG",
+    "BKNG",
+    "CAG",
+    "CASY",
+    "CCL",
+    "CHD",
+    "CL",
+    "CLX",
+    "COST",
+    "CPB",
+    "CVNA",
+    "DASH",
+    "DECK",
+    "DG",
+    "DHI",
+    "DLTR",
+    "DPZ",
+    "DRI",
+    "EBAY",
+    "EL",
+    "EXPE",
+    "GIS",
+    "GRMN",
+    "HAS",
+    "HD",
+    "HLT",
+    "HRL",
+    "HST",
+    "HSY",
+    "KDP",
+    "KHC",
+    "KMB",
+    "KO",
+    "KR",
+    "KVUE",
+    "LEN",
+    "LOW",
+    "LULU",
+    "LVS",
+    "MAR",
+    "MCD",
+    "MDLZ",
+    "MELI",
+    "MGM",
+    "MKC",
+    "MNST",
+    "MO",
+    "NCLH",
+    "NKE",
+    "NVR",
+    "PEP",
+    "PG",
+    "PHM",
+    "PM",
+    "POOL",
+    "RCL",
+    "RL",
+    "ROST",
+    "RUN",
+    "SBUX",
+    "SJM",
+    "STZ",
+    "SYY",
+    "TAP",
+    "TGT",
+    "TJX",
+    "TPR",
+    "TSCO",
+    "TSN",
+    "ULTA",
+    "WMT",
+    "WSM",
+    "WYNN",
+    "YUM"
+  ],
+  "product_coverage_summary": {
+    "official_product_surface_ticker_count": 79,
+    "primary_ticker_count": 79,
+    "product_context_gap_ticker_count": 0,
+    "product_context_node_ticker_count": 79,
+    "product_kpi_ready_ticker_count": 25,
+    "sample_official_product_surface_tickers": [
+      "ABNB",
+      "ADM",
+      "APTV",
+      "BBY",
+      "BF-B",
+      "BG",
+      "BKNG",
+      "CAG",
+      "CASY",
+      "CCL",
+      "CHD",
+      "CL",
+      "CLX",
+      "COST",
+      "CPB",
+      "CVNA",
+      "DASH",
+      "DECK",
+      "DG",
+      "DHI"
+    ],
+    "sample_product_kpi_ready_tickers": [
+      "ABNB",
+      "ADM",
+      "APTV",
+      "BBY",
+      "DRI",
+      "EXPE",
+      "HD",
+      "HRL",
+      "HSY",
+      "KMB",
+      "KO",
+      "KVUE",
+      "LEN",
+      "LOW",
+      "MCD",
+      "MGM",
+      "MNST",
+      "MO",
+      "NKE",
+      "ROST"
+    ]
+  },
+  "public_data_ceiling": [
+    "public listings/reviews/app ranks can support price/menu/attention context, not POS sell-through, product share, traffic, or channel inventory"
+  ],
+  "registry_digest": "755d7b3dd3fb5798",
+  "representative_cases": [
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V8_retail_cpg_restaurants_travel",
+      "case_id": "v8_retail_cpg_restaurants_travel_financial_product_bridge_001",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "Circana/NielsenIQ POS",
+        "scanner/panel data",
+        "traffic trackers",
+        "private booking conversion",
+        "promotion/channel inventory"
+      ],
+      "focus_tickers": [
+        "WMT",
+        "COST"
+      ],
+      "prompt": "分析 WMT, COST 在 Retail / CPG / Restaurants / Travel lane 中的产品/服务、财务三表、公开 KPI、资本投入、竞争位置和风险反证，要求区分 L1 强事实与 L2/L3 proxy。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V8"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "official_product_surface",
+        "trusted_external_context",
+        "channel_offer_proxy",
+        "platform_review_proxy",
+        "hiring_capacity_proxy",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "COST",
+        "HD",
+        "KO",
+        "LOW",
+        "PEP",
+        "PG",
+        "TGT",
+        "WMT"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V8_retail_cpg_restaurants_travel",
+      "case_id": "v8_retail_cpg_restaurants_travel_external_source_repair_boundary_002",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required",
+        "targeted_repair_before_bounded_gap"
+      ],
+      "execution_mode": "deep_research",
+      "expected_commercial_gaps": [
+        "Circana/NielsenIQ POS",
+        "scanner/panel data",
+        "traffic trackers",
+        "private booking conversion",
+        "promotion/channel inventory"
+      ],
+      "focus_tickers": [
+        "TGT",
+        "HD",
+        "LOW"
+      ],
+      "prompt": "针对 TGT, HD, LOW 检查当前公开源是否足以补齐产品、监管/行业、供应链或渠道 proxy；找不到时必须写出 retrievable/parser/bounded/commercial gap。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V8"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "official_product_surface",
+        "trusted_external_context",
+        "channel_offer_proxy",
+        "platform_review_proxy",
+        "hiring_capacity_proxy",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "COST",
+        "HD",
+        "KO",
+        "LOW",
+        "NKE",
+        "PEP",
+        "PG",
+        "SBUX",
+        "TGT",
+        "WMT"
+      ]
+    },
+    {
+      "allowed_secondary_lane_ids": [],
+      "case_family": "V8_retail_cpg_restaurants_travel",
+      "case_id": "v8_retail_cpg_restaurants_travel_proxy_no_promotion_003",
+      "eval_gates": [
+        "lane_registry_loaded",
+        "source_coverage_gate_visible",
+        "L1_exact_authority_required_for_company_financial_fact",
+        "L2_L3_context_or_proxy_boundary_visible",
+        "L4_direct_claim_forbidden",
+        "commercial_gap_exposed_not_filled_by_proxy",
+        "dimension_judgment_required",
+        "source_gap_classification_required",
+        "proxy_cannot_prove_sales_share_or_margin"
+      ],
+      "execution_mode": "standard_memo",
+      "expected_commercial_gaps": [
+        "Circana/NielsenIQ POS",
+        "scanner/panel data",
+        "traffic trackers",
+        "private booking conversion",
+        "promotion/channel inventory"
+      ],
+      "focus_tickers": [
+        "PG",
+        "KO",
+        "PEP"
+      ],
+      "prompt": "比较 PG, KO, PEP 的公开 proxy 信号如何补充但不能替代公司披露；输出应包含判断、依据、反证、缺口和触发条件。",
+      "required_dimension_ids": [
+        "fundamentals",
+        "product_and_production",
+        "capital_and_financing",
+        "industry_supply_chain",
+        "competition_and_market_position",
+        "risk_and_counterevidence"
+      ],
+      "required_lane_ids": [
+        "V8"
+      ],
+      "required_source_requirements": [
+        "primary_company_disclosure",
+        "official_product_surface",
+        "trusted_external_context",
+        "channel_offer_proxy",
+        "platform_review_proxy",
+        "hiring_capacity_proxy",
+        "macro_official_context"
+      ],
+      "search_scope_tickers": [
+        "COST",
+        "HD",
+        "KO",
+        "LOW",
+        "PEP",
+        "PG",
+        "TGT",
+        "WMT"
+      ]
+    }
+  ],
+  "representative_tickers": [
+    "WMT",
+    "COST",
+    "TGT",
+    "HD",
+    "LOW",
+    "PG",
+    "KO",
+    "PEP",
+    "NKE",
+    "SBUX",
+    "MCD",
+    "BKNG",
+    "ABNB"
+  ],
+  "schema_version": "finsight_vertical_lane_coverage_v0_1",
+  "secondary_inclusive_ticker_count": 80,
+  "subvertical": "retail_cpg_restaurants_travel",
+  "ticker_universe": [
+    "ABNB",
+    "ADM",
+    "APTV",
+    "BBY",
+    "BF-B",
+    "BG",
+    "BKNG",
+    "CAG",
+    "CASY",
+    "CCL",
+    "CHD",
+    "CL",
+    "CLX",
+    "COST",
+    "CPB",
+    "CVNA",
+    "DASH",
+    "DECK",
+    "DG",
+    "DHI",
+    "DLTR",
+    "DPZ",
+    "DRI",
+    "EBAY",
+    "EL",
+    "EXPE",
+    "GIS",
+    "GRMN",
+    "HAS",
+    "HD",
+    "HLT",
+    "HRL",
+    "HST",
+    "HSY",
+    "KDP",
+    "KHC",
+    "KMB",
+    "KO",
+    "KR",
+    "KVUE",
+    "LEN",
+    "LOW",
+    "LULU",
+    "LVS",
+    "MAR",
+    "MCD",
+    "MDLZ",
+    "MELI",
+    "MGM",
+    "MKC",
+    "MNST",
+    "MO",
+    "NCLH",
+    "NKE",
+    "NVR",
+    "PEP",
+    "PG",
+    "PHM",
+    "PM",
+    "POOL",
+    "RCL",
+    "RL",
+    "ROST",
+    "RUN",
+    "SBUX",
+    "SJM",
+    "STZ",
+    "SYY",
+    "TAP",
+    "TGT",
+    "TJX",
+    "TPR",
+    "TSCO",
+    "TSN",
+    "UBER",
+    "ULTA",
+    "WMT",
+    "WSM",
+    "WYNN",
+    "YUM"
+  ]
+}

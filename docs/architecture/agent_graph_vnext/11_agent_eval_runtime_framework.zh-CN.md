@@ -1,6 +1,6 @@
 # Agent Eval Runtime 闭环框架
 
-更新时间：2026-06-14
+更新时间：2026-06-15
 
 本文档作为 09 Research Lead closed loop 和 10 后端 / 前端 runtime 之后的评测体系闭环。目标不是再追加一个孤立 eval 脚本，而是把 FinSight 的评测、审计、回放、错误沉淀、gold set 晋级和线上监控统一成一个可持续运转的 Agent Eval Runtime。
 
@@ -12,6 +12,18 @@
 - Eval 已修复产品 surface 判断：使用 `analysis_dimension=product_and_production`、`primary_claim_ids` / `evidence_refs`，并对 `AI-optimized servers`、`ai_optimized_servers`、`AI-optimized server revenue` 这类 hyphen / underscore / plural 变体做归一化匹配。
 - 新增 contract gate：即使产品收入事实由 `fundamental_analyst` 提出，只要 metric/evidence 是 `product_revenue` / product KPI / AI server / ISG，ClaimCard 也必须进入 `product_technology` memo slot 和 `product_and_production` dimension。
 - 本轮未跑 P10 12case full-chain regression；P0-P9 的上线前门控当前只覆盖 Java/Python bridge、SQL/Redis backend smoke、Workbench 1case diagnostic、相关 node/eval unit tests。
+
+## 2026-06-15 R12 Supervising Analyst / HIL 更新
+
+- 新增 deep-case eval layer：`scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py` 现在检查 `supervising_analyst_pack` 是否存在，且是否包含 `financial_analysis_model`、`product_bridge_pack`、`capital_transmission_graph`、`research_lead_synthesis_plan` 和 writer directives。
+- 新增 artifact-only HIL 审计入口：`scripts/eval_multi_agent/run_supervising_analyst_hitl_audit.py`，读取已完成 case artifacts，不调用模型，重建监督包并输出 surface / downstream agent issue。
+- R22 两个 case 的 HIL 审计结果已经记录到 `reports/quality/supervising_analyst_hitl/20260615_r22_codex_supervisor/`。
+- HIL 当前能抓到此前人工观感发现的问题：
+  - investment implications 仍像操作说明，不像当前判断；
+  - capital / supply-chain edges 没被渲染成具体传导路径；
+  - derived financial/product bridge 已存在但未被写作使用；
+  - Fundamental specialist 缺 balance-sheet backbone 和 numeric display choice。
+- 后续 eval 需要把 HIL 发现的问题沉淀成 active regression cases，而不是只存在工作日志里。
 
 ## 外部参考
 
@@ -691,12 +703,15 @@ Judge 本身必须被审计：
 - 为 ResearchObjectiveContract、LeadReviewCheckpoint、TargetedRepairPlan、MemoLogicPlan 加 node-only eval。
 - 为 ContextEngine 和 context injection plan 加 replay eval。
 - 为 ModelRouter / AgentCoalescer 加成本质量 eval。
-- 2026-06-14 已落 ModelRouter / resource scheduler 的 deterministic unit gate：`src/sec_agent/runtime_bridge/resource_scheduler.py`；LeadReviewCheckpoint / MemoLogicPlan node eval 仍待接主 graph。
+- 2026-06-14 已落 ModelRouter / resource scheduler 的 deterministic unit gate：`src/sec_agent/runtime_bridge/resource_scheduler.py`。
+- 2026-06-14 已把 LeadReviewCheckpoint / TargetedRepairPlan / MemoLogicPlan 接入主 graph 的 aggregate -> memo_writer 屏障，并新增 ASML 类 non-US issuer official-source repair contract test。
 
 通过条件：
 
 - Lead Review 能识别 retrievable gap / bounded gap / commercial gap。
 - second pass 必须有 targeted repair plan 和 delta audit。
+- issuer route scope 缺失不能直接成为 bounded gap；若 company IR / local exchange / regulator / SEC FPI 公开源理论可查，必须进入 official-only targeted repair。
+- Memo surface readability gate 能拦截内部字段渲染、raw artifact citation、pipe-delimited dump、重复 wrapper 和语言混杂；短 citation `[C1]` 被视为合格证据引用。
 
 ### A5：Failure / Gold Lifecycle
 

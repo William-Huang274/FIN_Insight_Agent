@@ -1,0 +1,41 @@
+{
+  "action_row_count": 234,
+  "affected_ticker_count": 203,
+  "dimension_counts": {
+    "capital_market_detail_depth": 2,
+    "customer_deployment_depth": 72,
+    "product_kpi_depth": 160
+  },
+  "gap_counts": {
+    "capital_market_detail_depth::capital_market_detail_source_gap": 1,
+    "capital_market_detail_depth::capital_primary_disclosure_parser_gap": 1,
+    "customer_deployment_depth::customer_deployment_public_source_gap": 72,
+    "product_kpi_depth::filings_taxonomy_available_but_value_unit_period_product_kpi_absent": 34,
+    "product_kpi_depth::non_product_metric_public_boundary": 3,
+    "product_kpi_depth::official_product_surface_available_but_company_disclosed_product_kpi_absent": 122,
+    "product_kpi_depth::product_context_available_but_no_company_disclosed_product_kpi_exact_slot": 1
+  },
+  "lane_counts": {
+    "V1": 12,
+    "V2": 1,
+    "V3": 31,
+    "V4": 16,
+    "V5": 3,
+    "V6": 39,
+    "V7": 105,
+    "V8": 27
+  },
+  "outputs": {
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\second_third_layer_depth_parity_gap_action_plan_v0_1.jsonl"
+  },
+  "schema_version": "finsight_second_third_layer_depth_gap_action_plan_summary_v0_1",
+  "source_gap_type_counts": {
+    "classified_product_kpi_boundary_or_deep_adapter_gap": 4,
+    "classified_public_boundary_or_deep_adapter_gap": 122,
+    "company_disclosure_value_candidate_absent_or_locator_gap": 23,
+    "non_promotable_public_disclosure_boundary": 11,
+    "parser_or_join_gap": 1,
+    "source_locator_or_materialization_gap": 73
+  },
+  "status": "pass"
+}

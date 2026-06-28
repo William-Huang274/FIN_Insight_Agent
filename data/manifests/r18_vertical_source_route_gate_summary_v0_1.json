@@ -1,0 +1,54 @@
+{
+  "action_required_company_count": 3,
+  "by_gap_class": {
+    "source_gap": 3
+  },
+  "by_lane_status": {
+    "V1": {
+      "action_required": 2,
+      "pass": 41
+    },
+    "V2": {
+      "pass": 9
+    },
+    "V3": {
+      "pass": 96
+    },
+    "V4": {
+      "pass": 68
+    },
+    "V5": {
+      "pass": 14
+    },
+    "V6": {
+      "pass": 77
+    },
+    "V7": {
+      "action_required": 1,
+      "pass": 214
+    },
+    "V8": {
+      "pass": 81
+    }
+  },
+  "by_missing_source_role": {
+    "public_order_proxy": 3
+  },
+  "by_root_cause": {
+    "route_or_parser_debt": 1,
+    "source_or_adapter_gap": 2
+  },
+  "company_count": 603,
+  "generated_at": "2026-06-23T19:48:27Z",
+  "hard_gate": {
+    "by_flag": {},
+    "flag_count": 0
+  },
+  "missing_requirement_count": 3,
+  "pass_company_count": 600,
+  "passed_requirement_count": 5174,
+  "policy": "Cross-lane diagnostic source-route gate. A pass means each company lane-required source role has at least one parser-backed source-authority row admitted to evidence bundle. Action-required rows remain route/parser/resolver work, not memo evidence.",
+  "requirement_count": 5177,
+  "schema_version": "finsight_r18_vertical_source_route_gate_v0_1",
+  "status": "action_required"
+}

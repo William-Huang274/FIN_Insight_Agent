@@ -1,0 +1,876 @@
+{
+  "boundary": "V6 source closeout resolves the registry/package ambiguity by checking real materialized rows. A pass means the lane has at least one primary V6 ticker with parser-backed coverage for that requirement. It does not mean every V6 issuer or every product has complete coverage.",
+  "commercial_gap_ledger": [
+    {
+      "claim_boundary": "public sources cannot fill this as company sales/share/order/inventory authority",
+      "description": "real-time flows",
+      "gap_id": "V6_COMMERCIAL_GAP::EXPECTED::1",
+      "gap_type": "commercial_gap",
+      "lane_id": "V6",
+      "required_commercial_sources": [
+        "commercial market tracker"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "public sources cannot fill this as company sales/share/order/inventory authority",
+      "description": "private deposit migration",
+      "gap_id": "V6_COMMERCIAL_GAP::EXPECTED::2",
+      "gap_type": "commercial_gap",
+      "lane_id": "V6",
+      "required_commercial_sources": [
+        "commercial market tracker"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "public sources cannot fill this as company sales/share/order/inventory authority",
+      "description": "advisor-channel detail",
+      "gap_id": "V6_COMMERCIAL_GAP::EXPECTED::3",
+      "gap_type": "commercial_gap",
+      "lane_id": "V6",
+      "required_commercial_sources": [
+        "commercial market tracker"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "public sources cannot fill this as company sales/share/order/inventory authority",
+      "description": "consensus revision",
+      "gap_id": "V6_COMMERCIAL_GAP::EXPECTED::4",
+      "gap_type": "commercial_gap",
+      "lane_id": "V6",
+      "required_commercial_sources": [
+        "commercial market tracker"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "must remain bounded/commercial gap unless licensed tracker data is added",
+      "description": "Rystad appears in product evidence graph commercial gap ledger for 5 V6-related missing product/market metrics.",
+      "gap_id": "V6_COMMERCIAL_GAP::PRODUCT_GRAPH::Rystad",
+      "gap_type": "commercial_gap_from_product_evidence_graph",
+      "lane_id": "V6",
+      "required_commercial_sources": [
+        "Rystad"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "must remain bounded/commercial gap unless licensed tracker data is added",
+      "description": "S&P Global Commodity Insights appears in product evidence graph commercial gap ledger for 5 V6-related missing product/market metrics.",
+      "gap_id": "V6_COMMERCIAL_GAP::PRODUCT_GRAPH::S&P Global Commodity Insights",
+      "gap_type": "commercial_gap_from_product_evidence_graph",
+      "lane_id": "V6",
+      "required_commercial_sources": [
+        "S&P Global Commodity Insights"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    },
+    {
+      "claim_boundary": "must remain bounded/commercial gap unless licensed tracker data is added",
+      "description": "Wood Mackenzie appears in product evidence graph commercial gap ledger for 5 V6-related missing product/market metrics.",
+      "gap_id": "V6_COMMERCIAL_GAP::PRODUCT_GRAPH::Wood Mackenzie",
+      "gap_type": "commercial_gap_from_product_evidence_graph",
+      "lane_id": "V6",
+      "required_commercial_sources": [
+        "Wood Mackenzie"
+      ],
+      "schema_version": "finsight_vertical_lane_commercial_gap_v0_1"
+    }
+  ],
+  "generated_at": "2026-06-17T12:27:43Z",
+  "inclusive_ticker_coverage": {
+    "by_source": {
+      "company_product_kpi_facts_structured_metric_parser": {
+        "row_count": 619,
+        "sample_tickers": [
+          "AFL",
+          "ALL",
+          "AMP",
+          "APO",
+          "BAC",
+          "BLK",
+          "BRK-B",
+          "CBOE",
+          "COF",
+          "COIN",
+          "CPAY",
+          "GPN",
+          "ICE",
+          "KKR",
+          "L",
+          "MA",
+          "MRSH",
+          "MSCI",
+          "PFG",
+          "PNC"
+        ],
+        "ticker_count": 25
+      },
+      "company_reported_product_operating_metrics": {
+        "row_count": 619,
+        "sample_tickers": [
+          "AFL",
+          "ALL",
+          "AMP",
+          "APO",
+          "BAC",
+          "BLK",
+          "BRK-B",
+          "CBOE",
+          "COF",
+          "COIN",
+          "CPAY",
+          "GPN",
+          "ICE",
+          "KKR",
+          "L",
+          "MA",
+          "MRSH",
+          "MSCI",
+          "PFG",
+          "PNC"
+        ],
+        "ticker_count": 25
+      },
+      "fred_api": {
+        "row_count": 4,
+        "sample_tickers": [
+          "BAC",
+          "C",
+          "JPM",
+          "WFC"
+        ],
+        "ticker_count": 4
+      },
+      "industry_association_reports": {
+        "row_count": 4,
+        "sample_tickers": [
+          "BAC",
+          "GS",
+          "JPM",
+          "MS"
+        ],
+        "ticker_count": 4
+      },
+      "job_postings_hiring_signals": {
+        "row_count": 5,
+        "sample_tickers": [
+          "COIN"
+        ],
+        "ticker_count": 1
+      }
+    },
+    "covered_ticker_count": 30,
+    "covered_tickers": [
+      "AFL",
+      "ALL",
+      "AMP",
+      "APO",
+      "BAC",
+      "BLK",
+      "BRK-B",
+      "C",
+      "CBOE",
+      "COF",
+      "COIN",
+      "CPAY",
+      "GPN",
+      "GS",
+      "ICE",
+      "JPM",
+      "KKR",
+      "L",
+      "MA",
+      "MRSH",
+      "MS",
+      "MSCI",
+      "PFG",
+      "PNC",
+      "PRU",
+      "STT",
+      "TROW",
+      "TRV",
+      "WFC",
+      "XYZ"
+    ],
+    "missing_tickers": [
+      "ACGL",
+      "AIG",
+      "AIZ",
+      "AJG",
+      "AON",
+      "ARES",
+      "AXP",
+      "BEN",
+      "BK",
+      "BR",
+      "BRO",
+      "BX",
+      "CB",
+      "CFG",
+      "CINF",
+      "CME",
+      "EG",
+      "ERIE",
+      "FDS",
+      "FIS",
+      "FISV",
+      "FITB",
+      "GL",
+      "HBAN",
+      "HIG",
+      "HOOD",
+      "IBKR",
+      "IVZ",
+      "JKHY",
+      "KEY",
+      "MCO",
+      "MET",
+      "MTB",
+      "NDAQ",
+      "NTRS",
+      "PGR",
+      "PYPL",
+      "RF",
+      "RJF",
+      "SCHW",
+      "SPGI",
+      "SYF",
+      "TFC",
+      "USB",
+      "V",
+      "WRB",
+      "WTW"
+    ],
+    "schema_version": "finsight_vertical_lane_ticker_coverage_summary_v0_1",
+    "ticker_count": 77
+  },
+  "industry_schema": "financials_banks",
+  "lane_id": "V6",
+  "lane_name": "Banks / Financials / Capital Markets",
+  "primary_ticker_coverage": {
+    "by_source": {
+      "company_product_kpi_facts_structured_metric_parser": {
+        "row_count": 619,
+        "sample_tickers": [
+          "AFL",
+          "ALL",
+          "AMP",
+          "APO",
+          "BAC",
+          "BLK",
+          "BRK-B",
+          "CBOE",
+          "COF",
+          "COIN",
+          "CPAY",
+          "GPN",
+          "ICE",
+          "KKR",
+          "L",
+          "MA",
+          "MRSH",
+          "MSCI",
+          "PFG",
+          "PNC"
+        ],
+        "ticker_count": 25
+      },
+      "company_reported_product_operating_metrics": {
+        "row_count": 619,
+        "sample_tickers": [
+          "AFL",
+          "ALL",
+          "AMP",
+          "APO",
+          "BAC",
+          "BLK",
+          "BRK-B",
+          "CBOE",
+          "COF",
+          "COIN",
+          "CPAY",
+          "GPN",
+          "ICE",
+          "KKR",
+          "L",
+          "MA",
+          "MRSH",
+          "MSCI",
+          "PFG",
+          "PNC"
+        ],
+        "ticker_count": 25
+      },
+      "fred_api": {
+        "row_count": 4,
+        "sample_tickers": [
+          "BAC",
+          "C",
+          "JPM",
+          "WFC"
+        ],
+        "ticker_count": 4
+      },
+      "industry_association_reports": {
+        "row_count": 4,
+        "sample_tickers": [
+          "BAC",
+          "GS",
+          "JPM",
+          "MS"
+        ],
+        "ticker_count": 4
+      },
+      "job_postings_hiring_signals": {
+        "row_count": 5,
+        "sample_tickers": [
+          "COIN"
+        ],
+        "ticker_count": 1
+      }
+    },
+    "covered_ticker_count": 30,
+    "covered_tickers": [
+      "AFL",
+      "ALL",
+      "AMP",
+      "APO",
+      "BAC",
+      "BLK",
+      "BRK-B",
+      "C",
+      "CBOE",
+      "COF",
+      "COIN",
+      "CPAY",
+      "GPN",
+      "GS",
+      "ICE",
+      "JPM",
+      "KKR",
+      "L",
+      "MA",
+      "MRSH",
+      "MS",
+      "MSCI",
+      "PFG",
+      "PNC",
+      "PRU",
+      "STT",
+      "TROW",
+      "TRV",
+      "WFC",
+      "XYZ"
+    ],
+    "missing_tickers": [
+      "ACGL",
+      "AIG",
+      "AIZ",
+      "AJG",
+      "AON",
+      "ARES",
+      "AXP",
+      "BEN",
+      "BK",
+      "BR",
+      "BRO",
+      "BX",
+      "CB",
+      "CFG",
+      "CINF",
+      "CME",
+      "EG",
+      "ERIE",
+      "FDS",
+      "FIS",
+      "FISV",
+      "FITB",
+      "GL",
+      "HBAN",
+      "HIG",
+      "HOOD",
+      "IBKR",
+      "IVZ",
+      "JKHY",
+      "KEY",
+      "MCO",
+      "MET",
+      "MTB",
+      "NDAQ",
+      "NTRS",
+      "PGR",
+      "PYPL",
+      "RF",
+      "RJF",
+      "SCHW",
+      "SPGI",
+      "SYF",
+      "TFC",
+      "USB",
+      "V",
+      "WRB",
+      "WTW"
+    ],
+    "schema_version": "finsight_vertical_lane_ticker_coverage_summary_v0_1",
+    "ticker_count": 77
+  },
+  "registry_gate_status": "gap",
+  "requirement_closeouts": [
+    {
+      "claim_boundary": "Company-disclosed financial, filing, and product operating facts only after parser/period/unit/citation gates.",
+      "closeout_reason": "parser-backed primary V6 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "fundamentals",
+      "inclusive_entity_bound_row_count": 619,
+      "inclusive_entity_bound_ticker_count": 25,
+      "inclusive_parser_row_count": 619,
+      "inclusive_row_count": 619,
+      "inclusive_ticker_covered_count": 25,
+      "lane_id": "V6",
+      "next_action": "Use SEC/FSD for US issuers and official IR/local filing route for non-US issuers before exposing a filing gap.",
+      "primary_entity_bound_row_count": 619,
+      "primary_entity_bound_ticker_count": 25,
+      "primary_parser_row_count": 619,
+      "primary_row_count": 619,
+      "primary_ticker_covered_count": 25,
+      "registry_status": "pass",
+      "requirement_id": "primary_company_disclosure",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "AFL",
+        "ALL",
+        "AMP",
+        "APO",
+        "BAC",
+        "BLK",
+        "BRK-B",
+        "CBOE",
+        "COF",
+        "COIN",
+        "CPAY",
+        "GPN"
+      ],
+      "sample_primary_tickers": [
+        "AFL",
+        "ALL",
+        "AMP",
+        "APO",
+        "BAC",
+        "BLK",
+        "BRK-B",
+        "CBOE",
+        "COF",
+        "COIN",
+        "CPAY",
+        "GPN"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "sec_edgar_apis",
+        "sec_financial_statement_data_sets",
+        "company_ir_reports",
+        "company_reported_product_operating_metrics"
+      ]
+    },
+    {
+      "claim_boundary": "Bank regulatory and macro context only until institution-to-listed-issuer resolver passes.",
+      "closeout_reason": "parser-backed primary V6 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "macro_and_industry",
+      "inclusive_entity_bound_row_count": 4,
+      "inclusive_entity_bound_ticker_count": 4,
+      "inclusive_parser_row_count": 4,
+      "inclusive_row_count": 4,
+      "inclusive_ticker_covered_count": 4,
+      "lane_id": "V6",
+      "next_action": "Resolve FDIC institution/subsidiary to listed issuer and keep rate/credit context separated from company-reported facts.",
+      "primary_entity_bound_row_count": 4,
+      "primary_entity_bound_ticker_count": 4,
+      "primary_parser_row_count": 4,
+      "primary_row_count": 4,
+      "primary_ticker_covered_count": 4,
+      "registry_status": "gap",
+      "requirement_id": "financial_regulatory_context",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "BAC",
+        "C",
+        "JPM",
+        "WFC"
+      ],
+      "sample_primary_tickers": [
+        "BAC",
+        "C",
+        "JPM",
+        "WFC"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "fdic_bankfind_api",
+        "fred_api",
+        "fred_graph_csv"
+      ]
+    },
+    {
+      "claim_boundary": "Trusted event, management-statement, and industry context only; not company exact values unless independently authoritative.",
+      "closeout_reason": "parser-backed primary V6 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "competition_and_market_position",
+      "inclusive_entity_bound_row_count": 4,
+      "inclusive_entity_bound_ticker_count": 4,
+      "inclusive_parser_row_count": 4,
+      "inclusive_row_count": 4,
+      "inclusive_ticker_covered_count": 4,
+      "lane_id": "V6",
+      "next_action": "Use trusted publisher or official association routes before declaring external context unavailable.",
+      "primary_entity_bound_row_count": 4,
+      "primary_entity_bound_ticker_count": 4,
+      "primary_parser_row_count": 4,
+      "primary_row_count": 4,
+      "primary_ticker_covered_count": 4,
+      "registry_status": "pass",
+      "requirement_id": "trusted_external_context",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "BAC",
+        "GS",
+        "JPM",
+        "MS"
+      ],
+      "sample_primary_tickers": [
+        "BAC",
+        "GS",
+        "JPM",
+        "MS"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "mainstream_financial_news",
+        "industry_association_reports",
+        "official_social_accounts"
+      ]
+    },
+    {
+      "claim_boundary": "Official macro/industry context and demand proxy only; no issuer revenue or share inference.",
+      "closeout_reason": "parser-backed primary V6 ticker rows are materialized and bound enough for this requirement.",
+      "closeout_status": "pass",
+      "dimension": "macro_and_industry",
+      "inclusive_entity_bound_row_count": 4,
+      "inclusive_entity_bound_ticker_count": 4,
+      "inclusive_parser_row_count": 4,
+      "inclusive_row_count": 4,
+      "inclusive_ticker_covered_count": 4,
+      "lane_id": "V6",
+      "next_action": "Resolve industry driver/source mapping and keep company exposure bridge explicit.",
+      "primary_entity_bound_row_count": 4,
+      "primary_entity_bound_ticker_count": 4,
+      "primary_parser_row_count": 4,
+      "primary_row_count": 4,
+      "primary_ticker_covered_count": 4,
+      "registry_status": "pass",
+      "requirement_id": "macro_official_context",
+      "runtime_gaps": [],
+      "runtime_status": "pass",
+      "sample_inclusive_tickers": [
+        "BAC",
+        "C",
+        "JPM",
+        "WFC"
+      ],
+      "sample_primary_tickers": [
+        "BAC",
+        "C",
+        "JPM",
+        "WFC"
+      ],
+      "schema_version": "finsight_vertical_lane_source_requirement_closeout_v0_1",
+      "source_ids": [
+        "fred_api",
+        "fred_graph_csv",
+        "bls_public_api",
+        "bea_data_api",
+        "census_data_api",
+        "eia_open_data"
+      ]
+    }
+  ],
+  "runtime_gate": {
+    "case_id": "",
+    "exact_authority_violations": [],
+    "gaps": [],
+    "generated_at": "2026-06-17T12:27:43Z",
+    "industry_schema": "financials_banks",
+    "phase": "runtime_case",
+    "policy": "registry_then_runtime_case_source_coverage_without_l2_l3_exact_authority_promotion_v0_1",
+    "requested_industry_schema": "financials_banks",
+    "requirements": [
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 619
+          },
+          "issuer_binding_status": {
+            "issuer_mentioned_in_snapshot": 619
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 619
+          }
+        },
+        "by_source_status": {
+          "exact_authority_ready": 1,
+          "staging_parser_gate_pending": 1,
+          "structured_not_promoted": 2
+        },
+        "claim_boundary": "Company-disclosed financial, filing, and product operating facts only after parser/period/unit/citation gates.",
+        "dimension": "fundamentals",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 619,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L1"
+        ],
+        "next_action": "Use SEC/FSD for US issuers and official IR/local filing route for non-US issuers before exposing a filing gap.",
+        "observed_row_count": 619,
+        "observed_source_classes": [
+          "company_reported_product_operating_metric"
+        ],
+        "observed_structured_context_types": [
+          "company_reported_product_operating_metric_fact"
+        ],
+        "parser_row_count": 619,
+        "phase": "runtime_case",
+        "ready_source_count": 1,
+        "requirement_id": "primary_company_disclosure",
+        "route_candidate_source_count": 4,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "sec_edgar_apis",
+          "sec_financial_statement_data_sets",
+          "company_ir_reports",
+          "company_reported_product_operating_metrics"
+        ],
+        "source_profile_count": 4,
+        "specialist_roles": [
+          "fundamental_analyst",
+          "product_technology_analyst",
+          "capital_ownership_macro_analyst"
+        ],
+        "specialist_visible_row_count": 2476,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 4
+          },
+          "issuer_binding_status": {
+            "issuer_mentioned_in_snapshot": 4
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 4
+          }
+        },
+        "by_source_status": {
+          "structured_not_promoted": 3
+        },
+        "claim_boundary": "Bank regulatory and macro context only until institution-to-listed-issuer resolver passes.",
+        "dimension": "macro_and_industry",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 4,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Resolve FDIC institution/subsidiary to listed issuer and keep rate/credit context separated from company-reported facts.",
+        "observed_row_count": 4,
+        "observed_source_classes": [
+          "fred_api"
+        ],
+        "observed_structured_context_types": [
+          "macro_official_context"
+        ],
+        "parser_row_count": 4,
+        "phase": "runtime_case",
+        "ready_source_count": 0,
+        "requirement_id": "financial_regulatory_context",
+        "route_candidate_source_count": 3,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "fdic_bankfind_api",
+          "fred_api",
+          "fred_graph_csv"
+        ],
+        "source_profile_count": 3,
+        "specialist_roles": [
+          "fundamental_analyst",
+          "capital_ownership_macro_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 8,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 4
+          },
+          "issuer_binding_status": {
+            "lane_context_not_issuer_bound": 4
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 4
+          }
+        },
+        "by_source_status": {
+          "not_registered": 2,
+          "runtime_ready_context": 1
+        },
+        "claim_boundary": "Trusted event, management-statement, and industry context only; not company exact values unless independently authoritative.",
+        "dimension": "competition_and_market_position",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 4,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Use trusted publisher or official association routes before declaring external context unavailable.",
+        "observed_row_count": 4,
+        "observed_source_classes": [
+          "industry_association_dataset"
+        ],
+        "observed_structured_context_types": [
+          "trusted_external_context"
+        ],
+        "parser_row_count": 4,
+        "phase": "runtime_case",
+        "ready_source_count": 1,
+        "requirement_id": "trusted_external_context",
+        "route_candidate_source_count": 1,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "mainstream_financial_news",
+          "industry_association_reports",
+          "official_social_accounts"
+        ],
+        "source_profile_count": 3,
+        "specialist_roles": [
+          "market_valuation_analyst",
+          "risk_counterevidence_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 4,
+        "status": "pass"
+      },
+      {
+        "binding_status_distribution": {
+          "counterparty_binding_status": {
+            "not_bound": 4
+          },
+          "issuer_binding_status": {
+            "issuer_mentioned_in_snapshot": 4
+          },
+          "product_binding_status": {
+            "product_mentioned_in_snapshot": 4
+          }
+        },
+        "by_source_status": {
+          "runtime_ready_context": 1,
+          "structured_not_promoted": 5
+        },
+        "claim_boundary": "Official macro/industry context and demand proxy only; no issuer revenue or share inference.",
+        "dimension": "macro_and_industry",
+        "effective_ready_source_count": 1,
+        "entity_bound_row_count": 4,
+        "exact_authority_violation_sources": [],
+        "gaps": [],
+        "layer_ids": [
+          "L2"
+        ],
+        "next_action": "Resolve industry driver/source mapping and keep company exposure bridge explicit.",
+        "observed_row_count": 4,
+        "observed_source_classes": [
+          "fred_api"
+        ],
+        "observed_structured_context_types": [
+          "macro_official_context"
+        ],
+        "parser_row_count": 4,
+        "phase": "runtime_case",
+        "ready_source_count": 1,
+        "requirement_id": "macro_official_context",
+        "route_candidate_source_count": 6,
+        "schema_version": "finsight_source_coverage_requirement_v0_1",
+        "source_ids": [
+          "fred_api",
+          "fred_graph_csv",
+          "bls_public_api",
+          "bea_data_api",
+          "census_data_api",
+          "eia_open_data"
+        ],
+        "source_profile_count": 6,
+        "specialist_roles": [
+          "market_valuation_analyst",
+          "capital_ownership_macro_analyst",
+          "industry_supply_chain_analyst"
+        ],
+        "specialist_visible_row_count": 12,
+        "status": "pass"
+      }
+    ],
+    "schema_version": "finsight_source_coverage_gate_v0_1",
+    "status": "pass",
+    "summary": {
+      "by_dimension": {
+        "competition_and_market_position": 1,
+        "fundamentals": 1,
+        "macro_and_industry": 2
+      },
+      "by_status": {
+        "pass": 4
+      },
+      "exact_authority_violation_count": 0,
+      "fail_requirement_count": 0,
+      "gap_requirement_count": 0,
+      "pass_requirement_count": 4,
+      "requirement_count": 4
+    },
+    "validation": {
+      "errors": [],
+      "schema_version": "finsight_source_coverage_gate_validation_v0_1",
+      "status": "pass"
+    }
+  },
+  "runtime_gate_status": "pass",
+  "schema_version": "finsight_vertical_lane_source_coverage_closeout_v0_1",
+  "source_gap_ledger": [],
+  "status": "pass",
+  "summary": {
+    "by_closeout_status": {
+      "pass": 4
+    },
+    "commercial_gap_count": 7,
+    "inclusive_ticker_count": 77,
+    "observed_inclusive_ticker_count": 30,
+    "observed_primary_ticker_count": 30,
+    "observed_runtime_row_count": 632,
+    "pass_requirement_count": 4,
+    "primary_ticker_count": 77,
+    "requirement_count": 4,
+    "source_gap_requirement_count": 0
+  },
+  "validation": {
+    "errors": [],
+    "schema_version": "finsight_vertical_lane_source_coverage_closeout_validation_v0_1",
+    "status": "pass"
+  }
+}

@@ -16,7 +16,7 @@ SUMMARY_SCHEMA_VERSION = "fin_agent_product_kpi_quality_filter_summary_v0.1"
 SUPPRESSION_SCHEMA_VERSION = "fin_agent_product_kpi_quality_suppression_v0.1"
 
 DEFAULT_INPUT_FACTS = Path(
-    "Z:/FIN_Insight_Agent/data/manifests/product_evidence_v0_1/company_product_kpi_facts_parser_verified_with_monotonic_repair_v0_4.jsonl"
+    "Z:/FIN_Insight_Agent/data/manifests/product_evidence_v0_1/company_product_kpi_facts_parser_verified_with_monotonic_repair_v0_5.jsonl"
 )
 DEFAULT_OUTPUT_DIR = Path("Z:/FIN_Insight_Agent/data/manifests/product_evidence_v0_1")
 DEFAULT_FILTERED_FACTS_OUTPUT = DEFAULT_OUTPUT_DIR / "company_product_kpi_facts_parser_verified_with_quality_filter_v0_1.jsonl"

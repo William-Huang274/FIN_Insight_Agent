@@ -217,6 +217,35 @@ Slice closeout：`L4_scope_pass`（runtime task spine 范围）
 | `U1-D05-checkpoint-resume-replay` | R56-D04/D06/D09 | checkpoint ref、pause/resume、replay gate | 任务中断后可恢复关键状态；replay 能重建 artifact refs |
 | `U1-D06-run-trace-baseline` | R60-D02/D03 | model/tool/retrieval/parser 基础 trace/usage | 每个 node 有 trace span，至少记录 latency 和 token/cost placeholder |
 
+#### S1 v0.1 implementation closeout
+
+2026-06-29 已把 S1 从规划文本落成 SQL-final runtime task spine，并达到 S1 范围内的 `L4_scope_pass`。
+
+核心生成物：
+
+- `src/sec_agent/r53_r60_runtime_task_spine.py`
+- `scripts/engineering/build_r53_r60_s1_runtime_task_spine.py`
+- `tests/test_r53_r60_runtime_task_spine.py`
+- `configs/r53_r60/s1_runtime_task_spine_schema_v0_1.json`
+- `data/manifests/r53_r60_s1_runtime_task_spine_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_s1_runtime_task_spine_summary_v0_1.json`
+- `data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite`
+- `docs/internal/vnext_20260610/r53_r60_s1_runtime_task_spine_l4_scope_pass.zh-CN.md`
+
+本次真实构建结果：
+
+- SQL-final tables：`research_tasks`、`task_runs`、`task_events`、`node_executions`、`artifact_refs`、`workpaper_events`、`checkpoint_refs`、`trace_spans`、`task_progress_projection`；
+- dogfood / gateway compatibility tasks：`2`；
+- task runs：`3`；
+- task events：`16`；
+- append-only WorkpaperEvent rows：`1`，且 update/delete trigger 均 blocked；
+- node/artifact/checkpoint/trace rows：均有 runtime row；
+- S1 gate rows：`10 pass / 0 fail`；
+- closeout：`S1_L4_scope_pass`；
+- next slice unlocked：`S2`。
+
+边界：S1 只证明 runtime task spine 在自身范围达到 enterprise-grade，可被 S2-S10 依赖；不代表全产品达到 `L4_production_pass`。Java gateway / Workbench 后续应通过 S1 facade 或兼容导入写入该主账本，Redis / MQ 只做协作状态，不做最终审计源。
+
 ### S2 Tool / Sandbox / Trace Spine
 
 目标：让工具调用变成受控企业能力，不是 agent 任意执行脚本。

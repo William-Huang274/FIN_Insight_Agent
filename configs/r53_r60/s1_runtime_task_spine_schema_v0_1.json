@@ -1,0 +1,73 @@
+{
+  "append_only_tables": [
+    "workpaper_events"
+  ],
+  "closeout_level": "L4_scope_pass",
+  "facade_methods": [
+    "create_task",
+    "import_gateway_task",
+    "get_task_state",
+    "resume_task",
+    "replay_task",
+    "record_worker_update",
+    "record_node_result",
+    "record_artifact_ref",
+    "append_workpaper_event",
+    "save_checkpoint",
+    "record_trace_span"
+  ],
+  "legal_transitions": {
+    "cancelled": [],
+    "failed": [],
+    "paused": [
+      "cancelled",
+      "failed",
+      "running"
+    ],
+    "pending": [
+      "cancelled",
+      "failed",
+      "running"
+    ],
+    "repairing": [
+      "cancelled",
+      "failed",
+      "running",
+      "succeeded"
+    ],
+    "running": [
+      "cancelled",
+      "failed",
+      "paused",
+      "repairing",
+      "succeeded"
+    ],
+    "succeeded": []
+  },
+  "schema_version": "r53_r60_s1_runtime_task_spine_v0_1",
+  "status_values": [
+    "pending",
+    "running",
+    "paused",
+    "repairing",
+    "failed",
+    "succeeded",
+    "cancelled"
+  ],
+  "tables": [
+    "research_tasks",
+    "task_runs",
+    "task_events",
+    "node_executions",
+    "artifact_refs",
+    "workpaper_events",
+    "checkpoint_refs",
+    "trace_spans",
+    "task_progress_projection"
+  ],
+  "terminal_statuses": [
+    "cancelled",
+    "failed",
+    "succeeded"
+  ]
+}

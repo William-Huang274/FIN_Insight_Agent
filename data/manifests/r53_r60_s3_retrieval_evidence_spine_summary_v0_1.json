@@ -1,0 +1,40 @@
+{
+  "boundary": "S3 closes retrieval/evidence route ledger scope only; it does not tune full recall/rerank algorithms or write final memos.",
+  "closeout_level": "L4_scope_pass",
+  "counts": {
+    "gate_count": 12,
+    "gate_fail_count": 0,
+    "retrieval_candidates": 49,
+    "retrieval_dropped_candidates": 34,
+    "retrieval_eval_qrels": 2,
+    "retrieval_gap_ledger": 0,
+    "retrieval_intent_registry": 1,
+    "retrieval_plans": 1,
+    "retrieval_route_executions": 7,
+    "retrieval_route_policy_matrix": 7,
+    "retrieval_selected_evidence": 15,
+    "retrieval_spine_metadata": 2
+  },
+  "failed_gates": [],
+  "generated_at": "2026-06-28T18:27:49Z",
+  "next_slice_unlocked": "S4",
+  "outputs": {
+    "closeout_report": "docs/internal/vnext_20260610/r53_r60_s3_retrieval_evidence_spine_l4_scope_pass.zh-CN.md",
+    "gate_rows": "data/manifests/r53_r60_s3_retrieval_evidence_spine_gate_rows_v0_1.jsonl",
+    "schema": "configs/r53_r60/s3_retrieval_evidence_spine_schema_v0_1.json",
+    "sqlite_store": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "summary": "data/manifests/r53_r60_s3_retrieval_evidence_spine_summary_v0_1.json"
+  },
+  "release_decision": "S3_L4_scope_pass",
+  "schema_version": "r53_r60_s3_retrieval_evidence_spine_v0_1",
+  "selected_by_route": {
+    "bm25": 2,
+    "graph": 2,
+    "milvus_semantic": 2,
+    "object_bm25": 2,
+    "parser_row": 3,
+    "sql_exact": 3,
+    "web_repair": 1
+  },
+  "status": "pass"
+}

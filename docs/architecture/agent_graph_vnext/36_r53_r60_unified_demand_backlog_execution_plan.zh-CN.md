@@ -324,6 +324,46 @@ Slice closeout：`L4_scope_pass`（data / retrieval / evidence spine 范围）
 | `U3-D06-retrieval-eval-qrels` | R58-D06 / R60 | 建 qrels / gold / negative cases | 重点 case 有 target-in-candidates 和 rerank audit |
 | `U3-D07-data-lineage-contract` | R58-D07-D10 | Ingestion/Parser/Storage/DB performance profile | source -> parser -> row -> retrieval -> context 可回放 |
 
+#### S3 v0.1 implementation closeout
+
+2026-06-29 已把 S3 落成 S1 / S2 native 的 retrieval / evidence spine，并达到 S3 范围内的 `L4_scope_pass`。
+
+核心生成物：
+
+- `src/sec_agent/r53_r60_retrieval_evidence_spine.py`
+- `scripts/engineering/build_r53_r60_s3_retrieval_evidence_spine.py`
+- `tests/test_r53_r60_retrieval_evidence_spine.py`
+- `configs/r53_r60/s3_retrieval_evidence_spine_schema_v0_1.json`
+- `data/manifests/r53_r60_s3_retrieval_evidence_spine_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_s3_retrieval_evidence_spine_summary_v0_1.json`
+- `data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite`
+- `docs/internal/vnext_20260610/r53_r60_s3_retrieval_evidence_spine_l4_scope_pass.zh-CN.md`
+
+本次真实构建结果：
+
+- S3 SQL tables：`retrieval_intent_registry`、`retrieval_route_policy_matrix`、`retrieval_plans`、`retrieval_route_executions`、`retrieval_candidates`、`retrieval_selected_evidence`、`retrieval_dropped_candidates`、`retrieval_gap_ledger`、`retrieval_eval_qrels`；
+- required routes：`sql_exact`、`graph`、`bm25`、`object_bm25`、`milvus_semantic`、`web_repair`、`parser_row` 全部进入 `RoutePolicyMatrix` 和 route execution ledger；
+- retrieval candidates：`49`；
+- selected evidence：`15`，且只能来自 `exact_company_fact_authority` 或 `bounded_thesis_driver_authority`；
+- dropped candidates：`34`，包括 `duplicate_evidence_ref`、`authority_not_promotable`、`route_budget_exceeded` 等 reason；
+- qrels：`2`，证明 target refs 同时进入 candidates 和 selected evidence；
+- S3 gate rows：`12 pass / 0 fail`；
+- closeout：`S3_L4_scope_pass`；
+- next slice unlocked：`S4`。
+
+本轮 gate 覆盖：
+
+- 上游 RD3 / RD5 / RD6 / RD7 / ResearchGraph / ProductIntelligenceGraph summary 必须存在且状态允许；
+- route policy 必须覆盖 SQL exact、graph、BM25、ObjectBM25、Milvus semantic、web repair、parser row；
+- retrieval plan 必须有 facets、query rewrite、route budget 和 typed-gap policy；
+- route execution 必须写 SQL ledger，并链接 S1 trace；`sql_exact` 还必须链接 S2 `ToolInvocationLedger`；
+- selected evidence 禁止 planning / gap-only / raw retrieval hit 进入；
+- dropped candidates 必须有 reason；
+- qrels 必须证明重点 target-in-candidates 和 target-in-selected；
+- S3 任务可重复构建，不删除 S1 append-only `WorkpaperEvent`，而是通过 resume 新 run 重建 S3 自身表。
+
+边界：S3 只证明 retrieval / evidence route ledger 在自身范围达到 enterprise-grade；本轮不做 full recall/rerank 调参、不重建 Milvus、不写 memo，也不把 raw retrieval hit 直接注入 Memo Writer。S4 后续负责 Context / Graph / Skill Registry，S5 后续把 selected evidence / typed gaps 组织成 Workpaper。
+
 ### S4 Context / Graph / Skill Registry
 
 目标：让 Research Lead 和 specialist 使用可版本化能力资产，而不是靠 prompt 记忆。

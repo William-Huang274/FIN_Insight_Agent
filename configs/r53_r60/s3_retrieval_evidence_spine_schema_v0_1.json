@@ -1,0 +1,135 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "forbidden_selected_authority_modes": [
+    "planning_or_gap_only",
+    "retrieval_candidate_only"
+  ],
+  "policy": {
+    "drops_must_have_reason": true,
+    "gaps_must_be_typed": true,
+    "hybrid_recall_requires_route_policy": true,
+    "raw_retrieval_hit_cannot_enter_memo": true,
+    "redis_or_mq_not_final_audit": true,
+    "selected_evidence_requires_authority_row": true,
+    "sql_exact_first": true
+  },
+  "promotable_authority_modes": [
+    "bounded_thesis_driver_authority",
+    "exact_company_fact_authority"
+  ],
+  "required_routes": [
+    "sql_exact",
+    "graph",
+    "bm25",
+    "object_bm25",
+    "milvus_semantic",
+    "web_repair",
+    "parser_row"
+  ],
+  "route_policies": [
+    {
+      "actor_id": "research_lead",
+      "authority_boundary": "exact/bounded authority only after RD3/RD6 gate.",
+      "can_promote_directly": true,
+      "fail_closed": true,
+      "max_candidates": 8,
+      "requires_parser_authority_gate": false,
+      "route_family": "structured_sql",
+      "route_id": "sql_exact",
+      "selected_quota": 3,
+      "source_boundary": "SQL exact rows must already carry parser authority and citation.",
+      "tool_id": "database_query"
+    },
+    {
+      "actor_id": "evidence_operator",
+      "authority_boundary": "bounded graph edges only when evidence support is present.",
+      "can_promote_directly": false,
+      "fail_closed": true,
+      "max_candidates": 8,
+      "requires_parser_authority_gate": true,
+      "route_family": "evidence_backed_graph",
+      "route_id": "graph",
+      "selected_quota": 2,
+      "source_boundary": "Graph hits must return evidence support rows, not naked topology.",
+      "tool_id": "database_query"
+    },
+    {
+      "actor_id": "evidence_operator",
+      "authority_boundary": "no promotion from raw hit text.",
+      "can_promote_directly": false,
+      "fail_closed": true,
+      "max_candidates": 8,
+      "requires_parser_authority_gate": true,
+      "route_family": "lexical_recall",
+      "route_id": "bm25",
+      "selected_quota": 2,
+      "source_boundary": "BM25 hits are retrieval candidates and must rejoin parser/source authority.",
+      "tool_id": "database_query"
+    },
+    {
+      "actor_id": "evidence_operator",
+      "authority_boundary": "no promotion until object row maps to authority row.",
+      "can_promote_directly": false,
+      "fail_closed": true,
+      "max_candidates": 8,
+      "requires_parser_authority_gate": true,
+      "route_family": "object_store_recall",
+      "route_id": "object_bm25",
+      "selected_quota": 2,
+      "source_boundary": "Object hits must resolve to object evidence refs and source rowsets.",
+      "tool_id": "database_query"
+    },
+    {
+      "actor_id": "evidence_operator",
+      "authority_boundary": "must map back to parser-backed evidence row.",
+      "can_promote_directly": false,
+      "fail_closed": true,
+      "max_candidates": 8,
+      "requires_parser_authority_gate": true,
+      "route_family": "dense_semantic_recall",
+      "route_id": "milvus_semantic",
+      "selected_quota": 2,
+      "source_boundary": "Milvus hits expand recall only; semantic similarity is not fact authority.",
+      "tool_id": "database_query"
+    },
+    {
+      "actor_id": "research_lead",
+      "authority_boundary": "snapshot alone is context-only until parser authority gate.",
+      "can_promote_directly": false,
+      "fail_closed": true,
+      "max_candidates": 6,
+      "requires_parser_authority_gate": true,
+      "route_family": "targeted_public_web_repair",
+      "route_id": "web_repair",
+      "selected_quota": 1,
+      "source_boundary": "Web repair can only fill retrievable gaps through allowlisted source and parser gate.",
+      "tool_id": "live_web_snapshot"
+    },
+    {
+      "actor_id": "evidence_operator",
+      "authority_boundary": "accepted parser-backed row may support exact or bounded claims.",
+      "can_promote_directly": true,
+      "fail_closed": true,
+      "max_candidates": 8,
+      "requires_parser_authority_gate": false,
+      "route_family": "parser_authority_row",
+      "route_id": "parser_row",
+      "selected_quota": 3,
+      "source_boundary": "Parser rows are accepted only when value/unit/period/product/citation or bounded signal contract passes.",
+      "tool_id": "database_query"
+    }
+  ],
+  "schema_version": "r53_r60_s3_retrieval_evidence_spine_v0_1",
+  "tables": [
+    "retrieval_spine_metadata",
+    "retrieval_intent_registry",
+    "retrieval_route_policy_matrix",
+    "retrieval_plans",
+    "retrieval_route_executions",
+    "retrieval_candidates",
+    "retrieval_selected_evidence",
+    "retrieval_dropped_candidates",
+    "retrieval_gap_ledger",
+    "retrieval_eval_qrels"
+  ]
+}

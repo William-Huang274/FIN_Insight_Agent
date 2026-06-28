@@ -11,6 +11,10 @@
 - `docs/architecture/agent_graph_vnext/11_agent_eval_runtime_framework.zh-CN.md`
 - `docs/architecture/agent_graph_vnext/24_raw_disclosure_rag_database_recap_and_data_base_plan.zh-CN.md`
 - `docs/architecture/agent_graph_vnext/25_agent_runtime_reference_stack_and_harness_context_engine_draft.zh-CN.md`，仅作为归档参考。
+- `docs/architecture/agent_graph_vnext/31_r56_agent_runtime_stack_hardening_technical_plan.zh-CN.md`
+- `docs/architecture/agent_graph_vnext/32_r57_graph_skill_memory_pack_operating_model.zh-CN.md`
+- `docs/architecture/agent_graph_vnext/33_r58_db_rag_retrieval_data_pipeline_control_plane.zh-CN.md`
+- `docs/architecture/agent_graph_vnext/34_r59_backend_frontend_workbench_hardening_technical_plan.zh-CN.md`
 
 ## 1. 为什么需要总控计划
 
@@ -46,9 +50,9 @@ PRD
 | R54 | Secondary Market / Capital Feedback | 二级市场资金面、持仓、信用、资本动作和预期如何进入研究判断 | Ownership、CreditFunding、CorporateAction、Liquidity、Valuation、Derivatives packs |
 | R55 | Deliverable Studio & Dashboard Projection | Workpaper 如何投影成多格式交付物和工作台看板 | DeliverablePlan、renderer registry、dashboard projections |
 | R56 | Agent Runtime Stack Hardening | LangGraph / harness / MCP / A2A / Hermes-style ContextEngine 如何工程化 | RuntimeFacade、durable graph、tool gateway、context injection audit |
-| R57 | Memory & Context Lifecycle | 长短记忆如何支持任务、公司、项目、机构和 watchlist | Memory tier、promotion/invalidation gate、ContextEngine strategy |
-| R58 | DB / RAG / Retrieval Optimization | 数据库、RAG、Milvus、BM25、graph retrieval 如何稳定服务研究链路 | retrieval planner、hybrid route、index registry、role-specific selector |
-| R59 | Backend / Frontend Workbench Hardening | Java 后端、任务队列、权限、前端工作台如何产品化 | API、queue、SSE、RBAC、artifact browser、review UI |
+| R57 | Graph / Skill / Memory Pack Operating Model | 图谱、专家 skill、机构/用户/团队经验如何变成可插拔、可版本化、可评测、可审批的能力资产 | GraphPack、SkillPack、MemoryPack、Graph Capability Registry、Skill Registry、Memory Registry、patch lifecycle |
+| R58 | DB / RAG / Retrieval / Data Pipeline Control Plane | 数据库、RAG、Milvus、BM25、graph retrieval、ingestion、parser、数据治理和外部参考台账如何稳定服务研究链路 | RetrievalStrategyPack、RoutePolicyMatrix、RetrievalExecutionLedger、DataIngestionContract、ParserExecutionContract、DatabasePerformanceProfile、ReferenceSourceLedger、ReferenceChangeLedger |
+| R59 | Backend / Frontend Workbench Hardening | Java 后端、任务队列、权限、前端工作台、reference ledger 和 sandbox / approval 如何产品化 | API、queue、SSE、RBAC、artifact browser、review UI、ReferenceSourceLedger、SandboxPolicy |
 | R60 | Eval / Observability / Incident / Fallback | 全链路质量、异常、成本、trace 和兜底如何可审计 | Eval registry、trace export、failure ledger、release gates |
 
 ## 3. 依赖关系
@@ -57,7 +61,7 @@ PRD
 
 ```text
 R56 RuntimeFacade / durable graph
- + R57 ContextEngine / memory
+ + R57 GraphPack / SkillPack / MemoryPack registry
  + R58 DB-RAG retrieval contracts
  + R60 eval / observability baseline
  -> R52 collaborative graph implementation
@@ -70,10 +74,34 @@ R53 可以先写技术方案和 schema，但不能在没有 R56/R57/R58/R60 最�
 
 ### 3.2 可并行工作
 
-- R56 / R57 / R60 可以并行拆合同，因为它们共同定义 runtime、context 和 eval 主账本。
+- R56 / R57 / R60 可以并行拆合同，因为它们共同定义 runtime、graph/skill/memory asset、context 和 eval 主账本。
 - R55 可在 R52 WorkpaperEvent / WorkpaperPack contract 冻结后并行做前端和 renderer prototype。
 - R54 数据源 adapter 可以先做 source inventory / parser contract，不等 R55。
 - R53 可以先做 artifact schema、approval flow 和 dummy deterministic case，不跑真实回测。
+
+### 3.3 R53-R55 需求拆分冻结线
+
+2026-06-28 新增决策：R53、R54、R55 先做到 framework layer，不继续拆更细需求单。原因是三者都依赖 R56 以后的底座决策：
+
+- R56 决定 agent 编排、durable execution、interrupt/resume、tool permission 和 runtime facade；
+- R57 决定 GraphPack / SkillPack / MemoryPack 的资产化、tenant overlay、上下文注入范围、token budget、上下文泄露防护和自迭代审批边界；
+- R58 决定 SQL / RAG / Milvus / BM25 / graph retrieval、artifact refs、feature/data materialization、role-specific selector、外部参考源台账和参考设计表现门控；
+- R59 决定 Java 后端、queue、SSE、RBAC、Workbench 前端、artifact browser 和 review UI；
+- R60 决定 eval、observability、incident、fallback、cost/latency 和 release gate。
+
+因此当前阶段允许：
+
+- R53 落 whole-picture / stable object model；
+- R54 落 living source/pack registry；
+- R55 落 deliverable / dashboard projection framework。
+
+当前阶段不继续拆：
+
+- R53 v0.1/v0.2 demand tickets；
+- R54 adapter/parser/source coverage demand tickets；
+- R55 renderer/frontend/dashboard demand tickets。
+
+这些需求单必须等 R56-R60 框架完成后，按 runtime / context / data / frontend / eval 共同约束重新切 release slice。
 
 ## 4. 需求单标准
 
@@ -90,12 +118,12 @@ R53 可以先写技术方案和 schema，但不能在没有 R56/R57/R58/R60 最�
 | Non-goals | 本单明确不做什么 |
 | Inputs | 上游依赖、数据、artifact、API |
 | Outputs | schema、代码、文档、UI、eval、artifact |
-| Acceptance | 产品验收和工程验收分别列出 |
+| Acceptance | 必须拆成 Product / Engineering / Quality / Ops 四类验收，并标注目标通过级别 |
 | Tests | deterministic test、integration test、eval case、manual review |
 | Failure Policy | 失败如何暴露，是否允许 retry / fallback |
 | Rollback | 如何回滚或禁用 |
 | Owner | 负责人占位，不在文档中强制指定真实人 |
-| Status | planned / in_progress / blocked / review / done |
+| Status | planned / in_progress / blocked / review / done；另设 `pass_level`，不能用 done 代替上线通过 |
 
 禁止事项：
 
@@ -106,6 +134,36 @@ R53 可以先写技术方案和 schema，但不能在没有 R56/R57/R58/R60 最�
 - 不允许 quant backtest 使用未记录 publish time / available time 的特征。
 
 ## 5. 门控体系
+
+### 5.0 企业级通过条件分层
+
+R53-R60 后续需求单不得再使用“能跑通”“有输出”“页面能打开”作为最终通过条件。这些最多只能算 smoke。每个需求必须同时给出四类验收：
+
+| 验收类型 | 核心问题 | 典型证据 |
+| --- | --- | --- |
+| Product acceptance | 是否真的完成用户工作流、减少重复劳动，并让 senior 能审阅和追责 | 用户任务路径、Workpaper / Deliverable、人工 review 记录、edit distance、approval |
+| Engineering acceptance | schema / API / DB / artifact / event / runtime contract 是否稳定 | contract tests、integration tests、SQL rows、artifact refs、event replay、rollback |
+| Quality acceptance | 输出和证据是否足够好，是否有 unsupported claim、弱信号误提权、gap 隐藏 | eval case、citation coverage、claim support、counter-thesis、gap ledger、readability gate |
+| Ops acceptance | 是否可监控、可恢复、可治理、可控成本、可发布 | token/cost/latency、queue wait、incident、fallback、sandbox、release readiness |
+
+每个需求还必须标注目标通过级别：
+
+| pass_level | 含义 | 允许进入的阶段 | 禁止事项 |
+| --- | --- | --- | --- |
+| `L0_smoke_pass` | 只证明最小链路能跑，或 schema / API / UI 没明显断裂 | 继续开发、内部调试 | 不得称为可用，不得给用户试点 |
+| `L1_contract_pass` | 功能合同通过：schema、event、artifact、trace、权限和错误暴露完整 | 进入集成、被其他模块依赖 | 不得宣称产生业务生产力 |
+| `L2_internal_dogfood_pass` | 工作流通过：内部人员能用它完成真实任务的一部分，失败可追责 | 内部 dogfood、少量真实任务 | 不得对外发布，不得隐藏人工补救 |
+| `L3_release_candidate_pass` | 产品、工程、质量、运维 gate 基本通过，可给试点用户 | 受控 pilot / release candidate | 不得无监控、无 rollback、无 known gaps 发布 |
+| `L4_production_pass` | 企业级生产通过：多用户、长任务、异常、成本、权限、发布和回滚可控 | B 端正式交付 | 不得依赖人工聊天上下文或不可复现脚本 |
+
+默认规则：
+
+- `done` 只表示实现项结束，不等于 `L4_production_pass`。
+- `L0_smoke_pass` 只能支持继续开发。
+- `L1_contract_pass` 才能被下游需求依赖。
+- `L2_internal_dogfood_pass` 才能用真实业务任务内部试用。
+- `L3_release_candidate_pass` 必须有 ReleaseReadinessReport。
+- `L4_production_pass` 必须有 rollback、incident、monitoring、security/sandbox、cost budget 和 owner。
 
 ### 5.1 Design Gate
 
@@ -166,6 +224,8 @@ R53 可以先写技术方案和 schema，但不能在没有 R56/R57/R58/R60 最�
 - rollback / disable flag 明确；
 - release note 和 worklog 完整。
 
+Release Gate 的最低通过级别必须是 `L3_release_candidate_pass`。如果缺少 incident dashboard、token/cost/latency 观测、rollback plan、sandbox regression 或人工 review 证据，只能标为 `L2_internal_dogfood_pass`，不能进入试点用户或生产发布。
+
 ## 6. Program 排期
 
 ### P0：计划与合同冻结
@@ -200,7 +260,7 @@ R53 可以先写技术方案和 schema，但不能在没有 R56/R57/R58/R60 最�
 
 - R56 RuntimeFacade；
 - R56 durable graph / checkpoint / interrupt / resume；
-- R57 ContextEngine injection plan；
+- R57 GraphPack / SkillPack / MemoryPack registry and ContextEngine injection plan；
 - R60 run/eval trace baseline；
 - R52 WorkpaperEvent ledger 接入。
 
@@ -331,12 +391,24 @@ R53 可以先写技术方案和 schema，但不能在没有 R56/R57/R58/R60 最�
 2. `29_r54_secondary_market_capital_feedback_technical_plan.zh-CN.md`
 3. `30_r55_deliverable_studio_dashboard_projection_technical_plan.zh-CN.md`
 4. `31_r56_agent_runtime_stack_hardening_technical_plan.zh-CN.md`
-5. `32_r57_memory_context_lifecycle_technical_plan.zh-CN.md`
-6. `33_r58_rag_database_retrieval_optimization_technical_plan.zh-CN.md`
+5. `32_r57_graph_skill_memory_pack_operating_model.zh-CN.md`
+6. `33_r58_db_rag_retrieval_data_pipeline_control_plane.zh-CN.md`
 7. `34_r59_backend_frontend_workbench_hardening_technical_plan.zh-CN.md`
 8. `35_r60_eval_observability_incident_fallback_technical_plan.zh-CN.md`
 
 拆文档时先写 demand list 和 gates，再写 implementation details。实现顺序以本文 P0-P5 依赖为准，不以文档编号机械排序。
+
+2026-06-28 R56 草案已新增：`31_r56_agent_runtime_stack_hardening_technical_plan.zh-CN.md`。当前 R56 仍停留在 framework layer：已冻结 RuntimeFacade / ToolGateway / ContextEngine / actor permission / durable execution / trace export 的原则和 acceptance gates，但未进入具体 D01-D09 demand 实现。
+
+2026-06-28 R57 草案已新增：`32_r57_graph_skill_memory_pack_operating_model.zh-CN.md`。R57 不再只是 memory/context lifecycle，而是把 GraphPack、SkillPack、MemoryPack 定义为可插拔能力资产：图谱负责可表达世界和 authority，skill 负责专家工作法和输出合同，memory 负责机构/团队/用户偏好和经验。R53-R55 的更细需求拆分仍需等 R57-R60 框架同步完成后统一切 release slice。
+
+2026-06-28 R59 草案已新增：`34_r59_backend_frontend_workbench_hardening_technical_plan.zh-CN.md`。R59 将当前 Java Research Gateway、Python Workbench backend、React/Vite Workbench、runtime bridge 和 run audit 从研发型入口复盘为企业级产品化前后端计划；核心结论是 Java/API Gateway 承接企业入口、任务生命周期、权限、事件、artifact、review 和 admin/ops，Python runtime 继续负责 LangGraph 研究执行，前端从 debug console 升级为 Dashboard、Task Center、Evidence Workbench、Workpaper Builder、Review Queue、Deliverable Studio 和 Admin/Ops。
+
+2026-06-29 R59 补充 reference/sandbox 口径：R59-D01-D20 仍待后续和 R60 release/eval gate 一起切实现 slice。其中 D17-D18 负责外部参考来源、变更和进入项目后的表现台账；D19-D20 负责 SandboxPolicy / ApprovalPolicy / ToolInvocationLedger、前端阻断原因显示和 sandbox regression。
+
+2026-06-29 R60 草案已新增：`35_r60_eval_observability_incident_fallback_technical_plan.zh-CN.md`。R60 将 eval 从最终答案评分升级为质量工程层，明确 Agent / data / full-chain eval 与需求 / 研发 / 测开验收是两套不同但必须联动的体系；吸收 LangSmith / Langfuse / Phoenix / Braintrust / OpenAI prompt caching / OpenAI Agents SDK / Datadog LLM observability 的 token、cost、trace、online eval 和 release gate 设计，但本地 SQL/ObjectStore 仍是审计主账本。R60-D01-D18 仍待后续实现，优先级应与 R59 task lifecycle、R58 data/retrieval trace 和 R56 runtime trace 同步切 release slice。
+
+2026-06-29 验收标准补充：R53-R60 后续所有需求单必须采用 Product / Engineering / Quality / Ops 四类验收，并输出 `pass_level`：`L0_smoke_pass`、`L1_contract_pass`、`L2_internal_dogfood_pass`、`L3_release_candidate_pass`、`L4_production_pass`。`done` 只代表实现结束，不代表生产级通过；`L0/L1` 只能支持继续开发或集成，不能当成生产力价值成立。
 
 ## 10. 当前结论
 

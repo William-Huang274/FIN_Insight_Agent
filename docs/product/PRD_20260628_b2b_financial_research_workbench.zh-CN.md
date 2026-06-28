@@ -93,6 +93,99 @@ Dashboard
 - 交付物编辑器；
 - 审批和评论流。
 
+### 4.1 任务执行形态：Codex-like 长程研究任务
+
+复杂研究任务的产品形态应接近 Codex / Claude Code / OpenCode 类长程任务执行器，但产物不是代码 diff，而是金融研究对象。
+
+它的执行方式不是“一问一答”，也不是“Lead 派一次单、几个 agent 并发返回、writer 汇总”。复杂任务必须呈现为一个持续演进的 `ResearchTask`：
+
+```text
+用户提出任务
+ -> 系统生成 ResearchObjectiveContract
+ -> Research Lead 拆分必答维度、证据要求和缺口处理规则
+ -> specialist workstreams 并行或异步推进
+ -> 持续写入 WorkpaperEvent
+ -> LeadReviewCheckpoint 周期性审查是否满足目标
+ -> targeted repair / specialist rework / human question
+ -> JudgmentState 和 MemoLogicPlan 成形
+ -> Deliverable Composer 生成多格式交付物
+ -> Human Review / Approval / Publish
+```
+
+用户在任务执行过程中应持续看到：
+
+- 当前计划；
+- 正在执行的 workstreams；
+- 已完成维度；
+- 新增证据；
+- 当前缺口；
+- targeted repair 结果；
+- 被 verifier 拒绝或降权的证据；
+- human question / approval request；
+- 交付物生成状态；
+- 成本、耗时和失败原因。
+
+产品核心产物不是“聊天答案”，而是：
+
+```text
+ResearchTask
+WorkpaperEvent
+WorkpaperPack
+EvidencePack
+GapLedger
+JudgmentState
+DeliverablePlan
+FactorHypothesis
+FactorCard
+EvalTrace
+```
+
+最终回答、memo、PPT、Word、Excel、dashboard card 都只是上述研究对象的不同投影。
+
+### 4.2 任务模式
+
+系统应按任务复杂度选择不同运行模式，避免小问题也烧完整 multi-agent 链路。
+
+| 模式 | 场景 | 执行方式 | 主要产物 |
+| --- | --- | --- | --- |
+| `Quick Answer` | 简单查数、解释、定义、快速对比 | SQL/RAG/pack lookup + lightweight verifier | 短回答、引用、source refs |
+| `Focused Memo` | 单公司、单事件、单维度中等研究 | Research Lead + 少量 specialist + LeadReview | Focused Workpaper、short memo |
+| `Deep Research Workpaper` | 公司深度、行业链条、产品/供应链/资本多维研究 | Codex-like 长程任务执行，多轮 repair 和 human checkpoint | WorkpaperPack、JudgmentState、DeliverablePlan |
+| `Watchlist / Monitoring` | 持续覆盖公司、行业、主题、组合 | scheduled run / event trigger / thesis-change check | Watchlist update card、alert、review queue |
+| `Research-to-Quant` | 把研究观点转成因子假设、回测和模拟监控 | Workpaper -> FactorHypothesis，human approval 后进入 backtest / paper monitor | FactorCard、BacktestResult、PaperTradingRun |
+
+通过标准：
+
+- `Quick Answer` 不应强制启动完整 specialist fanout。
+- `Deep Research Workpaper` 必须可暂停、恢复、补查、重跑部分节点和回放任务历史。
+- `Watchlist / Monitoring` 必须能解释为什么触发或未触发 alert。
+- `Research-to-Quant` 必须有人工批准，不得自动变成交易建议。
+- 所有模式都必须保留 citation、gap、authority boundary 和 trace。
+
+### 4.3 工作台交互布局
+
+复杂任务执行时，界面不应只是聊天流。理想交互布局：
+
+```text
+左侧：任务 / project / company / watchlist / data room
+中间：Workpaper 当前版本 / Deliverable draft
+右侧：Evidence / Gap / Trace / Agent status / Review comments
+底部或侧栏：实时 WorkpaperEvent / run event stream
+顶部：Approve / Return / Request repair / Export / Publish
+```
+
+实时事件流示例：
+
+```text
+Research Lead: 已拆分 5 个研究维度和 3 个必须 repair 的缺口。
+Product Specialist: 已完成产品规格、代际和竞品边分析。
+Supply-chain Specialist: HBM / CoWoS 证据不足，提交 DependencyRequest。
+Lead Review: 触发 targeted repair，允许 official IR / supplier news / existing graph routes。
+Verifier: 拒绝 2 条不能提权的订单 proxy，并写入 GapLedger。
+Deliverable Composer: 已生成 internal memo draft，等待 human review。
+Human Reviewer: 要求重写投资含义并补反方证据。
+```
+
 ## 5. 数据与信息范围
 
 Evidence Workbench 必须综合 25 文档中的完整研究信息范围，而不是只看当前已实现源。
@@ -626,6 +719,20 @@ Research Objective Contract
 - 不连接真实资金交易。
 
 ## 9. 用户验收标准
+
+### 9.0 验收级别
+
+本 PRD 的验收不以“能输出答案”作为通过标准。所有功能必须标注目标通过级别：
+
+| 级别 | 产品含义 | 是否可对外 |
+| --- | --- | --- |
+| `L0_smoke_pass` | 功能入口或单点链路能跑，只能证明不是断链 | 否 |
+| `L1_contract_pass` | 对象、事件、证据、artifact、权限和错误暴露合同稳定 | 否 |
+| `L2_internal_dogfood_pass` | 内部真实任务可用，能减少 analyst 重复劳动，senior 能审阅和追责 | 仅内部 |
+| `L3_release_candidate_pass` | 可给试点用户，产品工作流、质量、异常、成本和回滚都有记录 | 受控试点 |
+| `L4_production_pass` | 企业级正式交付，多用户、长任务、权限、审计、监控、故障恢复和持续评测可用 | 是 |
+
+产品验收必须证明工作流价值，而不是只证明模型能力。最低可接受的内部产品验收是 `L2_internal_dogfood_pass`；面向试点客户至少需要 `L3_release_candidate_pass`；正式 B 端交付必须达到 `L4_production_pass`。
 
 ### 9.1 研究任务验收
 

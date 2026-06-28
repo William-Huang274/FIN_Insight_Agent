@@ -2,7 +2,7 @@
 
 更新时间：2026-06-28
 
-状态：已归档参考。本文记录 2026-06-27 至 2026-06-28 关于新 Agent 架构参考、harness、Hermes / ContextEngine、MCP / A2A、durable execution、observability / eval、Java 后端技术栈、Public Evidence 数据工程方法和二级市场 / 资本反馈层的讨论草案。2026-06-28 已完成吸收审计：协作型 agent graph、runtime facade、ContextEngine、MCP/A2A、durable execution、observability/eval、Java/Python 分层已迁入 `26_b2b_collaborative_agent_graph_and_workflow_runtime.zh-CN.md`；B 端产品范围迁入 `docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md`；Public Evidence 数据工程方法由 R48/RD/R/PIG 主线承接；二级市场 / 资本反馈技术实现后续另拆 R54。后续实现不得以本文作为 active source of truth，本文仅保留外部参考和历史讨论出处。
+状态：已归档参考。本文记录 2026-06-27 至 2026-06-28 关于新 Agent 架构参考、harness、Hermes / ContextEngine、MCP / A2A、durable execution、observability / eval、Java 后端技术栈、Public Evidence 数据工程方法和二级市场 / 资本反馈层的讨论草案。2026-06-28 已完成吸收审计：协作型 agent graph、runtime facade、ContextEngine、MCP/A2A、durable execution、observability/eval、Java/Python 分层已迁入 `26_b2b_collaborative_agent_graph_and_workflow_runtime.zh-CN.md`；B 端产品范围迁入 `docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md`；Public Evidence 数据工程方法由 R48/RD/R/PIG 主线承接；二级市场 / 资本反馈技术实现已拆入 `29_r54_secondary_market_capital_feedback_technical_plan.zh-CN.md`。后续实现不得以本文作为 active source of truth，本文仅保留外部参考和历史讨论出处。
 
 ## 归档映射
 
@@ -13,7 +13,7 @@
 | Public Evidence 数据工程方法、source-route/parser/authority/graph/eval 门控 | R48 checklist、RD/R/PIG 数据主线和后续数据源实现文档 |
 | Eval / failure-gold lifecycle / observability 主账本 | `docs/architecture/agent_graph_vnext/11_agent_eval_runtime_framework.zh-CN.md` |
 | Java 后端、前端、queue、SSE、trace、runtime bridge | `docs/architecture/agent_graph_vnext/10_backend_frontend_runtime_framework.zh-CN.md`、`12_integrated_execution_plan.zh-CN.md`、`13_09_11_remaining_full_completion_plan.zh-CN.md` |
-| 二级市场 / 资本反馈数据源和 pack 技术实现 | 后续 `R54 SecondaryMarketCapitalFeedback` 技术计划 |
+| 二级市场 / 资本反馈数据源和 pack 技术实现 | `docs/architecture/agent_graph_vnext/29_r54_secondary_market_capital_feedback_technical_plan.zh-CN.md` |
 | 外部参考出处 | 本文保留 |
 
 ## 为什么新增本文

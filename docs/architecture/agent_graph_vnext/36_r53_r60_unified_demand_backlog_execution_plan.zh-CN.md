@@ -39,7 +39,9 @@
 
 每条需求必须同时记录：
 
-- `target_pass_level`
+- intermediate gates
+- `scope_l4_acceptance`
+- `closeout_level`
 - Product acceptance
 - Engineering acceptance
 - Quality acceptance
@@ -65,7 +67,28 @@
 | `L3_release_candidate_pass` | 具备试点交付条件，有 release readiness、监控、回滚和已知风险 | 试点客户、受控试运行 | 不得当成正式多租户生产系统 |
 | `L4_production_pass` | 企业级正式交付，多用户、长任务、权限、审计、监控、异常恢复和持续评测可用 | 生产环境 | 不得绕过变更、incident、eval 和安全门控 |
 
-本文所有 release slice 的 `Target pass level` 是该 slice 的最低目标。关键路径需求如果只达到 `L0`，只能记录为 smoke 或 diagnostic；如果未达到目标 pass level，必须在 backlog 中保留 blocker、typed gap 或 follow-up，不得标记为完成。
+### 0.3 Slice Closeout 统一口径：`L4_scope_pass`
+
+本文后续所有 release slice 的最终通过口径统一为 `L4_scope_pass`。
+
+`L4_scope_pass` 不等于“每个 slice 都要证明整个系统已经 `L4_production_pass`”。它的含义是：该 slice 在自己的职责范围内达到 enterprise-grade / production-grade 标准，能够被下游长期依赖、审计、回放、回滚和持续评测。
+
+因此：
+
+| 概念 | 含义 | 用途 |
+| --- | --- | --- |
+| `L0_smoke_pass` / `L1_contract_pass` / `L2_internal_dogfood_pass` / `L3_release_candidate_pass` | 开发过程中的中间门控或阶段证据 | 证明某一类风险已经下降，但不代表 slice closeout |
+| `L4_scope_pass` | 当前 slice 在自身职责范围内达到企业级生产要求 | 每个 S0-S10 slice 的最终 closeout 口径 |
+| `L4_production_pass` | 全系统正式生产级通过 | 只适用于 S10 或全产品 release gate |
+
+例子：
+
+- S0 backlog/schema 不需要证明全系统多用户生产可用，但它的 backlog schema、gate matrix、R-demand map 和 release board contract 必须达到生产级：字段稳定、可机器读取、可回放、可追责、可被下游长期依赖。
+- S1 runtime spine 必须达到生产级任务主账本标准：状态机、SQL audit、artifact refs、trace、resume/replay、失败边界、rollback 和数据一致性都稳定。
+- S5 Workpaper / Lead Review 这类用户工作流 slice 必须证明真实内部任务下能产出可审阅、可追责、可复盘的底稿。
+- S10 Enterprise Hardening / Release Candidate 才负责把多个 `L4_scope_pass` slice 串成全系统 `L4_production_pass` 候选。
+
+换句话说，`L1_contract_pass` 和 `L2_internal_dogfood_pass` 以后只能作为中间检查点，不再作为“通过”。每个 slice 的 closeout 必须输出 `PassLevelDecision.closeout_level = L4_scope_pass`。如果达不到，只能记录为 `diagnostic` / `partial` / `blocked` / `exception_requested`，不得标记为 pass。
 
 ## 1. 目标
 
@@ -76,7 +99,7 @@
 - 不再按 R53、R54、R55 编号机械串行；
 - 不把上层 quant / deliverable / secondary market 做成孤立脚本；
 - 先建立任务、事件、证据、trace、eval、artifact 的主账本；
-- 每个 slice 都有 target pass level 和四类 acceptance；
+- 每个 slice 都有中间门控、`L4_scope_pass` closeout 条件和四类 acceptance；
 - 每个 slice 都能独立验收、提交、回滚。
 
 ## 2. 执行原则
@@ -84,7 +107,7 @@
 1. 先做 spine，再做功能面。
    Runtime / event / SQL audit / trace / evidence refs / eval refs 是所有上层功能的脊柱。
 
-2. 按 target pass level 推进，不用最低合同替代完成。
+2. 按 `L4_scope_pass` 推进，不用中间门控替代完成。
    `L1_contract_pass` 只适用于合同型底座需求，且必须有完整 schema/API/DB/artifact/event/eval 合同和确定性测试；凡是用户工作流、底稿、交付物、前端使用面、质量工程或 release candidate 相关 slice，必须达到对应 `L2_internal_dogfood_pass` 或 `L3_release_candidate_pass` 后才算该 slice 通过。
 
 3. 先 Workpaper，再 Memo / PPT。
@@ -100,9 +123,9 @@
    - demand list；
    - implementation diff；
    - deterministic tests；
-   - target pass level 判定；
+   - `L4_scope_pass` closeout 判定；
    - Product / Engineering / Quality / Ops 四类 acceptance 证据；
-   - 与目标 pass level 匹配的 smoke、dogfood、release-candidate 或 production gate；
+   - 与 `L4_scope_pass` 和中间门控匹配的 smoke、dogfood、release-candidate 或 production gate；
    - updated worklog/checklist；
    - git closeout。
 
@@ -130,15 +153,17 @@ S8 / S9 可以在 S5 之后做局部 schema smoke，但不能进入可信业务�
 
 目标：把 R53-R60 所有 open demand 合并为统一 backlog，避免“文档里有但没有需求单”的隐性任务。
 
-Target pass level：`L1_contract_pass`
+中间门控：`L1_contract_pass`
+
+Slice closeout：`L4_scope_pass`（backlog / schema / gate matrix 范围）
 
 需求单：
 
 | ID | 来源 | 目标 | 通过条件 |
 | --- | --- | --- | --- |
-| `U0-D01-backlog-schema` | 27 / R60 | 定义统一 demand ticket schema | 每条需求有 PRD trace、tech trace、domain、dependencies、acceptance、tests、target_pass_level |
+| `U0-D01-backlog-schema` | 27 / R60 | 定义统一 demand ticket schema | 每条需求有 PRD trace、tech trace、domain、dependencies、acceptance、tests、intermediate gates、`scope_l4_acceptance`、`closeout_level` |
 | `U0-D02-r-demand-map` | R53-R60 | 把 R53-R60 demand 映射到 unified backlog | 不存在 unmapped R-demand；每个 checklist open item 有 owner slice |
-| `U0-D03-pass-level-gate-matrix` | PRD / 27 / R60 | 把 L0-L4 pass level 固化到 backlog | 每条需求标注目标 pass level；done 不替代 pass |
+| `U0-D03-pass-level-gate-matrix` | PRD / 27 / R60 | 把中间门控、`L4_scope_pass` 和全产品 `L4_production_pass` 固化到 backlog | 每条需求标注 intermediate gates、`scope_l4_acceptance` 和 `closeout_level`；done 不替代 pass |
 | `U0-D04-release-slice-board` | 27 | 生成单 agent 执行看板 | 每个 slice 有前置依赖、阻塞项、验收和 rollback |
 
 S0 结束后才开始代码实现。
@@ -147,7 +172,9 @@ S0 结束后才开始代码实现。
 
 目标：建立任务主账本，让所有后续功能都有统一 run state、event、artifact、trace anchor。
 
-Target pass level：核心合同 `L1_contract_pass`，1 条真实任务达到 `L2_internal_dogfood_pass`
+中间门控：核心合同 `L1_contract_pass`，1 条真实任务达到 `L2_internal_dogfood_pass`
+
+Slice closeout：`L4_scope_pass`（runtime task spine 范围）
 
 需求单：
 
@@ -164,7 +191,9 @@ Target pass level：核心合同 `L1_contract_pass`，1 条真实任务达到 `L
 
 目标：让工具调用变成受控企业能力，不是 agent 任意执行脚本。
 
-Target pass level：`L1_contract_pass`
+中间门控：`L1_contract_pass`
+
+Slice closeout：`L4_scope_pass`（tool / sandbox / trace 范围）
 
 需求单：
 
@@ -180,7 +209,9 @@ Target pass level：`L1_contract_pass`
 
 目标：把 DB exact、BM25/ObjectBM25、Milvus、graph、web repair、parser rows 变成可审计 retrieval plan，而不是散装查询。
 
-Target pass level：`L1_contract_pass`；核心研究 case 目标 `L2_internal_dogfood_pass`
+中间门控：`L1_contract_pass`；核心研究 case 目标 `L2_internal_dogfood_pass`
+
+Slice closeout：`L4_scope_pass`（data / retrieval / evidence spine 范围）
 
 需求单：
 
@@ -198,7 +229,9 @@ Target pass level：`L1_contract_pass`；核心研究 case 目标 `L2_internal_d
 
 目标：让 Research Lead 和 specialist 使用可版本化能力资产，而不是靠 prompt 记忆。
 
-Target pass level：`L1_contract_pass`
+中间门控：`L1_contract_pass`
+
+Slice closeout：`L4_scope_pass`（context / graph / skill registry 范围）
 
 需求单：
 
@@ -215,7 +248,9 @@ Target pass level：`L1_contract_pass`
 
 目标：形成真正 B 端生产力闭环：Research Lead 常驻监督，specialist 输出先进底稿，senior 可审阅。
 
-Target pass level：`L2_internal_dogfood_pass`
+中间门控：`L2_internal_dogfood_pass`
+
+Slice closeout：`L4_scope_pass`（Workpaper / Lead Review workflow 范围）
 
 需求单：
 
@@ -232,7 +267,9 @@ Target pass level：`L2_internal_dogfood_pass`
 
 目标：让用户从工作台而不是命令行使用任务，并能追到 evidence、claim、gap、trace。
 
-Target pass level：`L2_internal_dogfood_pass`
+中间门控：`L2_internal_dogfood_pass`
+
+Slice closeout：`L4_scope_pass`（Workbench frontdoor / drilldown 范围）
 
 需求单：
 
@@ -249,7 +286,9 @@ Target pass level：`L2_internal_dogfood_pass`
 
 目标：从 approved / review-ready Workpaper 生成多格式交付物和 dashboard projection。
 
-Target pass level：`L2_internal_dogfood_pass`，后续冲 `L3_release_candidate_pass`
+中间门控：`L2_internal_dogfood_pass`，后续冲 `L3_release_candidate_pass`
+
+Slice closeout：`L4_scope_pass`（Deliverable Studio / Dashboard Projection 范围）
 
 需求单：
 
@@ -265,7 +304,9 @@ Target pass level：`L2_internal_dogfood_pass`，后续冲 `L3_release_candidate
 
 目标：把二级市场资金面、持仓、信用、资本动作、估值 price-in、期权/期货等接入研究判断，但不冒充基本面事实。
 
-Target pass level：`L1_contract_pass`，重点 pack 追 `L2_internal_dogfood_pass`
+中间门控：`L1_contract_pass`，重点 pack 追 `L2_internal_dogfood_pass`
+
+Slice closeout：`L4_scope_pass`（Secondary Market / Capital Feedback Pack 范围）
 
 需求单：
 
@@ -282,7 +323,9 @@ Target pass level：`L1_contract_pass`，重点 pack 追 `L2_internal_dogfood_pa
 
 目标：把 research thesis driver 转成候选因子，人工批准后进入 PIT 数据检查、回测和 paper trading monitor。
 
-Target pass level：第一阶段 `L1_contract_pass`，内部使用目标 `L2_internal_dogfood_pass`
+中间门控：第一阶段 `L1_contract_pass`，内部使用目标 `L2_internal_dogfood_pass`
+
+Slice closeout：`L4_scope_pass`（Research-to-Quant Lab 范围）
 
 需求单：
 
@@ -298,7 +341,9 @@ Target pass level：第一阶段 `L1_contract_pass`，内部使用目标 `L2_int
 
 目标：从内部 dogfood 提升到可试点客户使用的 release candidate。
 
-Target pass level：`L3_release_candidate_pass`
+中间门控：`L3_release_candidate_pass`
+
+Slice closeout：`L4_scope_pass`（Enterprise Hardening / Release Candidate 范围）；全产品 release gate 另行冲 `L4_production_pass`
 
 需求单：
 
@@ -314,23 +359,55 @@ Target pass level：`L3_release_candidate_pass`
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：
 
-1. 冻结本 slice demand ticket，明确每条需求的 `target_pass_level`、四类 acceptance、测试/eval/trace/artifact 证据和 rollback 条件；
-2. 实现达到目标 pass level 所需的完整合同、运行面、审计面和失败边界；
+1. 冻结本 slice demand ticket，明确每条需求的中间门控、`L4_scope_pass` closeout 条件、四类 acceptance、测试/eval/trace/artifact 证据和 rollback 条件；
+2. 实现达到 `L4_scope_pass` 所需的完整合同、运行面、审计面和失败边界；
 3. 加 deterministic tests、schema/API/DB/artifact/event parity checks，以及该 slice 必需的 eval / quality gates；
-4. 跑与目标 pass level 匹配的真实验证：
+4. 跑与 `L4_scope_pass` 和中间门控匹配的真实验证：
    - `L0` 只能做 smoke / diagnostic，不能推进依赖；
    - `L1` 需要合同完整、失败边界可见、下游可依赖；
    - `L2` 需要内部真实任务 dogfood、Workpaper / UI / trace / review 可用；
    - `L3` 需要 release readiness、监控、回滚、已知风险和试点交付报告；
    - `L4` 需要生产级多用户、权限、审计、监控、异常恢复和持续评测。
-5. 生成 `PassLevelDecision`：记录 achieved level、目标差距、Product / Engineering / Quality / Ops 证据、失败项、typed gaps 和是否允许下游依赖；
-6. 如果未达到目标 pass level，只能标记 `blocked` / `partial_diagnostic` / `exception_requested`，并把 blocker 写入 backlog；不得把该 slice 当成完成，也不得让依赖 slice 继续把它当作通过；
+5. 生成 `PassLevelDecision`：记录 achieved intermediate gates、`closeout_level`、目标差距、Product / Engineering / Quality / Ops 证据、失败项、typed gaps 和是否允许下游依赖；
+6. 如果未达到 `L4_scope_pass`，只能标记 `blocked` / `partial_diagnostic` / `exception_requested`，并把 blocker 写入 backlog；不得把该 slice 当成完成，也不得让依赖 slice 继续把它当作通过；
 7. 更新 checklist / worklog / release board；
 8. 运行 `git diff --check`、secret scan、targeted tests 和本 slice 的 mandatory gates；
 9. 精确 stage 和 commit；
-10. 只有在 `PassLevelDecision.achieved_level >= target_pass_level`，或用户明确批准带风险的 exception 且下游需求不依赖该缺口时，才进入下一主 slice。
+10. 只有在 `PassLevelDecision.closeout_level = L4_scope_pass`，或用户明确批准带风险的 exception 且下游需求不依赖该缺口时，才进入下一主 slice。
 
-当前单 agent 模式下不要同时推进超过 1 个主 slice。S8/S9 可以在 S5 后做局部 schema review 或 diagnostic smoke，但不能进入可信业务闭环，也不能被标记为 slice pass，直到对应 target pass level 被满足。
+当前单 agent 模式下不要同时推进超过 1 个主 slice。S8/S9 可以在 S5 后做局部 schema review 或 diagnostic smoke，但不能进入可信业务闭环，也不能被标记为 slice pass，直到对应 `L4_scope_pass` 被满足。
+
+## 5.1 R 文档到可执行需求单的拆分办法
+
+在进入任何代码实现前，必须先把涉及的 R 系列文档拆成更细的需求单。36 文档里的 S0-S10 只是 release-slice 编排层，不足以直接作为实现任务。
+
+拆分流程：
+
+1. `RDocumentInventory`
+   - 输入：PRD、26、27、28-35、36，以及 R0-R49 中会影响当前 slice 的历史合同 / 已实现能力 / known gaps。
+   - 输出：每个 R 文档的章节、对象、schema、API、runtime、data、frontend、eval、ops 要求清单。
+
+2. `RDocumentDemandMap`
+   - 把每条要求映射到 S0-S10、U0-U10、能力域和依赖关系。
+   - 每行至少包含：`source_doc`、`source_section`、`requirement_summary`、`slice_id`、`demand_id`、`capability_domain`、`dependencies`、`blocked_by`、`scope_l4_acceptance`。
+
+3. `DemandTicket`
+   - 每个 demand ticket 必须小到可以独立 review、测试、回滚。
+   - 每条 ticket 必须写明：问题 / 用户价值、输入输出、范围和 non-goals、受影响 schema/API/DB/artifact/UI/eval、实现文件或模块、四类 acceptance、`L4_scope_pass` 证据、rollback。
+
+4. `ImplementationTask`
+   - 每个 demand ticket 再拆成具体实现任务，例如 schema migration、runtime adapter、API endpoint、frontend view、deterministic test、eval case、trace dashboard、runbook。
+   - 实现任务可以 commit，但不能替代 demand ticket 的 `L4_scope_pass`。
+
+5. `GateArtifact`
+   - 每个 slice closeout 必须留下可审计 gate artifact：`PassLevelDecision`、test/eval report、trace/cost summary、known gaps、exception log、rollback note。
+
+执行约束：
+
+- 不允许直接从 R53/R54/R55 等高层文档跳到写代码。
+- 不允许把“已有文档规划”当成“已有需求单”。
+- 不允许把单个 implementation task 的完成当作 demand ticket 完成。
+- S0 的首要任务就是把上述对象先落成 machine-readable backlog / release board；S0 没有通过 `L4_scope_pass` 前，不进入 S1 主实现。
 
 ## 6. 第一批建议执行任务
 
@@ -358,7 +435,7 @@ Target pass level：`L3_release_candidate_pass`
 
 用企业级 pass level 看，当前最务实的里程碑是：
 
-- S0 达到 `L1_contract_pass`，并产出可机器读取的 backlog schema、R-demand map 和 pass-level gate matrix；未覆盖 R0-R49 baseline dependency 不算通过；
-- S1 达到核心合同 `L1_contract_pass`，并用 1 条真实研究任务跑到 `L2_internal_dogfood_pass`；只有 task/run/event/artifact/trace 可回放后才允许下游依赖；
-- S2-S3 达到合同完整、权限/检索/证据账本可审计的 `L1_contract_pass`，并为核心研究 case 追到 `L2_internal_dogfood_pass` 后，才启动 Workpaper dogfood；
-- S5 以后所有面向用户工作流的 slice 默认目标不得低于 `L2_internal_dogfood_pass`；S10 release candidate 目标不得低于 `L3_release_candidate_pass`。
+- S0 达到 `L4_scope_pass`：产出可机器读取的 backlog schema、R-document inventory、R-demand map、pass-level gate matrix 和 release board；未覆盖 R0-R49 baseline dependency 不算通过；
+- S1 达到 `L4_scope_pass`：task/run/event/artifact/trace 可回放，1 条真实研究任务达到内部 dogfood 证据，失败边界和 rollback 稳定；
+- S2-S3 达到 `L4_scope_pass`：工具权限、sandbox、trace、检索、证据账本和核心研究 case 都可审计，才能启动 Workpaper dogfood；
+- S5 以后所有面向用户工作流的 slice closeout 都必须达到自身范围内的 `L4_scope_pass`；S10 负责把各 slice 串成全产品 `L4_production_pass` 候选。

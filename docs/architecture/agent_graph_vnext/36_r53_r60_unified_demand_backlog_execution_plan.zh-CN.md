@@ -84,8 +84,8 @@
 1. 先做 spine，再做功能面。
    Runtime / event / SQL audit / trace / evidence refs / eval refs 是所有上层功能的脊柱。
 
-2. 先 L1 contract，再 L2 dogfood。
-   需求单完成时至少要达到 `L1_contract_pass` 才允许被下游依赖；关键用户工作流要追到 `L2_internal_dogfood_pass`。
+2. 按 target pass level 推进，不用最低合同替代完成。
+   `L1_contract_pass` 只适用于合同型底座需求，且必须有完整 schema/API/DB/artifact/event/eval 合同和确定性测试；凡是用户工作流、底稿、交付物、前端使用面、质量工程或 release candidate 相关 slice，必须达到对应 `L2_internal_dogfood_pass` 或 `L3_release_candidate_pass` 后才算该 slice 通过。
 
 3. 先 Workpaper，再 Memo / PPT。
    B 端生产力价值在可审阅底稿，不在一次性聊天答案。
@@ -100,7 +100,9 @@
    - demand list；
    - implementation diff；
    - deterministic tests；
-   - smoke 或 dogfood case；
+   - target pass level 判定；
+   - Product / Engineering / Quality / Ops 四类 acceptance 证据；
+   - 与目标 pass level 匹配的 smoke、dogfood、release-candidate 或 production gate；
    - updated worklog/checklist；
    - git closeout。
 
@@ -310,18 +312,25 @@ Target pass level：`L3_release_candidate_pass`
 
 ## 5. 单 Agent 执行节奏
 
-每个 slice 采用固定节奏：
+每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：
 
-1. 冻结本 slice demand ticket；
-2. 实现最小合同；
-3. 加 deterministic tests；
-4. 跑 1-2 个真实 case 或 smoke；
-5. 更新 checklist / worklog；
-6. `git diff --check`、secret scan、targeted tests；
-7. 精确 stage 和 commit；
-8. 进入下一 slice。
+1. 冻结本 slice demand ticket，明确每条需求的 `target_pass_level`、四类 acceptance、测试/eval/trace/artifact 证据和 rollback 条件；
+2. 实现达到目标 pass level 所需的完整合同、运行面、审计面和失败边界；
+3. 加 deterministic tests、schema/API/DB/artifact/event parity checks，以及该 slice 必需的 eval / quality gates；
+4. 跑与目标 pass level 匹配的真实验证：
+   - `L0` 只能做 smoke / diagnostic，不能推进依赖；
+   - `L1` 需要合同完整、失败边界可见、下游可依赖；
+   - `L2` 需要内部真实任务 dogfood、Workpaper / UI / trace / review 可用；
+   - `L3` 需要 release readiness、监控、回滚、已知风险和试点交付报告；
+   - `L4` 需要生产级多用户、权限、审计、监控、异常恢复和持续评测。
+5. 生成 `PassLevelDecision`：记录 achieved level、目标差距、Product / Engineering / Quality / Ops 证据、失败项、typed gaps 和是否允许下游依赖；
+6. 如果未达到目标 pass level，只能标记 `blocked` / `partial_diagnostic` / `exception_requested`，并把 blocker 写入 backlog；不得把该 slice 当成完成，也不得让依赖 slice 继续把它当作通过；
+7. 更新 checklist / worklog / release board；
+8. 运行 `git diff --check`、secret scan、targeted tests 和本 slice 的 mandatory gates；
+9. 精确 stage 和 commit；
+10. 只有在 `PassLevelDecision.achieved_level >= target_pass_level`，或用户明确批准带风险的 exception 且下游需求不依赖该缺口时，才进入下一主 slice。
 
-当前单 agent 模式下不要同时推进超过 1 个主 slice。S8/S9 可以只做 schema review，不要并行实现。
+当前单 agent 模式下不要同时推进超过 1 个主 slice。S8/S9 可以在 S5 后做局部 schema review 或 diagnostic smoke，但不能进入可信业务闭环，也不能被标记为 slice pass，直到对应 target pass level 被满足。
 
 ## 6. 第一批建议执行任务
 
@@ -349,6 +358,7 @@ Target pass level：`L3_release_candidate_pass`
 
 用企业级 pass level 看，当前最务实的里程碑是：
 
-- S0 达到 `L1_contract_pass`；
-- S1 达到 `L1_contract_pass`，并用 1 条真实研究任务跑到 `L2_internal_dogfood_pass`；
-- S2-S3 达到 `L1_contract_pass` 后再启动 Workpaper dogfood。
+- S0 达到 `L1_contract_pass`，并产出可机器读取的 backlog schema、R-demand map 和 pass-level gate matrix；未覆盖 R0-R49 baseline dependency 不算通过；
+- S1 达到核心合同 `L1_contract_pass`，并用 1 条真实研究任务跑到 `L2_internal_dogfood_pass`；只有 task/run/event/artifact/trace 可回放后才允许下游依赖；
+- S2-S3 达到合同完整、权限/检索/证据账本可审计的 `L1_contract_pass`，并为核心研究 case 追到 `L2_internal_dogfood_pass` 后，才启动 Workpaper dogfood；
+- S5 以后所有面向用户工作流的 slice 默认目标不得低于 `L2_internal_dogfood_pass`；S10 release candidate 目标不得低于 `L3_release_candidate_pass`。

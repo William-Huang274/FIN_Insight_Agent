@@ -1,0 +1,31 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "checkpoint_resume_required_before_hil_approval": true,
+    "human_approval_required_for_scope_expansion": true,
+    "model_route_must_record_budget_resource_and_fallback": true,
+    "not_full_langgraph_production_migration": true,
+    "redis_queue_is_not_final_audit_source": true,
+    "replay_must_use_runtime_task_ledger": true,
+    "sql_ledger_is_final_audit_source": true,
+    "trace_export_is_derived_not_primary_audit": true
+  },
+  "release_scope": "durable_runtime_hil_resource_router_drill",
+  "schema_version": "r53_r60_p12_durable_runtime_hil_resource_router_v0_1",
+  "tables": [
+    "durable_runtime_metadata_p12",
+    "runtime_facade_bindings_p12",
+    "graph_node_runtime_bindings_p12",
+    "checkpoint_bridge_records_p12",
+    "human_interrupt_records_p12",
+    "human_approval_decisions_p12",
+    "resource_model_route_policies_p12",
+    "resource_queue_events_p12",
+    "model_budget_ledger_p12",
+    "runtime_replay_attempts_p12",
+    "trace_export_records_p12",
+    "runtime_acceptance_records_p12",
+    "runtime_readiness_reports_p12",
+    "runtime_gate_results_p12"
+  ]
+}

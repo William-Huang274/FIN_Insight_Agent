@@ -736,6 +736,18 @@ P11 closeout（2026-06-30）：`P11_L4_scope_pass_pilot_ready_execution_pending`
 
 边界：P11 只证明 pilot 已准备到可执行状态，`pilot_readiness_status=ready_for_controlled_internal_pilot`；真实多用户 dogfood 仍未执行，`pilot_execution_status=not_started_requires_real_internal_pilot`，`full_product_release_status=not_l4_production_pass`。后续必须用真实 pilot run 填充 accepted / rejected workpapers、SLA / cost / feedback rows 和 reviewer acceptance，才能继续冲全系统生产级判断。
 
+## 4.3 P12 Durable Runtime + HIL + Resource Router
+
+P12 closeout（2026-06-30）：`P12_L4_scope_pass_runtime_drill_ready`。
+
+- runtime contract：新增 `DurableRuntimeMetadata`、`RuntimeFacadeBinding`、`GraphNodeRuntimeBinding`、`CheckpointBridgeRecord`、`HumanInterruptRecord`、`HumanApprovalDecision`、`ResourceModelRoutePolicy`、`ResourceQueueEvent`、`ModelBudgetLedger`、`RuntimeReplayAttempt`、`TraceExportRecord`、`RuntimeAcceptanceRecord`、`RuntimeReadinessReport` 和 `RuntimeGateResult`，全部进入 S1 runtime SQLite 主账本。
+- 真实构建：P11 dependency summary pass；runtime drill task `p12_runtime_drill_task_ai_infra_hil_resource_route` 经过 `research_lead_objective_contract`、`retrieval_evidence_operator`、`product_specialist_pack`、`lead_review_checkpoint`、`memo_logic_plan` 五个节点；`lead_review_checkpoint` 前保存 checkpoint、触发 human interrupt、经 human approval 后 resume，再完成 replay 和 trace export。
+- resource / budget：route policies `4` 个，覆盖 `lead_planning_high_reasoning`、`retrieval_embedding_gpu_queue`、`specialist_analysis_balanced`、`memo_render_cost_controlled`；queue events `5` 条，budget record `1` 条且 within budget。
+- replay / observability：checkpoint bridge `2` 条、replay attempt `1` 条、trace exports `3` 条（OpenTelemetry / Langfuse / Phoenix-style derived export），SQL runtime ledger 仍是 final audit source，外部 trace 只作派生观察。
+- 验证：P12 deterministic tests `5/5` pass；真实构建 gate `12 pass / 0 fail`；生成 `configs/r53_r60/p12_durable_runtime_hil_resource_router_schema_v0_1.json`、`data/manifests/r53_r60_p12_durable_runtime_hil_resource_router_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p12_durable_runtime_hil_resource_router_l4_scope_pass.zh-CN.md`。
+
+边界：P12 只证明 `FinSightResearchRuntimeFacade`、checkpoint/resume、HIL approval、resource/model router、replay 和 trace export 这些 durable runtime contract 已能通过 deterministic runtime drill 达到自身范围内 enterprise-grade；`full_runtime_migration_status=partial_migration_runtime_drill_only`，不声明所有 production LangGraph nodes 已迁移，也不证明云端高并发 GPU queue pressure。P13/P14/P15 必须把真实 graph / ContextEngine / data plane / Workbench 产品流接到同一 SQL-final runtime ledger。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

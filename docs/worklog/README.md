@@ -3,6 +3,7 @@
 Durable engineering notes for FinSight-Agent.
 
 - `integrated_execution_p_series/`: stage-aware worklogs for the 09/10/11/12 integrated execution phase; new entries use `NNN_<phase_id>_<topic>.md` naming.
+- `product_strategy/036_p12_durable_runtime_hil_resource_router_l4_scope_artifacts.md`: records P12 Durable Runtime + HIL + Resource Router closeout, including RuntimeFacade graph-node bindings, checkpoint/resume bridge, human approval ledger, resource/model router ledger, replay, derived trace export, and explicit `full_runtime_migration_status=partial_migration_runtime_drill_only` boundary.
 - `product_strategy/035_p11_production_pilot_readiness_l4_scope_artifacts.md`: records P11 Production Pilot Readiness Gate closeout, including pilot case catalog, reviewer protocols, SLA/cost/rollback contracts, feedback/defect lifecycle, and explicit `pilot_execution_status=not_started_requires_real_internal_pilot` boundary.
 - `product_strategy/034_post_s10_completion_gap_register.md`: records the post-S10 completion gap register, confirming S0-S10 dependency summaries `11/11` pass while preserving seven production gaps and the P11-P16 next release-slice proposal.
 - `product_strategy/033_s10_enterprise_release_candidate_l4_scope_artifacts.md`: records S10 Enterprise Hardening / Release Candidate runtime closeout, including tenant/RBAC checks, load/chaos/SLA rows, incident dashboard, release readiness report, and online eval feedback lifecycle.

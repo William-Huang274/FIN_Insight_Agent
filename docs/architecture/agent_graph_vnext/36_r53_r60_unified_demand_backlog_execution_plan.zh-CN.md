@@ -442,6 +442,50 @@ Slice closeout：`L4_scope_pass`（Workpaper / Lead Review workflow 范围）
 | `U5-D05-judgment-state` | R55 / R60 | thesis / counter-thesis / boundary | unsupported claim rate 可评测 |
 | `U5-D06-workpaper-readability-gate` | PRD / R60 | 底稿按研究问题组织，不堆证据 | 1-2 个真实 case 通过人工 review |
 
+#### S5 v0.1 implementation closeout
+
+2026-06-29 已把 S5 落成 S1/S3/S4 native 的 Workpaper / Lead Review workflow，并达到 S5 范围内的 `L4_scope_pass`。
+
+核心生成物：
+
+- `src/sec_agent/r53_r60_workpaper_lead_review_workflow.py`
+- `scripts/engineering/build_r53_r60_s5_workpaper_lead_review_workflow.py`
+- `tests/test_r53_r60_workpaper_lead_review_workflow.py`
+- `configs/r53_r60/s5_workpaper_lead_review_workflow_schema_v0_1.json`
+- `data/manifests/r53_r60_s5_workpaper_lead_review_workflow_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_s5_workpaper_lead_review_workflow_summary_v0_1.json`
+- `data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite`
+- `docs/internal/vnext_20260610/r53_r60_s5_workpaper_lead_review_workflow_l4_scope_pass.zh-CN.md`
+
+本次真实构建结果：
+
+- ResearchObjectiveContract：`1`；
+- DimensionEvidencePortfolio rows：`6`，覆盖 fundamentals、product/production、industry/supply-chain、capital/financing、competition/market-position、risk/counterevidence；
+- Specialist workstreams：`3`，均写入 append-only `WorkpaperEvent`；
+- Workpaper sections：`6`；
+- ClaimCards：`6`，全部带 evidence refs、authority boundary 和 source boundary；
+- GapItems：`3`，覆盖 retrievable gap、bounded gap、commercial gap；
+- TargetedRepairRequest：`1`；
+- LeadReviewCheckpoint：`1`，状态 `review_ready_with_visible_gaps`；
+- JudgmentState：`1`，状态 `ready_for_writer`，unsupported claim count `0`；
+- HumanReviewQueue：`1`；
+- S5 gate rows：`12 pass / 0 fail`；
+- closeout：`S5_L4_scope_pass`；
+- next slice unlocked：`S6`。
+
+本轮 gate 覆盖：
+
+- S5 必须读取 S3 selected evidence refs 和 S4 context / consumed pack refs，不能直接消费 raw retrieval candidates；
+- 每个任务必须先生成 ResearchObjectiveContract；
+- 每个 required dimension 必须有 claim refs 或 visible typed gaps；
+- specialists 必须提交 WorkpaperEvent，而不是直接写 final memo；
+- LeadReviewCheckpoint 必须审计 objective coverage、typed gaps、repair requests 和 writer guidance；
+- JudgmentState 必须作为 writer 的主输入边界，unsupported claim count 必须可评测；
+- ReadabilityGate 必须证明 Workpaper issue-first、不是 claim dump、没有内部字段泄漏、不是 gap-first opening；
+- human reviewer 是正式 actor，review item 进入 queue。
+
+边界：S5 只证明 Workpaper / Lead Review workflow 在自身范围达到 enterprise-grade；本轮不做 Workbench UI、不生成 Markdown/Word/PPT/Excel deliverables、不做 final memo、不调用 LLM、不跑 full-chain answer quality eval。S6 后续负责 Workbench frontdoor / drilldown，S7 后续负责 Deliverable Studio / Dashboard Projection。
+
 ### S6 Workbench Frontdoor And Drilldown
 
 目标：让用户从工作台而不是命令行使用任务，并能追到 evidence、claim、gap、trace。

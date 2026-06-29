@@ -1,0 +1,49 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "claim_cards_require_evidence_refs": true,
+    "gaps_must_be_typed_and_visible": true,
+    "human_review_is_formal_actor": true,
+    "lead_review_must_classify_unmet_objectives": true,
+    "raw_retrieval_candidates_forbidden": true,
+    "specialists_write_workpaper_events_not_final_memo": true,
+    "unmet_objectives_require_repair_or_typed_gap": true,
+    "writer_may_only_consume_review_ready_workpaper": true
+  },
+  "readability_sections": [
+    "core_judgment",
+    "fundamentals",
+    "product_and_production",
+    "industry_supply_chain",
+    "capital_and_financing",
+    "risk_and_counterevidence"
+  ],
+  "required_dimensions": [
+    "fundamentals",
+    "product_and_production",
+    "industry_supply_chain",
+    "capital_and_financing",
+    "competition_and_market_position",
+    "risk_and_counterevidence"
+  ],
+  "required_specialists": [
+    "fundamental_analyst",
+    "product_technology_analyst",
+    "industry_supply_chain_analyst"
+  ],
+  "schema_version": "r53_r60_s5_workpaper_lead_review_workflow_v0_1",
+  "tables": [
+    "workpaper_workflow_metadata",
+    "research_objective_contracts",
+    "dimension_evidence_portfolios_s5",
+    "specialist_workstreams",
+    "workpaper_sections",
+    "workpaper_claim_cards",
+    "workpaper_gap_items",
+    "lead_review_checkpoints",
+    "targeted_repair_requests",
+    "judgment_states",
+    "workpaper_readability_gates",
+    "human_review_queue"
+  ]
+}

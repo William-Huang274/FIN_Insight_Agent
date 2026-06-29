@@ -1,0 +1,116 @@
+{
+  "api_endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/r53-r60/tasks",
+      "surface": "task_center"
+    },
+    {
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}",
+      "surface": "task_state"
+    },
+    {
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/events",
+      "surface": "event_replay"
+    },
+    {
+      "method": "POST",
+      "path": "/api/r53-r60/tasks/{task_id}/resume",
+      "surface": "resume"
+    },
+    {
+      "method": "POST",
+      "path": "/api/r53-r60/tasks/{task_id}/cancel",
+      "surface": "cancel"
+    },
+    {
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/artifacts",
+      "surface": "artifact_refs"
+    },
+    {
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/drilldown",
+      "surface": "workpaper_drilldown"
+    },
+    {
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/review-queue",
+      "surface": "review_queue"
+    },
+    {
+      "method": "POST",
+      "path": "/api/r53-r60/tasks/{task_id}/review-actions",
+      "surface": "review_action"
+    },
+    {
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/ops",
+      "surface": "ops_projection"
+    },
+    {
+      "method": "GET",
+      "path": "/api/r53-r60/scope-gate",
+      "surface": "s6_gate"
+    }
+  ],
+  "boundary": "S6 closes Workbench frontdoor/drilldown scope only; it does not generate final deliverables, quant factors, or production multi-tenant hardening.",
+  "closeout_level": "L4_scope_pass",
+  "counts": {
+    "gate_count": 8,
+    "gate_fail_count": 0,
+    "workbench_api_contracts_s6": 11,
+    "workbench_drilldown_projection_s6": 1,
+    "workbench_frontdoor_metadata": 3,
+    "workbench_ops_projection_s6": 1,
+    "workbench_review_actions_s6": 0,
+    "workbench_task_projection_s6": 1
+  },
+  "failed_gates": [],
+  "generated_at": "2026-06-29T11:59:59Z",
+  "next_slice_unlocked": "S7",
+  "outputs": {
+    "closeout_report": "docs/internal/vnext_20260610/r53_r60_s6_workbench_frontdoor_drilldown_l4_scope_pass.zh-CN.md",
+    "gate_rows": "data/manifests/r53_r60_s6_workbench_frontdoor_drilldown_gate_rows_v0_1.jsonl",
+    "schema": "configs/r53_r60/s6_workbench_frontdoor_drilldown_schema_v0_1.json",
+    "sqlite_store": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "summary": "data/manifests/r53_r60_s6_workbench_frontdoor_drilldown_summary_v0_1.json"
+  },
+  "projection": {
+    "artifact_count": 3,
+    "claim_count": 6,
+    "event_count": 12,
+    "gap_count": 3,
+    "gate_count": 58,
+    "human_review_status": "queued",
+    "judgment_status": "ready_for_writer",
+    "lead_review_status": "review_ready_with_visible_gaps",
+    "payload": {
+      "api_contract_count": 11,
+      "required_ui_panels": [
+        "task_center",
+        "evidence_drilldown",
+        "workpaper_builder",
+        "review_queue",
+        "ops_panel"
+      ],
+      "source_run": "run_52c2dca15c04a65c",
+      "source_task": "s5_scope_task_workpaper_lead_review"
+    },
+    "progress": 100,
+    "query_text": "Build reviewable Workpaper and Lead Review workflow for NVDA AI infrastructure research case",
+    "run_id": "run_52c2dca15c04a65c",
+    "section_count": 6,
+    "status": "succeeded",
+    "task_id": "s5_scope_task_workpaper_lead_review",
+    "trace_id": "trace_s5_scope_workpaper_lead_review",
+    "trace_span_count": 1,
+    "updated_at": "2026-06-29T11:59:59Z"
+  },
+  "release_decision": "S6_L4_scope_pass",
+  "schema_version": "r53_r60_s6_workbench_frontdoor_drilldown_v0_1",
+  "status": "pass",
+  "task_id": "s5_scope_task_workpaper_lead_review"
+}

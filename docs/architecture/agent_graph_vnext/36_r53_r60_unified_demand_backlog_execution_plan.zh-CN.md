@@ -505,6 +505,54 @@ Slice closeout：`L4_scope_pass`（Workbench frontdoor / drilldown 范围）
 | `U6-D05-review-queue-ui` | R59-D11 | human question / approval / downgrade | human approval event 进入 ledger |
 | `U6-D06-admin-ops-minimal` | R59-D14 / R60 | run、queue、cost、latency、incident 最小视图 | 失败和成本可见 |
 
+#### S6 v0.1 implementation closeout
+
+2026-06-29 已把 S6 落成 S1-S5 SQL-final runtime ledger 的 Workbench frontdoor / drilldown 投影，并达到 S6 范围内的 `L4_scope_pass`。
+
+核心生成物：
+
+- `src/sec_agent/r53_r60_workbench_frontdoor_drilldown.py`
+- `scripts/engineering/build_r53_r60_s6_workbench_frontdoor_drilldown.py`
+- `tests/test_r53_r60_workbench_frontdoor_drilldown.py`
+- `apps/workbench/backend/app.py`
+- `apps/workbench/frontend/vite/src/main.tsx`
+- `apps/workbench/frontend/vite/src/workbench.css`
+- `configs/r53_r60/s6_workbench_frontdoor_drilldown_schema_v0_1.json`
+- `data/manifests/r53_r60_s6_workbench_frontdoor_drilldown_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_s6_workbench_frontdoor_drilldown_summary_v0_1.json`
+- `data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite`
+- `docs/internal/vnext_20260610/r53_r60_s6_workbench_frontdoor_drilldown_l4_scope_pass.zh-CN.md`
+
+本次真实构建结果：
+
+- Workbench API contracts：`11`，覆盖 task list / detail / events / resume / cancel / artifacts / drilldown / review queue / review actions / ops / scope gate；
+- Workbench SQL projection tables：`workbench_frontdoor_metadata`、`workbench_api_contracts_s6`、`workbench_task_projection_s6`、`workbench_drilldown_projection_s6`、`workbench_review_actions_s6`、`workbench_ops_projection_s6`；
+- Task projection：`s5_scope_task_workpaper_lead_review`，status `succeeded`，progress `100`；
+- drilldown：Workpaper sections `6`、ClaimCards `6`、typed gaps `3`、S1 events `12`、artifact refs `3`、gate rows `58`；
+- LeadReview status：`review_ready_with_visible_gaps`；
+- Judgment status：`ready_for_writer`；
+- HumanReview status：`queued`；
+- S6 gate rows：`8 pass / 0 fail`；
+- closeout：`S6_L4_scope_pass`；
+- next slice unlocked：`S7`。
+
+本轮 gate 覆盖：
+
+- S6 API contract 必须写入 SQL，而不是只存在于前端或 FastAPI handler；
+- Task Center 必须从 S1 task/run/event 主账本投影 status、progress、trace、artifact、review 和 gate counts；
+- drilldown 必须能追到 Workpaper sections、ClaimCards、typed gaps、LeadReview、JudgmentState、context refs、gate rows、artifact refs 和 task events；
+- review action 必须追加 `WorkpaperEvent` 并进入 `workbench_review_actions_s6`，不能只存在于浏览器状态；
+- ops projection 必须展示 queue、latency、cost、trace、incident 和 rollback ref；
+- S6 projection 必须 deterministic、SQL-final，不调用 LLM，也不把 Redis / frontend state 当最终审计源。
+
+本轮验证：
+
+- `python -m py_compile src\sec_agent\r53_r60_workbench_frontdoor_drilldown.py scripts\engineering\build_r53_r60_s6_workbench_frontdoor_drilldown.py apps\workbench\backend\app.py`
+- `python -m pytest tests/test_r53_r60_workbench_frontdoor_drilldown.py tests/test_workbench_backend.py -q`：`36 passed`
+- Frontend build 使用 bundled Node：`node node_modules\typescript\bin\tsc -p tsconfig.json` + `node node_modules\vite\bin\vite.js build --config vite.config.ts`，通过。
+
+边界：S6 只证明 Workbench task frontdoor、SQL-final drilldown、review action ledger 和 ops projection 在自身范围达到 enterprise-grade；本轮不生成 Markdown / Word / PPT / Excel deliverables，不做 dashboard projection 写回，不跑 full-chain answer quality eval，不证明多租户 / RBAC / 高并发生产 SLA。S7 后续负责 Deliverable Studio / Dashboard Projection，S10 后续负责全产品 release candidate。
+
 ### S7 Deliverable Studio And Dashboard Projection
 
 目标：从 approved / review-ready Workpaper 生成多格式交付物和 dashboard projection。

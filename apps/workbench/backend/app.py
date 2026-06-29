@@ -48,6 +48,19 @@ from sec_agent.workbench import (
 )
 from sec_agent.workbench.api_contracts import install_api_contracts, request_trace_id
 from sec_agent.langgraph_orchestrator import inspect_node_checkpoint_artifact
+from sec_agent.r53_r60_workbench_frontdoor_drilldown import (
+    append_review_action as append_r53_r60_review_action,
+    cancel_task as cancel_r53_r60_task,
+    get_ops_projection as get_r53_r60_ops_projection,
+    get_review_queue as get_r53_r60_review_queue,
+    get_scope_gate as get_r53_r60_scope_gate,
+    get_task_artifacts as get_r53_r60_task_artifacts,
+    get_task_detail as get_r53_r60_task_detail,
+    get_task_drilldown as get_r53_r60_task_drilldown,
+    get_task_events as get_r53_r60_task_events,
+    list_tasks as list_r53_r60_tasks,
+    resume_task as resume_r53_r60_task,
+)
 
 
 APP_ROOT = Path(__file__).resolve().parents[1]
@@ -187,6 +200,27 @@ class CancelRunRequest(BaseModel):
     reason: str = "cancelled by user"
 
 
+class R53R60ReviewActionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    action: Literal["approve", "request_repair", "return_to_specialist", "downgrade_claim", "comment"]
+    comment: str = ""
+    reviewer_role: str = "senior_analyst"
+    review_item_id: str = ""
+
+
+class R53R60ResumeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = "resume from workbench"
+
+
+class R53R60CancelRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = "cancel from workbench"
+
+
 class PruneRunHistoryRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -278,6 +312,94 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             "store": store_health,
             "paths": path_status,
         }
+
+    @app.get("/api/r53-r60/tasks")
+    def r53_r60_task_center(limit: int = Query(50, ge=1, le=500)):
+        return list_r53_r60_tasks(REPO_ROOT, limit=limit)
+
+    @app.get("/api/r53-r60/scope-gate")
+    def r53_r60_scope_gate():
+        return get_r53_r60_scope_gate(REPO_ROOT)
+
+    @app.get("/api/r53-r60/tasks/{task_id}")
+    def r53_r60_task_detail(task_id: str):
+        try:
+            return get_r53_r60_task_detail(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/events")
+    def r53_r60_task_events(
+        task_id: str,
+        after_sequence: int = Query(0, ge=0),
+        limit: int = Query(500, ge=1, le=5000),
+    ):
+        try:
+            return get_r53_r60_task_events(REPO_ROOT, task_id=task_id, after_sequence=after_sequence, limit=limit)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/artifacts")
+    def r53_r60_task_artifacts(task_id: str):
+        try:
+            return get_r53_r60_task_artifacts(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/drilldown")
+    def r53_r60_task_drilldown(task_id: str):
+        try:
+            return get_r53_r60_task_drilldown(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/review-queue")
+    def r53_r60_review_queue(task_id: str):
+        try:
+            return get_r53_r60_review_queue(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/tasks/{task_id}/review-actions")
+    def r53_r60_review_action(task_id: str, payload: R53R60ReviewActionRequest):
+        try:
+            return append_r53_r60_review_action(
+                REPO_ROOT,
+                task_id=task_id,
+                action=payload.action,
+                comment=payload.comment,
+                reviewer_role=payload.reviewer_role,
+                review_item_id=payload.review_item_id,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/tasks/{task_id}/resume")
+    def r53_r60_resume_task(task_id: str, payload: R53R60ResumeRequest):
+        try:
+            return resume_r53_r60_task(REPO_ROOT, task_id=task_id, reason=payload.reason.strip() or "resume from workbench")
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/tasks/{task_id}/cancel")
+    def r53_r60_cancel_task(task_id: str, payload: R53R60CancelRequest):
+        try:
+            return cancel_r53_r60_task(REPO_ROOT, task_id=task_id, reason=payload.reason.strip() or "cancel from workbench")
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/ops")
+    def r53_r60_ops_projection(task_id: str):
+        try:
+            return get_r53_r60_ops_projection(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @app.post("/api/profiles/import-env")
     def import_env(request: ImportEnvRequest) -> WorkbenchProfile:

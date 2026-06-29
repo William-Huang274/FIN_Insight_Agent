@@ -1,0 +1,106 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "drilldown_surfaces": [
+    "sections",
+    "claims",
+    "gaps",
+    "lead_review",
+    "judgment",
+    "context",
+    "gates",
+    "artifacts",
+    "events"
+  ],
+  "endpoints": [
+    {
+      "description": "List SQL-final R53-R60 tasks and Workpaper readiness.",
+      "method": "GET",
+      "path": "/api/r53-r60/tasks",
+      "surface": "task_center"
+    },
+    {
+      "description": "Get one task projection and core runtime state.",
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}",
+      "surface": "task_state"
+    },
+    {
+      "description": "Replay task events from the S1 ledger.",
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/events",
+      "surface": "event_replay"
+    },
+    {
+      "description": "Resume a paused/terminal task through S1 facade.",
+      "method": "POST",
+      "path": "/api/r53-r60/tasks/{task_id}/resume",
+      "surface": "resume"
+    },
+    {
+      "description": "Request cancellation when the S1 state machine allows it.",
+      "method": "POST",
+      "path": "/api/r53-r60/tasks/{task_id}/cancel",
+      "surface": "cancel"
+    },
+    {
+      "description": "List task artifact refs from the S1 ledger.",
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/artifacts",
+      "surface": "artifact_refs"
+    },
+    {
+      "description": "Inspect sections, ClaimCards, gaps, gates, context, and evidence refs.",
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/drilldown",
+      "surface": "workpaper_drilldown"
+    },
+    {
+      "description": "Inspect human review queue rows.",
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/review-queue",
+      "surface": "review_queue"
+    },
+    {
+      "description": "Append human review action to WorkpaperEvent and S6 ledger.",
+      "method": "POST",
+      "path": "/api/r53-r60/tasks/{task_id}/review-actions",
+      "surface": "review_action"
+    },
+    {
+      "description": "Inspect run, latency, cost, queue, trace, and incident projection.",
+      "method": "GET",
+      "path": "/api/r53-r60/tasks/{task_id}/ops",
+      "surface": "ops_projection"
+    },
+    {
+      "description": "Expose the S6 L4 scope gate summary.",
+      "method": "GET",
+      "path": "/api/r53-r60/scope-gate",
+      "surface": "s6_gate"
+    }
+  ],
+  "policy": {
+    "drilldown_must_link_to_evidence_claim_gap_gate_context": true,
+    "ops_projection_must_include_latency_cost_trace_queue_incident": true,
+    "redis_or_frontend_state_not_final_audit": true,
+    "review_actions_append_workpaper_event": true,
+    "sql_final_source": true,
+    "unsupported_task_or_missing_ledger_fails_closed": true
+  },
+  "schema_version": "r53_r60_s6_workbench_frontdoor_drilldown_v0_1",
+  "tables": [
+    "workbench_frontdoor_metadata",
+    "workbench_api_contracts_s6",
+    "workbench_task_projection_s6",
+    "workbench_drilldown_projection_s6",
+    "workbench_review_actions_s6",
+    "workbench_ops_projection_s6"
+  ],
+  "ui_panels": [
+    "task_center",
+    "evidence_drilldown",
+    "workpaper_builder",
+    "review_queue",
+    "ops_panel"
+  ]
+}

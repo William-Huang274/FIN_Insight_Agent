@@ -13,6 +13,7 @@ import {
   Terminal,
   Save,
   CircleStop,
+  ClipboardCheck,
 } from "lucide-react";
 import "../../static/styles.css";
 import "./workbench.css";
@@ -259,6 +260,67 @@ type RunStatusReport = {
   latest_event?: RunLogEvent | null;
 };
 
+type R53R60TaskProjection = {
+  task_id: string;
+  run_id: string;
+  trace_id: string;
+  query_text: string;
+  status: string;
+  progress: number;
+  lead_review_status: string;
+  judgment_status: string;
+  human_review_status: string;
+  section_count: number;
+  claim_count: number;
+  gap_count: number;
+  event_count: number;
+  artifact_count: number;
+  trace_span_count: number;
+  gate_count: number;
+  updated_at: string;
+  payload?: Record<string, unknown>;
+};
+
+type R53R60Drilldown = {
+  sections: Record<string, unknown>[];
+  claims: Record<string, unknown>[];
+  gaps: Record<string, unknown>[];
+  lead_review: Record<string, unknown>;
+  judgment: Record<string, unknown>;
+  context: Record<string, unknown>;
+  gates: Record<string, unknown>[];
+  artifacts: Record<string, unknown>[];
+  events: Record<string, unknown>[];
+};
+
+type R53R60ReviewQueue = {
+  review_queue: Record<string, unknown>[];
+  review_actions: Record<string, unknown>[];
+};
+
+type R53R60OpsProjection = {
+  status: string;
+  queue_status: string;
+  latency_ms: number;
+  token_count: number;
+  cost_amount: number;
+  trace_span_count: number;
+  event_count: number;
+  incident_count: number;
+  latest_event_at: string;
+  rollback_ref: string;
+  payload?: Record<string, unknown>;
+};
+
+type R53R60ScopeGate = {
+  status: string;
+  release_decision: string;
+  closeout_level: string;
+  counts: Record<string, number>;
+  failed_gates?: Record<string, unknown>[];
+  boundary?: string;
+};
+
 type NativeCheckpointInspection = {
   schema_version: string;
   checkpoint_path: string;
@@ -316,6 +378,14 @@ function App() {
   const [sessionTurns, setSessionTurns] = useState<RunJob[]>([]);
   const [evals, setEvals] = useState<EvalRunner[]>([]);
   const [evalDashboard, setEvalDashboard] = useState<EvalDashboard | null>(null);
+  const [r53r60Tasks, setR53R60Tasks] = useState<R53R60TaskProjection[]>([]);
+  const [r53r60SelectedTaskId, setR53R60SelectedTaskId] = useState("");
+  const [r53r60Task, setR53R60Task] = useState<R53R60TaskProjection | null>(null);
+  const [r53r60Drilldown, setR53R60Drilldown] = useState<R53R60Drilldown | null>(null);
+  const [r53r60ReviewQueue, setR53R60ReviewQueue] = useState<R53R60ReviewQueue | null>(null);
+  const [r53r60Ops, setR53R60Ops] = useState<R53R60OpsProjection | null>(null);
+  const [r53r60ScopeGate, setR53R60ScopeGate] = useState<R53R60ScopeGate | null>(null);
+  const [r53r60ReviewComment, setR53R60ReviewComment] = useState("Workbench reviewer note");
   const [dataBuildSteps, setDataBuildSteps] = useState<DataBuildStep[]>([]);
   const [dataBuildStepId, setDataBuildStepId] = useState("");
   const [dataBuildValues, setDataBuildValues] = useState<Record<string, string | boolean>>({});
@@ -346,6 +416,7 @@ function App() {
     void loadSessions();
     void loadEvals();
     void loadEvalDashboard();
+    void loadR53R60Workbench();
     void loadDataBuildSteps();
   }, []);
 
@@ -490,6 +561,54 @@ function App() {
   async function loadEvalDashboard() {
     const payload = await requestJson<EvalDashboard>("/api/evals/dashboard");
     setEvalDashboard(payload);
+  }
+
+  async function loadR53R60Workbench() {
+    try {
+      const [tasksPayload, gatePayload] = await Promise.all([
+        requestJson<{ tasks: R53R60TaskProjection[] }>("/api/r53-r60/tasks"),
+        requestJson<R53R60ScopeGate>("/api/r53-r60/scope-gate"),
+      ]);
+      const tasks = tasksPayload.tasks ?? [];
+      setR53R60Tasks(tasks);
+      setR53R60ScopeGate(gatePayload);
+      const selected = r53r60SelectedTaskId || tasks[0]?.task_id || "";
+      if (selected) {
+        await loadR53R60Task(selected);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  async function loadR53R60Task(taskId: string) {
+    if (!taskId) return;
+    setR53R60SelectedTaskId(taskId);
+    const [detail, drilldown, reviewQueue, ops] = await Promise.all([
+      requestJson<{ task: R53R60TaskProjection }>(`/api/r53-r60/tasks/${encodeURIComponent(taskId)}`),
+      requestJson<{ drilldown: R53R60Drilldown }>(`/api/r53-r60/tasks/${encodeURIComponent(taskId)}/drilldown`),
+      requestJson<R53R60ReviewQueue>(`/api/r53-r60/tasks/${encodeURIComponent(taskId)}/review-queue`),
+      requestJson<{ ops: R53R60OpsProjection }>(`/api/r53-r60/tasks/${encodeURIComponent(taskId)}/ops`),
+    ]);
+    setR53R60Task(detail.task);
+    setR53R60Drilldown(drilldown.drilldown);
+    setR53R60ReviewQueue(reviewQueue);
+    setR53R60Ops(ops.ops);
+  }
+
+  async function submitR53R60ReviewAction(action: string) {
+    if (!r53r60SelectedTaskId) return;
+    await runBusy("r53_r60_review", async () => {
+      await requestJson(`/api/r53-r60/tasks/${encodeURIComponent(r53r60SelectedTaskId)}/review-actions`, {
+        method: "POST",
+        body: JSON.stringify({
+          action,
+          comment: r53r60ReviewComment.trim() || "Workbench reviewer note",
+          reviewer_role: "senior_analyst",
+        }),
+      });
+      await loadR53R60Task(r53r60SelectedTaskId);
+    });
   }
 
   async function loadDataBuildSteps() {
@@ -774,6 +893,7 @@ function App() {
       { label: "数据源检查", icon: FileSearch, href: "#readiness", active: false },
       { label: "Agent 会话", icon: MessageSquareText, href: "#agent", active: false },
       { label: "评测入口", icon: FlaskConical, href: "#evals", active: false },
+      { label: "R53-R60 工作台", icon: ClipboardCheck, href: "#r53-r60-workbench", active: false },
       { label: "运行产物", icon: Database, href: "#artifacts", active: false },
     ],
     [],
@@ -1041,6 +1161,34 @@ function App() {
           <EvalRunners evals={evals} busy={busy} onRun={startEvalRun} />
         </section>
 
+        <section id="r53-r60-workbench" className="panel">
+          <div className="section-heading">
+            <div>
+              <h2>R53-R60 工作台</h2>
+              <p>从 SQL-final 任务账本下钻到 Workpaper、ClaimCards、typed gaps、gate rows、review action 和 ops projection。</p>
+            </div>
+            <button type="button" className="secondary" onClick={loadR53R60Workbench} disabled={Boolean(busy)}>
+              <RefreshCcw size={16} aria-hidden="true" />
+              刷新工作台
+            </button>
+          </div>
+
+          <R53R60WorkbenchPanel
+            tasks={r53r60Tasks}
+            selectedTaskId={r53r60SelectedTaskId}
+            task={r53r60Task}
+            drilldown={r53r60Drilldown}
+            reviewQueue={r53r60ReviewQueue}
+            ops={r53r60Ops}
+            scopeGate={r53r60ScopeGate}
+            reviewComment={r53r60ReviewComment}
+            busy={busy}
+            onSelectTask={loadR53R60Task}
+            onReviewCommentChange={setR53R60ReviewComment}
+            onSubmitReviewAction={submitR53R60ReviewAction}
+          />
+        </section>
+
         <section id="artifacts" className="panel">
           <div className="section-heading">
             <div>
@@ -1073,6 +1221,253 @@ function App() {
           {runReport ? <RunArtifacts report={runReport} /> : <EmptyArtifacts />}
         </section>
       </main>
+    </div>
+  );
+}
+
+function R53R60WorkbenchPanel({
+  tasks,
+  selectedTaskId,
+  task,
+  drilldown,
+  reviewQueue,
+  ops,
+  scopeGate,
+  reviewComment,
+  busy,
+  onSelectTask,
+  onReviewCommentChange,
+  onSubmitReviewAction,
+}: {
+  tasks: R53R60TaskProjection[];
+  selectedTaskId: string;
+  task: R53R60TaskProjection | null;
+  drilldown: R53R60Drilldown | null;
+  reviewQueue: R53R60ReviewQueue | null;
+  ops: R53R60OpsProjection | null;
+  scopeGate: R53R60ScopeGate | null;
+  reviewComment: string;
+  busy: string | null;
+  onSelectTask: (taskId: string) => void;
+  onReviewCommentChange: (value: string) => void;
+  onSubmitReviewAction: (action: string) => void;
+}) {
+  if (!tasks.length && !task) {
+    return (
+      <div className="summary-grid empty-state">
+        <div>
+          <h3>等待 S6 投影</h3>
+          <p>刷新后会从 SQL-final runtime ledger 生成任务中心、审查队列和 drilldown 投影。</p>
+        </div>
+      </div>
+    );
+  }
+
+  const claims = drilldown?.claims ?? [];
+  const gaps = drilldown?.gaps ?? [];
+  const sections = drilldown?.sections ?? [];
+  const gates = drilldown?.gates ?? [];
+  const actions = reviewQueue?.review_actions ?? [];
+  const reviewItems = reviewQueue?.review_queue ?? [];
+  const gateCounts = scopeGate?.counts ?? {};
+
+  return (
+    <div className="r53r60-workbench">
+      <div className="summary-grid">
+        <MetricBox label="Slice gate" value={scopeGate?.release_decision ?? "未生成"} detail={scopeGate?.closeout_level ?? ""} />
+        <MetricBox label="任务状态" value={task?.status ?? "未选择"} detail={task?.task_id ?? selectedTaskId} />
+        <MetricBox label="Workpaper" value={`${task?.section_count ?? 0} sections`} detail={`${task?.claim_count ?? 0} claims · ${task?.gap_count ?? 0} gaps`} />
+        <MetricBox label="Review" value={task?.human_review_status ?? "未入队"} detail={task?.lead_review_status ?? ""} />
+        <MetricBox label="Ops" value={`${ops?.trace_span_count ?? 0} traces`} detail={`${ops?.latency_ms ?? 0}ms · $${ops?.cost_amount ?? 0}`} />
+        <MetricBox label="Gate rows" value={numberText(gateCounts.gate_count)} detail={`${numberText(gateCounts.gate_fail_count)} failed`} />
+      </div>
+
+      <div className="r53r60-grid">
+        <div className="saved-profiles compact-panel">
+          <h3>任务中心</h3>
+          <div className="saved-profile-list vertical-list">
+            {tasks.map((item) => (
+              <button
+                className={`saved-profile-button ${item.task_id === selectedTaskId ? "selected" : ""}`}
+                type="button"
+                onClick={() => onSelectTask(item.task_id)}
+                key={item.task_id}
+              >
+                {item.task_id}
+                <span>
+                  {item.status} · {item.progress}% · {item.claim_count} claims · {item.gap_count} gaps
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="r53r60-card">
+          <h3>Lead / Judgment</h3>
+          <div className="readiness-columns">
+            <KeyValueBlock
+              title="Lead review"
+              values={{
+                status: objectValue(drilldown?.lead_review, "status"),
+                gaps: compactListValue(drilldown?.lead_review?.typed_gap_ids),
+                guidance: compactObjectValue(drilldown?.lead_review?.writing_guidance),
+              }}
+            />
+            <KeyValueBlock
+              title="Judgment state"
+              values={{
+                status: objectValue(drilldown?.judgment, "status"),
+                unsupported_claims: objectValue(drilldown?.judgment, "unsupported_claim_count"),
+                counter_thesis: compactObjectValue(drilldown?.judgment?.payload),
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="r53r60-grid wide">
+        <R53R60Table
+          title="Workpaper sections"
+          rows={sections.slice(0, 8)}
+          columns={[
+            ["section_key", "Section"],
+            ["title", "Title"],
+            ["claim_refs", "Claims"],
+          ]}
+        />
+        <R53R60Table
+          title="ClaimCards"
+          rows={claims.slice(0, 10)}
+          columns={[
+            ["claim_card_id", "Claim"],
+            ["dimension_id", "Dimension"],
+            ["authority_boundary", "Authority"],
+            ["source_boundary", "Boundary"],
+          ]}
+        />
+      </div>
+
+      <div className="r53r60-grid wide">
+        <R53R60Table
+          title="Typed gaps"
+          rows={gaps.slice(0, 10)}
+          columns={[
+            ["gap_id", "Gap"],
+            ["gap_type", "Type"],
+            ["dimension_id", "Dimension"],
+            ["status", "Status"],
+          ]}
+        />
+        <R53R60Table
+          title="Gate rows"
+          rows={gates.slice(0, 10)}
+          columns={[
+            ["slice_id", "Slice"],
+            ["gate_id", "Gate"],
+            ["status", "Status"],
+            ["description", "Description"],
+          ]}
+        />
+      </div>
+
+      <div className="r53r60-grid">
+        <div className="r53r60-card">
+          <h3>Review queue</h3>
+          <div className="summary-grid compact-metrics">
+            <MetricBox label="待审项" value={numberText(reviewItems.length)} />
+            <MetricBox label="已记账 action" value={numberText(actions.length)} />
+          </div>
+          <textarea value={reviewComment} onChange={(event) => onReviewCommentChange(event.target.value)} />
+          <div className="form-actions compact-actions">
+            <button type="button" className="secondary" onClick={() => onSubmitReviewAction("comment")} disabled={Boolean(busy)}>
+              追加评论
+            </button>
+            <button type="button" className="secondary" onClick={() => onSubmitReviewAction("request_repair")} disabled={Boolean(busy)}>
+              要求修复
+            </button>
+            <button type="button" onClick={() => onSubmitReviewAction("approve")} disabled={Boolean(busy)}>
+              审查通过
+            </button>
+          </div>
+          <ListBlock title="最近 review actions" values={listRecord(actions.slice(0, 5).map((row) => `${objectValue(row, "action")}: ${objectValue(row, "comment")}`))} />
+        </div>
+
+        <div className="r53r60-card">
+          <h3>Ops projection</h3>
+          <div className="summary-grid compact-metrics">
+            <MetricBox label="Queue" value={ops?.queue_status ?? "unknown"} detail={ops?.status ?? ""} />
+            <MetricBox label="Events" value={numberText(ops?.event_count)} detail={`${numberText(ops?.incident_count)} incidents`} />
+            <MetricBox label="Tokens" value={numberText(ops?.token_count)} detail="S6 deterministic projection" />
+          </div>
+          <KeyValueBlock
+            title="Rollback / trace"
+            values={{
+              rollback_ref: ops?.rollback_ref ?? "",
+              latest_event_at: ops?.latest_event_at ?? "",
+              boundary: scopeGate?.boundary ?? "",
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function R53R60Table({
+  title,
+  rows,
+  columns,
+}: {
+  title: string;
+  rows: Record<string, unknown>[];
+  columns: [string, string][];
+}) {
+  return (
+    <div className="r53r60-card">
+      <h3>{title}</h3>
+      <div className="table-wrap compact-table">
+        <table>
+          <thead>
+            <tr>
+              {columns.map(([, label]) => (
+                <th key={label}>{label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length ? (
+              rows.map((row, index) => (
+                <tr key={`${title}-${index}`}>
+                  {columns.map(([key]) => (
+                    <td key={key} className={key.endsWith("_id") || key === "status" ? "mono" : undefined}>
+                      {shortCellValue(row[key])}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={columns.length}>无数据</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function KeyValueBlock({ title, values }: { title: string; values: Record<string, string> }) {
+  return (
+    <div className="list-block">
+      <h3>{title}</h3>
+      <ul>
+        {Object.entries(values).map(([key, value]) => (
+          <li key={key}>
+            <span className="mono">{key}</span>: {value || "无"}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -1840,6 +2235,28 @@ function compactObject(value: Record<string, unknown>) {
     .slice(0, 5)
     .map(([key, item]) => `${key}: ${Array.isArray(item) ? item.join(",") : String(item)}`)
     .join(" · ");
+}
+
+function objectValue(value: Record<string, unknown> | null | undefined, key: string): string {
+  return shortCellValue(value?.[key]);
+}
+
+function compactListValue(value: unknown): string {
+  if (!Array.isArray(value)) return shortCellValue(value);
+  return value.slice(0, 5).map((item) => shortCellValue(item)).join(", ") || "无";
+}
+
+function compactObjectValue(value: unknown): string {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return shortCellValue(value);
+  return compactObject(value as Record<string, unknown>);
+}
+
+function shortCellValue(value: unknown): string {
+  if (value === undefined || value === null || value === "") return "无";
+  if (Array.isArray(value)) return value.length ? value.slice(0, 3).map((item) => shortCellValue(item)).join(", ") : "无";
+  if (typeof value === "object") return compactObject(value as Record<string, unknown>);
+  const text = String(value);
+  return text.length > 120 ? `${text.slice(0, 117)}...` : text;
 }
 
 function commandLine(args: string[]) {

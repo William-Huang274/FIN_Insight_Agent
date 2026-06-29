@@ -1,0 +1,31 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "all_cases_require_expected_workpaper_review_trace_and_eval_outputs": true,
+    "cost_roi_must_be_recorded_before_external_pilot": true,
+    "feedback_must_flow_to_defect_regression_or_gold_lifecycle": true,
+    "full_production_requires_separate_l4_production_pass": true,
+    "pilot_execution_requires_real_internal_dogfood_window": true,
+    "readiness_is_not_execution": true,
+    "rollback_and_oncall_evidence_required_before_l4_production": true
+  },
+  "release_scope": "production_pilot_readiness_not_pilot_execution",
+  "schema_version": "r53_r60_p11_production_pilot_readiness_v0_1",
+  "tables": [
+    "pilot_readiness_metadata_p11",
+    "pilot_programs_p11",
+    "pilot_case_catalog_p11",
+    "pilot_reviewer_protocols_p11",
+    "pilot_reviewer_assignments_p11",
+    "pilot_sla_targets_p11",
+    "pilot_baseline_observations_p11",
+    "pilot_feedback_channels_p11",
+    "pilot_dogfood_feedback_records_p11",
+    "pilot_defect_lifecycle_records_p11",
+    "pilot_rollback_rehearsals_p11",
+    "pilot_cost_roi_records_p11",
+    "pilot_acceptance_records_p11",
+    "pilot_readiness_reports_p11",
+    "pilot_gate_results_p11"
+  ]
+}

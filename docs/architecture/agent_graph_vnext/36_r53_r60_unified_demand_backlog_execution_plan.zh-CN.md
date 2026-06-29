@@ -725,6 +725,17 @@ S10 完成后必须立即生成 post-S10 gap register，而不是直接把 relea
 
 下一阶段建议按 P11-P16 推进：`P11 Production Pilot Readiness Gate`、`P12 Durable Runtime + HIL + Resource Router`、`P13 Graph/Skill/Memory Lifecycle`、`P14 Data Ingestion + Retrieval Control Plane`、`P15 Enterprise Workbench Product Surface`、`P16 Quality Engineering + Online Eval Platform`。
 
+## 4.2 P11 Production Pilot Readiness Gate
+
+P11 closeout（2026-06-30）：`P11_L4_scope_pass_pilot_ready_execution_pending`。
+
+- runtime contract：新增 `PilotProgram`、`PilotCaseCatalog`、`PilotReviewerProtocol`、`PilotReviewerAssignment`、`PilotSlaTarget`、`PilotBaselineObservation`、`PilotFeedbackChannel`、`PilotDogfoodFeedbackRecord`、`PilotDefectLifecycleRecord`、`PilotRollbackRehearsal`、`PilotCostRoiRecord`、`PilotAcceptanceRecord`、`PilotReadinessReport` 和 `PilotGateResult`，全部进入 S1 runtime SQLite 主账本。
+- 真实构建：S10 summary 和 post-S10 register `2/2` dependency pass；pilot case catalog `6` 个，覆盖 AI infra full research、non-US disclosure repair、product competitive graph、secondary-market capital feedback、research-to-quant validation、data-room deliverable；reviewer protocols `5` 个，assignments `12` 个；SLA targets `8` 个，S10 baseline observations `6` 个。
+- feedback / ops：feedback channels `4`、dogfood feedback records `4`、defect lifecycle records `6`、rollback rehearsals `3`、cost / ROI records `3`、demand acceptance records `5`。
+- 验证：P11 deterministic tests `5/5` pass；真实构建 gate `10 pass / 0 fail`；生成 `configs/r53_r60/p11_production_pilot_readiness_schema_v0_1.json`、`data/manifests/r53_r60_p11_production_pilot_readiness_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p11_production_pilot_readiness_l4_scope_pass.zh-CN.md`。
+
+边界：P11 只证明 pilot 已准备到可执行状态，`pilot_readiness_status=ready_for_controlled_internal_pilot`；真实多用户 dogfood 仍未执行，`pilot_execution_status=not_started_requires_real_internal_pilot`，`full_product_release_status=not_l4_production_pass`。后续必须用真实 pilot run 填充 accepted / rejected workpapers、SLA / cost / feedback rows 和 reviewer acceptance，才能继续冲全系统生产级判断。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

@@ -1,0 +1,47 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "chaos_types_required": [
+      "worker_crash",
+      "provider_timeout",
+      "sse_disconnect",
+      "artifact_write_retry"
+    ],
+    "cross_tenant_access_must_be_denied": true,
+    "failure_and_gold_lifecycle_required": true,
+    "incident_dashboard_categories": [
+      "parser",
+      "retrieval",
+      "tool",
+      "model",
+      "frontend",
+      "cost"
+    ],
+    "l4_production_pass_requires_separate_pilot_evidence": true,
+    "redis_or_queue_is_not_final_audit_source": true,
+    "release_candidate_is_not_full_production_launch": true,
+    "tenant_isolation_required": true
+  },
+  "release_scope": "controlled_internal_pilot_release_candidate",
+  "schema_version": "r53_r60_s10_enterprise_release_candidate_v0_1",
+  "tables": [
+    "enterprise_release_metadata_s10",
+    "tenants_s10",
+    "users_s10",
+    "project_spaces_s10",
+    "role_assignments_s10",
+    "permission_checks_s10",
+    "demand_acceptance_records_s10",
+    "load_scenarios_s10",
+    "load_task_observations_s10",
+    "chaos_events_s10",
+    "sla_observations_s10",
+    "incident_records_s10",
+    "incident_dashboard_projections_s10",
+    "online_eval_feedback_items_s10",
+    "regression_case_records_s10",
+    "gold_promotion_records_s10",
+    "release_readiness_reports_s10",
+    "release_gate_results_s10"
+  ]
+}

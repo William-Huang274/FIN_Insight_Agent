@@ -690,6 +690,16 @@ Slice closeout：`L4_scope_pass`（Enterprise Hardening / Release Candidate 范�
 | `U10-D04-release-readiness-report` | R60-D11 | release candidate 报告 | gates、known gaps、rollback、owner、user feedback 入口齐全 |
 | `U10-D05-online-eval-feedback-loop` | R60-D06/D09 | production failure / reviewer feedback 进 regression | failure/gold lifecycle 可运行 |
 
+S10 closeout（2026-06-29）：`S10_L4_scope_pass_release_candidate_ready`。
+
+- runtime contract：新增 `Tenant`、`User`、`ProjectSpace`、`RoleAssignment`、`PermissionCheck`、`DemandAcceptanceRecord`、`LoadScenario`、`LoadTaskObservation`、`ChaosEvent`、`SLAObservation`、`IncidentRecord`、`IncidentDashboardProjection`、`OnlineEvalFeedbackItem`、`RegressionCaseRecord`、`GoldPromotionRecord`、`ReleaseReadinessReport` 和 `ReleaseGateResult`，全部进入 S1 SQL 主账本。
+- 真实构建：S0-S9 dependency summaries `10/10` pass；租户/权限 rows 覆盖同租户 allow、跨租户 deny、analyst 不能 release publish 的 negative gate；20-task controlled load scenario 记录 queue wait、latency、token/cost、SSE reconnect；worker crash / provider timeout / SSE disconnect / artifact write retry 四类 chaos 均 recovered。
+- incident / eval：parser、retrieval、tool、model、frontend、cost 六类 incident 全部可见；online eval feedback 生成 `2` 条 regression case 和 `1` 条 gold promotion record。
+- release readiness：报告包含 gate refs、known gaps、rollback plan、owner、user feedback entry 和 pilot scope；`full_product_release_status=not_l4_production_pass`，不冒充全系统生产上线。
+- 验证：S10 deterministic tests `5/5` pass；真实构建 gate `12 pass / 0 fail`；生成 `configs/r53_r60/s10_enterprise_release_candidate_schema_v0_1.json`、`data/manifests/r53_r60_s10_enterprise_release_candidate_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_s10_enterprise_release_candidate_l4_scope_pass.zh-CN.md`。
+
+边界：S10 只证明 Enterprise Hardening / Release Candidate 在自身范围达到 enterprise-grade，可进入受控内部 pilot / dogfood 候选；本轮不证明正式 `L4_production_pass`，也不替代云端 SLA、on-call、审计留存、外部客户试点和长期 online eval 的生产证据。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

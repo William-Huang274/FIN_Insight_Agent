@@ -364,3 +364,42 @@ R60 的 Release Gates 不只输出 pass/fail，还必须输出 `pass_level`。�
 R60 的关键不是“多跑几个 case”，而是把项目从实验室脚本推进到企业级质量工程：每个需求有验收，每个节点有指标，每次模型调用有成本，每个失败有分类，每个发布有门控。
 
 Token 治理的正确方向也不是压低模型调用，而是把 token 用在最有边际收益的位置：DB exact / graph / parser row 先拿事实，ContextEngine 控制注入，Research Lead 决定是否 repair，强模型只用于高价值 judgment 和 verifier，最后用 release gate 检查“每花一笔 token 是否换来了可审计、可交付、可复用的研究质量”。
+
+## 14. S10 Runtime Closeout（2026-06-29）
+
+R60 的 release-candidate 必需子集已经在 R53-R60 release slice `S10 Enterprise Hardening / Release Candidate` 中落成 runtime contract，并达到自身范围内的 `L4_scope_pass`。
+
+已落对象：
+
+- `Tenant` / `User` / `ProjectSpace` / `RoleAssignment` / `PermissionCheck`；
+- `DemandAcceptanceRecord`；
+- `LoadScenario` / `LoadTaskObservation` / `ChaosEvent` / `SLAObservation`；
+- `IncidentRecord` / `IncidentDashboardProjection`；
+- `OnlineEvalFeedbackItem` / `RegressionCaseRecord` / `GoldPromotionRecord`；
+- `ReleaseReadinessReport` / `ReleaseGateResult`。
+
+真实构建结果：
+
+- S0-S9 dependency summaries：`10/10 pass`；
+- RBAC：`2` tenants、`4` users、`4` role assignments、`5` permission checks，包含同租户 allow 和跨租户 deny；
+- load / chaos / SLA：`20` load task observations、`4` recovered chaos events、`6` SLA observations，记录 p95 queue wait、p95 latency、recovery rate、SSE reconnect、token 和 cost；
+- incidents：parser / retrieval / tool / model / frontend / cost 六类 incident 全部进入 dashboard projection；
+- online eval lifecycle：`3` feedback items，生成 `2` regression cases 和 `1` gold promotion；
+- release readiness：报告包含 gate refs、known gaps、rollback plan、owner、user feedback entry 和 pilot scope；
+- release decision：`S10_L4_scope_pass_release_candidate_ready`；
+- full product release status：`not_l4_production_pass`。
+
+生成物：
+
+- `src/sec_agent/r53_r60_enterprise_release_candidate.py`
+- `scripts/engineering/build_r53_r60_s10_enterprise_release_candidate.py`
+- `tests/test_r53_r60_enterprise_release_candidate.py`
+- `configs/r53_r60/s10_enterprise_release_candidate_schema_v0_1.json`
+- `data/manifests/r53_r60_s10_enterprise_release_candidate_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_s10_enterprise_release_candidate_summary_v0_1.json`
+- `docs/internal/vnext_20260610/r53_r60_s10_enterprise_release_candidate_l4_scope_pass.zh-CN.md`
+
+边界：
+
+- S10 不等于正式生产上线；它只证明 controlled internal pilot release candidate 在权限、负载/恢复、incident、release report、online eval feedback 生命周期上达到本 slice 的 enterprise-grade。
+- `L4_production_pass` 仍需要真实试点、多租户长期运行、云端/生产 SLA、on-call/runbook、审计留存、异常恢复和成本预算的持续证据。

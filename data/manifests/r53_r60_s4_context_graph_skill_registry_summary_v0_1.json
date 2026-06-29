@@ -1,0 +1,61 @@
+{
+  "boundary": "S4 closes context/graph/skill/memory registry and injection-plan scope only; it does not write Workpaper or final memo.",
+  "closeout_level": "L4_scope_pass",
+  "counts": {
+    "context_compression_artifacts": 4,
+    "context_dropped_refs": 34,
+    "context_graph_skill_metadata": 3,
+    "context_injection_plans": 4,
+    "context_lifecycle_events": 7,
+    "context_pack_selections": 61,
+    "gate_count": 12,
+    "gate_fail_count": 0,
+    "graph_pack_registry": 6,
+    "lead_specialist_consumed_pack_refs": 4,
+    "memory_pack_registry": 6,
+    "skill_pack_registry": 16
+  },
+  "failed_gates": [],
+  "generated_at": "2026-06-29T11:27:46Z",
+  "next_slice_unlocked": "S5",
+  "outputs": {
+    "closeout_report": "docs/internal/vnext_20260610/r53_r60_s4_context_graph_skill_registry_l4_scope_pass.zh-CN.md",
+    "gate_rows": "data/manifests/r53_r60_s4_context_graph_skill_registry_gate_rows_v0_1.jsonl",
+    "schema": "configs/r53_r60/s4_context_graph_skill_registry_schema_v0_1.json",
+    "sqlite_store": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "summary": "data/manifests/r53_r60_s4_context_graph_skill_registry_summary_v0_1.json"
+  },
+  "plans_by_actor": {
+    "fundamental_analyst": {
+      "evidence_ref_count": 3,
+      "graph_pack_count": 3,
+      "injection_plan_id": "ctxinj_7f6baa1cf6172ab8",
+      "memory_pack_count": 2,
+      "skill_pack_count": 2
+    },
+    "industry_supply_chain_analyst": {
+      "evidence_ref_count": 5,
+      "graph_pack_count": 4,
+      "injection_plan_id": "ctxinj_80baa248a815eba1",
+      "memory_pack_count": 2,
+      "skill_pack_count": 2
+    },
+    "product_technology_analyst": {
+      "evidence_ref_count": 6,
+      "graph_pack_count": 4,
+      "injection_plan_id": "ctxinj_eebc427001d3004b",
+      "memory_pack_count": 3,
+      "skill_pack_count": 2
+    },
+    "research_lead": {
+      "evidence_ref_count": 12,
+      "graph_pack_count": 6,
+      "injection_plan_id": "ctxinj_788d2e1a6530e7ca",
+      "memory_pack_count": 3,
+      "skill_pack_count": 2
+    }
+  },
+  "release_decision": "S4_L4_scope_pass",
+  "schema_version": "r53_r60_s4_context_graph_skill_registry_v0_1",
+  "status": "pass"
+}

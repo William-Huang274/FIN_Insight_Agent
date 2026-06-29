@@ -1,0 +1,55 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "context_injection_must_be_replayable": true,
+    "dropped_context_refs_must_have_reason": true,
+    "exact_company_fact_refs_are_preserved_not_summarized": true,
+    "lead_and_specialists_must_declare_consumed_packs": true,
+    "memory_is_planning_context_not_fact_authority": true,
+    "redis_or_mq_not_final_audit": true
+  },
+  "required_actors": [
+    "research_lead",
+    "fundamental_analyst",
+    "product_technology_analyst",
+    "industry_supply_chain_analyst"
+  ],
+  "required_graph_packs": [
+    "retrieval_evidence_spine",
+    "dimension_evidence_portfolio",
+    "product_intelligence_graph",
+    "product_relationship_graph",
+    "research_graph",
+    "source_authority_mart"
+  ],
+  "required_lifecycle_operations": [
+    "resolve",
+    "select",
+    "compress",
+    "inject",
+    "write",
+    "consolidate",
+    "invalidate"
+  ],
+  "required_memory_tiers": [
+    "node_scratch_memory",
+    "run_memory",
+    "project_memory",
+    "company_watchlist_memory",
+    "org_private_memory",
+    "global_playbook_memory"
+  ],
+  "schema_version": "r53_r60_s4_context_graph_skill_registry_v0_1",
+  "tables": [
+    "context_graph_skill_metadata",
+    "graph_pack_registry",
+    "skill_pack_registry",
+    "memory_pack_registry",
+    "context_lifecycle_events",
+    "context_compression_artifacts",
+    "context_injection_plans",
+    "context_pack_selections",
+    "context_dropped_refs",
+    "lead_specialist_consumed_pack_refs"
+  ]
+}

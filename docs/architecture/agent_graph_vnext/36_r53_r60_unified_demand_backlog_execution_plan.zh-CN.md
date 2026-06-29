@@ -383,6 +383,46 @@ Slice closeout：`L4_scope_pass`（context / graph / skill registry 范围）
 | `U4-D05-context-compression-artifact` | R57-D11-D13 | 压缩策略和质量 gate | exact facts 只引用不摘要；dropped refs 有 reason |
 | `U4-D06-lead-graph-skill-selector` | R57-D04/D05 | Lead / specialist 必须声明消费哪些 packs | Specialist 输出中有 consumed pack refs |
 
+#### S4 v0.1 implementation closeout
+
+2026-06-29 已把 S4 落成 S1 / S3 native 的 Context / Graph / Skill Registry，并达到 S4 范围内的 `L4_scope_pass`。
+
+核心生成物：
+
+- `src/sec_agent/r53_r60_context_graph_skill_registry.py`
+- `scripts/engineering/build_r53_r60_s4_context_graph_skill_registry.py`
+- `tests/test_r53_r60_context_graph_skill_registry.py`
+- `configs/r53_r60/s4_context_graph_skill_registry_schema_v0_1.json`
+- `data/manifests/r53_r60_s4_context_graph_skill_registry_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_s4_context_graph_skill_registry_summary_v0_1.json`
+- `data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite`
+- `docs/internal/vnext_20260610/r53_r60_s4_context_graph_skill_registry_l4_scope_pass.zh-CN.md`
+
+本次真实构建结果：
+
+- GraphPack registry：`6`，覆盖 retrieval evidence spine、DimensionEvidencePortfolio、ProductIntelligenceGraph、ProductRelationshipGraph、ResearchGraph、source authority mart；
+- SkillPack registry：`16`，每个 skill pack 有 prompt digest、适用角色、输入/输出 contract、forbidden behavior 和 eval hooks；
+- MemoryPack registry：`6`，覆盖 node scratch、run、project、company/watchlist、org/private、global playbook memory，均带 provenance、TTL、staleness、permission 和 promotion status；
+- Context lifecycle events：`7`，覆盖 resolve/select/compress/inject/write/consolidate/invalidate；
+- ContextInjectionPlan：`4`，覆盖 `research_lead`、`fundamental_analyst`、`product_technology_analyst`、`industry_supply_chain_analyst`；
+- context pack selections：`61`；
+- dropped context refs：`34`，均有 reason；
+- S4 gate rows：`12 pass / 0 fail`；
+- closeout：`S4_L4_scope_pass`；
+- next slice unlocked：`S5`。
+
+本轮 gate 覆盖：
+
+- S4 必须读取 S3 selected evidence refs，不能直接消费 raw retrieval candidates；
+- GraphPack / SkillPack / MemoryPack 必须进入 SQL registry，并携带版本、scope、authority/permission/lifecycle 约束；
+- ContextEngine lifecycle 必须可 replay；
+- exact company facts 在 compression artifact 中只能保留 ref，不允许被压缩摘要改写；
+- dropped refs 必须有原因；
+- Research Lead 和 specialists 必须声明 consumed graph / skill / memory / evidence pack refs；
+- S4 任务可重复构建，不删除 S1 append-only `WorkpaperEvent`，而是 resume 新 run 并重建 S4 自身表。
+
+边界：S4 只证明 context / graph / skill / memory registry 与 ContextInjectionPlan 在自身范围达到 enterprise-grade；本轮不写 Workpaper、不调用 LLM、不生成 Memo，也不证明最终研究质量。S5 后续负责把 S3 selected evidence 与 S4 context pack refs 组织成 Workpaper / Lead Review workflow。
+
 ### S5 Workpaper / Lead Review Workflow
 
 目标：形成真正 B 端生产力闭环：Research Lead 常驻监督，specialist 输出先进底稿，senior 可审阅。

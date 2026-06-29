@@ -581,3 +581,47 @@ R53 的第一性问题不是“怎么跑一个回测”，而是：
 3. 权限边界：LLM proposal、human approval、deterministic runtime。
 4. 评价闭环：IC / event study / backtest / risk / paper monitor。
 5. 经验沉淀：ResearchExperienceStore 可检索、可审计、可失效、可反哺。
+
+## 13. S9 v0.1 Runtime Closeout（2026-06-29）
+
+R53 第一版已经在 R53-R60 release slice `S9 Research-to-Quant Lab` 中落成 runtime contract，并达到自身范围内的 `L4_scope_pass`。
+
+本轮实现范围：
+
+- 新增 `FactorHypothesis`、`FeatureSpec`、`LabelSpec`、`UniverseSpec`、`DatasetBuildPlan`、`PITDatasetRow`、`LeakageGuardResult`、`FactorAnalysisResult`、`BacktestResult`、`RiskAttribution`、`PaperTradingControl`、`FactorCard`、`ResearchExperienceRecord` 的 SQL-final schema。
+- 从 S8 `Secondary Market / Capital Feedback Pack` 中读取 bounded signals 作为 `SignalObservation` / thesis driver 的来源，而不是让 LLM 自行生成无源因子。
+- 生成 `3` 个 factor hypotheses：`2` 个 human-approved internal validation 因子进入 PIT dataset / deterministic backtest smoke，`1` 个 derivatives/gamma candidate 因缺 source route 和 human approval 被 fail-closed 阻断。
+- 所有 approved dataset build 均要求 human approval；paper trading monitor 全部保持 `not_started_requires_separate_human_approval`。
+- 每条 PIT row 保留 `feature_publish_time`、`feature_available_time`、`tradable_after`、`label_window_start`、`source_refs` 和 provenance；leakage gate 阻断无批准候选。
+- FactorCard 明确标注 `no_investment_advice`、failure scenarios、risk exposure、allowed next actions 和 forbidden actions。
+- ResearchExperienceRecord 写入经验库形态，用于后续 ContextEngine / Research Memory 检索。
+
+真实构建结果：
+
+- `signal_observation_count=3`
+- `factor_hypothesis_count=3`
+- `approved_factor_count=2`
+- `blocked_factor_count=1`
+- `pit_dataset_row_count=24`
+- `backtest_result_count=2`
+- `risk_attribution_count=2`
+- `factor_card_count=3`
+- `experience_record_count=3`
+- `gate_count=12 / gate_fail_count=0`
+- `release_decision=S9_L4_scope_pass`
+
+生成物：
+
+- `src/sec_agent/r53_r60_research_to_quant_lab.py`
+- `scripts/engineering/build_r53_r60_s9_research_to_quant_lab.py`
+- `tests/test_r53_r60_research_to_quant_lab.py`
+- `configs/r53_r60/s9_research_to_quant_lab_schema_v0_1.json`
+- `data/manifests/r53_r60_s9_research_to_quant_lab_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_s9_research_to_quant_lab_summary_v0_1.json`
+- `docs/internal/vnext_20260610/r53_r60_s9_research_to_quant_lab_l4_scope_pass.zh-CN.md`
+
+边界：
+
+- 这证明 Research-to-Quant Lab 的对象合同、审批、防泄漏、风险归因、FactorCard 和经验回写链路可审计、可回放。
+- 这不证明生产级 alpha、真实交易收益、自动交易、对外投资建议、完整历史 security master、商业实时行情或正式 paper trading monitor。
+- 后续如果接 Qlib / vectorbt / Alphalens / LEAN，应作为 `ValidationPlan executor adapter`，不能绕过当前 human approval、PIT 和 leakage contracts。

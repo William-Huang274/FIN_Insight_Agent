@@ -1,0 +1,41 @@
+{
+  "approval_scopes": [
+    "factor_hypothesis",
+    "dataset_build",
+    "backtest",
+    "paper_trading"
+  ],
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "backtest_requires_human_approval": true,
+    "dataset_build_requires_human_approval": true,
+    "factor_hypotheses_trace_to_workpaper_thesis_and_evidence": true,
+    "factorcard_must_include_risk_attribution_and_failure_scenarios": true,
+    "features_require_publish_available_asof_and_provenance": true,
+    "leakage_guard_blocks_invalid_or_unapproved_datasets": true,
+    "not_external_investment_advice": true,
+    "not_live_trading_system": true,
+    "paper_trading_requires_separate_human_approval": true,
+    "research_experience_record_is_searchable_memory_output": true
+  },
+  "schema_version": "r53_r60_s9_research_to_quant_lab_v0_1",
+  "tables": [
+    "research_to_quant_metadata",
+    "signal_observations_s9",
+    "factor_hypotheses_s9",
+    "feature_specs_s9",
+    "label_specs_s9",
+    "universe_specs_s9",
+    "human_approval_decisions_s9",
+    "dataset_build_plans_s9",
+    "pit_dataset_rows_s9",
+    "leakage_guard_results_s9",
+    "factor_analysis_results_s9",
+    "backtest_results_s9",
+    "risk_attributions_s9",
+    "paper_trading_controls_s9",
+    "factor_cards_s9",
+    "research_experience_records_s9",
+    "research_to_quant_quality_gates_s9"
+  ]
+}

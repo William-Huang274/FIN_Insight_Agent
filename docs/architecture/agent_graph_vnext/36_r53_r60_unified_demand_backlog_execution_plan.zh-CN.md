@@ -661,6 +661,17 @@ Slice closeout：`L4_scope_pass`（Research-to-Quant Lab 范围）
 | `U9-D04-backtest-adapter` | R53 | deterministic backtest smoke | 至少 2 个 thesis driver 转 FactorHypothesis 并跑 smoke |
 | `U9-D05-risk-attribution-factorcard` | R53 | 风险归因和 FactorCard | 回测结果能解释风险暴露、失效场景和 rejected reason |
 
+S9 closeout（2026-06-29）：`S9_L4_scope_pass`。
+
+- runtime contract：新增 `SignalObservation`、`FactorHypothesis`、`FeatureSpec`、`LabelSpec`、`UniverseSpec`、`HumanApprovalDecision`、`DatasetBuildPlan`、`PITDatasetRow`、`LeakageGuardResult`、`FactorAnalysisResult`、`BacktestResult`、`RiskAttribution`、`PaperTradingControl`、`FactorCard`、`ResearchExperienceRecord` 和 `ResearchToQuantQualityGate`，全部写入 S1 SQL 主账本。
+- 真实构建：从 S8 `Secondary Market / Capital Feedback Pack` 消费 bounded signals，生成 `3` 个 signal observations / factor hypotheses，其中 `2` 个 human-approved thesis drivers 进入 PIT dataset + deterministic backtest smoke，`1` 个 derivatives/gamma candidate 因无 approved source / human approval 被 fail-closed 阻断。
+- PIT / leakage：approved plans 生成 `24` 条 PIT dataset rows，每条都有 publish / available / tradable-after / label-window / source refs / provenance；未审批计划不产生 dataset rows，leakage guard 标为 `blocked_no_human_approval`。
+- backtest / FactorCard：生成 `2` 个 factor analysis、`2` 个 no-investment-advice backtest result、`2` 个 risk attribution、`3` 个 FactorCard、`3` 个 ResearchExperienceRecord；paper trading 全部保持 `not_started_requires_separate_human_approval`。
+- 验证：S9 deterministic tests `5/5` pass；真实构建 gate `12 pass / 0 fail`；生成 `configs/r53_r60/s9_research_to_quant_lab_schema_v0_1.json`、`data/manifests/r53_r60_s9_research_to_quant_lab_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_s9_research_to_quant_lab_l4_scope_pass.zh-CN.md`。
+- next slice unlocked：`S10`。
+
+边界：S9 只证明 Research-to-Quant Lab 在自身范围达到 enterprise-grade，可把研究证据转成可审计、可回放、需人工批准的量化验证对象；本轮不证明生产级 alpha、真实交易、对外投资建议、完整历史 security master、商业实时行情或正式 paper trading monitor。
+
 ### S10 Enterprise Hardening / Release Candidate
 
 目标：从内部 dogfood 提升到可试点客户使用的 release candidate。

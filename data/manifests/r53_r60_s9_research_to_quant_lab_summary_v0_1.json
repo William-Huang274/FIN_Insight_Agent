@@ -1,0 +1,92 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "counts": {
+    "approval_count": 7,
+    "approved_factor_count": 2,
+    "backtest_result_count": 2,
+    "blocked_factor_count": 1,
+    "dataset_build_plan_count": 3,
+    "experience_record_count": 3,
+    "factor_analysis_count": 2,
+    "factor_card_count": 3,
+    "factor_hypothesis_count": 3,
+    "feature_spec_count": 2,
+    "gate_count": 12,
+    "gate_fail_count": 0,
+    "label_spec_count": 2,
+    "leakage_guard_count": 3,
+    "no_live_trading": true,
+    "paper_control_count": 3,
+    "pit_dataset_row_count": 24,
+    "risk_attribution_count": 2,
+    "signal_observation_count": 3,
+    "source_dependency": "S8 Secondary Market / Capital Feedback Pack",
+    "universe_spec_count": 2
+  },
+  "experience_outcomes": {
+    "data_unavailable_or_approval_blocked": 1,
+    "diagnostic_supported_for_research_validation": 2
+  },
+  "factor_cards": [
+    {
+      "factor_card_id": "s9card_f33c68ab2f3a50eb",
+      "factor_hypothesis_id": "s9fac_77d029f1b839eb4b",
+      "no_investment_advice": true,
+      "status": "blocked"
+    },
+    {
+      "factor_card_id": "s9card_d6bbce318bf3f680",
+      "factor_hypothesis_id": "s9fac_9442604d8afc830c",
+      "no_investment_advice": true,
+      "status": "research_validation_pass"
+    },
+    {
+      "factor_card_id": "s9card_5da4576916d9c516",
+      "factor_hypothesis_id": "s9fac_f5103002655412b1",
+      "no_investment_advice": true,
+      "status": "research_validation_pass"
+    }
+  ],
+  "generated_at": "2026-06-29T13:15:54Z",
+  "next_slice_unlocked": "S10",
+  "outputs": {
+    "closeout_report": "docs/internal/vnext_20260610/r53_r60_s9_research_to_quant_lab_l4_scope_pass.zh-CN.md",
+    "gate_rows": "data/manifests/r53_r60_s9_research_to_quant_lab_gate_rows_v0_1.jsonl",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "schema": "configs/r53_r60/s9_research_to_quant_lab_schema_v0_1.json",
+    "summary": "data/manifests/r53_r60_s9_research_to_quant_lab_summary_v0_1.json"
+  },
+  "policy": {
+    "backtest_requires_human_approval": true,
+    "dataset_build_requires_human_approval": true,
+    "factor_hypotheses_trace_to_workpaper_thesis_and_evidence": true,
+    "factorcard_must_include_risk_attribution_and_failure_scenarios": true,
+    "features_require_publish_available_asof_and_provenance": true,
+    "leakage_guard_blocks_invalid_or_unapproved_datasets": true,
+    "not_external_investment_advice": true,
+    "not_live_trading_system": true,
+    "paper_trading_requires_separate_human_approval": true,
+    "research_experience_record_is_searchable_memory_output": true
+  },
+  "release_decision": "S9_L4_scope_pass",
+  "schema_version": "r53_r60_s9_research_to_quant_lab_v0_1",
+  "slice": "S9 Research-to-Quant Lab",
+  "status": "pass",
+  "task": {
+    "case_id": "s9_research_to_quant_lab_l4_scope",
+    "created_at": "2026-06-29T13:15:53Z",
+    "current_run_id": "run_a1d9feb606938173",
+    "error_message": "",
+    "metadata_json": "{\"closeout_level\": \"L4_scope_pass\", \"no_live_trading\": true, \"source_slice\": \"S9\"}",
+    "mode": "runtime_spine_dogfood",
+    "objective_json": "{\"minimum_evidence\": \"At least two approved thesis drivers become PIT-guarded deterministic factor validation runs.\", \"required_objects\": [\"FactorHypothesis\", \"FeatureSpec\", \"LabelSpec\", \"UniverseSpec\", \"DatasetBuildPlan\", \"PITDataset\", \"LeakageGuardResult\", \"BacktestResult\", \"RiskAttribution\", \"FactorCard\", \"ResearchExperienceRecord\"]}",
+    "progress": 100,
+    "query_text": "Convert review-ready research thesis drivers into approved PIT quant validation experiments",
+    "resume_count": 0,
+    "status": "succeeded",
+    "task_id": "s9_scope_task_research_to_quant_lab",
+    "trace_id": "trace_s9_research_to_quant_lab",
+    "updated_at": "2026-06-29T13:15:54Z",
+    "user_id": "s9_gate"
+  }
+}

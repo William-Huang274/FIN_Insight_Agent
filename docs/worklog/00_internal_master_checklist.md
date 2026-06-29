@@ -3,6 +3,7 @@
 ## Integrated 09-12 Execution Governance
 
 - [x] Harden 12 integrated execution plan with enterprise-grade SQL/ObjectStore/Redis/Milvus storage discipline.
+- [x] R53-R60 P16 Quality Engineering + Online Eval Platform: add SQL-final EvalDataset/EvalCase/EvalRun, E0-E12 node gates, trace/model/token-cost/retrieval/parser/tool metrics, failure/regression/gold lifecycle, QA plans, defects, R60 demand acceptance, sandbox regression, BudgetExceededGate, CI gate records, eval dashboards, incident rows, reference governance ledgers, and L4-scope gate artifacts.
 - [x] R53-R60 P15 Enterprise Workbench Product Surface: add SQL-final enterprise product surfaces, API contracts, frontend IA, Task Center, Evidence Workbench, Workpaper Builder, Review Queue, Artifact Browser, Deliverable Studio, Data Room upload, Admin/Ops Console, RBAC positive/negative checks, action ledger, E2E journeys, and L4-scope gate artifacts.
 - [x] R53-R60 P14 Data Ingestion / Retrieval Control Plane: add SQL-final source snapshots, ingestion jobs, raw documents, fetch attempts, parser runs, parsed objects, authority mappings, index refreshes, retrieval strategy packs, route budgets, ContextEngine bridge, quality probes, performance profiles, lineage edges, and L4-scope gate artifacts.
 - [x] R53-R60 P13 Graph / Skill / Memory Lifecycle: add SQL-final capability asset inventory, patch staging, deterministic eval, HIL approval/rejection, tenant overlay, internal canary, promotion, active-version, invalidation, ContextEngine injection policy, and L4-scope gate artifacts.

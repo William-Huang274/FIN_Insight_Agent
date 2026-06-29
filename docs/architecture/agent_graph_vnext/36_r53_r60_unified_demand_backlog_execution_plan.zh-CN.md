@@ -787,6 +787,19 @@ P15 closeout（2026-06-30）：`P15_L4_scope_pass_enterprise_workbench_product_s
 
 边界：P15 只证明企业 Workbench 产品面合同在自身范围达到 enterprise-grade：surface registry、API boundary、frontend IA、SQL-final projections、RBAC 正反例、action ledger、E2E journey、data-room provenance gate 和 known gaps 都可审计、可回放、可被 P16 依赖。`polished_react_frontend_not_implemented`、`real_multi_user_product_pilot_not_run` 和 `production_backend_framework_not_replaced` 仍保留为显式 gap；P15 不声明最终 React 视觉体验、真实多用户 pilot 或 Java/Spring production gateway 已完成。
 
+## 4.7 P16 Quality Engineering + Online Eval Platform
+
+P16 closeout（2026-06-30）：`P16_L4_scope_pass_quality_engineering_online_eval_ready`。
+
+- runtime contract：新增 `QualityEngineeringMetadata`、`EvalDataset`、`EvalCase`、`EvalRun`、`EvalMetricResult`、`EvalGateResult`、`TraceSpan`、`ModelCallMetric`、`TokenCostLedger`、`RetrievalMetric`、`ParserMetric`、`ToolMetric`、`NodeEvalGateRecord`、`FailureEvent`、`RegressionCaseRecord`、`GoldPromotionRecord`、`QAExecutionPlan`、`DefectRecord`、`DemandAcceptanceRecord`、`SandboxRegressionRecord`、`BudgetExceededGate`、`CIGateRecord`、`EvalDashboardProjection`、`IncidentRecord`、`ReferenceSourceLedger`、`ReferenceChangeLedger`、`ReferenceAdoptionPerformanceProfile`、`QualityReadinessReport` 和 `QualityEngineeringGateResult`，全部进入 S1 runtime SQLite 主账本。
+- 真实构建：P16 消费 S10 release-candidate eval/incident 子集、P14 parser/retrieval/data-plane rows 和 P15 product surface action/RBAC/journey rows，materialize EvalDataset `1`、EvalCase `6`、EvalRun `1`、EvalMetricResult `13`、EvalGateResult `13`。
+- 节点/链路评测：E0-E12 `13` 个 node eval gates 全部 pass，覆盖 data/source、parser/chunk/table、DB/Gold Mart、retrieval/rerank、ContextEngine、tool/sandbox、Research Lead、specialist、Judgment、Workpaper、Deliverable、full-chain、online eval。
+- observability / cost：trace spans `12`、model call metrics `5`、TokenCostLedger `5`、retrieval metrics `5`、parser metrics `6`、tool metrics `8`；BudgetExceededGate `2` 条，其中超预算路径必须 `pause_for_human_approval_or_scope_reduction`，禁止 silent overrun。
+- lifecycle / QA / governance：failure events `4`、regression cases `3`、gold records `2`、QA plans `3`、defects `4`、R60 demand acceptance `18/18 pass`、sandbox regression `4`、dashboard projections `4`、incidents `6`、reference source/change/performance ledgers各 `7`。
+- 验证：P16 deterministic tests `6/6` pass；真实构建 gate `12 pass / 0 fail`；生成 `configs/r53_r60/p16_quality_engineering_online_eval_schema_v0_1.json`、`data/manifests/r53_r60_p16_quality_engineering_online_eval_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p16_quality_engineering_online_eval_l4_scope_pass.zh-CN.md`。
+
+边界：P16 只证明质量工程和 online-eval runtime contract 在自身范围达到 enterprise-grade：eval registry、E0-E12 gates、trace/cost、failure/gold/regression、QA/defect、sandbox/budget、reference governance、dashboard projection 和 readiness report 都可审计、可回放、可被下一阶段 pilot / frontend / CI 工作依赖。`sustained_online_eval_window_not_run`、`ci_cd_provider_integration_not_enabled` 和 `frontend_eval_dashboard_visual_qa_not_run` 仍保留为显式 gap；P16 不声明长期生产监控窗口、CI/CD provider 集成或最终前端 eval dashboard 已完成。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

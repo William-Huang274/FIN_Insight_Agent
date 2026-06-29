@@ -1,0 +1,63 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "all_product_actions_append_ledger": true,
+    "artifact_browser_links_source_trace_and_gate": true,
+    "data_room_upload_requires_parser_and_provenance": true,
+    "frontend_state_is_projection_only": true,
+    "negative_rbac_cases_required": true,
+    "not_polished_react_or_external_pilot": true,
+    "review_actions_write_workpaper_event": true,
+    "sql_ledger_is_final_audit_source": true
+  },
+  "release_scope": "enterprise_workbench_product_surface_drill",
+  "required_api_surfaces": [
+    "task_lifecycle",
+    "task_drilldown",
+    "evidence_claim_gap_graph",
+    "review_action",
+    "artifact_browser",
+    "deliverable_render",
+    "data_room_upload",
+    "admin_ops"
+  ],
+  "required_journeys": [
+    "junior_analyst_create_reviewable_workpaper",
+    "senior_reviewer_approve_or_return",
+    "artifact_browser_trace_to_source",
+    "data_room_upload_to_provenance_pack",
+    "admin_ops_incident_and_quality_trace"
+  ],
+  "required_surfaces": [
+    "research_task_center",
+    "evidence_workbench",
+    "workpaper_builder",
+    "review_queue",
+    "artifact_browser",
+    "deliverable_studio",
+    "dashboard_projection",
+    "data_room_upload",
+    "admin_ops_console"
+  ],
+  "schema_version": "r53_r60_p15_enterprise_workbench_product_surface_v0_1",
+  "tables": [
+    "enterprise_workbench_product_surface_metadata_p15",
+    "workbench_product_surface_registry_p15",
+    "enterprise_api_surface_contracts_p15",
+    "frontend_information_architecture_p15",
+    "task_center_workflow_records_p15",
+    "evidence_workbench_panel_records_p15",
+    "workpaper_builder_panel_records_p15",
+    "review_queue_panel_records_p15",
+    "artifact_browser_records_p15",
+    "deliverable_studio_panel_records_p15",
+    "data_room_upload_contracts_p15",
+    "admin_ops_console_panel_records_p15",
+    "product_action_ledger_p15",
+    "rbac_product_permission_checks_p15",
+    "frontend_e2e_journey_records_p15",
+    "workbench_product_acceptance_records_p15",
+    "workbench_product_readiness_reports_p15",
+    "workbench_product_gate_results_p15"
+  ]
+}

@@ -775,6 +775,18 @@ P14 closeout（2026-06-30）：`P14_L4_scope_pass_data_ingestion_retrieval_contr
 
 边界：P14 只证明 data ingestion / retrieval control plane 在自身范围达到 enterprise-grade：source snapshot、fetch、parser、authority mapping、index refresh、retrieval strategy budget、ContextEngine bridge、quality probes、lineage 和 performance profile 都可审计、可回放、可被下游依赖。`not_full_crawler_or_production_refresh=true`，不声明所有公开源/所有公司已经全量刷新，不声明云端生产级 p95/p99 SLA，也不声明所有 live graph nodes 已经动态读取 P14 strategy。P15/P16 必须把 Workbench 产品流和 online eval / ops dashboard 接到这些 data-plane rows。
 
+## 4.6 P15 Enterprise Workbench Product Surface
+
+P15 closeout（2026-06-30）：`P15_L4_scope_pass_enterprise_workbench_product_surface_ready`。
+
+- runtime contract：新增 `EnterpriseWorkbenchProductSurfaceMetadata`、`WorkbenchProductSurfaceRegistry`、`EnterpriseApiSurfaceContract`、`FrontendInformationArchitecture`、`TaskCenterWorkflowRecord`、`EvidenceWorkbenchPanelRecord`、`WorkpaperBuilderPanelRecord`、`ReviewQueuePanelRecord`、`ArtifactBrowserRecord`、`DeliverableStudioPanelRecord`、`DataRoomUploadContract`、`AdminOpsConsolePanelRecord`、`ProductActionLedger`、`RbacProductPermissionCheck`、`FrontendE2EJourneyRecord`、`WorkbenchProductAcceptanceRecord`、`WorkbenchProductReadinessReport` 和 `WorkbenchProductGateResult`，全部进入 S1 runtime SQLite 主账本。
+- 真实构建：P15 消费 S6 Workbench drilldown、S7 Deliverable Studio / Dashboard Projection、P14 data-plane rows，materialize enterprise product surfaces `9` 个：Task Center、Evidence Workbench、Workpaper Builder、Review Queue、Artifact Browser、Deliverable Studio、Dashboard Projection、Data Room Upload、Admin/Ops Console。
+- API / IA / workflow：API contracts `9` 条、frontend IA nodes `9` 条；Task Center / Evidence / Workpaper / Review / Artifact / Deliverable / Upload / Admin Ops panel 均有 SQL-final projection row，且 Workpaper Builder / Review Queue 已对齐 S5 当前真实表 `workpaper_claim_cards`、`judgment_states`、`human_review_queue`。
+- RBAC / action / journey：permission checks `5` 条，包含 positive 和 negative cases；product action ledger `8` 条；deterministic E2E journeys `5` 条，覆盖 junior 创建可审底稿、senior 审核、artifact trace to source、data room upload to provenance gate、admin ops incident / quality trace。
+- 验证：P15 deterministic tests `6/6` pass；真实构建 gate `12 pass / 0 fail`；生成 `configs/r53_r60/p15_enterprise_workbench_product_surface_schema_v0_1.json`、`data/manifests/r53_r60_p15_enterprise_workbench_product_surface_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p15_enterprise_workbench_product_surface_l4_scope_pass.zh-CN.md`。
+
+边界：P15 只证明企业 Workbench 产品面合同在自身范围达到 enterprise-grade：surface registry、API boundary、frontend IA、SQL-final projections、RBAC 正反例、action ledger、E2E journey、data-room provenance gate 和 known gaps 都可审计、可回放、可被 P16 依赖。`polished_react_frontend_not_implemented`、`real_multi_user_product_pilot_not_run` 和 `production_backend_framework_not_replaced` 仍保留为显式 gap；P15 不声明最终 React 视觉体验、真实多用户 pilot 或 Java/Spring production gateway 已完成。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

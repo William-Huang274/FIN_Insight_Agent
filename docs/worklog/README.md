@@ -3,6 +3,7 @@
 Durable engineering notes for FinSight-Agent.
 
 - `integrated_execution_p_series/`: stage-aware worklogs for the 09/10/11/12 integrated execution phase; new entries use `NNN_<phase_id>_<topic>.md` naming.
+- `product_strategy/034_post_s10_completion_gap_register.md`: records the post-S10 completion gap register, confirming S0-S10 dependency summaries `11/11` pass while preserving seven production gaps and the P11-P16 next release-slice proposal.
 - `product_strategy/033_s10_enterprise_release_candidate_l4_scope_artifacts.md`: records S10 Enterprise Hardening / Release Candidate runtime closeout, including tenant/RBAC checks, load/chaos/SLA rows, incident dashboard, release readiness report, and online eval feedback lifecycle.
 - `product_strategy/032_s9_research_to_quant_lab_l4_scope_artifacts.md`: records S9 Research-to-Quant Lab runtime closeout, including approval-gated FactorHypothesis, PIT dataset rows, leakage guard, deterministic backtest smoke, RiskAttribution, FactorCard, and ResearchExperienceRecord outputs.
 - Latest: `403_r39_product_kpi_customer_capital_depth_repair.md` records Product-KPI parser/boundary tightening, Marketplace GOV operating-slot repair, CustomerDeployment non-customer-context closeout, and Capital two-ticker boundary audit. Latest depth matrix: Product/Business-KPI `441/603`, ProductSpec/Profile `603/603`, CustomerDeployment `531/603`, CapitalMarketDetail `601/603`, MarketLiquidity `603/603`, full parity `398/603`; remaining backfill queue is `236` rows.

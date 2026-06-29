@@ -1,0 +1,324 @@
+{
+  "completed_scope_items": [
+    {
+      "area": "program_governance",
+      "covered_by": [
+        "S0",
+        "S10"
+      ],
+      "evidence": "Machine-readable backlog, gate matrix, release board, S10 release-readiness report.",
+      "status": "scope_pass"
+    },
+    {
+      "area": "runtime_spine",
+      "covered_by": [
+        "S1",
+        "S5",
+        "S10"
+      ],
+      "evidence": "SQL-final ResearchTask/TaskRun/TaskEvent/WorkpaperEvent/artifact/checkpoint/trace ledger.",
+      "status": "scope_pass"
+    },
+    {
+      "area": "tool_sandbox_contract",
+      "covered_by": [
+        "S2",
+        "S10"
+      ],
+      "evidence": "SandboxPolicy, ApprovalPolicy, ToolInvocationLedger, blocked/approved tool-call rows.",
+      "status": "scope_pass"
+    },
+    {
+      "area": "retrieval_evidence_spine",
+      "covered_by": [
+        "S3"
+      ],
+      "evidence": "RetrievalIntent, RoutePolicyMatrix, RouteExecution, candidates, selected evidence, qrels, typed gaps.",
+      "status": "scope_pass"
+    },
+    {
+      "area": "graph_skill_context_registry_minimal",
+      "covered_by": [
+        "S4"
+      ],
+      "evidence": "GraphPack, SkillPack, MemoryPack, ContextInjectionPlan and context selection gates.",
+      "status": "scope_pass"
+    },
+    {
+      "area": "workpaper_lead_review",
+      "covered_by": [
+        "S5",
+        "S6"
+      ],
+      "evidence": "ResearchObjectiveContract, Workpaper sections, ClaimCards, LeadReviewCheckpoint, JudgmentState, review actions.",
+      "status": "scope_pass"
+    },
+    {
+      "area": "deliverable_dashboard_projection",
+      "covered_by": [
+        "S7"
+      ],
+      "evidence": "DeliverablePlan, RenderJob, dashboard projection, composer permission and quality gates.",
+      "status": "scope_pass"
+    },
+    {
+      "area": "secondary_market_capital_feedback",
+      "covered_by": [
+        "S8"
+      ],
+      "evidence": "603 issuer packs, bounded signals, typed gaps, graph edges, source registry.",
+      "status": "scope_pass"
+    },
+    {
+      "area": "research_to_quant_lab",
+      "covered_by": [
+        "S9"
+      ],
+      "evidence": "FactorHypothesis, PIT dataset, leakage guard, deterministic backtest smoke, FactorCard, experience records.",
+      "status": "scope_pass"
+    },
+    {
+      "area": "release_candidate_quality_ops_subset",
+      "covered_by": [
+        "S10"
+      ],
+      "evidence": "Tenant/RBAC, load/chaos/SLA, incident dashboard, release readiness, online eval feedback lifecycle.",
+      "status": "scope_pass"
+    }
+  ],
+  "decision": "R53-R60 reached controlled internal release-candidate scope pass; next work should target production pilot and productized runtime/data/frontend/eval gaps, not claim full production.",
+  "dependencies": [
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S0_L4_scope_pass",
+      "slice_id": "S0",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_unified_backlog_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S1_L4_scope_pass",
+      "slice_id": "S1",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s1_runtime_task_spine_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S2_L4_scope_pass",
+      "slice_id": "S2",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s2_tool_sandbox_trace_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S3_L4_scope_pass",
+      "slice_id": "S3",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s3_retrieval_evidence_spine_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S4_L4_scope_pass",
+      "slice_id": "S4",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s4_context_graph_skill_registry_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S5_L4_scope_pass",
+      "slice_id": "S5",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s5_workpaper_lead_review_workflow_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S6_L4_scope_pass",
+      "slice_id": "S6",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s6_workbench_frontdoor_drilldown_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S7_L4_scope_pass",
+      "slice_id": "S7",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s7_deliverable_studio_dashboard_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S8_L4_scope_pass",
+      "slice_id": "S8",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s8_secondary_market_capital_feedback_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S9_L4_scope_pass",
+      "slice_id": "S9",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s9_research_to_quant_lab_summary_v0_1.json"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "exists": true,
+      "release_decision": "S10_L4_scope_pass_release_candidate_ready",
+      "slice_id": "S10",
+      "status": "pass",
+      "summary_file": "data/manifests/r53_r60_s10_enterprise_release_candidate_summary_v0_1.json"
+    }
+  ],
+  "dependency_count": 11,
+  "dependency_pass_count": 11,
+  "next_release_slices": [
+    {
+      "name": "Production Pilot Readiness Gate",
+      "primary_gaps": [
+        "P-S10-001",
+        "P-PRD-001"
+      ],
+      "slice_id": "P11",
+      "target": "Cloud/internal pilot evidence for L4_production_candidate, without external client access."
+    },
+    {
+      "name": "Durable Runtime + HIL + Resource Router",
+      "primary_gaps": [
+        "P-R56-001"
+      ],
+      "slice_id": "P12",
+      "target": "Actual agent graph execution uses RuntimeFacade, checkpoint/resume, HIL and model/resource budget ledger."
+    },
+    {
+      "name": "Graph/Skill/Memory Lifecycle",
+      "primary_gaps": [
+        "P-R57-001"
+      ],
+      "slice_id": "P13",
+      "target": "Plug-in graph/skill/memory packs with staging, eval, approval, compression and invalidation gates."
+    },
+    {
+      "name": "Data Ingestion + Retrieval Control Plane",
+      "primary_gaps": [
+        "P-R58-001"
+      ],
+      "slice_id": "P14",
+      "target": "Source snapshots, parser runs, lineage, qrels, route budget and DB/index performance profiles become first-class runtime rows."
+    },
+    {
+      "name": "Enterprise Workbench Product Surface",
+      "primary_gaps": [
+        "P-R59-001"
+      ],
+      "slice_id": "P15",
+      "target": "Task Center, Evidence Workbench, Workpaper Builder, Review Queue, Artifact Browser, Admin/Ops Console and Data Room surfaces."
+    },
+    {
+      "name": "Quality Engineering + Online Eval Platform",
+      "primary_gaps": [
+        "P-R60-001"
+      ],
+      "slice_id": "P16",
+      "target": "Eval registry, token/cost ledger, node/full-chain gates, CI hooks, sandbox regression, defect/gold/failure lifecycle."
+    }
+  ],
+  "production_gaps": [
+    {
+      "area": "production_sla_and_cloud_pilot",
+      "blocked_by": "needs pilot environment and longer dogfood window",
+      "current_state": "local deterministic release-candidate gate only",
+      "gap_id": "P-S10-001",
+      "required_next_work": "Run cloud-backed multi-user pilot with queue/worker/provider failures, p95/p99 latency, cost budgets, recovery rate, alert routing, rollback rehearsal, and on-call runbook evidence.",
+      "severity": "release_blocker_for_L4_production",
+      "source_docs": [
+        "35_R60",
+        "36_S10"
+      ],
+      "why_not_done": "S10 intentionally records controlled internal pilot readiness, not cloud/production SLO proof."
+    },
+    {
+      "area": "durable_agent_runtime",
+      "blocked_by": "requires agent graph integration pass",
+      "current_state": "S1/S2/S4/S10 provide SQL ledger, tool policy, context registry and trace rows",
+      "gap_id": "P-R56-001",
+      "required_next_work": "Wire actual graph nodes through RuntimeFacade, model/resource router, checkpoint/resume, HIL approval and replay; export SQL trace to optional OTel/Langfuse/Phoenix-compatible spans.",
+      "severity": "high",
+      "source_docs": [
+        "31_R56"
+      ],
+      "why_not_done": "LangGraph checkpoint bridge, HIL interrupt/resume, resource/model router ledger, trace export adapter and runtime replay gate are not fully wired to real graph execution."
+    },
+    {
+      "area": "graph_skill_memory_lifecycle",
+      "blocked_by": "needs enterprise customization and context lifecycle design pass",
+      "current_state": "S4 has minimal GraphPack/SkillPack/MemoryPack registry and ContextInjectionPlan",
+      "gap_id": "P-R57-001",
+      "required_next_work": "Implement plug-in graph/skill/memory lifecycle with staging, eval, human approval, canary promotion, invalidation and compression artifacts connected to ContextEngine.",
+      "severity": "high",
+      "source_docs": [
+        "32_R57"
+      ],
+      "why_not_done": "Tenant overlays, SkillPatch/GraphPatch/MemoryPatch staging, compression quality gates, staleness/supersession/permission invalidation and behavior eval suite are still planned."
+    },
+    {
+      "area": "data_ingestion_retrieval_control_plane",
+      "blocked_by": "requires data engineering release slice",
+      "current_state": "S3 covers retrieval evidence spine; prior R-series covers many public-source rows",
+      "gap_id": "P-R58-001",
+      "required_next_work": "Build SQL/ObjectStore ingestion control plane with source snapshots, parser metrics, lineage, refresh policy, performance profiles, qrels and retrieval-context bridge.",
+      "severity": "high",
+      "source_docs": [
+        "33_R58"
+      ],
+      "why_not_done": "IngestionJob, RawSourceDocument, FetchAttempt, ParserRun, storage lineage convention, parser tool contract, DB performance profile and ContextEngine retrieval bridge are not fully productized."
+    },
+    {
+      "area": "enterprise_backend_frontend_product_surface",
+      "blocked_by": "requires backend/frontend implementation program",
+      "current_state": "S6/S7 expose workbench drilldown and deliverable/dashboard deterministic surfaces; S10 has release candidate RBAC/load/incident objects",
+      "gap_id": "P-R59-001",
+      "required_next_work": "Create enterprise API boundary, idempotency, lease/heartbeat/recovery, artifact/review/deliverable APIs, and product-grade frontend workflows with E2E checks.",
+      "severity": "high",
+      "source_docs": [
+        "34_R59"
+      ],
+      "why_not_done": "Java gateway is not yet production framework; frontend still lacks full Research Task Center, Evidence Workbench, Workpaper Builder, Review Queue, Artifact Browser, Admin/Ops Console and upload/data room product surfaces."
+    },
+    {
+      "area": "full_eval_observability_quality_engineering",
+      "blocked_by": "requires quality engineering release slice",
+      "current_state": "S10 has release-candidate subset: demand acceptance, incident, load/chaos/SLA, feedback lifecycle and release report",
+      "gap_id": "P-R60-001",
+      "required_next_work": "Implement runtime eval store, token/cost ledger, node/full-chain eval suites, QAExecutionPlan/DefectRecord, sandbox regression, BudgetExceededGate and dashboard APIs.",
+      "severity": "high",
+      "source_docs": [
+        "35_R60"
+      ],
+      "why_not_done": "Full EvalCase/EvalDataset/EvalRun, TokenCostLedger, parser/chunk/retrieval/context/tool/deliverable node gates, CI/CD integration, sandbox regression, BudgetExceededGate and eval dashboard API are not complete."
+    },
+    {
+      "area": "product_dogfood_and_user_acceptance",
+      "blocked_by": "requires agreed pilot case catalog and reviewer protocol",
+      "current_state": "Release candidate artifacts exist but not validated by repeated real analyst/reviewer workflows",
+      "gap_id": "P-PRD-001",
+      "required_next_work": "Run internal dogfood over representative research tasks, capture reviewer feedback, defect lifecycle, token/cost quality metrics and accepted/rejected deliverables.",
+      "severity": "release_blocker_for_external_pilot",
+      "source_docs": [
+        "PRD_20260628",
+        "36_S10"
+      ],
+      "why_not_done": "S10 deterministic gates cannot prove workflow value, user trust, reviewer acceptance, or token/cost ROI across real tasks."
+    }
+  ],
+  "schema_version": "r53_r60_post_s10_completion_gap_register_v0_1",
+  "scope": "post_s10_completion_gap_audit",
+  "status": "pass"
+}

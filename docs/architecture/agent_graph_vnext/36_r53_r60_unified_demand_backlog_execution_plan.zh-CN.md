@@ -700,6 +700,31 @@ S10 closeout（2026-06-29）：`S10_L4_scope_pass_release_candidate_ready`。
 
 边界：S10 只证明 Enterprise Hardening / Release Candidate 在自身范围达到 enterprise-grade，可进入受控内部 pilot / dogfood 候选；本轮不证明正式 `L4_production_pass`，也不替代云端 SLA、on-call、审计留存、外部客户试点和长期 online eval 的生产证据。
 
+## 4.1 Post-S10 Completion Gap Register
+
+S10 完成后必须立即生成 post-S10 gap register，而不是直接把 release candidate 当作生产完成。
+
+当前 register：`data/manifests/r53_r60_post_s10_completion_gap_register_v0_1.json`；可读报告：`docs/internal/vnext_20260610/r53_r60_post_s10_completion_gap_register.zh-CN.md`。
+
+真实结果：
+
+- S0-S10 dependency summaries：`11/11 pass`；
+- covered scope items：`10`；
+- remaining production gaps：`7`；
+- suggested next release slices：`6`。
+
+这些 remaining gaps 不是 S0-S10 的失败项，而是从 controlled internal release-candidate 走向真实生产级平台必须补齐的下一层证据：
+
+1. `P-S10-001 production_sla_and_cloud_pilot`：云端/生产级 SLA、on-call、rollback、alert 和多用户试点证据；
+2. `P-R56-001 durable_agent_runtime`：真实 graph execution 的 RuntimeFacade、checkpoint/resume、HIL、resource/model router 和 replay；
+3. `P-R57-001 graph_skill_memory_lifecycle`：GraphPack / SkillPack / MemoryPack 的 staging、eval、approval、tenant overlay、canary 和 invalidation；
+4. `P-R58-001 data_ingestion_retrieval_control_plane`：IngestionJob、RawSourceDocument、FetchAttempt、ParserRun、lineage、qrels、performance profile 和 retrieval-context bridge；
+5. `P-R59-001 enterprise_backend_frontend_product_surface`：企业级 API boundary、artifact/review/deliverable APIs、Task Center、Evidence Workbench、Review Queue、Data Room 和 Admin/Ops Console；
+6. `P-R60-001 full_eval_observability_quality_engineering`：EvalCase/EvalDataset/EvalRun、TokenCostLedger、node/full-chain gates、CI hooks、sandbox regression、BudgetExceededGate 和 eval dashboard；
+7. `P-PRD-001 product_dogfood_and_user_acceptance`：真实 analyst / reviewer dogfood、缺陷闭环、token/cost ROI 和 accepted / rejected deliverables。
+
+下一阶段建议按 P11-P16 推进：`P11 Production Pilot Readiness Gate`、`P12 Durable Runtime + HIL + Resource Router`、`P13 Graph/Skill/Memory Lifecycle`、`P14 Data Ingestion + Retrieval Control Plane`、`P15 Enterprise Workbench Product Surface`、`P16 Quality Engineering + Online Eval Platform`。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

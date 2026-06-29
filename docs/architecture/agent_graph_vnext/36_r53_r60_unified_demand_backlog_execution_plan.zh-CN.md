@@ -762,6 +762,19 @@ P13 closeout（2026-06-30）：`P13_L4_scope_pass_graph_skill_memory_lifecycle_r
 
 边界：P13 只证明 GraphPack / SkillPack / MemoryPack 的 lifecycle control plane 在自身范围达到 enterprise-grade：staging、eval、approval、tenant overlay、canary、promotion、active version、rollback/invalidation 和 ContextEngine policy 都可审计、可回放、可被下游依赖。`lifecycle_rollout_status=controlled_lifecycle_drill_only`，不声明真实多租户 canary traffic 已跑，不允许 production agent 自行修改并提权 graph/skill/memory，也不声明所有 live LangGraph nodes 已动态读取这些 lifecycle policies。P14/P15/P16 必须把 data plane、Workbench 产品流和 online eval 继续接到这些 active capability versions。
 
+## 4.5 P14 Data Ingestion / Retrieval Control Plane
+
+P14 closeout（2026-06-30）：`P14_L4_scope_pass_data_ingestion_retrieval_control_plane_ready`。
+
+- runtime contract：新增 `DataIngestionControlPlaneMetadata`、`SourceSnapshotRegistry`、`IngestionJob`、`RawSourceDocument`、`FetchAttempt`、`ParserRun`、`ParsedObjectRecord`、`AuthorityMappingRecord`、`IndexRefreshRecord`、`RetrievalStrategyPack`、`RetrievalBudgetRecord`、`RetrievalContextBridgeRecord`、`RetrievalQualityProbeRecord`、`DataQualityObservation`、`DatabasePerformanceProfile`、`IngestionLineageEdge`、`DataPlaneAcceptanceRecord`、`DataPlaneReadinessReport` 和 `DataPlaneGateResult`，全部进入 S1 runtime SQLite 主账本。
+- 真实构建：P14 消费 S3 retrieval evidence spine 和 P13 ContextEngine policy，materialize source snapshots `6`、ingestion jobs `6`、raw documents `7`、fetch attempts `7`、parser runs `6`、parsed objects `8`、authority mappings `9`。
+- parser / authority 边界：`p14_raw_unparsed_web_snapshot_blocked` 因缺 source-specific parser 被 fail-closed，`p14_authority_blocked_raw_snapshot_no_parser` 不能进入 context / ClaimCard / exact ledger；accepted authority modes 覆盖 exact company fact、technical fact、deployment signal 和 macro context。
+- retrieval control plane：index refresh rows `5`，覆盖 `sql_exact`、`object_bm25`、`bm25`、`milvus_semantic`、`graph`；strategy packs `5`，覆盖 exact financial metric、product spec / architecture、customer deployment / adoption、capital funding / ownership、retrievable gap repair；retrieval budgets `20`，全部带 candidate / rerank / context quota。
+- ContextEngine bridge / performance：为 `research_lead`、`fundamental_analyst`、`product_technology_analyst`、`industry_supply_chain_analyst` 生成 retrieval-context bridge `4` 条，全部绑定 P13 policy，固定 `exact_ref_policy=preserve_exact_refs_not_summaries`；DB/index/parser/context performance profiles `5` 条，lineage edges `53` 条。
+- 验证：P14 deterministic tests `6/6` pass；真实构建 gate `12 pass / 0 fail`；生成 `configs/r53_r60/p14_data_ingestion_retrieval_control_plane_schema_v0_1.json`、`data/manifests/r53_r60_p14_data_ingestion_retrieval_control_plane_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p14_data_ingestion_retrieval_control_plane_l4_scope_pass.zh-CN.md`。
+
+边界：P14 只证明 data ingestion / retrieval control plane 在自身范围达到 enterprise-grade：source snapshot、fetch、parser、authority mapping、index refresh、retrieval strategy budget、ContextEngine bridge、quality probes、lineage 和 performance profile 都可审计、可回放、可被下游依赖。`not_full_crawler_or_production_refresh=true`，不声明所有公开源/所有公司已经全量刷新，不声明云端生产级 p95/p99 SLA，也不声明所有 live graph nodes 已经动态读取 P14 strategy。P15/P16 必须把 Workbench 产品流和 online eval / ops dashboard 接到这些 data-plane rows。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

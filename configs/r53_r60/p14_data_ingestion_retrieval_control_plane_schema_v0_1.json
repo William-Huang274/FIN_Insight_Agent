@@ -1,0 +1,50 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "context_bridge_preserves_exact_refs": true,
+    "failed_fetch_or_parser_creates_typed_gap": true,
+    "index_refresh_requires_lineage_ref": true,
+    "milvus_is_semantic_recall_not_exact_authority": true,
+    "not_full_crawler_or_production_refresh": true,
+    "parser_run_required_before_authority_mapping": true,
+    "raw_source_snapshot_is_not_fact_authority": true,
+    "sql_ledger_is_final_audit_source": true
+  },
+  "release_scope": "data_ingestion_retrieval_control_plane_drill",
+  "required_intents": [
+    "exact_financial_metric",
+    "product_spec_architecture",
+    "customer_deployment_adoption",
+    "capital_funding_ownership",
+    "retrievable_gap_repair"
+  ],
+  "required_source_modalities": [
+    "api_json",
+    "http_html",
+    "playwright_rendered_html",
+    "pdf_table",
+    "sql_index"
+  ],
+  "schema_version": "r53_r60_p14_data_ingestion_retrieval_control_plane_v0_1",
+  "tables": [
+    "data_ingestion_control_plane_metadata_p14",
+    "source_snapshot_registry_p14",
+    "ingestion_jobs_p14",
+    "raw_source_documents_p14",
+    "fetch_attempts_p14",
+    "parser_runs_p14",
+    "parsed_object_records_p14",
+    "authority_mapping_records_p14",
+    "index_refresh_records_p14",
+    "retrieval_strategy_packs_p14",
+    "retrieval_budget_records_p14",
+    "retrieval_context_bridge_records_p14",
+    "retrieval_quality_probe_records_p14",
+    "data_quality_observations_p14",
+    "database_performance_profiles_p14",
+    "ingestion_lineage_edges_p14",
+    "data_plane_acceptance_records_p14",
+    "data_plane_readiness_reports_p14",
+    "data_plane_gate_results_p14"
+  ]
+}

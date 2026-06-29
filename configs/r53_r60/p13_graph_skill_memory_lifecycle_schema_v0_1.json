@@ -1,0 +1,52 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "exact_fact_refs_preserved_not_summarized": true,
+    "memory_pack_has_no_standalone_fact_authority": true,
+    "negative_authority_patch_must_be_blocked": true,
+    "not_full_multi_tenant_rollout": true,
+    "production_agents_cannot_self_promote_graph_skill_memory": true,
+    "sql_ledger_is_final_audit_source": true,
+    "staging_eval_human_approval_canary_promote_required": true,
+    "tenant_overlay_must_not_mutate_global_asset": true
+  },
+  "release_scope": "graph_skill_memory_lifecycle_control_plane_drill",
+  "required_asset_types": [
+    "graph",
+    "skill",
+    "memory"
+  ],
+  "required_graph_packs": [
+    "retrieval_evidence_spine",
+    "dimension_evidence_portfolio",
+    "product_intelligence_graph",
+    "product_relationship_graph",
+    "research_graph",
+    "source_authority_mart"
+  ],
+  "required_memory_tiers": [
+    "node_scratch_memory",
+    "run_memory",
+    "project_memory",
+    "company_watchlist_memory",
+    "org_private_memory",
+    "global_playbook_memory"
+  ],
+  "schema_version": "r53_r60_p13_graph_skill_memory_lifecycle_v0_1",
+  "tables": [
+    "graph_skill_memory_lifecycle_metadata_p13",
+    "capability_asset_inventory_p13",
+    "asset_patch_proposals_p13",
+    "asset_patch_eval_results_p13",
+    "asset_human_approval_records_p13",
+    "tenant_overlay_records_p13",
+    "asset_canary_runs_p13",
+    "asset_promotion_records_p13",
+    "asset_active_versions_p13",
+    "asset_invalidation_records_p13",
+    "contextengine_injection_policy_records_p13",
+    "asset_lifecycle_acceptance_records_p13",
+    "asset_lifecycle_readiness_reports_p13",
+    "asset_lifecycle_gate_results_p13"
+  ]
+}

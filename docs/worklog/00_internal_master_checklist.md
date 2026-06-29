@@ -3,6 +3,7 @@
 ## Integrated 09-12 Execution Governance
 
 - [x] Harden 12 integrated execution plan with enterprise-grade SQL/ObjectStore/Redis/Milvus storage discipline.
+- [x] R53-R60 P13 Graph / Skill / Memory Lifecycle: add SQL-final capability asset inventory, patch staging, deterministic eval, HIL approval/rejection, tenant overlay, internal canary, promotion, active-version, invalidation, ContextEngine injection policy, and L4-scope gate artifacts.
 - [x] Add root-cause-first and no-weak-fallback policy for P0-P10 tasks.
 - [x] Add parser/chunker/table/structured-extraction data-quality eval requirements to the P-series plan.
 - [x] Update project-worklog skill with stage-aware subfolder and `NNN_<phase_id>_<topic>` naming rules.

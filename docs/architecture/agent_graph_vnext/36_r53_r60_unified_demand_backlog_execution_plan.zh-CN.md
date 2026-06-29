@@ -748,6 +748,20 @@ P12 closeout（2026-06-30）：`P12_L4_scope_pass_runtime_drill_ready`。
 
 边界：P12 只证明 `FinSightResearchRuntimeFacade`、checkpoint/resume、HIL approval、resource/model router、replay 和 trace export 这些 durable runtime contract 已能通过 deterministic runtime drill 达到自身范围内 enterprise-grade；`full_runtime_migration_status=partial_migration_runtime_drill_only`，不声明所有 production LangGraph nodes 已迁移，也不证明云端高并发 GPU queue pressure。P13/P14/P15 必须把真实 graph / ContextEngine / data plane / Workbench 产品流接到同一 SQL-final runtime ledger。
 
+## 4.4 P13 Graph / Skill / Memory Lifecycle
+
+P13 closeout（2026-06-30）：`P13_L4_scope_pass_graph_skill_memory_lifecycle_ready`。
+
+- runtime contract：新增 `GraphSkillMemoryLifecycleMetadata`、`CapabilityAssetInventory`、`AssetPatchProposal`、`AssetPatchEvalResult`、`AssetHumanApprovalRecord`、`TenantOverlayRecord`、`AssetCanaryRun`、`AssetPromotionRecord`、`AssetActiveVersion`、`AssetInvalidationRecord`、`ContextEngineInjectionPolicyRecord`、`AssetLifecycleAcceptanceRecord`、`AssetLifecycleReadinessReport` 和 `AssetLifecycleGateResult`，全部进入 S1 runtime SQLite 主账本。
+- 真实构建：P13 读取 S4 已有 `GraphPack` / `SkillPack` / `MemoryPack` registry，不重做资产定义；本轮 materialize `28` 条 baseline asset inventory，其中 graph `6`、skill `16`、memory `6`。
+- 生命周期链路：staged patch proposal `4` 条，覆盖 graph / skill / memory；其中 `p13_patch_skill_auto_revenue_from_deployment_blocked` 被 deterministic eval 挡住，`blocked_negative_patch_count=1`，不能进入 approval/canary/promotion。
+- HIL / tenant / canary：human approval records `4` 条（`3` approved、`1` rejected），tenant overlay `3` 条且 `mutates_global_asset=0`，internal canary `3` 条且 `fail_count=0`。
+- promotion / invalidation：promotion records `3` 条，active-version rows `3` 条，invalidation rows `4` 条，其中 rejected unsafe patch 进入 `candidate_invalidated_no_activation`。
+- ContextEngine policy：为 `research_lead`、`fundamental_analyst`、`product_technology_analyst`、`industry_supply_chain_analyst` 生成 `4` 条 injection policy rows，固定 `exact_ref_policy=preserve_exact_refs_not_summaries` 和 `memory_fact_authority=memory_not_fact_authority`。
+- 验证：P13 deterministic tests `6/6` pass；真实构建 gate `12 pass / 0 fail`；生成 `configs/r53_r60/p13_graph_skill_memory_lifecycle_schema_v0_1.json`、`data/manifests/r53_r60_p13_graph_skill_memory_lifecycle_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p13_graph_skill_memory_lifecycle_l4_scope_pass.zh-CN.md`。
+
+边界：P13 只证明 GraphPack / SkillPack / MemoryPack 的 lifecycle control plane 在自身范围达到 enterprise-grade：staging、eval、approval、tenant overlay、canary、promotion、active version、rollback/invalidation 和 ContextEngine policy 都可审计、可回放、可被下游依赖。`lifecycle_rollout_status=controlled_lifecycle_drill_only`，不声明真实多租户 canary traffic 已跑，不允许 production agent 自行修改并提权 graph/skill/memory，也不声明所有 live LangGraph nodes 已动态读取这些 lifecycle policies。P14/P15/P16 必须把 data plane、Workbench 产品流和 online eval 继续接到这些 active capability versions。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

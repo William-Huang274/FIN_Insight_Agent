@@ -571,6 +571,47 @@ Slice closeout：`L4_scope_pass`（Deliverable Studio / Dashboard Projection 范
 | `U7-D04-dashboard-projection-updater` | R55 / R59 | task/gap/review/artifact projection | UI 状态回到 SQL/artifact refs，无幽灵状态 |
 | `U7-D05-composer-permission-gate` | R55 / R59 | Composer 工具边界 | Composer 不可 retrieval / DB / web |
 
+#### S7 v0.1 implementation closeout
+
+2026-06-29 已把 S7 落成 S5/S6 ledger-native 的 Deliverable Studio / Dashboard Projection，并达到 S7 范围内的 `L4_scope_pass`。
+
+核心生成物：
+
+- `src/sec_agent/r53_r60_deliverable_studio_dashboard.py`
+- `scripts/engineering/build_r53_r60_s7_deliverable_studio_dashboard.py`
+- `tests/test_r53_r60_deliverable_studio_dashboard.py`
+- `apps/workbench/backend/app.py`
+- `apps/workbench/frontend/vite/src/main.tsx`
+- `apps/workbench/frontend/vite/src/workbench.css`
+- `configs/r53_r60/s7_deliverable_studio_dashboard_schema_v0_1.json`
+- `data/manifests/r53_r60_s7_deliverable_studio_dashboard_gate_rows_v0_1.jsonl`
+- `data/manifests/r53_r60_s7_deliverable_studio_dashboard_summary_v0_1.json`
+- `docs/internal/vnext_20260610/r53_r60_s7_deliverable_studio_dashboard_l4_scope_pass.zh-CN.md`
+
+本次真实构建结果：
+
+- DeliverablePlan：`1`，绑定 `s5_scope_task_workpaper_lead_review` review-ready Workpaper；
+- NarrativeSurfaceContract：`4`，覆盖 internal workpaper、client brief、evidence appendix、dashboard projection；
+- RenderJob：`4`，覆盖 Markdown、Word、Excel appendix、dashboard JSON；
+- DashboardProjection：`1`，SQL-backed，并回写 artifact refs；
+- ComposerPermissionGate：`1`，禁止 retrieval / DB query / web / Milvus / parser fetch / source mutation；
+- DeliverableQualityGate：`4 pass / 0 fail`，覆盖 citation、gap、appendix、artifact refs；
+- S7 gate rows：`10 pass / 0 fail`；
+- closeout：`S7_L4_scope_pass`；
+- next slice unlocked：`S8`。
+
+本轮 gate 覆盖：
+
+- S7 必须消费 S5/S6 ledgered Workpaper / task projection，不能直接从 raw evidence 或 frontend state 拼交付物；
+- DeliverablePlan 必须声明 audience、formats、source Workpaper、evidence boundary 和 dashboard panel；
+- NarrativeSurfaceContract 必须明确每个输出面的用途、输入、禁止行为和 reviewer requirement；
+- Markdown / DOCX / XLSX / dashboard JSON 必须有 render job、hash、byte size、artifact ref 和 SQL ledger；
+- Composer 只允许 render/write projection，不允许 retrieval、DB query、web search、parser fetch 或 source mutation；
+- dashboard projection 必须从 SQL/artifact refs 生成，不能成为前端幽灵状态；
+- S6 Workbench drilldown 的 gate row 收集已补 slice 隔离测试，后续 S7+ gate artifact 不得污染 S6 projection。
+
+边界：S7 只证明 deterministic Deliverable Studio / Dashboard Projection 在自身范围达到 enterprise-grade；本轮不证明客户可直接发布的编辑质量、不做 PPT 模板系统、不做 RBAC / tenant / SLA、不跑 full-chain answer quality eval，也不允许 Composer 自行找新证据。S8 后续负责 Secondary Market / Capital Feedback Pack，S10 后续负责全产品 release candidate。
+
 ### S8 Secondary Market / Capital Feedback Pack
 
 目标：把二级市场资金面、持仓、信用、资本动作、估值 price-in、期权/期货等接入研究判断，但不冒充基本面事实。

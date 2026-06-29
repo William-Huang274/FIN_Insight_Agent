@@ -52,6 +52,7 @@ S6_ENDPOINTS = (
 
 DRILLDOWN_SURFACES = ("sections", "claims", "gaps", "lead_review", "judgment", "context", "gates", "artifacts", "events")
 REQUIRED_UI_PANELS = ("task_center", "evidence_drilldown", "workpaper_builder", "review_queue", "ops_panel")
+WORKBENCH_VISIBLE_GATE_SLICES = frozenset({"S0", "S1", "S2", "S3", "S4", "S5", "S6"})
 
 
 @dataclass(frozen=True)
@@ -703,6 +704,8 @@ def collect_gate_rows(root: Path) -> list[dict[str, Any]]:
             for line in path.read_text(encoding="utf-8").splitlines():
                 if line.strip():
                     row = json.loads(line)
+                    if str(row.get("slice_id") or "") not in WORKBENCH_VISIBLE_GATE_SLICES:
+                        continue
                     row["gate_artifact"] = rel_path(path, root)
                     rows.append(row)
         except (OSError, json.JSONDecodeError):

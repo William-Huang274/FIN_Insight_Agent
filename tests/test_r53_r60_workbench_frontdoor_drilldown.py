@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 import sys
 from pathlib import Path
@@ -54,6 +55,31 @@ def test_build_s6_projection_outputs_l4_scope_pass(tmp_path: Path) -> None:
     assert (tmp_path / summary["outputs"]["gate_rows"]).exists()
     assert (tmp_path / summary["outputs"]["summary"]).exists()
     assert (tmp_path / summary["outputs"]["closeout_report"]).exists()
+
+
+def test_s6_gate_rows_ignore_later_slice_artifacts(tmp_path: Path) -> None:
+    seed_s6_fixture(tmp_path)
+    build_s6_projection(tmp_path)
+    baseline_summary = build_s6_projection(tmp_path)
+    baseline_projection_gate_count = baseline_summary["projection"]["gate_count"]
+    s7_gate_rows = tmp_path / "data" / "manifests" / "r53_r60_s7_deliverable_studio_dashboard_gate_rows_v0_1.jsonl"
+    s7_gate_rows.parent.mkdir(parents=True, exist_ok=True)
+    s7_gate_rows.write_text(
+        json.dumps(
+            {
+                "schema_version": "r53_r60_s7_deliverable_studio_dashboard_v0_1",
+                "slice_id": "S7",
+                "gate_id": "future_slice_gate_should_not_pollute_s6",
+                "status": "pass",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    second_summary = build_s6_projection(tmp_path)
+
+    assert second_summary["projection"]["gate_count"] == baseline_projection_gate_count
 
 
 def test_s6_task_center_drilldown_review_and_ops_are_sql_final(tmp_path: Path) -> None:

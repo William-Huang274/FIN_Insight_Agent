@@ -334,6 +334,14 @@ select:focus {
   vertical-align: top;
 }
 
+.embedded-table {
+  margin-top: 12px;
+}
+
+.embedded-table h3 {
+  margin-top: 0;
+}
+
 @media (max-width: 980px) {
   .agent-grid,
   .session-grid,

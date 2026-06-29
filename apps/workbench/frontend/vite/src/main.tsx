@@ -321,6 +321,18 @@ type R53R60ScopeGate = {
   boundary?: string;
 };
 
+type R53R60DeliverableProjection = {
+  deliverable_plan: Record<string, unknown>;
+  narrative_surfaces: Record<string, unknown>[];
+  render_jobs: Record<string, unknown>[];
+  quality_gates: Record<string, unknown>[];
+  composer_permission_gate: Record<string, unknown>;
+};
+
+type R53R60DashboardProjection = {
+  dashboard_projection: Record<string, unknown>;
+};
+
 type NativeCheckpointInspection = {
   schema_version: string;
   checkpoint_path: string;
@@ -385,6 +397,8 @@ function App() {
   const [r53r60ReviewQueue, setR53R60ReviewQueue] = useState<R53R60ReviewQueue | null>(null);
   const [r53r60Ops, setR53R60Ops] = useState<R53R60OpsProjection | null>(null);
   const [r53r60ScopeGate, setR53R60ScopeGate] = useState<R53R60ScopeGate | null>(null);
+  const [r53r60Deliverables, setR53R60Deliverables] = useState<R53R60DeliverableProjection | null>(null);
+  const [r53r60DashboardProjection, setR53R60DashboardProjection] = useState<R53R60DashboardProjection | null>(null);
   const [r53r60ReviewComment, setR53R60ReviewComment] = useState("Workbench reviewer note");
   const [dataBuildSteps, setDataBuildSteps] = useState<DataBuildStep[]>([]);
   const [dataBuildStepId, setDataBuildStepId] = useState("");
@@ -594,6 +608,7 @@ function App() {
     setR53R60Drilldown(drilldown.drilldown);
     setR53R60ReviewQueue(reviewQueue);
     setR53R60Ops(ops.ops);
+    await loadR53R60Deliverables(taskId);
   }
 
   async function submitR53R60ReviewAction(action: string) {
@@ -607,6 +622,24 @@ function App() {
           reviewer_role: "senior_analyst",
         }),
       });
+      await loadR53R60Task(r53r60SelectedTaskId);
+    });
+  }
+
+  async function loadR53R60Deliverables(taskId = r53r60SelectedTaskId) {
+    if (!taskId) return;
+    const [deliverables, dashboard] = await Promise.all([
+      requestJson<R53R60DeliverableProjection>(`/api/r53-r60/tasks/${encodeURIComponent(taskId)}/deliverables`),
+      requestJson<R53R60DashboardProjection>(`/api/r53-r60/tasks/${encodeURIComponent(taskId)}/dashboard-projection`),
+    ]);
+    setR53R60Deliverables(deliverables);
+    setR53R60DashboardProjection(dashboard);
+  }
+
+  async function renderR53R60Deliverables() {
+    if (!r53r60SelectedTaskId) return;
+    await runBusy("r53_r60_render", async () => {
+      await requestJson(`/api/r53-r60/tasks/${encodeURIComponent(r53r60SelectedTaskId)}/render-deliverables`, { method: "POST" });
       await loadR53R60Task(r53r60SelectedTaskId);
     });
   }
@@ -1181,11 +1214,14 @@ function App() {
             reviewQueue={r53r60ReviewQueue}
             ops={r53r60Ops}
             scopeGate={r53r60ScopeGate}
+            deliverables={r53r60Deliverables}
+            dashboardProjection={r53r60DashboardProjection}
             reviewComment={r53r60ReviewComment}
             busy={busy}
             onSelectTask={loadR53R60Task}
             onReviewCommentChange={setR53R60ReviewComment}
             onSubmitReviewAction={submitR53R60ReviewAction}
+            onRenderDeliverables={renderR53R60Deliverables}
           />
         </section>
 
@@ -1233,11 +1269,14 @@ function R53R60WorkbenchPanel({
   reviewQueue,
   ops,
   scopeGate,
+  deliverables,
+  dashboardProjection,
   reviewComment,
   busy,
   onSelectTask,
   onReviewCommentChange,
   onSubmitReviewAction,
+  onRenderDeliverables,
 }: {
   tasks: R53R60TaskProjection[];
   selectedTaskId: string;
@@ -1246,11 +1285,14 @@ function R53R60WorkbenchPanel({
   reviewQueue: R53R60ReviewQueue | null;
   ops: R53R60OpsProjection | null;
   scopeGate: R53R60ScopeGate | null;
+  deliverables: R53R60DeliverableProjection | null;
+  dashboardProjection: R53R60DashboardProjection | null;
   reviewComment: string;
   busy: string | null;
   onSelectTask: (taskId: string) => void;
   onReviewCommentChange: (value: string) => void;
   onSubmitReviewAction: (action: string) => void;
+  onRenderDeliverables: () => void;
 }) {
   if (!tasks.length && !task) {
     return (
@@ -1270,6 +1312,9 @@ function R53R60WorkbenchPanel({
   const actions = reviewQueue?.review_actions ?? [];
   const reviewItems = reviewQueue?.review_queue ?? [];
   const gateCounts = scopeGate?.counts ?? {};
+  const renderJobs = deliverables?.render_jobs ?? [];
+  const qualityGates = deliverables?.quality_gates ?? [];
+  const dashboardPanelPayload = dashboardProjection?.dashboard_projection?.panel_payload;
 
   return (
     <div className="r53r60-workbench">
@@ -1279,6 +1324,7 @@ function R53R60WorkbenchPanel({
         <MetricBox label="Workpaper" value={`${task?.section_count ?? 0} sections`} detail={`${task?.claim_count ?? 0} claims · ${task?.gap_count ?? 0} gaps`} />
         <MetricBox label="Review" value={task?.human_review_status ?? "未入队"} detail={task?.lead_review_status ?? ""} />
         <MetricBox label="Ops" value={`${ops?.trace_span_count ?? 0} traces`} detail={`${ops?.latency_ms ?? 0}ms · $${ops?.cost_amount ?? 0}`} />
+        <MetricBox label="Deliverables" value={`${renderJobs.length} artifacts`} detail={`${qualityGates.length} quality gates`} />
         <MetricBox label="Gate rows" value={numberText(gateCounts.gate_count)} detail={`${numberText(gateCounts.gate_fail_count)} failed`} />
       </div>
 
@@ -1409,6 +1455,59 @@ function R53R60WorkbenchPanel({
           />
         </div>
       </div>
+
+      <div className="r53r60-grid wide">
+        <div className="r53r60-card">
+          <div className="inline-heading">
+            <h3>Deliverable Studio</h3>
+            <button type="button" className="secondary" onClick={onRenderDeliverables} disabled={Boolean(busy)}>
+              {busy === "r53_r60_render" ? "渲染中" : "重新渲染"}
+            </button>
+          </div>
+          <div className="summary-grid compact-metrics">
+            <MetricBox label="Plan" value={objectValue(deliverables?.deliverable_plan, "status")} detail={objectValue(deliverables?.deliverable_plan, "audience")} />
+            <MetricBox label="Surfaces" value={numberText(deliverables?.narrative_surfaces?.length)} />
+            <MetricBox label="Composer" value={objectValue(deliverables?.composer_permission_gate, "status")} detail="no retrieval/db/web" />
+          </div>
+          <R53R60Table
+            title="Rendered artifacts"
+            rows={renderJobs}
+            embedded
+            columns={[
+              ["output_format", "Format"],
+              ["status", "Status"],
+              ["output_uri", "URI"],
+              ["artifact_ref_id", "ArtifactRef"],
+            ]}
+          />
+        </div>
+
+        <div className="r53r60-card">
+          <h3>Dashboard Projection</h3>
+          <div className="summary-grid compact-metrics">
+            <MetricBox label="Status" value={objectValue(dashboardProjection?.dashboard_projection, "status")} />
+            <MetricBox label="Claims" value={objectValue(dashboardProjection?.dashboard_projection, "claim_count")} />
+            <MetricBox label="Gaps" value={objectValue(dashboardProjection?.dashboard_projection, "gap_count")} />
+          </div>
+          <KeyValueBlock
+            title="Projection payload"
+            values={{
+              panels: compactObjectValue(dashboardPanelPayload),
+              artifacts: compactListValue(dashboardPanelPayload && typeof dashboardPanelPayload === "object" ? (dashboardPanelPayload as Record<string, unknown>).artifact_ref_ids : []),
+            }}
+          />
+          <R53R60Table
+            title="Deliverable quality gates"
+            rows={qualityGates}
+            embedded
+            columns={[
+              ["gate_id", "Gate"],
+              ["status", "Status"],
+              ["detail", "Detail"],
+            ]}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1417,13 +1516,15 @@ function R53R60Table({
   title,
   rows,
   columns,
+  embedded = false,
 }: {
   title: string;
   rows: Record<string, unknown>[];
   columns: [string, string][];
+  embedded?: boolean;
 }) {
-  return (
-    <div className="r53r60-card">
+  const table = (
+    <>
       <h3>{title}</h3>
       <div className="table-wrap compact-table">
         <table>
@@ -1453,6 +1554,14 @@ function R53R60Table({
           </tbody>
         </table>
       </div>
+    </>
+  );
+  if (embedded) {
+    return <div className="embedded-table">{table}</div>;
+  }
+  return (
+    <div className="r53r60-card">
+      {table}
     </div>
   );
 }

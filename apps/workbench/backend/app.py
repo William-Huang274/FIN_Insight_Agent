@@ -48,6 +48,11 @@ from sec_agent.workbench import (
 )
 from sec_agent.workbench.api_contracts import install_api_contracts, request_trace_id
 from sec_agent.langgraph_orchestrator import inspect_node_checkpoint_artifact
+from sec_agent.r53_r60_deliverable_studio_dashboard import (
+    build_s7_gate as build_r53_r60_s7_deliverables,
+    get_dashboard_projection as get_r53_r60_dashboard_projection,
+    get_deliverable_projection as get_r53_r60_deliverable_projection,
+)
 from sec_agent.r53_r60_workbench_frontdoor_drilldown import (
     append_review_action as append_r53_r60_review_action,
     cancel_task as cancel_r53_r60_task,
@@ -398,6 +403,27 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
     def r53_r60_ops_projection(task_id: str):
         try:
             return get_r53_r60_ops_projection(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/deliverables")
+    def r53_r60_deliverables(task_id: str):
+        try:
+            return get_r53_r60_deliverable_projection(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/tasks/{task_id}/render-deliverables")
+    def r53_r60_render_deliverables(task_id: str):
+        try:
+            return build_r53_r60_s7_deliverables(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/dashboard-projection")
+    def r53_r60_dashboard_projection(task_id: str):
+        try:
+            return get_r53_r60_dashboard_projection(REPO_ROOT, task_id=task_id)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 

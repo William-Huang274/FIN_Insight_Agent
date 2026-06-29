@@ -1,0 +1,40 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "formats": [
+    "markdown",
+    "docx",
+    "xlsx",
+    "dashboard_projection"
+  ],
+  "narrative_surfaces": [
+    "internal_workpaper",
+    "client_brief",
+    "evidence_appendix",
+    "dashboard_projection"
+  ],
+  "policy": {
+    "artifact_refs_are_sql_final": true,
+    "citations_gaps_and_appendix_must_not_be_dropped": true,
+    "composer_forbidden_tools": [
+      "retrieval",
+      "sql_query",
+      "web_search",
+      "milvus_search",
+      "parser_fetch",
+      "source_mutation"
+    ],
+    "dashboard_projection_is_sql_backed": true,
+    "no_new_retrieval_or_web_in_s7": true,
+    "source_is_review_ready_workpaper": true
+  },
+  "schema_version": "r53_r60_s7_deliverable_studio_dashboard_v0_1",
+  "tables": [
+    "deliverable_studio_metadata",
+    "deliverable_plans_s7",
+    "narrative_surface_contracts_s7",
+    "render_jobs_s7",
+    "dashboard_projections_s7",
+    "composer_permission_gates_s7",
+    "deliverable_quality_gates_s7"
+  ]
+}

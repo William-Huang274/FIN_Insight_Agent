@@ -631,6 +631,18 @@ Slice closeout：`L4_scope_pass`（Secondary Market / Capital Feedback Pack 范�
 | `U8-D05-valuation-price-in-pack` | R54 | valuation / implied growth / peer multiple | 与 fundamental/product thesis 分离但可联动 |
 | `U8-D06-derivatives-market-signal-pack` | R54 | futures/options positioning proxy | 强制标注 delayed/proxy/commercial gap |
 
+S8 closeout（2026-06-29）：`S8_L4_scope_pass`。
+
+- runtime contract：新增 `SecondaryMarketSourceRegistry`、`CapitalFeedbackPack`、`CapitalFeedbackSignal`、`CapitalFeedbackGapItem`、`CapitalFeedbackGraphEdge`、`CapitalFeedbackQualityGate`，全部写入 S1 SQL 主账本。
+- 真实构建：从 `market_liquidity_driver_context_rows_v0_1`、`capital_funding_ownership_context_rows_v0_1`、`sec_capital_market_event_context_rows_v0_1` 读取已物化 rows，生成 `603` 个 issuer pack、`13,107` 条 bounded signal、`2,443` 条 typed gap、`4,221` 条 graph edge。
+- authority boundary：13F / holder 只能做 lagged positioning context；Yahoo chart 只能做 delayed market / liquidity context；SEC offering / insider / 13D/G / proxy metadata 只能证明 filing-event existence；debt / credit facility / working-capital rows 保留 filing / financial-statement exact 边界。
+- 明确缺口：derivatives / options / futures、company bond spread / CDS / rating history、short-interest / borrow-cost、valuation denominator / peer multiple 目前进入 typed gap，不伪装成 runtime-ready 数据。
+- 修复项：SEC event `all_tickers` 会带入 603 universe 外 ticker，本轮将 S8 issuer universe 锁定为 market snapshot 的 `603` 个 runtime issuer，并把 `6,655` 个 universe 外 SEC event ticker 记录为 scope-filtered 诊断计数，避免 pack 范围污染。
+- 验证：S8 deterministic tests `4/4` pass；真实构建 gate `10 pass / 0 fail`；生成 `configs/r53_r60/s8_secondary_market_capital_feedback_schema_v0_1.json`、`data/manifests/r53_r60_s8_secondary_market_capital_feedback_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_s8_secondary_market_capital_feedback_l4_scope_pass.zh-CN.md`。
+- next slice unlocked：`S9`。
+
+边界：S8 只证明 Secondary Market / Capital Feedback Pack 在自身范围达到 enterprise-grade，可供 Research Lead / Workpaper / 后续 R53 使用；本轮不证明实时资金流、OPRA options feed、dealer gamma、live borrow cost、CDS、完整债券价格或正式投资建议能力。
+
 ### S9 Research-to-Quant Lab
 
 目标：把 research thesis driver 转成候选因子，人工批准后进入 PIT 数据检查、回测和 paper trading monitor。

@@ -1,0 +1,41 @@
+{
+  "authority_classes": [
+    "exact_filing_fact",
+    "exact_financial_statement_fact",
+    "filing_event_context",
+    "lagged_positioning_context",
+    "market_expectation_proxy",
+    "capital_feedback_signal",
+    "valuation_price_in_signal",
+    "context_only",
+    "gap"
+  ],
+  "closeout_level": "L4_scope_pass",
+  "pack_roles": [
+    "secondary_market_capital_flow",
+    "ownership_and_holder",
+    "credit_funding",
+    "corporate_action",
+    "liquidity_and_positioning",
+    "valuation_price_in",
+    "derivatives_market_signal"
+  ],
+  "policy": {
+    "delayed_holder_rows_are_not_realtime_flow": true,
+    "derivatives_credit_spread_short_borrow_missing_rows_are_typed_gaps": true,
+    "issuer_packs_are_sql_final": true,
+    "market_rows_are_not_company_fundamentals": true,
+    "no_investment_recommendation_from_market_positioning": true,
+    "source_registry_required": true
+  },
+  "schema_version": "r53_r60_s8_secondary_market_capital_feedback_v0_1",
+  "tables": [
+    "secondary_market_feedback_metadata",
+    "secondary_market_source_registry_s8",
+    "capital_feedback_packs_s8",
+    "capital_feedback_signals_s8",
+    "capital_feedback_gap_items_s8",
+    "capital_feedback_graph_edges_s8",
+    "capital_feedback_quality_gates_s8"
+  ]
+}

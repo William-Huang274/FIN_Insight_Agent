@@ -1,0 +1,63 @@
+{
+  "boundary": "S8 proves the Secondary Market / Capital Feedback Pack in its own L4 scope. It separates exact filing facts, lagged holder context, delayed market proxies and typed gaps; it does not provide real-time fund flow, OPRA options feed, live borrow cost, credit spread, CDS, or investment advice.",
+  "closeout_level": "L4_scope_pass",
+  "counts": {
+    "capital_feedback_gap_items_s8": 2443,
+    "capital_feedback_graph_edges_s8": 4221,
+    "capital_feedback_packs_s8": 603,
+    "capital_feedback_quality_gates_s8": 10,
+    "capital_feedback_signals_s8": 13107,
+    "gap_count": 2443,
+    "gate_count": 10,
+    "gate_fail_count": 0,
+    "graph_edge_count": 4221,
+    "pack_count": 603,
+    "raw_input_counts": {
+      "capital_rows": 13185,
+      "market_rows": 603,
+      "sec_event_rows": 17485
+    },
+    "runtime_universe_count": 603,
+    "secondary_market_feedback_metadata": 4,
+    "secondary_market_source_registry_s8": 15,
+    "signal_count": 13107,
+    "skipped_counts": {
+      "capital_rows_outside_runtime_universe": 0,
+      "sec_event_tickers_outside_runtime_universe": 6655
+    },
+    "source_paths": {
+      "capital_rows": "data/manifests/capital_funding_ownership_context_rows_v0_1.jsonl",
+      "market_rows": "data/manifests/market_liquidity_driver_context_rows_v0_1.jsonl",
+      "sec_event_rows": "data/manifests/sec_capital_market_event_context_rows_v0_1.jsonl"
+    }
+  },
+  "failed_gates": [],
+  "generated_at": "2026-06-29T12:55:14Z",
+  "next_slice_unlocked": "S9",
+  "outputs": {
+    "closeout_report": "docs/internal/vnext_20260610/r53_r60_s8_secondary_market_capital_feedback_l4_scope_pass.zh-CN.md",
+    "gate_rows": "data/manifests/r53_r60_s8_secondary_market_capital_feedback_gate_rows_v0_1.jsonl",
+    "schema": "configs/r53_r60/s8_secondary_market_capital_feedback_schema_v0_1.json",
+    "sqlite_store": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "summary": "data/manifests/r53_r60_s8_secondary_market_capital_feedback_summary_v0_1.json"
+  },
+  "release_decision": "S8_L4_scope_pass",
+  "role_gap_counts": {
+    "corporate_action": 15,
+    "credit_funding": 603,
+    "derivatives_market_signal": 603,
+    "liquidity_and_positioning": 603,
+    "ownership_and_holder": 16,
+    "valuation_price_in": 603
+  },
+  "role_signal_counts": {
+    "corporate_action": 3509,
+    "credit_funding": 2070,
+    "liquidity_and_positioning": 3413,
+    "ownership_and_holder": 3512,
+    "secondary_market_capital_flow": 603
+  },
+  "schema_version": "r53_r60_s8_secondary_market_capital_feedback_v0_1",
+  "status": "pass",
+  "task_id": "s8_scope_task_secondary_market_capital_feedback"
+}

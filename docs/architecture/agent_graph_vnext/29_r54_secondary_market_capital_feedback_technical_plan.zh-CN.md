@@ -674,7 +674,50 @@ R54 必须有专门 eval，不能只靠 memo 观感：
 | `r53_feature_gate` | R53 只能消费 PIT-valid R54 signals |
 | `memo_surface_gate` | 输出能自然解释市场资金面，而不是堆字段或满篇 caveat |
 
-## 12. 当前开放问题
+## 12. S8 Runtime Closeout（2026-06-29）
+
+R54 第一版 runtime 已在 R53-R60 S8 中落地，closeout 为 `S8_L4_scope_pass`。
+
+### 12.1 已落地对象
+
+- `SecondaryMarketSourceRegistry`：`15` 条 source registry rows，覆盖 market snapshot、lagged ownership、13D/G、Form 3/4/5、offering/proxy metadata、debt footnote、FSD working capital、valuation planned source、derivatives planned source、credit-market planned source、short/borrow planned source、non-US holder/corporate-action planned routes。
+- `CapitalFeedbackPack`：`603` 个 issuer pack，范围锁定为当前 runtime market snapshot universe。
+- `CapitalFeedbackSignal`：`13,107` 条 bounded signal。
+- `CapitalFeedbackGapItem`：`2,443` 条 typed gap。
+- `CapitalFeedbackGraphEdge`：`4,221` 条 issuer -> capital-feedback-role graph edge。
+- `CapitalFeedbackQualityGate`：`10` 条 S8 L4 scope gate。
+- S1 主账本事件：S8 通过 `WorkpaperEvent` 写入 `secondary_market_capital_feedback_pack_ready`。
+
+### 12.2 已接入的 pack role
+
+| Pack role | 当前状态 | 说明 |
+| --- | --- | --- |
+| `secondary_market_capital_flow` | `runtime_ready` | 603/603 有 delayed price / return / volatility / drawdown context。 |
+| `liquidity_and_positioning` | `partial_runtime_ready` | 603/603 有 price/volatility/working-capital liquidity context，但 short interest / borrow cost / free float / ETF flow 仍是 gap。 |
+| `ownership_and_holder` | `partial_runtime_ready` | 13F lagged ownership context、13D/G metadata 已进入 pack；16 个 issuer 仍需 holder route / non-US adapter typed gap。 |
+| `credit_funding` | `partial_runtime_ready` | debt instrument、credit facility、working-capital liquidity rows 已进入 pack；market credit spread / CDS / rating history 对 603 issuer 仍是 typed gap。 |
+| `corporate_action` | `partial_runtime_ready` | SEC offering、Form 3/4/5、proxy、13D/G metadata 作为 filing-event context 进入 pack；15 个 issuer 需要 local/non-US corporate-action adapter。 |
+| `valuation_price_in` | `typed_gap_ready` | 当前市场快照缺稳定 market cap / EV / PE / EV-sales / EV-EBITDA denominator，603 issuer 均以 valuation typed gap 记录。 |
+| `derivatives_market_signal` | `typed_gap_ready` | 不伪造 options / futures / COT 信号；603 issuer 均以 public/parser/commercial boundary typed gap 记录。 |
+
+### 12.3 关键边界
+
+- 13F / holder rows 是 `lagged_positioning_context`，禁止写成实时资金流或当前买盘。
+- SEC 13D/G、Form 3/4/5、offering、proxy rows 在 S8 中主要是 metadata / filing-event context，除非后续 source-specific parser 抽到 amount / shares / terms，否则不能写成交易金额、持股比例、回购金额或融资完成。
+- Yahoo chart rows 是 delayed market context，只能支持价格反应、波动、回撤、流动性方向讨论，不能支持基本面、产品需求、资金流或投资建议。
+- Debt / credit facility / working-capital rows 保留 filing / financial-statement exact authority，但不能推出市场利差、CDS、rating 或再融资渠道通畅。
+- S8 对 SEC event `all_tickers` 做 runtime universe 过滤：只给 market snapshot universe 内 `603` 个 issuer 建 pack；`6,655` 个 universe 外 SEC event ticker 被记录为 scope-filtered 诊断计数，避免污染 issuer coverage。
+
+### 12.4 后续 R54 backlog
+
+- `R54.2`：补稳定 issuer-bound valuation panel，包括 shares、market cap、EV、TTM denominator、peer group 和 historical percentile。
+- `R54.3`：补 SEC source-specific capital-action parser，把 offering amount / security terms、Form 4 shares / price / transaction code、buyback authorization / actual repurchase 从 metadata 推进到 exact/event rows。
+- `R54.4`：补 delayed short interest、free float、ETF/factor flow、N-PORT / ETF holdings；borrow cost 和 securities lending 若无授权继续保留 commercial gap。
+- `R54.5`：补 CFTC / CME / OCC / exchange delayed derivatives/futures proxy，所有 rows 必须有 contract / underlying / asof / lag policy，且只能进入 expectation / positioning / regime。
+- `R54.6`：补 cross-asset / macro / policy mapping edge，把 rates、commodity、FX、VIX、sector ETF、peer/supply-chain read-through 接入 graph，并防止 correlation-only 提权。
+- `R54.7`：接入 Research Lead / DimensionEvidencePortfolio / R53 FeatureSpec / R60 eval 的消费门控，验证 R54 pack 能进入判断但不越权。
+
+## 13. 当前开放问题
 
 1. R54 v0.1 是否优先做 Valuation + SEC capital action + 13F/short，还是同步启动 derivatives。
 2. market data 是否先用当前已物化 rows 派生，还是先建设统一 price/security master。
@@ -684,7 +727,7 @@ R54 必须有专门 eval，不能只靠 memo 观感：
 6. ValuationPriceInPack 是否需要先定义 peer group registry，否则 historical/peer valuation 会不稳定。
 7. 与 R53 联动时，第一版是否只允许 feature availability audit，不允许真实 factor validation。
 
-## 13. 草案结论
+## 14. 草案结论
 
 R54 的核心不是“多接行情源”，而是把二级市场、资金面和资本反馈从散装市场数据变成可审计的研究维度。
 

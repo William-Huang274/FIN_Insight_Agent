@@ -1717,7 +1717,7 @@ def _claim_is_capital_only(claim: Mapping[str, Any]) -> bool:
     }
     if not metrics <= capital_metrics:
         return False
-    product_terms = (
+    product_authority_terms = (
         "product_revenue",
         "product revenue",
         "product_kpi",
@@ -1725,9 +1725,9 @@ def _claim_is_capital_only(claim: Mapping[str, Any]) -> bool:
         "backlog",
         "shipments",
         "units",
-        "capacity",
         "usage",
     )
+    product_capacity_terms = {"capacity", "utilization", "production"}
     text = " ".join(
         [
             str(claim.get("claim") or ""),
@@ -1735,7 +1735,15 @@ def _claim_is_capital_only(claim: Mapping[str, Any]) -> bool:
             " ".join(_unique_strings(claim.get("evidence_refs") or claim.get("refs"))),
         ]
     ).lower()
-    return not any(term in text for term in product_terms)
+    if any(term in text for term in product_authority_terms):
+        return False
+    # Plain capex claims often mention "capacity" as the intended use of cash
+    # outflow. That does not make the evidence a product/production ClaimCard
+    # unless the metric or source itself carries capacity/utilization authority.
+    return not (
+        metrics & product_capacity_terms
+        or any(str(item).lower() in product_capacity_terms for item in _unique_strings(claim.get("allowed_non_financial_claims")))
+    )
 
 
 def _analysis_dimension_title(dimension: str) -> str:
@@ -1799,9 +1807,9 @@ def _financial_bridge_for_claim(claim: Mapping[str, Any], dimension: str) -> str
     if metric_text:
         return f"Bridge the claim through {metric_text}; direction={direction}; do not infer unverified sales, share, or forecast values."
     if dimension == "product_and_production":
-        return "Bridge product evidence to revenue, margin, inventory, capacity, or backlog only when the verified ClaimCard states the metric."
+        return "Bridge product evidence to revenue, margin, inventory, capacity, or backlog only when verified evidence states the metric."
     if dimension == "capital_and_financing":
-        return "Bridge capital evidence to capex, leverage, liquidity, interest burden, or issuance only when the verified ClaimCard states the metric."
+        return "Bridge capital evidence to capex, leverage, liquidity, interest burden, or issuance only when verified evidence states the metric."
     return "Financial bridge is qualitative unless verified metric_scope or numeric evidence is present."
 
 

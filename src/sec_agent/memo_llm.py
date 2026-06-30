@@ -2573,8 +2573,26 @@ def _memo_metric_label(value: str, *, zh: bool) -> str:
 
 def _clean_internal_thesis_text(value: str) -> str:
     cleaned = str(value or "").replace("Synthesized thesis from bounded ClaimCards: ", "").strip()
-    cleaned = cleaned.replace("bounded ClaimCards", "verified evidence").replace("ClaimCards", "claim cards")
+    cleaned = _clean_memo_facing_internal_terms(cleaned)
     return cleaned.replace(" | ", " ")
+
+
+def _clean_memo_facing_internal_terms(value: str) -> str:
+    cleaned = str(value or "")
+    replacements = {
+        "This ClaimCard is a reconciled numeric fact;": "This verified numeric fact",
+        "bounded ClaimCards": "verified evidence",
+        "verified ClaimCards": "verified evidence",
+        "ClaimCards": "verified evidence",
+        "ClaimCard": "verified evidence",
+        "已验证 ClaimCard": "已验证证据",
+        "已验证ClaimCard": "已验证证据",
+        "该ClaimCard": "该已验证证据",
+        "该 ClaimCard": "该已验证证据",
+    }
+    for old, new in replacements.items():
+        cleaned = cleaned.replace(old, new)
+    return cleaned
 
 
 def _compact_claim_card(item: Mapping[str, Any]) -> dict[str, Any]:
@@ -2604,9 +2622,9 @@ def _compact_analyst_depth(value: Any) -> dict[str, Any]:
         return {}
     return {
         "analysis_dimension": str(value.get("analysis_dimension") or ""),
-        "business_mechanism": _truncate(str(value.get("business_mechanism") or ""), 80),
-        "financial_bridge": _truncate(str(value.get("financial_bridge") or ""), 80),
-        "counter_read": _truncate(str(value.get("counter_read") or ""), 80),
+        "business_mechanism": _truncate(_clean_memo_facing_internal_terms(str(value.get("business_mechanism") or "")), 80),
+        "financial_bridge": _truncate(_clean_memo_facing_internal_terms(str(value.get("financial_bridge") or "")), 80),
+        "counter_read": _truncate(_clean_memo_facing_internal_terms(str(value.get("counter_read") or "")), 80),
     }
 
 

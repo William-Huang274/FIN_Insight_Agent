@@ -348,7 +348,13 @@ def _validate_role_specific_scope(plan: AgentActivationPlan, errors: list[dict[s
     active = set(plan.activate_agents)
     allowed_sources = set(plan.allowed_source_families)
     if "industry_supply_chain_analyst" in active:
-        scope_sources = allowed_sources & {"industry_snapshot", "relationship_graph"}
+        scope_sources = allowed_sources & {
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+            "live_public_web_context",
+        }
         scope_agents = active & {"industry_operator", "universe_relationship"}
         if not scope_sources and not scope_agents:
             errors.append(

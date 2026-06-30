@@ -323,6 +323,7 @@ def score_case(
     rendered_has_dimension_section = _rendered_has_dimension_section(rendered_answer)
     surface_readability = _rendered_surface_readability_checks(rendered_answer, expected_response_language)
     investment_quality = _rendered_investment_quality_checks(rendered_answer, expected_response_language)
+    investment_quality_required = _investment_quality_required(case)
     memo_dimension_analyses = [row for row in memo.get("dimension_analyses") or [] if isinstance(row, Mapping)]
     analyst_depth_gate = claim_verification.get("analyst_depth_gate") if isinstance(claim_verification.get("analyst_depth_gate"), Mapping) else {}
     thesis_driver_pack = (
@@ -416,7 +417,7 @@ def score_case(
             ),
             "investment_memo_quality_pass": (
                 investment_quality["status"] == "pass"
-                if case.get("require_investment_memo_quality")
+                if investment_quality_required
                 else True
             ),
             **{
@@ -427,7 +428,7 @@ def score_case(
             **{
                 f"quality.{key}": value
                 for key, value in investment_quality.get("checks", {}).items()
-                if case.get("require_investment_memo_quality")
+                if investment_quality_required
             },
         },
         "payload_safety": {
@@ -478,6 +479,7 @@ def score_case(
         "rendered_answer_has_dimension_section": rendered_has_dimension_section,
         "surface_readability": surface_readability,
         "investment_quality": investment_quality,
+        "investment_quality_required": investment_quality_required,
         "claim_verification": claim_verification.get("status") or "",
         "specialist_verification": specialist_verification.get("status") or "",
         "universe_validation": universe_validation.get("status") or ("skipped" if "universe_relationship" not in active_agents else ""),
@@ -508,6 +510,20 @@ def score_case(
 def _rendered_has_claim_section(rendered_answer: str) -> bool:
     text = str(rendered_answer or "")
     return "Key memo claims:" in text or "关键论据:" in text
+
+
+def _investment_quality_required(case: Mapping[str, Any]) -> bool:
+    return bool(
+        case.get("require_investment_memo_quality")
+        or (
+            case.get("require_dimension_memo_surface")
+            and (
+                case.get("expected_execution_mode") == "deep_research"
+                or case.get("require_analyst_depth_gate")
+                or case.get("category") in {"sector_depth", "standard_memo"}
+            )
+        )
+    )
 
 
 def _rendered_has_evidence_refs(rendered_answer: str) -> bool:
@@ -840,8 +856,8 @@ def _product_section_has_fake_financial_line(text: str, expected_language: str) 
 
 
 def _product_section_fake_financial_line_count(text: str, expected_language: str) -> int:
-    section = _extract_dimension_section(text, expected_language)
-    if not section:
+    product_lines = _product_dimension_lines(text, expected_language)
+    if not product_lines:
         return 0
     bad_phrases = (
         "proceeds from sales",
@@ -865,20 +881,77 @@ def _product_section_fake_financial_line_count(text: str, expected_language: str
         "letter of credit",
         "proceeds from sales of lc",
         "contract liabilities",
+        "capex",
+        "capital expenditure",
+        "capital expenditures",
+        "purchases of property",
+        "property and equipment",
         "投资到期",
         "出售投资",
         "投资收益",
+        "资本开支",
+        "资本支出",
+        "购置物业",
+        "固定资产购置",
         "递延",
         "收入成本",
         "销售成本",
     )
     product_markers = ("产品", "产线", "product", "production")
+    product_anchor_phrases = (
+        "产品收入",
+        "server 收入",
+        "servers 收入",
+        "ai server 收入",
+        "ai-optimized servers 收入",
+        "product revenue",
+        "segment revenue",
+        "订单",
+        "积压",
+        "backlog",
+        "出货",
+        "销量",
+        "shipments",
+        "units",
+        "客户部署",
+        "部署",
+        "deployment",
+        "adoption",
+        "规格",
+        "参数",
+        "spec",
+        "benchmark",
+    )
     count = 0
-    for line in section.splitlines():
+    for line in product_lines:
         value = line.lower()
         if any(marker in value for marker in product_markers) and any(phrase in value for phrase in bad_phrases):
+            if any(anchor in value for anchor in product_anchor_phrases) and not any(
+                marker in value for marker in ("被写成", "冒充", "mistaken as", "misstated as", "written as")
+            ):
+                continue
             count += 1
     return count
+
+
+def _product_dimension_lines(text: str, expected_language: str) -> list[str]:
+    section = _extract_dimension_section(text, expected_language)
+    if not section:
+        return []
+    product_markers = ("产品", "产线", "product", "production")
+    lines: list[str] = []
+    capture = False
+    for raw_line in section.splitlines():
+        line = str(raw_line or "").strip()
+        if not line:
+            continue
+        numbered = re.match(r"\s*(?:[-*]\s*)?(\d+)[.、]\s+(.+)", line)
+        if numbered:
+            title = re.split(r"[:：]", numbered.group(2), maxsplit=1)[0].lower()
+            capture = any(marker in title for marker in product_markers)
+        if capture:
+            lines.append(raw_line)
+    return lines
 
 
 def _extract_gap_section(text: str, expected_language: str) -> str:
@@ -2529,7 +2602,13 @@ def _allowed_specialist_source_families(agent_id: str) -> set[str]:
     if agent_id == "market_valuation_analyst":
         return {"market_snapshot"}
     if agent_id == "industry_supply_chain_analyst":
-        return {"industry_snapshot", "relationship_graph"}
+        return {
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+            "live_public_web_context",
+        }
     if agent_id == "product_technology_analyst":
         return {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
     if agent_id == "risk_counterevidence_analyst":

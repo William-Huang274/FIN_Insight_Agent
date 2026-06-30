@@ -39,6 +39,8 @@ def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
     rejected_facts: list[dict[str, Any]] = []
     conflict_gap_links: list[dict[str, Any]] = []
     candidates_by_id = _candidate_index(reconciliation)
+    focus_tickers = set(_scope_tickers_from_state(state, "focus_tickers"))
+    search_scope_tickers = set(_scope_tickers_from_state(state, "search_scope_tickers"))
 
     for group in _mapping_rows(reconciliation.get("reconciliation_groups")):
         group_id = _text(group.get("group_id"))
@@ -57,6 +59,11 @@ def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
             "blocking_gate_result_ids": [_text(row.get("gate_result_id")) for row in blocking_gates],
             "source_layer": "reconciliation_ledger",
         }
+        base["scope_role"] = _scope_role_for_ticker(
+            base["ticker"],
+            focus_tickers=focus_tickers,
+            search_scope_tickers=search_scope_tickers,
+        )
         memo_reject_reason = _resolved_group_memo_reject_reason(group, preferred)
         if status.startswith("resolved") and preferred and not blocking_gates and not memo_reject_reason:
             approved_facts.append(
@@ -363,7 +370,7 @@ def _deterministic_fact_claims_from_approved_facts(
                     "analysis_lens": "Use approved reconciled financial facts as the numeric backbone before adding thesis interpretation.",
                     "evidence_role": "reported_company_authority",
                     "business_mechanism": _business_mechanism_for_fact(dimension),
-                    "financial_bridge": "This ClaimCard is a reconciled numeric fact; any thesis must bridge it to revenue, margin, capex, cash-flow, or financing mechanism explicitly.",
+                    "financial_bridge": "Use this verified numeric fact only after linking it to revenue, margin, capex, cash-flow, financing, or valuation mechanism explicitly.",
                     "comparison_basis": "Compare only against facts with the same ticker, metric, period_role, and product/segment key.",
                     "counter_read": "若同口径事实反向变化，或产品/期间口径发生切换，该维度权重需要下调并单独暴露冲突。",
                     "analyst_depth_gate": "period_product_unit_conflict_must_not_be_averaged",
@@ -425,6 +432,10 @@ def _approved_fact_can_be_claim_card(row: Mapping[str, Any]) -> bool:
     if _text(row.get("selection_status")) != "approved":
         return False
     canonical = _text(row.get("canonical_metric_id"))
+    if _is_unscored_peer_context_total_fact(row, canonical_metric=canonical):
+        return False
+    if not _approved_fact_unit_is_claim_card_safe(row, canonical_metric=canonical):
+        return False
     if canonical not in {
         "financial_metric:revenue",
         "financial_metric:gross_margin",
@@ -446,6 +457,45 @@ def _approved_fact_can_be_claim_card(row: Mapping[str, Any]) -> bool:
     if _text(row.get("source_family")) in {"public_source_context", "live_public_web_context", "market_snapshot", "industry_snapshot", "relationship_graph", "milvus_semantic"}:
         return False
     return bool(_text(row.get("value")) and _text(row.get("evidence_ref")))
+
+
+def _approved_fact_unit_is_claim_card_safe(row: Mapping[str, Any], *, canonical_metric: str) -> bool:
+    if canonical_metric not in {
+        "financial_metric:revenue",
+        "financial_metric:gross_profit",
+        "financial_metric:operating_income",
+        "financial_metric:operating_cash_flow",
+        "financial_metric:fcf",
+        "financial_metric:capex",
+        "financial_metric:debt",
+        "financial_metric:cash",
+        "product_kpi:product_revenue",
+        "product_kpi:backlog",
+    }:
+        return True
+    unit = _text(row.get("unit")).lower().replace(" ", "_")
+    numeric_value = _float_or_none(row.get("numeric_value") or row.get("value"))
+    if unit in {"usd", "$", "dollar", "dollars"} and numeric_value is not None and abs(numeric_value) >= 1000:
+        return False
+    return True
+
+
+def _is_unscored_peer_context_total_fact(row: Mapping[str, Any], *, canonical_metric: str) -> bool:
+    if _text(row.get("scope_role")) != "peer_context_ticker":
+        return False
+    relevance_reasons = set(_strings(row.get("selection_relevance_reasons")))
+    if _int(row.get("selection_relevance_score")) > 0 and relevance_reasons - {"ticker_matches_research_objective"}:
+        return False
+    if _text(row.get("product_or_segment")):
+        return False
+    return canonical_metric in {
+        "financial_metric:revenue",
+        "financial_metric:gross_profit",
+        "financial_metric:gross_margin",
+        "financial_metric:operating_income",
+        "financial_metric:operating_cash_flow",
+        "financial_metric:fcf",
+    }
 
 
 def _approved_fact_priority(row: Mapping[str, Any]) -> tuple[int, int, int, str, str, str]:
@@ -765,7 +815,11 @@ def _with_fact_selection_relevance(row: Mapping[str, Any], *, objective_text: st
 def _fact_selection_relevance(row: Mapping[str, Any], *, objective_text: str) -> tuple[int, list[str]]:
     canonical = _text(row.get("canonical_metric_id"))
     product = _text(row.get("product_or_segment"))
+    ticker = _text(row.get("ticker")).upper()
     if not product and not canonical.startswith("product_kpi:"):
+        objective_terms = _token_set(objective_text)
+        if ticker and ticker.lower() in objective_terms:
+            return (2, ["ticker_matches_research_objective"])
         return (0, [])
 
     product_terms = _expanded_product_terms(product)
@@ -799,6 +853,9 @@ def _fact_selection_relevance(row: Mapping[str, Any], *, objective_text: str) ->
     if _high_signal_product_terms(product_terms) & (objective_terms | evidence_terms):
         score += 5
         reasons.append("high_signal_product_line")
+    if ticker and ticker.lower() in objective_terms:
+        score += 2
+        reasons.append("ticker_matches_research_objective")
     return score, _dedupe_strings(reasons)
 
 
@@ -837,6 +894,37 @@ def _high_signal_product_terms(terms: set[str]) -> set[str]:
     return terms & high_signal
 
 
+def _scope_tickers_from_state(state: Mapping[str, Any], key: str) -> list[str]:
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    scope = query_contract.get("scope") if isinstance(query_contract.get("scope"), Mapping) else {}
+    values: list[str] = []
+    for candidate in (
+        state.get(key),
+        query_contract.get(key),
+        activation.get(key),
+        scope.get(key),
+    ):
+        values.extend(_strings(candidate))
+    return _dedupe_strings([value.upper() for value in values if value])
+
+
+def _scope_role_for_ticker(
+    ticker: str,
+    *,
+    focus_tickers: set[str],
+    search_scope_tickers: set[str],
+) -> str:
+    ticker = _text(ticker).upper()
+    if not ticker:
+        return ""
+    if ticker in focus_tickers:
+        return "focus_ticker"
+    if search_scope_tickers and ticker in search_scope_tickers:
+        return "peer_context_ticker"
+    return ""
+
+
 def _token_set(value: str) -> set[str]:
     tokens: set[str] = set()
     current: list[str] = []
@@ -856,6 +944,7 @@ def _token_set(value: str) -> set[str]:
 
 
 def _mapping_text_values(value: Mapping[str, Any], *, limit: int) -> list[str]:
+    skip_keys = {"focus_tickers", "search_scope_tickers", "selected_tickers", "universe_tickers", "tickers"}
     out: list[str] = []
     stack: list[Any] = [value]
     while stack and len(out) < limit:
@@ -865,7 +954,7 @@ def _mapping_text_values(value: Mapping[str, Any], *, limit: int) -> list[str]:
             if text:
                 out.append(text)
         elif isinstance(item, Mapping):
-            stack.extend(item.values())
+            stack.extend(candidate for key, candidate in item.items() if str(key) not in skip_keys)
         elif isinstance(item, (list, tuple, set)):
             stack.extend(item)
     return out

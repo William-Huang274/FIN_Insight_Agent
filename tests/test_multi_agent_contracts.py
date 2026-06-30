@@ -243,6 +243,40 @@ def test_capex_only_observation_is_not_routed_to_product_surface_by_provider_wor
     assert claim["claim_id"] in capital_section["primary_claim_ids"]
 
 
+def test_capex_only_observation_is_not_routed_to_product_surface_by_capacity_wording() -> None:
+    judgment = aggregate_specialist_judgment_plan(
+        [
+            {
+                "agent_id": "fundamental_analyst",
+                "observations": [
+                    {
+                        "claim": (
+                            "DELL's capex of -$963M in QTD 2026 is significantly higher than peers "
+                            "ANET (-$54.5M) and VRT (-$112.6M), reflecting heavy investment in AI "
+                            "infrastructure capacity."
+                        ),
+                        "claim_type": "business_observation",
+                        "evidence_refs": ["dell_capex_ref", "anet_capex_ref", "vrt_capex_ref"],
+                        "source_families": ["company_authored_unaudited_sec_filing"],
+                        "memo_slot": "fundamentals",
+                        "ticker_scope": ["DELL", "ANET", "VRT"],
+                        "metric_scope": ["capex"],
+                        "materiality": "high",
+                        "confidence": "high",
+                    }
+                ],
+            }
+        ]
+    )
+    claim = judgment["supported_claims"][0]
+    capital_section = next(row for row in judgment["thesis_driver_pack"]["dimension_sections"] if row["dimension_id"] == "capital_and_financing")
+
+    assert claim["analysis_dimension"] == "capital_and_financing"
+    assert claim["analyst_depth"]["analysis_dimension"] == "capital_and_financing"
+    assert not [row for row in judgment["thesis_driver_pack"]["dimension_sections"] if row["dimension_id"] == "product_and_production"]
+    assert claim["claim_id"] in capital_section["primary_claim_ids"]
+
+
 def test_thesis_driver_pack_structures_verified_claims_for_memo_surface() -> None:
     judgment = aggregate_specialist_judgment_plan(
         [

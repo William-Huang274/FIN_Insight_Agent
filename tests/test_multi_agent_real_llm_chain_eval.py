@@ -675,6 +675,109 @@ def test_real_llm_chain_investment_quality_rejects_fake_product_financial_lines_
     assert quality_checks["internal_gate_prose_absent"] is False
 
 
+def test_real_llm_chain_investment_quality_rejects_capex_as_product_line() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "investment_quality_capex_product_line",
+        "category": "sector_depth",
+        "response_language": "zh-CN",
+        "require_investment_memo_quality": True,
+        "require_dimension_memo_surface": True,
+        "require_rendered_evidence_refs": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {},
+        "agent_activation_validation": {"status": "pass"},
+        "memo_answer": {
+            "answer_status": "draft",
+            "dimension_analyses": [
+                {"dimension_id": "fundamentals", "summary": "收入证据可用。", "evidence_refs": ["rev_ref"]},
+                {"dimension_id": "product_and_production", "summary": "产品证据可用。", "evidence_refs": ["capex_ref"]},
+            ],
+        },
+        "claim_verification": {"status": "pass"},
+        "verified_judgment_plan": {
+            "thesis_driver_pack": {
+                "dimension_sections": [
+                    {"dimension_id": "fundamentals"},
+                    {"dimension_id": "product_and_production"},
+                ]
+            }
+        },
+        "rendered_answer": (
+            "核心判断:\nAI infra 需求要看客户投入是否传导到供应商产品收入。[C1]\n\n"
+            "分维度分析:\n"
+            "1. 基本面：收入与现金流是判断基线。[C1]\n"
+            "2. 产品与产线证据：DELL资本支出-9.63亿美元，远高于ANET和VRT，反映其在AI基础设施产能上的重投。[C2]\n"
+            "3. 投融资/资本开支：资本开支影响自由现金流和回报周期。[C2]\n\n"
+            "关键论据:\n1. capex 是资本配置证据，不应冒充产品证据。[C2]\n\n"
+            "投资含义:\n- 如果产品收入跟随客户投入，供应链收入传导才成立。\n\n"
+            "什么会改变判断:\n- 若产品收入不跟随资本开支，意味着投入回报弱化。\n\n"
+            "后续跟踪:\n- 跟踪产品收入、订单、客户部署和资本开支。\n\n"
+            "证据索引:\n- [C1] revenue\n- [C2] capex"
+        ),
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "fail"
+    assert score["investment_quality"]["checks"]["product_section_not_fake_financial_line"] is False
+    assert score["investment_quality"]["metrics"]["product_section_fake_financial_line_count"] >= 1
+
+
+def test_real_llm_chain_investment_quality_is_required_for_deep_dimension_surface() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "investment_quality_implicit_required",
+        "category": "sector_depth",
+        "response_language": "zh-CN",
+        "expected_execution_mode": "deep_research",
+        "require_dimension_memo_surface": True,
+        "require_analyst_depth_gate": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research"},
+        "agent_activation_validation": {"status": "pass"},
+        "memo_answer": {"answer_status": "draft", "dimension_analyses": []},
+        "claim_verification": {"status": "pass"},
+        "rendered_answer": (
+            "核心判断:\n当前公开数据缺口较多，无法判断。缺少产品、订单、capex 和竞争证据。\n\n"
+            "分维度分析:\n1. 产品产线：缺口较多，不能判断。[C1]\n2. 投融资：公开数据不足，不能判断。[C2]\n\n"
+            "投资含义:\n- 数据不足，无法判断。\n\n"
+            "什么会改变判断:\n- 如果补到数据。\n\n"
+            "后续跟踪:\n- 跟踪更多数据。\n\n"
+            "可行动的证据缺口:\n- 缺口很多，当前不能判断，公开数据不足，商业 tracker 缺口。"
+        ),
+    }
+    summary = {"payload_policy": {"raw_evidence": "not_included"}}
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=1)
+
+    assert score["investment_quality_required"] is True
+    assert score["gate_status"] == "fail"
+    assert score["layer_checks"]["memo_verifier"]["investment_memo_quality_pass"] is False
+
+
+def test_real_llm_chain_product_fake_financial_gate_only_scans_product_dimension() -> None:
+    module = _load_script_module()
+    rendered_answer = (
+        "核心判断:\nAI infrastructure 需求要看产品收入、订单和资本开支传导。[C1]\n\n"
+        "分维度分析:\n"
+        "1. 基本面与财务质量：收入和现金流决定盈利能力。[C1]\n"
+        "2. 产品与产线证据：DELL AI server 产品收入把客户需求传到供应商产品线。[C2]\n"
+        "3. 投融资/资本开支：资本开支影响供应商产品线的回报周期和现金流压力。[C3]\n\n"
+        "投资含义:\n- 如果产品收入跟随客户投入，需求传导才成立。\n\n"
+        "什么会改变判断:\n- 若产品收入不跟随资本开支，说明投入回报弱化。\n\n"
+        "后续跟踪:\n- 跟踪订单、积压、客户部署和资本开支。\n\n"
+        "证据索引:\n- [C1] revenue\n- [C2] product revenue\n- [C3] capex"
+    )
+
+    assert module._product_section_fake_financial_line_count(rendered_answer, "zh-CN") == 0
+
+
 def test_real_llm_chain_investment_quality_accepts_decision_useful_surface() -> None:
     module = _load_script_module()
     case = {
@@ -861,6 +964,7 @@ def test_real_llm_chain_scoring_accepts_run_audit_and_dimension_depth() -> None:
     case = {
         "case_id": "run_audit_depth_unit",
         "category": "standard_memo",
+        "response_language": "zh-CN",
         "require_run_audit_store": True,
         "require_dimension_memo_surface": True,
         "require_analyst_depth_gate": True,
@@ -917,7 +1021,18 @@ def test_real_llm_chain_scoring_accepts_run_audit_and_dimension_depth() -> None:
                 "model_call": 1,
             },
         },
-        "rendered_answer": "分维度分析:\n- 基本面：可追溯到已验证证据。[C1]\n- 产品产线：可追溯到 claim_2。\n关键论据:\n1. 支持性论据。[C1]\n\n证据索引:\n- [C1] ref 1",
+        "rendered_answer": (
+            "核心判断:\n公司基本面、产品线和风险证据形成可审计但仍需跟踪的判断：收入证据支撑基本面稳定，产品线证据说明需求能落到业务活动，风险证据决定结论权重。[C1][C2]\n\n"
+            "分维度分析:\n"
+            "1. 基本面：收入和现金流证据说明当前业务质量有事实锚点，后续要用利润率和经营现金流验证增长质量。[C1]\n"
+            "2. 产品产线：产品线证据把需求方向连接到具体业务活动，只有订单、积压或产品收入继续跟上，才能提高产品判断权重。[C2]\n"
+            "3. 风险反证：如果产品需求没有进入收入或订单，说明需求传导失败，估值应回到更保守情景。[C3]\n\n"
+            "关键论据:\n1. 收入和产品线证据共同支撑当前判断。[C1][C2]\n2. 风险证据决定是否下调结论权重。[C3]\n\n"
+            "投资含义:\n- 若产品线和收入继续同向改善，说明需求不是叙事而是正在进入业务；若只看到产品叙事而没有收入或订单承接，应降低结论强度。\n\n"
+            "什么会改变判断:\n- 如果后续收入放缓但资本开支或库存上升，意味着投入回报弱化，判断需要下修。\n\n"
+            "后续跟踪:\n- 跟踪收入、产品线订单、积压、现金流和风险反证，验证需求到财务的传导是否延续。\n\n"
+            "证据索引:\n- [C1] ref 1\n- [C2] product ref\n- [C3] risk gap"
+        ),
     }
     summary = {"payload_policy": {"raw_evidence": "not_included"}}
 
@@ -1462,6 +1577,78 @@ def test_real_llm_chain_specialist_quality_requires_industry_relationship_ref_fo
     assert detail["relationship_gate_required"] is True
     assert detail["checks"]["relationship_input_present_when_required"] is True
     assert detail["checks"]["relationship_evidence_ref_cited_when_required"] is False
+
+
+def test_real_llm_chain_industry_supply_chain_accepts_public_product_context_sources() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "industry_public_product_context",
+        "category": "standard_memo",
+    }
+    result = {
+        "specialist_route_results": [
+            {
+                "agent_id": "industry_supply_chain_analyst",
+                "status": "pass",
+                "prompt_row_distribution": {
+                    "by_ticker": {"DELL": 2},
+                    "by_source_family": {"public_source_context": 1, "company_product_evidence_graph": 1},
+                },
+            }
+        ],
+        "specialist_outputs": [
+            {
+                "agent_id": "industry_supply_chain_analyst",
+                "status": "pass",
+                "evidence_boundary": "bounded_rows_only",
+                "summary": "Official customer and product context support bounded supply-chain readthrough.",
+                "observations": [
+                    {
+                        "claim": "DELL has official customer deployment context tied to AI infrastructure demand.",
+                        "claim_type": "industry_context_only",
+                        "evidence_refs": ["public_deploy_ref", "product_graph_ref"],
+                        "source_families": ["public_source_context", "company_product_evidence_graph"],
+                        "confidence": "medium",
+                        "unsupported": False,
+                    }
+                ],
+                "unsupported_claims": [],
+                "conflicts": [],
+            }
+        ],
+        "public_source_context_rows": [
+            {
+                "ticker": "DELL",
+                "evidence_ref": "public_deploy_ref",
+                "source_family": "public_source_context",
+                "structured_context_type": "official_customer_deployment_context",
+                "claim_boundary": "context_only_no_revenue_or_backlog_inference",
+            }
+        ],
+        "product_evidence_rows": [
+            {
+                "ticker": "DELL",
+                "evidence_ref": "product_graph_ref",
+                "source_family": "company_product_evidence_graph",
+                "relationship_type": "deployed_by",
+                "promotion_status": "runtime_context_taxonomy_only",
+                "claim_boundary": "product_relationship_context_only",
+            }
+        ],
+    }
+
+    quality = module._specialist_real_evidence_quality(
+        case,
+        result,
+        {"industry_supply_chain_analyst"},
+        required=True,
+    )
+    detail = quality["details"]["industry_supply_chain_analyst"]
+
+    assert quality["quality_pass"] is True
+    assert detail["checks"]["bounded_row_source_family_owned"] is True
+    assert detail["checks"]["observation_source_family_owned"] is True
+    assert detail["input_source_families"] == ["company_product_evidence_graph", "public_source_context"]
 
 
 def test_real_llm_chain_relationship_pack_gate_rejects_off_sector_citation_without_cross_sector_prompt() -> None:

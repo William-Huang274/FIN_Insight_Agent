@@ -23,6 +23,27 @@ ROLE_POLICIES = {
         "preferred_terms": ("market", "valuation", "price", "volume", "event_window", "share"),
         "required_source_families": ("market_snapshot", "industry_snapshot", "relationship_graph"),
     },
+    "industry_supply_chain_analyst": {
+        "max_rows": 48,
+        "preferred_terms": (
+            "industry",
+            "supply",
+            "customer",
+            "deployment",
+            "order",
+            "contract",
+            "relationship",
+            "readthrough",
+            "company_product_evidence_graph",
+        ),
+        "required_source_families": (
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+            "live_public_web_context",
+        ),
+    },
     "capital_ownership_macro_analyst": {
         "max_rows": 40,
         "preferred_terms": ("debt", "credit", "offering", "13f", "ownership", "insider", "macro", "capital"),

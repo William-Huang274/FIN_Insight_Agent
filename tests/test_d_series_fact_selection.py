@@ -285,6 +285,49 @@ def test_pre_memo_fact_selection_formats_negative_capex_as_cash_outflow_proxy() 
     assert any("negative sign reflects cash-flow convention" in caveat for caveat in claim["caveats"])
 
 
+def test_pre_memo_fact_selection_keeps_ambiguous_large_usd_amount_out_of_memo_claims() -> None:
+    selection = build_pre_memo_fact_selection(
+        {
+            "reconciliation_ledger": {
+                "candidates": [{"candidate_id": "amzn_capex_ambiguous_unit", "evidence_ref": "amzn_capex_ref"}],
+                "reconciliation_groups": [
+                    {
+                        "group_id": "group_amzn_capex_ambiguous_unit",
+                        "ticker": "AMZN",
+                        "canonical_metric_id": "financial_metric:capex",
+                        "period_key": "fiscal:2024:ttm",
+                        "resolution_status": "resolved_single_candidate",
+                        "candidate_ids": ["amzn_capex_ambiguous_unit"],
+                        "preferred_value": {
+                            "candidate_id": "amzn_capex_ambiguous_unit",
+                            "value": "77658.0",
+                            "numeric_value": "77658.0",
+                            "unit": "usd",
+                            "source_id": "source-amzn-8k-table",
+                            "evidence_ref": "amzn_capex_ref",
+                            "source_family": "company_authored_unaudited_sec_filing",
+                            "resolution_rule": "single_exact_authority_candidate",
+                            "confidence": "high",
+                        },
+                    }
+                ],
+            }
+        }
+    )
+    filtered = apply_pre_memo_fact_selection_to_judgment(
+        {"memo_writer_allowed": True, "supported_claims": [], "unsupported_claims": []},
+        selection,
+    )
+    deterministic = [
+        row
+        for row in filtered["supported_claims"]
+        if row.get("agent_id") == "pre_memo_fact_selector"
+    ]
+
+    assert selection["approved_facts"][0]["unit"] == "usd"
+    assert deterministic == []
+
+
 def test_pre_memo_fact_selection_keeps_product_claim_when_financial_facts_crowd_budget() -> None:
     candidates = []
     groups = []
@@ -344,6 +387,70 @@ def test_pre_memo_fact_selection_keeps_product_claim_when_financial_facts_crowd_
     assert {"capital_and_financing", "fundamentals", "product_and_production"} <= dimensions
     assert any("AI-optimized servers" in row["claim"] for row in product_claims)
     assert len(deterministic) <= 18
+
+
+def test_pre_memo_fact_selection_keeps_zero_relevance_peer_totals_out_of_memo_claims() -> None:
+    candidates = []
+    groups = []
+
+    def add_group(index: int, ticker: str, metric: str, value: str) -> None:
+        candidate_id = f"candidate_{ticker.lower()}_{index}"
+        candidates.append({"candidate_id": candidate_id, "evidence_ref": f"ref_{ticker.lower()}_{index}"})
+        groups.append(
+            {
+                "group_id": f"group_{ticker.lower()}_{index}",
+                "ticker": ticker,
+                "canonical_metric_id": metric,
+                "period_key": "fiscal:2026:annual",
+                "resolution_status": "resolved_single_candidate",
+                "candidate_ids": [candidate_id],
+                "preferred_value": {
+                    "candidate_id": candidate_id,
+                    "value": value,
+                    "numeric_value": value,
+                    "unit": "usd_billions",
+                    "source_id": f"sec_{ticker.lower()}_{index}",
+                    "evidence_ref": f"ref_{ticker.lower()}_{index}",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                    "resolution_rule": "single_exact_authority_candidate",
+                    "confidence": "high",
+                },
+            }
+        )
+
+    add_group(1, "NVDA", "financial_metric:capex", "12.0")
+    add_group(2, "AMZN", "financial_metric:revenue", "20.0")
+    add_group(3, "MSFT", "financial_metric:capex", "250.0")
+
+    selection = build_pre_memo_fact_selection(
+        {
+            "user_query": "Analyze NVDA AI infrastructure capex and compare against MSFT cloud context.",
+            "query_contract": {
+                "focus_tickers": ["NVDA"],
+                "search_scope_tickers": ["NVDA", "AMZN", "MSFT"],
+            },
+            "reconciliation_ledger": {"candidates": candidates, "reconciliation_groups": groups},
+        }
+    )
+    filtered = apply_pre_memo_fact_selection_to_judgment(
+        {"memo_writer_allowed": True, "supported_claims": [], "unsupported_claims": []},
+        selection,
+    )
+    deterministic = [
+        row
+        for row in filtered["supported_claims"]
+        if row.get("agent_id") == "pre_memo_fact_selector"
+    ]
+    tickers = {row["ticker_scope"][0] for row in deterministic}
+
+    assert {row["ticker"]: row["scope_role"] for row in selection["approved_facts"]} == {
+        "NVDA": "focus_ticker",
+        "AMZN": "peer_context_ticker",
+        "MSFT": "peer_context_ticker",
+    }
+    assert "NVDA" in tickers
+    assert "MSFT" in tickers
+    assert "AMZN" not in tickers
 
 
 def test_pre_memo_fact_selection_promotes_product_segment_revenue_dimension() -> None:

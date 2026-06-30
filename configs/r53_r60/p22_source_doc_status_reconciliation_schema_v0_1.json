@@ -1,0 +1,22 @@
+{
+  "allowed_current_status": [
+    "done",
+    "partial",
+    "bounded_gap",
+    "blocked",
+    "open"
+  ],
+  "current_status_marker": "## P22 Current Status Reconciliation",
+  "required_row_fields": [
+    "doc_id",
+    "source_doc",
+    "item_id",
+    "title",
+    "current_status",
+    "evidence_refs",
+    "boundary",
+    "next_action",
+    "broad_full_chain_quality_evidence_allowed"
+  ],
+  "schema_version": "r53_r60_p22_source_doc_status_reconciliation_v0_1"
+}

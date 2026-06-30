@@ -2,7 +2,7 @@
 
 Date: 2026-06-30
 
-Supersession note: this audit captured the state before P21 and the later P20b D02/D03 repair. As of the P21/P20b update on 2026-06-30, `AUD-01` is closed by the current-status overlay/current release board, and `AUD-02` is closed by the numeric display lineage and MemoLogicPlan root-cause repairs. `AUD-03` through `AUD-05` remain broad full-chain blockers.
+Supersession note: this audit captured the state before P21, the later P20b D02/D03 repair, and P22. As of the P21/P20b/P22 update on 2026-06-30, `AUD-01` is closed by the current-status overlay/current release board, `AUD-02` is closed by the numeric display lineage and MemoLogicPlan root-cause repairs, and `AUD-03` is closed by P22 source-doc status reconciliation. `AUD-04` and `AUD-05` remain broad full-chain blockers.
 
 ## Scope
 
@@ -41,7 +41,7 @@ This does not mean the work was not done. It means the machine-readable planning
 | --- | --- | --- | --- | --- |
 | `AUD-01` | Source-of-truth parity | Closed by P21 current-status overlay/current release board | Later automation may route from stale data instead of closeout truth | Keep overlay parity tests current; do not consume historical S0 board as current state |
 | `AUD-02` | P20b root-cause hardening | Closed by P20b D02/D03 repair | The exact issue the user called out: gates can block bad output but do not improve upstream quality | Keep numeric display lineage and MemoLogicPlan evidence-to-thesis regressions active |
-| `AUD-03` | R57/R58 source docs | R57/R58 still contain demand rows marked `planned`, while P13/P14 implemented parts of those capabilities | Maintainers cannot tell what is done, partial, or still planned from the source docs alone | Add current-status sections to R57/R58 or reference a maintained status overlay that maps each demand row to S/P evidence |
+| `AUD-03` | R55/R57/R58/R59/R60 source docs | Closed by P22 source-doc status reconciliation | Maintainers can now read current done/partial state from the source docs and machine-readable P22 rows | Keep P22 rows updated when P23+ changes source-doc status; do not mark partial rows as product-complete |
 | `AUD-04` | PRD product acceptance | PRD requires internal dogfood / pilot / production-grade acceptance, but P17-P19 are controlled deterministic runs with real-human adoption pending | Enterprise product readiness cannot be inferred from deterministic runs alone | Run real reviewer sessions, capture accepted/rejected deliverables, defect closure, token/cost ROI, and reviewer acceptance |
 | `AUD-05` | Frontend / Workbench product surface | P15 added contracts and projections, but polished React UX, visual browser E2E, and real product-grade flows remain bounded | B-end product value depends on usable Task Center / Evidence Workbench / Workpaper / Review / Deliverable flows | Add browser visual E2E and user-flow acceptance for task creation, evidence drilldown, review action, deliverable export, and admin/ops |
 | `AUD-06` | Runtime migration | P12 is a deterministic runtime drill, not full migration of all LangGraph production nodes to RuntimeFacade/checkpoint/HIL/resource router | Long-running tasks still risk falling back into fixed serial graph behavior | Migrate actual graph execution paths and add replay/resume/parity tests across representative cases |
@@ -67,10 +67,9 @@ This does not mean the work was not done. It means the machine-readable planning
 
 ## Recommended Repair Order
 
-1. Create `P22-source-doc-status-reconciliation`: update R57/R58/R55/R59/R60 current-status sections so source docs no longer look like untouched plans.
-2. Create `P23-real-product-dogfood`: run real reviewer/browser sessions against the Workbench, with accepted/rejected deliverables and visible defect closure.
-3. Create `P24-runtime-and-data-live-integration`: connect actual runtime graph execution, P14 retrieval/data control plane, and R60 eval telemetry in real end-to-end runs.
-4. Create `P25-data-depth-and-secondary-market-closure`: continue baseline data-depth, secondary-market, quant, and deliverable gaps as explicit typed backlogs.
+1. Create `P23-real-product-dogfood`: run real reviewer/browser sessions against the Workbench, with accepted/rejected deliverables and visible defect closure.
+2. Create `P24-runtime-and-data-live-integration`: connect actual runtime graph execution, P14 retrieval/data control plane, and R60 eval telemetry in real end-to-end runs.
+3. Create `P25-data-depth-and-secondary-market-closure`: continue baseline data-depth, secondary-market, quant, and deliverable gaps as explicit typed backlogs.
 
 ## Verification
 

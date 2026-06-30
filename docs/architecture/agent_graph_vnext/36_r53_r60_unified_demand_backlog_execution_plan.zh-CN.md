@@ -856,7 +856,7 @@ P20 closeout（2026-06-30）：`P20_L4_scope_pass_real_llm_dogfood_gate_repair_r
 | `P20b-D03-memo-logic-plan-quality-root` | investment-quality gate 能拦坏输出，但 MemoLogicPlan / evidence-to-thesis bridge 仍可能只给模板化、gap-first 计划 | Research Lead / Supervising Analyst 在写作前必须形成 answer-first、dimension-linked、citation-backed MemoLogicPlan | 不只 eval gate pass，还要检查 writer 主输入里已有 thesis/counter-thesis/decision-changing evidence |
 | `P20b-D04-source-doc-status-correction` | checklist / source docs 可能把 diagnostic、smoke、gate containment 写成 complete | 36、R60、checklist、相关 worklog 必须同步 status / boundary / next repair | 不存在“最小合同即通过”“gate 兜底即修复”的 stale wording |
 
-2026-06-30 hardening update：`P20b-D01` 已前移到 `src/sec_agent/reconciliation_ledger.py`，大额裸 `usd` / `$` / `dollar(s)` currency facts 在 reconciliation candidate 阶段标记为 `excluded_ambiguous_currency_scale`，并由 `tests/test_metric_product_ontology_reconciliation.py` 回归覆盖。随后 `P20b-D02` 在 `src/sec_agent/d_series_fact_selection.py` 前移到 pre-memo selection 层，`ambiguous_currency_scale_not_memo_display_eligible` 不再进入 `approved_facts`；`P20b-D03` 在 `src/sec_agent/memo_logic_plan.py` 和 `src/sec_agent/memo_llm.py` 补齐 `answer_first_outline` / `evidence_to_thesis_bridge` 并进入 writer compact payload。P20b 四项 root-cause hardening 当前均已关闭；后续 broad full-chain 仍由 P21 的 B03-B05 阻塞。
+2026-06-30 hardening update：`P20b-D01` 已前移到 `src/sec_agent/reconciliation_ledger.py`，大额裸 `usd` / `$` / `dollar(s)` currency facts 在 reconciliation candidate 阶段标记为 `excluded_ambiguous_currency_scale`，并由 `tests/test_metric_product_ontology_reconciliation.py` 回归覆盖。随后 `P20b-D02` 在 `src/sec_agent/d_series_fact_selection.py` 前移到 pre-memo selection 层，`ambiguous_currency_scale_not_memo_display_eligible` 不再进入 `approved_facts`；`P20b-D03` 在 `src/sec_agent/memo_logic_plan.py` 和 `src/sec_agent/memo_llm.py` 补齐 `answer_first_outline` / `evidence_to_thesis_bridge` 并进入 writer compact payload。P20b 四项 root-cause hardening 当前均已关闭；P22 已关闭 source-doc status drift blocker；后续 broad full-chain 仍由 P21 的 B04-B05 阻塞。
 
 P20b closeout 必须执行 root-cause-first 顺序：复现症状 -> 定位最早 faulty artifact -> 修 parser/normalizer/reconciliation/planner/writer 输入 -> 保留 gate 做回归保护 -> 加 deterministic regression -> 更新源文档和 checklist。若根因未找到，只能标记 `blocked_root_cause_unknown` 或 `partial_diagnostic`，不得升级为 `L4_scope_pass`。
 
@@ -868,20 +868,20 @@ P20b closeout 必须执行 root-cause-first 顺序：复现症状 -> 定位最�
 2. 但当前仍不是 PRD-level product complete 或 full enterprise production pass；很多 slice 只是自身范围内的 `L4_scope_pass`，并保留真实生产/试点边界。
 3. 最大源文档漏项是 machine-readable source-of-truth drift：`r53_r60_demand_map_v0_1.jsonl` 仍是 `planned=57 / ready_for_implementation=4`，`r53_r60_implementation_tasks_v0_1.jsonl` 仍是 `planned=171 / ready_for_implementation=12`，`r53_r60_release_board_v0_1.jsonl` 仍是 `blocked_by_dependencies=10 / ready_to_start=1`。这些不能直接给后续自动化当当前状态用。
 4. P20b 的 `P20b-D02-numeric-display-lineage` 和 `P20b-D03-memo-logic-plan-quality-root` 已在 P21/P20b 后续修复中关闭；后续不能再把同类问题交给 renderer / eval gate 兜底，而应继续按 earliest faulty artifact 修。
-5. R57/R58/R55/R59/R60 需要补 current-status / closeout reconciliation：P13/P14/P15/P16 已实现了部分需求，但源文档中仍有 planned rows 或 current gaps，需要映射为 done / partial / open / bounded gap。
+5. R57/R58/R55/R59/R60 的 source-doc current-status / closeout reconciliation 已由 P22 补齐：源文档现在都有 `P22 Current Status Reconciliation`，并用机器可读 rows 映射 done / partial / boundary / next action；后续不再把这些源文档当作“未执行计划”，但 partial 行仍不能冒充产品级完成。
 
 | Audit item | 当前判断 | 必须补的动作 |
 | --- | --- | --- |
 | `AUD-01-source-status-parity` | S0 machine-readable backlog/release board stale | 生成 current-status overlay 或重建 demand/release board，并加 parity test |
 | `AUD-02-p20b-root-cause` | closed 2026-06-30 | 已修 numeric display lineage 和 MemoLogicPlan upstream quality；保留回归测试 |
-| `AUD-03-source-doc-reconciliation` | R57/R58 等源文档仍像未执行计划 | 对每个 demand row 建 done/partial/open 映射，或集中维护 status overlay |
+| `AUD-03-source-doc-reconciliation` | closed by P22 2026-06-30 | 已对 R55/R57/R58/R59/R60 建 73 条 done/partial 映射、源文档 current-status section 和 gate summary；后续维护这些 rows，不再依赖旧 planned wording |
 | `AUD-04-prd-product-acceptance` | P17-P19 是 controlled deterministic / reviewer-action drill，不是真实多人多日产品采用 | 跑真实 reviewer sessions、accepted/rejected deliverables、defect closure、token/cost ROI |
 | `AUD-05-frontend-workbench-e2e` | P15 是 product surface contract/projection，不是 polished React release | 做浏览器视觉 E2E 和用户流验收 |
 | `AUD-06-runtime-live-migration` | P12 是 runtime drill，不是全 graph 迁移 | 迁移真实 LangGraph execution paths，补 replay/resume/parity tests |
 | `AUD-07-data-rag-live-refresh` | P14 是 control plane，不是 full crawler / production refresh | 接真实 refresh jobs、parser coverage、qrels、DB perf profile 和 source adapter coverage |
 | `AUD-08-secondary-quant-deliverable-depth` | S8/S9/S7 是 bounded scope pass | 二级市场、量化实验、Deliverable Studio 继续按 typed gap 和 source authority 补深度 |
 
-建议下一轮不要直接开新大功能，而是按以下顺序做：`P22-source-doc-status-reconciliation` -> `P23-real-product-dogfood-and-frontend-e2e` -> `P24-runtime-data-live-integration` -> `P25-data-depth-and-secondary-market-closure`。
+建议下一轮不要直接开新大功能，而是按以下顺序做：`P23-real-product-dogfood-and-frontend-e2e` -> `P24-runtime-data-live-integration` -> `P25-data-depth-and-secondary-market-closure`。P22 已完成 source-doc status reconciliation，只关闭源文档漂移，不代表真实产品 dogfood / data-depth / runtime live migration 完成。
 
 详细审计记录见 `docs/worklog/product_strategy/046_prd_rseries_s_p_closeout_audit.md`。
 
@@ -906,11 +906,54 @@ P21 已新增机器可读 blocker gate：
 | `status` | `pass` |
 | `closeout_level` | `L4_scope_pass_for_blocker_registration_only` |
 | `full_chain_broad_eval_allowed` | `false` |
-| `blocker_count_open` | `3/5` |
+| `blocker_count_open` | `2/5` |
 | `allowed_while_blocked` | `deterministic_node_tests`, `pack_level_tests`, `targeted_full_chain_smoke_for_integration_only` |
 | `not_allowed_while_blocked` | `20_50_case_full_chain_quality_claim`, `product_release_claim`, `automation_from_stale_release_board` |
 
-注意：P21 的 pass 只代表“阻塞项登记、current status overlay 和 broad full-chain 禁止规则”达到了自身范围的 L4-grade。它关闭 `B01-machine-readable-backlog-status-parity` 和 `B02-p20b-owned-root-cause-open`，没有关闭剩余 3 条 blocker。下一步仍应按 blocker rows 的 `next_slice` 顺序修：`P22-source-doc-status-reconciliation`、`P23-real-product-dogfood-and-frontend-e2e`、`P24/P25 pack-depth gates`。
+注意：P21 的 pass 只代表“阻塞项登记、current status overlay 和 broad full-chain 禁止规则”达到了自身范围的 L4-grade。它关闭 `B01-machine-readable-backlog-status-parity`、`B02-p20b-owned-root-cause-open`，并在 P22 通过后关闭 `B03-r-source-doc-status-reconciliation`；剩余 2 条 blocker 仍打开。下一步仍应按 blocker rows 的 `next_slice` 顺序修：`P23-real-product-dogfood-and-frontend-e2e`、`P24/P25 pack-depth gates`。
+
+## 4.14 P22 Source-Doc Status Reconciliation（2026-06-30）
+
+P22 目标是关闭 `B03-r-source-doc-status-reconciliation`：把 R55/R57/R58/R59/R60 的源文档从“旧计划/旧缺口描述”更新成当前可审计状态。P22 不声明 Deliverable Studio、memory/context、RAG/data pipeline、backend/frontend 或 eval/observability 已达到全产品生产通过；它只声明这些源文档的 demand/status rows 已经可机器读取、可追责、可被后续 slice 依赖。
+
+新增/更新 artifacts：
+
+- schema：`configs/r53_r60/p22_source_doc_status_reconciliation_schema_v0_1.json`
+- source status rows：`data/manifests/r53_r60_p22_source_doc_status_rows_v0_1.jsonl`
+- gate rows：`data/manifests/r53_r60_p22_source_doc_status_gate_rows_v0_1.jsonl`
+- summary：`data/manifests/r53_r60_p22_source_doc_status_reconciliation_summary_v0_1.json`
+- report：`docs/internal/vnext_20260610/r53_r60_p22_source_doc_status_reconciliation_l4_scope_pass.zh-CN.md`
+- builder：`scripts/engineering/build_r53_r60_p22_source_doc_status_reconciliation.py`
+- tests：`tests/test_r53_r60_source_doc_status_reconciliation.py`
+
+真实构建结果：
+
+| Field | Value |
+| --- | --- |
+| `status` | `pass` |
+| `closeout_level` | `L4_scope_pass_for_source_doc_reconciliation_only` |
+| `source_doc_status` | `reconciled` |
+| `row_count` | `73` |
+| `status_counts` | `done=34`, `partial=39` |
+| `open_source_doc_status_rows` | `0` |
+| `gate_count` | `7 pass / 0 fail` |
+| `full_chain_broad_eval_allowed` | `false` |
+| `release_decision` | `P22_source_docs_reconciled_broad_full_chain_still_blocked` |
+
+R-series source-doc current status 分布：
+
+| Source doc | Done rows | Partial rows | P22 边界 |
+| --- | ---: | ---: | --- |
+| R55 Deliverable Studio / Dashboard Projection | 2 | 6 | artifact/render trace 已有；多格式导出、可视化、模板治理和真实产品验收仍属 P23/P24 |
+| R57 Graph / Skill / Memory | 5 | 8 | registry/patch/memory gates 已有；selector、tenant overlay、ContextEngine lifecycle、compression artifact 仍 partial |
+| R58 DB / RAG / Retrieval / Data Pipeline | 9 | 5 | SQL/Milvus/parity/control-plane 已有；qrels、rerank、crawler/adapter depth、SLA/perf 仍 partial |
+| R59 Backend / Frontend / Workbench | 7 | 13 | task ledger/callback/SSE/projections 已有；polished UI、auth/RBAC、load/SLA、live migration、visual E2E 仍 partial |
+| R60 Eval / Observability / Incident / Fallback | 11 | 7 | eval registry/gates/failure lifecycle 已有；online eval、release readiness、cost/SLA trends、dashboard product acceptance 仍 partial |
+
+P22 通过后，P21 blocker summary 已更新为 `blocker_count_open=2/5`。剩余 blocker 是：
+
+- `B04-prd-product-acceptance-not-met`
+- `B05-depth-packs-before-broad-full-chain`
 
 ## 5. 单 Agent 执行节奏
 

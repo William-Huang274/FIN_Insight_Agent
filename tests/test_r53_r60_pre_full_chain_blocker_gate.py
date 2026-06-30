@@ -125,5 +125,6 @@ def test_p21_current_status_overlay_covers_s_and_p_slices(tmp_path: Path) -> Non
 
     assert {"S0", "S1", "P14", "P18", "P20", "P20b", "P21"}.issubset(slice_ids)
     p20b = next(row for row in overlay_rows if row["slice_id"] == "P20b")
-    assert p20b["current_status"] == "partial_open"
-    assert "P20b-D02-numeric-display-lineage" in p20b["open_boundaries"]
+    assert p20b["current_status"] == "scope_pass_root_cause_hardening_closed"
+    assert p20b["open_boundaries"] == []
+    assert "P20b-D02-numeric-display-lineage" in p20b["resolved_items"]

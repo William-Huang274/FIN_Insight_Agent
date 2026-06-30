@@ -1,9 +1,9 @@
 # R53-R60 P21 Pre-Full-Chain Blocker Gate
 
-- Generated at: `2026-06-30T11:27:25Z`
+- Generated at: `2026-06-30T12:02:07Z`
 - Release decision: `P21_pre_full_chain_blockers_registered_broad_full_chain_blocked`
 - Broad full-chain eval allowed: `False`
-- Open blockers: `3/5`
+- Open blockers: `2/5`
 
 ## Interpretation / 解释
 
@@ -37,7 +37,7 @@ This artifact does not claim product readiness. It only proves that the known bl
 
 ### B03-r-source-doc-status-reconciliation - R57/R58/R55/R59/R60 source documents need done/partial/open mapping
 
-- Status: `open_source_doc_reconciliation_required`
+- Status: `closed_by_p22_source_doc_status_reconciliation`
 - Blocks: `new_feature_planning_from_stale_r_docs, broad_full_chain_20_50_eval`
 - Next slice: `P22-source-doc-status-reconciliation`
 - Why blocking: The source docs still contain planned rows or bounded gaps that are not mapped to current implementation evidence.

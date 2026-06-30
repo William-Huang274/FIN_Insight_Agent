@@ -568,22 +568,26 @@ ReferenceChangeLedger
 
 ## 16. Demand 草案
 
-| Demand ID | 目标 | 状态 |
-| --- | --- | --- |
-| `R58-D01-retrieval-intent-taxonomy` | 定义 retrieval intent schema 和 classifier contract | planned |
-| `R58-D02-route-policy-matrix` | 为每类 intent 定义 DB / graph / BM25 / ObjectBM25 / Milvus / web repair route 顺序和 budget | planned |
-| `R58-D03-query-rewrite-facet-plan` | 生成 exact / lexical / semantic / graph facet queries，并记录 query drift guard | planned |
-| `R58-D04-hybrid-recall-rerank-policy` | 统一 candidate generation、RRF/fusion、BGE rerank、role quota 和 source-family quota | planned |
-| `R58-D05-retrieval-execution-ledger` | 记录 route-level candidate、rerank、selected、dropped、latency、target-in-candidates | planned |
-| `R58-D06-retrieval-eval-qrels` | 建 retrieval qrels / gold refs / negative cases，与 R60 eval store 对接 | planned |
-| `R58-D07-data-ingestion-contract` | 定义 IngestionJob、RawSourceDocument、FetchAttempt、SourceSnapshot、ParserRun 合同 | planned |
-| `R58-D08-storage-lineage-convention` | 固化 raw/staging/processed/artifact/ObjectStore/SQL mirror 路径和 logical id 规范 | planned |
-| `R58-D09-parser-tool-contract` | 定义 crawler/fetcher/parser/verifier/authority mapper 工具输出合同 | planned |
-| `R58-D10-database-performance-profile` | 为主要 DB/index pipeline 增加 row count、complexity、latency、memory、refresh policy profile | planned |
-| `R58-D11-contextengine-retrieval-bridge` | 把 RetrievalExecutionLedger 接入 ContextCompressionArtifact / ContextInjectionPlan | planned |
-| `R58-D12-release-gate` | R58 与 R60 合并出 retrieval/data-pipeline release gate | planned |
-| `R58-D13-reference-source-ledger` | 建立外部参考源台账和变更台账，记录新增/删除/降级原因、吸收位置和项目内表现 | planned |
-| `R58-D14-reference-adoption-performance-gate` | 为六个吸收设计建立 performance profile，跟踪 lineage、permission、retrieval、parser、observability、workpaper trace 的项目内表现 | planned |
+## P22 Current Status Reconciliation
+
+状态口径：R58 已由 S3/P14/P16 落过合同、ledger、parser、lineage、ContextEngine bridge 和 reference governance。仍为 `partial` 的项不是未开始，而是需要更多 qrels、rerank、真实 crawler coverage 或 production SLA。
+
+| Demand ID | 目标 | 当前状态 | 已有证据 | 边界 / 下一步 |
+| --- | --- | --- | --- | --- |
+| `R58-D01-retrieval-intent-taxonomy` | 定义 retrieval intent schema 和 classifier contract | done | S3、P14 | 代表性 intent 集合已建；新增 intent 必须版本化。 |
+| `R58-D02-route-policy-matrix` | 定义 DB / graph / BM25 / ObjectBM25 / Milvus / web route 顺序和 budget | done | S3、P14 | 路由合同可用；仍需按 failure/gold 扩展 route quota。 |
+| `R58-D03-query-rewrite-facet-plan` | 生成 exact / lexical / semantic / graph facet queries | partial | S3、P14 | 有 retrieval plan；query drift / facet 覆盖仍需 qrels 回归。 |
+| `R58-D04-hybrid-recall-rerank-policy` | candidate generation、fusion/rerank、role/source quota | partial | S3、P14 | selected/dropped ledger 有；rerank 质量未完成全量调优。 |
+| `R58-D05-retrieval-execution-ledger` | 记录 candidate、rerank、selected、dropped、latency、target-in-candidates | done | S3、P14 | 后续 full-chain 必须消费该 ledger。 |
+| `R58-D06-retrieval-eval-qrels` | retrieval qrels / gold refs / negative cases | partial | S3、P16 | 初始 qrels 有，但覆盖面偏小。 |
+| `R58-D07-data-ingestion-contract` | IngestionJob、RawSourceDocument、FetchAttempt、SourceSnapshot、ParserRun | done | P14 | 代表性 source modalities 已过；不是全 crawler coverage。 |
+| `R58-D08-storage-lineage-convention` | raw/staging/processed/artifact/ObjectStore/SQL mirror 规范 | done | P14 | 新 ingestion 输出必须沿用该 lineage。 |
+| `R58-D09-parser-tool-contract` | crawler/fetcher/parser/verifier/authority mapper 工具输出合同 | done | P14、P16 | source-specific coverage 仍是数据深度任务；raw snippet 不能直接提权。 |
+| `R58-D10-database-performance-profile` | DB/index pipeline row count、complexity、latency、memory profile | partial | P14、P16 | 本地 profile 有；production p95/p99 SLA 未验收。 |
+| `R58-D11-contextengine-retrieval-bridge` | RetrievalExecutionLedger 接入 ContextEngine | done | P14 | bridge ready；live graph nodes 仍需逐步迁移。 |
+| `R58-D12-release-gate` | retrieval/data-pipeline release gate | partial | P14、P16、P21 | scope gates 通过；P21 仍阻断 broad full-chain 质量结论。 |
+| `R58-D13-reference-source-ledger` | 外部参考源台账和变更台账 | done | P16 | 新增/删除/降级仍必须留痕。 |
+| `R58-D14-reference-adoption-performance-gate` | reference adoption performance profile | done | P16 | 每次采用新参考设计后都要回填项目内表现。 |
 
 ## 17. Acceptance Gates
 

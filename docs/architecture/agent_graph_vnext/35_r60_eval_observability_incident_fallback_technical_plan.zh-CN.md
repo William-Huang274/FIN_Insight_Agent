@@ -318,26 +318,30 @@ R60 的 Release Gates 不只输出 pass/fail，还必须输出 `pass_level`。�
 
 ## 10. R60 Demand List
 
-| ID | 需求 | 状态 | 通过条件 |
-| --- | --- | --- | --- |
-| R60-D01 | Eval registry schema | draft | `EvalCase`、`EvalDataset`、`EvalRun`、`EvalMetricResult`、`EvalGateResult` schema 确定 |
-| R60-D02 | Trace / usage schema | draft | `TraceSpan`、`ModelCallMetric`、`RetrievalMetric`、`ParserMetric`、`ToolMetric` 可落 SQL |
-| R60-D03 | TokenCostLedger | draft | run/node/model/tool/retrieval cost 可聚合，支持 cache/reasoning token |
-| R60-D04 | Node eval gates | draft | E0-E10 每层至少有 deterministic gate 和 failure taxonomy |
-| R60-D05 | Full-chain eval harness | draft | E11 case 能生成 run trace、workpaper、deliverable、eval report |
-| R60-D06 | Online eval feedback loop | draft | production failure / reviewer feedback 可转 regression case |
-| R60-D07 | DemandAcceptanceRecord | draft | 每个需求单有 PRD trace、技术 trace、测试证据和 sign-off |
-| R60-D08 | QAExecutionPlan / DefectRecord | draft | 测开能按 release slice 建计划、跑 case、开缺陷、复验 |
-| R60-D09 | Failure / gold lifecycle | draft | failure 可修复/关闭/晋升 regression；good case 可晋升 gold |
-| R60-D10 | Incident dashboard | draft | parser/retrieval/tool/model/frontend/latency/cost incident 可见 |
-| R60-D11 | Release readiness report | draft | release candidate 自动汇总 gates、风险、rollback 和剩余缺口 |
-| R60-D12 | CI/CD gate integration | draft | deterministic tests、schema checks、eval smoke 接入 CI 或等价脚本 |
-| R60-D13 | Sandbox regression | draft | R59 sandbox/approval policy 有可复现阻断和允许用例 |
-| R60-D14 | Load / chaos / SLA tests | draft | queue wait、p95 latency、DB/ObjectStore 压力、provider failure 有测试 |
-| R60-D15 | Eval dashboard API | draft | 前端能按 task/run/case/node 查看 trace、metric、failure、release gate |
-| R60-D16 | BudgetExceededGate | draft | 超预算时能 fail closed、缩范围、请求人工批准或暴露 typed gap |
-| R60-D17 | ReferenceSourceLedger / ChangeLedger | draft | R60 外部参考源新增、更新、降级、删除都有来源、原因、影响和批准记录 |
-| R60-D18 | ReferenceAdoptionPerformanceProfile | draft | 外部参考设计进入项目后的质量、成本、延迟和运维表现可复核 |
+## P22 Current Status Reconciliation
+
+状态口径：R60 的基础 eval/trace/incident/reference governance 已由 P16 落地。仍为 `partial` 的项主要是 full-chain broader gate、真实 online feedback、release readiness、load/SLA 和前端 dashboard product acceptance。
+
+| ID | 需求 | 当前状态 | 已有证据 | 边界 / 下一步 |
+| --- | --- | --- | --- | --- |
+| R60-D01 | Eval registry schema | done | P16 | EvalCase / EvalDataset / EvalRun / metric / gate rows 已有。 |
+| R60-D02 | Trace / usage schema | done | P16 | TraceSpan、ModelCallMetric、RetrievalMetric、ParserMetric、ToolMetric 已有。 |
+| R60-D03 | TokenCostLedger | done | P16 | token/cost ledger 已有；后续每次模型 run 必须记录 cost-quality tradeoff。 |
+| R60-D04 | Node eval gates | done | P16 | Node gates 和 failure taxonomy 已有。 |
+| R60-D05 | Full-chain eval harness | partial | P16、P21 | harness 有，但 P21 阻断 broad full-chain 质量结论。 |
+| R60-D06 | Online eval feedback loop | partial | P16、P19 | failure/regression rows 有；真实 production/reviewer feedback loop 未持续运行。 |
+| R60-D07 | DemandAcceptanceRecord | done | P16 | 需求验收主账本已落。 |
+| R60-D08 | QAExecutionPlan / DefectRecord | done | P16 | QA plan 和 defect records 已落。 |
+| R60-D09 | Failure / gold lifecycle | done | P16 | failure/gold/regression lifecycle 已落；gold 仍需二次 review。 |
+| R60-D10 | Incident dashboard | partial | P16 | incident rows/projection 有；持续监控窗口未证明。 |
+| R60-D11 | Release readiness report | partial | S10、P16、P21 | report 有，但 P21 仍阻断 product/broad quality release。 |
+| R60-D12 | CI/CD gate integration | partial | P16 | 等价脚本和 gate 有；托管 CI 集成未完成。 |
+| R60-D13 | Sandbox regression | done | P16 | sandbox regression 已落。 |
+| R60-D14 | Load / chaos / SLA tests | partial | S10、P16 | controlled chaos 有；queue wait / p95 / DB/ObjectStore pressure 未完成上线级压测。 |
+| R60-D15 | Eval dashboard API | partial | P15、P16 | dashboard projection 有；前端 E2E 和产品可用性未验收。 |
+| R60-D16 | BudgetExceededGate | done | P16 | 超预算 fail-closed gate 已落。 |
+| R60-D17 | ReferenceSourceLedger / ChangeLedger | done | P16 | 参考源新增/更新/降级/删除台账已落。 |
+| R60-D18 | ReferenceAdoptionPerformanceProfile | done | P16 | 参考设计采用后的质量、成本、延迟和运维表现 profile 已落。 |
 
 ## 11. 执行顺序
 

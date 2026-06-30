@@ -1,0 +1,46 @@
+{
+  "closeout_level": "L4_scope_pass_for_source_doc_reconciliation_only",
+  "doc_status_counts": {
+    "R55": {
+      "done": 2,
+      "partial": 6
+    },
+    "R57": {
+      "done": 5,
+      "partial": 8
+    },
+    "R58": {
+      "done": 9,
+      "partial": 5
+    },
+    "R59": {
+      "done": 7,
+      "partial": 13
+    },
+    "R60": {
+      "done": 11,
+      "partial": 7
+    }
+  },
+  "full_chain_broad_eval_allowed": false,
+  "gate_count": 7,
+  "gate_fail_count": 0,
+  "generated_at": "2026-06-30T12:01:48Z",
+  "open_source_doc_status_rows": 0,
+  "outputs": {
+    "gate_rows": "data/manifests/r53_r60_p22_source_doc_status_gate_rows_v0_1.jsonl",
+    "report": "docs/internal/vnext_20260610/r53_r60_p22_source_doc_status_reconciliation_l4_scope_pass.zh-CN.md",
+    "schema": "configs/r53_r60/p22_source_doc_status_reconciliation_schema_v0_1.json",
+    "status_rows": "data/manifests/r53_r60_p22_source_doc_status_rows_v0_1.jsonl",
+    "summary": "data/manifests/r53_r60_p22_source_doc_status_reconciliation_summary_v0_1.json"
+  },
+  "release_decision": "P22_source_docs_reconciled_broad_full_chain_still_blocked",
+  "row_count": 73,
+  "schema_version": "r53_r60_p22_source_doc_status_reconciliation_v0_1",
+  "source_doc_status": "reconciled",
+  "status": "pass",
+  "status_counts": {
+    "done": 34,
+    "partial": 39
+  }
+}

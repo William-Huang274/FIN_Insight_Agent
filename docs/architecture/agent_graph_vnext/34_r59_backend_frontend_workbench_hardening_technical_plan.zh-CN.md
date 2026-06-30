@@ -738,28 +738,32 @@ ToolPolicyBinding
 
 ## 11. R59 Demand 草案
 
-| Demand ID | 名称 | 目标 | 前置 | 状态 |
+## P22 Current Status Reconciliation
+
+状态口径：R59 已由 S1/S2/S10/P12/P15/P16/P18/P19 做过 runtime、product-surface、review/action、ops/eval 合同实现。但前端视觉 E2E、真实 reviewer 多日采用、live migration 和 load/SLA 仍然是 product/ops blockers，不能被 partial 行冲掉。
+
+| Demand ID | 名称 | 当前状态 | 已有证据 | 边界 / 下一步 |
 | --- | --- | --- | --- | --- |
-| `R59-D01-current-surface-inventory` | 当前前后端盘点 | 把 Java gateway、Python Workbench、React Workbench、bridge/tests 的现状和缺口固化 | 无 | planned |
-| `R59-D02-api-boundary-contract` | Java / Python API 边界 | 冻结 Java enterprise gateway 与 Python runtime service 的职责和 API | R56 | planned |
-| `R59-D03-task-run-state-machine` | 任务状态机 | 建立 ResearchTask / TaskRun / TaskEvent / ProgressProjection 合同 | R52/R56 | planned |
-| `R59-D04-sql-final-task-audit` | SQL-final task audit | task/run/event/review/artifact/incident 进入 SQL 主账本 | R58/R60 | planned |
-| `R59-D05-queue-worker-recovery` | Queue/worker recovery | lease、heartbeat、retry/backoff、stuck-run recovery、idempotency | D03/D04 | planned |
-| `R59-D06-sse-event-replay` | SSE + event replay | 前端能断线重连并从 event ledger 恢复状态 | D03/D04 | planned |
-| `R59-D07-auth-tenant-rbac` | Auth / tenant / RBAC | 最小组织/项目/角色/权限模型 | D02 | planned |
-| `R59-D08-artifact-browser` | Artifact Browser | artifact refs、download、preview、version、permission | R55/R58 | planned |
-| `R59-D09-evidence-workbench-ui` | Evidence Workbench UI | evidence/claim/gap/gate/context/eval drilldown | R58/R60 | planned |
-| `R59-D10-workpaper-builder-ui` | Workpaper Builder UI | WorkpaperPack 分维度展示、评论、版本、退回 | R52/R55 | planned |
-| `R59-D11-review-queue-ui` | Review Queue UI | human question、comment、downgrade、return、approve | R52/R56 | planned |
-| `R59-D12-deliverable-studio-ui` | Deliverable Studio UI | markdown/docx/pptx/xlsx/pdf render job 和版本 | R55 | planned |
-| `R59-D13-dashboard-watchlist-projection` | Dashboard projection | watchlist、任务、事件、缺口、pending review 看板 | PRD/R55 | planned |
-| `R59-D14-admin-ops-console` | Admin/Ops console | run、queue、worker、cost、latency、incident、eval | R60 | planned |
-| `R59-D15-upload-data-room-input` | Upload/Data Room surface | 文件上传、解析状态、UserProvidedEvidencePack 入口 | R58/R55 | planned |
-| `R59-D16-load-and-chaos-gate` | Load/chaos gate | 10-20 task load、worker crash、provider timeout、SSE reconnect | D05/D06/R60 | planned |
-| `R59-D17-reference-source-ledger` | Reference source ledger | 外部参考来源、采用/不采用原因、映射对象、review date 可追溯 | 无 | planned |
-| `R59-D18-reference-change-performance-ledger` | Reference change/performance ledger | 新增、更新、删除参考必须记录原因，并跟踪进入项目后的实际表现 | D17 | planned |
-| `R59-D19-sandbox-policy-contract` | Sandbox / approval policy contract | 工具、actor、文件、网络、凭证、artifact 写入和审批边界结构化 | R56/R60 | planned |
-| `R59-D20-sandbox-ui-and-regression-gate` | Sandbox UI / eval gate | 前端可见 tool permission / block reason，eval 覆盖越权工具、writer fetch、credential/path/network escape | D19/R60 | planned |
+| `R59-D01-current-surface-inventory` | 当前前后端盘点 | done | P15 | surface inventory 已固化；后续 UI/API 变动要同步更新。 |
+| `R59-D02-api-boundary-contract` | Java / Python API 边界 | partial | P12、P15 | 合同存在；full runtime migration 未完成。 |
+| `R59-D03-task-run-state-machine` | 任务状态机 | done | S1、P12 | SQL-final task/run state 已有。 |
+| `R59-D04-sql-final-task-audit` | SQL-final task audit | done | S1、P16 | SQL ledger 是最终审计源；Redis 不可作为最终审计源。 |
+| `R59-D05-queue-worker-recovery` | Queue/worker recovery | partial | P12、S10 | recovery drill 有；真实 load/chaos SLA 待验收。 |
+| `R59-D06-sse-event-replay` | SSE + event replay | partial | P15、P18 | projection 有；浏览器断线重连 E2E 未过。 |
+| `R59-D07-auth-tenant-rbac` | Auth / tenant / RBAC | partial | P15、S10 | RBAC 正反例合同有；跨租户产品回归未完成。 |
+| `R59-D08-artifact-browser` | Artifact Browser | done | P15 | artifact refs、trace、gate、source refs 已可追溯。 |
+| `R59-D09-evidence-workbench-ui` | Evidence Workbench UI | partial | P15、P16 | API/projection 有；React 视觉 E2E 和用户流未验收。 |
+| `R59-D10-workpaper-builder-ui` | Workpaper Builder UI | partial | P15、P19 | review/action capture 有；真实多日 human workflow 未完成。 |
+| `R59-D11-review-queue-ui` | Review Queue UI | partial | P15、P18、P19 | append-only review actions 有；真实 reviewer adoption pending。 |
+| `R59-D12-deliverable-studio-ui` | Deliverable Studio UI | partial | S7、P15 | contracts 有；renderer / UI 质量仍需视觉 QA。 |
+| `R59-D13-dashboard-watchlist-projection` | Dashboard projection | partial | S7、P15、P18 | projection rows 有；dashboard 产品验收未完成。 |
+| `R59-D14-admin-ops-console` | Admin/Ops console | partial | P15、P16 | ops rows/projection 有；持续 incident monitoring 未证明。 |
+| `R59-D15-upload-data-room-input` | Upload/Data Room surface | partial | P14、P15 | contract 有；真实 upload -> parser -> evidence UI E2E 未完成。 |
+| `R59-D16-load-and-chaos-gate` | Load/chaos gate | partial | S10、P16 | controlled chaos 有；p95/p99 SLA 和并发压测未完成。 |
+| `R59-D17-reference-source-ledger` | Reference source ledger | done | P16 | 参考来源台账已落；新增/删除/降级必须继续留痕。 |
+| `R59-D18-reference-change-performance-ledger` | Reference change/performance ledger | done | P16 | 采用后表现 profile 已落；后续参考变更必须复核。 |
+| `R59-D19-sandbox-policy-contract` | Sandbox / approval policy contract | done | S2、P16 | sandbox policy 和 regression 已有。 |
+| `R59-D20-sandbox-ui-and-regression-gate` | Sandbox UI / eval gate | partial | P15、P16 | regression 有；前端可见 allow/block reason 需 browser E2E。 |
 
 ## 12. Acceptance Gates
 

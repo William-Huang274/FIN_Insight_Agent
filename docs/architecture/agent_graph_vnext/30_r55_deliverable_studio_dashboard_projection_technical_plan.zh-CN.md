@@ -237,6 +237,21 @@ R55 必须被 eval，而不是只看“文件能导出”。
 - artifact store schema；
 - 具体 release slice 和 story。
 
+## P22 Current Status Reconciliation
+
+状态口径：本节由 P22 源文档回填生成，是 R55 的当前事实源。`done` 表示该项在自身合同范围内已有可审计实现证据；`partial` 表示已有合同/对象/投影或 deterministic gate，但仍不能作为完整产品验收或 broad full-chain 质量证据。
+
+| Item | 当前状态 | 已有证据 | 边界 / 下一步 |
+| --- | --- | --- | --- |
+| DeliverablePlan / section / artifact contract | done | S7、P15 | 合同和 artifact trace 已落；模板库和产品级多格式渲染另行验收。 |
+| RenderJob / ArtifactRef traceability | done | S7、P15 | ArtifactRef 可回到 evidence / Workpaper / gate；真实 DOCX/PPTX/XLSX/PDF renderer 还要格式级 QA。 |
+| Dashboard projection parity | partial | S7、P15、P18、P19 | projection rows 存在，但前端视觉 E2E 和真实 reviewer adoption 尚未达到 PRD product pass。 |
+| Composer permission boundary | partial | S2、S7、P16 | sandbox / approval 合同存在；仍需真实 Workbench 验证 writer/composer 不能绕过 Workpaper 取新事实。 |
+| 多格式输出 surface | partial | S7、P15 | Markdown / artifact contract 已有，Word/PPT/Excel/PDF 仍需 renderer 和视觉验收。 |
+| Template governance / client-safe policy | partial | S7、P15、P16 | governance 对象已有，机构模板 lifecycle / tenant overlay 仍需后续产品化。 |
+| Graph / timeline / mind-map deliverables | partial | S4、S7、P15 | 图谱和 artifact projection 可作为输入，但最终可视化 renderer 质量未验收。 |
+| Deliverable Studio product acceptance | partial | P15、P19、P21 | P21 仍阻断 broad full-chain 和 product release claims；必须等 P23/P24 关闭后再算产品级通过。 |
+
 ## 11. 当前开放问题
 
 1. 第一版默认交付物是 Word memo、PPT deck、dashboard brief，还是 Markdown + PDF brief。

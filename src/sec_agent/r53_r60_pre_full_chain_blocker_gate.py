@@ -41,14 +41,17 @@ MANUAL_CURRENT_STATUS_ROWS = [
     {
         "slice_id": "P20b",
         "title": "P20b root-cause hardening",
-        "current_status": "partial_open",
-        "status": "partial",
-        "closeout_level": "partial_root_cause_hardening",
-        "release_decision": "P20b_D01_D04_complete_D02_D03_open",
+        "current_status": "scope_pass_root_cause_hardening_closed",
+        "status": "pass",
+        "closeout_level": "L4_scope_pass_for_root_cause_hardening",
+        "release_decision": "P20b_D01_D04_D02_D03_root_cause_closed",
         "source_ref": "docs/worklog/product_strategy/045_p20b_root_cause_source_doc_hardening.md",
-        "open_boundaries": [
+        "open_boundaries": [],
+        "resolved_items": [
+            "P20b-D01-ambiguous-currency-scale-root",
             "P20b-D02-numeric-display-lineage",
             "P20b-D03-memo-logic-plan-quality-root",
+            "P20b-D04-source-doc-status-correction",
         ],
     },
 ]
@@ -135,6 +138,16 @@ def _board_observation(root: Path) -> dict[str, Any]:
             "status_counts": _status_counts(rows),
         }
     return observations
+
+
+def _load_p22_source_doc_summary(root: Path) -> dict[str, Any]:
+    path = root / "data" / "manifests" / "r53_r60_p22_source_doc_status_reconciliation_summary_v0_1.json"
+    if not path.exists():
+        return {"exists": False, "path": "data/manifests/r53_r60_p22_source_doc_status_reconciliation_summary_v0_1.json"}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["exists"] = True
+    payload["path"] = "data/manifests/r53_r60_p22_source_doc_status_reconciliation_summary_v0_1.json"
+    return payload
 
 
 def _summary_current_status(slice_id: str, summary: dict[str, Any]) -> str:
@@ -225,6 +238,13 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
     manifest_dir = root / "data" / "manifests"
     board_observation = _board_observation(root)
     summaries = _load_summaries(manifest_dir)
+    p22_summary = _load_p22_source_doc_summary(root)
+    p22_source_docs_closed = (
+        p22_summary.get("exists")
+        and p22_summary.get("status") == "pass"
+        and p22_summary.get("source_doc_status") == "reconciled"
+        and int(p22_summary.get("open_source_doc_status_rows", 0)) == 0
+    )
     found_summary_count = sum(1 for item in summaries.values() if item.get("exists"))
     current_status_rows = current_status_rows or _current_status_overlay(root, summaries)
     required_current_ids = set(SUMMARY_FILES) | {"P20", "P20b", "P21"}
@@ -298,7 +318,9 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
             "blocker_id": "B03-r-source-doc-status-reconciliation",
             "title": "R57/R58/R55/R59/R60 source documents need done/partial/open mapping",
             "source_audit_item": "AUD-03",
-            "status": "open_source_doc_reconciliation_required",
+            "status": "closed_by_p22_source_doc_status_reconciliation"
+            if p22_source_docs_closed
+            else "open_source_doc_reconciliation_required",
             "blocks": ["new_feature_planning_from_stale_r_docs", "broad_full_chain_20_50_eval"],
             "observed_evidence": {
                 "docs_requiring_current_status": ["R55", "R57", "R58", "R59", "R60"],
@@ -306,6 +328,7 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
                     key: summaries.get(key, {})
                     for key in ("S7", "S8", "S9", "P13", "P14", "P15", "P16")
                 },
+                "p22_source_doc_status_summary": p22_summary,
             },
             "why_blocking": "The source docs still contain planned rows or bounded gaps that are not mapped to current implementation evidence.",
             "closeout_acceptance": [

@@ -4,13 +4,13 @@
     "pack_level_tests",
     "targeted_full_chain_smoke_for_integration_only"
   ],
-  "blocker_count_open": 3,
+  "blocker_count_open": 2,
   "blocker_count_total": 5,
   "closeout_level": "L4_scope_pass_for_blocker_registration_only",
   "full_chain_broad_eval_allowed": false,
   "gate_count": 5,
   "gate_fail_count": 0,
-  "generated_at": "2026-06-30T11:27:25Z",
+  "generated_at": "2026-06-30T12:02:07Z",
   "not_allowed_while_blocked": [
     "20_50_case_full_chain_quality_claim",
     "product_release_claim",

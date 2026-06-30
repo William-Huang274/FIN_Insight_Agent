@@ -1,0 +1,7 @@
+{"gate_id": "p22_required_source_docs_mapped", "missing_docs": [], "reason": "R55/R57/R58/R59/R60 all have status rows.", "status": "pass"}
+{"gate_id": "p22_source_docs_have_current_status_sections", "missing_markers": [], "reason": "Each source doc contains a P22 Current Status Reconciliation section.", "status": "pass"}
+{"gate_id": "p22_no_planned_or_unknown_current_rows", "planned_like_rows": [], "reason": "Current rows must use explicit done/partial/bounded_gap/blocked/open status, never planned/draft/unknown.", "status": "pass", "unknown_status_rows": []}
+{"gate_id": "p22_partial_rows_have_boundary_and_next_action", "reason": "Partial/bounded/blocked/open rows need boundary and next_action.", "status": "pass", "unfinished_untyped_rows": []}
+{"gate_id": "p22_evidence_refs_exist", "missing_evidence_refs": [], "reason": "Every row points to existing S/P evidence artifacts.", "status": "pass"}
+{"gate_id": "p22_broad_full_chain_remains_blocked", "p21_full_chain_broad_eval_allowed": false, "reason": "P22 only reconciles source docs; it must not unlock broad full-chain quality claims.", "status": "pass"}
+{"gate_id": "p22_no_open_source_doc_status_rows", "open_rows": [], "reason": "P22 closes the source-doc drift blocker only when every row has a concrete status and no source-doc row remains open/blocked.", "status": "pass"}

@@ -850,21 +850,25 @@ Upload / register new pack
 
 ## 12. R57 后续 Demand 草案
 
-| Demand ID | 目标 | 状态 |
-| --- | --- | --- |
-| `R57-D01-graph-capability-registry` | 建 GraphPack registry schema 和当前图谱 inventory | planned |
-| `R57-D02-skillpack-registry` | 把现有 markdown skill 包成结构化 SkillPack contract | planned |
-| `R57-D03-memorypack-registry` | 定义 NodeScratch / Run / Project / Company / Watchlist / Team / Org / GlobalPlaybook memory tiers 和 metadata contract | planned |
-| `R57-D04-lead-graph-skill-selector` | Research Lead 基于 GraphPack + SkillPack registry 生成计划 | planned |
-| `R57-D05-specialist-required-pack-gate` | Specialist 必须声明 required graph pack consumption | planned |
-| `R57-D06-learning-patch-lifecycle` | SkillPatch / GraphPatch / MemoryPatch staging + approval flow | planned |
-| `R57-D07-behavior-eval-suite` | 图谱使用、skill 行为、memory 注入的行为级 eval | planned |
-| `R57-D08-tenant-overlay-contract` | 企业自定义 skill/playbook/template/source policy overlay | planned |
-| `R57-D09-contextengine-lifecycle-contract` | 实现 resolve / select / compress / inject / write / consolidate / invalidate 合同和 replayable injection plan | planned |
-| `R57-D10-memory-promotion-invalidation-gates` | 实现 TTL、staleness、supersession、tenant permission、promotion gate 和 eval-linked invalidation | planned |
-| `R57-D11-context-compression-policy` | 实现 context class 分类、exact/ref-only/extractive/handoff/structured/memory/drop 压缩策略和 actor-specific context budget | planned |
-| `R57-D12-context-compression-artifact` | 为每次压缩生成 `ContextCompressionArtifact`，并把 `compression_artifact_ids` 接入 `ContextInjectionPlan` | planned |
-| `R57-D13-compression-quality-gates` | 实现 numeric/citation/authority/permission/staleness/forbidden-boundary preservation gate 和 compression hallucination verifier | planned |
+## P22 Current Status Reconciliation
+
+状态口径：R57 已由 S4/P13/P14/P16 做过合同和 lifecycle 层实现，但仍不是“全量多租户真实生产 rollout”。下表覆盖原 R57-D01-D13，禁止继续把这些行显示成 `planned`。
+
+| Demand ID | 目标 | 当前状态 | 已有证据 | 边界 / 下一步 |
+| --- | --- | --- | --- | --- |
+| `R57-D01-graph-capability-registry` | 建 GraphPack registry schema 和当前图谱 inventory | done | S4、P13 | controlled lifecycle drill 已通过；新 GraphPack 仍必须走 canary / approval。 |
+| `R57-D02-skillpack-registry` | 把现有 markdown skill 包成结构化 SkillPack contract | done | S4、P13 | registry 已有；专家行为质量仍需更多 real workpaper eval。 |
+| `R57-D03-memorypack-registry` | 定义 memory tiers 和 metadata contract | done | S4、P13 | MemoryPack 不具备事实权威，只能影响规划/偏好/经验提醒。 |
+| `R57-D04-lead-graph-skill-selector` | Research Lead 基于 GraphPack + SkillPack registry 生成计划 | partial | S4、P13 | active versions 和 policy 有了；所有 live graph node 尚未完全迁移到动态选择。 |
+| `R57-D05-specialist-required-pack-gate` | Specialist 必须声明 required graph pack consumption | partial | S4、P13、P16 | gate 合同存在；还需在 P23/P24 真实任务中证明每个 specialist 消费对应 pack。 |
+| `R57-D06-learning-patch-lifecycle` | SkillPatch / GraphPatch / MemoryPatch staging + approval flow | done | P13 | agent 不能 self-promote active asset；human approval / canary 必须保留。 |
+| `R57-D07-behavior-eval-suite` | 图谱使用、skill 行为、memory 注入行为级 eval | partial | P13、P16 | deterministic / patch eval 已有；真实 reviewer 行为样本仍不足。 |
+| `R57-D08-tenant-overlay-contract` | 企业自定义 skill/playbook/template/source policy overlay | partial | P13 | tenant overlay 合同有，未做真实多租户 rollout。 |
+| `R57-D09-contextengine-lifecycle-contract` | resolve / select / compress / inject / write / consolidate / invalidate | partial | S4、P13、P14 | ContextEngine policy 和 bridge 有，仍需迁移 live graph nodes。 |
+| `R57-D10-memory-promotion-invalidation-gates` | TTL、staleness、supersession、permission、promotion gate | done | P13 | controlled lifecycle drill 通过；生产流量下仍需持续 invalidation 记录。 |
+| `R57-D11-context-compression-policy` | context class 分类和压缩策略 | partial | S4、P13 | policy 有，尚未覆盖所有 agent context。 |
+| `R57-D12-context-compression-artifact` | `ContextCompressionArtifact` 与 `ContextInjectionPlan` 关联 | partial | S4、P13、P14 | 控制面已有，完整 runtime migration 仍是后续任务。 |
+| `R57-D13-compression-quality-gates` | numeric/citation/authority/permission/staleness gate | partial | P13、P16 | 范围内 gate 已有，仍需更多 exact/citation/numeric preservation regression。 |
 
 ## 13. Acceptance Gates
 

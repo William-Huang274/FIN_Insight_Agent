@@ -1047,9 +1047,14 @@ P25 目标是推进 `B05-depth-packs-before-broad-full-chain`：在进入 20-50 
 - gate rows：`data/manifests/r53_r60_p25_b05_pack_depth_gate_rows_v0_1.jsonl`
 - summary：`data/manifests/r53_r60_p25_b05_pack_depth_summary_v0_1.json`
 - report：`docs/internal/vnext_20260610/r53_r60_p25_b05_pack_depth_gate_blocked.zh-CN.md`
+- P26 product evidence schema：`configs/r53_r60/p26_product_evidence_all_universe_depth_schema_v0_1.json`
+- P26 product evidence layer/gap/gate rows：`data/manifests/r53_r60_p26_product_evidence_all_universe_depth_*_v0_1.jsonl`
+- P26 product evidence summary：`data/manifests/r53_r60_p26_product_evidence_all_universe_depth_summary_v0_1.json`
+- P26 product evidence report：`docs/internal/vnext_20260610/r53_r60_p26_product_evidence_all_universe_depth_gate.zh-CN.md`
 - runtime SQL mirror：`data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite`
 - builder：`scripts/engineering/build_r53_r60_p25_b05_pack_depth_gate.py`
-- tests：`tests/test_r53_r60_pack_depth_b05_gate.py`
+- P26 builder：`scripts/engineering/build_r53_r60_p26_product_evidence_all_universe_depth_gate.py`
+- tests：`tests/test_r53_r60_pack_depth_b05_gate.py`、`tests/test_r53_r60_product_evidence_depth_p26_gate.py`
 
 真实构建结果：
 
@@ -1073,10 +1078,22 @@ Pack readiness：
 | --- | --- | --- |
 | `ai_semis_product_evidence_pack` | `ready` | AI/Semis `53/53` strict pass，`gap_queue_count=0` |
 | `research_to_quant_lab_pack` | `ready` | S9 至少 2 个 approved factors、2 个 backtests，且 `no_live_trading=true` |
-| `product_evidence_pack_all_universe` | `blocked` | 603 universe 仍有 `203` 家 full-depth gap；Product-KPI `160`、CustomerDeployment `72`、CapitalMarketDetail `2` |
+| `product_evidence_pack_all_universe` | `blocked` | P26 分层后确认 Product Profile/Spec/Relationship ready；Product-KPI exact `160` 只阻断 exact KPI claims，CapitalMarketDetail `2` 转入资本包；当前真正阻断 ProductEvidence broad quality 的是 CustomerDeployment signal `72` |
 | `secondary_market_capital_feedback_pack` | `blocked` | `credit_funding`、`derivatives_market_signal`、`valuation_price_in` 三类 required roles 仍是 `603` 缺口 |
 | `deliverable_studio_pack` | `blocked` | S7 只证明 deterministic render/dashboard；缺真实 `customer_ready_editorial_quality_pass` |
 | `retrieval_data_refresh_pack` | `blocked` | P14 仍是 control plane；`not_full_crawler_or_production_refresh=true`，未证明 full crawler / production refresh |
+
+P26 ProductEvidence 分层 gate 的真实结果：
+
+| Layer | Status | Boundary |
+| --- | --- | --- |
+| `product_profile_spec_graph` | `ready` | 603 公司 Product/Profile/Spec/PIG 可用，可支撑产品画像、规格、架构、关系导航 |
+| `product_relationship_graph` | `ready` | 可支撑竞争、替代、上下游、部署、read-through 的 bounded thesis-driver |
+| `product_kpi_exact_boundary` | `ready_with_typed_exact_kpi_gaps` | `160` 家缺 SKU/产品线 exact KPI，只阻断收入、出货、ASP、份额、backlog 等 exact claims |
+| `customer_deployment_signal` | `blocked_customer_deployment_signal_gap` | `72` 家缺 issuer-bound customer/deployment/adoption/distribution/operating-footprint signal，仍阻断 ProductEvidence broad quality |
+| `capital_market_detail_cross_pack_dependency` | `out_of_scope_for_product_pack` | `2` 家 capital detail gap 归入 capital/funding pack，不再阻断 ProductEvidencePack |
+
+P26 的作用是修正 B05 ProductEvidence 的 blocker 归因：不是“没有 SKU 收入/出货量所以产品层失败”，而是“产品画像、规格、关系图谱已可用；exact KPI 缺口保留为 exact-claim boundary；CustomerDeployment signal 仍需继续补”。P25 现在优先读取 P26 summary；如果 P26 缺失才回退到旧的五维 depth parity 诊断路径。
 
 P25 修复/明确的真实 gating 问题：
 
@@ -1084,7 +1101,7 @@ P25 修复/明确的真实 gating 问题：
 2. `pack-level tests` 和 `targeted_full_chain_smoke_for_integration_only` 仍允许；`20_50_case_full_chain_quality_claim`、`product_release_claim` 和从旧 release board 自动推进仍禁止。
 3. P25 的通过只代表“pack-depth blocker registration”达到自身范围内 L4-grade；它不是数据补齐、不是产品验收、也不是全系统上线信号。
 
-P21 已回读 P25 summary，并仍保持 broad full-chain blocked。B05 的后续真实关闭条件是：所有 required packs 要么达到 ready，要么以公开源/商业源边界形成可接受的 typed requirement closeout，且不能再存在阻断 `product_evidence_pack_all_universe`、`secondary_market_capital_feedback_pack`、`deliverable_studio_pack`、`retrieval_data_refresh_pack` 的 open pack-depth rows。
+P21 已回读 P25 summary，并仍保持 broad full-chain blocked。B05 的后续真实关闭条件是：所有 required packs 要么达到 ready，要么以公开源/商业源边界形成可接受的 typed requirement closeout，且不能再存在阻断 `product_evidence_pack_all_universe`、`secondary_market_capital_feedback_pack`、`deliverable_studio_pack`、`retrieval_data_refresh_pack` 的 open pack-depth rows。对 `product_evidence_pack_all_universe` 来说，下一步不是继续泛化 Product-KPI exact，而是优先关闭 P26 暴露的 `customer_deployment_signal` 72 家缺口。
 
 ## 5. 单 Agent 执行节奏
 

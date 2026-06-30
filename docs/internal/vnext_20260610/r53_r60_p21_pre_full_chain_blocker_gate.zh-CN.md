@@ -1,6 +1,6 @@
 # R53-R60 P21 Pre-Full-Chain Blocker Gate
 
-- Generated at: `2026-06-30T15:43:37Z`
+- Generated at: `2026-06-30T16:29:10Z`
 - Release decision: `P21_pre_full_chain_blockers_registered_broad_full_chain_blocked`
 - Broad full-chain eval allowed: `False`
 - Open blockers: `2/5`

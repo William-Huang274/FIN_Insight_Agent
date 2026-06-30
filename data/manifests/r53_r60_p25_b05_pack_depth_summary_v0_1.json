@@ -18,26 +18,77 @@
     "ready_pack_count": 2,
     "requirement_count": 6
   },
-  "generated_at": "2026-06-30T15:37:10Z",
+  "generated_at": "2026-06-30T16:29:10Z",
   "known_gaps": [
     {
       "detail": {
-        "gap_by_dimension": {
-          "capital_market_detail_depth": 2,
-          "customer_deployment_depth": 72,
-          "market_liquidity_depth": 0,
-          "product_kpi_depth": 160,
-          "product_spec_depth": 0
-        },
-        "parity_status": "fail",
-        "remaining_gap_count": 203
+        "legacy_parity_status": "fail",
+        "legacy_remaining_gap_count": 203,
+        "p26_blocking_gap_ids": [
+          "p26_customer_deployment_signal_gap"
+        ],
+        "p26_known_gaps": [
+          {
+            "blocker_scope": "exact_product_kpi_claims_only",
+            "gap": "p26_product_kpi_exact_typed_gap",
+            "gap_count": 160,
+            "layer_id": "product_kpi_exact_boundary",
+            "next_action": "Keep exact Product-KPI gaps as claim-scope restrictions; repair only untyped parser/join gaps or known-public exact rows.",
+            "observed_value": {
+              "product_kpi_gap_class_counts": {
+                "filings_taxonomy_available_but_value_unit_period_product_kpi_absent": 34,
+                "non_product_metric_public_boundary": 3,
+                "none": 443,
+                "official_product_surface_available_but_company_disclosed_product_kpi_absent": 122,
+                "product_context_available_but_no_company_disclosed_product_kpi_exact_slot": 1
+              },
+              "product_kpi_gap_count": 160,
+              "product_kpi_gap_typed": true,
+              "product_kpi_ready_count": 443
+            },
+            "severity": "nonblocking_claim_scope_gap"
+          },
+          {
+            "blocker_scope": "product_pack_broad_full_chain_quality",
+            "gap": "p26_customer_deployment_signal_gap",
+            "gap_count": 72,
+            "layer_id": "customer_deployment_signal",
+            "next_action": "Continue targeted official customer/deployment, channel/distribution, regulated identity, public award/tender, and lane-specific operating-footprint adapters for the missing companies.",
+            "observed_value": {
+              "customer_deployment_gap_class_counts": {
+                "customer_deployment_public_source_gap": 72,
+                "none": 531
+              },
+              "customer_deployment_gap_count": 72,
+              "customer_deployment_ready_count": 531
+            },
+            "severity": "blocking_product_pack_gap"
+          },
+          {
+            "blocker_scope": "capital_or_funding_pack",
+            "gap": "p26_capital_market_detail_cross_pack_gap",
+            "gap_count": 2,
+            "layer_id": "capital_market_detail_cross_pack_dependency",
+            "next_action": "Route residual capital detail gaps to capital/funding pack repair, not ProductEvidencePack readiness.",
+            "observed_value": {
+              "capital_market_detail_gap_class_counts": {
+                "capital_market_detail_source_gap": 1,
+                "capital_primary_disclosure_parser_gap": 1,
+                "none": 601
+              },
+              "capital_market_detail_gap_count": 2
+            },
+            "severity": "cross_pack_nonblocking_for_product_pack"
+          }
+        ],
+        "p26_release_decision": "P26_product_evidence_pack_blocked_customer_deployment_gap"
       },
       "gap": "product_evidence_pack_all_universe",
       "next_actions": [
-        "Continue targeted adapter/parser repair for Product-KPI exact, CustomerDeployment and remaining capital detail gaps.",
-        "Do not treat classified gap audit pass as full-depth pass."
+        "Use P26 as the ProductEvidencePack depth boundary: Product-KPI exact gaps block exact KPI claims only; CustomerDeployment signal gaps still block broad product-pack quality.",
+        "Continue targeted official customer/deployment, channel/distribution, regulated identity, public award/tender, and lane-specific operating-footprint adapters until P26 broad_full_chain_product_pack_ready=true."
       ],
-      "reason": "blocked_full_universe_depth_gap"
+      "reason": "blocked_customer_deployment_signal_gap"
     },
     {
       "detail": {
@@ -99,7 +150,7 @@
   "pack_readiness": {
     "ai_semis_product_evidence_pack": "ready",
     "deliverable_studio_pack": "blocked_human_editorial_acceptance_gap",
-    "product_evidence_pack_all_universe": "blocked_full_universe_depth_gap",
+    "product_evidence_pack_all_universe": "blocked_customer_deployment_signal_gap",
     "research_to_quant_lab_pack": "ready",
     "retrieval_data_refresh_pack": "blocked_live_refresh_or_full_crawler_gap",
     "secondary_market_capital_feedback_pack": "blocked_missing_secondary_market_roles"

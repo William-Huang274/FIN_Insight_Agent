@@ -44,10 +44,12 @@ Pack readiness：
 | --- | --- | --- |
 | `ai_semis_product_evidence_pack` | ready | AI/Semis `53/53` strict pass，`gap_queue_count=0` |
 | `research_to_quant_lab_pack` | ready | S9 有 approved factors / backtests，且无真实交易 |
-| `product_evidence_pack_all_universe` | blocked | 603 universe 仍有 `203` 家 full-depth gap |
+| `product_evidence_pack_all_universe` | blocked | 2026-06-30 P26 分层后修正为 `blocked_customer_deployment_signal_gap`；Product Profile/Spec/Relationship ready，Product-KPI exact `160` 只阻断 exact KPI claims，Capital detail `2` 转到 capital/funding pack |
 | `secondary_market_capital_feedback_pack` | blocked | `credit_funding`、`derivatives_market_signal`、`valuation_price_in` 仍全量缺 role coverage |
 | `deliverable_studio_pack` | blocked | 缺真实 customer-ready editorial acceptance |
 | `retrieval_data_refresh_pack` | blocked | P14 是 control plane，不是 full crawler / production refresh |
+
+2026-06-30 P26 update：新增 `r53_r60_product_evidence_depth_p26_gate.py` 和 P26 artifacts，P25 现在优先读取 `r53_r60_p26_product_evidence_all_universe_depth_summary_v0_1.json`。旧的五维 depth parity 只保留为 P26 缺失时的诊断路径，不再作为 ProductEvidencePack 主判定。
 
 P21 重新生成后仍保持：
 
@@ -67,7 +69,7 @@ P21 重新生成后仍保持：
 
 P25 之后不应直接跑 20-50 case broad full-chain quality eval。下一步只能针对 open packs 做 root-cause-first 修复：
 
-1. `product_evidence_pack_all_universe`：继续补 Product-KPI exact、CustomerDeployment 和少数 CapitalMarketDetail 的真实 source/parser/adapter 深度。
+1. `product_evidence_pack_all_universe`：按 P26 结果优先补 CustomerDeployment signal `72` 家；Product-KPI exact `160` 保持 strict exact-claim boundary，CapitalMarketDetail `2` 转入 capital/funding pack。
 2. `secondary_market_capital_feedback_pack`：补 `credit_funding`、`derivatives_market_signal`、`valuation_price_in` 的公开源可得边界、商业 gap 和 adapter。
 3. `deliverable_studio_pack`：做真实 customer-ready editorial review，而不是只看 deterministic render。
 4. `retrieval_data_refresh_pack`：把 P14 control plane 接到真实 crawler/parser/index refresh run，并记录 lineage / qrels / performance。

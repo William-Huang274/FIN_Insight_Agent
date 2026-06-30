@@ -1,0 +1,23 @@
+{
+  "closeout_level": "L4_scope_pass_for_product_evidence_pack_depth_classification",
+  "policy": {
+    "all_gaps_must_be_typed_before_p25_can_consume_p26": true,
+    "capital_market_detail_gap_is_cross_pack_not_product_pack_gate": true,
+    "customer_deployment_signal_gap_blocks_product_pack_broad_quality": true,
+    "product_kpi_exact_gap_blocks_exact_kpi_claims_only": true,
+    "product_kpi_exact_gap_does_not_hide_product_profile_spec_graph": true
+  },
+  "required_layers": [
+    "product_profile_spec_graph",
+    "product_relationship_graph",
+    "product_kpi_exact_boundary",
+    "customer_deployment_signal"
+  ],
+  "schema_version": "r53_r60_p26_product_evidence_all_universe_depth_gate_v0_1",
+  "tables": [
+    "product_evidence_depth_layers_p26",
+    "product_evidence_depth_gaps_p26",
+    "product_evidence_depth_gate_results_p26",
+    "product_evidence_depth_reports_p26"
+  ]
+}

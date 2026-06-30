@@ -1,6 +1,6 @@
 # R53-R60 P25 / B05 Pack Depth Gate
 
-- Generated at: `2026-06-30T15:37:10Z`
+- Generated at: `2026-06-30T16:29:10Z`
 - Release decision: `P25_b05_pack_depth_blockers_registered_broad_full_chain_blocked`
 - Closeout level: `L4_scope_pass_for_pack_depth_blocker_registration_only`
 - B05 status after P25: `open_pack_level_depth_required`
@@ -19,7 +19,7 @@
 
 ## Pack Readiness
 
-- `product_evidence_pack_all_universe`: `blocked` / `blocked_full_universe_depth_gap`
+- `product_evidence_pack_all_universe`: `blocked` / `blocked_customer_deployment_signal_gap`
 - `ai_semis_product_evidence_pack`: `ready` / `ready`
 - `secondary_market_capital_feedback_pack`: `blocked` / `blocked_missing_secondary_market_roles`
 - `research_to_quant_lab_pack`: `ready` / `ready`

@@ -168,6 +168,9 @@ def load_p25_inputs(root: Path) -> dict[str, dict[str, Any]]:
         "s8_secondary": _read_json(manifest / "r53_r60_s8_secondary_market_capital_feedback_summary_v0_1.json"),
         "s9_quant": _read_json(manifest / "r53_r60_s9_research_to_quant_lab_summary_v0_1.json"),
         "p14_data": _read_json(manifest / "r53_r60_p14_data_ingestion_retrieval_control_plane_summary_v0_1.json"),
+        "p26_product_evidence": _read_json(
+            manifest / "r53_r60_p26_product_evidence_all_universe_depth_summary_v0_1.json"
+        ),
     }
 
 
@@ -180,6 +183,7 @@ def build_pack_assessment_rows(root: Path, inputs: Mapping[str, Mapping[str, Any
     s8 = inputs.get("s8_secondary", {})
     s9 = inputs.get("s9_quant", {})
     p14 = inputs.get("p14_data", {})
+    p26_product_evidence = inputs.get("p26_product_evidence", {})
 
     full_depth_count = _as_int(depth_metrics.get("full_depth_target_met_company_count"))
     company_count = _as_int(depth.get("company_count"))
@@ -219,6 +223,67 @@ def build_pack_assessment_rows(root: Path, inputs: Mapping[str, Mapping[str, Any
         and not bool(p14_policy.get("not_full_crawler_or_production_refresh"))
     )
 
+    p26_available = bool(p26_product_evidence)
+    p26_ready = bool(p26_product_evidence.get("broad_full_chain_product_pack_ready")) if p26_available else False
+    p26_readiness_status = str(p26_product_evidence.get("product_pack_readiness_status") or "")
+    if p26_available:
+        product_pack_ready = p26_ready
+        product_pack_status = "ready" if p26_ready else (p26_readiness_status or "blocked_product_evidence_depth_gap")
+        product_evidence_summary = {
+            "p26_status": p26_product_evidence.get("status"),
+            "p26_release_decision": p26_product_evidence.get("release_decision"),
+            "product_pack_readiness_status": p26_product_evidence.get("product_pack_readiness_status"),
+            "broad_full_chain_product_pack_ready": p26_product_evidence.get("broad_full_chain_product_pack_ready"),
+            "p26_counts": p26_product_evidence.get("counts", {}),
+            "p26_layer_readiness": p26_product_evidence.get("layer_readiness", {}),
+            "p26_claim_boundary_policy": p26_product_evidence.get("claim_boundary_policy", {}),
+            "legacy_depth_snapshot": {
+                "company_count": company_count,
+                "full_depth_target_met_company_count": full_depth_count,
+                "full_depth_target_gap_company_count": full_gap_count,
+                "dimension_gap_counts": dimension_gap_counts,
+                "all_missing_depth_is_classified": all_missing_classified,
+            },
+        }
+        product_blocker_summary = {
+            "p26_known_gaps": p26_product_evidence.get("known_gaps", []),
+            "p26_blocking_gap_ids": p26_product_evidence.get("blocking_gap_ids", []),
+            "p26_release_decision": p26_product_evidence.get("release_decision"),
+            "legacy_parity_status": depth.get("parity_status"),
+            "legacy_remaining_gap_count": full_gap_count,
+        }
+        product_source_refs = [
+            "data/manifests/r53_r60_p26_product_evidence_all_universe_depth_summary_v0_1.json",
+            "data/manifests/second_third_layer_depth_parity_summary_v0_1.json",
+            "data/manifests/product_intelligence_graph_summary_v0_1.json",
+        ]
+        product_next_actions = [
+            "Use P26 as the ProductEvidencePack depth boundary: Product-KPI exact gaps block exact KPI claims only; CustomerDeployment signal gaps still block broad product-pack quality.",
+            "Continue targeted official customer/deployment, channel/distribution, regulated identity, public award/tender, and lane-specific operating-footprint adapters until P26 broad_full_chain_product_pack_ready=true.",
+        ]
+    else:
+        product_pack_ready = depth_ready
+        product_pack_status = "ready" if depth_ready else "blocked_full_universe_depth_gap"
+        product_evidence_summary = {
+            "company_count": company_count,
+            "full_depth_target_met_company_count": full_depth_count,
+            "full_depth_target_gap_company_count": full_gap_count,
+            "dimension_gap_counts": dimension_gap_counts,
+            "all_missing_depth_is_classified": all_missing_classified,
+            "p26_product_evidence_summary_missing": True,
+        }
+        product_blocker_summary = {
+            "remaining_gap_count": full_gap_count,
+            "gap_by_dimension": dimension_gap_counts,
+            "parity_status": depth.get("parity_status"),
+        }
+        product_source_refs = ["data/manifests/second_third_layer_depth_parity_summary_v0_1.json"]
+        product_next_actions = [
+            "Build P26 ProductEvidence all-universe depth split before using P25 for product pack closeout.",
+            "Continue targeted adapter/parser repair for Product-KPI exact, CustomerDeployment and remaining capital detail gaps.",
+            "Do not treat classified gap audit pass as full-depth pass.",
+        ]
+
     def row(
         pack_id: str,
         pack_name: str,
@@ -246,27 +311,14 @@ def build_pack_assessment_rows(root: Path, inputs: Mapping[str, Mapping[str, Any
     return [
         row(
             "product_evidence_pack_all_universe",
-            "603-company product / customer / capital / market depth matrix",
+            "603-company ProductEvidencePack all-universe depth matrix",
             "product_data_depth",
-            "ready" if depth_ready else "blocked_full_universe_depth_gap",
-            depth_ready,
-            {
-                "company_count": company_count,
-                "full_depth_target_met_company_count": full_depth_count,
-                "full_depth_target_gap_company_count": full_gap_count,
-                "dimension_gap_counts": dimension_gap_counts,
-                "all_missing_depth_is_classified": all_missing_classified,
-            },
-            {
-                "remaining_gap_count": full_gap_count,
-                "gap_by_dimension": dimension_gap_counts,
-                "parity_status": depth.get("parity_status"),
-            },
-            ["data/manifests/second_third_layer_depth_parity_summary_v0_1.json"],
-            [
-                "Continue targeted adapter/parser repair for Product-KPI exact, CustomerDeployment and remaining capital detail gaps.",
-                "Do not treat classified gap audit pass as full-depth pass.",
-            ],
+            product_pack_status,
+            product_pack_ready,
+            product_evidence_summary,
+            product_blocker_summary,
+            product_source_refs,
+            product_next_actions,
         ),
         row(
             "ai_semis_product_evidence_pack",

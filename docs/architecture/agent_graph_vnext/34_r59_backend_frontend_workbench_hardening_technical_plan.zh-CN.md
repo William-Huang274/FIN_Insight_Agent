@@ -740,7 +740,7 @@ ToolPolicyBinding
 
 ## P22 Current Status Reconciliation
 
-状态口径：R59 已由 S1/S2/S10/P12/P15/P16/P18/P19 做过 runtime、product-surface、review/action、ops/eval 合同实现。但前端视觉 E2E、真实 reviewer 多日采用、live migration 和 load/SLA 仍然是 product/ops blockers，不能被 partial 行冲掉。
+状态口径：R59 已由 S1/S2/S10/P12/P15/P16/P18/P19 做过 runtime、product-surface、review/action、ops/eval 合同实现，并由 P23/P24 覆盖自动化产品链路与浏览器视觉 E2E。但真实 reviewer 多日采用、真实 product acceptance、live migration 和 load/SLA 仍然是 product/ops blockers，不能被 partial 行冲掉。
 
 | Demand ID | 名称 | 当前状态 | 已有证据 | 边界 / 下一步 |
 | --- | --- | --- | --- | --- |
@@ -752,11 +752,11 @@ ToolPolicyBinding
 | `R59-D06-sse-event-replay` | SSE + event replay | partial | P15、P18 | projection 有；浏览器断线重连 E2E 未过。 |
 | `R59-D07-auth-tenant-rbac` | Auth / tenant / RBAC | partial | P15、S10 | RBAC 正反例合同有；跨租户产品回归未完成。 |
 | `R59-D08-artifact-browser` | Artifact Browser | done | P15 | artifact refs、trace、gate、source refs 已可追溯。 |
-| `R59-D09-evidence-workbench-ui` | Evidence Workbench UI | partial | P15、P16、P23 | API/source-route/build contract 已过 P23 自动化 E2E；React 视觉 E2E 和真实用户流仍未验收。 |
-| `R59-D10-workpaper-builder-ui` | Workpaper Builder UI | partial | P15、P19、P23 | review/action API write path 已过 P23；真实多日 human workflow 未完成。 |
-| `R59-D11-review-queue-ui` | Review Queue UI | partial | P15、P18、P19、P23 | append-only review actions 和 automation-marked write path 已验证；真实 reviewer adoption pending。 |
-| `R59-D12-deliverable-studio-ui` | Deliverable Studio UI | partial | S7、P15、P23 | deliverables / dashboard-projection API journey 已过；renderer / UI 质量和人工验收仍需视觉 QA。 |
-| `R59-D13-dashboard-watchlist-projection` | Dashboard projection | partial | S7、P15、P18、P23 | dashboard projection API journey 已过；dashboard 产品验收未完成。 |
+| `R59-D09-evidence-workbench-ui` | Evidence Workbench UI | partial | P15、P16、P23、P24 | API/source-route/build contract 已过 P23；P24 已过真实浏览器 desktop/mobile 视觉 E2E；真实用户流仍未验收。 |
+| `R59-D10-workpaper-builder-ui` | Workpaper Builder UI | partial | P15、P19、P23、P24 | review/action API write path 已过 P23；P24 固化 human evidence protocol；真实多日 human workflow 未完成。 |
+| `R59-D11-review-queue-ui` | Review Queue UI | partial | P15、P18、P19、P23、P24 | append-only review actions、automation-marked write path、P24 acceptance protocol 已验证；真实 reviewer adoption pending。 |
+| `R59-D12-deliverable-studio-ui` | Deliverable Studio UI | partial | S7、P15、P23、P24 | deliverables / dashboard-projection API journey 已过；P24 浏览器视觉链路已过；真实 deliverable accept/reject 和人工质量验收未完成。 |
+| `R59-D13-dashboard-watchlist-projection` | Dashboard projection | partial | S7、P15、P18、P23、P24 | dashboard projection API journey 与 P24 浏览器视觉链路已过；dashboard 真实产品验收未完成。 |
 | `R59-D14-admin-ops-console` | Admin/Ops console | partial | P15、P16 | ops rows/projection 有；持续 incident monitoring 未证明。 |
 | `R59-D15-upload-data-room-input` | Upload/Data Room surface | partial | P14、P15 | contract 有；真实 upload -> parser -> evidence UI E2E 未完成。 |
 | `R59-D16-load-and-chaos-gate` | Load/chaos gate | partial | S10、P16 | controlled chaos 有；p95/p99 SLA 和并发压测未完成。 |
@@ -782,9 +782,30 @@ P23 未完成、不能冒充完成：
 - 真实 reviewer session；
 - accepted/rejected deliverable；
 - reviewer-raised defect closure；
-- 浏览器视觉 E2E / 可读性 / 多视口 UI QA；
+- 浏览器视觉 E2E / 可读性 / 多视口 UI QA（已由 P24 自动化覆盖，仍不等于真实 human product acceptance）；
 - full runtime migration、data/RAG live refresh、pack-depth 质量验收；
 - 20-50 broad full-chain research-quality claim。
+
+## P24 Product Acceptance / Browser Visual E2E Current Status
+
+状态口径：P24 把 B04 从“只有 P23 自动化 API/product journey”推进到“产品验收基础设施 + 真实浏览器视觉 E2E 已就绪”，但 B04 仍保持 open，因为真实人工验收不能由 automation 冒充。
+
+P24 已完成：
+
+- 新增 `ProductAcceptanceProtocolP24`、browser visual E2E rows、human evidence requirements、defect closeout requirements、decision rows、gate rows 和 summary；
+- Workbench backend 支持 `FINSIGHT_WORKBENCH_REPO_ROOT`，允许隔离 repo root 的真实浏览器 E2E；
+- P24 启动临时 uvicorn backend，使用真实浏览器 desktop/mobile viewports 检查 Workbench 页面、关键产品标签和 UI surface；
+- P24 记录 server HTTP probe，避免 browser context teardown 后的测试诱发阻塞；
+- P24 回填 P21 B04 observed evidence，但 P21 只有在真实 human acceptance complete 时才关闭 B04；
+- 自动化结果为 `status=pass_with_real_human_acceptance_blocked`、`browser_e2e_status=pass`、`browser_e2e_fail_count=0`、`gate_fail_count=0`。
+
+P24 明确未完成、不能冒充完成：
+
+- 真实 reviewer session、真实 PM / analyst 产品验收；
+- accepted/rejected deliverable 的人工决策；
+- reviewer-raised defect closure 的真实关闭证据；
+- P18/P19/P20 遗留产品缺陷的人工验收闭环；
+- PRD-level product pass 和 broad full-chain research quality pass。
 
 ## 12. Acceptance Gates
 

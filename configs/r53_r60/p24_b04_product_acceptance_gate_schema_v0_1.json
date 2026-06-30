@@ -1,0 +1,57 @@
+{
+  "closeout_level": "L4_scope_pass_for_product_acceptance_infrastructure_only",
+  "policy": {
+    "accepted_or_rejected_deliverable_decision_required": true,
+    "automation_must_not_count_as_human_acceptance": true,
+    "b04_cannot_close_with_pending_human_evidence": true,
+    "browser_e2e_must_use_real_http_server": true,
+    "defect_closeout_or_typed_gap_required": true,
+    "real_human_acceptance_requires_named_reviewer_role": [
+      "lead_analyst",
+      "portfolio_manager",
+      "product_owner",
+      "senior_research_reviewer"
+    ]
+  },
+  "release_scope": "b04_product_acceptance_protocol_browser_e2e_human_review_pending",
+  "required_browser_apis": [
+    {
+      "path": "/api/health",
+      "surface": "health"
+    },
+    {
+      "path": "/api/r53-r60/tasks",
+      "surface": "task_center"
+    },
+    {
+      "path": "/api/r53-r60/scope-gate",
+      "surface": "scope_gate"
+    },
+    {
+      "path": "/api/r53-r60/pilot/dashboard",
+      "surface": "pilot_dashboard"
+    },
+    {
+      "path": "/api/r53-r60/pilot/actions",
+      "surface": "pilot_action_ledger"
+    }
+  ],
+  "required_browser_labels": [
+    "R53-R60 工作台",
+    "Pilot dogfood window",
+    "任务中心",
+    "Review queue",
+    "Deliverable Studio",
+    "Dashboard Projection"
+  ],
+  "schema_version": "r53_r60_p24_b04_product_acceptance_gate_v0_1",
+  "tables": [
+    "product_acceptance_protocol_p24",
+    "product_acceptance_browser_e2e_p24",
+    "product_acceptance_human_evidence_requirements_p24",
+    "product_acceptance_defect_closeout_requirements_p24",
+    "product_acceptance_decision_records_p24",
+    "product_acceptance_gate_results_p24",
+    "product_acceptance_reports_p24"
+  ]
+}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import time
 from pathlib import Path
@@ -81,7 +82,7 @@ from sec_agent.r53_r60_workbench_frontdoor_drilldown import (
 APP_ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_ROOT = APP_ROOT / "frontend"
 FRONTEND_DIST_ROOT = FRONTEND_ROOT / "dist"
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(os.environ.get("FINSIGHT_WORKBENCH_REPO_ROOT", Path(__file__).resolve().parents[3])).resolve()
 
 
 class ImportEnvRequest(BaseModel):

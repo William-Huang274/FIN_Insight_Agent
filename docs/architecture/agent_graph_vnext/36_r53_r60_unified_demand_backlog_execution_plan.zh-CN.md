@@ -990,6 +990,51 @@ P23 修复过一个真实入口问题：builder 脚本环境只把 `src` 放进 
 
 P23 自动化 API journey 会写入 `reviewer_role=automation_e2e` 的 action，用于证明 review action write path 可用；该 action 不计入真人 adoption。P21 已回读 P23 summary，并仍保持 `blocker_count_open=2/5`。B04 只有在真实 reviewer 完成 session、对 deliverable 作出 accepted/rejected 判断、缺陷关闭或转 typed gap 后才能关闭。
 
+## 4.16 P24 / B04 Product Acceptance Gate（2026-06-30）
+
+P24 目标是把 `B04-prd-product-acceptance-not-met` 中“产品验收底座”做成可审计运行面：真实浏览器 Workbench visual E2E、真实 reviewer 验收协议、human evidence requirement、defect closeout requirement、acceptance decision placeholder，以及 P21 对 P24 summary 的回读。P24 不关闭 B04；它只证明产品验收基础设施达到自身范围内的 `L4_scope_pass`。
+
+新增/更新 artifacts：
+
+- schema：`configs/r53_r60/p24_b04_product_acceptance_gate_schema_v0_1.json`
+- protocol rows：`data/manifests/r53_r60_p24_b04_product_acceptance_protocol_rows_v0_1.jsonl`
+- browser E2E rows：`data/manifests/r53_r60_p24_b04_browser_e2e_rows_v0_1.jsonl`
+- human evidence rows：`data/manifests/r53_r60_p24_b04_human_evidence_requirements_v0_1.jsonl`
+- defect closeout rows：`data/manifests/r53_r60_p24_b04_defect_closeout_requirements_v0_1.jsonl`
+- decision rows：`data/manifests/r53_r60_p24_b04_acceptance_decision_rows_v0_1.jsonl`
+- gate rows：`data/manifests/r53_r60_p24_b04_product_acceptance_gate_rows_v0_1.jsonl`
+- summary：`data/manifests/r53_r60_p24_b04_product_acceptance_summary_v0_1.json`
+- report：`docs/internal/vnext_20260610/r53_r60_p24_b04_product_acceptance_gate_human_pending.zh-CN.md`
+- builder：`scripts/engineering/build_r53_r60_p24_b04_product_acceptance_gate.py`
+- tests：`tests/test_r53_r60_product_acceptance_b04_gate.py`
+
+真实构建结果：
+
+| Field | Value |
+| --- | --- |
+| `status` | `pass_with_real_human_acceptance_blocked` |
+| `closeout_level` | `L4_scope_pass_for_product_acceptance_infrastructure_only` |
+| `release_decision` | `P24_b04_product_acceptance_infrastructure_ready_human_review_pending` |
+| `browser_e2e_status` | `pass` |
+| `browser_e2e_fail_count` | `0/9` |
+| `gate_fail_count` | `0/6` |
+| `gate_blocked_count` | `2/6` |
+| `human_evidence_pending_count` | `5` |
+| `defect_closeout_pending_count` | `8` |
+| `product_acceptance_status` | `pending_real_human_acceptance` |
+| `b04_status_after_p24` | `open_product_acceptance_required` |
+| `full_chain_broad_eval_allowed` | `false` |
+
+P24 期间修复/明确的真实入口问题：
+
+1. Workbench backend 现在支持 `FINSIGHT_WORKBENCH_REPO_ROOT`，用于浏览器 E2E 在隔离 root 中跑真实 API；默认仓库路径不变。
+2. P24 uvicorn 子进程显式注入 repo root 和 `src`，避免子进程找不到 `sec_agent`。
+3. Playwright browser executable resolver 会优先使用 Playwright Chromium，缺失时使用系统 Chrome/Edge。
+4. SPA visual E2E 改为 `domcontentloaded` + body label polling + desktop/mobile viewport resize，不再用容易卡住的 `networkidle`。
+5. `/api/r53-r60/pilot/actions` 已经单独验证在 uvicorn 下约 26ms 返回；P24 API probe 前置到 browser visual 之前，避免 post-browser probe 对同一 server 造成测试性干扰。
+
+P21 已回读 P24 summary，并仍保持 `blocker_count_open=2/5`。B04 只有在 P24 summary 记录 `product_acceptance_status=accepted_by_real_human_review`、`b04_status_after_p24=closed_by_real_human_product_acceptance`、`human_evidence_pending_count=0` 且 `defect_closeout_pending_count=0` 后才能关闭。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

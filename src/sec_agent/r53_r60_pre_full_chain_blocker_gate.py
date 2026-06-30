@@ -160,6 +160,16 @@ def _load_p23_product_acceptance_summary(root: Path) -> dict[str, Any]:
     return payload
 
 
+def _load_p24_product_acceptance_summary(root: Path) -> dict[str, Any]:
+    path = root / "data" / "manifests" / "r53_r60_p24_b04_product_acceptance_summary_v0_1.json"
+    if not path.exists():
+        return {"exists": False, "path": "data/manifests/r53_r60_p24_b04_product_acceptance_summary_v0_1.json"}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["exists"] = True
+    payload["path"] = "data/manifests/r53_r60_p24_b04_product_acceptance_summary_v0_1.json"
+    return payload
+
+
 def _summary_current_status(slice_id: str, summary: dict[str, Any]) -> str:
     if not summary.get("exists"):
         return "missing_summary"
@@ -250,11 +260,20 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
     summaries = _load_summaries(manifest_dir)
     p22_summary = _load_p22_source_doc_summary(root)
     p23_summary = _load_p23_product_acceptance_summary(root)
+    p24_summary = _load_p24_product_acceptance_summary(root)
     p22_source_docs_closed = (
         p22_summary.get("exists")
         and p22_summary.get("status") == "pass"
         and p22_summary.get("source_doc_status") == "reconciled"
         and int(p22_summary.get("open_source_doc_status_rows", 0)) == 0
+    )
+    p24_counts = p24_summary.get("counts") if isinstance(p24_summary.get("counts"), dict) else {}
+    p24_human_acceptance_closed = (
+        p24_summary.get("exists")
+        and p24_summary.get("product_acceptance_status") == "accepted_by_real_human_review"
+        and p24_summary.get("b04_status_after_p24") == "closed_by_real_human_product_acceptance"
+        and int(p24_counts.get("human_evidence_pending_count", 1)) == 0
+        and int(p24_counts.get("defect_closeout_pending_count", 1)) == 0
     )
     found_summary_count = sum(1 for item in summaries.values() if item.get("exists"))
     current_status_rows = current_status_rows or _current_status_overlay(root, summaries)
@@ -353,7 +372,9 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
             "blocker_id": "B04-prd-product-acceptance-not-met",
             "title": "PRD-level product acceptance is still open",
             "source_audit_item": "AUD-04",
-            "status": "open_product_acceptance_required",
+            "status": "closed_by_p24_real_human_product_acceptance"
+            if p24_human_acceptance_closed
+            else "open_product_acceptance_required",
             "blocks": ["product_release_claim", "broad_full_chain_20_50_eval_as_quality_evidence"],
             "observed_evidence": {
                 "p17_p19_boundaries": {
@@ -365,6 +386,7 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
                     for key in ("P12", "P14", "P15", "P16")
                 },
                 "p23_product_acceptance_summary": p23_summary,
+                "p24_product_acceptance_summary": p24_summary,
             },
             "why_blocking": (
                 "Controlled deterministic pilot rows and P23 automated API/frontend E2E checks are useful for integration, "
@@ -376,7 +398,9 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
                 "Browser visual E2E for Workbench task, evidence, workpaper, review, deliverable, and admin flows.",
                 "Runtime live migration and data/RAG live refresh are consumed by actual graph execution paths.",
             ],
-            "next_slice": "P23-real-product-dogfood-and-frontend-e2e",
+            "next_slice": "P24-real-human-product-acceptance"
+            if p24_summary.get("exists")
+            else "P23-real-product-dogfood-and-frontend-e2e",
         },
         {
             "blocker_id": "B05-depth-packs-before-broad-full-chain",

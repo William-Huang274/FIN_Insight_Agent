@@ -1,0 +1,56 @@
+{
+  "b04_status_after_p24": "open_product_acceptance_required",
+  "browser_e2e_status": "pass",
+  "closeout_level": "L4_scope_pass_for_product_acceptance_infrastructure_only",
+  "counts": {
+    "browser_e2e_count": 9,
+    "browser_e2e_fail_count": 0,
+    "decision_record_count": 1,
+    "defect_closeout_pending_count": 8,
+    "defect_closeout_requirement_count": 8,
+    "dependency_count": 1,
+    "dependency_fail_count": 0,
+    "gate_blocked_count": 2,
+    "gate_count": 6,
+    "gate_fail_count": 0,
+    "human_evidence_pending_count": 5,
+    "human_evidence_requirement_count": 5,
+    "protocol_count": 5
+  },
+  "full_chain_broad_eval_allowed": false,
+  "generated_at": "2026-06-30T15:07:53Z",
+  "human_adoption_status": "pending_real_human_reviewer_acceptance",
+  "known_gaps": [
+    {
+      "gap": "real_human_product_acceptance_not_completed",
+      "reason": "B04 requires a real reviewer to accept or reject deliverables and close defects; automation cannot supply this evidence."
+    },
+    {
+      "gap": "defect_closeout_pending_real_reviewer_decision",
+      "reason": "Existing P18/P19 defect/action rows are queued as closeout requirements, not treated as already accepted."
+    }
+  ],
+  "next_actions": [
+    "run at least one real analyst reviewer session through the Workbench browser flow",
+    "record accepted/rejected deliverable decisions with reviewer role and artifact refs",
+    "close every P24 defect requirement via repair, regression coverage, or typed-gap acceptance",
+    "rerun P21; B04 may close only if P24 summary records accepted_by_real_human_review"
+  ],
+  "outputs": {
+    "browser_e2e_rows": "data/manifests/r53_r60_p24_b04_browser_e2e_rows_v0_1.jsonl",
+    "decision_rows": "data/manifests/r53_r60_p24_b04_acceptance_decision_rows_v0_1.jsonl",
+    "defect_closeout_rows": "data/manifests/r53_r60_p24_b04_defect_closeout_requirements_v0_1.jsonl",
+    "gate_rows": "data/manifests/r53_r60_p24_b04_product_acceptance_gate_rows_v0_1.jsonl",
+    "human_evidence_rows": "data/manifests/r53_r60_p24_b04_human_evidence_requirements_v0_1.jsonl",
+    "protocol_rows": "data/manifests/r53_r60_p24_b04_product_acceptance_protocol_rows_v0_1.jsonl",
+    "report": "docs/internal/vnext_20260610/r53_r60_p24_b04_product_acceptance_gate_human_pending.zh-CN.md",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "schema": "configs/r53_r60/p24_b04_product_acceptance_gate_schema_v0_1.json",
+    "screenshot_dir": "reports/r53_r60_p24_b04_product_acceptance_browser_e2e",
+    "summary": "data/manifests/r53_r60_p24_b04_product_acceptance_summary_v0_1.json"
+  },
+  "product_acceptance_status": "pending_real_human_acceptance",
+  "release_decision": "P24_b04_product_acceptance_infrastructure_ready_human_review_pending",
+  "schema_version": "r53_r60_p24_b04_product_acceptance_gate_v0_1",
+  "status": "pass_with_real_human_acceptance_blocked"
+}

@@ -860,6 +860,31 @@ P20 closeout（2026-06-30）：`P20_L4_scope_pass_real_llm_dogfood_gate_repair_r
 
 P20b closeout 必须执行 root-cause-first 顺序：复现症状 -> 定位最早 faulty artifact -> 修 parser/normalizer/reconciliation/planner/writer 输入 -> 保留 gate 做回归保护 -> 加 deterministic regression -> 更新源文档和 checklist。若根因未找到，只能标记 `blocked_root_cause_unknown` 或 `partial_diagnostic`，不得升级为 `L4_scope_pass`。
 
+## 4.12 PRD/R 系列源文档回扫审计（2026-06-30）
+
+按更新后的 project-worklog 规则，S/P closeout 不能替代 PRD/R 源文档，也不能把 smoke、最小合同、diagnostic gate 或 gate containment 当作完成。本轮回扫 PRD、R53-R60、S0-S10、P11-P20/P20b 和 `data/manifests/r53_r60_*` 后，结论如下：
+
+1. S0-S10/P11-P20 不是“没做”，它们已经留下 scope-level contracts、SQL rows、gate artifacts、Workbench/API contracts、eval/trace/control-plane rows。
+2. 但当前仍不是 PRD-level product complete 或 full enterprise production pass；很多 slice 只是自身范围内的 `L4_scope_pass`，并保留真实生产/试点边界。
+3. 最大源文档漏项是 machine-readable source-of-truth drift：`r53_r60_demand_map_v0_1.jsonl` 仍是 `planned=57 / ready_for_implementation=4`，`r53_r60_implementation_tasks_v0_1.jsonl` 仍是 `planned=171 / ready_for_implementation=12`，`r53_r60_release_board_v0_1.jsonl` 仍是 `blocked_by_dependencies=10 / ready_to_start=1`。这些不能直接给后续自动化当当前状态用。
+4. P20b 仍有 root-cause open：`P20b-D02-numeric-display-lineage` 和 `P20b-D03-memo-logic-plan-quality-root`。后续不能用 gate pass 或 memo quality gate 兜底解释为已修复。
+5. R57/R58/R55/R59/R60 需要补 current-status / closeout reconciliation：P13/P14/P15/P16 已实现了部分需求，但源文档中仍有 planned rows 或 current gaps，需要映射为 done / partial / open / bounded gap。
+
+| Audit item | 当前判断 | 必须补的动作 |
+| --- | --- | --- |
+| `AUD-01-source-status-parity` | S0 machine-readable backlog/release board stale | 生成 current-status overlay 或重建 demand/release board，并加 parity test |
+| `AUD-02-p20b-root-cause` | D02/D03 open | 修 numeric display lineage 和 MemoLogicPlan upstream quality |
+| `AUD-03-source-doc-reconciliation` | R57/R58 等源文档仍像未执行计划 | 对每个 demand row 建 done/partial/open 映射，或集中维护 status overlay |
+| `AUD-04-prd-product-acceptance` | P17-P19 是 controlled deterministic / reviewer-action drill，不是真实多人多日产品采用 | 跑真实 reviewer sessions、accepted/rejected deliverables、defect closure、token/cost ROI |
+| `AUD-05-frontend-workbench-e2e` | P15 是 product surface contract/projection，不是 polished React release | 做浏览器视觉 E2E 和用户流验收 |
+| `AUD-06-runtime-live-migration` | P12 是 runtime drill，不是全 graph 迁移 | 迁移真实 LangGraph execution paths，补 replay/resume/parity tests |
+| `AUD-07-data-rag-live-refresh` | P14 是 control plane，不是 full crawler / production refresh | 接真实 refresh jobs、parser coverage、qrels、DB perf profile 和 source adapter coverage |
+| `AUD-08-secondary-quant-deliverable-depth` | S8/S9/S7 是 bounded scope pass | 二级市场、量化实验、Deliverable Studio 继续按 typed gap 和 source authority 补深度 |
+
+建议下一轮不要直接开新大功能，而是按以下顺序做：`P20b-D02/D03` -> `P21-source-status-parity` -> `P22-source-doc-status-reconciliation` -> `P23-real-product-dogfood-and-frontend-e2e` -> `P24-runtime-data-live-integration` -> `P25-data-depth-and-secondary-market-closure`。
+
+详细审计记录见 `docs/worklog/product_strategy/046_prd_rseries_s_p_closeout_audit.md`。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

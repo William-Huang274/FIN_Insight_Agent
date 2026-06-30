@@ -1,0 +1,80 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "counts": {
+    "api_contract_count": 3,
+    "assignment_count": 6,
+    "dashboard_tile_count": 7,
+    "defect_promotion_count": 6,
+    "feedback_regression_link_count": 6,
+    "gate_count": 11,
+    "gate_fail_count": 0,
+    "max_latency_ms": 210000,
+    "reviewer_action_event_count": 18,
+    "reviewer_session_count": 6,
+    "total_cost_usd": 2.42,
+    "window_count": 1
+  },
+  "dependency_status": [
+    {
+      "actual_release_decision": "P17_L4_scope_pass_controlled_internal_pilot_execution_ready",
+      "expected_release_decision": "P17_L4_scope_pass_controlled_internal_pilot_execution_ready",
+      "name": "P17",
+      "path": "data/manifests/r53_r60_p17_controlled_internal_pilot_execution_summary_v0_1.json",
+      "status": "pass"
+    }
+  ],
+  "dogfood_status": "ready_for_real_internal_reviewer_use",
+  "full_product_release_status": "not_l4_production_pass",
+  "generated_at": "2026-06-30T06:25:18Z",
+  "outputs": {
+    "closeout_report": "docs/internal/vnext_20260610/r53_r60_p18_internal_reviewer_dogfood_window_l4_scope_pass.zh-CN.md",
+    "gate_rows": "data/manifests/r53_r60_p18_internal_reviewer_dogfood_window_gate_rows_v0_1.jsonl",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "schema": "configs/r53_r60/p18_internal_reviewer_dogfood_window_schema_v0_1.json",
+    "summary": "data/manifests/r53_r60_p18_internal_reviewer_dogfood_window_summary_v0_1.json"
+  },
+  "policy": {
+    "defects_must_promote_to_regression_queue_or_typed_gap": true,
+    "frontend_dashboard_is_projection_only": true,
+    "full_product_release_status_must_remain_not_l4_production_pass": true,
+    "p18_consumes_p17_execution_ledger": true,
+    "real_human_multi_day_adoption_must_not_be_claimed": true,
+    "reviewer_actions_require_append_only_records": true,
+    "sql_final_source_of_truth": true
+  },
+  "readiness_report": {
+    "closeout_level": "L4_scope_pass",
+    "created_at": "2026-06-30T06:25:18Z",
+    "dogfood_status": "ready_for_real_internal_reviewer_use",
+    "full_product_release_status": "not_l4_production_pass",
+    "gate_refs_json": "[\"p18_schema_tables_present\", \"p18_p17_dependency_pass\", \"p18_all_p17_cases_assigned\", \"p18_reviewer_sessions_ready\", \"p18_reviewer_action_events_projected\", \"p18_defects_promoted_to_regression_lifecycle\", \"p18_dashboard_projection_ready\", \"p18_workbench_api_contracts_ready\", \"p18_feedback_to_regression_links_ready\", \"p18_ready_boundary_not_fake_adoption\", \"p18_workpaper_event_and_artifact_trace_ready\"]",
+    "known_gaps_json": "[{\"gap\": \"actual_human_reviewer_window_not_completed\", \"reason\": \"P18 creates the SQL/API/UI-ready dogfood window; real reviewer actions require humans to use the Workbench.\"}, {\"gap\": \"external_customer_pilot_not_started\", \"reason\": \"Internal reviewer dogfood is not customer production or customer-facing pilot.\"}]",
+    "next_actions_json": "[\"open Workbench pilot dashboard for real reviewer actions\", \"route repeated P17/P18 defects into P16 regression lifecycle\", \"use actual reviewer feedback to decide P19 customer-pilot readiness\"]",
+    "payload_json": "{\"gate_count\": 11, \"gate_fail_count\": 0, \"real_human_adoption_status\": \"pending_actual_reviewer_actions\"}",
+    "release_decision": "P18_L4_scope_pass_internal_reviewer_dogfood_window_ready",
+    "report_id": "p18_internal_reviewer_dogfood_window_report_v0_1",
+    "window_id": "r53_r60_internal_reviewer_dogfood_window_v0_1"
+  },
+  "real_human_adoption_status": "pending_actual_reviewer_actions",
+  "release_decision": "P18_L4_scope_pass_internal_reviewer_dogfood_window_ready",
+  "schema_version": "r53_r60_p18_internal_reviewer_dogfood_window_v0_1",
+  "slice": "P18 Internal Reviewer Dogfood Window",
+  "status": "pass",
+  "task": {
+    "case_id": "p18_internal_reviewer_dogfood_window",
+    "created_at": "2026-06-30T06:25:18Z",
+    "current_run_id": "run_e2c496caed70fef9",
+    "error_message": "",
+    "metadata_json": "{\"closeout_level\": \"L4_scope_pass\", \"source_slice\": \"P18\"}",
+    "mode": "internal_reviewer_dogfood_window_gate",
+    "objective_json": "{\"minimum_evidence\": \"P17 cases are assignable, reviewable, dashboard-visible, and defect-promoted\"}",
+    "progress": 100,
+    "query_text": "Prepare internal reviewer dogfood window over P17 pilot execution records",
+    "resume_count": 0,
+    "status": "succeeded",
+    "task_id": "p18_scope_task_internal_reviewer_dogfood_window",
+    "trace_id": "trace_p18_internal_reviewer_dogfood_window",
+    "updated_at": "2026-06-30T06:25:18Z",
+    "user_id": "p18_pilot_program"
+  }
+}

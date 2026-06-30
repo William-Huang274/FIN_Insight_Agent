@@ -333,6 +333,21 @@ type R53R60DashboardProjection = {
   dashboard_projection: Record<string, unknown>;
 };
 
+type R53R60PilotDashboard = {
+  schema_version: string;
+  window: Record<string, unknown>;
+  readiness_report: Record<string, unknown>;
+  tiles: Record<string, unknown>[];
+  case_assignments: Record<string, unknown>[];
+  reviewer_sessions: Record<string, unknown>[];
+  reviewer_action_events: Record<string, unknown>[];
+  defect_promotions: Record<string, unknown>[];
+  feedback_regression_links: Record<string, unknown>[];
+  gates: Record<string, unknown>[];
+  api_contracts: Record<string, unknown>[];
+  counts: Record<string, number>;
+};
+
 type NativeCheckpointInspection = {
   schema_version: string;
   checkpoint_path: string;
@@ -399,6 +414,7 @@ function App() {
   const [r53r60ScopeGate, setR53R60ScopeGate] = useState<R53R60ScopeGate | null>(null);
   const [r53r60Deliverables, setR53R60Deliverables] = useState<R53R60DeliverableProjection | null>(null);
   const [r53r60DashboardProjection, setR53R60DashboardProjection] = useState<R53R60DashboardProjection | null>(null);
+  const [r53r60PilotDashboard, setR53R60PilotDashboard] = useState<R53R60PilotDashboard | null>(null);
   const [r53r60ReviewComment, setR53R60ReviewComment] = useState("Workbench reviewer note");
   const [dataBuildSteps, setDataBuildSteps] = useState<DataBuildStep[]>([]);
   const [dataBuildStepId, setDataBuildStepId] = useState("");
@@ -579,13 +595,15 @@ function App() {
 
   async function loadR53R60Workbench() {
     try {
-      const [tasksPayload, gatePayload] = await Promise.all([
+      const [tasksPayload, gatePayload, pilotPayload] = await Promise.all([
         requestJson<{ tasks: R53R60TaskProjection[] }>("/api/r53-r60/tasks"),
         requestJson<R53R60ScopeGate>("/api/r53-r60/scope-gate"),
+        requestJson<R53R60PilotDashboard>("/api/r53-r60/pilot/dashboard"),
       ]);
       const tasks = tasksPayload.tasks ?? [];
       setR53R60Tasks(tasks);
       setR53R60ScopeGate(gatePayload);
+      setR53R60PilotDashboard(pilotPayload);
       const selected = r53r60SelectedTaskId || tasks[0]?.task_id || "";
       if (selected) {
         await loadR53R60Task(selected);
@@ -1216,6 +1234,7 @@ function App() {
             scopeGate={r53r60ScopeGate}
             deliverables={r53r60Deliverables}
             dashboardProjection={r53r60DashboardProjection}
+            pilotDashboard={r53r60PilotDashboard}
             reviewComment={r53r60ReviewComment}
             busy={busy}
             onSelectTask={loadR53R60Task}
@@ -1271,6 +1290,7 @@ function R53R60WorkbenchPanel({
   scopeGate,
   deliverables,
   dashboardProjection,
+  pilotDashboard,
   reviewComment,
   busy,
   onSelectTask,
@@ -1287,6 +1307,7 @@ function R53R60WorkbenchPanel({
   scopeGate: R53R60ScopeGate | null;
   deliverables: R53R60DeliverableProjection | null;
   dashboardProjection: R53R60DashboardProjection | null;
+  pilotDashboard: R53R60PilotDashboard | null;
   reviewComment: string;
   busy: string | null;
   onSelectTask: (taskId: string) => void;
@@ -1327,6 +1348,8 @@ function R53R60WorkbenchPanel({
         <MetricBox label="Deliverables" value={`${renderJobs.length} artifacts`} detail={`${qualityGates.length} quality gates`} />
         <MetricBox label="Gate rows" value={numberText(gateCounts.gate_count)} detail={`${numberText(gateCounts.gate_fail_count)} failed`} />
       </div>
+
+      <R53R60PilotDogfoodPanel dashboard={pilotDashboard} />
 
       <div className="r53r60-grid">
         <div className="saved-profiles compact-panel">
@@ -1507,6 +1530,107 @@ function R53R60WorkbenchPanel({
             ]}
           />
         </div>
+      </div>
+    </div>
+  );
+}
+
+function R53R60PilotDogfoodPanel({ dashboard }: { dashboard: R53R60PilotDashboard | null }) {
+  if (!dashboard) {
+    return (
+      <div className="r53r60-card">
+        <h3>Pilot dogfood window</h3>
+        <p className="muted-text">P18 pilot dashboard 还没有返回。</p>
+      </div>
+    );
+  }
+  const tiles = dashboard.tiles ?? [];
+  const cases = dashboard.case_assignments ?? [];
+  const sessions = dashboard.reviewer_sessions ?? [];
+  const defects = dashboard.defect_promotions ?? [];
+  const gates = dashboard.gates ?? [];
+  const apiContracts = dashboard.api_contracts ?? [];
+  return (
+    <div className="r53r60-card pilot-dogfood-panel">
+      <div className="inline-heading">
+        <h3>Pilot dogfood window</h3>
+        <span className="mono">{objectValue(dashboard.window, "window_status")}</span>
+      </div>
+      <div className="summary-grid compact-metrics">
+        <MetricBox label="Dogfood" value={objectValue(dashboard.readiness_report, "dogfood_status")} detail={objectValue(dashboard.readiness_report, "full_product_release_status")} />
+        <MetricBox label="Cases" value={numberText(dashboard.counts?.case_assignment_count)} detail={`${numberText(dashboard.counts?.reviewer_session_count)} sessions`} />
+        <MetricBox label="Actions" value={numberText(dashboard.counts?.reviewer_action_event_count)} detail={`${numberText(dashboard.counts?.defect_promotion_count)} defects promoted`} />
+      </div>
+      <div className="r53r60-grid wide">
+        <R53R60Table
+          title="Dashboard tiles"
+          rows={tiles}
+          embedded
+          columns={[
+            ["title", "Tile"],
+            ["metric_value", "Value"],
+            ["metric_detail", "Detail"],
+            ["status", "Status"],
+          ]}
+        />
+        <R53R60Table
+          title="Case assignments"
+          rows={cases.slice(0, 8)}
+          embedded
+          columns={[
+            ["case_id", "Case"],
+            ["assigned_reviewer_role", "Reviewer"],
+            ["assignment_status", "Status"],
+            ["runtime_task_id", "Runtime"],
+          ]}
+        />
+      </div>
+      <div className="r53r60-grid wide">
+        <R53R60Table
+          title="Reviewer sessions"
+          rows={sessions.slice(0, 8)}
+          embedded
+          columns={[
+            ["case_id", "Case"],
+            ["reviewer_role", "Role"],
+            ["session_status", "Status"],
+            ["action_count", "Actions"],
+          ]}
+        />
+        <R53R60Table
+          title="Defect promotions"
+          rows={defects.slice(0, 8)}
+          embedded
+          columns={[
+            ["case_id", "Case"],
+            ["defect_type", "Defect"],
+            ["promotion_status", "Promotion"],
+            ["blocker_status", "Blocker"],
+          ]}
+        />
+      </div>
+      <div className="r53r60-grid wide">
+        <R53R60Table
+          title="P18 gates"
+          rows={gates}
+          embedded
+          columns={[
+            ["gate_name", "Gate"],
+            ["gate_group", "Group"],
+            ["status", "Status"],
+          ]}
+        />
+        <R53R60Table
+          title="Pilot API contracts"
+          rows={apiContracts}
+          embedded
+          columns={[
+            ["method", "Method"],
+            ["path", "Path"],
+            ["surface", "Surface"],
+            ["status", "Status"],
+          ]}
+        />
       </div>
     </div>
   );

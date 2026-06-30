@@ -1,0 +1,55 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "endpoints": [
+    {
+      "description": "Read pilot window status, tiles, cases, sessions, defects and gates.",
+      "method": "GET",
+      "path": "/api/r53-r60/pilot/dashboard",
+      "surface": "pilot_dashboard"
+    },
+    {
+      "description": "List pilot case assignments and reviewer-session state.",
+      "method": "GET",
+      "path": "/api/r53-r60/pilot/cases",
+      "surface": "pilot_case_list"
+    },
+    {
+      "description": "Inspect one pilot case assignment, actions, defects and feedback links.",
+      "method": "GET",
+      "path": "/api/r53-r60/pilot/cases/{case_id}",
+      "surface": "pilot_case_detail"
+    }
+  ],
+  "policy": {
+    "defects_must_promote_to_regression_queue_or_typed_gap": true,
+    "frontend_dashboard_is_projection_only": true,
+    "full_product_release_status_must_remain_not_l4_production_pass": true,
+    "p18_consumes_p17_execution_ledger": true,
+    "real_human_multi_day_adoption_must_not_be_claimed": true,
+    "reviewer_actions_require_append_only_records": true,
+    "sql_final_source_of_truth": true
+  },
+  "release_scope": "internal_reviewer_dogfood_window_ready_not_real_adoption_complete",
+  "required_demands": [
+    "P18-D01-reviewer-window-ledger",
+    "P18-D02-case-assignment-and-session-records",
+    "P18-D03-workbench-pilot-dashboard-api",
+    "P18-D04-reviewer-action-event-bridge",
+    "P18-D05-defect-feedback-regression-promotion",
+    "P18-D06-dogfood-readiness-and-boundary-gates"
+  ],
+  "schema_version": "r53_r60_p18_internal_reviewer_dogfood_window_v0_1",
+  "tables": [
+    "internal_reviewer_dogfood_metadata_p18",
+    "dogfood_windows_p18",
+    "dogfood_case_assignments_p18",
+    "reviewer_session_records_p18",
+    "reviewer_action_events_p18",
+    "pilot_dashboard_tiles_p18",
+    "pilot_defect_promotions_p18",
+    "pilot_feedback_to_regression_p18",
+    "pilot_workbench_api_contracts_p18",
+    "pilot_dogfood_readiness_reports_p18",
+    "pilot_dogfood_gate_results_p18"
+  ]
+}

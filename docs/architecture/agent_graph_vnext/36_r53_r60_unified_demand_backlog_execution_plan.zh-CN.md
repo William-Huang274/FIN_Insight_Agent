@@ -811,7 +811,20 @@ P17 closeout（2026-06-30）：`P17_L4_scope_pass_controlled_internal_pilot_exec
 - cost / latency：pilot drill 总成本 `2.42` USD，max case latency `210000ms`，所有 case 均 `within_case_budget`；超预算路径继续由 P16 BudgetExceededGate 控制，不允许 silent overrun。
 - 验证：P17 deterministic tests `6/6` pass；真实构建 gate `12 pass / 0 fail`；生成 `configs/r53_r60/p17_controlled_internal_pilot_execution_schema_v0_1.json`、`data/manifests/r53_r60_p17_controlled_internal_pilot_execution_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p17_controlled_internal_pilot_execution_l4_scope_pass.zh-CN.md`。
 
-边界：P17 只证明 P11-P16 合同能被一轮受控内部 deterministic pilot execution 消费，并形成可审计、可回放、可评测的 case-level ledger。它关闭了 P11 的 `pilot_execution_status=not_started_requires_real_internal_pilot` 在“受控内部演练”层面的缺口，但仍不声明外部客户生产、长期云端 SLA、正式 CI/CD、polished React 前端或全系统 `L4_production_pass`。下一步 P18 应进入真实 reviewer dogfood window，把 P17 的 deterministic case execution 转成带真实用户反馈、真实 UI 操作和长期 online eval 的 pilot evidence。
+边界：P17 只证明 P11-P16 合同能被一轮受控内部 deterministic pilot execution 消费，并形成可审计、可回放、可评测的 case-level ledger。它关闭了 P11 的 `pilot_execution_status=not_started_requires_real_internal_pilot` 在“受控内部演练”层面的缺口，但仍不声明外部客户生产、长期云端 SLA、正式 CI/CD、polished React 前端或全系统 `L4_production_pass`。P18 已承接 P17 产物，把 deterministic case execution 转成内部 reviewer dogfood window、Workbench dashboard API 和 defect / feedback regression bridge。
+
+## 4.9 P18 Internal Reviewer Dogfood Window
+
+P18 closeout（2026-06-30）：`P18_L4_scope_pass_internal_reviewer_dogfood_window_ready`。
+
+- runtime contract：新增 `InternalReviewerDogfoodMetadata`、`DogfoodWindow`、`DogfoodCaseAssignment`、`ReviewerSessionRecord`、`ReviewerActionEvent`、`PilotDashboardTile`、`PilotDefectPromotion`、`PilotFeedbackToRegression`、`PilotWorkbenchApiContract`、`PilotDogfoodReadinessReport` 和 `PilotDogfoodGateResult`，全部进入 S1 runtime SQLite 主账本。
+- 真实构建：P18 消费 P17 controlled pilot execution ledger，确认 P17 dependency pass；把 P17 的 6 个 case execution 全部转成内部 reviewer assignments、reviewer sessions、action events、defect promotions 和 dashboard tiles。
+- Workbench bridge：新增 `/api/r53-r60/pilot/dashboard`、`/api/r53-r60/pilot/cases`、`/api/r53-r60/pilot/cases/{case_id}` 三个 P18 API contract，并在 Workbench R53-R60 面板新增 Pilot dogfood window 区块，用于查看 case assignment、reviewer session、defect promotion、gate 和 API 状态。
+- review / defect lifecycle：ReviewerActionEvent `18` 条，保留 P17 append-only action ledger；DefectPromotion `6` 条全部进入 `queued_for_p16_regression_lifecycle`；FeedbackToRegression `6` 条把 P17 feedback / defect 接到 P16 regression lifecycle，而不是把缺陷藏在 memo 边界说明里。
+- dashboard / boundary：DashboardTile `7` 条，覆盖 window status、case assignments、reviewer sessions、review actions、defect promotions、cost/latency 和 release boundary；`real_human_adoption_status=pending_actual_reviewer_actions`，不虚报真实多人 dogfood 已完成。
+- 验证：P18 deterministic tests `5/5` pass；真实构建 gate `11 pass / 0 fail`；生成 `configs/r53_r60/p18_internal_reviewer_dogfood_window_schema_v0_1.json`、`data/manifests/r53_r60_p18_internal_reviewer_dogfood_window_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p18_internal_reviewer_dogfood_window_l4_scope_pass.zh-CN.md`。
+
+边界：P18 只证明内部 reviewer dogfood window 在自身范围达到 enterprise-grade：P17 case 可分派、可审查、可进入 Workbench dashboard、可追 defect / feedback / regression lifecycle，并且 API / SQL / Workpaper event / artifact trace 可复盘。它不声明真实人工 reviewer 已完成多日使用，不声明外部客户试点，不声明正式 CI/CD 或全系统 `L4_production_pass`。下一步应该进入 P19：真实人工 reviewer 操作窗口 / feedback capture / P16 regression promotion 的非 deterministic dogfood 证据，或者先补 P18 前端视觉 E2E 与浏览器验收。
 
 ## 5. 单 Agent 执行节奏
 

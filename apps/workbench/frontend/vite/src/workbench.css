@@ -313,6 +313,11 @@ select:focus {
   margin-bottom: 10px;
 }
 
+.pilot-dogfood-panel {
+  display: grid;
+  gap: 14px;
+}
+
 .saved-profile-button.selected {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);

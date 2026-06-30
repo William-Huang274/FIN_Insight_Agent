@@ -1,0 +1,55 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "endpoints": [
+    {
+      "description": "List live pilot reviewer actions and case status.",
+      "method": "GET",
+      "path": "/api/r53-r60/pilot/actions",
+      "surface": "pilot_action_ledger"
+    },
+    {
+      "description": "Read case-scoped live reviewer actions, feedback, defect triage and regression links.",
+      "method": "GET",
+      "path": "/api/r53-r60/pilot/cases/{case_id}/actions",
+      "surface": "pilot_case_action_ledger"
+    },
+    {
+      "description": "Append one internal reviewer action and update feedback/defect/regression lifecycle rows.",
+      "method": "POST",
+      "path": "/api/r53-r60/pilot/cases/{case_id}/review-actions",
+      "surface": "pilot_case_review_action_capture"
+    }
+  ],
+  "policy": {
+    "approval_actions_may_create_gold_candidate_not_final_gold_without_second_review": true,
+    "dashboard_is_projection_not_source_of_truth": true,
+    "deterministic_drill_is_not_real_multi_day_human_adoption": true,
+    "full_product_release_status_must_remain_not_l4_production_pass": true,
+    "p19_consumes_p18_dogfood_window": true,
+    "repair_actions_must_create_p16_failure_and_regression_rows": true,
+    "reviewer_actions_are_append_only": true
+  },
+  "release_scope": "internal_reviewer_action_capture_ready_not_multi_day_human_adoption_complete",
+  "required_demands": [
+    "P19-D01-live-reviewer-action-contract",
+    "P19-D02-workbench-post-action-api",
+    "P19-D03-defect-triage-to-p16-regression",
+    "P19-D04-gold-candidate-and-accepted-case-feedback",
+    "P19-D05-action-dashboard-and-case-status",
+    "P19-D06-boundary-gates-no-fake-adoption"
+  ],
+  "schema_version": "r53_r60_p19_internal_reviewer_action_capture_v0_1",
+  "tables": [
+    "internal_reviewer_action_capture_metadata_p19",
+    "live_reviewer_action_windows_p19",
+    "live_reviewer_actions_p19",
+    "live_reviewer_feedback_records_p19",
+    "live_defect_triage_records_p19",
+    "live_regression_promotions_p19",
+    "live_gold_candidate_promotions_p19",
+    "live_pilot_case_status_p19",
+    "live_reviewer_workbench_api_contracts_p19",
+    "live_reviewer_action_reports_p19",
+    "live_reviewer_gate_results_p19"
+  ]
+}

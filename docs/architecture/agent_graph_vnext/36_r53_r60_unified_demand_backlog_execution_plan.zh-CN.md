@@ -824,7 +824,20 @@ P18 closeout（2026-06-30）：`P18_L4_scope_pass_internal_reviewer_dogfood_wind
 - dashboard / boundary：DashboardTile `7` 条，覆盖 window status、case assignments、reviewer sessions、review actions、defect promotions、cost/latency 和 release boundary；`real_human_adoption_status=pending_actual_reviewer_actions`，不虚报真实多人 dogfood 已完成。
 - 验证：P18 deterministic tests `5/5` pass；真实构建 gate `11 pass / 0 fail`；生成 `configs/r53_r60/p18_internal_reviewer_dogfood_window_schema_v0_1.json`、`data/manifests/r53_r60_p18_internal_reviewer_dogfood_window_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p18_internal_reviewer_dogfood_window_l4_scope_pass.zh-CN.md`。
 
-边界：P18 只证明内部 reviewer dogfood window 在自身范围达到 enterprise-grade：P17 case 可分派、可审查、可进入 Workbench dashboard、可追 defect / feedback / regression lifecycle，并且 API / SQL / Workpaper event / artifact trace 可复盘。它不声明真实人工 reviewer 已完成多日使用，不声明外部客户试点，不声明正式 CI/CD 或全系统 `L4_production_pass`。下一步应该进入 P19：真实人工 reviewer 操作窗口 / feedback capture / P16 regression promotion 的非 deterministic dogfood 证据，或者先补 P18 前端视觉 E2E 与浏览器验收。
+边界：P18 只证明内部 reviewer dogfood window 在自身范围达到 enterprise-grade：P17 case 可分派、可审查、可进入 Workbench dashboard、可追 defect / feedback / regression lifecycle，并且 API / SQL / Workpaper event / artifact trace 可复盘。它不声明真实人工 reviewer 已完成多日使用，不声明外部客户试点，不声明正式 CI/CD 或全系统 `L4_production_pass`。P19 已承接 P18，把只读 dogfood window 升级为可提交 reviewer action、可写入 P16 regression lifecycle 的 action-capture 闭环。
+
+## 4.10 P19 Internal Reviewer Action Capture
+
+P19 closeout（2026-06-30）：`P19_L4_scope_pass_internal_reviewer_action_capture_ready`。
+
+- runtime contract：新增 `InternalReviewerActionCaptureMetadata`、`LiveReviewerActionWindow`、`LiveReviewerAction`、`LiveReviewerFeedbackRecord`、`LiveDefectTriageRecord`、`LiveRegressionPromotion`、`LiveGoldCandidatePromotion`、`LivePilotCaseStatus`、`LiveReviewerWorkbenchApiContract`、`LiveReviewerActionReport` 和 `LiveReviewerGateResult`，全部进入 S1 runtime SQLite 主账本。
+- 真实构建：P19 消费 P16 quality / online-eval lifecycle 和 P18 dogfood window，确认 `2/2` dependency pass；对 P18 的 6 个 pilot case 执行 deterministic reviewer input drill，生成 `6` 条 live reviewer actions、`6` 条 feedback records、`6` 条 defect triage records 和 `6` 条 case status rows。
+- Workbench action bridge：新增 `/api/r53-r60/pilot/actions`、`/api/r53-r60/pilot/cases/{case_id}/actions`、`POST /api/r53-r60/pilot/cases/{case_id}/review-actions` 三个 P19 API contract；Workbench Pilot dogfood window 增加 case 选择、review comment、comment / request repair / approve action 按钮和 P19 case-status / regression-promotion 投影。
+- P16 regression lifecycle：`request_repair`、`return_to_specialist`、`downgrade_claim` 这类 repair action 不只停留在 P19 表，而是实际写入 P16 `failure_events_p16` 和 `regression_case_records_p16`；本轮 deterministic drill 生成 `3` 条 P16 live failure rows 和 `3` 条 P16 live regression rows。
+- gold / adoption boundary：`approve` action 只进入 `candidate_pending_second_review` 的 gold candidate，不直接变成 final gold；`real_multi_day_human_adoption_status=pending_multi_day_human_dogfood`，不把 deterministic input drill 伪装成真实多日人工采用。
+- 验证：P19 deterministic/API tests `5/5` pass；真实构建 gate `11 pass / 0 fail`；生成 `configs/r53_r60/p19_internal_reviewer_action_capture_schema_v0_1.json`、`data/manifests/r53_r60_p19_internal_reviewer_action_capture_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p19_internal_reviewer_action_capture_l4_scope_pass.zh-CN.md`。
+
+边界：P19 只证明内部 reviewer action-capture 在自身范围达到 enterprise-grade：case action 可提交、可审计、可追 Workpaper event、repair feedback 可进入 P16 regression lifecycle、approval 需要二次审查后才能变成 gold。它不声明真实多人多日 dogfood 已经完成，不声明外部客户 pilot，不声明正式 CI/CD / production SLA / 全系统 `L4_production_pass`。下一步应进入 P20：真实 reviewer 多轮 dogfood 会话、feedback acceptance / rejection、缺陷关闭验证和 token/cost ROI 记录；同时补 P18/P19 前端浏览器视觉 E2E。
 
 ## 5. 单 Agent 执行节奏
 

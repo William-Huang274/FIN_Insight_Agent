@@ -1,0 +1,57 @@
+{
+  "action_capture_status": "api_sql_capture_ready",
+  "closeout_level": "L4_scope_pass",
+  "counts": {
+    "api_contract_count": 3,
+    "case_count": 6,
+    "case_status_count": 6,
+    "defect_triage_count": 6,
+    "feedback_count": 6,
+    "gate_count": 11,
+    "gate_fail_count": 0,
+    "gold_candidate_count": 2,
+    "live_action_count": 6,
+    "p16_live_failure_count": 3,
+    "p16_live_regression_count": 3,
+    "regression_promotion_count": 3
+  },
+  "dependency_status": [
+    {
+      "actual_release_decision": "P16_L4_scope_pass_quality_engineering_online_eval_ready",
+      "expected_release_decision": "P16_L4_scope_pass_quality_engineering_online_eval_ready",
+      "name": "P16",
+      "path": "data/manifests/r53_r60_p16_quality_engineering_online_eval_summary_v0_1.json",
+      "status": "pass"
+    },
+    {
+      "actual_release_decision": "P18_L4_scope_pass_internal_reviewer_dogfood_window_ready",
+      "expected_release_decision": "P18_L4_scope_pass_internal_reviewer_dogfood_window_ready",
+      "name": "P18",
+      "path": "data/manifests/r53_r60_p18_internal_reviewer_dogfood_window_summary_v0_1.json",
+      "status": "pass"
+    }
+  ],
+  "full_product_release_status": "not_l4_production_pass",
+  "generated_at": "2026-06-30T07:37:45Z",
+  "outputs": {
+    "closeout_report": "docs/internal/vnext_20260610/r53_r60_p19_internal_reviewer_action_capture_l4_scope_pass.zh-CN.md",
+    "gate_rows": "data/manifests/r53_r60_p19_internal_reviewer_action_capture_gate_rows_v0_1.jsonl",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "schema": "configs/r53_r60/p19_internal_reviewer_action_capture_schema_v0_1.json",
+    "summary": "data/manifests/r53_r60_p19_internal_reviewer_action_capture_summary_v0_1.json"
+  },
+  "policy": {
+    "approval_actions_may_create_gold_candidate_not_final_gold_without_second_review": true,
+    "dashboard_is_projection_not_source_of_truth": true,
+    "deterministic_drill_is_not_real_multi_day_human_adoption": true,
+    "full_product_release_status_must_remain_not_l4_production_pass": true,
+    "p19_consumes_p18_dogfood_window": true,
+    "repair_actions_must_create_p16_failure_and_regression_rows": true,
+    "reviewer_actions_are_append_only": true
+  },
+  "real_multi_day_human_adoption_status": "pending_multi_day_human_dogfood",
+  "release_decision": "P19_L4_scope_pass_internal_reviewer_action_capture_ready",
+  "schema_version": "r53_r60_p19_internal_reviewer_action_capture_v0_1",
+  "slice": "P19 Internal Reviewer Action Capture",
+  "status": "pass"
+}

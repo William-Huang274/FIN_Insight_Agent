@@ -58,6 +58,11 @@ from sec_agent.r53_r60_internal_reviewer_dogfood_window import (
     get_pilot_dashboard_projection as get_r53_r60_pilot_dashboard_projection,
     list_pilot_cases as list_r53_r60_pilot_cases,
 )
+from sec_agent.r53_r60_internal_reviewer_action_capture import (
+    append_live_reviewer_action as append_r53_r60_pilot_reviewer_action,
+    get_pilot_action_ledger as get_r53_r60_pilot_action_ledger,
+    get_pilot_case_action_ledger as get_r53_r60_pilot_case_action_ledger,
+)
 from sec_agent.r53_r60_workbench_frontdoor_drilldown import (
     append_review_action as append_r53_r60_review_action,
     cancel_task as cancel_r53_r60_task,
@@ -446,6 +451,33 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             return get_r53_r60_pilot_case_detail(REPO_ROOT, case_id=case_id)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/pilot/actions")
+    def r53_r60_pilot_action_ledger():
+        return get_r53_r60_pilot_action_ledger(REPO_ROOT)
+
+    @app.get("/api/r53-r60/pilot/cases/{case_id}/actions")
+    def r53_r60_pilot_case_action_ledger(case_id: str):
+        try:
+            return get_r53_r60_pilot_case_action_ledger(REPO_ROOT, case_id=case_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/pilot/cases/{case_id}/review-actions")
+    def r53_r60_pilot_reviewer_action(case_id: str, payload: R53R60ReviewActionRequest):
+        try:
+            return append_r53_r60_pilot_reviewer_action(
+                REPO_ROOT,
+                case_id=case_id,
+                action=payload.action,
+                comment=payload.comment,
+                reviewer_role=payload.reviewer_role,
+                action_source="workbench_api",
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @app.post("/api/profiles/import-env")
     def import_env(request: ImportEnvRequest) -> WorkbenchProfile:

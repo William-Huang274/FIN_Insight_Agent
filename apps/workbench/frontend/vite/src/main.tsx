@@ -348,6 +348,20 @@ type R53R60PilotDashboard = {
   counts: Record<string, number>;
 };
 
+type R53R60PilotActionLedger = {
+  schema_version: string;
+  window: Record<string, unknown>;
+  report: Record<string, unknown>;
+  live_reviewer_actions: Record<string, unknown>[];
+  case_status: Record<string, unknown>[];
+  feedback_records: Record<string, unknown>[];
+  defect_triage_records: Record<string, unknown>[];
+  regression_promotions: Record<string, unknown>[];
+  gold_candidate_promotions: Record<string, unknown>[];
+  gates: Record<string, unknown>[];
+  counts: Record<string, number>;
+};
+
 type NativeCheckpointInspection = {
   schema_version: string;
   checkpoint_path: string;
@@ -415,6 +429,9 @@ function App() {
   const [r53r60Deliverables, setR53R60Deliverables] = useState<R53R60DeliverableProjection | null>(null);
   const [r53r60DashboardProjection, setR53R60DashboardProjection] = useState<R53R60DashboardProjection | null>(null);
   const [r53r60PilotDashboard, setR53R60PilotDashboard] = useState<R53R60PilotDashboard | null>(null);
+  const [r53r60PilotActions, setR53R60PilotActions] = useState<R53R60PilotActionLedger | null>(null);
+  const [r53r60PilotCaseId, setR53R60PilotCaseId] = useState("");
+  const [r53r60PilotReviewComment, setR53R60PilotReviewComment] = useState("Pilot reviewer note");
   const [r53r60ReviewComment, setR53R60ReviewComment] = useState("Workbench reviewer note");
   const [dataBuildSteps, setDataBuildSteps] = useState<DataBuildStep[]>([]);
   const [dataBuildStepId, setDataBuildStepId] = useState("");
@@ -595,15 +612,18 @@ function App() {
 
   async function loadR53R60Workbench() {
     try {
-      const [tasksPayload, gatePayload, pilotPayload] = await Promise.all([
+      const [tasksPayload, gatePayload, pilotPayload, pilotActionsPayload] = await Promise.all([
         requestJson<{ tasks: R53R60TaskProjection[] }>("/api/r53-r60/tasks"),
         requestJson<R53R60ScopeGate>("/api/r53-r60/scope-gate"),
         requestJson<R53R60PilotDashboard>("/api/r53-r60/pilot/dashboard"),
+        requestJson<R53R60PilotActionLedger>("/api/r53-r60/pilot/actions"),
       ]);
       const tasks = tasksPayload.tasks ?? [];
       setR53R60Tasks(tasks);
       setR53R60ScopeGate(gatePayload);
       setR53R60PilotDashboard(pilotPayload);
+      setR53R60PilotActions(pilotActionsPayload);
+      setR53R60PilotCaseId((current) => current || pilotPayload.case_assignments?.[0]?.case_id?.toString() || "");
       const selected = r53r60SelectedTaskId || tasks[0]?.task_id || "";
       if (selected) {
         await loadR53R60Task(selected);
@@ -641,6 +661,26 @@ function App() {
         }),
       });
       await loadR53R60Task(r53r60SelectedTaskId);
+    });
+  }
+
+  async function submitR53R60PilotReviewAction(action: string) {
+    if (!r53r60PilotCaseId) return;
+    await runBusy("r53_r60_pilot_review", async () => {
+      await requestJson(`/api/r53-r60/pilot/cases/${encodeURIComponent(r53r60PilotCaseId)}/review-actions`, {
+        method: "POST",
+        body: JSON.stringify({
+          action,
+          comment: r53r60PilotReviewComment.trim() || "Pilot reviewer note",
+          reviewer_role: "senior_analyst",
+        }),
+      });
+      const [pilotPayload, actionPayload] = await Promise.all([
+        requestJson<R53R60PilotDashboard>("/api/r53-r60/pilot/dashboard"),
+        requestJson<R53R60PilotActionLedger>("/api/r53-r60/pilot/actions"),
+      ]);
+      setR53R60PilotDashboard(pilotPayload);
+      setR53R60PilotActions(actionPayload);
     });
   }
 
@@ -1235,11 +1275,17 @@ function App() {
             deliverables={r53r60Deliverables}
             dashboardProjection={r53r60DashboardProjection}
             pilotDashboard={r53r60PilotDashboard}
+            pilotActions={r53r60PilotActions}
+            pilotCaseId={r53r60PilotCaseId}
+            pilotReviewComment={r53r60PilotReviewComment}
             reviewComment={r53r60ReviewComment}
             busy={busy}
             onSelectTask={loadR53R60Task}
             onReviewCommentChange={setR53R60ReviewComment}
+            onPilotCaseChange={setR53R60PilotCaseId}
+            onPilotReviewCommentChange={setR53R60PilotReviewComment}
             onSubmitReviewAction={submitR53R60ReviewAction}
+            onSubmitPilotReviewAction={submitR53R60PilotReviewAction}
             onRenderDeliverables={renderR53R60Deliverables}
           />
         </section>
@@ -1291,11 +1337,17 @@ function R53R60WorkbenchPanel({
   deliverables,
   dashboardProjection,
   pilotDashboard,
+  pilotActions,
+  pilotCaseId,
+  pilotReviewComment,
   reviewComment,
   busy,
   onSelectTask,
   onReviewCommentChange,
+  onPilotCaseChange,
+  onPilotReviewCommentChange,
   onSubmitReviewAction,
+  onSubmitPilotReviewAction,
   onRenderDeliverables,
 }: {
   tasks: R53R60TaskProjection[];
@@ -1308,11 +1360,17 @@ function R53R60WorkbenchPanel({
   deliverables: R53R60DeliverableProjection | null;
   dashboardProjection: R53R60DashboardProjection | null;
   pilotDashboard: R53R60PilotDashboard | null;
+  pilotActions: R53R60PilotActionLedger | null;
+  pilotCaseId: string;
+  pilotReviewComment: string;
   reviewComment: string;
   busy: string | null;
   onSelectTask: (taskId: string) => void;
   onReviewCommentChange: (value: string) => void;
+  onPilotCaseChange: (caseId: string) => void;
+  onPilotReviewCommentChange: (value: string) => void;
   onSubmitReviewAction: (action: string) => void;
+  onSubmitPilotReviewAction: (action: string) => void;
   onRenderDeliverables: () => void;
 }) {
   if (!tasks.length && !task) {
@@ -1349,7 +1407,16 @@ function R53R60WorkbenchPanel({
         <MetricBox label="Gate rows" value={numberText(gateCounts.gate_count)} detail={`${numberText(gateCounts.gate_fail_count)} failed`} />
       </div>
 
-      <R53R60PilotDogfoodPanel dashboard={pilotDashboard} />
+      <R53R60PilotDogfoodPanel
+        dashboard={pilotDashboard}
+        actionLedger={pilotActions}
+        selectedCaseId={pilotCaseId}
+        reviewComment={pilotReviewComment}
+        busy={busy}
+        onCaseChange={onPilotCaseChange}
+        onReviewCommentChange={onPilotReviewCommentChange}
+        onSubmitReviewAction={onSubmitPilotReviewAction}
+      />
 
       <div className="r53r60-grid">
         <div className="saved-profiles compact-panel">
@@ -1535,7 +1602,25 @@ function R53R60WorkbenchPanel({
   );
 }
 
-function R53R60PilotDogfoodPanel({ dashboard }: { dashboard: R53R60PilotDashboard | null }) {
+function R53R60PilotDogfoodPanel({
+  dashboard,
+  actionLedger,
+  selectedCaseId,
+  reviewComment,
+  busy,
+  onCaseChange,
+  onReviewCommentChange,
+  onSubmitReviewAction,
+}: {
+  dashboard: R53R60PilotDashboard | null;
+  actionLedger: R53R60PilotActionLedger | null;
+  selectedCaseId: string;
+  reviewComment: string;
+  busy: string | null;
+  onCaseChange: (caseId: string) => void;
+  onReviewCommentChange: (value: string) => void;
+  onSubmitReviewAction: (action: string) => void;
+}) {
   if (!dashboard) {
     return (
       <div className="r53r60-card">
@@ -1550,6 +1635,9 @@ function R53R60PilotDogfoodPanel({ dashboard }: { dashboard: R53R60PilotDashboar
   const defects = dashboard.defect_promotions ?? [];
   const gates = dashboard.gates ?? [];
   const apiContracts = dashboard.api_contracts ?? [];
+  const liveActions = actionLedger?.live_reviewer_actions ?? [];
+  const caseStatus = actionLedger?.case_status ?? [];
+  const regressions = actionLedger?.regression_promotions ?? [];
   return (
     <div className="r53r60-card pilot-dogfood-panel">
       <div className="inline-heading">
@@ -1560,6 +1648,36 @@ function R53R60PilotDogfoodPanel({ dashboard }: { dashboard: R53R60PilotDashboar
         <MetricBox label="Dogfood" value={objectValue(dashboard.readiness_report, "dogfood_status")} detail={objectValue(dashboard.readiness_report, "full_product_release_status")} />
         <MetricBox label="Cases" value={numberText(dashboard.counts?.case_assignment_count)} detail={`${numberText(dashboard.counts?.reviewer_session_count)} sessions`} />
         <MetricBox label="Actions" value={numberText(dashboard.counts?.reviewer_action_event_count)} detail={`${numberText(dashboard.counts?.defect_promotion_count)} defects promoted`} />
+        <MetricBox label="Live actions" value={numberText(actionLedger?.counts?.live_action_count)} detail={`${numberText(actionLedger?.counts?.regression_promotion_count)} P16 regressions`} />
+      </div>
+      <div className="pilot-action-editor">
+        <h3>P19 reviewer action capture</h3>
+        <label>
+          <span>Pilot case</span>
+          <select value={selectedCaseId} onChange={(event) => onCaseChange(event.target.value)}>
+            {cases.map((row) => {
+              const caseId = objectValue(row, "case_id");
+              return (
+                <option key={caseId} value={caseId}>
+                  {caseId}
+                </option>
+              );
+            })}
+          </select>
+        </label>
+        <textarea value={reviewComment} onChange={(event) => onReviewCommentChange(event.target.value)} />
+        <div className="form-actions compact-actions">
+          <button type="button" className="secondary" onClick={() => onSubmitReviewAction("comment")} disabled={Boolean(busy) || !selectedCaseId}>
+            追加评论
+          </button>
+          <button type="button" className="secondary" onClick={() => onSubmitReviewAction("request_repair")} disabled={Boolean(busy) || !selectedCaseId}>
+            要求修复
+          </button>
+          <button type="button" onClick={() => onSubmitReviewAction("approve")} disabled={Boolean(busy) || !selectedCaseId}>
+            审查通过
+          </button>
+        </div>
+        <ListBlock title="最近 pilot actions" values={listRecord(liveActions.slice(0, 5).map((row) => `${objectValue(row, "case_id")} / ${objectValue(row, "action_type")}: ${objectValue(row, "comment")}`))} />
       </div>
       <div className="r53r60-grid wide">
         <R53R60Table
@@ -1606,6 +1724,29 @@ function R53R60PilotDogfoodPanel({ dashboard }: { dashboard: R53R60PilotDashboar
             ["defect_type", "Defect"],
             ["promotion_status", "Promotion"],
             ["blocker_status", "Blocker"],
+          ]}
+        />
+      </div>
+      <div className="r53r60-grid wide">
+        <R53R60Table
+          title="P19 case status"
+          rows={caseStatus.slice(0, 8)}
+          embedded
+          columns={[
+            ["case_id", "Case"],
+            ["case_review_status", "Review"],
+            ["live_action_count", "Actions"],
+            ["p16_regression_count", "Regressions"],
+          ]}
+        />
+        <R53R60Table
+          title="P19 regression promotions"
+          rows={regressions.slice(0, 8)}
+          embedded
+          columns={[
+            ["case_id", "Case"],
+            ["p16_regression_case_id", "P16 Regression"],
+            ["promotion_status", "Status"],
           ]}
         />
       </div>

@@ -1,0 +1,31 @@
+{
+  "allowed_while_blocked": [
+    "deterministic_node_tests",
+    "pack_level_tests",
+    "targeted_full_chain_smoke_for_integration_only"
+  ],
+  "blocker_count_open": 3,
+  "blocker_count_total": 5,
+  "closeout_level": "L4_scope_pass_for_blocker_registration_only",
+  "full_chain_broad_eval_allowed": false,
+  "gate_count": 5,
+  "gate_fail_count": 0,
+  "generated_at": "2026-06-30T11:27:25Z",
+  "not_allowed_while_blocked": [
+    "20_50_case_full_chain_quality_claim",
+    "product_release_claim",
+    "automation_from_stale_release_board"
+  ],
+  "outputs": {
+    "blockers": "data/manifests/r53_r60_p21_pre_full_chain_blockers_v0_1.jsonl",
+    "current_release_board": "data/manifests/r53_r60_current_release_board_v0_1.jsonl",
+    "current_status_overlay": "data/manifests/r53_r60_current_status_overlay_v0_1.jsonl",
+    "gate_rows": "data/manifests/r53_r60_p21_pre_full_chain_blocker_gate_rows_v0_1.jsonl",
+    "report": "docs/internal/vnext_20260610/r53_r60_p21_pre_full_chain_blocker_gate.zh-CN.md",
+    "schema": "configs/r53_r60/p21_pre_full_chain_blocker_gate_schema_v0_1.json",
+    "summary": "data/manifests/r53_r60_p21_pre_full_chain_blocker_summary_v0_1.json"
+  },
+  "release_decision": "P21_pre_full_chain_blockers_registered_broad_full_chain_blocked",
+  "schema_version": "r53_r60_p21_pre_full_chain_blocker_gate_v0_1",
+  "status": "pass"
+}

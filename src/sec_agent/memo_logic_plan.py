@@ -55,6 +55,9 @@ def build_memo_logic_plan(
                 "required_claim_ids": _list(dimension.get("claim_ids")),
                 "required_evidence_refs": _list(dimension.get("evidence_refs")),
                 "required_gap_refs": _list((lead_reviews.get(dimension_id) or {}).get("gap_ids")),
+                "thesis_direction": _section_thesis_direction(dimension, lead_reviews.get(dimension_id) or {}),
+                "decision_changing_evidence_refs": _decision_changing_refs(dimension, lead_reviews.get(dimension_id) or {}),
+                "counter_thesis_refs": _counter_thesis_refs(dimension, lead_reviews.get(dimension_id) or {}),
                 "dimension_pack_refs": _list((lead_reviews.get(dimension_id) or {}).get("dimension_portfolio_available_pack_refs")),
                 "dimension_lead_questions": _list((lead_reviews.get(dimension_id) or {}).get("dimension_portfolio_lead_questions")),
                 "writing_instruction": (
@@ -90,6 +93,8 @@ def build_memo_logic_plan(
         },
         "section_order": [section["section_id"] for section in sections],
         "sections": sections,
+        "answer_first_outline": _answer_first_outline(sections=sections, lead_directive=lead_directive),
+        "evidence_to_thesis_bridge": _evidence_to_thesis_bridge(sections),
         "writer_allowed_inputs": ["judgment_state", "memo_logic_plan", "verified_claim_cards", "bounded_gaps", "report_style_config"],
         "writer_forbidden_tools": ["database_query", "live_web_snapshot", "retrieval", "new_fact_generation"],
         "citation_policy": "copy_claim_and_evidence_refs_exactly_no_new_refs",
@@ -120,6 +125,15 @@ def validate_memo_logic_plan(plan: Mapping[str, Any], *, judgment_state: Mapping
             continue
         if not section.get("required_claim_ids") and not section.get("required_gap_refs"):
             errors.append({"type": "section_without_claim_or_gap_trace", "section_id": section.get("section_id")})
+        if section.get("required_claim_ids") and not section.get("decision_changing_evidence_refs"):
+            errors.append({"type": "section_claims_missing_decision_changing_evidence", "section_id": section.get("section_id")})
+    if plan.get("sections"):
+        outline = plan.get("answer_first_outline") if isinstance(plan.get("answer_first_outline"), Mapping) else {}
+        bridge = [row for row in plan.get("evidence_to_thesis_bridge") or [] if isinstance(row, Mapping)]
+        if not outline.get("thesis_statement"):
+            errors.append({"type": "answer_first_outline_missing_thesis_statement"})
+        if not bridge:
+            errors.append({"type": "evidence_to_thesis_bridge_missing"})
     return {
         "schema_version": "finsight_memo_logic_plan_validation_v0_1",
         "status": "fail" if errors else "pass",
@@ -217,3 +231,100 @@ def _compact_repair_execution(value: Mapping[str, Any]) -> dict[str, Any]:
 
 def _digest(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+
+
+def _section_thesis_direction(dimension: Mapping[str, Any], lead_review: Mapping[str, Any]) -> str:
+    for key in ("thesis_direction", "judgment", "summary", "conclusion", "stance"):
+        value = str(dimension.get(key) or lead_review.get(key) or "").strip()
+        if value:
+            return value
+    claim_ids = _list(dimension.get("claim_ids"))
+    gap_ids = _list(lead_review.get("gap_ids"))
+    if claim_ids and gap_ids:
+        return "mixed_support_with_boundary"
+    if claim_ids:
+        return "supporting_evidence_available"
+    if gap_ids:
+        return "boundary_or_counter_thesis_required"
+    return "planning_context"
+
+
+def _decision_changing_refs(dimension: Mapping[str, Any], lead_review: Mapping[str, Any]) -> list[str]:
+    refs = [
+        *_list(dimension.get("decision_changing_evidence_refs")),
+        *_list(dimension.get("evidence_refs")),
+        *_list(lead_review.get("evidence_refs")),
+    ]
+    return _dedupe(refs)[:8]
+
+
+def _counter_thesis_refs(dimension: Mapping[str, Any], lead_review: Mapping[str, Any]) -> list[str]:
+    refs = [
+        *_list(dimension.get("counter_thesis_refs")),
+        *_list(dimension.get("counter_claim_ids")),
+        *_list(dimension.get("unsupported_claim_ids")),
+        *_list(lead_review.get("gap_ids")),
+    ]
+    return _dedupe(refs)[:8]
+
+
+def _answer_first_outline(*, sections: list[dict[str, Any]], lead_directive: Mapping[str, Any]) -> dict[str, Any]:
+    supporting = [section for section in sections if section.get("required_claim_ids")]
+    boundary = [section for section in sections if section.get("required_gap_refs") or section.get("counter_thesis_refs")]
+    decision_refs = _dedupe(
+        ref
+        for section in sections
+        for ref in _list(section.get("decision_changing_evidence_refs"))
+    )[:12]
+    memo_stance = str(lead_directive.get("memo_stance") or "").strip()
+    if memo_stance:
+        thesis_statement = memo_stance
+    elif supporting:
+        titles = ", ".join(str(section.get("title") or section.get("section_id")) for section in supporting[:3])
+        thesis_statement = f"Lead with the judgment supported by {titles}; use gaps only where they change that judgment."
+    elif boundary:
+        thesis_statement = "Lead with the bounded judgment and state which missing evidence prevents stronger thesis promotion."
+    else:
+        thesis_statement = "Lead with the research objective answer before listing evidence or gaps."
+    return {
+        "schema_version": "finsight_memo_answer_first_outline_v0_1",
+        "thesis_statement": thesis_statement,
+        "supporting_dimension_ids": [str(section.get("section_id") or "") for section in supporting],
+        "counter_thesis_dimension_ids": [str(section.get("section_id") or "") for section in boundary],
+        "decision_changing_evidence_refs": decision_refs,
+        "opening_instruction": "state judgment first, then causal bridge, then evidence and boundaries",
+    }
+
+
+def _evidence_to_thesis_bridge(sections: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for section in sections:
+        claim_ids = _list(section.get("required_claim_ids"))
+        evidence_refs = _list(section.get("decision_changing_evidence_refs"))
+        gap_refs = _list(section.get("required_gap_refs"))
+        if not claim_ids and not evidence_refs and not gap_refs:
+            continue
+        rows.append(
+            {
+                "dimension_id": str(section.get("section_id") or ""),
+                "thesis_role": "supporting_thesis" if claim_ids or evidence_refs else "boundary_or_counter_thesis",
+                "claim_ids": claim_ids[:8],
+                "evidence_refs": evidence_refs[:8],
+                "gap_refs": gap_refs[:8],
+                "counter_thesis_refs": _list(section.get("counter_thesis_refs"))[:8],
+                "writer_instruction": "convert these refs into causal investment judgment; do not dump ids or internal labels",
+            }
+        )
+    return rows
+
+
+def _dedupe(values: Any) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for item in values:
+        text = str(item or "").strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        result.append(text)
+    return result

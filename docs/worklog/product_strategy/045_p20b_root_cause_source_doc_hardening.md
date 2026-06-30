@@ -32,10 +32,23 @@ P20 可以保留为真实模型 dogfood + gate repair closeout，但不能再被
    - 运行 P20 扩展回归组合 `python -m pytest tests\test_multi_agent_contracts.py tests\test_multi_agent_real_llm_chain_eval.py tests\test_d_series_fact_selection.py tests\test_multi_agent_memo_llm_repair.py tests\test_multi_agent_activation_plan.py tests\test_metric_product_ontology_reconciliation.py -q` -> `159 passed`。
    - 运行 `python -m compileall -q src\sec_agent scripts\eval_multi_agent tests` -> pass。
 
-## 仍未闭环
+4. 2026-06-30 D02 / D03 根因补齐：
+   - 更新 `src/sec_agent/d_series_fact_selection.py`，在 pre-memo fact selection 层拒绝 `ambiguous_currency_scale_not_memo_display_eligible`，不再让大额裸 `usd` 进入 `approved_facts` 后等待 renderer / writer 避险。
+   - 更新 `src/sec_agent/memo_logic_plan.py`，MemoLogicPlan 新增 `answer_first_outline` 和 `evidence_to_thesis_bridge`，把 thesis / counter-thesis / decision-changing evidence 显式传给 writer。
+   - 更新 `src/sec_agent/memo_llm.py`，writer compact payload 保留 `answer_first_outline` 和 `evidence_to_thesis_bridge`。
+   - 新增 `tests/test_memo_logic_plan.py`，并更新 `tests/test_d_series_fact_selection.py`，覆盖 D02 / D03 根因。
+   - 运行 `python -m pytest tests/test_d_series_fact_selection.py tests/test_memo_logic_plan.py tests/test_r53_r60_pre_full_chain_blocker_gate.py -q` -> `16 passed`。
 
-- `P20b-D02-numeric-display-lineage`：还需要补 renderer / writer 层的 numeric display lineage 回归，证明缺 scale lineage 的金额不会出现在最终 rendered memo。
-- `P20b-D03-memo-logic-plan-quality-root`：还需要继续把 investment-quality 从“事后 gate”前移到 Research Lead / Supervising Analyst / MemoLogicPlan 的输入质量，确保 writer 拿到的是 answer-first、dimension-linked、citation-backed plan。
+## 当前状态
+
+P20b 四个 root-cause hardening item 当前均已关闭：
+
+- `P20b-D01-ambiguous-currency-scale-root`
+- `P20b-D02-numeric-display-lineage`
+- `P20b-D03-memo-logic-plan-quality-root`
+- `P20b-D04-source-doc-status-correction`
+
+这不代表 PRD 级产品验收完成，也不代表可以开始 20-50 个 broad full-chain 质量回归；P21 gate 仍然保持 `full_chain_broad_eval_allowed=false`，因为源文档状态回填、真实 dogfood / 前端 E2E / live runtime-data integration、pack-depth gates 仍未关闭。
 
 ## 后续原则
 

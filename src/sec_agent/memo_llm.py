@@ -1372,6 +1372,22 @@ def _compact_memo_logic_plan(value: Any) -> dict[str, Any]:
         "plan_id": str(value.get("plan_id") or ""),
         "memo_intent": str(value.get("memo_intent") or ""),
         "opening_answer_policy": str(value.get("opening_answer_policy") or ""),
+        "answer_first_outline": dict(value.get("answer_first_outline") or {})
+        if isinstance(value.get("answer_first_outline"), Mapping)
+        else {},
+        "evidence_to_thesis_bridge": [
+            {
+                "dimension_id": str(row.get("dimension_id") or ""),
+                "thesis_role": str(row.get("thesis_role") or ""),
+                "claim_ids": _string_list(row.get("claim_ids"))[:5],
+                "evidence_refs": _string_list(row.get("evidence_refs"))[:5],
+                "gap_refs": _string_list(row.get("gap_refs"))[:5],
+                "counter_thesis_refs": _string_list(row.get("counter_thesis_refs"))[:5],
+                "writer_instruction": _truncate(str(row.get("writer_instruction") or ""), 180),
+            }
+            for row in value.get("evidence_to_thesis_bridge") or []
+            if isinstance(row, Mapping)
+        ][:12],
         "section_order": _string_list(value.get("section_order"))[:12],
         "sections": sections[:12],
         "writer_allowed_inputs": _string_list(value.get("writer_allowed_inputs"))[:8],

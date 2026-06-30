@@ -1,0 +1,5 @@
+{"gate_id": "p21_blocker_register_materialized", "reason": "Five user-confirmed blockers are represented as machine-readable rows.", "status": "pass"}
+{"gate_id": "p21_broad_full_chain_blocked_when_open", "reason": "full_chain_broad_eval_allowed is false while blocker_count_open > 0.", "status": "pass"}
+{"gate_id": "p21_machine_backlog_drift_visible", "reason": "S0 demand/release status counts are recorded as blocker evidence.", "status": "pass"}
+{"gate_id": "p21_no_blocker_marked_complete_without_acceptance", "reason": "Only B01 can close when the current-status overlay covers the required scope; all remaining blockers keep explicit closeout acceptance.", "status": "pass"}
+{"gate_id": "p21_current_status_overlay_covers_required_slices", "reason": "Current status overlay covers S0-S10, P11-P19, P20, P20b, and P21.", "status": "pass"}

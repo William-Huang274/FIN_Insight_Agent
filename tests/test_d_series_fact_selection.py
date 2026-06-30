@@ -324,7 +324,8 @@ def test_pre_memo_fact_selection_keeps_ambiguous_large_usd_amount_out_of_memo_cl
         if row.get("agent_id") == "pre_memo_fact_selector"
     ]
 
-    assert selection["approved_facts"][0]["unit"] == "usd"
+    assert selection["approved_facts"] == []
+    assert selection["rejected_facts"][0]["reject_reason"] == "ambiguous_currency_scale_not_memo_display_eligible"
     assert deterministic == []
 
 

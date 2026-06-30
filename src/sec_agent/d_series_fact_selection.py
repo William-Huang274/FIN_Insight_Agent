@@ -713,8 +713,11 @@ def _revenue_label_is_adjustment_or_cost(normalized_label: str) -> bool:
 
 def _resolved_group_memo_reject_reason(group: Mapping[str, Any], preferred: Mapping[str, Any]) -> str:
     canonical = _text(group.get("canonical_metric_id"))
+    merged = {**dict(group), **dict(preferred)}
+    if not _approved_fact_unit_is_claim_card_safe(merged, canonical_metric=canonical):
+        return "ambiguous_currency_scale_not_memo_display_eligible"
     if canonical == "financial_metric:revenue":
-        if not _revenue_fact_label_is_claim_card_safe({**dict(group), **dict(preferred)}):
+        if not _revenue_fact_label_is_claim_card_safe(merged):
             return "revenue_label_not_memo_eligible"
         numeric_value = _float_or_none(preferred.get("numeric_value") or preferred.get("value"))
         if numeric_value is not None and numeric_value < 0:

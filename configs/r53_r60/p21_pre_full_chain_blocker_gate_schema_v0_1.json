@@ -1,0 +1,19 @@
+{
+  "artifact_role": "pre_full_chain_blocker_gate",
+  "policy": {
+    "broad_full_chain_eval_requires_zero_open_blockers": true,
+    "node_or_pack_level_deterministic_tests_allowed_while_blocked": true,
+    "root_cause_repair_required_for_owned_internal_defects": true,
+    "smoke_or_gate_containment_cannot_close_blocker": true
+  },
+  "required_blocker_fields": [
+    "blocker_id",
+    "status",
+    "blocks",
+    "observed_evidence",
+    "why_blocking",
+    "closeout_acceptance",
+    "next_slice"
+  ],
+  "schema_version": "r53_r60_p21_pre_full_chain_blocker_gate_v0_1"
+}

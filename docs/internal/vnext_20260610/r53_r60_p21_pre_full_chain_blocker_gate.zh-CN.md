@@ -1,6 +1,6 @@
 # R53-R60 P21 Pre-Full-Chain Blocker Gate
 
-- Generated at: `2026-06-30T12:02:07Z`
+- Generated at: `2026-06-30T12:42:33Z`
 - Release decision: `P21_pre_full_chain_blockers_registered_broad_full_chain_blocked`
 - Broad full-chain eval allowed: `False`
 - Open blockers: `2/5`
@@ -51,7 +51,7 @@ This artifact does not claim product readiness. It only proves that the known bl
 - Status: `open_product_acceptance_required`
 - Blocks: `product_release_claim, broad_full_chain_20_50_eval_as_quality_evidence`
 - Next slice: `P23-real-product-dogfood-and-frontend-e2e`
-- Why blocking: Controlled deterministic pilot rows are useful for integration, but they do not prove real reviewer adoption, polished UI, live runtime migration, or production data refresh.
+- Why blocking: Controlled deterministic pilot rows and P23 automated API/frontend E2E checks are useful for integration, but they do not prove real reviewer adoption, accepted/rejected deliverables, defect closure, live runtime migration, or production data refresh.
 - Closeout acceptance:
   - Real reviewer sessions with accepted/rejected deliverables and defect closure.
   - Browser visual E2E for Workbench task, evidence, workpaper, review, deliverable, and admin flows.

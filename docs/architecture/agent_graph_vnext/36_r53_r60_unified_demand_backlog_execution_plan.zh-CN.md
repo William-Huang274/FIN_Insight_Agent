@@ -955,6 +955,41 @@ P22 通过后，P21 blocker summary 已更新为 `blocker_count_open=2/5`。剩�
 - `B04-prd-product-acceptance-not-met`
 - `B05-depth-packs-before-broad-full-chain`
 
+## 4.15 P23 Product Dogfood / Frontend E2E Readiness（2026-06-30）
+
+P23 目标是推进 `B04-prd-product-acceptance-not-met` 中可自动化验证的产品链路部分：确认 Workbench 从 task center、drilldown、review queue、deliverables、dashboard projection 到 pilot dogfood/action ledger 的后端 API 和前端 route/component/build contract 真实可用。P23 不关闭真实人工 dogfood / 产品验收 blocker。
+
+新增/更新 artifacts：
+
+- schema：`configs/r53_r60/p23_product_dogfood_frontend_e2e_schema_v0_1.json`
+- API journey rows：`data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_api_journey_rows_v0_1.jsonl`
+- frontend check rows：`data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_frontend_check_rows_v0_1.jsonl`
+- gate rows：`data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_gate_rows_v0_1.jsonl`
+- summary：`data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_summary_v0_1.json`
+- report：`docs/internal/vnext_20260610/r53_r60_p23_product_dogfood_frontend_e2e_scope_pass_human_pending.zh-CN.md`
+- builder：`scripts/engineering/build_r53_r60_p23_product_dogfood_frontend_e2e.py`
+- tests：`tests/test_r53_r60_product_dogfood_frontend_e2e.py`
+
+真实构建结果：
+
+| Field | Value |
+| --- | --- |
+| `status` | `pass_with_human_acceptance_blocked` |
+| `closeout_level` | `L4_scope_pass_for_automated_product_journey_only` |
+| `release_decision` | `P23_automated_product_journey_pass_human_dogfood_pending` |
+| `dependency_fail_count` | `0/5` |
+| `api_journey_fail_count` | `0/14` |
+| `frontend_fail_count` | `0/13` |
+| `frontend_warn_count` | `0/13` |
+| `gate_fail_count` | `0/7` |
+| `product_acceptance_status` | `blocked_requires_real_human_review` |
+| `b04_status_after_p23` | `open_product_acceptance_required` |
+| `full_chain_broad_eval_allowed` | `false` |
+
+P23 修复过一个真实入口问题：builder 脚本环境只把 `src` 放进 import path，导致 `apps.workbench.backend.app` 在真实运行中不可导入。该问题已在 P23 API journey 中修为显式 repo-root import path contract，并由 `tests/test_r53_r60_product_dogfood_frontend_e2e.py` 覆盖。
+
+P23 自动化 API journey 会写入 `reviewer_role=automation_e2e` 的 action，用于证明 review action write path 可用；该 action 不计入真人 adoption。P21 已回读 P23 summary，并仍保持 `blocker_count_open=2/5`。B04 只有在真实 reviewer 完成 session、对 deliverable 作出 accepted/rejected 判断、缺陷关闭或转 typed gap 后才能关闭。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

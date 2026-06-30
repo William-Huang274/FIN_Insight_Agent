@@ -10,7 +10,7 @@
   "full_chain_broad_eval_allowed": false,
   "gate_count": 5,
   "gate_fail_count": 0,
-  "generated_at": "2026-06-30T12:02:07Z",
+  "generated_at": "2026-06-30T12:42:33Z",
   "not_allowed_while_blocked": [
     "20_50_case_full_chain_quality_claim",
     "product_release_claim",

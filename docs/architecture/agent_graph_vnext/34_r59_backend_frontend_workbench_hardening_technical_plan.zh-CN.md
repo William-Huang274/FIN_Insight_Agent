@@ -752,11 +752,11 @@ ToolPolicyBinding
 | `R59-D06-sse-event-replay` | SSE + event replay | partial | P15、P18 | projection 有；浏览器断线重连 E2E 未过。 |
 | `R59-D07-auth-tenant-rbac` | Auth / tenant / RBAC | partial | P15、S10 | RBAC 正反例合同有；跨租户产品回归未完成。 |
 | `R59-D08-artifact-browser` | Artifact Browser | done | P15 | artifact refs、trace、gate、source refs 已可追溯。 |
-| `R59-D09-evidence-workbench-ui` | Evidence Workbench UI | partial | P15、P16 | API/projection 有；React 视觉 E2E 和用户流未验收。 |
-| `R59-D10-workpaper-builder-ui` | Workpaper Builder UI | partial | P15、P19 | review/action capture 有；真实多日 human workflow 未完成。 |
-| `R59-D11-review-queue-ui` | Review Queue UI | partial | P15、P18、P19 | append-only review actions 有；真实 reviewer adoption pending。 |
-| `R59-D12-deliverable-studio-ui` | Deliverable Studio UI | partial | S7、P15 | contracts 有；renderer / UI 质量仍需视觉 QA。 |
-| `R59-D13-dashboard-watchlist-projection` | Dashboard projection | partial | S7、P15、P18 | projection rows 有；dashboard 产品验收未完成。 |
+| `R59-D09-evidence-workbench-ui` | Evidence Workbench UI | partial | P15、P16、P23 | API/source-route/build contract 已过 P23 自动化 E2E；React 视觉 E2E 和真实用户流仍未验收。 |
+| `R59-D10-workpaper-builder-ui` | Workpaper Builder UI | partial | P15、P19、P23 | review/action API write path 已过 P23；真实多日 human workflow 未完成。 |
+| `R59-D11-review-queue-ui` | Review Queue UI | partial | P15、P18、P19、P23 | append-only review actions 和 automation-marked write path 已验证；真实 reviewer adoption pending。 |
+| `R59-D12-deliverable-studio-ui` | Deliverable Studio UI | partial | S7、P15、P23 | deliverables / dashboard-projection API journey 已过；renderer / UI 质量和人工验收仍需视觉 QA。 |
+| `R59-D13-dashboard-watchlist-projection` | Dashboard projection | partial | S7、P15、P18、P23 | dashboard projection API journey 已过；dashboard 产品验收未完成。 |
 | `R59-D14-admin-ops-console` | Admin/Ops console | partial | P15、P16 | ops rows/projection 有；持续 incident monitoring 未证明。 |
 | `R59-D15-upload-data-room-input` | Upload/Data Room surface | partial | P14、P15 | contract 有；真实 upload -> parser -> evidence UI E2E 未完成。 |
 | `R59-D16-load-and-chaos-gate` | Load/chaos gate | partial | S10、P16 | controlled chaos 有；p95/p99 SLA 和并发压测未完成。 |
@@ -764,6 +764,27 @@ ToolPolicyBinding
 | `R59-D18-reference-change-performance-ledger` | Reference change/performance ledger | done | P16 | 采用后表现 profile 已落；后续参考变更必须复核。 |
 | `R59-D19-sandbox-policy-contract` | Sandbox / approval policy contract | done | S2、P16 | sandbox policy 和 regression 已有。 |
 | `R59-D20-sandbox-ui-and-regression-gate` | Sandbox UI / eval gate | partial | P15、P16 | regression 有；前端可见 allow/block reason 需 browser E2E。 |
+
+## P23 Product Dogfood / Frontend E2E Current Status
+
+状态口径：P23 已证明 Workbench 的自动化产品链路在自身范围达到 `L4_scope_pass_for_automated_product_journey_only`，但不等于 R59 前端产品验收完成，也不等于 PRD-level product pass。
+
+P23 已完成：
+
+- `GET /api/r53-r60/tasks`、task detail、events、artifacts、drilldown、review queue、ops、deliverables、dashboard projection；
+- `GET /api/r53-r60/scope-gate`、pilot dashboard、pilot action ledger；
+- `POST /api/r53-r60/tasks/{task_id}/review-actions` 和 `POST /api/r53-r60/pilot/cases/{case_id}/review-actions`，并强制标记为 `reviewer_role=automation_e2e`；
+- frontend source markers、route/component labels、Pilot Dogfood panel、Review Queue、Deliverable Studio、Dashboard Projection、CSS marker 和 Vite dist build freshness；
+- P21 回读 P23 summary 后仍保持 `B04-prd-product-acceptance-not-met=open_product_acceptance_required`。
+
+P23 未完成、不能冒充完成：
+
+- 真实 reviewer session；
+- accepted/rejected deliverable；
+- reviewer-raised defect closure；
+- 浏览器视觉 E2E / 可读性 / 多视口 UI QA；
+- full runtime migration、data/RAG live refresh、pack-depth 质量验收；
+- 20-50 broad full-chain research-quality claim。
 
 ## 12. Acceptance Gates
 

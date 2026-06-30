@@ -150,6 +150,16 @@ def _load_p22_source_doc_summary(root: Path) -> dict[str, Any]:
     return payload
 
 
+def _load_p23_product_acceptance_summary(root: Path) -> dict[str, Any]:
+    path = root / "data" / "manifests" / "r53_r60_p23_product_dogfood_frontend_e2e_summary_v0_1.json"
+    if not path.exists():
+        return {"exists": False, "path": "data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_summary_v0_1.json"}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["exists"] = True
+    payload["path"] = "data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_summary_v0_1.json"
+    return payload
+
+
 def _summary_current_status(slice_id: str, summary: dict[str, Any]) -> str:
     if not summary.get("exists"):
         return "missing_summary"
@@ -239,6 +249,7 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
     board_observation = _board_observation(root)
     summaries = _load_summaries(manifest_dir)
     p22_summary = _load_p22_source_doc_summary(root)
+    p23_summary = _load_p23_product_acceptance_summary(root)
     p22_source_docs_closed = (
         p22_summary.get("exists")
         and p22_summary.get("status") == "pass"
@@ -353,10 +364,12 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
                     key: summaries.get(key, {})
                     for key in ("P12", "P14", "P15", "P16")
                 },
+                "p23_product_acceptance_summary": p23_summary,
             },
             "why_blocking": (
-                "Controlled deterministic pilot rows are useful for integration, but they do not prove real reviewer "
-                "adoption, polished UI, live runtime migration, or production data refresh."
+                "Controlled deterministic pilot rows and P23 automated API/frontend E2E checks are useful for integration, "
+                "but they do not prove real reviewer adoption, accepted/rejected deliverables, defect closure, live runtime "
+                "migration, or production data refresh."
             ),
             "closeout_acceptance": [
                 "Real reviewer sessions with accepted/rejected deliverables and defect closure.",

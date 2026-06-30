@@ -1,0 +1,37 @@
+{
+  "api_surfaces": [
+    "task_center",
+    "task_state",
+    "task_events",
+    "task_artifacts",
+    "task_drilldown",
+    "review_queue",
+    "ops_projection",
+    "deliverables",
+    "dashboard_projection",
+    "scope_gate",
+    "pilot_dashboard",
+    "pilot_action_ledger",
+    "task_review_action_write",
+    "pilot_review_action_write"
+  ],
+  "closeout_level": "L4_scope_pass_for_automated_product_journey_only",
+  "policy": {
+    "automation_e2e_must_not_count_as_real_human_adoption": true,
+    "b04_remains_open_until_real_reviewer_acceptance": true,
+    "broad_full_chain_quality_eval_stays_blocked": true,
+    "frontend_state_is_projection_only": true,
+    "review_actions_are_append_only": true
+  },
+  "release_scope": "workbench_api_frontend_e2e_readiness_human_acceptance_pending",
+  "schema_version": "r53_r60_p23_product_dogfood_frontend_e2e_v0_1",
+  "tables": [
+    "product_dogfood_frontend_e2e_metadata_p23",
+    "product_acceptance_dependency_checks_p23",
+    "product_acceptance_api_journey_checks_p23",
+    "product_acceptance_frontend_checks_p23",
+    "product_acceptance_human_review_requirements_p23",
+    "product_acceptance_gate_results_p23",
+    "product_acceptance_reports_p23"
+  ]
+}

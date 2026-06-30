@@ -1,0 +1,49 @@
+{
+  "b04_status_after_p23": "open_product_acceptance_required",
+  "closeout_level": "L4_scope_pass_for_automated_product_journey_only",
+  "counts": {
+    "api_journey_check_count": 14,
+    "api_journey_fail_count": 0,
+    "dependency_check_count": 5,
+    "dependency_fail_count": 0,
+    "frontend_check_count": 13,
+    "frontend_fail_count": 0,
+    "frontend_warn_count": 0,
+    "gate_count": 7,
+    "gate_fail_count": 0,
+    "gate_warn_count": 0,
+    "human_requirement_count": 3
+  },
+  "frontend_e2e_status": "api_journey_and_frontend_build_verified_visual_human_review_pending",
+  "full_chain_broad_eval_allowed": false,
+  "generated_at": "2026-06-30T12:42:14Z",
+  "human_adoption_status": "pending_real_human_reviewer_sessions",
+  "known_gaps": [
+    {
+      "gap": "real_human_reviewer_acceptance_not_completed",
+      "reason": "P23 automation proves the Workbench product journey is reachable; it cannot replace a real reviewer accepting or rejecting deliverables."
+    },
+    {
+      "gap": "broad_full_chain_quality_eval_still_blocked",
+      "reason": "B05 data-depth and pack-level gates remain open before 20-50 broad full-chain cases can count as research-quality evidence."
+    }
+  ],
+  "next_actions": [
+    "run real reviewer sessions through Workbench and record accepted/rejected deliverables",
+    "close reviewer-raised defects or promote them to typed gaps",
+    "continue P24/P25 pack-depth gates before broad full-chain quality regression"
+  ],
+  "outputs": {
+    "api_journey_rows": "data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_api_journey_rows_v0_1.jsonl",
+    "frontend_check_rows": "data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_frontend_check_rows_v0_1.jsonl",
+    "gate_rows": "data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_gate_rows_v0_1.jsonl",
+    "report": "docs/internal/vnext_20260610/r53_r60_p23_product_dogfood_frontend_e2e_scope_pass_human_pending.zh-CN.md",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "schema": "configs/r53_r60/p23_product_dogfood_frontend_e2e_schema_v0_1.json",
+    "summary": "data/manifests/r53_r60_p23_product_dogfood_frontend_e2e_summary_v0_1.json"
+  },
+  "product_acceptance_status": "blocked_requires_real_human_review",
+  "release_decision": "P23_automated_product_journey_pass_human_dogfood_pending",
+  "schema_version": "r53_r60_p23_product_dogfood_frontend_e2e_v0_1",
+  "status": "pass_with_human_acceptance_blocked"
+}

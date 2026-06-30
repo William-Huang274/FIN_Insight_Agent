@@ -2,7 +2,7 @@
 
 Date: 2026-06-30
 
-Supersession note: this log records the original P21 build and the later P22 rerun. After P22 source-doc status reconciliation, `B03-r-source-doc-status-reconciliation` is closed. The current P21 summary is `blocker_count_open=2/5`; broad full-chain is still blocked by `B04-prd-product-acceptance-not-met` and `B05-depth-packs-before-broad-full-chain`.
+Supersession note: this log records the original P21 build and later P22/P23 reruns. After P22 source-doc status reconciliation, `B03-r-source-doc-status-reconciliation` is closed. After P23, B04 observed evidence includes automated Workbench API/frontend E2E readiness, but `B04-prd-product-acceptance-not-met` remains open because real reviewer acceptance is still pending. The current P21 summary is `blocker_count_open=2/5`; broad full-chain is still blocked by `B04-prd-product-acceptance-not-met` and `B05-depth-packs-before-broad-full-chain`.
 
 ## Prompt
 
@@ -51,7 +51,7 @@ The real repo build produced:
 - `closeout_level=L4_scope_pass_for_blocker_registration_only`;
 - `full_chain_broad_eval_allowed=false`;
 - original build: `blocker_count_open=3/5`;
-- after P22 rerun: `blocker_count_open=2/5`;
+- after P22 and P23 reruns: `blocker_count_open=2/5`;
 - `not_allowed_while_blocked` includes `20_50_case_full_chain_quality_claim`, `product_release_claim`, and `automation_from_stale_release_board`;
 - S0 board drift is captured with real status counts: demand map `planned=57 / ready_for_implementation=4`, implementation tasks `planned=171 / ready_for_implementation=12`, release board `blocked_by_dependencies=10 / ready_to_start=1`.
 - `B01-machine-readable-backlog-status-parity` is closed by the new current-status overlay, which covers S0-S10, P11-P19, P20, P20b, and P21 without rewriting the historical S0 board.
@@ -66,7 +66,7 @@ The real repo build produced:
 
 ## Remaining Work
 
-P21 closes the machine-readable status overlay blocker (`B01`) and, after the P20b D02/D03 repair, the owned root-cause blocker (`B02`). After P22 rerun it also closes source-doc reconciliation (`B03`). It does not close the remaining two blockers, and it prevents them from being hidden by later broad full-chain runs.
+P21 closes the machine-readable status overlay blocker (`B01`) and, after the P20b D02/D03 repair, the owned root-cause blocker (`B02`). After P22 rerun it also closes source-doc reconciliation (`B03`). After P23 rerun, B04 records automated Workbench product-journey readiness but remains open until real reviewer sessions, accepted/rejected deliverables, and defect closure are recorded. P21 does not close the remaining two blockers, and it prevents them from being hidden by later broad full-chain runs.
 
 Next repair sequence:
 

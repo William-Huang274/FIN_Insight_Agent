@@ -800,6 +800,19 @@ P16 closeout（2026-06-30）：`P16_L4_scope_pass_quality_engineering_online_eva
 
 边界：P16 只证明质量工程和 online-eval runtime contract 在自身范围达到 enterprise-grade：eval registry、E0-E12 gates、trace/cost、failure/gold/regression、QA/defect、sandbox/budget、reference governance、dashboard projection 和 readiness report 都可审计、可回放、可被下一阶段 pilot / frontend / CI 工作依赖。`sustained_online_eval_window_not_run`、`ci_cd_provider_integration_not_enabled` 和 `frontend_eval_dashboard_visual_qa_not_run` 仍保留为显式 gap；P16 不声明长期生产监控窗口、CI/CD provider 集成或最终前端 eval dashboard 已完成。
 
+## 4.8 P17 Controlled Internal Pilot Execution
+
+P17 closeout（2026-06-30）：`P17_L4_scope_pass_controlled_internal_pilot_execution_ready`。
+
+- runtime contract：新增 `ControlledPilotMetadata`、`PilotExecutionBatch`、`PilotCaseExecution`、`PilotCaseStageCheckpoint`、`PilotCaseWorkpaperOutput`、`PilotCaseReviewerAction`、`PilotCaseEvalSnapshot`、`PilotCaseFeedbackRecord`、`PilotCaseDefectRecord`、`PilotCaseCostLatencyRecord`、`PilotCaseArtifactLink`、`PilotCaseReleaseDecision`、`PilotExecutionReadinessReport` 和 `PilotExecutionGateResult`，全部进入 S1 runtime SQLite 主账本。
+- 真实构建：P17 消费 P11-P16 summary release decision，确认 `6/6` dependency pass；把 P11 的 6 个 pilot cases 全部生成 case-level runtime task，而不是只在 P17 主任务下写静态 summary。
+- case execution：6 个 case runtime tasks 全部 `succeeded`；每个 case 通过 intake、retrieval/evidence、workpaper、lead review、deliverable projection、quality eval、feedback closeout 7 个 stage，共 `42` 个 stage checkpoints。
+- review / eval / lifecycle：ReviewerAction `18` 条，覆盖 research lead、QA reviewer、domain reviewer；EvalSnapshot `6` 条全部 pass；FeedbackRecord `6`、DefectRecord `6`、CostLatencyRecord `6`、ArtifactLink `6`、ReleaseDecision `6`。
+- cost / latency：pilot drill 总成本 `2.42` USD，max case latency `210000ms`，所有 case 均 `within_case_budget`；超预算路径继续由 P16 BudgetExceededGate 控制，不允许 silent overrun。
+- 验证：P17 deterministic tests `6/6` pass；真实构建 gate `12 pass / 0 fail`；生成 `configs/r53_r60/p17_controlled_internal_pilot_execution_schema_v0_1.json`、`data/manifests/r53_r60_p17_controlled_internal_pilot_execution_*_v0_1.*` 和 `docs/internal/vnext_20260610/r53_r60_p17_controlled_internal_pilot_execution_l4_scope_pass.zh-CN.md`。
+
+边界：P17 只证明 P11-P16 合同能被一轮受控内部 deterministic pilot execution 消费，并形成可审计、可回放、可评测的 case-level ledger。它关闭了 P11 的 `pilot_execution_status=not_started_requires_real_internal_pilot` 在“受控内部演练”层面的缺口，但仍不声明外部客户生产、长期云端 SLA、正式 CI/CD、polished React 前端或全系统 `L4_production_pass`。下一步 P18 应进入真实 reviewer dogfood window，把 P17 的 deterministic case execution 转成带真实用户反馈、真实 UI 操作和长期 online eval 的 pilot evidence。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

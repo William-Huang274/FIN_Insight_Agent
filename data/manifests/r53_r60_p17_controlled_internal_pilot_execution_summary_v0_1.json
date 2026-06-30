@@ -1,0 +1,119 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "counts": {
+    "artifact_link_count": 6,
+    "batch_count": 1,
+    "case_execution_count": 6,
+    "case_runtime_task_success_count": 6,
+    "cost_latency_count": 6,
+    "defect_count": 6,
+    "eval_snapshot_count": 6,
+    "feedback_count": 6,
+    "gate_count": 12,
+    "gate_fail_count": 0,
+    "max_latency_ms": 210000,
+    "release_decision_count": 6,
+    "reviewer_action_count": 18,
+    "stage_checkpoint_count": 42,
+    "total_cost_usd": 2.42,
+    "workpaper_output_count": 6
+  },
+  "dependency_status": [
+    {
+      "actual_release_decision": "P11_L4_scope_pass_pilot_ready_execution_pending",
+      "expected_release_decision": "P11_L4_scope_pass_pilot_ready_execution_pending",
+      "name": "P11",
+      "path": "data/manifests/r53_r60_p11_production_pilot_readiness_summary_v0_1.json",
+      "status": "pass"
+    },
+    {
+      "actual_release_decision": "P12_L4_scope_pass_runtime_drill_ready",
+      "expected_release_decision": "P12_L4_scope_pass_runtime_drill_ready",
+      "name": "P12",
+      "path": "data/manifests/r53_r60_p12_durable_runtime_hil_resource_router_summary_v0_1.json",
+      "status": "pass"
+    },
+    {
+      "actual_release_decision": "P13_L4_scope_pass_graph_skill_memory_lifecycle_ready",
+      "expected_release_decision": "P13_L4_scope_pass_graph_skill_memory_lifecycle_ready",
+      "name": "P13",
+      "path": "data/manifests/r53_r60_p13_graph_skill_memory_lifecycle_summary_v0_1.json",
+      "status": "pass"
+    },
+    {
+      "actual_release_decision": "P14_L4_scope_pass_data_ingestion_retrieval_control_plane_ready",
+      "expected_release_decision": "P14_L4_scope_pass_data_ingestion_retrieval_control_plane_ready",
+      "name": "P14",
+      "path": "data/manifests/r53_r60_p14_data_ingestion_retrieval_control_plane_summary_v0_1.json",
+      "status": "pass"
+    },
+    {
+      "actual_release_decision": "P15_L4_scope_pass_enterprise_workbench_product_surface_ready",
+      "expected_release_decision": "P15_L4_scope_pass_enterprise_workbench_product_surface_ready",
+      "name": "P15",
+      "path": "data/manifests/r53_r60_p15_enterprise_workbench_product_surface_summary_v0_1.json",
+      "status": "pass"
+    },
+    {
+      "actual_release_decision": "P16_L4_scope_pass_quality_engineering_online_eval_ready",
+      "expected_release_decision": "P16_L4_scope_pass_quality_engineering_online_eval_ready",
+      "name": "P16",
+      "path": "data/manifests/r53_r60_p16_quality_engineering_online_eval_summary_v0_1.json",
+      "status": "pass"
+    }
+  ],
+  "full_product_release_status": "not_l4_production_pass",
+  "generated_at": "2026-06-30T01:46:52Z",
+  "outputs": {
+    "closeout_report": "docs/internal/vnext_20260610/r53_r60_p17_controlled_internal_pilot_execution_l4_scope_pass.zh-CN.md",
+    "gate_rows": "data/manifests/r53_r60_p17_controlled_internal_pilot_execution_gate_rows_v0_1.jsonl",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "schema": "configs/r53_r60/p17_controlled_internal_pilot_execution_schema_v0_1.json",
+    "summary": "data/manifests/r53_r60_p17_controlled_internal_pilot_execution_summary_v0_1.json"
+  },
+  "pilot_execution_status": "controlled_internal_pilot_drill_executed",
+  "policy": {
+    "all_cases_require_eval_snapshot": true,
+    "all_cases_require_reviewer_actions": true,
+    "all_cases_require_stage_checkpoints": true,
+    "all_gaps_must_be_typed": true,
+    "all_p11_cases_require_runtime_task": true,
+    "frontend_and_cloud_production_remain_separate_gates": true,
+    "full_product_release_status_must_remain_not_l4_production_pass": true,
+    "p17_consumes_p11_p16_scope_passes": true
+  },
+  "readiness_report": {
+    "batch_id": "r53_r60_controlled_internal_pilot_batch_v0_1",
+    "closeout_level": "L4_scope_pass",
+    "created_at": "2026-06-30T01:46:51Z",
+    "full_product_release_status": "not_l4_production_pass",
+    "gate_refs_json": "[\"p17_schema_tables_present\", \"p17_p11_p16_dependencies_pass\", \"p17_all_p11_cases_executed\", \"p17_stage_checkpoints_complete\", \"p17_runtime_tasks_succeeded\", \"p17_reviewer_actions_complete\", \"p17_eval_snapshots_pass\", \"p17_feedback_defect_lifecycle_ready\", \"p17_cost_latency_budget_ready\", \"p17_artifact_workpaper_trace_ready\", \"p17_no_untyped_gap_or_hidden_fallback\", \"p17_release_boundary_not_production\"]",
+    "known_gaps_json": "[{\"gap\": \"external_customer_pilot_not_run\", \"reason\": \"P17 is a controlled internal deterministic pilot drill, not a customer production deployment.\"}, {\"gap\": \"sustained_cloud_sla_window_not_run\", \"reason\": \"Latency/cost rows are case-level drill records; multi-day cloud SLO proof remains a later gate.\"}, {\"gap\": \"polished_frontend_browser_e2e_not_run\", \"reason\": \"Workbench surfaces are contract-backed; final browser visual QA remains separate.\"}]",
+    "next_actions_json": "[\"run P18 real internal reviewer dogfood window\", \"promote recurring defects into P16 regression case lifecycle\", \"wire P17 case execution records into Workbench pilot dashboard\"]",
+    "payload_json": "{\"gate_count\": 12, \"gate_fail_count\": 0}",
+    "pilot_execution_status": "controlled_internal_pilot_drill_executed",
+    "release_decision": "P17_L4_scope_pass_controlled_internal_pilot_execution_ready",
+    "report_id": "p17_controlled_internal_pilot_execution_report_v0_1"
+  },
+  "release_decision": "P17_L4_scope_pass_controlled_internal_pilot_execution_ready",
+  "schema_version": "r53_r60_p17_controlled_internal_pilot_execution_v0_1",
+  "slice": "P17 Controlled Internal Pilot Execution",
+  "status": "pass",
+  "task": {
+    "case_id": "p17_controlled_internal_pilot_execution",
+    "created_at": "2026-06-30T01:46:51Z",
+    "current_run_id": "run_63dac341bb665d13",
+    "error_message": "",
+    "metadata_json": "{\"closeout_level\": \"L4_scope_pass\", \"source_slice\": \"P17\"}",
+    "mode": "controlled_internal_pilot_execution_gate",
+    "objective_json": "{\"minimum_evidence\": \"six pilot cases have runtime task, review, eval, defect and cost ledgers\"}",
+    "progress": 100,
+    "query_text": "Execute controlled internal pilot over P11-P16 contracts",
+    "resume_count": 0,
+    "status": "succeeded",
+    "task_id": "p17_scope_task_controlled_internal_pilot_execution",
+    "trace_id": "trace_p17_controlled_internal_pilot_execution",
+    "updated_at": "2026-06-30T01:46:52Z",
+    "user_id": "p17_pilot_program"
+  }
+}

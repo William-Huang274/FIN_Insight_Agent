@@ -1,0 +1,48 @@
+{
+  "closeout_level": "L4_scope_pass",
+  "policy": {
+    "all_cases_require_eval_snapshot": true,
+    "all_cases_require_reviewer_actions": true,
+    "all_cases_require_stage_checkpoints": true,
+    "all_gaps_must_be_typed": true,
+    "all_p11_cases_require_runtime_task": true,
+    "frontend_and_cloud_production_remain_separate_gates": true,
+    "full_product_release_status_must_remain_not_l4_production_pass": true,
+    "p17_consumes_p11_p16_scope_passes": true
+  },
+  "release_scope": "controlled_internal_pilot_execution_drill_not_external_production",
+  "required_case_stages": [
+    "intake",
+    "retrieval_evidence",
+    "workpaper_build",
+    "lead_review",
+    "deliverable_projection",
+    "quality_eval",
+    "feedback_closeout"
+  ],
+  "required_demands": [
+    "P17-D01-pilot-execution-batch-ledger",
+    "P17-D02-case-runtime-task-execution",
+    "P17-D03-stage-checkpoint-and-workpaper-trace",
+    "P17-D04-reviewer-action-and-hil-ledger",
+    "P17-D05-eval-feedback-defect-cost-closeout",
+    "P17-D06-pilot-release-decision-and-boundary-report"
+  ],
+  "schema_version": "r53_r60_p17_controlled_internal_pilot_execution_v0_1",
+  "tables": [
+    "controlled_pilot_metadata_p17",
+    "pilot_execution_batches_p17",
+    "pilot_case_executions_p17",
+    "pilot_case_stage_checkpoints_p17",
+    "pilot_case_workpaper_outputs_p17",
+    "pilot_case_reviewer_actions_p17",
+    "pilot_case_eval_snapshots_p17",
+    "pilot_case_feedback_records_p17",
+    "pilot_case_defect_records_p17",
+    "pilot_case_cost_latency_records_p17",
+    "pilot_case_artifact_links_p17",
+    "pilot_case_release_decisions_p17",
+    "pilot_execution_readiness_reports_p17",
+    "pilot_execution_gate_results_p17"
+  ]
+}

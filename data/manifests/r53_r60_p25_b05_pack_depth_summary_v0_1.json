@@ -1,0 +1,110 @@
+{
+  "b05_status_after_p25": "open_pack_level_depth_required",
+  "blocked_pack_ids": [
+    "product_evidence_pack_all_universe",
+    "secondary_market_capital_feedback_pack",
+    "deliverable_studio_pack",
+    "retrieval_data_refresh_pack"
+  ],
+  "broad_full_chain_quality_eval_allowed": false,
+  "closeout_level": "L4_scope_pass_for_pack_depth_blocker_registration_only",
+  "counts": {
+    "blocked_pack_count": 4,
+    "blocked_requirement_count": 4,
+    "gate_blocked_count": 1,
+    "gate_count": 5,
+    "gate_fail_count": 0,
+    "pack_count": 6,
+    "ready_pack_count": 2,
+    "requirement_count": 6
+  },
+  "generated_at": "2026-06-30T15:37:10Z",
+  "known_gaps": [
+    {
+      "detail": {
+        "gap_by_dimension": {
+          "capital_market_detail_depth": 2,
+          "customer_deployment_depth": 72,
+          "market_liquidity_depth": 0,
+          "product_kpi_depth": 160,
+          "product_spec_depth": 0
+        },
+        "parity_status": "fail",
+        "remaining_gap_count": 203
+      },
+      "gap": "product_evidence_pack_all_universe",
+      "next_actions": [
+        "Continue targeted adapter/parser repair for Product-KPI exact, CustomerDeployment and remaining capital detail gaps.",
+        "Do not treat classified gap audit pass as full-depth pass."
+      ],
+      "reason": "blocked_full_universe_depth_gap"
+    },
+    {
+      "detail": {
+        "boundary": "S8 proves the Secondary Market / Capital Feedback Pack in its own L4 scope. It separates exact filing facts, lagged holder context, delayed market proxies and typed gaps; it does not provide real-time fund flow, OPRA options feed, live borrow cost, credit spread, CDS, or investment advice.",
+        "missing_required_roles": {
+          "credit_funding": 603,
+          "derivatives_market_signal": 603,
+          "valuation_price_in": 603
+        }
+      },
+      "gap": "secondary_market_capital_feedback_pack",
+      "next_actions": [
+        "Backfill or explicitly commercial-bound credit funding, derivatives, valuation and positioning roles.",
+        "Keep delayed/lagged market rows as market context, not company fundamental proof."
+      ],
+      "reason": "blocked_missing_secondary_market_roles"
+    },
+    {
+      "detail": {
+        "boundary": "S7 closes deterministic deliverable studio/dashboard projection only; it does not prove customer-ready editorial quality, RBAC, or production SLA.",
+        "customer_ready_editorial_quality_pass": false
+      },
+      "gap": "deliverable_studio_pack",
+      "next_actions": [
+        "Run real deliverable accept/reject and editorial/readability review before using broad full-chain outputs as product quality proof."
+      ],
+      "reason": "blocked_human_editorial_acceptance_gap"
+    },
+    {
+      "detail": {
+        "known_p14_gaps": "[{\"gap\": \"full_crawler_source_coverage\", \"next_action\": \"Use this contract to onboard real R58 adapters source family by source family.\", \"reason\": \"P14 proves the control plane with representative source modalities; it does not crawl every source or every company.\"}, {\"gap\": \"production_db_index_sla\", \"next_action\": \"P16 and production pilot should record real load and online eval metrics.\", \"reason\": \"Performance profile is deterministic/local, not a cloud p95/p99 SLA.\"}, {\"gap\": \"all_live_graph_nodes_read_p14_strategy\", \"next_action\": \"P15/P16 should expose and monitor strategy consumption.\", \"reason\": \"Context bridge records are ready; production nodes still need migration to read the active strategy pack.\"}]",
+        "policy": {
+          "context_bridge_preserves_exact_refs": true,
+          "failed_fetch_or_parser_creates_typed_gap": true,
+          "index_refresh_requires_lineage_ref": true,
+          "milvus_is_semantic_recall_not_exact_authority": true,
+          "not_full_crawler_or_production_refresh": true,
+          "parser_run_required_before_authority_mapping": true,
+          "raw_source_snapshot_is_not_fact_authority": true,
+          "sql_ledger_is_final_audit_source": true
+        }
+      },
+      "gap": "retrieval_data_refresh_pack",
+      "next_actions": [
+        "Migrate real crawler/parser/index refresh into production-like runs before broad full-chain quality claims."
+      ],
+      "reason": "blocked_live_refresh_or_full_crawler_gap"
+    }
+  ],
+  "outputs": {
+    "gate_rows": "data/manifests/r53_r60_p25_b05_pack_depth_gate_rows_v0_1.jsonl",
+    "pack_rows": "data/manifests/r53_r60_p25_b05_pack_depth_assessment_rows_v0_1.jsonl",
+    "report": "docs/internal/vnext_20260610/r53_r60_p25_b05_pack_depth_gate_blocked.zh-CN.md",
+    "requirement_rows": "data/manifests/r53_r60_p25_b05_pack_depth_requirement_rows_v0_1.jsonl",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "schema": "configs/r53_r60/p25_b05_pack_depth_gate_schema_v0_1.json",
+    "summary": "data/manifests/r53_r60_p25_b05_pack_depth_summary_v0_1.json"
+  },
+  "pack_readiness": {
+    "ai_semis_product_evidence_pack": "ready",
+    "deliverable_studio_pack": "blocked_human_editorial_acceptance_gap",
+    "product_evidence_pack_all_universe": "blocked_full_universe_depth_gap",
+    "research_to_quant_lab_pack": "ready",
+    "retrieval_data_refresh_pack": "blocked_live_refresh_or_full_crawler_gap",
+    "secondary_market_capital_feedback_pack": "blocked_missing_secondary_market_roles"
+  },
+  "release_decision": "P25_b05_pack_depth_blockers_registered_broad_full_chain_blocked",
+  "schema_version": "r53_r60_p25_b05_pack_depth_gate_v0_1",
+  "status": "pass_with_pack_depth_blockers_registered"
+}

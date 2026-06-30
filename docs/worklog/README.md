@@ -3,6 +3,7 @@
 Durable engineering notes for FinSight-Agent.
 
 - `integrated_execution_p_series/`: stage-aware worklogs for the 09/10/11/12 integrated execution phase; new entries use `NNN_<phase_id>_<topic>.md` naming.
+- `product_strategy/051_p25_b05_pack_depth_gate.md`: records P25 / B05 pack-depth blocker registration. It assesses six packs, writes SQL/manifest/report artifacts, wires P21 to read P25 before closing B05, and keeps broad full-chain quality eval blocked while four packs remain open.
 - `product_strategy/050_p24_b04_product_acceptance_gate.md`: records P24 / B04 product acceptance infrastructure. It adds reviewer acceptance protocol rows, human evidence and defect-closeout requirements, real Playwright browser visual E2E screenshots, server API probes, and P21 B04 ingestion while keeping B04 open until real reviewer acceptance exists.
 - `product_strategy/049_p23_product_dogfood_frontend_e2e_readiness.md`: records P23 automated Workbench product journey / frontend E2E readiness. It verifies 14 backend API surfaces, 13 frontend route/component/build checks, automation-marked review action writes, and P21 B04 evidence ingestion while preserving the real-human product acceptance blocker.
 - `product_strategy/048_p22_source_doc_status_reconciliation.md`: records P22 source-doc status reconciliation for R55/R57/R58/R59/R60. It maps 73 source rows to `done=34` / `partial=39`, updates source docs with current-status sections, closes P21 blocker B03, and leaves broad full-chain blocked by B04/B05.

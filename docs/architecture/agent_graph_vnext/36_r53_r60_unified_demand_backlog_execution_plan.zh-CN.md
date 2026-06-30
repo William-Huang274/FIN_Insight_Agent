@@ -1035,6 +1035,57 @@ P24 期间修复/明确的真实入口问题：
 
 P21 已回读 P24 summary，并仍保持 `blocker_count_open=2/5`。B04 只有在 P24 summary 记录 `product_acceptance_status=accepted_by_real_human_review`、`b04_status_after_p24=closed_by_real_human_product_acceptance`、`human_evidence_pending_count=0` 且 `defect_closeout_pending_count=0` 后才能关闭。
 
+## 4.17 P25 / B05 Pack Depth Gate（2026-06-30）
+
+P25 目标是推进 `B05-depth-packs-before-broad-full-chain`：在进入 20-50 case broad full-chain quality eval 之前，把产品证据、二级市场/资本反馈、量化实验、交付物、检索/数据刷新等 pack 的真实深度状态统一落到机器可读 SQL / manifest / report。P25 不补齐缺失数据，不把 classified gap 或 bounded scope 当作数据深度完成，也不关闭 B05。
+
+新增/更新 artifacts：
+
+- schema：`configs/r53_r60/p25_b05_pack_depth_gate_schema_v0_1.json`
+- pack assessment rows：`data/manifests/r53_r60_p25_b05_pack_depth_assessment_rows_v0_1.jsonl`
+- requirement rows：`data/manifests/r53_r60_p25_b05_pack_depth_requirement_rows_v0_1.jsonl`
+- gate rows：`data/manifests/r53_r60_p25_b05_pack_depth_gate_rows_v0_1.jsonl`
+- summary：`data/manifests/r53_r60_p25_b05_pack_depth_summary_v0_1.json`
+- report：`docs/internal/vnext_20260610/r53_r60_p25_b05_pack_depth_gate_blocked.zh-CN.md`
+- runtime SQL mirror：`data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite`
+- builder：`scripts/engineering/build_r53_r60_p25_b05_pack_depth_gate.py`
+- tests：`tests/test_r53_r60_pack_depth_b05_gate.py`
+
+真实构建结果：
+
+| Field | Value |
+| --- | --- |
+| `status` | `pass_with_pack_depth_blockers_registered` |
+| `closeout_level` | `L4_scope_pass_for_pack_depth_blocker_registration_only` |
+| `release_decision` | `P25_b05_pack_depth_blockers_registered_broad_full_chain_blocked` |
+| `pack_count` | `6` |
+| `ready_pack_count` | `2` |
+| `blocked_pack_count` | `4` |
+| `blocked_requirement_count` | `4` |
+| `gate_fail_count` | `0/5` |
+| `gate_blocked_count` | `1/5` |
+| `b05_status_after_p25` | `open_pack_level_depth_required` |
+| `broad_full_chain_quality_eval_allowed` | `false` |
+
+Pack readiness：
+
+| Pack | Status | Reason |
+| --- | --- | --- |
+| `ai_semis_product_evidence_pack` | `ready` | AI/Semis `53/53` strict pass，`gap_queue_count=0` |
+| `research_to_quant_lab_pack` | `ready` | S9 至少 2 个 approved factors、2 个 backtests，且 `no_live_trading=true` |
+| `product_evidence_pack_all_universe` | `blocked` | 603 universe 仍有 `203` 家 full-depth gap；Product-KPI `160`、CustomerDeployment `72`、CapitalMarketDetail `2` |
+| `secondary_market_capital_feedback_pack` | `blocked` | `credit_funding`、`derivatives_market_signal`、`valuation_price_in` 三类 required roles 仍是 `603` 缺口 |
+| `deliverable_studio_pack` | `blocked` | S7 只证明 deterministic render/dashboard；缺真实 `customer_ready_editorial_quality_pass` |
+| `retrieval_data_refresh_pack` | `blocked` | P14 仍是 control plane；`not_full_crawler_or_production_refresh=true`，未证明 full crawler / production refresh |
+
+P25 修复/明确的真实 gating 问题：
+
+1. P21 B05 不能再只靠“P24/P25 规划存在”关闭；现在必须回读 P25 summary，且只有 `b05_status_after_p25=closed_by_p25_pack_depth_ready`、`broad_full_chain_quality_eval_allowed=true`、`blocked_pack_count=0`、`blocked_requirement_count=0`、`gate_fail_count=0` 时才关闭。
+2. `pack-level tests` 和 `targeted_full_chain_smoke_for_integration_only` 仍允许；`20_50_case_full_chain_quality_claim`、`product_release_claim` 和从旧 release board 自动推进仍禁止。
+3. P25 的通过只代表“pack-depth blocker registration”达到自身范围内 L4-grade；它不是数据补齐、不是产品验收、也不是全系统上线信号。
+
+P21 已回读 P25 summary，并仍保持 broad full-chain blocked。B05 的后续真实关闭条件是：所有 required packs 要么达到 ready，要么以公开源/商业源边界形成可接受的 typed requirement closeout，且不能再存在阻断 `product_evidence_pack_all_universe`、`secondary_market_capital_feedback_pack`、`deliverable_studio_pack`、`retrieval_data_refresh_pack` 的 open pack-depth rows。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

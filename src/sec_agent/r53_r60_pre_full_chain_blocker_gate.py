@@ -170,6 +170,16 @@ def _load_p24_product_acceptance_summary(root: Path) -> dict[str, Any]:
     return payload
 
 
+def _load_p25_pack_depth_summary(root: Path) -> dict[str, Any]:
+    path = root / "data" / "manifests" / "r53_r60_p25_b05_pack_depth_summary_v0_1.json"
+    if not path.exists():
+        return {"exists": False, "path": "data/manifests/r53_r60_p25_b05_pack_depth_summary_v0_1.json"}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["exists"] = True
+    payload["path"] = "data/manifests/r53_r60_p25_b05_pack_depth_summary_v0_1.json"
+    return payload
+
+
 def _summary_current_status(slice_id: str, summary: dict[str, Any]) -> str:
     if not summary.get("exists"):
         return "missing_summary"
@@ -261,6 +271,7 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
     p22_summary = _load_p22_source_doc_summary(root)
     p23_summary = _load_p23_product_acceptance_summary(root)
     p24_summary = _load_p24_product_acceptance_summary(root)
+    p25_summary = _load_p25_pack_depth_summary(root)
     p22_source_docs_closed = (
         p22_summary.get("exists")
         and p22_summary.get("status") == "pass"
@@ -274,6 +285,15 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
         and p24_summary.get("b04_status_after_p24") == "closed_by_real_human_product_acceptance"
         and int(p24_counts.get("human_evidence_pending_count", 1)) == 0
         and int(p24_counts.get("defect_closeout_pending_count", 1)) == 0
+    )
+    p25_counts = p25_summary.get("counts") if isinstance(p25_summary.get("counts"), dict) else {}
+    p25_pack_depth_closed = (
+        p25_summary.get("exists")
+        and p25_summary.get("b05_status_after_p25") == "closed_by_p25_pack_depth_ready"
+        and p25_summary.get("broad_full_chain_quality_eval_allowed") is True
+        and int(p25_counts.get("blocked_pack_count", 1)) == 0
+        and int(p25_counts.get("blocked_requirement_count", 1)) == 0
+        and int(p25_counts.get("gate_fail_count", 1)) == 0
     )
     found_summary_count = sum(1 for item in summaries.values() if item.get("exists"))
     current_status_rows = current_status_rows or _current_status_overlay(root, summaries)
@@ -406,13 +426,16 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
             "blocker_id": "B05-depth-packs-before-broad-full-chain",
             "title": "Secondary-market, quant, deliverable, product graph, and data-depth packs must pass pack-level gates first",
             "source_audit_item": "AUD-05",
-            "status": "open_pack_level_depth_required",
+            "status": "closed_by_p25_pack_depth_ready"
+            if p25_pack_depth_closed
+            else "open_pack_level_depth_required",
             "blocks": ["broad_full_chain_20_50_eval_as_research_quality_evidence"],
             "observed_evidence": {
                 "bounded_scope_summaries": {
                     key: summaries.get(key, {})
                     for key in ("S7", "S8", "S9", "P14")
                 },
+                "p25_pack_depth_summary": p25_summary,
                 "baseline_dependency_note": "Historical Product-KPI, CustomerDeployment, ProductGraph, secondary-market, quant, and deliverable gaps remain data-depth dependencies.",
             },
             "why_blocking": (
@@ -424,7 +447,9 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
                 "Only after pack-level gates pass should 20-50 broad full-chain cases count as research-quality regression.",
                 "Any public-source or commercial-data limit must be typed with attempted adapter/parser evidence.",
             ],
-            "next_slice": "P24-P25-pack-depth-before-broad-full-chain",
+            "next_slice": "P25-pack-depth-before-broad-full-chain"
+            if p25_summary.get("exists")
+            else "P24-P25-pack-depth-before-broad-full-chain",
         },
     ]
 

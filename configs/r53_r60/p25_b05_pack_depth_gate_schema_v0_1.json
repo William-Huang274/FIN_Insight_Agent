@@ -1,0 +1,26 @@
+{
+  "closeout_level": "L4_scope_pass_for_pack_depth_blocker_registration_only",
+  "policy": {
+    "blocked_packs_must_report_next_repair": true,
+    "broad_full_chain_requires_all_required_packs_ready": true,
+    "route_or_seed_only_never_counts_as_depth": true,
+    "scope_pass_slices_do_not_equal_depth_pass": true,
+    "typed_gap_required_for_public_or_commercial_boundary": true
+  },
+  "release_scope": "b05_pack_level_depth_readiness_gate",
+  "required_packs": [
+    "product_evidence_pack_all_universe",
+    "ai_semis_product_evidence_pack",
+    "secondary_market_capital_feedback_pack",
+    "research_to_quant_lab_pack",
+    "deliverable_studio_pack",
+    "retrieval_data_refresh_pack"
+  ],
+  "schema_version": "r53_r60_p25_b05_pack_depth_gate_v0_1",
+  "tables": [
+    "pack_depth_assessments_p25",
+    "pack_depth_requirements_p25",
+    "pack_depth_gate_results_p25",
+    "pack_depth_reports_p25"
+  ]
+}

@@ -1,6 +1,6 @@
 # R53-R60 P21 Pre-Full-Chain Blocker Gate
 
-- Generated at: `2026-06-30T15:08:15Z`
+- Generated at: `2026-06-30T15:43:37Z`
 - Release decision: `P21_pre_full_chain_blockers_registered_broad_full_chain_blocked`
 - Broad full-chain eval allowed: `False`
 - Open blockers: `2/5`
@@ -61,7 +61,7 @@ This artifact does not claim product readiness. It only proves that the known bl
 
 - Status: `open_pack_level_depth_required`
 - Blocks: `broad_full_chain_20_50_eval_as_research_quality_evidence`
-- Next slice: `P24-P25-pack-depth-before-broad-full-chain`
+- Next slice: `P25-pack-depth-before-broad-full-chain`
 - Why blocking: Broad full-chain cases mostly test orchestration when upstream packs are shallow; they do not prove report quality if product, market, quant, and deliverable evidence packs are incomplete.
 - Closeout acceptance:
   - Run deterministic node/pack-level gates for ProductEvidencePack, SecondaryMarketPack, QuantLab, Deliverable Studio, and Retrieval/Data refresh.

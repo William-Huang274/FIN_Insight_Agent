@@ -839,6 +839,27 @@ P19 closeout（2026-06-30）：`P19_L4_scope_pass_internal_reviewer_action_captu
 
 边界：P19 只证明内部 reviewer action-capture 在自身范围达到 enterprise-grade：case action 可提交、可审计、可追 Workpaper event、repair feedback 可进入 P16 regression lifecycle、approval 需要二次审查后才能变成 gold。它不声明真实多人多日 dogfood 已经完成，不声明外部客户 pilot，不声明正式 CI/CD / production SLA / 全系统 `L4_production_pass`。下一步应进入 P20：真实 reviewer 多轮 dogfood 会话、feedback acceptance / rejection、缺陷关闭验证和 token/cost ROI 记录；同时补 P18/P19 前端浏览器视觉 E2E。
 
+## 4.11 P20 DeepSeek Real-LLM Dogfood And P20b Root-Cause Hardening
+
+P20 closeout（2026-06-30）：`P20_L4_scope_pass_real_llm_dogfood_gate_repair_ready`，但只限于真实 DeepSeek dogfood 和 gate repair 范围。
+
+- 真实模型验证：完成 DeepSeek health smoke、Research Lead activation 2-case、Specialist real-evidence 2-case、AI infra full-chain 1-case dogfood，并把真实模型暴露的问题写入 P20 worklog。
+- 已完成的 owned repair：token 截断处理、industry/supply-chain source-family gate、memo 内部字段泄漏、peer/context fact contamination、product/capex dimension mixing、investment-quality gate aggregation。
+- 验证：targeted deterministic regression `150 passed`，`python -m compileall -q src\sec_agent scripts\eval_multi_agent tests` pass。
+
+边界修正（用户复核后生效）：P20 的 gate repair 不能被解释为所有上游质量根因都已闭环。以下问题必须进入 P20b，完成前不得以“gate 已拦住”为由继续把同类错误视为已解决：
+
+| P20b item | 根因位置 | 必须修到哪里 | 通过条件 |
+| --- | --- | --- | --- |
+| `P20b-D01-ambiguous-currency-scale-root` | exact/reconciliation 层允许大额裸 `usd` 进入 approved fact | source-scale / ambiguous-scale candidate 在 reconciliation 阶段被排除或带明确 scale lineage 后才可进入 approved fact | `excluded_ambiguous_currency_scale` 单测通过，memo selector gate 只作为回归保险 |
+| `P20b-D02-numeric-display-lineage` | numeric display 可能丢失 source unit / scale / period lineage | renderer / writer 只能显示已解析 scale 的金额，不能把 source-scale 裸值渲染成美元金额 | 真实或 fixture case 证明 `77658.0 usd` 类错误不进入 rendered memo |
+| `P20b-D03-memo-logic-plan-quality-root` | investment-quality gate 能拦坏输出，但 MemoLogicPlan / evidence-to-thesis bridge 仍可能只给模板化、gap-first 计划 | Research Lead / Supervising Analyst 在写作前必须形成 answer-first、dimension-linked、citation-backed MemoLogicPlan | 不只 eval gate pass，还要检查 writer 主输入里已有 thesis/counter-thesis/decision-changing evidence |
+| `P20b-D04-source-doc-status-correction` | checklist / source docs 可能把 diagnostic、smoke、gate containment 写成 complete | 36、R60、checklist、相关 worklog 必须同步 status / boundary / next repair | 不存在“最小合同即通过”“gate 兜底即修复”的 stale wording |
+
+2026-06-30 hardening update：`P20b-D01` 已前移到 `src/sec_agent/reconciliation_ledger.py`，大额裸 `usd` / `$` / `dollar(s)` currency facts 在 reconciliation candidate 阶段标记为 `excluded_ambiguous_currency_scale`，并由 `tests/test_metric_product_ontology_reconciliation.py` 回归覆盖；`P20b-D02` 和 `P20b-D03` 仍保持 open，不得用 P20 gate pass 代替。
+
+P20b closeout 必须执行 root-cause-first 顺序：复现症状 -> 定位最早 faulty artifact -> 修 parser/normalizer/reconciliation/planner/writer 输入 -> 保留 gate 做回归保护 -> 加 deterministic regression -> 更新源文档和 checklist。若根因未找到，只能标记 `blocked_root_cause_unknown` 或 `partial_diagnostic`，不得升级为 `L4_scope_pass`。
+
 ## 5. 单 Agent 执行节奏
 
 每个 slice 采用固定节奏，但最低接口可运行不等于推进条件：

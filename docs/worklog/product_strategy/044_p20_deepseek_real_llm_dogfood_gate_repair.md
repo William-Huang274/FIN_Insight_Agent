@@ -108,3 +108,16 @@
 - 本轮没有把 DeepSeek key 写入仓库。
 - `reports/r53_r60_p20_deepseek_smoke/` 是生成报告目录，默认不提交 Git。
 - 本轮没有重新跑 12-case / 50-case 全量，因为当前目标是验证真实模型暴露的问题和 gate repair，而不是消耗 token 做广覆盖回归。
+
+## 用户复核后的状态修正
+
+用户指出：金额单位错误、investment-quality 坏输出这类问题如果能在项目内部上游定位，就不能只靠新增 gate / fallback 拦住。P20 的原结论需要收窄为“真实模型 dogfood + gate repair 通过”，而不是“所有上游根因已修完”。
+
+已回写到 36 总控和 master checklist 的 P20b 根因修复项：
+
+1. `P20b-D01-ambiguous-currency-scale-root`：把大额裸 `usd` / source-scale 金额从 reconciliation 阶段排除或要求明确 scale lineage，不能等它进入 memo-facing claim 后再拦。
+2. `P20b-D02-numeric-display-lineage`：renderer / writer 不得显示缺 scale lineage 的金额事实。
+3. `P20b-D03-memo-logic-plan-quality-root`：investment-quality gate 只能做回归保护；Research Lead / Supervising Analyst / MemoLogicPlan 必须提前形成 answer-first、dimension-linked、citation-backed 写作输入。
+4. `P20b-D04-source-doc-status-correction`：旧 source docs / checklist 中把 diagnostic、smoke、gate containment 写成 complete 的口径必须改回 partial / root-cause-required / boundary。
+
+本次更正后，P20 不再作为“金额单位和 investment-quality 根因已闭环”的证据；P20b 完成前，只能说明相关错误已经被 gate containment 暂时挡住，并有 named repair item 继续追根因。

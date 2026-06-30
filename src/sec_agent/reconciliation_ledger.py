@@ -186,7 +186,12 @@ def _candidate_from_row(
     has_value = raw_value != ""
     unit = _first_text(row, "unit", "unit_name", "unit_label")
     unit_family = _unit_family(unit=unit, metric=metric)
-    unit_gate_reason = _metric_unit_gate_reason(metric, unit_family=unit_family, unit=unit)
+    unit_gate_reason = _metric_unit_gate_reason(
+        metric,
+        unit_family=unit_family,
+        unit=unit,
+        numeric_value=numeric_value,
+    )
     semantic_gate_reason = _metric_semantic_gate_reason(row, metric)
     eligible = (
         has_value
@@ -505,7 +510,13 @@ def _unit_family(*, unit: str, metric: Mapping[str, Any]) -> str:
     return explicit or ("unknown" if raw else "")
 
 
-def _metric_unit_gate_reason(metric: Mapping[str, Any], *, unit_family: str, unit: str) -> str:
+def _metric_unit_gate_reason(
+    metric: Mapping[str, Any],
+    *,
+    unit_family: str,
+    unit: str,
+    numeric_value: Decimal | None = None,
+) -> str:
     canonical = str(metric.get("canonical_metric_id") or "")
     if not canonical or canonical.startswith("unmapped:"):
         return ""
@@ -522,10 +533,16 @@ def _metric_unit_gate_reason(metric: Mapping[str, Any], *, unit_family: str, uni
         "financial_metric:debt",
         "financial_metric:cash",
         "financial_metric:inventory",
-    } and actual != "currency":
-        return "excluded_metric_unit_mismatch"
+    }:
+        if actual != "currency":
+            return "excluded_metric_unit_mismatch"
+        if raw_unit in {"usd", "$", "dollar", "dollars"} and numeric_value is not None and abs(numeric_value) >= Decimal("1000"):
+            return "excluded_ambiguous_currency_scale"
     if canonical == "financial_metric:gross_margin" and actual != "percent":
         return "excluded_metric_unit_mismatch"
+    if canonical in {"product_kpi:product_revenue", "product_kpi:backlog"}:
+        if raw_unit in {"usd", "$", "dollar", "dollars"} and numeric_value is not None and abs(numeric_value) >= Decimal("1000"):
+            return "excluded_ambiguous_currency_scale"
     if canonical == "product_kpi:backlog" and (actual == "percent" or raw_unit in {"%", "percent", "percentage"}):
         return "excluded_metric_unit_mismatch"
     return ""

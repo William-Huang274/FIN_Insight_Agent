@@ -187,6 +187,34 @@ def test_reconciliation_resolves_source_priority_and_blocks_unit_and_taxonomy_co
     assert ledger["conflict_gap_count"] == 1
 
 
+def test_reconciliation_excludes_large_bare_usd_currency_scale_before_approval() -> None:
+    ontology = build_metric_product_ontology_snapshot({})
+    ledger = build_reconciliation_ledger(
+        {
+            "run_id": "unit-ambiguous-usd-scale",
+            "metric_product_ontology_snapshot": ontology,
+            "runtime_ledger_rows": [
+                {
+                    "evidence_ref": "amzn_capex_ambiguous_unit",
+                    "source_id": "amzn-capex-8k-table",
+                    "ticker": "AMZN",
+                    "metric_family": "capex",
+                    "metric_name": "Property and equipment additions",
+                    "value": "77658.0",
+                    "unit": "usd",
+                    "fiscal_year": 2024,
+                    "fiscal_period": "FY",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                }
+            ],
+        }
+    )
+
+    assert not ledger["reconciliation_groups"]
+    assert ledger["excluded_candidate_count"] == 1
+    assert ledger["excluded_candidates"][0]["candidate_status"] == "excluded_ambiguous_currency_scale"
+
+
 def test_reconciliation_splits_period_role_and_segment_labels_for_sec_table_rows() -> None:
     ontology = build_metric_product_ontology_snapshot({})
     ledger = build_reconciliation_ledger(

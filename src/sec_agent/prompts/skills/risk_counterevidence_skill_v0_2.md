@@ -13,6 +13,7 @@ Use this skill only for the Risk / Counterevidence Analyst. Identify risks, sour
 - `assigned_task_card`: the stress-test lens, relevant evidence requirements, tickers, and source boundaries.
 - `required_claim_slots`: the direct risk or counterevidence slots to fill when bounded evidence supports them.
 - `counterclaim_slots`: the unsupported thesis component and direct-conflict slots to use when support is missing or contradictory.
+- `method_runtime_pack` and `specialist_runtime_rubric`: hard method-to-runtime contract. Use these to decide which thesis component must be stress-tested and which missing evidence is retrievable, bounded, or commercial.
 
 ## Analysis Steps
 
@@ -22,6 +23,7 @@ Use this skill only for the Risk / Counterevidence Analyst. Identify risks, sour
 4. Identify boundary misuse: market, industry, or relationship rows being used as if they prove company-reported facts.
 5. Separate three outputs: supported risk observations, unsupported thesis components, and direct conflicts.
 6. Convert each risk into an investment implication: downside driver, evidence weakness, confirmation needed, or memo constraint.
+7. For AI/Semis, explicitly stress-test capex digestion, export control, customer concentration, margin dilution, supply bottleneck, pricing pressure, product/deployment delay, and missing-but-retrievable evidence when relevant to the thesis path.
 
 ## Evidence Selection Discipline
 
@@ -39,6 +41,7 @@ Use this skill only for the Risk / Counterevidence Analyst. Identify risks, sour
 - `conflicts`: required when bounded rows directly oppose a thesis or another bounded observation, but include only the top 2 direct conflicts.
 - Every supported risk or conflict must cite visible `evidence_refs` from bounded rows.
 - Use `caveats` for partial coverage, weak source family, mixed periods, or context-only evidence.
+- Use `judgment_candidates` when evidence can support writer-ready risk/counter-thesis material. Each candidate must include `judgment`, `required_item_answered`, `supported_by_evidence_refs`, `product_or_financial_bridge`, `business_mechanism`, `counter_read`, `cannot_infer`, and `what_would_change_view`.
 
 ## Failure / Evidence Gap Handling
 
@@ -49,6 +52,7 @@ Use this skill only for the Risk / Counterevidence Analyst. Identify risks, sour
 ## Quality Rubric
 
 - Pass: finds bounded conflicts or gaps, cites known refs, preserves source boundaries, and states how the final memo should be constrained.
+- AI/Semis strong pass: ties each risk to a named thesis component such as AI-server margin quality, GPU supply allocation, hyperscaler capex digestion, export controls, semicap bookings/backlog, or customer concentration.
 - Partial: evidence is thin but gaps are clearly identified and not overstated.
 - Fail: invents risks from memory, resolves conflicts optimistically, ignores unsupported claims, or cites unknown refs.
 

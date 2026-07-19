@@ -1,0 +1,2811 @@
+{
+  "schema_version": "finsight_historical_case_performance_audit_v0_1",
+  "audit_id": "historical_case_performance_audit_20260711_v0_1",
+  "status": "pass",
+  "source_membership_row_count": 122,
+  "unique_case_count": 137,
+  "catalog_source_counts": {
+    "vnext_50": 50,
+    "full_chain_multiturn_17": 17,
+    "real_llm_chain_10": 10,
+    "layered_agent_quality_9": 9,
+    "retrieval_ab_12": 12,
+    "lane_v1": 3,
+    "lane_v2": 3,
+    "lane_v3": 3,
+    "lane_v4": 3,
+    "lane_v5": 3,
+    "lane_v6": 3,
+    "lane_v7": 3,
+    "lane_v8": 3
+  },
+  "readiness_row_count": 45,
+  "readiness_source_summaries": [
+    {
+      "source_id": "p33_multicase_readiness",
+      "status": "blocked_until_multicase_artifact_depth_and_fresh_specialists_pass",
+      "case_count": 15,
+      "artifact_ready_count": 1,
+      "fresh_specialist_pass_count": 0,
+      "runtime_contract_ready_count": 15,
+      "blocking_case_count": 15,
+      "adapter": "nested_readiness"
+    },
+    {
+      "source_id": "p34_multicase_readiness",
+      "status": "blocked_until_multicase_artifact_depth_and_fresh_specialists_pass",
+      "case_count": 15,
+      "artifact_ready_count": 1,
+      "fresh_specialist_pass_count": 0,
+      "runtime_contract_ready_count": 15,
+      "blocking_case_count": 15,
+      "adapter": "nested_readiness"
+    },
+    {
+      "source_id": "p33_multicase_no_paid_audit",
+      "status": "pass",
+      "case_count": 15,
+      "artifact_ready_count": 15,
+      "fresh_specialist_pass_count": 1,
+      "runtime_contract_ready_count": 15,
+      "blocking_case_count": 0,
+      "adapter": "no_paid_multicase_audit"
+    }
+  ],
+  "maturity_counts": {
+    "catalog_only": 98,
+    "exemplar_artifact_backed": 14,
+    "fixture_defined": 24,
+    "fresh_specialist_fixture_proven": 1
+  },
+  "sector_counts": {
+    "auto_mobility": 8,
+    "banks_financials": 21,
+    "consumer_hardware": 1,
+    "cross_sector_or_unclassified": 25,
+    "energy_utilities_industrials": 14,
+    "healthcare_pharma_medtech": 14,
+    "retail_consumer": 17,
+    "semiconductors_ai_infrastructure": 26,
+    "technology_software_services": 11
+  },
+  "artifact_backed_case_count": 15,
+  "exemplar_artifact_backed_case_count": 14,
+  "live_or_case_specific_artifact_case_count": 1,
+  "fresh_specialist_fixture_proven_case_count": 1,
+  "fresh_specialist_proven_case_count": 0,
+  "explicit_full_chain_proven_case_count": 0,
+  "explicit_human_accepted_case_count": 0,
+  "cross_sector_comparable_performance_case_count": 0,
+  "generalization_status": "not_proven",
+  "historical_run_evidence": [
+    {
+      "run_evidence_id": "legacy_sec_cross_industry10_20260520",
+      "runtime_generation": "legacy_sec_benchmark_pipeline",
+      "scope": "10 cross-industry SEC cases",
+      "result_class": "diagnostic_pass",
+      "case_count": 10,
+      "mean_score_pct": 0.88,
+      "artifact_path": "reports/quality/cloud_v2_cross_industry10_pipeline_bge_m3_judgment_plan_qwen9b_5090_post_gates/sec_benchmark_post_gates_summary.json",
+      "worklog_path": "docs/worklog/120_sec_benchmark_v2_cross_industry10_bge_m3_qwen9b_cloud_audit.md",
+      "claim_boundary": "Proves legacy SEC retrieval, exact-value grounding, Judgment Plan and bounded synthesis diagnostics; does not prove current multi-agent DecisionSurface or agentic-research runtime.",
+      "artifact_present": true,
+      "worklog_present": true
+    },
+    {
+      "run_evidence_id": "legacy_sec_combined40_20260521",
+      "runtime_generation": "legacy_sec_benchmark_pipeline",
+      "scope": "40 mixed SEC cases including 4 traps",
+      "result_class": "diagnostic_pass",
+      "case_count": 40,
+      "mean_score_pct": 0.884,
+      "artifact_path": "reports/quality/cloud_v2_combined40_qwen9b_raw_replay_company_alias_fix_post_gates/sec_benchmark_post_gates_summary.json",
+      "worklog_path": "docs/worklog/121_sec_benchmark_v2_combined40_cloud_gates_and_efficiency.md",
+      "claim_boundary": "Valid legacy regression baseline with deterministic gates; not a current full-chain research-agent or client-ready report proof.",
+      "artifact_present": true,
+      "worklog_present": true
+    },
+    {
+      "run_evidence_id": "p20_ai_infra_full_chain_20260630",
+      "runtime_generation": "pre_decision_surface_multi_agent",
+      "scope": "1 AI infrastructure full-chain dogfood case",
+      "result_class": "diagnostic_pass_after_gate_repair",
+      "case_count": 1,
+      "worklog_path": "docs/worklog/product_strategy/044_p20_deepseek_real_llm_dogfood_gate_repair.md",
+      "claim_boundary": "Real-model AI-infrastructure dogfood only; later review corrected diagnostic/smoke completion language and requested a fresh case.",
+      "artifact_present": false,
+      "worklog_present": true
+    },
+    {
+      "run_evidence_id": "p30_ai_semis_two_case_20260701",
+      "runtime_generation": "pre_decision_surface_multi_agent",
+      "scope": "2 AI/Semis full-chain smoke cases",
+      "result_class": "diagnostic_pass_with_material_defects",
+      "case_count": 2,
+      "worklog_path": "docs/worklog/product_strategy/063_p30_ai_semis_full_chain_product_experience_smoke.md",
+      "claim_boundary": "Both CLI gates passed with diagnostic_only=true, while memo correctness, core-ticker evidence, token cost and Workbench projection defects remained.",
+      "artifact_present": false,
+      "worklog_present": true
+    },
+    {
+      "run_evidence_id": "p33_single_gold_paid_attempt_20260705",
+      "runtime_generation": "pre_decision_surface_multi_agent",
+      "scope": "1 scoped paid AI/Semis case",
+      "result_class": "failed_writer_verifier",
+      "case_count": 1,
+      "worklog_path": "docs/worklog/product_strategy/083_p33_single_gold_case_risk_dimension_and_writer_cost_root_cause.md",
+      "claim_boundary": "Research Lead, reflection and specialist quality passed, but writer/verifier failed; no accepted gold workpaper.",
+      "artifact_present": false,
+      "worklog_present": true
+    },
+    {
+      "run_evidence_id": "p36_codex_manual_11_node_dogfood_20260708",
+      "runtime_generation": "manual_codex_as_paid_model",
+      "scope": "11-node manual AI infrastructure dogfood",
+      "result_class": "manual_observation_complete_runtime_fail",
+      "case_count": 1,
+      "worklog_path": "docs/worklog/product_strategy/117_p36_codex_as_paid_model_manual_full_chain_dogfood.md",
+      "claim_boundary": "Manual chain completed, but supervisor supplements are not runtime evidence and the result explicitly fails as runtime capability.",
+      "artifact_present": false,
+      "worklog_present": true
+    }
+  ],
+  "legacy_benchmark_diagnostic_run_count": 2,
+  "current_multi_agent_or_manual_run_evidence_count": 4,
+  "current_runtime_cross_sector_generalization_status": "not_proven",
+  "cases": [
+    {
+      "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "deep_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "AI/Semis",
+      "maturity": "fresh_specialist_fixture_proven",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "case_specific_ai_semis_gold_pack",
+      "fresh_specialist_status": "pass",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "auto_ev_industrial_cycle_rubric_v0_1",
+      "sector": "energy_utilities_industrials",
+      "case_family": "rubric_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Auto/EV/Industrial",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "capital_market_feedback_price_in_rubric_v0_1",
+      "sector": "banks_financials",
+      "case_family": "rubric_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Cross-sector secondary market",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "cloud_saas_ai_monetization_rubric_v0_1",
+      "sector": "technology_software_services",
+      "case_family": "rubric_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Cloud/SaaS",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "energy_utilities_power_demand_rubric_v0_1",
+      "sector": "energy_utilities_industrials",
+      "case_family": "rubric_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Energy/Utilities/Power",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "fin_deep_ai_infra_nvda_dell_capex_023",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "NVDA",
+        "DELL"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_ai_software_msft_googl_meta_adoption_034",
+      "sector": "technology_software_services",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "MSFT",
+        "GOOGL",
+        "META"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_auto_ev_tsla_byd_gm_f_supply_030",
+      "sector": "auto_mobility",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "TSLA",
+        "BYDDF",
+        "GM",
+        "F"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_banks_rate_cycle_jpm_bac_c_wfc_032",
+      "sector": "banks_financials",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "JPM",
+        "BAC",
+        "C",
+        "WFC"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_cloud_capex_msft_amzn_googl_supplier_026",
+      "sector": "technology_software_services",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "MSFT",
+        "AMZN",
+        "GOOGL"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_cyber_crwd_panw_zs_sentinelone_028",
+      "sector": "technology_software_services",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "CRWD",
+        "PANW",
+        "ZS",
+        "S"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_energy_lng_xom_cvx_cop_033",
+      "sector": "energy_utilities_industrials",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "XOM",
+        "CVX",
+        "COP"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_glp1_nvo_lly_pfe_amgn_supply_029",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "NVO",
+        "LLY",
+        "PFE",
+        "AMGN"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_healthcare_lly_pfe_amgn_regulatory_024",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "LLY",
+        "PFE",
+        "AMGN"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_power_data_center_vrt_etn_pwr_vst_027",
+      "sector": "energy_utilities_industrials",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "VRT",
+        "ETN",
+        "PWR",
+        "VST"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_retail_cpg_pg_cl_kmb_pricing_031",
+      "sector": "retail_consumer",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "PG",
+        "CL",
+        "KMB"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_deep_semicap_asml_amat_lrcx_klac_cycle_025",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "L3_deep_research",
+      "focus_tickers": [
+        "ASML",
+        "AMAT",
+        "LRCX",
+        "KLAC"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_aapl_services_product_margin_002",
+      "sector": "retail_consumer",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "AAPL"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_crm_subscription_rpo_margin_010",
+      "sector": "technology_software_services",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "CRM"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_duke_load_capex_009",
+      "sector": "energy_utilities_industrials",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "DUK"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_jpm_nii_cet1_deposit_003",
+      "sector": "banks_financials",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "JPM"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_lly_mounjaro_product_revenue_005",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "LLY"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_msft_ai_capex_cashflow_001",
+      "sector": "technology_software_services",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "MSFT"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_nflx_subscriber_arpu_008",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "NFLX"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_tsla_auto_margin_delivery_007",
+      "sector": "auto_mobility",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "TSLA"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_wmt_inventory_gross_margin_006",
+      "sector": "retail_consumer",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "WMT"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_focus_xom_cash_capex_production_004",
+      "sector": "energy_utilities_industrials",
+      "case_family": "L1_basic_focused",
+      "focus_tickers": [
+        "XOM"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_english_msft_googl_ai_capex_en",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "standard_memo",
+      "focus_tickers": [
+        "MSFT",
+        "GOOGL"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_exact_jpm_credit_provision_zh",
+      "sector": "banks_financials",
+      "case_family": "exact_lookup",
+      "focus_tickers": [
+        "JPM"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_exact_msft_capex_zh",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "exact_lookup",
+      "focus_tickers": [
+        "MSFT"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_focused_amzn_margin_management_zh",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "focused_answer",
+      "focus_tickers": [
+        "AMZN"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_focused_healthcare_lly_rnd_zh",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "focused_answer",
+      "focus_tickers": [
+        "LLY"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_mt_banking_t1",
+      "sector": "banks_financials",
+      "case_family": "multi_turn",
+      "focus_tickers": [
+        "JPM",
+        "BAC"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_mt_banking_t2",
+      "sector": "banks_financials",
+      "case_family": "multi_turn",
+      "focus_tickers": [
+        "BAC"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_mt_semis_scope_t1",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "multi_turn",
+      "focus_tickers": [
+        "NVDA",
+        "AMD"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_mt_semis_scope_t2",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "multi_turn",
+      "focus_tickers": [
+        "NVDA"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_sector_ai_infra_depth_zh",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "NVDA",
+        "DELL"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_sector_banking_depth_zh",
+      "sector": "banks_financials",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "JPM",
+        "C"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_sector_healthcare_depth_zh",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "PFE",
+        "HCA"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_sector_utilities_power_depth_zh",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "NEE",
+        "DUK",
+        "SO"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_standard_jpm_bac_deposit_credit_zh",
+      "sector": "banks_financials",
+      "case_family": "standard_memo",
+      "focus_tickers": [
+        "JPM",
+        "BAC"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_standard_nvda_amd_market_zh",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "standard_memo",
+      "focus_tickers": [
+        "NVDA",
+        "AMD"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_standard_wmt_tgt_consumer_zh",
+      "sector": "retail_consumer",
+      "case_family": "standard_memo",
+      "focus_tickers": [
+        "WMT",
+        "TGT"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_full_standard_xom_cvx_energy_zh",
+      "sector": "energy_utilities_industrials",
+      "case_family": "standard_memo",
+      "focus_tickers": [
+        "XOM",
+        "CVX"
+      ],
+      "source_memberships": [
+        "full_chain_multiturn_17"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_gap_app_download_sensor_tower_038",
+      "sector": "technology_software_services",
+      "case_family": "L4_gap_boundary",
+      "focus_tickers": [
+        "NFLX",
+        "SPOT",
+        "DUOL"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_gap_auto_registration_sp_mobility_037",
+      "sector": "auto_mobility",
+      "case_family": "L4_gap_boundary",
+      "focus_tickers": [
+        "TSLA",
+        "GM",
+        "F"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_gap_channel_inventory_semiconductor_tracker_040",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "L4_gap_boundary",
+      "focus_tickers": [
+        "NVDA",
+        "AMD",
+        "MU"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_gap_consensus_revision_commercial_039",
+      "sector": "banks_financials",
+      "case_family": "L4_gap_boundary",
+      "focus_tickers": [
+        "MSFT",
+        "NVDA",
+        "JPM"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_gap_market_share_idc_counterpoint_042",
+      "sector": "retail_consumer",
+      "case_family": "L4_gap_boundary",
+      "focus_tickers": [
+        "AAPL",
+        "SSNLF",
+        "HPQ",
+        "DELL"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_gap_pharma_prescription_iqvia_035",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "L4_gap_boundary",
+      "focus_tickers": [
+        "LLY",
+        "NVO"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_gap_restaurant_traffic_card_panel_041",
+      "sector": "retail_consumer",
+      "case_family": "L4_gap_boundary",
+      "focus_tickers": [
+        "MCD",
+        "SBUX",
+        "CMG"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_gap_retail_pos_scanner_circana_036",
+      "sector": "retail_consumer",
+      "case_family": "L4_gap_boundary",
+      "focus_tickers": [
+        "PG",
+        "WMT",
+        "COST"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_load_cancel_resume_mixed_049",
+      "sector": "banks_financials",
+      "case_family": "L6_backend_runtime_stress",
+      "focus_tickers": [
+        "AAPL",
+        "MSFT",
+        "NVDA",
+        "LLY"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_load_deep_research_6x_048",
+      "sector": "banks_financials",
+      "case_family": "L6_backend_runtime_stress",
+      "focus_tickers": [
+        "NVDA",
+        "LLY",
+        "JPM",
+        "XOM"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_load_light_focused_20x_047",
+      "sector": "banks_financials",
+      "case_family": "L6_backend_runtime_stress",
+      "focus_tickers": [
+        "MSFT",
+        "JPM",
+        "WMT",
+        "XOM"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_load_replay_trace_eval_store_050",
+      "sector": "banks_financials",
+      "case_family": "L6_backend_runtime_stress",
+      "focus_tickers": [
+        "MSFT",
+        "NVDA",
+        "JPM",
+        "LLY"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_nonus_novo_lly_glp1_regulatory_046",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "L5_non_us_supply_chain",
+      "focus_tickers": [
+        "NVO",
+        "LLY"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_nonus_samsung_hynix_mu_memory_cycle_044",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "L5_non_us_supply_chain",
+      "focus_tickers": [
+        "SSNLF",
+        "HXSCF",
+        "MU"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_nonus_toyota_byd_tsla_ev_045",
+      "sector": "auto_mobility",
+      "case_family": "L5_non_us_supply_chain",
+      "focus_tickers": [
+        "TM",
+        "BYDDF",
+        "TSLA"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_nonus_tsm_asml_nvda_supply_043",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "L5_non_us_supply_chain",
+      "focus_tickers": [
+        "TSM",
+        "ASML",
+        "NVDA"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_aapl_msft_product_mix_011",
+      "sector": "consumer_hardware",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "AAPL",
+        "MSFT"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_abt_mdt_dhr_medtech_019",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "ABT",
+        "MDT",
+        "DHR"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_cost_wmt_costco_membership_margin_022",
+      "sector": "retail_consumer",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "COST",
+        "WMT"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_crm_now_ddog_saas_usage_017",
+      "sector": "technology_software_services",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "CRM",
+        "NOW",
+        "DDOG"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_hd_low_housing_demand_020",
+      "sector": "retail_consumer",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "HD",
+        "LOW"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_jpm_bac_wfc_bank_quality_012",
+      "sector": "banks_financials",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "JPM",
+        "BAC",
+        "WFC"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_nee_duk_so_utility_capex_018",
+      "sector": "energy_utilities_industrials",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "NEE",
+        "DUK",
+        "SO"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_nflx_dis_roku_streaming_016",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "NFLX",
+        "DIS",
+        "ROKU"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_tsla_gm_f_ev_profit_014",
+      "sector": "auto_mobility",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "TSLA",
+        "GM",
+        "F"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_v_ma_adyen_payment_volume_021",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "V",
+        "MA",
+        "ADYEY"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_wmt_tgt_cost_inventory_013",
+      "sector": "retail_consumer",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "WMT",
+        "TGT",
+        "COST"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "fin_standard_xom_cvx_capex_cash_return_015",
+      "sector": "energy_utilities_industrials",
+      "case_family": "L2_standard_memo",
+      "focus_tickers": [
+        "XOM",
+        "CVX"
+      ],
+      "source_memberships": [
+        "vnext_50"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "financials_rate_credit_capital_rubric_v0_1",
+      "sector": "banks_financials",
+      "case_family": "rubric_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Financials",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "healthcare_regulated_product_adoption_rubric_v0_1",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "rubric_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Healthcare/Medtech/Pharma",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "ma_ai_capex_supply_chain_deep",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "NVDA",
+        "AMD"
+      ],
+      "source_memberships": [
+        "layered_agent_quality_9"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_amzn_margin_focused",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "focused_answer",
+      "focus_tickers": [
+        "AMZN"
+      ],
+      "source_memberships": [
+        "layered_agent_quality_9"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_banking_deposit_credit_standard",
+      "sector": "banks_financials",
+      "case_family": "standard_memo",
+      "focus_tickers": [
+        "JPM",
+        "BAC"
+      ],
+      "source_memberships": [
+        "layered_agent_quality_9"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_energy_capex_commodity_standard",
+      "sector": "energy_utilities_industrials",
+      "case_family": "standard_memo",
+      "focus_tickers": [
+        "XOM",
+        "CVX"
+      ],
+      "source_memberships": [
+        "layered_agent_quality_9"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_healthcare_product_cycle_focused",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "focused_answer",
+      "focus_tickers": [
+        "LLY"
+      ],
+      "source_memberships": [
+        "layered_agent_quality_9"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_msft_capex_lookup",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "exact_lookup",
+      "focus_tickers": [
+        "MSFT"
+      ],
+      "source_memberships": [
+        "layered_agent_quality_9"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_nvda_amd_market_standard",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "standard_memo",
+      "focus_tickers": [
+        "NVDA",
+        "AMD"
+      ],
+      "source_memberships": [
+        "layered_agent_quality_9"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_multiturn_scope_revision_t1",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "multi_turn",
+      "focus_tickers": [
+        "NVDA",
+        "AMD"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_multiturn_scope_revision_t2",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "multi_turn",
+      "focus_tickers": [
+        "NVDA"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_probe_deep_ai_capex_relationship",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "detailed_probe",
+      "focus_tickers": [
+        "NVDA",
+        "AMD"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_probe_focused_management_commentary",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "detailed_probe",
+      "focus_tickers": [
+        "AMZN"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_sector_ai_infra_full_chain_real_retrieval",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "NVDA",
+        "DELL"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_sector_banking_full_chain_real_retrieval",
+      "sector": "banks_financials",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "JPM",
+        "C"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_sector_energy_utilities_full_chain_real_retrieval",
+      "sector": "energy_utilities_industrials",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "OXY",
+        "SRE"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_sector_healthcare_full_chain_real_retrieval",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "PFE",
+        "HCA"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_single_exact_metric_lookup",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "single_turn",
+      "focus_tickers": [
+        "MSFT"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_real_single_standard_peer_market_memo",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "single_turn",
+      "focus_tickers": [
+        "NVDA",
+        "AMD"
+      ],
+      "source_memberships": [
+        "real_llm_chain_10"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_run_coverage_inspect",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "artifact_inspect",
+      "focus_tickers": [],
+      "source_memberships": [
+        "layered_agent_quality_9"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "ma_utilities_power_load_deep",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "sector_depth",
+      "focus_tickers": [
+        "NEE",
+        "DUK",
+        "SO"
+      ],
+      "source_memberships": [
+        "layered_agent_quality_9"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "negative_available_evidence_not_used_v0_1",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "negative_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Evidence projection and memo writer consumption",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "negative_commercial_tracker_boundary_v0_1",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "negative_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Commercial tracker boundary",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "negative_demand_pool_not_supplier_allocation_v0_1",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "negative_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "AI/Semis demand read-through",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "negative_parser_gap_not_public_source_absent_v0_1",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "negative_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Disclosure parser and source route",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "negative_relationship_graph_not_financial_fact_v0_1",
+      "sector": "banks_financials",
+      "case_family": "negative_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Product relationship graph",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "negative_sku_revenue_missing_not_product_failure_v0_1",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "negative_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "AI/Semis product analysis",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "retail_consumer_traffic_margin_rubric_v0_1",
+      "sector": "retail_consumer",
+      "case_family": "rubric_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Retail/Consumer",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "retrieval_exact_jpm_credit_provision_2026",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "exact_lookup",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_exact_msft_capex_2026",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "exact_lookup",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_paraphrase_ai_buildout_without_ticker_names",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "paraphrase",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_paraphrase_credit_cycle_without_bank_jargon",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "paraphrase",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_relationship_cloud_capex_to_ai_suppliers",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "relationship",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_relationship_power_demand_to_utilities",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "relationship",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_sector_ai_infra_demand_chain",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "sector_depth",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_sector_banking_rates_credit",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "sector_depth",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_sector_consumer_demand_margin",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "sector_depth",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_sector_energy_cash_flow_capex",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "sector_depth",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_sector_healthcare_product_cycle",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "sector_depth",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "retrieval_sector_utilities_power_load_regulated",
+      "sector": "cross_sector_or_unclassified",
+      "case_family": "sector_depth",
+      "focus_tickers": [],
+      "source_memberships": [
+        "retrieval_ab_12"
+      ],
+      "maturity": "catalog_only",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "semicap_cycle_rubric_v0_1",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "rubric_gold_case",
+      "focus_tickers": [],
+      "source_memberships": [
+        "p33_multicase_readiness",
+        "p34_multicase_readiness",
+        "p33_multicase_no_paid_audit"
+      ],
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "vertical": "Semiconductor equipment",
+      "maturity": "exemplar_artifact_backed",
+      "runtime_contract_status": "pass",
+      "artifact_depth_status": "pass",
+      "artifact_basis": "gold_exemplar_backed_not_live_runtime",
+      "fresh_specialist_status": "not_required_or_not_proven",
+      "matrix_audit_status": "pass",
+      "blocking_reasons": [],
+      "next_repair": []
+    },
+    {
+      "case_id": "v1_ai_infra_demand_transmission_nvda_dell_hyperscaler_001",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "V1_semiconductors_ai_infrastructure",
+      "focus_tickers": [
+        "NVDA",
+        "DELL"
+      ],
+      "source_memberships": [
+        "lane_v1"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v1_ai_server_channel_proxy_boundary_dell_hpe_smci_anet_003",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "V1_semiconductors_ai_infrastructure",
+      "focus_tickers": [
+        "DELL",
+        "HPE"
+      ],
+      "source_memberships": [
+        "lane_v1"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v1_semicap_nonus_local_filing_asml_tsm_amat_lrcx_002",
+      "sector": "semiconductors_ai_infrastructure",
+      "case_family": "V1_semiconductors_ai_infrastructure",
+      "focus_tickers": [
+        "ASML",
+        "TSM"
+      ],
+      "source_memberships": [
+        "lane_v1"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v2_consumer_hardware_devices_external_source_repair_boundary_002",
+      "sector": "retail_consumer",
+      "case_family": "V2_consumer_hardware_devices",
+      "focus_tickers": [
+        "GOOGL",
+        "DELL",
+        "HPQ"
+      ],
+      "source_memberships": [
+        "lane_v2"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v2_consumer_hardware_devices_financial_product_bridge_001",
+      "sector": "retail_consumer",
+      "case_family": "V2_consumer_hardware_devices",
+      "focus_tickers": [
+        "AAPL",
+        "MSFT"
+      ],
+      "source_memberships": [
+        "lane_v2"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v2_consumer_hardware_devices_proxy_no_promotion_003",
+      "sector": "retail_consumer",
+      "case_family": "V2_consumer_hardware_devices",
+      "focus_tickers": [
+        "SONY"
+      ],
+      "source_memberships": [
+        "lane_v2"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v3_software_cloud_developer_products_external_source_repair_boundary_002",
+      "sector": "technology_software_services",
+      "case_family": "V3_software_cloud_developer_products",
+      "focus_tickers": [
+        "GOOGL",
+        "CRM",
+        "NOW"
+      ],
+      "source_memberships": [
+        "lane_v3"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v3_software_cloud_developer_products_financial_product_bridge_001",
+      "sector": "technology_software_services",
+      "case_family": "V3_software_cloud_developer_products",
+      "focus_tickers": [
+        "MSFT",
+        "AMZN"
+      ],
+      "source_memberships": [
+        "lane_v3"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v3_software_cloud_developer_products_proxy_no_promotion_003",
+      "sector": "technology_software_services",
+      "case_family": "V3_software_cloud_developer_products",
+      "focus_tickers": [
+        "ADBE",
+        "SNOW",
+        "DDOG"
+      ],
+      "source_memberships": [
+        "lane_v3"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v4_pharma_biotech_medtech_external_source_repair_boundary_002",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "V4_pharma_biotech_medtech",
+      "focus_tickers": [
+        "PFE",
+        "AMGN",
+        "MRK"
+      ],
+      "source_memberships": [
+        "lane_v4"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v4_pharma_biotech_medtech_financial_product_bridge_001",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "V4_pharma_biotech_medtech",
+      "focus_tickers": [
+        "LLY",
+        "NVO"
+      ],
+      "source_memberships": [
+        "lane_v4"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v4_pharma_biotech_medtech_proxy_no_promotion_003",
+      "sector": "healthcare_pharma_medtech",
+      "case_family": "V4_pharma_biotech_medtech",
+      "focus_tickers": [
+        "JNJ",
+        "ISRG",
+        "BSX"
+      ],
+      "source_memberships": [
+        "lane_v4"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v5_auto_mobility_transport_external_source_repair_boundary_002",
+      "sector": "auto_mobility",
+      "case_family": "V5_auto_mobility_transport",
+      "focus_tickers": [
+        "F",
+        "RIVN",
+        "LCID"
+      ],
+      "source_memberships": [
+        "lane_v5"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v5_auto_mobility_transport_financial_product_bridge_001",
+      "sector": "auto_mobility",
+      "case_family": "V5_auto_mobility_transport",
+      "focus_tickers": [
+        "TSLA",
+        "GM"
+      ],
+      "source_memberships": [
+        "lane_v5"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v5_auto_mobility_transport_proxy_no_promotion_003",
+      "sector": "auto_mobility",
+      "case_family": "V5_auto_mobility_transport",
+      "focus_tickers": [
+        "TM",
+        "UBER"
+      ],
+      "source_memberships": [
+        "lane_v5"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v6_banks_financials_capital_markets_external_source_repair_boundary_002",
+      "sector": "banks_financials",
+      "case_family": "V6_banks_financials_capital_markets",
+      "focus_tickers": [
+        "WFC",
+        "C",
+        "GS"
+      ],
+      "source_memberships": [
+        "lane_v6"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v6_banks_financials_capital_markets_financial_product_bridge_001",
+      "sector": "banks_financials",
+      "case_family": "V6_banks_financials_capital_markets",
+      "focus_tickers": [
+        "JPM",
+        "BAC"
+      ],
+      "source_memberships": [
+        "lane_v6"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v6_banks_financials_capital_markets_proxy_no_promotion_003",
+      "sector": "banks_financials",
+      "case_family": "V6_banks_financials_capital_markets",
+      "focus_tickers": [
+        "MS",
+        "BLK",
+        "SCHW"
+      ],
+      "source_memberships": [
+        "lane_v6"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v7_energy_utilities_industrials_materials_external_source_repair_boundary_002",
+      "sector": "energy_utilities_industrials",
+      "case_family": "V7_energy_utilities_industrials_materials",
+      "focus_tickers": [
+        "COP",
+        "SLB",
+        "NEE"
+      ],
+      "source_memberships": [
+        "lane_v7"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v7_energy_utilities_industrials_materials_financial_product_bridge_001",
+      "sector": "energy_utilities_industrials",
+      "case_family": "V7_energy_utilities_industrials_materials",
+      "focus_tickers": [
+        "XOM",
+        "CVX"
+      ],
+      "source_memberships": [
+        "lane_v7"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v7_energy_utilities_industrials_materials_proxy_no_promotion_003",
+      "sector": "energy_utilities_industrials",
+      "case_family": "V7_energy_utilities_industrials_materials",
+      "focus_tickers": [
+        "DUK",
+        "SO",
+        "XEL"
+      ],
+      "source_memberships": [
+        "lane_v7"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v8_retail_cpg_restaurants_travel_external_source_repair_boundary_002",
+      "sector": "retail_consumer",
+      "case_family": "V8_retail_cpg_restaurants_travel",
+      "focus_tickers": [
+        "TGT",
+        "HD",
+        "LOW"
+      ],
+      "source_memberships": [
+        "lane_v8"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v8_retail_cpg_restaurants_travel_financial_product_bridge_001",
+      "sector": "retail_consumer",
+      "case_family": "V8_retail_cpg_restaurants_travel",
+      "focus_tickers": [
+        "WMT",
+        "COST"
+      ],
+      "source_memberships": [
+        "lane_v8"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    },
+    {
+      "case_id": "v8_retail_cpg_restaurants_travel_proxy_no_promotion_003",
+      "sector": "retail_consumer",
+      "case_family": "V8_retail_cpg_restaurants_travel",
+      "focus_tickers": [
+        "PG",
+        "KO",
+        "PEP"
+      ],
+      "source_memberships": [
+        "lane_v8"
+      ],
+      "maturity": "fixture_defined",
+      "runtime_contract_status": "not_explicitly_proven",
+      "artifact_depth_status": "not_explicitly_proven",
+      "fresh_specialist_status": "not_explicitly_proven",
+      "full_chain_status": "not_explicitly_proven",
+      "human_acceptance_status": "not_explicitly_proven",
+      "blocking_reasons": []
+    }
+  ],
+  "errors": [],
+  "boundaries": {
+    "catalog_count_is_not_performance": true,
+    "fixture_definition_is_not_runtime_consumption": true,
+    "artifact_file_presence_is_not_full_chain_acceptance": true,
+    "paid_model_or_full_chain_executed": false,
+    "legacy_sec_benchmark_is_not_current_agentic_runtime": true,
+    "diagnostic_gate_pass_is_not_client_ready_acceptance": true
+  }
+}

@@ -152,3 +152,24 @@ def test_build_s2_gate_outputs_l4_scope_pass(tmp_path):
     assert (tmp_path / summary["outputs"]["gate_rows"]).exists()
     assert (tmp_path / summary["outputs"]["summary"]).exists()
     assert (tmp_path / summary["outputs"]["closeout_report"]).exists()
+
+
+def test_build_s2_gate_is_not_polluted_by_historical_tool_rows(tmp_path):
+    db_path = tmp_path / "data" / "workbench_private" / "research_data" / "r53_r60_runtime_task_spine_v0_1.sqlite"
+    runtime = FinSightResearchRuntimeFacade(db_path)
+    historical_task = runtime.create_task("Historical S2-adjacent task", task_id="historical_tool_task")
+    runtime.store.transition_task(historical_task["task"]["task_id"], "running", actor="research_lead", progress=10)
+    gateway = FinSightToolGateway(runtime, workspace_root=tmp_path, artifact_root=tmp_path / "data" / "workbench_private")
+    gateway.invoke_tool(
+        historical_task["task"]["task_id"],
+        actor_id="research_lead",
+        node="lead_review_checkpoint",
+        tool_id="database_query",
+        arguments={"query": "select 1"},
+    )
+
+    summary = build_s2_gate(tmp_path)
+
+    assert summary["release_decision"] == "S2_L4_scope_pass"
+    assert summary["counts"]["gate_fail_count"] == 0
+    assert summary["counts"]["tool_invocations"] > 9

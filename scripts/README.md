@@ -41,3 +41,26 @@
 - 一次性实验脚本不要继续加回主线脚本目录；如果需要保留背景，写进工作日志。
 - 用户会复制的命令必须使用当前保留脚本，不能引用已删除的历史脚本。
 - 私有数据、运行产物、索引、模型缓存和 API key 不进入 `scripts/`。
+
+## 仓库结构与复杂度门控
+
+代码、脚本、文档、配置、测试、archive 和数据资产的静态引用图由以下命令维护：
+
+```powershell
+python scripts/engineering/build_repository_architecture_inventory.py
+python scripts/engineering/check_repository_architecture_guard.py
+python scripts/engineering/build_engineering_handoff_baseline.py
+pytest -q tests/test_repository_architecture_inventory.py
+pytest -q tests/test_engineering_handoff.py
+```
+
+完整图写入 `data/manifests/repository_architecture_inventory_v0_1.json`，可读摘要写入 `docs/architecture/repository/REPOSITORY_ARCHITECTURE_MAP.zh-CN.md`。新增或移动入口、归档代码、修改 TECH/source-of-truth 或增加大型模块后必须重建并通过 guard。
+
+新旧工程交接合同位于 `configs/engineering_handoff/`。交接 builder 会校验 canonical identity/version/owner、legacy adapter 方向、source-of-truth 和 cutover gate，并审计 pytest profile；它不会切换 runtime 写路径。
+### WorkBuddy semantic/trajectory re-audit
+
+```powershell
+python scripts/engineering/build_workbuddy_semantic_trajectory_reaudit.py
+```
+
+Builds the 12-case semantic and structured-trajectory review, defect matrix, and pack-candidate governance artifacts. It does not ingest WorkBuddy claims into FIN evidence or run a paid/full-chain workflow.

@@ -1,0 +1,34 @@
+{
+  "claim_boundary": "Rows support bounded secondary-market/capital-feedback context only; they do not provide investment recommendations, issuer CDS, OPRA option feeds, borrow cost, or consensus valuation.",
+  "fred_failure_count": 0,
+  "fred_failures": [],
+  "fred_series_count": 3,
+  "generated_at": "2026-06-30T18:47:27Z",
+  "market_bar_input_count": 38613,
+  "market_input_count": 39819,
+  "market_snapshot_input_count": 603,
+  "output_rows": "data\\manifests\\secondary_market_public_context_rows_v0_1.jsonl",
+  "role_counts": {
+    "credit_funding": 603,
+    "derivatives_market_signal": 603,
+    "valuation_price_in": 603
+  },
+  "row_count": 1809,
+  "schema_version": "finsight_secondary_market_public_context_summary_v0_1",
+  "sec_financial_input_count": 10146,
+  "source_counts": {
+    "fred_credit_spread_regime": 603,
+    "fred_vix_market_volatility_regime": 603,
+    "public_price_x_sec_shares_market_cap": 559,
+    "sec_entity_public_float": 24,
+    "yahoo_fundamentals_timeseries_market_cap": 20
+  },
+  "status": "pass",
+  "supplemental_valuation_fact_count": 85,
+  "supplemental_valuation_fact_type_counts": {
+    "market_cap": 20,
+    "public_float": 24,
+    "shares_outstanding": 41
+  },
+  "ticker_count": 603
+}

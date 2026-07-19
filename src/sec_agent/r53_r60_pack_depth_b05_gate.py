@@ -220,7 +220,7 @@ def build_pack_assessment_rows(root: Path, inputs: Mapping[str, Mapping[str, Any
         p14.get("status") == "pass"
         and p14.get("source_snapshot_status") == "source_snapshots_ready"
         and p14.get("parser_contract_status") == "parser_contracts_ready"
-        and not bool(p14_policy.get("not_full_crawler_or_production_refresh"))
+        and p14.get("current_universe_refresh_status") == "current_accepted_public_source_universe_ready"
     )
 
     p26_available = bool(p26_product_evidence)
@@ -257,10 +257,16 @@ def build_pack_assessment_rows(root: Path, inputs: Mapping[str, Mapping[str, Any
             "data/manifests/second_third_layer_depth_parity_summary_v0_1.json",
             "data/manifests/product_intelligence_graph_summary_v0_1.json",
         ]
-        product_next_actions = [
-            "Use P26 as the ProductEvidencePack depth boundary: Product-KPI exact gaps block exact KPI claims only; CustomerDeployment signal gaps still block broad product-pack quality.",
-            "Continue targeted official customer/deployment, channel/distribution, regulated identity, public award/tender, and lane-specific operating-footprint adapters until P26 broad_full_chain_product_pack_ready=true.",
-        ]
+        if product_pack_ready:
+            product_next_actions = [
+                "Use P26 as the ProductEvidencePack depth boundary: Product-KPI exact gaps block exact KPI claims only.",
+                "CustomerDeployment/adoption depth is closed for the 603-company universe; keep residual exact KPI gaps as claim-scope limits, not product-pack blockers.",
+            ]
+        else:
+            product_next_actions = [
+                "Use P26 as the ProductEvidencePack depth boundary: Product-KPI exact gaps block exact KPI claims only; CustomerDeployment signal gaps still block broad product-pack quality.",
+                "Continue targeted official customer/deployment, channel/distribution, regulated identity, public award/tender, and lane-specific operating-footprint adapters until P26 broad_full_chain_product_pack_ready=true.",
+            ]
     else:
         product_pack_ready = depth_ready
         product_pack_status = "ready" if depth_ready else "blocked_full_universe_depth_gap"
@@ -413,6 +419,8 @@ def build_pack_assessment_rows(root: Path, inputs: Mapping[str, Mapping[str, Any
                 "retrieval_control_status": p14.get("retrieval_control_status"),
                 "lineage_status": p14.get("lineage_status"),
                 "context_bridge_status": p14.get("context_bridge_status"),
+                "current_universe_refresh_status": p14.get("current_universe_refresh_status"),
+                "current_universe_refresh_evidence_count": len(p14.get("current_universe_refresh_evidence") or []),
             },
             {
                 "policy": p14_policy,
@@ -420,7 +428,7 @@ def build_pack_assessment_rows(root: Path, inputs: Mapping[str, Mapping[str, Any
             },
             ["data/manifests/r53_r60_p14_data_ingestion_retrieval_control_plane_summary_v0_1.json"],
             [
-                "Migrate real crawler/parser/index refresh into production-like runs before broad full-chain quality claims.",
+                "Keep accepted-universe manifests refreshed before broad full-chain quality claims; real-time/full internet crawler and production p95/p99 remain separate production gates.",
             ],
         ),
     ]

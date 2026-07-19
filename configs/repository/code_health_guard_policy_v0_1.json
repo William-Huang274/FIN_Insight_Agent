@@ -1,0 +1,42 @@
+{
+  "schema_version": "finsight_repository_code_health_guard_v0_1",
+  "critical_line_threshold": 4000,
+  "warning_line_threshold": 1500,
+  "max_review_candidates": 30,
+  "forbidden_tracked_prefixes": [
+    "eval/",
+    "reports/demo/",
+    "reports/deliverables/",
+    "reports/eval/",
+    "reports/evidence_packs/",
+    "reports/evidence_pool/",
+    "reports/exact_value_ledgers/",
+    "reports/logs/",
+    "reports/metrics/",
+    "reports/quality/",
+    "reports/query_contracts/",
+    "reports/verifier/",
+    "reports/r53_r60_",
+    "data/indexes/",
+    "data/raw_private/",
+    "data/processed_private/",
+    "data/workbench_private/",
+    ".tmp_",
+    "tmp/"
+  ],
+  "forbidden_tracked_names": [".env"],
+  "grandfathered_hotspots": {
+    "scripts/cloud/sec_agent_interactive.py": 10900,
+    "src/sec_agent/langgraph_orchestrator.py": 9400,
+    "src/sec_agent/multi_agent_runtime.py": 9075,
+    "src/sec_agent/memo_llm.py": 7380,
+    "scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py": 6425,
+    "src/sec_agent/multi_agent_contracts.py": 5340,
+    "src/sec_agent/specialist_llm.py": 4430,
+    "src/sec_agent/humanmade_gold_set_runtime.py": 4240,
+    "scripts/eval_sec_benchmark/run_sec_eval_synthesis_qwen9b_backend.py": 3900,
+    "src/sec_agent/p34_lane_quality_runtime.py": 3650,
+    "apps/workbench/frontend/vite/src/main.tsx": 3625,
+    "src/sec_agent/research_lead_llm.py": 3380
+  }
+}

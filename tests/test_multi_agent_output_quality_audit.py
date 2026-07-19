@@ -315,13 +315,13 @@ def test_output_quality_audit_reports_cost_quality_metrics(tmp_path) -> None:
                 "rendered_answer_chars": 500,
                 "agent_audit": {
                     "research_lead": {"diagnostics": {"total_tokens": 3000}},
-                    "memo_writer": {
-                        "route_result": {"attempt_count": 2, "repair_attempts": 1},
-                        "diagnostics": {
-                            "total_tokens": 4000,
-                            "calls": [{"total_tokens": 1000}, {"total_tokens": 3000}],
+                        "memo_writer": {
+                            "route_result": {"attempt_count": 2, "repair_attempts": 1},
+                            "diagnostics": {
+                                "total_tokens": 25000,
+                                "calls": [{"total_tokens": 5000}, {"total_tokens": 20000}],
+                            },
                         },
-                    },
                     "verifier": {"diagnostics": {"total_tokens": 3000}},
                     "specialists": {
                         "route_results": [
@@ -337,13 +337,53 @@ def test_output_quality_audit_reports_cost_quality_metrics(tmp_path) -> None:
     case = audit["cases"][0]
     stats = case["cost_quality_stats"]
 
-    assert stats["tokens_per_supported_claim_card"] == 12000
-    assert stats["tokens_per_rendered_memo_claim"] == 30000
-    assert stats["memo_writer_repair_token_ratio"] == 0.75
+    assert stats["tokens_per_supported_claim_card"] == 16200
+    assert stats["tokens_per_rendered_memo_claim"] == 40500
+    assert stats["memo_writer_repair_token_ratio"] == 0.8
     assert "low_rendered_claim_token_efficiency" in case["quality_flags"]
     assert "low_claim_card_token_efficiency" in case["quality_flags"]
     assert "low_memo_chars_per_token" in case["quality_flags"]
     assert "memo_writer_retry_cost_present" in case["quality_flags"]
+    assert "memo_payload_not_dense_enough" in case["quality_flags"]
+    diagnosis = case["claim_yield_diagnosis"]
+    assert diagnosis["status"] == "action_required"
+    assert "specialist_claim_conversion_or_selector" in diagnosis["suspected_root_layers"]
+    assert "memo_logic_plan_to_writer_payload" in diagnosis["suspected_root_layers"]
+    assert "memo_writer_schema_or_repair_loop" in diagnosis["suspected_root_layers"]
+
+
+def test_output_quality_audit_flags_boundary_heavy_noncommittal_surface() -> None:
+    module = _load_script()
+    summary = {
+        "run_id": "unit_boundary_heavy",
+        "cases": [
+            {
+                "case_id": "case_boundary_heavy",
+                "category": "sector_depth",
+                "gate_status": "pass",
+                "execution_mode": "deep_research",
+                "memo_status": "draft",
+                "rendered_answer_preview": (
+                    "核心判断：当前证据边界内，DELL AI server gross margin 需要继续验证。"
+                    "NVDA GPU supply 和 cloud capex read-through 只能作为线索，不能形成强判断。"
+                    "客户部署缺口仍需后续跟踪，当前证据边界不足以直接证明产品质量改善。"
+                ),
+                "agent_audit": {
+                    "memo_writer": {"diagnostics": {"total_tokens": 8000}},
+                    "specialists": {"route_results": []},
+                },
+            }
+        ],
+    }
+
+    audit = module.audit_summary(summary)
+    case = audit["cases"][0]
+
+    assert "memo_surface_boundary_heavy_or_noncommittal" in case["quality_flags"]
+    assert case["rendered_preview_boundary_language_stats"]["boundary_marker_count"] >= 5
+    assert "memo_logic_plan_to_writer_payload" in case["claim_yield_diagnosis"]["suspected_root_layers"]
+    assert "memo_writer_required_item_answer_execution" in case["claim_yield_diagnosis"]["suspected_root_layers"]
+    assert any("boundary / verification language" in item for item in audit["run_hypotheses"])
 
 
 def _load_script():

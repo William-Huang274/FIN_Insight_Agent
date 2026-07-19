@@ -41,6 +41,16 @@ SCHEMA_VERSION = "r53_r60_s7_deliverable_studio_dashboard_v0_1"
 REQUIRED_FORMATS = ("markdown", "docx", "xlsx", "dashboard_projection")
 NARRATIVE_SURFACES = ("internal_workpaper", "client_brief", "evidence_appendix", "dashboard_projection")
 COMPOSER_FORBIDDEN_TOOLS = ("retrieval", "sql_query", "web_search", "milvus_search", "parser_fetch", "source_mutation")
+CUSTOMER_READY_FORBIDDEN_TERMS = (
+    "claim_card_id",
+    "dimension_id",
+    "payload_json",
+    "section_intent",
+    "writer_boundary",
+    "authority_boundary",
+    "source_boundary",
+    "mechanism:",
+)
 
 
 @dataclass(frozen=True)
@@ -569,49 +579,121 @@ def build_deliverable_plan(*, task_id: str, run_id: str, payload: Mapping[str, A
 
 
 def render_markdown(payload: Mapping[str, Any], plan: Mapping[str, Any]) -> str:
+    claims_by_id = {str(claim.get("claim_card_id") or ""): claim for claim in payload["claims"]}
+    gaps_by_id = {str(gap.get("gap_id") or ""): gap for gap in payload["gaps"]}
+    judgment = payload.get("judgment") if isinstance(payload.get("judgment"), Mapping) else {}
+    thesis = judgment.get("thesis") if isinstance(judgment.get("thesis"), Mapping) else {}
+    counter = judgment.get("counter_thesis") if isinstance(judgment.get("counter_thesis"), Mapping) else {}
+    judgment_text = str(thesis.get("judgment") or "The workpaper is ready for senior review with explicit evidence boundaries.")
     lines = [
         "# Workpaper Review Draft",
         "",
-        f"- Plan: `{plan['deliverable_plan_id']}`",
-        f"- Audience: `{plan['audience']}`",
-        f"- Source: `{plan['source_workpaper_ref']}`",
-        "- Boundary: S7 formats S5 review-ready Workpaper only; no new retrieval, DB query, web search, or parser fetch.",
+        "## Core Judgment",
         "",
-        "## Core Judgment And Sections",
+        judgment_text,
+        "",
+        "This draft is generated from a reviewed Workpaper. It is suitable for analyst review, while market-share, sell-through, price-in, and other unavailable exact data remain visible evidence boundaries.",
         "",
     ]
     for section in payload["sections"]:
         section_title = str(section.get("title") or section.get("section_key") or "Section")
         section_payload = section.get("payload") if isinstance(section.get("payload"), Mapping) else {}
-        lines.extend([f"### {section_title}", ""])
-        if section_payload:
-            lines.append(compact_dict(section_payload))
+        section_key = str(section.get("section_key") or "")
+        claim_ids = json_loads(str(section.get("claim_card_refs_json") or ""), []) if isinstance(section.get("claim_card_refs_json"), str) else section.get("claim_card_refs", [])
+        gap_ids = json_loads(str(section.get("gap_refs_json") or ""), []) if isinstance(section.get("gap_refs_json"), str) else section.get("gap_refs", [])
+        section_claims = [claims_by_id.get(str(claim_id)) for claim_id in claim_ids if claims_by_id.get(str(claim_id))]
+        section_gaps = [gaps_by_id.get(str(gap_id)) for gap_id in gap_ids if gaps_by_id.get(str(gap_id))]
+        if section_key == "core_judgment":
+            continue
+        lines.extend([f"## {section_title}", ""])
+        intent = str(section_payload.get("section_intent") or "")
+        if intent:
+            lines.append(_reader_sentence(intent))
+            lines.append("")
+        if section_claims:
+            for claim in section_claims[:3]:
+                evidence_refs = _string_list(claim.get("evidence_refs"))
+                lines.append(f"- {claim.get('claim_text')} Evidence refs: {compact_list(evidence_refs[:3])}.")
         else:
-            lines.append("No section payload.")
+            lines.append("- No promoted evidence-backed point is available for this section.")
+        if section_gaps:
+            lines.append("")
+            lines.append("Open evidence boundary:")
+            for gap in section_gaps[:2]:
+                lines.append(f"- {gap.get('gap_reason')} Next step: {gap.get('next_action')}")
         lines.append("")
-    lines.extend(["## ClaimCards", ""])
+    if counter:
+        lines.extend(["## Counter-Thesis And Boundaries", "", str(counter.get("interpretation") or "Counter-evidence and evidence boundaries must constrain the conclusion."), ""])
+    lines.extend(["## Evidence Boundary Appendix", ""])
     for claim in payload["claims"]:
-        lines.append(
-            f"- `{claim.get('claim_card_id')}` · `{claim.get('dimension_id')}` · "
-            f"{claim.get('authority_boundary')} · refs={compact_list(claim.get('evidence_refs'))}"
-        )
-    lines.extend(["", "## Typed Gaps", ""])
+        lines.append(f"- Evidence point `{claim.get('claim_card_id')}`: {claim.get('claim_text')} Refs: {compact_list(_string_list(claim.get('evidence_refs'))[:4])}.")
+    lines.extend(["", "## Gap Appendix", ""])
     for gap in payload["gaps"]:
-        lines.append(f"- `{gap.get('gap_id')}` · `{gap.get('gap_type')}` · `{gap.get('status')}`")
-    lines.extend(["", "## Appendix Policy", "", "All ClaimCards, typed gaps, citation/evidence refs, and artifact refs remain visible for review."])
+        lines.append(f"- Gap `{gap.get('gap_id')}` ({gap.get('gap_type')}): {gap.get('gap_reason')} Next: {gap.get('next_action')}")
+    lines.extend(
+        [
+            "",
+            "## Audit Note",
+            "",
+            f"- Source workpaper: `{plan['source_workpaper_ref']}`",
+            "- S7 formats approved Workpaper content only. It cannot run retrieval, database queries, web search, parser fetch, or source mutation.",
+            "- Full evidence refs stay in the appendix for review and replay.",
+        ]
+    )
     return "\n".join(lines) + "\n"
 
 
+def _reader_sentence(value: Any) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    replacements = {
+        "issue_first_section": "This section should start from the investment issue",
+        "investment_implication": "investment implication",
+        "evidence_to_thesis": "evidence to thesis",
+        "product_market_context": "product and market context",
+        "risk_counter_thesis": "risk and counter-thesis",
+        "open_gap_section": "open evidence boundary",
+        "_": " ",
+    }
+    for source, target in replacements.items():
+        text = text.replace(source, target)
+    text = " ".join(text.split())
+    return text[0].upper() + text[1:] if text else text
+
+
+def _string_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item)]
+    if value is None:
+        return []
+    return [str(value)] if str(value) else []
+
+
 def write_minimal_docx(path: Path, payload: Mapping[str, Any], plan: Mapping[str, Any]) -> None:
+    judgment = payload.get("judgment") if isinstance(payload.get("judgment"), Mapping) else {}
+    thesis = judgment.get("thesis") if isinstance(judgment.get("thesis"), Mapping) else {}
     paragraphs = [
         "Workpaper Review Draft",
         f"Plan: {plan['deliverable_plan_id']}",
         "Boundary: S7 formats S5 review-ready Workpaper only; no new retrieval, DB query, web search, or parser fetch.",
-        "Sections",
+        "Core Judgment",
+        str(thesis.get("judgment") or "The workpaper is ready for senior review with explicit evidence boundaries."),
+        "Analyst Sections",
     ]
-    paragraphs.extend(str(section.get("title") or section.get("section_key") or "Section") for section in payload["sections"])
-    paragraphs.append("ClaimCards")
-    paragraphs.extend(str(claim.get("claim_card_id") or "") for claim in payload["claims"])
+    claim_by_id = {str(claim.get("claim_card_id") or ""): claim for claim in payload["claims"]}
+    for section in payload["sections"]:
+        if str(section.get("section_key") or "") == "core_judgment":
+            continue
+        paragraphs.append(str(section.get("title") or section.get("section_key") or "Section"))
+        claim_ids = json_loads(str(section.get("claim_card_refs_json") or ""), []) if isinstance(section.get("claim_card_refs_json"), str) else section.get("claim_card_refs", [])
+        for claim_id in claim_ids[:3]:
+            claim = claim_by_id.get(str(claim_id))
+            if claim:
+                paragraphs.append(str(claim.get("claim_text") or "Evidence-backed point requires review."))
+    paragraphs.append("Open Evidence Boundary")
+    for gap in payload["gaps"][:4]:
+        paragraphs.append(f"{gap.get('gap_reason')} Next step: {gap.get('next_action')}")
     document_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
 {paragraphs}
@@ -624,19 +706,19 @@ def write_minimal_docx(path: Path, payload: Mapping[str, Any], plan: Mapping[str
 
 
 def write_minimal_xlsx(path: Path, payload: Mapping[str, Any]) -> None:
-    rows = [["kind", "id", "dimension_or_type", "status_or_authority", "refs"]]
+    rows = [["kind", "reader_label", "dimension_or_type", "status_or_authority", "refs"]]
     for claim in payload["claims"]:
         rows.append([
-            "claim",
-            str(claim.get("claim_card_id") or ""),
+            "evidence_point",
+            str(claim.get("claim_text") or ""),
             str(claim.get("dimension_id") or ""),
             str(claim.get("authority_boundary") or ""),
             compact_list(claim.get("evidence_refs")),
         ])
     for gap in payload["gaps"]:
         rows.append([
-            "gap",
-            str(gap.get("gap_id") or ""),
+            "open_boundary",
+            str(gap.get("gap_reason") or ""),
             str(gap.get("gap_type") or ""),
             str(gap.get("status") or ""),
             compact_list(gap.get("evidence_refs")),
@@ -696,6 +778,20 @@ def build_quality_gate_records(
 ) -> list[dict[str, Any]]:
     formats = {str(item["output_format"]) for item in artifacts}
     artifact_refs = [str(item["artifact"]["artifact_ref_id"]) for item in artifacts]
+    markdown_artifact = next((item for item in artifacts if item["output_format"] == "markdown"), None)
+    markdown_text = ""
+    if markdown_artifact:
+        markdown_path = Path(str(markdown_artifact["path"]))
+        if markdown_path.exists():
+            markdown_text = markdown_path.read_text(encoding="utf-8")
+    forbidden_terms_present = [term for term in CUSTOMER_READY_FORBIDDEN_TERMS if term in markdown_text]
+    has_reader_headings = all(heading in markdown_text for heading in ("## Core Judgment", "## Evidence Boundary Appendix", "## Gap Appendix"))
+    has_claim_text = all(str(claim.get("claim_text") or "") in markdown_text for claim in payload["claims"])
+    gap_reason_count = sum(1 for gap in payload["gaps"] if str(gap.get("gap_reason") or "") in markdown_text)
+    docx_artifact = next((item for item in artifacts if item["output_format"] == "docx"), None)
+    xlsx_artifact = next((item for item in artifacts if item["output_format"] == "xlsx"), None)
+    docx_valid = bool(docx_artifact) and zipfile.is_zipfile(str(docx_artifact["path"]))
+    xlsx_valid = bool(xlsx_artifact) and zipfile.is_zipfile(str(xlsx_artifact["path"]))
     return [
         {
             "gate_id": "citations_preserved",
@@ -716,6 +812,21 @@ def build_quality_gate_records(
             "gate_id": "artifact_refs_ledgered",
             "status": "pass" if len(artifact_refs) == len(REQUIRED_FORMATS) else "fail",
             "detail": {"task_id": task_id, "plan_id": plan_id, "artifact_refs": artifact_refs},
+        },
+        {
+            "gate_id": "customer_reader_markdown_no_internal_field_dump",
+            "status": "pass" if markdown_text and not forbidden_terms_present and "## ClaimCards" not in markdown_text else "fail",
+            "detail": {"forbidden_terms_present": forbidden_terms_present, "markdown_chars": len(markdown_text)},
+        },
+        {
+            "gate_id": "customer_reader_markdown_has_issue_claim_gap_flow",
+            "status": "pass" if has_reader_headings and has_claim_text and gap_reason_count >= 1 else "fail",
+            "detail": {"has_reader_headings": has_reader_headings, "has_claim_text": has_claim_text, "gap_reason_count": gap_reason_count},
+        },
+        {
+            "gate_id": "office_artifacts_are_valid_packages",
+            "status": "pass" if docx_valid and xlsx_valid else "fail",
+            "detail": {"docx_valid_zip": docx_valid, "xlsx_valid_zip": xlsx_valid},
         },
     ]
 
@@ -746,6 +857,19 @@ def evaluate_s7_gates(
     rendered_formats = {row["output_format"] for row in render_rows if row.get("status") == "rendered"}
     render_paths_ok = all((root / str(row.get("output_uri", ""))).exists() for row in render_rows)
     dashboard_payload = json_loads(str(dashboard.get("panel_payload_json") or ""), {})
+    markdown_rows = [row for row in render_rows if row.get("output_format") == "markdown" and row.get("status") == "rendered"]
+    markdown_text = ""
+    if markdown_rows:
+        markdown_path = root / str(markdown_rows[0].get("output_uri") or "")
+        if markdown_path.exists():
+            markdown_text = markdown_path.read_text(encoding="utf-8")
+    forbidden_terms_present = [term for term in CUSTOMER_READY_FORBIDDEN_TERMS if term in markdown_text]
+    customer_quality_gate_ids = {
+        "customer_reader_markdown_no_internal_field_dump",
+        "customer_reader_markdown_has_issue_claim_gap_flow",
+        "office_artifacts_are_valid_packages",
+    }
+    customer_quality_rows = [row for row in quality_rows if row.get("gate_id") in customer_quality_gate_ids]
     checks = [
         ("schema_tables_present", all(table in existing_tables for table in contract["tables"]), "All S7 deliverable studio tables exist.", {"tables": sorted(existing_tables & set(contract["tables"]))}),
         ("deliverable_plan_ready", bool(plan) and set(json_loads(str(plan.get("formats_json") or ""), [])).issuperset(REQUIRED_FORMATS), "DeliverablePlan declares audience, formats, source Workpaper, and evidence boundary.", plan),
@@ -756,6 +880,18 @@ def evaluate_s7_gates(
         ("composer_permission_gate_passed", composer.get("status") == "pass" and int(composer.get("attempted_forbidden_tool_count") or 0) == 0, "Composer cannot call retrieval, DB, web, parser, or source mutation tools.", composer),
         ("artifact_refs_ledgered", artifact_ref_count >= len(REQUIRED_FORMATS), "Rendered artifacts are present in S1 ArtifactRef ledger.", {"artifact_ref_count": artifact_ref_count}),
         ("deliverable_quality_gates_passed", quality_rows and all(row["status"] == "pass" for row in quality_rows), "Citation, gap, appendix and artifact gates pass.", {"quality_gate_count": len(quality_rows)}),
+        (
+            "customer_ready_editorial_quality_gate",
+            len(customer_quality_rows) == len(customer_quality_gate_ids)
+            and all(row["status"] == "pass" for row in customer_quality_rows)
+            and not forbidden_terms_present,
+            "Rendered deliverable is reader-facing: no internal field dump, issue/claim/gap flow is present, and Office packages are valid.",
+            {
+                "customer_quality_gate_ids": sorted(customer_quality_gate_ids),
+                "forbidden_terms_present": forbidden_terms_present,
+                "markdown_chars": len(markdown_text),
+            },
+        ),
         ("no_llm_or_retrieval_dependency", True, "S7 is deterministic and consumes S5/S6 ledgered Workpaper state only.", {"workpaper_event_id": materialized.get("workpaper_event_id")}),
     ]
     generated_at = utc_now_iso()
@@ -784,6 +920,7 @@ def build_s7_summary(
     materialized: Mapping[str, Any],
 ) -> dict[str, Any]:
     failed = [row for row in gate_rows if row["status"] != "pass"]
+    customer_ready = not failed and any(row["gate_id"] == "customer_ready_editorial_quality_gate" and row["status"] == "pass" for row in gate_rows)
     with store._connect() as conn:
         counts = {
             table: int(conn.execute(f"select count(*) from {table}").fetchone()[0])
@@ -804,6 +941,8 @@ def build_s7_summary(
         "deliverable_plan_id": materialized["plan"]["deliverable_plan_id"],
         "render_jobs": render_jobs,
         "counts": {**counts, "gate_count": len(gate_rows), "gate_fail_count": len(failed)},
+        "customer_ready_editorial_quality_pass": customer_ready,
+        "editorial_acceptance_status": "deterministic_customer_ready_pass" if customer_ready else "blocked_customer_ready_editorial_quality",
         "outputs": {
             "schema": rel_path(paths.schema_path, root),
             "sqlite_store": rel_path(paths.db_path, root),
@@ -814,7 +953,7 @@ def build_s7_summary(
         },
         "failed_gates": failed,
         "next_slice_unlocked": "S8" if not failed else None,
-        "boundary": "S7 closes deterministic deliverable studio/dashboard projection only; it does not prove customer-ready editorial quality, RBAC, or production SLA.",
+        "boundary": "S7 closes deterministic customer-readable deliverable studio/dashboard projection for reviewed Workpaper content; it does not prove human-approved publication, RBAC, or production SLA.",
     }
 
 

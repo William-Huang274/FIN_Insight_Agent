@@ -7,6 +7,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from sec_agent.method_runtime import project_graph_edge_investment_role
+
 
 PRODUCT_INTELLIGENCE_RUNTIME_SCHEMA_VERSION = "finsight_product_intelligence_runtime_v0_1"
 
@@ -309,6 +311,7 @@ def _relationship_row(item: Mapping[str, Any], *, ticker: str) -> dict[str, Any]
     if authority == "template_context_edge" or not bool(item.get("can_enter_evidence_bundle")):
         return None
     source_id = _first(item, "edge_id") or _stable_ref("pig_edge", ticker, item)
+    investment_projection = project_graph_edge_investment_role(edge_type, authority)
     base = {
         "evidence_ref": source_id,
         "source_family": "company_product_evidence_graph",
@@ -323,6 +326,7 @@ def _relationship_row(item: Mapping[str, Any], *, ticker: str) -> dict[str, Any]
         "claim_boundary": _first(item, "claim_boundary") or CONTEXT_BOUNDARY,
         "summary": _summary_text(f"{edge_type} {authority}", item),
         "product_intelligence_row": True,
+        **investment_projection,
     }
     if authority == "competitive_context_candidate":
         base.update(

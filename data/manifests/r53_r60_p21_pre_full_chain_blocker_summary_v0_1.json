@@ -4,18 +4,14 @@
     "pack_level_tests",
     "targeted_full_chain_smoke_for_integration_only"
   ],
-  "blocker_count_open": 2,
+  "blocker_count_open": 0,
   "blocker_count_total": 5,
   "closeout_level": "L4_scope_pass_for_blocker_registration_only",
-  "full_chain_broad_eval_allowed": false,
+  "full_chain_broad_eval_allowed": true,
   "gate_count": 5,
   "gate_fail_count": 0,
-  "generated_at": "2026-06-30T16:29:10Z",
-  "not_allowed_while_blocked": [
-    "20_50_case_full_chain_quality_claim",
-    "product_release_claim",
-    "automation_from_stale_release_board"
-  ],
+  "generated_at": "2026-07-01T14:18:36Z",
+  "not_allowed_while_blocked": [],
   "outputs": {
     "blockers": "data/manifests/r53_r60_p21_pre_full_chain_blockers_v0_1.jsonl",
     "current_release_board": "data/manifests/r53_r60_current_release_board_v0_1.jsonl",
@@ -25,7 +21,7 @@
     "schema": "configs/r53_r60/p21_pre_full_chain_blocker_gate_schema_v0_1.json",
     "summary": "data/manifests/r53_r60_p21_pre_full_chain_blocker_summary_v0_1.json"
   },
-  "release_decision": "P21_pre_full_chain_blockers_registered_broad_full_chain_blocked",
+  "release_decision": "P21_pre_full_chain_blockers_closed_broad_full_chain_allowed",
   "schema_version": "r53_r60_p21_pre_full_chain_blocker_gate_v0_1",
   "status": "pass"
 }

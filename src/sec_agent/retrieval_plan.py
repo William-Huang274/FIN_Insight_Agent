@@ -15,6 +15,7 @@ ALLOWED_RETRIEVAL_ROUTES = {
     "milvus_semantic",
     "market_snapshot",
     "industry_snapshot",
+    "relationship_graph",
     "risk_text",
     "run_artifact",
     "live_public_web_context",
@@ -40,6 +41,7 @@ RUN_ARTIFACT_SOURCE_TIER = "run_artifact"
 LIVE_PUBLIC_WEB_SOURCE_TIER = "live_public_web_context"
 PRIMARY_SEC_SOURCE_TIER = "primary_sec_filing"
 COMPANY_AUTHORED_SOURCE_TIER = "company_authored_unaudited_sec_filing"
+RELATIONSHIP_SOURCE_TIER = "relationship_graph"
 
 MARKET_TERMS = (
     "market",
@@ -118,6 +120,30 @@ INDUSTRY_CONTEXT_TERMS = (
     "大宗商品",
     "需求环境",
     "监管",
+)
+
+RELATIONSHIP_TERMS = (
+    "relationship",
+    "read-through",
+    "read through",
+    "supply chain",
+    "supplier",
+    "customer",
+    "deployment",
+    "adoption",
+    "configured",
+    "dependency",
+    "bottleneck",
+    "竞争",
+    "替代",
+    "上下游",
+    "供应链",
+    "供应商",
+    "客户",
+    "部署",
+    "采用",
+    "传导",
+    "瓶颈",
 )
 
 PERIOD_ROLES = {"QTD", "YTD", "TTM", "ANNUAL"}
@@ -668,6 +694,8 @@ def _routes_for_task(
         routes.append("market_snapshot")
     if INDUSTRY_SOURCE_TIER in tier_set or _task_requests_industry(task, task_text):
         routes.append("industry_snapshot")
+    if RELATIONSHIP_SOURCE_TIER in tier_set and _contains_any(task_text, RELATIONSHIP_TERMS):
+        routes.append("relationship_graph")
     if COMPANY_AUTHORED_SOURCE_TIER in tier_set or "8-K" in form_set:
         if _contains_any(task_text, COMMENTARY_TERMS) or metric_families:
             routes.append("8k_commentary")
@@ -703,6 +731,8 @@ def _route_budgets(route_name: str, *, ticker_count: int, family_count: int) -> 
 def _route_filing_types(route_name: str, filing_types: list[str]) -> list[str]:
     if route_name == "run_artifact":
         return []
+    if route_name == "relationship_graph":
+        return []
     if route_name == "8k_commentary":
         return ["8-K"] if "8-K" in set(filing_types) else filing_types
     if route_name in {"industry_snapshot", "live_public_web_context"}:
@@ -716,6 +746,8 @@ def _route_filing_types(route_name: str, filing_types: list[str]) -> list[str]:
 def _route_source_tiers(route_name: str, source_tiers: list[str]) -> list[str]:
     if route_name == "run_artifact":
         return [RUN_ARTIFACT_SOURCE_TIER]
+    if route_name == "relationship_graph":
+        return [RELATIONSHIP_SOURCE_TIER] if RELATIONSHIP_SOURCE_TIER in set(source_tiers) else []
     if route_name == "market_snapshot":
         return [MARKET_SOURCE_TIER] if MARKET_SOURCE_TIER in set(source_tiers) else []
     if route_name == "industry_snapshot":
@@ -741,6 +773,8 @@ def _section_hints(route_name: str) -> list[str]:
         return ["market_analytics", "event_window", "valuation_snapshot"]
     if route_name == "industry_snapshot":
         return ["industry_observations", "sector_context", "macro_context"]
+    if route_name == "relationship_graph":
+        return ["relationship_edges", "customer_supplier_readthrough", "bounded_graph_context"]
     if route_name == "live_public_web_context":
         return ["allowlisted_web_snapshot", "source_classifier", "authority_gate"]
     if route_name == "milvus_semantic":

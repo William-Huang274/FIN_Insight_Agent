@@ -28,7 +28,11 @@ class ContextEngine:
             if isinstance(value, Mapping) and value:
                 snapshots.append(_snapshot(context_type, dict(value)))
             elif isinstance(value, list) and value:
-                snapshots.append(_snapshot(context_type, {"items": [item for item in value if isinstance(item, Mapping)]}))
+                items = [item for item in value if isinstance(item, Mapping)]
+                if context_type == "role_context":
+                    snapshots.extend(_snapshot(context_type, dict(item)) for item in items)
+                else:
+                    snapshots.append(_snapshot(context_type, {"items": items}))
         return {
             "schema_version": CONTEXT_ENGINE_SCHEMA_VERSION,
             "operation": "resolve",

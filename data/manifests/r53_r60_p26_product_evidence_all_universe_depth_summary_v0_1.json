@@ -1,25 +1,23 @@
 {
-  "blocking_gap_ids": [
-    "p26_customer_deployment_signal_gap"
-  ],
-  "broad_full_chain_product_pack_ready": false,
+  "blocking_gap_ids": [],
+  "broad_full_chain_product_pack_ready": true,
   "claim_boundary_policy": {
     "capital_market_detail_gap_is_cross_pack_dependency": true,
-    "customer_deployment_gap_blocks_product_pack_broad_quality": true,
+    "customer_deployment_gap_blocks_product_pack_broad_quality": false,
     "product_kpi_exact_gap_blocks_exact_kpi_claims_only": true
   },
   "closeout_level": "L4_scope_pass_for_product_evidence_pack_depth_classification",
   "counts": {
-    "blocking_gap_count": 1,
-    "blocking_layer_count": 1,
-    "gap_count": 3,
-    "gate_blocked_count": 2,
+    "blocking_gap_count": 0,
+    "blocking_layer_count": 0,
+    "gap_count": 2,
+    "gate_blocked_count": 0,
     "gate_count": 6,
     "gate_fail_count": 0,
     "layer_count": 5,
     "nonblocking_gap_count": 2
   },
-  "generated_at": "2026-06-30T16:28:54Z",
+  "generated_at": "2026-06-30T18:06:27Z",
   "known_gaps": [
     {
       "blocker_scope": "exact_product_kpi_claims_only",
@@ -42,22 +40,6 @@
       "severity": "nonblocking_claim_scope_gap"
     },
     {
-      "blocker_scope": "product_pack_broad_full_chain_quality",
-      "gap": "p26_customer_deployment_signal_gap",
-      "gap_count": 72,
-      "layer_id": "customer_deployment_signal",
-      "next_action": "Continue targeted official customer/deployment, channel/distribution, regulated identity, public award/tender, and lane-specific operating-footprint adapters for the missing companies.",
-      "observed_value": {
-        "customer_deployment_gap_class_counts": {
-          "customer_deployment_public_source_gap": 72,
-          "none": 531
-        },
-        "customer_deployment_gap_count": 72,
-        "customer_deployment_ready_count": 531
-      },
-      "severity": "blocking_product_pack_gap"
-    },
-    {
       "blocker_scope": "capital_or_funding_pack",
       "gap": "p26_capital_market_detail_cross_pack_gap",
       "gap_count": 2,
@@ -76,7 +58,7 @@
   ],
   "layer_readiness": {
     "capital_market_detail_cross_pack_dependency": "out_of_scope_for_product_pack",
-    "customer_deployment_signal": "blocked_customer_deployment_signal_gap",
+    "customer_deployment_signal": "ready",
     "product_kpi_exact_boundary": "ready_with_typed_exact_kpi_gaps",
     "product_profile_spec_graph": "ready",
     "product_relationship_graph": "ready"
@@ -90,8 +72,8 @@
     "schema": "configs/r53_r60/p26_product_evidence_all_universe_depth_schema_v0_1.json",
     "summary": "data/manifests/r53_r60_p26_product_evidence_all_universe_depth_summary_v0_1.json"
   },
-  "product_pack_readiness_status": "blocked_customer_deployment_signal_gap",
-  "release_decision": "P26_product_evidence_pack_blocked_customer_deployment_gap",
+  "product_pack_readiness_status": "ready",
+  "release_decision": "P26_product_evidence_pack_ready_for_broad_full_chain",
   "schema_version": "r53_r60_p26_product_evidence_all_universe_depth_gate_v0_1",
-  "status": "pass_with_product_pack_blocker_registered"
+  "status": "pass"
 }

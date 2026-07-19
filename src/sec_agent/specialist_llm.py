@@ -9,6 +9,11 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
 from sec_agent.llm_gateway import chat_completion
+from sec_agent.method_runtime import (
+    build_method_runtime_pack,
+    compact_method_runtime_pack_for_prompt,
+    specialist_runtime_rubric,
+)
 from sec_agent.multi_agent_contracts import (
     SPECIALIST_AGENT_IDS,
     _is_material_numeric_token,
@@ -37,7 +42,7 @@ class SpecialistLLMConfig:
     model: str = "deepseek-v4-pro"
     api_key_env: str = "DEEPSEEK_API_KEY"
     temperature: float = 0.0
-    max_tokens: int = 2000
+    max_tokens: int = 1600
     timeout_s: int = 180
     max_repair_attempts: int = 2
 
@@ -51,7 +56,7 @@ def specialist_llm_config_from_env(env: Mapping[str, str] | None = None) -> Spec
         model=values.get("MODEL_NAME", "deepseek-v4-pro"),
         api_key_env=values.get("API_KEY_ENV", "DEEPSEEK_API_KEY"),
         temperature=_float_env(values.get("SPECIALIST_TEMPERATURE"), default=0.0),
-        max_tokens=_int_env(values.get("SPECIALIST_MAX_TOKENS"), default=2000),
+        max_tokens=_int_env(values.get("SPECIALIST_MAX_TOKENS"), default=1600),
         timeout_s=_int_env(values.get("SPECIALIST_TIMEOUT_S"), default=180),
         max_repair_attempts=_int_env(values.get("SPECIALIST_MAX_REPAIR_ATTEMPTS"), default=2),
     )
@@ -100,6 +105,11 @@ def route_specialists_from_env(
             decision = decision_by_agent.get(agent_id) or {}
             summary["priority"] = decision.get("priority") or ""
             summary["activation_policy"] = decision.get("policy") or ""
+            summary["activation_decision"] = decision.get("decision") or "run"
+            summary["activation_reason"] = str(decision.get("reason") or "")[:500]
+            summary["matched_requirement_count"] = int(decision.get("matched_requirement_count") or 0)
+            summary["explicit_intent"] = bool(decision.get("explicit_intent"))
+            summary["signal_count"] = int(decision.get("signal_count") or 0)
             route_results.append(summary)
             if result.get("status") == "pass":
                 outputs.append(dict(result.get("memolet") or {}))
@@ -108,6 +118,7 @@ def route_specialists_from_env(
         return {
             "shared_specialist_context": shared_context,
             "specialist_outputs": outputs,
+            "specialist_activation_decisions": decisions,
             "specialist_route_results": route_results,
             "specialist_fanout_barrier": _specialist_fanout_barrier(
                 route_results,
@@ -270,19 +281,36 @@ def build_specialist_request_from_state(
         data_view.get("relationship_summary"),
         execution_mode=execution_mode,
         required_claim_slots=required_claim_slots,
+        agent_id=agent_id,
     )
-    product_spec_pack = data_view.get("product_spec_pack") if isinstance(data_view.get("product_spec_pack"), Mapping) else {}
-    capital_macro_pack = data_view.get("capital_macro_pack") if isinstance(data_view.get("capital_macro_pack"), Mapping) else {}
-    fundamental_statement_pack = (
+    raw_product_spec_pack = data_view.get("product_spec_pack") if isinstance(data_view.get("product_spec_pack"), Mapping) else {}
+    raw_capital_macro_pack = data_view.get("capital_macro_pack") if isinstance(data_view.get("capital_macro_pack"), Mapping) else {}
+    raw_fundamental_statement_pack = (
         data_view.get("fundamental_statement_pack_ref")
         if isinstance(data_view.get("fundamental_statement_pack_ref"), Mapping)
         else data_view.get("fundamental_statement_pack") if isinstance(data_view.get("fundamental_statement_pack"), Mapping) else {}
     )
-    fundamental_peer_statement_panel = (
+    raw_fundamental_peer_statement_panel = (
         data_view.get("fundamental_peer_statement_panel_ref")
         if isinstance(data_view.get("fundamental_peer_statement_panel_ref"), Mapping)
         else data_view.get("fundamental_peer_statement_panel") if isinstance(data_view.get("fundamental_peer_statement_panel"), Mapping) else {}
     )
+    product_spec_pack = _compact_product_spec_pack_for_prompt(raw_product_spec_pack, agent_id=agent_id)
+    capital_macro_pack = _compact_capital_macro_pack_for_prompt(raw_capital_macro_pack, agent_id=agent_id)
+    fundamental_statement_pack = _compact_fundamental_statement_pack_for_prompt(
+        raw_fundamental_statement_pack,
+        agent_id=agent_id,
+    )
+    fundamental_peer_statement_panel = _compact_fundamental_peer_statement_panel_for_prompt(
+        raw_fundamental_peer_statement_panel,
+        agent_id=agent_id,
+    )
+    method_runtime_pack = build_method_runtime_pack(
+        state,
+        user_query=str(state.get("user_query") or ""),
+        focus_tickers=_string_list(state.get("focus_tickers") or state.get("tickers") or []),
+    )
+    role_method_rubric = specialist_runtime_rubric(method_runtime_pack, agent_id)
     refs = _known_evidence_refs_from_request(
         {
             "bounded_evidence_rows": rows,
@@ -319,6 +347,8 @@ def build_specialist_request_from_state(
         "prompt_row_distribution": prompt_row_distribution,
         "source_layer_distribution": role_source_layer_selection,
         "source_family_bundle": source_family_bundle,
+        "method_runtime_pack": compact_method_runtime_pack_for_prompt(method_runtime_pack, agent_id=agent_id),
+        "specialist_runtime_rubric": role_method_rubric,
         "product_spec_pack": product_spec_pack if agent_id == "product_technology_analyst" else {},
         "capital_macro_pack": capital_macro_pack
         if agent_id in {"fundamental_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"}
@@ -330,7 +360,7 @@ def build_specialist_request_from_state(
         "coverage_summary": data_view.get("coverage_summary") or state.get("multi_agent_reflection_report") or state.get("evidence_sufficiency_report") or {},
         "source_boundaries": _source_boundaries_from_state(state),
         "input_budget": input_budget,
-        "output_contract": _specialist_output_contract(agent_id, execution_mode),
+        "output_contract": _specialist_output_contract(agent_id, execution_mode, method_runtime_pack=method_runtime_pack),
         "known_evidence_refs": sorted(refs),
         "agent_data_view_status": data_view.get("status") or "pass",
     }
@@ -562,7 +592,9 @@ def _build_messages(
     prior_content: str,
 ) -> list[dict[str, str]]:
     system = _system_prompt(agent_id)
-    shared_context = request.get("shared_context") if isinstance(request.get("shared_context"), Mapping) else {}
+    shared_context = _compact_shared_context_for_prompt(
+        request.get("shared_context") if isinstance(request.get("shared_context"), Mapping) else {}
+    )
     execution_mode = str(request.get("execution_mode") or "")
     bounded_rows = _compact_rows_for_model_payload(
         agent_id,
@@ -576,24 +608,34 @@ def _build_messages(
     user_payload = {
         "shared_context": shared_context,
         "agent_data_view_ref": request.get("agent_data_view_ref") or {},
-        "role_context": request.get("role_context") or {},
+        "role_context": _compact_role_context_for_prompt(
+            request.get("role_context") if isinstance(request.get("role_context"), Mapping) else {}
+        ),
         "agent_id": agent_id,
         "execution_mode": execution_mode,
         "user_query": request.get("user_query") or request.get("prompt") or "",
-        "assigned_task_card": request.get("assigned_task_card") or {},
-        "required_claim_slots": request.get("required_claim_slots") or [],
-        "counterclaim_slots": request.get("counterclaim_slots") or [],
+        "assigned_task_card": _compact_task_card_for_prompt(
+            request.get("assigned_task_card") if isinstance(request.get("assigned_task_card"), Mapping) else {}
+        ),
+        "required_claim_slots": _compact_claim_slots_for_prompt(request.get("required_claim_slots") or [], max_items=4),
+        "counterclaim_slots": _compact_claim_slots_for_prompt(request.get("counterclaim_slots") or [], max_items=2),
         "bounded_evidence_rows": bounded_rows,
         "prompt_row_distribution": request.get("prompt_row_distribution") or _prompt_row_distribution(bounded_rows),
         "source_layer_distribution": _compact_source_layer_distribution_for_route(
             request.get("source_layer_distribution") if isinstance(request.get("source_layer_distribution"), Mapping) else {}
         ),
-        "source_family_bundle": request.get("source_family_bundle") or {},
+        "source_family_bundle": _compact_source_family_bundle_for_prompt(
+            request.get("source_family_bundle") if isinstance(request.get("source_family_bundle"), Mapping) else {}
+        ),
+        "method_runtime_pack": request.get("method_runtime_pack") or {},
+        "specialist_runtime_rubric": request.get("specialist_runtime_rubric") or {},
         "product_spec_pack": request.get("product_spec_pack") or {},
         "capital_macro_pack": request.get("capital_macro_pack") or {},
         "fundamental_statement_pack": request.get("fundamental_statement_pack") or {},
         "fundamental_peer_statement_panel": request.get("fundamental_peer_statement_panel") or {},
-        "input_coverage_summary": request.get("input_coverage_summary") or {},
+        "input_coverage_summary": _compact_input_coverage_summary_for_prompt(
+            request.get("input_coverage_summary") if isinstance(request.get("input_coverage_summary"), Mapping) else {}
+        ),
         "relationship_summary": relationship_summary,
         "coverage_summary": {} if shared_context else request.get("coverage_summary") or {},
         "source_boundaries": {} if shared_context else request.get("source_boundaries") or {},
@@ -615,6 +657,7 @@ def _build_messages(
         "Use shared_context for common scope, coverage, and source-boundary context; do not restate it unless it changes a claim. "
         "Use source_family_bundle to enforce selected source families, context-only families, semantic-supplement limits, and forbidden claim scopes before writing any observation. "
         "Use source_layer_distribution to understand which L1/L2/L3/L4 sources are available, repairable, or missing for your role; explicit selector gaps should become bounded unsupported_claims, not generic caveats. "
+        "Use method_runtime_pack and specialist_runtime_rubric as hard method-to-runtime instructions: answer the role's must_answer items, preserve must_not_infer boundaries, and convert evidence into judgment_candidates. "
         "If product_spec_pack is present, use it as the parser-gated ProductSpecPack for product taxonomy, model/spec, customer deployment, supply-chain, comparable, channel offer, field inquiry, and commercial-gap boundaries. "
         "If capital_macro_pack is present, use it as the parser-gated capital, ownership, macro exposure, and vertical official object boundary; 13F is lagged context and macro drivers need exposure bridges. "
         "If fundamental_statement_pack is present, use it as the parser-gated three-statement, period-change, peer-comparison, industry-focus financial analysis pack; peer claims require same metric, unit, and period in that pack. "
@@ -623,6 +666,8 @@ def _build_messages(
         "Use assigned_task_card as your only role task brief; use required_claim_slots and counterclaim_slots to decide what to write. "
         "Inspect bounded_evidence_rows selectively: start with rows whose ticker, metric, source_family, or summary match a required_claim_slot; ignore irrelevant rows even if present. "
         "Treat each observation as a ClaimCard v0.3: include ticker_scope, metric_scope, memo_slot, materiality, direction, evidence_refs, source_families, caveats, and missing_confirmations; when using non-financial signal rows, include signal_authority_type and thesis_driver_authority. "
+        "Also include judgment_candidates when a slot can support a writer-ready judgment; each candidate must state judgment, required_item_answered, supported_by_evidence_refs, graph_edge_refs, product_or_financial_bridge, business_mechanism, counter_read, cannot_infer, and what_would_change_view. "
+        "Every judgment_candidate must cite at least one supported_by_evidence_refs value copied exactly from known evidence_refs; if no cited evidence_ref supports the judgment, omit the judgment_candidate and write an unsupported_claim instead. "
         "Prefer memo-ready investment implications over row summaries; downstream will rank ClaimCards by evidence support, role fit, and memo readiness. "
         "Each observation must state the role-specific investment implication, not just restate the row. "
         "Each supported observation should satisfy one required_claim_slot; if a slot is unsupported, add one material missing_confirmation or top unsupported_claim instead of a generic gap list. "
@@ -646,6 +691,7 @@ def _build_messages(
                 "Return exactly one minimal SpecialistMemolet JSON object. "
                 "Use at most 2 observations, at most 2 unsupported_claims, and at most 1 conflict. "
                 "Every supported observation must cite known evidence_refs. "
+                "Every judgment_candidate must cite supported_by_evidence_refs copied exactly from known evidence_refs; otherwise omit it and write an unsupported_claim. "
                 "Start with { and end with }. No markdown, no prose, no copied tables."
             )
         else:
@@ -653,7 +699,7 @@ def _build_messages(
                 f"{user}\n\nRepair the previous output. It failed this diagnostic:\n"
                 f"{_json_for_prompt(cleaned_failure, sort_keys=True)}\n\n"
                 f"Previous output excerpt:\n{_truncate(prior_content, 1600)}\n\n"
-                "Return one compact corrected SpecialistMemolet JSON object only. Start with { and end with }."
+                "Return one compact corrected SpecialistMemolet JSON object only. Every judgment_candidate must cite supported_by_evidence_refs copied exactly from known evidence_refs; otherwise omit it and write an unsupported_claim. Start with { and end with }."
             )
     return [{"role": "system", "content": system}, {"role": "user", "content": user}]
 
@@ -684,20 +730,206 @@ def _system_prompt(agent_id: str) -> str:
         ],
         "unsupported_claims": [{"claim": "unsupported named fact", "reason": "not in bounded evidence"}],
         "conflicts": [{"claim": "conflict or counterevidence", "reason": "why it conflicts"}],
+        "judgment_candidates": [
+            {
+                "judgment": "writer-ready bounded analyst judgment",
+                "required_item_answered": "product_architecture_competition | fundamental_financial_bridge | risk_and_counterevidence",
+                "supported_by_evidence_refs": ["evidence_ref"],
+                "graph_edge_refs": ["relationship_or_product_edge_ref"],
+                "product_or_financial_bridge": "how product/customer/supply-chain evidence reaches financial or investment judgment",
+                "business_mechanism": "why the evidence matters",
+                "counter_read": "what could weaken the judgment",
+                "confidence": "low | medium | high",
+                "cannot_infer": ["exact revenue/share/order value without exact authority"],
+                "what_would_change_view": ["specific confirmation or contradiction"],
+            }
+        ],
         "confidence": "low | medium | high",
     }
     return "\n\n".join(
         [
             f"You are the {agent_id}.",
-            research_skill_prompt(agent_id, max_chars=4500),
+            research_skill_prompt(agent_id, max_chars=_specialist_skill_prompt_chars()),
             "Return exactly one JSON object. Do not wrap it in prose. Do not call tools.",
             "Keep output compact enough to fit within max_tokens; prefer role-prioritized observations over exhaustive notes.",
             "You may only use bounded evidence rows, product_spec_pack, capital_macro_pack, fundamental_statement_pack, fundamental_peer_statement_panel, relationship summaries, and shared summaries in the input.",
             "Every supported observation must cite evidence_refs from known_evidence_refs.",
+            "Every judgment_candidate must cite supported_by_evidence_refs from known_evidence_refs; uncited judgment_candidates are invalid.",
             "If a named fact, relationship, number, or causal claim is not supported by bounded evidence, put it in unsupported_claims.",
             f"SpecialistMemolet schema hint:\n{_json_for_prompt(schema_hint)}",
         ]
     )
+
+
+def _specialist_skill_prompt_chars() -> int:
+    return max(900, _int_env(os.environ.get("SPECIALIST_SKILL_PROMPT_MAX_CHARS"), default=2200))
+
+
+def _compact_shared_context_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    coverage = value.get("coverage") if isinstance(value.get("coverage"), Mapping) else {}
+    relationship = value.get("relationship_context") if isinstance(value.get("relationship_context"), Mapping) else {}
+    prompt_policy = value.get("prompt_policy") if isinstance(value.get("prompt_policy"), Mapping) else {}
+    return {
+        "schema_version": str(value.get("schema_version") or ""),
+        "user_query": _truncate(str(value.get("user_query") or ""), 180),
+        "execution_mode": str(value.get("execution_mode") or ""),
+        "focus_tickers": _string_list(value.get("focus_tickers"))[:8],
+        "search_scope_tickers": _string_list(value.get("search_scope_tickers"))[:12],
+        "coverage": {
+            "sufficiency_level": str(coverage.get("sufficiency_level") or ""),
+            "missing_requirement_count": coverage.get("missing_requirement_count"),
+            "bounded_answer_allowed": bool(coverage.get("bounded_answer_allowed")),
+            "second_pass_reason": _truncate(str(coverage.get("second_pass_reason") or ""), 60),
+        },
+        "relationship_context": {
+            "available": bool(relationship.get("available")),
+            "relationship_count": relationship.get("relationship_count"),
+            "financial_fact_policy": str(relationship.get("financial_fact_policy") or ""),
+            "scope_mode": str(relationship.get("scope_mode") or ""),
+        },
+        "prompt_policy": {
+            "role_payload_policy": str(prompt_policy.get("role_payload_policy") or ""),
+            "evidence_ref_policy": str(prompt_policy.get("evidence_ref_policy") or ""),
+            "source_layer_policy": _compact_policy_statement(
+                prompt_policy.get("source_layer_policy"),
+                max_words=8,
+            ),
+        },
+        "context_digest": str(value.get("context_digest") or ""),
+    }
+
+
+def _compact_policy_statement(value: Any, *, max_words: int) -> str:
+    text = " ".join(str(value or "").split())
+    if not text:
+        return ""
+    words = text.split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]).rstrip() + f"...[truncated_words={len(words)}]"
+
+
+def _compact_role_context_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    portfolio = value.get("dimension_evidence_portfolio_ref") if isinstance(value.get("dimension_evidence_portfolio_ref"), Mapping) else {}
+    return {
+        "schema_version": str(value.get("schema_version") or ""),
+        "agent_id": str(value.get("agent_id") or ""),
+        "role_context_type": str(value.get("role_context_type") or ""),
+        "analyst_lens": str(value.get("analyst_lens") or ""),
+        "assigned_memo_slot": str(value.get("assigned_memo_slot") or ""),
+        "selected_source_families": _string_list(value.get("selected_source_families"))[:8],
+        "context_only_source_families": _string_list(value.get("context_only_source_families"))[:8],
+        "exact_value_authority_source_families": _string_list(value.get("exact_value_authority_source_families"))[:8],
+        "required_claim_slot_ids": _string_list(value.get("required_claim_slot_ids"))[:8],
+        "bounded_row_count": value.get("bounded_row_count"),
+        "claim_card_output_required": bool(value.get("claim_card_output_required")),
+        "dimension_evidence_portfolio_ref": _compact_pack_metadata(portfolio, max_items=6, text_limit=70),
+        "fundamental_statement_pack_policy": _truncate(str(value.get("fundamental_statement_pack_policy") or ""), 100),
+        "capital_macro_pack_policy": _truncate(str(value.get("capital_macro_pack_policy") or ""), 100),
+        "product_evidence_pack_policy": _truncate(str(value.get("product_evidence_pack_policy") or ""), 100),
+    }
+
+
+def _compact_task_card_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    requirements = []
+    for row in value.get("relevant_requirements") or []:
+        if not isinstance(row, Mapping):
+            continue
+        requirements.append(
+            {
+                "requirement_id": str(row.get("requirement_id") or ""),
+                "task_id": str(row.get("task_id") or ""),
+                "priority": str(row.get("priority") or ""),
+                "tickers": _string_list(row.get("tickers"))[:4],
+                "source_families": _string_list(row.get("source_families"))[:4],
+                "metric_families": _string_list(row.get("metric_families"))[:4],
+                "question": _truncate(str(row.get("question_zh") or row.get("question") or ""), 90),
+            }
+        )
+        if len(requirements) >= 4:
+            break
+    return {
+        "schema_version": str(value.get("schema_version") or ""),
+        "agent_id": str(value.get("agent_id") or ""),
+        "priority": str(value.get("priority") or ""),
+        "assigned_memo_slot": str(value.get("assigned_memo_slot") or ""),
+        "analyst_lens": _truncate(str(value.get("analyst_lens") or ""), 90),
+        "focus_tickers": _string_list(value.get("focus_tickers"))[:6],
+        "relevant_requirements": requirements,
+    }
+
+
+def _compact_claim_slots_for_prompt(value: Any, *, max_items: int) -> list[dict[str, Any]]:
+    slots: list[dict[str, Any]] = []
+    for item in value if isinstance(value, list) else []:
+        if not isinstance(item, Mapping):
+            continue
+        slots.append(
+            {
+                "slot_id": str(item.get("slot_id") or ""),
+                "slot_kind": str(item.get("slot_kind") or ""),
+                "memo_slot": str(item.get("memo_slot") or ""),
+                "metric_families": _string_list(item.get("metric_families"))[:4],
+                "source_families": _string_list(item.get("source_families"))[:4],
+                "required_tickers": _string_list(item.get("required_tickers") or item.get("tickers"))[:4],
+                "description": _truncate(str(item.get("description") or item.get("question") or item.get("claim") or ""), 90),
+            }
+        )
+        if len(slots) >= max_items:
+            break
+    return slots
+
+
+def _compact_source_family_bundle_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    return {
+        "schema_version": str(value.get("schema_version") or ""),
+        "agent_id": str(value.get("agent_id") or ""),
+        "selected_source_families": _string_list(value.get("selected_source_families"))[:8],
+        "row_counts_by_source_family": dict(value.get("row_counts_by_source_family") or {})
+        if isinstance(value.get("row_counts_by_source_family"), Mapping)
+        else {},
+        "context_only_source_families": _string_list(value.get("context_only_source_families"))[:8],
+        "exact_value_authority_source_families": _string_list(value.get("exact_value_authority_source_families"))[:8],
+        "forbidden_claim_scopes": _string_list(value.get("forbidden_claim_scopes"))[:8],
+        "semantic_supplement_row_count": value.get("semantic_supplement_row_count"),
+        "semantic_supplement_policy": str(value.get("semantic_supplement_policy") or ""),
+    }
+
+
+def _compact_input_coverage_summary_for_prompt(value: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    authority = value.get("non_financial_signal_authority") if isinstance(value.get("non_financial_signal_authority"), Mapping) else {}
+    return {
+        "schema_version": str(value.get("schema_version") or ""),
+        "agent_id": str(value.get("agent_id") or ""),
+        "focus_tickers": _string_list(value.get("focus_tickers"))[:8],
+        "prompt_row_distribution": value.get("prompt_row_distribution") or {},
+        "focus_ticker_primary_row_counts": dict(value.get("focus_ticker_primary_row_counts") or {})
+        if isinstance(value.get("focus_ticker_primary_row_counts"), Mapping)
+        else {},
+        "focus_ticker_source_gap_reasons": dict(value.get("focus_ticker_source_gap_reasons") or {})
+        if isinstance(value.get("focus_ticker_source_gap_reasons"), Mapping)
+        else {},
+        "non_financial_signal_authority": {
+            "thesis_driver_authority_row_count": authority.get("thesis_driver_authority_row_count"),
+            "by_signal_authority_type": dict(authority.get("by_signal_authority_type") or {})
+            if isinstance(authority.get("by_signal_authority_type"), Mapping)
+            else {},
+            "by_signal_promotion_level": dict(authority.get("by_signal_promotion_level") or {})
+            if isinstance(authority.get("by_signal_promotion_level"), Mapping)
+            else {},
+        },
+        "coverage_policy": str(value.get("coverage_policy") or ""),
+    }
 
 
 def _known_evidence_refs_from_request(request: Mapping[str, Any]) -> set[str]:
@@ -864,16 +1096,25 @@ def _compact_relationship_summary_for_prompt(
     *,
     execution_mode: str = "",
     required_claim_slots: list[Any] | None = None,
+    agent_id: str = "industry_supply_chain_analyst",
 ) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {}
     max_rows = _relationship_summary_max_rows_for_prompt(execution_mode)
     relationship_rows = [dict(row) for row in value.get("relationships") or [] if isinstance(row, Mapping)]
-    selected_rows = _rank_rows_for_prompt(
-        relationship_rows,
-        _selection_terms({}, required_claim_slots or [], [], agent_id="industry_supply_chain_analyst"),
-        agent_id="industry_supply_chain_analyst",
-    )[: max(1, max_rows)]
+    focus_tickers = _unique_upper(value.get("focus_tickers") or value.get("expanded_tickers"))
+    if agent_id == "product_technology_analyst":
+        selected_rows = _product_relationship_summary_rows_for_prompt(
+            relationship_rows,
+            focus_tickers=focus_tickers,
+            max_rows=max(1, max_rows),
+        )
+    else:
+        selected_rows = _rank_rows_for_prompt(
+            relationship_rows,
+            _selection_terms({}, required_claim_slots or [], [], agent_id="industry_supply_chain_analyst"),
+            agent_id="industry_supply_chain_analyst",
+        )[: max(1, max_rows)]
     relationships = []
     for row in selected_rows:
         if not isinstance(row, Mapping):
@@ -890,6 +1131,76 @@ def _compact_relationship_summary_for_prompt(
         "relationships": relationships,
         "financial_fact_policy": "relationship_graph_hypothesis_only",
     }
+
+
+def _product_relationship_summary_rows_for_prompt(
+    rows: list[dict[str, Any]],
+    *,
+    focus_tickers: list[str],
+    max_rows: int,
+) -> list[dict[str, Any]]:
+    if not rows or max_rows <= 0:
+        return []
+    focus = set(_unique_upper(focus_tickers))
+
+    def _score(row: Mapping[str, Any]) -> int:
+        ticker = str(row.get("ticker") or "").strip().upper()
+        related = str(row.get("related_ticker") or "").strip().upper()
+        text = " ".join(
+            str(row.get(key) or "").lower()
+            for key in ("relationship_type", "edge_type", "evidence_ref", "summary", "source_family")
+        )
+        score = 0
+        if ticker in focus and related in focus:
+            score += 14
+        elif ticker in focus:
+            score += 9
+        elif related in focus:
+            score += 7
+        if any(term in text for term in ("accelerator", "gpu", "tpu", "server", "rack", "cloud", "ai ")):
+            score += 6
+        if any(term in text for term in ("customer", "deployment", "configured", "adoption", "channel_offer")):
+            score += 4
+        if any(term in text for term in ("supplier", "supply", "input", "component")):
+            score += 3
+        if str(row.get("evidence_ref") or "").strip():
+            score += 1
+        return score
+
+    ranked = [
+        row
+        for _, row in sorted(
+            list(enumerate(rows)),
+            key=lambda item: (-_score(item[1]), item[0]),
+        )
+    ]
+    selected: list[dict[str, Any]] = []
+    selected_ids: set[int] = set()
+    for ticker in focus_tickers:
+        upper = str(ticker or "").strip().upper()
+        if not upper:
+            continue
+        for row in ranked:
+            if len(selected) >= max_rows:
+                return selected
+            if id(row) in selected_ids:
+                continue
+            if upper not in {
+                str(row.get("ticker") or "").strip().upper(),
+                str(row.get("related_ticker") or "").strip().upper(),
+            }:
+                continue
+            selected.append(row)
+            selected_ids.add(id(row))
+            break
+    for row in ranked:
+        if len(selected) >= max_rows:
+            break
+        if id(row) in selected_ids:
+            continue
+        selected.append(row)
+        selected_ids.add(id(row))
+    return selected
 
 
 def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -939,17 +1250,42 @@ def _compact_user_payload_for_repair(payload: Mapping[str, Any]) -> dict[str, An
     }
 
 
+def _compact_product_spec_pack_for_prompt(value: Any, *, agent_id: str = "") -> dict[str, Any]:
+    if agent_id != "product_technology_analyst":
+        return {}
+    compact = _compact_product_spec_pack(
+        value,
+        max_items=_prompt_pack_max_items("PRODUCT_SPEC_PACK_PROMPT_MAX_ITEMS", 3),
+        section_keys=(
+            "product_specs",
+            "product_kpi_refs",
+            "channel_offers",
+            "field_inquiry_notes",
+            "commercial_gaps",
+            "rejected_objects",
+        ),
+    )
+    if compact:
+        compact["role_projection_policy"] = "product_prompt_specs_kpi_channel_only_v0_1"
+        compact["excluded_sections"] = ["customer_deployment_signals", "supply_chain_signals"]
+    return compact
+
+
 def _compact_product_spec_pack_for_repair(value: Any) -> dict[str, Any]:
+    return _compact_product_spec_pack(value, max_items=4)
+
+
+def _compact_product_spec_pack(value: Any, *, max_items: int, section_keys: tuple[str, ...] | None = None) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {}
     compact = {
         "schema_version": value.get("schema_version") or "",
         "pack_id": value.get("pack_id") or "",
         "status": value.get("status") or "",
-        "summary": value.get("summary") or {},
-        "boundary_policy": value.get("boundary_policy") or {},
+        "summary": _compact_pack_metadata(value.get("summary") or {}, max_items=8, text_limit=120),
+        "boundary_policy": _compact_pack_metadata(value.get("boundary_policy") or {}, max_items=6, text_limit=140),
     }
-    for key in (
+    all_keys = (
         "product_specs",
         "product_kpi_refs",
         "channel_offers",
@@ -958,22 +1294,38 @@ def _compact_product_spec_pack_for_repair(value: Any) -> dict[str, Any]:
         "supply_chain_signals",
         "commercial_gaps",
         "rejected_objects",
-    ):
-        compact[key] = [dict(item) for item in value.get(key) or [] if isinstance(item, Mapping)][:4]
+    )
+    for key in section_keys or all_keys:
+        compact[key] = [
+            _compact_pack_prompt_row(item)
+            for item in value.get(key) or []
+            if isinstance(item, Mapping)
+        ][:max(1, max_items)]
+    for key in all_keys:
+        compact.setdefault(key, [])
     return compact
 
 
+def _compact_capital_macro_pack_for_prompt(value: Any, *, agent_id: str = "") -> dict[str, Any]:
+    if agent_id not in {"fundamental_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"}:
+        return {}
+    return _compact_capital_macro_pack(
+        value,
+        max_items=_prompt_pack_max_items("CAPITAL_MACRO_PACK_PROMPT_MAX_ITEMS", 5),
+        agent_id=agent_id,
+    )
+
+
 def _compact_capital_macro_pack_for_repair(value: Any) -> dict[str, Any]:
+    return _compact_capital_macro_pack(value, max_items=4)
+
+
+def _compact_capital_macro_pack(value: Any, *, max_items: int, agent_id: str = "") -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {}
-    compact = {
-        "schema_version": value.get("schema_version") or "",
-        "pack_id": value.get("pack_id") or "",
-        "status": value.get("status") or "",
-        "summary": value.get("summary") or {},
-        "boundary_policy": value.get("boundary_policy") or {},
-    }
-    for key in (
+    section_policy = _capital_macro_prompt_sections(agent_id)
+    included_sections = section_policy["included_sections"]
+    all_sections = (
         "debt_instruments",
         "ownership_positions",
         "insider_transactions",
@@ -981,19 +1333,103 @@ def _compact_capital_macro_pack_for_repair(value: Any) -> dict[str, Any]:
         "company_exposure_edges",
         "vertical_official_objects",
         "rejected_objects",
-    ):
-        compact[key] = [dict(item) for item in value.get(key) or [] if isinstance(item, Mapping)][:4]
+    )
+    compact = {
+        "schema_version": value.get("schema_version") or "",
+        "pack_id": value.get("pack_id") or "",
+        "status": value.get("status") or "",
+        "summary": value.get("summary") or {},
+        "boundary_policy": value.get("boundary_policy") or {},
+        "role_projection_policy": section_policy["policy"],
+        "included_sections": included_sections,
+        "excluded_sections": [key for key in all_sections if key not in set(included_sections)],
+    }
+    for key in included_sections:
+        compact[key] = [
+            _compact_pack_prompt_row(item)
+            for item in value.get(key) or []
+            if isinstance(item, Mapping)
+        ][:max(1, max_items)]
     return compact
 
 
+def _capital_macro_prompt_sections(agent_id: str) -> dict[str, Any]:
+    role = str(agent_id or "").strip()
+    if role == "fundamental_analyst":
+        return {
+            "policy": "role_projected_capital_macro_pack_v0_2_fundamental_capital_structure",
+            "included_sections": [
+                "debt_instruments",
+                "ownership_positions",
+                "insider_transactions",
+                "company_exposure_edges",
+            ],
+        }
+    if role == "industry_supply_chain_analyst":
+        return {
+            "policy": "role_projected_capital_macro_pack_v0_2_industry_exposure_edges",
+            "included_sections": [
+                "macro_drivers",
+                "company_exposure_edges",
+                "vertical_official_objects",
+            ],
+        }
+    if role == "risk_counterevidence_analyst":
+        return {
+            "policy": "role_projected_capital_macro_pack_v0_2_risk_counterevidence",
+            "included_sections": [
+                "debt_instruments",
+                "macro_drivers",
+                "rejected_objects",
+            ],
+        }
+    return {
+        "policy": "role_projected_capital_macro_pack_v0_2_repair_full_boundary",
+        "included_sections": [
+            "debt_instruments",
+            "ownership_positions",
+            "insider_transactions",
+            "macro_drivers",
+            "company_exposure_edges",
+            "vertical_official_objects",
+            "rejected_objects",
+        ],
+    }
+
+
+def _compact_fundamental_statement_pack_for_prompt(value: Any, *, agent_id: str = "") -> dict[str, Any]:
+    if agent_id != "fundamental_analyst":
+        return {}
+    return _compact_fundamental_statement_pack(
+        value,
+        max_items=_prompt_pack_max_items("FUNDAMENTAL_STATEMENT_PACK_PROMPT_MAX_ITEMS", 6),
+    )
+
+
 def _compact_fundamental_statement_pack_for_repair(value: Any) -> dict[str, Any]:
+    return _compact_fundamental_statement_pack(value, max_items=4)
+
+
+def _compact_fundamental_statement_pack(value: Any, *, max_items: int) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {}
     compact = {
         "schema_version": value.get("schema_version") or "",
-        "industry_focus_policy": value.get("industry_focus_policy") or {},
-        "summary": value.get("summary") or {},
-        "source_boundary": value.get("source_boundary") or {},
+        "industry_focus_policy": _compact_pack_metadata(
+            value.get("industry_focus_policy") or {},
+            max_items=6,
+            text_limit=90,
+        ),
+        "summary": _compact_pack_metadata(
+            value.get("summary") or {},
+            max_items=8,
+            text_limit=90,
+        ),
+        "source_boundary": _compact_pack_metadata(
+            value.get("source_boundary") or {},
+            max_items=6,
+            text_limit=90,
+        ),
     }
     for key in (
         "statement_line_items",
@@ -1003,24 +1439,61 @@ def _compact_fundamental_statement_pack_for_repair(value: Any) -> dict[str, Any]
         "integration_bridges",
         "analysis_gaps",
     ):
-        compact[key] = [dict(item) for item in value.get(key) or [] if isinstance(item, Mapping)][:4]
+        compact[key] = [
+            _compact_pack_prompt_row(item)
+            for item in value.get(key) or []
+            if isinstance(item, Mapping)
+        ][:max(1, max_items)]
     return compact
 
 
+def _compact_fundamental_peer_statement_panel_for_prompt(value: Any, *, agent_id: str = "") -> dict[str, Any]:
+    if agent_id != "fundamental_analyst":
+        return {}
+    return _compact_fundamental_peer_statement_panel(
+        value,
+        max_items=_prompt_pack_max_items("FUNDAMENTAL_PEER_PANEL_PROMPT_MAX_ITEMS", 5),
+    )
+
+
 def _compact_fundamental_peer_statement_panel_for_repair(value: Any) -> dict[str, Any]:
+    return _compact_fundamental_peer_statement_panel(value, max_items=4)
+
+
+def _compact_fundamental_peer_statement_panel(value: Any, *, max_items: int) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {}
     compact = {
         "schema_version": value.get("schema_version") or "",
-        "industry_financial_focus_policy": value.get("industry_financial_focus_policy") or {},
-        "summary": value.get("summary") or {},
-        "analysis_gates": value.get("analysis_gates") or {},
-        "source_boundary": value.get("source_boundary") or {},
+        "industry_financial_focus_policy": _compact_pack_metadata(
+            value.get("industry_financial_focus_policy") or {},
+            max_items=6,
+            text_limit=90,
+        ),
+        "summary": _compact_pack_metadata(
+            value.get("summary") or {},
+            max_items=8,
+            text_limit=90,
+        ),
+        "analysis_gates": _compact_pack_metadata(
+            value.get("analysis_gates") or {},
+            max_items=6,
+            text_limit=90,
+        ),
+        "source_boundary": _compact_pack_metadata(
+            value.get("source_boundary") or {},
+            max_items=6,
+            text_limit=90,
+        ),
     }
     three_statement = value.get("three_statement_metric_panel") if isinstance(value.get("three_statement_metric_panel"), Mapping) else {}
     compact["three_statement_metric_panel"] = {
         "statement_type_counts": three_statement.get("statement_type_counts") or {},
-        "statements": [dict(item) for item in three_statement.get("statements") or [] if isinstance(item, Mapping)][:3],
+        "statements": [
+            _compact_pack_prompt_row(item)
+            for item in three_statement.get("statements") or []
+            if isinstance(item, Mapping)
+        ][:3],
     }
     for key in (
         "peer_comparable_metric_panel",
@@ -1031,13 +1504,194 @@ def _compact_fundamental_peer_statement_panel_for_repair(value: Any) -> dict[str
         "statement_anomaly_detector",
     ):
         panel = value.get(key) if isinstance(value.get(key), Mapping) else {}
-        compact_panel = dict(panel)
+        compact_panel = _compact_pack_metadata(
+            {
+                panel_key: panel_value
+                for panel_key, panel_value in panel.items()
+                if panel_key
+                not in {
+                    "comparisons",
+                    "coverage",
+                    "rows",
+                    "bridges",
+                    "items",
+                    "latest_rows",
+                    "peer_values",
+                }
+            },
+            max_items=6,
+            text_limit=90,
+        )
         for row_key in ("comparisons", "coverage", "rows", "bridges", "items"):
             if isinstance(compact_panel.get(row_key), list):
-                compact_panel[row_key] = [dict(item) for item in compact_panel.get(row_key) if isinstance(item, Mapping)][:4]
+                compact_panel[row_key] = [
+                    _compact_pack_prompt_row(item)
+                    for item in compact_panel.get(row_key)
+                    if isinstance(item, Mapping)
+                ][:max(1, max_items)]
+            elif isinstance(panel.get(row_key), list):
+                compact_panel[row_key] = [
+                    _compact_pack_prompt_row(item)
+                    for item in panel.get(row_key)
+                    if isinstance(item, Mapping)
+                ][:max(1, max_items)]
         compact[key] = compact_panel
-    compact["analysis_gaps"] = [dict(item) for item in value.get("analysis_gaps") or [] if isinstance(item, Mapping)][:4]
+    compact["analysis_gaps"] = [
+        _compact_pack_prompt_row(item)
+        for item in value.get("analysis_gaps") or []
+        if isinstance(item, Mapping)
+    ][:max(1, max_items)]
     return compact
+
+
+def _prompt_pack_max_items(env_name: str, default: int) -> int:
+    return max(1, _int_env(os.environ.get(env_name), default=default))
+
+
+def _compact_pack_prompt_row(item: Mapping[str, Any]) -> dict[str, Any]:
+    clean = dict(item)
+    for key, limit in (
+        ("summary", 180),
+        ("text", 140),
+        ("snippet", 140),
+        ("description", 140),
+        ("notes", 120),
+        ("rationale", 120),
+        ("authority_boundary", 120),
+    ):
+        if key in clean:
+            clean[key] = _truncate(str(clean.get(key) or ""), limit)
+    return _compact_prompt_row(clean)
+
+
+def _compact_pack_metadata(value: Any, *, max_items: int, text_limit: int) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    allowed_scalar_keys = {
+        "schema_version",
+        "pack_id",
+        "artifact_ref",
+        "artifact_uri",
+        "path",
+        "source_id",
+        "source_family",
+        "source_role",
+        "source_url",
+        "snapshot_url",
+        "url",
+        "ticker",
+        "company",
+        "product",
+        "product_family",
+        "metric",
+        "metric_family",
+        "period",
+        "confidence",
+        "authority_boundary",
+        "status",
+        "coverage_status",
+        "count",
+        "row_count",
+        "ready_count",
+        "gap_count",
+        "line_item_count",
+        "input_row_count",
+        "product_spec_count",
+        "product_kpi_count",
+        "customer_deployment_count",
+        "source_entity_role",
+        "issuer_binding_status",
+        "product_binding_status",
+        "counterparty_binding_status",
+        "issuer_matched_terms",
+        "product_matched_terms",
+        "counterparty_matched_terms",
+        "binding_claim_boundary",
+    }
+    compact: dict[str, Any] = {}
+    omitted_keys: list[str] = []
+    for key, item in list(value.items())[:max_items]:
+        key_text = str(key)
+        if _prompt_value_empty(item):
+            continue
+        if isinstance(item, Mapping):
+            compact[key_text] = _compact_metadata_mapping(item, max_items=max_items, text_limit=text_limit)
+        elif isinstance(item, (list, tuple, set)):
+            if key_text in allowed_scalar_keys:
+                compact[key_text] = [
+                    _truncate(str(part), text_limit)
+                    for part in list(item)[:4]
+                    if not isinstance(part, Mapping) and not _prompt_value_empty(part)
+                ]
+            else:
+                omitted_keys.append(key_text)
+        else:
+            text = str(item)
+            if key_text in allowed_scalar_keys or len(text) <= min(text_limit, 80):
+                compact[key_text] = _truncate(text, text_limit)
+            else:
+                omitted_keys.append(key_text)
+    if omitted_keys:
+        compact["omitted_keys"] = omitted_keys[:6]
+        compact["omitted_key_count"] = len(omitted_keys)
+        compact["content_policy"] = "metadata_ref_only_nested_payload_omitted"
+    return compact
+
+
+def _compact_metadata_mapping(value: Mapping[str, Any], *, max_items: int, text_limit: int) -> dict[str, Any]:
+    allowed_scalar_keys = {
+        "schema_version",
+        "pack_id",
+        "artifact_ref",
+        "artifact_uri",
+        "path",
+        "source_id",
+        "source_family",
+        "source_role",
+        "source_url",
+        "snapshot_url",
+        "url",
+        "ticker",
+        "company",
+        "product",
+        "product_family",
+        "metric",
+        "metric_family",
+        "period",
+        "confidence",
+        "authority_boundary",
+        "status",
+        "coverage_status",
+        "count",
+        "row_count",
+        "ready_count",
+        "gap_count",
+    }
+    compact: dict[str, Any] = {}
+    for key, item in list(value.items())[:max_items]:
+        key_text = str(key)
+        if _prompt_value_empty(item):
+            continue
+        if key_text in allowed_scalar_keys and not isinstance(item, Mapping):
+            if isinstance(item, (list, tuple, set)):
+                compact[key_text] = [
+                    _truncate(str(part), text_limit)
+                    for part in list(item)[:4]
+                    if not isinstance(part, Mapping) and not _prompt_value_empty(part)
+                ]
+            else:
+                compact[key_text] = _truncate(str(item), text_limit)
+    if compact:
+        omitted = [str(key) for key in value.keys() if str(key) not in compact]
+        if omitted:
+            compact["omitted_keys"] = omitted[:6]
+            compact["omitted_key_count"] = len(omitted)
+        return compact
+    return {
+        "keys": [str(key) for key in list(value.keys())[:6]],
+        "key_count": len(value),
+        "content_policy": "metadata_ref_only_nested_payload_omitted",
+    }
 
 
 def _compact_rows_for_model_payload(agent_id: str, rows: Any, *, execution_mode: str = "") -> list[dict[str, Any]]:
@@ -1074,17 +1728,156 @@ def _compact_relationship_summary_payload(value: Mapping[str, Any], *, execution
 
 
 def _compact_prompt_row(row: Mapping[str, Any]) -> dict[str, Any]:
-    """Drop empty row fields before JSON serialization without removing citation fields."""
-    preserve = {"evidence_ref", "source_family", "ticker", "related_ticker", "summary"}
+    """Project a row into the minimal prompt contract without losing citations."""
+    source_family = str(row.get("source_family") or "").strip()
+    base_allowlist = {
+        "evidence_ref",
+        "evidence_refs",
+        "evidence_id",
+        "ref_id",
+        "refs",
+        "raw_record_ref",
+        "source_fact_id",
+        "source_record_ref",
+        "line_item_id",
+        "change_id",
+        "comparison_id",
+        "source_family",
+        "ticker",
+        "related_ticker",
+        "summary",
+        "text",
+        "snippet",
+        "description",
+        "notes",
+        "rationale",
+        "authority_boundary",
+        "source_role",
+        "source_entity_role",
+        "claim_scope",
+        "context_only",
+        "exact_value_authority",
+        "gap_only",
+        "gap_type",
+        "reason_code",
+        "reason",
+        "confidence",
+        "materiality",
+        "direction",
+        "semantic_supplement",
+    }
+    numeric_fields = {
+        "metric",
+        "metric_name",
+        "metric_family",
+        "value",
+        "unit",
+        "display_value",
+        "display_value_zh",
+        "selected_for_display",
+        "formatted_value",
+        "period",
+        "period_end",
+        "period_role",
+        "fy",
+        "fp",
+        "form_type",
+    }
+    product_fields = {
+        "product_family",
+        "product_or_segment",
+        "product",
+        "promotion_status",
+        "product_binding_status",
+        "runtime_contract",
+        *numeric_fields,
+    }
+    public_context_fields = {
+        "source_id",
+        "underlying_source_family",
+        "source_class",
+        "structured_context_type",
+        "authority_type",
+        "signal_authority_type",
+        "signal_promotion_level",
+        "issuer_binding_status",
+        "product_binding_status",
+        "counterparty_binding_status",
+        "entity_binding",
+        "entity_binding_claim_boundary",
+    }
+    relationship_fields = {
+        "from_ticker",
+        "to_ticker",
+        "relationship_type",
+        "edge_type",
+        "mechanism",
+        "metric_links",
+    }
+    if source_family == "company_product_evidence_graph":
+        allowlist = base_allowlist | product_fields
+    elif source_family in {"public_source_context", "live_public_web_context"}:
+        allowlist = base_allowlist | public_context_fields
+    elif source_family == "relationship_graph":
+        allowlist = base_allowlist | relationship_fields
+    elif source_family in {"primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot", "industry_snapshot", ""}:
+        allowlist = base_allowlist | numeric_fields | {"signal_authority_type", "signal_promotion_level"}
+    else:
+        allowlist = base_allowlist | numeric_fields | product_fields | public_context_fields | relationship_fields
+    text_limits = {
+        "summary": 120,
+        "reason": 120,
+        "entity_binding_claim_boundary": 120,
+        "text": 120,
+        "snippet": 120,
+        "description": 120,
+        "notes": 120,
+        "rationale": 120,
+        "authority_boundary": 120,
+        "mechanism": 120,
+        "source_url": 180,
+        "snapshot_url": 180,
+        "url": 180,
+    }
+    reference_fields = {
+        "evidence_ref",
+        "evidence_refs",
+        "evidence_id",
+        "ref_id",
+        "refs",
+        "raw_record_ref",
+        "source_id",
+        "source_fact_id",
+        "source_record_ref",
+        "line_item_id",
+        "change_id",
+        "comparison_id",
+        "metric_id",
+        "gap_id",
+        "id",
+    }
     clean: dict[str, Any] = {}
     for key, value in row.items():
         key_text = str(key)
-        if key_text in preserve:
-            clean[key_text] = value
+        if key_text not in allowlist:
             continue
         if _prompt_value_empty(value):
             continue
-        clean[key_text] = value
+        if key_text in reference_fields:
+            refs = _string_list(value)
+            clean[key_text] = refs[:4] if isinstance(value, (list, tuple, set)) else (refs[0] if refs else "")
+        elif isinstance(value, (list, tuple, set)):
+            clean[key_text] = [_truncate(str(item), 80) for item in list(value)[:4] if not _prompt_value_empty(item)]
+        elif isinstance(value, Mapping):
+            clean[key_text] = _compact_pack_metadata(
+                value,
+                max_items=8 if key_text == "entity_binding" else 4,
+                text_limit=80,
+            )
+        elif isinstance(value, str):
+            clean[key_text] = _truncate(value, text_limits.get(key_text, 80))
+        else:
+            clean[key_text] = value
     return clean
 
 
@@ -1098,6 +1891,337 @@ def _prompt_value_empty(value: Any) -> bool:
     return False
 
 
+_PRODUCT_PROMPT_TERMS = (
+    "product",
+    "products",
+    "sku",
+    "model",
+    "spec",
+    "specification",
+    "architecture",
+    "platform",
+    "generation",
+    "taxonomy",
+    "benchmark",
+    "performance",
+    "developer",
+    "api",
+    "software",
+    "semiconductor",
+    "gpu",
+    "cpu",
+    "accelerator",
+    "hbm",
+    "server",
+    "segment",
+    "kpi",
+    "revenue",
+    "margin",
+    "gross margin",
+    "shipment",
+    "delivery",
+    "capacity",
+    "utilization",
+    "channel_offer",
+    "field_inquiry",
+    "field_inquiry_note",
+    "company_official_product_surface",
+    "commerce_product_surface",
+    "pricing",
+    "availability",
+)
+
+_PRODUCT_PROMPT_EXCLUSION_TERMS = (
+    "customer_deployment",
+    "customer_deployment_signal",
+    "official_customer_deployment_surface",
+    "deployment",
+    "deployed_by",
+    "adopted_by",
+    "ordered_by",
+    "customer",
+    "counterparty",
+    "supply_chain",
+    "supply_chain_signal",
+    "supplier",
+    "partner",
+    "relationship",
+    "component_input_to",
+    "public_order",
+    "contract award",
+)
+
+_INDUSTRY_PROMPT_TERMS = (
+    "relationship",
+    "supplier",
+    "supply",
+    "supply chain",
+    "component",
+    "customer",
+    "deployment",
+    "deployed",
+    "adoption",
+    "ordered",
+    "order",
+    "backlog",
+    "booking",
+    "capex",
+    "demand",
+    "cycle",
+    "industry",
+    "sector",
+    "fab",
+    "wafer",
+    "foundry",
+    "memory",
+    "logic",
+    "export",
+    "restriction",
+    "competitive",
+    "competes",
+    "substitute",
+    "downstream",
+    "upstream",
+    "channel",
+    "distributor",
+    "sold_through",
+)
+
+_INDUSTRY_PRODUCT_CONTEXT_TERMS = (
+    "relationship",
+    "supplier",
+    "supply",
+    "supply chain",
+    "component",
+    "customer",
+    "deployment",
+    "deployed",
+    "adoption",
+    "adopted",
+    "ordered",
+    "order",
+    "backlog",
+    "booking",
+    "downstream",
+    "upstream",
+    "channel",
+    "distributor",
+    "sold_through",
+    "configured_in",
+)
+
+_RISK_PROMPT_TERMS = (
+    "risk",
+    "risks",
+    "decline",
+    "pressure",
+    "gap",
+    "missing",
+    "weak",
+    "uncertain",
+    "uncertainty",
+    "constraint",
+    "caveat",
+    "lawsuit",
+    "litigation",
+    "regulatory",
+    "export",
+    "export control",
+    "restriction",
+    "china",
+    "sanction",
+    "tariff",
+    "concentration",
+    "dependency",
+    "dependence",
+    "bottleneck",
+    "shortage",
+    "cyclical",
+    "cycle",
+    "downturn",
+    "inventory",
+    "cancellation",
+    "delay",
+    "impairment",
+    "debt",
+    "liquidity",
+    "cash burn",
+    "margin pressure",
+    "cost pressure",
+    "competition",
+    "competitive",
+    "loss",
+    "adverse",
+    "exposure",
+    "limited",
+    "fail",
+    "conflict",
+    "counter",
+    "counterevidence",
+)
+
+
+def _role_filtered_prompt_rows(
+    agent_id: str,
+    rows: list[dict[str, Any]],
+    *,
+    task_card: Mapping[str, Any],
+    required_claim_slots: list[Any],
+    counterclaim_slots: list[Any],
+) -> list[dict[str, Any]]:
+    if agent_id not in {"product_technology_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"}:
+        return rows
+    selected = [
+        row
+        for row in rows
+        if _row_allowed_for_role_prompt(
+            agent_id,
+            row,
+            task_card=task_card,
+            required_claim_slots=required_claim_slots,
+            counterclaim_slots=counterclaim_slots,
+        )
+    ]
+    return selected
+
+
+def _row_allowed_for_role_prompt(
+    agent_id: str,
+    row: Mapping[str, Any],
+    *,
+    task_card: Mapping[str, Any],
+    required_claim_slots: list[Any],
+    counterclaim_slots: list[Any],
+) -> bool:
+    family = str(row.get("source_family") or "")
+    text = _row_role_prompt_text(row)
+    if agent_id == "product_technology_analyst":
+        if _has_any_prompt_term(text, _PRODUCT_PROMPT_EXCLUSION_TERMS):
+            # Deployment, customer, and supply-chain rows are intentionally handled by
+            # the industry/supply-chain lens so the same evidence is not reread by
+            # both specialists.
+            return False
+        if family == "company_product_evidence_graph":
+            if str(row.get("promotion_status") or "") == "runtime_fact_allowed":
+                return True
+            return _has_any_prompt_term(text, _PRODUCT_PROMPT_TERMS)
+        if family in {"public_source_context", "live_public_web_context"}:
+            return _has_any_prompt_term(text, _PRODUCT_PROMPT_TERMS)
+        return _has_any_prompt_term(text, _PRODUCT_PROMPT_TERMS)
+    if agent_id == "industry_supply_chain_analyst":
+        if family in {"relationship_graph", "industry_snapshot"}:
+            return True
+        if family in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}:
+            return _has_any_prompt_term(text, _INDUSTRY_PRODUCT_CONTEXT_TERMS)
+        return _has_any_prompt_term(text, _INDUSTRY_PROMPT_TERMS)
+    if agent_id == "risk_counterevidence_analyst":
+        if _has_any_prompt_term(text, _RISK_PROMPT_TERMS):
+            return True
+        if _risk_relevant_financial_row_for_prompt(row):
+            return True
+        if family == "relationship_graph":
+            return True
+        if family in {"market_snapshot", "industry_snapshot"} and _matches_claim_slot_terms(row, [task_card]):
+            return True
+        return False
+    return True
+
+
+def _row_role_prompt_text(row: Mapping[str, Any]) -> str:
+    return " ".join(
+        str(row.get(key) or "").lower()
+        for key in (
+            "evidence_ref",
+            "source_family",
+            "source_role",
+            "source_class",
+            "structured_context_type",
+            "runtime_contract",
+            "signal_authority_type",
+            "signal_promotion_level",
+            "authority_type",
+            "claim_scope",
+            "metric",
+            "metric_name",
+            "period_role",
+            "product_family",
+            "product_or_segment",
+            "model_name",
+            "spec_name",
+            "current_model",
+            "prior_model",
+            "channel_name",
+            "inquiry_target",
+            "relationship_type",
+            "edge_type",
+            "direction",
+            "source_entity_role",
+            "entity_binding_claim_boundary",
+            "summary",
+        )
+    )
+
+
+def _has_any_prompt_term(text: str, terms: tuple[str, ...]) -> bool:
+    for term in terms:
+        if not term:
+            continue
+        if " " in term:
+            if term in text:
+                return True
+            continue
+        if re.search(rf"(?<![a-z0-9_]){re.escape(term)}(?![a-z0-9_])", text):
+            return True
+    return False
+
+
+def _matches_claim_slot_terms(row: Mapping[str, Any], slots: list[Any]) -> bool:
+    if not slots:
+        return False
+    text = _row_role_prompt_text(row)
+    terms: set[str] = set()
+    for slot in slots:
+        for term in _terms_from_value(slot):
+            if len(term) >= 3:
+                terms.add(term)
+    return any(term in text for term in terms)
+
+
+def _risk_relevant_financial_row_for_prompt(row: Mapping[str, Any]) -> bool:
+    family = str(row.get("source_family") or "")
+    if family not in {"primary_sec_filing", "company_authored_unaudited_sec_filing", "derived_metric_layer"}:
+        return False
+    requirement_ids: set[str] = set()
+    requirement_ids.update(_string_list(row.get("evidence_requirement_id")))
+    requirement_ids.update(_string_list(row.get("evidence_requirement_ids")))
+    requirement_ids.update(_string_list(row.get("selection_task_ids")))
+    if requirement_ids & {
+        "req_dell_margin_quality",
+        "req_hyperscaler_capex",
+        "req_supply_chain",
+        "req_customer_deployment",
+        "req_accelerator_architecture",
+    }:
+        return True
+    text = _row_metric_text(row)
+    return any(
+        term in text
+        for term in (
+            "capex",
+            "capital expenditure",
+            "property and equipment",
+            "gross margin",
+            "margin",
+            "operating income",
+            "cash flow",
+            "inventory",
+            "backlog",
+            "debt",
+            "cash",
+        )
+    )
+
+
 def _select_prompt_rows(
     agent_id: str,
     rows: list[dict[str, Any]],
@@ -1109,11 +2233,28 @@ def _select_prompt_rows(
 ) -> list[dict[str, Any]]:
     if not rows:
         return []
+    rows = _role_filtered_prompt_rows(
+        agent_id,
+        rows,
+        task_card=task_card,
+        required_claim_slots=required_claim_slots,
+        counterclaim_slots=counterclaim_slots,
+    )
+    if not rows:
+        return []
     terms = _selection_terms(task_card, required_claim_slots, counterclaim_slots, agent_id=agent_id)
     ranked = _rank_rows_for_prompt(rows, terms, agent_id=agent_id)
     if agent_id == "industry_supply_chain_analyst":
         return _relationship_preserving_selection(ranked, max_rows=max_rows)
     if agent_id == "product_technology_analyst":
+        focus_tickers = _unique_upper(task_card.get("focus_tickers") or task_card.get("search_scope_tickers"))
+        if len(focus_tickers) >= 2:
+            return _focus_ticker_balanced_prompt_rows(
+                ranked,
+                focus_tickers=focus_tickers,
+                max_rows=max_rows,
+                source_families={"company_product_evidence_graph", "public_source_context", "live_public_web_context"},
+            )
         return _balanced_rows_by_source_for_prompt(ranked, max_rows=max_rows)
     if agent_id in {"fundamental_analyst", "risk_counterevidence_analyst"}:
         focus_tickers = _unique_upper(task_card.get("focus_tickers"))
@@ -1126,18 +2267,150 @@ def _select_prompt_rows(
                     "company_authored_unaudited_sec_filing",
                     "market_snapshot",
                     "industry_snapshot",
+                    "relationship_graph",
                     "run_artifact",
                 }
-            return _focus_ticker_balanced_prompt_rows(
+                return _risk_counterevidence_prompt_rows(
+                    ranked,
+                    focus_tickers=focus_tickers,
+                    max_rows=max_rows,
+                    source_families=source_families,
+                )
+            return _fundamental_prompt_rows(
                 ranked,
                 focus_tickers=focus_tickers,
                 max_rows=max_rows,
                 source_families=source_families,
-                priority_source_families=("market_snapshot", "industry_snapshot") if agent_id == "risk_counterevidence_analyst" else (),
             )
     if agent_id == "risk_counterevidence_analyst":
         return _balanced_rows_by_source_for_prompt(ranked, max_rows=max_rows)
     return ranked[:max_rows]
+
+
+def _fundamental_prompt_rows(
+    rows: list[dict[str, Any]],
+    *,
+    focus_tickers: list[str],
+    max_rows: int,
+    source_families: set[str],
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    selected_ids: set[int] = set()
+
+    def add(row: dict[str, Any]) -> None:
+        if len(selected) >= max_rows or id(row) in selected_ids:
+            return
+        selected.append(row)
+        selected_ids.add(id(row))
+
+    for requirement_id, limit in (("req_dell_margin_quality", 3), ("req_hyperscaler_capex", 3)):
+        count = 0
+        for row in rows:
+            if count >= limit:
+                break
+            if _row_has_prompt_requirement(row, {requirement_id}):
+                add(row)
+                count += 1
+        if requirement_id == "req_hyperscaler_capex":
+            for row in _requirement_rows_by_distinct_ticker(rows, requirement_id=requirement_id, limit=2):
+                add(row)
+
+    for row in _focus_ticker_balanced_prompt_rows(
+        rows,
+        focus_tickers=focus_tickers,
+        max_rows=max_rows,
+        source_families=source_families,
+        priority_source_families=("primary_sec_filing", "company_authored_unaudited_sec_filing"),
+    ):
+        add(row)
+    return selected[:max_rows]
+
+
+def _risk_counterevidence_prompt_rows(
+    rows: list[dict[str, Any]],
+    *,
+    focus_tickers: list[str],
+    max_rows: int,
+    source_families: set[str],
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    selected_ids: set[int] = set()
+
+    def add(row: dict[str, Any]) -> None:
+        if len(selected) >= max_rows or id(row) in selected_ids:
+            return
+        selected.append(row)
+        selected_ids.add(id(row))
+
+    for requirement_id, limit in (
+        ("req_dell_margin_quality", 2),
+        ("req_hyperscaler_capex", 2),
+        ("req_supply_chain", 1),
+        ("req_customer_deployment", 1),
+    ):
+        count = 0
+        for row in rows:
+            if count >= limit:
+                break
+            if _row_has_prompt_requirement(row, {requirement_id}):
+                add(row)
+                count += 1
+        if requirement_id == "req_hyperscaler_capex":
+            for row in _requirement_rows_by_distinct_ticker(rows, requirement_id=requirement_id, limit=2):
+                add(row)
+
+    for family, limit in (("relationship_graph", 2), ("market_snapshot", 1), ("industry_snapshot", 1)):
+        count = 0
+        for row in rows:
+            if count >= limit:
+                break
+            if str(row.get("source_family") or "") == family:
+                add(row)
+                count += 1
+
+    for row in _focus_ticker_balanced_prompt_rows(
+        rows,
+        focus_tickers=focus_tickers,
+        max_rows=max_rows,
+        source_families=source_families,
+        priority_source_families=(
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "relationship_graph",
+            "market_snapshot",
+            "industry_snapshot",
+        ),
+    ):
+        add(row)
+    return selected[:max_rows]
+
+
+def _row_has_prompt_requirement(row: Mapping[str, Any], requirement_ids: set[str]) -> bool:
+    values: list[str] = []
+    values.extend(_string_list(row.get("evidence_requirement_id")))
+    values.extend(_string_list(row.get("evidence_requirement_ids")))
+    values.extend(_string_list(row.get("selection_task_ids")))
+    values.extend(_string_list(row.get("task_id")))
+    return bool(set(values) & requirement_ids)
+
+
+def _requirement_rows_by_distinct_ticker(
+    rows: list[dict[str, Any]],
+    *,
+    requirement_id: str,
+    limit: int,
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    seen_tickers: set[str] = set()
+    for row in rows:
+        if len(selected) >= limit:
+            break
+        ticker = _row_ticker(row)
+        if not ticker or ticker in seen_tickers or not _row_has_prompt_requirement(row, {requirement_id}):
+            continue
+        selected.append(row)
+        seen_tickers.add(ticker)
+    return selected
 
 
 def _relationship_preserving_selection(rows: list[dict[str, Any]], *, max_rows: int) -> list[dict[str, Any]]:
@@ -1559,14 +2832,29 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
 
 def _source_boundaries_from_state(state: Mapping[str, Any]) -> dict[str, Any]:
     plan = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    fused_counts = _fusion_source_family_counts(state)
     return {
         "execution_mode": str(plan.get("execution_mode") or state.get("execution_mode") or ""),
         "allowed_source_families": list(plan.get("allowed_source_families") or []),
-        "context_row_count": len(state.get("context_rows") or []),
-        "ledger_row_count": len(state.get("runtime_ledger_rows") or []),
-        "market_row_count": len(state.get("market_snapshot_rows") or []),
-        "industry_row_count": len(state.get("industry_snapshot_rows") or []),
+        "context_row_count": len(state.get("context_rows") or [])
+        or sum(fused_counts.get(family, 0) for family in ("company_authored_unaudited_sec_filing", "relationship_graph")),
+        "ledger_row_count": len(state.get("runtime_ledger_rows") or []) or fused_counts.get("primary_sec_filing", 0),
+        "market_row_count": len(state.get("market_snapshot_rows") or []) or fused_counts.get("market_snapshot", 0),
+        "industry_row_count": len(state.get("industry_snapshot_rows") or []) or fused_counts.get("industry_snapshot", 0),
+        "fusion_authority_row_count": sum(fused_counts.values()),
     }
+
+
+def _fusion_source_family_counts(state: Mapping[str, Any]) -> dict[str, int]:
+    bundle = state.get("evidence_fusion_bundle") if isinstance(state.get("evidence_fusion_bundle"), Mapping) else {}
+    rows = [dict(item) for item in bundle.get("authority_rows") or [] if isinstance(item, Mapping)]
+    counts: dict[str, int] = {}
+    for row in rows:
+        family = str(row.get("source_family") or row.get("runtime_source_family") or row.get("source_tier") or "").strip()
+        if not family:
+            continue
+        counts[family] = counts.get(family, 0) + 1
+    return counts
 
 
 def _blocked_memolet(agent_id: str, result: Mapping[str, Any]) -> dict[str, Any]:
@@ -1606,6 +2894,24 @@ def _salvage_supported_claim_ref_errors(
     if not error_types or not error_types <= allowed_error_types:
         return None
     memolet = dict(validation.get("memolet") or {})
+    restored_memolet, restored_count = _restore_truncated_evidence_refs_in_memolet(
+        memolet,
+        known_evidence_refs=known_evidence_refs,
+    )
+    if restored_count:
+        restored_validation = validate_specialist_memolet(restored_memolet, known_evidence_refs=known_evidence_refs)
+        if restored_validation.get("status") == "pass":
+            restored_validation["warnings"] = [
+                *list(validation.get("warnings") or []),
+                *list(restored_validation.get("warnings") or []),
+                {
+                    "type": "truncated_evidence_refs_restored_from_known_refs",
+                    "restored_count": restored_count,
+                    "policy": "repair_machine_ref_lineage_before_demoting_supported_observations",
+                },
+            ]
+            return restored_validation
+        memolet = restored_memolet
     observations = [dict(item) for item in memolet.get("observations") or [] if isinstance(item, Mapping)]
     kept: list[dict[str, Any]] = []
     removed: list[dict[str, str]] = []
@@ -1649,6 +2955,58 @@ def _salvage_supported_claim_ref_errors(
         },
     ]
     return salvaged
+
+
+def _restore_truncated_evidence_refs_in_memolet(
+    memolet: Mapping[str, Any],
+    *,
+    known_evidence_refs: set[str],
+) -> tuple[dict[str, Any], int]:
+    if not known_evidence_refs:
+        return dict(memolet), 0
+    known = sorted(str(ref) for ref in known_evidence_refs if str(ref).strip())
+    restored = dict(memolet)
+    restored_count = 0
+    for key in ("observations", "unsupported_claims"):
+        rows: list[dict[str, Any]] = []
+        for item in restored.get(key) or []:
+            if not isinstance(item, Mapping):
+                continue
+            row = dict(item)
+            refs, count = _restore_truncated_evidence_ref_list(
+                _string_list(row.get("evidence_refs") or row.get("refs")),
+                known_refs=known,
+            )
+            if count:
+                row["evidence_refs"] = refs
+                restored_count += count
+            rows.append(row)
+        if rows:
+            restored[key] = rows
+    return restored, restored_count
+
+
+def _restore_truncated_evidence_ref_list(refs: list[str], *, known_refs: list[str]) -> tuple[list[str], int]:
+    restored: list[str] = []
+    restored_count = 0
+    for ref in refs:
+        new_ref = _restore_truncated_evidence_ref(ref, known_refs=known_refs)
+        if new_ref != ref:
+            restored_count += 1
+        restored.append(new_ref)
+    return _dedupe_strings(restored), restored_count
+
+
+def _restore_truncated_evidence_ref(ref: str, *, known_refs: list[str]) -> str:
+    text = str(ref or "").strip()
+    marker = "...[truncated]"
+    if marker not in text:
+        return text
+    prefix = text.split(marker, 1)[0].rstrip()
+    if not prefix:
+        return text
+    matches = [known for known in known_refs if known.startswith(prefix) and marker not in known]
+    return matches[0] if len(matches) == 1 else text
 
 
 def _salvage_product_kpi_authority_violations(
@@ -2009,10 +3367,26 @@ def _row_ref_candidates(row: Mapping[str, Any]) -> list[str]:
 
 def _route_result_summary(result: Mapping[str, Any]) -> dict[str, Any]:
     diagnostics = result.get("model_diagnostics") if isinstance(result.get("model_diagnostics"), Mapping) else {}
+    validation = result.get("validation") if isinstance(result.get("validation"), Mapping) else {}
+    rejected = result.get("rejected_memolet") if isinstance(result.get("rejected_memolet"), Mapping) else {}
     return {
         "agent_id": result.get("agent_id"),
         "status": result.get("status"),
         "failure_reason": str(result.get("failure_reason") or "")[:500],
+        "validation_status": str(validation.get("status") or ""),
+        "validation_error_types": [
+            str(row.get("type") or "")
+            for row in validation.get("errors") or []
+            if isinstance(row, Mapping) and str(row.get("type") or "").strip()
+        ][:12],
+        "validation_warning_types": [
+            str(row.get("type") or "")
+            for row in validation.get("warnings") or []
+            if isinstance(row, Mapping) and str(row.get("type") or "").strip()
+        ][:12],
+        "rejected_memolet_observation_count": len(rejected.get("observations") or []),
+        "rejected_memolet_judgment_candidate_count": len(rejected.get("judgment_candidates") or []),
+        "rejected_memolet_unsupported_claim_count": len(rejected.get("unsupported_claims") or []),
         "attempt_count": (result.get("routing_trace") or {}).get("attempt_count") if isinstance(result.get("routing_trace"), Mapping) else None,
         "repair_attempts": (result.get("routing_trace") or {}).get("repair_attempts") if isinstance(result.get("routing_trace"), Mapping) else None,
         "salvage_policy": (result.get("routing_trace") or {}).get("salvage_policy") if isinstance(result.get("routing_trace"), Mapping) else None,
@@ -2049,6 +3423,7 @@ def _request_route_summary(request: Mapping[str, Any]) -> dict[str, Any]:
         "prompt_bounded_evidence_row_count": len(request.get("bounded_evidence_rows") or []),
         "prompt_relationship_summary_row_count": len(relationship_summary.get("relationships") or []),
         "prompt_row_distribution": request.get("prompt_row_distribution") or _prompt_row_distribution(rows),
+        "input_pack_fingerprint": _request_input_pack_fingerprint(request),
         "source_layer_distribution": _compact_source_layer_distribution_for_route(source_layer_distribution),
         "selected_source_families": _string_list(source_family_bundle.get("selected_source_families"))[:8],
         "semantic_supplement_row_count": int(source_family_bundle.get("semantic_supplement_row_count") or 0),
@@ -2076,6 +3451,16 @@ def _specialist_fanout_barrier(
         for row in routes
         if str(row.get("status") or "") not in {"pass", "run", "stubbed", "skipped"}
     ]
+    supporting_without_match = [
+        str(row.get("agent_id") or "")
+        for row in routes
+        if str(row.get("agent_id") or "")
+        and str(row.get("status") or "").strip().lower() != "skipped"
+        and str(row.get("activation_decision") or "").strip().lower() != "skipped"
+        and str(row.get("priority") or "").strip().lower() in {"supporting", "conditional", "low"}
+        and int(row.get("matched_requirement_count") or 0) == 0
+        and not bool(row.get("explicit_intent"))
+    ]
     return {
         "schema_version": SPECIALIST_FANOUT_BARRIER_SCHEMA_VERSION,
         "barrier_id": "specialist_fanout_barrier",
@@ -2085,6 +3470,8 @@ def _specialist_fanout_barrier(
         "route_result_count": len(routes),
         "failed_route_count": len(failed),
         "failed_agents": [str(row.get("agent_id") or "") for row in failed if str(row.get("agent_id") or "")],
+        "supporting_run_without_required_item_match_count": len(supporting_without_match),
+        "supporting_run_without_required_item_match_agents": supporting_without_match[:8],
         "source_layer_distribution": _compact_fanout_source_layer_distribution(source_layer_distribution),
         "output_schema": {
             "specialist_outputs": "append_only_claim_card_memolets",
@@ -2108,6 +3495,11 @@ def _skipped_route_result_summary(decision: Mapping[str, Any]) -> dict[str, Any]
         "finish_reasons": [],
         "priority": decision.get("priority") or "",
         "activation_policy": decision.get("policy") or "",
+        "activation_decision": decision.get("decision") or "skipped",
+        "activation_reason": str(decision.get("reason") or "")[:500],
+        "matched_requirement_count": int(decision.get("matched_requirement_count") or 0),
+        "explicit_intent": bool(decision.get("explicit_intent")),
+        "signal_count": int(decision.get("signal_count") or 0),
         "task_card_schema_version": "",
         "assigned_memo_slot": "",
         "task_relevant_requirement_count": 0,
@@ -2120,9 +3512,136 @@ def _skipped_route_result_summary(decision: Mapping[str, Any]) -> dict[str, Any]
         "prompt_bounded_evidence_row_count": 0,
         "prompt_relationship_summary_row_count": 0,
         "prompt_row_distribution": _prompt_row_distribution([]),
+        "input_pack_fingerprint": _empty_input_pack_fingerprint(str(decision.get("agent_id") or "")),
         "source_layer_distribution": {},
         "input_coverage_summary": {},
     }
+
+
+def _request_input_pack_fingerprint(request: Mapping[str, Any]) -> dict[str, Any]:
+    component_keys = (
+        "shared_context",
+        "role_context",
+        "assigned_task_card",
+        "required_claim_slots",
+        "counterclaim_slots",
+        "bounded_evidence_rows",
+        "source_layer_distribution",
+        "source_family_bundle",
+        "relationship_summary",
+        "product_spec_pack",
+        "capital_macro_pack",
+        "fundamental_statement_pack",
+        "fundamental_peer_statement_panel",
+        "input_coverage_summary",
+    )
+    component_summaries: dict[str, dict[str, Any]] = {}
+    component_digests: dict[str, str] = {}
+    approx_chars = 0
+    for key in component_keys:
+        value = request.get(key)
+        if _prompt_value_empty(value):
+            component_summaries[key] = _empty_component_fingerprint()
+            continue
+        refs = sorted(_nested_prompt_evidence_refs(value))
+        digest = _payload_digest({"component": key, "payload": value})
+        chars = len(_json_for_prompt(value))
+        approx_chars += chars
+        component_digests[key] = digest
+        component_summaries[key] = {
+            "digest": digest,
+            "item_count": _component_item_count(value),
+            "evidence_ref_count": len(refs),
+            "evidence_refs_sample": refs[:24],
+            "approx_chars": chars,
+        }
+    known_refs = sorted(_known_evidence_refs_from_request(request))
+    visible_refs = known_refs[:256]
+    return {
+        "schema_version": "sec_agent_specialist_input_pack_fingerprint_v0_1",
+        "agent_id": str(request.get("agent_id") or ""),
+        "digest": _payload_digest(
+            {
+                "agent_id": str(request.get("agent_id") or ""),
+                "component_digests": component_digests,
+                "known_evidence_refs": visible_refs,
+            }
+        ),
+        "known_evidence_ref_count": len(known_refs),
+        "known_evidence_refs": visible_refs,
+        "known_evidence_refs_truncated": len(known_refs) > len(visible_refs),
+        "component_summaries": component_summaries,
+        "approx_prompt_payload_chars": approx_chars,
+        "policy": "fingerprint_only_no_prompt_text_persisted_v0_1",
+    }
+
+
+def _empty_input_pack_fingerprint(agent_id: str = "") -> dict[str, Any]:
+    return {
+        "schema_version": "sec_agent_specialist_input_pack_fingerprint_v0_1",
+        "agent_id": agent_id,
+        "digest": "",
+        "known_evidence_ref_count": 0,
+        "known_evidence_refs": [],
+        "known_evidence_refs_truncated": False,
+        "component_summaries": {},
+        "approx_prompt_payload_chars": 0,
+        "policy": "fingerprint_only_no_prompt_text_persisted_v0_1",
+    }
+
+
+def _empty_component_fingerprint() -> dict[str, Any]:
+    return {
+        "digest": "",
+        "item_count": 0,
+        "evidence_ref_count": 0,
+        "evidence_refs_sample": [],
+        "approx_chars": 0,
+    }
+
+
+def _component_item_count(value: Any) -> int:
+    if isinstance(value, list):
+        return len(value)
+    if not isinstance(value, Mapping):
+        return int(not _prompt_value_empty(value))
+    count = 0
+    for item in value.values():
+        if isinstance(item, list):
+            count += len(item)
+        elif isinstance(item, Mapping):
+            count += _component_item_count(item)
+    return count or int(bool(value))
+
+
+def _nested_prompt_evidence_refs(value: Any) -> set[str]:
+    refs: set[str] = set()
+    if isinstance(value, Mapping):
+        for key in (
+            "evidence_refs",
+            "refs",
+            "supporting_evidence_ids",
+            "known_evidence_refs",
+            "evidence_ref",
+            "evidence_id",
+            "ref_id",
+            "id",
+            "metric_id",
+            "source_id",
+            "source_fact_id",
+            "line_item_id",
+            "change_id",
+            "comparison_id",
+            "raw_record_ref",
+        ):
+            refs.update(_string_list(value.get(key)))
+        for nested in value.values():
+            if isinstance(nested, (Mapping, list)):
+                refs.update(_nested_prompt_evidence_refs(nested))
+    elif isinstance(value, list):
+        for item in value:
+            refs.update(_nested_prompt_evidence_refs(item))
+    return {ref for ref in refs if ref}
 
 
 def _compact_source_layer_distribution_for_route(value: Mapping[str, Any]) -> dict[str, Any]:
@@ -2226,11 +3745,11 @@ def _specialist_input_max_rows(execution_mode: str, *, priority: str = "", agent
         )
     elif mode == "deep_research":
         if agent_id in {"fundamental_analyst", "product_technology_analyst"}:
-            default = 24
-        elif agent_id == "industry_supply_chain_analyst":
-            default = 20
-        else:
             default = 16
+        elif agent_id == "industry_supply_chain_analyst":
+            default = 12
+        else:
+            default = 8
         value = _int_env(os.environ.get("SPECIALIST_DEEP_RESEARCH_INPUT_MAX_ROWS") or generic, default=default)
     elif mode == "standard_memo" and normalized_priority == "supporting":
         value = _int_env(
@@ -2319,10 +3838,10 @@ def _observation_budget_text(
         if agent_id == "risk_counterevidence_analyst":
             return "produce 2-3 supported risk ClaimCards when evidence supports them; use at most 2 unsupported_claims and at most 2 conflicts"
         if agent_id == "product_technology_analyst":
-            return "produce 2-4 product ClaimCards when exact product KPI or proxy context supports them; expose commercial tracker gaps instead of filling them"
+            return "produce 2-3 product ClaimCards when exact product KPI or proxy context supports them; expose commercial tracker gaps instead of filling them"
         if agent_id == "fundamental_analyst":
-            return "produce 2-4 supported fundamental ClaimCards when evidence supports them; prioritize investment implications over row summaries; keep unsupported_claims/conflicts to the top 3 each"
-        return "produce 3-5 supported observations when evidence supports them; keep unsupported_claims/conflicts to the top 3 each"
+            return "produce 2-3 supported fundamental ClaimCards when evidence supports them; prioritize investment implications over row summaries; keep unsupported_claims/conflicts to the top 2 each"
+        return "produce 2-3 supported observations when evidence supports them; keep unsupported_claims/conflicts to the top 2 each"
     if mode == "standard_memo":
         if agent_id == "risk_counterevidence_analyst":
             return "produce 2-3 supported risk ClaimCards when evidence supports them; use at most 2 unsupported_claims and at most 2 conflicts"
@@ -2332,14 +3851,42 @@ def _observation_budget_text(
     return "at most 3 observations, 3 unsupported_claims, and 3 conflicts"
 
 
-def _specialist_output_contract(agent_id: str, execution_mode: str) -> dict[str, Any]:
+def _specialist_output_contract(
+    agent_id: str,
+    execution_mode: str,
+    *,
+    method_runtime_pack: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     mode = str(execution_mode or "").strip()
+    role_rubric = specialist_runtime_rubric(method_runtime_pack or {}, agent_id)
+    judgment_candidate_contract = (
+        method_runtime_pack.get("judgment_candidate_contract")
+        if isinstance(method_runtime_pack, Mapping) and isinstance(method_runtime_pack.get("judgment_candidate_contract"), Mapping)
+        else {
+            "required_fields": [
+                "judgment",
+                "required_item_answered",
+                "supported_by_evidence_refs",
+                "graph_edge_refs",
+                "product_or_financial_bridge",
+                "business_mechanism",
+                "counter_read",
+                "confidence",
+                "cannot_infer",
+                "what_would_change_view",
+            ],
+            "policy": "specialists produce writer-ready judgment candidates, not row summaries",
+        }
+    )
     if agent_id == "risk_counterevidence_analyst":
         return {
             "policy": "risk_compact_schema_v0_3",
             "supported_observation_target": "2-3" if mode in {"standard_memo", "deep_research"} else "0-2",
             "unsupported_claim_cap": 2,
             "conflict_cap": 2,
+            "required_outputs": ["judgment_candidates", "bounded risk/counterevidence ClaimCards"],
+            "judgment_candidate_contract": judgment_candidate_contract,
+            "specialist_runtime_rubric": role_rubric,
             "memo_ready_requirement": "each risk must be a downside driver, evidence weakness, or confirmation need",
         }
     if agent_id == "product_technology_analyst":
@@ -2349,7 +3896,9 @@ def _specialist_output_contract(agent_id: str, execution_mode: str) -> dict[str,
             "unsupported_claim_cap": 2,
             "conflict_cap": 1,
             "required_structured_inputs": ["ProductSpecPack", "ProductIntelligenceGraph company pack"],
-            "required_outputs": ["ProductSpecPack", "bounded product/technology ClaimCards"],
+            "required_outputs": ["judgment_candidates", "ProductSpecPack", "bounded product/technology ClaimCards"],
+            "judgment_candidate_contract": judgment_candidate_contract,
+            "specialist_runtime_rubric": role_rubric,
             "product_spec_pack_policy": "ChannelOffer, FieldInquiryNote, CustomerDeploymentSignal, and ProductSupplyChainSignal are context or lead objects only; they cannot support sales, sell-through, market share, company ASP, channel inventory, order value, backlog, shipment, or allocation claims",
             "memo_ready_requirement": (
                 "product KPI facts require company_product_evidence_graph runtime_fact_allowed exact authority; public proxy rows "
@@ -2364,6 +3913,9 @@ def _specialist_output_contract(agent_id: str, execution_mode: str) -> dict[str,
             "unsupported_claim_cap": 1,
             "conflict_cap": 2,
             "required_structured_inputs": ["FundamentalStatementPack"],
+            "required_outputs": ["judgment_candidates", "bounded fundamental ClaimCards"],
+            "judgment_candidate_contract": judgment_candidate_contract,
+            "specialist_runtime_rubric": role_rubric,
             "memo_ready_requirement": "connect three statements, peer context, industry priority metrics, and product/capital bridges when supported",
         }
     return {
@@ -2371,6 +3923,9 @@ def _specialist_output_contract(agent_id: str, execution_mode: str) -> dict[str,
         "supported_observation_target": "3-5" if mode == "deep_research" else "0-3" if mode not in {"standard_memo"} else "3-6",
         "unsupported_claim_cap": 1,
         "conflict_cap": 2,
+        "required_outputs": ["judgment_candidates", "bounded role-specific ClaimCards"],
+        "judgment_candidate_contract": judgment_candidate_contract,
+        "specialist_runtime_rubric": role_rubric,
         "memo_ready_requirement": "write only material observations that can support a memo section",
     }
 
@@ -2422,26 +3977,26 @@ def _specialist_summary_chars_for_row(agent_id: str, row: Mapping[str, Any], *, 
     family = str(row.get("source_family") or "").strip()
     mode = str(execution_mode or "").strip()
     if family in {"primary_sec_filing", "company_authored_unaudited_sec_filing", ""}:
-        default = 240 if mode == "deep_research" else 320
+        default = 160 if mode == "deep_research" else 240
         if agent_id == "fundamental_analyst":
-            default = 220 if mode == "deep_research" else 300
+            default = 150 if mode == "deep_research" else 220
         return _int_env(os.environ.get("SPECIALIST_SEC_SUMMARY_CHARS"), default=default)
     if family == "market_snapshot":
-        return _int_env(os.environ.get("SPECIALIST_MARKET_SUMMARY_CHARS"), default=220)
+        return _int_env(os.environ.get("SPECIALIST_MARKET_SUMMARY_CHARS"), default=140)
     if family == "industry_snapshot":
-        return _int_env(os.environ.get("SPECIALIST_INDUSTRY_SUMMARY_CHARS"), default=240)
+        return _int_env(os.environ.get("SPECIALIST_INDUSTRY_SUMMARY_CHARS"), default=160)
     if family == "relationship_graph":
         return _relationship_summary_chars(execution_mode)
     if family in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}:
-        return _int_env(os.environ.get("SPECIALIST_PRODUCT_SUMMARY_CHARS"), default=260 if mode == "deep_research" else 340)
-    return _int_env(os.environ.get("SPECIALIST_OTHER_SUMMARY_CHARS"), default=240 if mode == "deep_research" else 320)
+        return _int_env(os.environ.get("SPECIALIST_PRODUCT_SUMMARY_CHARS"), default=140 if mode == "deep_research" else 220)
+    return _int_env(os.environ.get("SPECIALIST_OTHER_SUMMARY_CHARS"), default=150 if mode == "deep_research" else 220)
 
 
 def _relationship_summary_chars(execution_mode: str = "") -> int:
     generic = os.environ.get("SPECIALIST_INPUT_SUMMARY_CHARS")
     if generic not in {None, ""}:
         return _int_env(generic, default=520)
-    default = 280 if str(execution_mode or "").strip() == "deep_research" else 360
+    default = 180 if str(execution_mode or "").strip() == "deep_research" else 260
     return _int_env(os.environ.get("SPECIALIST_RELATIONSHIP_SUMMARY_CHARS"), default=default)
 
 
@@ -2534,8 +4089,11 @@ def _first_balanced_json_object(text: str) -> str | None:
 def _model_call_summary(result: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "status": result.get("status"),
+        "call_id": result.get("call_id"),
         "provider": result.get("provider"),
         "model": result.get("model"),
+        "proxy_mode": result.get("proxy_mode"),
+        "url": result.get("url"),
         "finish_reason": result.get("finish_reason"),
         "latency_ms": result.get("latency_ms"),
         "input_tokens": result.get("input_tokens"),
@@ -2592,6 +4150,14 @@ def _specialist_input_coverage_summary(agent_id: str, rows: list[Mapping[str, An
         ticker = str(gap.get("ticker") or "").upper().strip()
         if not ticker:
             continue
+        if _suppress_source_gap_for_specialist(
+            agent_id=agent_id,
+            gap=gap,
+            ticker=ticker,
+            primary_by_ticker=primary_by_ticker,
+            rows=rows,
+        ):
+            continue
         reason = str(gap.get("reason_code") or gap.get("quality_gap_type") or gap.get("reason") or "source_gap")[:120]
         ticker_gap_reasons.setdefault(ticker, [])
         if reason not in ticker_gap_reasons[ticker]:
@@ -2618,6 +4184,29 @@ def _specialist_input_coverage_summary(agent_id: str, rows: list[Mapping[str, An
         },
         "coverage_policy": "comparative_focus_tickers_must_have_visible_primary_rows_or_ticker_source_gap",
     }
+
+
+def _suppress_source_gap_for_specialist(
+    *,
+    agent_id: str,
+    gap: Mapping[str, Any],
+    ticker: str,
+    primary_by_ticker: Mapping[str, int],
+    rows: list[Mapping[str, Any]],
+) -> bool:
+    reason = str(gap.get("reason_code") or gap.get("quality_gap_type") or gap.get("reason") or "")
+    gap_source_family = str(gap.get("source_family") or "").strip()
+    sec_source_families = {"", "primary_sec_filing", "company_authored_unaudited_sec_filing"}
+    if reason == "not_in_manifest_for_mcp_route_scope" and int(primary_by_ticker.get(ticker, 0) or 0) > 0:
+        return True
+    if gap_source_family in sec_source_families and agent_id not in {
+        "fundamental_analyst",
+        "risk_counterevidence_analyst",
+    }:
+        role_row_families = {str(row.get("source_family") or "").strip() for row in rows}
+        if not (role_row_families & sec_source_families):
+            return True
+    return False
 
 
 def _prompt_row_distribution(rows: list[Mapping[str, Any]]) -> dict[str, Any]:
@@ -2728,3 +4317,15 @@ def _string_list(value: Any) -> list[str]:
     if isinstance(value, (list, tuple, set)):
         return [str(item).strip() for item in value if str(item).strip()]
     return [str(value).strip()]
+
+
+def _dedupe_strings(values: list[str]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        result.append(text)
+    return result

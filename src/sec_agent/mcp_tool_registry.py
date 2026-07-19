@@ -44,6 +44,11 @@ _BANKING_MCP_METRIC_FAMILIES = {
 }
 _SEC_FORM_TYPES = {"10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"}
 _SEC_FORM_ID_RE = re.compile(r"(?:^|[^A-Z0-9])(?P<form>10-?K|10-?Q|8-?K|20-?F|40-?F|6-?K)(?:[^A-Z0-9]|$)")
+_SEC_FORM_EQUIVALENTS = {
+    "10-K": {"20-F", "40-F"},
+    "10-Q": {"6-K"},
+    "8-K": {"6-K"},
+}
 
 
 def list_registered_tools() -> list[dict[str, Any]]:
@@ -716,6 +721,7 @@ def _invoke_relationship_graph(args: dict[str, Any]) -> dict[str, Any]:
     return query_relationship_graph(
         focus_tickers=_list_arg(args.get("focus_tickers")),
         search_scope_tickers=_list_arg(args.get("search_scope_tickers")),
+        allowed_universe_tickers=_list_arg(args.get("allowed_universe_tickers")),
         user_query=str(args.get("user_query") or ""),
         relationship_graph_path=args.get("relationship_graph_path") or os.environ.get("RELATIONSHIP_GRAPH_PATH") or "",
         sector_depth_pack_path=args.get("sector_depth_pack_path") or os.environ.get("SECTOR_DEPTH_PACK_PATH") or "",
@@ -900,6 +906,8 @@ def _overlay_sec_search_contract(contract: dict[str, Any], args: dict[str, Any],
         clean["evidence_requirements"] = requirements
     if source_gaps:
         clean["source_coverage_gaps"] = [*(clean.get("source_coverage_gaps") or []), *source_gaps]
+    else:
+        clean.setdefault("source_coverage_gaps", [])
     return clean
 
 
@@ -1026,7 +1034,7 @@ def _compile_available_sec_requirements(
             continue
         if requested_years and year not in requested_years:
             continue
-        if requested_form_set and form not in requested_form_set:
+        if requested_form_set and not _manifest_form_satisfies_requested(form, requested_form_set):
             continue
         if requested_tier_set and tier not in requested_tier_set:
             continue
@@ -1066,7 +1074,13 @@ def _compile_available_sec_requirements(
             for form in sorted(requested_form_set):
                 tiers = _tiers_for_requested_form(form, requested_tiers)
                 for tier in tiers:
-                    if (ticker, year, form, tier) in available_keys:
+                    if _requested_sec_scope_has_available_form(
+                        ticker,
+                        year,
+                        form,
+                        tier,
+                        available_keys,
+                    ):
                         continue
                     source_gaps.append(
                         {
@@ -1155,9 +1169,33 @@ def _default_source_tier_for_form(form: str) -> str:
 def _default_route_for_form(form: str) -> str:
     if form == "8-K":
         return "8k_commentary"
+    if form == "6-K":
+        return "8k_commentary"
     if form in {"10-K", "10-Q", "20-F", "40-F"}:
         return "filing_text"
     return ""
+
+
+def _manifest_form_satisfies_requested(form: str, requested_forms: set[str]) -> bool:
+    if form in requested_forms:
+        return True
+    return any(form in _SEC_FORM_EQUIVALENTS.get(requested_form, set()) for requested_form in requested_forms)
+
+
+def _requested_sec_scope_has_available_form(
+    ticker: str,
+    year: int,
+    requested_form: str,
+    requested_tier: str,
+    available_keys: set[tuple[str, int, str, str]],
+) -> bool:
+    forms = [requested_form, *sorted(_SEC_FORM_EQUIVALENTS.get(requested_form, set()))]
+    for form in forms:
+        tiers = {requested_tier, _default_source_tier_for_form(form)}
+        for tier in tiers:
+            if (ticker, year, form, tier) in available_keys:
+                return True
+    return False
 
 
 def _tiers_for_requested_form(form: str, source_tiers: list[str]) -> list[str]:

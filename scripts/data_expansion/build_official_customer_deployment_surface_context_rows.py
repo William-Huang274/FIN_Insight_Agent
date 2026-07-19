@@ -114,6 +114,25 @@ DEPLOYMENT_RE = re.compile(
 )
 PARTNER_RE = re.compile(r"\b(partner|partnership|ecosystem|alliance|supplier|collaboration)\b", flags=re.IGNORECASE)
 
+MANUAL_CUSTOMER_DEPLOYMENT_SEEDS: dict[str, tuple[tuple[str, str], ...]] = {
+    "000660.KS": (
+        (
+            "https://news.skhynix.com/multi-year-tech-partnership-with-nvidia/",
+            "SK hynix and NVIDIA multi-year technology partnership",
+        ),
+    ),
+    "300750.SZ": (
+        (
+            "https://www.catl.com/en/news/6328.html",
+            "CATL and Stellantis large-scale LFP battery plant joint venture",
+        ),
+        (
+            "https://www.catl.com/en/news/6497.html",
+            "CATL embedded manufacturing and local supply for AITO models",
+        ),
+    ),
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -364,6 +383,22 @@ def discover_candidate_links(
     raw_files = _raw_files_for_ticker(raw_product_page_dir, ticker)
     candidates: list[dict[str, str]] = []
     seen_urls: set[str] = set()
+    for url, label in MANUAL_CUSTOMER_DEPLOYMENT_SEEDS.get(ticker.upper(), ()):
+        if not _same_official_host(url, official_hosts):
+            continue
+        if url in seen_urls:
+            continue
+        seen_urls.add(url)
+        candidates.append(
+            {
+                "url": url,
+                "label": label,
+                "source_product_url": bases[0] if bases else "",
+                "raw_product_page": "",
+            }
+        )
+        if len(candidates) >= max_candidates:
+            return candidates
     for raw_file in raw_files:
         try:
             html_text = raw_file.read_text(encoding="utf-8", errors="ignore")
@@ -633,6 +668,23 @@ def _extract_counterparty(label: str) -> str:
         match = re.search(pattern, clean, flags=re.IGNORECASE)
         if match:
             return match.group(1).strip()[:120]
+    known_counterparties = (
+        "NVIDIA",
+        "Stellantis",
+        "AITO",
+        "Meta",
+        "Microsoft",
+        "Google",
+        "Amazon",
+        "Intel",
+        "Toyota",
+        "Ford",
+        "GM",
+        "BMW",
+    )
+    for name in known_counterparties:
+        if re.search(rf"\b{re.escape(name)}\b", clean, flags=re.IGNORECASE):
+            return name
     if len(clean.split()) <= 6 and re.search(r"\b(meta|microsoft|google|amazon|intel|nvidia|toyota|ford|gm|bmw)\b", clean, flags=re.IGNORECASE):
         return clean[:120]
     return ""
@@ -779,19 +831,32 @@ def _attempt(
 
 
 def _dedupe_rows(rows: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    seen: set[tuple[str, str, str]] = set()
-    out: list[dict[str, Any]] = []
+    best: dict[tuple[str, str, str], dict[str, Any]] = {}
     for row in rows:
         key = (
             str(row.get("ticker") or "").upper(),
             str(row.get("source_url") or ""),
             str(row.get("structured_context_type") or ""),
         )
-        if key in seen:
-            continue
-        seen.add(key)
-        out.append(dict(row))
+        clean = dict(row)
+        previous = best.get(key)
+        if previous is None or _row_completeness_score(clean) >= _row_completeness_score(previous):
+            best[key] = clean
+    out = list(best.values())
     return sorted(out, key=lambda row: (str(row.get("ticker") or ""), str(row.get("source_url") or "")))
+
+
+def _row_completeness_score(row: Mapping[str, Any]) -> int:
+    score = 0
+    for field in ("counterparty", "fact_label", "preview", "raw_path", "source_url", "claim_boundary"):
+        if str(row.get(field) or "").strip():
+            score += 1
+    if str(row.get("counterparty_binding_status") or "") == "counterparty_mentioned_in_snapshot":
+        score += 2
+    entity_binding = row.get("entity_binding") if isinstance(row.get("entity_binding"), Mapping) else {}
+    if str(entity_binding.get("counterparty_binding_status") or "") == "counterparty_mentioned_in_snapshot":
+        score += 2
+    return score
 
 
 def _dedupe_attempts(rows: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:

@@ -3,12 +3,16 @@ from __future__ import annotations
 import json
 
 from sec_agent.multi_agent_runtime import (
+    active_specialists_for_state,
     build_evidence_fusion_bundle,
     build_agent_data_view,
     build_multi_agent_evidence_requirement_plan,
     compile_multi_agent_retrieval_plan,
+    execute_evidence_operator_plan,
     merge_universe_relationship_evidence_requirements,
     plan_reflection_gate,
+    reflection_report_from_evidence_fusion_bundle,
+    reflection_report_from_tool_observations,
     validate_multi_agent_evidence_requirement_plan,
 )
 
@@ -300,6 +304,105 @@ def test_evidence_fusion_builds_bounded_gap_register() -> None:
     assert all(row["claim_boundary"] == "do_not_fill_with_generic_fallback_or_proxy_fact" for row in register["gaps"])
 
 
+def test_evidence_fusion_dedupes_source_gap_authority_projection() -> None:
+    bundle = build_evidence_fusion_bundle(
+        {
+            "source_gaps": [
+                {
+                    "ticker": "ASML",
+                    "year": 2026,
+                    "form_type": "10-Q",
+                    "source_tier": "primary_sec_filing",
+                    "reason_code": "not_in_manifest_for_mcp_route_scope",
+                    "reason": "Requested SEC form/year/tier is not present in the active manifest.",
+                    "source": "mcp_sec_search_filings",
+                    "status": "missing",
+                }
+            ]
+        }
+    )
+
+    register = bundle["bounded_gap_register"]
+
+    assert bundle["summary"]["gap_only_row_count"] == 1
+    assert register["gap_count"] == 1
+    assert register["gaps"][0]["ticker"] == "ASML"
+    assert register["gaps"][0]["gap_type"] == "retrievable_gap"
+
+
+def test_evidence_fusion_preserves_required_item_trace_fields() -> None:
+    bundle = build_evidence_fusion_bundle(
+        {
+            "context_rows": [
+                {
+                    "evidence_id": "ctx_dell_margin",
+                    "ticker": "DELL",
+                    "source_family": "primary_sec_filing",
+                    "selection_task_ids": ["req_dell_margin_quality"],
+                    "selection_route_ids": ["fundamental::filing_text::12"],
+                    "retrieval_routes": ["filing_text"],
+                    "text": "ISG revenue and gross margin commentary.",
+                }
+            ]
+        }
+    )
+
+    row = bundle["authority_rows"][0]
+
+    assert row["selection_task_ids"] == ["req_dell_margin_quality"]
+    assert row["selection_route_ids"] == ["fundamental::filing_text::12"]
+    assert row["retrieval_routes"] == ["filing_text"]
+
+
+def test_execute_evidence_operator_preserves_requirement_trace_from_route() -> None:
+    def executor(tool_name: str, arguments: dict[str, object]) -> dict[str, object]:
+        assert tool_name == "sec_search_filings"
+        return {
+            "status": "ok",
+            "context_rows": [
+                {
+                    "evidence_id": "ctx_dell_margin",
+                    "ticker": "DELL",
+                    "selection_routes": [
+                        {
+                            "route_id": "fundamental::filing_text::12",
+                            "retrieval_route": "filing_text",
+                        }
+                    ],
+                    "selection_route_ids": ["fundamental::filing_text::12"],
+                    "retrieval_route": "filing_text",
+                    "text": "ISG revenue and gross margin commentary.",
+                }
+            ],
+        }
+
+    result = execute_evidence_operator_plan(
+        {
+            "routes": [
+                {
+                    "route_id": "fundamental::filing_text::12",
+                    "retrieval_route": "filing_text",
+                    "task_id": "fundamental",
+                    "evidence_requirement_id": "req_dell_margin_quality",
+                    "tickers": ["DELL"],
+                    "years": [2026],
+                    "filing_types": ["10-Q"],
+                    "source_tiers": ["primary_sec_filing"],
+                }
+            ]
+        },
+        turn_id="unit-trace",
+        tool_executor=executor,
+    )
+
+    row = result["context_rows"][0]
+
+    assert row["evidence_requirement_id"] == "req_dell_margin_quality"
+    assert row["evidence_requirement_ids"] == ["req_dell_margin_quality"]
+    assert row["selection_task_ids"] == ["fundamental"]
+    assert row["selection_route_ids"] == ["fundamental::filing_text::12"]
+
+
 def test_plan_reflection_gate_rejects_required_source_family_missing_from_inventory() -> None:
     report = plan_reflection_gate(
         {
@@ -418,6 +521,50 @@ def test_plan_reflection_exposes_playbook_forbidden_claims_for_verifier() -> Non
     assert "playbook_forbidden_claims_available_for_verifier" in {item["type"] for item in report["warnings"]}
 
 
+def test_plan_reflection_gate_rejects_supervising_plan_without_must_answer_or_risk_path() -> None:
+    report = plan_reflection_gate(
+        {
+            "execution_mode": "deep_research",
+            "activate_agents": [
+                "research_lead",
+                "universe_relationship",
+                "fundamental_analyst",
+                "product_technology_analyst",
+                "industry_supply_chain_analyst",
+                "memo_writer",
+                "verifier",
+                "renderer",
+            ],
+            "allowed_source_families": ["primary_sec_filing", "relationship_graph"],
+            "relationship_scope_rationale": "supply-chain read-through required",
+            "metadata": {
+                "supervising_analyst_contract_schema_version": "fin_insight_research_lead_supervising_contract_v0_1",
+            },
+            "evidence_role_plan": [
+                {
+                    "required_item": "risk_and_counterevidence",
+                    "dimension": "counter_thesis_and_what_would_change",
+                    "evidence_role": "state the counter-read",
+                }
+            ],
+        },
+        activation_validation={"status": "pass"},
+        source_inventory={
+            "available_source_families": ["primary_sec_filing", "relationship_graph"],
+            "source_family_availability": {
+                "primary_sec_filing": {"status": "available", "available": True},
+                "relationship_graph": {"status": "available", "available": True},
+            },
+        },
+    )
+
+    assert report["status"] == "fail"
+    error_types = {error["type"] for error in report["errors"]}
+    assert "supervising_plan_missing_must_answer" in error_types
+    warning_types = {warning["type"] for warning in report["warnings"]}
+    assert "required_risk_counterevidence_agent_pruned" in warning_types
+
+
 def test_relationship_requirements_are_capped_by_activation_tool_budget() -> None:
     base = {
         "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
@@ -480,12 +627,12 @@ def test_compiled_retrieval_routes_are_capped_by_agent_permission_matrix() -> No
             {
                 "requirement_id": f"req_{index}",
                 "task_id": f"task_{index}",
-                "question_zh": "Need filing text.",
+                "question_zh": "Need ledger values.",
                 "tickers": ["NVDA"],
                 "years": [2026],
                 "filing_types": ["10-Q"],
                 "source_tiers": ["primary_sec_filing"],
-                "evidence_routes": ["filing_text"],
+                "evidence_routes": ["ledger_first"],
             }
             for index in range(1, 7)
         ]
@@ -505,7 +652,43 @@ def test_compiled_retrieval_routes_are_capped_by_agent_permission_matrix() -> No
 
     assert len(retrieval_plan["routes"]) == 4
     assert retrieval_plan["route_budget_pruning"]["dropped_route_count"] == 2
+    assert {route["retrieval_route"] for route in retrieval_plan["routes"]} == {"ledger_first"}
+    assert retrieval_plan["summary"]["route_count"] == len(retrieval_plan["routes"])
+    assert retrieval_plan["summary"]["route_counts"] == {"ledger_first": 4}
+
+
+def test_sec_text_routes_are_budgeted_as_grouped_physical_call() -> None:
+    plan = {
+        "requirements": [
+            {
+                "requirement_id": f"req_{index}",
+                "task_id": f"task_{index}",
+                "question_zh": "Need filing text for different required items.",
+                "tickers": [ticker],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing"],
+                "evidence_routes": ["filing_text"],
+            }
+            for index, ticker in enumerate(["NVDA", "AMD", "DELL", "MSFT", "AMZN", "GOOGL"], start=1)
+        ]
+    }
+
+    retrieval_plan = compile_multi_agent_retrieval_plan(
+        plan,
+        query_contract={
+            "focus_tickers": ["NVDA", "AMD", "DELL"],
+            "search_scope_tickers": ["NVDA", "AMD", "DELL", "MSFT", "AMZN", "GOOGL"],
+            "years": [2026],
+            "filing_types": ["10-Q"],
+            "source_tiers": ["primary_sec_filing"],
+        },
+        activation_plan={"max_tool_calls_total": 12},
+    )
+
+    assert len(retrieval_plan["routes"]) == 6
     assert {route["retrieval_route"] for route in retrieval_plan["routes"]} == {"filing_text"}
+    assert "route_budget_pruning" not in retrieval_plan
 
 
 def test_standard_compiled_retrieval_routes_coalesce_same_scope_before_budget() -> None:
@@ -552,6 +735,146 @@ def test_standard_compiled_retrieval_routes_coalesce_same_scope_before_budget() 
     assert retrieval_plan["routes"][0]["metric_families"] == ["revenue", "gross_margin"]
     assert retrieval_plan["route_coalescing"]["original_route_count"] == 2
     assert retrieval_plan["summary"]["route_count"] == 1
+
+
+def test_relationship_graph_routes_coalesce_before_universe_tool_budget() -> None:
+    plan = {
+        "requirements": [
+            {
+                "requirement_id": "req_customer_deployment",
+                "task_id": "customer_deployment",
+                "question_zh": "Need relationship evidence for customer deployment.",
+                "tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+                "years": [2026],
+                "source_tiers": ["company_authored_unaudited_sec_filing", "relationship_graph"],
+                "metric_families": ["customer_deployment"],
+                "evidence_routes": ["relationship_graph"],
+            },
+            {
+                "requirement_id": "req_supply_chain",
+                "task_id": "supply_chain",
+                "question_zh": "Need relationship evidence for supply-chain read-through.",
+                "tickers": ["ASML", "LRCX", "AMAT", "KLAC", "TSM"],
+                "years": [2026],
+                "source_tiers": ["primary_sec_filing", "relationship_graph"],
+                "metric_families": ["customer_deployment", "orders_backlog"],
+                "evidence_routes": ["relationship_graph"],
+            },
+        ]
+    }
+
+    retrieval_plan = compile_multi_agent_retrieval_plan(
+        plan,
+        query_contract={
+            "focus_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+            "search_scope_tickers": ["NVDA", "AMD", "GOOGL", "DELL", "ASML", "LRCX", "AMAT", "KLAC", "TSM"],
+            "years": [2026],
+            "source_tiers": ["relationship_graph"],
+        },
+        activation_plan={"execution_mode": "deep_research", "max_tool_calls_total": 12},
+    )
+
+    relationship_routes = [route for route in retrieval_plan["routes"] if route["retrieval_route"] == "relationship_graph"]
+    assert len(relationship_routes) == 1
+    assert set(relationship_routes[0]["coalesced_route_ids"]) == {
+        "customer_deployment::relationship_graph",
+        "supply_chain::relationship_graph",
+    }
+    assert set(relationship_routes[0]["evidence_requirement_id"].split(",")) == {
+        "req_customer_deployment",
+        "req_supply_chain",
+    }
+    assert set(relationship_routes[0]["tickers"]) == {
+        "NVDA",
+        "AMD",
+        "GOOGL",
+        "DELL",
+        "ASML",
+        "LRCX",
+        "AMAT",
+        "KLAC",
+        "TSM",
+    }
+    assert retrieval_plan["summary"]["route_counts"]["relationship_graph"] == 1
+    assert all(
+        dropped["retrieval_route"] != "relationship_graph"
+        for dropped in (retrieval_plan.get("route_budget_pruning") or {}).get("dropped_routes", [])
+    )
+
+
+def test_ai_semis_core_routes_survive_physical_call_budgeting() -> None:
+    plan = {
+        "requirements": [
+            {
+                "requirement_id": "req_hyperscaler_capex",
+                "task_id": "fundamental",
+                "question_zh": "Need hyperscaler capex and demand pool evidence.",
+                "tickers": ["MSFT", "AMZN"],
+                "years": [2026],
+                "source_tiers": ["primary_sec_filing", "market_snapshot"],
+                "metric_families": ["capex", "rpo_deferred_revenue"],
+                "evidence_routes": ["ledger_first", "filing_text", "market_snapshot"],
+            },
+            {
+                "requirement_id": "req_accelerator_architecture",
+                "task_id": "product_technology",
+                "question_zh": "Need accelerator architecture evidence.",
+                "tickers": ["NVDA", "AMD", "GOOGL"],
+                "years": [2026],
+                "source_tiers": ["industry_snapshot"],
+                "metric_families": ["technical_product_spec"],
+                "evidence_routes": ["industry_snapshot"],
+            },
+            {
+                "requirement_id": "req_customer_deployment",
+                "task_id": "customer_deployment",
+                "question_zh": "Need deployment and adoption evidence.",
+                "tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+                "years": [2026],
+                "source_tiers": ["company_authored_unaudited_sec_filing", "primary_sec_filing", "relationship_graph"],
+                "metric_families": ["customer_deployment"],
+                "evidence_routes": ["8k_commentary", "filing_text", "relationship_graph"],
+            },
+            {
+                "requirement_id": "req_supply_chain",
+                "task_id": "supply_chain",
+                "question_zh": "Need supply-chain read-through evidence.",
+                "tickers": ["ASML", "LRCX", "AMAT", "KLAC", "TSM"],
+                "years": [2026],
+                "source_tiers": ["primary_sec_filing", "relationship_graph"],
+                "metric_families": ["orders_backlog", "customer_deployment"],
+                "evidence_routes": ["ledger_first", "filing_text", "relationship_graph"],
+            },
+            {
+                "requirement_id": "req_dell_margin_quality",
+                "task_id": "fundamental",
+                "question_zh": "Need DELL AI server margin quality evidence.",
+                "tickers": ["DELL"],
+                "years": [2026],
+                "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                "metric_families": ["revenue", "gross_margin", "operating_margin"],
+                "evidence_routes": ["ledger_first", "filing_text", "8k_commentary"],
+            },
+        ]
+    }
+
+    retrieval_plan = compile_multi_agent_retrieval_plan(
+        plan,
+        query_contract={
+            "focus_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+            "search_scope_tickers": ["NVDA", "AMD", "GOOGL", "DELL", "MSFT", "AMZN", "ASML", "LRCX", "AMAT", "KLAC", "TSM"],
+            "years": [2026],
+            "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing", "market_snapshot", "industry_snapshot", "relationship_graph"],
+        },
+        activation_plan={"execution_mode": "deep_research", "max_tool_calls_total": 12},
+    )
+
+    kept = {(route["evidence_requirement_id"], route["retrieval_route"]) for route in retrieval_plan["routes"]}
+    assert ("req_dell_margin_quality", "ledger_first") in kept
+    assert ("req_dell_margin_quality", "filing_text") in kept
+    assert ("req_supply_chain", "filing_text") in kept
+    assert ("req_customer_deployment,req_supply_chain", "relationship_graph") in kept
+    assert "route_budget_pruning" not in retrieval_plan
 
 
 def test_research_lead_data_view_is_summary_inventory_and_artifact_refs_only() -> None:
@@ -666,6 +989,7 @@ def test_product_data_view_exposes_bounded_gap_when_product_sources_requested_bu
             "product_evidence_rows": [],
             "public_source_context_rows": [],
             "context_rows": [],
+            "product_intelligence_runtime_autoload": False,
         },
     )
 
@@ -873,6 +1197,407 @@ def test_memo_writer_data_view_only_contains_verified_summary() -> None:
     assert "context_rows" not in payload
     assert "data/raw_private" not in payload
     assert view["verified_summary"]["memo_writer_allowed"] is True
+
+
+def test_coverage_reflection_uses_fused_rows_before_supplemental_route_gaps() -> None:
+    plan = {
+        "requirements": [
+            {
+                "requirement_id": "req_customer_deployment",
+                "task_id": "customer_deployment",
+                "question_zh": "Customer deployment and adoption patterns",
+                "priority": "primary",
+                "tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+                "years": [2026],
+                "filing_types": ["10-Q", "8-K"],
+                "source_tiers": ["company_authored_unaudited_sec_filing", "primary_sec_filing", "relationship_graph"],
+                "metric_families": ["customer_deployment"],
+                "evidence_routes": ["8k_commentary", "filing_text", "relationship_graph"],
+            }
+        ]
+    }
+    report = reflection_report_from_evidence_fusion_bundle(
+        {
+            "authority_rows": [
+                {
+                    "evidence_requirement_ids": ["req_customer_deployment"],
+                    "authority_tier": "company_disclosed_context",
+                    "claim_scope": "company_disclosed_context_only",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                },
+                {
+                    "evidence_requirement_ids": ["req_customer_deployment"],
+                    "authority_tier": "context_or_proxy",
+                    "claim_scope": "scope_or_hypothesis_only",
+                    "source_family": "relationship_graph",
+                },
+            ]
+        },
+        evidence_requirement_plan=plan,
+        source_gaps=[
+            {
+                "ticker": "ASML",
+                "source_family": "primary_sec_filing",
+                "reason_code": "not_in_manifest_for_mcp_route_scope",
+                "status": "missing",
+            }
+        ],
+    )
+
+    assert report["sufficiency_level"] == "sufficient"
+    assert report["missing_requirements"] == []
+    assert report["second_pass_requests"] == []
+    assert report["trigger"] == "coverage_reflection_evidence_fusion_bundle"
+
+
+def test_coverage_reflection_splits_coalesced_relationship_requirement_ids() -> None:
+    plan = {
+        "requirements": [
+            {
+                "requirement_id": "req_customer_deployment",
+                "task_id": "customer_deployment",
+                "source_tiers": ["relationship_graph"],
+                "evidence_routes": ["relationship_graph"],
+            },
+            {
+                "requirement_id": "req_supply_chain",
+                "task_id": "supply_chain",
+                "source_tiers": ["relationship_graph"],
+                "evidence_routes": ["relationship_graph"],
+            },
+        ]
+    }
+    report = reflection_report_from_tool_observations(
+        {"routes": [{"route_id": "relationship::group", "retrieval_route": "relationship_graph", "evidence_requirement_id": "req_customer_deployment,req_supply_chain"}]},
+        evidence_requirement_plan=plan,
+        tool_observations=[{"route_id": "relationship::group", "retrieval_route": "relationship_graph", "status": "ok", "row_count": 24}],
+    )
+
+    assert report["sufficiency_level"] == "sufficient"
+    assert report["missing_requirements"] == []
+    assert report["second_pass_requests"] == []
+
+
+def test_coverage_reflection_rejects_unrelated_industry_snapshot_for_accelerator_architecture() -> None:
+    plan = {
+        "requirements": [
+            {
+                "requirement_id": "req_accelerator_architecture",
+                "task_id": "product_architecture",
+                "source_tiers": ["industry_snapshot"],
+                "evidence_routes": ["industry_snapshot"],
+                "metric_families": ["product_architecture"],
+            }
+        ]
+    }
+    report = reflection_report_from_evidence_fusion_bundle(
+        {
+            "authority_rows": [
+                {
+                    "evidence_ref": "INDUSTRY::industry_housing_real_estate_power::HOUST::2026-05-30",
+                    "source_family": "industry_snapshot",
+                    "summary": "HOUST latest value=1465.0 Thousands of units.",
+                    "evidence_requirement_ids": ["req_accelerator_architecture"],
+                    "authority_tier": "context_or_proxy",
+                    "claim_scope": "context_or_proxy_only",
+                }
+            ]
+        },
+        evidence_requirement_plan=plan,
+    )
+
+    assert report["sufficiency_level"] == "partial"
+    assert [item["requirement_id"] for item in report["missing_requirements"]] == ["req_accelerator_architecture"]
+    assert report["second_pass_requests"]
+
+
+def test_specialist_data_view_reads_compact_fusion_bundle_rows() -> None:
+    state = {
+        "agent_activation_plan": {
+            "execution_mode": "deep_research",
+            "activate_agents": [
+                "fundamental_analyst",
+                "product_technology_analyst",
+                "industry_supply_chain_analyst",
+                "market_valuation_analyst",
+                "risk_counterevidence_analyst",
+            ],
+            "agent_priorities": {
+                "fundamental_analyst": "primary",
+                "product_technology_analyst": "primary",
+                "industry_supply_chain_analyst": "primary",
+                "market_valuation_analyst": "supporting",
+                "risk_counterevidence_analyst": "supporting",
+            },
+            "research_objective_contract": {
+                "minimum_evidence_requirements": {
+                    "risk_and_counterevidence": {
+                        "question": "What would make the thesis wrong?",
+                        "minimum_role": "counter_thesis_and_what_would_change",
+                    }
+                }
+            },
+            "thesis_path": {
+                "required_items": [
+                    {
+                        "required_item": "risk_and_counterevidence",
+                        "question": "What would make the thesis wrong?",
+                        "primary_agents": ["risk_counterevidence_analyst"],
+                    }
+                ]
+            },
+        },
+        "query_contract": {"focus_tickers": ["DELL", "NVDA"]},
+        "product_intelligence_runtime_autoload": False,
+        "evidence_fusion_bundle": {
+            "authority_rows": [
+                {
+                    "evidence_ref": "sec::DELL::margin",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "DELL",
+                    "metric": "gross_margin",
+                    "value": "23%",
+                    "evidence_requirement_id": "req_dell_margin_quality",
+                    "evidence_requirement_ids": ["req_dell_margin_quality"],
+                    "authority_tier": "primary_exact_value",
+                    "claim_scope": "reported_financial_fact",
+                    "exact_value_authority": True,
+                },
+                {
+                    "evidence_ref": "industry::accelerator_architecture",
+                    "source_family": "industry_snapshot",
+                    "metric": "accelerator architecture",
+                    "summary": "Architecture context only.",
+                    "evidence_requirement_id": "req_accelerator_architecture",
+                    "evidence_requirement_ids": ["req_accelerator_architecture"],
+                    "authority_tier": "context_or_proxy",
+                    "claim_scope": "context_or_proxy_only",
+                },
+                {
+                    "evidence_ref": "relationship::NVDA::DELL",
+                    "source_family": "relationship_graph",
+                    "ticker": "NVDA",
+                    "related_ticker": "DELL",
+                    "metric": "supplier",
+                    "relationship_type": "supplier",
+                    "summary": "Relationship scope only.",
+                    "evidence_requirement_id": "req_customer_deployment",
+                    "evidence_requirement_ids": ["req_customer_deployment", "req_supply_chain"],
+                    "authority_tier": "context_or_proxy",
+                    "claim_scope": "scope_or_hypothesis_only",
+                },
+                {
+                    "evidence_ref": "market::NVDA",
+                    "source_family": "market_snapshot",
+                    "ticker": "NVDA",
+                    "metric": "price_in_context",
+                    "summary": "Market context only.",
+                    "evidence_requirement_id": "req_hyperscaler_capex",
+                    "evidence_requirement_ids": ["req_hyperscaler_capex"],
+                    "authority_tier": "context_or_proxy",
+                    "claim_scope": "context_or_proxy_only",
+                },
+            ]
+        },
+    }
+
+    fundamental = build_agent_data_view("fundamental_analyst", state)
+    product = build_agent_data_view("product_technology_analyst", state)
+    industry = build_agent_data_view("industry_supply_chain_analyst", state)
+    market = build_agent_data_view("market_valuation_analyst", state)
+    risk = build_agent_data_view("risk_counterevidence_analyst", state)
+
+    assert len(fundamental["bounded_evidence_rows"]) == 1
+    assert {row["source_family"] for row in product["bounded_evidence_rows"]} >= {"industry_snapshot", "relationship_graph"}
+    assert len(industry["relationship_summary"]["relationships"]) == 1
+    assert len(market["bounded_evidence_rows"]) == 1
+    assert risk["bounded_evidence_rows"]
+
+
+def test_product_data_view_keeps_fused_architecture_proxy_when_gap_rows_are_present() -> None:
+    state = {
+        "agent_activation_plan": {
+            "execution_mode": "deep_research",
+            "activate_agents": ["product_technology_analyst"],
+        },
+        "query_contract": {"focus_tickers": ["DELL", "NVDA"]},
+        "product_evidence_rows": [
+            {
+                "evidence_ref": "product_gap::DELL",
+                "source_family": "company_product_evidence_graph",
+                "ticker": "DELL",
+                "summary": "DELL has product taxonomy but no exact SKU revenue row.",
+                "promotion_status": "gap_exposed_not_fallback",
+                "claim_scope": "bounded_gap_only",
+                "exact_value_authority": False,
+            }
+        ],
+        "public_source_context_rows": [
+            {
+                "evidence_ref": "public_context::NVDA",
+                "source_family": "public_source_context",
+                "ticker": "NVDA",
+                "summary": "Official product page context is available but not SKU revenue.",
+                "claim_scope": "context_or_proxy_only",
+                "exact_value_authority": False,
+            }
+        ],
+        "product_intelligence_runtime_autoload": False,
+        "evidence_fusion_bundle": {
+            "authority_rows": [
+                {
+                    "evidence_ref": "industry::accelerator_architecture",
+                    "source_family": "industry_snapshot",
+                    "metric": "accelerator architecture",
+                    "summary": "Architecture context supports bounded accelerator comparison.",
+                    "evidence_requirement_id": "req_accelerator_architecture",
+                    "evidence_requirement_ids": ["req_accelerator_architecture"],
+                    "authority_tier": "context_or_proxy",
+                    "claim_scope": "context_or_proxy_only",
+                    "exact_value_authority": False,
+                },
+                {
+                    "evidence_ref": "relationship::NVDA::DELL",
+                    "source_family": "relationship_graph",
+                    "ticker": "NVDA",
+                    "related_ticker": "DELL",
+                    "metric": "supplier",
+                    "summary": "Relationship graph supports bounded GPU-to-server-OEM read-through.",
+                    "evidence_requirement_id": "req_customer_deployment",
+                    "evidence_requirement_ids": ["req_customer_deployment", "req_supply_chain"],
+                    "authority_tier": "context_or_proxy",
+                    "claim_scope": "scope_or_hypothesis_only",
+                    "exact_value_authority": False,
+                },
+            ]
+        },
+        "product_intelligence_runtime_autoload": False,
+    }
+
+    product = build_agent_data_view("product_technology_analyst", state)
+    rows = product["bounded_evidence_rows"]
+    families = {row["source_family"] for row in rows}
+
+    assert {"industry_snapshot", "relationship_graph"} <= families
+    assert "industry_snapshot_cannot_prove_company_level_revenue_margin_customer_or_supplier_facts" in set(
+        product["source_family_bundle"]["forbidden_claim_scopes"]
+    )
+
+
+def test_product_data_view_drops_unrelated_industry_snapshot_architecture_proxy() -> None:
+    state = {
+        "agent_activation_plan": {
+            "execution_mode": "deep_research",
+            "activate_agents": ["product_technology_analyst"],
+        },
+        "query_contract": {"focus_tickers": ["DELL", "NVDA"]},
+        "product_evidence_rows": [
+            {
+                "evidence_ref": "product_gap::DELL",
+                "source_family": "company_product_evidence_graph",
+                "ticker": "DELL",
+                "summary": "DELL has product taxonomy but no exact SKU revenue row.",
+                "promotion_status": "gap_exposed_not_fallback",
+                "claim_scope": "bounded_gap_only",
+                "exact_value_authority": False,
+            }
+        ],
+        "evidence_fusion_bundle": {
+            "authority_rows": [
+                {
+                    "evidence_ref": "INDUSTRY::industry_housing_real_estate_power::HOUST::2026-05-30",
+                    "source_family": "industry_snapshot",
+                    "summary": "HOUST latest value=1465.0 Thousands of units.",
+                    "evidence_requirement_ids": ["req_accelerator_architecture"],
+                    "authority_tier": "context_or_proxy",
+                    "claim_scope": "context_or_proxy_only",
+                }
+            ]
+        },
+    }
+
+    product = build_agent_data_view("product_technology_analyst", state)
+
+    assert "industry_snapshot" not in {row["source_family"] for row in product["bounded_evidence_rows"]}
+
+
+def test_product_data_view_autoloaded_pig_rows_are_focus_ticker_balanced() -> None:
+    product = build_agent_data_view(
+        "product_technology_analyst",
+        {
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["product_technology_analyst"],
+            },
+            "query_contract": {
+                "focus_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+                "search_scope_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+                "source_tiers": ["company_product_evidence_graph", "public_source_context", "relationship_graph"],
+                "metric_families": ["technical_product_spec", "customer_deployment"],
+            },
+        },
+    )
+
+    rows = product["bounded_evidence_rows"]
+    by_ticker: dict[str, int] = {}
+    by_ticker_family: dict[str, set[str]] = {}
+    for row in rows:
+        ticker = str(row.get("ticker") or "")
+        if not ticker:
+            continue
+        by_ticker[ticker] = by_ticker.get(ticker, 0) + 1
+        by_ticker_family.setdefault(ticker, set()).add(str(row.get("source_family") or ""))
+
+    for ticker in ("NVDA", "AMD", "GOOGL", "DELL"):
+        assert by_ticker.get(ticker, 0) >= 3
+    assert "company_product_evidence_graph" in by_ticker_family["NVDA"]
+    assert max(by_ticker.get(ticker, 0) for ticker in ("NVDA", "AMD", "GOOGL", "DELL")) <= 16
+    first_googl = next(row for row in rows if row.get("ticker") == "GOOGL")
+    assert str(first_googl.get("product_or_segment") or "").lower() != "copilot"
+
+
+def test_risk_specialist_activation_uses_research_objective_contract_required_item() -> None:
+    state = {
+        "agent_activation_plan": {
+            "execution_mode": "deep_research",
+            "activate_agents": ["risk_counterevidence_analyst"],
+            "agent_priorities": {"risk_counterevidence_analyst": "supporting"},
+            "research_objective_contract": {
+                "minimum_evidence_requirements": {
+                    "risk_and_counterevidence": {
+                        "question": "What would make the thesis wrong, weaker, delayed, or commercially bounded?",
+                        "minimum_role": "counter_thesis_and_what_would_change",
+                    }
+                }
+            },
+            "thesis_path": {
+                "required_items": [
+                    {
+                        "required_item": "risk_and_counterevidence",
+                        "question": "What would make the thesis wrong?",
+                        "primary_agents": ["risk_counterevidence_analyst"],
+                    }
+                ]
+            },
+        },
+        "query_contract": {"focus_tickers": ["DELL"]},
+        "evidence_fusion_bundle": {
+            "authority_rows": [
+                {
+                    "evidence_ref": "gap::asml_fpi_route",
+                    "source_family": "industry_snapshot",
+                    "ticker": "ASML",
+                    "metric": "export_control_context",
+                    "summary": "Context/proxy only.",
+                    "evidence_requirement_ids": ["req_supply_chain"],
+                    "claim_scope": "context_or_proxy_only",
+                    "authority_tier": "context_or_proxy",
+                }
+            ]
+        },
+    }
+
+    assert active_specialists_for_state(state) == ["risk_counterevidence_analyst"]
 
 
 def _query_contract() -> dict:

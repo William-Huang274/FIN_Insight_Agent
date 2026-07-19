@@ -388,6 +388,11 @@ def test_official_issuer_repair_materializes_asml_sec_context_without_promoting_
     assert row["context_only"] is True
     assert row["exact_value_authority"] is False
     assert "20-F" in row["preview"]
+    assert row["parser_diagnosis_complete"] is True
+    assert row["source_attempt_outcome"] == "official_source_reached_context_only_no_exact_metric_promotion"
+    assert row["source_specific_parser_status"] == "filing_presence_parser_pass_exact_filing_document_parser_not_run"
+    assert "does not fetch and parse the linked 6-K/20-F filing body tables" in row["parser_failure_reason"]
+    assert "fetch 6-K/20-F/annual report documents" in row["next_parser_action"]
     structured_rows = [
         row
         for row in execution["context_rows"]
@@ -413,6 +418,9 @@ def test_official_issuer_repair_materializes_asml_sec_context_without_promoting_
     assert "EUV lithography systems" in claims[0]["claim"]
     assert "does not promote exact sales" in claims[0]["claim"]
     assert claims[0]["source_families"] == ["live_public_web_context"]
+    assert claims[0]["parser_diagnosis_complete"] is True
+    assert claims[0]["exact_fact_parser_failure_reasons"]
+    assert claims[0]["next_parser_actions"]
 
 
 def test_research_lead_proactively_routes_known_non_us_issuer_to_official_probe() -> None:

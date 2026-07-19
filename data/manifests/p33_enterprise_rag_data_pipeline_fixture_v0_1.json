@@ -1,0 +1,533 @@
+{
+  "absorbed_contract_ids": [
+    "l3_enterprise_rag_data_pipeline_contract_v0_1"
+  ],
+  "acceptance_gates": [
+    {
+      "detail": {
+        "p14_gate_fail_count": 0,
+        "p14_release_decision": "P14_L4_scope_pass_data_ingestion_retrieval_control_plane_ready",
+        "p14_status": "pass"
+      },
+      "gate_id": "p33_enterprise_rag_p14_control_plane_pass",
+      "generated_at": "2026-07-04T16:54:37Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "complete_lineage_count": 8,
+        "complete_required_field_count": 8,
+        "evidence_row_count": 8
+      },
+      "gate_id": "p33_promoted_evidence_traces_to_raw_parser_chunk_index_authority",
+      "generated_at": "2026-07-04T16:54:37Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "can_enter_claim_card": false,
+        "can_enter_context": false,
+        "parser_status": "parser_gap_blocked",
+        "typed_gap": {
+          "gap_type": "parser_gap",
+          "next_action": "add source-specific parser before evidence/context promotion",
+          "public_source_absent": false,
+          "reason": "missing_source_specific_parser",
+          "source_absent": false
+        }
+      },
+      "gate_id": "p33_parser_failure_is_typed_not_source_absent",
+      "generated_at": "2026-07-04T16:54:37Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "milvus_boundary_ok": true,
+        "milvus_index_count": 1,
+        "milvus_selected_exact_authority_count": 0
+      },
+      "gate_id": "p33_generic_vector_hit_cannot_override_exact_first_authority",
+      "generated_at": "2026-07-04T16:54:37Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "index_refresh_count": 5,
+        "quality_fail_count": 0,
+        "quality_probe_count": 5,
+        "refresh_bad_count": 0
+      },
+      "gate_id": "p33_refresh_status_and_quality_probe_visible",
+      "generated_at": "2026-07-04T16:54:37Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_type": "p33_enterprise_rag_data_pipeline_fixture",
+      "contract_aligned_plan": {
+        "absorbed_contract_ids": [
+          "l3_enterprise_rag_data_pipeline_contract_v0_1"
+        ],
+        "used_case_contract_ids": [
+          "l3_enterprise_rag_data_pipeline_contract_v0_1"
+        ]
+      }
+    }
+  ],
+  "closeout_level": "L4_scope_pass",
+  "contract_id": "l3_enterprise_rag_data_pipeline_contract_v0_1",
+  "do_not_promote": [
+    "generic_vector_hit_over_exact_source",
+    "parser_failure_hidden_as_source_absent",
+    "raw_snapshot_as_fact_authority"
+  ],
+  "evidence_rows": [
+    {
+      "authority_boundary": "technical_fact_or_bounded_signal_after_parser",
+      "authority_policy": "technical_fact_authority",
+      "can_enter_claim_card": true,
+      "can_enter_context": true,
+      "can_enter_exact_value_ledger": false,
+      "chunk_or_table_artifact_ref": "parsed_object_records_p14:p14_obj_gb200_rack",
+      "chunk_or_table_policy": "parsed_product_spec_slot_preserve_version_and_citation",
+      "citation_ref": "ir://NVDA/product-deck#GB200",
+      "claim_scope": "product_spec_technical_fact",
+      "evidence_row_ref": "authority_mapping_records_p14:p14auth_2380e1b41c83593a",
+      "ingestion_run_id": "p14job_1037649bf5ab6dee",
+      "issuer": "NVDA",
+      "lineage_checks": {
+        "authority_to_index": true,
+        "object_to_authority": true,
+        "parser_to_object": true,
+        "raw_to_parser": true,
+        "source_to_raw": true
+      },
+      "lineage_ref": "p14_lineage_chain:p14auth_2380e1b41c83593a:p14idx_c2d7061781473a70",
+      "metric_or_signal": "GB200 NVL rack configuration",
+      "parser_execution_id": "p14parser_bfc2af8a2c5e81cb",
+      "parser_profile": "ir_pdf_table_and_caption_parser:v0_1",
+      "parser_status": "parsed",
+      "period_or_version": "Blackwell",
+      "product_family": "ai_server_rack",
+      "quality_probe_result": "quality_probe:product_spec_architecture:pass",
+      "raw_artifact_ref": "object://bronze/ir/NVDA/product_architecture_deck.pdf",
+      "retrieval_index_ref": "p14idx_c2d7061781473a70",
+      "retrieval_index_type": "object_bm25",
+      "source_id": "p14_src_company_ir_product_deck_nvda",
+      "source_modality": "pdf_table",
+      "source_role": "official_product_surface",
+      "ticker": "NVDA",
+      "typed_gap_if_failed": null
+    },
+    {
+      "authority_boundary": "exact_financial_metric_after_parser",
+      "authority_policy": "exact_company_fact_authority",
+      "can_enter_claim_card": true,
+      "can_enter_context": true,
+      "can_enter_exact_value_ledger": true,
+      "chunk_or_table_artifact_ref": "parsed_object_records_p14:p14_obj_nvda_capex",
+      "chunk_or_table_policy": "parsed_table_metric_object_preserve_value_unit_period_citation",
+      "citation_ref": "sec://NVDA/companyfacts/capex",
+      "claim_scope": "financial_statement_exact",
+      "evidence_row_ref": "authority_mapping_records_p14:p14auth_29529769a328725e",
+      "ingestion_run_id": "p14job_886227a89bc2781d",
+      "issuer": "NVDA",
+      "lineage_checks": {
+        "authority_to_index": true,
+        "object_to_authority": true,
+        "parser_to_object": true,
+        "raw_to_parser": true,
+        "source_to_raw": true
+      },
+      "lineage_ref": "p14_lineage_chain:p14auth_29529769a328725e:p14idx_dbb6dee6b1093791",
+      "metric_or_signal": "capex",
+      "parser_execution_id": "p14parser_0c0b33a1a3a9f57f",
+      "parser_profile": "sec_companyfacts_json_parser:v0_1",
+      "parser_status": "parsed",
+      "period_or_version": "FY2026Q1",
+      "product_family": "Corporate",
+      "quality_probe_result": "quality_probe:exact_financial_metric:pass",
+      "raw_artifact_ref": "object://bronze/sec/NVDA/companyfacts_2026q1.json",
+      "retrieval_index_ref": "p14idx_dbb6dee6b1093791",
+      "retrieval_index_type": "sql_exact",
+      "source_id": "p14_src_sec_structured_facts_2026q1",
+      "source_modality": "api_json",
+      "source_role": "primary_company_disclosure",
+      "ticker": "NVDA",
+      "typed_gap_if_failed": null
+    },
+    {
+      "authority_boundary": "technical_fact_or_bounded_signal_after_parser",
+      "authority_policy": "technical_fact_authority",
+      "can_enter_claim_card": true,
+      "can_enter_context": true,
+      "can_enter_exact_value_ledger": false,
+      "chunk_or_table_artifact_ref": "parsed_object_records_p14:p14_obj_b200_spec",
+      "chunk_or_table_policy": "parsed_product_spec_slot_preserve_version_and_citation",
+      "citation_ref": "ir://NVDA/product-deck#B200",
+      "claim_scope": "product_spec_technical_fact",
+      "evidence_row_ref": "authority_mapping_records_p14:p14auth_2a054c06cf687cff",
+      "ingestion_run_id": "p14job_1037649bf5ab6dee",
+      "issuer": "NVDA",
+      "lineage_checks": {
+        "authority_to_index": true,
+        "object_to_authority": true,
+        "parser_to_object": true,
+        "raw_to_parser": true,
+        "source_to_raw": true
+      },
+      "lineage_ref": "p14_lineage_chain:p14auth_2a054c06cf687cff:p14idx_c2d7061781473a70",
+      "metric_or_signal": "B200 architecture memory bandwidth",
+      "parser_execution_id": "p14parser_bfc2af8a2c5e81cb",
+      "parser_profile": "ir_pdf_table_and_caption_parser:v0_1",
+      "parser_status": "parsed",
+      "period_or_version": "Blackwell",
+      "product_family": "gpu_accelerator",
+      "quality_probe_result": "quality_probe:product_spec_architecture:pass",
+      "raw_artifact_ref": "object://bronze/ir/NVDA/product_architecture_deck.pdf",
+      "retrieval_index_ref": "p14idx_c2d7061781473a70",
+      "retrieval_index_type": "object_bm25",
+      "source_id": "p14_src_company_ir_product_deck_nvda",
+      "source_modality": "pdf_table",
+      "source_role": "official_product_surface",
+      "ticker": "NVDA",
+      "typed_gap_if_failed": null
+    },
+    {
+      "authority_boundary": "deployment_signal_after_parser",
+      "authority_policy": "deployment_signal_authority",
+      "can_enter_claim_card": true,
+      "can_enter_context": true,
+      "can_enter_exact_value_ledger": false,
+      "chunk_or_table_artifact_ref": "parsed_object_records_p14:p14_obj_cloud_deployment",
+      "chunk_or_table_policy": "parsed_event_signal_preserve_counterparty_context_and_citation",
+      "citation_ref": "customer-news://ai-cluster",
+      "claim_scope": "bounded_customer_deployment_signal",
+      "evidence_row_ref": "authority_mapping_records_p14:p14auth_4650f3c4d27b35d6",
+      "ingestion_run_id": "p14job_87408cdc02e885c6",
+      "issuer": "NVDA",
+      "lineage_checks": {
+        "authority_to_index": true,
+        "object_to_authority": true,
+        "parser_to_object": true,
+        "raw_to_parser": true,
+        "source_to_raw": true
+      },
+      "lineage_ref": "p14_lineage_chain:p14auth_4650f3c4d27b35d6:p14idx_4bfeb214d8a9ae3e",
+      "metric_or_signal": "cloud cluster deployment",
+      "parser_execution_id": "p14parser_03adbf4ad3e72fac",
+      "parser_profile": "customer_deployment_event_parser:v0_1",
+      "parser_status": "parsed",
+      "period_or_version": "2026",
+      "product_family": "gpu_accelerator",
+      "quality_probe_result": "quality_probe:customer_deployment_adoption:pass",
+      "raw_artifact_ref": "object://bronze/web/customer/ai_cluster_news.html",
+      "retrieval_index_ref": "p14idx_4bfeb214d8a9ae3e",
+      "retrieval_index_type": "bm25",
+      "source_id": "p14_src_cloud_customer_deployment_news",
+      "source_modality": "playwright_rendered_html",
+      "source_role": "customer_deployment_signal",
+      "ticker": "NVDA",
+      "typed_gap_if_failed": null
+    },
+    {
+      "authority_boundary": "technical_fact_after_parser",
+      "authority_policy": "technical_fact_authority",
+      "can_enter_claim_card": true,
+      "can_enter_context": true,
+      "can_enter_exact_value_ledger": false,
+      "chunk_or_table_artifact_ref": "parsed_object_records_p14:p14_obj_b200_spec_html",
+      "chunk_or_table_policy": "parsed_product_spec_slot_preserve_version_and_citation",
+      "citation_ref": "official://NVDA/B200",
+      "claim_scope": "product_spec_technical_fact",
+      "evidence_row_ref": "authority_mapping_records_p14:p14auth_51442d74d98c60c7",
+      "ingestion_run_id": "p14job_0e2259ddac4ec63f",
+      "issuer": "NVDA",
+      "lineage_checks": {
+        "authority_to_index": true,
+        "object_to_authority": true,
+        "parser_to_object": true,
+        "raw_to_parser": true,
+        "source_to_raw": true
+      },
+      "lineage_ref": "p14_lineage_chain:p14auth_51442d74d98c60c7:p14idx_4bfeb214d8a9ae3e",
+      "metric_or_signal": "B200 official product spec",
+      "parser_execution_id": "p14parser_439c126d233125a1",
+      "parser_profile": "official_product_html_spec_parser:v0_1",
+      "parser_status": "parsed",
+      "period_or_version": "Blackwell",
+      "product_family": "gpu_accelerator",
+      "quality_probe_result": "quality_probe:product_spec_architecture:pass",
+      "raw_artifact_ref": "object://bronze/web/NVDA/gpu_product_surface.html",
+      "retrieval_index_ref": "p14idx_4bfeb214d8a9ae3e",
+      "retrieval_index_type": "bm25",
+      "source_id": "p14_src_official_product_surface_gpu",
+      "source_modality": "http_html",
+      "source_role": "official_product_surface",
+      "ticker": "NVDA",
+      "typed_gap_if_failed": null
+    },
+    {
+      "authority_boundary": "exact_financial_metric_after_parser",
+      "authority_policy": "exact_company_fact_authority",
+      "can_enter_claim_card": true,
+      "can_enter_context": true,
+      "can_enter_exact_value_ledger": true,
+      "chunk_or_table_artifact_ref": "parsed_object_records_p14:p14_obj_nvda_revenue",
+      "chunk_or_table_policy": "parsed_table_metric_object_preserve_value_unit_period_citation",
+      "citation_ref": "sec://NVDA/companyfacts/revenue",
+      "claim_scope": "financial_statement_exact",
+      "evidence_row_ref": "authority_mapping_records_p14:p14auth_523f629775cb433e",
+      "ingestion_run_id": "p14job_886227a89bc2781d",
+      "issuer": "NVDA",
+      "lineage_checks": {
+        "authority_to_index": true,
+        "object_to_authority": true,
+        "parser_to_object": true,
+        "raw_to_parser": true,
+        "source_to_raw": true
+      },
+      "lineage_ref": "p14_lineage_chain:p14auth_523f629775cb433e:p14idx_dbb6dee6b1093791",
+      "metric_or_signal": "revenue",
+      "parser_execution_id": "p14parser_0c0b33a1a3a9f57f",
+      "parser_profile": "sec_companyfacts_json_parser:v0_1",
+      "parser_status": "parsed",
+      "period_or_version": "FY2026Q1",
+      "product_family": "Data Center",
+      "quality_probe_result": "quality_probe:exact_financial_metric:pass",
+      "raw_artifact_ref": "object://bronze/sec/NVDA/companyfacts_2026q1.json",
+      "retrieval_index_ref": "p14idx_dbb6dee6b1093791",
+      "retrieval_index_type": "sql_exact",
+      "source_id": "p14_src_sec_structured_facts_2026q1",
+      "source_modality": "api_json",
+      "source_role": "primary_company_disclosure",
+      "ticker": "NVDA",
+      "typed_gap_if_failed": null
+    },
+    {
+      "authority_boundary": "macro_context_only",
+      "authority_policy": "macro_context_only",
+      "can_enter_claim_card": false,
+      "can_enter_context": true,
+      "can_enter_exact_value_ledger": false,
+      "chunk_or_table_artifact_ref": "parsed_object_records_p14:p14_obj_rates_macro",
+      "chunk_or_table_policy": "parsed_context_row_preserve_source_ref",
+      "citation_ref": "fred://DGS10",
+      "claim_scope": "macro_context",
+      "evidence_row_ref": "authority_mapping_records_p14:p14auth_aef00b847cd259e9",
+      "ingestion_run_id": "p14job_f9f0c62ca6a3f379",
+      "issuer": "MACRO",
+      "lineage_checks": {
+        "authority_to_index": true,
+        "object_to_authority": true,
+        "parser_to_object": true,
+        "raw_to_parser": true,
+        "source_to_raw": true
+      },
+      "lineage_ref": "p14_lineage_chain:p14auth_aef00b847cd259e9:p14idx_4bfeb214d8a9ae3e",
+      "metric_or_signal": "US 10Y yield",
+      "parser_execution_id": "p14parser_2b7d5b3882d08e87",
+      "parser_profile": "fred_json_series_parser:v0_1",
+      "parser_status": "parsed",
+      "period_or_version": "daily",
+      "product_family": "rates",
+      "quality_probe_result": "quality_probe:macro_context_only:pass",
+      "raw_artifact_ref": "object://bronze/fred/DGS10.json",
+      "retrieval_index_ref": "p14idx_4bfeb214d8a9ae3e",
+      "retrieval_index_type": "bm25",
+      "source_id": "p14_src_macro_rates_fred_api",
+      "source_modality": "api_json",
+      "source_role": "macro_policy_proxy",
+      "ticker": "",
+      "typed_gap_if_failed": null
+    },
+    {
+      "authority_boundary": "technical_fact_after_parser",
+      "authority_policy": "technical_fact_authority",
+      "can_enter_claim_card": true,
+      "can_enter_context": true,
+      "can_enter_exact_value_ledger": false,
+      "chunk_or_table_artifact_ref": "parsed_object_records_p14:p14_obj_h100_spec",
+      "chunk_or_table_policy": "parsed_product_spec_slot_preserve_version_and_citation",
+      "citation_ref": "official://NVDA/H100",
+      "claim_scope": "product_spec_technical_fact",
+      "evidence_row_ref": "authority_mapping_records_p14:p14auth_dfe99e501cfe5038",
+      "ingestion_run_id": "p14job_0e2259ddac4ec63f",
+      "issuer": "NVDA",
+      "lineage_checks": {
+        "authority_to_index": true,
+        "object_to_authority": true,
+        "parser_to_object": true,
+        "raw_to_parser": true,
+        "source_to_raw": true
+      },
+      "lineage_ref": "p14_lineage_chain:p14auth_dfe99e501cfe5038:p14idx_4bfeb214d8a9ae3e",
+      "metric_or_signal": "H100 tensor core architecture",
+      "parser_execution_id": "p14parser_439c126d233125a1",
+      "parser_profile": "official_product_html_spec_parser:v0_1",
+      "parser_status": "parsed",
+      "period_or_version": "Hopper",
+      "product_family": "gpu_accelerator",
+      "quality_probe_result": "quality_probe:product_spec_architecture:pass",
+      "raw_artifact_ref": "object://bronze/web/NVDA/gpu_product_surface.html",
+      "retrieval_index_ref": "p14idx_4bfeb214d8a9ae3e",
+      "retrieval_index_type": "bm25",
+      "source_id": "p14_src_official_product_surface_gpu",
+      "source_modality": "http_html",
+      "source_role": "official_product_surface",
+      "ticker": "NVDA",
+      "typed_gap_if_failed": null
+    }
+  ],
+  "gate_fail_count": 0,
+  "generated_at": "2026-07-04T16:54:37Z",
+  "index_refresh_rows": [
+    {
+      "index_name": "p14_idx_bm25_narrative",
+      "index_refresh_id": "p14idx_4bfeb214d8a9ae3e",
+      "index_type": "bm25",
+      "lineage_complete": true,
+      "milvus_not_exact_authority": false,
+      "refresh_status": "refresh_ready"
+    },
+    {
+      "index_name": "p14_idx_graph_relationship_context",
+      "index_refresh_id": "p14idx_9ec685cb986abae6",
+      "index_type": "graph",
+      "lineage_complete": true,
+      "milvus_not_exact_authority": false,
+      "refresh_status": "refresh_ready"
+    },
+    {
+      "index_name": "p14_idx_object_bm25_tables",
+      "index_refresh_id": "p14idx_c2d7061781473a70",
+      "index_type": "object_bm25",
+      "lineage_complete": true,
+      "milvus_not_exact_authority": false,
+      "refresh_status": "refresh_ready"
+    },
+    {
+      "index_name": "p14_idx_sql_exact_financial",
+      "index_refresh_id": "p14idx_dbb6dee6b1093791",
+      "index_type": "sql_exact",
+      "lineage_complete": true,
+      "milvus_not_exact_authority": false,
+      "refresh_status": "refresh_ready"
+    },
+    {
+      "index_name": "p14_idx_milvus_semantic_context",
+      "index_refresh_id": "p14idx_fef9b70782ecd01f",
+      "index_type": "milvus_semantic",
+      "lineage_complete": true,
+      "milvus_not_exact_authority": true,
+      "refresh_status": "refresh_ready"
+    }
+  ],
+  "input_contract_required_fields": [
+    "source_id",
+    "source_role",
+    "raw_artifact_ref",
+    "parser_profile",
+    "chunk_or_table_policy",
+    "index_target",
+    "authority_policy"
+  ],
+  "output_contract_required_fields": [
+    "ingestion_run_id",
+    "parser_execution_id",
+    "chunk_or_table_artifact_ref",
+    "retrieval_index_ref",
+    "lineage_ref",
+    "quality_probe_result",
+    "typed_gap_if_failed"
+  ],
+  "promotion_recommendation": "active_registry_ready_runtime_alignment_only",
+  "promotion_scope": "data_pipeline_initial",
+  "quality_probe_rows": [
+    {
+      "candidate_found": 1,
+      "expected_authority_mode": "exact_company_fact_authority",
+      "expected_source_role": "primary_company_disclosure",
+      "gap_if_missing": "",
+      "intent_id": "capital_funding_ownership",
+      "selected_for_context": 1,
+      "status": "pass"
+    },
+    {
+      "candidate_found": 1,
+      "expected_authority_mode": "deployment_signal_authority",
+      "expected_source_role": "customer_deployment_signal",
+      "gap_if_missing": "",
+      "intent_id": "customer_deployment_adoption",
+      "selected_for_context": 1,
+      "status": "pass"
+    },
+    {
+      "candidate_found": 1,
+      "expected_authority_mode": "exact_company_fact_authority",
+      "expected_source_role": "primary_company_disclosure",
+      "gap_if_missing": "",
+      "intent_id": "exact_financial_metric",
+      "selected_for_context": 1,
+      "status": "pass"
+    },
+    {
+      "candidate_found": 1,
+      "expected_authority_mode": "technical_fact_authority",
+      "expected_source_role": "official_product_surface",
+      "gap_if_missing": "",
+      "intent_id": "product_spec_architecture",
+      "selected_for_context": 1,
+      "status": "pass"
+    },
+    {
+      "candidate_found": 0,
+      "expected_authority_mode": "parser_required_before_authority",
+      "expected_source_role": "allowlisted_web_repair",
+      "gap_if_missing": "typed_gap_until_parser_or_source_route_exists",
+      "intent_id": "retrievable_gap_repair",
+      "selected_for_context": 0,
+      "status": "pass"
+    }
+  ],
+  "release_decision": "P33_1_1_L4_scope_pass_enterprise_rag_data_pipeline_fixture",
+  "rollback_gate": [
+    "promoted_evidence_without_raw_parser_chunk_index_authority_lineage",
+    "refresh_status_invisible",
+    "milvus_or_generic_vector_used_as_exact_authority"
+  ],
+  "runtime_entry_policy": "Runtime alignment only: may align DataIngestionContract, ParserExecutionContract, RetrievalIndexRegistry, RoutePolicyMatrix, RetrievalAudit and StorageAndLineageContract. It does not by itself prove broad crawler coverage, paid-model memo quality or production p95/p99.",
+  "schema_version": "fin_insight_p33_enterprise_rag_data_pipeline_fixture_v0_1",
+  "source_fixture_refs": {
+    "p14_gate_rows": "data/manifests/r53_r60_p14_data_ingestion_retrieval_control_plane_gate_rows_v0_1.jsonl",
+    "p14_runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "p14_summary": "data/manifests/r53_r60_p14_data_ingestion_retrieval_control_plane_summary_v0_1.json",
+    "p33_manifest": "data/manifests/p33_enterprise_rag_data_pipeline_fixture_v0_1.json",
+    "p33_report": "docs/internal/vnext_20260610/p33_enterprise_rag_data_pipeline_fixture_report.zh-CN.md"
+  },
+  "status": "pass",
+  "typed_parser_gap": {
+    "blocked_authority_ref": "authority_mapping_records_p14:p14_authority_blocked_raw_snapshot_no_parser",
+    "blocked_authority_status": "blocked",
+    "can_enter_claim_card": false,
+    "can_enter_context": false,
+    "fetch_attempt_ref": "fetch_attempts_p14:p14fetch_77b4602a50863595",
+    "parser_execution_id": "p14parser_44d614ce29ed95ac",
+    "parser_status": "parser_gap_blocked",
+    "raw_artifact_ref": "object://bronze/web/customer/unparsed_snapshot.html",
+    "raw_document_ref": "raw_source_documents_p14:p14_raw_unparsed_web_snapshot_blocked",
+    "typed_gap_if_failed": {
+      "gap_type": "parser_gap",
+      "next_action": "add source-specific parser before evidence/context promotion",
+      "public_source_absent": false,
+      "reason": "missing_source_specific_parser",
+      "source_absent": false
+    }
+  }
+}

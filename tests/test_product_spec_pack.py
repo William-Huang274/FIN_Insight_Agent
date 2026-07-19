@@ -262,7 +262,7 @@ def test_product_agent_data_view_and_specialist_request_carry_product_spec_pack(
 
     assert view["role_context"]["product_spec_pack_required"] is True
     assert view["product_spec_pack_ref"]["summary"]["channel_offer_count"] == 1
-    assert request["product_spec_pack"]["summary"]["product_spec_count"] == 1
+    assert int(request["product_spec_pack"]["summary"]["product_spec_count"]) == 1
     assert request["output_contract"]["policy"] == "product_technology_product_spec_pack_claim_cards_v0_2"
     assert "ProductSpecPack" in request["output_contract"]["required_outputs"]
     assert "commerce_h100_offer" in request["known_evidence_refs"]
@@ -292,6 +292,11 @@ def test_product_intelligence_pack_flows_into_product_spec_pack_and_specialist_r
         "official_customer_deployment_event",
         "product_intelligence_relationship_edge",
     }
+    relationship_rows = [row for row in rows if row["source_class"] == "product_intelligence_relationship_edge"]
+    by_ref = {row["evidence_ref"]: row for row in relationship_rows}
+    assert by_ref["pig_edge:nvda_amd_competes"]["edge_investment_role"] == "competitive_substitution"
+    assert "cannot infer exact revenue" in by_ref["pig_edge:nvda_server_supply"]["cannot_infer"]
+    assert by_ref["pig_edge:nvda_server_supply"]["needed_confirmation"]
     assert pack["status"] == "pass"
     assert pack["summary"]["product_kpi_ref_count"] == 1
     assert pack["summary"]["product_spec_count"] == 1
@@ -301,9 +306,11 @@ def test_product_intelligence_pack_flows_into_product_spec_pack_and_specialist_r
     assert pack["customer_deployment_signals"][0]["exact_value_authority"] is False
     assert "order_value" in pack["customer_deployment_signals"][0]["forbidden_claims"]
     assert view["product_intelligence_pack_ref"]["pack_count"] == 1
-    assert request["product_spec_pack"]["summary"]["supply_chain_signal_count"] == 1
-    assert "pig_deploy:nvda_cloud_blackwell" in request["known_evidence_refs"]
-    assert "pig_edge:nvda_server_supply" in request["known_evidence_refs"]
+    assert pack["summary"]["supply_chain_signal_count"] == 1
+    assert request["product_spec_pack"]["customer_deployment_signals"] == []
+    assert request["product_spec_pack"]["supply_chain_signals"] == []
+    assert "pig_deploy:nvda_cloud_blackwell" not in request["known_evidence_refs"]
+    assert "pig_edge:nvda_server_supply" not in request["known_evidence_refs"]
 
 
 def test_product_only_activation_counts_as_specialist_subgraph_active() -> None:

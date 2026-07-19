@@ -2,9 +2,11 @@
 
 Date: 2026-06-30
 
+Supersession note: at this checkpoint both B04 and B05 remained open. The later P25/B05 closeout closed B05; current P21 has only B04 open.
+
 ## Prompt
 
-Continue the post-P22 closeout sequence under the updated enterprise-grade rule: do not move to broad full-chain cases while PRD product acceptance and data-depth blockers remain open. The immediate target was P23, the automated Workbench product journey and frontend E2E readiness slice.
+Continue the post-P22 closeout sequence under the updated enterprise-grade rule: at this checkpoint, broad full-chain cases were not allowed because PRD product acceptance and the data-depth blocker had not yet closed. The immediate target was P23, the automated Workbench product journey and frontend E2E readiness slice.
 
 ## Decision
 

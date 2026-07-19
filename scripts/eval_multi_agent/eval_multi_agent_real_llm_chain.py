@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -19,12 +20,26 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
 
 from sec_agent.agent_registry import agent_registry_by_id  # noqa: E402
+from sec_agent.agent_information_economy import (  # noqa: E402
+    build_agent_information_economy_summary,
+    build_preflight_information_economy,
+)
+from sec_agent.data_script_quality_audit import (  # noqa: E402
+    build_data_script_quality_summary,
+    render_data_script_quality_markdown,
+)
 from sec_agent.eval_case_catalog import expand_case_catalog, load_case_catalog  # noqa: E402
 from sec_agent.multi_agent_contracts import validate_specialist_memolet  # noqa: E402
 from sec_agent.multi_agent_runtime import build_agent_data_view, milvus_runtime_capability  # noqa: E402
 from sec_agent.langgraph_orchestrator import (  # noqa: E402
     build_multi_agent_orchestration_graph_from_env,
     make_multi_agent_smoke_state,
+    multi_agent_node_order,
+)
+from sec_agent.llm_gateway import chat_completion  # noqa: E402
+from sec_agent.project_os_preflight import (  # noqa: E402
+    compact_preflight_stdout as compact_project_os_preflight_stdout,
+    run_project_os_preflight,
 )
 
 
@@ -101,13 +116,111 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--chat-completions-path", default=os.environ.get("CHAT_COMPLETIONS_PATH", "/chat/completions"))
     parser.add_argument("--model", default=os.environ.get("MODEL_NAME", "deepseek-v4-pro"))
     parser.add_argument("--api-key-env", default=os.environ.get("API_KEY_ENV", "DEEPSEEK_API_KEY"))
-    parser.add_argument("--research-lead-max-tokens", type=int, default=int(os.environ.get("RESEARCH_LEAD_MAX_TOKENS", "2400")))
-    parser.add_argument("--specialist-max-tokens", type=int, default=int(os.environ.get("SPECIALIST_MAX_TOKENS", "2000")))
-    parser.add_argument("--universe-max-tokens", type=int, default=int(os.environ.get("UNIVERSE_MAX_TOKENS", "3000")))
-    parser.add_argument("--memo-max-tokens", type=int, default=int(os.environ.get("MEMO_MAX_TOKENS", "3600")))
-    parser.add_argument("--verifier-max-tokens", type=int, default=int(os.environ.get("VERIFIER_MAX_TOKENS", "1000")))
+    parser.add_argument("--research-lead-max-tokens", type=int, default=int(os.environ.get("RESEARCH_LEAD_MAX_TOKENS", "2200")))
+    parser.add_argument("--specialist-max-tokens", type=int, default=int(os.environ.get("SPECIALIST_MAX_TOKENS", "1600")))
+    parser.add_argument("--universe-max-tokens", type=int, default=int(os.environ.get("UNIVERSE_MAX_TOKENS", "500")))
+    parser.add_argument("--memo-max-tokens", type=int, default=int(os.environ.get("MEMO_MAX_TOKENS", "3000")))
+    parser.add_argument("--verifier-max-tokens", type=int, default=int(os.environ.get("VERIFIER_MAX_TOKENS", "800")))
     parser.add_argument("--timeout-s", type=int, default=int(os.environ.get("MULTI_AGENT_REAL_CHAIN_TIMEOUT_S", "180")))
+    parser.add_argument(
+        "--universe-timeout-s",
+        type=int,
+        default=int(os.environ.get("UNIVERSE_TIMEOUT_S", "90")),
+        help="Independent hard timeout budget for the relationship mechanism-overlay node.",
+    )
+    parser.add_argument(
+        "--universe-llm-overlay",
+        action="store_true",
+        default=str(os.environ.get("UNIVERSE_LLM_OVERLAY") or "").strip().lower() in {"1", "true", "yes"},
+        help=(
+            "Allow the universe relationship node to call the model for a short economic-mechanism overlay. "
+            "Default keeps relationship edge completion deterministic so graph facts stay program-owned."
+        ),
+    )
+    parser.add_argument(
+        "--llm-gateway-proxy-mode",
+        default=os.environ.get("LLM_GATEWAY_PROXY_MODE", "auto"),
+        help="Transport proxy mode for model calls. auto defaults to direct; use system/explicit only when a proxy is intentionally required.",
+    )
+    parser.add_argument(
+        "--skip-provider-preflight",
+        action="store_true",
+        help="Skip tiny provider connectivity/auth preflight before paid full-chain execution.",
+    )
+    parser.add_argument(
+        "--provider-preflight-only",
+        action="store_true",
+        help="Run token budget and provider connectivity/auth preflight, then exit before graph execution.",
+    )
+    parser.add_argument(
+        "--provider-preflight-timeout-s",
+        type=int,
+        default=int(os.environ.get("PROVIDER_PREFLIGHT_TIMEOUT_S", "45")),
+        help="Timeout for the tiny provider preflight call.",
+    )
+    parser.add_argument("--allow-expensive-llm", action="store_true", help="Permit paid full-chain runs that exceed the preflight token budget.")
+    parser.add_argument(
+        "--project-os-preflight-only",
+        action="store_true",
+        help="Run Project OS full-chain blocker preflight and exit before token/provider/model checks.",
+    )
+    parser.add_argument(
+        "--skip-project-os-preflight",
+        action="store_true",
+        help="Skip Project OS preflight. Intended only for deterministic unit tests or explicitly approved diagnostics.",
+    )
+    parser.add_argument(
+        "--project-os-preflight-allow-open-blockers",
+        action="store_true",
+        help="Allow an explicitly diagnostic run to continue despite open Project OS full-chain blockers.",
+    )
+    parser.add_argument(
+        "--project-os-run-scope",
+        default=os.environ.get("PROJECT_OS_RUN_SCOPE", "broad_full_chain"),
+        help=(
+            "Project OS blocker scope. Use broad_full_chain by default; controlled single-case evals "
+            "can pass a narrower scope such as p33_single_gold_case when root-cause rows allow it."
+        ),
+    )
+    parser.add_argument(
+        "--token-budget-preflight-only",
+        action="store_true",
+        help="Resolve cases, write token_budget_plan.json, and exit before graph/model execution.",
+    )
+    parser.add_argument(
+        "--token-budget-total",
+        type=int,
+        default=int(os.environ.get("REAL_CHAIN_TOKEN_BUDGET_TOTAL", "180000")),
+        help="Estimated total-token ceiling for paid full-chain runs before any model call.",
+    )
+    parser.add_argument(
+        "--token-budget-per-case",
+        type=int,
+        default=int(os.environ.get("REAL_CHAIN_TOKEN_BUDGET_PER_CASE", "120000")),
+        help="Estimated per-case token ceiling for paid full-chain runs before any model call.",
+    )
+    parser.add_argument(
+        "--max-paid-calls",
+        type=int,
+        default=int(os.environ.get("REAL_CHAIN_MAX_PAID_CALLS", "8")),
+        help="Estimated paid model-call ceiling for a run before any model call.",
+    )
+    parser.add_argument("--token-budget-plan-path", type=Path, default=None, help="Optional explicit token budget plan JSON path.")
+    parser.add_argument(
+        "--ignore-output-cost-quality",
+        action="store_true",
+        help="Do not fail the aggregate gate on post-run token-efficiency and claim-yield quality flags.",
+    )
     parser.add_argument("--real-evidence-operators", action="store_true", help="Execute MCP/interactive retrieval instead of dry-run operator rows.")
+    parser.add_argument(
+        "--stop-after-node",
+        default=os.environ.get("MULTI_AGENT_STOP_AFTER_NODE", ""),
+        choices=["", *multi_agent_node_order()],
+        help=(
+            "Stop the LangGraph run after a specific multi-agent node and write node checkpoint/native summary artifacts. "
+            "Use this for stepwise P33 review instead of running the whole chain."
+        ),
+    )
     parser.add_argument("--manifest-path", type=Path, default=Path(os.environ.get("MANIFEST_PATH", str(DEFAULT_SECTOR_DEPTH_MANIFEST))))
     parser.add_argument("--bm25-index-dir", type=Path, default=Path(os.environ.get("BM25_INDEX_DIR", str(DEFAULT_SECTOR_DEPTH_BM25))))
     parser.add_argument("--object-bm25-index-dir", type=Path, default=Path(os.environ.get("OBJECT_BM25_INDEX_DIR", str(DEFAULT_SECTOR_DEPTH_OBJECT_BM25))))
@@ -149,10 +262,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    cases = _load_cases(args)
+    cases = [_case_with_runtime_paid_specialists(case) for case in _load_cases(args)]
     run_id = args.run_id or _default_run_id(args)
     output_dir = args.output_dir / run_id
     output_dir.mkdir(parents=True, exist_ok=True)
+    gateway_event_log_path = output_dir / "model_call_events.jsonl"
+    setattr(args, "_llm_gateway_event_log_path", str(gateway_event_log_path))
+    os.environ["LLM_GATEWAY_EVENT_LOG_PATH"] = str(gateway_event_log_path)
+    os.environ["LLM_GATEWAY_PROXY_MODE"] = _resolved_llm_gateway_proxy_mode(args)
     if args.dump_expanded_cases_path:
         args.dump_expanded_cases_path.parent.mkdir(parents=True, exist_ok=True)
         _write_jsonl(args.dump_expanded_cases_path, cases)
@@ -164,8 +281,41 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
         return 0
 
+    if args.project_os_preflight_only:
+        project_os_preflight = _write_project_os_preflight(args=args, run_id=run_id, output_dir=output_dir)
+        print(json.dumps(compact_project_os_preflight_stdout(project_os_preflight), ensure_ascii=False, indent=2), flush=True)
+        return 0 if project_os_preflight.get("status") in {"pass", "diagnostic_override", "skipped"} else 4
+
+    budget_plan = _write_token_budget_plan(args=args, cases=cases, run_id=run_id, output_dir=output_dir)
+    _write_preflight_information_economy(budget_plan, output_dir)
+    setattr(args, "_token_budget_plan", budget_plan)
+    if args.token_budget_preflight_only:
+        print(json.dumps(_token_budget_stdout_summary(budget_plan), ensure_ascii=False, indent=2), flush=True)
+        return 0
+    if not budget_plan["allowed"]:
+        print(json.dumps(_token_budget_stdout_summary(budget_plan), ensure_ascii=False, indent=2), flush=True)
+        return 2
+    if not args.provider_preflight_only:
+        project_os_preflight = _write_project_os_preflight(args=args, run_id=run_id, output_dir=output_dir)
+        setattr(args, "_project_os_preflight", project_os_preflight)
+        if project_os_preflight.get("status") not in {"pass", "diagnostic_override", "skipped"}:
+            print(json.dumps(compact_project_os_preflight_stdout(project_os_preflight), ensure_ascii=False, indent=2), flush=True)
+            return 4
+    provider_preflight = _write_provider_preflight(args=args, run_id=run_id, output_dir=output_dir)
+    setattr(args, "_provider_preflight", provider_preflight)
+    if args.provider_preflight_only:
+        print(json.dumps(_provider_preflight_stdout_summary(provider_preflight), ensure_ascii=False, indent=2), flush=True)
+        return 0 if provider_preflight.get("status") in {"ok", "skipped"} else 3
+    if provider_preflight.get("status") not in {"ok", "skipped"}:
+        print(json.dumps(_provider_preflight_stdout_summary(provider_preflight), ensure_ascii=False, indent=2), flush=True)
+        return 3
+
     env = _graph_env(args)
-    graph = build_multi_agent_orchestration_graph_from_env(env=env, use_checkpointer=False)
+    graph = build_multi_agent_orchestration_graph_from_env(
+        env=env,
+        use_checkpointer=False,
+        stop_after_node=(args.stop_after_node or None),
+    )
     conversation_summaries: dict[str, dict[str, Any]] = {}
     scores: list[dict[str, Any]] = []
     started = time.time()
@@ -183,11 +333,41 @@ def main(argv: list[str] | None = None) -> int:
         elapsed_ms = int((time.time() - case_started) * 1000)
         summary = _read_json(case_dir / "multi_agent_summary.json")
         native = _read_json(case_dir / "langgraph_native_summary.json")
-        score = score_case(case, result, summary, native, elapsed_ms=elapsed_ms, ordinal=ordinal, total=len(cases))
+        case_for_score = {**dict(case), "_universe_llm_overlay_required": bool(args.universe_llm_overlay)}
+        score = score_case(case_for_score, result, summary, native, elapsed_ms=elapsed_ms, ordinal=ordinal, total=len(cases))
+        if args.stop_after_node:
+            score["stepwise_node_run"] = {
+                "enabled": True,
+                "requested_stop_after_node": args.stop_after_node,
+                "result_status": result.get("status") or "",
+                "native_stop_after_node": result.get("native_stop_after_node") or "",
+                "node_checkpoint_artifact": str((case_dir / "langgraph_node_checkpoints.json").resolve()),
+                "native_summary_artifact": str((case_dir / "langgraph_native_summary.json").resolve()),
+                "interpretation": (
+                    "diagnostic_node_stop_not_full_chain_pass"
+                    if result.get("status") == "stopped_after_node"
+                    else "stop_node_not_reached_or_graph_failed"
+                ),
+            }
+            _write_stepwise_node_result(
+                case_dir,
+                args=args,
+                case=case_for_score,
+                result=result,
+                summary=summary,
+                native=native,
+                score=score,
+            )
         (case_dir / "real_chain_case_score.json").write_text(
             json.dumps(score, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
+        p30_audit = score.get("p30_root_cause_quality_audit")
+        if isinstance(p30_audit, Mapping):
+            (case_dir / "p30_root_cause_quality_audit.json").write_text(
+                json.dumps(p30_audit, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
         scores.append(score)
         _update_conversation_summary(case, score, result, conversation_summaries)
 
@@ -211,6 +391,18 @@ def main(argv: list[str] | None = None) -> int:
             if isinstance(case, Mapping)
         },
     }
+    information_economy_audit = _write_agent_information_economy_audit(
+        aggregate,
+        output_quality_audit=output_quality_audit,
+        output_dir=output_dir,
+    )
+    aggregate["agent_information_economy_audit"] = _compact_agent_information_economy_for_summary(
+        information_economy_audit
+    )
+    data_script_quality_audit = _write_data_script_quality_audit(aggregate, output_dir)
+    aggregate["data_script_quality_audit"] = _compact_data_script_quality_for_summary(data_script_quality_audit)
+    _apply_output_cost_quality_gate(aggregate, output_quality_audit, ignore=bool(args.ignore_output_cost_quality))
+    _apply_data_script_quality_gate(aggregate, data_script_quality_audit)
     _write_jsonl(output_dir / "real_chain_case_scores.jsonl", scores)
     summary_path = output_dir / "real_chain_eval_summary.json"
     summary_path.write_text(json.dumps(aggregate, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -251,6 +443,877 @@ def _write_workbench_eval_summary(
     output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def _write_stepwise_node_result(
+    case_dir: Path,
+    *,
+    args: argparse.Namespace,
+    case: Mapping[str, Any],
+    result: Mapping[str, Any],
+    summary: Mapping[str, Any],
+    native: Mapping[str, Any],
+    score: Mapping[str, Any],
+) -> None:
+    """Persist a compact, reviewable node-stop artifact for HITL stepwise runs."""
+    node_trace = [row.get("node") for row in result.get("node_trace") or [] if isinstance(row, Mapping)]
+    payload = {
+        "schema_version": "sec_agent_stepwise_node_result_v0.1",
+        "case_id": case.get("case_id") or "",
+        "run_id": result.get("run_id") or "",
+        "status": result.get("status") or "",
+        "requested_stop_after_node": args.stop_after_node or "",
+        "native_stop_after_node": result.get("native_stop_after_node") or "",
+        "node_trace": node_trace,
+        "summary_artifact_present": bool(summary),
+        "native_summary_artifact_present": bool(native),
+        "gate_semantics": "node_level_diagnostic_only_not_full_chain_pass",
+        "artifact_refs": {
+            "stepwise_node_result": str((case_dir / "stepwise_node_result.json").resolve()),
+            "node_checkpoints": str((case_dir / "langgraph_node_checkpoints.json").resolve()),
+            "langgraph_native_summary": str((case_dir / "langgraph_native_summary.json").resolve()),
+        },
+        "research_lead": {
+            "route_status": result.get("research_lead_route_status") or "",
+            "failure_reason": result.get("research_lead_failure_reason") or "",
+            "validation": result.get("research_lead_validation") if isinstance(result.get("research_lead_validation"), Mapping) else {},
+            "rejected_plan": result.get("research_lead_rejected_plan") if isinstance(result.get("research_lead_rejected_plan"), Mapping) else {},
+            "diagnostics": result.get("research_lead_model_diagnostics")
+            if isinstance(result.get("research_lead_model_diagnostics"), Mapping)
+            else {},
+            "input_pack_fingerprint": result.get("research_lead_input_pack_fingerprint")
+            if isinstance(result.get("research_lead_input_pack_fingerprint"), Mapping)
+            else {},
+            "routing_trace": result.get("multi_agent_routing_trace") if isinstance(result.get("multi_agent_routing_trace"), Mapping) else {},
+        },
+        "agent_activation_plan": result.get("agent_activation_plan") if isinstance(result.get("agent_activation_plan"), Mapping) else {},
+        "agent_activation_validation": (
+            result.get("agent_activation_validation") if isinstance(result.get("agent_activation_validation"), Mapping) else {}
+        ),
+        "evidence_requirement_plan": (
+            result.get("evidence_requirement_plan") if isinstance(result.get("evidence_requirement_plan"), Mapping) else {}
+        ),
+        "product_intelligence_runtime_policy": (
+            result.get("product_intelligence_runtime_policy")
+            if isinstance(result.get("product_intelligence_runtime_policy"), Mapping)
+            else {}
+        ),
+        "stepwise_score_focus": {
+            "research_lead_checks": {
+                key: value for key, value in (score.get("checks") or {}).items() if str(key).startswith("research_lead.")
+            },
+            "missing_required_agents": score.get("missing_required_agents") or [],
+            "activated_agents": score.get("activated_agents") or [],
+            "node_stop_interpretation": (score.get("stepwise_node_run") or {}).get("interpretation") or "",
+        },
+    }
+    (case_dir / "stepwise_node_result.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_token_budget_plan(
+    *,
+    args: argparse.Namespace,
+    cases: list[Mapping[str, Any]],
+    run_id: str,
+    output_dir: Path,
+) -> dict[str, Any]:
+    plan = _token_budget_plan(args=args, cases=cases, run_id=run_id, output_dir=output_dir)
+    path = args.token_budget_plan_path or output_dir / "token_budget_plan.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return plan
+
+
+def _write_project_os_preflight(*, args: argparse.Namespace, run_id: str, output_dir: Path) -> dict[str, Any]:
+    path = output_dir / "project_os_preflight.json"
+    if args.skip_project_os_preflight:
+        preflight: dict[str, Any] = {
+            "schema_version": "fin_insight_project_os_full_chain_preflight_v0_1",
+            "run_id": run_id,
+            "status": "skipped",
+            "policy": "manual_skip_project_os_preflight",
+            "reason": "skip_project_os_preflight",
+            "warning": "Do not use this for paid product-quality full-chain closeout without explicit user approval.",
+        }
+    else:
+        preflight = run_project_os_preflight(
+            REPO_ROOT,
+            allow_open_blockers=bool(args.project_os_preflight_allow_open_blockers),
+            run_scope=str(args.project_os_run_scope or "broad_full_chain"),
+        )
+        preflight["run_id"] = run_id
+    path.write_text(json.dumps(preflight, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return preflight
+
+
+def _case_with_runtime_paid_specialists(case: Mapping[str, Any]) -> dict[str, Any]:
+    normalized = dict(case)
+    paid_specialists = _runtime_paid_specialist_agents(case)
+    quality_specialists = _quality_expected_specialist_agents(case)
+    if quality_specialists:
+        normalized.setdefault("expected_specialist_agents", quality_specialists)
+    if paid_specialists:
+        normalized["expected_paid_specialist_agents"] = paid_specialists
+        normalized["expected_paid_specialist_priorities"] = _expected_paid_specialist_priorities(normalized, paid_specialists)
+    return normalized
+
+
+def _write_provider_preflight(*, args: argparse.Namespace, run_id: str, output_dir: Path) -> dict[str, Any]:
+    paid_backend = _llm_backend_is_paid(args.llm_backend)
+    proxy_mode = _resolved_llm_gateway_proxy_mode(args)
+    path = output_dir / "provider_preflight.json"
+    if not paid_backend:
+        preflight = {
+            "schema_version": "sec_agent_provider_preflight_v0.1",
+            "run_id": run_id,
+            "status": "skipped",
+            "reason": "unpaid_backend",
+            "paid_backend": False,
+            "llm_backend": args.llm_backend,
+            "model": args.model,
+            "base_url": args.base_url,
+            "chat_completions_path": args.chat_completions_path,
+            "api_key_env": args.api_key_env,
+            "api_key_present": bool(args.api_key_env and os.environ.get(str(args.api_key_env))),
+            "proxy_mode": proxy_mode,
+            "api_key_saved": False,
+        }
+        path.write_text(json.dumps(preflight, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return preflight
+    if args.skip_provider_preflight:
+        preflight = {
+            "schema_version": "sec_agent_provider_preflight_v0.1",
+            "run_id": run_id,
+            "status": "skipped",
+            "reason": "skip_provider_preflight",
+            "paid_backend": True,
+            "llm_backend": args.llm_backend,
+            "model": args.model,
+            "base_url": args.base_url,
+            "chat_completions_path": args.chat_completions_path,
+            "api_key_env": args.api_key_env,
+            "api_key_present": bool(args.api_key_env and os.environ.get(str(args.api_key_env))),
+            "proxy_mode": proxy_mode,
+            "api_key_saved": False,
+        }
+        path.write_text(json.dumps(preflight, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return preflight
+
+    started = time.time()
+    old_retry_count = os.environ.get("LLM_GATEWAY_TRANSPORT_RETRIES")
+    os.environ["LLM_GATEWAY_TRANSPORT_RETRIES"] = os.environ.get("PROVIDER_PREFLIGHT_TRANSPORT_RETRIES", "0")
+    try:
+        result = chat_completion(
+            llm_backend=args.llm_backend,
+            base_url=args.base_url,
+            chat_completions_path=args.chat_completions_path,
+            model=args.model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a connectivity preflight endpoint. Return a compact JSON object only.",
+                },
+                {"role": "user", "content": "{\"status\":\"ok\"}"},
+            ],
+            response_format={"type": "json_object"},
+            api_key_env=args.api_key_env,
+            temperature=0.0,
+            max_tokens=24,
+            timeout_s=max(1, int(args.provider_preflight_timeout_s)),
+            role="provider_preflight",
+            profile="full_chain_preflight",
+            trace_tags={"run_id": run_id, "preflight": True},
+        )
+    finally:
+        if old_retry_count is None:
+            os.environ.pop("LLM_GATEWAY_TRANSPORT_RETRIES", None)
+        else:
+            os.environ["LLM_GATEWAY_TRANSPORT_RETRIES"] = old_retry_count
+    ok = result.get("status") == "ok"
+    preflight = {
+        "schema_version": "sec_agent_provider_preflight_v0.1",
+        "run_id": run_id,
+        "status": "ok" if ok else "fail",
+        "paid_backend": True,
+        "llm_backend": args.llm_backend,
+        "model": args.model,
+        "base_url": args.base_url,
+        "chat_completions_path": args.chat_completions_path,
+        "api_key_env": args.api_key_env,
+        "api_key_present": bool(args.api_key_env and os.environ.get(str(args.api_key_env))),
+        "api_key_saved": False,
+        "proxy_mode": result.get("proxy_mode") or proxy_mode,
+        "url": result.get("url") or "",
+        "call_id": result.get("call_id") or "",
+        "latency_ms": int(result.get("latency_ms") or ((time.time() - started) * 1000)),
+        "input_tokens": result.get("input_tokens"),
+        "output_tokens": result.get("output_tokens"),
+        "total_tokens": result.get("total_tokens"),
+        "finish_reason": result.get("finish_reason"),
+        "failure_reason": str(result.get("failure_reason") or "")[:1000],
+        "transport_attempt_count": result.get("transport_attempt_count"),
+        "transport_failures": result.get("transport_failures") or [],
+        "raw_response_saved": False,
+        "policy": "fail_fast_before_paid_full_chain_graph_execution_v0_1",
+    }
+    path.write_text(json.dumps(preflight, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return preflight
+
+
+def _provider_preflight_stdout_summary(preflight: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": preflight.get("schema_version"),
+        "run_id": preflight.get("run_id"),
+        "status": preflight.get("status"),
+        "paid_backend": preflight.get("paid_backend"),
+        "llm_backend": preflight.get("llm_backend"),
+        "model": preflight.get("model"),
+        "base_url": preflight.get("base_url"),
+        "chat_completions_path": preflight.get("chat_completions_path"),
+        "api_key_env": preflight.get("api_key_env"),
+        "api_key_present": preflight.get("api_key_present"),
+        "api_key_saved": False,
+        "proxy_mode": preflight.get("proxy_mode"),
+        "latency_ms": preflight.get("latency_ms"),
+        "total_tokens": preflight.get("total_tokens"),
+        "failure_reason": preflight.get("failure_reason"),
+    }
+
+
+def _token_budget_plan(
+    *,
+    args: argparse.Namespace,
+    cases: list[Mapping[str, Any]],
+    run_id: str,
+    output_dir: Path,
+) -> dict[str, Any]:
+    case_plans = [_estimate_case_token_budget(case, args=args) for case in cases]
+    estimated_total = sum(int(row["estimated_total_tokens"]) for row in case_plans)
+    estimated_paid_calls = sum(int(row["estimated_paid_call_count"]) for row in case_plans)
+    paid_backend = _llm_backend_is_paid(args.llm_backend)
+    violations: list[dict[str, Any]] = []
+    if paid_backend and args.token_budget_total > 0 and estimated_total > args.token_budget_total:
+        violations.append(
+            {
+                "type": "run_token_budget_exceeded",
+                "estimated_total_tokens": estimated_total,
+                "token_budget_total": args.token_budget_total,
+            }
+        )
+    if paid_backend and args.max_paid_calls > 0 and estimated_paid_calls > args.max_paid_calls:
+        violations.append(
+            {
+                "type": "paid_call_budget_exceeded",
+                "estimated_paid_call_count": estimated_paid_calls,
+                "max_paid_calls": args.max_paid_calls,
+            }
+        )
+    for row in case_plans:
+        if paid_backend and args.token_budget_per_case > 0 and int(row["estimated_total_tokens"]) > args.token_budget_per_case:
+            violations.append(
+                {
+                    "type": "case_token_budget_exceeded",
+                    "case_id": row["case_id"],
+                    "estimated_total_tokens": row["estimated_total_tokens"],
+                    "token_budget_per_case": args.token_budget_per_case,
+                }
+            )
+    evidence_mode_violations = _evidence_operator_mode_preflight_violations(
+        args=args,
+        cases=cases,
+        paid_backend=paid_backend,
+    )
+    violations.extend(evidence_mode_violations)
+    token_violations = [row for row in violations if str(row.get("type") or "") != "real_evidence_operators_required"]
+    token_budget_allowed = (not paid_backend) or args.allow_expensive_llm or not token_violations
+    evidence_mode_allowed = (not paid_backend) or not evidence_mode_violations
+    allowed = token_budget_allowed and evidence_mode_allowed
+    scheduler_advice = _token_budget_scheduler_advice(
+        case_plans,
+        paid_backend=paid_backend,
+        token_budget_total=int(args.token_budget_total),
+        token_budget_per_case=int(args.token_budget_per_case),
+        max_paid_calls=int(args.max_paid_calls),
+        has_violations=bool(token_violations),
+    )
+    return {
+        "schema_version": "sec_agent_paid_llm_token_budget_plan_v0.1",
+        "run_id": run_id,
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "output_dir": str(output_dir.resolve()),
+        "paid_backend": paid_backend,
+        "llm_backend": args.llm_backend,
+        "model": args.model,
+        "provider_preflight_required": bool(paid_backend and not args.skip_provider_preflight),
+        "provider_preflight_paid_call_count": 1 if paid_backend and not args.skip_provider_preflight else 0,
+        "llm_gateway_proxy_mode": _resolved_llm_gateway_proxy_mode(args),
+        "budget_policy": "preflight_fail_closed_before_paid_model_calls_v0_1",
+        "evidence_operator_mode_policy": "paid_real_retrieval_cases_require_real_evidence_operators_v0_1",
+        "allow_expensive_llm": bool(args.allow_expensive_llm),
+        "real_evidence_operators": bool(args.real_evidence_operators),
+        "allowed": bool(allowed),
+        "status": _preflight_block_status(
+            allowed=bool(allowed),
+            token_violations=token_violations,
+            evidence_mode_violations=evidence_mode_violations,
+        ),
+        "estimated_total_tokens": estimated_total,
+        "estimated_paid_call_count": estimated_paid_calls,
+        "token_budget_total": int(args.token_budget_total),
+        "token_budget_per_case": int(args.token_budget_per_case),
+        "max_paid_calls": int(args.max_paid_calls),
+        "violations": violations,
+        "scheduler_advice": scheduler_advice,
+        "cases": case_plans,
+        "required_action": _preflight_required_action(
+            paid_backend=paid_backend,
+            allow_expensive_llm=bool(args.allow_expensive_llm),
+            token_violations=token_violations,
+            evidence_mode_violations=evidence_mode_violations,
+            scheduler_advice=scheduler_advice,
+        ),
+    }
+
+
+def _evidence_operator_mode_preflight_violations(
+    *,
+    args: argparse.Namespace,
+    cases: list[Mapping[str, Any]],
+    paid_backend: bool,
+) -> list[dict[str, Any]]:
+    if not paid_backend or bool(getattr(args, "real_evidence_operators", False)):
+        return []
+    violations: list[dict[str, Any]] = []
+    for case in cases:
+        requires_real_retrieval = bool(case.get("require_real_retrieval_pass"))
+        requires_real_evidence = bool(case.get("require_real_evidence_quality_pass"))
+        if not (requires_real_retrieval or requires_real_evidence):
+            continue
+        violations.append(
+            {
+                "type": "real_evidence_operators_required",
+                "case_id": str(case.get("case_id") or ""),
+                "evidence_operator_mode": "dry_run",
+                "required_flag": {
+                    "require_real_retrieval_pass": requires_real_retrieval,
+                    "require_real_evidence_quality_pass": requires_real_evidence,
+                },
+                "required_action": "Pass --real-evidence-operators or run a no-paid/deterministic diagnostic instead.",
+            }
+        )
+    return violations
+
+
+def _preflight_block_status(
+    *,
+    allowed: bool,
+    token_violations: list[Mapping[str, Any]],
+    evidence_mode_violations: list[Mapping[str, Any]],
+) -> str:
+    if allowed:
+        return "allowed"
+    if evidence_mode_violations:
+        return "blocked_preflight_evidence_operator_mode"
+    if token_violations:
+        return "blocked_preflight_token_budget"
+    return "blocked_preflight"
+
+
+def _preflight_required_action(
+    *,
+    paid_backend: bool,
+    allow_expensive_llm: bool,
+    token_violations: list[Mapping[str, Any]],
+    evidence_mode_violations: list[Mapping[str, Any]],
+    scheduler_advice: Mapping[str, Any],
+) -> str:
+    if not paid_backend:
+        return ""
+    actions: list[str] = []
+    if evidence_mode_violations:
+        actions.append(
+            "Pass --real-evidence-operators before paid model execution for cases that require real retrieval/evidence quality; do not spend LLM tokens on dry-run evidence."
+        )
+    if token_violations and not allow_expensive_llm:
+        actions.append(
+            str(scheduler_advice.get("required_action") or "").strip()
+            or "Use deterministic/node-level tests, reduce case count, enable preflight-only, or explicitly pass --allow-expensive-llm after reviewing this plan."
+        )
+    return " ".join(action for action in actions if action)
+
+
+def _token_budget_stdout_summary(plan: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "run_id": plan.get("run_id"),
+        "status": plan.get("status"),
+        "allowed": plan.get("allowed"),
+        "estimated_total_tokens": plan.get("estimated_total_tokens"),
+        "estimated_paid_call_count": plan.get("estimated_paid_call_count"),
+        "provider_preflight_required": plan.get("provider_preflight_required"),
+        "provider_preflight_paid_call_count": plan.get("provider_preflight_paid_call_count"),
+        "llm_gateway_proxy_mode": plan.get("llm_gateway_proxy_mode"),
+        "token_budget_total": plan.get("token_budget_total"),
+        "token_budget_per_case": plan.get("token_budget_per_case"),
+        "max_paid_calls": plan.get("max_paid_calls"),
+        "real_evidence_operators": plan.get("real_evidence_operators"),
+        "violations": plan.get("violations") or [],
+        "scheduler_advice": plan.get("scheduler_advice") or {},
+        "required_action": plan.get("required_action") or "",
+    }
+
+
+def _compact_token_budget_plan_for_summary(plan: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(plan, Mapping) or not plan:
+        return {}
+    return {
+        "schema_version": plan.get("schema_version") or "",
+        "status": plan.get("status") or "",
+        "allowed": bool(plan.get("allowed")),
+        "paid_backend": bool(plan.get("paid_backend")),
+        "provider_preflight_required": bool(plan.get("provider_preflight_required")),
+        "provider_preflight_paid_call_count": int(plan.get("provider_preflight_paid_call_count") or 0),
+        "llm_gateway_proxy_mode": plan.get("llm_gateway_proxy_mode") or "",
+        "estimated_total_tokens": int(plan.get("estimated_total_tokens") or 0),
+        "estimated_paid_call_count": int(plan.get("estimated_paid_call_count") or 0),
+        "token_budget_total": int(plan.get("token_budget_total") or 0),
+        "token_budget_per_case": int(plan.get("token_budget_per_case") or 0),
+        "max_paid_calls": int(plan.get("max_paid_calls") or 0),
+        "violation_count": len(plan.get("violations") or []),
+        "budget_policy": plan.get("budget_policy") or "",
+        "scheduler_advice": plan.get("scheduler_advice") if isinstance(plan.get("scheduler_advice"), Mapping) else {},
+    }
+
+
+def _compact_provider_preflight_for_summary(preflight: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(preflight, Mapping) or not preflight:
+        return {}
+    return {
+        "schema_version": preflight.get("schema_version") or "",
+        "status": preflight.get("status") or "",
+        "paid_backend": bool(preflight.get("paid_backend")),
+        "llm_backend": preflight.get("llm_backend") or "",
+        "model": preflight.get("model") or "",
+        "base_url": preflight.get("base_url") or "",
+        "chat_completions_path": preflight.get("chat_completions_path") or "",
+        "api_key_env": preflight.get("api_key_env") or "",
+        "api_key_present": bool(preflight.get("api_key_present")),
+        "api_key_saved": False,
+        "proxy_mode": preflight.get("proxy_mode") or "",
+        "latency_ms": preflight.get("latency_ms"),
+        "total_tokens": preflight.get("total_tokens"),
+        "failure_reason": preflight.get("failure_reason") or "",
+    }
+
+
+def _token_budget_scheduler_advice(
+    case_plans: list[Mapping[str, Any]],
+    *,
+    paid_backend: bool,
+    token_budget_total: int,
+    token_budget_per_case: int,
+    max_paid_calls: int,
+    has_violations: bool,
+) -> dict[str, Any]:
+    if not paid_backend:
+        return {
+            "status": "not_required_for_unpaid_backend",
+            "recommended_batch_count": 1 if case_plans else 0,
+            "batches": [_budget_batch_row(1, case_plans)] if case_plans else [],
+            "blocked_case_ids": [],
+            "required_action": "",
+        }
+
+    blocked_cases: list[Mapping[str, Any]] = []
+    runnable_cases: list[Mapping[str, Any]] = []
+    for case in case_plans:
+        tokens = int(case.get("estimated_total_tokens") or 0)
+        calls = int(case.get("estimated_paid_call_count") or 0)
+        exceeds_case_tokens = token_budget_per_case > 0 and tokens > token_budget_per_case
+        exceeds_case_calls = max_paid_calls > 0 and calls > max_paid_calls
+        if exceeds_case_tokens or exceeds_case_calls:
+            blocked_cases.append(case)
+        else:
+            runnable_cases.append(case)
+
+    batches: list[list[Mapping[str, Any]]] = []
+    current: list[Mapping[str, Any]] = []
+    current_tokens = 0
+    current_calls = 0
+    for case in runnable_cases:
+        tokens = int(case.get("estimated_total_tokens") or 0)
+        calls = int(case.get("estimated_paid_call_count") or 0)
+        would_exceed_tokens = token_budget_total > 0 and current and current_tokens + tokens > token_budget_total
+        would_exceed_calls = max_paid_calls > 0 and current and current_calls + calls > max_paid_calls
+        if would_exceed_tokens or would_exceed_calls:
+            batches.append(current)
+            current = []
+            current_tokens = 0
+            current_calls = 0
+        current.append(case)
+        current_tokens += tokens
+        current_calls += calls
+    if current:
+        batches.append(current)
+
+    status = "single_batch_allowed"
+    required_action = ""
+    if blocked_cases:
+        status = "case_budget_repair_required"
+        required_action = "Repair or down-scope blocked cases with deterministic/node-level tests before paid execution."
+    elif has_violations and len(batches) > 1:
+        status = "split_required"
+        required_action = "Run the recommended paid batches separately; do not launch this case set as one paid full-chain batch."
+    elif has_violations:
+        status = "budget_review_required"
+        required_action = "Review budget violations before paid execution."
+
+    return {
+        "status": status,
+        "recommended_batch_count": len(batches),
+        "max_cases_per_paid_batch": max([len(batch) for batch in batches] or [0]),
+        "blocked_case_ids": [str(case.get("case_id") or "") for case in blocked_cases],
+        "batches": [_budget_batch_row(index + 1, batch) for index, batch in enumerate(batches)],
+        "required_action": required_action,
+        "policy": "split_paid_full_chain_batches_before_model_calls_v0_1",
+    }
+
+
+def _budget_batch_row(index: int, cases: list[Mapping[str, Any]]) -> dict[str, Any]:
+    return {
+        "batch_id": f"budget_batch_{index}",
+        "case_ids": [str(case.get("case_id") or "") for case in cases],
+        "estimated_total_tokens": sum(int(case.get("estimated_total_tokens") or 0) for case in cases),
+        "estimated_paid_call_count": sum(int(case.get("estimated_paid_call_count") or 0) for case in cases),
+    }
+
+
+def _estimate_case_token_budget(case: Mapping[str, Any], *, args: argparse.Namespace) -> dict[str, Any]:
+    mode = str(case.get("expected_execution_mode") or case.get("execution_mode") or "").strip()
+    required_agents = set(_string_list(case.get("required_agents")))
+    quality_expected_specialists = _quality_expected_specialist_agents(case)
+    expected_specialists = _estimated_specialist_agents(case)
+    paid_specialist_priorities = _expected_paid_specialist_priorities(case, expected_specialists)
+    cost_aware_specialists = _cost_aware_estimated_specialist_agents(case, fallback=expected_specialists)
+    paid_nodes: list[dict[str, Any]] = []
+    if mode not in {"deterministic_lookup"} and ("research_lead" in required_agents or bool(case.get("require_lead_llm_pass", True))):
+        paid_nodes.append(_node_token_estimate("research_lead", 8000, args.research_lead_max_tokens))
+    if bool(getattr(args, "universe_llm_overlay", False)):
+        paid_nodes.append(_node_token_estimate("universe_relationship", 9000, args.universe_max_tokens))
+    for agent_id in expected_specialists:
+        priority = paid_specialist_priorities.get(agent_id, "primary")
+        paid_nodes.append(
+            _node_token_estimate(
+                agent_id,
+                _estimated_specialist_input_tokens(agent_id, case, priority=priority),
+                args.specialist_max_tokens,
+                priority=priority,
+            )
+        )
+    if "memo_writer" in required_agents or bool(case.get("require_memo_llm_pass", mode in {"focused_answer", "standard_memo", "deep_research"})):
+        paid_nodes.append(_node_token_estimate("memo_writer", _estimated_memo_input_tokens(case), args.memo_max_tokens))
+    if "verifier" in required_agents or bool(case.get("require_verifier_llm_pass")):
+        paid_nodes.append(_node_token_estimate("verifier", 5000, args.verifier_max_tokens))
+    pruned_paid_nodes = _replace_specialist_nodes_for_cost_aware_estimate(
+        paid_nodes,
+        original_specialists=expected_specialists,
+        cost_aware_specialists=cost_aware_specialists,
+    )
+    estimated_total = sum(int(row["estimated_total_tokens"]) for row in pruned_paid_nodes)
+    return {
+        "case_id": str(case.get("case_id") or ""),
+        "execution_mode": mode,
+        "estimated_total_tokens": estimated_total,
+        "estimated_paid_call_count": len(pruned_paid_nodes),
+        "estimated_specialist_count": len(expected_specialists),
+        "quality_expected_specialist_agents": quality_expected_specialists,
+        "expected_specialist_agents": expected_specialists,
+        "expected_paid_specialist_priorities": paid_specialist_priorities,
+        "cost_aware_specialist_agents": cost_aware_specialists,
+        "pruned_from_quality_expected_specialist_agents": [
+            agent for agent in quality_expected_specialists if agent not in set(expected_specialists)
+        ],
+        "prunable_specialist_agents": [agent for agent in expected_specialists if agent not in set(cost_aware_specialists)],
+        "estimated_total_tokens_after_specialist_pruning": sum(
+            int(row["estimated_total_tokens"]) for row in pruned_paid_nodes
+        ),
+        "estimated_paid_call_count_after_specialist_pruning": len(pruned_paid_nodes),
+        "nodes": pruned_paid_nodes,
+        "unpruned_candidate_nodes": paid_nodes,
+        "cost_aware_nodes": pruned_paid_nodes,
+        "estimate_policy": "role_projected_compact_prompt_budget_v0_3",
+        "estimate_adjustments": {
+            "specialist_input": "role_specific_pack_projection_and_priority_scaling",
+            "memo_writer_input": "writer_thesis_skeleton_first_compact_verified_inputs",
+            "boundary": "preflight_estimate_not_actual_token_meter",
+        },
+        "cost_aware_boundary": "Preflight uses expected_paid_specialist_agents when present; full-chain runtime activation still must be audited against actual active agents.",
+    }
+
+
+def _node_token_estimate(node: str, input_tokens: int, output_tokens: int, *, priority: str = "") -> dict[str, Any]:
+    payload = {
+        "node": node,
+        "estimated_input_tokens": max(0, int(input_tokens or 0)),
+        "max_output_tokens": max(0, int(output_tokens or 0)),
+        "estimated_total_tokens": max(0, int(input_tokens or 0)) + max(0, int(output_tokens or 0)),
+    }
+    if priority:
+        payload["priority"] = priority
+    return payload
+
+
+def _estimated_specialist_agents(case: Mapping[str, Any]) -> list[str]:
+    explicit_paid = _string_list(case.get("expected_paid_specialist_agents"))
+    if explicit_paid:
+        return explicit_paid
+    explicit = _string_list(case.get("expected_specialist_agents"))
+    if explicit:
+        return explicit
+    required = set(_string_list(case.get("required_agents")))
+    specialists = [
+        agent
+        for agent in (
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst",
+            "risk_counterevidence_analyst",
+        )
+        if agent in required
+    ]
+    if specialists:
+        return specialists
+    mode = str(case.get("expected_execution_mode") or case.get("execution_mode") or "")
+    if mode == "deep_research":
+        return ["fundamental_analyst", "industry_supply_chain_analyst"]
+    if mode == "standard_memo":
+        return ["fundamental_analyst"]
+    return []
+
+
+def _quality_expected_specialist_agents(case: Mapping[str, Any]) -> list[str]:
+    explicit = _string_list(case.get("expected_specialist_agents"))
+    if explicit:
+        return explicit
+    return _estimated_specialist_agents(case)
+
+
+def _runtime_required_agents(case: Mapping[str, Any]) -> set[str]:
+    required = set(_string_list(case.get("required_agents")))
+    quality_specialists = set(_string_list(case.get("expected_specialist_agents")))
+    runtime_specialists = set(_string_list(case.get("expected_paid_specialist_agents")))
+    if quality_specialists and runtime_specialists:
+        required -= quality_specialists
+        required |= runtime_specialists
+    return required
+
+
+def _expected_paid_specialist_priorities(case: Mapping[str, Any], specialists: list[str]) -> dict[str, str]:
+    explicit = case.get("expected_paid_specialist_priorities")
+    values = explicit if isinstance(explicit, Mapping) else {}
+    priorities: dict[str, str] = {}
+    for agent_id in specialists:
+        priority = str(values.get(agent_id) or "").strip().lower()
+        if priority not in {"primary", "supporting", "conditional", "low"}:
+            priority = "supporting" if agent_id in {"market_valuation_analyst", "risk_counterevidence_analyst"} else "primary"
+        priorities[agent_id] = priority
+    return priorities
+
+
+def _cost_aware_estimated_specialist_agents(case: Mapping[str, Any], *, fallback: list[str]) -> list[str]:
+    mode = str(case.get("expected_execution_mode") or case.get("execution_mode") or "")
+    if mode == "deterministic_lookup":
+        return []
+    prompt = str(case.get("prompt") or "").lower()
+    metrics = {str(item).lower() for item in _string_list(case.get("metric_families"))}
+    source_tiers = {str(item).lower() for item in _string_list(case.get("source_tiers"))}
+    required_dimensions = {
+        str(item).lower()
+        for item in (
+            _string_list(case.get("required_dimension_ids")) + _string_list(case.get("required_dimensions"))
+        )
+    }
+    eval_focus = {str(item).lower() for item in _string_list(case.get("eval_focus"))}
+    agents: list[str] = []
+
+    if metrics & {
+        "revenue",
+        "segment_revenue",
+        "gross_margin",
+        "operating_margin",
+        "capex",
+        "cash_flow",
+        "orders_backlog",
+        "rpo_deferred_revenue",
+        "customer_concentration",
+    } or "fundamentals" in required_dimensions:
+        agents.append("fundamental_analyst")
+
+    if (
+        "product_revenue" in metrics
+        or "product_and_production" in required_dimensions
+        or any(term in prompt for term in ("product", "产品", "产线", "sku", "h100", "b200", "gb200", "server"))
+    ):
+        agents.append("product_technology_analyst")
+
+    if (
+        "industry_supply_chain" in required_dimensions
+        or "relationship_graph" in source_tiers
+        or any(term in prompt for term in ("supply", "供应", "需求传导", "shipment", "订单", "积压", "export", "出口"))
+    ):
+        agents.append("industry_supply_chain_analyst")
+
+    capital_market_feedback_intent = bool(
+        required_dimensions
+        & {
+            "capital_market_feedback",
+            "capital_market",
+            "capital_and_financing",
+            "secondary_market",
+            "market_expectation",
+            "valuation_price_in",
+        }
+        or metrics
+        & {
+            "capital_market_feedback",
+            "valuation",
+            "market_reaction",
+            "liquidity",
+            "short_interest",
+            "credit_spread",
+            "corporate_action",
+            "ownership_flow",
+            "holder_positioning",
+            "derivatives_positioning",
+        }
+        or eval_focus & {"capital_market_feedback", "market_expectation", "valuation_price_in"}
+        or (
+            "market_snapshot" in source_tiers
+            and any(
+                term in prompt
+                for term in (
+                    "market reaction",
+                    "valuation",
+                    "price-in",
+                    "capital market",
+                    "资本市场",
+                    "资金面",
+                    "估值",
+                    "股价",
+                    "预期",
+                )
+            )
+        )
+    )
+    if (
+        "competition_and_market_position" in required_dimensions
+        and any(term in prompt for term in ("market reaction", "valuation", "估值", "股价", "price-in", "market_snapshot"))
+    ) or capital_market_feedback_intent:
+        agents.append("market_valuation_analyst")
+
+    explicit_risk_intent = bool(
+        "risk_and_counterevidence" in required_dimensions
+        or any(
+            term in prompt
+            for term in (
+                "risk",
+                "风险",
+                "出口限制",
+                "监管",
+                "geopolitical",
+                "export control",
+                "sanction",
+                "litigation",
+                "lawsuit",
+                "antitrust",
+            )
+        )
+        or "source_boundary" in eval_focus
+    )
+    if explicit_risk_intent:
+        agents.append("risk_counterevidence_analyst")
+
+    ordered = [agent for agent in _dedupe_preserve_order(agents) if agent in set(fallback)]
+    return ordered or fallback
+
+
+def _replace_specialist_nodes_for_cost_aware_estimate(
+    nodes: list[dict[str, Any]],
+    *,
+    original_specialists: list[str],
+    cost_aware_specialists: list[str],
+) -> list[dict[str, Any]]:
+    original = set(original_specialists)
+    keep = set(cost_aware_specialists)
+    return [
+        dict(row)
+        for row in nodes
+        if str(row.get("node") or "") not in original or str(row.get("node") or "") in keep
+    ]
+
+
+def _estimated_specialist_input_tokens(agent_id: str, case: Mapping[str, Any], *, priority: str = "primary") -> int:
+    mode = str(case.get("expected_execution_mode") or case.get("execution_mode") or "")
+    if mode == "deep_research":
+        defaults = {
+            "fundamental_analyst": 11000,
+            "product_technology_analyst": 9500,
+            "industry_supply_chain_analyst": 8500,
+            "market_valuation_analyst": 6000,
+            "risk_counterevidence_analyst": 7000,
+        }
+        return _priority_scaled_input_tokens(defaults.get(agent_id, 8000), priority=priority, minimum=3000)
+    if mode == "standard_memo":
+        return _priority_scaled_input_tokens(6500, priority=priority, minimum=3000)
+    return _priority_scaled_input_tokens(5200, priority=priority, minimum=2600)
+
+
+def _priority_scaled_input_tokens(value: int, *, priority: str, minimum: int) -> int:
+    normalized = str(priority or "primary").strip().lower()
+    factor = {
+        "primary": 1.0,
+        "supporting": 0.6,
+        "conditional": 0.45,
+        "low": 0.35,
+    }.get(normalized, 1.0)
+    return max(int(minimum), int(round(max(0, int(value or 0)) * factor)))
+
+
+def _estimated_memo_input_tokens(case: Mapping[str, Any]) -> int:
+    mode = str(case.get("expected_execution_mode") or case.get("execution_mode") or "")
+    if mode == "deep_research":
+        return 10500
+    if mode == "standard_memo":
+        return 7500
+    return 6500
+
+
+def _llm_backend_is_paid(value: Any) -> bool:
+    backend = str(value or "").strip().lower()
+    return backend not in {"", "mock", "stub", "off", "false", "0", "fixture", "local"}
+
+
+def _resolved_llm_gateway_proxy_mode(args: argparse.Namespace) -> str:
+    mode = str(getattr(args, "llm_gateway_proxy_mode", "") or os.environ.get("LLM_GATEWAY_PROXY_MODE") or "auto").strip().lower()
+    if mode != "auto":
+        if mode in {"none", "no_proxy", "disable", "disabled"}:
+            return "direct"
+        return mode if mode in {"system", "direct", "explicit"} else "system"
+    return "direct"
+
+
+def _base_url_is_http_ip_or_local(base_url: str) -> bool:
+    match = re.match(r"^http://([^/:]+)", str(base_url or "").strip(), flags=re.IGNORECASE)
+    if not match:
+        return False
+    host = match.group(1).strip("[]").lower()
+    if host in {"localhost", "127.0.0.1", "::1"}:
+        return True
+    parts = host.split(".")
+    return len(parts) == 4 and all(part.isdigit() and 0 <= int(part) <= 255 for part in parts)
+
+
 def _write_output_quality_audit(aggregate: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     audit_summary, render_markdown = _load_quality_audit_helpers()
     audit = audit_summary(aggregate, artifact_root=output_dir)
@@ -260,6 +1323,190 @@ def _write_output_quality_audit(aggregate: Mapping[str, Any], output_dir: Path) 
     )
     (output_dir / "multi_agent_output_quality_audit.md").write_text(render_markdown(audit), encoding="utf-8")
     return audit
+
+
+def _write_preflight_information_economy(plan: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
+    audit = build_preflight_information_economy(plan)
+    (output_dir / "agent_information_economy_preflight.json").write_text(
+        json.dumps(audit, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return audit
+
+
+def _write_agent_information_economy_audit(
+    aggregate: Mapping[str, Any],
+    *,
+    output_quality_audit: Mapping[str, Any],
+    output_dir: Path,
+) -> dict[str, Any]:
+    audit = build_agent_information_economy_summary(aggregate, output_quality_audit=output_quality_audit)
+    (output_dir / "agent_information_economy_audit.json").write_text(
+        json.dumps(audit, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "agent_information_economy_audit.md").write_text(
+        _render_agent_information_economy_markdown(audit),
+        encoding="utf-8",
+    )
+    return audit
+
+
+def _write_data_script_quality_audit(aggregate: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
+    audit = build_data_script_quality_summary(aggregate, artifact_root=output_dir)
+    (output_dir / "data_script_quality_audit.json").write_text(
+        json.dumps(audit, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "data_script_quality_audit.md").write_text(
+        render_data_script_quality_markdown(audit),
+        encoding="utf-8",
+    )
+    return audit
+
+
+def _compact_agent_information_economy_for_summary(audit: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": audit.get("schema_version") or "",
+        "diagnostic_only": bool(audit.get("diagnostic_only")),
+        "status": audit.get("status") or "",
+        "case_count": int(audit.get("case_count") or 0),
+        "failed_case_ids": audit.get("failed_case_ids") or [],
+        "issue_counts": audit.get("issue_counts") or {},
+        "aggregate_metrics": audit.get("aggregate_metrics") or {},
+        "policy": audit.get("policy") or "",
+    }
+
+
+def _compact_data_script_quality_for_summary(audit: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": audit.get("schema_version") or "",
+        "diagnostic_only": bool(audit.get("diagnostic_only")),
+        "status": audit.get("status") or "",
+        "case_count": int(audit.get("case_count") or 0),
+        "failed_case_ids": audit.get("failed_case_ids") or [],
+        "issue_counts": audit.get("issue_counts") or {},
+        "policy": audit.get("policy") or "",
+    }
+
+
+def _render_agent_information_economy_markdown(audit: Mapping[str, Any]) -> str:
+    lines = [
+        f"# Agent Information Economy Audit: {audit.get('run_id') or ''}",
+        "",
+        "Deterministic audit generated from saved runtime artifacts. It does not call models or retrieval tools.",
+        "",
+        f"- Status: `{audit.get('status') or ''}`",
+        f"- Cases: `{audit.get('case_count') or 0}`",
+        f"- Failed cases: `{', '.join(str(item) for item in audit.get('failed_case_ids') or []) or 'none'}`",
+        "",
+        "## Issue Counts",
+        "",
+    ]
+    issue_counts = audit.get("issue_counts") if isinstance(audit.get("issue_counts"), Mapping) else {}
+    if issue_counts:
+        for issue, count in sorted(issue_counts.items()):
+            lines.append(f"- `{issue}`: {count}")
+    else:
+        lines.append("- none")
+    lines.extend(
+        [
+            "",
+            "## Cases",
+            "",
+            "| Case | Gate | Tokens | Specialists | Supported claims | Memo claims | Prompt ref overlap | Same pack digests | Lead refs | Lead payload chars | Universe refs | Universe payload chars | Memo refs | Memo payload chars | Verifier refs | Verifier payload chars | Issues |",
+            "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        ]
+    )
+    for case in audit.get("cases") or []:
+        if not isinstance(case, Mapping):
+            continue
+        tokens = case.get("tokens") if isinstance(case.get("tokens"), Mapping) else {}
+        specialists = case.get("specialists") if isinstance(case.get("specialists"), Mapping) else {}
+        claims = case.get("claim_metrics") if isinstance(case.get("claim_metrics"), Mapping) else {}
+        transfer = case.get("information_transfer") if isinstance(case.get("information_transfer"), Mapping) else {}
+        prompt_overlap = transfer.get("prompt_pack_overlap") if isinstance(transfer.get("prompt_pack_overlap"), Mapping) else {}
+        lead_input = transfer.get("research_lead_input_pack") if isinstance(transfer.get("research_lead_input_pack"), Mapping) else {}
+        universe_input = transfer.get("universe_relationship_input_pack") if isinstance(transfer.get("universe_relationship_input_pack"), Mapping) else {}
+        memo_input = transfer.get("memo_writer_input_pack") if isinstance(transfer.get("memo_writer_input_pack"), Mapping) else {}
+        verifier_input = transfer.get("verifier_input_pack") if isinstance(transfer.get("verifier_input_pack"), Mapping) else {}
+        issues = ", ".join(f"`{issue}`" for issue in case.get("issues") or []) or "none"
+        lines.append(
+            "| {case_id} | {gate} | {tokens} | {specialists} | {supported} | {memo_claims} | {prompt_refs} | {same_digests} | {lead_refs} | {lead_chars} | {universe_refs} | {universe_chars} | {memo_refs} | {memo_chars} | {verifier_refs} | {verifier_chars} | {issues} |".format(
+                case_id=case.get("case_id") or "",
+                gate=case.get("gate_status") or "",
+                tokens=int(tokens.get("total_tokens") or 0),
+                specialists=int(specialists.get("active_count") or 0),
+                supported=int(claims.get("supported_claim_card_count") or 0),
+                memo_claims=int(claims.get("memo_claim_count") or 0),
+                prompt_refs=int(prompt_overlap.get("duplicate_prompt_evidence_ref_count") or 0),
+                same_digests=int(prompt_overlap.get("same_component_digest_count") or 0),
+                lead_refs=int(lead_input.get("known_evidence_ref_count") or 0),
+                lead_chars=int(lead_input.get("approx_prompt_payload_chars") or 0),
+                universe_refs=int(universe_input.get("known_evidence_ref_count") or 0),
+                universe_chars=int(universe_input.get("approx_prompt_payload_chars") or 0),
+                memo_refs=int(memo_input.get("known_evidence_ref_count") or 0),
+                memo_chars=int(memo_input.get("approx_prompt_payload_chars") or 0),
+                verifier_refs=int(verifier_input.get("known_evidence_ref_count") or 0),
+                verifier_chars=int(verifier_input.get("approx_prompt_payload_chars") or 0),
+                issues=issues,
+            )
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _apply_output_cost_quality_gate(aggregate: dict[str, Any], audit: Mapping[str, Any], *, ignore: bool) -> None:
+    issue_counts = audit.get("issue_counts") if isinstance(audit.get("issue_counts"), Mapping) else {}
+    blocking_flags = {
+        "high_total_token_cost",
+        "memo_writer_high_token_cost",
+        "verifier_high_token_cost",
+        "low_rendered_claim_token_efficiency",
+        "low_claim_card_token_efficiency",
+        "low_memo_chars_per_token",
+        "memo_writer_retry_cost_present",
+        "memo_payload_not_dense_enough",
+        "specialist_claim_yield_low",
+        "deep_research_all_specialists_active",
+    }
+    blocking = {
+        flag: int(issue_counts.get(flag) or 0)
+        for flag in sorted(blocking_flags)
+        if int(issue_counts.get(flag) or 0) > 0
+    }
+    gate = {
+        "schema_version": "sec_agent_output_cost_quality_gate_v0.1",
+        "enforced": not ignore,
+        "status": "pass" if ignore or not blocking else "fail",
+        "blocking_flags": blocking,
+        "policy": "post_run_token_efficiency_and_claim_yield_flags_block_full_chain_pass_v0_1",
+    }
+    aggregate["output_cost_quality_gate"] = gate
+    if gate["status"] != "pass":
+        aggregate["gate_status"] = "fail"
+        metrics = aggregate.get("metrics") if isinstance(aggregate.get("metrics"), dict) else {}
+        metrics["output_cost_quality_blocked"] = True
+        metrics["output_cost_quality_blocking_flags"] = blocking
+        aggregate["metrics"] = metrics
+
+
+def _apply_data_script_quality_gate(aggregate: dict[str, Any], audit: Mapping[str, Any]) -> None:
+    status = str(audit.get("status") or "")
+    gate = {
+        "schema_version": "sec_agent_data_script_quality_gate_v0.1",
+        "status": "pass" if status == "pass" else "fail",
+        "blocking_issues": audit.get("issue_counts") or {},
+        "failed_case_ids": audit.get("failed_case_ids") or [],
+        "policy": "owned_data_script_root_causes_block_full_chain_pass_before_paid_broad_regression_v0_1",
+    }
+    aggregate["data_script_quality_gate"] = gate
+    if gate["status"] != "pass":
+        aggregate["gate_status"] = "fail"
+        metrics = aggregate.get("metrics") if isinstance(aggregate.get("metrics"), dict) else {}
+        metrics["data_script_quality_blocked"] = True
+        metrics["data_script_quality_blocking_issue_counts"] = gate["blocking_issues"]
+        aggregate["metrics"] = metrics
 
 
 def _load_quality_audit_helpers():
@@ -291,12 +1538,17 @@ def score_case(
 ) -> dict[str, Any]:
     activation = result.get("agent_activation_plan") if isinstance(result.get("agent_activation_plan"), Mapping) else {}
     activation_validation = result.get("agent_activation_validation") if isinstance(result.get("agent_activation_validation"), Mapping) else {}
+    if not activation_validation and isinstance(result.get("research_lead_validation"), Mapping):
+        activation_validation = result.get("research_lead_validation") or {}
     active_agents = set(_string_list(activation.get("activate_agents")))
-    required_agents = set(_string_list(case.get("required_agents")))
+    required_agents = _runtime_required_agents(case)
     forbidden_agents = set(_string_list(case.get("forbidden_agents")))
-    required_specialists = set(_string_list(case.get("expected_specialist_agents")))
+    required_specialists = set(_string_list(case.get("expected_paid_specialist_agents")) or _string_list(case.get("expected_specialist_agents")))
     tool_calls = _tool_calls(result, summary)
     llm_routes = summary.get("llm_routes") if isinstance(summary.get("llm_routes"), Mapping) else {}
+    research_lead_route = _route(llm_routes, "research_lead")
+    if not research_lead_route and isinstance(result.get("research_lead_model_diagnostics"), Mapping):
+        research_lead_route = {"diagnostics": result.get("research_lead_model_diagnostics")}
     memo = result.get("memo_answer") if isinstance(result.get("memo_answer"), Mapping) else {}
     claim_verification = result.get("claim_verification") if isinstance(result.get("claim_verification"), Mapping) else {}
     specialist_verification = result.get("specialist_verification") if isinstance(result.get("specialist_verification"), Mapping) else {}
@@ -348,15 +1600,21 @@ def score_case(
         rendered_answer=rendered_answer,
         memo_dimension_analyses=memo_dimension_analyses,
     )
+    p30_root_cause_quality = _p30_root_cause_quality_audit(
+        case,
+        result=result,
+        rendered_answer=rendered_answer,
+        memo_dimension_analyses=memo_dimension_analyses,
+    )
     supervising_analyst = _supervising_analyst_pack_checks(case, result=result)
     source_layer_capability = _source_layer_capability_checks(case, result=result, summary=summary)
     role_source_layer_distribution = _role_source_layer_distribution_checks(case, result=result, summary=summary)
 
     layer_checks = {
         "research_lead": {
-            "llm_invoked": _diag_call_count(_route(llm_routes, "research_lead")) >= 1 if case.get("require_lead_llm_pass") else True,
-            "llm_calls_ok": _diag_calls_ok(_route(llm_routes, "research_lead")) if case.get("require_lead_llm_pass") else True,
-            "validation_pass": (result.get("agent_activation_validation") or {}).get("status") == "pass",
+            "llm_invoked": _diag_call_count(research_lead_route) >= 1 if case.get("require_lead_llm_pass") else True,
+            "llm_calls_ok": _diag_calls_ok(research_lead_route) if case.get("require_lead_llm_pass") else True,
+            "validation_pass": activation_validation.get("status") == "pass",
             "execution_mode_match": activation.get("execution_mode") == case.get("expected_execution_mode"),
             "required_agents_present": required_agents <= active_agents,
             "forbidden_agents_absent": not (forbidden_agents & active_agents),
@@ -443,6 +1701,7 @@ def score_case(
         "supervising_analyst": supervising_analyst["checks"],
         "source_layer_capability": source_layer_capability["checks"],
         "role_source_layer_distribution": role_source_layer_distribution["checks"],
+        "p30_root_cause_quality": p30_root_cause_quality["checks"],
     }
     checks = _flatten_checks(layer_checks)
     hard_gate_status = "pass" if all(checks.values()) and result.get("status") == "completed" else "fail"
@@ -487,6 +1746,7 @@ def score_case(
         "agent_activation_validation_errors": activation_validation.get("errors") or [],
         "research_lead_failure_reason": result.get("research_lead_failure_reason") or "",
         "research_lead_routing_trace": result.get("multi_agent_routing_trace") or {},
+        "plan_reflection_report": _compact_plan_reflection_report(result.get("plan_reflection_report") or {}),
         "real_retrieval_required": real_retrieval_required,
         "real_specialist_quality_required": real_specialist_quality_required,
         "specialist_real_evidence_quality": specialist_quality,
@@ -497,6 +1757,7 @@ def score_case(
         "supervising_analyst_audit": supervising_analyst,
         "source_layer_capability_audit": source_layer_capability,
         "role_source_layer_distribution_audit": role_source_layer_distribution,
+        "p30_root_cause_quality_audit": p30_root_cause_quality,
         "layer_checks": layer_checks,
         "checks": checks,
         "agent_audit": _agent_audit(result, summary, tool_calls=tool_calls, specialist_routes=specialist_routes, specialist_quality=specialist_quality),
@@ -504,6 +1765,20 @@ def score_case(
         "summary_artifact_present": bool(summary),
         "native_summary_artifact_present": bool(native),
         "rendered_answer_preview": rendered_answer[:640],
+    }
+
+
+def _compact_plan_reflection_report(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    return {
+        "schema_version": value.get("schema_version") or "",
+        "status": value.get("status") or "",
+        "policy": value.get("policy") or "",
+        "checked": value.get("checked") if isinstance(value.get("checked"), Mapping) else {},
+        "errors": [dict(item) for item in value.get("errors") or [] if isinstance(item, Mapping)],
+        "warnings": [dict(item) for item in value.get("warnings") or [] if isinstance(item, Mapping)],
+        "repair_requests": [dict(item) for item in value.get("repair_requests") or [] if isinstance(item, Mapping)],
     }
 
 
@@ -651,7 +1926,7 @@ def _sentence_is_gap_dominant(sentence: str) -> bool:
 
 
 def _text_is_gap_dominant(text: str) -> bool:
-    value = str(text or "").lower()
+    value = _strip_role_boundary_prose(str(text or "")).lower()
     if not value.strip():
         return False
     gap_terms = (
@@ -691,6 +1966,26 @@ def _text_is_gap_dominant(text: str) -> bool:
     return hits >= 1 and len(value) <= 120
 
 
+def _strip_role_boundary_prose(text: str) -> str:
+    """Remove concise authority-boundary clauses that prevent overclaiming.
+
+    These clauses are different from gap-first writing. For example,
+    "cannot treat customer capex as supplier revenue" is a correct role boundary,
+    while "data is missing, cannot judge" is a gap-led answer.
+    """
+
+    value = str(text or "")
+    patterns = (
+        r"不能(?:当作|当成|外推|转写成)[^。；\n]{0,80}",
+        r"不是客户需求信号",
+        r"not\s+(?:supplier\s+revenue|customer\s+demand|direct\s+order)[^.;\n]{0,80}",
+        r"cannot\s+(?:treat|infer|rewrite)[^.;\n]{0,100}",
+    )
+    for pattern in patterns:
+        value = re.sub(pattern, "", value, flags=re.IGNORECASE)
+    return value
+
+
 def _sentence_has_investment_mechanism(sentence: str) -> bool:
     value = str(sentence or "").lower()
     mechanism_terms = (
@@ -701,7 +1996,6 @@ def _sentence_has_investment_mechanism(sentence: str) -> bool:
         "压制",
         "改善",
         "恶化",
-        "验证",
         "反映",
         "对应",
         "回报",
@@ -837,9 +2131,17 @@ def _dimension_number_sequence_ok(text: str, expected_language: str) -> bool:
 def _extract_dimension_section(text: str, expected_language: str) -> str:
     label = "分维度分析" if expected_language == "zh-CN" else "Dimension analysis"
     stop_labels = (
-        ("关键论据", "投资含义", "什么会改变判断", "后续跟踪", "可行动的证据缺口", "证据索引")
+        ("关键问题回应", "关键论据", "投资含义", "什么会改变判断", "后续跟踪", "可行动的证据缺口", "证据索引")
         if expected_language == "zh-CN"
-        else ("Key memo claims", "Investment implications", "What would change the view", "Monitoring items", "Evidence gaps", "Evidence index")
+        else (
+            "Required question coverage",
+            "Key memo claims",
+            "Investment implications",
+            "What would change the view",
+            "Monitoring items",
+            "Evidence gaps",
+            "Evidence index",
+        )
     )
     return _extract_labeled_section(text, label, stop_labels)
 
@@ -1283,6 +2585,1090 @@ def _diagnostic_quality_checks(
         "approved_fact_count": len(approved_facts),
         "checks": checks,
     }
+
+
+def _p30_root_cause_quality_audit(
+    case: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    rendered_answer: str,
+    memo_dimension_analyses: list[Mapping[str, Any]],
+) -> dict[str, Any]:
+    required_items = _p30_required_items(case)
+    product_required = _p30_product_required(case, memo_dimension_analyses)
+    approved_facts = _diagnostic_approved_facts(result)
+    supported_claims = _diagnostic_supported_claims(result)
+    gap_rows = _diagnostic_gap_rows(result)
+    memo_logic_plan = result.get("memo_logic_plan") if isinstance(result.get("memo_logic_plan"), Mapping) else {}
+    product_frame = memo_logic_plan.get("product_reasoning_frame") if isinstance(memo_logic_plan.get("product_reasoning_frame"), Mapping) else {}
+    memo_logic_plan_validation = (
+        memo_logic_plan.get("validation") if isinstance(memo_logic_plan.get("validation"), Mapping) else {}
+    )
+    required_item_answer_plan_rows = [
+        row for row in memo_logic_plan.get("required_item_answer_plan") or [] if isinstance(row, Mapping)
+    ]
+    summary_artifact = result.get("multi_agent_summary") if isinstance(result.get("multi_agent_summary"), Mapping) else {}
+    summary_memo_logic_plan = (
+        summary_artifact.get("memo_logic_plan") if isinstance(summary_artifact.get("memo_logic_plan"), Mapping) else {}
+    )
+    all_evidence_text = "\n".join(
+        [
+            rendered_answer,
+            *(_diagnostic_row_text(row) for row in approved_facts),
+            *(_diagnostic_row_text(row) for row in supported_claims),
+            *(_diagnostic_row_text(row) for row in gap_rows),
+        ]
+    )
+    root_rows: list[dict[str, Any]] = []
+    case_id_text = str(case.get("case_id") or "").lower()
+    required = bool(
+        case.get("require_p30_root_cause_quality")
+        or "p30" in case_id_text
+        or "ai_infra" in case_id_text
+        or "semicap" in case_id_text
+    )
+
+    display_lineage_violations = _p30_display_lineage_violations(approved_facts)
+    for row in display_lineage_violations:
+        root_rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom="missing_display_value_lineage",
+                required_item_id=_diagnostic_text(row.get("canonical_metric_id") or row.get("fact_id")),
+                tickers=_string_list(row.get("ticker")),
+                earliest_faulty_artifact="pre_memo_fact_selection.approved_facts",
+                root_cause_layer="fact_selection_display_value_lineage",
+                repair_action="derive display_value/display_value_lineage before fact enters ClaimCard or memo payload",
+                evidence_refs=_string_list(row.get("evidence_ref")),
+                verification_test="tests/test_d_series_fact_selection.py::display_value_lineage",
+            )
+        )
+
+    raw_surface_violations = _p30_raw_numeric_surface_violations(rendered_answer)
+    for issue in raw_surface_violations:
+        root_rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom="raw_unitless_numeric_rendered",
+                required_item_id="numeric_display_lineage",
+                tickers=[],
+                earliest_faulty_artifact="memo_answer.rendered_answer",
+                root_cause_layer="memo_writer_numeric_projection",
+                repair_action="writer must consume display_value only; upstream must emit display_value for every numeric fact",
+                evidence_refs=[issue.get("token", "")],
+                verification_test="p30_root_cause_quality.rendered_no_raw_unitless_numeric",
+            )
+        )
+
+    missing_value_claims = _p30_missing_value_claims(rendered_answer)
+    for issue in missing_value_claims:
+        root_rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom="missing_value_before_citation",
+                required_item_id="numeric_display_value",
+                tickers=[],
+                earliest_faulty_artifact="memo_answer.rendered_answer",
+                root_cause_layer="memo_writer_numeric_projection",
+                repair_action="replace empty numeric phrase with display_value or write display-lineage parser gap",
+                evidence_refs=[issue],
+                verification_test="p30_root_cause_quality.rendered_no_missing_value_claim",
+            )
+        )
+
+    memo_logic_plan_validation_failed = _p30_memo_logic_plan_validation_failed(memo_logic_plan_validation)
+    if memo_logic_plan_validation_failed:
+        root_rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom="memo_logic_plan_validation_failed",
+                required_item_id="MemoLogicPlan.validation",
+                tickers=_string_list(case.get("focus_tickers")),
+                earliest_faulty_artifact="memo_logic_plan.validation",
+                root_cause_layer="research_lead_memo_logic_plan_projection",
+                repair_action="repair MemoLogicPlan coverage/status before memo writer; do not let writer compensate for invalid plan",
+                evidence_refs=_string_list(memo_logic_plan_validation.get("errors") or memo_logic_plan_validation.get("warnings"))[:6],
+                verification_test="p30_root_cause_quality.memo_logic_plan_validation_pass",
+            )
+        )
+
+    focus_matrix, contradiction_rows = _p30_focus_ticker_coverage_matrix(case, approved_facts, supported_claims, rendered_answer)
+    root_rows.extend(contradiction_rows)
+
+    required_matrix, missing_required_rows = _p30_required_item_matrix(
+        case,
+        required_items=required_items,
+        text=all_evidence_text,
+        approved_facts=approved_facts,
+        supported_claims=supported_claims,
+        rendered_answer=rendered_answer,
+        memo_logic_plan=memo_logic_plan,
+    )
+    root_rows.extend(missing_required_rows)
+    missing_answer_plan_rows = _p30_missing_required_item_answer_plan(required_items, required_item_answer_plan_rows)
+    for item_id in missing_answer_plan_rows:
+        root_rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom="required_item_missing_answer_plan",
+                required_item_id=item_id,
+                tickers=_string_list(case.get("focus_tickers")),
+                earliest_faulty_artifact="memo_logic_plan.required_item_answer_plan",
+                root_cause_layer="research_lead_memo_logic_plan_projection",
+                repair_action="project every required question item into an answer-first judgment/evidence-bridge/counter-read plan before writer",
+                evidence_refs=[],
+                verification_test="p30_root_cause_quality.required_item_answer_plan_present",
+            )
+        )
+    required_item_plan_projection_missing = _p30_required_item_plan_projection_missing(
+        required_items=required_items,
+        required_item_answer_plan_rows=required_item_answer_plan_rows,
+        summary_memo_logic_plan=summary_memo_logic_plan,
+    )
+    if required_item_plan_projection_missing:
+        root_rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom="required_item_answer_plan_not_projected_to_summary",
+                required_item_id="MemoLogicPlan.required_item_answer_plan",
+                tickers=_string_list(case.get("focus_tickers")),
+                earliest_faulty_artifact="multi_agent_summary.memo_logic_plan.required_item_answer_plan",
+                root_cause_layer="workbench_projection",
+                repair_action="project MemoLogicPlan required question items and answer plans into the durable run summary for review/replay",
+                evidence_refs=[],
+                verification_test="p30_root_cause_quality.required_item_answer_plan_projected_to_summary",
+            )
+        )
+
+    frame_roles = set(_string_list(product_frame.get("coverage_roles")))
+    scope_hypothesis_refs = _string_list(product_frame.get("scope_hypothesis_refs"))
+    non_scope_product_roles = frame_roles - {"scope_hypothesis"}
+    product_frame_missing = product_required and not frame_roles
+    if product_frame_missing:
+        root_rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom="product_reasoning_frame_missing",
+                required_item_id="ProductReasoningFrame",
+                tickers=_string_list(case.get("focus_tickers")),
+                earliest_faulty_artifact="memo_logic_plan.product_reasoning_frame",
+                root_cause_layer="research_lead_memo_logic_plan_projection",
+                repair_action="project ProductIntelligenceGraph/ProductBridge rows into MemoLogicPlan before writer",
+                evidence_refs=[],
+                verification_test="p30_root_cause_quality.product_reasoning_frame_present_when_product_required",
+            )
+        )
+    scope_dominant = bool(product_required and scope_hypothesis_refs and not non_scope_product_roles)
+    if scope_dominant:
+        root_rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom="product_section_scope_hypothesis_only",
+                required_item_id="product_primary_evidence",
+                tickers=_string_list(case.get("focus_tickers")),
+                earliest_faulty_artifact="product_reasoning_frame.scope_hypothesis_refs",
+                root_cause_layer="product_evidence_selection_or_source_depth",
+                repair_action="recover official product/spec/deployment/proxy evidence or mark section as low-confidence context with why_scope_only",
+                evidence_refs=scope_hypothesis_refs[:6],
+                verification_test="p30_root_cause_quality.scope_hypothesis_not_primary_product_proof",
+            )
+        )
+
+    non_us_rows = _p30_non_us_disclosure_diagnostics(case, result, approved_facts, supported_claims, gap_rows, rendered_answer)
+    root_rows.extend(non_us_rows)
+    role_misuse_rows = _p30_economic_role_misuse_rows(case, rendered_answer)
+    root_rows.extend(role_misuse_rows)
+
+    checks = {
+        "display_value_lineage_complete": (not display_lineage_violations) if required else True,
+        "rendered_no_raw_unitless_numeric": (not raw_surface_violations) if required else True,
+        "rendered_no_missing_value_claim": (not missing_value_claims) if required else True,
+        "memo_logic_plan_validation_pass": (not memo_logic_plan_validation_failed) if required else True,
+        "focus_ticker_no_evidence_contradiction": (not contradiction_rows) if required else True,
+        "focus_ticker_no_product_evidence_contradiction": (
+            not any(row.get("symptom") == "memo_claims_missing_product_data_despite_available_evidence" for row in contradiction_rows)
+        )
+        if required
+        else True,
+        "required_items_covered": (not missing_required_rows) if required else True,
+        "required_item_answer_plan_present": (not missing_answer_plan_rows) if required else True,
+        "required_item_answer_plan_projected_to_summary": (not required_item_plan_projection_missing) if required else True,
+        "product_reasoning_frame_present_when_product_required": (not product_frame_missing) if required else True,
+        "scope_hypothesis_not_primary_product_proof": (not scope_dominant) if required else True,
+        "non_us_official_source_gaps_have_parser_diagnosis": (not non_us_rows) if required else True,
+        "economic_role_no_misuse": (not role_misuse_rows) if required else True,
+        "root_cause_rows_complete": all(_p30_root_row_complete(row) for row in root_rows),
+    }
+    return {
+        "schema_version": "finsight_p30_root_cause_quality_audit_v0_1",
+        "required": required,
+        "status": "pass" if all(checks.values()) else "fail",
+        "required_item_matrix": required_matrix,
+        "focus_ticker_coverage_matrix": focus_matrix,
+        "product_reasoning_frame_summary": {
+            "coverage_roles": sorted(frame_roles),
+            "scope_hypothesis_ref_count": len(scope_hypothesis_refs),
+            "product_frame_present": bool(product_frame),
+            "memo_logic_plan_validation_status": str(memo_logic_plan_validation.get("status") or ""),
+            "required_item_answer_plan_count": len(required_item_answer_plan_rows),
+            "summary_required_item_answer_plan_count": int(
+                summary_memo_logic_plan.get("required_item_answer_plan_count") or 0
+            ),
+        },
+        "display_lineage_violations": display_lineage_violations,
+        "raw_surface_violations": raw_surface_violations,
+        "missing_value_claims": missing_value_claims,
+        "economic_role_misuse_rows": role_misuse_rows,
+        "root_cause_rows": root_rows,
+        "checks": checks,
+        "policy": "repair_root_cause_before_release_no_gate_only_closeout_v0_1",
+    }
+
+
+def _p30_required_items(case: Mapping[str, Any]) -> list[dict[str, Any]]:
+    explicit = [dict(row) for row in case.get("required_answer_items") or [] if isinstance(row, Mapping)]
+    if explicit:
+        return explicit
+    case_id = str(case.get("case_id") or "").lower()
+    prompt = str(case.get("prompt") or case.get("query") or "").lower()
+    items: list[dict[str, Any]] = []
+    if "nvda" in prompt and "dell" in prompt:
+        items.extend(
+            [
+                {
+                    "item_id": "dell_ai_server_quality_margin_bridge",
+                    "terms_any": ["dell", "ai server", "gross margin", "margin", "ai服务器", "毛利", "利润率"],
+                },
+                {
+                    "item_id": "nvda_gpu_supply_generation",
+                    "terms_any": ["nvda", "gpu", "h100", "h200", "b200", "gb200", "blackwell", "算力", "显卡"],
+                },
+                {
+                    "item_id": "cloud_capex_read_through",
+                    "terms_any": ["capex", "amzn", "msft", "googl", "cloud", "资本支出", "云服务", "数据中心"],
+                },
+                {
+                    "item_id": "customer_deployment_or_order_signal",
+                    "terms_any": ["deployment", "customer", "order", "configured", "adoption", "客户", "订单", "部署", "采用", "配置"],
+                },
+            ]
+        )
+    if "semicap" in case_id or {"asml", "lrcx", "amat", "klac"} & set(_string.lower() for _string in _string_list(case.get("search_scope_tickers"))):
+        items.extend(
+            [
+                {"item_id": "asml_orders_or_backlog", "terms_any": ["asml", "order", "booking", "backlog", "订单", "预订", "积压"]},
+                {
+                    "item_id": "shipment_or_cycle_context",
+                    "terms_any": ["shipment", "cycle", "wafer fab", "semicap", "出货", "周期", "晶圆厂", "半导体设备"],
+                },
+                {
+                    "item_id": "customer_concentration_or_deployment",
+                    "terms_any": ["customer", "tsmc", "samsung", "intel", "deployment", "客户", "台积电", "三星", "英特尔", "部署"],
+                },
+                {
+                    "item_id": "export_restriction_context",
+                    "terms_any": ["export", "china", "restriction", "license", "出口", "中国", "限制", "许可证", "管制"],
+                },
+            ]
+        )
+    return items
+
+
+def _p30_product_required(case: Mapping[str, Any], memo_dimension_analyses: list[Mapping[str, Any]]) -> bool:
+    dimensions = set(_string_list(case.get("required_dimension_ids")))
+    dimensions.update(_diagnostic_text(row.get("dimension_id")) for row in memo_dimension_analyses if isinstance(row, Mapping))
+    if "product_and_production" in dimensions:
+        return True
+    text = " ".join([str(case.get("prompt") or ""), " ".join(_string_list(case.get("expected_specialist_agents")))]).lower()
+    return any(term in text for term in ("product", "产品", "gpu", "server", "ai", "semicap", "deployment"))
+
+
+def _p30_memo_logic_plan_validation_failed(validation: Mapping[str, Any]) -> bool:
+    if not isinstance(validation, Mapping) or not validation:
+        return False
+    status = _diagnostic_text(validation.get("status") or validation.get("result")).strip().lower()
+    if not status:
+        return False
+    return status not in {"pass", "passed", "ok", "valid", "warning_only"}
+
+
+def _p30_display_lineage_violations(approved_facts: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    violations: list[dict[str, Any]] = []
+    for row in approved_facts:
+        if not _p30_numeric_present(row):
+            continue
+        lineage = row.get("display_value_lineage") if isinstance(row.get("display_value_lineage"), Mapping) else {}
+        if not _diagnostic_text(row.get("display_value")) or lineage.get("schema_version") != "sec_agent_display_value_lineage_v0.1":
+            violations.append(dict(row))
+    return violations
+
+
+def _p30_numeric_present(row: Mapping[str, Any]) -> bool:
+    return bool(_diagnostic_text(row.get("numeric_value")) or re.fullmatch(r"-?\d+(?:\.\d+)?", _diagnostic_text(row.get("value"))))
+
+
+def _p30_raw_numeric_surface_violations(rendered_answer: str) -> list[dict[str, str]]:
+    text = _p30_user_prose_for_numeric_scan(rendered_answer)
+    violations: list[dict[str, str]] = []
+    for match in re.finditer(r"(?<![A-Za-z0-9$])(-?\d{4,}(?:\.\d+)?)(?![A-Za-z0-9])", text):
+        token = match.group(1)
+        try:
+            value = float(token)
+        except ValueError:
+            continue
+        if 1900 <= abs(value) <= 2100 and "." not in token:
+            continue
+        window = text[max(0, match.start() - 18) : min(len(text), match.end() + 18)].lower()
+        if any(unit in window for unit in ("$", "usd", "美元", "million", "billion", "百万", "十亿", "亿", "万", "%", "bps", "台", "辆", "units")):
+            continue
+        violations.append({"token": token, "context": window.strip()})
+    return violations[:20]
+
+
+def _p30_user_prose_for_numeric_scan(rendered_answer: str) -> str:
+    text = str(rendered_answer or "")
+    for marker in ("证据索引:", "证据索引：", "Evidence index:", "Evidence Index:", "Citations:", "引用:"):
+        if marker in text:
+            text = text.split(marker, 1)[0]
+    return text
+
+
+def _p30_missing_value_claims(rendered_answer: str) -> list[str]:
+    text = str(rendered_answer or "")
+    patterns = [
+        r"(?:达到|为|约为|录得|reported|reached|was|were)\s*(?:\[[A-Z]\d+\])",
+        r"(?:达到|为|约为|录得)\s*[，,。.；;]",
+    ]
+    issues: list[str] = []
+    for pattern in patterns:
+        for match in re.finditer(pattern, text, flags=re.IGNORECASE):
+            issues.append(text[max(0, match.start() - 24) : min(len(text), match.end() + 24)].strip())
+    return issues[:12]
+
+
+def _p30_economic_role_misuse_rows(case: Mapping[str, Any], rendered_answer: str) -> list[dict[str, Any]]:
+    text = str(rendered_answer or "")
+    normalized = text.lower()
+    case_id = str(case.get("case_id") or "").lower()
+    prompt = str(case.get("prompt") or case.get("query") or "").lower()
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, tuple[str, ...], str]] = set()
+
+    def add(symptom: str, tickers: list[str], context: str, repair_action: str) -> None:
+        key = (symptom, tuple(sorted(tickers)), context[:120])
+        if key in seen:
+            return
+        seen.add(key)
+        rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom=symptom,
+                required_item_id="economic_role_projection",
+                tickers=tickers,
+                earliest_faulty_artifact="memo_answer.rendered_answer",
+                root_cause_layer="memo_logic_plan_economic_role_projection_or_writer_execution",
+                repair_action=repair_action,
+                evidence_refs=[context[:260]],
+                verification_test="p30_root_cause_quality.economic_role_no_misuse",
+            )
+        )
+
+    if "nvda" in prompt and "dell" in prompt:
+        for ticker in ("AMZN", "MSFT", "GOOGL"):
+            for context in _p30_windows_containing(text, ticker):
+                lowered = context.lower()
+                if any(term in context for term in ("供应商端", "供应商侧", "供应端")) and any(
+                    term in lowered for term in ("product revenue", "产品收入", "承接需求", "供应商端已有")
+                ):
+                    add(
+                        "peer_or_customer_capex_context_rendered_as_supplier_revenue",
+                        [ticker],
+                        context,
+                        "Use economic_role/customer_or_demand_side_capex_signal: hyperscaler facts may support demand-pool context only, not supplier-side revenue or orders.",
+                    )
+                    break
+
+    focus_tickers = [ticker.upper() for ticker in _string_list(case.get("focus_tickers")) if ticker]
+    for ticker in focus_tickers:
+        for context in _p30_windows_containing(text, ticker):
+            if _p30_context_mentions_focus_ticker_own_capex(context, ticker) and _p30_context_affirms_own_capex_as_customer_demand(context):
+                add(
+                    "issuer_own_capex_rendered_as_customer_demand",
+                    [ticker],
+                    context,
+                    "Use economic_role/issuer_own_capital_investment: focus issuer capex is own reinvestment, capacity preparation, or cash-flow pressure; do not render it as customer demand without a verified counterparty edge.",
+                )
+                break
+
+    if "semicap" in case_id or any(ticker in prompt for ticker in ("asml", "amat", "lrcx", "klac")):
+        for ticker in ("AMAT", "KLAC", "LRCX"):
+            for context in _p30_windows_containing(text, ticker):
+                if _p30_context_mentions_focus_ticker_own_capex(context, ticker) and _p30_context_affirms_own_capex_as_customer_demand(context):
+                    add(
+                        "issuer_own_capex_rendered_as_customer_demand",
+                        [ticker],
+                        context,
+                        "Use economic_role/issuer_own_capital_investment: focus supplier capex is own reinvestment or cash-flow pressure, not customer demand without a verified counterparty edge.",
+                    )
+                    break
+    return rows[:8]
+
+
+def _p30_context_mentions_focus_ticker_own_capex(context: str, ticker: str) -> bool:
+    value = str(context or "")
+    ticker_text = str(ticker or "").upper().strip()
+    lowered = value.lower()
+    if not ticker_text:
+        return False
+    if not any(term in value for term in ("资本支出", "资本开支")) and not any(
+        term in lowered for term in ("capex", "capital expenditure")
+    ):
+        return False
+    direct_patterns = [
+        rf"{re.escape(ticker_text)}\s*(?:的)?\s*(?:资本支出|资本开支)",
+        rf"{re.escape(ticker_text)}\s*(?:在|于).{{0,48}}(?:资本支出|资本开支)",
+        rf"{re.escape(ticker_text.lower())}\s*(?:capex|capital expenditure)",
+        rf"{re.escape(ticker_text.lower())}.{{0,48}}(?:capex|capital expenditure)",
+    ]
+    if any(re.search(pattern, value if not pattern.islower() else lowered, flags=re.IGNORECASE) for pattern in direct_patterns):
+        return True
+    customer_capex_markers = (
+        "客户资本支出",
+        "客户的资本支出",
+        "客户 capex",
+        "客户capex",
+        "需求端资本支出",
+        "买方资本支出",
+        "超大规模云服务商资本支出",
+        "hyperscaler capex",
+        "customer capex",
+        "buyer capex",
+        "demand-side capex",
+    )
+    if any(marker in lowered for marker in customer_capex_markers):
+        return False
+    return False
+
+
+def _p30_windows_containing(text: str, term: str, *, radius: int = 110) -> list[str]:
+    windows: list[str] = []
+    raw_text = str(text or "")
+    chunks = [chunk.strip() for chunk in re.split(r"(?<=[。！？.!?])\s+|\n+|\s+\|\s+", raw_text) if chunk.strip()]
+    for chunk in chunks or [raw_text]:
+        for match in re.finditer(re.escape(term), chunk, flags=re.IGNORECASE):
+            windows.append(chunk[max(0, match.start() - radius) : min(len(chunk), match.end() + radius)])
+    return windows
+
+
+def _p30_context_affirms_own_capex_as_customer_demand(context: str) -> bool:
+    value = str(context or "")
+    lowered = value.lower()
+    if "资本支出" not in value and "capex" not in lowered and "capital expenditure" not in lowered:
+        return False
+    if not any(term in value for term in ("需求端投入", "买方资本支出", "客户需求")) and not any(
+        term in lowered for term in ("customer demand", "buyer capex", "demand-side")
+    ):
+        return False
+    negated_patterns = [
+        "非直接客户需求",
+        "不是客户需求",
+        "不是直接客户需求",
+        "不是客户需求信号",
+        "不能当作客户需求",
+        "不能直接等同于客户需求",
+        "不能直接等同于供应商营收",
+        "不能直接等同于供应商收入",
+        "不能直接等同于供应商订单",
+        "不能直接等同于供应商backlog",
+        "不能直接等同于供应商 backlog",
+        "not customer demand",
+        "not direct customer demand",
+        "cannot be treated as customer demand",
+        "cannot be read as customer demand",
+        "cannot directly equal supplier revenue",
+        "cannot be equated with supplier revenue",
+    ]
+    if any(pattern in lowered for pattern in negated_patterns if pattern.isascii()):
+        return False
+    if any(pattern in value for pattern in negated_patterns if not pattern.isascii()):
+        return False
+    return True
+
+
+def _p30_focus_ticker_coverage_matrix(
+    case: Mapping[str, Any],
+    approved_facts: list[Mapping[str, Any]],
+    supported_claims: list[Mapping[str, Any]],
+    rendered_answer: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    tickers = _string_list(case.get("focus_tickers")) or _string_list(case.get("search_scope_tickers"))[:4]
+    rows: list[dict[str, Any]] = []
+    root_rows: list[dict[str, Any]] = []
+    for ticker in [item.upper() for item in tickers if item]:
+        fact_refs = [
+            _diagnostic_text(row.get("evidence_ref") or row.get("fact_id"))
+            for row in approved_facts
+            if _diagnostic_text(row.get("ticker")).upper() == ticker
+        ]
+        product_fact_refs = [
+            _diagnostic_text(row.get("evidence_ref") or row.get("fact_id") or row.get("selection_id"))
+            for row in approved_facts
+            if _diagnostic_text(row.get("ticker")).upper() == ticker and _p30_row_is_product_evidence(row)
+        ]
+        claim_refs = [
+            _diagnostic_text(row.get("claim_id"))
+            for row in supported_claims
+            if ticker in {value.upper() for value in _string_list(row.get("ticker_scope"))}
+            or ticker in _diagnostic_row_text(row).upper()
+        ]
+        product_claim_refs = [
+            _diagnostic_text(row.get("claim_id"))
+            for row in supported_claims
+            if (
+                ticker in {value.upper() for value in _string_list(row.get("ticker_scope"))}
+                or ticker in _diagnostic_row_text(row).upper()
+            )
+            and _p30_row_is_product_evidence(row)
+        ]
+        financial_contradiction = _p30_rendered_says_missing_for_ticker(rendered_answer, ticker) and bool(fact_refs or claim_refs)
+        product_contradiction = _p30_rendered_says_missing_product_for_ticker(rendered_answer, ticker) and bool(
+            product_fact_refs or product_claim_refs
+        )
+        rows.append(
+            {
+                "ticker": ticker,
+                "approved_fact_count": len([ref for ref in fact_refs if ref]),
+                "product_fact_count": len([ref for ref in product_fact_refs if ref]),
+                "supported_claim_count": len([ref for ref in claim_refs if ref]),
+                "product_claim_count": len([ref for ref in product_claim_refs if ref]),
+                "rendered_mentions_ticker": ticker in str(rendered_answer).upper(),
+                "rendered_missing_contradiction": financial_contradiction or product_contradiction,
+                "financial_missing_contradiction": financial_contradiction,
+                "product_missing_contradiction": product_contradiction,
+                "approved_fact_refs": [ref for ref in fact_refs if ref][:8],
+                "product_fact_refs": [ref for ref in product_fact_refs if ref][:8],
+                "claim_refs": [ref for ref in claim_refs if ref][:8],
+                "product_claim_refs": [ref for ref in product_claim_refs if ref][:8],
+            }
+        )
+        if financial_contradiction:
+            root_rows.append(
+                _p30_root_row(
+                    case_id=case.get("case_id"),
+                    symptom="memo_claims_missing_data_despite_available_evidence",
+                    required_item_id=f"{ticker}_coverage",
+                    tickers=[ticker],
+                    earliest_faulty_artifact="memo_answer.rendered_answer",
+                    root_cause_layer="memo_writer_or_memo_logic_plan_evidence_selection",
+                    repair_action="trace why available fact/claim refs were not selected into MemoLogicPlan section before memo writer",
+                    evidence_refs=[*fact_refs[:4], *claim_refs[:4]],
+                    verification_test="p30_root_cause_quality.focus_ticker_no_evidence_contradiction",
+                )
+            )
+        if product_contradiction:
+            root_rows.append(
+                _p30_root_row(
+                    case_id=case.get("case_id"),
+                    symptom="memo_claims_missing_product_data_despite_available_evidence",
+                    required_item_id=f"{ticker}_product_coverage",
+                    tickers=[ticker],
+                    earliest_faulty_artifact="memo_answer.rendered_answer",
+                    root_cause_layer="memo_writer_or_memo_logic_plan_product_evidence_selection",
+                    repair_action="select exact product KPI/spec/deployment/product-context claims into MemoLogicPlan before emitting product-data absence",
+                    evidence_refs=[*product_fact_refs[:4], *product_claim_refs[:4]],
+                    verification_test="p30_root_cause_quality.focus_ticker_no_product_evidence_contradiction",
+                )
+            )
+    return rows, root_rows
+
+
+def _p30_rendered_says_missing_for_ticker(rendered_answer: str, ticker: str) -> bool:
+    text = str(rendered_answer or "")
+    for match in re.finditer(re.escape(ticker), text, flags=re.IGNORECASE):
+        window = text[max(0, match.start() - 60) : min(len(text), match.end() + 90)].lower()
+        if any(term in window for term in ("缺财务", "财务数据缺失", "缺少财务", "没有财务", "no financial", "missing financial", "financial data missing")):
+            return True
+    return False
+
+
+def _p30_rendered_says_missing_product_for_ticker(rendered_answer: str, ticker: str) -> bool:
+    text = str(rendered_answer or "")
+    lower_text = text.lower()
+    ticker_windows = []
+    for match in re.finditer(re.escape(ticker), text, flags=re.IGNORECASE):
+        ticker_windows.append(text[max(0, match.start() - 80) : min(len(text), match.end() + 150)].lower())
+    if not ticker_windows and ticker.lower() in lower_text:
+        ticker_windows.append(lower_text)
+    product_markers = (
+        "no runtime facts confirm",
+        "no product data",
+        "missing product",
+        "product data missing",
+        "product revenue not available",
+        "no company-disclosed product",
+        "no company product evidence",
+        "product evidence missing",
+        "缺少产品",
+        "缺产品",
+        "产品数据缺失",
+        "没有产品",
+        "没有 runtime facts",
+        "没有运行时事实",
+        "未确认产品",
+        "无法确认产品",
+        "缺少产品收入",
+        "缺少产品级",
+    )
+    return any(any(marker in window for marker in product_markers) for window in ticker_windows)
+
+
+def _p30_row_is_product_evidence(row: Mapping[str, Any]) -> bool:
+    row_text = _diagnostic_row_text(row).lower()
+    claim_type = _diagnostic_text(row.get("claim_type")).lower()
+    metric_scope = " ".join(_string_list(row.get("metric_scope"))).lower()
+    metric_id = _diagnostic_text(row.get("canonical_metric_id") or row.get("metric_id")).lower()
+    source_role = _diagnostic_text(row.get("source_role") or row.get("evidence_role")).lower()
+    if claim_type in {
+        "company_reported_product_operating_fact",
+        "technical_product_fact",
+        "product_specification_fact",
+        "product_architecture_fact",
+        "product_taxonomy_context",
+    }:
+        return True
+    product_markers = (
+        "product_kpi",
+        "product revenue",
+        "product_revenue",
+        "product_or_segment",
+        "business segment",
+        "segment revenue",
+        "segment_revenue",
+        "server",
+        "servers and networking",
+        "isg",
+        "gpu",
+        "blackwell",
+        "h100",
+        "h200",
+        "b200",
+        "gb200",
+        "ai-optimized server",
+        "deployment",
+        "configured",
+        "product surface",
+        "official_product_surface",
+        "customer_deployment",
+    )
+    combined = " ".join([row_text, metric_scope, metric_id, source_role])
+    return any(marker in combined for marker in product_markers)
+
+
+def _p30_required_item_matrix(
+    case: Mapping[str, Any],
+    *,
+    required_items: list[Mapping[str, Any]],
+    text: str,
+    approved_facts: list[Mapping[str, Any]],
+    supported_claims: list[Mapping[str, Any]],
+    rendered_answer: str,
+    memo_logic_plan: Mapping[str, Any] | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    rows: list[dict[str, Any]] = []
+    root_rows: list[dict[str, Any]] = []
+    lower = str(text or "").lower()
+    rendered_lower = str(rendered_answer or "").lower()
+    answer_plan_ids = {
+        _diagnostic_text(row.get("question_item_id"))
+        for row in ((memo_logic_plan or {}).get("required_item_answer_plan") or [])
+        if isinstance(row, Mapping)
+    }
+    for item in required_items:
+        item_id = _diagnostic_text(item.get("item_id") or item.get("id") or item.get("required_item_id"))
+        terms = [term.lower() for term in _string_list(item.get("terms_any") or item.get("terms"))]
+        evidence_hit = any(term in lower for term in terms) if terms else False
+        rendered_hit = any(term in rendered_lower for term in terms) if terms else False
+        rendered_answer_status = _p30_required_item_rendered_answer_status(rendered_answer, item, terms=terms)
+        rendered_judgment_hit = rendered_answer_status["status"] == "answered_with_judgment"
+        if evidence_hit and rendered_judgment_hit:
+            status = "covered"
+        elif evidence_hit and rendered_hit:
+            status = "term_only_or_boundary_only"
+        elif evidence_hit:
+            status = "available_not_rendered"
+        else:
+            status = "missing_or_not_selected"
+        rows.append(
+            {
+                "item_id": item_id,
+                "terms_any": terms,
+                "status": status,
+                "evidence_hit": evidence_hit,
+                "rendered_hit": rendered_hit,
+                "rendered_judgment_hit": rendered_judgment_hit,
+                "answer_plan_present": item_id in answer_plan_ids if item_id else False,
+                "rendered_answer_status": rendered_answer_status,
+            }
+        )
+        if status != "covered":
+            if status == "term_only_or_boundary_only":
+                earliest = (
+                    "memo_answer.rendered_answer"
+                    if item_id in answer_plan_ids
+                    else "memo_logic_plan.required_item_answer_plan"
+                )
+                symptom = "required_item_keyword_covered_without_analyst_judgment"
+                root_layer = (
+                    "memo_writer_required_item_answer_execution"
+                    if item_id in answer_plan_ids
+                    else "memo_logic_plan_required_item_answer_projection"
+                )
+                repair = (
+                    "rewrite required-item section as answer-first analyst judgment with evidence bridge, counter-read, and what-would-change-view"
+                )
+            else:
+                earliest = "memo_answer.rendered_answer" if evidence_hit else "retrieval_or_specialist_pack_selection"
+                symptom = "required_item_not_covered"
+                root_layer = "memo_logic_plan_evidence_selection" if evidence_hit else "research_lead_retrieval_or_specialist_selection"
+                repair = "ensure required item is traced from retrieval to ClaimCard/MemoLogicPlan and final memo, or diagnose parser/source boundary"
+            root_rows.append(
+                _p30_root_row(
+                    case_id=case.get("case_id"),
+                    symptom=symptom,
+                    required_item_id=item_id,
+                    tickers=_string_list(case.get("focus_tickers")),
+                    earliest_faulty_artifact=earliest,
+                    root_cause_layer=root_layer,
+                    repair_action=repair,
+                    evidence_refs=_p30_refs_for_terms(terms, approved_facts, supported_claims)[:8],
+                    verification_test="p30_root_cause_quality.required_items_covered",
+                )
+            )
+    return rows, root_rows
+
+
+def _p30_missing_required_item_answer_plan(
+    required_items: list[Mapping[str, Any]],
+    answer_plan_rows: list[Mapping[str, Any]],
+) -> list[str]:
+    required_ids = {
+        _diagnostic_text(item.get("item_id") or item.get("id") or item.get("required_item_id"))
+        for item in required_items
+        if _diagnostic_text(item.get("item_id") or item.get("id") or item.get("required_item_id"))
+    }
+    plan_ids = {
+        _diagnostic_text(item.get("question_item_id") or item.get("item_id") or item.get("required_item_id"))
+        for item in answer_plan_rows
+        if _diagnostic_text(item.get("question_item_id") or item.get("item_id") or item.get("required_item_id"))
+    }
+    return sorted(required_ids - plan_ids)
+
+
+def _p30_required_item_plan_projection_missing(
+    *,
+    required_items: list[Mapping[str, Any]],
+    required_item_answer_plan_rows: list[Mapping[str, Any]],
+    summary_memo_logic_plan: Mapping[str, Any],
+) -> bool:
+    if not required_items:
+        return False
+    required_ids = {
+        _diagnostic_text(item.get("item_id") or item.get("id") or item.get("required_item_id"))
+        for item in required_items
+        if _diagnostic_text(item.get("item_id") or item.get("id") or item.get("required_item_id"))
+    }
+    runtime_plan_ids = {
+        _diagnostic_text(item.get("question_item_id") or item.get("item_id") or item.get("required_item_id"))
+        for item in required_item_answer_plan_rows
+        if _diagnostic_text(item.get("question_item_id") or item.get("item_id") or item.get("required_item_id"))
+    }
+    if not required_ids <= runtime_plan_ids:
+        return False
+    projected_rows = [
+        row for row in summary_memo_logic_plan.get("required_item_answer_plan") or [] if isinstance(row, Mapping)
+    ]
+    projected_ids = {
+        _diagnostic_text(item.get("question_item_id") or item.get("item_id") or item.get("required_item_id"))
+        for item in projected_rows
+        if _diagnostic_text(item.get("question_item_id") or item.get("item_id") or item.get("required_item_id"))
+    }
+    projected_count = int(summary_memo_logic_plan.get("required_item_answer_plan_count") or len(projected_rows))
+    return not (required_ids <= projected_ids and projected_count >= len(required_ids))
+
+
+def _p30_required_item_rendered_answer_status(
+    rendered_answer: str,
+    item: Mapping[str, Any],
+    *,
+    terms: list[str],
+) -> dict[str, Any]:
+    text = str(rendered_answer or "")
+    windows = _p30_required_item_windows(text, terms)
+    if not windows:
+        return {"status": "not_rendered", "judgment_window_count": 0, "boundary_only_window_count": 0}
+    judgment_windows = [window for window in windows if _p30_required_item_window_has_judgment(window, item)]
+    boundary_only = [
+        window
+        for window in windows
+        if _p30_required_item_window_is_boundary_only(window) and not _p30_required_item_window_has_judgment(window, item)
+    ]
+    if judgment_windows:
+        return {
+            "status": "answered_with_judgment",
+            "judgment_window_count": len(judgment_windows),
+            "boundary_only_window_count": len(boundary_only),
+        }
+    if boundary_only:
+        return {
+            "status": "boundary_or_watchlist_only",
+            "judgment_window_count": 0,
+            "boundary_only_window_count": len(boundary_only),
+        }
+    return {"status": "keyword_only", "judgment_window_count": 0, "boundary_only_window_count": 0}
+
+
+def _p30_required_item_windows(text: str, terms: list[str]) -> list[str]:
+    if not text or not terms:
+        return []
+    windows: list[str] = []
+    lowered = text.lower()
+    for term in terms:
+        if not term:
+            continue
+        start = 0
+        term_lower = term.lower()
+        while True:
+            index = lowered.find(term_lower, start)
+            if index < 0:
+                break
+            windows.append(text[max(0, index - 120) : min(len(text), index + len(term) + 180)])
+            start = index + max(1, len(term))
+            if len(windows) >= 24:
+                return windows
+    return windows
+
+
+def _p30_required_item_window_has_judgment(window: str, item: Mapping[str, Any]) -> bool:
+    value = str(window or "").lower()
+    judgment_terms = (
+        "说明",
+        "意味着",
+        "支撑",
+        "压制",
+        "改善",
+        "恶化",
+        "反映",
+        "对应",
+        "传导",
+        "回报",
+        "质量",
+        "风险",
+        "利好",
+        "利空",
+        "正向",
+        "负向",
+        "受益",
+        "拖累",
+        "压力",
+        "强于",
+        "弱于",
+        "只能作为",
+        "不能形成",
+        "supports",
+        "implies",
+        "therefore",
+        "because",
+        "pressure",
+        "quality",
+        "risk",
+        "read-through",
+        "bridge",
+        "benefit",
+        "weaken",
+    )
+    return any(term in value for term in judgment_terms)
+
+
+def _p30_required_item_window_is_boundary_only(window: str) -> bool:
+    value = str(window or "").lower()
+    boundary_terms = (
+        "缺口",
+        "缺乏",
+        "缺少",
+        "缺失",
+        "无法",
+        "不能",
+        "不足",
+        "未披露",
+        "尚未",
+        "边界",
+        "需要",
+        "继续验证",
+        "后续",
+        "跟踪",
+        "not available",
+        "cannot",
+        "missing",
+        "insufficient",
+        "limited",
+        "needs verification",
+        "watch",
+    )
+    mechanism_terms = ("说明", "意味着", "支撑", "传导", "回报", "质量", "风险", "supports", "implies", "read-through")
+    return sum(value.count(term) for term in boundary_terms) >= 2 and not any(term in value for term in mechanism_terms)
+
+
+def _p30_refs_for_terms(terms: list[str], approved_facts: list[Mapping[str, Any]], supported_claims: list[Mapping[str, Any]]) -> list[str]:
+    refs: list[str] = []
+    for row in [*approved_facts, *supported_claims]:
+        text = _diagnostic_row_text(row).lower()
+        if terms and not any(term in text for term in terms):
+            continue
+        ref = _diagnostic_text(row.get("evidence_ref") or row.get("claim_id") or row.get("fact_id"))
+        if ref and ref not in refs:
+            refs.append(ref)
+    return refs
+
+
+def _p30_non_us_disclosure_diagnostics(
+    case: Mapping[str, Any],
+    result: Mapping[str, Any],
+    approved_facts: list[Mapping[str, Any]],
+    supported_claims: list[Mapping[str, Any]],
+    gap_rows: list[Mapping[str, Any]],
+    rendered_answer: str,
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    tickers = {ticker.upper() for ticker in _string_list(case.get("focus_tickers")) + _string_list(case.get("search_scope_tickers"))}
+    if "ASML" not in tickers:
+        return rows
+    repair_rows = _p30_lead_repair_context_rows(result)
+    combined_rows = [*supported_claims, *gap_rows, *repair_rows]
+    official_presence_refs = []
+    for row in combined_rows:
+        text = _diagnostic_row_text(row).lower()
+        if "asml" in text and any(term in text for term in ("6-k", "20-f", "annual report", "quarterly results", "ir", "local filing")):
+            ref = _diagnostic_text(row.get("evidence_ref") or row.get("claim_id") or row.get("gap_id") or row.get("source_id"))
+            if ref:
+                official_presence_refs.append(ref)
+    asml_fact_refs = [
+        _diagnostic_text(row.get("evidence_ref") or row.get("fact_id"))
+        for row in approved_facts
+        if _diagnostic_text(row.get("ticker")).upper() == "ASML"
+    ]
+    parser_diagnosis_complete = _p30_non_us_parser_diagnosis_complete(combined_rows)
+    if official_presence_refs and not asml_fact_refs and not parser_diagnosis_complete:
+        rows.append(
+            _p30_root_row(
+                case_id=case.get("case_id"),
+                symptom="non_us_official_source_located_but_no_promoted_fact",
+                required_item_id="ASML_non_us_disclosure_parser",
+                tickers=["ASML"],
+                earliest_faulty_artifact="official_source_context_rows",
+                root_cause_layer="non_us_disclosure_parser_or_table_extraction",
+                repair_action="diagnose whether ASML 6-K/20-F/IR tables were fetched but not parsed, parsed without numeric rows, or blocked by route scope",
+                evidence_refs=official_presence_refs[:8],
+                verification_test="p30_root_cause_quality.non_us_official_source_gaps_have_parser_diagnosis",
+            )
+        )
+    return rows
+
+
+def _p30_lead_repair_context_rows(result: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    execution = result.get("lead_targeted_repair_execution") if isinstance(result.get("lead_targeted_repair_execution"), Mapping) else {}
+    rows.extend(dict(row) for row in execution.get("context_rows") or [] if isinstance(row, Mapping))
+    rows.extend(dict(row) for row in execution.get("official_context_summaries") or [] if isinstance(row, Mapping))
+    checkpoint = result.get("lead_review_checkpoint") if isinstance(result.get("lead_review_checkpoint"), Mapping) else {}
+    nested_execution = (
+        checkpoint.get("lead_targeted_repair_execution")
+        if isinstance(checkpoint.get("lead_targeted_repair_execution"), Mapping)
+        else {}
+    )
+    rows.extend(dict(row) for row in nested_execution.get("context_rows") or [] if isinstance(row, Mapping))
+    rows.extend(dict(row) for row in nested_execution.get("official_context_summaries") or [] if isinstance(row, Mapping))
+    return _dedupe_diagnostic_rows(rows, keys=("evidence_ref", "snapshot_id", "url"))
+
+
+def _p30_non_us_parser_diagnosis_complete(rows: list[Mapping[str, Any]]) -> bool:
+    for row in rows:
+        text = _diagnostic_row_text(row).lower()
+        if "asml" not in text:
+            continue
+        diagnosis = row.get("parser_diagnosis") if isinstance(row.get("parser_diagnosis"), Mapping) else {}
+        complete = bool(row.get("parser_diagnosis_complete") or diagnosis.get("parser_diagnosis_complete"))
+        failure_reason = _diagnostic_text(
+            row.get("exact_fact_parser_failure_reason")
+            or row.get("parser_failure_reason")
+            or "; ".join(_string_list(diagnosis.get("exact_fact_parser_failure_reasons")))
+        )
+        next_action = _diagnostic_text(row.get("next_parser_action") or "; ".join(_string_list(diagnosis.get("next_parser_actions"))))
+        parser_status = _diagnostic_text(
+            row.get("source_specific_parser_status")
+            or row.get("exact_value_parser_status")
+            or "; ".join(_string_list(diagnosis.get("source_specific_parser_statuses")))
+        )
+        if complete and failure_reason and next_action and parser_status:
+            return True
+    return False
+
+
+def _p30_root_row(
+    *,
+    case_id: Any,
+    symptom: str,
+    required_item_id: str,
+    tickers: list[str],
+    earliest_faulty_artifact: str,
+    root_cause_layer: str,
+    repair_action: str,
+    evidence_refs: list[str],
+    verification_test: str,
+) -> dict[str, Any]:
+    key = json.dumps(
+        {
+            "case_id": case_id,
+            "symptom": symptom,
+            "required_item_id": required_item_id,
+            "tickers": tickers,
+            "artifact": earliest_faulty_artifact,
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+    return {
+        "symptom_id": f"p30_{hashlib.sha1(key.encode('utf-8')).hexdigest()[:12]}",
+        "case_id": str(case_id or ""),
+        "required_item_id": required_item_id,
+        "affected_tickers": [ticker.upper() for ticker in tickers if ticker],
+        "symptom": symptom,
+        "earliest_faulty_artifact": earliest_faulty_artifact,
+        "root_cause_layer": root_cause_layer,
+        "owned_by_project": True,
+        "repairability": "root_cause_repair_required",
+        "repair_action": repair_action,
+        "evidence_refs_or_attempt_refs": [ref for ref in evidence_refs if ref],
+        "why_not_external_gap": "classified as internal until parser/locator/adapter/context/writer path is attempted and documented",
+        "verification_test": verification_test,
+        "status": "open",
+    }
+
+
+def _p30_root_row_complete(row: Mapping[str, Any]) -> bool:
+    required = {
+        "symptom_id",
+        "case_id",
+        "required_item_id",
+        "earliest_faulty_artifact",
+        "root_cause_layer",
+        "owned_by_project",
+        "repairability",
+        "repair_action",
+        "why_not_external_gap",
+        "verification_test",
+        "status",
+    }
+    return all(_diagnostic_text(row.get(key)) if key != "owned_by_project" else isinstance(row.get(key), bool) for key in required)
 
 
 def _supervising_analyst_pack_checks(case: Mapping[str, Any], *, result: Mapping[str, Any]) -> dict[str, Any]:
@@ -1966,6 +4352,8 @@ def _vnext_contract_audit(
             "details": {},
         }
     plan_reflection = summary.get("plan_reflection") if isinstance(summary.get("plan_reflection"), Mapping) else {}
+    if not plan_reflection and isinstance(result.get("plan_reflection_report"), Mapping):
+        plan_reflection = result.get("plan_reflection_report")  # type: ignore[assignment]
     evidence_fusion = summary.get("evidence_fusion") if isinstance(summary.get("evidence_fusion"), Mapping) else {}
     bounded_gap_summary = summary.get("bounded_gap_register") if isinstance(summary.get("bounded_gap_register"), Mapping) else {}
     bounded_gap_register = result.get("bounded_gap_register") if isinstance(result.get("bounded_gap_register"), Mapping) else {}
@@ -1987,7 +4375,7 @@ def _vnext_contract_audit(
         "weak_proxy_fallback_absent": _weak_proxy_fallback_absent(result=result, summary=summary, tool_calls=tool_calls),
     }
     return {
-        "required": required,
+        "required": any((required, require_plan_reflection, require_fusion, require_gap_register, require_graph_barriers, require_milvus)),
         "checks": checks,
         "details": {
             "plan_reflection_status": plan_reflection.get("status") or "",
@@ -2240,6 +4628,7 @@ def _evidence_operator_resource_policy(args: argparse.Namespace) -> dict[str, An
 
 def _graph_env(args: argparse.Namespace) -> dict[str, str]:
     env = dict(os.environ)
+    router_modes = _graph_router_modes(args)
     env.update(
         {
             "LLM_BACKEND": args.llm_backend,
@@ -2247,10 +4636,12 @@ def _graph_env(args: argparse.Namespace) -> dict[str, str]:
             "CHAT_COMPLETIONS_PATH": args.chat_completions_path,
             "MODEL_NAME": args.model,
             "API_KEY_ENV": args.api_key_env,
-            "SEC_AGENT_MULTI_AGENT_LEAD_ROUTER": "llm",
-            "SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER": "llm",
-            "SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER": "llm",
-            "SEC_AGENT_MULTI_AGENT_MEMO_ROUTER": "llm",
+            "LLM_GATEWAY_PROXY_MODE": _resolved_llm_gateway_proxy_mode(args),
+            "LLM_GATEWAY_EVENT_LOG_PATH": str(getattr(args, "_llm_gateway_event_log_path", "") or ""),
+            "SEC_AGENT_MULTI_AGENT_LEAD_ROUTER": router_modes["lead"],
+            "SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER": router_modes["specialist"],
+            "SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER": router_modes["universe"],
+            "SEC_AGENT_MULTI_AGENT_MEMO_ROUTER": router_modes["memo"],
             "SEC_AGENT_MULTI_AGENT_EVIDENCE_OPERATOR_MODE": "real" if args.real_evidence_operators else "dry_run",
             "RESEARCH_LEAD_REQUIRE_EVIDENCE_REQUIREMENTS": "1",
             "MANIFEST_PATH": str(args.manifest_path),
@@ -2273,11 +4664,23 @@ def _graph_env(args: argparse.Namespace) -> dict[str, str]:
             "VERIFIER_MAX_TOKENS": str(args.verifier_max_tokens),
             "RESEARCH_LEAD_TIMEOUT_S": str(args.timeout_s),
             "SPECIALIST_TIMEOUT_S": str(args.timeout_s),
-            "UNIVERSE_TIMEOUT_S": str(args.timeout_s),
+            "UNIVERSE_TIMEOUT_S": str(args.universe_timeout_s),
             "MEMO_TIMEOUT_S": str(args.timeout_s),
         }
     )
     return env
+
+
+def _graph_router_modes(args: argparse.Namespace) -> dict[str, str]:
+    if _llm_backend_is_paid(args.llm_backend):
+        universe_mode = "llm" if bool(getattr(args, "universe_llm_overlay", False)) else "deterministic"
+        return {"lead": "llm", "specialist": "llm", "universe": universe_mode, "memo": "llm"}
+    return {
+        "lead": "deterministic",
+        "specialist": "mock",
+        "universe": "deterministic",
+        "memo": "deterministic",
+    }
 
 
 def _initial_state(
@@ -2301,8 +4704,14 @@ def _initial_state(
     if run_audit_db_path:
         state["run_audit_db_path"] = str(run_audit_db_path)
     inventory_companies = _string_list(case.get("source_inventory_companies"))
+    case_source_families = _string_list(case.get("source_tiers"))
     project_inventory: dict[str, Any] = {
-        "source_families": _string_list(case.get("source_tiers")),
+        "source_families": case_source_families,
+        "available_source_families": case_source_families,
+        "source_family_availability": {
+            family: {"available": True, "status": "available"}
+            for family in case_source_families
+        },
         "evaluation_inventory": "summary_only_no_private_paths",
     }
     if inventory_companies:
@@ -2310,13 +4719,34 @@ def _initial_state(
     if _case_requires_milvus_runtime_contract(case):
         milvus_context = _milvus_runtime_context_from_env(case)
         capability = milvus_runtime_capability({"project_inventory": project_inventory, **milvus_context})
-        project_inventory["milvus_runtime"] = _public_milvus_runtime_for_eval(capability)
+        milvus_runtime = _public_milvus_runtime_for_eval(capability)
+        project_inventory["milvus_runtime"] = milvus_runtime
+        availability = dict(project_inventory.get("source_family_availability") or {})
+        availability["milvus_semantic"] = {
+            "available": bool(milvus_runtime.get("available")),
+            "status": str(milvus_runtime.get("status") or "unavailable"),
+            "location": str(milvus_runtime.get("location") or "none"),
+            "exact_value_authority": False,
+            "allowed_claim_scope": "semantic_recall_supplement_only",
+        }
+        project_inventory["source_family_availability"] = availability
+        if milvus_runtime.get("available") and "milvus_semantic" not in project_inventory["available_source_families"]:
+            project_inventory["available_source_families"] = [*project_inventory["available_source_families"], "milvus_semantic"]
+            project_inventory["source_families"] = [*project_inventory["source_families"], "milvus_semantic"]
     state["project_inventory"] = project_inventory
     response_language = str(case.get("response_language") or case.get("output_language") or "").strip()
     if response_language:
         state["response_language"] = response_language
     evidence_operator_resource_policy = _evidence_operator_resource_policy(args)
     context = {
+        "execution_mode": str(case.get("execution_mode") or case.get("expected_execution_mode") or ""),
+        "expected_execution_mode": str(case.get("expected_execution_mode") or ""),
+        "expected_specialist_agents": _quality_expected_specialist_agents(case),
+        "expected_paid_specialist_agents": _runtime_paid_specialist_agents(case),
+        "expected_paid_specialist_priorities": _expected_paid_specialist_priorities(
+            case,
+            _runtime_paid_specialist_agents(case),
+        ),
         "evidence_operator_mode": "real" if args.real_evidence_operators else "dry_run",
         "build_runtime_ledger": bool(args.real_evidence_operators),
         "manifest_path": str(args.manifest_path),
@@ -2360,12 +4790,52 @@ def _initial_state(
     return state
 
 
+def _runtime_paid_specialist_agents(case: Mapping[str, Any]) -> list[str]:
+    explicit = _string_list(case.get("expected_paid_specialist_agents"))
+    if explicit:
+        agents = list(explicit)
+        if _case_has_explicit_risk_or_counterevidence_intent(case) and "risk_counterevidence_analyst" not in agents:
+            agents.append("risk_counterevidence_analyst")
+        return agents
+    quality_expected = _quality_expected_specialist_agents(case)
+    estimated = _estimated_specialist_agents(case)
+    fallback = estimated or quality_expected
+    return _cost_aware_estimated_specialist_agents(case, fallback=fallback)
+
+
+def _case_has_explicit_risk_or_counterevidence_intent(case: Mapping[str, Any]) -> bool:
+    text = " ".join(
+        [
+            str(case.get("prompt") or ""),
+            json.dumps(case.get("required_dimensions") or [], ensure_ascii=False, default=str),
+            json.dumps(case.get("required_dimension_ids") or [], ensure_ascii=False, default=str),
+            json.dumps(case.get("required_answer_moves") or [], ensure_ascii=False, default=str),
+        ]
+    ).lower()
+    return any(
+        term in text
+        for term in (
+            "risk",
+            "counter",
+            "counterevidence",
+            "counter-thesis",
+            "what-would-change",
+            "what would change",
+            "downside",
+            "风险",
+            "反证",
+            "推翻",
+        )
+    )
+
+
 def _run_audit_db_path_for_case(*, args: argparse.Namespace, case: Mapping[str, Any], run_id: str) -> Path | None:
     if args.run_audit_db_path:
-        return Path(args.run_audit_db_path)
+        path = Path(args.run_audit_db_path)
+        return path if path.is_absolute() else (REPO_ROOT / path).resolve()
     if not bool(case.get("require_run_audit_store")):
         return None
-    return Path("data") / "workbench_private" / "run_audit" / f"{run_id}.sqlite"
+    return (REPO_ROOT / "data" / "workbench_private" / "run_audit" / f"{run_id}.sqlite").resolve()
 
 
 def _query_contract(case: Mapping[str, Any]) -> dict[str, Any]:
@@ -2374,10 +4844,14 @@ def _query_contract(case: Mapping[str, Any]) -> dict[str, Any]:
     source_tiers = _string_list(case.get("source_tiers")) or ["primary_sec_filing"]
     metric_families = _string_list(case.get("metric_families")) or ["revenue", "capex", "margin"]
     required_dimension_ids = _string_list(case.get("required_dimension_ids"))
+    demand_proxy_tickers = _infer_demand_proxy_tickers(case, search_scope_tickers=tickers, focus_tickers=focus)
+    ticker_roles = _infer_ticker_roles(case, demand_proxy_tickers=demand_proxy_tickers)
     return {
         "task_type": "open_analysis",
         "search_scope_tickers": tickers,
         "focus_tickers": focus,
+        "demand_proxy_tickers": demand_proxy_tickers,
+        "ticker_roles": ticker_roles,
         "years": [int(year) for year in (case.get("years") or [2026])],
         "filing_types": _string_list(case.get("filing_types")) or ["10-Q", "8-K"],
         "source_tiers": source_tiers,
@@ -2396,6 +4870,62 @@ def _query_contract(case: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _infer_demand_proxy_tickers(
+    case: Mapping[str, Any],
+    *,
+    search_scope_tickers: list[str],
+    focus_tickers: list[str],
+) -> list[str]:
+    explicit = _string_list(case.get("demand_proxy_tickers"))
+    query_contract = case.get("query_contract") if isinstance(case.get("query_contract"), Mapping) else {}
+    explicit.extend(_string_list(query_contract.get("demand_proxy_tickers")))
+    if explicit:
+        return _unique_upper([ticker for ticker in explicit if ticker not in set(_unique_upper(focus_tickers))])
+
+    text = " ".join(
+        [
+            str(case.get("case_id") or ""),
+            str(case.get("category") or ""),
+            str(case.get("industry_schema") or ""),
+            str(case.get("prompt") or ""),
+            " ".join(_string_list(case.get("metric_families"))),
+        ]
+    ).lower()
+    wants_cloud_capex_readthrough = (
+        "capex" in text
+        and any(marker in text for marker in ("ai", "cloud", "hyperscaler", "data center", "infrastructure", "供应链", "需求传导"))
+        and any(marker in text for marker in ("read-through", "readthrough", "传导", "supplier", "供应链", "demand", "需求"))
+    )
+    if not wants_cloud_capex_readthrough:
+        return []
+
+    focus = set(_unique_upper(focus_tickers))
+    cloud_buyer_candidates = {
+        "MSFT",
+        "AMZN",
+        "GOOGL",
+        "GOOG",
+        "META",
+        "ORCL",
+    }
+    return _unique_upper([ticker for ticker in search_scope_tickers if ticker.upper() in cloud_buyer_candidates and ticker.upper() not in focus])
+
+
+def _infer_ticker_roles(case: Mapping[str, Any], *, demand_proxy_tickers: list[str]) -> dict[str, str]:
+    query_contract = case.get("query_contract") if isinstance(case.get("query_contract"), Mapping) else {}
+    roles: dict[str, str] = {}
+    for source in (case.get("ticker_roles"), query_contract.get("ticker_roles")):
+        if isinstance(source, Mapping):
+            for ticker, role in source.items():
+                ticker_text = str(ticker or "").upper().strip()
+                role_text = str(role or "").strip()
+                if ticker_text and role_text:
+                    roles[ticker_text] = role_text
+    for ticker in demand_proxy_tickers:
+        roles.setdefault(str(ticker).upper(), "cloud_buyer_demand_proxy")
+    return roles
+
+
 def _universe_checks(
     case: Mapping[str, Any],
     *,
@@ -2407,6 +4937,7 @@ def _universe_checks(
 ) -> dict[str, bool]:
     active = set(_string_list((result.get("agent_activation_plan") or {}).get("activate_agents") if isinstance(result.get("agent_activation_plan"), Mapping) else []))
     universe_expected = "universe_relationship" in active or bool(case.get("require_universe_llm_pass"))
+    llm_overlay_required = bool(case.get("_universe_llm_overlay_required") or case.get("require_universe_llm_overlay_pass"))
     if not universe_expected:
         return {
             "skipped_when_not_expected": not validation,
@@ -2419,8 +4950,8 @@ def _universe_checks(
     relationships = lookup.get("relationships") if isinstance(lookup.get("relationships"), list) else []
     return {
         "skipped_when_not_expected": True,
-        "llm_invoked_when_expected": _diag_call_count(route) >= 1,
-        "llm_calls_ok": _diag_calls_ok(route),
+        "llm_invoked_when_expected": (not llm_overlay_required) or _diag_call_count(route) >= 1,
+        "llm_calls_ok": (not llm_overlay_required) or _diag_calls_ok(route),
         "validation_pass_when_expected": validation.get("status") == "pass",
         "relationship_lookup_called": any(call.get("tool_name") == "relationship_graph_lookup" for call in tool_calls),
         "relationship_claim_scope_bounded": all(str(item.get("claim_scope") or "") == "scope_or_hypothesis_only" for item in relationships if isinstance(item, Mapping)),
@@ -2598,7 +5129,7 @@ def _specialist_real_evidence_quality(
 
 def _allowed_specialist_source_families(agent_id: str) -> set[str]:
     if agent_id == "fundamental_analyst":
-        return {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
+        return {"primary_sec_filing", "company_authored_unaudited_sec_filing", "derived_metric_layer"}
     if agent_id == "market_valuation_analyst":
         return {"market_snapshot"}
     if agent_id == "industry_supply_chain_analyst":
@@ -2663,16 +5194,12 @@ def _nested_evidence_refs(value: Any) -> set[str]:
             "supporting_evidence_ids",
             "evidence_ref",
             "evidence_id",
-            "source_id",
             "raw_record_ref",
             "source_fact_id",
             "line_item_id",
             "change_id",
             "comparison_id",
-            "metric_id",
-            "object_id",
             "gap_id",
-            "id",
         ):
             refs.update(_string_list(value.get(key)))
         for item in value.values():
@@ -3143,6 +5670,29 @@ def _agent_audit(
     specialist_quality: Mapping[str, Any],
 ) -> dict[str, Any]:
     llm_routes = summary.get("llm_routes") if isinstance(summary.get("llm_routes"), Mapping) else {}
+    research_lead_fingerprint = (
+        _route(llm_routes, "research_lead").get("input_pack_fingerprint")
+        or result.get("research_lead_input_pack_fingerprint")
+        or _fallback_research_lead_input_pack_fingerprint(result)
+    )
+    universe_fingerprint = (
+        _route(llm_routes, "universe_relationship").get("input_pack_fingerprint")
+        or result.get("universe_relationship_input_pack_fingerprint")
+        or _fallback_universe_relationship_input_pack_fingerprint(result)
+    )
+    memo_route_result = dict(result.get("memo_route_result") or {}) if isinstance(result.get("memo_route_result"), Mapping) else {}
+    if not isinstance(memo_route_result.get("input_pack_fingerprint"), Mapping):
+        memo_route_result["input_pack_fingerprint"] = _fallback_memo_writer_input_pack_fingerprint(result)
+        memo_route_result.setdefault("status", "deterministic_or_missing_route_result")
+    verifier_input_projection = (
+        dict((result.get("claim_verification") or {}).get("verifier_input_projection") or {})
+        if isinstance(result.get("claim_verification"), Mapping)
+        else {}
+    )
+    if not isinstance(verifier_input_projection.get("input_pack_fingerprint"), Mapping):
+        verifier_input_projection["input_pack_fingerprint"] = _fallback_verifier_input_pack_fingerprint(result)
+        verifier_input_projection.setdefault("projection_source", "deterministic_fallback_from_saved_state")
+    specialist_routes = _specialist_routes_with_fallback_input_fingerprints(specialist_routes, result)
     return {
         "research_lead": {
             "route_status": result.get("research_lead_route_status")
@@ -3152,13 +5702,18 @@ def _agent_audit(
             or _route(llm_routes, "research_lead").get("failure_reason")
             or "",
             "validation_errors": (result.get("research_lead_validation") or {}).get("errors") or [],
-            "validation_status": (result.get("agent_activation_validation") or {}).get("status")
-            if isinstance(result.get("agent_activation_validation"), Mapping)
-            else "",
+            "validation_status": (
+                (result.get("agent_activation_validation") or {}).get("status")
+                if isinstance(result.get("agent_activation_validation"), Mapping)
+                else (result.get("research_lead_validation") or {}).get("status")
+                if isinstance(result.get("research_lead_validation"), Mapping)
+                else ""
+            ),
             "execution_mode": (result.get("agent_activation_plan") or {}).get("execution_mode")
             if isinstance(result.get("agent_activation_plan"), Mapping)
             else "",
             "diagnostics": _route(llm_routes, "research_lead").get("diagnostics") or result.get("research_lead_model_diagnostics") or {},
+            "input_pack_fingerprint": research_lead_fingerprint,
         },
         "universe_relationship": {
             "lookup_status": (result.get("relationship_graph_observation") or {}).get("status")
@@ -3168,6 +5723,7 @@ def _agent_audit(
             if isinstance(result.get("universe_relationship_validation"), Mapping)
             else "",
             "diagnostics": _route(llm_routes, "universe_relationship").get("diagnostics") or {},
+            "input_pack_fingerprint": universe_fingerprint,
         },
         "evidence_operators": {
             "tool_calls": [
@@ -3195,19 +5751,277 @@ def _agent_audit(
             "memo_status": (result.get("memo_answer") or {}).get("answer_status")
             if isinstance(result.get("memo_answer"), Mapping)
             else "",
-            "route_result": result.get("memo_route_result") if isinstance(result.get("memo_route_result"), Mapping) else {},
+            "route_result": memo_route_result,
             "diagnostics": _route(llm_routes, "memo_writer").get("diagnostics") or {},
         },
         "verifier": {
             "claim_verification": (result.get("claim_verification") or {}).get("status")
             if isinstance(result.get("claim_verification"), Mapping)
             else "",
-            "input_projection": (result.get("claim_verification") or {}).get("verifier_input_projection")
-            if isinstance(result.get("claim_verification"), Mapping)
-            else {},
+            "input_projection": verifier_input_projection,
             "diagnostics": _route(llm_routes, "verifier").get("diagnostics") or {},
         },
     }
+
+
+def _fallback_research_lead_input_pack_fingerprint(result: Mapping[str, Any]) -> dict[str, Any]:
+    return _fallback_input_pack_fingerprint(
+        agent_id="research_lead",
+        schema_version="sec_agent_research_lead_input_pack_fingerprint_v0_1",
+        components={
+            "query_contract": result.get("query_contract") if isinstance(result.get("query_contract"), Mapping) else {},
+            "agent_activation_plan": result.get("agent_activation_plan") if isinstance(result.get("agent_activation_plan"), Mapping) else {},
+            "evidence_requirement_plan": result.get("evidence_requirement_plan") if isinstance(result.get("evidence_requirement_plan"), Mapping) else {},
+            "source_inventory": result.get("project_inventory") if isinstance(result.get("project_inventory"), Mapping) else {},
+            "routing_trace": result.get("multi_agent_routing_trace") if isinstance(result.get("multi_agent_routing_trace"), Mapping) else {},
+        },
+        capture_source="deterministic_fallback_from_saved_research_lead_state",
+    )
+
+
+def _fallback_universe_relationship_input_pack_fingerprint(result: Mapping[str, Any]) -> dict[str, Any]:
+    try:
+        from sec_agent.universe_relationship_llm import (
+            _compact_relationship_lookup,
+            _known_relationship_refs,
+            _relationship_lookup_prompt_view,
+            _universe_relationship_input_pack_fingerprint,
+        )
+
+        raw_lookup = (
+            result.get("relationship_graph_observation")
+            if isinstance(result.get("relationship_graph_observation"), Mapping)
+            else {}
+        )
+        activation = result.get("agent_activation_plan") if isinstance(result.get("agent_activation_plan"), Mapping) else {}
+        source_inventory = result.get("project_inventory") if isinstance(result.get("project_inventory"), Mapping) else {}
+        lookup = _compact_relationship_lookup(
+            raw_lookup,
+            source_inventory=source_inventory,
+            max_relationships=8,
+            priority_tickers=_string_list(activation.get("search_scope_tickers") or activation.get("focus_tickers")),
+        )
+        prompt_request = {
+            "user_query": result.get("user_query") or "",
+            "activation_plan": activation,
+            "relationship_lookup": _relationship_lookup_prompt_view(lookup),
+            "source_inventory": source_inventory,
+        }
+        fingerprint = _universe_relationship_input_pack_fingerprint(
+            prompt_request,
+            known_refs=_known_relationship_refs(lookup),
+            source_inventory=source_inventory,
+        )
+        return {
+            **fingerprint,
+            "capture_source": "deterministic_fallback_using_universe_relationship_input_contract",
+        }
+    except Exception as exc:
+        generic = _generic_universe_relationship_input_pack_fingerprint(result)
+        generic["fallback_error"] = str(exc)[:240]
+        return generic
+
+
+def _generic_universe_relationship_input_pack_fingerprint(result: Mapping[str, Any]) -> dict[str, Any]:
+    return _fallback_input_pack_fingerprint(
+        agent_id="universe_relationship",
+        schema_version="sec_agent_universe_relationship_input_pack_fingerprint_v0_1",
+        components={
+            "agent_activation_plan": result.get("agent_activation_plan") if isinstance(result.get("agent_activation_plan"), Mapping) else {},
+            "relationship_graph_observation": result.get("relationship_graph_observation")
+            if isinstance(result.get("relationship_graph_observation"), Mapping)
+            else {},
+            "universe_relationship_plan": result.get("universe_relationship_plan")
+            if isinstance(result.get("universe_relationship_plan"), Mapping)
+            else {},
+            "source_inventory": result.get("project_inventory") if isinstance(result.get("project_inventory"), Mapping) else {},
+        },
+        capture_source="deterministic_fallback_from_saved_universe_state",
+    )
+
+
+def _fallback_memo_writer_input_pack_fingerprint(result: Mapping[str, Any]) -> dict[str, Any]:
+    try:
+        from sec_agent.memo_llm import (  # Local private-helper import keeps this path deterministic and no-model.
+            _compact_shared_memo_context_for_prompt,
+            _memo_writer_input_pack_fingerprint,
+            build_shared_memo_context,
+        )
+
+        fingerprint = _memo_writer_input_pack_fingerprint(
+            result,
+            shared_context=_compact_shared_memo_context_for_prompt(build_shared_memo_context(result)),
+            judgment=result.get("verified_judgment_plan") if isinstance(result.get("verified_judgment_plan"), Mapping) else {},
+        )
+        return {
+            **fingerprint,
+            "capture_source": "deterministic_fallback_using_memo_writer_input_contract",
+        }
+    except Exception as exc:
+        generic = _generic_memo_writer_input_pack_fingerprint(result)
+        generic["fallback_error"] = str(exc)[:240]
+        return generic
+
+
+def _generic_memo_writer_input_pack_fingerprint(result: Mapping[str, Any]) -> dict[str, Any]:
+    return _fallback_input_pack_fingerprint(
+        agent_id="memo_writer",
+        schema_version="sec_agent_memo_writer_input_pack_fingerprint_v0_1",
+        components={
+            "memo_logic_plan": result.get("memo_logic_plan") if isinstance(result.get("memo_logic_plan"), Mapping) else {},
+            "verified_judgment_plan": result.get("verified_judgment_plan") if isinstance(result.get("verified_judgment_plan"), Mapping) else {},
+            "pre_memo_fact_selection": result.get("pre_memo_fact_selection") if isinstance(result.get("pre_memo_fact_selection"), Mapping) else {},
+            "supervising_analyst_pack": result.get("supervising_analyst_pack") if isinstance(result.get("supervising_analyst_pack"), Mapping) else {},
+        },
+        capture_source="deterministic_fallback_from_saved_memo_writer_state",
+    )
+
+
+def _fallback_verifier_input_pack_fingerprint(result: Mapping[str, Any]) -> dict[str, Any]:
+    try:
+        from sec_agent.memo_llm import _verifier_input_pack_fingerprint, _verifier_minimal_projection
+
+        deterministic = result.get("claim_verification") if isinstance(result.get("claim_verification"), Mapping) else {}
+        projection = _verifier_minimal_projection(result, deterministic=deterministic)
+        fingerprint = _verifier_input_pack_fingerprint(projection)
+        return {
+            **fingerprint,
+            "capture_source": "deterministic_fallback_using_verifier_projection_contract",
+        }
+    except Exception as exc:
+        generic = _generic_verifier_input_pack_fingerprint(result)
+        generic["fallback_error"] = str(exc)[:240]
+        return generic
+
+
+def _generic_verifier_input_pack_fingerprint(result: Mapping[str, Any]) -> dict[str, Any]:
+    return _fallback_input_pack_fingerprint(
+        agent_id="verifier",
+        schema_version="sec_agent_verifier_input_pack_fingerprint_v0_1",
+        components={
+            "memo_answer": result.get("memo_answer") if isinstance(result.get("memo_answer"), Mapping) else {},
+            "verified_judgment_plan": result.get("verified_judgment_plan") if isinstance(result.get("verified_judgment_plan"), Mapping) else {},
+            "claim_evidence_ledger": result.get("claim_evidence_ledger") if isinstance(result.get("claim_evidence_ledger"), Mapping) else {},
+            "pre_memo_fact_selection": result.get("pre_memo_fact_selection") if isinstance(result.get("pre_memo_fact_selection"), Mapping) else {},
+        },
+        capture_source="deterministic_fallback_from_saved_verifier_state",
+    )
+
+
+def _specialist_routes_with_fallback_input_fingerprints(
+    routes: list[dict[str, Any]],
+    result: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    outputs_by_agent = {
+        str(row.get("agent_id") or ""): dict(row)
+        for row in result.get("specialist_outputs") or []
+        if isinstance(row, Mapping) and str(row.get("agent_id") or "")
+    }
+    rows: list[dict[str, Any]] = []
+    for route in routes:
+        row = dict(route)
+        if not isinstance(row.get("input_pack_fingerprint"), Mapping):
+            agent_id = str(row.get("agent_id") or "")
+            row["input_pack_fingerprint"] = _fallback_input_pack_fingerprint(
+                agent_id=agent_id,
+                schema_version="sec_agent_specialist_input_pack_fingerprint_v0_1",
+                components={
+                    "route_summary": row,
+                    "specialist_output_proxy": outputs_by_agent.get(agent_id, {}),
+                },
+                capture_source="deterministic_fallback_from_saved_specialist_output_proxy",
+            )
+        rows.append(row)
+    return rows
+
+
+def _fallback_input_pack_fingerprint(
+    *,
+    agent_id: str,
+    schema_version: str,
+    components: Mapping[str, Any],
+    capture_source: str,
+) -> dict[str, Any]:
+    component_summaries: dict[str, dict[str, Any]] = {}
+    component_digests: dict[str, str] = {}
+    approx_chars = 0
+    for name, value in components.items():
+        if _prompt_component_empty(value):
+            component_summaries[str(name)] = _empty_fingerprint_component()
+            continue
+        encoded = _stable_json(value)
+        refs = sorted(_nested_evidence_refs(value))
+        digest = _short_sha256({"component": name, "payload": value})
+        approx_chars += len(encoded)
+        component_digests[str(name)] = digest
+        component_summaries[str(name)] = {
+            "digest": digest,
+            "item_count": _component_item_count(value),
+            "evidence_ref_count": len(refs),
+            "evidence_refs_sample": refs[:24],
+            "approx_chars": len(encoded),
+        }
+    known_refs = sorted({ref for value in components.values() for ref in _nested_evidence_refs(value)})
+    visible_refs = known_refs[:256]
+    return {
+        "schema_version": schema_version,
+        "agent_id": str(agent_id or ""),
+        "digest": _short_sha256(
+            {
+                "agent_id": str(agent_id or ""),
+                "component_digests": component_digests,
+                "known_evidence_refs": visible_refs,
+                "capture_source": capture_source,
+            }
+        ),
+        "known_evidence_ref_count": len(known_refs),
+        "known_evidence_refs": visible_refs,
+        "known_evidence_refs_truncated": len(known_refs) > len(visible_refs),
+        "component_summaries": component_summaries,
+        "approx_prompt_payload_chars": approx_chars,
+        "fingerprint_policy": "fingerprint_only_no_prompt_text_persisted_v0_1",
+        "capture_source": capture_source,
+    }
+
+
+def _prompt_component_empty(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return not value.strip()
+    if isinstance(value, Mapping):
+        return not bool(value)
+    if isinstance(value, (list, tuple, set)):
+        return not bool(value)
+    return False
+
+
+def _empty_fingerprint_component() -> dict[str, Any]:
+    return {
+        "digest": "",
+        "item_count": 0,
+        "evidence_ref_count": 0,
+        "evidence_refs_sample": [],
+        "approx_chars": 0,
+    }
+
+
+def _component_item_count(value: Any) -> int:
+    if isinstance(value, Mapping):
+        return len(value)
+    if isinstance(value, (list, tuple, set)):
+        return len(value)
+    if value is None:
+        return 0
+    return 1
+
+
+def _short_sha256(value: Any) -> str:
+    return "sha256:" + hashlib.sha256(_stable_json(value).encode("utf-8")).hexdigest()[:16]
+
+
+def _stable_json(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
 
 
 def _aggregate(
@@ -3249,9 +6063,16 @@ def _aggregate(
             "api_key_present": bool(args.api_key_env and os.environ.get(str(args.api_key_env))),
             "raw_llm_response_saved": False,
             "api_key_saved": False,
+            "llm_gateway_proxy_mode": _resolved_llm_gateway_proxy_mode(args),
+            "model_call_event_log_path": str(getattr(args, "_llm_gateway_event_log_path", "") or ""),
         },
+        "provider_preflight": _compact_provider_preflight_for_summary(
+            getattr(args, "_provider_preflight", {}) or {}
+        ),
+        "token_budget_preflight": _compact_token_budget_plan_for_summary(getattr(args, "_token_budget_plan", {}) or {}),
         "retrieval_runtime_config": {
             "real_evidence_operators": bool(args.real_evidence_operators),
+            "stepwise_stop_after_node": str(args.stop_after_node or ""),
             "context_runner": args.context_runner,
             "bge_device": args.bge_device,
             "bge_model_ref": _model_ref(args.bge_model),
@@ -3282,6 +6103,15 @@ def _aggregate(
         "categories": categories,
         "cases": scores,
         "fixture_case_ids": [case.get("case_id") for case in cases],
+        "stepwise_node_run": {
+            "enabled": bool(args.stop_after_node),
+            "stop_after_node": str(args.stop_after_node or ""),
+            "gate_semantics": (
+                "node_level_diagnostic_only_not_full_chain_pass"
+                if args.stop_after_node
+                else "full_chain_or_preflight"
+            ),
+        },
     }
 
 
@@ -3292,6 +6122,7 @@ def _stdout_summary(summary: Mapping[str, Any], output_path: Path) -> dict[str, 
         "diagnostic_only": summary.get("diagnostic_only"),
         "output_path": str(output_path.resolve()),
         "metrics": summary.get("metrics"),
+        "stepwise_node_run": summary.get("stepwise_node_run"),
         "failures": [
             {
                 "case_id": case.get("case_id"),
@@ -3336,7 +6167,17 @@ def _diag_calls_ok(route: Mapping[str, Any]) -> bool:
     diagnostics = route.get("diagnostics") if isinstance(route.get("diagnostics"), Mapping) else route
     if not diagnostics:
         return False
-    return bool(diagnostics.get("all_calls_ok")) and int(diagnostics.get("direct_tool_call_count") or 0) == 0
+    if "all_calls_ok" in diagnostics:
+        return bool(diagnostics.get("all_calls_ok")) and int(diagnostics.get("direct_tool_call_count") or 0) == 0
+    calls = [dict(call) for call in diagnostics.get("calls") or [] if isinstance(call, Mapping)]
+    if calls:
+        return all(
+            str(call.get("status") or "").lower() == "ok"
+            and not str(call.get("failure_reason") or "").strip()
+            and int(call.get("tool_call_count") or 0) == 0
+            for call in calls
+        )
+    return False
 
 
 def _tool_calls(result: Mapping[str, Any], summary: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -3445,6 +6286,18 @@ def _string_list(value: Any) -> list[str]:
     seen: set[str] = set()
     for item in items:
         text = str(item or "").strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        result.append(text)
+    return result
+
+
+def _dedupe_preserve_order(values: list[str]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip()
         if not text or text in seen:
             continue
         seen.add(text)

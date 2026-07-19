@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -19,6 +20,9 @@ from sec_agent.research_skills import research_skill_prompt
 ROUTE_SCHEMA_VERSION = "sec_agent_universe_relationship_llm_route_v0.1"
 ROUTE_SOURCE = "universe_relationship_llm_v0.1"
 UNIVERSE_ROUTER_ENV = "SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER"
+UNIVERSE_RELATIONSHIP_INPUT_PACK_FINGERPRINT_SCHEMA_VERSION = "sec_agent_universe_relationship_input_pack_fingerprint_v0_1"
+DEFAULT_UNIVERSE_MAX_TOKENS = 500
+DEFAULT_UNIVERSE_TIMEOUT_S = 90
 
 ChatCompletionFunc = Callable[..., dict[str, Any]]
 
@@ -31,9 +35,9 @@ class UniverseRelationshipLLMConfig:
     model: str = "deepseek-v4-pro"
     api_key_env: str = "DEEPSEEK_API_KEY"
     temperature: float = 0.0
-    max_tokens: int = 3000
-    timeout_s: int = 180
-    max_repair_attempts: int = 2
+    max_tokens: int = DEFAULT_UNIVERSE_MAX_TOKENS
+    timeout_s: int = DEFAULT_UNIVERSE_TIMEOUT_S
+    max_repair_attempts: int = 0
     input_max_relationships: int = 8
     require_economic_link_map: bool = False
 
@@ -47,9 +51,9 @@ def universe_relationship_llm_config_from_env(env: Mapping[str, str] | None = No
         model=values.get("MODEL_NAME", "deepseek-v4-pro"),
         api_key_env=values.get("API_KEY_ENV", "DEEPSEEK_API_KEY"),
         temperature=_float_env(values.get("UNIVERSE_TEMPERATURE"), default=0.0),
-        max_tokens=_int_env(values.get("UNIVERSE_MAX_TOKENS"), default=3000),
-        timeout_s=_int_env(values.get("UNIVERSE_TIMEOUT_S"), default=180),
-        max_repair_attempts=_int_env(values.get("UNIVERSE_MAX_REPAIR_ATTEMPTS"), default=2),
+        max_tokens=_int_env(values.get("UNIVERSE_MAX_TOKENS"), default=DEFAULT_UNIVERSE_MAX_TOKENS),
+        timeout_s=_int_env(values.get("UNIVERSE_TIMEOUT_S"), default=DEFAULT_UNIVERSE_TIMEOUT_S),
+        max_repair_attempts=_int_env(values.get("UNIVERSE_MAX_REPAIR_ATTEMPTS"), default=0),
         input_max_relationships=_int_env(values.get("UNIVERSE_INPUT_MAX_RELATIONSHIPS"), default=8),
         require_economic_link_map=str(values.get("UNIVERSE_REQUIRE_ECONOMIC_LINK_MAP") or "").lower() in {"1", "true", "yes"},
     )
@@ -107,6 +111,11 @@ def route_universe_relationship_llm(
     known_refs = _known_relationship_refs(lookup)
     max_repair_attempts = max(0, int(route_config.max_repair_attempts))
     prompt_request = {**dict(request), "relationship_lookup": prompt_lookup}
+    input_pack_fingerprint = _universe_relationship_input_pack_fingerprint(
+        prompt_request,
+        known_refs=known_refs,
+        source_inventory=source_inventory,
+    )
 
     model_calls: list[dict[str, Any]] = []
     previous_content = ""
@@ -158,8 +167,7 @@ def route_universe_relationship_llm(
             focus_tickers=focus,
             relationship_scope_rationale=str(activation.get("relationship_scope_rationale") or ""),
         )
-        if route_config.require_economic_link_map:
-            completed = _complete_economic_link_map_from_lookup(completed, lookup=lookup, focus_tickers=focus)
+        completed = _complete_economic_link_map_from_lookup(completed, lookup=lookup, focus_tickers=focus)
         validation = validate_universe_relationship_plan(completed, known_evidence_refs=known_refs, source_inventory=source_inventory)
         last_validation = validation
         if validation["status"] == "pass":
@@ -190,6 +198,7 @@ def route_universe_relationship_llm(
                 "universe_relationship_validation": validation,
                 "routing_trace": {"attempt_count": len(model_calls), "repair_attempts": attempt_index},
                 "model_diagnostics": _aggregate_model_calls(model_calls),
+                "input_pack_fingerprint": input_pack_fingerprint,
                 "failure_reason": "",
             }
         last_failure = {"type": "validation_failed", "errors": validation["errors"], "warnings": validation["warnings"]}
@@ -201,8 +210,7 @@ def route_universe_relationship_llm(
         relationship_scope_rationale=str(activation.get("relationship_scope_rationale") or ""),
     )
     fallback_plan = normalize_universe_relationship_plan(fallback)
-    if route_config.require_economic_link_map:
-        fallback_plan = _complete_economic_link_map_from_lookup(fallback_plan, lookup=lookup, focus_tickers=focus)
+    fallback_plan = _complete_economic_link_map_from_lookup(fallback_plan, lookup=lookup, focus_tickers=focus)
     fallback_validation = validate_universe_relationship_plan(
         fallback_plan,
         known_evidence_refs=known_refs,
@@ -217,6 +225,7 @@ def route_universe_relationship_llm(
         "rejected_plan": (last_validation or {}).get("plan") or {},
         "routing_trace": {"attempt_count": len(model_calls), "repair_attempts": max(0, len(model_calls) - 1), "fallback_used": True},
         "model_diagnostics": _aggregate_model_calls(model_calls),
+        "input_pack_fingerprint": input_pack_fingerprint,
         "failure_reason": _format_failure_reason(last_failure),
     }
 
@@ -265,13 +274,15 @@ def _build_messages(
         "known_relationship_refs": sorted(known_refs),
     }
     user = (
-        "Return one UniverseRelationshipPlan JSON object from the bounded relationship lookup only. "
+        "Return one compact UniverseRelationshipPlan JSON object as a mechanism overlay. "
+        "The runtime, not you, is responsible for preserving who is related to whom. "
         "Do not add named companies or relationships from memory. "
         "included_tickers may contain only focus_tickers and tickers that have relationship evidence_refs in the input. "
         "Search-scope tickers without input relationship rows must be excluded or listed as unsupported_relationships. "
-        "Do not copy the input relationship rows into the output. "
-        "Set relationships to [] unless you need at most 3 priority examples; the runtime will deterministically preserve every bounded lookup relationship in the final plan. "
-        "Keep economic_link_map compact: at most 8 entities, 6 economic links, 4 mechanisms, and 4 investment_implications. "
+        "Return only the minimal top-level keys needed for a merge overlay: relationship_scope_rationale, economic_link_map, unsupported_relationships. "
+        "Set relationships to [] if you include the key at all; the runtime will deterministically preserve every bounded lookup relationship in the final plan. "
+        "Spend tokens only on economic_link_map: why the relationship matters, transmission mechanism, metric implications, risks, and missing confirmations. "
+        "Keep economic_link_map compact: at most 4 entities, 3 economic links, 2 mechanisms, and 2 investment_implications. "
         "Use short strings; do not narrate evidence rows; keep the whole JSON concise. "
         "Every sector_inferred relationship is not a confirmed direct commercial edge and must carry missing_confirmations.\n\n"
         f"Input JSON:\n{_json_for_prompt(user_payload)}"
@@ -281,104 +292,54 @@ def _build_messages(
             f"{user}\n\nRepair the previous output. It failed this diagnostic:\n"
             f"{_json_for_prompt(_clean_for_prompt(prior_failure), sort_keys=True)}\n\n"
             f"Previous output excerpt:\n{_truncate(prior_content, 1600)}\n\n"
-            "Return one corrected UniverseRelationshipPlan JSON object only."
+            "Return one corrected merge overlay JSON object only."
         )
     return [{"role": "system", "content": system}, {"role": "user", "content": user}]
 
 
 def _system_prompt() -> str:
     schema_hint = {
-        "schema_version": "sec_agent_universe_relationship_plan_v0.1",
-        "agent_id": "universe_relationship",
-        "scope_mode": "focused_peer | sector_representative | full_universe",
-        "focus_tickers": ["TICKER"],
-        "expanded_tickers": ["TICKER"],
-        "included_tickers": ["TICKER"],
-        "excluded_tickers": [],
-        "relationship_scope_rationale": "short rationale",
-        "relationships": [
-            {
-                "ticker": "TICKER",
-                "related_ticker": "TICKER",
-                "relationship_type": "peer | competitor | customer | supplier | sector | macro_sensitive | other",
-                "direction": "short direction",
-                "financial_link_type": "short link type",
-                "metrics_to_check": ["metric"],
-                "evidence_source_needed": ["primary_sec_filing | market_snapshot | industry_snapshot | relationship_graph"],
-                "evidence_refs": ["relationship evidence ref"],
-                    "confidence": "low | medium | high",
-                    "inference_level": "confirmed_direct | disclosed_indirect | curated_input_unverified | sector_inferred | category_inferred | unknown",
-                    "confirmation_status": "confirmed_direct_edge | no_confirmed_direct_edge | input_edge_unverified",
-                    "evidence_basis": ["basis"],
-                    "missing_confirmations": ["missing confirmation"],
-                    "source_limitations": ["source limitation"],
-                    "inclusion_rationale": "why included for research scope",
-                    "claim_scope": "scope_or_hypothesis_only",
-                }
-        ],
+        "relationship_scope_rationale": "one short sentence",
+        "relationships": [],
         "economic_link_map": {
-            "schema_version": "sec_agent_economic_link_map_v0.1",
-            "map_scope": "relationship_hypothesis",
-            "focus_tickers": ["TICKER"],
-            "entities": [
-                {
-                    "ticker": "TICKER",
-                    "role": "direct_beneficiary | peer | second_order_beneficiary | risk_exposure",
-                    "evidence_refs": ["relationship evidence ref"],
-                    "confidence": "low | medium | high",
-                    "materiality": "low | medium | high",
-                    "missing_confirmations": ["missing confirmation"],
-                }
-            ],
+            "entities": [{"ticker": "TICKER", "role": "short role", "evidence_refs": ["ref"], "confidence": "low|medium|high"}],
             "links": [
                 {
                     "source": "TICKER or economic driver",
                     "target": "TICKER",
-                    "link_type": "peer | demand_driver | second_order_beneficiary | substitution | macro_regulatory | sector_hypothesis | unknown",
-                    "mechanism": "economic transmission mechanism",
-                    "direction": "positive | negative | mixed | neutral | unknown",
-                    "materiality": "low | medium | high",
-                    "confidence": "low | medium | high",
+                    "link_type": "demand_driver | substitution | peer | sector_hypothesis",
+                    "mechanism": "one short economic transmission mechanism",
+                    "direction": "positive | negative | mixed | unknown",
                     "metric_implications": ["metric"],
-                    "evidence_refs": ["relationship evidence ref"],
+                    "evidence_refs": ["ref"],
                     "claim_scope": "economic_mechanism_hypothesis_only",
                     "missing_confirmations": ["missing confirmation"],
                 }
             ],
-            "mechanisms": [
-                {
-                    "driver": "economic driver",
-                    "affected_entities": ["TICKER"],
-                    "metric_implications": ["metric"],
-                    "confirming_indicators": ["indicator"],
-                    "disconfirming_indicators": ["indicator"],
-                    "evidence_refs": ["relationship evidence ref"],
-                    "confidence": "low | medium | high",
-                }
-            ],
+            "mechanisms": [{"driver": "driver", "affected_entities": ["TICKER"], "metric_implications": ["metric"], "evidence_refs": ["ref"]}],
             "investment_implications": [
                 {
                     "claim": "bounded implication",
-                    "so_what": "why this matters for the research memo",
+                    "so_what": "why this matters",
                     "entity_scope": ["TICKER"],
                     "confidence": "low | medium | high",
-                    "supporting_refs": ["relationship evidence ref"],
+                    "supporting_refs": ["ref"],
                     "missing_confirmations": ["missing confirmation"],
                 }
             ],
-            "source_boundary": "relationship_graph_hypothesis_only",
         },
         "unsupported_relationships": [],
-        "source_family": "relationship_graph",
     }
     return "\n\n".join(
         [
             "You are the Universe / Relationship Agent for a SEC investment research multi-agent graph.",
-            research_skill_prompt("universe_relationship", max_chars=4200),
+            research_skill_prompt("universe_relationship", max_chars=1600),
             "Return exactly one JSON object. Do not wrap it in prose. Do not call tools.",
+            "You are not the graph builder. The program owns relationship edges, confidence, boundary, and evidence refs.",
+            "Your only value-add is compact economic mechanism interpretation over bounded graph refs.",
             "Relationship evidence can support scope and hypotheses only, never company financial facts.",
-            "Fill economic_link_map from the same bounded relationship refs. It must explain entity roles, economic links, mechanisms, metrics to verify, missing confirmations, and bounded investment implications.",
-            f"UniverseRelationshipPlan schema hint:\n{_json_for_prompt(schema_hint)}",
+            "Return a merge overlay, not a full plan. Fill economic_link_map from bounded relationship refs and keep relationships empty.",
+            f"Minimal overlay schema hint:\n{_json_for_prompt(schema_hint)}",
         ]
     )
 
@@ -410,10 +371,16 @@ def _complete_plan_from_lookup(
         for item in lookup.get("relationships") or []
         if isinstance(item, Mapping)
     ]
-    model_relationships = [
+    raw_model_relationships = [
         dict(item)
         for item in raw.get("relationships") or []
         if isinstance(item, Mapping)
+    ]
+    lookup_keys = {_relationship_completion_key(item) for item in lookup_relationships}
+    model_relationships = [
+        item
+        for item in raw_model_relationships
+        if _relationship_completion_key(item) in lookup_keys
     ]
     seen = {_relationship_completion_key(item) for item in model_relationships}
     completed = list(model_relationships)
@@ -468,8 +435,11 @@ def _complete_plan_from_lookup(
     metadata.update(
         {
             "relationship_completion_policy": "deterministic_lookup_edge_completion_v0_1",
+            "graph_completion_mode": "program_owns_edges_model_owns_mechanism_overlay",
             "lookup_relationship_count": len(lookup_relationships),
-            "model_relationship_count": len(model_relationships),
+            "model_relationship_count": len(raw_model_relationships),
+            "model_relationship_accepted_count": len(model_relationships),
+            "model_relationship_rejected_count": max(0, len(raw_model_relationships) - len(model_relationships)),
             "deterministic_completed_relationship_count": added,
             "direct_commercial_edge_boundary": "sector-depth relationship rows remain inference-only unless source evidence marks confirmed_direct.",
         }
@@ -949,6 +919,60 @@ def _relationship_lookup_prompt_view(lookup: Mapping[str, Any]) -> dict[str, Any
     }
 
 
+def _universe_relationship_input_pack_fingerprint(
+    prompt_request: Mapping[str, Any],
+    *,
+    known_refs: set[str],
+    source_inventory: Mapping[str, Any],
+) -> dict[str, Any]:
+    components: dict[str, Any] = {
+        "request_scope": {
+            "user_query_chars": len(str(prompt_request.get("user_query") or "")),
+        },
+        "activation_plan": prompt_request.get("activation_plan") if isinstance(prompt_request.get("activation_plan"), Mapping) else {},
+        "relationship_lookup_prompt_view": prompt_request.get("relationship_lookup")
+        if isinstance(prompt_request.get("relationship_lookup"), Mapping)
+        else {},
+        "known_relationship_refs": sorted(known_refs),
+        "source_inventory_summary": _source_inventory_fingerprint_summary(source_inventory),
+    }
+    summaries = {
+        name: _input_pack_component_summary(component)
+        for name, component in components.items()
+    }
+    refs = _dedupe(
+        [
+            ref
+            for component in components.values()
+            for ref in _input_pack_evidence_refs(component)
+        ]
+    )
+    digest_payload = {
+        "component_digests": {name: summary.get("digest") for name, summary in summaries.items()},
+        "known_relationship_refs": sorted(set(known_refs)),
+        "component_ref_count": len(refs),
+    }
+    return {
+        "schema_version": UNIVERSE_RELATIONSHIP_INPUT_PACK_FINGERPRINT_SCHEMA_VERSION,
+        "agent_id": "universe_relationship",
+        "digest": _fingerprint_digest(digest_payload),
+        "component_summaries": summaries,
+        "known_evidence_ref_count": len(refs),
+        "known_evidence_refs": refs[:256],
+        "known_evidence_refs_truncated": len(refs) > 256,
+        "approx_prompt_payload_chars": sum(int(summary.get("approx_chars") or 0) for summary in summaries.values()),
+        "fingerprint_policy": "fingerprint_only_no_prompt_text_persisted_v0_1",
+    }
+
+
+def _source_inventory_fingerprint_summary(value: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "source_inventory_keys": sorted(str(key) for key in value.keys())[:32],
+        "inventory_ticker_count": len(_inventory_tickers(value)),
+        "available_tickers_sample": _unique_upper(value.get("available_tickers") or value.get("tickers"))[:12],
+    }
+
+
 def _relationship_priority_key(
     relationship: Mapping[str, Any],
     *,
@@ -1062,11 +1086,78 @@ def _first_balanced_json_object(text: str) -> str | None:
     return None
 
 
+def _input_pack_component_summary(value: Any) -> dict[str, Any]:
+    refs = _input_pack_evidence_refs(value)
+    return {
+        "digest": _fingerprint_digest(value),
+        "item_count": _input_pack_item_count(value),
+        "evidence_ref_count": len(refs),
+        "approx_chars": len(json.dumps(_clean_for_fingerprint(value), ensure_ascii=False, sort_keys=True)),
+    }
+
+
+def _input_pack_item_count(value: Any) -> int:
+    if isinstance(value, list):
+        return len(value)
+    if isinstance(value, tuple):
+        return len(value)
+    if isinstance(value, Mapping):
+        preferred_keys = (
+            "relationships",
+            "relationship_refs",
+            "source_gaps",
+            "included_tickers",
+            "expanded_tickers",
+            "known_relationship_refs",
+        )
+        counts = [
+            len(value.get(key) or [])
+            for key in preferred_keys
+            if isinstance(value.get(key), (list, tuple))
+        ]
+        return sum(counts) if counts else len(value)
+    return 0 if value is None or value == "" else 1
+
+
+def _input_pack_evidence_refs(value: Any) -> list[str]:
+    refs: list[str] = []
+    if isinstance(value, Mapping):
+        for key in (
+            "evidence_refs",
+            "relationship_refs",
+            "refs",
+            "supporting_evidence_ids",
+            "evidence_ref",
+            "evidence_id",
+            "source_id",
+        ):
+            refs.extend(_string_list(value.get(key)))
+        for item in value.values():
+            if isinstance(item, (Mapping, list, tuple)):
+                refs.extend(_input_pack_evidence_refs(item))
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            refs.extend(_input_pack_evidence_refs(item))
+    return _dedupe(refs)
+
+
+def _fingerprint_digest(value: Any) -> str:
+    text = json.dumps(_clean_for_fingerprint(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+def _clean_for_fingerprint(value: Any) -> Any:
+    return json.loads(json.dumps(value, ensure_ascii=False, default=str))
+
+
 def _model_call_summary(result: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "status": result.get("status"),
+        "call_id": result.get("call_id"),
         "provider": result.get("provider"),
         "model": result.get("model"),
+        "proxy_mode": result.get("proxy_mode"),
+        "url": result.get("url"),
         "finish_reason": result.get("finish_reason"),
         "latency_ms": result.get("latency_ms"),
         "input_tokens": result.get("input_tokens"),

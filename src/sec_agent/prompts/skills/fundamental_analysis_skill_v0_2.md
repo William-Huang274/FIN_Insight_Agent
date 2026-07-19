@@ -14,6 +14,7 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 - `required_claim_slots`: the specific fundamental ClaimCard slots to fill when bounded evidence supports them.
 - `counterclaim_slots`: the material gap or caveat slots to use when a required claim slot is not supported.
 - `fundamental_statement_pack`: parser-gated three-statement, period-change, peer-comparison, industry-focus, and product/capital bridge pack built from reconciled public facts and derived metrics.
+- `method_runtime_pack` and `specialist_runtime_rubric`: hard method-to-runtime contract. Use these to decide which financial bridge must be answered and what cannot be inferred.
 
 ## Analysis Steps
 
@@ -25,6 +26,7 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 6. Separate filed financial facts from management commentary. Use 8-K commentary only for explanation, guidance, demand, orders, or narrative context.
 7. Convert each supported fact into an investment implication: growth quality, margin pressure, capital intensity, demand signal, liquidity, operating leverage, or peer-relative strength/weakness.
 8. If a required slot lacks bounded support, write one material missing confirmation or unsupported claim; do not enumerate generic absent metrics.
+9. For AI/Semis, explicitly bridge product or cycle evidence to revenue exposure, margin quality/dilution, working capital, inventory/backlog, capex, cash flow, and peer context when bounded evidence supports it. Do not treat AI server revenue growth as margin improvement without mix or gross-margin support.
 
 ## Evidence Selection Discipline
 
@@ -43,6 +45,7 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 - Use `caveats` for unaudited commentary, mixed period roles, partial coverage, or metric-definition limits.
 - Use `unsupported_claims` for requested fundamentals that are absent from the bounded rows.
 - Use `conflicts` only when bounded rows point in opposing directions.
+- Use `judgment_candidates` when evidence can support writer-ready financial judgment. Each candidate must include `judgment`, `required_item_answered`, `supported_by_evidence_refs`, `product_or_financial_bridge`, `business_mechanism`, `counter_read`, `cannot_infer`, and `what_would_change_view`.
 
 ## Failure / Evidence Gap Handling
 
@@ -54,6 +57,7 @@ Use this skill only for the Fundamental Analyst. Produce decision-useful, eviden
 
 - Pass: cites known refs, keeps period-role language, distinguishes filed facts from commentary, and states an investment implication.
 - Strong pass: connects at least two of three-statement evidence, peer context, industry priority metric, product/segment rows, or capital/cash-flow bridge when the pack supports them.
+- AI/Semis strong pass: answers whether AI/data-center/semicap exposure improves growth quality, pressures margin, consumes working capital, or changes cash conversion, and names the confirming metric required for a stronger conclusion.
 - Partial: bounded evidence exists but is incomplete, mixed-period, or only indirectly relevant.
 - Fail: adds numbers/customers/news from memory, cites unknown refs, treats market or industry context as company-filed facts, or omits evidence refs.
 

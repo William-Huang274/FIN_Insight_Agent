@@ -1,6 +1,6 @@
 # R53-R60 S6 Workbench Frontdoor / Drilldown L4 Scope Closeout
 
-Generated: `2026-06-29T11:59:59Z`
+Generated: `2026-07-04T18:05:33Z`
 Status: `pass`
 Release decision: `S6_L4_scope_pass`
 Closeout level: `L4_scope_pass`
@@ -29,7 +29,7 @@ S6 exposes the SQL-final S1-S5 runtime and Workpaper ledger through Workbench ta
 - `workbench_api_contracts_s6`: `11`
 - `workbench_task_projection_s6`: `1`
 - `workbench_drilldown_projection_s6`: `1`
-- `workbench_review_actions_s6`: `0`
+- `workbench_review_actions_s6`: `2`
 - `workbench_ops_projection_s6`: `1`
 - `gate_count`: `8`
 - `gate_fail_count`: `0`

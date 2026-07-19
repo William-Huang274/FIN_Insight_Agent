@@ -69,6 +69,7 @@ class S8Paths:
     market_rows_path: Path
     capital_rows_path: Path
     sec_event_rows_path: Path
+    public_context_rows_path: Path
 
 
 def default_s8_paths(root: Path) -> S8Paths:
@@ -86,6 +87,7 @@ def default_s8_paths(root: Path) -> S8Paths:
         market_rows_path=root / "data" / "manifests" / "market_liquidity_driver_context_rows_v0_1.jsonl",
         capital_rows_path=root / "data" / "manifests" / "capital_funding_ownership_context_rows_v0_1.jsonl",
         sec_event_rows_path=root / "data" / "manifests" / "sec_capital_market_event_context_rows_v0_1.jsonl",
+        public_context_rows_path=root / "data" / "manifests" / "secondary_market_public_context_rows_v0_1.jsonl",
     )
 
 
@@ -344,7 +346,7 @@ def materialize_capital_feedback_pack(
     inserted_signal_keys: set[str] = set()
     cap_counts: dict[tuple[str, str], int] = defaultdict(int)
     runtime_universe: set[str] = set()
-    raw_input_counts = {"market_rows": 0, "capital_rows": 0, "sec_event_rows": 0}
+    raw_input_counts = {"market_rows": 0, "capital_rows": 0, "sec_event_rows": 0, "public_context_rows": 0}
     skipped_counts = {"capital_rows_outside_runtime_universe": 0, "sec_event_tickers_outside_runtime_universe": 0}
 
     with store._connect() as conn:
@@ -399,6 +401,32 @@ def materialize_capital_feedback_pack(
                         pack_role="valuation_price_in",
                         authority_class="valuation_price_in_signal",
                         signal_type="public_snapshot_valuation_context",
+                        pack_state=pack_state,
+                        inserted_signal_keys=inserted_signal_keys,
+                        cap_counts=cap_counts,
+                    )
+
+            if paths.public_context_rows_path.exists():
+                for row in stream_jsonl(paths.public_context_rows_path):
+                    raw_input_counts["public_context_rows"] += 1
+                    ticker = normalize_ticker(row.get("ticker"))
+                    if not ticker:
+                        continue
+                    if ticker not in runtime_universe:
+                        skipped_counts["sec_event_tickers_outside_runtime_universe"] += 1
+                        continue
+                    role, authority, signal_type = classify_public_context_row(row)
+                    record_source(pack_state, ticker, row)
+                    insert_signal(
+                        conn,
+                        task_id=task_id,
+                        run_id=run_id,
+                        now=now,
+                        row=row,
+                        ticker=ticker,
+                        pack_role=role,
+                        authority_class=authority,
+                        signal_type=signal_type,
                         pack_state=pack_state,
                         inserted_signal_keys=inserted_signal_keys,
                         cap_counts=cap_counts,
@@ -489,6 +517,7 @@ def new_pack_state() -> dict[str, Any]:
         "gap_refs": defaultdict(list),
         "source_refs": set(),
         "authority_boundary": {},
+        "signal_types": defaultdict(set),
     }
 
 
@@ -523,10 +552,14 @@ def insert_signal(
     inserted_signal_keys.add(signal_key)
 
     allowed_claims = list(row.get("allowed_claims") or [])
-    forbidden_claims = list(row.get("forbidden_claims") or [])
+    row_forbidden_claims = list(row.get("forbidden_claims") or [])
+    default_forbidden = default_forbidden_claims(pack_role, authority_class)
+    # Source rows often carry source-specific forbidden claims, but S8 must
+    # also enforce the role/authority-wide boundary so downstream Research Lead
+    # and writer cannot promote market/capital signals into fundamentals,
+    # real-time flow, or investment advice.
+    forbidden_claims = sorted({*row_forbidden_claims, *default_forbidden})
     claim_boundary = str(row.get("claim_boundary") or "")
-    if not forbidden_claims:
-        forbidden_claims = default_forbidden_claims(pack_role, authority_class)
     if not claim_boundary:
         claim_boundary = default_claim_boundary(pack_role, authority_class)
     signal_id = signal_key
@@ -571,6 +604,7 @@ def insert_signal(
     state = pack_state[ticker]
     state["role_counts"][pack_role] += 1
     state["signal_refs"][pack_role].append(signal_id)
+    state["signal_types"][pack_role].add(signal_type)
     state["authority_boundary"][pack_role] = {
         "authority_class": authority_class,
         "claim_boundary": claim_boundary,
@@ -588,6 +622,11 @@ def add_required_gaps(
     state: dict[str, Any],
 ) -> None:
     role_counts = state["role_counts"]
+    signal_types = state.get("signal_types") or {}
+    valuation_signal_types = set(signal_types.get("valuation_price_in", set()))
+    derivatives_signal_types = set(signal_types.get("derivatives_market_signal", set()))
+    credit_signal_types = set(signal_types.get("credit_funding", set()))
+    liquidity_signal_types = set(signal_types.get("liquidity_and_positioning", set()))
     required_gap_specs = [
         (
             "valuation_price_in",
@@ -633,6 +672,27 @@ def add_required_gaps(
         ),
     ]
     for pack_role, gap_type, source_id, public_boundary, next_action in required_gap_specs:
+        if gap_type == "valuation_fields_missing_from_current_public_snapshot" and valuation_signal_types.intersection(
+            {
+                "public_price_filed_shares_market_cap_context",
+                "public_snapshot_valuation_context",
+                "sec_entity_public_float_context",
+                "yahoo_fundamentals_market_cap_context",
+            }
+        ):
+            continue
+        if gap_type == "derivatives_public_parser_not_runtime_ready" and derivatives_signal_types.intersection(
+            {"fred_vix_market_volatility_regime", "public_derivatives_market_regime_context"}
+        ):
+            continue
+        if gap_type == "credit_market_price_spread_missing" and credit_signal_types.intersection(
+            {"fred_credit_spread_regime_context", "issuer_market_credit_spread_context"}
+        ):
+            continue
+        if gap_type == "short_interest_borrow_cost_missing" and liquidity_signal_types.intersection(
+            {"public_short_interest_context", "public_borrow_cost_context"}
+        ):
+            continue
         if role_counts.get(pack_role, 0) > 0 and gap_type not in {
             "derivatives_public_parser_not_runtime_ready",
             "credit_market_price_spread_missing",
@@ -867,6 +927,13 @@ def evaluate_s8_gates(
                 (task_id,),
             ).fetchall()
         }
+        role_signal_counts = {
+            row["pack_role"]: int(row["count"])
+            for row in conn.execute(
+                "select pack_role, count(*) as count from capital_feedback_signals_s8 where task_id = ? group by pack_role",
+                (task_id,),
+            ).fetchall()
+        }
         gap_bad = rows_to_dicts(
             conn.execute(
                 """
@@ -876,11 +943,22 @@ def evaluate_s8_gates(
                 (task_id,),
             ).fetchall()
         )
-        derivative_signal_count = int(
-            conn.execute(
-                "select count(*) from capital_feedback_signals_s8 where task_id = ? and pack_role = 'derivatives_market_signal'",
+        derivative_signal_counts = {
+            row["signal_type"]: int(row["count"])
+            for row in conn.execute(
+                """
+                select signal_type, count(*) as count
+                from capital_feedback_signals_s8
+                where task_id = ? and pack_role = 'derivatives_market_signal'
+                group by signal_type
+                """,
                 (task_id,),
-            ).fetchone()[0]
+            ).fetchall()
+        }
+        allowed_derivative_signal_types = {"fred_vix_market_volatility_regime", "public_derivatives_market_regime_context"}
+        derivative_signal_count = sum(derivative_signal_counts.values())
+        derivative_bad_count = sum(
+            count for signal_type, count in derivative_signal_counts.items() if signal_type not in allowed_derivative_signal_types
         )
         graph_bad_count = int(
             conn.execute(
@@ -941,15 +1019,24 @@ def evaluate_s8_gates(
         ),
         (
             "missing_derivatives_credit_short_valuation_are_typed_gaps",
-            all(role_gap_counts.get(role, 0) > 0 for role in ["derivatives_market_signal", "credit_funding", "liquidity_and_positioning", "valuation_price_in"]) and not gap_bad,
-            "Missing derivatives, market-credit, short/borrow, and valuation fields are explicit typed gaps.",
-            {"role_gap_counts": role_gap_counts, "gap_bad_count": len(gap_bad)},
+            all(
+                role_signal_counts.get(role, 0) > 0 or role_gap_counts.get(role, 0) > 0
+                for role in ["derivatives_market_signal", "credit_funding", "liquidity_and_positioning", "valuation_price_in"]
+            )
+            and not gap_bad,
+            "Missing derivatives, market-credit, short/borrow, and valuation fields are either parser-backed bounded signals or explicit typed gaps.",
+            {"role_signal_counts": role_signal_counts, "role_gap_counts": role_gap_counts, "gap_bad_count": len(gap_bad)},
         ),
         (
             "no_fake_derivatives_runtime_signal",
-            derivative_signal_count == 0,
-            "S8 does not fake options/futures signals before parser-backed public derivatives rows exist.",
-            {"derivative_signal_count": derivative_signal_count},
+            derivative_bad_count == 0,
+            "S8 allows bounded broad-market derivatives regime signals and still rejects fake single-stock option/gamma signals.",
+            {
+                "derivative_signal_count": derivative_signal_count,
+                "derivative_signal_counts": derivative_signal_counts,
+                "bad_count": derivative_bad_count,
+                "allowed_signal_types": sorted(allowed_derivative_signal_types),
+            },
         ),
         (
             "graph_edges_are_evidence_or_gap_backed",
@@ -1302,6 +1389,84 @@ def source_registry_rows(now: str) -> list[dict[str, Any]]:
             eval_case_refs=["S8_gate_proxy_metadata_boundary"],
         ),
         registry_row(
+            "public_price_x_sec_shares_market_cap",
+            "valuation_price_in",
+            "equity",
+            "US/global",
+            ["delayed_close_price", "reported_shares_outstanding", "computed_market_cap"],
+            "valuation_price_in_signal",
+            "runtime_ready",
+            "delayed price + filing lag",
+            "Computed market-cap context from delayed public price and issuer-filed shares; not consensus valuation or fair-value truth.",
+            ["valuation_truth_without_denominator", "consensus_ntm_without_commercial_source", "investment_recommendation"],
+            eval_case_refs=["S8_gate_public_price_x_filed_shares_valuation_context"],
+        ),
+        registry_row(
+            "sec_companyfacts_common_stock_shares_outstanding",
+            "valuation_price_in",
+            "equity",
+            "US SEC",
+            ["delayed_close_price", "sec_companyfacts_common_stock_shares_outstanding", "computed_market_cap"],
+            "valuation_price_in_signal",
+            "runtime_ready",
+            "SEC filing lag + delayed market price",
+            "SEC CompanyFacts common-stock shares can support computed market-cap context when cover-page DEI shares are absent; it is not consensus valuation or fair-value truth.",
+            ["valuation_truth_without_denominator", "consensus_ntm_without_commercial_source", "investment_recommendation"],
+            eval_case_refs=["S8_gate_sec_companyfacts_common_stock_shares_valuation_context"],
+        ),
+        registry_row(
+            "sec_entity_public_float",
+            "valuation_price_in",
+            "equity",
+            "US SEC",
+            ["entity_public_float", "filing_date", "period_end"],
+            "valuation_price_in_signal",
+            "runtime_ready",
+            "SEC filing lag",
+            "SEC EntityPublicFloat is company-reported public float context at the filing date; it is not complete market capitalization, target price, or consensus valuation.",
+            ["full_market_cap_without_share_count", "valuation_truth_without_denominator", "consensus_ntm_without_commercial_source", "investment_recommendation"],
+            eval_case_refs=["S8_gate_sec_entity_public_float_context"],
+        ),
+        registry_row(
+            "yahoo_fundamentals_timeseries_market_cap",
+            "valuation_price_in",
+            "equity",
+            "global public market",
+            ["market_cap", "as_of_date", "currency"],
+            "valuation_price_in_signal",
+            "runtime_ready",
+            "delayed public market data",
+            "Yahoo fundamentals-timeseries market cap is delayed public valuation context; it is not fair-value truth, consensus estimate, target price, or real-time fund flow.",
+            ["valuation_truth_without_denominator", "consensus_ntm_without_commercial_source", "target_price_without_source", "realtime_fund_flow", "investment_recommendation"],
+            eval_case_refs=["S8_gate_yahoo_fundamentals_market_cap_context"],
+        ),
+        registry_row(
+            "fred_credit_spread_regime",
+            "credit_funding",
+            "credit_index",
+            "US macro/credit",
+            ["investment_grade_oas", "high_yield_oas"],
+            "capital_feedback_signal",
+            "runtime_ready",
+            "daily public macro/credit series",
+            "FRED credit spread rows are market-regime context only, not issuer-specific bond yield, CDS, or refinancing access.",
+            ["issuer_credit_spread_without_issuer_bond_source", "cds_claim_without_source", "investment_recommendation"],
+            eval_case_refs=["S8_gate_fred_credit_spread_regime_context"],
+        ),
+        registry_row(
+            "fred_vix_market_volatility_regime",
+            "derivatives_market_signal",
+            "volatility_index",
+            "US equity market",
+            ["vix_close"],
+            "market_expectation_proxy",
+            "runtime_ready",
+            "daily public volatility index",
+            "VIX is broad equity volatility regime context only, not single-stock option OI, IV surface, gamma, or dealer positioning.",
+            ["single_stock_option_positioning_without_option_chain", "realtime_gamma_without_licensed_source", "investment_recommendation"],
+            eval_case_refs=["S8_gate_fred_vix_derivatives_regime_context"],
+        ),
+        registry_row(
             "public_valuation_snapshot_planned",
             "valuation_price_in",
             "equity",
@@ -1459,6 +1624,26 @@ def classify_sec_event_row(row: Mapping[str, Any]) -> tuple[str, str, str]:
     return "corporate_action", "filing_event_context", event_type or "capital_market_filing_event"
 
 
+def classify_public_context_row(row: Mapping[str, Any]) -> tuple[str, str, str]:
+    pack_role = str(row.get("pack_role") or "")
+    signal_type = str(row.get("signal_type") or row.get("metric_name") or "")
+    authority = str(row.get("authority_class") or "")
+    if pack_role in PACK_ROLES:
+        return pack_role, authority or "market_expectation_proxy", signal_type or "public_market_context"
+    source_id = str(row.get("source_id") or "")
+    if source_id == "public_price_x_sec_shares_market_cap":
+        return "valuation_price_in", "valuation_price_in_signal", signal_type or "public_price_filed_shares_market_cap_context"
+    if source_id in {"sec_entity_public_float", "sec_companyfacts_common_stock_shares_outstanding"}:
+        return "valuation_price_in", "valuation_price_in_signal", signal_type or "sec_entity_public_float_context"
+    if source_id == "yahoo_fundamentals_timeseries_market_cap":
+        return "valuation_price_in", "valuation_price_in_signal", signal_type or "yahoo_fundamentals_market_cap_context"
+    if source_id == "fred_credit_spread_regime":
+        return "credit_funding", "capital_feedback_signal", signal_type or "fred_credit_spread_regime_context"
+    if source_id == "fred_vix_market_volatility_regime":
+        return "derivatives_market_signal", "market_expectation_proxy", signal_type or "fred_vix_market_volatility_regime"
+    return "secondary_market_capital_flow", "context_only", signal_type or "public_market_context"
+
+
 def record_source(pack_state: dict[str, dict[str, Any]], ticker: str, row: Mapping[str, Any]) -> None:
     source_id = str(row.get("source_id") or "")
     if source_id:
@@ -1534,6 +1719,8 @@ def compact_signal_payload(row: Mapping[str, Any]) -> dict[str, Any]:
         "object_type",
         "market_reaction",
         "valuation_context",
+        "credit_spread_context",
+        "derivatives_context",
         "missing_fields",
         "parser_status",
         "runtime_contract",

@@ -8,17 +8,18 @@
 - Retrieval control status: `strategy_budget_context_bridge_ready`
 - Context bridge status: `context_bridge_ready`
 - Performance status: `local_profile_recorded`
+- Current universe refresh status: `current_accepted_public_source_universe_ready`
 
 ## Scope Boundary
 
-P14 proves a SQL-final control plane for source snapshots, ingestion jobs, fetch attempts, parser runs, authority mapping, index refreshes, retrieval strategy budgets, ContextEngine retrieval bridge, quality probes, lineage and performance profiles. It does not claim full crawler coverage, all-company refresh completeness, or production p95/p99 SLA.
+P14 proves a SQL-final control plane for source snapshots, ingestion jobs, fetch attempts, parser runs, authority mapping, index refreshes, retrieval strategy budgets, ContextEngine retrieval bridge, quality probes, lineage and performance profiles. It also verifies the current accepted 603-company data universe through manifest-backed refresh evidence. It does not claim unlimited internet crawler coverage, real-time refresh, or production p95/p99 SLA.
 
 ## Counts
 
 - `drill_task_id`: `p14_data_plane_drill_task_ai_infra_ingestion_retrieval`
-- `drill_run_id`: `run_24e0944aa5a271a4`
+- `drill_run_id`: `run_d2876532d2845416`
 - `drill_task_status`: `succeeded`
-- `drill_resume_count`: `0`
+- `drill_resume_count`: `2`
 - `source_snapshot_count`: `6`
 - `ingestion_job_count`: `6`
 - `raw_document_count`: `7`
@@ -34,10 +35,22 @@ P14 proves a SQL-final control plane for source snapshots, ingestion jobs, fetch
 - `quality_probe_count`: `5`
 - `quality_observation_count`: `4`
 - `performance_profile_count`: `5`
+- `current_universe_refresh_evidence_count`: `8`
 - `lineage_edge_count`: `53`
 - `acceptance_count`: `8`
-- `gate_count`: `12`
+- `gate_count`: `13`
 - `gate_fail_count`: `0`
+
+## Current Accepted Universe Refresh Evidence
+
+- `pass` `company_public_source_coverage_matrix` -> `data/manifests/company_public_source_coverage_matrix_v0_1.json` ({'company_count': 603, 'exists': True, 'repair_queue_count': 25, 'status': 'gap'})
+- `pass` `gold_fact_signal_mart` -> `data/manifests/gold_fact_signal_mart_summary_v0_1.json` ({'company_count': 603, 'exists': True, 'row_count': 74894, 'status': 'pass'})
+- `pass` `p26_product_evidence_all_universe_depth` -> `data/manifests/r53_r60_p26_product_evidence_all_universe_depth_summary_v0_1.json` ({'broad_full_chain_product_pack_ready': True, 'counts': {'blocking_gap_count': 0, 'blocking_layer_count': 0, 'gap_count': 2, 'gate_blocked_count': 0, 'gate_count': 6, 'gate_fail_count': 0, 'layer_count': 5, 'nonblocking_gap_count': 2}, 'exists': True, 'product_pack_readiness_status': 'ready', 'release_decision': 'P26_product_evidence_pack_ready_for_broad_full_chain', 'status': 'pass'})
+- `pass` `product_intelligence_graph` -> `data/manifests/product_intelligence_graph_summary_v0_1.json` ({'company_count': 603, 'exists': True, 'status': 'pass'})
+- `pass` `retrieval_index_registry` -> `data/manifests/retrieval_index_registry_summary_v0_1.json` ({'exists': True, 'release_decision': None, 'status': 'pass'})
+- `pass` `s8_secondary_market_capital_feedback` -> `data/manifests/r53_r60_s8_secondary_market_capital_feedback_summary_v0_1.json` ({'exists': True, 'pack_count': 603, 'release_decision': 'S8_L4_scope_pass', 'signal_count': 14706, 'status': 'pass'})
+- `pass` `secondary_market_public_context_rows` -> `data/manifests/secondary_market_public_context_summary_v0_1.json` ({'exists': True, 'row_count': 1809, 'status': 'pass', 'ticker_count': 603})
+- `pass` `source_coverage_gate_summary` -> `data/manifests/source_coverage_gate_summary_v0_1.json` ({'exists': True, 'generated_at': '2026-06-17T10:36:16Z', 'status': 'gap'})
 
 ## Gates
 
@@ -52,11 +65,11 @@ P14 proves a SQL-final control plane for source snapshots, ingestion jobs, fetch
 - `p14_retrieval_strategy_and_budget_ready` (retrieval_control): `pass`
 - `p14_context_bridge_preserves_exact_refs` (context_bridge): `pass`
 - `p14_perf_lineage_eval_records_ready` (quality_ops): `pass`
+- `p14_current_accepted_universe_refresh_evidence_ready` (current_universe_refresh): `pass`
 - `p14_acceptance_and_boundary_report_ready` (release_boundary): `pass`
 
 ## Known Gaps
 
-- `full_crawler_source_coverage`: P14 proves the control plane with representative source modalities; it does not crawl every source or every company. Next: Use this contract to onboard real R58 adapters source family by source family.
 - `production_db_index_sla`: Performance profile is deterministic/local, not a cloud p95/p99 SLA. Next: P16 and production pilot should record real load and online eval metrics.
 - `all_live_graph_nodes_read_p14_strategy`: Context bridge records are ready; production nodes still need migration to read the active strategy pack. Next: P15/P16 should expose and monitor strategy consumption.
 

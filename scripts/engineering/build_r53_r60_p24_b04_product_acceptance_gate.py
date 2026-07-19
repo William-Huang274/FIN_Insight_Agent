@@ -21,7 +21,7 @@ def main() -> int:
     print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
     return (
         0
-        if summary.get("status") == "pass_with_real_human_acceptance_blocked"
+        if summary.get("status") in {"pass_with_real_human_acceptance_blocked", "pass"}
         and summary.get("counts", {}).get("gate_fail_count") == 0
         else 1
     )

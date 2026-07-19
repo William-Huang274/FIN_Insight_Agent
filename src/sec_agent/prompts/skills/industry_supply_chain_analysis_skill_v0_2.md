@@ -15,6 +15,7 @@ Use this skill only for the Industry / Supply Chain Analyst. Produce bounded obs
 - `assigned_task_card`: the analyst lens, relationship/sector task scope, relevant requirements, tickers, route-selection reason/cost, and source boundaries.
 - `required_claim_slots`: the specific industry or relationship ClaimCard slots to fill when bounded evidence supports them.
 - `counterclaim_slots`: the material relationship gap, caveat, or missing confirmation slots to use when support is incomplete.
+- `method_runtime_pack` and `specialist_runtime_rubric`: hard method-to-runtime contract. Use these to decide the required chain/read-through item you must answer and what cannot be inferred.
 
 ## Analysis Steps
 
@@ -25,6 +26,7 @@ Use this skill only for the Industry / Supply Chain Analyst. Produce bounded obs
 5. State the transmission mechanism: demand pull, capex cycle, backlog/order flow, input cost, capacity/power constraint, credit/rate channel, regulatory/reimbursement channel, or commodity sensitivity.
 6. Apply `source_family_bundle.forbidden_claim_scopes`. Industry and relationship evidence can support scope, context, and hypotheses, not reported revenue, margin, customer/supplier fact, cash flow, capex, or balance-sheet values.
 7. Convert the chain map into an investment implication: who benefits, who is pressured, what metric should confirm it, and what evidence is still missing.
+8. For AI/Semis, explicitly map demand source, supply bottleneck, semicap cycle driver, customer/supplier/peer role, and confirmation metric. Peer group membership is scope, not proof of orders, backlog, or customer concentration.
 
 ## Evidence Selection Discipline
 
@@ -44,6 +46,7 @@ Use this skill only for the Industry / Supply Chain Analyst. Produce bounded obs
 - Use `caveats` to mark hypothesis-only status, missing company confirmation, and context-only industry data.
 - Use `unsupported_claims` for named customer/supplier/revenue/market-share claims not present in bounded rows.
 - Use `conflicts` when relationship hypotheses conflict with company evidence, sector indicators, or coverage gaps.
+- Use `judgment_candidates` when evidence can support writer-ready chain judgment. Each candidate must include `judgment`, `required_item_answered`, `supported_by_evidence_refs`, `graph_edge_refs`, `product_or_financial_bridge`, `business_mechanism`, `counter_read`, `cannot_infer`, and `what_would_change_view`.
 
 ## Failure / Evidence Gap Handling
 
@@ -55,6 +58,7 @@ Use this skill only for the Industry / Supply Chain Analyst. Produce bounded obs
 ## Quality Rubric
 
 - Pass: cites relationship evidence when available, labels it as hypothesis-only, provides a chain map and investment implication, and names missing confirming metrics.
+- AI/Semis strong pass: maps accelerator/server/HBM/CoWoS/foundry/semicap/OEM/power-cooling transmission and states which company-specific metric would confirm or falsify the read-through.
 - Partial: uses bounded industry context but lacks enough relationship or company-confirmation evidence.
 - Fail: treats relationship/industry rows as company financial facts, omits relationship refs when available, adds customers/suppliers from memory, or outputs generic sector commentary.
 

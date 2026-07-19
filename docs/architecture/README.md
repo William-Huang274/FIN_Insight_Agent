@@ -2,6 +2,16 @@
 
 这个目录用于放 FinSight-Agent 的公开架构文档。这里要讲的是当前系统怎么工作，而不是每一轮实验怎么演进。实验过程、失败记录和具体运行编号放在 `docs/worklog/`。
 
+## Point 01 冻结实施合同（2026-07-12）
+
+- `agent_graph_vnext/SCHEMA_01_point01_canonical_object_registry.zh-CN.md`
+- `agent_graph_vnext/DB_01_point01_canonical_store_transaction_boundary.zh-CN.md`
+- `agent_graph_vnext/API_01_point01_runtime_command_event_contract.zh-CN.md`
+- `agent_graph_vnext/MIGRATION_01_point01_legacy_canonical_cutover.zh-CN.md`
+- Freeze manifest：`configs/engineering_handoff/point01_prerequisite_contract_freeze_manifest_v1_0.json`
+
+这些文档冻结 M0-M2 的 schema/store/API/migration prerequisites，不表示 runtime、migration 或 cutover 已执行。
+
 ## 后续三篇主文档
 
 ### `fin_sight_agent_architecture.zh-CN.md`
@@ -49,6 +59,8 @@
 - [投研质量评价体系](../eval/fin_agent_investment_research_quality_framework_v0_1.md)
 - [分层质量门控执行文档](../eval/fin_agent_layered_quality_execution_plan_v0_1.md)
 - [脚本发布面](../../scripts/README.md)
+- [仓库架构图与持续审计](repository/README.md)
+- [2026-07-11 项目深度审计](repository/REPOSITORY_DEEP_AUDIT_20260711.zh-CN.md)
 
 ## 内部规划指针
 

@@ -27,8 +27,33 @@ def test_universe_relationship_llm_accepts_valid_plan_json() -> None:
     assert result["source"] == ROUTE_SOURCE
     assert result["status"] == "pass"
     assert result["universe_relationship_plan"]["relationships"][0]["related_ticker"] == "MSFT"
-    assert "Relationship Universe Skill" in fake.calls[0]["messages"][0]["content"]
+    assert fake.calls[0]["max_tokens"] <= 900
     assert "Do not call tools" in fake.calls[0]["messages"][0]["content"]
+    assert "program owns relationship edges" in fake.calls[0]["messages"][0]["content"].lower()
+    assert "mechanism interpretation" in fake.calls[0]["messages"][0]["content"].lower()
+
+
+def test_universe_relationship_route_records_input_pack_fingerprint_without_prompt_text() -> None:
+    request = _request()
+    request["user_query"] = "Map AI capex customer deployment readthrough."
+    fake = _FakeChat([json.dumps(_plan())])
+
+    result = route_universe_relationship_llm(
+        request,
+        config=_config(max_repair_attempts=0),
+        call_chat_completion=fake,
+    )
+
+    fingerprint = result["input_pack_fingerprint"]
+    serialized = json.dumps(fingerprint, ensure_ascii=False, sort_keys=True)
+    assert result["status"] == "pass"
+    assert fingerprint["schema_version"] == "sec_agent_universe_relationship_input_pack_fingerprint_v0_1"
+    assert fingerprint["agent_id"] == "universe_relationship"
+    assert fingerprint["digest"].startswith("sha256:")
+    assert fingerprint["known_evidence_ref_count"] >= 1
+    assert "rel_nvda_msft" in fingerprint["known_evidence_refs"]
+    assert fingerprint["approx_prompt_payload_chars"] > 0
+    assert "Map AI capex customer deployment readthrough." not in serialized
 
 
 def test_universe_relationship_llm_repairs_invalid_json_then_passes() -> None:
@@ -85,6 +110,39 @@ def test_universe_relationship_llm_completes_all_lookup_relationships_when_model
     assert result["universe_relationship_plan"]["metadata"]["deterministic_completed_relationship_count"] == 1
 
 
+def test_universe_relationship_llm_rejects_model_relationships_outside_lookup() -> None:
+    model_plan = _plan()
+    model_plan["relationships"].append(
+        {
+            "ticker": "NVDA",
+            "related_ticker": "TSLA",
+            "relationship_type": "customer",
+            "direction": "hallucinated_customer",
+            "metrics_to_check": ["capex"],
+            "evidence_source_needed": ["relationship_graph"],
+            "evidence_refs": ["unknown_rel"],
+            "inclusion_rationale": "This edge is not in the bounded lookup.",
+            "claim_scope": "scope_or_hypothesis_only",
+        }
+    )
+    model_plan["included_tickers"] = ["NVDA", "MSFT", "TSLA"]
+    fake = _FakeChat([json.dumps(model_plan)])
+
+    result = route_universe_relationship_llm(
+        _request(),
+        config=_config(max_repair_attempts=0),
+        call_chat_completion=fake,
+    )
+
+    plan = result["universe_relationship_plan"]
+    metadata = plan["metadata"]
+    assert result["status"] == "pass"
+    assert [row["related_ticker"] for row in plan["relationships"]] == ["MSFT"]
+    assert "TSLA" not in plan["included_tickers"]
+    assert metadata["model_relationship_rejected_count"] == 1
+    assert metadata["graph_completion_mode"] == "program_owns_edges_model_owns_mechanism_overlay"
+
+
 def test_universe_relationship_llm_completes_omitted_lookup_edges() -> None:
     request = _request()
     request["source_inventory"] = {"available_tickers": ["NVDA", "MSFT", "AMZN"]}
@@ -114,6 +172,7 @@ def test_universe_relationship_llm_completes_omitted_lookup_edges() -> None:
     assert result["status"] == "pass"
     assert refs == {"rel_nvda_msft", "rel_nvda_amzn"}
     assert plan["metadata"]["deterministic_completed_relationship_count"] == 1
+    assert plan["economic_link_map"]["links"]
 
 
 def test_universe_relationship_env_router_returns_none_for_mock() -> None:

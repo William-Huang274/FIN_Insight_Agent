@@ -139,6 +139,19 @@ def expand_catalog_case(
     required_dimensions = _list(case.get("required_dimension_ids") or defaults.get("required_dimension_ids"))
     operators = _list(case.get("expected_operator_agents") or profile.get("operators"))
     specialists = _list(case.get("expected_specialist_agents") or profile.get("specialists"))
+    paid_specialists = _list(
+        case.get("expected_paid_specialist_agents")
+        or _cost_aware_specialists_for_case(
+            case,
+            fallback=specialists,
+            required_dimensions=required_dimensions,
+            source_tiers=source_tiers,
+        )
+    )
+    paid_specialist_priorities = _specialist_priorities_for_case(
+        case.get("expected_paid_specialist_priorities"),
+        specialists=paid_specialists,
+    )
     category = str(case.get("category") or profile["category"])
     expected_execution_mode = str(case.get("expected_execution_mode") or _stress_execution_mode(case) or profile["expected_execution_mode"])
     require_depth_surface = bool(profile.get("require_depth_surface"))
@@ -157,6 +170,8 @@ def expand_catalog_case(
             "expected_operator_agents": operators,
             "expected_tool_names": _expected_tool_names(source_tiers, operators),
             "expected_specialist_agents": specialists,
+            "expected_paid_specialist_agents": paid_specialists,
+            "expected_paid_specialist_priorities": paid_specialist_priorities,
             "memo_status_allowed": _list(case.get("memo_status_allowed") or ["draft", "blocked_by_specialist_verification"]),
             "max_tool_calls_total_lte": int(case.get("max_tool_calls_total_lte") or profile["max_tool_calls_total_lte"]),
             "require_lead_llm_pass": True,
@@ -261,6 +276,88 @@ def _expected_tool_names(source_tiers: list[str], operators: list[str]) -> list[
     if "industry_snapshot" in source_set or "industry_operator" in set(operators):
         tool_names.append("industry_get_snapshot")
     return _dedupe(tool_names)
+
+
+def _cost_aware_specialists_for_case(
+    case: Mapping[str, Any],
+    *,
+    fallback: list[str],
+    required_dimensions: list[str],
+    source_tiers: list[str],
+) -> list[str]:
+    mode = str(case.get("expected_execution_mode") or case.get("execution_mode") or "")
+    if mode == "deterministic_lookup":
+        return []
+    if not fallback:
+        return []
+
+    prompt = str(case.get("prompt") or "").lower()
+    metrics = {str(item).lower() for item in _list(case.get("metric_families"))}
+    dimensions = {str(item).lower() for item in required_dimensions}
+    sources = {str(item).lower() for item in source_tiers}
+    eval_focus = {str(item).lower() for item in _list(case.get("eval_focus"))}
+    agents: list[str] = []
+
+    if metrics & {
+        "revenue",
+        "segment_revenue",
+        "gross_margin",
+        "operating_margin",
+        "capex",
+        "cash_flow",
+        "free_cash_flow",
+        "orders_backlog",
+        "rpo_deferred_revenue",
+        "customer_concentration",
+        "net_interest_income",
+        "deposits",
+        "provision_for_credit_losses",
+        "capital_ratio",
+        "inventory",
+    } or "fundamentals" in dimensions:
+        agents.append("fundamental_analyst")
+
+    if (
+        metrics & {"product_revenue", "deliveries", "units", "asp", "subscribers", "capacity", "utilization"}
+        or "product_and_production" in dimensions
+        or any(term in prompt for term in ("product", "产品", "产线", "sku", "h100", "b200", "gb200", "server"))
+    ):
+        agents.append(PRODUCT_SPECIALIST)
+
+    if (
+        "industry_supply_chain" in dimensions
+        or "relationship_graph" in sources
+        or any(term in prompt for term in ("supply", "供应", "需求传导", "shipment", "订单", "积压", "export", "出口"))
+    ):
+        agents.append(INDUSTRY_SPECIALIST)
+
+    if (
+        metrics & {"valuation", "market_reaction", "liquidity", "short_interest"}
+        or any(term in prompt for term in ("valuation", "price-in", "market reaction", "股价", "估值", "流动性"))
+    ):
+        agents.append("market_valuation_analyst")
+
+    if (
+        "risk_and_counterevidence" in dimensions
+        or "source_boundary" in eval_focus
+        or any(term in prompt for term in ("risk", "反证", "出口限制", "监管", "geopolitical", "boundary"))
+    ):
+        agents.append("risk_counterevidence_analyst")
+
+    fallback_set = set(fallback)
+    selected = [agent for agent in _dedupe(agents) if agent in fallback_set]
+    return selected or fallback
+
+
+def _specialist_priorities_for_case(value: Any, *, specialists: list[str]) -> dict[str, str]:
+    explicit = value if isinstance(value, Mapping) else {}
+    priorities: dict[str, str] = {}
+    for agent_id in specialists:
+        priority = str(explicit.get(agent_id) or "").strip().lower()
+        if priority not in {"primary", "supporting", "conditional", "low"}:
+            priority = "supporting" if agent_id in {"market_valuation_analyst", "risk_counterevidence_analyst"} else "primary"
+        priorities[agent_id] = priority
+    return priorities
 
 
 def _stress_execution_mode(case: Mapping[str, Any]) -> str:

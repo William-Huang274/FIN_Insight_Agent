@@ -458,6 +458,7 @@ _TOOL_CONTRACTS: list[dict[str, Any]] = [
             {
                 "focus_tickers": _array({"type": "string"}),
                 "search_scope_tickers": _array({"type": "string"}),
+                "allowed_universe_tickers": _array({"type": "string"}),
                 "user_query": {"type": "string"},
                 "relationship_graph_path": {"type": "string"},
                 "sector_depth_pack_path": {"type": "string"},

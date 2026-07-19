@@ -21,6 +21,7 @@
   "schema_version": "r53_r60_s9_research_to_quant_lab_v0_1",
   "tables": [
     "research_to_quant_metadata",
+    "research_judgment_cards_s9",
     "signal_observations_s9",
     "factor_hypotheses_s9",
     "feature_specs_s9",

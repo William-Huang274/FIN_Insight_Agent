@@ -1,6 +1,6 @@
 # R53-R60 S8 Secondary Market / Capital Feedback Pack L4 Scope Closeout
 
-Generated: `2026-06-29T12:55:14Z`
+Generated: `2026-07-04T17:43:23Z`
 Status: `pass`
 Release decision: `S8_L4_scope_pass`
 Closeout level: `L4_scope_pass`
@@ -8,36 +8,35 @@ Closeout level: `L4_scope_pass`
 ## Counts
 
 - `secondary_market_feedback_metadata`: `4`
-- `secondary_market_source_registry_s8`: `15`
+- `secondary_market_source_registry_s8`: `21`
 - `capital_feedback_packs_s8`: `603`
-- `capital_feedback_signals_s8`: `13107`
-- `capital_feedback_gap_items_s8`: `2443`
+- `capital_feedback_signals_s8`: `14706`
+- `capital_feedback_gap_items_s8`: `634`
 - `capital_feedback_graph_edges_s8`: `4221`
 - `capital_feedback_quality_gates_s8`: `10`
 - `gate_count`: `10`
 - `gate_fail_count`: `0`
 - `pack_count`: `603`
-- `signal_count`: `13107`
-- `gap_count`: `2443`
+- `signal_count`: `14706`
+- `gap_count`: `634`
 - `graph_edge_count`: `4221`
 - `runtime_universe_count`: `603`
 
 ## Role Signal Counts
 
 - `corporate_action`: `3509`
-- `credit_funding`: `2070`
+- `credit_funding`: `2463`
+- `derivatives_market_signal`: `603`
 - `liquidity_and_positioning`: `3413`
 - `ownership_and_holder`: `3512`
 - `secondary_market_capital_flow`: `603`
+- `valuation_price_in`: `603`
 
 ## Role Gap Counts
 
 - `corporate_action`: `15`
-- `credit_funding`: `603`
-- `derivatives_market_signal`: `603`
 - `liquidity_and_positioning`: `603`
 - `ownership_and_holder`: `16`
-- `valuation_price_in`: `603`
 
 ## Gate Rows
 
@@ -47,8 +46,8 @@ Closeout level: `L4_scope_pass`
 - `pass` `market_and_liquidity_context_cover_every_pack`: Every issuer pack has delayed market price/volume/liquidity context.
 - `pass` `signals_are_authority_bounded`: Signals carry evidence refs, authority class, claim boundary, and forbidden claims.
 - `pass` `lagged_holder_rows_never_realtime_flow`: Lagged 13F/holder rows cannot be rendered as current fund flow or current buying pressure.
-- `pass` `missing_derivatives_credit_short_valuation_are_typed_gaps`: Missing derivatives, market-credit, short/borrow, and valuation fields are explicit typed gaps.
-- `pass` `no_fake_derivatives_runtime_signal`: S8 does not fake options/futures signals before parser-backed public derivatives rows exist.
+- `pass` `missing_derivatives_credit_short_valuation_are_typed_gaps`: Missing derivatives, market-credit, short/borrow, and valuation fields are either parser-backed bounded signals or explicit typed gaps.
+- `pass` `no_fake_derivatives_runtime_signal`: S8 allows bounded broad-market derivatives regime signals and still rejects fake single-stock option/gamma signals.
 - `pass` `graph_edges_are_evidence_or_gap_backed`: Capital feedback graph edges always point to evidence refs or typed gap refs.
 - `pass` `runtime_workpaper_event_and_task_closeout`: S8 appends a WorkpaperEvent and closes through the S1 task spine.
 

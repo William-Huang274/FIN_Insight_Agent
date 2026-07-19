@@ -1,0 +1,501 @@
+{
+  "acceptance_gates": [
+    {
+      "closeout_level": "preflight_contract_pass",
+      "description": "P33-2 runtime-assimilation artifact is available and passed deterministic L4 scope gates.",
+      "detail": {
+        "closeout_level": "L4_scope_pass",
+        "gate_fail_count": 0,
+        "status": "pass"
+      },
+      "fixture_id": "P33-3",
+      "gate_id": "p33_3_p33_2_runtime_assimilation_input_valid",
+      "generated_at": "2026-07-05T07:34:56Z",
+      "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "preflight_contract_pass",
+      "description": "Exactly one AI/Semis gold-case objective contract is frozen before paid execution.",
+      "detail": {
+        "case_id": "p33_3_ai_semis_accelerator_dell_gold_case_v0_1",
+        "focus_tickers": [
+          "NVDA",
+          "AMD",
+          "GOOGL",
+          "DELL"
+        ]
+      },
+      "fixture_id": "P33-3",
+      "gate_id": "p33_3_single_case_contract_frozen",
+      "generated_at": "2026-07-05T07:34:56Z",
+      "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "preflight_contract_pass",
+      "description": "Gold workpaper dimensions cover thesis, fundamentals, product, deployment, supply chain, capital and counter-thesis.",
+      "detail": {
+        "required_dimensions": [
+          "opening_thesis",
+          "fundamentals",
+          "product_architecture",
+          "customer_deployment",
+          "industry_supply_chain",
+          "capital_market_feedback",
+          "counter_thesis_and_what_would_change"
+        ]
+      },
+      "fixture_id": "P33-3",
+      "gate_id": "p33_3_gold_dimensions_required",
+      "generated_at": "2026-07-05T07:34:56Z",
+      "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "preflight_contract_pass",
+      "description": "Required Product/Fundamental/Capital/Customer/Industry packs, evidence refs and JudgmentCards are present.",
+      "detail": {
+        "evidence_ref_count": 6,
+        "judgment_card_count": 6,
+        "pack_ids": [
+          "ProductIntelligenceGraph",
+          "FundamentalStatementPack",
+          "CapitalMarketFeedbackPack",
+          "CustomerDeploymentPack",
+          "IndustryPlaybook"
+        ]
+      },
+      "fixture_id": "P33-3",
+      "gate_id": "p33_3_upstream_material_traceable",
+      "generated_at": "2026-07-05T07:34:56Z",
+      "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "preflight_contract_pass",
+      "description": "Research Lead required items, MemoLogicPlan and typed gaps are visible before paid execution.",
+      "detail": {
+        "memo_logic_plan_refs": [
+          "memo_logic:52c64e00d296d56af336"
+        ],
+        "required_item_count": 4,
+        "typed_gap_refs": [
+          "gap_customer_order_amount_exact",
+          "gap_sku_revenue_exact_tracker"
+        ]
+      },
+      "fixture_id": "P33-3",
+      "gate_id": "p33_3_required_item_to_writer_mapping_present",
+      "generated_at": "2026-07-05T07:34:56Z",
+      "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "preflight_contract_pass",
+      "description": "Pre-paid data/script lineage check proves evidence rows, JudgmentCards, typed gaps and MemoLogicPlan are auditable before paid execution.",
+      "detail": {
+        "evidence_row_count": 6,
+        "issue_count": 0,
+        "issues": [],
+        "judgment_card_count": 6,
+        "memo_logic_plan_ref": "memo_logic:52c64e00d296d56af336",
+        "policy": "This is a pre-paid lineage check over P33-2 writer-ready material. Post-run DataScriptQualityAudit must still inspect generated full-chain artifacts.",
+        "schema_version": "fin_insight_p33_pre_paid_data_script_lineage_preflight_v0_1",
+        "status": "pass",
+        "typed_gap_count": 2
+      },
+      "fixture_id": "P33-3",
+      "gate_id": "p33_3_data_script_lineage_preflight_pass",
+      "generated_at": "2026-07-05T07:34:56Z",
+      "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "preflight_contract_pass",
+      "description": "Known failure modes and targeted-repair triggers are explicit before paid execution.",
+      "detail": {
+        "fail_condition_count": 10,
+        "targeted_repair_trigger_count": 6
+      },
+      "fixture_id": "P33-3",
+      "gate_id": "p33_3_fail_conditions_and_repair_triggers_explicit",
+      "generated_at": "2026-07-05T07:34:56Z",
+      "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "preflight_contract_pass",
+      "description": "Project OS full-chain preflight is enforced with run-scope-aware blockers.",
+      "detail": {
+        "open_full_chain_blocker_count": 0,
+        "paid_run_allowed": true,
+        "project_os_status": "pass",
+        "run_scope": "p33_single_gold_case"
+      },
+      "fixture_id": "P33-3",
+      "gate_id": "p33_3_project_os_preflight_enforced",
+      "generated_at": "2026-07-05T07:34:56Z",
+      "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "preflight_contract_pass",
+      "description": "P33-3 preflight used no paid LLM and no full-chain run.",
+      "detail": {
+        "full_chain_run_count": 0,
+        "paid_llm_call_count": 0
+      },
+      "fixture_id": "P33-3",
+      "gate_id": "p33_3_no_paid_or_full_chain_used",
+      "generated_at": "2026-07-05T07:34:56Z",
+      "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+      "status": "pass"
+    }
+  ],
+  "case_contract": {
+    "case_family": "AI/Semis",
+    "case_id": "p33_3_ai_semis_accelerator_dell_gold_case_v0_1",
+    "case_scope": "single_ai_semis_gold_case",
+    "fail_conditions": [
+      "opening_is_background_summary_not_thesis",
+      "memo_is_claim_inventory_or_search_summary",
+      "memo_says_product_layer_unanswerable_only_because_no_sku_revenue",
+      "cloud_capex_rendered_as_supplier_exact_revenue_or_backlog",
+      "customer_deployment_rendered_as_order_amount_without_exact_source",
+      "capital_market_feedback_rendered_as_investment_advice_or_realtime_flow",
+      "memo_claims_missing_evidence_when_upstream_judgment_card_exists",
+      "writer_receives_raw_evidence_dump_instead_of_memo_logic_plan",
+      "section_dominated_by_scope_hypothesis_without_low_confidence_context_label",
+      "wide_specialist_fanout_without_required_item"
+    ],
+    "focus_tickers": [
+      "NVDA",
+      "AMD",
+      "GOOGL",
+      "DELL"
+    ],
+    "manual_review_standard": {
+      "not_target_style": [
+        "sell-side marketing report",
+        "search result summary",
+        "gap-only caution memo"
+      ],
+      "review_required_before_gold_candidate": true,
+      "target_style": "buyside-style analyst workpaper"
+    },
+    "minimum_upstream_inputs": {
+      "required_evidence_refs": [
+        "ev_product_nvda_blackwell_architecture",
+        "ev_customer_cloud_gpu_deployment",
+        "ev_fundamental_dell_ai_server_margin",
+        "ev_industry_semis_value_chain_cycle",
+        "ev_relationship_graph_gpu_to_foundry_semicap",
+        "ev_capital_cloud_capex_market_feedback"
+      ],
+      "required_judgment_cards": [
+        "jc_product_architecture",
+        "jc_customer_deployment",
+        "jc_fundamental_margin",
+        "jc_supply_chain_cycle",
+        "jc_capital_feedback",
+        "jc_exact_kpi_gap"
+      ],
+      "required_pack_ids": [
+        "ProductIntelligenceGraph",
+        "FundamentalStatementPack",
+        "CapitalMarketFeedbackPack",
+        "CustomerDeploymentPack",
+        "IndustryPlaybook"
+      ],
+      "runtime_assimilation_manifest": "data/manifests/p33_runtime_assimilation_fixture_v0_1.json"
+    },
+    "required_answer_moves": [
+      "Start with a clear bounded thesis, not background.",
+      "Explain product/architecture advantage and competitive/substitution edges.",
+      "Bridge deployment and cloud capex to demand pool without treating it as supplier exact revenue.",
+      "Assess DELL AI server revenue quality through margin, cash flow and working-capital implications.",
+      "Map supply-chain dependencies and bottlenecks from GPU to foundry/packaging/HBM/semicap.",
+      "Separate exact facts, bounded thesis drivers, proxies and typed gaps.",
+      "State counter-thesis and what evidence would change the view."
+    ],
+    "required_dimensions": [
+      "opening_thesis",
+      "fundamentals",
+      "product_architecture",
+      "customer_deployment",
+      "industry_supply_chain",
+      "capital_market_feedback",
+      "counter_thesis_and_what_would_change"
+    ],
+    "research_question": "Assess whether AI infrastructure demand read-through from hyperscaler capex, accelerator architecture, customer deployment and DELL AI server margin quality supports a bounded thesis on NVDA/AMD/GOOGL TPU competition and DELL supply-chain exposure.",
+    "schema_version": "fin_insight_p33_case_objective_contract_v0_1",
+    "supporting_tickers": [
+      "ASML",
+      "LRCX",
+      "AMAT",
+      "KLAC",
+      "TSM"
+    ],
+    "targeted_repair_triggers": [
+      "required_dimension_missing_from_memo",
+      "existing_upstream_evidence_not_used_by_writer",
+      "typed_gap_not_traceable_to_source_or_adapter_attempt",
+      "numeric_or_display_value_lineage_missing",
+      "product_graph_edge_used_without_authority_boundary",
+      "token_to_judgment_yield_below_threshold"
+    ]
+  },
+  "case_id": "p33_3_ai_semis_accelerator_dell_gold_case_v0_1",
+  "closeout_level": "ready_for_next_preflights",
+  "contract_id": "p33_ai_semis_gold_workpaper_case_contract_v0_1",
+  "deterministic_preflight_status": "pass",
+  "do_not_promote": [
+    "boundary_heavy_memo_as_gold",
+    "search_summary_as_gold_workpaper",
+    "product_layer_failed_only_because_no_sku_revenue",
+    "cloud_capex_as_supplier_exact_revenue",
+    "wide_specialist_fanout_without_required_item",
+    "raw_evidence_dump_to_writer",
+    "memo_claims_missing_when_upstream_judgment_cards_exist"
+  ],
+  "gate_fail_count": 0,
+  "generated_at": "2026-07-05T07:34:56Z",
+  "next_action": "Run token/provider/real-evidence/AIE preflights before one paid real-evidence case.",
+  "paid_run_allowed": true,
+  "paid_run_policy": {
+    "full_chain_run_count": 0,
+    "paid_llm_call_count": 0,
+    "paid_run_allowed": true,
+    "policy_note": "This preflight does not close RC-P30 blockers. It freezes the case contract and records whether paid execution is allowed.",
+    "remaining_pre_paid_preflights": [
+      "token_budget_preflight",
+      "provider_health_preflight",
+      "real_evidence_mode_preflight",
+      "agent_information_economy_preflight",
+      "data_script_lineage_preflight"
+    ],
+    "requires_explicit_diagnostic_override": false,
+    "schema_version": "fin_insight_p33_paid_run_policy_v0_1"
+  },
+  "project_os_preflight": {
+    "allow_open_blockers": false,
+    "errors": [],
+    "missing_capabilities": [],
+    "missing_files": [],
+    "next_action": "Project OS preflight passed. Continue to token budget, provider, evidence-mode, AIE, and data-script preflights.",
+    "open_full_chain_blocker_count": 0,
+    "open_full_chain_blockers": [],
+    "policy": "fail_closed_on_open_project_os_blockers_v0_1",
+    "run_scope": "p33_single_gold_case",
+    "schema_version": "fin_insight_project_os_full_chain_preflight_v0_1",
+    "status": "pass"
+  },
+  "release_decision": "P33_3_ready_for_remaining_pre_paid_preflights",
+  "schema_version": "fin_insight_p33_ai_semis_gold_workpaper_preflight_v0_1",
+  "source_fixture_refs": {
+    "p33_2_manifest": "data/manifests/p33_runtime_assimilation_fixture_v0_1.json",
+    "p33_2_report": "docs/internal/vnext_20260610/p33_runtime_assimilation_fixture_report.zh-CN.md",
+    "p33_preflight_manifest": "data/manifests/p33_ai_semis_gold_workpaper_preflight_v0_1.json",
+    "p33_preflight_report": "docs/internal/vnext_20260610/p33_ai_semis_gold_workpaper_preflight_report.zh-CN.md",
+    "project_os_root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl"
+  },
+  "status": "ready_for_paid_run_preflights",
+  "upstream_material_projection": {
+    "data_script_lineage_preflight": {
+      "evidence_row_count": 6,
+      "issue_count": 0,
+      "issues": [],
+      "judgment_card_count": 6,
+      "memo_logic_plan_ref": "memo_logic:52c64e00d296d56af336",
+      "policy": "This is a pre-paid lineage check over P33-2 writer-ready material. Post-run DataScriptQualityAudit must still inspect generated full-chain artifacts.",
+      "schema_version": "fin_insight_p33_pre_paid_data_script_lineage_preflight_v0_1",
+      "status": "pass",
+      "typed_gap_count": 2
+    },
+    "evidence_refs": [
+      "ev_capital_cloud_capex_market_feedback",
+      "ev_customer_cloud_gpu_deployment",
+      "ev_fundamental_dell_ai_server_margin",
+      "ev_industry_semis_value_chain_cycle",
+      "ev_product_nvda_blackwell_architecture",
+      "ev_relationship_graph_gpu_to_foundry_semicap"
+    ],
+    "evidence_role_plan": [
+      {
+        "claim_boundary": "technical_fact_or_relationship_context_not_revenue_exact",
+        "evidence_refs": [
+          "ev_product_nvda_blackwell_architecture",
+          "ev_relationship_graph_gpu_to_foundry_semicap"
+        ],
+        "role_id": "product_architecture_and_generation",
+        "source_pack": "ProductIntelligenceGraph",
+        "target_specialist": "product_technology_analyst"
+      },
+      {
+        "claim_boundary": "adoption_signal_not_order_value_or_backlog_exact",
+        "evidence_refs": [
+          "ev_customer_cloud_gpu_deployment"
+        ],
+        "role_id": "customer_deployment_and_adoption",
+        "source_pack": "CustomerDeploymentPack",
+        "target_specialist": "industry_supply_chain_analyst"
+      },
+      {
+        "claim_boundary": "issuer_statement_fact_only_with_display_value_lineage",
+        "evidence_refs": [
+          "ev_fundamental_dell_ai_server_margin"
+        ],
+        "role_id": "fundamental_statement_bridge",
+        "source_pack": "FundamentalStatementPack",
+        "target_specialist": "fundamental_analyst"
+      },
+      {
+        "claim_boundary": "bounded_market_or_holder_signal_not_investment_advice",
+        "evidence_refs": [
+          "ev_capital_cloud_capex_market_feedback"
+        ],
+        "role_id": "capital_market_feedback_and_price_in",
+        "source_pack": "CapitalMarketFeedbackPack",
+        "target_specialist": "market_valuation_analyst"
+      },
+      {
+        "claim_boundary": "playbook_context_must_be_tied_to_company_specific_rows",
+        "evidence_refs": [
+          "ev_industry_semis_value_chain_cycle"
+        ],
+        "role_id": "industry_cycle_and_counterevidence",
+        "source_pack": "IndustryPlaybook",
+        "target_specialist": "industry_supply_chain_analyst"
+      }
+    ],
+    "judgment_card_ids": [
+      "jc_capital_feedback",
+      "jc_customer_deployment",
+      "jc_exact_kpi_gap",
+      "jc_fundamental_margin",
+      "jc_product_architecture",
+      "jc_supply_chain_cycle"
+    ],
+    "memo_logic_plan_refs": [
+      "memo_logic:52c64e00d296d56af336"
+    ],
+    "pack_ids": [
+      "ProductIntelligenceGraph",
+      "FundamentalStatementPack",
+      "CapitalMarketFeedbackPack",
+      "CustomerDeploymentPack",
+      "IndustryPlaybook"
+    ],
+    "required_item_plan": [
+      {
+        "answer_contract": "State product capability and competitive positioning; keep SKU revenue as exact-KPI gap only.",
+        "dimension": "product_and_production",
+        "expected_repair_policy": "targeted_repair_only_if_official_product_or_deployment_rows_missing",
+        "minimum_answer_status": "answerable_with_bounded_judgment",
+        "question_item_id": "nvda_amd_google_accelerator_competitive_position",
+        "required_evidence_roles": [
+          "technical_product_spec",
+          "relationship_graph_edge",
+          "customer_deployment_adoption"
+        ],
+        "required_tickers": [
+          "NVDA",
+          "AMD",
+          "GOOGL"
+        ],
+        "terms_any": [
+          "GPU",
+          "accelerator",
+          "TPU",
+          "H100",
+          "B200",
+          "MI300"
+        ]
+      },
+      {
+        "answer_contract": "Bridge cloud capex to demand pool and supply-chain beneficiaries without treating it as supplier revenue.",
+        "dimension": "industry_supply_chain",
+        "expected_repair_policy": "repair_if_capex_pack_or_customer_deployment_pack_absent",
+        "minimum_answer_status": "answerable_with_bounded_judgment",
+        "question_item_id": "cloud_capex_to_ai_server_readthrough",
+        "required_evidence_roles": [
+          "capital_market_feedback",
+          "relationship_graph_edge",
+          "customer_deployment_adoption"
+        ],
+        "required_tickers": [
+          "MSFT",
+          "AMZN",
+          "GOOGL",
+          "NVDA",
+          "DELL"
+        ],
+        "terms_any": [
+          "capex",
+          "AI infrastructure",
+          "server",
+          "GPU",
+          "cloud"
+        ]
+      },
+      {
+        "answer_contract": "Analyze revenue quality and margin bridge, not just AI server demand headline.",
+        "dimension": "fundamentals",
+        "expected_repair_policy": "parser_gap_if_filing_rows_exist_but_display_value_missing",
+        "minimum_answer_status": "answerable_with_boundary",
+        "question_item_id": "dell_ai_server_margin_quality",
+        "required_evidence_roles": [
+          "fundamental_statement_metric",
+          "product_kpi_exact",
+          "customer_deployment_adoption"
+        ],
+        "required_tickers": [
+          "DELL"
+        ],
+        "terms_any": [
+          "AI server",
+          "gross margin",
+          "cash flow",
+          "revenue"
+        ]
+      },
+      {
+        "answer_contract": "Separate cycle/order visibility from export restriction and customer concentration risk.",
+        "dimension": "risk_and_counterevidence",
+        "expected_repair_policy": "non_us_ir_or_local_filing_parser_gap_when_document_found_but_table_not_extracted",
+        "minimum_answer_status": "typed_gap_traceable_if_exact_orders_missing",
+        "question_item_id": "semicap_orders_backlog_export_risk",
+        "required_evidence_roles": [
+          "semis_value_chain_playbook",
+          "fundamental_statement_metric",
+          "relationship_graph_edge"
+        ],
+        "required_tickers": [
+          "ASML",
+          "LRCX",
+          "AMAT",
+          "KLAC"
+        ],
+        "terms_any": [
+          "bookings",
+          "backlog",
+          "orders",
+          "export",
+          "China"
+        ]
+      }
+    ],
+    "root": "D:/FIN_Insight_Agent",
+    "schema_version": "fin_insight_p33_upstream_material_projection_v0_1",
+    "source_manifest_digest": "93c6cb11a8d9bd20542245aafee6a87aa709ad813925081533d6e270cae72657",
+    "source_manifest_ref": "data/manifests/p33_runtime_assimilation_fixture_v0_1.json",
+    "thesis_path_digest": "fcbcf1c3d36537081e3de6f2c13e0ee0ec99245eb5289a2c4048c37b2588093f",
+    "typed_gap_refs": [
+      "gap_customer_order_amount_exact",
+      "gap_sku_revenue_exact_tracker"
+    ],
+    "workbench_trace_task_id": "p33_2_runtime_assimilation_ai_semis",
+    "writer_payload_policy": "writer_expression_only_no_fact_tools"
+  }
+}

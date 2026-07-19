@@ -1,0 +1,2155 @@
+{
+  "schema_version": "finsight_engineering_handoff_summary_v0_1",
+  "status": "pass",
+  "canonical_object_count": 28,
+  "canonical_domain_counts": {
+    "context": 3,
+    "control": 5,
+    "evaluation": 2,
+    "evidence": 4,
+    "judgment": 4,
+    "release": 3,
+    "repair": 4,
+    "research": 3
+  },
+  "legacy_mapping_count": 28,
+  "migration_mode_counts": {
+    "direct_adapter": 3,
+    "merge_adapter": 22,
+    "semantic_split": 3
+  },
+  "runtime_cutover_count": 0,
+  "canonical_objects": [
+    {
+      "object_id": "co_task_run",
+      "object_name": "TaskRun",
+      "domain": "control",
+      "owner": "TECH_06",
+      "target_store": "sql_control_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_work_unit",
+      "object_name": "WorkUnit",
+      "domain": "control",
+      "owner": "TECH_06",
+      "target_store": "sql_control_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_attempt",
+      "object_name": "Attempt",
+      "domain": "control",
+      "owner": "TECH_06",
+      "target_store": "sql_control_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_event_envelope",
+      "object_name": "EventEnvelope",
+      "domain": "control",
+      "owner": "TECH_06",
+      "target_store": "append_only_sql_event_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_artifact_version",
+      "object_name": "ArtifactVersion",
+      "domain": "control",
+      "owner": "TECH_06_TECH_09",
+      "target_store": "sql_metadata_plus_immutable_object_store",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_decision_surface_contract",
+      "object_name": "DecisionSurfaceContract",
+      "domain": "research",
+      "owner": "TECH_01",
+      "target_store": "sql_research_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_decision_surface_cell",
+      "object_name": "DecisionSurfaceCell",
+      "domain": "research",
+      "owner": "TECH_01",
+      "target_store": "sql_research_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_evidence_slot",
+      "object_name": "EvidenceSlot",
+      "domain": "research",
+      "owner": "TECH_01_TECH_02",
+      "target_store": "sql_research_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_evidence_request",
+      "object_name": "EvidenceRequest",
+      "domain": "evidence",
+      "owner": "TECH_02",
+      "target_store": "sql_evidence_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_candidate_bundle",
+      "object_name": "CandidateBundle",
+      "domain": "evidence",
+      "owner": "TECH_02_TECH_03",
+      "target_store": "sql_metadata_plus_object_store",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_promotion_decision",
+      "object_name": "PromotionDecision",
+      "domain": "evidence",
+      "owner": "TECH_02_TECH_04",
+      "target_store": "append_only_sql_evidence_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_numeric_program_trace",
+      "object_name": "NumericProgramTrace",
+      "domain": "evidence",
+      "owner": "TECH_04",
+      "target_store": "sql_numeric_ledger_plus_object_store",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_gap_record",
+      "object_name": "GapRecord",
+      "domain": "repair",
+      "owner": "TECH_01_TECH_02_TECH_09",
+      "target_store": "sql_gap_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_repair_ticket",
+      "object_name": "RepairTicket",
+      "domain": "repair",
+      "owner": "TECH_01_TECH_06_TECH_08",
+      "target_store": "sql_gap_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_repair_attempt",
+      "object_name": "RepairAttempt",
+      "domain": "repair",
+      "owner": "TECH_06_TECH_08",
+      "target_store": "sql_gap_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_gap_resolution",
+      "object_name": "GapResolution",
+      "domain": "repair",
+      "owner": "TECH_01_TECH_09",
+      "target_store": "append_only_sql_gap_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_context_snapshot",
+      "object_name": "ContextSnapshot",
+      "domain": "context",
+      "owner": "TECH_07",
+      "target_store": "sql_context_ledger_plus_object_store",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_context_selection_decision",
+      "object_name": "ContextSelectionDecision",
+      "domain": "context",
+      "owner": "TECH_07",
+      "target_store": "append_only_sql_context_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_context_injection_plan",
+      "object_name": "ContextInjectionPlan",
+      "domain": "context",
+      "owner": "TECH_07_TECH_08",
+      "target_store": "sql_context_ledger_plus_object_store",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_domain_cell_judgment_pack",
+      "object_name": "DomainCellJudgmentPack",
+      "domain": "judgment",
+      "owner": "TECH_05",
+      "target_store": "sql_metadata_plus_immutable_object_store",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_decision_surface_pack",
+      "object_name": "DecisionSurfacePack",
+      "domain": "judgment",
+      "owner": "TECH_01_TECH_05",
+      "target_store": "sql_metadata_plus_immutable_object_store",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_lead_review_decision",
+      "object_name": "LeadReviewDecision",
+      "domain": "judgment",
+      "owner": "TECH_01_TECH_09",
+      "target_store": "append_only_sql_review_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_writer_admission",
+      "object_name": "WriterAdmission",
+      "domain": "judgment",
+      "owner": "TECH_01_TECH_09",
+      "target_store": "append_only_sql_review_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_review_action",
+      "object_name": "ReviewAction",
+      "domain": "release",
+      "owner": "TECH_09",
+      "target_store": "append_only_sql_review_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_approval_decision",
+      "object_name": "ApprovalDecision",
+      "domain": "release",
+      "owner": "TECH_06_TECH_09",
+      "target_store": "append_only_sql_review_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_release_transaction",
+      "object_name": "ReleaseTransaction",
+      "domain": "release",
+      "owner": "TECH_09_TECH_10",
+      "target_store": "append_only_sql_release_ledger",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_eval_subject",
+      "object_name": "EvalSubject",
+      "domain": "evaluation",
+      "owner": "TECH_10",
+      "target_store": "sql_quality_ledger_plus_object_store",
+      "runtime_write_status": "not_cut_over"
+    },
+    {
+      "object_id": "co_failure_attribution",
+      "object_name": "FailureAttribution",
+      "domain": "evaluation",
+      "owner": "TECH_10",
+      "target_store": "append_only_sql_quality_ledger",
+      "runtime_write_status": "not_cut_over"
+    }
+  ],
+  "legacy_mappings": [
+    {
+      "mapping_id": "lm_task_runs",
+      "legacy_object": "r53_r60 task_runs and current graph run state",
+      "canonical_object_ids": [
+        "co_task_run"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "task identity, status, event sequence, resume and replay parity"
+    },
+    {
+      "mapping_id": "lm_node_execution_work_unit",
+      "legacy_object": "node_executions and graph node invocation",
+      "canonical_object_ids": [
+        "co_work_unit"
+      ],
+      "migration_mode": "semantic_split",
+      "cutover_gate": "one logical WorkUnit can own multiple immutable Attempts"
+    },
+    {
+      "mapping_id": "lm_retry_attempt",
+      "legacy_object": "node retry counters, writer repair attempts, tool invocations",
+      "canonical_object_ids": [
+        "co_attempt"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "attempt numbering, causation, input version and terminal reason parity"
+    },
+    {
+      "mapping_id": "lm_task_workpaper_tool_events",
+      "legacy_object": "task_events, WorkpaperEvents, tool ledgers and trace spans",
+      "canonical_object_ids": [
+        "co_event_envelope"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "append-only sequence, causation, correlation and state-version replay parity"
+    },
+    {
+      "mapping_id": "lm_artifact_refs_render_jobs",
+      "legacy_object": "artifact_refs, render jobs and Workbench artifact rows",
+      "canonical_object_ids": [
+        "co_artifact_version"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "immutable version, supersession, current projection and hash parity"
+    },
+    {
+      "mapping_id": "lm_research_objective_to_surface",
+      "legacy_object": "research objective contract, required item plan and P35 decision surface framework",
+      "canonical_object_ids": [
+        "co_decision_surface_contract"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "contract identity, user scope, archetype pack and required-cell parity"
+    },
+    {
+      "mapping_id": "lm_dimensions_required_items_to_cells",
+      "legacy_object": "analysis dimensions, memo slots and required items",
+      "canonical_object_ids": [
+        "co_decision_surface_cell"
+      ],
+      "migration_mode": "semantic_split",
+      "cutover_gate": "10-20 case cells have owner, evidence slots, stop rule and status"
+    },
+    {
+      "mapping_id": "lm_p34_slots_to_evidence_slots",
+      "legacy_object": "P34 evidence-slot mapping and required source items",
+      "canonical_object_ids": [
+        "co_evidence_slot"
+      ],
+      "migration_mode": "direct_adapter",
+      "cutover_gate": "slot identity, entity, period, source policy and acceptance role parity"
+    },
+    {
+      "mapping_id": "lm_retrieval_intent_to_evidence_request",
+      "legacy_object": "retrieval intent, retrieval plan and source route plan",
+      "canonical_object_ids": [
+        "co_evidence_request"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "request compilation is deterministic and bound to slot/source policy"
+    },
+    {
+      "mapping_id": "lm_candidates_to_bundle",
+      "legacy_object": "retrieval candidates, source bundles, graph hits and parser rows",
+      "canonical_object_ids": [
+        "co_candidate_bundle"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "all candidates carry source snapshot, lineage, route and rank metadata"
+    },
+    {
+      "mapping_id": "lm_selected_dropped_to_promotion",
+      "legacy_object": "selected evidence, dropped candidates and authority gates",
+      "canonical_object_ids": [
+        "co_promotion_decision"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "five promotion statuses and hard-gate reasons are replayable"
+    },
+    {
+      "mapping_id": "lm_exact_derived_to_numeric_trace",
+      "legacy_object": "exact-value ledger, derived metrics and numeric lineage",
+      "canonical_object_ids": [
+        "co_numeric_program_trace"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "deterministic recomputation and unit/scale/period audit parity"
+    },
+    {
+      "mapping_id": "lm_typed_gaps_to_gap_record",
+      "legacy_object": "retrieval gaps, workpaper gaps and unsupported-claim gaps",
+      "canonical_object_ids": [
+        "co_gap_record"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "one gap identity spans evidence, cell, repair, review and writer disclosure"
+    },
+    {
+      "mapping_id": "lm_targeted_repair_to_ticket",
+      "legacy_object": "targeted repair requests and lead repair instructions",
+      "canonical_object_ids": [
+        "co_repair_ticket"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "ticket routes to the authorized source owner with bounded budget and stop rule"
+    },
+    {
+      "mapping_id": "lm_route_tool_attempt_to_repair_attempt",
+      "legacy_object": "route executions, tool attempts and repair-loop observations",
+      "canonical_object_ids": [
+        "co_repair_attempt"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "every repair attempt is immutable, permission-bound and causation-linked"
+    },
+    {
+      "mapping_id": "lm_gap_status_to_resolution",
+      "legacy_object": "gap accepted, bounded, repaired, superseded and reviewer states",
+      "canonical_object_ids": [
+        "co_gap_resolution"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "resolution actor, evidence, reason and supersession are append-only"
+    },
+    {
+      "mapping_id": "lm_context_candidates_to_snapshot",
+      "legacy_object": "ContextEngine candidates, graph/skill/memory/evidence packs",
+      "canonical_object_ids": [
+        "co_context_snapshot"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "snapshot freezes candidate versions, permissions, freshness and revocations"
+    },
+    {
+      "mapping_id": "lm_context_selection_to_decision",
+      "legacy_object": "context selected and dropped refs",
+      "canonical_object_ids": [
+        "co_context_selection_decision"
+      ],
+      "migration_mode": "direct_adapter",
+      "cutover_gate": "selected/rejected/stale/budget/dedup/externalized reasons are complete"
+    },
+    {
+      "mapping_id": "lm_context_plan_to_canonical_plan",
+      "legacy_object": "R53-R60 ContextInjectionPlan and live node prompt payloads",
+      "canonical_object_ids": [
+        "co_context_injection_plan"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "same plan and artifact versions reconstruct the same model input"
+    },
+    {
+      "mapping_id": "lm_claim_cards_to_domain_pack",
+      "legacy_object": "specialist ClaimCards and judgment_candidates",
+      "canonical_object_ids": [
+        "co_domain_cell_judgment_pack"
+      ],
+      "migration_mode": "semantic_split",
+      "cutover_gate": "operator pack binds cell, accepted evidence, mechanism, counterevidence and confidence"
+    },
+    {
+      "mapping_id": "lm_judgment_state_to_surface_pack",
+      "legacy_object": "JudgmentState, aggregate judgment plan and P36 manual matrix",
+      "canonical_object_ids": [
+        "co_decision_surface_pack"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "all required cells, dependencies, gaps, what-would-change and evidence versions survive"
+    },
+    {
+      "mapping_id": "lm_lead_checkpoint_to_review",
+      "legacy_object": "LeadReviewCheckpoint and aggregate validation",
+      "canonical_object_ids": [
+        "co_lead_review_decision"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "story, coverage, conflict, gap and repair decisions are version-pinned"
+    },
+    {
+      "mapping_id": "lm_writer_gate_to_admission",
+      "legacy_object": "memo_writer_allowed, MemoLogicPlan validation and material gates",
+      "canonical_object_ids": [
+        "co_writer_admission"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "single immutable admission identifies allowed pack, blockers and forbidden tools"
+    },
+    {
+      "mapping_id": "lm_workbench_actions_to_review_action",
+      "legacy_object": "Workbench reviewer actions and WorkpaperEvents",
+      "canonical_object_ids": [
+        "co_review_action"
+      ],
+      "migration_mode": "direct_adapter",
+      "cutover_gate": "append-only action binds actor, target identity/version, reason and resulting projection"
+    },
+    {
+      "mapping_id": "lm_acceptance_to_approval",
+      "legacy_object": "reviewer acceptance and approval gate artifacts",
+      "canonical_object_ids": [
+        "co_approval_decision"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "approved hash equals release candidate hash and invalidates on supersession"
+    },
+    {
+      "mapping_id": "lm_release_gate_to_transaction",
+      "legacy_object": "enterprise release candidate and deliverable release status",
+      "canonical_object_ids": [
+        "co_release_transaction"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "release is atomic, hash-checked, auditable, withdrawable and supersedable"
+    },
+    {
+      "mapping_id": "lm_eval_runs_to_subject",
+      "legacy_object": "eval run rows, fixtures, quality cards and release gates",
+      "canonical_object_ids": [
+        "co_eval_subject"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "eval subject freezes all compared versions, scope and execution profile"
+    },
+    {
+      "mapping_id": "lm_failures_to_attribution",
+      "legacy_object": "root-cause ledger, eval failure rows and trace observations",
+      "canonical_object_ids": [
+        "co_failure_attribution"
+      ],
+      "migration_mode": "merge_adapter",
+      "cutover_gate": "failure links earliest faulty artifact, causal event, owner, repair and verification"
+    }
+  ],
+  "test_profile_audit": {
+    "test_file_count": 268,
+    "profile_file_counts": {
+      "fast_contract": 262,
+      "fixture_integration": 4,
+      "frontend_e2e": 1,
+      "full_chain": 1
+    },
+    "files": [
+      {
+        "path": "tests/test_agent_information_economy.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 744
+      },
+      {
+        "path": "tests/test_agent_runtime_consumption_contract.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 168
+      },
+      {
+        "path": "tests/test_ai_semis_product_depth_followup_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 67
+      },
+      {
+        "path": "tests/test_ai_semis_product_evidence_pack.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 225
+      },
+      {
+        "path": "tests/test_analyst_view_layer.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 193
+      },
+      {
+        "path": "tests/test_app_marketplace_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 169
+      },
+      {
+        "path": "tests/test_bm25_retriever.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 619
+      },
+      {
+        "path": "tests/test_broad_app_store_platform_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 112
+      },
+      {
+        "path": "tests/test_broad_hiring_capacity_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 82
+      },
+      {
+        "path": "tests/test_broad_official_careers_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 749
+      },
+      {
+        "path": "tests/test_broad_public_contract_award_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 91
+      },
+      {
+        "path": "tests/test_build_evidence_store_streaming.py",
+        "default_profile": "fixture_integration",
+        "requirements": [
+          "requires_subprocess"
+        ],
+        "line_count": 71
+      },
+      {
+        "path": "tests/test_build_sec_mixed_latest_manifest.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 102
+      },
+      {
+        "path": "tests/test_capital_funding_ownership_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 75
+      },
+      {
+        "path": "tests/test_capital_macro_d_series_integration.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 150
+      },
+      {
+        "path": "tests/test_capital_macro_pack.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 144
+      },
+      {
+        "path": "tests/test_capital_macro_source_adapters.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 344
+      },
+      {
+        "path": "tests/test_channel_offer_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 257
+      },
+      {
+        "path": "tests/test_claim_evidence_gap_ledgers.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 262
+      },
+      {
+        "path": "tests/test_cloud_interactive_ledger_rules.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 227
+      },
+      {
+        "path": "tests/test_company_disclosed_product_business_mix_runtime_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 138
+      },
+      {
+        "path": "tests/test_company_disclosed_product_profile_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 360
+      },
+      {
+        "path": "tests/test_company_earnings_material_source_plan.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 113
+      },
+      {
+        "path": "tests/test_company_gap_docket.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 120
+      },
+      {
+        "path": "tests/test_company_product_evidence_graph.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 162
+      },
+      {
+        "path": "tests/test_company_public_source_coverage_matrix.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 484
+      },
+      {
+        "path": "tests/test_company_reported_product_operating_metric_runtime_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 152
+      },
+      {
+        "path": "tests/test_d_series_database_closeout.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 110
+      },
+      {
+        "path": "tests/test_d_series_database_store.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 423
+      },
+      {
+        "path": "tests/test_d_series_fact_selection.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1187
+      },
+      {
+        "path": "tests/test_data_quality_release_eval_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 142
+      },
+      {
+        "path": "tests/test_data_script_quality_audit.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 593
+      },
+      {
+        "path": "tests/test_derived_metric_layer.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 216
+      },
+      {
+        "path": "tests/test_developer_ecosystem_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 244
+      },
+      {
+        "path": "tests/test_developer_official_seed_locator.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 137
+      },
+      {
+        "path": "tests/test_dimension_evidence_portfolio.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 140
+      },
+      {
+        "path": "tests/test_engineering_handoff.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 66
+      },
+      {
+        "path": "tests/test_entity_master_source_capability_router.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 274
+      },
+      {
+        "path": "tests/test_entity_resolution_contract.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 33
+      },
+      {
+        "path": "tests/test_eval_multi_agent_gate_config_roundtrip.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 142
+      },
+      {
+        "path": "tests/test_evidence_fusion_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 101
+      },
+      {
+        "path": "tests/test_evidence_schema_global_public.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 82
+      },
+      {
+        "path": "tests/test_exact_slot_contracts.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 453
+      },
+      {
+        "path": "tests/test_exact_slot_gap_closeout_ledger.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 316
+      },
+      {
+        "path": "tests/test_family_channel_distributor_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 614
+      },
+      {
+        "path": "tests/test_family_official_product_surface_materializer.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 176
+      },
+      {
+        "path": "tests/test_filing_operating_footprint_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 122
+      },
+      {
+        "path": "tests/test_fin_agent_layer_quality_audit.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 442
+      },
+      {
+        "path": "tests/test_financial_statement_analysis.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 195
+      },
+      {
+        "path": "tests/test_gate_registry_eval_matrix.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 216
+      },
+      {
+        "path": "tests/test_global_public_disclosure_download_tasks.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 471
+      },
+      {
+        "path": "tests/test_global_public_disclosure_source_plan.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 161
+      },
+      {
+        "path": "tests/test_global_public_disclosure_source_plan_audit.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 77
+      },
+      {
+        "path": "tests/test_gold_fact_signal_mart.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 153
+      },
+      {
+        "path": "tests/test_hiring_capacity_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 219
+      },
+      {
+        "path": "tests/test_industry_operating_metric_slot_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 679
+      },
+      {
+        "path": "tests/test_industry_playbooks.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 38
+      },
+      {
+        "path": "tests/test_industry_source_snapshot.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 169
+      },
+      {
+        "path": "tests/test_kg_matrix_registry.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 77
+      },
+      {
+        "path": "tests/test_kg_minimal_registry.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 45
+      },
+      {
+        "path": "tests/test_kg_subagent_k8_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 171
+      },
+      {
+        "path": "tests/test_l3_minimum_coverage_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 100
+      },
+      {
+        "path": "tests/test_l4_weak_signal_contract.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 220
+      },
+      {
+        "path": "tests/test_layered_staging_dataset_registry.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 22
+      },
+      {
+        "path": "tests/test_lightweight_ledger_builder.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 64
+      },
+      {
+        "path": "tests/test_llm_gateway.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 151
+      },
+      {
+        "path": "tests/test_local_public_tender_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 86
+      },
+      {
+        "path": "tests/test_market_industry_expansion_manifests.py",
+        "default_profile": "fixture_integration",
+        "requirements": [
+          "requires_subprocess"
+        ],
+        "line_count": 94
+      },
+      {
+        "path": "tests/test_market_liquidity_driver_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 73
+      },
+      {
+        "path": "tests/test_market_snapshot_fixture.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1101
+      },
+      {
+        "path": "tests/test_memo_logic_plan.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 404
+      },
+      {
+        "path": "tests/test_merge_jsonl_shards.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 47
+      },
+      {
+        "path": "tests/test_method_runtime.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 45
+      },
+      {
+        "path": "tests/test_metric_product_ontology_reconciliation.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 491
+      },
+      {
+        "path": "tests/test_milvus_retrieval_ab_design.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 327
+      },
+      {
+        "path": "tests/test_multi_agent_activation_plan.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 277
+      },
+      {
+        "path": "tests/test_multi_agent_agent_registry.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 181
+      },
+      {
+        "path": "tests/test_multi_agent_chain_performance_eval.py",
+        "default_profile": "full_chain",
+        "requirements": [],
+        "line_count": 56
+      },
+      {
+        "path": "tests/test_multi_agent_contracts.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1835
+      },
+      {
+        "path": "tests/test_multi_agent_eval_known_refs.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 45
+      },
+      {
+        "path": "tests/test_multi_agent_evidence_requirements.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1657
+      },
+      {
+        "path": "tests/test_multi_agent_judgment_memo_verifier.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 611
+      },
+      {
+        "path": "tests/test_multi_agent_langgraph_routing.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1235
+      },
+      {
+        "path": "tests/test_multi_agent_memo_llm_repair.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 4276
+      },
+      {
+        "path": "tests/test_multi_agent_operator_permissions.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1048
+      },
+      {
+        "path": "tests/test_multi_agent_output_quality_audit.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 394
+      },
+      {
+        "path": "tests/test_multi_agent_real_llm_chain_eval.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 3751
+      },
+      {
+        "path": "tests/test_multi_agent_reflection_second_pass.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 683
+      },
+      {
+        "path": "tests/test_multi_agent_research_lead_llm.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1611
+      },
+      {
+        "path": "tests/test_multi_agent_routing_fixtures.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 212
+      },
+      {
+        "path": "tests/test_multi_agent_runtime_sec_context_ledger.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 65
+      },
+      {
+        "path": "tests/test_multi_agent_specialist_llm.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 2527
+      },
+      {
+        "path": "tests/test_multi_agent_specialist_real_evidence_eval.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 221
+      },
+      {
+        "path": "tests/test_multi_agent_tool_call_ledger.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 189
+      },
+      {
+        "path": "tests/test_multi_agent_universe_relationship.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 310
+      },
+      {
+        "path": "tests/test_multi_agent_universe_relationship_llm.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 450
+      },
+      {
+        "path": "tests/test_non_financial_signal_authority.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 167
+      },
+      {
+        "path": "tests/test_non_us_l1_financial_statement_metric_runtime_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 83
+      },
+      {
+        "path": "tests/test_non_us_portal_public_disclosures.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 88
+      },
+      {
+        "path": "tests/test_non_us_product_kpi_local_disclosure_runtime_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 225
+      },
+      {
+        "path": "tests/test_non_us_supply_chain_disclosure_coverage_summary.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 103
+      },
+      {
+        "path": "tests/test_official_business_asset_profile_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 149
+      },
+      {
+        "path": "tests/test_official_customer_deployment_surface_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 269
+      },
+      {
+        "path": "tests/test_official_product_catalog_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 106
+      },
+      {
+        "path": "tests/test_official_product_spec_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 179
+      },
+      {
+        "path": "tests/test_official_product_surface_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 148
+      },
+      {
+        "path": "tests/test_official_product_surface_materializer.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 151
+      },
+      {
+        "path": "tests/test_official_spec_source_locator.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 96
+      },
+      {
+        "path": "tests/test_official_spec_source_materializer.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 87
+      },
+      {
+        "path": "tests/test_p32_l4_ai_semis_deterministic_fixture.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 85
+      },
+      {
+        "path": "tests/test_p32_learning_gate_validation.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 134
+      },
+      {
+        "path": "tests/test_p32_learning_source_snapshots.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 69
+      },
+      {
+        "path": "tests/test_p32_registry_promotion_validation.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 119
+      },
+      {
+        "path": "tests/test_p33_aggregate_judgment_plan_runner.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 149
+      },
+      {
+        "path": "tests/test_p33_ai_semis_gold_workpaper_preflight.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 306
+      },
+      {
+        "path": "tests/test_p33_capital_market_feedback_fixture.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 205
+      },
+      {
+        "path": "tests/test_p33_enterprise_rag_data_pipeline_fixture.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 93
+      },
+      {
+        "path": "tests/test_p33_goldset_live_source_backfill.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 65
+      },
+      {
+        "path": "tests/test_p33_goldset_source_runtime_assimilation_matrix.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 64
+      },
+      {
+        "path": "tests/test_p33_humanmade_gold_set_matrix_audit_runner.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 59
+      },
+      {
+        "path": "tests/test_p33_humanmade_gold_set_runtime_quality_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 185
+      },
+      {
+        "path": "tests/test_p33_memo_projection_replay.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 101
+      },
+      {
+        "path": "tests/test_p33_memo_writer_node_runner.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 165
+      },
+      {
+        "path": "tests/test_p33_memo_writer_payload_preflight_runner.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 201
+      },
+      {
+        "path": "tests/test_p33_multicase_goldset_no_paid_audit.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 85
+      },
+      {
+        "path": "tests/test_p33_research_to_quant_factor_handoff_fixture.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 175
+      },
+      {
+        "path": "tests/test_p33_runtime_assimilation_fixture.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 119
+      },
+      {
+        "path": "tests/test_p33_sandbox_resource_scheduler_fixture.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 91
+      },
+      {
+        "path": "tests/test_p33_workbench_artifact_review_surface_fixture.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 124
+      },
+      {
+        "path": "tests/test_p34_ai_semis_adapter_fixtures.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 56
+      },
+      {
+        "path": "tests/test_p34_ai_semis_live_route_attempts.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 44
+      },
+      {
+        "path": "tests/test_p34_ai_semis_no_paid_quality_audit.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 77
+      },
+      {
+        "path": "tests/test_p34_ai_semis_source_route_plan.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 68
+      },
+      {
+        "path": "tests/test_p34_lane_quality_first_program.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 75
+      },
+      {
+        "path": "tests/test_p34_scoped_memo_writer_payload.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 164
+      },
+      {
+        "path": "tests/test_p35_ai_infra_supervisor_dogfood.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 72
+      },
+      {
+        "path": "tests/test_parser_quality_ledger.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 120
+      },
+      {
+        "path": "tests/test_product_evidence_strategy_artifacts.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 186
+      },
+      {
+        "path": "tests/test_product_family_gap_repair.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 82
+      },
+      {
+        "path": "tests/test_product_family_source_routes.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 291
+      },
+      {
+        "path": "tests/test_product_intelligence_graph.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 229
+      },
+      {
+        "path": "tests/test_product_kpi_deep_gap_diagnostic.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 160
+      },
+      {
+        "path": "tests/test_product_kpi_quality_filter.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 64
+      },
+      {
+        "path": "tests/test_product_kpi_rejection_closeout.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 139
+      },
+      {
+        "path": "tests/test_product_kpi_repair_promotion.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 488
+      },
+      {
+        "path": "tests/test_product_kpi_sentence_repair_verifier.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 87
+      },
+      {
+        "path": "tests/test_product_kpi_source_specific_verifier.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 207
+      },
+      {
+        "path": "tests/test_product_operating_metric_repair_promotion.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 98
+      },
+      {
+        "path": "tests/test_product_slot_relationship_graph.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 319
+      },
+      {
+        "path": "tests/test_product_spec_pack.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 317
+      },
+      {
+        "path": "tests/test_product_taxonomy_kpi_parser.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1222
+      },
+      {
+        "path": "tests/test_project_inventory_source_inventory.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 308
+      },
+      {
+        "path": "tests/test_project_os_preflight.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 142
+      },
+      {
+        "path": "tests/test_provenance_vintage_layers.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 206
+      },
+      {
+        "path": "tests/test_public_contract_award_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 173
+      },
+      {
+        "path": "tests/test_public_official_api_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 363
+      },
+      {
+        "path": "tests/test_public_source_access_plan.py",
+        "default_profile": "fixture_integration",
+        "requirements": [
+          "requires_subprocess"
+        ],
+        "line_count": 240
+      },
+      {
+        "path": "tests/test_public_source_extended_materialization.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 51
+      },
+      {
+        "path": "tests/test_public_source_full_availability_audit.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 152
+      },
+      {
+        "path": "tests/test_public_source_information_strength_report.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 75
+      },
+      {
+        "path": "tests/test_public_source_inventory_adapter.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 145
+      },
+      {
+        "path": "tests/test_public_source_mapping_endpoint_gates.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 80
+      },
+      {
+        "path": "tests/test_public_source_normalized_snapshot.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 295
+      },
+      {
+        "path": "tests/test_public_source_strength_materialization_report.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 152
+      },
+      {
+        "path": "tests/test_public_web_gap_repair.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 613
+      },
+      {
+        "path": "tests/test_r16_product_kpi_deep_repair_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 126
+      },
+      {
+        "path": "tests/test_r17_known_public_product_kpi_repair_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 62
+      },
+      {
+        "path": "tests/test_r17_product_family_evidence_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 120
+      },
+      {
+        "path": "tests/test_r17_source_route_attempt_ledger.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 176
+      },
+      {
+        "path": "tests/test_r18_ai_semis_source_route_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 124
+      },
+      {
+        "path": "tests/test_r18_data_source_admission_ledger.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 240
+      },
+      {
+        "path": "tests/test_r18_source_authority_data_mart.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 138
+      },
+      {
+        "path": "tests/test_r18_vertical_source_route_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 141
+      },
+      {
+        "path": "tests/test_r26_layer_acceptance_gates.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 90
+      },
+      {
+        "path": "tests/test_r53_r60_b04_reviewer_acceptance_package.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 163
+      },
+      {
+        "path": "tests/test_r53_r60_context_graph_skill_registry.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 137
+      },
+      {
+        "path": "tests/test_r53_r60_controlled_internal_pilot_execution.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 151
+      },
+      {
+        "path": "tests/test_r53_r60_data_ingestion_retrieval_control_plane.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 249
+      },
+      {
+        "path": "tests/test_r53_r60_deliverable_studio_dashboard.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 148
+      },
+      {
+        "path": "tests/test_r53_r60_durable_runtime_hil_resource_router.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 143
+      },
+      {
+        "path": "tests/test_r53_r60_enterprise_release_candidate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 173
+      },
+      {
+        "path": "tests/test_r53_r60_enterprise_workbench_product_surface.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 173
+      },
+      {
+        "path": "tests/test_r53_r60_graph_skill_memory_lifecycle.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 177
+      },
+      {
+        "path": "tests/test_r53_r60_internal_reviewer_action_capture.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 141
+      },
+      {
+        "path": "tests/test_r53_r60_internal_reviewer_dogfood_window.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 141
+      },
+      {
+        "path": "tests/test_r53_r60_pack_depth_b05_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 192
+      },
+      {
+        "path": "tests/test_r53_r60_post_s10_completion_gap_register.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 96
+      },
+      {
+        "path": "tests/test_r53_r60_pre_full_chain_blocker_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 201
+      },
+      {
+        "path": "tests/test_r53_r60_product_acceptance_b04_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 427
+      },
+      {
+        "path": "tests/test_r53_r60_product_dogfood_frontend_e2e.py",
+        "default_profile": "frontend_e2e",
+        "requirements": [],
+        "line_count": 191
+      },
+      {
+        "path": "tests/test_r53_r60_product_evidence_depth_p26_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 184
+      },
+      {
+        "path": "tests/test_r53_r60_production_pilot_readiness.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 152
+      },
+      {
+        "path": "tests/test_r53_r60_quality_engineering_online_eval.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 160
+      },
+      {
+        "path": "tests/test_r53_r60_research_to_quant_lab.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 179
+      },
+      {
+        "path": "tests/test_r53_r60_retrieval_evidence_spine.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 256
+      },
+      {
+        "path": "tests/test_r53_r60_runtime_task_spine.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 153
+      },
+      {
+        "path": "tests/test_r53_r60_secondary_market_capital_feedback.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 323
+      },
+      {
+        "path": "tests/test_r53_r60_source_doc_status_reconciliation.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 100
+      },
+      {
+        "path": "tests/test_r53_r60_tool_sandbox_spine.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 175
+      },
+      {
+        "path": "tests/test_r53_r60_unified_backlog.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 95
+      },
+      {
+        "path": "tests/test_r53_r60_workbench_frontdoor_drilldown.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 173
+      },
+      {
+        "path": "tests/test_r53_r60_workpaper_lead_review_workflow.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 154
+      },
+      {
+        "path": "tests/test_raw_disclosure_data_inventory.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 126
+      },
+      {
+        "path": "tests/test_raw_source_provenance_store.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 163
+      },
+      {
+        "path": "tests/test_relationship_edge_extractor.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 132
+      },
+      {
+        "path": "tests/test_relationship_edge_schema.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 107
+      },
+      {
+        "path": "tests/test_relationship_graph_lookup.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 306
+      },
+      {
+        "path": "tests/test_repository_architecture_inventory.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 121
+      },
+      {
+        "path": "tests/test_research_graph_store.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 126
+      },
+      {
+        "path": "tests/test_research_skills.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 130
+      },
+      {
+        "path": "tests/test_resume_closeout_readiness.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 233
+      },
+      {
+        "path": "tests/test_retrieval_index_registry.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 169
+      },
+      {
+        "path": "tests/test_run_audit_store.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 110
+      },
+      {
+        "path": "tests/test_runtime_bridge_contracts.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 453
+      },
+      {
+        "path": "tests/test_runtime_bridge_java_python_smoke.py",
+        "default_profile": "fixture_integration",
+        "requirements": [
+          "requires_java",
+          "requires_network",
+          "requires_subprocess"
+        ],
+        "line_count": 200
+      },
+      {
+        "path": "tests/test_runtime_source_context_store.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 259
+      },
+      {
+        "path": "tests/test_sec_20f_section_splitter.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 106
+      },
+      {
+        "path": "tests/test_sec_40f_annual_package.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 95
+      },
+      {
+        "path": "tests/test_sec_agent_10q_source_contract.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1929
+      },
+      {
+        "path": "tests/test_sec_agent_8k_earnings_source.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1793
+      },
+      {
+        "path": "tests/test_sec_agent_context_source_policy.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 453
+      },
+      {
+        "path": "tests/test_sec_agent_graph_runner.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 22
+      },
+      {
+        "path": "tests/test_sec_agent_industry_snapshot_route.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 248
+      },
+      {
+        "path": "tests/test_sec_agent_langgraph_orchestrator.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1872
+      },
+      {
+        "path": "tests/test_sec_agent_ledger_store.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 890
+      },
+      {
+        "path": "tests/test_sec_agent_mcp_contracts.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 68
+      },
+      {
+        "path": "tests/test_sec_agent_mcp_runtime_tools.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 758
+      },
+      {
+        "path": "tests/test_sec_agent_p0_observability.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 405
+      },
+      {
+        "path": "tests/test_sec_agent_retrieval_plan.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 842
+      },
+      {
+        "path": "tests/test_sec_annual_download_config.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 129
+      },
+      {
+        "path": "tests/test_sec_benchmark_eval_mixed_context.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 182
+      },
+      {
+        "path": "tests/test_sec_benchmark_post_gate_usage.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 66
+      },
+      {
+        "path": "tests/test_sec_capital_market_event_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 109
+      },
+      {
+        "path": "tests/test_sec_chunk_id_uniqueness.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 21
+      },
+      {
+        "path": "tests/test_sec_chunk_quality_audit.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 159
+      },
+      {
+        "path": "tests/test_sec_financial_statement_metric_runtime_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 138
+      },
+      {
+        "path": "tests/test_sec_full_source_expansion_config.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 76
+      },
+      {
+        "path": "tests/test_sec_structured_facts_download.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 159
+      },
+      {
+        "path": "tests/test_second_third_layer_depth_gap_action_plan.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 156
+      },
+      {
+        "path": "tests/test_second_third_layer_depth_parity_matrix.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 784
+      },
+      {
+        "path": "tests/test_second_third_layer_real_source_readiness_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 91
+      },
+      {
+        "path": "tests/test_secondary_market_public_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 110
+      },
+      {
+        "path": "tests/test_source_authority_coverage.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 139
+      },
+      {
+        "path": "tests/test_source_coverage_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 420
+      },
+      {
+        "path": "tests/test_source_layer_capability_audit.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 201
+      },
+      {
+        "path": "tests/test_source_route_registry_v2.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 164
+      },
+      {
+        "path": "tests/test_sp500_constituent_download.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 32
+      },
+      {
+        "path": "tests/test_structured_financial_fact_source_plan.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 89
+      },
+      {
+        "path": "tests/test_supervising_analyst_pack.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 213
+      },
+      {
+        "path": "tests/test_supply_chain_supplement_manifest.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 67
+      },
+      {
+        "path": "tests/test_targeted_official_technology_document_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 68
+      },
+      {
+        "path": "tests/test_targeted_regulated_auto_official_api_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 124
+      },
+      {
+        "path": "tests/test_targeted_supply_chain_official_relationship_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 134
+      },
+      {
+        "path": "tests/test_universe_tier_builder.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 35
+      },
+      {
+        "path": "tests/test_v1_macro_official_exposure_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 95
+      },
+      {
+        "path": "tests/test_v1_openalex_technology_research_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 203
+      },
+      {
+        "path": "tests/test_v1_patentsview_technology_research_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 127
+      },
+      {
+        "path": "tests/test_v1_semiconductor_ai_infrastructure_lane.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 69
+      },
+      {
+        "path": "tests/test_v1_source_coverage_closeout.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 119
+      },
+      {
+        "path": "tests/test_v1_trusted_external_context_rows.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 97
+      },
+      {
+        "path": "tests/test_vertical_source_lane_package_and_closeout.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 160
+      },
+      {
+        "path": "tests/test_vertical_source_lane_registry.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 103
+      },
+      {
+        "path": "tests/test_vnext_50_case_catalog.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 148
+      },
+      {
+        "path": "tests/test_vnext_case_catalog_replay_gate.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 46
+      },
+      {
+        "path": "tests/test_workbench_artifacts.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 188
+      },
+      {
+        "path": "tests/test_workbench_backend.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 1185
+      },
+      {
+        "path": "tests/test_workbench_job_runner.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 493
+      },
+      {
+        "path": "tests/test_workbench_profiles.py",
+        "default_profile": "fast_contract",
+        "requirements": [],
+        "line_count": 322
+      }
+    ]
+  },
+  "test_profile_collection": {
+    "manifest_present": true,
+    "collected_item_count": 1953,
+    "profile_counts": {
+      "fast_contract": 1937,
+      "fixture_integration": 7,
+      "frontend_e2e": 4,
+      "full_chain": 2,
+      "local_data_integration": 3
+    },
+    "requirement_counts": {
+      "requires_java": 1,
+      "requires_local_data": 3,
+      "requires_network": 1,
+      "requires_subprocess": 7
+    }
+  },
+  "errors": [],
+  "boundaries": {
+    "prd_or_tech_requirement_added": false,
+    "runtime_write_path_changed": false,
+    "legacy_store_remains_source_of_truth_until_cutover_gate": true,
+    "paid_model_or_full_chain_executed": false
+  }
+}

@@ -1,0 +1,1016 @@
+{
+  "absorbed_contract_ids": [
+    "l3_sandbox_resource_scheduler_contract_v0_1"
+  ],
+  "acceptance_gates": [
+    {
+      "detail": {
+        "counts": {
+          "approval_decisions": 1,
+          "approval_policies": 6,
+          "gate_count": 12,
+          "gate_fail_count": 0,
+          "sandbox_policies": 5,
+          "tool_gateway_metadata": 1,
+          "tool_invocations": 11,
+          "tool_policy_bindings": 6
+        },
+        "release_decision": "S2_L4_scope_pass"
+      },
+      "gate_id": "p33_1_2_s2_tool_sandbox_l4_pass",
+      "generated_at": "2026-07-04T17:23:25Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "observed": [
+          "actor_tool_not_allowed",
+          "credential_argument_forbidden",
+          "domain_not_allowlisted",
+          "human_approval_required",
+          "path_outside_allowed_roots",
+          "unknown_tool"
+        ],
+        "required_blocked": [
+          "actor_tool_not_allowed",
+          "credential_argument_forbidden",
+          "domain_not_allowlisted",
+          "human_approval_required",
+          "path_outside_allowed_roots",
+          "unknown_tool"
+        ]
+      },
+      "gate_id": "p33_1_2_forbidden_tools_fail_closed",
+      "generated_at": "2026-07-04T17:23:25Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "approval_decision_count": 1,
+        "secret_redacted": true
+      },
+      "gate_id": "p33_1_2_secret_redaction_and_hil_approval",
+      "generated_at": "2026-07-04T17:23:25Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "readiness": {
+          "full_runtime_migration_status": "partial_migration_runtime_drill_only",
+          "release_decision": "P12_L4_scope_pass_runtime_drill_ready",
+          "resource_router_status": "resource_router_ledger_pass"
+        },
+        "release_decision": "P12_L4_scope_pass_runtime_drill_ready"
+      },
+      "gate_id": "p33_1_2_p12_resource_router_l4_pass",
+      "generated_at": "2026-07-04T17:23:25Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "budget_record_count": 1,
+        "queue_event_count": 5,
+        "route_policy_count": 4
+      },
+      "gate_id": "p33_1_2_route_queue_and_budget_rows_present",
+      "generated_at": "2026-07-04T17:23:25Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "allowed_lanes": {
+          "bge_cpu_spillover": 3,
+          "bge_cuda": 2,
+          "non_bge_worker": 2
+        },
+        "blocked_lanes": {
+          "bge_cuda": 2,
+          "non_bge_worker": 2,
+          "queued_bge_cuda": 3
+        },
+        "queued_wait_ok": true
+      },
+      "gate_id": "p33_1_2_gpu_queue_cpu_spillover_audited",
+      "generated_at": "2026-07-04T17:23:25Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "issue_counts": {
+          "preflight_case_token_budget_high": 1,
+          "preflight_paid_call_fanout_high": 1,
+          "preflight_specialist_fanout_broad": 1,
+          "preflight_specialist_pruning_available": 1
+        },
+        "status": "fail"
+      },
+      "gate_id": "p33_1_2_budget_preflight_blocks_expensive_fanout",
+      "generated_at": "2026-07-04T17:23:25Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "errors": [
+          "open_full_chain_blockers"
+        ],
+        "status": "blocked"
+      },
+      "gate_id": "p33_1_2_project_os_preflight_executable",
+      "generated_at": "2026-07-04T17:23:25Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "projection_count": 15,
+        "required_fields": [
+          "audit_artifact_ref",
+          "budget_decision",
+          "failure_or_spillover_reason",
+          "permission_decision",
+          "queue_event_id",
+          "resource_route",
+          "tool_or_model_call_ref"
+        ]
+      },
+      "gate_id": "p33_1_2_contract_projection_fields_complete",
+      "generated_at": "2026-07-04T17:23:25Z",
+      "pass_level": "L4_scope_pass",
+      "status": "pass"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_type": "p33_sandbox_resource_scheduler_fixture",
+      "contract_aligned_plan": {
+        "absorbed_contract_ids": [
+          "l3_sandbox_resource_scheduler_contract_v0_1"
+        ],
+        "used_case_contract_ids": [
+          "l3_sandbox_resource_scheduler_contract_v0_1"
+        ]
+      }
+    }
+  ],
+  "budget_preflight": {
+    "cases": [
+      {
+        "case_id": "p33_ai_semis_budget_guard",
+        "cost_aware_specialist_agents": [],
+        "estimated_paid_call_count": 9,
+        "estimated_paid_call_count_after_specialist_pruning": 8,
+        "estimated_specialist_count": 5,
+        "estimated_total_tokens": 150000,
+        "estimated_total_tokens_after_specialist_pruning": 138000,
+        "expected_paid_specialist_priorities": {},
+        "expected_specialist_agents": [],
+        "issues": [
+          "preflight_case_token_budget_high",
+          "preflight_paid_call_fanout_high",
+          "preflight_specialist_fanout_broad",
+          "preflight_specialist_pruning_available"
+        ],
+        "nodes": [
+          {
+            "estimated_total_tokens": 11000,
+            "node": "research_lead"
+          },
+          {
+            "estimated_total_tokens": 20000,
+            "node": "fundamental_analyst"
+          },
+          {
+            "estimated_total_tokens": 18000,
+            "node": "product_technology_analyst"
+          },
+          {
+            "estimated_total_tokens": 17000,
+            "node": "industry_supply_chain_analyst"
+          },
+          {
+            "estimated_total_tokens": 15000,
+            "node": "market_valuation_analyst"
+          },
+          {
+            "estimated_total_tokens": 16000,
+            "node": "risk_counterevidence_analyst"
+          },
+          {
+            "estimated_total_tokens": 25000,
+            "node": "memo_writer"
+          },
+          {
+            "estimated_total_tokens": 9000,
+            "node": "verifier"
+          },
+          {
+            "estimated_total_tokens": 11000,
+            "node": "universe_relationship"
+          }
+        ],
+        "prunable_specialist_agents": [
+          "market_valuation_analyst"
+        ],
+        "pruned_from_quality_expected_specialist_agents": [],
+        "quality_expected_specialist_agents": [],
+        "status": "fail"
+      }
+    ],
+    "diagnostic_only": true,
+    "estimated_paid_call_count": 18,
+    "estimated_total_tokens": 272000,
+    "issue_counts": {
+      "preflight_case_token_budget_high": 1,
+      "preflight_paid_call_fanout_high": 1,
+      "preflight_specialist_fanout_broad": 1,
+      "preflight_specialist_pruning_available": 1
+    },
+    "plan_status": "blocked_preflight_token_budget",
+    "policy": "preflight_information_economy_blocks_expensive_unreviewed_runs_v0_1",
+    "preflight_only": true,
+    "run_id": "p33_sandbox_resource_scheduler_budget_preflight_unit",
+    "scheduler_advice": {
+      "recommended_batch_count": 0,
+      "status": "case_budget_repair_required"
+    },
+    "schema_version": "finsight_agent_information_economy_ledger_v0_1",
+    "status": "fail"
+  },
+  "closeout_level": "L4_scope_pass",
+  "contract_id": "l3_sandbox_resource_scheduler_contract_v0_1",
+  "contract_projection": [
+    {
+      "agent_id": "research_lead",
+      "audit_artifact_ref": "tool_invocations",
+      "budget_decision": "no_paid_model_call",
+      "budget_policy": "tool_timeout_output_and_approval_policy",
+      "credential_scope": "forbidden_by_default",
+      "failure_or_spillover_reason": "unknown_tool",
+      "network_scope": "none_or_local",
+      "permission_decision": "block",
+      "queue_event_id": "",
+      "requested_capability": "tool_invocation",
+      "resource_class": "tool_gateway",
+      "resource_route": "",
+      "tool_or_model_call_ref": "toolcall_34f3c49cc81bc9aa",
+      "tool_or_model_id": "unknown_future_tool"
+    },
+    {
+      "agent_id": "research_lead",
+      "audit_artifact_ref": "tool_invocations",
+      "budget_decision": "no_paid_model_call",
+      "budget_policy": "tool_timeout_output_and_approval_policy",
+      "credential_scope": "forbidden_by_default",
+      "failure_or_spillover_reason": "human_approval_required",
+      "network_scope": "none_or_local",
+      "permission_decision": "block",
+      "queue_event_id": "",
+      "requested_capability": "tool_invocation",
+      "resource_class": "tool_gateway",
+      "resource_route": "local_no_network_workspace_temp",
+      "tool_or_model_call_ref": "toolcall_37b59835c5a1a583",
+      "tool_or_model_id": "python_analysis"
+    },
+    {
+      "agent_id": "research_lead",
+      "audit_artifact_ref": "tool_invocations",
+      "budget_decision": "no_paid_model_call",
+      "budget_policy": "tool_timeout_output_and_approval_policy",
+      "credential_scope": "forbidden_by_default",
+      "failure_or_spillover_reason": "domain_not_allowlisted",
+      "network_scope": "domain_allowlist_only",
+      "permission_decision": "block",
+      "queue_event_id": "",
+      "requested_capability": "tool_invocation",
+      "resource_class": "tool_gateway",
+      "resource_route": "allowlisted_public_web",
+      "tool_or_model_call_ref": "toolcall_79b0b8d398c11ff7",
+      "tool_or_model_id": "live_web_snapshot"
+    },
+    {
+      "agent_id": "research_lead",
+      "audit_artifact_ref": "tool_invocations",
+      "budget_decision": "no_paid_model_call",
+      "budget_policy": "tool_timeout_output_and_approval_policy",
+      "credential_scope": "forbidden_by_default",
+      "failure_or_spillover_reason": "credential_argument_forbidden",
+      "network_scope": "none_or_local",
+      "permission_decision": "block",
+      "queue_event_id": "",
+      "requested_capability": "tool_invocation",
+      "resource_class": "tool_gateway",
+      "resource_route": "local_db_readonly",
+      "tool_or_model_call_ref": "toolcall_79eeab1b4153d085",
+      "tool_or_model_id": "database_query"
+    },
+    {
+      "agent_id": "memo_writer",
+      "audit_artifact_ref": "tool_invocations",
+      "budget_decision": "no_paid_model_call",
+      "budget_policy": "tool_timeout_output_and_approval_policy",
+      "credential_scope": "forbidden_by_default",
+      "failure_or_spillover_reason": "actor_tool_not_allowed",
+      "network_scope": "domain_allowlist_only",
+      "permission_decision": "block",
+      "queue_event_id": "",
+      "requested_capability": "tool_invocation",
+      "resource_class": "tool_gateway",
+      "resource_route": "allowlisted_public_web",
+      "tool_or_model_call_ref": "toolcall_8eee743951033a9e",
+      "tool_or_model_id": "live_web_snapshot"
+    },
+    {
+      "agent_id": "research_lead",
+      "audit_artifact_ref": "tool_invocations",
+      "budget_decision": "no_paid_model_call",
+      "budget_policy": "tool_timeout_output_and_approval_policy",
+      "credential_scope": "forbidden_by_default",
+      "failure_or_spillover_reason": "",
+      "network_scope": "none_or_local",
+      "permission_decision": "allow",
+      "queue_event_id": "",
+      "requested_capability": "tool_invocation",
+      "resource_class": "tool_gateway",
+      "resource_route": "local_no_network_workspace_temp",
+      "tool_or_model_call_ref": "toolcall_a58a88627cd995d0",
+      "tool_or_model_id": "python_analysis"
+    },
+    {
+      "agent_id": "input_parser",
+      "audit_artifact_ref": "tool_invocations",
+      "budget_decision": "no_paid_model_call",
+      "budget_policy": "tool_timeout_output_and_approval_policy",
+      "credential_scope": "forbidden_by_default",
+      "failure_or_spillover_reason": "path_outside_allowed_roots",
+      "network_scope": "none_or_local",
+      "permission_decision": "block",
+      "queue_event_id": "",
+      "requested_capability": "tool_invocation",
+      "resource_class": "tool_gateway",
+      "resource_route": "workspace_file_readonly",
+      "tool_or_model_call_ref": "toolcall_bbe508d61851562f",
+      "tool_or_model_id": "document_parser"
+    },
+    {
+      "agent_id": "memo_writer",
+      "audit_artifact_ref": "tool_invocations",
+      "budget_decision": "no_paid_model_call",
+      "budget_policy": "tool_timeout_output_and_approval_policy",
+      "credential_scope": "forbidden_by_default",
+      "failure_or_spillover_reason": "",
+      "network_scope": "none_or_local",
+      "permission_decision": "allow",
+      "queue_event_id": "",
+      "requested_capability": "tool_invocation",
+      "resource_class": "tool_gateway",
+      "resource_route": "workspace_artifact_write",
+      "tool_or_model_call_ref": "toolcall_e7f4bfbfe04230be",
+      "tool_or_model_id": "report_renderer"
+    },
+    {
+      "agent_id": "research_lead",
+      "audit_artifact_ref": "tool_invocations",
+      "budget_decision": "no_paid_model_call",
+      "budget_policy": "tool_timeout_output_and_approval_policy",
+      "credential_scope": "forbidden_by_default",
+      "failure_or_spillover_reason": "",
+      "network_scope": "none_or_local",
+      "permission_decision": "allow",
+      "queue_event_id": "",
+      "requested_capability": "tool_invocation",
+      "resource_class": "tool_gateway",
+      "resource_route": "local_db_readonly",
+      "tool_or_model_call_ref": "toolcall_f5b933a0a586181e",
+      "tool_or_model_id": "database_query"
+    },
+    {
+      "agent_id": "runtime_facade",
+      "audit_artifact_ref": "resource_queue_events_p12",
+      "budget_decision": "routed",
+      "budget_policy": "model_budget_ledger_p12",
+      "credential_scope": "provider_key_not_exposed_to_agent",
+      "failure_or_spillover_reason": "dispatch",
+      "network_scope": "provider_or_local_resource",
+      "permission_decision": "route_allowed",
+      "queue_event_id": "p12queue_d9222684d2bdf1dd",
+      "requested_capability": "lead_planning_high_reasoning",
+      "resource_class": "remote_llm",
+      "resource_route": "lead_planning_high_reasoning",
+      "tool_or_model_call_ref": "p12queue_d9222684d2bdf1dd",
+      "tool_or_model_id": "deepseek-reasoner"
+    },
+    {
+      "agent_id": "runtime_facade",
+      "audit_artifact_ref": "resource_queue_events_p12",
+      "budget_decision": "routed",
+      "budget_policy": "model_budget_ledger_p12",
+      "credential_scope": "provider_key_not_exposed_to_agent",
+      "failure_or_spillover_reason": "dispatch",
+      "network_scope": "provider_or_local_resource",
+      "permission_decision": "route_allowed",
+      "queue_event_id": "p12queue_6f1362ab9171101d",
+      "requested_capability": "memo_render_cost_controlled",
+      "resource_class": "remote_llm_low_cost",
+      "resource_route": "memo_render_cost_controlled",
+      "tool_or_model_call_ref": "p12queue_6f1362ab9171101d",
+      "tool_or_model_id": "qwen-flash"
+    },
+    {
+      "agent_id": "runtime_facade",
+      "audit_artifact_ref": "resource_queue_events_p12",
+      "budget_decision": "routed",
+      "budget_policy": "model_budget_ledger_p12",
+      "credential_scope": "provider_key_not_exposed_to_agent",
+      "failure_or_spillover_reason": "dispatch",
+      "network_scope": "provider_or_local_resource",
+      "permission_decision": "route_allowed",
+      "queue_event_id": "p12queue_e8477349611736ff",
+      "requested_capability": "memo_render_cost_controlled",
+      "resource_class": "remote_llm_low_cost",
+      "resource_route": "memo_render_cost_controlled",
+      "tool_or_model_call_ref": "p12queue_e8477349611736ff",
+      "tool_or_model_id": "qwen-flash"
+    },
+    {
+      "agent_id": "runtime_facade",
+      "audit_artifact_ref": "resource_queue_events_p12",
+      "budget_decision": "routed",
+      "budget_policy": "model_budget_ledger_p12",
+      "credential_scope": "provider_key_not_exposed_to_agent",
+      "failure_or_spillover_reason": "dispatch",
+      "network_scope": "provider_or_local_resource",
+      "permission_decision": "route_allowed",
+      "queue_event_id": "p12queue_259d7a7b3ddd117b",
+      "requested_capability": "retrieval_embedding_gpu_queue",
+      "resource_class": "local_gpu_embedding_queue",
+      "resource_route": "retrieval_embedding_gpu_queue",
+      "tool_or_model_call_ref": "p12queue_259d7a7b3ddd117b",
+      "tool_or_model_id": "bge-large-cuda"
+    },
+    {
+      "agent_id": "runtime_facade",
+      "audit_artifact_ref": "resource_queue_events_p12",
+      "budget_decision": "routed",
+      "budget_policy": "model_budget_ledger_p12",
+      "credential_scope": "provider_key_not_exposed_to_agent",
+      "failure_or_spillover_reason": "dispatch",
+      "network_scope": "provider_or_local_resource",
+      "permission_decision": "route_allowed",
+      "queue_event_id": "p12queue_f466ad3b9d313e46",
+      "requested_capability": "specialist_analysis_balanced",
+      "resource_class": "remote_llm_balanced",
+      "resource_route": "specialist_analysis_balanced",
+      "tool_or_model_call_ref": "p12queue_f466ad3b9d313e46",
+      "tool_or_model_id": "deepseek-chat"
+    },
+    {
+      "agent_id": "preflight_guard",
+      "audit_artifact_ref": "budget_preflight",
+      "budget_decision": "fail",
+      "budget_policy": "preflight_information_economy_blocks_expensive_unreviewed_runs_v0_1",
+      "credential_scope": "not_requested",
+      "failure_or_spillover_reason": "preflight_case_token_budget_high,preflight_paid_call_fanout_high,preflight_specialist_fanout_broad,preflight_specialist_pruning_available",
+      "network_scope": "provider_call_blocked_before_execution",
+      "permission_decision": "blocked",
+      "queue_event_id": "",
+      "requested_capability": "expensive_eval_preflight",
+      "resource_class": "paid_llm",
+      "resource_route": "not_scheduled",
+      "tool_or_model_call_ref": "agent_information_economy_preflight",
+      "tool_or_model_id": "paid_full_chain"
+    }
+  ],
+  "do_not_promote": [
+    "allow_all_network",
+    "silent_cpu_fallback",
+    "paid_full_chain_budget_bypass",
+    "credential_argument_persisted",
+    "unknown_tool_allowed"
+  ],
+  "gate_fail_count": 0,
+  "generated_at": "2026-07-04T17:23:25Z",
+  "input_contract_required_fields": [
+    "agent_id",
+    "tool_or_model_id",
+    "requested_capability",
+    "network_scope",
+    "credential_scope",
+    "resource_class",
+    "budget_policy"
+  ],
+  "output_contract_required_fields": [
+    "permission_decision",
+    "queue_event_id",
+    "resource_route",
+    "budget_decision",
+    "tool_or_model_call_ref",
+    "failure_or_spillover_reason",
+    "audit_artifact_ref"
+  ],
+  "project_os_preflight": {
+    "allow_open_blockers": false,
+    "errors": [
+      "open_full_chain_blockers"
+    ],
+    "missing_capabilities": [],
+    "missing_files": [],
+    "next_action": "Close the listed root-cause blockers or ask for explicit diagnostic override before paid full-chain.",
+    "open_full_chain_blocker_count": 3,
+    "open_full_chain_blockers": [
+      {
+        "issue_id": "RC-P30-001-real-single-case-artifact-proof-pending",
+        "layer": "full_chain_quality",
+        "required_fix": "Run Project OS, token, provider, real-evidence, AIE, and data-script preflights; then run one paid real-evidence AI/Semis case only after preflight passes; inspect output manually.",
+        "severity": "high",
+        "status": "open",
+        "symptom": "Historical paid/full-chain artifacts either predate repairs or were diagnostic-only; current repaired path has not yet been proven on a newly generated real single-case artifact."
+      },
+      {
+        "issue_id": "RC-P30-002-memo-quality-insight-density-not-proven",
+        "layer": "memo_writer_research_lead",
+        "required_fix": "Use deterministic tests plus one real single-case proof to show product/financial/supply-chain/capital evidence is organized into thesis, counter-thesis, and what-would-change sections.",
+        "severity": "high",
+        "status": "open",
+        "symptom": "Rendered memo can still become evidence summary or boundary-heavy prose instead of thesis-led financial research judgment."
+      },
+      {
+        "issue_id": "RC-P30-003-paid-full-chain-overuse-risk",
+        "layer": "eval_governance",
+        "required_fix": "Project OS preflight must run before expensive full-chain; root-cause blockers must be reviewed and either closed or explicitly diagnostic-overridden by user.",
+        "severity": "medium",
+        "status": "open",
+        "symptom": "Prior work used paid full-chain too early for issues that deterministic/node-level tests could catch, causing high token cost and low learning efficiency."
+      }
+    ],
+    "policy": "fail_closed_on_open_project_os_blockers_v0_1",
+    "schema_version": "fin_insight_project_os_full_chain_preflight_v0_1",
+    "status": "blocked"
+  },
+  "promotion_recommendation": "active_registry_ready_runtime_alignment_only",
+  "promotion_scope": "sandbox_resource_initial",
+  "release_decision": "P33_1_2_L4_scope_pass_sandbox_resource_scheduler_fixture",
+  "resource_router_audit": {
+    "budget_record_count": 1,
+    "budget_rows": [
+      {
+        "budget_id": "p12budget_69956f8c8e3ada1f",
+        "budget_scope": "runtime_drill_total",
+        "cost_budget_usd": 1.5,
+        "cost_used_usd": 0.13,
+        "status": "within_budget",
+        "task_id": "p12_runtime_drill_task_ai_infra_hil_resource_route",
+        "token_budget": 50000,
+        "tokens_used": 6300
+      }
+    ],
+    "queue_event_count": 5,
+    "queue_events": [
+      {
+        "assigned_model": "deepseek-reasoner",
+        "assigned_resource": "remote_llm",
+        "cost_amount": 0.018,
+        "event_type": "dispatch",
+        "queue_event_id": "p12queue_d9222684d2bdf1dd",
+        "queue_wait_ms": 35,
+        "route_class": "lead_planning_high_reasoning",
+        "route_policy_id": "p12route_cf9050062b570c48",
+        "status": "routed",
+        "task_id": "p12_runtime_drill_task_ai_infra_hil_resource_route",
+        "token_count": 900
+      },
+      {
+        "assigned_model": "qwen-flash",
+        "assigned_resource": "remote_llm_low_cost",
+        "cost_amount": 0.034,
+        "event_type": "dispatch",
+        "queue_event_id": "p12queue_6f1362ab9171101d",
+        "queue_wait_ms": 103,
+        "route_class": "memo_render_cost_controlled",
+        "route_policy_id": "p12route_5ab1b2676fec5347",
+        "status": "routed",
+        "task_id": "p12_runtime_drill_task_ai_infra_hil_resource_route",
+        "token_count": 1620
+      },
+      {
+        "assigned_model": "qwen-flash",
+        "assigned_resource": "remote_llm_low_cost",
+        "cost_amount": 0.03,
+        "event_type": "dispatch",
+        "queue_event_id": "p12queue_e8477349611736ff",
+        "queue_wait_ms": 86,
+        "route_class": "memo_render_cost_controlled",
+        "route_policy_id": "p12route_5ab1b2676fec5347",
+        "status": "routed",
+        "task_id": "p12_runtime_drill_task_ai_infra_hil_resource_route",
+        "token_count": 1440
+      },
+      {
+        "assigned_model": "bge-large-cuda",
+        "assigned_resource": "local_gpu_embedding_queue",
+        "cost_amount": 0.022,
+        "event_type": "dispatch",
+        "queue_event_id": "p12queue_259d7a7b3ddd117b",
+        "queue_wait_ms": 52,
+        "route_class": "retrieval_embedding_gpu_queue",
+        "route_policy_id": "p12route_7689c4de45fc6d45",
+        "status": "routed",
+        "task_id": "p12_runtime_drill_task_ai_infra_hil_resource_route",
+        "token_count": 1080
+      },
+      {
+        "assigned_model": "deepseek-chat",
+        "assigned_resource": "remote_llm_balanced",
+        "cost_amount": 0.026,
+        "event_type": "dispatch",
+        "queue_event_id": "p12queue_f466ad3b9d313e46",
+        "queue_wait_ms": 69,
+        "route_class": "specialist_analysis_balanced",
+        "route_policy_id": "p12route_f2def2b05fad0048",
+        "status": "routed",
+        "task_id": "p12_runtime_drill_task_ai_infra_hil_resource_route",
+        "token_count": 1260
+      }
+    ],
+    "readiness_status": {
+      "full_runtime_migration_status": "partial_migration_runtime_drill_only",
+      "release_decision": "P12_L4_scope_pass_runtime_drill_ready",
+      "resource_router_status": "resource_router_ledger_pass"
+    },
+    "route_policies": [
+      {
+        "cost_cap_usd": 0.35,
+        "fallback_model": "deepseek-chat",
+        "max_tokens": 12000,
+        "preferred_model": "deepseek-reasoner",
+        "queue_class": "critical_path",
+        "resource_class": "gpu_or_remote_llm",
+        "route_class": "lead_planning_high_reasoning",
+        "route_policy_id": "p12route_cf9050062b570c48",
+        "spillover_policy": "fallback_to_balanced",
+        "status": "ready"
+      },
+      {
+        "cost_cap_usd": 0.08,
+        "fallback_model": "deepseek-chat",
+        "max_tokens": 6000,
+        "preferred_model": "qwen-flash",
+        "queue_class": "composer_queue",
+        "resource_class": "remote_llm_low_cost",
+        "route_class": "memo_render_cost_controlled",
+        "route_policy_id": "p12route_5ab1b2676fec5347",
+        "spillover_policy": "escalate_only_if_readability_gate_fails",
+        "status": "ready"
+      },
+      {
+        "cost_cap_usd": 0.02,
+        "fallback_model": "bge-large-cpu",
+        "max_tokens": 2048,
+        "preferred_model": "bge-large-cuda",
+        "queue_class": "embedding_queue",
+        "resource_class": "local_gpu_embedding",
+        "route_class": "retrieval_embedding_gpu_queue",
+        "route_policy_id": "p12route_7689c4de45fc6d45",
+        "spillover_policy": "cpu_spillover_after_wait_threshold",
+        "status": "ready"
+      },
+      {
+        "cost_cap_usd": 0.18,
+        "fallback_model": "qwen-flash",
+        "max_tokens": 8000,
+        "preferred_model": "deepseek-chat",
+        "queue_class": "analysis_queue",
+        "resource_class": "remote_llm",
+        "route_class": "specialist_analysis_balanced",
+        "route_policy_id": "p12route_f2def2b05fad0048",
+        "spillover_policy": "coalesce_low_risk_specialists",
+        "status": "ready"
+      }
+    ],
+    "route_policy_count": 4,
+    "status": "pass"
+  },
+  "rollback_gate": [
+    "forbidden_tool_access_succeeds",
+    "queue_or_spillover_not_audited",
+    "budget_preflight_allows_expensive_fanout",
+    "cpu_spillover_without_latency_or_quality_boundary"
+  ],
+  "runtime_entry_policy": "Runtime alignment only: may align SandboxPolicy, ApprovalPolicy, ToolInvocationLedger, ResourceQueuePolicy, BudgetExceededGate, ModelProviderRouter, and AgentInformationEconomyLedger. It does not claim cloud/Kubernetes/vLLM production scheduling or all production tools.",
+  "scheduler_audit": {
+    "cpu_spillover_allowed": {
+      "cpu_spillover_allowed": true,
+      "cuda_bge_slots": 2,
+      "cuda_bge_used": 2,
+      "lane_counts": {
+        "bge_cpu_spillover": 3,
+        "bge_cuda": 2,
+        "non_bge_worker": 2
+      },
+      "policy": "cuda_queue_first_cpu_spillover_explicit_model_tier_routing_v0_1",
+      "scheduled_tasks": [
+        {
+          "estimated_wait_ms": 0,
+          "lane": "bge_cuda",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "cuda_slot_available",
+          "route": "retrieval",
+          "task_id": "p33_bge_1"
+        },
+        {
+          "estimated_wait_ms": 0,
+          "lane": "bge_cuda",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "cuda_slot_available",
+          "route": "retrieval",
+          "task_id": "p33_bge_2"
+        },
+        {
+          "estimated_wait_ms": 0,
+          "lane": "bge_cpu_spillover",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "cuda_queue_full_cpu_allowed",
+          "route": "retrieval",
+          "task_id": "p33_bge_3"
+        },
+        {
+          "estimated_wait_ms": 0,
+          "lane": "bge_cpu_spillover",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "cuda_queue_full_cpu_allowed",
+          "route": "retrieval",
+          "task_id": "p33_bge_4"
+        },
+        {
+          "estimated_wait_ms": 0,
+          "lane": "bge_cpu_spillover",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "cuda_queue_full_cpu_allowed",
+          "route": "retrieval",
+          "task_id": "p33_bge_5"
+        },
+        {
+          "estimated_wait_ms": 0,
+          "lane": "non_bge_worker",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "no_cuda_bge_required",
+          "route": "research_lead",
+          "task_id": "p33_research_lead"
+        },
+        {
+          "estimated_wait_ms": 0,
+          "lane": "non_bge_worker",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "no_cuda_bge_required",
+          "route": "memo_writer",
+          "task_id": "p33_memo_writer"
+        }
+      ],
+      "schema_version": "finsight_inference_resource_scheduler_audit_v0_1",
+      "status": "pass",
+      "token_budget_pressure": true
+    },
+    "cpu_spillover_blocked": {
+      "cpu_spillover_allowed": false,
+      "cuda_bge_slots": 2,
+      "cuda_bge_used": 2,
+      "lane_counts": {
+        "bge_cuda": 2,
+        "non_bge_worker": 2,
+        "queued_bge_cuda": 3
+      },
+      "policy": "cuda_queue_first_cpu_spillover_explicit_model_tier_routing_v0_1",
+      "scheduled_tasks": [
+        {
+          "estimated_wait_ms": 0,
+          "lane": "bge_cuda",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "cuda_slot_available",
+          "route": "retrieval",
+          "task_id": "p33_bge_1"
+        },
+        {
+          "estimated_wait_ms": 0,
+          "lane": "bge_cuda",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "cuda_slot_available",
+          "route": "retrieval",
+          "task_id": "p33_bge_2"
+        },
+        {
+          "estimated_wait_ms": 300,
+          "lane": "queued_bge_cuda",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 1,
+          "reason": "cuda_queue_full_cpu_not_allowed",
+          "route": "retrieval",
+          "task_id": "p33_bge_3"
+        },
+        {
+          "estimated_wait_ms": 600,
+          "lane": "queued_bge_cuda",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 2,
+          "reason": "cuda_queue_full_cpu_not_allowed",
+          "route": "retrieval",
+          "task_id": "p33_bge_4"
+        },
+        {
+          "estimated_wait_ms": 900,
+          "lane": "queued_bge_cuda",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 3,
+          "reason": "cuda_queue_full_cpu_not_allowed",
+          "route": "retrieval",
+          "task_id": "p33_bge_5"
+        },
+        {
+          "estimated_wait_ms": 0,
+          "lane": "non_bge_worker",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "no_cuda_bge_required",
+          "route": "research_lead",
+          "task_id": "p33_research_lead"
+        },
+        {
+          "estimated_wait_ms": 0,
+          "lane": "non_bge_worker",
+          "model_tier": "flash_or_coalesced",
+          "queue_position": 0,
+          "reason": "no_cuda_bge_required",
+          "route": "memo_writer",
+          "task_id": "p33_memo_writer"
+        }
+      ],
+      "schema_version": "finsight_inference_resource_scheduler_audit_v0_1",
+      "status": "pass",
+      "token_budget_pressure": true
+    },
+    "status": "pass"
+  },
+  "schema_version": "fin_insight_p33_sandbox_resource_scheduler_fixture_v0_1",
+  "source_fixture_refs": {
+    "p12_gate_rows": "data/manifests/r53_r60_p12_durable_runtime_hil_resource_router_gate_rows_v0_1.jsonl",
+    "p12_summary": "data/manifests/r53_r60_p12_durable_runtime_hil_resource_router_summary_v0_1.json",
+    "p33_manifest": "data/manifests/p33_sandbox_resource_scheduler_fixture_v0_1.json",
+    "p33_report": "docs/internal/vnext_20260610/p33_sandbox_resource_scheduler_fixture_report.zh-CN.md",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "s2_gate_rows": "data/manifests/r53_r60_s2_tool_sandbox_trace_gate_rows_v0_1.jsonl",
+    "s2_summary": "data/manifests/r53_r60_s2_tool_sandbox_trace_summary_v0_1.json"
+  },
+  "status": "pass",
+  "tool_audit": {
+    "approval_decision_count": 1,
+    "approval_rows": [
+      {
+        "actor_id": "research_lead",
+        "approval_decision_id": "approval_a85ab4a7681cced5",
+        "approver_actor_id": "human_reviewer",
+        "decision": "approved",
+        "reason": "S2 deterministic bounded local analysis smoke",
+        "task_id": "s2_scope_task_tool_sandbox",
+        "tool_id": "python_analysis"
+      }
+    ],
+    "blocked_count": 6,
+    "blocked_reasons": [
+      "actor_tool_not_allowed",
+      "credential_argument_forbidden",
+      "domain_not_allowlisted",
+      "human_approval_required",
+      "path_outside_allowed_roots",
+      "unknown_tool"
+    ],
+    "executed_count": 3,
+    "policy_binding_count": 6,
+    "sample_invocations": [
+      {
+        "actor_id": "research_lead",
+        "approval_decision_id": "",
+        "approval_policy_id": "",
+        "blocked_reason": "unknown_tool",
+        "node": "lead_review_checkpoint",
+        "policy_decision": "block",
+        "sandbox_policy_id": "",
+        "status": "blocked",
+        "tool_call_id": "toolcall_34f3c49cc81bc9aa",
+        "tool_id": "unknown_future_tool"
+      },
+      {
+        "actor_id": "research_lead",
+        "approval_decision_id": "",
+        "approval_policy_id": "requires_human_for_code_execution",
+        "blocked_reason": "human_approval_required",
+        "node": "lead_review_checkpoint",
+        "policy_decision": "block",
+        "sandbox_policy_id": "local_no_network_workspace_temp",
+        "status": "blocked",
+        "tool_call_id": "toolcall_37b59835c5a1a583",
+        "tool_id": "python_analysis"
+      },
+      {
+        "actor_id": "research_lead",
+        "approval_decision_id": "",
+        "approval_policy_id": "auto_allow_allowlisted_web",
+        "blocked_reason": "domain_not_allowlisted",
+        "node": "lead_review_checkpoint",
+        "policy_decision": "block",
+        "sandbox_policy_id": "allowlisted_public_web",
+        "status": "blocked",
+        "tool_call_id": "toolcall_79b0b8d398c11ff7",
+        "tool_id": "live_web_snapshot"
+      },
+      {
+        "actor_id": "research_lead",
+        "approval_decision_id": "",
+        "approval_policy_id": "auto_allow_low_risk",
+        "blocked_reason": "credential_argument_forbidden",
+        "node": "lead_review_checkpoint",
+        "policy_decision": "block",
+        "sandbox_policy_id": "local_db_readonly",
+        "status": "blocked",
+        "tool_call_id": "toolcall_79eeab1b4153d085",
+        "tool_id": "database_query"
+      },
+      {
+        "actor_id": "memo_writer",
+        "approval_decision_id": "",
+        "approval_policy_id": "auto_allow_allowlisted_web",
+        "blocked_reason": "actor_tool_not_allowed",
+        "node": "memo_writer",
+        "policy_decision": "block",
+        "sandbox_policy_id": "allowlisted_public_web",
+        "status": "blocked",
+        "tool_call_id": "toolcall_8eee743951033a9e",
+        "tool_id": "live_web_snapshot"
+      },
+      {
+        "actor_id": "research_lead",
+        "approval_decision_id": "approval_a85ab4a7681cced5",
+        "approval_policy_id": "requires_human_for_code_execution",
+        "blocked_reason": "",
+        "node": "lead_review_checkpoint",
+        "policy_decision": "allow",
+        "sandbox_policy_id": "local_no_network_workspace_temp",
+        "status": "executed",
+        "tool_call_id": "toolcall_a58a88627cd995d0",
+        "tool_id": "python_analysis"
+      },
+      {
+        "actor_id": "input_parser",
+        "approval_decision_id": "",
+        "approval_policy_id": "auto_allow_workspace_file",
+        "blocked_reason": "path_outside_allowed_roots",
+        "node": "input_parser",
+        "policy_decision": "block",
+        "sandbox_policy_id": "workspace_file_readonly",
+        "status": "blocked",
+        "tool_call_id": "toolcall_bbe508d61851562f",
+        "tool_id": "document_parser"
+      },
+      {
+        "actor_id": "memo_writer",
+        "approval_decision_id": "",
+        "approval_policy_id": "auto_allow_render_only",
+        "blocked_reason": "",
+        "node": "memo_writer",
+        "policy_decision": "allow",
+        "sandbox_policy_id": "workspace_artifact_write",
+        "status": "executed",
+        "tool_call_id": "toolcall_e7f4bfbfe04230be",
+        "tool_id": "report_renderer"
+      },
+      {
+        "actor_id": "research_lead",
+        "approval_decision_id": "",
+        "approval_policy_id": "auto_allow_low_risk",
+        "blocked_reason": "",
+        "node": "lead_review_checkpoint",
+        "policy_decision": "allow",
+        "sandbox_policy_id": "local_db_readonly",
+        "status": "executed",
+        "tool_call_id": "toolcall_f5b933a0a586181e",
+        "tool_id": "database_query"
+      }
+    ],
+    "secret_redacted": true,
+    "status": "pass",
+    "tool_invocation_count": 9
+  }
+}

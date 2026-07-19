@@ -58,6 +58,9 @@ DEFAULT_CUSTOMER_DEPLOYMENT_ROW_PATHS = [
     MANIFEST_DIR / "sec_financial_statement_metric_runtime_rows_v0_1.jsonl",
     MANIFEST_DIR / "industry_operating_metric_slot_rows_v0_1.jsonl",
     MANIFEST_DIR / "company_reported_product_operating_metric_runtime_rows_v0_1.jsonl",
+    MANIFEST_DIR / "non_us_product_kpi_local_disclosure_runtime_rows_v0_1.jsonl",
+    MANIFEST_DIR / "customer_operating_footprint_signal_runtime_rows_v0_1.jsonl",
+    MANIFEST_DIR / "filing_operating_footprint_context_rows_v0_1.jsonl",
     MANIFEST_DIR / "official_business_asset_profile_context_rows_v0_1.jsonl",
 ]
 DEFAULT_CAPITAL_MARKET_ROW_PATHS = [

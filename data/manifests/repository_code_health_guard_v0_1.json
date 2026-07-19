@@ -1,0 +1,144 @@
+{
+  "schema_version": "finsight_repository_code_health_guard_result_v0_1",
+  "status": "pass",
+  "error_count": 0,
+  "warning_count": 27,
+  "errors": [],
+  "warnings": [
+    {
+      "code": "complexity_warning",
+      "path": "apps/workbench/frontend/vite/src/main.tsx",
+      "lines": 3512
+    },
+    {
+      "code": "complexity_warning",
+      "path": "scripts/cloud/sec_agent_interactive.py",
+      "lines": 10794
+    },
+    {
+      "code": "complexity_warning",
+      "path": "scripts/data_expansion/build_broad_official_careers_context_rows.py",
+      "lines": 2236
+    },
+    {
+      "code": "complexity_warning",
+      "path": "scripts/data_expansion/build_product_taxonomy_kpi_parser.py",
+      "lines": 2875
+    },
+    {
+      "code": "complexity_warning",
+      "path": "scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py",
+      "lines": 6317
+    },
+    {
+      "code": "complexity_warning",
+      "path": "scripts/eval_retrieval/eval_milvus_retrieval_ab.py",
+      "lines": 2291
+    },
+    {
+      "code": "complexity_warning",
+      "path": "scripts/eval_sec_benchmark/run_sec_benchmark_eval.py",
+      "lines": 1985
+    },
+    {
+      "code": "complexity_warning",
+      "path": "scripts/eval_sec_benchmark/run_sec_eval_synthesis_qwen9b_backend.py",
+      "lines": 3799
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/ingestion/section_splitter.py",
+      "lines": 1789
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/d_series_database_store.py",
+      "lines": 1848
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/humanmade_gold_set_runtime.py",
+      "lines": 4137
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/langgraph_orchestrator.py",
+      "lines": 9290
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/layer_acceptance_gates.py",
+      "lines": 1548
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/memo_llm.py",
+      "lines": 7279
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/multi_agent_contracts.py",
+      "lines": 5238
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/multi_agent_runtime.py",
+      "lines": 8963
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/p34_lane_quality_runtime.py",
+      "lines": 3545
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/product_family_source_routes.py",
+      "lines": 1707
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/r53_r60_data_ingestion_retrieval_control_plane.py",
+      "lines": 1959
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/r53_r60_product_acceptance_b04_gate.py",
+      "lines": 1617
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/r53_r60_quality_engineering_online_eval.py",
+      "lines": 1922
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/r53_r60_research_to_quant_lab.py",
+      "lines": 2218
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/r53_r60_runtime_task_spine.py",
+      "lines": 1594
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/r53_r60_secondary_market_capital_feedback.py",
+      "lines": 1764
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/r53_r60_workpaper_lead_review_workflow.py",
+      "lines": 1521
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/research_lead_llm.py",
+      "lines": 3272
+    },
+    {
+      "code": "complexity_warning",
+      "path": "src/sec_agent/specialist_llm.py",
+      "lines": 4331
+    }
+  ]
+}

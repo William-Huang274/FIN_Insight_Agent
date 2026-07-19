@@ -43,7 +43,7 @@ def _write_frontend_fixture(root: Path) -> None:
     main_path.write_text(
         """
         function R53R60WorkbenchPanel() {
-          return <section id="r53-r60-workbench">Deliverable Studio Review queue Dashboard Projection</section>;
+          return <section id="r53-r60-workbench">Deliverable Studio Review queue Dashboard Projection Product acceptance evidence</section>;
         }
         function R53R60PilotDogfoodPanel() { return null; }
         const taskRoute = "/api/r53-r60/tasks";

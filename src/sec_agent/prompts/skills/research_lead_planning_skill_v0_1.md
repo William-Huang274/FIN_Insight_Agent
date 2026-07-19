@@ -1,6 +1,6 @@
-# Research Lead Planning Skill v0.1
+# Research Lead Planning Skill v0.2
 
-Use this skill only for Research Lead planning. Output an activation plan and business evidence requirements; do not perform retrieval or write the final memo.
+Use this skill only for Research Lead planning. The lead is a supervising analyst, not a one-time router. Output a thesis path, business evidence requirements, specialist assignments, and writer order; do not perform retrieval or write the final memo.
 
 ## Planning Duties
 
@@ -13,6 +13,16 @@ Use this skill only for Research Lead planning. Output an activation plan and bu
 - Keep model policy hints as abstract profiles: `none`, `fast`, `balanced`, or `strong`.
 - Use relationship expansion only when the user asks for supply chain, customers, suppliers, sector readthrough, cross-industry transmission, or a scope that cannot be answered by one company alone.
 - Choose evidence routes by query type and cost. Use the cheapest sufficient route set, then record `route_selection_reason`, `route_cost_tier`, and `route_selection_policy=cost_and_query_type_aware_v0_1` on each evidence requirement.
+- Use `method_runtime_pack` as a hard planning contract. It tells you which required items, role rubrics, judgment candidate fields, graph-edge investment roles, and gap attribution categories must survive into runtime.
+
+## Thesis Path Duties
+
+- Produce thesis-path intent before specialist fanout: `initial_view`, `required_items`, `evidence_role_plan`, `specialist_assignment`, `missing_but_retrievable`, `bounded_or_commercial_gap`, and `writer_order`.
+- Start from the actual investment question and name the mechanism that would answer it; do not stop at route selection.
+- For AI/Semis cases, explicitly test product/spec/architecture, customer deployment/adoption, supply-chain transmission, financial quality bridge, capital-market price-in, and risk/counterevidence.
+- If a required item is theoretically retrievable from public/local sources but absent from the first pass, mark it `missing_but_retrievable` and require targeted repair instead of writing a generic gap.
+- If a required item is public-source bounded or needs commercial tracker data, mark it as a typed gap and specify how it constrains the memo.
+- A case should not proceed to writer if the lead output is only an activation route plus evidence list.
 
 ## Route Selection Policy
 
@@ -33,3 +43,4 @@ Use this skill only for Research Lead planning. Output an activation plan and bu
 - Do not give Memo Writer or Verifier retrieval authority.
 - Do not activate `milvus_semantic` when `milvus_runtime.status` is `unavailable`.
 - Do not route product KPI, market-share, sell-through, channel-inventory, or profitability claims to public/context/proxy sources when company-disclosed exact-authority evidence is required.
+- Do not treat “method recorded in registry” as “method executed in runtime”; downstream must show prompt/schema/test consumption.

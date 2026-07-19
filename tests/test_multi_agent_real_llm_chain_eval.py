@@ -35,6 +35,20 @@ def test_multi_agent_real_llm_chain_fixture_schema() -> None:
     assert all(row.get("require_rendered_evidence_refs") for row in sector_cases)
 
 
+def test_dimension_number_sequence_stops_before_required_question_section() -> None:
+    module = _load_script_module()
+    rendered = "\n\n".join(
+        [
+            "核心判断:\n当前判断集中在财务、产品和供应链传导。",
+            "分维度分析:\n1. 基本面与财务质量：AMAT 毛利率支撑盈利质量判断。\n2. 产品与产线：KLAC 产品收入支撑过程控制业务规模判断。\n3. 投融资与资本开支：发行人自身 capex 不能等同客户订单。",
+            "关键问题回应:\n1. 出口限制与中国暴露风险：只能形成风险折价方向判断。\n2. 订单/积压：需要 parsed bookings/backlog 才能提权。",
+            "证据索引:\n- [C1] AMAT / gross margin",
+        ]
+    )
+
+    assert module._dimension_number_sequence_ok(rendered, "zh-CN") is True
+
+
 def test_fin_agent_full_chain_multiturn_fixture_schema() -> None:
     rows = _read_jsonl(FULL_CHAIN_MULTITURN_FIXTURE_PATH)
 
@@ -143,6 +157,719 @@ def test_multi_agent_real_llm_chain_dry_run_resolves_catalog_subset(tmp_path: Pa
     assert all(row["require_vnext_contract"] for row in expanded)
     assert all(row["expected_execution_mode"] == "deep_research" for row in expanded)
     assert all(row["require_investment_memo_quality"] for row in expanded)
+    ai_case = next(row for row in expanded if row["case_id"] == "fin_deep_ai_infra_nvda_dell_capex_023")
+    semicap_case = next(row for row in expanded if row["case_id"] == "fin_deep_semicap_asml_amat_lrcx_klac_cycle_025")
+    for row in (ai_case, semicap_case):
+        assert "market_valuation_analyst" in row["expected_specialist_agents"]
+        assert "market_valuation_analyst" not in row["expected_paid_specialist_agents"]
+        assert set(row["expected_paid_specialist_agents"]) < set(row["expected_specialist_agents"])
+        assert row["expected_paid_specialist_priorities"]["risk_counterevidence_analyst"] == "supporting"
+        assert row["expected_paid_specialist_priorities"]["fundamental_analyst"] == "primary"
+
+
+def test_real_llm_chain_token_budget_preflight_blocks_expensive_paid_run(tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args(
+        [
+            "--token-budget-total",
+            "50000",
+            "--token-budget-per-case",
+            "50000",
+            "--max-paid-calls",
+            "3",
+        ]
+    )
+    cases = [
+        {
+            "case_id": "deep_cost_case_a",
+            "expected_execution_mode": "deep_research",
+            "required_agents": [
+                "research_lead",
+                "universe_relationship",
+                "fundamental_analyst",
+                "product_technology_analyst",
+                "industry_supply_chain_analyst",
+                "memo_writer",
+                "verifier",
+            ],
+        },
+        {
+            "case_id": "deep_cost_case_b",
+            "expected_execution_mode": "deep_research",
+            "required_agents": [
+                "research_lead",
+                "universe_relationship",
+                "fundamental_analyst",
+                "industry_supply_chain_analyst",
+                "memo_writer",
+                "verifier",
+            ],
+        },
+    ]
+
+    plan = module._token_budget_plan(args=args, cases=cases, run_id="unit_budget", output_dir=tmp_path)
+
+    assert plan["paid_backend"] is True
+    assert plan["allowed"] is False
+    assert plan["status"] == "blocked_preflight_token_budget"
+    assert {row["type"] for row in plan["violations"]} >= {
+        "run_token_budget_exceeded",
+        "paid_call_budget_exceeded",
+        "case_token_budget_exceeded",
+    }
+    assert plan["scheduler_advice"]["status"] == "case_budget_repair_required"
+    assert plan["scheduler_advice"]["blocked_case_ids"] == ["deep_cost_case_a", "deep_cost_case_b"]
+
+
+def test_real_llm_chain_preflight_blocks_paid_real_retrieval_case_without_real_evidence_operators(tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args([])
+    case = {
+        "case_id": "requires_real_retrieval",
+        "expected_execution_mode": "deep_research",
+        "required_agents": ["research_lead", "memo_writer", "verifier"],
+        "require_real_retrieval_pass": True,
+        "require_real_evidence_quality_pass": True,
+    }
+
+    plan = module._token_budget_plan(args=args, cases=[case], run_id="unit_real_evidence_mode", output_dir=tmp_path)
+
+    assert plan["allowed"] is False
+    assert plan["status"] == "blocked_preflight_evidence_operator_mode"
+    assert plan["real_evidence_operators"] is False
+    assert plan["evidence_operator_mode_policy"] == "paid_real_retrieval_cases_require_real_evidence_operators_v0_1"
+    assert [row["type"] for row in plan["violations"]] == ["real_evidence_operators_required"]
+    assert plan["violations"][0]["case_id"] == "requires_real_retrieval"
+    assert "Pass --real-evidence-operators" in plan["required_action"]
+
+
+def test_real_llm_chain_preflight_allows_paid_real_retrieval_case_with_real_evidence_operators(tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--real-evidence-operators"])
+    case = {
+        "case_id": "requires_real_retrieval",
+        "expected_execution_mode": "focused_answer",
+        "required_agents": ["research_lead", "memo_writer", "verifier"],
+        "require_real_retrieval_pass": True,
+        "require_real_evidence_quality_pass": True,
+    }
+
+    plan = module._token_budget_plan(args=args, cases=[case], run_id="unit_real_evidence_mode", output_dir=tmp_path)
+
+    assert plan["allowed"] is True
+    assert plan["status"] == "allowed"
+    assert plan["real_evidence_operators"] is True
+    assert not [row for row in plan["violations"] if row["type"] == "real_evidence_operators_required"]
+
+
+def test_real_llm_chain_token_budget_uses_expected_paid_specialists(tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args([])
+    case = {
+        "case_id": "paid_specialist_case",
+        "expected_execution_mode": "deep_research",
+        "required_agents": [
+            "research_lead",
+            "universe_relationship",
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst",
+            "risk_counterevidence_analyst",
+            "memo_writer",
+            "verifier",
+        ],
+        "expected_specialist_agents": [
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst",
+            "risk_counterevidence_analyst",
+        ],
+        "expected_paid_specialist_agents": [
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "risk_counterevidence_analyst",
+        ],
+        "expected_paid_specialist_priorities": {
+            "fundamental_analyst": "primary",
+            "product_technology_analyst": "primary",
+            "industry_supply_chain_analyst": "primary",
+            "risk_counterevidence_analyst": "supporting",
+        },
+    }
+
+    plan = module._token_budget_plan(args=args, cases=[case], run_id="paid_specialist_unit", output_dir=tmp_path)
+    case_plan = plan["cases"][0]
+
+    assert case_plan["quality_expected_specialist_agents"] == case["expected_specialist_agents"]
+    assert case_plan["expected_specialist_agents"] == case["expected_paid_specialist_agents"]
+    assert case_plan["pruned_from_quality_expected_specialist_agents"] == ["market_valuation_analyst"]
+    assert "market_valuation_analyst" not in {row["node"] for row in case_plan["nodes"]}
+    node_by_id = {row["node"]: row for row in case_plan["nodes"]}
+    assert node_by_id["risk_counterevidence_analyst"]["priority"] == "supporting"
+    assert node_by_id["risk_counterevidence_analyst"]["estimated_input_tokens"] < 11000
+    assert case_plan["estimate_policy"] == "role_projected_compact_prompt_budget_v0_3"
+    assert case_plan["estimate_adjustments"]["memo_writer_input"] == "writer_thesis_skeleton_first_compact_verified_inputs"
+    assert node_by_id["memo_writer"]["estimated_input_tokens"] == 10500
+    assert int(case_plan["estimated_total_tokens"]) < 70000
+
+
+def test_real_llm_chain_runtime_required_agents_use_expected_paid_specialists() -> None:
+    module = _load_script_module()
+    case = {
+        "required_agents": [
+            "research_lead",
+            "universe_relationship",
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst",
+            "risk_counterevidence_analyst",
+            "memo_writer",
+            "verifier",
+            "renderer",
+        ],
+        "expected_specialist_agents": [
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst",
+            "risk_counterevidence_analyst",
+        ],
+        "expected_paid_specialist_agents": [
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "risk_counterevidence_analyst",
+        ],
+    }
+
+    required = module._runtime_required_agents(case)
+
+    assert "market_valuation_analyst" not in required
+    assert {"fundamental_analyst", "product_technology_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"} <= required
+    assert {"research_lead", "universe_relationship", "memo_writer", "verifier", "renderer"} <= required
+
+
+def test_real_llm_chain_initial_state_exports_cost_aware_paid_specialist_whitelist(tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args([])
+    case = {
+        "case_id": "ai_infra_cost_whitelist",
+        "prompt": "分析 NVDA/DELL AI server demand read-through，不要求估值或股价反应。",
+        "expected_execution_mode": "deep_research",
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "ANET", "VRT"],
+        "source_tiers": ["primary_sec_filing", "relationship_graph"],
+        "metric_families": ["revenue", "gross_margin", "capex"],
+        "required_dimension_ids": ["fundamentals", "industry_supply_chain", "risk_and_counterevidence"],
+        "expected_specialist_agents": [
+            "fundamental_analyst",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst",
+            "risk_counterevidence_analyst",
+        ],
+    }
+
+    state = module._initial_state(
+        case,
+        tmp_path,
+        run_id="unit_paid_specialist_whitelist",
+        previous_turn_summary=None,
+        args=args,
+    )
+
+    context = state["multi_agent_context"]
+    assert context["expected_specialist_agents"] == case["expected_specialist_agents"]
+    assert "market_valuation_analyst" not in context["expected_paid_specialist_agents"]
+    assert {
+        "fundamental_analyst",
+        "industry_supply_chain_analyst",
+        "risk_counterevidence_analyst",
+    } <= set(context["expected_paid_specialist_agents"])
+
+
+def test_real_llm_chain_cost_aware_specialists_keep_capital_market_feedback_role(tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args([])
+    case = {
+        "case_id": "p33_capital_market_feedback_role",
+        "prompt": "分析 NVDA/DELL AI server 与资本市场预期、price-in 和资金面反馈。",
+        "expected_execution_mode": "deep_research",
+        "source_tiers": ["primary_sec_filing", "market_snapshot", "relationship_graph"],
+        "metric_families": ["revenue", "gross_margin", "capital_market_feedback"],
+        "required_dimensions": ["fundamentals", "capital_market_feedback"],
+        "expected_specialist_agents": [
+            "fundamental_analyst",
+            "market_valuation_analyst",
+            "risk_counterevidence_analyst",
+        ],
+    }
+
+    plan = module._token_budget_plan(args=args, cases=[case], run_id="unit_capital_feedback", output_dir=tmp_path)
+    case_plan = plan["cases"][0]
+
+    assert "market_valuation_analyst" in case_plan["cost_aware_specialist_agents"]
+    assert "market_valuation_analyst" not in case_plan["prunable_specialist_agents"]
+    assert "market_valuation_analyst" in {row["node"] for row in case_plan["nodes"]}
+
+
+def test_real_llm_chain_counter_thesis_requirement_does_not_force_paid_risk_specialist(tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args([])
+    case = {
+        "case_id": "p33_counter_thesis_without_risk_specialist",
+        "prompt": "输出反证和 what-would-change，作为常规报告结构要求。",
+        "expected_execution_mode": "deep_research",
+        "source_tiers": ["primary_sec_filing", "relationship_graph"],
+        "metric_families": ["revenue", "gross_margin"],
+        "required_dimensions": ["fundamentals", "counter_thesis_and_what_would_change"],
+        "expected_specialist_agents": [
+            "fundamental_analyst",
+            "risk_counterevidence_analyst",
+        ],
+    }
+
+    plan = module._token_budget_plan(args=args, cases=[case], run_id="unit_counter_thesis", output_dir=tmp_path)
+    case_plan = plan["cases"][0]
+
+    assert "risk_counterevidence_analyst" not in case_plan["cost_aware_specialist_agents"]
+    assert "risk_counterevidence_analyst" in case_plan["prunable_specialist_agents"]
+    assert "risk_counterevidence_analyst" not in {row["node"] for row in case_plan["nodes"]}
+
+
+def test_real_llm_chain_case_normalization_aligns_score_with_paid_specialist_whitelist() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "ai_infra_cost_whitelist",
+        "prompt": "分析 NVDA/DELL AI server demand read-through，不要求估值或股价反应。",
+        "expected_execution_mode": "deep_research",
+        "source_tiers": ["primary_sec_filing", "relationship_graph"],
+        "metric_families": ["revenue", "gross_margin", "capex"],
+        "required_dimension_ids": ["fundamentals", "industry_supply_chain", "risk_and_counterevidence"],
+        "expected_specialist_agents": [
+            "fundamental_analyst",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst",
+            "risk_counterevidence_analyst",
+        ],
+    }
+
+    normalized = module._case_with_runtime_paid_specialists(case)
+
+    assert normalized["expected_specialist_agents"] == case["expected_specialist_agents"]
+    assert "market_valuation_analyst" not in normalized["expected_paid_specialist_agents"]
+    required = module._runtime_required_agents(
+        {
+            **normalized,
+            "required_agents": [
+                "research_lead",
+                "fundamental_analyst",
+                "industry_supply_chain_analyst",
+                "market_valuation_analyst",
+                "risk_counterevidence_analyst",
+                "memo_writer",
+                "verifier",
+            ],
+        }
+    )
+    assert "market_valuation_analyst" not in required
+
+
+def test_real_llm_chain_token_budget_scheduler_splits_batch_before_paid_run(tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args([])
+    base_case = {
+        "expected_execution_mode": "deep_research",
+        "required_agents": [
+            "research_lead",
+            "universe_relationship",
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "risk_counterevidence_analyst",
+            "memo_writer",
+            "verifier",
+        ],
+        "expected_paid_specialist_agents": [
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "risk_counterevidence_analyst",
+        ],
+        "expected_paid_specialist_priorities": {
+            "fundamental_analyst": "primary",
+            "product_technology_analyst": "primary",
+            "industry_supply_chain_analyst": "primary",
+            "risk_counterevidence_analyst": "supporting",
+        },
+    }
+    cases = [
+        {**base_case, "case_id": "ai_infra_case"},
+        {**base_case, "case_id": "semicap_case"},
+    ]
+
+    plan = module._token_budget_plan(args=args, cases=cases, run_id="batch_scheduler_unit", output_dir=tmp_path)
+
+    assert plan["allowed"] is False
+    assert plan["scheduler_advice"]["status"] == "split_required"
+    assert plan["scheduler_advice"]["blocked_case_ids"] == []
+    assert plan["scheduler_advice"]["recommended_batch_count"] == 2
+    assert [batch["case_ids"] for batch in plan["scheduler_advice"]["batches"]] == [["ai_infra_case"], ["semicap_case"]]
+    assert plan["required_action"].startswith("Run the recommended paid batches separately")
+
+
+def test_real_llm_chain_token_budget_preflight_only_writes_plan_without_graph(tmp_path: Path) -> None:
+    module = _load_script_module()
+    plan_path = tmp_path / "budget.json"
+
+    exit_code = module.main(
+        [
+            "--case-catalog-path",
+            str(VNEXT_50_CASE_CATALOG_PATH),
+            "--case-id",
+            "fin_deep_ai_infra_nvda_dell_capex_023",
+            "--token-budget-preflight-only",
+            "--token-budget-plan-path",
+            str(plan_path),
+            "--output-dir",
+            str(tmp_path / "outputs"),
+            "--run-id",
+            "preflight_only_unit",
+        ]
+    )
+
+    assert exit_code == 0
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    economy_plan = json.loads((tmp_path / "outputs" / "preflight_only_unit" / "agent_information_economy_preflight.json").read_text(encoding="utf-8"))
+    assert plan["schema_version"] == "sec_agent_paid_llm_token_budget_plan_v0.1"
+    assert plan["cases"][0]["case_id"] == "fin_deep_ai_infra_nvda_dell_capex_023"
+    assert "estimated_total_tokens" in plan
+    assert plan["cases"][0]["estimate_policy"] == "role_projected_compact_prompt_budget_v0_3"
+    assert int(plan["cases"][0]["estimated_total_tokens"]) < 119600
+    assert economy_plan["schema_version"] == "finsight_agent_information_economy_ledger_v0_1"
+    assert economy_plan["preflight_only"] is True
+
+
+def test_real_llm_chain_provider_preflight_writes_fail_fast_artifact(monkeypatch, tmp_path: Path) -> None:
+    module = _load_script_module()
+    args = module.parse_args(
+        [
+            "--llm-backend",
+            "openai_compat",
+            "--base-url",
+            "http://43.135.174.27:8080",
+            "--chat-completions-path",
+            "/v1/chat/completions",
+            "--model",
+            "gpt-5.5",
+            "--api-key-env",
+            "GPT_COMPAT_API_KEY",
+        ]
+    )
+
+    def fake_chat_completion(**kwargs: object) -> dict[str, object]:
+        return {
+            "status": "provider_error",
+            "call_id": "unit_call",
+            "provider": kwargs.get("llm_backend"),
+            "model": kwargs.get("model"),
+            "url": "http://43.135.174.27:8080/v1/chat/completions",
+            "proxy_mode": "direct",
+            "latency_ms": 12,
+            "failure_reason": "ConnectionResetError: simulated",
+            "transport_attempt_count": 1,
+            "transport_failures": [],
+        }
+
+    monkeypatch.setenv("GPT_COMPAT_API_KEY", "unit-key")
+    monkeypatch.setattr(module, "chat_completion", fake_chat_completion)
+
+    preflight = module._write_provider_preflight(args=args, run_id="unit_provider", output_dir=tmp_path)
+    saved = json.loads((tmp_path / "provider_preflight.json").read_text(encoding="utf-8"))
+
+    assert preflight["status"] == "fail"
+    assert saved["status"] == "fail"
+    assert saved["api_key_present"] is True
+    assert saved["api_key_saved"] is False
+    assert saved["proxy_mode"] == "direct"
+    assert "simulated" in saved["failure_reason"]
+
+
+def test_real_llm_chain_auto_proxy_mode_uses_direct_for_http_ip_endpoint() -> None:
+    module = _load_script_module()
+    args = module.parse_args(
+        [
+            "--llm-backend",
+            "openai_compat",
+            "--base-url",
+            "http://43.135.174.27:8080",
+            "--llm-gateway-proxy-mode",
+            "auto",
+        ]
+    )
+
+    assert module._resolved_llm_gateway_proxy_mode(args) == "direct"
+
+
+def test_real_llm_chain_graph_env_uses_deterministic_routes_for_unpaid_backend() -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--llm-backend", "mock"])
+
+    env = module._graph_env(args)
+
+    assert env["SEC_AGENT_MULTI_AGENT_LEAD_ROUTER"] == "deterministic"
+    assert env["SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER"] == "mock"
+    assert env["SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER"] == "deterministic"
+    assert env["SEC_AGENT_MULTI_AGENT_MEMO_ROUTER"] == "deterministic"
+
+
+def test_real_llm_chain_graph_env_uses_llm_routes_for_paid_backend_with_program_owned_relationships() -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--llm-backend", "deepseek"])
+
+    env = module._graph_env(args)
+
+    assert env["SEC_AGENT_MULTI_AGENT_LEAD_ROUTER"] == "llm"
+    assert env["SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER"] == "llm"
+    assert env["SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER"] == "deterministic"
+    assert env["SEC_AGENT_MULTI_AGENT_MEMO_ROUTER"] == "llm"
+
+
+def test_real_llm_chain_graph_env_allows_explicit_universe_llm_overlay_for_paid_backend() -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--llm-backend", "deepseek", "--universe-llm-overlay"])
+
+    env = module._graph_env(args)
+
+    assert env["SEC_AGENT_MULTI_AGENT_LEAD_ROUTER"] == "llm"
+    assert env["SEC_AGENT_MULTI_AGENT_SPECIALIST_ROUTER"] == "llm"
+    assert env["SEC_AGENT_MULTI_AGENT_UNIVERSE_ROUTER"] == "llm"
+    assert env["SEC_AGENT_MULTI_AGENT_MEMO_ROUTER"] == "llm"
+
+
+def test_real_llm_chain_token_budget_does_not_charge_universe_relationship_without_llm_requirement() -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--llm-backend", "deepseek"])
+    case = {
+        "case_id": "program_owned_relationships",
+        "expected_execution_mode": "deep_research",
+        "required_agents": ["research_lead", "universe_relationship", "memo_writer", "verifier"],
+    }
+
+    estimate = module._estimate_case_token_budget(case, args=args)
+
+    assert "universe_relationship" not in {row["node"] for row in estimate["nodes"]}
+
+
+def test_real_llm_chain_token_budget_ignores_legacy_universe_llm_requirement_without_overlay() -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--llm-backend", "deepseek"])
+    case = {
+        "case_id": "legacy_relationship_requirement",
+        "expected_execution_mode": "deep_research",
+        "required_agents": ["research_lead", "universe_relationship", "memo_writer", "verifier"],
+        "require_universe_llm_pass": True,
+    }
+
+    estimate = module._estimate_case_token_budget(case, args=args)
+
+    assert "universe_relationship" not in {row["node"] for row in estimate["nodes"]}
+
+
+def test_real_llm_chain_token_budget_charges_universe_relationship_when_overlay_required() -> None:
+    module = _load_script_module()
+    args = module.parse_args(["--llm-backend", "deepseek", "--universe-llm-overlay"])
+    case = {
+        "case_id": "model_explained_relationships",
+        "expected_execution_mode": "deep_research",
+        "required_agents": ["research_lead", "universe_relationship", "memo_writer", "verifier"],
+        "require_universe_llm_pass": True,
+    }
+
+    estimate = module._estimate_case_token_budget(case, args=args)
+
+    assert "universe_relationship" in {row["node"] for row in estimate["nodes"]}
+
+
+def test_real_llm_chain_universe_checks_accept_program_owned_relationship_completion_without_llm_call() -> None:
+    module = _load_script_module()
+    checks = module._universe_checks(
+        {
+            "case_id": "program_owned_relationships",
+            "required_agents": ["universe_relationship"],
+        },
+        result={"agent_activation_plan": {"activate_agents": ["universe_relationship"]}},
+        route={},
+        lookup={
+            "relationships": [
+                {
+                    "ticker": "NVDA",
+                    "related_ticker": "DELL",
+                    "claim_scope": "scope_or_hypothesis_only",
+                }
+            ]
+        },
+        validation={"status": "pass"},
+        tool_calls=[{"tool_name": "relationship_graph_lookup", "status": "ok"}],
+    )
+
+    assert checks["llm_invoked_when_expected"] is True
+    assert checks["llm_calls_ok"] is True
+    assert checks["validation_pass_when_expected"] is True
+    assert checks["relationship_lookup_called"] is True
+
+
+def test_real_llm_chain_universe_checks_require_llm_only_for_explicit_overlay() -> None:
+    module = _load_script_module()
+    checks = module._universe_checks(
+        {
+            "case_id": "model_explained_relationships",
+            "required_agents": ["universe_relationship"],
+            "require_universe_llm_pass": True,
+            "_universe_llm_overlay_required": True,
+        },
+        result={"agent_activation_plan": {"activate_agents": ["universe_relationship"]}},
+        route={},
+        lookup={
+            "relationships": [
+                {
+                    "ticker": "NVDA",
+                    "related_ticker": "DELL",
+                    "claim_scope": "scope_or_hypothesis_only",
+                }
+            ]
+        },
+        validation={"status": "pass"},
+        tool_calls=[{"tool_name": "relationship_graph_lookup", "status": "ok"}],
+    )
+
+    assert checks["llm_invoked_when_expected"] is False
+    assert checks["llm_calls_ok"] is False
+    assert checks["validation_pass_when_expected"] is True
+
+
+def test_agent_audit_projects_input_fingerprints_for_deterministic_routes() -> None:
+    module = _load_script_module()
+    result = {
+        "query_contract": {"focus_tickers": ["NVDA"], "search_scope_tickers": ["NVDA", "DELL"]},
+        "agent_activation_plan": {"execution_mode": "deep_research", "focus_tickers": ["NVDA"]},
+        "evidence_requirement_plan": {"requirements": [{"requirement_id": "req_gpu", "evidence_refs": ["req_ref"]}]},
+        "relationship_graph_observation": {
+            "status": "ok",
+            "relationships": [{"ticker": "NVDA", "related_ticker": "DELL", "evidence_refs": ["rel_ref"]}],
+        },
+        "universe_relationship_plan": {"relationships": [{"evidence_refs": ["rel_ref"]}]},
+        "memo_logic_plan": {"required_item_answer_plan": [{"item_id": "gpu_supply", "evidence_refs": ["memo_ref"]}]},
+        "verified_judgment_plan": {"supported_claims": [{"claim_id": "c1", "evidence_refs": ["claim_ref"]}]},
+        "pre_memo_fact_selection": {"approved_facts": [{"evidence_ref": "fact_ref"}]},
+        "memo_answer": {"memo_claims": [{"claim_id": "m1", "evidence_refs": ["claim_ref"]}]},
+        "claim_evidence_ledger": {"claims": [{"claim_id": "c1", "evidence_refs": ["claim_ref"]}]},
+        "specialist_outputs": [
+            {"agent_id": "product_technology_analyst", "observations": [{"evidence_refs": ["product_ref"]}]}
+        ],
+    }
+
+    audit = module._agent_audit(
+        result,
+        {},
+        tool_calls=[],
+        specialist_routes=[{"agent_id": "product_technology_analyst", "status": "run"}],
+        specialist_quality={},
+    )
+
+    assert audit["research_lead"]["input_pack_fingerprint"]["capture_source"] == (
+        "deterministic_fallback_from_saved_research_lead_state"
+    )
+    assert audit["universe_relationship"]["input_pack_fingerprint"]["known_evidence_ref_count"] >= 1
+    memo_fp = audit["memo_writer"]["route_result"]["input_pack_fingerprint"]
+    verifier_fp = audit["verifier"]["input_projection"]["input_pack_fingerprint"]
+    specialist_fp = audit["specialists"]["route_results"][0]["input_pack_fingerprint"]
+    assert memo_fp["agent_id"] == "memo_writer"
+    assert verifier_fp["agent_id"] == "verifier"
+    assert specialist_fp["capture_source"] == "deterministic_fallback_from_saved_specialist_output_proxy"
+    assert "raw_prompt" not in memo_fp
+    assert "messages" not in memo_fp
+    assert "component_summaries" in memo_fp
+
+
+def test_real_llm_chain_initial_state_forces_catalog_execution_mode(tmp_path: Path) -> None:
+    module = _load_script_module()
+    from sec_agent.multi_agent_router import route_multi_agent_activation
+
+    args = module.parse_args(
+        [
+            "--case-catalog-path",
+            str(VNEXT_50_CASE_CATALOG_PATH),
+            "--case-id",
+            "fin_deep_ai_infra_nvda_dell_capex_023",
+            "--llm-backend",
+            "mock",
+        ]
+    )
+    case = module._load_cases(args)[0]
+    state = module._initial_state(
+        case,
+        tmp_path,
+        run_id="unit_catalog_mode",
+        previous_turn_summary=None,
+        args=args,
+    )
+
+    assert state["multi_agent_context"]["execution_mode"] == "deep_research"
+    route = route_multi_agent_activation(
+        {
+            "user_query": state["user_query"],
+            "focus_tickers": state["selected_tickers"],
+            "search_scope_tickers": state["multi_agent_context"]["search_scope_tickers"],
+            "source_inventory": state["project_inventory"],
+            "context": {**state["multi_agent_context"], "query_contract": state["query_contract"]},
+        }
+    )
+    assert route["activation_plan"]["execution_mode"] == "deep_research"
+
+
+def test_query_contract_infers_cloud_buyer_demand_proxy_roles_for_ai_capex_case() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_diag_ai_infra_dell_product_capex_zh",
+        "industry_schema": "technology_ai_infrastructure",
+        "prompt": (
+            "用 AI infrastructure sector-depth pack 诊断 NVDA 与 DELL 的基本面、产品证据、"
+            "MSFT/AMZN/GOOGL capex 背景、需求传导和反证风险。"
+        ),
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "ANET", "VRT", "MSFT", "AMZN", "GOOGL"],
+        "metric_families": ["revenue", "capex", "product_revenue"],
+    }
+
+    contract = module._query_contract(case)
+
+    assert contract["demand_proxy_tickers"] == ["MSFT", "AMZN", "GOOGL"]
+    assert contract["ticker_roles"] == {
+        "MSFT": "cloud_buyer_demand_proxy",
+        "AMZN": "cloud_buyer_demand_proxy",
+        "GOOGL": "cloud_buyer_demand_proxy",
+    }
+
+
+def test_query_contract_does_not_infer_infra_suppliers_as_demand_proxy_roles() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "ma_real_sector_ai_infra_full_chain_real_retrieval",
+        "industry_schema": "technology_ai_infrastructure",
+        "prompt": "从 AI infrastructure sector-depth pack 出发，分析 NVDA、DELL、ANET、VRT 的需求传导。",
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "ANET", "VRT"],
+        "metric_families": ["revenue", "capex"],
+    }
+
+    contract = module._query_contract(case)
+
+    assert contract["demand_proxy_tickers"] == []
+    assert contract["ticker_roles"] == {}
 
 
 def test_multi_agent_real_llm_chain_reads_milvus_runtime_config_env(
@@ -177,6 +904,51 @@ def test_multi_agent_real_llm_chain_reads_milvus_runtime_config_env(
     assert context["milvus_runtime"]["status"] == "available"
     assert context["milvus_runtime"]["location"] == "local"
     assert context["milvus_runtime"]["fallback_routes"] == ["bm25", "object_bm25", "exact_value_ledger"]
+
+
+def test_real_llm_chain_initial_state_marks_unavailable_milvus_as_unavailable(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    module = _load_script_module()
+    monkeypatch.delenv("FINSIGHT_MILVUS_RUNTIME_CONFIG", raising=False)
+    monkeypatch.delenv("MILVUS_DB_PATH", raising=False)
+    monkeypatch.delenv("MILVUS_COLLECTION_NAME", raising=False)
+    monkeypatch.delenv("MILVUS_COLLECTION", raising=False)
+    args = module.parse_args([])
+    case = {
+        "case_id": "milvus_unavailable_inventory_contract",
+        "prompt": "Analyze NVDA DELL AI infrastructure evidence.",
+        "expected_execution_mode": "deep_research",
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "MSFT", "AMZN", "GOOGL"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "relationship_graph",
+            "company_product_evidence_graph",
+        ],
+        "metric_families": ["revenue", "capex", "customer_deployment"],
+        "require_milvus_runtime_contract": True,
+    }
+
+    state = module._initial_state(
+        case,
+        tmp_path,
+        run_id="unit_milvus_unavailable_inventory",
+        previous_turn_summary=None,
+        args=args,
+    )
+
+    inventory = state["project_inventory"]
+    milvus = inventory["milvus_runtime"]
+    availability = inventory["source_family_availability"]["milvus_semantic"]
+    assert milvus["available"] is False
+    assert milvus["status"] == "unavailable"
+    assert availability["available"] is False
+    assert availability["status"] == "unavailable"
+    assert "milvus_semantic" not in inventory["available_source_families"]
+    assert "milvus_semantic" not in inventory["source_families"]
 
 
 def test_real_llm_chain_resource_policy_serializes_local_cuda_fanout() -> None:
@@ -488,6 +1260,52 @@ def test_multi_agent_real_llm_chain_scoring_accepts_layered_success() -> None:
     assert score["agent_audit"]["verifier"]["input_projection"]["projected_claim_count"] == 2
 
 
+def test_multi_agent_real_llm_chain_scoring_accepts_stepwise_research_lead_validation() -> None:
+    module = _load_script_module()
+    case = _read_jsonl(FIXTURE_PATH)[0]
+    result = {
+        "status": "stopped_after_node",
+        "agent_activation_plan": {
+            "execution_mode": "focused_answer",
+            "activate_agents": [
+                "research_lead",
+                "sec_operator",
+                "eight_k_operator",
+                "coverage_reflection",
+                "memo_writer",
+                "verifier",
+                "renderer",
+            ],
+            "focus_tickers": ["AMZN"],
+            "search_scope_tickers": ["AMZN"],
+        },
+        "research_lead_validation": {"status": "pass"},
+        "memo_answer": {"answer_status": "draft", "bounded_answer_allowed": False},
+        "memo_route_result": {"status": "pass", "attempt_count": 1},
+        "claim_verification": {
+            "status": "pass",
+            "verifier_input_projection": {
+                "projection_policy": "final_memo_claims_and_referenced_evidence_only",
+                "projected_claim_count": 2,
+            },
+        },
+        "rendered_answer": "bounded rendered answer",
+    }
+    summary = {
+        "payload_policy": {"raw_evidence": "not_included"},
+        "llm_routes": {
+            "research_lead": {"diagnostics": _ok_diag()},
+            "memo_writer": {"diagnostics": _ok_diag()},
+            "verifier": {"diagnostics": _ok_diag()},
+        },
+    }
+
+    score = module.score_case(case, result, summary, {}, elapsed_ms=12)
+
+    assert score["checks"]["research_lead.validation_pass"] is True
+    assert score["agent_audit"]["research_lead"]["validation_status"] == "pass"
+
+
 def test_real_llm_chain_diagnostic_quality_accepts_product_and_capex_facts() -> None:
     module = _load_script_module()
     case = {
@@ -616,6 +1434,28 @@ def test_real_llm_chain_investment_quality_rejects_gap_ledger_surface() -> None:
     assert quality_checks["internal_gate_prose_absent"] is False
 
 
+def test_real_llm_chain_investment_quality_allows_role_boundary_opening() -> None:
+    module = _load_script_module()
+    text = (
+        "核心判断:\n"
+        "已披露事实给出的主线是：DELL 的产品收入（$16.1B、2026）提供公司披露的产品或分部收入锚点，"
+        "可用于收入承接和业务组合判断，但不能外推 SKU 份额、ASP 或客户订单；"
+        "AMZN 的资本开支（$151B、2026）只能说明客户/需求侧资本开支或终端需求池扩张，"
+        "不能当作供应商收入、backlog 或直接订单。投资判断应先区分客户/需求侧 capex、供应商自身 capex、产品收入/订单与毛利锚点。"
+        "\n\n分维度分析:\n"
+        "1. 基本面与财务质量：DELL AI server 收入和 NVDA 毛利率共同支撑收入质量判断。[C1]\n"
+        "2. 产品与产线证据：DELL AI server 与 NVDA GPU 构成供应链桥接，需要看客户部署和利润率。[C2]\n\n"
+        "关键论据:\n1. DELL AI server 收入构成产品-财务桥接。[C1]\n\n"
+        "投资含义:\n- 当前证据支持 AI 基础设施需求池扩张，但需要用 DELL 利润率和 NVDA 数据中心收入验证传导质量。\n\n"
+        "什么会改变判断:\n- 如果客户部署或订单证据无法对应 DELL/NVDA 收入，供应链传导判断需要下修。\n\n"
+        "后续跟踪:\n- 跟踪云厂商 capex、DELL AI server 毛利、NVDA GPU 供给和客户部署。"
+    )
+
+    quality = module._rendered_investment_quality_checks(text, "zh-CN")
+
+    assert quality["checks"]["thesis_not_gap_first"] is True
+
+
 def test_real_llm_chain_investment_quality_rejects_fake_product_financial_lines_and_metadata() -> None:
     module = _load_script_module()
     case = {
@@ -725,6 +1565,92 @@ def test_real_llm_chain_investment_quality_rejects_capex_as_product_line() -> No
     assert score["gate_status"] == "fail"
     assert score["investment_quality"]["checks"]["product_section_not_fake_financial_line"] is False
     assert score["investment_quality"]["metrics"]["product_section_fake_financial_line_count"] >= 1
+
+
+def test_p30_required_item_gate_requires_summary_projection_for_answer_plan() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_ai_infra_nvda_dell_capex_023",
+        "prompt": "诊断 NVDA 与 DELL AI infrastructure demand read-through。",
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "AMZN", "MSFT", "GOOGL"],
+    }
+    required_plan = [
+        {"question_item_id": "dell_ai_server_quality_margin_bridge"},
+        {"question_item_id": "nvda_gpu_supply_generation"},
+        {"question_item_id": "cloud_capex_read_through"},
+        {"question_item_id": "customer_deployment_or_order_signal"},
+    ]
+    result = {
+        "memo_logic_plan": {
+            "validation": {"status": "pass"},
+            "required_item_answer_plan": required_plan,
+            "product_reasoning_frame": {"coverage_roles": ["product_kpi", "customer_deployment"]},
+        },
+        "multi_agent_summary": {
+            "memo_logic_plan": {
+                "status": "pass",
+                "required_item_answer_plan_count": 0,
+                "required_item_answer_plan": [],
+            }
+        },
+        "pre_memo_fact_selection": {
+            "approved_facts": [
+                {
+                    "ticker": "DELL",
+                    "canonical_metric_id": "product_kpi:product_revenue",
+                    "display_value": "$16.1B",
+                    "display_value_lineage": {"schema_version": "sec_agent_display_value_lineage_v0.1"},
+                    "source_statement": "DELL AI server revenue and gross margin bridge.",
+                }
+            ]
+        },
+        "verified_judgment_plan": {
+            "supported_claims": [
+                {
+                    "claim_id": "dell_ai_server_quality",
+                    "claim": "DELL AI server gross margin bridge supports product quality analysis.",
+                    "analysis_dimension": "product_and_production",
+                    "ticker_scope": ["DELL"],
+                    "evidence_refs": ["dell_ai_server_quality"],
+                },
+                {
+                    "claim_id": "nvda_gpu_supply",
+                    "claim": "NVDA GPU H100 Blackwell generation supports supply analysis.",
+                    "analysis_dimension": "product_and_production",
+                    "ticker_scope": ["NVDA"],
+                    "evidence_refs": ["nvda_gpu_supply"],
+                },
+                {
+                    "claim_id": "cloud_capex",
+                    "claim": "AMZN MSFT GOOGL cloud capex supports data center read-through.",
+                    "analysis_dimension": "capital_and_financing",
+                    "ticker_scope": ["AMZN", "MSFT", "GOOGL"],
+                    "evidence_refs": ["cloud_capex"],
+                },
+                {
+                    "claim_id": "customer_deployment",
+                    "claim": "Customer deployment and order adoption signal supports demand quality.",
+                    "analysis_dimension": "product_and_production",
+                    "ticker_scope": ["DELL", "NVDA"],
+                    "evidence_refs": ["deployment"],
+                },
+            ]
+        },
+    }
+    rendered = (
+        "DELL AI server gross margin supports a bounded product-quality judgment. "
+        "NVDA GPU H100 Blackwell generation supports supply and architecture judgment. "
+        "AMZN MSFT GOOGL cloud capex supports data center read-through. "
+        "Customer deployment and order adoption signal supports demand quality."
+    )
+
+    audit = module._p30_root_cause_quality_audit(case, result=result, rendered_answer=rendered, memo_dimension_analyses=[])
+
+    assert audit["status"] == "fail"
+    assert audit["checks"]["required_item_answer_plan_present"] is True
+    assert audit["checks"]["required_item_answer_plan_projected_to_summary"] is False
+    assert any(row["symptom"] == "required_item_answer_plan_not_projected_to_summary" for row in audit["root_cause_rows"])
 
 
 def test_real_llm_chain_investment_quality_is_required_for_deep_dimension_surface() -> None:
@@ -1065,9 +1991,550 @@ def test_initial_state_adds_default_case_run_audit_path_when_required(tmp_path: 
         args=args,
     )
 
-    expected = Path("data") / "workbench_private" / "run_audit" / "unit_audit_default.sqlite"
+    expected = (REPO_ROOT / "data" / "workbench_private" / "run_audit" / "unit_audit_default.sqlite").resolve()
     assert state["run_audit_db_path"] == str(expected)
     assert state["multi_agent_context"]["run_audit_db_path"] == str(expected)
+
+
+def test_p30_root_cause_quality_flags_raw_numeric_and_false_missing_evidence() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_semicap_p30_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "focus_tickers": ["LRCX"],
+        "search_scope_tickers": ["LRCX"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "pre_memo_fact_selection": {
+            "approved_facts": [
+                {
+                    "selection_id": "sel_lrcx_revenue",
+                    "fact_id": "fact_lrcx_revenue",
+                    "ticker": "LRCX",
+                    "canonical_metric_id": "financial_metric:revenue",
+                    "value": "14922.0",
+                    "numeric_value": "14922.0",
+                    "unit": "usd_millions",
+                    "display_value": "$14.9B",
+                    "display_value_lineage": {"schema_version": "sec_agent_display_value_lineage_v0.1"},
+                    "evidence_ref": "lrcx_revenue_ref",
+                }
+            ]
+        },
+        "verified_judgment_plan": {"supported_claims": []},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": "LRCX 财务数据缺失，后续仍需补表。另有内部数值 1743504.0 被写出。",
+    }
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+    audit = score["p30_root_cause_quality_audit"]
+
+    assert score["layer_checks"]["p30_root_cause_quality"]["rendered_no_raw_unitless_numeric"] is False
+    assert score["layer_checks"]["p30_root_cause_quality"]["focus_ticker_no_evidence_contradiction"] is False
+    assert {row["symptom"] for row in audit["root_cause_rows"]} >= {
+        "raw_unitless_numeric_rendered",
+        "memo_claims_missing_data_despite_available_evidence",
+    }
+
+
+def test_p30_root_cause_quality_flags_false_missing_product_evidence() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_ai_infra_product_p30_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 NVDA 和 DELL 的 AI server 产品、客户部署和供应链 read-through",
+        "focus_tickers": ["DELL"],
+        "search_scope_tickers": ["NVDA", "DELL"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "pre_memo_fact_selection": {
+            "approved_facts": [
+                {
+                    "selection_id": "sel_dell_ai_server_revenue",
+                    "fact_id": "fact_dell_ai_server_revenue",
+                    "ticker": "DELL",
+                    "canonical_metric_id": "product_kpi:product_revenue",
+                    "product_or_segment": "AI-optimized server / ISG",
+                    "display_value": "$16.1B AI-optimized server annual revenue",
+                    "display_value_lineage": {"schema_version": "sec_agent_display_value_lineage_v0.1"},
+                    "evidence_ref": "dell_ai_server_revenue_ref",
+                }
+            ]
+        },
+        "verified_judgment_plan": {
+            "supported_claims": [
+                {
+                    "claim_id": "dell_isg_product_revenue_claim",
+                    "claim_type": "company_reported_product_operating_fact",
+                    "ticker_scope": ["DELL"],
+                    "metric_scope": ["product_kpi:product_revenue", "AI-optimized server"],
+                    "claim": "DELL reported AI-optimized server revenue and ISG revenue, giving a product-level bridge for AI server exposure.",
+                    "evidence_refs": ["dell_ai_server_revenue_ref"],
+                }
+            ]
+        },
+        "memo_logic_plan": {"product_reasoning_frame": {"coverage_roles": ["exact_product_kpi"]}},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": "DELL 的产品 taxonomy 可见，但 no runtime facts confirm AI-optimized server revenue or ISG performance。",
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    checks = score["layer_checks"]["p30_root_cause_quality"]
+    assert checks["focus_ticker_no_product_evidence_contradiction"] is False
+    assert any(
+        row["symptom"] == "memo_claims_missing_product_data_despite_available_evidence"
+        and row["root_cause_layer"] == "memo_writer_or_memo_logic_plan_product_evidence_selection"
+        for row in score["p30_root_cause_quality_audit"]["root_cause_rows"]
+    )
+
+
+def test_p30_root_cause_quality_flags_memo_logic_plan_validation_failure() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_p30_plan_validation_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "focus_tickers": ["NVDA"],
+        "search_scope_tickers": ["NVDA"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "memo_logic_plan": {
+            "validation": {"status": "fail", "errors": ["required item not projected into writer skeleton"]},
+            "product_reasoning_frame": {"coverage_roles": ["official_product_surface"]},
+        },
+        "verified_judgment_plan": {"supported_claims": []},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": "NVDA 产品线和需求背景被简要覆盖。",
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert score["layer_checks"]["p30_root_cause_quality"]["memo_logic_plan_validation_pass"] is False
+    assert any(
+        row["symptom"] == "memo_logic_plan_validation_failed"
+        for row in score["p30_root_cause_quality_audit"]["root_cause_rows"]
+    )
+
+
+def test_p30_raw_numeric_gate_ignores_evidence_index_artifact_ids() -> None:
+    module = _load_script_module()
+
+    assert module._p30_raw_numeric_surface_violations(
+        "核心判断:\n资本支出约为1510亿美元。\n\n证据索引:\n- [C1] 20260702_p30_root BLOCK_0013"
+    ) == []
+    assert module._p30_raw_numeric_surface_violations("核心判断:\n内部数值 1743504.0 被写出。")
+
+
+def test_p30_required_item_gate_accepts_chinese_product_terms() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_ai_infra_semicap_p30_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 NVDA、DELL、ASML、AMAT、LRCX、KLAC 的 AI server 和 semicap 周期",
+        "focus_tickers": ["NVDA", "DELL", "ASML", "AMAT", "LRCX", "KLAC"],
+        "search_scope_tickers": ["NVDA", "DELL", "ASML", "AMAT", "LRCX", "KLAC"],
+        "require_p30_root_cause_quality": True,
+    }
+    rendered = (
+        "NVDA GPU 与 Blackwell 代际支撑算力判断；DELL AI服务器毛利和客户订单需要联动。"
+        "MSFT、AMZN、GOOGL 云服务资本支出和数据中心投入提供需求 read-through。"
+        "ASML 订单积压、半导体设备出货周期、台积电/三星/英特尔客户部署，以及中国出口限制和许可证约束均被覆盖。"
+    )
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "verified_judgment_plan": {"supported_claims": []},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "memo_logic_plan": {"product_reasoning_frame": {"coverage_roles": ["official_relationship"]}},
+        "rendered_answer": rendered,
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert score["layer_checks"]["p30_root_cause_quality"]["required_items_covered"] is True
+
+
+def test_p30_root_cause_quality_flags_economic_role_misuse() -> None:
+    module = _load_script_module()
+    ai_case = {
+        "case_id": "fin_deep_ai_infra_economic_role_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 NVDA、DELL 与 MSFT、AMZN、GOOGL cloud capex 的 AI server 需求传导",
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "MSFT", "AMZN", "GOOGL"],
+        "require_p30_root_cause_quality": True,
+    }
+    ai_result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "verified_judgment_plan": {"supported_claims": []},
+        "memo_logic_plan": {"product_reasoning_frame": {"coverage_roles": ["product_kpi"]}},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": "AMZN 的产品线/产品面/aws revenue/operating income说明供应商端已有产品收入或产品线证据承接需求。NVDA GPU 和 DELL AI server 毛利判断可回答。",
+    }
+
+    ai_score = module.score_case(ai_case, ai_result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert ai_score["layer_checks"]["p30_root_cause_quality"]["economic_role_no_misuse"] is False
+    assert any(
+        row["symptom"] == "peer_or_customer_capex_context_rendered_as_supplier_revenue"
+        for row in ai_score["p30_root_cause_quality_audit"]["root_cause_rows"]
+    )
+
+    ai_issuer_capex_result = {
+        **ai_result,
+        "rendered_answer": "DELL 的资本支出（$0.67B、2026）说明需求端投入或再投资强度，是供应链收入传导的上游约束。",
+    }
+
+    ai_issuer_capex_score = module.score_case(
+        ai_case,
+        ai_issuer_capex_result,
+        {"payload_policy": {"raw_evidence": "not_included"}},
+        {},
+        elapsed_ms=1,
+    )
+
+    assert ai_issuer_capex_score["layer_checks"]["p30_root_cause_quality"]["economic_role_no_misuse"] is False
+    assert any(
+        row["symptom"] == "issuer_own_capex_rendered_as_customer_demand"
+        and row["affected_tickers"] == ["DELL"]
+        for row in ai_issuer_capex_score["p30_root_cause_quality_audit"]["root_cause_rows"]
+    )
+
+    semicap_case = {
+        "case_id": "fin_deep_semicap_economic_role_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 ASML、AMAT、LRCX、KLAC 的订单、积压、出货周期和客户需求",
+        "focus_tickers": ["ASML", "AMAT", "LRCX", "KLAC"],
+        "search_scope_tickers": ["ASML", "AMAT", "LRCX", "KLAC", "INTC"],
+        "require_p30_root_cause_quality": True,
+    }
+    semicap_result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "verified_judgment_plan": {"supported_claims": []},
+        "memo_logic_plan": {"product_reasoning_frame": {"coverage_roles": ["product_kpi"]}},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": "KLAC 的资本支出（$287M、2026）说明需求端投入或再投资强度，是供应链收入传导的上游约束；ASML 订单、backlog 和客户部署均被覆盖。",
+    }
+
+    semicap_score = module.score_case(
+        semicap_case,
+        semicap_result,
+        {"payload_policy": {"raw_evidence": "not_included"}},
+        {},
+        elapsed_ms=1,
+    )
+
+    assert semicap_score["layer_checks"]["p30_root_cause_quality"]["economic_role_no_misuse"] is False
+    assert any(
+        row["symptom"] == "issuer_own_capex_rendered_as_customer_demand"
+        for row in semicap_score["p30_root_cause_quality_audit"]["root_cause_rows"]
+    )
+
+
+def test_p30_root_cause_quality_allows_capex_customer_demand_boundary_language() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_ai_infra_economic_role_boundary_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 NVDA、DELL 与 MSFT、AMZN、GOOGL cloud capex 的 AI server 需求传导",
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "MSFT", "AMZN", "GOOGL"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "verified_judgment_plan": {"supported_claims": []},
+        "memo_logic_plan": {
+            "product_reasoning_frame": {"coverage_roles": ["product_kpi"]},
+            "required_item_answer_plan": [
+                {"item_id": "cloud_capex_signal", "terms_any": ["capex", "资本支出"], "answer_strategy": "judgment"}
+            ],
+        },
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": (
+            "NVDA 的营收和毛利率反映 AI demand 与 pricing power。"
+            "DELL 的资本支出约6.7亿美元，反映其自身产能投资，不是客户需求信号。"
+            "MSFT、AMZN、GOOGL 的资本支出只能说明需求池扩张，不能直接等同于供应商营收。"
+        ),
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert score["layer_checks"]["p30_root_cause_quality"]["economic_role_no_misuse"] is True
+    assert not score["p30_root_cause_quality_audit"]["economic_role_misuse_rows"]
+
+
+def test_p30_root_cause_quality_does_not_treat_supplier_revenue_to_customer_capex_as_own_capex() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_ai_infra_supplier_revenue_customer_capex_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 NVDA 与 DELL 的 AI server、cloud capex 和客户部署",
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "MSFT", "AMZN", "GOOGL"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "verified_judgment_plan": {"supported_claims": []},
+        "memo_logic_plan": {"validation": {"status": "pass"}},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": (
+            "NVDA 的营收规模可以作为数据中心客户资本支出强度的供应商侧结果线索，"
+            "但不能直接等同于客户订单或未来份额。"
+            "DELL 的资本开支是自身再投资，不是客户需求信号。"
+        ),
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert score["layer_checks"]["p30_root_cause_quality"]["economic_role_no_misuse"] is True
+    assert not score["p30_root_cause_quality_audit"]["economic_role_misuse_rows"]
+
+
+def test_p30_required_item_gate_rejects_keyword_only_boundary_language() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_ai_infra_p30_keyword_only_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 NVDA 与 DELL 的 AI server、cloud capex 和客户部署",
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "MSFT", "AMZN", "GOOGL"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "verified_judgment_plan": {
+            "supported_claims": [
+                {
+                    "claim_id": "claim_dell_ai_server_margin",
+                    "claim": "DELL AI server gross margin and ISG revenue are available for judging AI server quality.",
+                    "ticker_scope": ["DELL"],
+                    "metric_scope": ["gross margin", "AI server"],
+                    "evidence_refs": ["ev_dell_margin"],
+                }
+            ]
+        },
+        "memo_logic_plan": {
+            "product_reasoning_frame": {"coverage_roles": ["exact_product_kpi"]},
+            "required_item_answer_plan": [
+                {
+                    "question_item_id": "dell_ai_server_quality_margin_bridge",
+                    "dimension": "product_and_production",
+                    "answer_first_judgment_prompt": "Judge DELL AI server quality.",
+                }
+            ],
+        },
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": "DELL AI server gross margin 需要继续验证；NVDA GPU、cloud capex 和客户部署也需要后续跟踪。",
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    audit = score["p30_root_cause_quality_audit"]
+    assert score["layer_checks"]["p30_root_cause_quality"]["required_items_covered"] is False
+    dell_row = next(row for row in audit["required_item_matrix"] if row["item_id"] == "dell_ai_server_quality_margin_bridge")
+    assert dell_row["status"] == "term_only_or_boundary_only"
+    assert dell_row["rendered_judgment_hit"] is False
+    assert any(
+        row["symptom"] == "required_item_keyword_covered_without_analyst_judgment"
+        and row["root_cause_layer"] == "memo_writer_required_item_answer_execution"
+        for row in audit["root_cause_rows"]
+    )
+
+
+def test_p30_required_item_gate_requires_answer_plan_for_required_items() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_semicap_answer_plan_missing_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 ASML、AMAT、LRCX、KLAC 的订单、积压和出口限制",
+        "focus_tickers": ["ASML", "AMAT", "LRCX", "KLAC"],
+        "search_scope_tickers": ["ASML", "AMAT", "LRCX", "KLAC"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "verified_judgment_plan": {
+            "supported_claims": [
+                {
+                    "claim_id": "claim_asml_backlog",
+                    "claim": "ASML backlog and order cycle evidence supports semicap cycle visibility.",
+                    "ticker_scope": ["ASML"],
+                    "metric_scope": ["orders", "backlog"],
+                    "evidence_refs": ["ev_asml_backlog"],
+                }
+            ]
+        },
+        "memo_logic_plan": {
+            "product_reasoning_frame": {"coverage_roles": ["official_product_surface"]},
+            "required_item_answer_plan": [],
+        },
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": "ASML 订单积压支撑半导体设备周期判断，出口限制构成中国收入风险。",
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert score["layer_checks"]["p30_root_cause_quality"]["required_item_answer_plan_present"] is False
+    assert any(
+        row["symptom"] == "required_item_missing_answer_plan"
+        and row["earliest_faulty_artifact"] == "memo_logic_plan.required_item_answer_plan"
+        for row in score["p30_root_cause_quality_audit"]["root_cause_rows"]
+    )
+
+
+def test_p30_non_us_official_source_gap_requires_parser_diagnosis() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_semicap_asml_p30_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 ASML、AMAT、LRCX、KLAC 的订单、积压和半导体设备周期",
+        "focus_tickers": ["ASML", "AMAT", "LRCX", "KLAC"],
+        "search_scope_tickers": ["ASML", "AMAT", "LRCX", "KLAC"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "pre_memo_fact_selection": {"approved_facts": []},
+        "verified_judgment_plan": {
+            "supported_claims": [
+                {
+                    "claim_id": "lead_targeted_repair_claim:issuer_official:asml",
+                    "ticker_scope": ["ASML"],
+                    "claim": "ASML targeted web repair reached official issuer sources via government_dataset_endpoint. Official parser targets include net bookings, backlog and systems revenue.",
+                    "evidence_refs": ["official_asml_submissions"],
+                    "parser_diagnosis_complete": True,
+                    "parser_diagnosis": {
+                        "parser_diagnosis_complete": True,
+                        "source_specific_parser_statuses": [
+                            "filing_presence_parser_pass_exact_filing_document_parser_not_run"
+                        ],
+                        "exact_fact_parser_failure_reasons": [
+                            "SEC submissions JSON proves issuer filing presence, but this route does not fetch and parse the linked 6-K/20-F filing body tables into period/unit/citation exact facts."
+                        ],
+                        "next_parser_actions": [
+                            "resolve filing accession links, fetch 6-K/20-F/annual report documents, then parse tables for net bookings, backlog and systems revenue with period/unit/citation gates"
+                        ],
+                    },
+                }
+            ]
+        },
+        "memo_logic_plan": {"product_reasoning_frame": {"coverage_roles": ["official_product_surface"]}},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": (
+            "核心判断:\nASML 订单积压和半导体设备周期需要以 6-K/20-F、IR 表格和客户部署交叉验证。"
+            "当前官方源已定位，但 exact 表格解析还未把订单/积压提成可引用数值。\n"
+        ),
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert score["layer_checks"]["p30_root_cause_quality"]["non_us_official_source_gaps_have_parser_diagnosis"] is True
+    assert not any(
+        row["required_item_id"] == "ASML_non_us_disclosure_parser"
+        for row in score["p30_root_cause_quality_audit"]["root_cause_rows"]
+    )
+
+
+def test_p30_non_us_official_source_gap_fails_without_parser_diagnosis() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_semicap_asml_p30_missing_diagnosis_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 ASML 的 6-K、20-F、订单和积压",
+        "focus_tickers": ["ASML"],
+        "search_scope_tickers": ["ASML"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "pre_memo_fact_selection": {"approved_facts": []},
+        "verified_judgment_plan": {
+            "supported_claims": [
+                {
+                    "claim_id": "lead_targeted_repair_claim:issuer_official:asml",
+                    "ticker_scope": ["ASML"],
+                    "claim": "ASML targeted web repair reached official issuer sources via government_dataset_endpoint and found 6-K / 20-F presence.",
+                    "evidence_refs": ["official_asml_submissions"],
+                }
+            ]
+        },
+        "memo_logic_plan": {"product_reasoning_frame": {"coverage_roles": ["official_product_surface"]}},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": "ASML 6-K/20-F 官方源已定位，但没有订单和积压 exact fact。",
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert score["layer_checks"]["p30_root_cause_quality"]["non_us_official_source_gaps_have_parser_diagnosis"] is False
+    assert any(
+        row["required_item_id"] == "ASML_non_us_disclosure_parser"
+        for row in score["p30_root_cause_quality_audit"]["root_cause_rows"]
+    )
+
+
+def test_p30_root_cause_quality_flags_scope_hypothesis_as_product_primary_proof() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "fin_deep_ai_infra_p30_unit",
+        "category": "sector_depth",
+        "expected_execution_mode": "deep_research",
+        "prompt": "分析 NVDA 和 DELL 的 AI server 产品、客户部署和供应链 read-through",
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL"],
+        "required_dimension_ids": ["product_and_production"],
+        "require_p30_root_cause_quality": True,
+    }
+    result = {
+        "status": "completed",
+        "agent_activation_plan": {"execution_mode": "deep_research", "activate_agents": []},
+        "memo_logic_plan": {
+            "product_reasoning_frame": {
+                "schema_version": "finsight_product_reasoning_frame_v0_1",
+                "coverage_roles": ["scope_hypothesis"],
+                "scope_hypothesis_refs": ["same_family_ai_infra_peer_group"],
+            }
+        },
+        "verified_judgment_plan": {"supported_claims": []},
+        "memo_answer": {"answer_status": "draft", "memo_claims": []},
+        "rendered_answer": "产品产线主要基于 NVDA、DELL 同属 AI infrastructure peer group 判断，未展开客户部署。",
+    }
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert score["layer_checks"]["p30_root_cause_quality"]["scope_hypothesis_not_primary_product_proof"] is False
+    assert any(
+        row["symptom"] == "product_section_scope_hypothesis_only"
+        for row in score["p30_root_cause_quality_audit"]["root_cause_rows"]
+    )
 
 
 def test_real_llm_chain_scoring_accepts_vnext_contract_summary() -> None:
@@ -1140,6 +2607,50 @@ def test_real_llm_chain_scoring_accepts_vnext_contract_summary() -> None:
     assert score["gate_status"] == "pass"
     assert all(score["layer_checks"]["vnext_contract"].values())
     assert score["vnext_contract_audit"]["details"]["milvus_runtime_status"] == "unavailable"
+
+
+def test_real_llm_chain_scoring_reports_plan_reflection_early_stop_without_hiding_lead_call() -> None:
+    module = _load_script_module()
+    case = {
+        "case_id": "p33_plan_reflection_early_stop_unit",
+        "category": "p33_gold_workpaper",
+        "expected_execution_mode": "deep_research",
+        "required_agents": ["research_lead", "universe_relationship", "memo_writer", "verifier", "renderer"],
+        "memo_status_allowed": ["draft"],
+        "require_lead_llm_pass": True,
+        "require_plan_reflection_gate": True,
+    }
+    result = {
+        "status": "failed",
+        "loop_break_reason": "plan_reflection_gate_failed",
+        "agent_activation_plan": {
+            "execution_mode": "deep_research",
+            "activate_agents": ["research_lead", "universe_relationship", "coverage_reflection", "memo_writer", "verifier", "renderer"],
+            "allowed_source_families": ["relationship_graph"],
+        },
+        "agent_activation_validation": {"status": "pass"},
+        "plan_reflection_report": {
+            "schema_version": "sec_agent_plan_reflection_gate_v0.1",
+            "status": "fail",
+            "errors": [{"type": "milvus_semantic_requested_but_unavailable", "status": "unavailable"}],
+            "warnings": [],
+            "checked": {"allowed_source_families": ["milvus_semantic", "relationship_graph"]},
+        },
+        "research_lead_model_diagnostics": _ok_diag(),
+        "memo_answer": {"answer_status": ""},
+        "claim_verification": {"status": ""},
+        "rendered_answer": "",
+    }
+
+    score = module.score_case(case, result, {"payload_policy": {"raw_evidence": "not_included"}}, {}, elapsed_ms=1)
+
+    assert score["gate_status"] == "fail"
+    assert score["layer_checks"]["research_lead"]["llm_invoked"] is True
+    assert score["layer_checks"]["research_lead"]["llm_calls_ok"] is True
+    assert score["layer_checks"]["vnext_contract"]["plan_reflection_pass"] is False
+    assert score["vnext_contract_audit"]["required"] is True
+    assert score["vnext_contract_audit"]["details"]["plan_reflection_status"] == "fail"
+    assert score["plan_reflection_report"]["errors"][0]["type"] == "milvus_semantic_requested_but_unavailable"
 
 
 def test_real_llm_chain_scoring_rejects_milvus_exact_authority_misuse() -> None:
@@ -1649,6 +3160,63 @@ def test_real_llm_chain_industry_supply_chain_accepts_public_product_context_sou
     assert detail["checks"]["bounded_row_source_family_owned"] is True
     assert detail["checks"]["observation_source_family_owned"] is True
     assert detail["input_source_families"] == ["company_product_evidence_graph", "public_source_context"]
+
+
+def test_real_llm_chain_fundamental_accepts_owned_derived_metric_layer() -> None:
+    module = _load_script_module()
+    case = {"case_id": "fundamental_derived_metric_layer", "category": "sector_depth"}
+    result = {
+        "specialist_route_results": [
+            {
+                "agent_id": "fundamental_analyst",
+                "status": "pass",
+                "prompt_row_distribution": {
+                    "by_ticker": {"DELL": 1},
+                    "by_source_family": {"derived_metric_layer": 1},
+                },
+            }
+        ],
+        "specialist_outputs": [
+            {
+                "agent_id": "fundamental_analyst",
+                "status": "pass",
+                "evidence_boundary": "bounded_rows_only",
+                "summary": "Derived filing metric supports a bounded margin-change observation.",
+                "observations": [
+                    {
+                        "claim": "DELL product gross margin declined by 8 percentage points.",
+                        "claim_type": "financial_metric_observation",
+                        "evidence_refs": ["derived_margin_pp"],
+                        "source_families": ["derived_metric_layer"],
+                        "confidence": "medium",
+                        "unsupported": False,
+                    }
+                ],
+                "unsupported_claims": [],
+                "conflicts": [],
+            }
+        ],
+        "derived_metric_layer": {
+            "derived_metrics": [
+                {
+                    "derived_metric_id": "derived_margin_pp",
+                    "ticker": "DELL",
+                    "evidence_ref": "derived_margin_pp",
+                    "source_family": "derived_metric_layer",
+                    "derived_metric_family": "yoy_change_pp",
+                    "input_evidence_refs": ["sec_current", "sec_prior"],
+                    "value": "-8",
+                    "unit": "percentage_points",
+                }
+            ]
+        },
+    }
+
+    quality = module._specialist_real_evidence_quality(case, result, {"fundamental_analyst"}, required=True)
+    detail = quality["details"]["fundamental_analyst"]
+
+    assert quality["quality_pass"] is True
+    assert detail["checks"]["observation_source_family_owned"] is True
 
 
 def test_real_llm_chain_relationship_pack_gate_rejects_off_sector_citation_without_cross_sector_prompt() -> None:

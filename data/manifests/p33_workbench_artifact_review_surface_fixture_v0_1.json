@@ -1,0 +1,480 @@
+{
+  "absorbed_contract_ids": [
+    "l3_workbench_artifact_review_surface_contract_v0_1"
+  ],
+  "acceptance_gates": [
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "S6 Workbench and S7 deliverable/dashboard projections are deterministic L4-scope pass.",
+      "detail": {
+        "endpoint_surfaces": [
+          "artifact_refs",
+          "cancel",
+          "event_replay",
+          "ops_projection",
+          "resume",
+          "review_action",
+          "review_queue",
+          "s6_gate",
+          "task_center",
+          "task_state",
+          "workpaper_drilldown"
+        ],
+        "missing_surfaces": [],
+        "ops_endpoint_present": true,
+        "populated_surfaces": {
+          "artifacts": 21,
+          "claims": 6,
+          "events": 43,
+          "gaps": 3,
+          "gates": 66,
+          "sections": 6
+        },
+        "review_endpoint_present": true,
+        "s6_release_decision": "S6_L4_scope_pass",
+        "s7_release_decision": "S7_L4_scope_pass",
+        "sql_final_policy": {
+          "drilldown_must_link_to_evidence_claim_gap_gate_context": true,
+          "ops_projection_must_include_latency_cost_trace_queue_incident": true,
+          "redis_or_frontend_state_not_final_audit": true,
+          "review_actions_append_workpaper_event": true,
+          "sql_final_source": true,
+          "unsupported_task_or_missing_ledger_fails_closed": true
+        },
+        "status": "pass"
+      },
+      "fixture_id": "P33-1.4",
+      "gate_id": "s6_s7_surfaces_l4_pass",
+      "generated_at": "2026-07-04T18:05:35Z",
+      "schema_version": "fin_insight_p33_workbench_artifact_review_surface_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Workbench drilldown links task to evidence-backed claims, typed gaps, gates and artifacts.",
+      "detail": {
+        "artifact_count": 21,
+        "artifact_ref_ids": [
+          "artifact_093890ae623f918d",
+          "artifact_1560a8258474c3e2",
+          "artifact_1cbf1e40cd7901f4",
+          "artifact_26043c7a8e925168",
+          "artifact_31c15432aedfd678",
+          "artifact_406f73cd5ebd9ddd",
+          "artifact_65795276ac7934ad",
+          "artifact_687dbed952617180",
+          "artifact_694b1790da5eb546",
+          "artifact_84cfc325bc3e528a",
+          "artifact_8a635701228515f9",
+          "artifact_9a78ec5a4272e1b1",
+          "artifact_b2a3b0d30c8fc803",
+          "artifact_b9ddee36b1d560fd",
+          "artifact_d104a83c2a5b15d2",
+          "artifact_d1338aa56849b6a2",
+          "artifact_e1ed1611b635d524",
+          "artifact_e657524b38fefa3a",
+          "artifact_ec151532cc064306",
+          "artifact_f69f18cfec149bc0",
+          "artifact_f7f3d8b29af87fe5"
+        ],
+        "claim_count": 6,
+        "claim_with_selected_evidence_count": 6,
+        "dashboard_artifact_refs_covered": true,
+        "deliverable_artifact_refs_covered": true,
+        "deliverable_render_job_count": 4,
+        "gap_count": 3,
+        "gate_count": 66,
+        "judgment_claim_refs_covered": true,
+        "judgment_gap_refs_covered": true,
+        "judgment_state_id": "judgment_573f382cf5e541cf",
+        "run_id": "run_52c2dca15c04a65c",
+        "selected_evidence_ref_count": 15,
+        "status": "pass",
+        "task_projection_id": "s5_scope_task_workpaper_lead_review",
+        "typed_gap_count": 3
+      },
+      "fixture_id": "P33-1.4",
+      "gate_id": "drilldown_task_to_evidence_claim_gap_gate_artifact",
+      "generated_at": "2026-07-04T18:05:35Z",
+      "schema_version": "fin_insight_p33_workbench_artifact_review_surface_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "JudgmentState references are covered by Workbench-visible ClaimCards and typed gaps.",
+      "detail": {
+        "artifact_count": 21,
+        "artifact_ref_ids": [
+          "artifact_093890ae623f918d",
+          "artifact_1560a8258474c3e2",
+          "artifact_1cbf1e40cd7901f4",
+          "artifact_26043c7a8e925168",
+          "artifact_31c15432aedfd678",
+          "artifact_406f73cd5ebd9ddd",
+          "artifact_65795276ac7934ad",
+          "artifact_687dbed952617180",
+          "artifact_694b1790da5eb546",
+          "artifact_84cfc325bc3e528a",
+          "artifact_8a635701228515f9",
+          "artifact_9a78ec5a4272e1b1",
+          "artifact_b2a3b0d30c8fc803",
+          "artifact_b9ddee36b1d560fd",
+          "artifact_d104a83c2a5b15d2",
+          "artifact_d1338aa56849b6a2",
+          "artifact_e1ed1611b635d524",
+          "artifact_e657524b38fefa3a",
+          "artifact_ec151532cc064306",
+          "artifact_f69f18cfec149bc0",
+          "artifact_f7f3d8b29af87fe5"
+        ],
+        "claim_count": 6,
+        "claim_with_selected_evidence_count": 6,
+        "dashboard_artifact_refs_covered": true,
+        "deliverable_artifact_refs_covered": true,
+        "deliverable_render_job_count": 4,
+        "gap_count": 3,
+        "gate_count": 66,
+        "judgment_claim_refs_covered": true,
+        "judgment_gap_refs_covered": true,
+        "judgment_state_id": "judgment_573f382cf5e541cf",
+        "run_id": "run_52c2dca15c04a65c",
+        "selected_evidence_ref_count": 15,
+        "status": "pass",
+        "task_projection_id": "s5_scope_task_workpaper_lead_review",
+        "typed_gap_count": 3
+      },
+      "fixture_id": "P33-1.4",
+      "gate_id": "judgment_refs_cover_claims_and_gaps",
+      "generated_at": "2026-07-04T18:05:35Z",
+      "schema_version": "fin_insight_p33_workbench_artifact_review_surface_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Accept/reject/supersede reviewer actions are ledgered and linked to WorkpaperEvents.",
+      "detail": {
+        "action_types": [
+          "accept",
+          "reject",
+          "supersede"
+        ],
+        "all_required_actions_present": true,
+        "append_only_source": "workbench_review_actions_s6 + workpaper_events",
+        "fixture_action_count": 3,
+        "required_actions": [
+          "accept",
+          "reject",
+          "supersede"
+        ],
+        "rows_with_target_count": 3,
+        "rows_with_workpaper_event_count": 3,
+        "status": "pass"
+      },
+      "fixture_id": "P33-1.4",
+      "gate_id": "review_actions_append_only_workpaper_events",
+      "generated_at": "2026-07-04T18:05:35Z",
+      "schema_version": "fin_insight_p33_workbench_artifact_review_surface_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Deliverable and dashboard projection refs are SQL-backed artifact refs.",
+      "detail": {
+        "artifact_count": 21,
+        "artifact_ref_ids": [
+          "artifact_093890ae623f918d",
+          "artifact_1560a8258474c3e2",
+          "artifact_1cbf1e40cd7901f4",
+          "artifact_26043c7a8e925168",
+          "artifact_31c15432aedfd678",
+          "artifact_406f73cd5ebd9ddd",
+          "artifact_65795276ac7934ad",
+          "artifact_687dbed952617180",
+          "artifact_694b1790da5eb546",
+          "artifact_84cfc325bc3e528a",
+          "artifact_8a635701228515f9",
+          "artifact_9a78ec5a4272e1b1",
+          "artifact_b2a3b0d30c8fc803",
+          "artifact_b9ddee36b1d560fd",
+          "artifact_d104a83c2a5b15d2",
+          "artifact_d1338aa56849b6a2",
+          "artifact_e1ed1611b635d524",
+          "artifact_e657524b38fefa3a",
+          "artifact_ec151532cc064306",
+          "artifact_f69f18cfec149bc0",
+          "artifact_f7f3d8b29af87fe5"
+        ],
+        "claim_count": 6,
+        "claim_with_selected_evidence_count": 6,
+        "dashboard_artifact_refs_covered": true,
+        "deliverable_artifact_refs_covered": true,
+        "deliverable_render_job_count": 4,
+        "gap_count": 3,
+        "gate_count": 66,
+        "judgment_claim_refs_covered": true,
+        "judgment_gap_refs_covered": true,
+        "judgment_state_id": "judgment_573f382cf5e541cf",
+        "run_id": "run_52c2dca15c04a65c",
+        "selected_evidence_ref_count": 15,
+        "status": "pass",
+        "task_projection_id": "s5_scope_task_workpaper_lead_review",
+        "typed_gap_count": 3
+      },
+      "fixture_id": "P33-1.4",
+      "gate_id": "deliverable_dashboard_projection_sql_backed",
+      "generated_at": "2026-07-04T18:05:35Z",
+      "schema_version": "fin_insight_p33_workbench_artifact_review_surface_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Ops trace, cost/token fields and rollback ref are visible from SQL-final replay.",
+      "detail": {
+        "chat_transcript_used_as_audit_source": false,
+        "cost_amount": 0.0,
+        "frontend_local_state_used": false,
+        "ops_status": "succeeded",
+        "queue_status": "terminal",
+        "replay_trace_span_count": 1,
+        "rollback_ref": "git+db://s5_scope_task_workpaper_lead_review/run_52c2dca15c04a65c/s6_projection",
+        "status": "pass",
+        "token_count": 0,
+        "trace_span_count": 1
+      },
+      "fixture_id": "P33-1.4",
+      "gate_id": "ops_trace_replay_visible",
+      "generated_at": "2026-07-04T18:05:35Z",
+      "schema_version": "fin_insight_p33_workbench_artifact_review_surface_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Frontend local state and chat transcript are not final audit sources.",
+      "detail": {
+        "ops": {
+          "chat_transcript_used_as_audit_source": false,
+          "cost_amount": 0.0,
+          "frontend_local_state_used": false,
+          "ops_status": "succeeded",
+          "queue_status": "terminal",
+          "replay_trace_span_count": 1,
+          "rollback_ref": "git+db://s5_scope_task_workpaper_lead_review/run_52c2dca15c04a65c/s6_projection",
+          "status": "pass",
+          "token_count": 0,
+          "trace_span_count": 1
+        },
+        "surface_policy": {
+          "drilldown_must_link_to_evidence_claim_gap_gate_context": true,
+          "ops_projection_must_include_latency_cost_trace_queue_incident": true,
+          "redis_or_frontend_state_not_final_audit": true,
+          "review_actions_append_workpaper_event": true,
+          "sql_final_source": true,
+          "unsupported_task_or_missing_ledger_fails_closed": true
+        }
+      },
+      "fixture_id": "P33-1.4",
+      "gate_id": "frontend_or_chat_state_not_audit_source",
+      "generated_at": "2026-07-04T18:05:35Z",
+      "schema_version": "fin_insight_p33_workbench_artifact_review_surface_fixture_v0_1",
+      "status": "pass"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_type": "p33_workbench_artifact_review_surface_fixture",
+      "contract_aligned_plan": {
+        "absorbed_contract_ids": [
+          "l3_workbench_artifact_review_surface_contract_v0_1"
+        ],
+        "used_case_contract_ids": [
+          "l3_workbench_artifact_review_surface_contract_v0_1"
+        ]
+      }
+    }
+  ],
+  "closeout_level": "L4_scope_pass",
+  "contract_id": "l3_workbench_artifact_review_surface_contract_v0_1",
+  "do_not_promote": [
+    "chat_transcript_as_workbench",
+    "frontend_local_state_as_audit_source",
+    "review_action_without_workpaper_event",
+    "artifact_panel_without_evidence_or_gate_drilldown"
+  ],
+  "gate_fail_count": 0,
+  "generated_at": "2026-07-04T18:05:35Z",
+  "input_contract_required_fields": [
+    "task_id",
+    "run_id",
+    "artifact_refs",
+    "evidence_refs",
+    "claim_or_judgment_card_refs",
+    "gap_refs",
+    "gate_refs"
+  ],
+  "ops_audit": {
+    "chat_transcript_used_as_audit_source": false,
+    "cost_amount": 0.0,
+    "frontend_local_state_used": false,
+    "ops_status": "succeeded",
+    "queue_status": "terminal",
+    "replay_trace_span_count": 1,
+    "rollback_ref": "git+db://s5_scope_task_workpaper_lead_review/run_52c2dca15c04a65c/s6_projection",
+    "status": "pass",
+    "token_count": 0,
+    "trace_span_count": 1
+  },
+  "output_contract_required_fields": [
+    "task_projection_id",
+    "artifact_drilldown_refs",
+    "review_action_event_id",
+    "visible_gate_status",
+    "deliverable_or_dashboard_projection_ref",
+    "ops_trace_ref"
+  ],
+  "promotion_recommendation": "active_registry_ready_runtime_alignment_only",
+  "promotion_scope": "workbench_surface_initial",
+  "release_decision": "P33_1_4_L4_scope_pass_workbench_artifact_review_surface_fixture",
+  "review_action_audit": {
+    "action_types": [
+      "accept",
+      "reject",
+      "supersede"
+    ],
+    "all_required_actions_present": true,
+    "append_only_source": "workbench_review_actions_s6 + workpaper_events",
+    "fixture_action_count": 3,
+    "required_actions": [
+      "accept",
+      "reject",
+      "supersede"
+    ],
+    "rows_with_target_count": 3,
+    "rows_with_workpaper_event_count": 3,
+    "status": "pass"
+  },
+  "review_action_results": [
+    {
+      "action": "accept",
+      "review_action_id": "s6review_9ce58099f15a4f16",
+      "run_id": "run_52c2dca15c04a65c",
+      "schema_version": "r53_r60_s6_workbench_frontdoor_drilldown_v0_1",
+      "status": "ledgered",
+      "task_id": "s5_scope_task_workpaper_lead_review",
+      "workpaper_event_id": "wpe_fdffd2a0b3afa8d6"
+    },
+    {
+      "action": "reject",
+      "review_action_id": "s6review_b7d571cdb2dff6d0",
+      "run_id": "run_52c2dca15c04a65c",
+      "schema_version": "r53_r60_s6_workbench_frontdoor_drilldown_v0_1",
+      "status": "ledgered",
+      "task_id": "s5_scope_task_workpaper_lead_review",
+      "workpaper_event_id": "wpe_168ba15fdf1c5534"
+    },
+    {
+      "action": "supersede",
+      "review_action_id": "s6review_16b67e928142ed87",
+      "run_id": "run_52c2dca15c04a65c",
+      "schema_version": "r53_r60_s6_workbench_frontdoor_drilldown_v0_1",
+      "status": "ledgered",
+      "task_id": "s5_scope_task_workpaper_lead_review",
+      "workpaper_event_id": "wpe_a785a438a979ce0e"
+    }
+  ],
+  "rollback_gate": [
+    "review_action_not_append_only",
+    "artifact_drilldown_missing_evidence_or_gate",
+    "deliverable_projection_not_sql_backed",
+    "ops_trace_missing"
+  ],
+  "runtime_entry_policy": "Runtime alignment only: Workbench may project SQL-final task, evidence, claim/judgment, gap, gate, artifact, deliverable and ops rows into reviewer surfaces. Frontend local state or chat transcript cannot become final audit source.",
+  "schema_version": "fin_insight_p33_workbench_artifact_review_surface_fixture_v0_1",
+  "source_fixture_refs": {
+    "p33_manifest": "data/manifests/p33_workbench_artifact_review_surface_fixture_v0_1.json",
+    "p33_report": "docs/internal/vnext_20260610/p33_workbench_artifact_review_surface_fixture_report.zh-CN.md",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "s6_gate_rows": "data/manifests/r53_r60_s6_workbench_frontdoor_drilldown_gate_rows_v0_1.jsonl",
+    "s6_summary": "data/manifests/r53_r60_s6_workbench_frontdoor_drilldown_summary_v0_1.json",
+    "s7_gate_rows": "data/manifests/r53_r60_s7_deliverable_studio_dashboard_gate_rows_v0_1.jsonl",
+    "s7_summary": "data/manifests/r53_r60_s7_deliverable_studio_dashboard_summary_v0_1.json"
+  },
+  "status": "pass",
+  "surface_audit": {
+    "endpoint_surfaces": [
+      "artifact_refs",
+      "cancel",
+      "event_replay",
+      "ops_projection",
+      "resume",
+      "review_action",
+      "review_queue",
+      "s6_gate",
+      "task_center",
+      "task_state",
+      "workpaper_drilldown"
+    ],
+    "missing_surfaces": [],
+    "ops_endpoint_present": true,
+    "populated_surfaces": {
+      "artifacts": 21,
+      "claims": 6,
+      "events": 43,
+      "gaps": 3,
+      "gates": 66,
+      "sections": 6
+    },
+    "review_endpoint_present": true,
+    "s6_release_decision": "S6_L4_scope_pass",
+    "s7_release_decision": "S7_L4_scope_pass",
+    "sql_final_policy": {
+      "drilldown_must_link_to_evidence_claim_gap_gate_context": true,
+      "ops_projection_must_include_latency_cost_trace_queue_incident": true,
+      "redis_or_frontend_state_not_final_audit": true,
+      "review_actions_append_workpaper_event": true,
+      "sql_final_source": true,
+      "unsupported_task_or_missing_ledger_fails_closed": true
+    },
+    "status": "pass"
+  },
+  "traceability_audit": {
+    "artifact_count": 21,
+    "artifact_ref_ids": [
+      "artifact_093890ae623f918d",
+      "artifact_1560a8258474c3e2",
+      "artifact_1cbf1e40cd7901f4",
+      "artifact_26043c7a8e925168",
+      "artifact_31c15432aedfd678",
+      "artifact_406f73cd5ebd9ddd",
+      "artifact_65795276ac7934ad",
+      "artifact_687dbed952617180",
+      "artifact_694b1790da5eb546",
+      "artifact_84cfc325bc3e528a",
+      "artifact_8a635701228515f9",
+      "artifact_9a78ec5a4272e1b1",
+      "artifact_b2a3b0d30c8fc803",
+      "artifact_b9ddee36b1d560fd",
+      "artifact_d104a83c2a5b15d2",
+      "artifact_d1338aa56849b6a2",
+      "artifact_e1ed1611b635d524",
+      "artifact_e657524b38fefa3a",
+      "artifact_ec151532cc064306",
+      "artifact_f69f18cfec149bc0",
+      "artifact_f7f3d8b29af87fe5"
+    ],
+    "claim_count": 6,
+    "claim_with_selected_evidence_count": 6,
+    "dashboard_artifact_refs_covered": true,
+    "deliverable_artifact_refs_covered": true,
+    "deliverable_render_job_count": 4,
+    "gap_count": 3,
+    "gate_count": 66,
+    "judgment_claim_refs_covered": true,
+    "judgment_gap_refs_covered": true,
+    "judgment_state_id": "judgment_573f382cf5e541cf",
+    "run_id": "run_52c2dca15c04a65c",
+    "selected_evidence_ref_count": 15,
+    "status": "pass",
+    "task_projection_id": "s5_scope_task_workpaper_lead_review",
+    "typed_gap_count": 3
+  }
+}

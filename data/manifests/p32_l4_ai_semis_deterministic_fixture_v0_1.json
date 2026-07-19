@@ -1,0 +1,1155 @@
+{
+  "artifacts": [
+    {
+      "baseline_plan": {
+        "case_id": "p32_l4_ai_infra_nvda_dell_capex",
+        "core_view": "Evidence is available, but the chain remains a source summary rather than a thesis path.",
+        "covered_required_items": [
+          "capex_demand_pool",
+          "core_view",
+          "counter_thesis",
+          "deployment_adoption"
+        ],
+        "missing_required_items": [
+          "theme_exposure_materiality",
+          "product_architecture",
+          "supply_chain_read_through",
+          "financial_bridge",
+          "what_would_change_view"
+        ],
+        "plan_type": "baseline_evidence_list",
+        "quality_score": 3,
+        "thesis_path": [
+          {
+            "dimension": "generic_context",
+            "evidence_refs": [
+              "aiinfra_product_nvda_gb200_architecture",
+              "aiinfra_dell_ai_server_business_metric",
+              "aiinfra_hyperscaler_capex_demand_pool"
+            ],
+            "statement": "List available company and industry evidence."
+          }
+        ],
+        "writer_material": {
+          "has_answer_first_core_view": false,
+          "sections": [
+            "company facts",
+            "industry context",
+            "gaps"
+          ],
+          "shape": "evidence_dump",
+          "uses_peer_group_as_primary_evidence": true,
+          "uses_product_graph_as_spine": false
+        }
+      },
+      "case_id": "p32_l4_ai_infra_nvda_dell_capex",
+      "contract_aligned_plan": {
+        "absorbed_contract_ids": [
+          "l3_ai_theme_exposure_thesis_path_contract_v0_1",
+          "l3_checkpoint_targeted_repair_contract_v0_1",
+          "l3_context_engine_injection_contract_v0_1",
+          "l3_durable_hil_task_event_contract_v0_1",
+          "l3_genai_trace_quality_cost_contract_v0_1",
+          "l3_product_architecture_competitive_bridge_contract_v0_1",
+          "l3_semis_cycle_value_chain_playbook_contract_v0_1",
+          "l3_thesis_led_memo_output_contract_v0_1",
+          "l3_tool_gateway_mcp_boundary_contract_v0_1",
+          "l3_workpaper_lifecycle_event_contract_v0_1"
+        ],
+        "agent_runtime_alignment": {
+          "checkpoint_targeted_repair": {
+            "checkpoint_scope": [
+              "ResearchLead",
+              "ProductSpecialist",
+              "MemoLogicPlan"
+            ],
+            "enabled_by_contract": true,
+            "repair_policy": "node-level repair before paid full-chain if deterministic issue appears"
+          },
+          "context_engine": {
+            "enabled_by_contract": true,
+            "excluded_context_policy": "raw dumps and stale context excluded",
+            "selected_context_roles": [
+              "theme",
+              "product",
+              "industry_cycle",
+              "financial_bridge",
+              "counter_thesis"
+            ]
+          },
+          "durable_hil": {
+            "enabled_by_contract": true,
+            "review_event_policy": "workpaper review remains append-only and resumable"
+          },
+          "tool_gateway_boundary": {
+            "enabled_by_contract": true,
+            "policy": "resources/prompts/tools separated; no blind tool promotion"
+          },
+          "trace_quality_cost": {
+            "enabled_by_contract": true,
+            "quality_yield_target": "JudgmentCard / required-item answer count, not token count alone"
+          }
+        },
+        "case_id": "p32_l4_ai_infra_nvda_dell_capex",
+        "judgment_cards": [
+          {
+            "cannot_infer": [
+              "gpu_shipments",
+              "nvda_product_revenue"
+            ],
+            "evidence_refs": [
+              "aiinfra_dell_ai_server_business_metric"
+            ],
+            "gap_type": "",
+            "judgment": "Core view is directional and must connect product capability, demand signal, financial bridge and counter-thesis.",
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_01",
+            "strength": "high",
+            "supports_required_item": "core_view"
+          },
+          {
+            "cannot_infer": [
+              "customer_order_exact",
+              "order_amount_exact",
+              "product_revenue",
+              "revenue_conversion_exact",
+              "shipments"
+            ],
+            "evidence_refs": [
+              "aiinfra_product_nvda_gb200_architecture",
+              "aiinfra_customer_deployment_signal"
+            ],
+            "gap_type": "",
+            "judgment": "Theme exposure is material when product/financial/deployment rows jointly support the link.",
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_02",
+            "strength": "high",
+            "supports_required_item": "theme_exposure_materiality"
+          },
+          {
+            "cannot_infer": [
+              "customer_order_exact",
+              "product_revenue",
+              "shipments"
+            ],
+            "evidence_refs": [
+              "aiinfra_product_nvda_gb200_architecture"
+            ],
+            "gap_type": "",
+            "judgment": "Product architecture can support competitive capability even without SKU revenue.",
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_03",
+            "strength": "high",
+            "supports_required_item": "product_architecture"
+          },
+          {
+            "cannot_infer": [
+              "order_amount_exact",
+              "revenue_conversion_exact"
+            ],
+            "evidence_refs": [
+              "aiinfra_customer_deployment_signal"
+            ],
+            "gap_type": "",
+            "judgment": "Deployment/adoption signals can support product-market reality when marked bounded.",
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_04",
+            "strength": "high",
+            "supports_required_item": "deployment_adoption"
+          },
+          {
+            "cannot_infer": [
+              "capacity_exact",
+              "gross_margin_exact"
+            ],
+            "evidence_refs": [
+              "aiinfra_cowos_hbm_supply_chain_constraint"
+            ],
+            "gap_type": "",
+            "judgment": "Supply-chain links can support delivery cadence and bottleneck risk.",
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_05",
+            "strength": "high",
+            "supports_required_item": "supply_chain_read_through"
+          },
+          {
+            "cannot_infer": [
+              "customer_order_exact",
+              "dell_revenue_exact",
+              "nvda_revenue_exact"
+            ],
+            "evidence_refs": [
+              "aiinfra_hyperscaler_capex_demand_pool"
+            ],
+            "gap_type": "",
+            "judgment": "Capex demand pool supports background demand, not direct customer-order exact claims.",
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_06",
+            "strength": "high",
+            "supports_required_item": "capex_demand_pool"
+          },
+          {
+            "cannot_infer": [
+              "gpu_shipments",
+              "nvda_product_revenue"
+            ],
+            "evidence_refs": [
+              "aiinfra_dell_ai_server_business_metric"
+            ],
+            "gap_type": "",
+            "judgment": "Financial bridge connects operating/financial facts to thesis while preserving exact-claim boundaries.",
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_07",
+            "strength": "high",
+            "supports_required_item": "financial_bridge"
+          },
+          {
+            "cannot_infer": [
+              "capacity_exact",
+              "customer_order_exact",
+              "dell_revenue_exact",
+              "gross_margin_exact",
+              "nvda_revenue_exact"
+            ],
+            "evidence_refs": [
+              "aiinfra_hyperscaler_capex_demand_pool",
+              "aiinfra_cowos_hbm_supply_chain_constraint"
+            ],
+            "gap_type": "",
+            "judgment": "Counter-thesis should identify what can break the link from signal to financial outcome.",
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_08",
+            "strength": "high",
+            "supports_required_item": "counter_thesis"
+          },
+          {
+            "cannot_infer": [],
+            "evidence_refs": [],
+            "gap_type": "analysis_synthesis_gap",
+            "judgment": "what_would_change_view needs additional company-specific or source-role-specific evidence before promotion.",
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_09",
+            "strength": "bounded",
+            "supports_required_item": "what_would_change_view"
+          }
+        ],
+        "plan_type": "p32_l3_contract_aligned",
+        "quality_score": 11,
+        "required_item_answer_plan": [
+          {
+            "answer": "Core view is directional and must connect product capability, demand signal, financial bridge and counter-thesis.",
+            "authority_boundary": [
+              "issuer_disclosed_operating_metric"
+            ],
+            "evidence_refs": [
+              "aiinfra_dell_ai_server_business_metric"
+            ],
+            "forbidden_claims": [
+              "gpu_shipments",
+              "nvda_product_revenue"
+            ],
+            "required_item": "core_view",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Theme exposure is material when product/financial/deployment rows jointly support the link.",
+            "authority_boundary": [
+              "bounded_customer_deployment_context",
+              "official_product_surface"
+            ],
+            "evidence_refs": [
+              "aiinfra_product_nvda_gb200_architecture",
+              "aiinfra_customer_deployment_signal"
+            ],
+            "forbidden_claims": [
+              "customer_order_exact",
+              "order_amount_exact",
+              "product_revenue",
+              "revenue_conversion_exact",
+              "shipments"
+            ],
+            "required_item": "theme_exposure_materiality",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Product architecture can support competitive capability even without SKU revenue.",
+            "authority_boundary": [
+              "official_product_surface"
+            ],
+            "evidence_refs": [
+              "aiinfra_product_nvda_gb200_architecture"
+            ],
+            "forbidden_claims": [
+              "customer_order_exact",
+              "product_revenue",
+              "shipments"
+            ],
+            "required_item": "product_architecture",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Deployment/adoption signals can support product-market reality when marked bounded.",
+            "authority_boundary": [
+              "bounded_customer_deployment_context"
+            ],
+            "evidence_refs": [
+              "aiinfra_customer_deployment_signal"
+            ],
+            "forbidden_claims": [
+              "order_amount_exact",
+              "revenue_conversion_exact"
+            ],
+            "required_item": "deployment_adoption",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Supply-chain links can support delivery cadence and bottleneck risk.",
+            "authority_boundary": [
+              "bounded_supply_chain_context"
+            ],
+            "evidence_refs": [
+              "aiinfra_cowos_hbm_supply_chain_constraint"
+            ],
+            "forbidden_claims": [
+              "capacity_exact",
+              "gross_margin_exact"
+            ],
+            "required_item": "supply_chain_read_through",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Capex demand pool supports background demand, not direct customer-order exact claims.",
+            "authority_boundary": [
+              "company_disclosed_capex_context"
+            ],
+            "evidence_refs": [
+              "aiinfra_hyperscaler_capex_demand_pool"
+            ],
+            "forbidden_claims": [
+              "customer_order_exact",
+              "dell_revenue_exact",
+              "nvda_revenue_exact"
+            ],
+            "required_item": "capex_demand_pool",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Financial bridge connects operating/financial facts to thesis while preserving exact-claim boundaries.",
+            "authority_boundary": [
+              "issuer_disclosed_operating_metric"
+            ],
+            "evidence_refs": [
+              "aiinfra_dell_ai_server_business_metric"
+            ],
+            "forbidden_claims": [
+              "gpu_shipments",
+              "nvda_product_revenue"
+            ],
+            "required_item": "financial_bridge",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Counter-thesis should identify what can break the link from signal to financial outcome.",
+            "authority_boundary": [
+              "bounded_supply_chain_context",
+              "company_disclosed_capex_context"
+            ],
+            "evidence_refs": [
+              "aiinfra_hyperscaler_capex_demand_pool",
+              "aiinfra_cowos_hbm_supply_chain_constraint"
+            ],
+            "forbidden_claims": [
+              "capacity_exact",
+              "customer_order_exact",
+              "dell_revenue_exact",
+              "gross_margin_exact",
+              "nvda_revenue_exact"
+            ],
+            "required_item": "counter_thesis",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "what_would_change_view needs additional company-specific or source-role-specific evidence before promotion.",
+            "evidence_refs": [],
+            "gap_type": "analysis_synthesis_gap",
+            "required_item": "what_would_change_view",
+            "status": "typed_gap"
+          }
+        ],
+        "theme_exposure_map": {
+          "exposure_class": "core_or_significant",
+          "materiality_class": "material_but_boundary_aware",
+          "rate_of_change_direction": "increasing",
+          "source_boundary": "theme context must be bridged through company/product/financial rows before company-level claims.",
+          "theme": "AI infrastructure capex and accelerator/server read-through"
+        },
+        "thesis_path": [
+          {
+            "boundary": [
+              "customer_order_exact",
+              "order_amount_exact",
+              "product_revenue",
+              "revenue_conversion_exact",
+              "shipments"
+            ],
+            "dimension": "theme_exposure_materiality",
+            "evidence_refs": [
+              "aiinfra_product_nvda_gb200_architecture",
+              "aiinfra_customer_deployment_signal"
+            ],
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_02",
+            "mechanism": "theme -> company exposure -> valuation/expectation relevance"
+          },
+          {
+            "boundary": [
+              "customer_order_exact",
+              "product_revenue",
+              "shipments"
+            ],
+            "dimension": "product_architecture",
+            "evidence_refs": [
+              "aiinfra_product_nvda_gb200_architecture"
+            ],
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_03",
+            "mechanism": "product specs/architecture -> competitive capability"
+          },
+          {
+            "boundary": [
+              "order_amount_exact",
+              "revenue_conversion_exact"
+            ],
+            "dimension": "deployment_adoption",
+            "evidence_refs": [
+              "aiinfra_customer_deployment_signal"
+            ],
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_04",
+            "mechanism": "customer/deployment signal -> demand reality"
+          },
+          {
+            "boundary": [
+              "capacity_exact",
+              "gross_margin_exact"
+            ],
+            "dimension": "supply_chain_read_through",
+            "evidence_refs": [
+              "aiinfra_cowos_hbm_supply_chain_constraint"
+            ],
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_05",
+            "mechanism": "supplier/bottleneck -> delivery cadence and margin/risk bridge"
+          },
+          {
+            "boundary": [
+              "customer_order_exact",
+              "dell_revenue_exact",
+              "nvda_revenue_exact"
+            ],
+            "dimension": "capex_demand_pool",
+            "evidence_refs": [
+              "aiinfra_hyperscaler_capex_demand_pool"
+            ],
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_06",
+            "mechanism": "hyperscaler capex -> demand pool, not direct order"
+          },
+          {
+            "boundary": [
+              "gpu_shipments",
+              "nvda_product_revenue"
+            ],
+            "dimension": "financial_bridge",
+            "evidence_refs": [
+              "aiinfra_dell_ai_server_business_metric"
+            ],
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_07",
+            "mechanism": "operating/financial fact -> thesis materiality"
+          },
+          {
+            "boundary": [
+              "capacity_exact",
+              "customer_order_exact",
+              "dell_revenue_exact",
+              "gross_margin_exact",
+              "nvda_revenue_exact"
+            ],
+            "dimension": "counter_thesis",
+            "evidence_refs": [
+              "aiinfra_hyperscaler_capex_demand_pool",
+              "aiinfra_cowos_hbm_supply_chain_constraint"
+            ],
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_08",
+            "mechanism": "weak link / risk -> thesis fragility"
+          },
+          {
+            "boundary": [
+              "analysis_synthesis_gap"
+            ],
+            "dimension": "what_would_change_view",
+            "evidence_refs": [],
+            "judgment_card_id": "p32_l4_ai_infra_nvda_dell_capex_jc_09",
+            "mechanism": "missing evidence -> upgrade/falsification trigger"
+          }
+        ],
+        "used_case_contract_ids": [
+          "l3_ai_theme_exposure_thesis_path_contract_v0_1",
+          "l3_product_architecture_competitive_bridge_contract_v0_1",
+          "l3_thesis_led_memo_output_contract_v0_1",
+          "l3_context_engine_injection_contract_v0_1",
+          "l3_genai_trace_quality_cost_contract_v0_1"
+        ],
+        "writer_material": {
+          "answer_first_core_view": "AI infrastructure read-through: NVDA / DELL / hyperscaler capex: current evidence supports a bounded thesis path rather than a raw evidence summary; the strongest links are product/industry signal into financial bridge, with explicit gaps for exact claims.",
+          "answered_required_item_count": 8,
+          "has_answer_first_core_view": true,
+          "internal_field_names_allowed_in_body": false,
+          "judgment_card_ids": [
+            "p32_l4_ai_infra_nvda_dell_capex_jc_01",
+            "p32_l4_ai_infra_nvda_dell_capex_jc_02",
+            "p32_l4_ai_infra_nvda_dell_capex_jc_03",
+            "p32_l4_ai_infra_nvda_dell_capex_jc_04",
+            "p32_l4_ai_infra_nvda_dell_capex_jc_05",
+            "p32_l4_ai_infra_nvda_dell_capex_jc_06",
+            "p32_l4_ai_infra_nvda_dell_capex_jc_07",
+            "p32_l4_ai_infra_nvda_dell_capex_jc_08",
+            "p32_l4_ai_infra_nvda_dell_capex_jc_09"
+          ],
+          "sections": [
+            "core view",
+            "why this matters",
+            "product / architecture / deployment bridge",
+            "financial and cycle bridge",
+            "counter-thesis and what would change view",
+            "typed gaps and next actions"
+          ],
+          "shape": "writer_ready_judgment_material",
+          "thesis_path_dimensions": [
+            "theme_exposure_materiality",
+            "product_architecture",
+            "deployment_adoption",
+            "supply_chain_read_through",
+            "capex_demand_pool",
+            "financial_bridge",
+            "counter_thesis",
+            "what_would_change_view"
+          ],
+          "typed_gap_count": 1,
+          "uses_peer_group_as_primary_evidence": false,
+          "uses_product_graph_as_spine": true
+        }
+      },
+      "evaluation": {
+        "baseline_quality_score": 3,
+        "case_id": "p32_l4_ai_infra_nvda_dell_capex",
+        "contract_quality_score": 11,
+        "failed_gates": [],
+        "gate_details": {
+          "agent_runtime_patterns_integrated": true,
+          "authority_boundaries_preserved": true,
+          "baseline_to_contract_improvement": true,
+          "counter_thesis_present": true,
+          "deployment_or_adoption_signal_integrated": true,
+          "financial_bridge_integrated": true,
+          "no_sku_revenue_absence_reason_traced": true,
+          "product_architecture_in_thesis_path": true,
+          "product_kpi_not_required_for_product_judgment": true,
+          "required_items_complete": true,
+          "supply_chain_or_value_chain_link_integrated": true,
+          "writer_material_is_judgment_material": true
+        },
+        "judgment_card_count": 9,
+        "quality_delta": 8,
+        "required_item_count": 9,
+        "status": "pass",
+        "thesis_path_dimension_count": 8,
+        "used_contract_count": 5
+      },
+      "title": "AI infrastructure read-through: NVDA / DELL / hyperscaler capex"
+    },
+    {
+      "baseline_plan": {
+        "case_id": "p32_l4_semicap_asml_lrcx_cycle",
+        "core_view": "Evidence is available, but the chain remains a source summary rather than a thesis path.",
+        "covered_required_items": [
+          "core_view",
+          "counter_thesis",
+          "customer_concentration",
+          "export_control_risk"
+        ],
+        "missing_required_items": [
+          "industry_cycle",
+          "value_chain_position",
+          "product_architecture",
+          "orders_backlog_or_bookings",
+          "financial_bridge",
+          "what_would_change_view"
+        ],
+        "plan_type": "baseline_evidence_list",
+        "quality_score": 3,
+        "thesis_path": [
+          {
+            "dimension": "generic_context",
+            "evidence_refs": [
+              "semicap_asml_euv_duv_product_context",
+              "semicap_lrcx_revenue_capex_fact",
+              "semicap_wfe_cycle_industry_context"
+            ],
+            "statement": "List available company and industry evidence."
+          }
+        ],
+        "writer_material": {
+          "has_answer_first_core_view": false,
+          "sections": [
+            "company facts",
+            "industry context",
+            "gaps"
+          ],
+          "shape": "evidence_dump",
+          "uses_peer_group_as_primary_evidence": true,
+          "uses_product_graph_as_spine": false
+        }
+      },
+      "case_id": "p32_l4_semicap_asml_lrcx_cycle",
+      "contract_aligned_plan": {
+        "absorbed_contract_ids": [
+          "l3_ai_theme_exposure_thesis_path_contract_v0_1",
+          "l3_checkpoint_targeted_repair_contract_v0_1",
+          "l3_context_engine_injection_contract_v0_1",
+          "l3_durable_hil_task_event_contract_v0_1",
+          "l3_genai_trace_quality_cost_contract_v0_1",
+          "l3_product_architecture_competitive_bridge_contract_v0_1",
+          "l3_semis_cycle_value_chain_playbook_contract_v0_1",
+          "l3_thesis_led_memo_output_contract_v0_1",
+          "l3_tool_gateway_mcp_boundary_contract_v0_1",
+          "l3_workpaper_lifecycle_event_contract_v0_1"
+        ],
+        "agent_runtime_alignment": {
+          "checkpoint_targeted_repair": {
+            "checkpoint_scope": [
+              "ResearchLead",
+              "ProductSpecialist",
+              "MemoLogicPlan"
+            ],
+            "enabled_by_contract": true,
+            "repair_policy": "node-level repair before paid full-chain if deterministic issue appears"
+          },
+          "context_engine": {
+            "enabled_by_contract": true,
+            "excluded_context_policy": "raw dumps and stale context excluded",
+            "selected_context_roles": [
+              "theme",
+              "product",
+              "industry_cycle",
+              "financial_bridge",
+              "counter_thesis"
+            ]
+          },
+          "durable_hil": {
+            "enabled_by_contract": true,
+            "review_event_policy": "workpaper review remains append-only and resumable"
+          },
+          "tool_gateway_boundary": {
+            "enabled_by_contract": true,
+            "policy": "resources/prompts/tools separated; no blind tool promotion"
+          },
+          "trace_quality_cost": {
+            "enabled_by_contract": true,
+            "quality_yield_target": "JudgmentCard / required-item answer count, not token count alone"
+          }
+        },
+        "case_id": "p32_l4_semicap_asml_lrcx_cycle",
+        "judgment_cards": [
+          {
+            "cannot_infer": [
+              "orders_backlog_or_bookings"
+            ],
+            "evidence_refs": [
+              "semicap_lrcx_revenue_capex_fact"
+            ],
+            "gap_type": "",
+            "judgment": "Core view is directional and must connect product capability, demand signal, financial bridge and counter-thesis.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_01",
+            "strength": "high",
+            "supports_required_item": "core_view"
+          },
+          {
+            "cannot_infer": [
+              "customer_concentration_exact",
+              "issuer_order_exact"
+            ],
+            "evidence_refs": [
+              "semicap_wfe_cycle_industry_context"
+            ],
+            "gap_type": "",
+            "judgment": "Industry cycle frames beta versus structural demand.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_02",
+            "strength": "high",
+            "supports_required_item": "industry_cycle"
+          },
+          {
+            "cannot_infer": [
+              "bookings_exact",
+              "china_revenue_exact",
+              "customer_revenue_exact"
+            ],
+            "evidence_refs": [
+              "semicap_asml_euv_duv_product_context",
+              "semicap_customer_concentration_signal"
+            ],
+            "gap_type": "",
+            "judgment": "Value-chain position explains why the company benefits or bears bottleneck risk.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_03",
+            "strength": "high",
+            "supports_required_item": "value_chain_position"
+          },
+          {
+            "cannot_infer": [
+              "bookings_exact",
+              "china_revenue_exact"
+            ],
+            "evidence_refs": [
+              "semicap_asml_euv_duv_product_context"
+            ],
+            "gap_type": "",
+            "judgment": "Product architecture can support competitive capability even without SKU revenue.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_04",
+            "strength": "high",
+            "supports_required_item": "product_architecture"
+          },
+          {
+            "cannot_infer": [],
+            "evidence_refs": [],
+            "gap_type": "retrievable_or_parser_gap",
+            "judgment": "orders_backlog_or_bookings needs additional company-specific or source-role-specific evidence before promotion.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_05",
+            "strength": "bounded",
+            "supports_required_item": "orders_backlog_or_bookings"
+          },
+          {
+            "cannot_infer": [
+              "customer_revenue_exact"
+            ],
+            "evidence_refs": [
+              "semicap_customer_concentration_signal"
+            ],
+            "gap_type": "",
+            "judgment": "Customer concentration/adoption can be discussed as signal unless exact customer revenue is present.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_06",
+            "strength": "high",
+            "supports_required_item": "customer_concentration"
+          },
+          {
+            "cannot_infer": [
+              "impact_amount_exact"
+            ],
+            "evidence_refs": [
+              "semicap_export_control_risk_context"
+            ],
+            "gap_type": "",
+            "judgment": "Export-control risk belongs in counter-thesis and scenario analysis.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_07",
+            "strength": "high",
+            "supports_required_item": "export_control_risk"
+          },
+          {
+            "cannot_infer": [
+              "orders_backlog_or_bookings"
+            ],
+            "evidence_refs": [
+              "semicap_lrcx_revenue_capex_fact"
+            ],
+            "gap_type": "",
+            "judgment": "Financial bridge connects operating/financial facts to thesis while preserving exact-claim boundaries.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_08",
+            "strength": "high",
+            "supports_required_item": "financial_bridge"
+          },
+          {
+            "cannot_infer": [
+              "customer_concentration_exact",
+              "impact_amount_exact",
+              "issuer_order_exact"
+            ],
+            "evidence_refs": [
+              "semicap_wfe_cycle_industry_context",
+              "semicap_export_control_risk_context"
+            ],
+            "gap_type": "",
+            "judgment": "Counter-thesis should identify what can break the link from signal to financial outcome.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_09",
+            "strength": "high",
+            "supports_required_item": "counter_thesis"
+          },
+          {
+            "cannot_infer": [],
+            "evidence_refs": [],
+            "gap_type": "analysis_synthesis_gap",
+            "judgment": "what_would_change_view needs additional company-specific or source-role-specific evidence before promotion.",
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_10",
+            "strength": "bounded",
+            "supports_required_item": "what_would_change_view"
+          }
+        ],
+        "plan_type": "p32_l3_contract_aligned",
+        "quality_score": 11,
+        "required_item_answer_plan": [
+          {
+            "answer": "Core view is directional and must connect product capability, demand signal, financial bridge and counter-thesis.",
+            "authority_boundary": [
+              "issuer_disclosed_financial_fact"
+            ],
+            "evidence_refs": [
+              "semicap_lrcx_revenue_capex_fact"
+            ],
+            "forbidden_claims": [
+              "orders_backlog_or_bookings"
+            ],
+            "required_item": "core_view",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Industry cycle frames beta versus structural demand.",
+            "authority_boundary": [
+              "industry_context"
+            ],
+            "evidence_refs": [
+              "semicap_wfe_cycle_industry_context"
+            ],
+            "forbidden_claims": [
+              "customer_concentration_exact",
+              "issuer_order_exact"
+            ],
+            "required_item": "industry_cycle",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Value-chain position explains why the company benefits or bears bottleneck risk.",
+            "authority_boundary": [
+              "bounded_customer_context",
+              "issuer_or_official_product_surface"
+            ],
+            "evidence_refs": [
+              "semicap_asml_euv_duv_product_context",
+              "semicap_customer_concentration_signal"
+            ],
+            "forbidden_claims": [
+              "bookings_exact",
+              "china_revenue_exact",
+              "customer_revenue_exact"
+            ],
+            "required_item": "value_chain_position",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Product architecture can support competitive capability even without SKU revenue.",
+            "authority_boundary": [
+              "issuer_or_official_product_surface"
+            ],
+            "evidence_refs": [
+              "semicap_asml_euv_duv_product_context"
+            ],
+            "forbidden_claims": [
+              "bookings_exact",
+              "china_revenue_exact"
+            ],
+            "required_item": "product_architecture",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "orders_backlog_or_bookings needs additional company-specific or source-role-specific evidence before promotion.",
+            "evidence_refs": [],
+            "gap_type": "retrievable_or_parser_gap",
+            "required_item": "orders_backlog_or_bookings",
+            "status": "typed_gap"
+          },
+          {
+            "answer": "Customer concentration/adoption can be discussed as signal unless exact customer revenue is present.",
+            "authority_boundary": [
+              "bounded_customer_context"
+            ],
+            "evidence_refs": [
+              "semicap_customer_concentration_signal"
+            ],
+            "forbidden_claims": [
+              "customer_revenue_exact"
+            ],
+            "required_item": "customer_concentration",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Export-control risk belongs in counter-thesis and scenario analysis.",
+            "authority_boundary": [
+              "policy_or_regulatory_context"
+            ],
+            "evidence_refs": [
+              "semicap_export_control_risk_context"
+            ],
+            "forbidden_claims": [
+              "impact_amount_exact"
+            ],
+            "required_item": "export_control_risk",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Financial bridge connects operating/financial facts to thesis while preserving exact-claim boundaries.",
+            "authority_boundary": [
+              "issuer_disclosed_financial_fact"
+            ],
+            "evidence_refs": [
+              "semicap_lrcx_revenue_capex_fact"
+            ],
+            "forbidden_claims": [
+              "orders_backlog_or_bookings"
+            ],
+            "required_item": "financial_bridge",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "Counter-thesis should identify what can break the link from signal to financial outcome.",
+            "authority_boundary": [
+              "industry_context",
+              "policy_or_regulatory_context"
+            ],
+            "evidence_refs": [
+              "semicap_wfe_cycle_industry_context",
+              "semicap_export_control_risk_context"
+            ],
+            "forbidden_claims": [
+              "customer_concentration_exact",
+              "impact_amount_exact",
+              "issuer_order_exact"
+            ],
+            "required_item": "counter_thesis",
+            "status": "answered_with_bounded_evidence"
+          },
+          {
+            "answer": "what_would_change_view needs additional company-specific or source-role-specific evidence before promotion.",
+            "evidence_refs": [],
+            "gap_type": "analysis_synthesis_gap",
+            "required_item": "what_would_change_view",
+            "status": "typed_gap"
+          }
+        ],
+        "theme_exposure_map": {
+          "exposure_class": "core_or_significant",
+          "materiality_class": "material_but_boundary_aware",
+          "rate_of_change_direction": "increasing",
+          "source_boundary": "theme context must be bridged through company/product/financial rows before company-level claims.",
+          "theme": "AI semicap WFE cycle, order/backlog, export-control and customer concentration"
+        },
+        "thesis_path": [
+          {
+            "boundary": [
+              "bookings_exact",
+              "china_revenue_exact"
+            ],
+            "dimension": "product_architecture",
+            "evidence_refs": [
+              "semicap_asml_euv_duv_product_context"
+            ],
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_04",
+            "mechanism": "product specs/architecture -> competitive capability"
+          },
+          {
+            "boundary": [
+              "customer_concentration_exact",
+              "issuer_order_exact"
+            ],
+            "dimension": "industry_cycle",
+            "evidence_refs": [
+              "semicap_wfe_cycle_industry_context"
+            ],
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_02",
+            "mechanism": "industry beta/cycle -> revenue and order sensitivity"
+          },
+          {
+            "boundary": [
+              "bookings_exact",
+              "china_revenue_exact",
+              "customer_revenue_exact"
+            ],
+            "dimension": "value_chain_position",
+            "evidence_refs": [
+              "semicap_asml_euv_duv_product_context",
+              "semicap_customer_concentration_signal"
+            ],
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_03",
+            "mechanism": "value-chain role -> bargaining power and bottleneck exposure"
+          },
+          {
+            "boundary": [
+              "orders_backlog_or_bookings"
+            ],
+            "dimension": "financial_bridge",
+            "evidence_refs": [
+              "semicap_lrcx_revenue_capex_fact"
+            ],
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_08",
+            "mechanism": "operating/financial fact -> thesis materiality"
+          },
+          {
+            "boundary": [
+              "customer_concentration_exact",
+              "impact_amount_exact",
+              "issuer_order_exact"
+            ],
+            "dimension": "counter_thesis",
+            "evidence_refs": [
+              "semicap_wfe_cycle_industry_context",
+              "semicap_export_control_risk_context"
+            ],
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_09",
+            "mechanism": "weak link / risk -> thesis fragility"
+          },
+          {
+            "boundary": [
+              "analysis_synthesis_gap"
+            ],
+            "dimension": "what_would_change_view",
+            "evidence_refs": [],
+            "judgment_card_id": "p32_l4_semicap_asml_lrcx_cycle_jc_10",
+            "mechanism": "missing evidence -> upgrade/falsification trigger"
+          }
+        ],
+        "used_case_contract_ids": [
+          "l3_semis_cycle_value_chain_playbook_contract_v0_1",
+          "l3_product_architecture_competitive_bridge_contract_v0_1",
+          "l3_ai_theme_exposure_thesis_path_contract_v0_1",
+          "l3_thesis_led_memo_output_contract_v0_1",
+          "l3_checkpoint_targeted_repair_contract_v0_1"
+        ],
+        "writer_material": {
+          "answer_first_core_view": "Semicap cycle: ASML / AMAT / LRCX / KLAC order and value-chain logic: current evidence supports a bounded thesis path rather than a raw evidence summary; the strongest links are product/industry signal into financial bridge, with explicit gaps for exact claims.",
+          "answered_required_item_count": 8,
+          "has_answer_first_core_view": true,
+          "internal_field_names_allowed_in_body": false,
+          "judgment_card_ids": [
+            "p32_l4_semicap_asml_lrcx_cycle_jc_01",
+            "p32_l4_semicap_asml_lrcx_cycle_jc_02",
+            "p32_l4_semicap_asml_lrcx_cycle_jc_03",
+            "p32_l4_semicap_asml_lrcx_cycle_jc_04",
+            "p32_l4_semicap_asml_lrcx_cycle_jc_05",
+            "p32_l4_semicap_asml_lrcx_cycle_jc_06",
+            "p32_l4_semicap_asml_lrcx_cycle_jc_07",
+            "p32_l4_semicap_asml_lrcx_cycle_jc_08",
+            "p32_l4_semicap_asml_lrcx_cycle_jc_09",
+            "p32_l4_semicap_asml_lrcx_cycle_jc_10"
+          ],
+          "sections": [
+            "core view",
+            "why this matters",
+            "product / architecture / deployment bridge",
+            "financial and cycle bridge",
+            "counter-thesis and what would change view",
+            "typed gaps and next actions"
+          ],
+          "shape": "writer_ready_judgment_material",
+          "thesis_path_dimensions": [
+            "product_architecture",
+            "industry_cycle",
+            "value_chain_position",
+            "financial_bridge",
+            "counter_thesis",
+            "what_would_change_view"
+          ],
+          "typed_gap_count": 2,
+          "uses_peer_group_as_primary_evidence": false,
+          "uses_product_graph_as_spine": true
+        }
+      },
+      "evaluation": {
+        "baseline_quality_score": 3,
+        "case_id": "p32_l4_semicap_asml_lrcx_cycle",
+        "contract_quality_score": 11,
+        "failed_gates": [],
+        "gate_details": {
+          "agent_runtime_patterns_integrated": true,
+          "authority_boundaries_preserved": true,
+          "baseline_to_contract_improvement": true,
+          "counter_thesis_present": true,
+          "deployment_or_adoption_signal_integrated": true,
+          "financial_bridge_integrated": true,
+          "no_sku_revenue_absence_reason_traced": true,
+          "product_architecture_in_thesis_path": true,
+          "product_kpi_not_required_for_product_judgment": true,
+          "required_items_complete": true,
+          "supply_chain_or_value_chain_link_integrated": true,
+          "writer_material_is_judgment_material": true
+        },
+        "judgment_card_count": 10,
+        "quality_delta": 8,
+        "required_item_count": 10,
+        "status": "pass",
+        "thesis_path_dimension_count": 6,
+        "used_contract_count": 5
+      },
+      "title": "Semicap cycle: ASML / AMAT / LRCX / KLAC order and value-chain logic"
+    }
+  ],
+  "boundary": "This fixture proves contract-level shape improvement only. It does not prove real retrieval, paid-model memo quality, or production full-chain readiness.",
+  "case_count": 2,
+  "case_results": [
+    {
+      "baseline_quality_score": 3,
+      "case_id": "p32_l4_ai_infra_nvda_dell_capex",
+      "contract_quality_score": 11,
+      "failed_gates": [],
+      "gate_details": {
+        "agent_runtime_patterns_integrated": true,
+        "authority_boundaries_preserved": true,
+        "baseline_to_contract_improvement": true,
+        "counter_thesis_present": true,
+        "deployment_or_adoption_signal_integrated": true,
+        "financial_bridge_integrated": true,
+        "no_sku_revenue_absence_reason_traced": true,
+        "product_architecture_in_thesis_path": true,
+        "product_kpi_not_required_for_product_judgment": true,
+        "required_items_complete": true,
+        "supply_chain_or_value_chain_link_integrated": true,
+        "writer_material_is_judgment_material": true
+      },
+      "judgment_card_count": 9,
+      "quality_delta": 8,
+      "required_item_count": 9,
+      "status": "pass",
+      "thesis_path_dimension_count": 8,
+      "used_contract_count": 5
+    },
+    {
+      "baseline_quality_score": 3,
+      "case_id": "p32_l4_semicap_asml_lrcx_cycle",
+      "contract_quality_score": 11,
+      "failed_gates": [],
+      "gate_details": {
+        "agent_runtime_patterns_integrated": true,
+        "authority_boundaries_preserved": true,
+        "baseline_to_contract_improvement": true,
+        "counter_thesis_present": true,
+        "deployment_or_adoption_signal_integrated": true,
+        "financial_bridge_integrated": true,
+        "no_sku_revenue_absence_reason_traced": true,
+        "product_architecture_in_thesis_path": true,
+        "product_kpi_not_required_for_product_judgment": true,
+        "required_items_complete": true,
+        "supply_chain_or_value_chain_link_integrated": true,
+        "writer_material_is_judgment_material": true
+      },
+      "judgment_card_count": 10,
+      "quality_delta": 8,
+      "required_item_count": 10,
+      "status": "pass",
+      "thesis_path_dimension_count": 6,
+      "used_contract_count": 5
+    }
+  ],
+  "failed_case_count": 0,
+  "generated_at": "2026-07-04T15:51:52+00:00",
+  "missing_contracts": [],
+  "mode": "no_paid_no_llm_deterministic",
+  "passed_case_count": 2,
+  "quality_gates": [
+    "required_items_complete",
+    "product_architecture_in_thesis_path",
+    "no_sku_revenue_absence_reason_traced",
+    "product_kpi_not_required_for_product_judgment",
+    "deployment_or_adoption_signal_integrated",
+    "supply_chain_or_value_chain_link_integrated",
+    "financial_bridge_integrated",
+    "counter_thesis_present",
+    "authority_boundaries_preserved",
+    "writer_material_is_judgment_material",
+    "agent_runtime_patterns_integrated",
+    "baseline_to_contract_improvement"
+  ],
+  "required_contract_count": 10,
+  "schema_version": "fin_insight_p32_l4_ai_semis_deterministic_fixture_v0_1",
+  "status": "pass"
+}

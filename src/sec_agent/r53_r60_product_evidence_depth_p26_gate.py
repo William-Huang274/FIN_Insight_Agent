@@ -621,6 +621,30 @@ def render_p26_report(
     gap_rows: list[dict[str, Any]],
     gate_rows: list[dict[str, Any]],
 ) -> str:
+    customer_gap_open = any(row.get("gap_id") == "p26_customer_deployment_signal_gap" for row in gap_rows)
+    if customer_gap_open:
+        boundary_en = (
+            "P26 deliberately separates Product-KPI exact coverage from the rest of product intelligence. Missing exact "
+            "Product-KPI rows block exact KPI claims, not product profile/spec/relationship reasoning. "
+            "Customer/deployment/adoption gaps still block broad product-pack quality until real source/adapter repair "
+            "or an accepted public/commercial boundary is recorded."
+        )
+        boundary_zh = (
+            "P26 把 Product-KPI exact 和产品画像/规格/关系图谱拆开：缺 SKU/产品线 exact KPI 不能写成精确收入、出货、ASP、份额，"
+            "但不能抹掉已经存在的产品规格、架构、部署、竞争和供应链证据。CustomerDeployment 仍是产品包 broad quality 的真实 blocker。"
+        )
+    else:
+        boundary_en = (
+            "P26 deliberately separates Product-KPI exact coverage from the rest of product intelligence. Missing exact "
+            "Product-KPI rows block exact KPI claims, not product profile/spec/relationship reasoning. "
+            "Customer/deployment/adoption depth is currently closed for the 603-company universe; ProductEvidencePack "
+            "is ready for broad product-pack consumption, with residual Product-KPI exact gaps kept as claim-scope limits."
+        )
+        boundary_zh = (
+            "P26 把 Product-KPI exact 和产品画像/规格/关系图谱拆开：缺 SKU/产品线 exact KPI 不能写成精确收入、出货、ASP、份额，"
+            "但不能抹掉已经存在的产品规格、架构、部署、竞争和供应链证据。当前 603 公司 CustomerDeployment/adoption depth 已清零，"
+            "ProductEvidencePack 可进入 broad product-pack 消费；剩余 Product-KPI exact gap 只限制 exact KPI claim。"
+        )
     lines = [
         "# R53-R60 P26 Product Evidence All-Universe Depth Gate",
         "",
@@ -649,9 +673,9 @@ def render_p26_report(
             "",
             "## Boundary",
             "",
-            "P26 deliberately separates Product-KPI exact coverage from the rest of product intelligence. Missing exact Product-KPI rows block exact KPI claims, not product profile/spec/relationship reasoning. Customer/deployment/adoption gaps still block broad product-pack quality until real source/adapter repair or an accepted public/commercial boundary is recorded.",
+            boundary_en,
             "",
-            "P26 把 Product-KPI exact 和产品画像/规格/关系图谱拆开：缺 SKU/产品线 exact KPI 不能写成精确收入、出货、ASP、份额，但不能抹掉已经存在的产品规格、架构、部署、竞争和供应链证据。CustomerDeployment 仍是产品包 broad quality 的真实 blocker。",
+            boundary_zh,
             "",
         ]
     )

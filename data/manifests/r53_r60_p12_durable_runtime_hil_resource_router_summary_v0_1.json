@@ -4,8 +4,8 @@
     "acceptance_count": 5,
     "budget_record_count": 1,
     "checkpoint_bridge_count": 2,
-    "drill_resume_count": 1,
-    "drill_run_id": "run_d123e89dcef12683",
+    "drill_resume_count": 5,
+    "drill_run_id": "run_3dfab84fb66c10b6",
     "drill_task_id": "p12_runtime_drill_task_ai_infra_hil_resource_route",
     "drill_task_status": "succeeded",
     "gate_count": 12,
@@ -22,22 +22,22 @@
   "drill_task": {
     "case_id": "pilot_case_ai_infra_full_research",
     "created_at": "2026-06-29T22:22:26Z",
-    "current_run_id": "run_267058400e6c843a",
+    "current_run_id": "run_1567eaec5cf5fa90",
     "error_message": "",
     "metadata_json": "{\"drill\": true, \"source_slice\": \"P12\"}",
     "mode": "durable_runtime_drill",
     "objective_json": "{\"required_nodes\": [\"research_lead_objective_contract\", \"retrieval_evidence_operator\", \"product_specialist_pack\", \"lead_review_checkpoint\", \"memo_logic_plan\"], \"research_question\": \"Can the agent runtime pause for human approval, resume from checkpoint, route resources, and replay?\"}",
     "progress": 100,
     "query_text": "Run P12 durable runtime drill with HIL and model routing",
-    "resume_count": 1,
+    "resume_count": 5,
     "status": "succeeded",
     "task_id": "p12_runtime_drill_task_ai_infra_hil_resource_route",
     "trace_id": "trace_p12_runtime_drill",
-    "updated_at": "2026-06-29T22:22:26Z",
+    "updated_at": "2026-07-04T17:23:24Z",
     "user_id": "pilot_research_lead"
   },
   "full_runtime_migration_status": "partial_migration_runtime_drill_only",
-  "generated_at": "2026-06-29T22:22:26Z",
+  "generated_at": "2026-07-04T17:23:25Z",
   "hil_status": "human_interrupt_resume_pass",
   "outputs": {
     "closeout_report": "docs/internal/vnext_20260610/r53_r60_p12_durable_runtime_hil_resource_router_l4_scope_pass.zh-CN.md",
@@ -57,7 +57,7 @@
     "trace_export_is_derived_not_primary_audit": true
   },
   "readiness_report": {
-    "created_at": "2026-06-29T22:22:26Z",
+    "created_at": "2026-07-04T17:23:24Z",
     "full_runtime_migration_status": "partial_migration_runtime_drill_only",
     "gate_refs_json": "[\"p12_schema_tables_present\", \"p12_p11_dependency_pass\", \"p12_runtime_facade_binding_ready\", \"p12_graph_node_bindings_ready\", \"p12_checkpoint_bridge_resume_ready\", \"p12_human_interrupt_and_approval_ready\", \"p12_resource_model_router_budget_ready\", \"p12_replay_attempt_reconstructs_runtime\", \"p12_trace_exports_derived_from_sql_ledger\", \"p12_acceptance_records_complete\", \"p12_readiness_report_boundary_not_full_migration\", \"p12_runtime_artifacts_and_workpaper_event_ledgered\"]",
     "hil_status": "human_interrupt_resume_pass",
@@ -82,18 +82,18 @@
   "task": {
     "case_id": "p12_durable_runtime_hil_resource_router_l4_scope",
     "created_at": "2026-06-29T22:22:26Z",
-    "current_run_id": "run_19f11687b86fa183",
+    "current_run_id": "run_c5b60538c6c78544",
     "error_message": "",
     "metadata_json": "{\"closeout_level\": \"L4_scope_pass\", \"source_slice\": \"P12\"}",
     "mode": "durable_runtime_gate",
     "objective_json": "{\"minimum_evidence\": \"checkpoint/resume, HIL approval, router, replay and trace export rows exist\"}",
     "progress": 100,
     "query_text": "Build durable runtime, HIL and resource-router gate package",
-    "resume_count": 0,
+    "resume_count": 2,
     "status": "succeeded",
     "task_id": "p12_scope_task_durable_runtime_hil_resource_router",
     "trace_id": "trace_p12_durable_runtime_hil_resource_router",
-    "updated_at": "2026-06-29T22:22:26Z",
+    "updated_at": "2026-07-04T17:23:25Z",
     "user_id": "p12_gate"
   }
 }

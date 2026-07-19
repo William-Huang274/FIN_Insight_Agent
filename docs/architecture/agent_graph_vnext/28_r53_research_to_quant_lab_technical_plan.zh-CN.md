@@ -625,3 +625,96 @@ R53 第一版已经在 R53-R60 release slice `S9 Research-to-Quant Lab` 中落�
 - 这证明 Research-to-Quant Lab 的对象合同、审批、防泄漏、风险归因、FactorCard 和经验回写链路可审计、可回放。
 - 这不证明生产级 alpha、真实交易收益、自动交易、对外投资建议、完整历史 security master、商业实时行情或正式 paper trading monitor。
 - 后续如果接 Qlib / vectorbt / Alphalens / LEAN，应作为 `ValidationPlan executor adapter`，不能绕过当前 human approval、PIT 和 leakage contracts。
+
+## 14. 2026-07-10 vNext 对齐：公开源、Derived Feature 与 Decision Surface
+
+本节补充 R53 与 TECH_03/04/05/09 的正式边界，并纠正一个容易产生的误解：S9 `L4_scope_pass` 只证明 Research-to-Quant 对象合同、审批、防泄漏 smoke 和经验回写链路，不证明当前 603-company snapshot、24 PIT smoke rows 或 2 个 backtest result 已经能够支持统计显著因子、生产 alpha 或投资建议。
+
+### 14.1 上游公开数据最低合同
+
+R53 在接受新的 factor hypothesis 进入 effect-seeking experiment 前，至少检查：
+
+- `SecurityMasterPIT`：historical listing / delisting / ticker / share class / ADR / sector / peer membership；
+- `MarketBarPIT`：足够历史的 adjusted OHLCV、corporate actions、calendar、currency、timezone；
+- `FundamentalPIT`：period_end、filed/accepted/available time、amendment、restatement、vintage；
+- `OwnershipPositionPIT`：13F / N-PORT / insider / 13D-G / ETF holdings 的 report/available time 和 lag；
+- `MacroVintagePIT`：ALFRED 或等价 vintage/revision contract；
+- `EventPIT`：guidance、filing、product/policy/regulatory event 的 announced/available/tradable-after time；
+- source license、security mapping、missingness、revision 和 coverage audit。
+
+公开源可以增加 short、TRACE bond trade/yield、OCC option OI/volume、CFTC COT、non-US official market/holder/disclosure 等信号，但不能把 short-sale volume 写成 short interest、把 option OI 写成 dealer gamma、把 lagged holder rows 写成 real-time flow，或把公开 proxy 写成 consensus。
+
+### 14.2 与 TECH_04 DerivedMetricRegistry 的边界
+
+- TECH_04 注册和执行 source-backed feature 公式，生成 `DerivedMetricResult` / `NumericProgramTrace` / `ComputeEligibilityAssessment`。
+- R53 把合格 feature 绑定到 `FeatureSpec`，构建 PIT dataset、label、universe 和 validation plan。
+- TECH_04 不负责 IC、RankIC、event study、OOS、multiple-testing、backtest 或 factor promotion。
+- R53 不得自行绕过 TECH_04 的 period/unit/scope/as-of/lag/lineage hard fail。
+
+### 14.3 Factor 生命周期与显著性纪律
+
+统一状态：
+
+```text
+diagnostic_score
+ -> research_factor_candidate
+ -> in_sample_supported
+ -> out_of_sample_supported
+ -> paper_monitored_factor
+ -> retired_or_failed
+```
+
+只有 `out_of_sample_supported` 及以上状态，才能作为 bounded quant corroboration / counterevidence 进入 TECH_05 DecisionSurfaceCell。`diagnostic_score` 只能作为定量背景；样本内结果不得写成样本外有效；失败、过拟合、retired 和 data-unavailable 结果必须进入 ResearchExperienceStore。
+
+显著性 gate 至少覆盖：
+
+- PIT / leakage / survivorship / universe drift；
+- IC / RankIC、quantile monotonicity、decay、turnover、coverage；
+- walk-forward / OOS、multiple-testing / FDR；
+- sector/size/value/momentum/quality/liquidity exposure 和 risk neutralization；
+- regime、sector、market stability；
+- cost、slippage、capacity 和 missingness sensitivity；
+- frozen test attribution discipline。
+
+### 14.4 Decision Surface / Workbench 回流
+
+```text
+TECH_03 PIT source/address layer
+ -> TECH_04 DerivedMetric / NumericProgramTrace
+ -> R53 PIT dataset / ValidationResult / FactorCard
+ -> TECH_05 QuantValidationDecisionSurfaceProjection
+ -> TECH_09 FactorCard / cell-level review
+```
+
+回流对象必须说明它对 cell 是 `quant_support`、`quant_counterevidence` 还是 `diagnostic_only`，并携带 factor lifecycle、sample coverage、OOS、risk exposure、regime、failure scenarios、source/feature/dataset lineage 和 no-advice boundary。FactorCard 不能成为脱离原 thesis / evidence 的黑箱分数。
+
+### 14.5 当前状态
+
+本节为 `documented / contract_draft` 对齐，没有补历史市场数据、没有构建 production PIT security master、没有训练模型、没有运行新 factor analysis / event study / backtest、没有证明新增因子显著性。后续任何 effect-seeking 因子实验必须先建立 experiment governance gate 和可支持目标的 upstream data ceiling。
+
+## 15. 2026-07-10 Derivatives Quant Scope
+
+R53 接收衍生品作为 feature / event / regime input，不负责建设全市场实时衍生品终端，也不允许 LLM 直接从 option/futures rows 生成交易规则。
+
+### 15.1 优先因子范围
+
+- futures curve / roll / basis / OI / COT regime factor；
+- commodity-cost / FX / rates exposure factor；
+- index volatility / risk-regime factor；
+- single-stock option event uncertainty / IV-RV / OI concentration factor；
+- issuer funding/dilution / equity-credit divergence factor；
+- public weekly swap aggregate regime factor。
+
+### 15.2 低优先级或阻断范围
+
+- dealer gamma、borrow、securities lending、real-time OPRA；
+- single-name CDS/SBS broad panel、TRS/complex OTC/exotics；
+- high-frequency option/futures execution signals；
+- 无 quotes/contract master/side 的 Greek or IV reconstruction；
+- 任何把 derivatives proxy 当成 fundamentals 或 current institutional position 的 feature。
+
+### 15.3 验证要求
+
+除常规 PIT/leakage/OOS gate 外，衍生品 factor 额外检查 contract roll、expiry selection、look-ahead in final settlement/OI、preliminary/final revision、option contract adjustments、liquidity/stale quotes、COT release lag、overlapping expiries/events 和 transaction-cost sensitivity。
+
+若未来使用 QuantLib、py_vollib 或专业 backtest engine，应作为 deterministic calculator / ValidationPlan adapter，不能绕过 TECH_04 registry、source lineage、human approval 和 no-advice boundary。

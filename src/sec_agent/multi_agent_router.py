@@ -44,12 +44,30 @@ class MultiAgentRouteRequest:
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "MultiAgentRouteRequest":
+        context = dict(payload.get("context") or {})
+        for key in (
+            "query_contract",
+            "task_type",
+            "source_tiers",
+            "source_families",
+            "metric_families",
+            "required_dimension_ids",
+            "eval_focus",
+            "required_agents",
+            "expected_specialist_agents",
+            "expected_paid_specialist_agents",
+            "expected_paid_specialist_priorities",
+            "execution_mode",
+            "expected_execution_mode",
+        ):
+            if key in payload and key not in context:
+                context[key] = payload.get(key)
         return cls(
             user_query=str(payload.get("user_query") or payload.get("prompt") or ""),
             focus_tickers=_unique_upper(payload.get("focus_tickers")),
             search_scope_tickers=_unique_upper(payload.get("search_scope_tickers")),
             source_inventory=dict(payload.get("source_inventory") or {}),
-            context=dict(payload.get("context") or {}),
+            context=context,
         )
 
 
@@ -195,8 +213,11 @@ def _standard_memo_plan(
     ]
     if _management_commentary_intent(request):
         active.insert(2, "eight_k_operator")
-    if _market_or_valuation_intent(request) or _source_family_requested(request, "market_snapshot"):
+    market_intent = _market_or_valuation_intent(request)
+    market_source_requested = _source_family_requested(request, "market_snapshot")
+    if market_intent or market_source_requested:
         active.insert(3 if "eight_k_operator" in active else 2, "market_operator")
+    if market_intent:
         active.insert(active.index("judgment_plan_aggregator"), "market_valuation_analyst")
     if _product_technology_intent(request) or any(
         _source_family_requested(request, family)
@@ -267,8 +288,11 @@ def _deep_research_plan(
         "verifier",
         "renderer",
     ]
-    if _market_or_valuation_intent(request) or _source_family_requested(request, "market_snapshot"):
+    market_intent = _market_or_valuation_intent(request)
+    market_source_requested = _source_family_requested(request, "market_snapshot")
+    if market_intent or market_source_requested:
         active.insert(active.index("industry_operator"), "market_operator")
+    if market_intent:
         active.insert(active.index("judgment_plan_aggregator"), "market_valuation_analyst")
     if _product_technology_intent(request) or any(
         _source_family_requested(request, family)
@@ -458,6 +482,17 @@ def _playbook_source_family_available(request: MultiAgentRouteRequest, family: s
     item = availability.get(family) if isinstance(availability.get(family), Mapping) else {}
     if item:
         return item.get("available") is not False and str(item.get("status") or "") not in {"unavailable", "policy_not_loaded"}
+    if family == "milvus_semantic":
+        milvus = inventory.get("milvus_runtime") if isinstance(inventory.get("milvus_runtime"), Mapping) else {}
+        if milvus:
+            status = str(milvus.get("status") or "").strip()
+            if status == "unavailable":
+                return False
+            if "available" in milvus:
+                return bool(milvus.get("available"))
+            return False
+        if inventory:
+            return False
     families = set(_unique_strings(inventory.get("available_source_families") or inventory.get("source_families")))
     if families:
         return family in families
@@ -542,7 +577,7 @@ def _agent_priorities(execution_mode: str, active: list[str]) -> dict[str, str]:
 
 
 def _execution_mode(request: MultiAgentRouteRequest) -> str:
-    context_mode = str(request.context.get("execution_mode") or "").strip()
+    context_mode = str(request.context.get("execution_mode") or request.context.get("expected_execution_mode") or "").strip()
     if context_mode in {"deterministic_lookup", "focused_answer", "standard_memo", "deep_research"}:
         return context_mode
     if _run_artifact_intent(request) or _deterministic_lookup_intent(request):
@@ -823,6 +858,9 @@ def _text_with_context(request: MultiAgentRouteRequest) -> str:
             _text(request),
             str(request.context.get("task_type") or "").lower(),
             " ".join(_unique_strings(request.context.get("source_tiers") or request.context.get("source_families"))).lower(),
+            " ".join(_unique_strings(request.context.get("metric_families"))).lower(),
+            " ".join(_unique_strings(request.context.get("required_dimension_ids"))).lower(),
+            " ".join(_unique_strings(request.context.get("eval_focus"))).lower(),
             " ".join(_unique_strings(query_contract.get("metric_families") if isinstance(query_contract, Mapping) else [])).lower(),
             " ".join(_unique_strings(query_contract.get("source_tiers") if isinstance(query_contract, Mapping) else [])).lower(),
         ]

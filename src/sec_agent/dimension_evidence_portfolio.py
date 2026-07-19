@@ -54,7 +54,10 @@ def build_dimension_evidence_portfolio(
 
     state = dict(state or {})
     focus_tickers = _tickers(tickers) or _focus_tickers_from_state(state)
-    runtime_autoload = bool(state.get("product_intelligence_runtime_autoload")) if autoload is None else bool(autoload)
+    if autoload is None and "product_intelligence_runtime_autoload" not in state:
+        runtime_autoload: bool | None = None
+    else:
+        runtime_autoload = bool(state.get("product_intelligence_runtime_autoload")) if autoload is None else bool(autoload)
 
     fundamental_ref = _fundamental_ref(state)
     product_intelligence_ref = compact_product_intelligence_pack_refs(

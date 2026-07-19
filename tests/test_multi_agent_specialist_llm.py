@@ -3,11 +3,17 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from sec_agent.multi_agent_runtime import build_agent_data_view
+from sec_agent.multi_agent_runtime import build_agent_data_view, specialist_activation_decisions
 from sec_agent.specialist_llm import (
     ROUTE_SOURCE,
     SPECIALIST_ROUTER_ENV,
     SpecialistLLMConfig,
+    _compact_capital_macro_pack_for_prompt,
+    _compact_fundamental_statement_pack_for_prompt,
+    _compact_fundamental_peer_statement_panel_for_prompt,
+    _compact_prompt_row,
+    _compact_product_spec_pack_for_prompt,
+    _specialist_input_coverage_summary,
     build_shared_specialist_context,
     build_specialist_request_from_state,
     extract_specialist_memolet_json,
@@ -104,6 +110,57 @@ def test_specialist_llm_supports_product_technology_skill() -> None:
     assert "Product Technology Analysis Skill v0.1" in fake.calls[0]["messages"][0]["content"]
 
 
+def test_fundamental_specialist_prompt_compacts_pack_headers_and_panel_metadata() -> None:
+    long_text = "long nested header " * 80
+    statement_pack = _compact_fundamental_statement_pack_for_prompt(
+        {
+            "schema_version": "fundamental_pack_v1",
+            "industry_focus_policy": {"very_large_policy_blob": long_text, "status": "ready"},
+            "summary": {"line_item_count": 10, "large_summary_blob": long_text},
+            "source_boundary": {"large_boundary_blob": long_text, "status": "bounded"},
+            "statement_line_items": [
+                {
+                    "evidence_ref": "stmt_ref_1",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "DELL",
+                    "metric_family": "revenue",
+                    "display_value": "$29.0B",
+                    "summary": long_text,
+                }
+            ],
+        },
+        agent_id="fundamental_analyst",
+    )
+    peer_panel = _compact_fundamental_peer_statement_panel_for_prompt(
+        {
+            "schema_version": "peer_panel_v1",
+            "summary": {"large_summary_blob": long_text, "row_count": 99},
+            "analysis_gates": {"large_gate_blob": long_text, "status": "pass"},
+            "peer_comparable_metric_panel": {
+                "large_panel_blob": long_text,
+                "comparisons": [
+                    {
+                        "comparison_id": "cmp_1",
+                        "evidence_ref": "peer_ref_1",
+                        "source_family": "primary_sec_filing",
+                        "ticker": "DELL",
+                        "metric_family": "gross_margin",
+                        "display_value": "6.0%",
+                        "summary": long_text,
+                    }
+                ],
+            },
+        },
+        agent_id="fundamental_analyst",
+    )
+
+    packed_text = json.dumps({"statement": statement_pack, "peer": peer_panel}, ensure_ascii=False)
+    assert "stmt_ref_1" in packed_text
+    assert "peer_ref_1" in packed_text
+    assert long_text not in packed_text
+    assert "metadata_ref_only_nested_payload_omitted" in packed_text
+
+
 def test_specialist_llm_passes_relationship_summary_as_bounded_prompt_input() -> None:
     memolet = _memolet("industry_supply_chain_analyst", source_family="relationship_graph", evidence_ref="rel_ref_1")
     fake = _FakeChat([json.dumps(memolet)])
@@ -152,12 +209,143 @@ def test_specialist_llm_prompt_uses_deep_research_observation_budget() -> None:
 
     user_prompt = fake.calls[0]["messages"][1]["content"]
     assert result["status"] == "pass"
-    assert "2-4 supported fundamental ClaimCards" in user_prompt
+    assert "2-3 supported fundamental ClaimCards" in user_prompt
     assert "ClaimCard v0.3" in user_prompt
     payload = json.loads(user_prompt.split("Input JSON:\n", 1)[1])
     assert payload["execution_mode"] == "deep_research"
     assert "input_budget" in user_prompt
     assert "output_contract" in user_prompt
+
+
+def test_specialist_llm_prompt_uses_compact_context_projection() -> None:
+    fake = _FakeChat([json.dumps(_memolet("fundamental_analyst"))])
+    request = _request()
+    request["execution_mode"] = "deep_research"
+    request["shared_context"] = {
+        "schema_version": "shared",
+        "user_query": "x" * 800,
+        "execution_mode": "deep_research",
+        "focus_tickers": ["NVDA", "DELL"],
+        "prompt_policy": {
+            "role_payload_policy": "specialist_receives_only_role_task_and_selected_visible_rows",
+            "source_layer_policy": "source layer policy " + ("too long " * 120),
+        },
+    }
+    request["role_context"] = {
+        "schema_version": "role",
+        "agent_id": "fundamental_analyst",
+        "analyst_lens": "company_reported_fundamentals_and_management_commentary",
+        "dimension_evidence_portfolio_ref": {
+            "large_nested_payload": {
+                f"item_{index}": "this should be compacted away " * 20
+                for index in range(20)
+            }
+        },
+        "fundamental_statement_pack_policy": "three statement policy " + ("long " * 80),
+    }
+
+    result = route_specialist_memolet_llm(
+        "fundamental_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    user_prompt = fake.calls[0]["messages"][1]["content"]
+    payload = json.loads(user_prompt.split("Input JSON:\n", 1)[1])
+    assert result["status"] == "pass"
+    assert len(json.dumps(payload["shared_context"], ensure_ascii=False)) < 900
+    assert len(json.dumps(payload["role_context"], ensure_ascii=False)) < 1300
+    assert "too long too long too long" not in user_prompt
+    assert "this should be compacted away" not in user_prompt
+
+
+def test_specialist_input_coverage_suppresses_false_manifest_gap_when_rows_are_visible() -> None:
+    rows = [
+        {"ticker": "NVDA", "source_family": "primary_sec_filing", "evidence_ref": "nvda_10q"},
+        {"ticker": "DELL", "source_family": "company_authored_unaudited_sec_filing", "evidence_ref": "dell_8k"},
+    ]
+    state = {
+        "focus_tickers": ["NVDA", "DELL"],
+        "source_gaps": [
+            {
+                "ticker": "NVDA",
+                "source_family": "company_authored_unaudited_sec_filing",
+                "reason_code": "not_in_manifest_for_mcp_route_scope",
+            },
+            {
+                "ticker": "DELL",
+                "source_family": "company_authored_unaudited_sec_filing",
+                "reason_code": "not_in_manifest_for_mcp_route_scope",
+            },
+        ],
+    }
+
+    summary = _specialist_input_coverage_summary("fundamental_analyst", rows, state)
+
+    assert summary["focus_ticker_primary_row_counts"] == {"NVDA": 1, "DELL": 1}
+    assert summary["focus_ticker_source_gap_reasons"] == {}
+
+
+def test_specialist_input_coverage_does_not_inherit_sec_gap_for_non_sec_role() -> None:
+    rows = [
+        {"ticker": "NVDA", "source_family": "relationship_graph", "evidence_ref": "rel_1"},
+    ]
+    state = {
+        "focus_tickers": ["NVDA"],
+        "source_gaps": [
+            {
+                "ticker": "NVDA",
+                "source_family": "company_authored_unaudited_sec_filing",
+                "reason_code": "not_in_manifest_for_mcp_route_scope",
+            }
+        ],
+    }
+
+    summary = _specialist_input_coverage_summary("industry_supply_chain_analyst", rows, state)
+
+    assert summary["focus_ticker_source_gap_reasons"] == {}
+
+
+def test_specialist_prompt_preserves_machine_evidence_refs_without_truncation() -> None:
+    long_ref = "MARKET_SNAPSHOT::20260530_market_yahoo_chart_full238_6m_bars_3m_fmp_key_metrics_price_return_relative_peer_context"
+    compact = _compact_prompt_row(
+        {
+            "ticker": "DELL",
+            "source_family": "market_snapshot",
+            "evidence_ref": long_ref,
+            "evidence_refs": [long_ref],
+            "summary": "x" * 400,
+        }
+    )
+
+    assert compact["evidence_ref"] == long_ref
+    assert compact["evidence_refs"] == [long_ref]
+    assert "...[truncated]" not in compact["evidence_ref"]
+    assert "...[truncated]" in compact["summary"]
+
+
+def test_specialist_route_restores_truncated_machine_evidence_ref_before_claim_card() -> None:
+    long_ref = "MARKET_SNAPSHOT::20260530_market_yahoo_chart_full238_6m_bars_3m_fmp_key_metrics_price_return_relative_peer_context"
+    truncated_ref = long_ref[:80].rstrip() + "...[truncated]"
+    request = _request(source_family="market_snapshot")
+    request["known_evidence_refs"] = [long_ref]
+    request["bounded_evidence_rows"][0]["evidence_ref"] = long_ref
+    fake = _FakeChat([json.dumps(_memolet("market_valuation_analyst", source_family="market_snapshot", evidence_ref=truncated_ref))])
+
+    result = route_specialist_memolet_llm(
+        "market_valuation_analyst",
+        request,
+        config=_config(),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["memolet"]["observations"][0]["evidence_refs"] == [long_ref]
+    assert any(
+        warning.get("type") == "truncated_evidence_refs_restored_from_known_refs"
+        for warning in result["validation"]["warnings"]
+    )
 
 
 def test_specialist_llm_repairs_truncated_json_with_compact_prompt() -> None:
@@ -459,6 +647,17 @@ def test_specialist_env_router_runs_active_specialists_with_bounded_state() -> N
     assert result["specialist_route_results"][0]["required_claim_slot_count"] >= 1
     assert result["specialist_route_results"][0]["shared_context_digest"].startswith("sha256:")
     assert result["specialist_route_results"][0]["prompt_bounded_evidence_row_count"] == 1
+    assert result["specialist_route_results"][0]["activation_decision"] == "run"
+    assert result["specialist_route_results"][0]["matched_requirement_count"] == 0
+    assert result["specialist_route_results"][0]["explicit_intent"] is False
+    assert "activation_reason" in result["specialist_route_results"][0]
+    fingerprint = result["specialist_route_results"][0]["input_pack_fingerprint"]
+    assert fingerprint["schema_version"] == "sec_agent_specialist_input_pack_fingerprint_v0_1"
+    assert fingerprint["digest"].startswith("sha256:")
+    assert fingerprint["known_evidence_ref_count"] >= 1
+    assert "ledger_ref_1" in fingerprint["known_evidence_refs"]
+    assert fingerprint["component_summaries"]["bounded_evidence_rows"]["item_count"] == 1
+    assert fingerprint["policy"] == "fingerprint_only_no_prompt_text_persisted_v0_1"
     assert "raw_response" not in json.dumps(result)
 
 
@@ -484,6 +683,7 @@ def test_specialist_env_router_skips_conditional_specialist_without_signal() -> 
         {
             "user_query": "Analyze bounded fundamentals.",
             "agent_activation_plan": {
+                "execution_mode": "standard_memo",
                 "activate_agents": ["fundamental_analyst", "market_valuation_analyst"],
                 "agent_priorities": {
                     "fundamental_analyst": "primary",
@@ -507,6 +707,9 @@ def test_specialist_env_router_skips_conditional_specialist_without_signal() -> 
     assert len(fake.calls) == 1
     skipped = [row for row in result["specialist_route_results"] if row["status"] == "skipped"]
     assert skipped[0]["agent_id"] == "market_valuation_analyst"
+    assert skipped[0]["activation_decision"] == "skipped"
+    assert skipped[0]["matched_requirement_count"] == 0
+    assert skipped[0]["activation_reason"] == "supporting_specialist_skipped_no_matching_required_item_or_explicit_intent"
 
 
 def test_build_specialist_request_from_state_sanitizes_rows() -> None:
@@ -745,6 +948,84 @@ def test_risk_specialist_request_excludes_relationship_rows() -> None:
     assert "relationship_summary" not in request or not request["relationship_summary"]
     assert {row["source_family"] for row in request["bounded_evidence_rows"]} == {"primary_sec_filing"}
     assert "rel_ref_1" not in request["known_evidence_refs"]
+
+
+def test_risk_specialist_request_keeps_required_exact_financial_rows_from_compact_fusion_bundle() -> None:
+    request = build_specialist_request_from_state(
+        "risk_counterevidence_analyst",
+        {
+            "user_query": "Assess AI infra thesis risks across hyperscaler capex and DELL margin quality.",
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["risk_counterevidence_analyst"],
+            },
+            "query_contract": {
+                "focus_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+                "search_scope_tickers": ["NVDA", "AMD", "GOOGL", "DELL", "AMZN", "MSFT"],
+            },
+            "evidence_fusion_bundle": {
+                "authority_rows": [
+                    {
+                        "evidence_ref": "capex_ref_amzn",
+                        "source_family": "primary_sec_filing",
+                        "claim_scope": "reported_financial_fact",
+                        "ticker": "AMZN",
+                        "metric": "capital_expenditure_proxy",
+                        "summary": "AMZN capital expenditure increased for AI infrastructure.",
+                        "evidence_requirement_ids": ["req_hyperscaler_capex"],
+                    },
+                    {
+                        "evidence_ref": "capex_ref_msft",
+                        "source_family": "primary_sec_filing",
+                        "claim_scope": "reported_financial_fact",
+                        "ticker": "MSFT",
+                        "metric": "capital_expenditure_proxy",
+                        "summary": "MSFT capital additions provide a second hyperscaler capex data point.",
+                        "evidence_requirement_ids": ["req_hyperscaler_capex"],
+                    },
+                    {
+                        "evidence_ref": "margin_ref_dell",
+                        "source_family": "company_authored_unaudited_sec_filing",
+                        "claim_scope": "reported_financial_fact",
+                        "ticker": "DELL",
+                        "metric": "operating_income",
+                        "summary": "DELL operating income row relevant to AI server margin quality.",
+                        "evidence_requirement_ids": ["req_dell_margin_quality"],
+                    },
+                    {
+                        "evidence_ref": "market_ref_nvda",
+                        "source_family": "market_snapshot",
+                        "claim_scope": "context_or_proxy_only",
+                        "ticker": "NVDA",
+                        "summary": "NVDA market snapshot context.",
+                    },
+                    {
+                        "evidence_ref": "rel_ref_nvda_dell",
+                        "source_family": "relationship_graph",
+                        "claim_scope": "scope_or_hypothesis_only",
+                        "ticker": "NVDA",
+                        "related_ticker": "DELL",
+                        "relationship_type": "supplier",
+                        "summary": "NVIDIA GPU supply to DELL AI servers is relationship context.",
+                    },
+                ]
+            },
+        },
+    )
+
+    refs = {row["evidence_ref"] for row in request["bounded_evidence_rows"]}
+    families = request["prompt_row_distribution"]["by_source_family"]
+
+    assert "capex_ref_amzn" in refs
+    assert "capex_ref_msft" in refs
+    assert "margin_ref_dell" in refs
+    assert "capex_ref_amzn" in request["known_evidence_refs"]
+    assert "capex_ref_msft" in request["known_evidence_refs"]
+    assert "margin_ref_dell" in request["known_evidence_refs"]
+    assert "rel_ref_nvda_dell" in refs
+    assert families["primary_sec_filing"] >= 1
+    assert families["company_authored_unaudited_sec_filing"] >= 1
+    assert families["relationship_graph"] >= 1
 
 
 def test_agent_data_view_source_family_bundle_selects_role_specific_rows() -> None:
@@ -1013,11 +1294,12 @@ def test_build_specialist_request_from_state_uses_deep_research_prompt_budget() 
     )
 
     assert request["execution_mode"] == "deep_research"
-    assert len(request["bounded_evidence_rows"]) == 24
-    assert request["input_budget"]["prompt_bounded_evidence_row_budget"] == 24
+    assert len(request["bounded_evidence_rows"]) == 16
+    assert request["input_budget"]["prompt_bounded_evidence_row_budget"] == 16
     assert request["input_budget"]["data_view_bounded_evidence_row_budget"] == 48
     assert request["input_budget"]["prompt_summary_char_policy"] == "source_family_tiered_v0_2_compact"
-    assert "ledger_ref_24" in request["known_evidence_refs"]
+    assert "ledger_ref_16" in request["known_evidence_refs"]
+    assert "ledger_ref_17" not in request["known_evidence_refs"]
 
 
 def test_build_specialist_request_from_state_uses_supporting_priority_prompt_budget() -> None:
@@ -1037,7 +1319,7 @@ def test_build_specialist_request_from_state_uses_supporting_priority_prompt_bud
                     "ticker": "NVDA",
                     "metric": "revenue",
                     "value": str(index),
-                    "summary": f"Revenue evidence row {index}.",
+                    "summary": f"Revenue pressure risk evidence row {index}.",
                 }
                 for index in range(1, 31)
             ],
@@ -1046,7 +1328,7 @@ def test_build_specialist_request_from_state_uses_supporting_priority_prompt_bud
                     "evidence_ref": f"market_ref_{index}",
                     "source_family": "market_snapshot",
                     "ticker": "NVDA",
-                    "summary": f"Market evidence row {index}.",
+                    "summary": f"Market risk evidence row {index}.",
                 }
                 for index in range(1, 11)
             ],
@@ -1060,19 +1342,102 @@ def test_build_specialist_request_from_state_uses_supporting_priority_prompt_bud
     assert {row["source_family"] for row in request["bounded_evidence_rows"]} == {"primary_sec_filing", "market_snapshot"}
 
 
+def test_specialist_prompt_filters_role_specific_refs_before_fingerprinting() -> None:
+    state = {
+        "user_query": "Analyze AI infrastructure semicap product, deployment, and risk evidence.",
+        "query_contract": {"focus_tickers": ["AMAT", "LRCX"], "search_scope_tickers": ["AMAT", "LRCX"]},
+        "agent_activation_plan": {
+            "execution_mode": "deep_research",
+            "activate_agents": [
+                "product_technology_analyst",
+                "industry_supply_chain_analyst",
+                "risk_counterevidence_analyst",
+            ],
+            "agent_priorities": {
+                "product_technology_analyst": "primary",
+                "industry_supply_chain_analyst": "primary",
+                "risk_counterevidence_analyst": "supporting",
+            },
+        },
+        "runtime_ledger_rows": [
+            {
+                "metric_id": "amat_revenue_plain",
+                "source_family": "primary_sec_filing",
+                "ticker": "AMAT",
+                "metric": "revenue",
+                "summary": "AMAT revenue increased in the quarter.",
+            },
+            {
+                "metric_id": "lrcx_export_risk",
+                "source_family": "primary_sec_filing",
+                "ticker": "LRCX",
+                "metric": "export_restriction_risk",
+                "summary": "Export control risk and China exposure could constrain sales.",
+            },
+        ],
+        "product_evidence_rows": [
+            {
+                "evidence_ref": "amat_product_profile",
+                "source_family": "company_product_evidence_graph",
+                "ticker": "AMAT",
+                "source_role": "official_product_surface",
+                "metric": "product_architecture",
+                "product_family": "wafer_fab_equipment",
+                "promotion_status": "context_or_lead_available",
+                "summary": "AMAT product architecture and process-control platform context.",
+            },
+            {
+                "evidence_ref": "amat_customer_deployment",
+                "source_family": "company_product_evidence_graph",
+                "ticker": "AMAT",
+                "source_role": "official_customer_deployment_surface",
+                "structured_context_type": "customer_deployment_signal",
+                "metric": "customer_deployment",
+                "promotion_status": "context_or_lead_available",
+                "summary": "Customer deployment and supplier relationship signal for a foundry capacity expansion.",
+            },
+        ],
+        "industry_snapshot_rows": [
+            {
+                "evidence_ref": "semicap_cycle_context",
+                "source_family": "industry_snapshot",
+                "ticker": "AMAT",
+                "metric": "wafer_fab_equipment_cycle",
+                "summary": "Semicap wafer fab equipment cycle and foundry demand context.",
+            }
+        ],
+    }
+
+    product = build_specialist_request_from_state("product_technology_analyst", state)
+    industry = build_specialist_request_from_state("industry_supply_chain_analyst", state)
+    risk = build_specialist_request_from_state("risk_counterevidence_analyst", state)
+
+    product_refs = {row["evidence_ref"] for row in product["bounded_evidence_rows"]}
+    industry_refs = {row["evidence_ref"] for row in industry["bounded_evidence_rows"]}
+    risk_refs = {row["evidence_ref"] for row in risk["bounded_evidence_rows"]}
+
+    assert "amat_product_profile" in product_refs
+    assert "amat_customer_deployment" not in product_refs
+    assert "amat_customer_deployment" in industry_refs
+    assert "amat_product_profile" not in industry_refs
+    assert "lrcx_export_risk" in risk_refs
+    assert "amat_revenue_plain" not in risk_refs
+    assert "amat_product_profile" not in risk_refs
+
+
 def test_specialist_prompt_uses_source_family_summary_budgets() -> None:
     request = build_specialist_request_from_state(
         "risk_counterevidence_analyst",
         {
             "agent_activation_plan": {"execution_mode": "deep_research"},
             "runtime_ledger_rows": [
-                {"metric_id": "sec_ref", "source_family": "primary_sec_filing", "summary": "s" * 900},
+                {"metric_id": "sec_ref", "source_family": "primary_sec_filing", "summary": "risk " + "s" * 900},
             ],
             "market_snapshot_rows": [
-                {"evidence_ref": "market_ref", "source_family": "market_snapshot", "summary": "m" * 900},
+                {"evidence_ref": "market_ref", "source_family": "market_snapshot", "summary": "risk " + "m" * 900},
             ],
             "industry_snapshot_rows": [
-                {"evidence_ref": "industry_ref", "source_family": "industry_snapshot", "summary": "i" * 900},
+                {"evidence_ref": "industry_ref", "source_family": "industry_snapshot", "summary": "risk " + "i" * 900},
             ],
             "universe_relationship_plan": {
                 "relationships": [
@@ -1156,6 +1521,7 @@ def test_build_specialist_request_from_state_includes_task_card_and_claim_slots(
         "fundamental_analyst",
         {
             "user_query": "Compare NVDA fundamentals.",
+            "focus_tickers": ["NVDA"],
             "query_contract": {
                 "focus_tickers": ["NVDA"],
                 "search_scope_tickers": ["NVDA", "AMD"],
@@ -1196,6 +1562,161 @@ def test_build_specialist_request_from_state_includes_task_card_and_claim_slots(
     assert task_card["relevant_requirements"][0]["requirement_id"] == "req_revenue"
     assert request["required_claim_slots"][0]["slot_id"] == "fundamentals_three_statement_quality"
     assert request["counterclaim_slots"][0]["slot_kind"] == "counterclaim_or_gap"
+    assert request["method_runtime_pack"]["status"] == "runtime_injected"
+    assert request["method_runtime_pack"]["lane"] == "ai_semis"
+    assert "three_statement_peer_panel" in request["method_runtime_pack"]["active_method_ids"]
+    assert request["specialist_runtime_rubric"]["role_runtime_mission"].startswith("Bridge product")
+    assert "product_to_financial_bridge" in request["specialist_runtime_rubric"]["must_answer"]
+    assert "judgment_candidates" in request["output_contract"]["required_outputs"]
+    assert "business_mechanism" in request["output_contract"]["judgment_candidate_contract"]["required_fields"]
+
+
+def test_specialist_activation_matches_chinese_industry_and_risk_requirements() -> None:
+    decisions = specialist_activation_decisions(
+        {
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": [
+                    "industry_supply_chain_analyst",
+                    "risk_counterevidence_analyst",
+                ],
+                "agent_priorities": {
+                    "industry_supply_chain_analyst": "primary",
+                    "risk_counterevidence_analyst": "supporting",
+                },
+            },
+            "evidence_requirement_plan": {
+                "requirements": [
+                    {
+                        "requirement_id": "req_orders",
+                        "task_id": "订单积压出货周期",
+                        "question_zh": "分析订单、积压、出货周期和客户集中度。",
+                        "priority": "primary",
+                    },
+                    {
+                        "requirement_id": "req_export_risk",
+                        "task_id": "出口限制监管风险",
+                        "question_zh": "分析出口限制、监管和地缘风险。",
+                        "priority": "supporting",
+                    },
+                ]
+            },
+        }
+    )
+
+    by_agent = {row["agent_id"]: row for row in decisions}
+    assert by_agent["industry_supply_chain_analyst"]["decision"] == "run"
+    assert by_agent["industry_supply_chain_analyst"]["matched_requirement_count"] >= 1
+    assert by_agent["risk_counterevidence_analyst"]["decision"] == "run"
+    assert by_agent["risk_counterevidence_analyst"]["matched_requirement_count"] >= 1
+
+    intent_only = specialist_activation_decisions(
+        {
+            "user_query": "分析 ASML、AMAT、LRCX、KLAC 的订单、积压、出货周期、客户集中度、出口限制和监管风险。",
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": [
+                    "industry_supply_chain_analyst",
+                    "risk_counterevidence_analyst",
+                ],
+                "agent_priorities": {
+                    "industry_supply_chain_analyst": "primary",
+                    "risk_counterevidence_analyst": "supporting",
+                },
+            },
+        }
+    )
+    intent_by_agent = {row["agent_id"]: row for row in intent_only}
+    assert intent_by_agent["industry_supply_chain_analyst"]["decision"] == "run"
+    assert intent_by_agent["industry_supply_chain_analyst"]["explicit_intent"] is True
+    assert intent_by_agent["risk_counterevidence_analyst"]["decision"] == "run"
+    assert intent_by_agent["risk_counterevidence_analyst"]["explicit_intent"] is True
+
+
+def test_prompt_pack_compaction_caps_large_product_and_fundamental_rows() -> None:
+    product_pack = {
+        "schema_version": "product_spec_pack_unit",
+        "summary": {"product_spec_count": 20},
+        "product_specs": [
+            {
+                "evidence_ref": f"spec_{index}",
+                "summary": "H100 spec " + ("very long " * 80),
+                "empty": "",
+            }
+            for index in range(12)
+        ],
+        "customer_deployment_signals": [
+            {"evidence_ref": f"deploy_{index}", "notes": "deployment " + ("detail " * 80)}
+            for index in range(12)
+        ],
+    }
+    compact_product = _compact_product_spec_pack_for_prompt(product_pack, agent_id="product_technology_analyst")
+
+    assert len(compact_product["product_specs"]) == 3
+    assert compact_product["customer_deployment_signals"] == []
+    assert compact_product["role_projection_policy"] == "product_prompt_specs_kpi_channel_only_v0_1"
+    assert "customer_deployment_signals" in compact_product["excluded_sections"]
+    assert len(compact_product["product_specs"][0]["summary"]) <= 200
+    assert "empty" not in compact_product["product_specs"][0]
+
+    panel = {
+        "schema_version": "fundamental_panel_unit",
+        "summary": {"line_item_count": 20},
+        "analysis_gates": {"three_statement_coverage": True},
+        "three_statement_metric_panel": {
+            "statement_type_counts": {"income_statement": 12},
+            "statements": [{"evidence_ref": f"stmt_{index}", "summary": "row " * 120} for index in range(10)],
+        },
+        "peer_comparable_metric_panel": {
+            "comparisons": [{"evidence_ref": f"peer_{index}", "description": "peer " * 120} for index in range(10)]
+        },
+        "analysis_gaps": [{"evidence_ref": f"gap_{index}", "rationale": "gap " * 100} for index in range(10)],
+    }
+    compact_panel = _compact_fundamental_peer_statement_panel_for_prompt(panel, agent_id="fundamental_analyst")
+
+    assert len(compact_panel["three_statement_metric_panel"]["statements"]) == 3
+    assert len(compact_panel["peer_comparable_metric_panel"]["comparisons"]) == 5
+    assert len(compact_panel["analysis_gaps"]) == 5
+    assert len(compact_panel["peer_comparable_metric_panel"]["comparisons"][0]["description"]) <= 240
+
+
+def test_capital_macro_pack_prompt_is_role_projected_not_duplicated_wholesale() -> None:
+    pack = {
+        "schema_version": "capital_macro_pack_unit",
+        "summary": {"input_row_count": 42},
+        "debt_instruments": [{"evidence_ref": "debt_ref", "summary": "Debt maturity row."}],
+        "ownership_positions": [{"evidence_ref": "ownership_ref", "summary": "13F holder row."}],
+        "insider_transactions": [{"evidence_ref": "insider_ref", "summary": "Form 4 row."}],
+        "macro_drivers": [{"evidence_ref": "macro_ref", "summary": "Rate driver row."}],
+        "company_exposure_edges": [{"evidence_ref": "exposure_ref", "summary": "Capex exposure edge."}],
+        "vertical_official_objects": [{"evidence_ref": "vertical_ref", "summary": "EIA/FRED context row."}],
+        "rejected_objects": [{"evidence_ref": "reject_ref", "summary": "Rejected weak proxy row."}],
+    }
+
+    fundamental = _compact_capital_macro_pack_for_prompt(pack, agent_id="fundamental_analyst")
+    industry = _compact_capital_macro_pack_for_prompt(pack, agent_id="industry_supply_chain_analyst")
+    risk = _compact_capital_macro_pack_for_prompt(pack, agent_id="risk_counterevidence_analyst")
+
+    assert fundamental["role_projection_policy"].endswith("fundamental_capital_structure")
+    assert "debt_instruments" in fundamental
+    assert "ownership_positions" in fundamental
+    assert "macro_drivers" not in fundamental
+    assert "vertical_official_objects" not in fundamental
+
+    assert industry["role_projection_policy"].endswith("industry_exposure_edges")
+    assert "macro_drivers" in industry
+    assert "vertical_official_objects" in industry
+    assert "debt_instruments" not in industry
+    assert "ownership_positions" not in industry
+
+    assert risk["role_projection_policy"].endswith("risk_counterevidence")
+    assert "debt_instruments" in risk
+    assert "rejected_objects" in risk
+    assert "ownership_positions" not in risk
+    assert "vertical_official_objects" not in risk
+
+    assert set(fundamental["included_sections"]) != set(industry["included_sections"])
+    assert set(industry["included_sections"]) != set(risk["included_sections"])
 
 
 def test_industry_task_card_requires_relationship_claim_slot_when_relationship_rows_exist() -> None:
@@ -1522,6 +2043,182 @@ def test_build_specialist_request_preserves_comparative_focus_ticker_prompt_rows
     assert {"NVDA", "AMD"} <= tickers
     assert request["prompt_row_distribution"]["by_ticker"]["NVDA"] >= 1
     assert request["input_coverage_summary"]["focus_ticker_primary_row_counts"]["NVDA"] >= 1
+
+
+def test_fundamental_request_keeps_required_non_focus_hyperscaler_capex_rows() -> None:
+    request = build_specialist_request_from_state(
+        "fundamental_analyst",
+        {
+            "user_query": "Assess AI infrastructure demand and DELL margin quality.",
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["fundamental_analyst"],
+            },
+            "query_contract": {
+                "focus_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+                "search_scope_tickers": ["NVDA", "AMD", "GOOGL", "DELL", "AMZN", "MSFT"],
+            },
+            "evidence_fusion_bundle": {
+                "authority_rows": [
+                    {
+                        "evidence_ref": "dell_margin_ref",
+                        "source_family": "primary_sec_filing",
+                        "claim_scope": "reported_financial_fact",
+                        "ticker": "DELL",
+                        "metric": "gross_margin",
+                        "summary": "DELL gross margin row for margin-quality analysis.",
+                        "evidence_requirement_ids": ["req_dell_margin_quality"],
+                    },
+                    {
+                        "evidence_ref": "amzn_capex_ref",
+                        "source_family": "primary_sec_filing",
+                        "claim_scope": "reported_financial_fact",
+                        "ticker": "AMZN",
+                        "metric": "capital_expenditure_proxy",
+                        "summary": "AMZN capex row required for hyperscaler demand context.",
+                        "evidence_requirement_ids": ["req_hyperscaler_capex"],
+                    },
+                    {
+                        "evidence_ref": "msft_capex_ref",
+                        "source_family": "primary_sec_filing",
+                        "claim_scope": "reported_financial_fact",
+                        "ticker": "MSFT",
+                        "metric": "capital_expenditure_proxy",
+                        "summary": "MSFT capex row required for hyperscaler demand context.",
+                        "evidence_requirement_ids": ["req_hyperscaler_capex"],
+                    },
+                ]
+                + [
+                    {
+                        "evidence_ref": f"focus_ref_{ticker}_{index}",
+                        "source_family": "company_authored_unaudited_sec_filing",
+                        "claim_scope": "company_disclosed_context_only",
+                        "ticker": ticker,
+                        "metric": "revenue",
+                        "summary": f"{ticker} context row {index}.",
+                    }
+                    for ticker in ("NVDA", "AMD", "GOOGL", "DELL")
+                    for index in range(1, 6)
+                ]
+            },
+        },
+    )
+
+    refs = {row["evidence_ref"] for row in request["bounded_evidence_rows"]}
+
+    assert "dell_margin_ref" in refs
+    assert "amzn_capex_ref" in refs
+    assert "msft_capex_ref" in refs
+    assert "amzn_capex_ref" in request["known_evidence_refs"]
+    assert "msft_capex_ref" in request["known_evidence_refs"]
+
+
+def test_build_product_specialist_request_balances_comparative_prompt_rows() -> None:
+    product_rows = []
+    for ticker in ("NVDA", "AMD", "GOOGL", "DELL"):
+        for index in range(1, 9):
+            product_rows.append(
+                {
+                    "evidence_ref": f"product_slot::{ticker}::{index}",
+                    "source_family": "company_product_evidence_graph",
+                    "ticker": ticker,
+                    "product_family": "GPU / Accelerator" if ticker != "DELL" else "AI Server / Rack OEM",
+                    "product_or_segment": f"{ticker} accelerator architecture product {index}",
+                    "promotion_status": "runtime_context_taxonomy_only",
+                    "claim_scope": "product_taxonomy_context",
+                    "summary": f"product slot; {ticker} accelerator architecture product {index}; bounded product context.",
+                }
+            )
+    request = build_specialist_request_from_state(
+        "product_technology_analyst",
+        {
+            "user_query": "Compare NVDA, AMD, GOOGL, and DELL AI infrastructure products.",
+            "product_intelligence_runtime_autoload": False,
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["product_technology_analyst"],
+            },
+            "query_contract": {
+                "focus_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+                "search_scope_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+            },
+            "product_evidence_rows": product_rows,
+        },
+    )
+
+    distribution = request["prompt_row_distribution"]["by_ticker"]
+
+    assert distribution == {"NVDA": 4, "AMD": 4, "GOOGL": 4, "DELL": 4}
+
+
+def test_build_product_specialist_request_includes_relationship_summary_for_product_bridge() -> None:
+    product_rows = [
+        {
+            "evidence_ref": f"product_slot::{ticker}::1",
+            "source_family": "company_product_evidence_graph",
+            "ticker": ticker,
+            "product_family": "GPU / Accelerator" if ticker != "DELL" else "AI Server / Rack OEM",
+            "product_or_segment": f"{ticker} AI infrastructure product",
+            "promotion_status": "runtime_context_taxonomy_only",
+            "claim_scope": "product_taxonomy_context",
+            "summary": f"{ticker} AI product bounded context.",
+        }
+        for ticker in ("NVDA", "AMD", "GOOGL", "DELL")
+    ]
+    request = build_specialist_request_from_state(
+        "product_technology_analyst",
+        {
+            "user_query": "Compare NVDA, AMD, GOOGL, and DELL AI infrastructure products and deployment links.",
+            "product_intelligence_runtime_autoload": False,
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["product_technology_analyst"],
+            },
+            "query_contract": {
+                "focus_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+                "search_scope_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+            },
+            "product_evidence_rows": product_rows,
+            "universe_relationship_plan": {
+                "relationships": [
+                    {
+                        "ticker": "NVDA",
+                        "related_ticker": "DELL",
+                        "relationship_type": "supplier",
+                        "source_family": "relationship_graph",
+                        "evidence_ref": "rel_nvda_dell_gpu_supply",
+                        "summary": "NVIDIA GPU supply to DELL AI servers is bounded relationship context.",
+                    },
+                    {
+                        "ticker": "AMD",
+                        "related_ticker": "DELL",
+                        "relationship_type": "supplier",
+                        "source_family": "relationship_graph",
+                        "evidence_refs": ["rel_amd_dell_accelerator_option"],
+                        "notes": "AMD accelerator option in DELL server context.",
+                    },
+                    {
+                        "ticker": "DELL",
+                        "related_ticker": "GOOGL",
+                        "relationship_type": "customer",
+                        "source_family": "relationship_graph",
+                        "evidence_ref": "rel_dell_googl_cloud_customer",
+                        "summary": "DELL server OEM context can be evaluated against cloud customer deployment.",
+                    },
+                ]
+            },
+        },
+    )
+
+    rel_refs = {row["evidence_ref"] for row in request["relationship_summary"]["relationships"]}
+    slot_ids = {slot["slot_id"] for slot in request["required_claim_slots"]}
+
+    assert "product_relationship_deployment_context" in slot_ids
+    assert "rel_nvda_dell_gpu_supply" in rel_refs
+    assert "rel_amd_dell_accelerator_option" in rel_refs
+    assert "rel_dell_googl_cloud_customer" in rel_refs
+    assert rel_refs <= set(request["known_evidence_refs"])
+    assert request["relationship_summary"]["financial_fact_policy"] == "relationship_graph_hypothesis_only"
 
 
 def test_build_specialist_request_soft_balances_comparative_prompt_rows() -> None:

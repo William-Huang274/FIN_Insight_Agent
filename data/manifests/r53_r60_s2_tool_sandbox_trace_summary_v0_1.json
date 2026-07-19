@@ -8,11 +8,11 @@
     "gate_fail_count": 0,
     "sandbox_policies": 5,
     "tool_gateway_metadata": 1,
-    "tool_invocations": 9,
+    "tool_invocations": 11,
     "tool_policy_bindings": 6
   },
   "failed_gates": [],
-  "generated_at": "2026-06-28T18:10:09Z",
+  "generated_at": "2026-07-04T17:23:24Z",
   "next_slice_unlocked": "S3",
   "outputs": {
     "closeout_report": "docs/internal/vnext_20260610/r53_r60_s2_tool_sandbox_trace_l4_scope_pass.zh-CN.md",

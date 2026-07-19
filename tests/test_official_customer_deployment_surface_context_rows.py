@@ -93,6 +93,37 @@ def test_discover_candidate_links_adds_official_path_probes_when_product_page_ha
     ]
 
 
+def test_discover_candidate_links_uses_verified_manual_customer_deployment_seed(tmp_path: Path) -> None:
+    candidates = MODULE.discover_candidate_links(
+        ticker="300750.SZ",
+        surface_rows=[{"ticker": "300750.SZ", "source_url": "https://www.catl.com/en/solution/"}],
+        raw_product_page_dir=tmp_path,
+        official_hosts={"catl.com"},
+        max_candidates=2,
+    )
+
+    assert [candidate["url"] for candidate in candidates] == [
+        "https://www.catl.com/en/news/6328.html",
+        "https://www.catl.com/en/news/6497.html",
+    ]
+    assert all(candidate["raw_product_page"] == "" for candidate in candidates)
+
+
+def test_discover_candidate_links_rejects_manual_seed_when_official_host_does_not_match(tmp_path: Path) -> None:
+    candidates = MODULE.discover_candidate_links(
+        ticker="000660.KS",
+        surface_rows=[{"ticker": "000660.KS", "source_url": "https://www.not-skhynix.example/products"}],
+        raw_product_page_dir=tmp_path,
+        official_hosts={"not-skhynix.example"},
+        max_candidates=2,
+    )
+
+    assert "https://news.skhynix.com/multi-year-tech-partnership-with-nvidia/" not in {
+        candidate["url"] for candidate in candidates
+    }
+    assert all(candidate["url"].startswith("https://www.not-skhynix.example/") for candidate in candidates)
+
+
 def test_path_probe_does_not_materialize_when_only_generated_label_has_signal(tmp_path: Path, monkeypatch) -> None:
     raw_dir = tmp_path / "raw"
     raw_dir.mkdir()
@@ -203,3 +234,36 @@ def test_context_row_is_bounded_and_never_exact_authority(tmp_path: Path) -> Non
     assert row["can_support_company_exact_fact"] is False
     assert "order_value" in row["forbidden_claims"]
     assert row["counterparty"] == "Meta"
+
+
+def test_extract_counterparty_from_official_news_labels() -> None:
+    assert MODULE._extract_counterparty("SK hynix and NVIDIA multi-year technology partnership") == "NVIDIA"
+    assert (
+        MODULE._extract_counterparty("CATL and Stellantis large-scale LFP battery plant joint venture")
+        == "Stellantis"
+    )
+    assert MODULE._extract_counterparty("CATL embedded manufacturing and local supply for AITO models") == "AITO"
+
+
+def test_dedupe_rows_prefers_more_complete_counterparty_binding() -> None:
+    rows = MODULE._dedupe_rows(
+        [
+            {
+                "ticker": "300750.SZ",
+                "source_url": "https://www.catl.com/en/news/6328.html",
+                "structured_context_type": "official_customer_deployment_surface",
+                "counterparty": "",
+                "counterparty_binding_status": "not_bound",
+            },
+            {
+                "ticker": "300750.SZ",
+                "source_url": "https://www.catl.com/en/news/6328.html",
+                "structured_context_type": "official_customer_deployment_surface",
+                "counterparty": "Stellantis",
+                "counterparty_binding_status": "counterparty_mentioned_in_snapshot",
+            },
+        ]
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["counterparty"] == "Stellantis"

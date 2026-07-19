@@ -59,6 +59,13 @@ def audit_case(case: Mapping[str, Any], *, artifact_root: Path | None = None) ->
         second_pass_attempts=second_pass_attempts,
         second_pass_quality_gap_count=second_pass_quality_gap_count,
     )
+    claim_yield_diagnosis = _claim_yield_diagnosis(
+        quality_flags=quality_flags,
+        tokens=tokens,
+        specialists=specialists,
+        cost_quality=cost_quality,
+        memo_claim_count=int(case.get("memo_claim_count") or 0),
+    )
     return {
         "case_id": case_id,
         "category": str(case.get("category") or ""),
@@ -80,7 +87,9 @@ def audit_case(case: Mapping[str, Any], *, artifact_root: Path | None = None) ->
         "rendered_answer_has_claim_section": bool(case.get("rendered_answer_has_claim_section")),
         "rendered_answer_has_evidence_refs": bool(case.get("rendered_answer_has_evidence_refs")),
         "rendered_preview_gap_language": _has_gap_language(preview),
+        "rendered_preview_boundary_language_stats": _boundary_language_stats(preview),
         "quality_flags": quality_flags,
+        "claim_yield_diagnosis": claim_yield_diagnosis,
         "quality_risk_level": _risk_level(quality_flags),
     }
 
@@ -107,8 +116,10 @@ def render_markdown(audit: Mapping[str, Any]) -> str:
         rows_text = ", ".join(f"{_short_agent(agent)}={count}" for agent, count in rows.items()) or "n/a"
         claim_card_stats = specs.get("claim_card_stats") if isinstance(specs.get("claim_card_stats"), Mapping) else {}
         flags = ", ".join(case.get("quality_flags") or []) or "none"
+        diagnosis = case.get("claim_yield_diagnosis") if isinstance(case.get("claim_yield_diagnosis"), Mapping) else {}
+        root_layers = ", ".join(diagnosis.get("suspected_root_layers") or []) or "n/a"
         lines.append(
-            "| {case_id} | {risk} | {gate} | {tokens} | {cost_claim} | {chars_token} | {rows_total} | {gaps} | {second} | {spec_rows} | {claim_cards} | {flags} |".format(
+            "| {case_id} | {risk} | {gate} | {tokens} | {cost_claim} | {chars_token} | {rows_total} | {gaps} | {second} | {spec_rows} | {claim_cards} | {flags}; root={root_layers} |".format(
                 case_id=case.get("case_id") or "",
                 risk=case.get("quality_risk_level") or "",
                 gate=case.get("gate_status") or "",
@@ -121,6 +132,7 @@ def render_markdown(audit: Mapping[str, Any]) -> str:
                 spec_rows=rows_text,
                 claim_cards=claim_card_stats.get("supported_claim_count") or 0,
                 flags=flags,
+                root_layers=root_layers,
             )
         )
     lines.extend(
@@ -473,6 +485,8 @@ def _quality_flags(
         flags.append("memo_outline_under_supported")
     if _has_gap_language(preview):
         flags.append("memo_surface_says_evidence_thin")
+    if _has_boundary_heavy_language(preview):
+        flags.append("memo_surface_boundary_heavy_or_noncommittal")
     rendered_chars = int(case.get("rendered_answer_chars") or len(preview))
     if mode == "deep_research" and str(case.get("memo_status") or "") == "draft" and rendered_chars < 900:
         flags.append("rendered_memo_too_short")
@@ -484,6 +498,13 @@ def _quality_flags(
         and not _has_nonuniform_specialist_priorities(specialists)
     ):
         flags.append("deep_research_all_specialists_active")
+    if (
+        "memo_writer_high_token_cost" in flags
+        and ("low_memo_chars_per_token" in flags or "low_rendered_claim_token_efficiency" in flags)
+    ):
+        flags.append("memo_payload_not_dense_enough")
+    if "low_claim_card_token_efficiency" in flags and int(tokens.get("specialist_tokens") or 0) > int(tokens.get("memo_writer_tokens") or 0):
+        flags.append("specialist_claim_yield_low")
     return flags
 
 
@@ -539,10 +560,16 @@ def _run_hypotheses(cases: list[Mapping[str, Any]]) -> list[str]:
         hypotheses.append("No supported claim cards were recorded in the summary artifact; inspect Specialist normalization and Judgment Aggregator transfer before tuning Memo Writer.")
     if any("memo_outline_under_supported" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Judgment aggregation produced memo sections with too few supported claim cards; Memo Writer will likely stay conservative or caveat-heavy.")
+    if any("memo_surface_boundary_heavy_or_noncommittal" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("Final memo surface is dominated by boundary / verification language; inspect required-item answer plans and Memo Writer execution before adding more retrieval.")
     if any("source_gaps_without_second_pass" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Coverage / Reflection is not converting source gaps into useful second-pass retrieval before memo generation.")
     if any("memo_writer_high_token_cost" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("Memo Writer spends many tokens on a large compressed judgment payload, but the contract does not force a dense structured memo.")
+    if any("memo_payload_not_dense_enough" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("Memo Writer input still needs a stronger thesis skeleton and shorter claim projection before increasing max tokens.")
+    if any("specialist_claim_yield_low" in case.get("quality_flags", []) for case in cases):
+        hypotheses.append("Specialist/model token spend is not yielding enough memo-useful claims; inspect role prompts, row selectors, and claim normalization.")
     if any("low_rendered_claim_token_efficiency" in case.get("quality_flags", []) for case in cases):
         hypotheses.append("The chain spends many tokens per rendered memo claim; inspect Memo Writer retries, Specialist breadth, and claim projection before adding more evidence.")
     if any("low_claim_card_token_efficiency" in case.get("quality_flags", []) for case in cases):
@@ -601,6 +628,70 @@ def _repair_tokens_from_diagnostics(diagnostics: Mapping[str, Any]) -> int | Non
     return sum(values) if values else 0
 
 
+def _claim_yield_diagnosis(
+    *,
+    quality_flags: list[str],
+    tokens: Mapping[str, Any],
+    specialists: Mapping[str, Any],
+    cost_quality: Mapping[str, Any],
+    memo_claim_count: int,
+) -> dict[str, Any]:
+    flags = set(quality_flags)
+    suspected: list[str] = []
+    actions: list[str] = []
+    if "deep_research_all_specialists_active" in flags:
+        suspected.append("research_lead_activation_breadth")
+        actions.append("Tighten Research Lead specialist priorities and skip non-material specialists for the query.")
+    if "specialist_claim_yield_low" in flags or "low_claim_card_token_efficiency" in flags:
+        suspected.append("specialist_claim_conversion_or_selector")
+        actions.append("Audit role-specific row selectors and Specialist prompts that generate observations without memo-ready ClaimCards.")
+    if "memo_payload_not_dense_enough" in flags or "memo_writer_high_token_cost" in flags:
+        suspected.append("memo_logic_plan_to_writer_payload")
+        actions.append("Prefer writer_thesis_skeleton, thesis_density_contract, and selected decision claims over broad judgment payloads.")
+    if "memo_surface_boundary_heavy_or_noncommittal" in flags:
+        suspected.append("memo_logic_plan_to_writer_payload")
+        suspected.append("memo_writer_required_item_answer_execution")
+        actions.append("Require each material question to render answer-first judgment, evidence bridge, counter-read, and what-would-change-view instead of repeated boundary language.")
+    if "memo_writer_retry_cost_present" in flags:
+        suspected.append("memo_writer_schema_or_repair_loop")
+        actions.append("Reduce optional output shape and repair prompt size before raising token caps.")
+    if "low_rendered_claim_token_efficiency" in flags and memo_claim_count > 0:
+        suspected.append("renderer_or_memo_claim_projection")
+        actions.append("Check whether rendered memo claims are too few relative to approved memo-ready claims.")
+    if not suspected and flags:
+        suspected.append("quality_gate_followup_required")
+        actions.append("Inspect raw case sidecar before broad evaluation.")
+    claim_card_stats = specialists.get("claim_card_stats") if isinstance(specialists.get("claim_card_stats"), Mapping) else {}
+    return {
+        "schema_version": "sec_agent_claim_yield_diagnosis_v0_1",
+        "status": "action_required" if suspected else "pass",
+        "suspected_root_layers": _dedupe_preserve_order(suspected),
+        "recommended_actions": _dedupe_preserve_order(actions),
+        "metrics": {
+            "total_tokens": int(tokens.get("total_tokens") or 0),
+            "memo_writer_tokens": int(tokens.get("memo_writer_tokens") or 0),
+            "specialist_tokens": int(tokens.get("specialist_tokens") or 0),
+            "supported_claim_count": int(claim_card_stats.get("supported_claim_count") or 0),
+            "memo_claim_count": int(memo_claim_count or 0),
+            "tokens_per_supported_claim_card": cost_quality.get("tokens_per_supported_claim_card"),
+            "tokens_per_rendered_memo_claim": cost_quality.get("tokens_per_rendered_memo_claim"),
+            "memo_chars_per_total_token": cost_quality.get("memo_chars_per_total_token"),
+        },
+        "policy": "low_cost_efficiency_must_map_to_repairable_pipeline_layer_v0_1",
+    }
+
+
+def _dedupe_preserve_order(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        result.append(value)
+    return result
+
+
 def _safe_ratio(numerator: int, denominator: int, *, precision: int = 2) -> float | None:
     if denominator <= 0:
         return None
@@ -655,6 +746,87 @@ def _has_gap_language(text: str) -> bool:
         "不完整",
     )
     return any(marker in lowered for marker in markers)
+
+
+def _has_boundary_heavy_language(text: str) -> bool:
+    stats = _boundary_language_stats(text)
+    if int(stats["boundary_marker_count"]) >= 5:
+        return True
+    if int(stats["boundary_marker_count"]) >= 3 and int(stats["judgment_marker_count"]) <= 1:
+        return True
+    return False
+
+
+def _boundary_language_stats(text: str) -> dict[str, int]:
+    lowered = str(text or "").lower()
+    boundary_markers = (
+        "当前证据边界",
+        "证据边界",
+        "只能作为",
+        "不能形成",
+        "无法形成",
+        "无法判断",
+        "不能判断",
+        "需要继续验证",
+        "继续验证",
+        "后续跟踪",
+        "后续验证",
+        "缺口",
+        "缺少",
+        "缺失",
+        "未披露",
+        "没有披露",
+        "不足以",
+        "不能直接证明",
+        "不能直接说明",
+        "无法直接证明",
+        "不应提权",
+        "只能暴露",
+        "bounded gap",
+        "evidence boundary",
+        "current evidence boundary",
+        "needs further verification",
+        "requires further verification",
+        "insufficient to conclude",
+        "cannot conclude",
+        "not enough evidence",
+    )
+    judgment_markers = (
+        "核心判断",
+        "投资含义",
+        "我判断",
+        "判断是",
+        "更可能",
+        "因此",
+        "所以",
+        "说明",
+        "意味着",
+        "反映",
+        "支撑",
+        "压制",
+        "改善",
+        "恶化",
+        "拖累",
+        "风险在于",
+        "上行",
+        "下行",
+        "正向",
+        "负向",
+        "because",
+        "therefore",
+        "suggests",
+        "implies",
+        "supports",
+        "pressures",
+    )
+    return {
+        "boundary_marker_count": _marker_count(lowered, boundary_markers),
+        "judgment_marker_count": _marker_count(lowered, judgment_markers),
+    }
+
+
+def _marker_count(text: str, markers: tuple[str, ...]) -> int:
+    return sum(text.count(marker) for marker in markers)
 
 
 def _risk_level(flags: list[str]) -> str:

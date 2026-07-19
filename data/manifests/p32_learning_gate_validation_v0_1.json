@@ -1,0 +1,14 @@
+{
+  "contract_count": 15,
+  "coverage_counts": {
+    "gap_needs_l1": 0,
+    "partial_needs_more_l1": 4,
+    "sufficient_for_initial_l3": 11
+  },
+  "coverage_domain_count": 15,
+  "error_count": 0,
+  "errors": [],
+  "extraction_count": 15,
+  "source_count": 21,
+  "status": "pass"
+}

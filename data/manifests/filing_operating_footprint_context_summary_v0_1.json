@@ -1,0 +1,24 @@
+{
+  "document_ticker_count": 3,
+  "generated_at": "2026-06-30T17:48:43+00:00",
+  "missing_target_tickers": [
+    "000660.KS",
+    "300750.SZ",
+    "373220.KS"
+  ],
+  "outputs": {
+    "rejections": "D:\\FIN_Insight_Agent\\data\\manifests\\filing_operating_footprint_context_rejections_v0_1.jsonl",
+    "rows": "D:\\FIN_Insight_Agent\\data\\manifests\\filing_operating_footprint_context_rows_v0_1.jsonl"
+  },
+  "rejection_count": 0,
+  "runtime_row_count": 10,
+  "runtime_ticker_count": 3,
+  "runtime_tickers": [
+    "BHP",
+    "LNT",
+    "STLD"
+  ],
+  "schema_version": "finsight_filing_operating_footprint_context_summary_v0_1",
+  "status": "pass",
+  "target_ticker_count": 6
+}

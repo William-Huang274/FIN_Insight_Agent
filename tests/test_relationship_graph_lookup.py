@@ -45,6 +45,61 @@ def test_relationship_graph_jsonl_lookup_returns_hypothesis_rows(tmp_path: Path)
     assert plan["included_tickers"] == ["NVDA", "MSFT"]
 
 
+def test_product_relationship_graph_edge_shape_feeds_relationship_lookup(tmp_path: Path) -> None:
+    graph_path = tmp_path / "product_relationship_edges.jsonl"
+    graph_path.write_text(
+        json.dumps(
+            {
+                "edge_id": "product_relationship_edge:dell_msft",
+                "from_node_id": "company_product_family:DELL:server_oem",
+                "to_node_id": "company_product_family:MSFT:cloud_infrastructure",
+                "relationship_type": "INFRASTRUCTURE_SUPPLIER_TO",
+                "source_layer": "parser_backed_context",
+                "claim_boundary": "Server/rack OEM products can be infrastructure inputs to cloud capacity; no revenue promotion.",
+                "evidence_refs": ["public_contract_award:sample"],
+                "confidence": 0.58,
+            }
+        )
+        + "\n"
+        + json.dumps(
+            {
+                "edge_id": "product_relationship_edge:amd_customer",
+                "from_node_id": "company_product_family:AMD:gpu_accelerator",
+                "to_node_id": "external_counterparty:counterparty:554a393e45b8b138",
+                "relationship_type": "OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP",
+                "source_layer": "L2_parser_backed_relationship_context",
+                "claim_boundary": "Issuer-official relationship context only; no shipment or share authority.",
+                "evidence_refs_json": json.dumps(["official_customer_deployment_surface:sample"]),
+                "forbidden_claims_json": json.dumps(["shipment_volume", "market_share"]),
+                "confidence": 0.78,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = query_relationship_graph(
+        focus_tickers=["DELL", "AMD"],
+        search_scope_tickers=["DELL", "AMD", "MSFT"],
+        relationship_graph_path=graph_path,
+        include_sector_depth=False,
+    )
+
+    by_original_type = {row["original_relationship_type"]: row for row in result["relationships"]}
+    assert result["status"] == "ok"
+    assert result["summary"]["relationship_graph_rows"] == 2
+    assert by_original_type["INFRASTRUCTURE_SUPPLIER_TO"]["ticker"] == "DELL"
+    assert by_original_type["INFRASTRUCTURE_SUPPLIER_TO"]["related_ticker"] == "MSFT"
+    assert by_original_type["INFRASTRUCTURE_SUPPLIER_TO"]["relationship_type"] == "supplier"
+    assert by_original_type["INFRASTRUCTURE_SUPPLIER_TO"]["direction"] == "infrastructure_supplier_to"
+    assert by_original_type["OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP"]["ticker"] == "AMD"
+    assert by_original_type["OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP"]["relationship_type"] == "supplier"
+    assert by_original_type["OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP"]["related_entity_id"].startswith("external_counterparty:")
+    assert by_original_type["OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP"]["inference_level"] == "disclosed_indirect"
+    assert "official_customer_deployment_surface:sample" in by_original_type["OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP"]["evidence_refs"]
+    assert any("Cannot infer shipment_volume" in item for item in by_original_type["OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP"]["source_limitations"])
+
+
 def test_sector_depth_pack_metadata_can_seed_ai_relationship_scope(tmp_path: Path) -> None:
     sector_path = tmp_path / "sector_depth.yaml"
     sector_path.write_text(
@@ -86,6 +141,42 @@ packs:
         "market_snapshot",
         "industry_snapshot",
     }
+
+
+def test_sector_depth_pack_respects_allowed_universe_tickers(tmp_path: Path) -> None:
+    sector_path = tmp_path / "sector_depth.yaml"
+    sector_path.write_text(
+        """
+packs:
+  - pack_id: "technology_ai_infrastructure_depth"
+    industry_group: "information_technology"
+    research_questions:
+      - "AI infrastructure demand transmission from chips to servers and cloud capex."
+    candidate_tickers:
+      p0: ["DELL", "ANET"]
+      p1: ["VRT", "APH"]
+    primary_metric_families:
+      - "revenue"
+      - "capex"
+    required_source_families:
+      - "us_primary_annual_10k"
+""",
+        encoding="utf-8",
+    )
+
+    result = query_relationship_graph(
+        focus_tickers=["NVDA"],
+        search_scope_tickers=["NVDA", "DELL", "ANET", "VRT"],
+        allowed_universe_tickers=["NVDA", "DELL", "ANET", "VRT"],
+        user_query="AI cloud capex supply chain readthrough",
+        sector_depth_pack_path=sector_path,
+        max_relationships=8,
+    )
+
+    related = {row["related_ticker"] for row in result["relationships"]}
+    assert related == {"DELL", "ANET", "VRT"}
+    assert "APH" not in related
+    assert set(result["included_tickers"]) <= {"NVDA", "DELL", "ANET", "VRT"}
 
 
 def test_sector_depth_pack_scope_match_blocks_power_only_ai_cross_sector_leakage(tmp_path: Path) -> None:

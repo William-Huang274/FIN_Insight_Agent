@@ -5,6 +5,7 @@ from typing import Any
 
 from sec_agent.agent_registry import agent_registry_by_id
 from sec_agent.industry_playbooks import load_playbook_registry, match_playbook_candidates
+from sec_agent.multi_agent_runtime import plan_reflection_gate
 from sec_agent.multi_agent_router import route_multi_agent_activation
 from sec_agent.research_lead_llm import (
     ROUTE_SOURCE,
@@ -34,6 +35,35 @@ def test_research_lead_llm_accepts_valid_activation_plan_json() -> None:
     assert "Do not call tools" in fake.calls[0]["messages"][0]["content"]
 
 
+def test_research_lead_route_records_input_pack_fingerprint_without_prompt_text() -> None:
+    request = _case("Analyze AMZN margins with management commentary.", "focused_answer", ["AMZN"], ["AMZN"])
+    request["source_inventory"] = {
+        "available_tickers": ["AMZN"],
+        "source_family_availability": {
+            "primary_sec_filing": {"available": True, "evidence_refs": ["sec_amzn_10q"]}
+        },
+    }
+    request["context"]["query_contract"] = {
+        **_query_contract(["AMZN"]),
+        "evidence_refs": ["contract_ref_amzn"],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    fingerprint = result["input_pack_fingerprint"]
+    serialized = json.dumps(fingerprint, ensure_ascii=False, sort_keys=True)
+    assert result["status"] == "pass"
+    assert fingerprint["schema_version"] == "sec_agent_research_lead_input_pack_fingerprint_v0_1"
+    assert fingerprint["agent_id"] == "research_lead"
+    assert fingerprint["digest"].startswith("sha256:")
+    assert fingerprint["known_evidence_ref_count"] >= 1
+    assert "contract_ref_amzn" in fingerprint["known_evidence_refs"]
+    assert fingerprint["approx_prompt_payload_chars"] > 0
+    assert "Analyze AMZN margins with management commentary." not in serialized
+
+
 def test_research_lead_llm_accepts_activation_plus_evidence_requirement_plan() -> None:
     request = _case("Analyze AMZN margins with management commentary.", "focused_answer", ["AMZN"], ["AMZN"])
     request["context"]["query_contract"] = _query_contract(["AMZN"])
@@ -61,6 +91,219 @@ def test_research_lead_llm_accepts_activation_plus_evidence_requirement_plan() -
     assert "EvidenceRequirementPlan schema hint" in fake.calls[0]["messages"][0]["content"]
 
 
+def test_research_lead_llm_accepts_evidence_requirement_only_using_program_owned_activation_scaffold() -> None:
+    request = _case("Analyze NVDA and DELL AI server demand read-through.", "deep_research", ["NVDA", "DELL"], ["NVDA", "DELL", "MSFT"])
+    request["context"]["query_contract"] = _query_contract(["NVDA", "DELL"])
+    fake = _FakeChat([json.dumps({"evidence_requirement_plan": _evidence_plan(["NVDA", "DELL"])})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["execution_mode"] == "deep_research"
+    assert result["activation_plan"]["metadata"]["activation_scaffold_source"] == (
+        "deterministic_router_when_llm_omits_activation_plan"
+    )
+    assert result["evidence_requirement_plan"]["multi_agent_evidence_requirement_validation"]["status"] == "pass"
+
+
+def test_research_lead_llm_accepts_minimal_top_level_evidence_requirements() -> None:
+    request = _case("Analyze NVDA and DELL AI server demand read-through.", "deep_research", ["NVDA", "DELL"], ["NVDA", "DELL", "MSFT"])
+    request["context"]["query_contract"] = _query_contract(["NVDA", "DELL"])
+    minimal_requirement = {
+        "requirement_id": "req_ai_server_demand",
+        "task_id": "industry_supply_chain",
+        "question": "Need AI server demand and supplier read-through evidence.",
+        "priority": "primary",
+        "tickers": ["NVDA", "DELL"],
+        "source_tiers": ["relationship_graph"],
+        "evidence_routes": ["relationship_graph"],
+        "route_cost_tier": "medium",
+        "route_selection_reason": "Question asks demand read-through.",
+    }
+    fake = _FakeChat([json.dumps({"evidence_requirements": [minimal_requirement]})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert result["activation_plan"]["execution_mode"] == "deep_research"
+    assert result["evidence_requirement_plan"]["requirements"][0]["requirement_id"] == "req_ai_server_demand"
+    assert result["evidence_requirement_plan"]["multi_agent_evidence_requirement_validation"]["status"] == "pass"
+
+
+def test_research_lead_compiles_supervising_contract_when_llm_returns_requirements_only() -> None:
+    request = _case(
+        "Assess NVDA/AMD/GOOGL TPU and DELL AI server margin quality with customer deployment, supply chain, and price-in counterevidence.",
+        "deep_research",
+        ["NVDA", "AMD", "GOOGL", "DELL"],
+        ["NVDA", "AMD", "GOOGL", "DELL", "MSFT", "AMZN", "ASML", "LRCX", "AMAT", "KLAC", "TSM"],
+    )
+    request["context"]["query_contract"] = {
+        "focus_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+        "search_scope_tickers": ["NVDA", "AMD", "GOOGL", "DELL", "MSFT", "AMZN", "ASML", "LRCX", "AMAT", "KLAC", "TSM"],
+        "required_dimensions": [
+            "opening_thesis",
+            "fundamentals",
+            "product_architecture",
+            "customer_deployment",
+            "industry_supply_chain",
+            "capital_market_feedback",
+            "counter_thesis_and_what_would_change",
+        ],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+        ],
+        "expected_paid_specialist_agents": [
+            "fundamental_analyst",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst",
+        ],
+    }
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "evidence_requirement_plan": {
+                        "schema_version": "sec_agent_evidence_requirement_plan_v0.1",
+                        "requirements": [
+                            {
+                                "requirement_id": "req_accelerator_architecture",
+                                "task_id": "product_architecture",
+                                "question": "Need accelerator architecture and competitive substitution evidence.",
+                                "tickers": ["NVDA", "AMD", "GOOGL"],
+                                "source_tiers": ["company_product_evidence_graph", "public_source_context", "primary_sec_filing"],
+                                "metric_families": ["technical_product_spec"],
+                                "evidence_routes": ["filing_text"],
+                                "route_selection_reason": "Product graph and public context frame product capability; filings provide issuer boundary.",
+                                "route_cost_tier": "medium",
+                            },
+                            {
+                                "requirement_id": "req_customer_deployment",
+                                "task_id": "customer_deployment",
+                                "question": "Need customer deployment and adoption read-through evidence.",
+                                "tickers": ["NVDA", "DELL", "MSFT", "AMZN"],
+                                "source_tiers": ["relationship_graph", "public_source_context", "company_authored_unaudited_sec_filing"],
+                                "metric_families": ["customer_deployment"],
+                                "evidence_routes": ["relationship_graph", "8k_commentary"],
+                                "route_selection_reason": "Deployment evidence needs graph edge plus issuer-authored context.",
+                                "route_cost_tier": "high",
+                            },
+                            {
+                                "requirement_id": "req_supply_chain",
+                                "task_id": "supply_chain_readthrough",
+                                "question": "Need GPU, foundry, HBM, CoWoS and semicap transmission evidence.",
+                                "tickers": ["NVDA", "TSM", "ASML", "LRCX", "AMAT", "KLAC"],
+                                "source_tiers": ["relationship_graph", "industry_snapshot", "primary_sec_filing"],
+                                "metric_families": ["supply_chain_readthrough"],
+                                "evidence_routes": ["relationship_graph", "industry_snapshot", "filing_text"],
+                                "route_selection_reason": "Supply-chain thesis requires relationship graph and industry-cycle context.",
+                                "route_cost_tier": "high",
+                            },
+                            {
+                                "requirement_id": "req_dell_margin_quality",
+                                "task_id": "fundamental_financial_bridge",
+                                "question": "Need DELL AI server revenue, margin, cash-flow and working-capital bridge.",
+                                "tickers": ["DELL"],
+                                "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                                "metric_families": ["revenue", "gross_margin", "cash_flow", "working_capital"],
+                                "evidence_routes": ["ledger_first", "filing_text", "8k_commentary"],
+                                "route_selection_reason": "Financial quality requires exact ledger and issuer commentary.",
+                                "route_cost_tier": "low",
+                            },
+                            {
+                                "requirement_id": "req_market_price_in",
+                                "task_id": "capital_market_price_in",
+                                "question": "Need market expectation and price-in context.",
+                                "tickers": ["NVDA", "DELL"],
+                                "source_tiers": ["market_snapshot"],
+                                "metric_families": ["valuation", "capital_market_feedback"],
+                                "evidence_routes": ["market_snapshot"],
+                                "route_selection_reason": "Price-in context needs market snapshot only.",
+                                "route_cost_tier": "medium",
+                            },
+                        ],
+                    }
+                }
+            )
+        ]
+    )
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    plan = result["activation_plan"]
+    assert result["status"] == "pass"
+    assert plan["research_objective_contract"]["validation"]["status"] == "pass"
+    assert plan["thesis_path"]["path_nodes"]
+    assert "product_architecture" in plan["writer_order"]
+    assert "counter_thesis_and_what_would_change" in plan["writer_order"]
+    by_item = {row["required_item"]: row for row in plan["evidence_role_plan"]}
+    assert all(row.get("must_answer") for row in by_item.values())
+    assert "company_product_evidence_graph" in by_item["product_architecture_competition"]["required_source_families"]
+    assert "relationship_graph" in by_item["customer_deployment_adoption"]["route_intents"]
+    assert "relationship_graph" in by_item["supply_chain_readthrough"]["route_intents"]
+    by_requirement = {row["requirement_id"]: row for row in result["evidence_requirement_plan"]["requirements"]}
+    assert "relationship_graph" in by_requirement["req_customer_deployment"]["evidence_routes"]
+    assert "relationship_graph" in by_requirement["req_customer_deployment"]["source_families"]
+    assert any(
+        intent.get("evidence_route") == "relationship_graph"
+        and intent.get("operator_owner") == "universe_relationship"
+        for intent in by_requirement["req_customer_deployment"]["route_intents"]
+    )
+    assert "relationship_graph" in by_requirement["req_supply_chain"]["evidence_routes"]
+    assert "relationship_graph" in by_requirement["req_supply_chain"]["source_families"]
+    assert any(
+        intent.get("evidence_route") == "relationship_graph"
+        and intent.get("operator_owner") == "universe_relationship"
+        for intent in by_requirement["req_supply_chain"]["route_intents"]
+    )
+    assert "SKU revenue" in json.dumps(plan["bounded_or_commercial_gap"], ensure_ascii=False)
+    assert "risk_counterevidence_analyst" in plan["activate_agents"]
+    assert "product_technology_analyst" in plan["specialist_assignment"]
+    assert "product_architecture_competition" in plan["specialist_assignment"]["product_technology_analyst"]["required_items"]
+    assert plan["specialist_assignment"]["risk_counterevidence_analyst"]["activation_state"] == "active"
+    assert "risk_and_counterevidence" in plan["specialist_assignment"]["risk_counterevidence_analyst"]["required_items"]
+    assert plan["metadata"]["supervising_analyst_field_sources"]["thesis_path"] == "deterministic_supervising_plan_compiler_v0_1"
+
+
 def test_research_lead_prompt_exposes_cost_aware_route_selection_policy() -> None:
     request = _case("Compare NVDA and AMD with valuation, industry context, and semantic filing recall.", "standard_memo", ["NVDA", "AMD"], ["NVDA", "AMD"])
     plan = route_multi_agent_activation(request)["activation_plan"]
@@ -77,7 +320,22 @@ def test_research_lead_prompt_exposes_cost_aware_route_selection_policy() -> Non
     assert "route_cost_tier" in system_prompt
     assert "milvus_semantic" in system_prompt
     assert "semantic recall supplement only" in system_prompt
+    assert "Do not enumerate default inactive registry agents in skip_agents" in system_prompt
+    assert "preferred_shape" in system_prompt
+    assert "top-level evidence_requirements array" in system_prompt
+    assert "each question/reason <= 18 words" in system_prompt
+    assert "Include skip_agents for inactive registry agents" not in system_prompt
+    assert "Default output mode is evidence-overlay only" in system_prompt
+    assert "must omit activation_plan unless" in system_prompt
+    assert "deterministic_activation_scaffold" in user_prompt
+    assert "do not repeat it just to confirm it" in user_prompt
     assert "exact values use ledger_first first" in user_prompt
+    assert "method_runtime_pack" in user_prompt
+    assert "hard planning contract" in user_prompt
+    assert "thesis-path intent" in user_prompt
+    assert "required-item coverage" in user_prompt
+    assert "p32_product_architecture_competitive_bridge" in user_prompt
+    assert "thesis_path" in system_prompt
 
 
 def test_research_lead_llm_repairs_invalid_evidence_requirement_owner() -> None:
@@ -234,6 +492,50 @@ def test_research_lead_llm_keeps_risk_specialist_with_explicit_risk_intent() -> 
     assert result["status"] == "pass"
     assert "risk_counterevidence_analyst" in result["activation_plan"]["activate_agents"]
     assert not result["activation_plan"].get("metadata", {}).get("risk_counterevidence_pruned")
+
+
+def test_research_lead_llm_prunes_specialist_outside_paid_whitelist() -> None:
+    request = _case(
+        "Analyze NVDA and DELL AI server demand read-through without a stock-price or valuation section.",
+        "deep_research",
+        ["NVDA", "DELL"],
+        ["NVDA", "DELL", "ANET", "VRT"],
+    )
+    request["context"]["query_contract"] = {
+        **_query_contract(["NVDA", "DELL"]),
+        "source_tiers": ["primary_sec_filing", "relationship_graph"],
+        "required_dimension_ids": ["fundamentals", "industry_supply_chain", "risk_and_counterevidence"],
+    }
+    request["context"]["expected_paid_specialist_agents"] = [
+        "fundamental_analyst",
+        "industry_supply_chain_analyst",
+        "risk_counterevidence_analyst",
+    ]
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["activate_agents"] = [
+        *plan["activate_agents"],
+        "market_operator",
+        "market_valuation_analyst",
+    ]
+    plan["agent_priorities"] = {
+        **dict(plan.get("agent_priorities") or {}),
+        "market_valuation_analyst": "supporting",
+    }
+    fake = _FakeChat([json.dumps(plan)])
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    active = set(result["activation_plan"]["activate_agents"])
+    assert "market_operator" in active
+    assert "market_valuation_analyst" not in active
+    assert "product_technology_analyst" not in active
+    metadata = result["activation_plan"]["metadata"]
+    assert metadata["paid_specialist_whitelist_policy"] == "runtime_paid_specialist_budget_whitelist_v0_1"
+    assert set(metadata["paid_specialist_pruned_agents"]) >= {"market_valuation_analyst", "product_technology_analyst"}
+    skipped = {row["agent_id"]: row["reason"] for row in result["activation_plan"]["skip_agents"]}
+    assert "market_valuation_analyst" in skipped
+    assert "product_technology_analyst" in skipped
 
 
 def test_research_lead_llm_adds_risk_lens_for_pressure_and_evidence_gap_memo() -> None:
@@ -420,6 +722,79 @@ def test_research_lead_llm_promotes_relationship_source_to_deep_research() -> No
     assert "risk_counterevidence_analyst" in result["activation_plan"]["activate_agents"]
     assert result["activation_plan"]["agent_priorities"]["risk_counterevidence_analyst"] == "supporting"
     assert result["activation_plan"]["model_policy_hint"]["risk_counterevidence_analyst"] == "strong"
+
+
+def test_research_lead_llm_repairs_evidence_route_relationship_contract_before_plan_gate() -> None:
+    request = _case(
+        "Assess AI accelerator demand bridge for DELL and NVDA.",
+        "standard_memo",
+        ["NVDA", "DELL"],
+        ["NVDA", "DELL", "GOOGL", "MSFT", "AMZN"],
+    )
+    request["context"]["query_contract"] = {
+        **_query_contract(["NVDA", "DELL"]),
+        "search_scope_tickers": ["NVDA", "DELL", "GOOGL", "MSFT", "AMZN"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+        ],
+    }
+    activation_plan = route_multi_agent_activation(
+        _case("Summarize reported AI server evidence.", "standard_memo", ["NVDA", "DELL"], ["NVDA", "DELL"])
+    )["activation_plan"]
+    activation_plan["metadata"]["required_source_families"] = ["relationship_graph", "unknown_live_tracker"]
+    fake = _FakeChat(
+        [
+            json.dumps(
+                {
+                    "activation_plan": activation_plan,
+                    "evidence_requirements": [
+                        {
+                            "requirement_id": "req_relationship",
+                            "task_id": "industry_supply_chain",
+                            "question": "Need cloud capex to AI server and GPU read-through.",
+                            "priority": "primary",
+                            "tickers": ["NVDA", "DELL"],
+                            "source_tiers": ["relationship_graph"],
+                            "evidence_routes": ["relationship_graph"],
+                            "route_cost_tier": "high",
+                            "route_selection_reason": "supply-chain read-through needs relationship graph.",
+                        }
+                    ],
+                }
+            )
+        ]
+    )
+
+    result = route_research_lead_activation_llm(request, config=_config(), call_chat_completion=fake)
+
+    assert result["status"] == "pass"
+    plan = result["activation_plan"]
+    assert plan["execution_mode"] == "deep_research"
+    assert "universe_relationship" in plan["activate_agents"]
+    assert "relationship_graph" in plan["allowed_source_families"]
+    assert plan["relationship_scope_rationale"]
+    assert plan["metadata"]["relationship_scope_rationale_filled"] is True
+    assert plan["metadata"]["plan_reflection_required_source_families_pruned"] == ["unknown_live_tracker"]
+    assert "unknown_live_tracker" not in plan["metadata"]["required_source_families"]
+
+    gate = plan_reflection_gate(
+        plan,
+        activation_validation=result["validation"],
+        source_inventory={
+            "available_source_families": [
+                "primary_sec_filing",
+                "company_authored_unaudited_sec_filing",
+                "market_snapshot",
+                "industry_snapshot",
+                "relationship_graph",
+            ],
+            "source_family_availability": {"relationship_graph": {"available": True, "status": "available"}},
+        },
+    )
+    assert gate["status"] == "pass"
 
 
 def test_research_lead_llm_fails_closed_after_repair_budget_without_fallback() -> None:
@@ -631,6 +1006,7 @@ def test_research_lead_downgrades_live_web_without_scope_policy() -> None:
                 "task_id": "public_proxy_context",
                 "source_tiers": ["live_public_web_context"],
                 "evidence_routes": ["live_public_web_context"],
+                "retrieval_routes": ["live_public_web_context"],
                 "metric_families": ["market_share"],
             }
         ],
@@ -657,6 +1033,7 @@ def test_research_lead_downgrades_live_web_without_scope_policy() -> None:
     assert result["activation_plan"]["metadata"]["live_web_downgraded"] is True
     requirements = result["evidence_requirement_plan"]["requirements"]
     assert requirements[0]["evidence_routes"] == ["market_snapshot"]
+    assert "live_public_web_context" not in requirements[0].get("retrieval_routes", [])
     assert "market_snapshot" in result["activation_plan"]["allowed_source_families"]
 
 
@@ -758,6 +1135,7 @@ def test_research_lead_removes_milvus_semantic_when_runtime_unavailable() -> Non
                 "task_id": "filing_theme_recall",
                 "source_tiers": ["milvus_semantic", "primary_sec_filing"],
                 "evidence_routes": ["milvus_semantic", "filing_text"],
+                "retrieval_routes": ["milvus_semantic", "filing_text"],
                 "metric_families": ["orders_backlog"],
             }
         ],
@@ -783,6 +1161,151 @@ def test_research_lead_removes_milvus_semantic_when_runtime_unavailable() -> Non
     assert "milvus_semantic" not in result["evidence_requirement_plan"]["scope"]["source_tiers"]
     for requirement in result["evidence_requirement_plan"]["requirements"]:
         assert "milvus_semantic" not in requirement["evidence_routes"]
+        assert "milvus_semantic" not in requirement.get("retrieval_routes", [])
+
+
+def test_research_lead_does_not_readd_unavailable_milvus_from_context_or_playbook() -> None:
+    request = _case(
+        "从 AI infrastructure sector-depth pack 出发，分析 NVDA、DELL 的需求传导。",
+        "deep_research",
+        ["NVDA", "DELL"],
+        ["NVDA", "DELL", "MSFT", "AMZN", "GOOGL"],
+    )
+    request["context"]["query_contract"] = {
+        "focus_tickers": ["NVDA", "DELL"],
+        "search_scope_tickers": ["NVDA", "DELL", "MSFT", "AMZN", "GOOGL"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "milvus_semantic",
+        ],
+        "metric_families": ["revenue", "capex", "customer_deployment"],
+    }
+    request["source_inventory"] = {
+        "source_families": [
+            "primary_sec_filing",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "milvus_semantic",
+        ],
+        "milvus_runtime": {"available": False, "status": "unavailable", "location": "none"},
+        "playbook_candidates": [
+            {
+                "playbook_id": "ai_semis_fixture_playbook",
+                "industry_schema": "technology_ai_infrastructure",
+                "default_source_families": [
+                    "relationship_graph",
+                    "company_product_evidence_graph",
+                    "milvus_semantic",
+                ],
+                "source_family_policy": {
+                    "milvus_semantic": {"allowed_claims": ["semantic recall supplement only"]}
+                },
+                "specialist_routing": {
+                    "product_technology_analyst": "high",
+                    "industry_supply_chain_analyst": "high",
+                },
+            }
+        ],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    assert "milvus_semantic" not in plan["allowed_source_families"]
+    llm_plan = dict(plan)
+    llm_plan["allowed_source_families"] = [*llm_plan["allowed_source_families"], "milvus_semantic"]
+    fake = _FakeChat([json.dumps({"activation_plan": llm_plan, "evidence_requirement_plan": _evidence_plan(["NVDA", "DELL"])})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert "milvus_semantic" not in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["metadata"]["milvus_semantic_removed"] is True
+    gate = plan_reflection_gate(
+        result["activation_plan"],
+        activation_validation=result["validation"],
+        source_inventory=request["source_inventory"],
+    )
+    assert gate["status"] == "pass"
+
+
+def test_research_lead_removes_milvus_when_inventory_lacks_runtime_contract() -> None:
+    request = _case(
+        "围绕 NVDA、AMD、GOOGL TPU 与 DELL AI server 做 AI infrastructure thesis。",
+        "deep_research",
+        ["NVDA", "AMD", "GOOGL", "DELL"],
+        ["NVDA", "AMD", "GOOGL", "DELL", "MSFT", "AMZN"],
+    )
+    request["context"]["query_contract"] = {
+        "focus_tickers": ["NVDA", "AMD", "GOOGL", "DELL"],
+        "search_scope_tickers": ["NVDA", "AMD", "GOOGL", "DELL", "MSFT", "AMZN"],
+        "source_tiers": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+        ],
+        "metric_families": ["revenue", "capex", "technical_product_spec", "customer_deployment"],
+    }
+    request["source_inventory"] = {
+        "source_families": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+        ],
+        "available_source_families": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "market_snapshot",
+            "industry_snapshot",
+            "relationship_graph",
+            "company_product_evidence_graph",
+            "public_source_context",
+        ],
+    }
+    plan = route_multi_agent_activation(request)["activation_plan"]
+    plan["allowed_source_families"] = [*plan["allowed_source_families"], "milvus_semantic"]
+    fake = _FakeChat([json.dumps({"activation_plan": plan, "evidence_requirement_plan": _evidence_plan(["NVDA", "DELL"])})])
+
+    result = route_research_lead_activation_llm(
+        request,
+        config=ResearchLeadLLMConfig(
+            llm_backend="unit",
+            base_url="http://unit.test",
+            chat_completions_path="/chat/completions",
+            model="unit-model",
+            api_key_env="UNIT_API_KEY",
+            require_evidence_requirements=True,
+        ),
+        call_chat_completion=fake,
+    )
+
+    assert result["status"] == "pass"
+    assert "milvus_semantic" not in result["activation_plan"]["allowed_source_families"]
+    assert result["activation_plan"]["metadata"]["milvus_semantic_removed"] is True
+    gate = plan_reflection_gate(
+        result["activation_plan"],
+        activation_validation=result["validation"],
+        source_inventory=request["source_inventory"],
+    )
+    assert gate["status"] == "pass"
 
 
 def test_research_lead_prunes_relationship_route_without_scope_intent_after_alignment() -> None:
@@ -817,6 +1340,7 @@ def test_research_lead_prunes_relationship_route_without_scope_intent_after_alig
                 "task_id": "product_peer_context",
                 "source_tiers": ["relationship_graph", "primary_sec_filing"],
                 "evidence_routes": ["relationship_graph", "filing_text"],
+                "retrieval_routes": ["relationship_graph", "filing_text"],
                 "metric_families": ["product_revenue"],
             }
         ],
@@ -842,6 +1366,7 @@ def test_research_lead_prunes_relationship_route_without_scope_intent_after_alig
     assert result["activation_plan"]["metadata"]["relationship_overroute_pruned"] is True
     for requirement in result["evidence_requirement_plan"]["requirements"]:
         assert "relationship_graph" not in requirement["evidence_routes"]
+        assert "relationship_graph" not in requirement.get("retrieval_routes", [])
 
 
 def test_research_lead_alignment_applies_playbook_policy_from_inventory() -> None:

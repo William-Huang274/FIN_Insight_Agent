@@ -18,6 +18,7 @@
     "no_live_trading": true,
     "paper_control_count": 3,
     "pit_dataset_row_count": 24,
+    "research_judgment_card_count": 3,
     "risk_attribution_count": 2,
     "signal_observation_count": 3,
     "source_dependency": "S8 Secondary Market / Capital Feedback Pack",
@@ -47,7 +48,7 @@
       "status": "research_validation_pass"
     }
   ],
-  "generated_at": "2026-06-29T13:15:54Z",
+  "generated_at": "2026-07-04T18:46:53Z",
   "next_slice_unlocked": "S10",
   "outputs": {
     "closeout_report": "docs/internal/vnext_20260610/r53_r60_s9_research_to_quant_lab_l4_scope_pass.zh-CN.md",
@@ -75,18 +76,18 @@
   "task": {
     "case_id": "s9_research_to_quant_lab_l4_scope",
     "created_at": "2026-06-29T13:15:53Z",
-    "current_run_id": "run_a1d9feb606938173",
+    "current_run_id": "run_85695af3d7c4b732",
     "error_message": "",
     "metadata_json": "{\"closeout_level\": \"L4_scope_pass\", \"no_live_trading\": true, \"source_slice\": \"S9\"}",
     "mode": "runtime_spine_dogfood",
     "objective_json": "{\"minimum_evidence\": \"At least two approved thesis drivers become PIT-guarded deterministic factor validation runs.\", \"required_objects\": [\"FactorHypothesis\", \"FeatureSpec\", \"LabelSpec\", \"UniverseSpec\", \"DatasetBuildPlan\", \"PITDataset\", \"LeakageGuardResult\", \"BacktestResult\", \"RiskAttribution\", \"FactorCard\", \"ResearchExperienceRecord\"]}",
     "progress": 100,
     "query_text": "Convert review-ready research thesis drivers into approved PIT quant validation experiments",
-    "resume_count": 0,
+    "resume_count": 2,
     "status": "succeeded",
     "task_id": "s9_scope_task_research_to_quant_lab",
     "trace_id": "trace_s9_research_to_quant_lab",
-    "updated_at": "2026-06-29T13:15:54Z",
+    "updated_at": "2026-07-04T18:46:53Z",
     "user_id": "s9_gate"
   }
 }

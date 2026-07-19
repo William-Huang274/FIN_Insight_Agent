@@ -486,7 +486,7 @@ _AGENT_REGISTRY: list[dict[str, Any]] = [
         description="Forms bounded product taxonomy, company-disclosed product KPI, public proxy, and commercial gap observations.",
         tool_permission="inspect_only",
         allowed_tools=[],
-        allowed_data_views=["bounded_rows", "coverage_summary"],
+        allowed_data_views=["bounded_rows", "relationship_graph_summary", "coverage_summary"],
         route_authority="none",
         model_profile="balanced",
         max_tool_calls=0,
@@ -495,6 +495,7 @@ _AGENT_REGISTRY: list[dict[str, Any]] = [
         output_schema="SpecialistAnalystMemoletV0",
         source_families=[
             "company_product_evidence_graph",
+            "relationship_graph",
             "public_source_context",
             "live_public_web_context",
         ],

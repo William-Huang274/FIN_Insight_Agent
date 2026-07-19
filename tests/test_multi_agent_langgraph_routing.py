@@ -8,6 +8,7 @@ from sec_agent.langgraph_orchestrator import (
     _node_research_lead_plan,
     _node_validate_activation_plan,
     _route_after_multi_agent_reflection,
+    _route_after_multi_agent_second_pass,
     build_multi_agent_summary_artifact_payload,
     build_multi_agent_orchestration_graph,
     build_multi_agent_orchestration_graph_from_env,
@@ -49,6 +50,61 @@ def test_multi_agent_graph_runs_focused_path_and_writes_summary(tmp_path: Path) 
     assert "evidence_fusion" in summary
     assert "bounded_gap_register" in summary
     assert summary["payload_policy"]["raw_evidence"] == "not_included"
+
+
+def test_research_lead_plan_projects_supervising_contract_into_state(tmp_path: Path) -> None:
+    initial = make_multi_agent_smoke_state(
+        user_query="分析 NVDA/DELL AI server 的产品、客户部署、供应链和财务传导。",
+        output_dir=tmp_path,
+        query_contract=_query_contract(
+            ["NVDA", "DELL"],
+            source_tiers=[
+                "primary_sec_filing",
+                "company_authored_unaudited_sec_filing",
+                "relationship_graph",
+                "company_product_evidence_graph",
+            ],
+        ),
+        focus_tickers=["NVDA", "DELL"],
+        search_scope_tickers=["NVDA", "DELL", "MSFT", "AMZN"],
+    )
+
+    def route_activation(_: dict) -> dict:
+        return {
+            "status": "pass",
+            "source": "unit_supervising_contract",
+            "activation_plan": {
+                "schema_version": "sec_agent_agent_activation_plan_v0.1",
+                "execution_mode": "deep_research",
+                "activate_agents": [
+                    "research_lead",
+                    "universe_relationship",
+                    "coverage_reflection",
+                    "memo_writer",
+                    "verifier",
+                    "renderer",
+                ],
+                "allowed_source_families": ["primary_sec_filing", "relationship_graph"],
+                "relationship_scope_rationale": "AI server supply-chain read-through requires relationship expansion.",
+                "research_objective_contract": {"core_question": "AI server thesis", "required_dimensions": ["product_architecture"]},
+                "thesis_path": {"initial_view": "Link product architecture to deployment and margin quality."},
+                "evidence_role_plan": [{"required_item": "product_architecture_competition"}],
+                "specialist_assignment": {"product_technology_analyst": {"required_items": ["product_architecture_competition"]}},
+                "missing_but_retrievable": [{"required_item": "customer_deployment_adoption"}],
+                "bounded_or_commercial_gap": [{"gap_type": "product_kpi_exact_gap"}],
+                "writer_order": ["opening_thesis", "product_architecture"],
+            },
+            "validation": {"status": "pass"},
+            "routing_trace": {"mode": "deep_research"},
+        }
+
+    result = _node_research_lead_plan(initial, route_activation=route_activation)
+
+    assert result["agent_activation_plan"]["thesis_path"]["initial_view"]
+    assert result["research_objective_contract"]["core_question"] == "AI server thesis"
+    assert result["research_lead_thesis_path"]["initial_view"].startswith("Link product")
+    assert result["research_lead_evidence_role_plan"][0]["required_item"] == "product_architecture_competition"
+    assert result["research_lead_writer_order"] == ["opening_thesis", "product_architecture"]
 
 
 def test_multi_agent_graph_runs_evidence_fusion_before_coverage(tmp_path: Path) -> None:
@@ -311,6 +367,9 @@ def test_multi_agent_graph_standard_path_runs_specialists(tmp_path: Path) -> Non
     assert "claim_card_stats" in summary["verified_judgment_plan"]
     assert summary["judgment_plan"]["memo_thesis_pack"]["present"] is True
     assert summary["graph_barriers"]["specialist_fanout"]["schema_version"] == "sec_agent_specialist_fanout_barrier_v0.1"
+    assert "supporting_run_without_required_item_match_count" in summary["graph_barriers"]["specialist_fanout"]
+    assert summary["specialists"]["activation_decisions"]
+    assert "matched_requirement_count" in summary["specialists"]["route_results"][0]
     assert summary["graph_barriers"]["claim_card_store"]["schema_version"] == "sec_agent_claim_card_store_barrier_v0.1"
 
 
@@ -471,7 +530,50 @@ def test_multi_agent_graph_quality_second_pass_runs_before_memo_when_claim_cards
             ]
         }
 
-    graph = build_multi_agent_orchestration_graph(run_specialist_analysts=injected_specialists)
+    def injected_second_pass_retrieval(state: dict) -> dict:
+        return {
+            "runtime_ledger_rows": [
+                {
+                    "evidence_ref": "amd_capex_ref",
+                    "source_family": "primary_sec_filing",
+                    "ticker": "AMD",
+                    "metric_family": "capex",
+                    "authority_tier": "primary_exact_value",
+                    "exact_value_authority": True,
+                }
+            ],
+            "tool_observations": [],
+            "source_gaps": [],
+        }
+
+    def injected_coverage_reflection(state: dict) -> dict:
+        return {
+            "multi_agent_reflection_report": {
+                "schema_version": "sec_agent_multi_agent_reflection_report_v0.1",
+                "sufficiency_level": "sufficient",
+                "missing_requirements": [],
+                "source_available": True,
+                "second_pass_requests": [],
+                "source_family_gaps": [],
+                "bounded_answer_allowed": False,
+            },
+            "evidence_sufficiency_report": {
+                "schema_version": "sec_agent_multi_agent_reflection_report_v0.1",
+                "sufficiency_level": "sufficient",
+                "missing_requirements": [],
+                "source_available": True,
+                "second_pass_requests": [],
+                "source_family_gaps": [],
+                "bounded_answer_allowed": False,
+            },
+            "multi_agent_second_pass_decision": {"allowed": False, "reason": "evidence_sufficient"},
+        }
+
+    graph = build_multi_agent_orchestration_graph(
+        coverage_reflection=injected_coverage_reflection,
+        execute_second_pass_retrieval=injected_second_pass_retrieval,
+        run_specialist_analysts=injected_specialists,
+    )
     result = graph.invoke(
         make_multi_agent_smoke_state(
             user_query="从 AI capex 产业链角度分析 NVDA 和 AMD 的基本面、供应链传导和反证风险。",
@@ -722,7 +824,7 @@ packs:
       - "AI infrastructure demand transmission."
     candidate_tickers:
       p0: ["DELL"]
-      p1: ["ANET", "VRT"]
+      p1: ["ANET", "VRT", "APH"]
     primary_metric_families: ["revenue"]
     required_source_families: ["primary_sec_filing"]
   - pack_id: "energy_infrastructure_depth"
@@ -749,6 +851,10 @@ packs:
         "sector_depth_pack_path": str(sector_path),
         "expected_relationship_pack_ids": ["technology_ai_infrastructure_depth"],
     }  # type: ignore[literal-required]
+    initial["project_inventory"] = {
+        "schema_version": "project_source_inventory_v0.1",
+        "companies": [{"ticker": ticker} for ticker in ["NVDA", "DELL", "ANET", "VRT"]],
+    }  # type: ignore[literal-required]
 
     result = graph.invoke(initial, config={"configurable": {"thread_id": "unit-relationship-expected-pack"}})
     refs = {
@@ -760,6 +866,12 @@ packs:
     assert refs
     assert all("sector_depth_pack:technology_ai_infrastructure_depth" in ref for ref in refs)
     assert not any("sector_depth_pack:energy_infrastructure_depth" in ref for ref in refs)
+    assert {row["related_ticker"] for row in result["relationship_graph_observation"]["relationships"]} <= {
+        "DELL",
+        "ANET",
+        "VRT",
+    }
+    assert result["universe_relationship_validation"]["status"] == "pass"
 
 
 def test_multi_agent_graph_stop_after_node_keeps_new_state_summary(tmp_path: Path) -> None:
@@ -811,6 +923,28 @@ def test_multi_agent_graph_stop_after_optional_second_pass_is_terminal(tmp_path:
     assert nodes == ["optional_second_pass"]
     assert result["status"] == "stopped_after_node"
     assert result["native_stop_after_node"] == "optional_second_pass"
+
+
+def test_second_pass_without_authority_delta_does_not_rerun_existing_specialists() -> None:
+    route = _route_after_multi_agent_second_pass(
+        {
+            "agent_activation_plan": {
+                "execution_mode": "deep_research",
+                "activate_agents": ["fundamental_analyst", "industry_supply_chain_analyst", "memo_writer"],
+            },
+            "specialist_outputs": [{"agent_id": "fundamental_analyst", "status": "pass"}],
+            "second_pass_delta_audit": {
+                "status": "no_authority_delta",
+                "added_authority_bearing_row_count": 0,
+            },
+            "second_pass_result": {
+                "loop_break_reason": "no_incremental_evidence",
+                "added_authority_bearing_row_count": 0,
+            },
+        }
+    )
+
+    assert route == "aggregate"
 
 
 def test_multi_agent_graph_from_env_defaults_to_deterministic_router(tmp_path: Path) -> None:

@@ -1,0 +1,545 @@
+{
+  "schema_version": "finsight_workbuddy_expert_variant_audit_v0_1",
+  "audit_id": "workbuddy_expert_configuration_variants_20260712_v0_1",
+  "status": "pass",
+  "errors": [],
+  "model_boundary": {
+    "ui_model": "deepseek-v4-pro",
+    "classification": "non_strong_calibration_model",
+    "prompt_equivalence": "user_asserted_not_trace_verifiable",
+    "maturity_inference_allowed": false
+  },
+  "review_boundary": {
+    "raw_reasoning_reviewed": false,
+    "observable_tool_trajectory_only": true,
+    "workbuddy_facts_promotable": false,
+    "variant_overwrites_base_case": false
+  },
+  "variant_count": 2,
+  "variants": [
+    {
+      "variant_id": "WB-S01B",
+      "base_case_id": "WB-S01",
+      "sector": "technology_software_services",
+      "report_type": "company_comparison",
+      "ui_configuration": {
+        "selected_agent_labels": [
+          "交易分析团队",
+          "腾讯自选股股票研究 agent"
+        ],
+        "selected_skill_labels": [
+          "US Stock Analysis",
+          "财报追踪",
+          "Web Scraper",
+          "盈米Skills",
+          "新闻摘要",
+          "NeoData金融搜索服务",
+          "Deep Research"
+        ],
+        "skill_label_aliases": {
+          "US Stock Analysis": "us-stock-analysis",
+          "财报追踪": "earnings-tracker",
+          "Web Scraper": "web-scraper",
+          "盈米Skills": "yingmi-skills",
+          "新闻摘要": "news-summary",
+          "NeoData金融搜索服务": "neodata-financial-search",
+          "Deep Research": "deep-research"
+        }
+      },
+      "selected_skill_labels_without_observable_invocation": [
+        "US Stock Analysis",
+        "财报追踪",
+        "盈米Skills",
+        "新闻摘要"
+      ],
+      "base": {
+        "report_path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-11-20-54-48\\enterprise-ai-saas-deep-research.html",
+        "trace_path": "C:\\Users\\hht13\\.workbuddy\\traces\\89716\\trace_ce62b3e35a7e4f1d8e20da0bd78e0ffa.json",
+        "report_bytes": 46962,
+        "duration_ms": 262085,
+        "visible_numeric_token_count": 418,
+        "numeric_table_cell_count": 160,
+        "directly_linked_numeric_table_cell_count": 0,
+        "direct_numeric_linkage_ratio": 0.0,
+        "external_link_count": 16,
+        "heading_count": 1,
+        "table_count": 9,
+        "estimate_marker_count": 59,
+        "source_list_is_detached_from_numeric_cells": true,
+        "missing_marker_count": 0,
+        "stale_marker_count": 0,
+        "svg_count": 0,
+        "script_count": 0,
+        "agent_span_count": 1,
+        "agent_names": [
+          "cli"
+        ],
+        "function_counts": {
+          "Bash": 2,
+          "TaskCreate": 4,
+          "TaskUpdate": 7,
+          "WebSearch": 12,
+          "Write": 2,
+          "present_files": 1
+        },
+        "invoked_skills": [],
+        "credential_material_observed": false,
+        "trace_status": "ok",
+        "model_calls": 16,
+        "input_tokens_cumulative": 984059,
+        "cached_tokens_cumulative": 907136,
+        "uncached_input_tokens_cumulative": 76923,
+        "output_tokens": 18413,
+        "tool_call_count": 28,
+        "tool_counts": {
+          "Bash": 2,
+          "TaskCreate": 4,
+          "TaskUpdate": 7,
+          "WebSearch": 12,
+          "Write": 2,
+          "present_files": 1
+        },
+        "web_search_count": 12,
+        "source_open_or_fetch_count": 0,
+        "structured_financial_query_count": 0,
+        "subagent_or_handoff_count": 0,
+        "explicit_function_error_count": 0,
+        "status_ok_but_output_error_count": 0,
+        "post_write_research_call_count": 0,
+        "artifact_syntax_validation_call_count": 0,
+        "max_web_query_similarity": 0.649,
+        "claim_to_observation_lineage_count": 0,
+        "raw_generation_or_reasoning_reviewed": false
+      },
+      "variant": {
+        "report_path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-12-00-07-41\\deliverables\\trading-agent\\enterprise-ai-cloud-analysis-2026-07-12.html",
+        "trace_path": "C:\\Users\\hht13\\.workbuddy\\traces\\101324\\trace_f07bc137bca544b3ac624e97f3596caf.json",
+        "report_bytes": 36818,
+        "duration_ms": 307817,
+        "visible_numeric_token_count": 264,
+        "numeric_table_cell_count": 138,
+        "directly_linked_numeric_table_cell_count": 0,
+        "direct_numeric_linkage_ratio": 0.0,
+        "external_link_count": 0,
+        "heading_count": 13,
+        "table_count": 9,
+        "estimate_marker_count": 62,
+        "source_list_is_detached_from_numeric_cells": true,
+        "missing_marker_count": 0,
+        "stale_marker_count": 0,
+        "svg_count": 0,
+        "script_count": 2,
+        "agent_span_count": 1,
+        "agent_names": [
+          "cli"
+        ],
+        "function_counts": {
+          "Bash": 14,
+          "DeferExecuteTool": 1,
+          "Skill": 4,
+          "ToolSearch": 1,
+          "WebSearch": 4,
+          "Write": 2,
+          "present_files": 1,
+          "read_me": 1,
+          "show_widget": 1
+        },
+        "invoked_skills": [
+          "Deep Research",
+          "deep-research",
+          "neodata-financial-search",
+          "web-scraper"
+        ],
+        "credential_material_observed": true,
+        "trace_status": "ok",
+        "model_calls": 15,
+        "input_tokens_cumulative": 1254950,
+        "cached_tokens_cumulative": 1133312,
+        "uncached_input_tokens_cumulative": 121638,
+        "output_tokens": 20353,
+        "tool_call_count": 29,
+        "tool_counts": {
+          "Bash": 14,
+          "DeferExecuteTool": 1,
+          "Skill": 4,
+          "ToolSearch": 1,
+          "WebSearch": 4,
+          "Write": 2,
+          "present_files": 1,
+          "read_me": 1,
+          "show_widget": 1
+        },
+        "web_search_count": 4,
+        "source_open_or_fetch_count": 0,
+        "structured_financial_query_count": 13,
+        "subagent_or_handoff_count": 0,
+        "explicit_function_error_count": 0,
+        "status_ok_but_output_error_count": 0,
+        "post_write_research_call_count": 0,
+        "artifact_syntax_validation_call_count": 0,
+        "max_web_query_similarity": 0.5281,
+        "claim_to_observation_lineage_count": 0,
+        "raw_generation_or_reasoning_reviewed": false
+      },
+      "delta": {
+        "report_bytes": -10144,
+        "visible_numeric_token_count": -154,
+        "numeric_table_cell_count": -22,
+        "external_link_count": -16,
+        "heading_count": 12,
+        "table_count": 0,
+        "estimate_marker_count": 3,
+        "model_calls": -1,
+        "input_tokens_cumulative": 270891,
+        "output_tokens": 1940,
+        "tool_call_count": 1,
+        "web_search_count": -8,
+        "structured_financial_query_count": 13,
+        "source_open_or_fetch_count": 0,
+        "artifact_syntax_validation_call_count": 0,
+        "post_write_research_call_count": 0
+      },
+      "scores": {
+        "sector_mechanism": 5,
+        "decision_cell_semantics": 5,
+        "evidence_binding": 1,
+        "numeric_integrity": 1,
+        "counterevidence_and_gaps": 4,
+        "valuation_or_scenario_method": 2,
+        "artifact_usability": 5,
+        "trajectory_planning": 3,
+        "tool_grounding": 2,
+        "repair_reflection": 2,
+        "context_efficiency": 1,
+        "repeatability": 2
+      },
+      "disposition": "redesign",
+      "material_defect_severity": "high",
+      "capability_findings": [
+        "领域配置显著改善了 Decision Surface、传导链、What-Would-Change、缺口披露和报告结构。",
+        "NeoData 认证失败后被识别并修复，构成真实但有界的工具恢复行为。",
+        "可观察轨迹中仍只有一个 cli agent；界面选中的专家标签没有产生独立 subagent 或 handoff。",
+        "实际只调用 deep-research、neodata-financial-search 和 web-scraper，多个界面选中 Skill 未调用。",
+        "Writer 丢弃了 NeoData request id、as-of metadata 和 source URL，数字 claim-local link 仍为零。",
+        "凭证材料进入工具轨迹和 shell 命令，没有保持 runtime 持有和 trace 脱敏。"
+      ],
+      "quality_findings": [
+        "Salesforce 当前 ARR/用量指标与较早季度的付费交易数混用，使单客户 ARR 计算失效。",
+        "报告称 Salesforce cRPO 增速未披露，但当前官方季度已经披露。",
+        "Datadog 客户数、Top 20 渗透率和百万美元 ARR 客户数被语义合并。",
+        "Snowflake 全年产品收入和时点采用指标缺少 period-local binding。",
+        "报告列出多个来源家族却没有外部链接，并在缺少 suitability/permission gate 时给出组合权重。"
+      ],
+      "retain_candidates": [
+        "四层产品采用到财务捕获 Decision Surface",
+        "将 What-Would-Change 作为一等研究界面",
+        "显式数据缺口与 proxy 表",
+        "席位制与用量制变现对比",
+        "observe-failure-select-fallback 工具循环"
+      ],
+      "redesign_requirements": [
+        "Writer 投影必须保留 evidence lineage 和 period metadata",
+        "区分 UI selected、context injected 与 actually invoked capability",
+        "强制 freshness reconciliation 和 NumericProgramTrace",
+        "凭证移出模型上下文并对 trace 脱敏",
+        "排名、权重和建议必须受用户授权及 approval policy 控制"
+      ],
+      "official_checks": [
+        {
+          "check_id": "salesforce_period_mix",
+          "finding": "The paid-deal denominator and current ARR numerator come from different quarters.",
+          "source_urls": [
+            "https://investor.salesforce.com/news/news-details/2025/Salesforce-Delivers-Record-Third-Quarter-Fiscal-2026-Results-Driven-by-Agentforce--Data-360/default.aspx",
+            "https://investor.salesforce.com/news/news-details/2026/Salesforce-Delivers-Record-First-Quarter-Fiscal-2027-Results/default.aspx"
+          ]
+        },
+        {
+          "check_id": "datadog_metric_conflation",
+          "finding": "AI-native customer count, top-20 penetration and million-dollar ARR customer count are separate metrics.",
+          "source_urls": [
+            "https://investors.datadoghq.com/static-files/752ff050-a264-4ef2-aaad-79412f887119"
+          ]
+        }
+      ],
+      "direct_pack_promotion_allowed": false
+    },
+    {
+      "variant_id": "WB-S02B",
+      "base_case_id": "WB-S02",
+      "sector": "banks_financials",
+      "report_type": "company_comparison",
+      "ui_configuration": {
+        "selected_agent_labels": [
+          "股票研究专家"
+        ],
+        "selected_skill_labels": [
+          "US Stock Analysis",
+          "财报追踪",
+          "Deep Research"
+        ],
+        "skill_label_aliases": {
+          "US Stock Analysis": "us-stock-analysis",
+          "财报追踪": "earnings-tracker",
+          "Deep Research": "deep-research"
+        }
+      },
+      "selected_skill_labels_without_observable_invocation": [],
+      "base": {
+        "report_path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-11-20-55-08\\US-Banks-Deep-Research-20260711.html",
+        "trace_path": "C:\\Users\\hht13\\.workbuddy\\traces\\82576\\trace_543a2759d0094afbb64646c728897d82.json",
+        "report_bytes": 51838,
+        "duration_ms": 387208,
+        "visible_numeric_token_count": 347,
+        "numeric_table_cell_count": 182,
+        "directly_linked_numeric_table_cell_count": 0,
+        "direct_numeric_linkage_ratio": 0.0,
+        "external_link_count": 7,
+        "heading_count": 10,
+        "table_count": 10,
+        "estimate_marker_count": 108,
+        "source_list_is_detached_from_numeric_cells": true,
+        "missing_marker_count": 0,
+        "stale_marker_count": 0,
+        "svg_count": 1,
+        "script_count": 2,
+        "agent_span_count": 1,
+        "agent_names": [
+          "cli"
+        ],
+        "function_counts": {
+          "Bash": 20,
+          "DeferExecuteTool": 1,
+          "Read": 4,
+          "Skill": 3,
+          "TaskCreate": 5,
+          "TaskUpdate": 10,
+          "ToolSearch": 1,
+          "Write": 2,
+          "present_files": 1
+        },
+        "invoked_skills": [
+          "wb-finance-skill",
+          "westock-data",
+          "neodata-financial-search"
+        ],
+        "credential_material_observed": true,
+        "trace_status": "ok",
+        "model_calls": 19,
+        "input_tokens_cumulative": 1705943,
+        "cached_tokens_cumulative": 1594624,
+        "uncached_input_tokens_cumulative": 111319,
+        "output_tokens": 25912,
+        "tool_call_count": 47,
+        "tool_counts": {
+          "Bash": 20,
+          "DeferExecuteTool": 1,
+          "Read": 4,
+          "Skill": 3,
+          "TaskCreate": 5,
+          "TaskUpdate": 10,
+          "ToolSearch": 1,
+          "Write": 2,
+          "present_files": 1
+        },
+        "web_search_count": 0,
+        "source_open_or_fetch_count": 0,
+        "structured_financial_query_count": 17,
+        "subagent_or_handoff_count": 0,
+        "explicit_function_error_count": 0,
+        "status_ok_but_output_error_count": 0,
+        "post_write_research_call_count": 0,
+        "artifact_syntax_validation_call_count": 1,
+        "max_web_query_similarity": 0.0,
+        "claim_to_observation_lineage_count": 0,
+        "raw_generation_or_reasoning_reviewed": false
+      },
+      "variant": {
+        "report_path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-12-00-20-31\\us-banks-deep-research.html",
+        "trace_path": "C:\\Users\\hht13\\.workbuddy\\traces\\105172\\trace_36a80f993cef4f238ff32c63aa0ff59c.json",
+        "report_bytes": 83186,
+        "duration_ms": 600345,
+        "visible_numeric_token_count": 736,
+        "numeric_table_cell_count": 396,
+        "directly_linked_numeric_table_cell_count": 0,
+        "direct_numeric_linkage_ratio": 0.0,
+        "external_link_count": 7,
+        "heading_count": 49,
+        "table_count": 23,
+        "estimate_marker_count": 49,
+        "source_list_is_detached_from_numeric_cells": true,
+        "missing_marker_count": 74,
+        "stale_marker_count": 5,
+        "svg_count": 2,
+        "script_count": 1,
+        "agent_span_count": 1,
+        "agent_names": [
+          "cli"
+        ],
+        "function_counts": {
+          "Bash": 2,
+          "Skill": 3,
+          "TaskCreate": 6,
+          "TaskUpdate": 8,
+          "WebSearch": 12,
+          "Write": 2,
+          "present_files": 1
+        },
+        "invoked_skills": [
+          "us-stock-analysis",
+          "earnings-tracker",
+          "deep-research"
+        ],
+        "credential_material_observed": false,
+        "trace_status": "ok",
+        "model_calls": 34,
+        "input_tokens_cumulative": 2374176,
+        "cached_tokens_cumulative": 2268672,
+        "uncached_input_tokens_cumulative": 105504,
+        "output_tokens": 38416,
+        "tool_call_count": 34,
+        "tool_counts": {
+          "Bash": 2,
+          "Skill": 3,
+          "TaskCreate": 6,
+          "TaskUpdate": 8,
+          "WebSearch": 12,
+          "Write": 2,
+          "present_files": 1
+        },
+        "web_search_count": 12,
+        "source_open_or_fetch_count": 0,
+        "structured_financial_query_count": 0,
+        "subagent_or_handoff_count": 0,
+        "explicit_function_error_count": 0,
+        "status_ok_but_output_error_count": 0,
+        "post_write_research_call_count": 0,
+        "artifact_syntax_validation_call_count": 0,
+        "max_web_query_similarity": 0.8475,
+        "claim_to_observation_lineage_count": 0,
+        "raw_generation_or_reasoning_reviewed": false
+      },
+      "delta": {
+        "report_bytes": 31348,
+        "visible_numeric_token_count": 389,
+        "numeric_table_cell_count": 214,
+        "external_link_count": 0,
+        "heading_count": 39,
+        "table_count": 13,
+        "estimate_marker_count": -59,
+        "model_calls": 15,
+        "input_tokens_cumulative": 668233,
+        "output_tokens": 12504,
+        "tool_call_count": -13,
+        "web_search_count": 12,
+        "structured_financial_query_count": -17,
+        "source_open_or_fetch_count": 0,
+        "artifact_syntax_validation_call_count": -1,
+        "post_write_research_call_count": 0
+      },
+      "scores": {
+        "sector_mechanism": 5,
+        "decision_cell_semantics": 5,
+        "evidence_binding": 2,
+        "numeric_integrity": 2,
+        "counterevidence_and_gaps": 4,
+        "valuation_or_scenario_method": 2,
+        "artifact_usability": 5,
+        "trajectory_planning": 3,
+        "tool_grounding": 2,
+        "repair_reflection": 1,
+        "context_efficiency": 1,
+        "repeatability": 2
+      },
+      "disposition": "redesign",
+      "material_defect_severity": "high",
+      "capability_findings": [
+        "领域 Skill 组合生成了更丰富的银行本体、23 张表、2 个 SVG 决策图、显式 MISSING/STALE 标记和 7 个外链。",
+        "新版正确把 Wells Fargo 资产上限视为已解除，而非当前约束。",
+        "可观察轨迹仍只有一个 cli agent；6 个 task 是规划记录，不是独立 subagent。",
+        "Runtime 执行了 12 次 WebSearch，但没有 source-open、官方 filing parser、结构化金融查询或写后研究修复。",
+        "报告只检查文件存在和大小，没有验证脚本语法、图表数据、claim 一致性和数值语义。"
+      ],
+      "quality_findings": [
+        "报告依据低权威搜索摘要，把 0.25%、0.65%、0.56% 和 0.64% 标为 2024 年银行存款成本；官方文件显示总存款利率和定义显著不同。",
+        "市场价格、目标价、季度经营事实、2024 存款利率 proxy 和估算值混在一起，缺少统一 as-of 与 metric-definition contract。",
+        "数字表格单元格没有 claim-local link；7 个外链集中在脱离 claim 的来源清单。",
+        "CRE、估值和目标价判断依赖二手摘要与估算，没有可执行计算或 row lineage。",
+        "报告诚实暴露缺失数据，但停止前没有执行邻居/来源扩展或 evidence repair loop。"
+      ],
+      "retain_candidates": [
+        "银行专属存款-NIM/NII-信用-资本-ROTCE 传导机制",
+        "显式 MISSING 与 STALE 界面",
+        "资产负债表传导图",
+        "监管与压力测试事件面板",
+        "银行专属 What-Would-Change 阈值"
+      ],
+      "redesign_requirements": [
+        "每个银行指标绑定 entity level、合并口径/银行子公司、period、FTE 状态和计算定义",
+        "二手比较摘要之前必须优先 issuer、SEC、FFIEC 和 Federal Reserve",
+        "存款利率、NIM、资本和估值采用确定性程序",
+        "必须打开并验证一手来源，不能只复制搜索结果 URL",
+        "执行写后 contradiction、freshness、numeric 和 citation 检查"
+      ],
+      "official_checks": [
+        {
+          "check_id": "bank_q1_2026_core_metrics",
+          "finding": "Several core Q1 metrics are directionally correct in issuer materials, but that does not validate detached comparison rows.",
+          "source_urls": [
+            "https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/quarterly-earnings/2026/1st-quarter/corp-q1-2026.pdf",
+            "https://investor.bankofamerica.com/regulatory-and-other-filings/select-sec-filings/content/0000070858-26-000222/0000070858-26-000222.pdf",
+            "https://www.wellsfargo.com/assets/pdf/about/investor-relations/earnings/first-quarter-2026-financial-results.pdf",
+            "https://www.citigroup.com/rcs/citigpa/storage/public/Earnings/Q12026/2026psqtr1rslt.pdf"
+          ]
+        },
+        {
+          "check_id": "deposit_cost_definition_failure",
+          "finding": "JPMorgan's 2024 total deposit rate is 2.08%, not the report's 0.25%; the comparison row lacks a stable metric definition.",
+          "source_urls": [
+            "https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/annualreport-2024.pdf"
+          ]
+        },
+        {
+          "check_id": "wells_fargo_asset_cap_freshness",
+          "finding": "The variant correctly recognizes that the Federal Reserve removed the asset growth restriction on 2025-06-03.",
+          "source_urls": [
+            "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20250603a.htm"
+          ]
+        }
+      ],
+      "direct_pack_promotion_allowed": false
+    }
+  ],
+  "competitive_position": {
+    "current_high_pressure_segments": [
+      "零售与 prosumer 投资研究",
+      "通用分析师初稿",
+      "外观接近 client-ready 的 HTML 与 dashboard",
+      "广泛公开网页公司比较",
+      "通过 Skill 快速分发领域研究方法"
+    ],
+    "near_term_pressure_segments": [
+      "缺少受控数据基座的小型顾问团队",
+      "卖方或咨询研究的选题与初稿生产",
+      "标准化上市公司监控"
+    ],
+    "not_yet_replaced_capabilities": [
+      "claim-local provenance 与可复算 NumericProgramTrace",
+      "带 revision/supersession 的 point-in-time accepted fact memory",
+      "私有数据与商业授权机构数据集成",
+      "带权限的 durable workflow 与 reviewer accountability",
+      "memo/model/deck/dashboard 跨产物一致性",
+      "受监管的 model-risk、retention 与 approval control"
+    ],
+    "required_finsight_response": [
+      "把领域 Skill 和精美多格式输出视为基础能力，而不是差异化。",
+      "差异化转向证据控制、数值可复算、point-in-time memory、私有数据集成和机构工作流。",
+      "显式展示 selected capability 与 invoked capability，并保留完整 trajectory provenance。",
+      "持续对标通用 Agent 平台，评估替代压力和用户画像匹配，而不只评报告正确率。"
+    ]
+  },
+  "promotion_summary": {
+    "direct_pack_promotion_count": 0,
+    "variant_overwrite_count": 0,
+    "redesign_variant_count": 2
+  }
+}

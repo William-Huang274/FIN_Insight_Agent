@@ -10,12 +10,14 @@ from typing import Any, Mapping
 RELATIONSHIP_GRAPH_SCHEMA_VERSION = "sec_agent_relationship_graph_lookup_v0.1"
 RELATIONSHIP_EDGE_SCHEMA_VERSION = "sec_agent_relationship_edge_v0.3"
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_RELATIONSHIP_GRAPH_PATH = REPO_ROOT / "data" / "manifests" / "product_relationship_graph_edges_v0_1.jsonl"
 
 
 def query_relationship_graph(
     *,
     focus_tickers: list[str] | None = None,
     search_scope_tickers: list[str] | None = None,
+    allowed_universe_tickers: list[str] | None = None,
     user_query: str = "",
     relationship_graph_path: str | Path | None = None,
     sector_depth_pack_path: str | Path | None = None,
@@ -31,18 +33,27 @@ def query_relationship_graph(
     """
     focus = _unique_upper(focus_tickers)
     scope = _unique_upper(search_scope_tickers) or focus
+    allowed_universe = _unique_upper(allowed_universe_tickers)
     max_rels = _bounded_int(max_relationships, default=24, minimum=1, maximum=100)
     max_tickers = _bounded_int(max_expanded_tickers, default=12, minimum=1, maximum=50)
 
     graph_path = _resolve_optional_path(relationship_graph_path)
-    sector_path = _resolve_optional_path(sector_depth_pack_path) or (REPO_ROOT / "configs" / "sector_depth_packs_v0_2.yaml")
+    explicit_sector_path = _resolve_optional_path(sector_depth_pack_path)
+    if graph_path is None and explicit_sector_path is None:
+        graph_path = _default_relationship_graph_path()
+    sector_path = explicit_sector_path or (REPO_ROOT / "configs" / "sector_depth_packs_v0_2.yaml")
 
-    graph_relationships = _read_relationship_graph_rows(graph_path, focus=focus, scope=scope) if graph_path else []
+    graph_relationships = (
+        _read_relationship_graph_rows(graph_path, focus=focus, scope=scope, allowed_universe=allowed_universe)
+        if graph_path
+        else []
+    )
     sector_relationships = (
         _relationships_from_sector_depth_pack(
             sector_path,
             focus=focus,
             scope=scope,
+            allowed_universe=allowed_universe,
             user_query=user_query,
             expected_pack_ids=expected_pack_ids or [],
             max_relationships=max_rels,
@@ -50,7 +61,12 @@ def query_relationship_graph(
         if include_sector_depth and sector_path.exists()
         else []
     )
-    relationships = _dedupe_relationships([*graph_relationships, *sector_relationships])[:max_rels]
+    relationships = _prioritize_relationships(
+        _dedupe_relationships([*graph_relationships, *sector_relationships]),
+        focus=focus,
+        scope=scope,
+        query_text=user_query,
+    )[:max_rels]
     expanded = _expanded_tickers(focus, relationships)[:max_tickers]
     relationship_rows = [_relationship_row(item, index) for index, item in enumerate(relationships, start=1)]
     inference_counts = _count_by_key(relationships, "inference_level")
@@ -129,10 +145,11 @@ def relationship_plan_from_lookup(
     }
 
 
-def _read_relationship_graph_rows(path: Path, *, focus: list[str], scope: list[str]) -> list[dict[str, Any]]:
+def _read_relationship_graph_rows(path: Path, *, focus: list[str], scope: list[str], allowed_universe: list[str]) -> list[dict[str, Any]]:
     if not path.exists() or not path.is_file():
         return []
     allowed = set(scope or focus)
+    universe = set(allowed_universe)
     rows: list[dict[str, Any]] = []
     with path.open("r", encoding="utf-8") as handle:
         for line in handle:
@@ -148,6 +165,9 @@ def _read_relationship_graph_rows(path: Path, *, focus: list[str], scope: list[s
             tickers = {relationship.get("ticker"), relationship.get("related_ticker")}
             if allowed and not ({str(item).upper() for item in tickers if item} & allowed):
                 continue
+            non_empty_tickers = {str(item).upper() for item in tickers if item}
+            if universe and any(ticker not in universe for ticker in non_empty_tickers):
+                continue
             rows.append(relationship)
     return rows
 
@@ -157,6 +177,7 @@ def _relationships_from_sector_depth_pack(
     *,
     focus: list[str],
     scope: list[str],
+    allowed_universe: list[str],
     user_query: str,
     expected_pack_ids: list[str],
     max_relationships: int,
@@ -189,9 +210,12 @@ def _relationships_from_sector_depth_pack(
     if not selected:
         return []
     relationship_groups: list[list[dict[str, Any]]] = []
+    allowed = set(allowed_universe)
     for pack in selected:
         pack_relationships: list[dict[str, Any]] = []
         candidates = _unique_upper([*(pack.get("p0") or []), *(pack.get("p1") or [])])
+        if allowed:
+            candidates = [ticker for ticker in candidates if ticker in allowed]
         for ticker in focus or scope[:1]:
             for related in candidates:
                 if related == ticker:
@@ -368,21 +392,45 @@ def _contains_alias(text: str, alias: str) -> bool:
 
 
 def _normalize_relationship_row(payload: Mapping[str, Any], *, source: str) -> dict[str, Any]:
-    ticker = str(payload.get("ticker") or payload.get("source_ticker") or payload.get("company") or "").upper().strip()
-    related = str(payload.get("related_ticker") or payload.get("counterparty") or payload.get("target_ticker") or "").upper().strip()
-    refs = _string_list(payload.get("evidence_refs") or payload.get("refs") or payload.get("source_id"))
+    from_node_id = str(payload.get("from_node_id") or "").strip()
+    to_node_id = str(payload.get("to_node_id") or "").strip()
+    ticker = str(
+        payload.get("ticker")
+        or payload.get("source_ticker")
+        or payload.get("company")
+        or _ticker_from_graph_node_id(from_node_id)
+        or ""
+    ).upper().strip()
+    related = str(
+        payload.get("related_ticker")
+        or payload.get("counterparty")
+        or payload.get("target_ticker")
+        or _ticker_from_graph_node_id(to_node_id)
+        or ""
+    ).upper().strip()
+    refs = _json_or_string_list(payload.get("evidence_refs_json")) or _string_list(
+        payload.get("evidence_refs") or payload.get("refs") or payload.get("source_id")
+    )
     if not refs and ticker and related:
         refs = [f"{source}:{ticker}:{related}"]
-    relationship_type = str(payload.get("relationship_type") or payload.get("type") or "other").strip()
-    direction = str(payload.get("direction") or "unknown").strip()
-    metrics = _string_list(payload.get("metrics_to_check") or payload.get("required_metrics"))
+    original_relationship_type = str(payload.get("relationship_type") or payload.get("edge_type") or payload.get("type") or "other").strip()
+    relationship_type = _universe_relationship_type(original_relationship_type)
+    direction = str(payload.get("direction") or payload.get("edge_direction") or _direction_from_relationship_type(original_relationship_type)).strip()
+    metrics = _string_list(payload.get("metrics_to_check") or payload.get("required_metrics")) or _default_metrics_to_check(original_relationship_type, relationship_type)
     source_pack_id = str(payload.get("source_pack_id") or payload.get("pack_id") or _source_pack_id_from_refs(refs) or "").strip()
-    edge_id = str(payload.get("edge_id") or _relationship_edge_id(source, ticker, related, relationship_type, direction, refs)).strip()
-    mechanism = str(payload.get("mechanism") or payload.get("financial_link_type") or relationship_type or "").strip()
-    inference_level = _normalize_inference_level(payload.get("inference_level"), source=source)
+    edge_id = str(payload.get("edge_id") or _relationship_edge_id(source, ticker, related, original_relationship_type, direction, refs)).strip()
+    mechanism = str(
+        payload.get("mechanism")
+        or payload.get("financial_link_type")
+        or payload.get("source_role")
+        or payload.get("authority_type")
+        or relationship_type
+        or ""
+    ).strip()
+    inference_level = _normalize_inference_level(payload.get("inference_level"), source=source, relationship_type=original_relationship_type)
     confirmation_status = str(
         payload.get("confirmation_status")
-        or ("no_confirmed_direct_edge" if inference_level in {"sector_inferred", "category_inferred"} else "input_edge_unverified")
+        or _confirmation_status_for_inference(inference_level, relationship_type=original_relationship_type)
     ).strip()
     missing_confirmations = _string_list(payload.get("missing_confirmations"))
     if inference_level in {"sector_inferred", "category_inferred"} and not missing_confirmations:
@@ -390,7 +438,7 @@ def _normalize_relationship_row(payload: Mapping[str, Any], *, source: str) -> d
             "direct customer/supplier filing confirmation",
             "contract/order/revenue exposure evidence",
         ]
-    evidence_basis = _string_list(payload.get("evidence_basis"))
+    evidence_basis = _string_list(payload.get("evidence_basis") or payload.get("source_layer") or payload.get("source_role"))
     if not evidence_basis:
         evidence_basis = ["sector_depth_pack_membership"] if source == "sector_depth_pack" else ["relationship_graph_input"]
     source_limitations = _string_list(payload.get("source_limitations"))
@@ -399,6 +447,10 @@ def _normalize_relationship_row(payload: Mapping[str, Any], *, source: str) -> d
             "Sector-depth pack membership supports research-scope inference only.",
             "It does not prove a direct commercial customer/supplier edge.",
         ]
+    if source != "sector_depth_pack" and not source_limitations:
+        boundary = str(payload.get("claim_boundary") or "").strip()
+        forbidden = _json_or_string_list(payload.get("forbidden_claims_json")) or _string_list(payload.get("forbidden_claims"))
+        source_limitations = _dedupe_strings([boundary, *[f"Cannot infer {item}." for item in forbidden]])[:8]
     return {
         "edge_schema_version": RELATIONSHIP_EDGE_SCHEMA_VERSION,
         "edge_id": edge_id,
@@ -406,14 +458,19 @@ def _normalize_relationship_row(payload: Mapping[str, Any], *, source: str) -> d
         "related_ticker": related,
         "from_ticker": str(payload.get("from_ticker") or ticker).upper().strip(),
         "to_ticker": str(payload.get("to_ticker") or related).upper().strip(),
+        "from_node_id": from_node_id,
+        "to_node_id": to_node_id,
+        "related_entity_id": to_node_id if to_node_id and not related else "",
         "relationship_type": relationship_type,
+        "original_relationship_type": original_relationship_type,
         "direction": direction,
         "edge_direction": direction,
-        "financial_link_type": str(payload.get("financial_link_type") or "").strip(),
+        "financial_link_type": str(payload.get("financial_link_type") or payload.get("authority_type") or payload.get("source_role") or "").strip(),
         "mechanism": mechanism,
         "metrics_to_check": metrics,
         "metric_links": metrics,
-        "evidence_source_needed": _string_list(payload.get("evidence_source_needed") or payload.get("source_families_needed")),
+        "evidence_source_needed": _string_list(payload.get("evidence_source_needed") or payload.get("source_families_needed"))
+        or _default_evidence_source_needed(source=source, relationship_type=original_relationship_type),
         "evidence_refs": refs,
         "source_record_ref": refs[0] if refs else "",
         "source_pack_id": source_pack_id,
@@ -423,7 +480,7 @@ def _normalize_relationship_row(payload: Mapping[str, Any], *, source: str) -> d
         "evidence_basis": evidence_basis,
         "missing_confirmations": missing_confirmations,
         "source_limitations": source_limitations,
-        "inclusion_rationale": str(payload.get("inclusion_rationale") or payload.get("rationale") or "").strip(),
+        "inclusion_rationale": str(payload.get("inclusion_rationale") or payload.get("rationale") or payload.get("claim_boundary") or "").strip(),
         "claim_scope": "scope_or_hypothesis_only",
         "notes": str(payload.get("notes") or payload.get("summary") or "").strip(),
         "relationship_source": source,
@@ -443,7 +500,11 @@ def _relationship_row(relationship: Mapping[str, Any], index: int) -> dict[str, 
         "related_ticker": relationship.get("related_ticker") or "",
         "from_ticker": relationship.get("from_ticker") or relationship.get("ticker") or "",
         "to_ticker": relationship.get("to_ticker") or relationship.get("related_ticker") or "",
+        "from_node_id": relationship.get("from_node_id") or "",
+        "to_node_id": relationship.get("to_node_id") or "",
+        "related_entity_id": relationship.get("related_entity_id") or "",
         "relationship_type": relationship.get("relationship_type") or "",
+        "original_relationship_type": relationship.get("original_relationship_type") or "",
         "direction": relationship.get("direction") or relationship.get("edge_direction") or "",
         "mechanism": relationship.get("mechanism") or relationship.get("financial_link_type") or "",
         "metric_links": _string_list(relationship.get("metric_links") or relationship.get("metrics_to_check")),
@@ -494,7 +555,140 @@ def _normalize_required_source_families(values: list[str]) -> list[str]:
     return _dedupe_strings(result) or ["primary_sec_filing"]
 
 
-def _normalize_inference_level(value: Any, *, source: str) -> str:
+def _default_relationship_graph_path() -> Path | None:
+    return DEFAULT_RELATIONSHIP_GRAPH_PATH if DEFAULT_RELATIONSHIP_GRAPH_PATH.exists() else None
+
+
+def _ticker_from_graph_node_id(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    match = re.match(r"^(?:company|company_product_family):([^:]+)(?::|$)", text)
+    return match.group(1).upper() if match else ""
+
+
+def _direction_from_relationship_type(value: str) -> str:
+    text = str(value or "").strip().upper()
+    mapping = {
+        "OFFICIAL_CUSTOMER_DEPLOYMENT_EVENT": "issuer_to_customer_or_deployment_context",
+        "OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP": "issuer_to_supply_chain_context",
+        "PUBLIC_ORDER_OR_TENDER_CONTEXT": "issuer_to_public_order_context",
+        "INFRASTRUCTURE_SUPPLIER_TO": "infrastructure_supplier_to",
+        "INFRASTRUCTURE_COMPLEMENT_TO": "infrastructure_complement_to",
+        "COMPETES_WITH": "competitive_comparable",
+        "COMPLEMENTS_WITH": "product_complement",
+        "COMPONENT_INPUT_TO": "component_input_to",
+        "MANUFACTURING_DEPENDENCY_FOR": "manufacturing_dependency_for",
+        "ENABLES_PRODUCTION_FOR": "production_enablement_for",
+    }
+    return mapping.get(text, "unknown")
+
+
+def _universe_relationship_type(value: str) -> str:
+    text = str(value or "").strip().upper()
+    mapping = {
+        "COMPETES_WITH": "competitor",
+        "OFFICIAL_CUSTOMER_DEPLOYMENT_EVENT": "customer",
+        "OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP": "supplier",
+        "PUBLIC_ORDER_OR_TENDER_CONTEXT": "customer",
+        "INFRASTRUCTURE_SUPPLIER_TO": "supplier",
+        "MANUFACTURING_DEPENDENCY_FOR": "supplier",
+        "COMPONENT_INPUT_TO": "supplier",
+        "ENABLES_PRODUCTION_FOR": "supplier",
+        "CHANNEL_OR_DISTRIBUTION_CONTEXT": "other",
+        "INFRASTRUCTURE_COMPLEMENT_TO": "other",
+        "COMPLEMENTS_WITH": "other",
+        "INPUT_OR_COMPLEMENT_TO": "other",
+    }
+    normalized = mapping.get(text, text.lower())
+    return normalized if normalized in {"peer", "competitor", "customer", "supplier", "sector", "macro_sensitive", "other"} else "other"
+
+
+def _default_metrics_to_check(original_relationship_type: str, relationship_type: str) -> list[str]:
+    original = str(original_relationship_type or "").strip().upper()
+    normalized = str(relationship_type or "").strip().lower()
+    if original in {"OFFICIAL_CUSTOMER_DEPLOYMENT_EVENT", "PUBLIC_ORDER_OR_TENDER_CONTEXT"} or normalized == "customer":
+        return [
+            "customer_deployment",
+            "public_order_or_deployment_context",
+            "demand_readthrough",
+            "cannot_infer_revenue_or_backlog",
+        ]
+    if original in {
+        "OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP",
+        "INFRASTRUCTURE_SUPPLIER_TO",
+        "COMPONENT_INPUT_TO",
+        "MANUFACTURING_DEPENDENCY_FOR",
+        "ENABLES_PRODUCTION_FOR",
+    } or normalized == "supplier":
+        return [
+            "supply_chain_relationship",
+            "component_or_infrastructure_dependency",
+            "supply_constraint_or_enablement",
+            "cannot_infer_shipments_or_market_share",
+        ]
+    if original == "COMPETES_WITH" or normalized == "competitor":
+        return [
+            "competitive_context",
+            "product_architecture_or_spec_comparison",
+            "substitution_or_peer_check",
+            "cannot_infer_win_loss_or_share",
+        ]
+    if original in {"CHANNEL_OR_DISTRIBUTION_CONTEXT", "INFRASTRUCTURE_COMPLEMENT_TO", "COMPLEMENTS_WITH", "INPUT_OR_COMPLEMENT_TO"}:
+        return [
+            "channel_presence_or_complement_context",
+            "product_availability_or_configuration",
+            "cannot_infer_sell_through_or_asp",
+        ]
+    return ["relationship_mechanism"]
+
+
+def _default_evidence_source_needed(*, source: str, relationship_type: str) -> list[str]:
+    if source == "sector_depth_pack":
+        return ["primary_sec_filing", "industry_snapshot"]
+    original = str(relationship_type or "").strip().upper()
+    if original in {
+        "OFFICIAL_CUSTOMER_DEPLOYMENT_EVENT",
+        "OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP",
+        "PUBLIC_ORDER_OR_TENDER_CONTEXT",
+    }:
+        return ["relationship_graph", "company_authored_unaudited_sec_filing"]
+    if original in {
+        "INFRASTRUCTURE_SUPPLIER_TO",
+        "COMPONENT_INPUT_TO",
+        "MANUFACTURING_DEPENDENCY_FOR",
+        "ENABLES_PRODUCTION_FOR",
+        "COMPETES_WITH",
+        "CHANNEL_OR_DISTRIBUTION_CONTEXT",
+        "INFRASTRUCTURE_COMPLEMENT_TO",
+        "COMPLEMENTS_WITH",
+        "INPUT_OR_COMPLEMENT_TO",
+    }:
+        return ["relationship_graph", "industry_snapshot"]
+    return ["relationship_graph"]
+
+
+def _json_or_string_list(value: Any) -> list[str]:
+    if isinstance(value, str):
+        text = value.strip()
+        if text.startswith("[") and text.endswith("]"):
+            try:
+                loaded = json.loads(text)
+            except json.JSONDecodeError:
+                return _string_list(value)
+            return _string_list(loaded)
+    return _string_list(value)
+
+
+def _confirmation_status_for_inference(inference_level: str, *, relationship_type: str) -> str:
+    if inference_level in {"sector_inferred", "category_inferred"}:
+        return "no_confirmed_direct_edge"
+    if str(relationship_type or "").upper() in {"OFFICIAL_CUSTOMER_DEPLOYMENT_EVENT", "OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP"}:
+        return "parser_backed_context_edge"
+    return "input_edge_unverified"
+
+
+def _normalize_inference_level(value: Any, *, source: str, relationship_type: str = "") -> str:
     text = str(value or "").strip().lower()
     allowed = {
         "confirmed_direct",
@@ -509,6 +703,10 @@ def _normalize_inference_level(value: Any, *, source: str) -> str:
         return text
     if source == "sector_depth_pack":
         return "sector_inferred"
+    if str(relationship_type or "").upper() in {"OFFICIAL_CUSTOMER_DEPLOYMENT_EVENT", "OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP"}:
+        return "disclosed_indirect"
+    if str(relationship_type or "").upper() in {"INFRASTRUCTURE_SUPPLIER_TO", "INFRASTRUCTURE_COMPLEMENT_TO", "COMPETES_WITH"}:
+        return "category_inferred"
     if source == "relationship_graph":
         return "curated_input_unverified"
     return "unknown"
@@ -531,6 +729,102 @@ def _expanded_tickers(focus: list[str], relationships: list[Mapping[str, Any]]) 
             if ticker and ticker not in focus_set:
                 tickers.append(ticker)
     return _unique_upper(tickers)
+
+
+def _prioritize_relationships(
+    rows: list[dict[str, Any]],
+    *,
+    focus: list[str],
+    scope: list[str],
+    query_text: str,
+) -> list[dict[str, Any]]:
+    focus_set = set(focus)
+    scope_set = set(scope)
+    query = str(query_text or "").lower()
+
+    def type_priority(row: Mapping[str, Any]) -> int:
+        original = str(row.get("original_relationship_type") or row.get("relationship_type") or "").upper()
+        relationship_type = str(row.get("relationship_type") or "").lower()
+        if original in {
+            "OFFICIAL_CUSTOMER_DEPLOYMENT_EVENT",
+            "OFFICIAL_SUPPLY_CHAIN_RELATIONSHIP",
+            "PUBLIC_ORDER_OR_TENDER_CONTEXT",
+        }:
+            return 0
+        if original in {
+            "INFRASTRUCTURE_SUPPLIER_TO",
+            "MANUFACTURING_DEPENDENCY_FOR",
+            "COMPONENT_INPUT_TO",
+            "ENABLES_PRODUCTION_FOR",
+        }:
+            return 1
+        if relationship_type in {"customer", "supplier"}:
+            return 1
+        if relationship_type == "competitor":
+            return 2
+        if original in {
+            "CHANNEL_OR_DISTRIBUTION_CONTEXT",
+            "INFRASTRUCTURE_COMPLEMENT_TO",
+            "COMPLEMENTS_WITH",
+            "INPUT_OR_COMPLEMENT_TO",
+        }:
+            return 3
+        if relationship_type == "sector":
+            return 4
+        return 5
+
+    def endpoint_priority(row: Mapping[str, Any]) -> int:
+        ticker = str(row.get("ticker") or "").upper()
+        related = str(row.get("related_ticker") or "").upper()
+        if ticker in focus_set or related in focus_set:
+            return 0
+        if ticker in scope_set or related in scope_set:
+            return 1
+        return 2
+
+    def source_priority(row: Mapping[str, Any]) -> int:
+        text = " ".join(
+            [
+                " ".join(str(item) for item in row.get("evidence_basis") or []),
+                " ".join(str(item) for item in row.get("evidence_refs") or []),
+                str(row.get("relationship_source") or ""),
+                str(row.get("inference_level") or ""),
+            ]
+        ).lower()
+        if "official" in text or "parser" in text or "disclosed_indirect" in text:
+            return 0
+        if "relationship_graph" in text:
+            return 1
+        if "sector" in text:
+            return 2
+        return 3
+
+    def query_priority(row: Mapping[str, Any]) -> int:
+        if not query:
+            return 0
+        haystack = " ".join(
+            [
+                str(row.get("relationship_type") or ""),
+                str(row.get("original_relationship_type") or ""),
+                str(row.get("direction") or ""),
+                str(row.get("mechanism") or ""),
+                str(row.get("inclusion_rationale") or ""),
+                str(row.get("notes") or ""),
+            ]
+        ).lower()
+        terms = [term for term in ("customer", "deployment", "supplier", "supply", "capex", "margin", "gpu", "server") if term in query]
+        return 0 if any(term in haystack for term in terms) else 1
+
+    return sorted(
+        rows,
+        key=lambda row: (
+            type_priority(row),
+            endpoint_priority(row),
+            source_priority(row),
+            query_priority(row),
+            str(row.get("edge_id") or ""),
+        ),
+    )
 
 
 def _dedupe_relationships(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:

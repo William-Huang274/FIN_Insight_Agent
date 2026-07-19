@@ -6,12 +6,13 @@
     "authority_mapping_count": 9,
     "blocked_authority_count": 1,
     "context_bridge_count": 4,
-    "drill_resume_count": 0,
-    "drill_run_id": "run_24e0944aa5a271a4",
+    "current_universe_refresh_evidence_count": 8,
+    "drill_resume_count": 2,
+    "drill_run_id": "run_d2876532d2845416",
     "drill_task_id": "p14_data_plane_drill_task_ai_infra_ingestion_retrieval",
     "drill_task_status": "succeeded",
     "fetch_attempt_count": 7,
-    "gate_count": 12,
+    "gate_count": 13,
     "gate_fail_count": 0,
     "index_refresh_count": 5,
     "ingestion_job_count": 6,
@@ -26,24 +27,148 @@
     "source_snapshot_count": 6,
     "strategy_pack_count": 5
   },
+  "current_universe_refresh_evidence": [
+    {
+      "boundary": "May contain typed source gaps; accepted as refresh evidence only when every runtime issuer is represented.",
+      "evidence_name": "company_public_source_coverage_matrix",
+      "evidence_scope": "603_company_public_source_role_matrix",
+      "expected_contract": "matrix exists for every accepted issuer and classifies remaining public/commercial source boundaries",
+      "manifest_path": "data/manifests/company_public_source_coverage_matrix_v0_1.json",
+      "observed_value": {
+        "company_count": 603,
+        "exists": true,
+        "repair_queue_count": 25,
+        "status": "gap"
+      },
+      "status": "pass"
+    },
+    {
+      "boundary": "Gold rows remain parser/authority scoped; raw rows cannot be treated as final facts.",
+      "evidence_name": "gold_fact_signal_mart",
+      "evidence_scope": "603_company_gold_fact_signal_mart",
+      "expected_contract": "gold fact/signal mart has current runtime issuer coverage and non-empty rows",
+      "manifest_path": "data/manifests/gold_fact_signal_mart_summary_v0_1.json",
+      "observed_value": {
+        "company_count": 603,
+        "exists": true,
+        "row_count": 74894,
+        "status": "pass"
+      },
+      "status": "pass"
+    },
+    {
+      "boundary": "Product-KPI exact gaps remain claim-scope limits if P26 marks them nonblocking.",
+      "evidence_name": "p26_product_evidence_all_universe_depth",
+      "evidence_scope": "603_company_product_evidence_pack",
+      "expected_contract": "P26 product evidence pack is broad-full-chain ready with no blocking product/deployment gaps",
+      "manifest_path": "data/manifests/r53_r60_p26_product_evidence_all_universe_depth_summary_v0_1.json",
+      "observed_value": {
+        "broad_full_chain_product_pack_ready": true,
+        "counts": {
+          "blocking_gap_count": 0,
+          "blocking_layer_count": 0,
+          "gap_count": 2,
+          "gate_blocked_count": 0,
+          "gate_count": 6,
+          "gate_fail_count": 0,
+          "layer_count": 5,
+          "nonblocking_gap_count": 2
+        },
+        "exists": true,
+        "product_pack_readiness_status": "ready",
+        "release_decision": "P26_product_evidence_pack_ready_for_broad_full_chain",
+        "status": "pass"
+      },
+      "status": "pass"
+    },
+    {
+      "boundary": "Product graph supports product/relationship reasoning; exact KPI claims still require exact rows.",
+      "evidence_name": "product_intelligence_graph",
+      "evidence_scope": "603_company_product_intelligence_graph",
+      "expected_contract": "ProductIntelligenceGraph exists for every accepted issuer",
+      "manifest_path": "data/manifests/product_intelligence_graph_summary_v0_1.json",
+      "observed_value": {
+        "company_count": 603,
+        "exists": true,
+        "status": "pass"
+      },
+      "status": "pass"
+    },
+    {
+      "boundary": "Registry proves addressable route metadata, not semantic recall quality by itself.",
+      "evidence_name": "retrieval_index_registry",
+      "evidence_scope": "runtime_retrieval_index_registry",
+      "expected_contract": "retrieval index registry is present and current enough for runtime route selection",
+      "manifest_path": "data/manifests/retrieval_index_registry_summary_v0_1.json",
+      "observed_value": {
+        "exists": true,
+        "release_decision": null,
+        "status": "pass"
+      },
+      "status": "pass"
+    },
+    {
+      "boundary": "Delayed/free market rows support market context, not real-time trading or dealer positioning.",
+      "evidence_name": "s8_secondary_market_capital_feedback",
+      "evidence_scope": "603_company_secondary_market_capital_feedback_pack",
+      "expected_contract": "secondary-market/capital feedback packs exist for every accepted issuer",
+      "manifest_path": "data/manifests/r53_r60_s8_secondary_market_capital_feedback_summary_v0_1.json",
+      "observed_value": {
+        "exists": true,
+        "pack_count": 603,
+        "release_decision": "S8_L4_scope_pass",
+        "signal_count": 14706,
+        "status": "pass"
+      },
+      "status": "pass"
+    },
+    {
+      "boundary": "Free public market context is lagged/delayed and cannot replace real-time commercial market feeds.",
+      "evidence_name": "secondary_market_public_context_rows",
+      "evidence_scope": "603_ticker_public_market_context_rows",
+      "expected_contract": "public secondary-market context rows cover every accepted ticker",
+      "manifest_path": "data/manifests/secondary_market_public_context_summary_v0_1.json",
+      "observed_value": {
+        "exists": true,
+        "row_count": 1809,
+        "status": "pass",
+        "ticker_count": 603
+      },
+      "status": "pass"
+    },
+    {
+      "boundary": "A gap status is allowed only as typed public-source boundary evidence, not as proof of complete source depth.",
+      "evidence_name": "source_coverage_gate_summary",
+      "evidence_scope": "source_route_gate_and_gap_classification",
+      "expected_contract": "coverage gate exists and reports pass or typed gap status instead of silent missing source routes",
+      "manifest_path": "data/manifests/source_coverage_gate_summary_v0_1.json",
+      "observed_value": {
+        "exists": true,
+        "generated_at": "2026-06-17T10:36:16Z",
+        "status": "gap"
+      },
+      "status": "pass"
+    }
+  ],
+  "current_universe_refresh_status": "current_accepted_public_source_universe_ready",
   "drill_task": {
     "case_id": "pilot_case_ai_infra_ingestion_retrieval_control",
     "created_at": "2026-06-29T23:05:38Z",
-    "current_run_id": "run_24e0944aa5a271a4",
+    "current_run_id": "run_d2876532d2845416",
     "error_message": "",
     "metadata_json": "{\"drill\": true, \"source_slice\": \"P14\"}",
     "mode": "data_plane_control_drill",
     "objective_json": "{\"required_intents\": [\"exact_financial_metric\", \"product_spec_architecture\", \"customer_deployment_adoption\", \"capital_funding_ownership\", \"retrievable_gap_repair\"], \"research_question\": \"Can source rows become parser-backed authority rows and route-budgeted context without raw fallback?\"}",
     "progress": 100,
     "query_text": "Run P14 data-plane drill across source snapshot, parser, index and retrieval bridge",
-    "resume_count": 0,
+    "resume_count": 2,
     "status": "succeeded",
     "task_id": "p14_data_plane_drill_task_ai_infra_ingestion_retrieval",
     "trace_id": "trace_p14_data_plane_drill",
-    "updated_at": "2026-06-29T23:05:38Z",
+    "updated_at": "2026-07-04T16:54:37Z",
     "user_id": "data_engineering_owner"
   },
-  "generated_at": "2026-06-29T23:05:38Z",
+  "generated_at": "2026-07-04T16:54:37Z",
   "lineage_status": "raw_to_runtime_lineage_ready",
   "outputs": {
     "closeout_report": "docs/internal/vnext_20260610/r53_r60_p14_data_ingestion_retrieval_control_plane_l4_scope_pass.zh-CN.md",
@@ -56,24 +181,27 @@
   "performance_status": "local_profile_recorded",
   "policy": {
     "context_bridge_preserves_exact_refs": true,
+    "current_accepted_universe_refresh_is_runtime_ready": true,
+    "current_accepted_universe_refresh_requires_manifest_evidence": true,
     "failed_fetch_or_parser_creates_typed_gap": true,
     "index_refresh_requires_lineage_ref": true,
     "milvus_is_semantic_recall_not_exact_authority": true,
-    "not_full_crawler_or_production_refresh": true,
+    "not_full_internet_crawler_or_realtime_refresh": true,
+    "not_production_p95_p99_sla": true,
     "parser_run_required_before_authority_mapping": true,
     "raw_source_snapshot_is_not_fact_authority": true,
     "sql_ledger_is_final_audit_source": true
   },
   "readiness_report": {
     "context_bridge_status": "context_bridge_ready",
-    "created_at": "2026-06-29T23:05:38Z",
-    "gate_refs_json": "[\"p14_schema_tables_present\", \"p14_s3_p13_dependencies_pass\", \"p14_source_modalities_covered\", \"p14_fetch_attempts_typed_no_silent_fail\", \"p14_parser_runs_output_or_typed_gap\", \"p14_raw_snapshot_blocked_without_parser\", \"p14_authority_modes_cover_exact_bounded_context\", \"p14_index_refresh_lineage_complete\", \"p14_retrieval_strategy_and_budget_ready\", \"p14_context_bridge_preserves_exact_refs\", \"p14_perf_lineage_eval_records_ready\", \"p14_acceptance_and_boundary_report_ready\"]",
-    "known_gaps_json": "[{\"gap\": \"full_crawler_source_coverage\", \"next_action\": \"Use this contract to onboard real R58 adapters source family by source family.\", \"reason\": \"P14 proves the control plane with representative source modalities; it does not crawl every source or every company.\"}, {\"gap\": \"production_db_index_sla\", \"next_action\": \"P16 and production pilot should record real load and online eval metrics.\", \"reason\": \"Performance profile is deterministic/local, not a cloud p95/p99 SLA.\"}, {\"gap\": \"all_live_graph_nodes_read_p14_strategy\", \"next_action\": \"P15/P16 should expose and monitor strategy consumption.\", \"reason\": \"Context bridge records are ready; production nodes still need migration to read the active strategy pack.\"}]",
+    "created_at": "2026-07-04T16:54:37Z",
+    "gate_refs_json": "[\"p14_schema_tables_present\", \"p14_s3_p13_dependencies_pass\", \"p14_source_modalities_covered\", \"p14_fetch_attempts_typed_no_silent_fail\", \"p14_parser_runs_output_or_typed_gap\", \"p14_raw_snapshot_blocked_without_parser\", \"p14_authority_modes_cover_exact_bounded_context\", \"p14_index_refresh_lineage_complete\", \"p14_retrieval_strategy_and_budget_ready\", \"p14_context_bridge_preserves_exact_refs\", \"p14_perf_lineage_eval_records_ready\", \"p14_current_accepted_universe_refresh_evidence_ready\", \"p14_acceptance_and_boundary_report_ready\"]",
+    "known_gaps_json": "[{\"gap\": \"production_db_index_sla\", \"next_action\": \"P16 and production pilot should record real load and online eval metrics.\", \"reason\": \"Performance profile is deterministic/local, not a cloud p95/p99 SLA.\"}, {\"gap\": \"all_live_graph_nodes_read_p14_strategy\", \"next_action\": \"P15/P16 should expose and monitor strategy consumption.\", \"reason\": \"Context bridge records are ready; production nodes still need migration to read the active strategy pack.\"}]",
     "lineage_status": "raw_to_runtime_lineage_ready",
     "next_actions_json": "[\"wire real crawlers/parsers to DataIngestionContract\", \"bind RetrievalStrategyPack to Research Lead route planner\", \"export DB/index profiles to eval/ops dashboard\", \"add production qrels and online retrieval drift monitoring\"]",
     "owner": "data_engineering_owner",
     "parser_contract_status": "parser_contracts_ready",
-    "payload_json": "{\"gate_count\": 12, \"gate_fail_count\": 0}",
+    "payload_json": "{\"gate_count\": 13, \"gate_fail_count\": 0}",
     "performance_status": "local_profile_recorded",
     "release_decision": "P14_L4_scope_pass_data_ingestion_retrieval_control_plane_ready",
     "report_id": "p14_data_ingestion_retrieval_control_plane_report_v0_1",
@@ -90,18 +218,18 @@
   "task": {
     "case_id": "p14_data_plane_control_l4_scope",
     "created_at": "2026-06-29T23:05:38Z",
-    "current_run_id": "run_adfe597085a14ffa",
+    "current_run_id": "run_060cb642437cc563",
     "error_message": "",
     "metadata_json": "{\"closeout_level\": \"L4_scope_pass\", \"source_slice\": \"P14\"}",
     "mode": "data_plane_control_gate",
     "objective_json": "{\"minimum_evidence\": \"source/fetch/parser/authority/index/context/performance rows exist\"}",
     "progress": 100,
     "query_text": "Build Data Ingestion / Retrieval Control Plane gate package",
-    "resume_count": 0,
+    "resume_count": 2,
     "status": "succeeded",
     "task_id": "p14_scope_task_data_ingestion_retrieval_control_plane",
     "trace_id": "trace_p14_data_ingestion_retrieval_control_plane",
-    "updated_at": "2026-06-29T23:05:38Z",
+    "updated_at": "2026-07-04T16:54:37Z",
     "user_id": "p14_gate"
   }
 }

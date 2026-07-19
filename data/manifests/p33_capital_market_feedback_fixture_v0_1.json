@@ -1,0 +1,1566 @@
+{
+  "absorbed_contract_ids": [
+    "l3_capital_market_feedback_contract_v0_1"
+  ],
+  "acceptance_gates": [
+    {
+      "detail": {
+        "counts": {
+          "capital_feedback_gap_items_s8": 634,
+          "capital_feedback_graph_edges_s8": 4221,
+          "capital_feedback_packs_s8": 603,
+          "capital_feedback_quality_gates_s8": 10,
+          "capital_feedback_signals_s8": 14706,
+          "gap_count": 634,
+          "gate_count": 10,
+          "gate_fail_count": 0,
+          "graph_edge_count": 4221,
+          "pack_count": 603,
+          "raw_input_counts": {
+            "capital_rows": 13185,
+            "market_rows": 603,
+            "public_context_rows": 1809,
+            "sec_event_rows": 17485
+          },
+          "runtime_universe_count": 603,
+          "secondary_market_feedback_metadata": 4,
+          "secondary_market_source_registry_s8": 21,
+          "signal_count": 14706,
+          "skipped_counts": {
+            "capital_rows_outside_runtime_universe": 0,
+            "sec_event_tickers_outside_runtime_universe": 6655
+          },
+          "source_paths": {
+            "capital_rows": "data/manifests/capital_funding_ownership_context_rows_v0_1.jsonl",
+            "market_rows": "data/manifests/market_liquidity_driver_context_rows_v0_1.jsonl",
+            "sec_event_rows": "data/manifests/sec_capital_market_event_context_rows_v0_1.jsonl"
+          }
+        },
+        "release_decision": "S8_L4_scope_pass"
+      },
+      "gate_id": "p33_1_3_s8_capital_feedback_l4_pass",
+      "generated_at": "2026-07-04T17:43:23Z",
+      "pass_level": "L4_scope_pass",
+      "schema_version": "fin_insight_p33_capital_market_feedback_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "boundary_ready_count": 21,
+        "missing_roles": [],
+        "role_counts": {
+          "corporate_action": 4,
+          "credit_funding": 3,
+          "derivatives_market_signal": 2,
+          "liquidity_and_positioning": 3,
+          "ownership_and_holder": 3,
+          "secondary_market_capital_flow": 1,
+          "valuation_price_in": 5
+        },
+        "source_count": 21,
+        "status": "pass"
+      },
+      "gate_id": "p33_1_3_source_roles_authority_boundaries_present",
+      "generated_at": "2026-07-04T17:43:23Z",
+      "pass_level": "L4_scope_pass",
+      "schema_version": "fin_insight_p33_capital_market_feedback_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "market_proxy_boundary_ok_count": 3487,
+        "market_proxy_row_count": 3487
+      },
+      "gate_id": "p33_1_3_market_proxy_not_fundamental_fact",
+      "generated_at": "2026-07-04T17:43:23Z",
+      "pass_level": "L4_scope_pass",
+      "schema_version": "fin_insight_p33_capital_market_feedback_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "lagged_positioning_boundary_ok_count": 1678,
+        "lagged_positioning_count": 1678
+      },
+      "gate_id": "p33_1_3_lagged_holder_not_realtime_flow",
+      "generated_at": "2026-07-04T17:43:23Z",
+      "pass_level": "L4_scope_pass",
+      "schema_version": "fin_insight_p33_capital_market_feedback_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "exact_fact_boundary_ok_count": 4670,
+        "exact_fact_row_count": 4670
+      },
+      "gate_id": "p33_1_3_exact_credit_and_statement_facts_separated",
+      "generated_at": "2026-07-04T17:43:23Z",
+      "pass_level": "L4_scope_pass",
+      "schema_version": "fin_insight_p33_capital_market_feedback_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "complete_gap_count": 634,
+        "gap_count": 634,
+        "role_counts": {
+          "corporate_action": 15,
+          "liquidity_and_positioning": 603,
+          "ownership_and_holder": 16
+        },
+        "status": "pass"
+      },
+      "gate_id": "p33_1_3_missing_market_depth_is_typed_gap",
+      "generated_at": "2026-07-04T17:43:23Z",
+      "pass_level": "L4_scope_pass",
+      "schema_version": "fin_insight_p33_capital_market_feedback_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "backed_edge_count": 4221,
+        "boundary_ready_edge_count": 4221,
+        "edge_count": 4221,
+        "role_counts": {
+          "corporate_action": 603,
+          "credit_funding": 603,
+          "derivatives_market_signal": 603,
+          "liquidity_and_positioning": 603,
+          "ownership_and_holder": 603,
+          "secondary_market_capital_flow": 603,
+          "valuation_price_in": 603
+        },
+        "status": "pass"
+      },
+      "gate_id": "p33_1_3_graph_edges_evidence_or_gap_backed",
+      "generated_at": "2026-07-04T17:43:23Z",
+      "pass_level": "L4_scope_pass",
+      "schema_version": "fin_insight_p33_capital_market_feedback_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "detail": {
+        "judgment_material_count": 42,
+        "roles": [
+          "corporate_action",
+          "credit_funding",
+          "derivatives_market_signal",
+          "liquidity_and_positioning",
+          "ownership_and_holder",
+          "secondary_market_capital_flow",
+          "valuation_price_in"
+        ]
+      },
+      "gate_id": "p33_1_3_judgment_material_writer_ready_and_bounded",
+      "generated_at": "2026-07-04T17:43:23Z",
+      "pass_level": "L4_scope_pass",
+      "schema_version": "fin_insight_p33_capital_market_feedback_fixture_v0_1",
+      "status": "pass"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_type": "p33_capital_market_feedback_fixture",
+      "contract_aligned_plan": {
+        "absorbed_contract_ids": [
+          "l3_capital_market_feedback_contract_v0_1"
+        ],
+        "used_case_contract_ids": [
+          "l3_capital_market_feedback_contract_v0_1"
+        ]
+      }
+    }
+  ],
+  "closeout_level": "L4_scope_pass",
+  "contract_id": "l3_capital_market_feedback_contract_v0_1",
+  "do_not_promote": [
+    "market_proxy_as_fundamental_fact",
+    "real_time_flow_claim_from_delayed_public_data",
+    "derivatives_proxy_as_single_stock_gamma_exposure",
+    "13f_lagged_position_as_current_buying_pressure",
+    "market_positioning_as_investment_recommendation"
+  ],
+  "gap_audit": {
+    "complete_gap_count": 634,
+    "gap_count": 634,
+    "role_counts": {
+      "corporate_action": 15,
+      "liquidity_and_positioning": 603,
+      "ownership_and_holder": 16
+    },
+    "status": "pass"
+  },
+  "gate_fail_count": 0,
+  "generated_at": "2026-07-04T17:43:23Z",
+  "graph_audit": {
+    "backed_edge_count": 4221,
+    "boundary_ready_edge_count": 4221,
+    "edge_count": 4221,
+    "role_counts": {
+      "corporate_action": 603,
+      "credit_funding": 603,
+      "derivatives_market_signal": 603,
+      "liquidity_and_positioning": 603,
+      "ownership_and_holder": 603,
+      "secondary_market_capital_flow": 603,
+      "valuation_price_in": 603
+    },
+    "status": "pass"
+  },
+  "input_contract_required_fields": [
+    "ticker",
+    "pack_role",
+    "source_id",
+    "authority_class",
+    "frequency",
+    "lag_policy",
+    "allowed_claims",
+    "forbidden_claims",
+    "claim_boundary",
+    "evidence_or_gap_ref"
+  ],
+  "judgment_material": [
+    {
+      "allowed_claims": [
+        "market_liquidity_driver",
+        "market_reaction_context",
+        "valuation_context_if_present"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "evidence_refs": [
+        "market_liquidity_driver:c453ce758a1f12c8"
+      ],
+      "forbidden_claims": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "gap_refs": [],
+      "judgment_role": "secondary_market_capital_flow",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "market_price_volume_reaction_context",
+      "ticker": "NVDA",
+      "writer_instruction": "Use secondary_market_capital_flow as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "lagged_ownership_context",
+        "ownership_positioning_signal"
+      ],
+      "authority_class": "lagged_positioning_context",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "13f:0000709428-26-000006:129562303",
+        "13f:0001172661-26-002440:129466031",
+        "13f:0001172661-26-002442:129574740"
+      ],
+      "forbidden_claims": [
+        "complete_ownership",
+        "complete_ownership_without_full_source",
+        "current_buying_pressure",
+        "intraday_positioning",
+        "investment_recommendation",
+        "realtime_flow"
+      ],
+      "gap_refs": [],
+      "judgment_role": "ownership_and_holder",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "holder_structure_or_lagged_positioning_context",
+      "ticker": "NVDA",
+      "writer_instruction": "Use ownership_and_holder as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_structure_fact",
+        "credit_market_regime_context",
+        "debt_context",
+        "liquidity_context",
+        "market_credit_spread_context"
+      ],
+      "authority_class": "capital_feedback_signal,exact_filing_fact",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "fsd-capital-structure:0001045810-26-000021",
+        "s8_fred_credit:6c2be63e0e6bbce3"
+      ],
+      "forbidden_claims": [
+        "cds_claim_without_source",
+        "investment_recommendation",
+        "issuer_credit_spread_without_issuer_bond_source",
+        "market_implied_credit_spread_without_market_source",
+        "realtime_refinancing_access_without_source",
+        "undisclosed_financing_terms"
+      ],
+      "gap_refs": [],
+      "judgment_role": "credit_funding",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "capital_cost_or_refinancing_context",
+      "ticker": "NVDA",
+      "writer_instruction": "Use credit_funding as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_market_event_context",
+        "filing_event_existence",
+        "insider_transaction_context"
+      ],
+      "authority_class": "filing_event_context",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "sec_capital_market_event:1942d4a5048d1e5f",
+        "sec_capital_market_event:7e1ca233ec8309fc",
+        "sec_capital_market_event:35dbbad12c037e6e"
+      ],
+      "forbidden_claims": [
+        "beneficial_ownership_percentage_without_schedule_parser",
+        "buyback_amount_without_company_disclosure",
+        "complete_ownership",
+        "completed_financing_without_completion_source",
+        "current_buying_pressure",
+        "insider_share_count_without_xml",
+        "intraday_positioning",
+        "investment_recommendation",
+        "offering_amount_without_filing_text_or_xml",
+        "realtime_flow",
+        "security_terms_without_filing_text_or_xml"
+      ],
+      "gap_refs": [],
+      "judgment_role": "corporate_action",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "issuance_buyback_insider_proxy_event_context",
+      "ticker": "NVDA",
+      "writer_instruction": "Use corporate_action as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_allocation_context",
+        "cash_conversion_context",
+        "liquidity_context",
+        "working_capital_liquidity_fact"
+      ],
+      "authority_class": "exact_financial_statement_fact",
+      "cannot_promote_to": [
+        "investment_recommendation",
+        "market_share"
+      ],
+      "evidence_refs": [
+        "sec_financial_statement_metric:0627cefce6b6aa98",
+        "sec_financial_statement_metric:3091910794738f18",
+        "sec_financial_statement_metric:3ee48fadcb1a8f24"
+      ],
+      "forbidden_claims": [
+        "asp",
+        "borrow_cost_without_lending_source",
+        "channel_inventory",
+        "claiming_missing_data_as_observed_fact",
+        "investment_recommendation",
+        "market_share",
+        "product_sales_without_product_kpi",
+        "realtime_positioning",
+        "realtime_refinancing_access_without_source",
+        "sell_through",
+        "short_interest_without_short_source",
+        "undisclosed_financing_terms"
+      ],
+      "gap_refs": [
+        "s8gap_fa0ac6ac3d2bbd92"
+      ],
+      "judgment_role": "liquidity_and_positioning",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "liquidity_short_borrow_or_positioning_context",
+      "ticker": "NVDA",
+      "writer_instruction": "Use liquidity_and_positioning as bounded market/capital context and explicitly mention missing exact/public fields."
+    },
+    {
+      "allowed_claims": [
+        "market_cap_context_from_public_price_and_filed_shares",
+        "valuation_price_in_context"
+      ],
+      "authority_class": "valuation_price_in_signal",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_public_valuation:e428b7c4f0232069"
+      ],
+      "forbidden_claims": [
+        "consensus_ntm_without_commercial_source",
+        "fair_value_truth",
+        "investment_recommendation",
+        "valuation_truth_without_denominator"
+      ],
+      "gap_refs": [],
+      "judgment_role": "valuation_price_in",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "valuation_or_price_in_context",
+      "ticker": "NVDA",
+      "writer_instruction": "Use valuation_price_in as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "derivatives_market_regime_context",
+        "market_wide_volatility_regime_context"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "fundamental_improvement",
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_fred_vix:b1ec60e4e0e59674"
+      ],
+      "forbidden_claims": [
+        "fundamental_improvement",
+        "investment_recommendation",
+        "realtime_gamma_without_licensed_source",
+        "single_stock_option_positioning_without_option_chain"
+      ],
+      "gap_refs": [],
+      "judgment_role": "derivatives_market_signal",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "macro_or_derivatives_expectation_proxy",
+      "ticker": "NVDA",
+      "writer_instruction": "Use derivatives_market_signal as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "market_liquidity_driver",
+        "market_reaction_context",
+        "valuation_context_if_present"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "evidence_refs": [
+        "market_liquidity_driver:467aa1bb92920bad"
+      ],
+      "forbidden_claims": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "gap_refs": [],
+      "judgment_role": "secondary_market_capital_flow",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "market_price_volume_reaction_context",
+      "ticker": "AMD",
+      "writer_instruction": "Use secondary_market_capital_flow as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "lagged_ownership_context",
+        "ownership_positioning_signal"
+      ],
+      "authority_class": "lagged_positioning_context",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "13f:0000895421-26-000187:129516958",
+        "13f:0000895421-26-000187:129516960",
+        "13f:0000895421-26-000187:129516955"
+      ],
+      "forbidden_claims": [
+        "complete_ownership",
+        "complete_ownership_without_full_source",
+        "current_buying_pressure",
+        "intraday_positioning",
+        "investment_recommendation",
+        "realtime_flow"
+      ],
+      "gap_refs": [],
+      "judgment_role": "ownership_and_holder",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "holder_structure_or_lagged_positioning_context",
+      "ticker": "AMD",
+      "writer_instruction": "Use ownership_and_holder as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_structure_fact",
+        "debt_context",
+        "liquidity_context"
+      ],
+      "authority_class": "exact_filing_fact",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "AMD_2023_10K_ITEM1A_BLOCK_0029_PART_01_OF_02:credit_facility",
+        "AMD_2025_10K_ITEM8_BLOCK_0010_CHUNK_0001",
+        "fsd-capital-structure:0000002488-26-000018"
+      ],
+      "forbidden_claims": [
+        "investment_recommendation",
+        "market_implied_credit_spread_without_market_source",
+        "realtime_refinancing_access_without_source",
+        "undisclosed_financing_terms"
+      ],
+      "gap_refs": [],
+      "judgment_role": "credit_funding",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "capital_cost_or_refinancing_context",
+      "ticker": "AMD",
+      "writer_instruction": "Use credit_funding as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_market_event_context",
+        "filing_event_existence",
+        "insider_transaction_context"
+      ],
+      "authority_class": "filing_event_context",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "sec_capital_market_event:aa9caf5c9d945889",
+        "sec_capital_market_event:840c2382c02328ca",
+        "sec_capital_market_event:0c8e03c6e3a1fce1"
+      ],
+      "forbidden_claims": [
+        "beneficial_ownership_percentage_without_schedule_parser",
+        "buyback_amount_without_company_disclosure",
+        "complete_ownership",
+        "completed_financing_without_completion_source",
+        "current_buying_pressure",
+        "insider_share_count_without_xml",
+        "intraday_positioning",
+        "investment_recommendation",
+        "offering_amount_without_filing_text_or_xml",
+        "realtime_flow",
+        "security_terms_without_filing_text_or_xml"
+      ],
+      "gap_refs": [],
+      "judgment_role": "corporate_action",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "issuance_buyback_insider_proxy_event_context",
+      "ticker": "AMD",
+      "writer_instruction": "Use corporate_action as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_allocation_context",
+        "cash_conversion_context",
+        "liquidity_context",
+        "working_capital_liquidity_fact"
+      ],
+      "authority_class": "exact_financial_statement_fact",
+      "cannot_promote_to": [
+        "investment_recommendation",
+        "market_share"
+      ],
+      "evidence_refs": [
+        "sec_financial_statement_metric:06769dad3554ab35",
+        "sec_financial_statement_metric:6b11181e61feb2e6",
+        "sec_financial_statement_metric:7cc676c999db7a12"
+      ],
+      "forbidden_claims": [
+        "asp",
+        "borrow_cost_without_lending_source",
+        "channel_inventory",
+        "claiming_missing_data_as_observed_fact",
+        "investment_recommendation",
+        "market_share",
+        "product_sales_without_product_kpi",
+        "realtime_positioning",
+        "realtime_refinancing_access_without_source",
+        "sell_through",
+        "short_interest_without_short_source",
+        "undisclosed_financing_terms"
+      ],
+      "gap_refs": [
+        "s8gap_9fc586abc304e2ea"
+      ],
+      "judgment_role": "liquidity_and_positioning",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "liquidity_short_borrow_or_positioning_context",
+      "ticker": "AMD",
+      "writer_instruction": "Use liquidity_and_positioning as bounded market/capital context and explicitly mention missing exact/public fields."
+    },
+    {
+      "allowed_claims": [
+        "market_cap_context_from_public_price_and_filed_shares",
+        "valuation_price_in_context"
+      ],
+      "authority_class": "valuation_price_in_signal",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_public_valuation:23e94802fcb20f43"
+      ],
+      "forbidden_claims": [
+        "consensus_ntm_without_commercial_source",
+        "fair_value_truth",
+        "investment_recommendation",
+        "valuation_truth_without_denominator"
+      ],
+      "gap_refs": [],
+      "judgment_role": "valuation_price_in",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "valuation_or_price_in_context",
+      "ticker": "AMD",
+      "writer_instruction": "Use valuation_price_in as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "derivatives_market_regime_context",
+        "market_wide_volatility_regime_context"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "fundamental_improvement",
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_fred_vix:0aecf47c62661413"
+      ],
+      "forbidden_claims": [
+        "fundamental_improvement",
+        "investment_recommendation",
+        "realtime_gamma_without_licensed_source",
+        "single_stock_option_positioning_without_option_chain"
+      ],
+      "gap_refs": [],
+      "judgment_role": "derivatives_market_signal",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "macro_or_derivatives_expectation_proxy",
+      "ticker": "AMD",
+      "writer_instruction": "Use derivatives_market_signal as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "market_liquidity_driver",
+        "market_reaction_context",
+        "valuation_context_if_present"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "evidence_refs": [
+        "market_liquidity_driver:9962b7f0967ca09e"
+      ],
+      "forbidden_claims": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "gap_refs": [],
+      "judgment_role": "secondary_market_capital_flow",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "market_price_volume_reaction_context",
+      "ticker": "DELL",
+      "writer_instruction": "Use secondary_market_capital_flow as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "activist_or_holder_attention_context",
+        "beneficial_ownership_context",
+        "capital_market_event_context",
+        "filing_event_existence",
+        "lagged_ownership_context",
+        "ownership_positioning_signal"
+      ],
+      "authority_class": "filing_event_context,lagged_positioning_context",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "13f:0000895421-26-000187:129552812",
+        "13f:0000895421-26-000187:129552818",
+        "sec_capital_market_event:9e5ad41160d3a6b8"
+      ],
+      "forbidden_claims": [
+        "beneficial_ownership_percentage_without_schedule_parser",
+        "buyback_amount_without_company_disclosure",
+        "complete_ownership",
+        "complete_ownership_without_full_source",
+        "current_buying_pressure",
+        "insider_share_count_without_xml",
+        "intraday_positioning",
+        "investment_recommendation",
+        "offering_amount_without_filing_text_or_xml",
+        "realtime_flow",
+        "security_terms_without_filing_text_or_xml"
+      ],
+      "gap_refs": [],
+      "judgment_role": "ownership_and_holder",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "holder_structure_or_lagged_positioning_context",
+      "ticker": "DELL",
+      "writer_instruction": "Use ownership_and_holder as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_structure_fact",
+        "credit_market_regime_context",
+        "debt_context",
+        "liquidity_context",
+        "market_credit_spread_context"
+      ],
+      "authority_class": "capital_feedback_signal,exact_filing_fact",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "DELL_2024_10K_ITEM7_BLOCK_0019_PART_01_OF_03",
+        "fsd-capital-structure:0001571996-26-000008",
+        "s8_fred_credit:2fe1ca1be5f00685"
+      ],
+      "forbidden_claims": [
+        "cds_claim_without_source",
+        "investment_recommendation",
+        "issuer_credit_spread_without_issuer_bond_source",
+        "market_implied_credit_spread_without_market_source",
+        "realtime_refinancing_access_without_source",
+        "undisclosed_financing_terms"
+      ],
+      "gap_refs": [],
+      "judgment_role": "credit_funding",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "capital_cost_or_refinancing_context",
+      "ticker": "DELL",
+      "writer_instruction": "Use credit_funding as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_market_event_context",
+        "filing_event_existence",
+        "insider_transaction_context"
+      ],
+      "authority_class": "filing_event_context",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "sec_capital_market_event:368012c71bb6fb78",
+        "sec_capital_market_event:09b1fd5f83e17978",
+        "sec_capital_market_event:704a5e90ab30d7bc"
+      ],
+      "forbidden_claims": [
+        "beneficial_ownership_percentage_without_schedule_parser",
+        "buyback_amount_without_company_disclosure",
+        "complete_ownership",
+        "completed_financing_without_completion_source",
+        "current_buying_pressure",
+        "insider_share_count_without_xml",
+        "intraday_positioning",
+        "investment_recommendation",
+        "offering_amount_without_filing_text_or_xml",
+        "realtime_flow",
+        "security_terms_without_filing_text_or_xml"
+      ],
+      "gap_refs": [],
+      "judgment_role": "corporate_action",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "issuance_buyback_insider_proxy_event_context",
+      "ticker": "DELL",
+      "writer_instruction": "Use corporate_action as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_allocation_context",
+        "cash_conversion_context",
+        "liquidity_context",
+        "working_capital_liquidity_fact"
+      ],
+      "authority_class": "exact_financial_statement_fact",
+      "cannot_promote_to": [
+        "investment_recommendation",
+        "market_share"
+      ],
+      "evidence_refs": [
+        "sec_financial_statement_metric:9e5b4dd6922a9826",
+        "sec_financial_statement_metric:9344dd15ab78e76b",
+        "sec_financial_statement_metric:91acd74124fae329"
+      ],
+      "forbidden_claims": [
+        "asp",
+        "borrow_cost_without_lending_source",
+        "channel_inventory",
+        "claiming_missing_data_as_observed_fact",
+        "investment_recommendation",
+        "market_share",
+        "product_sales_without_product_kpi",
+        "realtime_positioning",
+        "realtime_refinancing_access_without_source",
+        "sell_through",
+        "short_interest_without_short_source",
+        "undisclosed_financing_terms"
+      ],
+      "gap_refs": [
+        "s8gap_3b75f47ff16a1671"
+      ],
+      "judgment_role": "liquidity_and_positioning",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "liquidity_short_borrow_or_positioning_context",
+      "ticker": "DELL",
+      "writer_instruction": "Use liquidity_and_positioning as bounded market/capital context and explicitly mention missing exact/public fields."
+    },
+    {
+      "allowed_claims": [
+        "market_cap_context_from_public_price_and_filed_shares",
+        "valuation_price_in_context"
+      ],
+      "authority_class": "valuation_price_in_signal",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_public_valuation:d8a6d3f6a4aa4cc4"
+      ],
+      "forbidden_claims": [
+        "consensus_ntm_without_commercial_source",
+        "fair_value_truth",
+        "investment_recommendation",
+        "valuation_truth_without_denominator"
+      ],
+      "gap_refs": [],
+      "judgment_role": "valuation_price_in",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "valuation_or_price_in_context",
+      "ticker": "DELL",
+      "writer_instruction": "Use valuation_price_in as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "derivatives_market_regime_context",
+        "market_wide_volatility_regime_context"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "fundamental_improvement",
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_fred_vix:c11d238a08bedeee"
+      ],
+      "forbidden_claims": [
+        "fundamental_improvement",
+        "investment_recommendation",
+        "realtime_gamma_without_licensed_source",
+        "single_stock_option_positioning_without_option_chain"
+      ],
+      "gap_refs": [],
+      "judgment_role": "derivatives_market_signal",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "macro_or_derivatives_expectation_proxy",
+      "ticker": "DELL",
+      "writer_instruction": "Use derivatives_market_signal as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "market_liquidity_driver",
+        "market_reaction_context",
+        "valuation_context_if_present"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "evidence_refs": [
+        "market_liquidity_driver:83589adb9fcb8978"
+      ],
+      "forbidden_claims": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "gap_refs": [],
+      "judgment_role": "secondary_market_capital_flow",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "market_price_volume_reaction_context",
+      "ticker": "ASML",
+      "writer_instruction": "Use secondary_market_capital_flow as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "activist_or_holder_attention_context",
+        "beneficial_ownership_context",
+        "capital_market_event_context",
+        "filing_event_existence"
+      ],
+      "authority_class": "filing_event_context",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "sec_capital_market_event:f7c8f81b0fa7f66a",
+        "sec_capital_market_event:9ea31f4c9bccac7f",
+        "sec_capital_market_event:e33d08f44882cb6c"
+      ],
+      "forbidden_claims": [
+        "beneficial_ownership_percentage_without_schedule_parser",
+        "buyback_amount_without_company_disclosure",
+        "complete_ownership",
+        "complete_ownership_without_full_source",
+        "current_buying_pressure",
+        "insider_share_count_without_xml",
+        "intraday_positioning",
+        "investment_recommendation",
+        "offering_amount_without_filing_text_or_xml",
+        "realtime_flow",
+        "security_terms_without_filing_text_or_xml"
+      ],
+      "gap_refs": [],
+      "judgment_role": "ownership_and_holder",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "holder_structure_or_lagged_positioning_context",
+      "ticker": "ASML",
+      "writer_instruction": "Use ownership_and_holder as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_structure_fact",
+        "debt_context",
+        "liquidity_context"
+      ],
+      "authority_class": "exact_filing_fact",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "fsd-capital-structure:0001628280-26-011378",
+        "ASML_2024_20F_ITEM8_BLOCK_0031_PART_07_OF_13:credit_facility",
+        "ASML_2025_20F_ITEM8_BLOCK_0037_PART_08_OF_11:credit_facility"
+      ],
+      "forbidden_claims": [
+        "investment_recommendation",
+        "market_implied_credit_spread_without_market_source",
+        "realtime_refinancing_access_without_source",
+        "undisclosed_financing_terms"
+      ],
+      "gap_refs": [],
+      "judgment_role": "credit_funding",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "capital_cost_or_refinancing_context",
+      "ticker": "ASML",
+      "writer_instruction": "Use credit_funding as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_market_event_context",
+        "filing_event_existence",
+        "financing_activity_signal",
+        "securities_offering_context"
+      ],
+      "authority_class": "filing_event_context",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "sec_capital_market_event:039c2c367d5a9b78",
+        "sec_capital_market_event:0b75d13a5d38c029",
+        "sec_capital_market_event:c1c8baf2fc8a3bcc"
+      ],
+      "forbidden_claims": [
+        "beneficial_ownership_percentage_without_schedule_parser",
+        "buyback_amount_without_company_disclosure",
+        "complete_ownership",
+        "completed_financing_without_completion_source",
+        "current_buying_pressure",
+        "insider_share_count_without_xml",
+        "intraday_positioning",
+        "investment_recommendation",
+        "offering_amount_without_filing_text_or_xml",
+        "realtime_flow",
+        "security_terms_without_filing_text_or_xml"
+      ],
+      "gap_refs": [],
+      "judgment_role": "corporate_action",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "issuance_buyback_insider_proxy_event_context",
+      "ticker": "ASML",
+      "writer_instruction": "Use corporate_action as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "capital_allocation_context",
+        "cash_conversion_context",
+        "liquidity_context",
+        "working_capital_liquidity_fact"
+      ],
+      "authority_class": "exact_financial_statement_fact",
+      "cannot_promote_to": [
+        "investment_recommendation",
+        "market_share"
+      ],
+      "evidence_refs": [
+        "sec_financial_statement_metric:0c82875c1e0208e5",
+        "sec_financial_statement_metric:54dc2ccb66ccb3ab",
+        "sec_financial_statement_metric:1a41e1f7d12270dc"
+      ],
+      "forbidden_claims": [
+        "asp",
+        "borrow_cost_without_lending_source",
+        "channel_inventory",
+        "claiming_missing_data_as_observed_fact",
+        "investment_recommendation",
+        "market_share",
+        "product_sales_without_product_kpi",
+        "realtime_positioning",
+        "realtime_refinancing_access_without_source",
+        "sell_through",
+        "short_interest_without_short_source",
+        "undisclosed_financing_terms"
+      ],
+      "gap_refs": [
+        "s8gap_ff096edbe950c568"
+      ],
+      "judgment_role": "liquidity_and_positioning",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "liquidity_short_borrow_or_positioning_context",
+      "ticker": "ASML",
+      "writer_instruction": "Use liquidity_and_positioning as bounded market/capital context and explicitly mention missing exact/public fields."
+    },
+    {
+      "allowed_claims": [
+        "market_cap_context_from_public_price_and_filed_shares",
+        "valuation_price_in_context"
+      ],
+      "authority_class": "valuation_price_in_signal",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_public_valuation:e6fdfd1ea46b9e7f"
+      ],
+      "forbidden_claims": [
+        "consensus_ntm_without_commercial_source",
+        "fair_value_truth",
+        "investment_recommendation",
+        "valuation_truth_without_denominator"
+      ],
+      "gap_refs": [],
+      "judgment_role": "valuation_price_in",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "valuation_or_price_in_context",
+      "ticker": "ASML",
+      "writer_instruction": "Use valuation_price_in as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "derivatives_market_regime_context",
+        "market_wide_volatility_regime_context"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "fundamental_improvement",
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_fred_vix:260853010eaedcf6"
+      ],
+      "forbidden_claims": [
+        "fundamental_improvement",
+        "investment_recommendation",
+        "realtime_gamma_without_licensed_source",
+        "single_stock_option_positioning_without_option_chain"
+      ],
+      "gap_refs": [],
+      "judgment_role": "derivatives_market_signal",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "macro_or_derivatives_expectation_proxy",
+      "ticker": "ASML",
+      "writer_instruction": "Use derivatives_market_signal as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "market_liquidity_driver",
+        "market_reaction_context",
+        "valuation_context_if_present"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "evidence_refs": [
+        "market_liquidity_driver:93c4e5560698e8ab"
+      ],
+      "forbidden_claims": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "gap_refs": [],
+      "judgment_role": "secondary_market_capital_flow",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "market_price_volume_reaction_context",
+      "ticker": "000660.KS",
+      "writer_instruction": "Use secondary_market_capital_flow as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [],
+      "authority_class": "gap",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [],
+      "forbidden_claims": [
+        "claiming_missing_data_as_observed_fact",
+        "investment_recommendation"
+      ],
+      "gap_refs": [
+        "s8gap_8894f3dbbaeb049f"
+      ],
+      "judgment_role": "ownership_and_holder",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "holder_structure_or_lagged_positioning_context",
+      "ticker": "000660.KS",
+      "writer_instruction": "Expose ownership_and_holder as a typed gap; do not infer the missing signal from other rows."
+    },
+    {
+      "allowed_claims": [
+        "credit_market_regime_context",
+        "market_credit_spread_context"
+      ],
+      "authority_class": "capital_feedback_signal",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_fred_credit:0f5a723a4f8ca614"
+      ],
+      "forbidden_claims": [
+        "cds_claim_without_source",
+        "investment_recommendation",
+        "issuer_credit_spread_without_issuer_bond_source",
+        "market_implied_credit_spread_without_market_source",
+        "realtime_refinancing_access_without_source"
+      ],
+      "gap_refs": [],
+      "judgment_role": "credit_funding",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "capital_cost_or_refinancing_context",
+      "ticker": "000660.KS",
+      "writer_instruction": "Use credit_funding as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [],
+      "authority_class": "gap",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [],
+      "forbidden_claims": [
+        "claiming_missing_data_as_observed_fact",
+        "investment_recommendation"
+      ],
+      "gap_refs": [
+        "s8gap_20921cad33304e66"
+      ],
+      "judgment_role": "corporate_action",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "issuance_buyback_insider_proxy_event_context",
+      "ticker": "000660.KS",
+      "writer_instruction": "Expose corporate_action as a typed gap; do not infer the missing signal from other rows."
+    },
+    {
+      "allowed_claims": [
+        "market_liquidity_driver",
+        "market_reaction_context",
+        "valuation_context_if_present"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "evidence_refs": [
+        "market_liquidity_driver:93c4e5560698e8ab"
+      ],
+      "forbidden_claims": [
+        "borrow_cost_without_lending_source",
+        "claiming_missing_data_as_observed_fact",
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue",
+        "realtime_positioning",
+        "short_interest_without_short_source"
+      ],
+      "gap_refs": [
+        "s8gap_21f5297af7ac909e"
+      ],
+      "judgment_role": "liquidity_and_positioning",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "liquidity_short_borrow_or_positioning_context",
+      "ticker": "000660.KS",
+      "writer_instruction": "Use liquidity_and_positioning as bounded market/capital context and explicitly mention missing exact/public fields."
+    },
+    {
+      "allowed_claims": [
+        "market_cap_context_from_public_timeseries",
+        "valuation_price_in_context"
+      ],
+      "authority_class": "valuation_price_in_signal",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_yahoo_market_cap:3ef387a58a0e20b0"
+      ],
+      "forbidden_claims": [
+        "consensus_ntm_without_commercial_source",
+        "fair_value_truth",
+        "investment_recommendation",
+        "realtime_fund_flow",
+        "valuation_truth_without_denominator"
+      ],
+      "gap_refs": [],
+      "judgment_role": "valuation_price_in",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "valuation_or_price_in_context",
+      "ticker": "000660.KS",
+      "writer_instruction": "Use valuation_price_in as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "derivatives_market_regime_context",
+        "market_wide_volatility_regime_context"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "fundamental_improvement",
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_fred_vix:acc1fcb52b801c49"
+      ],
+      "forbidden_claims": [
+        "fundamental_improvement",
+        "investment_recommendation",
+        "realtime_gamma_without_licensed_source",
+        "single_stock_option_positioning_without_option_chain"
+      ],
+      "gap_refs": [],
+      "judgment_role": "derivatives_market_signal",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "macro_or_derivatives_expectation_proxy",
+      "ticker": "000660.KS",
+      "writer_instruction": "Use derivatives_market_signal as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "market_liquidity_driver",
+        "market_reaction_context",
+        "valuation_context_if_present"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "evidence_refs": [
+        "market_liquidity_driver:4bf0a864af0c09c9"
+      ],
+      "forbidden_claims": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "gap_refs": [],
+      "judgment_role": "secondary_market_capital_flow",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "market_price_volume_reaction_context",
+      "ticker": "005930.KS",
+      "writer_instruction": "Use secondary_market_capital_flow as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [],
+      "authority_class": "gap",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [],
+      "forbidden_claims": [
+        "claiming_missing_data_as_observed_fact",
+        "investment_recommendation"
+      ],
+      "gap_refs": [
+        "s8gap_bdd9309c72508b45"
+      ],
+      "judgment_role": "ownership_and_holder",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "holder_structure_or_lagged_positioning_context",
+      "ticker": "005930.KS",
+      "writer_instruction": "Expose ownership_and_holder as a typed gap; do not infer the missing signal from other rows."
+    },
+    {
+      "allowed_claims": [
+        "credit_market_regime_context",
+        "market_credit_spread_context"
+      ],
+      "authority_class": "capital_feedback_signal",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_fred_credit:a48361c0a8f842e1"
+      ],
+      "forbidden_claims": [
+        "cds_claim_without_source",
+        "investment_recommendation",
+        "issuer_credit_spread_without_issuer_bond_source",
+        "market_implied_credit_spread_without_market_source",
+        "realtime_refinancing_access_without_source"
+      ],
+      "gap_refs": [],
+      "judgment_role": "credit_funding",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "capital_cost_or_refinancing_context",
+      "ticker": "005930.KS",
+      "writer_instruction": "Use credit_funding as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [],
+      "authority_class": "gap",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [],
+      "forbidden_claims": [
+        "claiming_missing_data_as_observed_fact",
+        "investment_recommendation"
+      ],
+      "gap_refs": [
+        "s8gap_f5163b8d985a7cb4"
+      ],
+      "judgment_role": "corporate_action",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "issuance_buyback_insider_proxy_event_context",
+      "ticker": "005930.KS",
+      "writer_instruction": "Expose corporate_action as a typed gap; do not infer the missing signal from other rows."
+    },
+    {
+      "allowed_claims": [
+        "market_liquidity_driver",
+        "market_reaction_context",
+        "valuation_context_if_present"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue"
+      ],
+      "evidence_refs": [
+        "market_liquidity_driver:4bf0a864af0c09c9"
+      ],
+      "forbidden_claims": [
+        "borrow_cost_without_lending_source",
+        "claiming_missing_data_as_observed_fact",
+        "company_operating_performance",
+        "current_fund_flow_without_flow_source",
+        "fundamental_improvement",
+        "investment_recommendation",
+        "market_share",
+        "product_revenue",
+        "realtime_positioning",
+        "short_interest_without_short_source"
+      ],
+      "gap_refs": [
+        "s8gap_eb755e43d0355fda"
+      ],
+      "judgment_role": "liquidity_and_positioning",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "liquidity_short_borrow_or_positioning_context",
+      "ticker": "005930.KS",
+      "writer_instruction": "Use liquidity_and_positioning as bounded market/capital context and explicitly mention missing exact/public fields."
+    },
+    {
+      "allowed_claims": [
+        "market_cap_context_from_public_timeseries",
+        "valuation_price_in_context"
+      ],
+      "authority_class": "valuation_price_in_signal",
+      "cannot_promote_to": [
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_yahoo_market_cap:f70495b806d549e2"
+      ],
+      "forbidden_claims": [
+        "consensus_ntm_without_commercial_source",
+        "fair_value_truth",
+        "investment_recommendation",
+        "realtime_fund_flow",
+        "valuation_truth_without_denominator"
+      ],
+      "gap_refs": [],
+      "judgment_role": "valuation_price_in",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "valuation_or_price_in_context",
+      "ticker": "005930.KS",
+      "writer_instruction": "Use valuation_price_in as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    },
+    {
+      "allowed_claims": [
+        "derivatives_market_regime_context",
+        "market_wide_volatility_regime_context"
+      ],
+      "authority_class": "market_expectation_proxy",
+      "cannot_promote_to": [
+        "fundamental_improvement",
+        "investment_recommendation"
+      ],
+      "evidence_refs": [
+        "s8_fred_vix:644e17107d28fb5c"
+      ],
+      "forbidden_claims": [
+        "fundamental_improvement",
+        "investment_recommendation",
+        "realtime_gamma_without_licensed_source",
+        "single_stock_option_positioning_without_option_chain"
+      ],
+      "gap_refs": [],
+      "judgment_role": "derivatives_market_signal",
+      "promoted_to_fundamental_fact": false,
+      "thesis_driver_scope": "macro_or_derivatives_expectation_proxy",
+      "ticker": "005930.KS",
+      "writer_instruction": "Use derivatives_market_signal as bounded thesis-driver context only; do not state fundamentals or investment advice from it."
+    }
+  ],
+  "output_contract_required_fields": [
+    "ticker",
+    "judgment_role",
+    "thesis_driver_scope",
+    "authority_class",
+    "evidence_refs",
+    "gap_refs",
+    "allowed_claims",
+    "forbidden_claims",
+    "cannot_promote_to",
+    "writer_instruction"
+  ],
+  "promotion_recommendation": "active_registry_ready_runtime_alignment_only",
+  "promotion_scope": "capital_market_initial",
+  "release_decision": "P33_1_3_L4_scope_pass_capital_market_feedback_fixture",
+  "rollback_gate": [
+    "market_proxy_misused_in_core_thesis",
+    "lagged_holder_row_rendered_as_realtime_flow",
+    "missing_borrow_or_option_data_hidden_as_observed_signal",
+    "capital_feedback_judgment_material_lacks_boundary"
+  ],
+  "runtime_entry_policy": "Runtime alignment only: may align CapitalMarketFeedbackPack, CapitalFeedbackSignal, CapitalFeedbackGapItem, and capital-feedback graph edges as bounded thesis drivers. It cannot promote market signals to company fundamentals, product KPIs, real-time fund flow, or investment recommendations.",
+  "schema_version": "fin_insight_p33_capital_market_feedback_fixture_v0_1",
+  "signal_audit": {
+    "authority_counts": {
+      "capital_feedback_signal": 603,
+      "exact_filing_fact": 1860,
+      "exact_financial_statement_fact": 2810,
+      "filing_event_context": 5343,
+      "lagged_positioning_context": 1678,
+      "market_expectation_proxy": 1809,
+      "valuation_price_in_signal": 603
+    },
+    "exact_fact_boundary_ok_count": 4670,
+    "exact_fact_row_count": 4670,
+    "lagged_positioning_boundary_ok_count": 1678,
+    "lagged_positioning_count": 1678,
+    "market_proxy_boundary_ok_count": 3487,
+    "market_proxy_row_count": 3487,
+    "role_counts": {
+      "corporate_action": 3509,
+      "credit_funding": 2463,
+      "derivatives_market_signal": 603,
+      "liquidity_and_positioning": 3413,
+      "ownership_and_holder": 3512,
+      "secondary_market_capital_flow": 603,
+      "valuation_price_in": 603
+    },
+    "signal_count": 14706,
+    "status": "pass"
+  },
+  "source_audit": {
+    "boundary_ready_count": 21,
+    "missing_roles": [],
+    "role_counts": {
+      "corporate_action": 4,
+      "credit_funding": 3,
+      "derivatives_market_signal": 2,
+      "liquidity_and_positioning": 3,
+      "ownership_and_holder": 3,
+      "secondary_market_capital_flow": 1,
+      "valuation_price_in": 5
+    },
+    "source_count": 21,
+    "status": "pass"
+  },
+  "source_fixture_refs": {
+    "p33_manifest": "data/manifests/p33_capital_market_feedback_fixture_v0_1.json",
+    "p33_report": "docs/internal/vnext_20260610/p33_capital_market_feedback_fixture_report.zh-CN.md",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "s8_gate_rows": "data/manifests/r53_r60_s8_secondary_market_capital_feedback_gate_rows_v0_1.jsonl",
+    "s8_summary": "data/manifests/r53_r60_s8_secondary_market_capital_feedback_summary_v0_1.json"
+  },
+  "status": "pass"
+}

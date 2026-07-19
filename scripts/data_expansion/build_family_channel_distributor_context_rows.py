@@ -94,6 +94,7 @@ DOMAIN_OVERRIDES: dict[str, tuple[str, ...]] = {
     "BBY": ("bestbuy.com",),
     "CASY": ("caseys.com",),
     "CAT": ("cat.com", "caterpillar.com"),
+    "CHD": ("churchdwight.com", "armandhammer.com", "oxiclean.com"),
     "CMI": ("cummins.com",),
     "CRDO": ("credosemi.com",),
     "DECK": ("deckers.com", "hoka.com", "ugg.com", "teva.com"),
@@ -110,18 +111,22 @@ DOMAIN_OVERRIDES: dict[str, tuple[str, ...]] = {
     "LI": ("lixiang.com", "liauto.com"),
     "LOW": ("lowes.com",),
     "LULU": ("shop.lululemon.com", "lululemon.com"),
+    "MDLZ": ("mondelezinternational.com", "mondelezawayfromhome.com", "oreo.com"),
     "MNST": ("monsterbeverage.com", "monsterenergy.com"),
     "MRVL": ("marvell.com",),
     "NIO": ("nio.com",),
     "PH": ("parker.com",),
+    "PPG": ("ppg.com", "ppgpaints.com"),
     "QCOM": ("qualcomm.com",),
     "RIVN": ("rivian.com",),
     "ROK": ("rockwellautomation.com",),
+    "SJM": ("jmsmucker.com", "smuckers.com"),
     "SNA": ("snapon.com",),
     "SWK": ("stanleyblackanddecker.com", "stanleytools.com", "dewalt.com", "craftsman.com"),
     "TPR": ("tapestry.com", "coach.com", "katespade.com"),
     "TSCO": ("tractorsupply.com", "corporate.tractorsupply.com"),
     "WAB": ("wabteccorp.com",),
+    "XOM": ("exxonmobil.com", "exxon.com"),
 }
 
 MANUAL_CHANNEL_SEEDS: dict[str, tuple[str, ...]] = {
@@ -131,6 +136,7 @@ MANUAL_CHANNEL_SEEDS: dict[str, tuple[str, ...]] = {
     "BBY": ("https://stores.bestbuy.com/",),
     "CASY": ("https://www.caseys.com/store-finder",),
     "CAT": ("https://www.cat.com/en_US/support/dealer-locator.html",),
+    "CHD": ("https://www.armandhammer.com/en", "https://www.oxiclean.com/en"),
     "CMI": ("https://www.cummins.com/locations",),
     "COST": ("https://www.costco.com/warehouse-locations",),
     "CRDO": ("https://www.credosemi.com/contact", "https://www.credosemi.com/contact-us"),
@@ -150,14 +156,21 @@ MANUAL_CHANNEL_SEEDS: dict[str, tuple[str, ...]] = {
     "LCID": ("https://lucidmotors.com/locations",),
     "LOW": ("https://www.lowes.com/store/",),
     "LULU": ("https://shop.lululemon.com/stores",),
+    "MDLZ": (
+        "https://www.mondelezawayfromhome.com/where-to-buy/",
+        "https://www.mondelezawayfromhome.com/Find-Distributor/",
+        "https://www.oreo.com/",
+    ),
     "MRVL": ("https://www.marvell.com/company/sales.html", "https://www.marvell.com/company/contact-us.html"),
     "MNST": ("https://www.monsterenergy.com/en-us/where-to-buy/",),
     "NIO": ("https://www.nio.com/locations",),
     "ORLY": ("https://locations.oreillyauto.com/",),
     "PH": ("https://ph.parker.com/us/en/wtb/where-to-buy", "https://www.parker.com/us/en/distribution-network.html"),
+    "PPG": ("https://www.ppgpaints.com/store-locator",),
     "QCOM": ("https://www.qualcomm.com/contact/sales",),
     "RIVN": ("https://rivian.com/spaces",),
     "ROK": ("https://www.rockwellautomation.com/en-us/sales/partner-locator.html",),
+    "SJM": ("https://www.smuckers.com/where-to-buy", "https://www.jmsmucker.com/smucker-store"),
     "SNA": ("https://shop.snapon.com/webapp/wcs/stores/servlet/StoreLocator",),
     "SWK": ("https://www.stanleytools.com/support/where-to-buy",),
     "TPR": ("https://www.katespade.com/stores", "https://www.coach.com/stores"),
@@ -166,6 +179,7 @@ MANUAL_CHANNEL_SEEDS: dict[str, tuple[str, ...]] = {
         "https://www.wabteccorp.com/marine-solutions/marine-diesel-engines/parts-and-service",
         "https://www.wabteccorp.com/stationary-power-diesel-engines/parts-and-service",
     ),
+    "XOM": ("https://www.exxon.com/en/find-station",),
 }
 
 READER_PROXY_CHANNEL_SEEDS: dict[str, tuple[str, ...]] = {
@@ -267,6 +281,11 @@ def build_targets(
         ticker = str(row.get("ticker") or "").strip().upper()
         if ticker:
             family_by_ticker[ticker].append(dict(row))
+    company_by_ticker: dict[str, dict[str, Any]] = {}
+    for company in company_source_matrix_rows:
+        ticker = str(company.get("ticker") or "").strip().upper()
+        if ticker:
+            company_by_ticker[ticker] = dict(company)
     targets: dict[str, dict[str, Any]] = {}
     for row in docket_rows:
         if str(row.get("requirement_id") or "") != REQUIREMENT_ID:
@@ -309,6 +328,20 @@ def build_targets(
             "family_names": _unique_strings([family.get("family_name") for family in families]),
             "query_terms": _unique_strings(term for family in families for term in (family.get("query_terms") or [])),
             "docket_id": "",
+        }
+    for ticker in sorted(ticker_filter):
+        if ticker in targets:
+            continue
+        company = company_by_ticker.get(ticker, {})
+        families = family_by_ticker.get(ticker) or []
+        targets[ticker] = {
+            "ticker": ticker,
+            "company_name": company.get("company_name") or ticker,
+            "primary_lane_id": company.get("primary_lane_id") or "",
+            "family_ids": _unique_strings([family.get("family_id") for family in families]),
+            "family_names": _unique_strings([family.get("family_name") for family in families]),
+            "query_terms": _unique_strings(term for family in families for term in (family.get("query_terms") or [])),
+            "docket_id": "explicit_ticker_channel_probe",
         }
     return sorted(targets.values(), key=lambda row: row["ticker"])
 

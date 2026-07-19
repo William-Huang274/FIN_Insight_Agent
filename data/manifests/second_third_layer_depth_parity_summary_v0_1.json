@@ -9,11 +9,10 @@
   "expected_company_count": 603,
   "failures": [],
   "metrics": {
-    "backfill_queue_count": 234,
+    "backfill_queue_count": 162,
     "backfill_queue_counts": {
       "capital_market_detail_depth::capital_market_detail_source_gap": 1,
       "capital_market_detail_depth::capital_primary_disclosure_parser_gap": 1,
-      "customer_deployment_depth::customer_deployment_public_source_gap": 72,
       "product_kpi_depth::filings_taxonomy_available_but_value_unit_period_product_kpi_absent": 34,
       "product_kpi_depth::non_product_metric_public_boundary": 3,
       "product_kpi_depth::official_product_surface_available_but_company_disclosed_product_kpi_absent": 122,
@@ -26,8 +25,7 @@
         "none": 601
       },
       "customer_deployment_depth": {
-        "customer_deployment_public_source_gap": 72,
-        "none": 531
+        "none": 603
       },
       "market_liquidity_depth": {
         "none": 603
@@ -45,7 +43,7 @@
     },
     "dimension_gap_counts": {
       "capital_market_detail_depth": 2,
-      "customer_deployment_depth": 72,
+      "customer_deployment_depth": 0,
       "market_liquidity_depth": 0,
       "product_kpi_depth": 160,
       "product_spec_depth": 0
@@ -58,11 +56,10 @@
         "non_us_primary_capital_disclosure_ready": 14
       },
       "customer_deployment_depth": {
-        "business_operating_footprint_signal_ready": 26,
-        "customer_contract_liability_footprint_ready": 85,
-        "customer_deployment_or_public_order_signal_ready": 241,
-        "customer_distribution_or_adoption_proxy_ready": 146,
-        "missing_customer_deployment_signal": 72,
+        "business_operating_footprint_signal_ready": 61,
+        "customer_contract_liability_footprint_ready": 104,
+        "customer_deployment_or_public_order_signal_ready": 243,
+        "customer_distribution_or_adoption_proxy_ready": 162,
         "regulated_product_or_identity_context_ready": 33
       },
       "market_liquidity_depth": {
@@ -79,20 +76,16 @@
     },
     "dimension_target_met_counts": {
       "capital_market_detail_depth": 601,
-      "customer_deployment_depth": 531,
+      "customer_deployment_depth": 603,
       "market_liquidity_depth": 603,
       "product_kpi_depth": 443,
       "product_spec_depth": 603
     },
-    "full_depth_target_gap_company_count": 203,
-    "full_depth_target_met_company_count": 400,
+    "full_depth_target_gap_company_count": 160,
+    "full_depth_target_met_company_count": 443,
     "sample_full_depth_gap_companies": [
-      "000660.KS",
-      "005930.KS",
       "2308.TW",
       "2317.TW",
-      "300750.SZ",
-      "373220.KS",
       "6723.T",
       "8035.T",
       "ABNB",
@@ -102,15 +95,12 @@
       "ADP",
       "AEE",
       "AES",
-      "AFL",
       "AIG",
       "AIZ",
       "ALLE",
-      "AMCR",
       "AMT",
       "ANET",
       "APP",
-      "ARE",
       "ARES",
       "ARRY",
       "AXP",
@@ -119,24 +109,31 @@
       "BHP",
       "BK",
       "BKR",
-      "BRK-B",
       "C",
-      "CAG",
       "CAH",
       "CB",
       "CE",
       "CFG",
-      "CHD",
-      "CINF",
       "CL",
-      "CLX",
       "CMG",
       "COHR",
       "CPB",
       "CPRT",
-      "CPT",
       "CRH",
-      "CRL"
+      "CRL",
+      "CTVA",
+      "D",
+      "DDOG",
+      "DE",
+      "DLR",
+      "DNN",
+      "DPZ",
+      "DQ",
+      "DVN",
+      "DXCM",
+      "EBAY",
+      "ECL",
+      "EG"
     ]
   },
   "parity_status": "fail",

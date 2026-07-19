@@ -88,6 +88,39 @@ def test_derived_metric_layer_calculates_only_from_reconciled_inputs() -> None:
         assert row["explainability_trace"]
 
 
+def test_derived_metric_layer_uses_percentage_point_change_for_margin_rates() -> None:
+    state = {
+        "run_id": "unit-d10-margin-rate-change",
+        "runtime_ledger_rows": [
+            _row("gm25", "sec-gm25", "gross margin", "6", 2025, unit="percent"),
+            _row("gm24", "sec-gm24", "gross margin", "14", 2024, unit="percent"),
+        ],
+    }
+    ontology = build_metric_product_ontology_snapshot(state)
+    reconciliation = build_reconciliation_ledger({**state, "metric_product_ontology_snapshot": ontology})
+    gates = build_gate_registry_eval_matrix(
+        {**state, "metric_product_ontology_snapshot": ontology, "reconciliation_ledger": reconciliation}
+    )
+    layer = build_derived_metric_layer(
+        {
+            **state,
+            "metric_product_ontology_snapshot": ontology,
+            "reconciliation_ledger": reconciliation,
+            "gate_registry_eval_matrix": gates,
+        }
+    )
+
+    rate_changes = [row for row in layer["derived_metrics"] if row["derived_metric_family"] == "yoy_change_pp"]
+    assert rate_changes
+    assert rate_changes[0]["value"] == "-8"
+    assert rate_changes[0]["unit"] == "percentage_points"
+    assert rate_changes[0]["formula"] == "current_rate - prior_rate"
+    assert not any(
+        row["derived_metric_family"] == "yoy_growth" and row.get("unit") == "percent"
+        for row in layer["derived_metrics"]
+    )
+
+
 def test_derived_metric_layer_blocks_formula_when_input_gate_fails() -> None:
     state = {
         "run_id": "unit-d10-blocked",
@@ -169,14 +202,14 @@ def test_graph_persists_derived_metric_layer(tmp_path: Path) -> None:
     assert recoverable_summary["derived_metric_validation_status"] == "pass"
 
 
-def _row(evidence_ref: str, source_id: str, metric_family: str, value: str, fiscal_year: int) -> dict:
+def _row(evidence_ref: str, source_id: str, metric_family: str, value: str, fiscal_year: int, *, unit: str = "USD") -> dict:
     return {
         "evidence_ref": evidence_ref,
         "source_id": source_id,
         "ticker": "MSFT",
         "metric_family": metric_family,
         "value": value,
-        "unit": "USD",
+        "unit": unit,
         "fiscal_year": fiscal_year,
         "fiscal_period": "FY",
         "source_family": "primary_sec_filing",

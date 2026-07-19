@@ -175,9 +175,13 @@ def validate_claim_evidence_ledger(payload: Mapping[str, Any]) -> dict[str, Any]
 
 def build_typed_gap_ledger(state: Mapping[str, Any]) -> dict[str, Any]:
     rows = _gap_rows_from_state(state)
+    visible_primary_tickers = _visible_primary_evidence_tickers_from_state(state)
+    focus_tickers = _focus_tickers_from_state(state)
     gaps: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str, str, str]] = set()
     for index, row in enumerate(rows, start=1):
+        if _route_scope_gap_is_non_blocking(row, visible_primary_tickers=visible_primary_tickers, focus_tickers=focus_tickers):
+            continue
         entry = _typed_gap_entry(row, index=index)
         key = (
             str(entry.get("gap_id") or ""),
@@ -282,6 +286,96 @@ def _gap_rows_from_state(state: Mapping[str, Any]) -> list[dict[str, Any]]:
     quality = state.get("quality_second_pass_report") if isinstance(state.get("quality_second_pass_report"), Mapping) else {}
     rows.extend(_mapping_rows(quality.get("quality_gaps")))
     return rows
+
+
+def _route_scope_gap_is_non_blocking(
+    row: Mapping[str, Any],
+    *,
+    visible_primary_tickers: set[str],
+    focus_tickers: set[str],
+) -> bool:
+    if not _is_route_scope_gap(row):
+        return False
+    ticker = str(row.get("ticker") or row.get("company") or "").upper().strip()
+    if not ticker:
+        return False
+    if ticker in visible_primary_tickers:
+        return True
+    if focus_tickers and ticker not in focus_tickers:
+        return True
+    return False
+
+
+def _is_route_scope_gap(row: Mapping[str, Any]) -> bool:
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in (
+            "raw_gap_type",
+            "gap_type",
+            "reason_code",
+            "reason",
+            "register_source",
+            "source",
+            "error",
+        )
+    ).lower()
+    return any(
+        marker in text
+        for marker in (
+            "not_in_manifest_for_mcp_route_scope",
+            "not_in_manifest",
+            "mcp route scope",
+            "route_scope",
+            "local_or_sec_route_scope_missing",
+        )
+    )
+
+
+def _visible_primary_evidence_tickers_from_state(state: Mapping[str, Any]) -> set[str]:
+    tickers: set[str] = set()
+    candidates: list[Any] = []
+    fact_selection = state.get("pre_memo_fact_selection") if isinstance(state.get("pre_memo_fact_selection"), Mapping) else {}
+    candidates.extend(fact_selection.get("approved_facts") or [])
+    for key in ("verified_judgment_plan", "judgment_plan", "claim_cards"):
+        payload = state.get(key) if isinstance(state.get(key), Mapping) else {}
+        candidates.extend(payload.get("supported_claims") or [])
+    candidates.extend(state.get("runtime_ledger_rows") or [])
+
+    primary_families = {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
+    for row in candidates:
+        if not isinstance(row, Mapping):
+            continue
+        families = set(_string_list(row.get("source_families") or row.get("source_family")))
+        if families and not (families & primary_families):
+            continue
+        if not _row_has_evidence_identity(row):
+            continue
+        tickers.update(_ticker_set_from_row(row))
+    return tickers
+
+
+def _focus_tickers_from_state(state: Mapping[str, Any]) -> set[str]:
+    values: list[Any] = []
+    for key in ("focus_tickers",):
+        values.extend(_string_list(state.get(key)))
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    for key in ("focus_tickers", "companies", "tickers"):
+        values.extend(_string_list(query_contract.get(key)))
+    return {str(value).upper().strip() for value in values if str(value).strip()}
+
+
+def _ticker_set_from_row(row: Mapping[str, Any]) -> set[str]:
+    values: list[str] = []
+    for key in ("ticker", "company", "ticker_scope", "tickers"):
+        values.extend(_string_list(row.get(key)))
+    return {value.upper().strip() for value in values if value.strip()}
+
+
+def _row_has_evidence_identity(row: Mapping[str, Any]) -> bool:
+    for key in ("evidence_refs", "refs", "evidence_ref", "source_id", "source_fact_id", "line_item_id", "metric_id"):
+        if _string_list(row.get(key)):
+            return True
+    return False
 
 
 def _claim_ledger_entry(

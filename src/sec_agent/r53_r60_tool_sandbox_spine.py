@@ -1054,12 +1054,12 @@ def evaluate_s2_gates(store: RuntimeTaskSpineStore, decisions: Iterable[ToolInvo
             "artifact_refs": int(conn.execute("select count(*) from artifact_refs where task_id = ?", ("s2_scope_task_tool_sandbox",)).fetchone()[0]),
             "trace_spans": int(conn.execute("select count(*) from trace_spans where task_id = ?", ("s2_scope_task_tool_sandbox",)).fetchone()[0]),
         }
-        persisted_rows = [
-            dict(row)
-            for row in conn.execute(
-                "select * from tool_invocations where task_id = ? order by created_at, tool_call_id",
-                ("s2_scope_task_tool_sandbox",),
-            ).fetchall()
+    persisted_rows = [
+        dict(row)
+        for row in conn.execute(
+            "select * from tool_invocations where task_id = ? order by created_at, tool_call_id",
+            ("s2_scope_task_tool_sandbox",),
+        ).fetchall()
         ]
     statuses = [decision.status for decision in decisions_list]
     blocked_reasons = {decision.blocked_reason for decision in decisions_list if decision.status == "blocked"}
@@ -1069,7 +1069,16 @@ def evaluate_s2_gates(store: RuntimeTaskSpineStore, decisions: Iterable[ToolInvo
         ("schema_tables_present", all(counts.get(table, 0) >= 0 for table in tool_sandbox_schema_contract()["tables"]), "All S2 policy and invocation tables exist.", counts),
         ("policy_registry_seeded", counts["tool_policy_bindings"] >= 6 and counts["sandbox_policies"] >= 5 and counts["approval_policies"] >= 6, "Tool, sandbox, and approval policy registries are seeded.", counts),
         ("allowed_tool_artifact_trace", len(executed) >= 3 and runtime_counts["artifact_refs"] >= len(executed) and runtime_counts["trace_spans"] >= len(decisions_list), "Allowed tool calls produce artifact refs and all calls produce trace spans.", {"executed": len(executed), **runtime_counts}),
-        ("blocked_tool_calls_ledgered", len(blocked) >= 5 and counts["tool_invocations"] == len(decisions_list), "Blocked tool calls are ledgered instead of hidden.", {"blocked": len(blocked), "tool_invocations": counts["tool_invocations"]}),
+        (
+            "blocked_tool_calls_ledgered",
+            len(blocked) >= 5 and len(persisted_rows) == len(decisions_list),
+            "Blocked tool calls are ledgered instead of hidden.",
+            {
+                "blocked": len(blocked),
+                "scoped_tool_invocations": len(persisted_rows),
+                "total_tool_invocations": counts["tool_invocations"],
+            },
+        ),
         ("writer_fetch_forbidden", "actor_tool_not_allowed" in blocked_reasons, "Memo writer cannot call retrieval/web tools.", sorted(blocked_reasons)),
         ("network_domain_allowlist_enforced", "domain_not_allowlisted" in blocked_reasons, "Public web snapshots enforce domain allowlist.", sorted(blocked_reasons)),
         ("workspace_path_scope_enforced", "path_outside_allowed_roots" in blocked_reasons, "Filesystem tools enforce workspace/artifact path scope.", sorted(blocked_reasons)),

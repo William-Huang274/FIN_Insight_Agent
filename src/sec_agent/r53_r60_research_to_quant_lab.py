@@ -71,6 +71,7 @@ def research_to_quant_schema_contract() -> dict[str, Any]:
         "closeout_level": "L4_scope_pass",
         "tables": [
             "research_to_quant_metadata",
+            "research_judgment_cards_s9",
             "signal_observations_s9",
             "factor_hypotheses_s9",
             "feature_specs_s9",
@@ -111,6 +112,21 @@ def create_research_to_quant_schema(conn: sqlite3.Connection) -> None:
             key text primary key,
             value_json text not null,
             updated_at text not null
+        );
+        create table if not exists research_judgment_cards_s9 (
+            judgment_card_id text primary key,
+            task_id text not null,
+            run_id text not null,
+            thesis_driver_id text not null,
+            signal_domain text not null,
+            judgment_summary text not null,
+            source_refs_json text not null default '[]',
+            authority_boundary text not null,
+            counter_view text not null default '',
+            failure_view text not null default '',
+            forbidden_claims_json text not null default '[]',
+            payload_json text not null default '{}',
+            created_at text not null
         );
         create table if not exists signal_observations_s9 (
             signal_observation_id text primary key,
@@ -360,6 +376,7 @@ def create_research_to_quant_schema(conn: sqlite3.Connection) -> None:
             created_at text not null
         );
         create index if not exists idx_factor_hypotheses_s9_task on factor_hypotheses_s9(task_id, status);
+        create index if not exists idx_research_judgment_cards_s9_task on research_judgment_cards_s9(task_id, thesis_driver_id);
         create index if not exists idx_feature_specs_s9_factor on feature_specs_s9(factor_hypothesis_id);
         create index if not exists idx_dataset_rows_s9_plan on pit_dataset_rows_s9(dataset_build_plan_id, ticker, asof_date);
         create index if not exists idx_factor_cards_s9_task on factor_cards_s9(task_id, status);
@@ -505,6 +522,7 @@ def materialize_research_to_quant_lab(store: RuntimeTaskSpineStore, *, task_id: 
             source_context = load_s8_source_context(conn)
             hypotheses = build_factor_hypothesis_seed(source_context, task_id=task_id, run_id=run_id, now=now)
             for item in hypotheses:
+                insert_research_judgment_card(conn, item["research_judgment_card"])
                 insert_signal_observation(conn, item["signal_observation"])
                 insert_factor_hypothesis(conn, item["factor_hypothesis"])
                 if item["approved"]:
@@ -553,6 +571,7 @@ def materialize_research_to_quant_lab(store: RuntimeTaskSpineStore, *, task_id: 
             task_id,
             [
                 ("signal_observation_count", "signal_observations_s9"),
+                ("research_judgment_card_count", "research_judgment_cards_s9"),
                 ("factor_hypothesis_count", "factor_hypotheses_s9"),
                 ("feature_spec_count", "feature_specs_s9"),
                 ("label_spec_count", "label_specs_s9"),
@@ -695,13 +714,70 @@ def build_factor_hypothesis_seed(
     for seed in seeds:
         obs_id = stable_id("s9obs", [task_id, seed["thesis_driver_id"], seed["domain"]])
         factor_id = stable_id("s9fac", [task_id, seed["name"], seed["thesis_driver_id"]])
+        judgment_card_id = stable_id("s9jcard", [task_id, seed["thesis_driver_id"], seed["name"]])
         feature_id = stable_id("s9feat", [factor_id, seed["feature_name"]])
         label_id = stable_id("s9label", [factor_id, seed["label_name"]])
         universe_id = stable_id("s9univ", [factor_id, ",".join(universe)])
         source_refs = evidence_refs if seed["approved"] else ["gap://s8/derivatives_market_signal_public_boundary"]
+        authority_boundary = (
+            "Bounded internal research judgment: may seed quant validation only after PIT, leakage, and human "
+            "approval; cannot be used as external investment advice, live trading instruction, or unapproved "
+            "feature generation."
+        )
+        counter_view = (
+            "The observed market or capital-feedback signal may be regime-specific, crowded, delayed, or already "
+            "priced in; validation must test whether it survives PIT controls and benchmark adjustment."
+        )
+        failure_view = (
+            "If publish/available timestamps, source refs, human approvals, or leakage guards are missing, the "
+            "candidate must stop before PIT dataset materialization or backtest planning."
+        )
+        forbidden_claims = ["live_trading", "external_investment_advice", "unapproved_feature_generation"]
+        handoff_payload = {
+            **common_payload,
+            "judgment_card_ids": [judgment_card_id],
+            "signal_definition": seed["summary"],
+            "candidate_feature_refs": [feature_id],
+            "point_in_time_data_manifest": {
+                "feature_publish_time": "2026-01-31T21:00:00Z",
+                "feature_available_time": "2026-02-01T14:30:00Z",
+                "asof_date": "2026-01-31",
+                "tradable_after": "2026-02-02T14:30:00Z",
+                "label_window_start": "2026-02-02T14:30:00Z",
+                "lag_policy": "available_next_trading_day_after_public_signal",
+                "source_refs": source_refs,
+            },
+            "human_approval_policy": {
+                "factor_hypothesis": "required",
+                "dataset_build": "required",
+                "backtest": "required",
+                "paper_trading": "separate_explicit_approval_required",
+            },
+        }
         rows.append(
             {
                 "approved": bool(seed["approved"]),
+                "research_judgment_card": {
+                    "judgment_card_id": judgment_card_id,
+                    "task_id": task_id,
+                    "run_id": run_id,
+                    "thesis_driver_id": seed["thesis_driver_id"],
+                    "signal_domain": seed["domain"],
+                    "judgment_summary": seed["summary"],
+                    "source_refs": source_refs,
+                    "authority_boundary": authority_boundary,
+                    "counter_view": counter_view,
+                    "failure_view": failure_view,
+                    "forbidden_claims": forbidden_claims,
+                    "payload": {
+                        **common_payload,
+                        "factor_hypothesis_seed_name": seed["name"],
+                        "expected_direction": seed["expected_direction"],
+                        "validation_method": seed["method"],
+                        "source_refs": source_refs,
+                    },
+                    "created_at": now,
+                },
                 "signal_observation": {
                     "signal_observation_id": obs_id,
                     "task_id": task_id,
@@ -712,8 +788,8 @@ def build_factor_hypothesis_seed(
                     "source_evidence_refs": source_refs,
                     "signal_domain": seed["domain"],
                     "signal_summary": seed["summary"],
-                    "authority_boundary": "Bounded research signal; cannot be used as investment advice or live trading instruction.",
-                    "payload": {**common_payload, "seed": seed["name"]},
+                    "authority_boundary": authority_boundary,
+                    "payload": {**handoff_payload, "seed": seed["name"]},
                     "created_at": now,
                 },
                 "factor_hypothesis": {
@@ -728,8 +804,8 @@ def build_factor_hypothesis_seed(
                     "validation_method": seed["method"],
                     "source_refs": source_refs,
                     "status": "approved_for_validation" if seed["approved"] else "blocked_no_human_approval",
-                    "forbidden_claims": ["live_trading", "external_investment_advice", "unapproved_feature_generation"],
-                    "payload": {**common_payload, "signal_domain": seed["domain"]},
+                    "forbidden_claims": forbidden_claims,
+                    "payload": {**handoff_payload, "signal_domain": seed["domain"]},
                     "created_at": now,
                 },
                 "feature_spec": {
@@ -1113,6 +1189,7 @@ def insert_dataset_build_plan(
     now: str,
 ) -> dict[str, Any]:
     plan_id = stable_id("s9ds", [item["factor_hypothesis"]["factor_hypothesis_id"], "pit_dataset_plan"])
+    backtest_plan_id = stable_id("s9btplan", [item["factor_hypothesis"]["factor_hypothesis_id"], "approved_backtest_plan"])
     plan = {
         "dataset_build_plan_id": plan_id,
         "task_id": item["factor_hypothesis"]["task_id"],
@@ -1132,7 +1209,16 @@ def insert_dataset_build_plan(
         "artifact_refs": [],
         "blocked_reason": "",
         "dataset_snapshot_id": stable_id("s9snap", [plan_id, "deterministic_pit_smoke_v0_1"]),
-        "payload": {"backtest_approval_id": approvals["backtest"]["approval_id"]},
+        "payload": {
+            "backtest_approval_id": approvals["backtest"]["approval_id"],
+            "backtest_plan_id": backtest_plan_id,
+            "backtest_policy": {
+                "requires_leakage_guard_pass": True,
+                "requires_human_approval_scope": "backtest",
+                "no_live_trading": True,
+                "no_external_investment_advice": True,
+            },
+        },
         "created_at": now,
     }
     insert_dataset_plan(conn, plan)
@@ -1160,7 +1246,11 @@ def insert_blocked_dataset_build_plan(
         "artifact_refs": [],
         "blocked_reason": "dataset build denied by human approval gate and missing approved source route",
         "dataset_snapshot_id": "",
-        "payload": {"blocked_candidate": True},
+        "payload": {
+            "blocked_candidate": True,
+            "blocked_before_backtest_plan": True,
+            "blocked_reason": "dataset_build_denied_or_unapproved_source",
+        },
         "created_at": now,
     }
     insert_dataset_plan(conn, plan)
@@ -1626,8 +1716,36 @@ def clear_s9_task_rows(conn: sqlite3.Connection, task_id: str) -> None:
         "feature_specs_s9",
         "factor_hypotheses_s9",
         "signal_observations_s9",
+        "research_judgment_cards_s9",
     ]:
         conn.execute(f"delete from {table} where task_id = ?", (task_id,))
+
+
+def insert_research_judgment_card(conn: sqlite3.Connection, row: Mapping[str, Any]) -> None:
+    conn.execute(
+        """
+        insert into research_judgment_cards_s9(
+            judgment_card_id, task_id, run_id, thesis_driver_id, signal_domain,
+            judgment_summary, source_refs_json, authority_boundary, counter_view,
+            failure_view, forbidden_claims_json, payload_json, created_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            row["judgment_card_id"],
+            row["task_id"],
+            row["run_id"],
+            row["thesis_driver_id"],
+            row["signal_domain"],
+            row["judgment_summary"],
+            json_dumps(row["source_refs"]),
+            row["authority_boundary"],
+            row["counter_view"],
+            row["failure_view"],
+            json_dumps(row["forbidden_claims"]),
+            json_dumps(row["payload"]),
+            row["created_at"],
+        ),
+    )
 
 
 def insert_signal_observation(conn: sqlite3.Connection, row: Mapping[str, Any]) -> None:

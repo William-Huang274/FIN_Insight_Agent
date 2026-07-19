@@ -1,0 +1,584 @@
+{
+  "absorbed_contract_ids": [
+    "l3_research_to_quant_factor_handoff_contract_v0_1"
+  ],
+  "acceptance_gates": [
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "S9 Research-to-Quant Lab is already L4-scope pass.",
+      "detail": {
+        "counts": {
+          "approval_count": 7,
+          "approved_factor_count": 2,
+          "backtest_result_count": 2,
+          "blocked_factor_count": 1,
+          "dataset_build_plan_count": 3,
+          "experience_record_count": 3,
+          "factor_analysis_count": 2,
+          "factor_card_count": 3,
+          "factor_hypothesis_count": 3,
+          "feature_spec_count": 2,
+          "gate_count": 12,
+          "gate_fail_count": 0,
+          "label_spec_count": 2,
+          "leakage_guard_count": 3,
+          "no_live_trading": true,
+          "paper_control_count": 3,
+          "pit_dataset_row_count": 24,
+          "research_judgment_card_count": 3,
+          "risk_attribution_count": 2,
+          "signal_observation_count": 3,
+          "source_dependency": "S8 Secondary Market / Capital Feedback Pack",
+          "universe_spec_count": 2
+        },
+        "release_decision": "S9_L4_scope_pass"
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_s9_research_to_quant_l4_pass",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Every candidate carries judgment IDs, signal definition, feature refs, PIT manifest, approval policy and source refs.",
+      "detail": {
+        "handoff_record_count": 3,
+        "input_complete": true
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_judgment_signal_source_input_mapping_complete",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Judgment card IDs resolve to first-class SQL rows with source refs, authority boundary, counter-view, failure-view and no-advice limits.",
+      "detail": {
+        "direct_thesis_id_substitute_count": 0,
+        "direct_thesis_id_substitutes": [],
+        "judgment_card_count": 3,
+        "malformed_judgment_card_ids": [],
+        "missing_judgment_card_ids": [],
+        "referenced_judgment_card_count": 3,
+        "status": "pass"
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_judgment_cards_are_first_class_source_backed",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Approved candidates expose factor, signal, backtest plan, leakage result, validation status, approval state and experience record IDs.",
+      "detail": {
+        "approved_output_complete": true,
+        "approved_record_count": 2
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_factor_output_contract_complete_for_approved_records",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Unapproved candidate is blocked before PIT rows, backtest plan/result or paper trading.",
+      "detail": {
+        "blocked_fail_closed": true,
+        "blocked_record_count": 1
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_blocked_candidate_fails_closed",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "PIT rows have publish/available/asof/tradable/label timestamps and backtests require passed leakage guards.",
+      "detail": {
+        "approved_plan_count": 2,
+        "backtest_without_passed_leakage": 0,
+        "leakage_rows": [
+          {
+            "checked_row_count": 0,
+            "dataset_build_plan_id": "s9ds_387a1c3f19aa15ef",
+            "factor_hypothesis_id": "s9fac_77d029f1b839eb4b",
+            "leakage_guard_id": "s9lg_c6a478ded048bdb6",
+            "status": "blocked_no_human_approval",
+            "violation_count": 1
+          },
+          {
+            "checked_row_count": 12,
+            "dataset_build_plan_id": "s9ds_b298744ad27683c6",
+            "factor_hypothesis_id": "s9fac_9442604d8afc830c",
+            "leakage_guard_id": "s9lg_0a8de325c1b58ab3",
+            "status": "pass",
+            "violation_count": 0
+          },
+          {
+            "checked_row_count": 12,
+            "dataset_build_plan_id": "s9ds_47279ede82f65b5c",
+            "factor_hypothesis_id": "s9fac_f5103002655412b1",
+            "leakage_guard_id": "s9lg_ae3c46c7f77f7d3a",
+            "status": "pass",
+            "violation_count": 0
+          }
+        ],
+        "pit_bad": 0,
+        "pit_row_count": 24,
+        "status": "pass"
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_point_in_time_and_leakage_before_backtest",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Approved paths have factor/dataset/backtest approvals; denied paths have no PIT rows.",
+      "detail": {
+        "approval_count": 7,
+        "approved_factor_ids": [
+          "s9fac_9442604d8afc830c",
+          "s9fac_f5103002655412b1"
+        ],
+        "bad_approved_factor_ids": [],
+        "blocked_factor_pit_row_count": 0,
+        "denied_approval_count": 1,
+        "status": "pass"
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_human_approval_state_blocks_unapproved_paths",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Backtest and FactorCard rows stay internal validation artifacts; paper trading remains not started.",
+      "detail": {
+        "bad_backtest_advice_count": 0,
+        "bad_factor_card_advice_count": 0,
+        "paper_control_count": 3,
+        "paper_started_count": 0,
+        "status": "pass"
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_no_trading_or_external_advice_boundary",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "FactorCards and ResearchExperienceRecords are written for future searchable internal learning.",
+      "detail": {
+        "bad_factor_hypothesis_ids": [],
+        "factor_card_count": 3,
+        "status": "pass"
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_factorcard_and_experience_memory_written",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    },
+    {
+      "closeout_level": "L4_scope_pass",
+      "description": "Schema, summary, gate rows, closeout report and WorkpaperEvent are replayable from SQL-final ledger.",
+      "detail": {
+        "quality_gate_count": 12,
+        "runtime_artifact_count": 8,
+        "status": "pass",
+        "workpaper_event_count": 3
+      },
+      "fixture_id": "P33-1.5",
+      "gate_id": "p33_1_5_runtime_artifacts_and_workpaper_event_ledgered",
+      "generated_at": "2026-07-04T18:46:53Z",
+      "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+      "status": "pass"
+    }
+  ],
+  "advice_audit": {
+    "bad_backtest_advice_count": 0,
+    "bad_factor_card_advice_count": 0,
+    "paper_control_count": 3,
+    "paper_started_count": 0,
+    "status": "pass"
+  },
+  "approval_audit": {
+    "approval_count": 7,
+    "approved_factor_ids": [
+      "s9fac_9442604d8afc830c",
+      "s9fac_f5103002655412b1"
+    ],
+    "bad_approved_factor_ids": [],
+    "blocked_factor_pit_row_count": 0,
+    "denied_approval_count": 1,
+    "status": "pass"
+  },
+  "artifacts": [
+    {
+      "artifact_type": "p33_research_to_quant_factor_handoff_fixture",
+      "contract_aligned_plan": {
+        "absorbed_contract_ids": [
+          "l3_research_to_quant_factor_handoff_contract_v0_1"
+        ],
+        "used_case_contract_ids": [
+          "l3_research_to_quant_factor_handoff_contract_v0_1"
+        ]
+      }
+    }
+  ],
+  "closeout_level": "L4_scope_pass",
+  "contract_id": "l3_research_to_quant_factor_handoff_contract_v0_1",
+  "do_not_promote": [
+    "backtest_as_trade_advice",
+    "factor_without_judgment_or_source_refs",
+    "factor_without_pit_manifest",
+    "dataset_or_backtest_without_human_approval",
+    "paper_or_live_trading_without_explicit_approval"
+  ],
+  "gate_fail_count": 0,
+  "generated_at": "2026-07-04T18:46:53Z",
+  "handoff_records": [
+    {
+      "approved_for_backtest": false,
+      "blocked_reason": "dataset build denied by human approval gate and missing approved source route",
+      "dataset_plan_status": "blocked_no_human_approval",
+      "factor_hypothesis_id": "s9fac_77d029f1b839eb4b",
+      "feature_spec_id": "",
+      "input_mapping": {
+        "candidate_feature_refs": [
+          "s9feat_b82aac319198328d"
+        ],
+        "human_approval_policy": {
+          "backtest": "required",
+          "dataset_build": "required",
+          "factor_hypothesis": "required",
+          "paper_trading": "separate_explicit_approval_required"
+        },
+        "judgment_card_ids": [
+          "s9jcard_755c022a7dcb6dfa"
+        ],
+        "point_in_time_data_manifest": {
+          "asof_date": "2026-01-31",
+          "feature_available_time": "2026-02-01T14:30:00Z",
+          "feature_publish_time": "2026-01-31T21:00:00Z",
+          "label_window_start": "2026-02-02T14:30:00Z",
+          "lag_policy": "available_next_trading_day_after_public_signal",
+          "source_refs": [
+            "gap://s8/derivatives_market_signal_public_boundary"
+          ],
+          "tradable_after": "2026-02-02T14:30:00Z"
+        },
+        "signal_definition": "Derivatives positioning is a useful market-expectation layer, but missing licensed or approved data cannot enter a dataset.",
+        "source_refs": [
+          "gap://s8/derivatives_market_signal_public_boundary"
+        ]
+      },
+      "label_spec_id": "",
+      "output_mapping": {
+        "backtest_plan_id": "",
+        "blocked_before_backtest_plan": true,
+        "factor_hypothesis_id": "s9fac_77d029f1b839eb4b",
+        "human_approval_state": {
+          "dataset_build": "denied"
+        },
+        "leakage_guard_result": "s9lg_c6a478ded048bdb6",
+        "leakage_guard_status": "blocked_no_human_approval",
+        "research_experience_record_id": "s9exp_a47966fe2d30720d",
+        "signal_observation_refs": [
+          "s9obs_2332f80ac82b2436"
+        ],
+        "validation_status": "blocked"
+      },
+      "source_evidence_refs": [
+        "gap://s8/derivatives_market_signal_public_boundary"
+      ],
+      "thesis_driver_id": "td_derivatives_gap_candidate_requires_license_and_approval",
+      "universe_spec_id": "",
+      "validation_status": "blocked_no_human_approval"
+    },
+    {
+      "approved_for_backtest": true,
+      "blocked_reason": "",
+      "dataset_plan_status": "ready_for_leakage_check",
+      "factor_hypothesis_id": "s9fac_9442604d8afc830c",
+      "feature_spec_id": "s9feat_9ca21051ea70ce9b",
+      "input_mapping": {
+        "candidate_feature_refs": [
+          "s9feat_9ca21051ea70ce9b"
+        ],
+        "human_approval_policy": {
+          "backtest": "required",
+          "dataset_build": "required",
+          "factor_hypothesis": "required",
+          "paper_trading": "separate_explicit_approval_required"
+        },
+        "judgment_card_ids": [
+          "s9jcard_91369a21c4bb9baf"
+        ],
+        "point_in_time_data_manifest": {
+          "asof_date": "2026-01-31",
+          "feature_available_time": "2026-02-01T14:30:00Z",
+          "feature_publish_time": "2026-01-31T21:00:00Z",
+          "label_window_start": "2026-02-02T14:30:00Z",
+          "lag_policy": "available_next_trading_day_after_public_signal",
+          "source_refs": [
+            "sec_capital_market_event:0c8e03c6e3a1fce1",
+            "sec_capital_market_event:13602c04111f438d",
+            "sec_capital_market_event:1942d4a5048d1e5f",
+            "sec_capital_market_event:7e1ca233ec8309fc",
+            "sec_capital_market_event:91d03292801ab7ae",
+            "sec_capital_market_event:99e055157765003e",
+            "sec_capital_market_event:9b69c2fff946be81",
+            "sec_capital_market_event:a4306eaf5e2fbaa4",
+            "sec_capital_market_event:cec7e375c8083d06",
+            "sec_capital_market_event:d0f3c5ba6c0f6ce2",
+            "sec_capital_market_event:db8c4e50a7394b18",
+            "sec_capital_market_event:f69cd1b1825116e2"
+          ],
+          "tradable_after": "2026-02-02T14:30:00Z"
+        },
+        "signal_definition": "Delayed market and liquidity context can be tested as a short-horizon price-in or reversal signal.",
+        "source_refs": [
+          "sec_capital_market_event:0c8e03c6e3a1fce1",
+          "sec_capital_market_event:13602c04111f438d",
+          "sec_capital_market_event:1942d4a5048d1e5f",
+          "sec_capital_market_event:7e1ca233ec8309fc",
+          "sec_capital_market_event:91d03292801ab7ae",
+          "sec_capital_market_event:99e055157765003e",
+          "sec_capital_market_event:9b69c2fff946be81",
+          "sec_capital_market_event:a4306eaf5e2fbaa4",
+          "sec_capital_market_event:cec7e375c8083d06",
+          "sec_capital_market_event:d0f3c5ba6c0f6ce2",
+          "sec_capital_market_event:db8c4e50a7394b18",
+          "sec_capital_market_event:f69cd1b1825116e2"
+        ]
+      },
+      "label_spec_id": "s9label_ed047e95e1e1b182",
+      "output_mapping": {
+        "backtest_plan_id": "s9btplan_e9703f9cf3ed925a",
+        "blocked_before_backtest_plan": false,
+        "factor_hypothesis_id": "s9fac_9442604d8afc830c",
+        "human_approval_state": {
+          "backtest": "approved",
+          "dataset_build": "approved",
+          "factor_hypothesis": "approved"
+        },
+        "leakage_guard_result": "s9lg_0a8de325c1b58ab3",
+        "leakage_guard_status": "pass",
+        "research_experience_record_id": "s9exp_fe75695e750fd56c",
+        "signal_observation_refs": [
+          "s9obs_42a9ca02806ceb2b"
+        ],
+        "validation_status": "pass"
+      },
+      "source_evidence_refs": [
+        "sec_capital_market_event:0c8e03c6e3a1fce1",
+        "sec_capital_market_event:13602c04111f438d",
+        "sec_capital_market_event:1942d4a5048d1e5f",
+        "sec_capital_market_event:7e1ca233ec8309fc",
+        "sec_capital_market_event:91d03292801ab7ae",
+        "sec_capital_market_event:99e055157765003e",
+        "sec_capital_market_event:9b69c2fff946be81",
+        "sec_capital_market_event:a4306eaf5e2fbaa4",
+        "sec_capital_market_event:cec7e375c8083d06",
+        "sec_capital_market_event:d0f3c5ba6c0f6ce2",
+        "sec_capital_market_event:db8c4e50a7394b18",
+        "sec_capital_market_event:f69cd1b1825116e2"
+      ],
+      "thesis_driver_id": "td_s8_market_reaction_and_liquidity_context",
+      "universe_spec_id": "s9univ_69bcf7b09278dbe0",
+      "validation_status": "approved_for_validation"
+    },
+    {
+      "approved_for_backtest": true,
+      "blocked_reason": "",
+      "dataset_plan_status": "ready_for_leakage_check",
+      "factor_hypothesis_id": "s9fac_f5103002655412b1",
+      "feature_spec_id": "s9feat_8279b80e1651b844",
+      "input_mapping": {
+        "candidate_feature_refs": [
+          "s9feat_8279b80e1651b844"
+        ],
+        "human_approval_policy": {
+          "backtest": "required",
+          "dataset_build": "required",
+          "factor_hypothesis": "required",
+          "paper_trading": "separate_explicit_approval_required"
+        },
+        "judgment_card_ids": [
+          "s9jcard_f25803442a507ac1"
+        ],
+        "point_in_time_data_manifest": {
+          "asof_date": "2026-01-31",
+          "feature_available_time": "2026-02-01T14:30:00Z",
+          "feature_publish_time": "2026-01-31T21:00:00Z",
+          "label_window_start": "2026-02-02T14:30:00Z",
+          "lag_policy": "available_next_trading_day_after_public_signal",
+          "source_refs": [
+            "sec_capital_market_event:0c8e03c6e3a1fce1",
+            "sec_capital_market_event:13602c04111f438d",
+            "sec_capital_market_event:1942d4a5048d1e5f",
+            "sec_capital_market_event:7e1ca233ec8309fc",
+            "sec_capital_market_event:91d03292801ab7ae",
+            "sec_capital_market_event:99e055157765003e",
+            "sec_capital_market_event:9b69c2fff946be81",
+            "sec_capital_market_event:a4306eaf5e2fbaa4",
+            "sec_capital_market_event:cec7e375c8083d06",
+            "sec_capital_market_event:d0f3c5ba6c0f6ce2",
+            "sec_capital_market_event:db8c4e50a7394b18",
+            "sec_capital_market_event:f69cd1b1825116e2"
+          ],
+          "tradable_after": "2026-02-02T14:30:00Z"
+        },
+        "signal_definition": "Corporate-action, credit-funding and ownership filing context can be tested as an event-pressure signal.",
+        "source_refs": [
+          "sec_capital_market_event:0c8e03c6e3a1fce1",
+          "sec_capital_market_event:13602c04111f438d",
+          "sec_capital_market_event:1942d4a5048d1e5f",
+          "sec_capital_market_event:7e1ca233ec8309fc",
+          "sec_capital_market_event:91d03292801ab7ae",
+          "sec_capital_market_event:99e055157765003e",
+          "sec_capital_market_event:9b69c2fff946be81",
+          "sec_capital_market_event:a4306eaf5e2fbaa4",
+          "sec_capital_market_event:cec7e375c8083d06",
+          "sec_capital_market_event:d0f3c5ba6c0f6ce2",
+          "sec_capital_market_event:db8c4e50a7394b18",
+          "sec_capital_market_event:f69cd1b1825116e2"
+        ]
+      },
+      "label_spec_id": "s9label_4e010d10fb1cd25a",
+      "output_mapping": {
+        "backtest_plan_id": "s9btplan_eab078704a9c47f3",
+        "blocked_before_backtest_plan": false,
+        "factor_hypothesis_id": "s9fac_f5103002655412b1",
+        "human_approval_state": {
+          "backtest": "approved",
+          "dataset_build": "approved",
+          "factor_hypothesis": "approved"
+        },
+        "leakage_guard_result": "s9lg_ae3c46c7f77f7d3a",
+        "leakage_guard_status": "pass",
+        "research_experience_record_id": "s9exp_364fe63a1e5858a5",
+        "signal_observation_refs": [
+          "s9obs_04f79a684209d506"
+        ],
+        "validation_status": "pass"
+      },
+      "source_evidence_refs": [
+        "sec_capital_market_event:0c8e03c6e3a1fce1",
+        "sec_capital_market_event:13602c04111f438d",
+        "sec_capital_market_event:1942d4a5048d1e5f",
+        "sec_capital_market_event:7e1ca233ec8309fc",
+        "sec_capital_market_event:91d03292801ab7ae",
+        "sec_capital_market_event:99e055157765003e",
+        "sec_capital_market_event:9b69c2fff946be81",
+        "sec_capital_market_event:a4306eaf5e2fbaa4",
+        "sec_capital_market_event:cec7e375c8083d06",
+        "sec_capital_market_event:d0f3c5ba6c0f6ce2",
+        "sec_capital_market_event:db8c4e50a7394b18",
+        "sec_capital_market_event:f69cd1b1825116e2"
+      ],
+      "thesis_driver_id": "td_s8_capital_event_and_funding_pressure",
+      "universe_spec_id": "s9univ_cd4f173cb219b19d",
+      "validation_status": "approved_for_validation"
+    }
+  ],
+  "input_contract_required_fields": [
+    "judgment_card_ids",
+    "signal_definition",
+    "candidate_feature_refs",
+    "point_in_time_data_manifest",
+    "human_approval_policy"
+  ],
+  "judgment_card_audit": {
+    "direct_thesis_id_substitute_count": 0,
+    "direct_thesis_id_substitutes": [],
+    "judgment_card_count": 3,
+    "malformed_judgment_card_ids": [],
+    "missing_judgment_card_ids": [],
+    "referenced_judgment_card_count": 3,
+    "status": "pass"
+  },
+  "memory_audit": {
+    "bad_factor_hypothesis_ids": [],
+    "factor_card_count": 3,
+    "status": "pass"
+  },
+  "output_contract_required_fields": [
+    "factor_hypothesis_id",
+    "signal_observation_refs",
+    "backtest_plan_id",
+    "leakage_guard_result",
+    "validation_status",
+    "human_approval_state",
+    "research_experience_record_id"
+  ],
+  "pit_audit": {
+    "approved_plan_count": 2,
+    "backtest_without_passed_leakage": 0,
+    "leakage_rows": [
+      {
+        "checked_row_count": 0,
+        "dataset_build_plan_id": "s9ds_387a1c3f19aa15ef",
+        "factor_hypothesis_id": "s9fac_77d029f1b839eb4b",
+        "leakage_guard_id": "s9lg_c6a478ded048bdb6",
+        "status": "blocked_no_human_approval",
+        "violation_count": 1
+      },
+      {
+        "checked_row_count": 12,
+        "dataset_build_plan_id": "s9ds_b298744ad27683c6",
+        "factor_hypothesis_id": "s9fac_9442604d8afc830c",
+        "leakage_guard_id": "s9lg_0a8de325c1b58ab3",
+        "status": "pass",
+        "violation_count": 0
+      },
+      {
+        "checked_row_count": 12,
+        "dataset_build_plan_id": "s9ds_47279ede82f65b5c",
+        "factor_hypothesis_id": "s9fac_f5103002655412b1",
+        "leakage_guard_id": "s9lg_ae3c46c7f77f7d3a",
+        "status": "pass",
+        "violation_count": 0
+      }
+    ],
+    "pit_bad": 0,
+    "pit_row_count": 24,
+    "status": "pass"
+  },
+  "promotion_recommendation": "active_registry_ready_runtime_alignment_only",
+  "promotion_scope": "research_to_quant_initial",
+  "release_decision": "P33_1_5_L4_scope_pass_research_to_quant_factor_handoff_fixture",
+  "rollback_gate": [
+    "judgment_card_ids_missing",
+    "backtest_plan_id_missing_for_approved_factor",
+    "leakage_guard_missing_or_after_backtest",
+    "human_approval_state_missing",
+    "factorcard_rendered_as_external_trade_advice"
+  ],
+  "runtime_audit": {
+    "quality_gate_count": 12,
+    "runtime_artifact_count": 8,
+    "status": "pass",
+    "workpaper_event_count": 3
+  },
+  "runtime_entry_policy": "Runtime alignment only: bounded research judgments may become internal FactorHypothesis / PIT dataset / leakage-guarded backtest validation artifacts. They cannot become live trading, paper trading without separate approval, or external investment advice.",
+  "schema_version": "fin_insight_p33_research_to_quant_factor_handoff_fixture_v0_1",
+  "source_fixture_refs": {
+    "p33_manifest": "data/manifests/p33_research_to_quant_factor_handoff_fixture_v0_1.json",
+    "p33_report": "docs/internal/vnext_20260610/p33_research_to_quant_factor_handoff_fixture_report.zh-CN.md",
+    "runtime_db": "data/workbench_private/research_data/r53_r60_runtime_task_spine_v0_1.sqlite",
+    "s9_gate_rows": "data/manifests/r53_r60_s9_research_to_quant_lab_gate_rows_v0_1.jsonl",
+    "s9_summary": "data/manifests/r53_r60_s9_research_to_quant_lab_summary_v0_1.json"
+  },
+  "status": "pass"
+}

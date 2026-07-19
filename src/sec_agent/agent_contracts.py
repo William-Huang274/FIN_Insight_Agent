@@ -142,6 +142,13 @@ class AgentActivationPlan:
     focus_tickers: list[str] = field(default_factory=list)
     search_scope_tickers: list[str] = field(default_factory=list)
     relationship_scope_rationale: str = ""
+    research_objective_contract: dict[str, Any] = field(default_factory=dict)
+    thesis_path: dict[str, Any] = field(default_factory=dict)
+    evidence_role_plan: list[dict[str, Any]] = field(default_factory=list)
+    specialist_assignment: dict[str, Any] = field(default_factory=dict)
+    missing_but_retrievable: list[dict[str, Any]] = field(default_factory=list)
+    bounded_or_commercial_gap: list[dict[str, Any]] = field(default_factory=list)
+    writer_order: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -181,6 +188,13 @@ def normalize_agent_activation_plan(payload: Mapping[str, Any] | AgentActivation
         focus_tickers=_unique_upper(payload.get("focus_tickers")),
         search_scope_tickers=_unique_upper(payload.get("search_scope_tickers")),
         relationship_scope_rationale=str(payload.get("relationship_scope_rationale") or "").strip(),
+        research_objective_contract=dict(payload.get("research_objective_contract") or {}),
+        thesis_path=dict(payload.get("thesis_path") or {}),
+        evidence_role_plan=_list_of_dicts(payload.get("evidence_role_plan")),
+        specialist_assignment=dict(payload.get("specialist_assignment") or {}),
+        missing_but_retrievable=_list_of_dicts(payload.get("missing_but_retrievable")),
+        bounded_or_commercial_gap=_list_of_dicts(payload.get("bounded_or_commercial_gap")),
+        writer_order=_unique_strings(payload.get("writer_order")),
         metadata=dict(payload.get("metadata") or {}),
     )
 
@@ -454,6 +468,14 @@ def _unique_strings(value: Any) -> list[str]:
             continue
         seen.add(text)
         result.append(text)
+    return result
+
+
+def _list_of_dicts(value: Any) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    for item in _list_value(value):
+        if isinstance(item, Mapping):
+            result.append(dict(item))
     return result
 
 

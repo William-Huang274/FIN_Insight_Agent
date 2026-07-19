@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 from pathlib import Path
 
@@ -21,6 +22,57 @@ from test_r53_r60_context_graph_skill_registry import seed_s3_fixture
 from test_r53_r60_durable_runtime_hil_resource_router import seed_p12_fixture
 
 
+def _write_json(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True), encoding="utf-8")
+
+
+def seed_p14_current_universe_manifests(root: Path) -> None:
+    manifest_dir = root / "data" / "manifests"
+    _write_json(
+        manifest_dir / "company_public_source_coverage_matrix_v0_1.json",
+        {"status": "gap", "company_count": 603, "repair_queue": [], "boundary": "fixture typed source gaps only"},
+    )
+    _write_json(
+        manifest_dir / "source_coverage_gate_summary_v0_1.json",
+        {"status": "gap", "generated_at": "2026-06-30T00:00:00Z"},
+    )
+    _write_json(
+        manifest_dir / "r53_r60_p26_product_evidence_all_universe_depth_summary_v0_1.json",
+        {
+            "status": "pass",
+            "release_decision": "P26_product_evidence_pack_ready_for_broad_full_chain",
+            "product_pack_readiness_status": "ready",
+            "broad_full_chain_product_pack_ready": True,
+            "counts": {"blocking_gap_count": 0},
+        },
+    )
+    _write_json(
+        manifest_dir / "r53_r60_s8_secondary_market_capital_feedback_summary_v0_1.json",
+        {
+            "status": "pass",
+            "release_decision": "S8_L4_scope_pass",
+            "counts": {"pack_count": 603, "signal_count": 1200},
+        },
+    )
+    _write_json(
+        manifest_dir / "secondary_market_public_context_summary_v0_1.json",
+        {"status": "pass", "ticker_count": 603, "row_count": 1809},
+    )
+    _write_json(
+        manifest_dir / "gold_fact_signal_mart_summary_v0_1.json",
+        {"status": "pass", "company_count": 603, "row_count": 74894},
+    )
+    _write_json(
+        manifest_dir / "retrieval_index_registry_summary_v0_1.json",
+        {"status": "pass", "release_decision": "fixture_retrieval_index_registry_ready"},
+    )
+    _write_json(
+        manifest_dir / "product_intelligence_graph_summary_v0_1.json",
+        {"status": "pass", "company_count": 603},
+    )
+
+
 def seed_p14_fixture(root: Path) -> None:
     seed_s3_fixture(root)
     assert build_s3_gate(root)["release_decision"] == "S3_L4_scope_pass"
@@ -28,6 +80,7 @@ def seed_p14_fixture(root: Path) -> None:
     seed_p12_fixture(root)
     assert build_p12_gate(root)["release_decision"] == "P12_L4_scope_pass_runtime_drill_ready"
     assert build_p13_gate(root)["release_decision"] == "P13_L4_scope_pass_graph_skill_memory_lifecycle_ready"
+    seed_p14_current_universe_manifests(root)
 
 
 def test_build_p14_gate_outputs_l4_scope_pass(tmp_path: Path) -> None:
@@ -44,13 +97,16 @@ def test_build_p14_gate_outputs_l4_scope_pass(tmp_path: Path) -> None:
     assert summary["retrieval_control_status"] == "strategy_budget_context_bridge_ready"
     assert summary["context_bridge_status"] == "context_bridge_ready"
     assert summary["performance_status"] == "local_profile_recorded"
-    assert summary["counts"]["gate_count"] == 12
+    assert summary["current_universe_refresh_status"] == "current_accepted_public_source_universe_ready"
+    assert len(summary["current_universe_refresh_evidence"]) >= 8
+    assert summary["counts"]["gate_count"] == 13
     assert summary["counts"]["gate_fail_count"] == 0
     assert summary["counts"]["source_snapshot_count"] >= 6
     assert summary["counts"]["parser_run_count"] >= 6
     assert summary["counts"]["blocked_authority_count"] == 1
     assert summary["counts"]["strategy_pack_count"] >= 5
     assert summary["counts"]["context_bridge_count"] >= 4
+    assert summary["counts"]["current_universe_refresh_evidence_count"] >= 8
     assert (tmp_path / summary["outputs"]["schema"]).exists()
     assert (tmp_path / summary["outputs"]["gate_rows"]).exists()
     assert (tmp_path / summary["outputs"]["summary"]).exists()
@@ -73,6 +129,30 @@ def test_p14_schema_and_source_modalities_are_present(tmp_path: Path) -> None:
     assert set(contract["required_source_modalities"]).issubset(modalities)
     assert "succeeded" in statuses
     assert "index_snapshot_reconciled" in statuses
+
+
+def test_p14_current_universe_refresh_evidence_requires_manifest_backing(tmp_path: Path) -> None:
+    seed_p14_fixture(tmp_path)
+    build_p14_gate(tmp_path)
+    db_path = default_p14_paths(tmp_path).db_path
+
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("select * from current_universe_refresh_evidence_p14").fetchall()
+        failed = conn.execute("select count(*) from current_universe_refresh_evidence_p14 where status != 'pass'").fetchone()[0]
+
+    assert len(rows) >= 8
+    assert failed == 0
+    assert {row["evidence_name"] for row in rows}.issuperset(
+        {
+            "company_public_source_coverage_matrix",
+            "p26_product_evidence_all_universe_depth",
+            "s8_secondary_market_capital_feedback",
+            "gold_fact_signal_mart",
+            "retrieval_index_registry",
+            "product_intelligence_graph",
+        }
+    )
 
 
 def test_p14_blocks_raw_snapshot_without_parser_authority(tmp_path: Path) -> None:
@@ -164,6 +244,6 @@ def test_p14_rerun_stable_and_appends_workpaper_event(tmp_path: Path) -> None:
     assert first["release_decision"] == "P14_L4_scope_pass_data_ingestion_retrieval_control_plane_ready"
     assert second["release_decision"] == "P14_L4_scope_pass_data_ingestion_retrieval_control_plane_ready"
     assert snapshot_count >= 6
-    assert gate_count == 12
+    assert gate_count == 13
     assert event_count == 2
     assert int(drill_resume_count) >= 1

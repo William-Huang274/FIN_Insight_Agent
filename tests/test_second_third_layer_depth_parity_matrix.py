@@ -425,6 +425,154 @@ def test_depth_parity_accepts_deferred_revenue_as_customer_contract_footprint() 
     assert "do not infer customer names" in contract["next_action"]
 
 
+def test_depth_parity_accepts_customer_operating_footprint_signal_rows() -> None:
+    payload = build_second_third_layer_depth_parity_matrix(
+        company_universe_rows=[{"ticker": "PGR"}],
+        product_kpi_closeout_rows=[{"ticker": "PGR", "status": "product_kpi_exact_gap"}],
+        product_kpi_rows=[],
+        product_spec_rows=[],
+        customer_deployment_rows=[
+            {
+                "_source_file": "customer_operating_footprint_signal_runtime_rows_v0_1.jsonl",
+                "ticker": "PGR",
+                "evidence_ref": "customer_operating_footprint_signal:pgr:premium",
+                "source_role": "financial_services_operating_metric",
+                "source_id": "sec_companyfacts_operating_footprint",
+                "source_url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000080661.json",
+                "parser_status": "value_unit_period_product_citation_parser_pass",
+                "structured_fact_status": "exact_fact_materialized",
+                "allowed_claims": ["company_disclosed_industry_operating_metric"],
+                "claim_types": ["company_disclosed_industry_operating_metric"],
+                "claim_boundary": "insurance premium operating footprint only",
+                "metric_family": "insurance_premiums_or_policies",
+                "metric_name": "Direct Premiums Written",
+                "period": "FY2025-FY",
+                "unit": "USD",
+                "value": 84208000000.0,
+                "exact_value_authority": True,
+                "can_support_company_exact_fact": True,
+            }
+        ],
+        capital_market_rows=[],
+        market_liquidity_rows=[],
+        company_count=1,
+    )
+
+    footprint = payload["company_rows"][0]["dimensions"]["customer_deployment_depth"]
+    assert footprint["status"] == "business_operating_footprint_signal_ready"
+    assert footprint["target_depth_met"] is True
+
+
+def test_depth_parity_accepts_customer_contract_footprint_from_operating_projector() -> None:
+    payload = build_second_third_layer_depth_parity_matrix(
+        company_universe_rows=[{"ticker": "FLNC"}],
+        product_kpi_closeout_rows=[{"ticker": "FLNC", "status": "product_kpi_exact_gap"}],
+        product_kpi_rows=[],
+        product_spec_rows=[],
+        customer_deployment_rows=[
+            {
+                "_source_file": "customer_operating_footprint_signal_runtime_rows_v0_1.jsonl",
+                "ticker": "FLNC",
+                "evidence_ref": "customer_operating_footprint_signal:flnc:rpo",
+                "source_role": "customer_contract_liability_footprint",
+                "source_id": "sec_companyfacts_operating_footprint",
+                "source_url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001868941.json",
+                "parser_status": "value_unit_period_product_citation_parser_pass",
+                "structured_fact_status": "exact_fact_materialized",
+                "claim_boundary": "RPO customer contract footprint only; no order value or product revenue authority.",
+                "metric_family": "remaining_performance_obligation",
+                "metric_name": "Revenue, Remaining Performance Obligation, Amount",
+                "period": "FY2026-Q2",
+                "unit": "USD",
+                "value": 5600000000.0,
+                "exact_value_authority": True,
+                "can_support_company_exact_fact": True,
+            }
+        ],
+        capital_market_rows=[],
+        market_liquidity_rows=[],
+        company_count=1,
+    )
+
+    contract = payload["company_rows"][0]["dimensions"]["customer_deployment_depth"]
+    assert contract["status"] == "customer_contract_liability_footprint_ready"
+    assert contract["target_depth_met"] is True
+    assert "do not infer customer names" in contract["next_action"]
+
+
+def test_depth_parity_accepts_store_count_as_operating_footprint() -> None:
+    payload = build_second_third_layer_depth_parity_matrix(
+        company_universe_rows=[{"ticker": "POOL"}],
+        product_kpi_closeout_rows=[{"ticker": "POOL", "status": "product_kpi_exact_gap"}],
+        product_kpi_rows=[],
+        product_spec_rows=[],
+        customer_deployment_rows=[
+            {
+                "_source_file": "customer_operating_footprint_signal_runtime_rows_v0_1.jsonl",
+                "ticker": "POOL",
+                "evidence_ref": "customer_operating_footprint_signal:pool:stores",
+                "source_role": "store_or_location_footprint",
+                "source_id": "sec_companyfacts_operating_footprint",
+                "source_url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000945841.json",
+                "parser_status": "value_unit_period_product_citation_parser_pass",
+                "structured_fact_status": "exact_fact_materialized",
+                "claim_boundary": "Store count operating footprint only; no sales or sell-through authority.",
+                "metric_family": "store_or_location_count",
+                "metric_name": "Number of Stores",
+                "period": "FY2025-FY",
+                "unit": "NumberOfReportingUnit",
+                "value": 456,
+                "exact_value_authority": True,
+                "can_support_company_exact_fact": True,
+            }
+        ],
+        capital_market_rows=[],
+        market_liquidity_rows=[],
+        company_count=1,
+    )
+
+    footprint = payload["company_rows"][0]["dimensions"]["customer_deployment_depth"]
+    assert footprint["status"] == "business_operating_footprint_signal_ready"
+    assert footprint["target_depth_met"] is True
+
+
+def test_depth_parity_accepts_filing_operating_footprint_context_rows() -> None:
+    payload = build_second_third_layer_depth_parity_matrix(
+        company_universe_rows=[{"ticker": "STLD"}],
+        product_kpi_closeout_rows=[{"ticker": "STLD", "status": "product_kpi_exact_gap"}],
+        product_kpi_rows=[],
+        product_spec_rows=[],
+        customer_deployment_rows=[
+            {
+                "_source_file": "filing_operating_footprint_context_rows_v0_1.jsonl",
+                "ticker": "STLD",
+                "evidence_ref": "filing_operating_footprint:stld:sheet_steel",
+                "source_role": "production_or_throughput",
+                "source_id": "sec_or_fpi_annual_operating_footprint_filing",
+                "source_url": "https://www.sec.gov/Archives/example/stld.htm",
+                "parser_status": "value_unit_period_product_citation_parser_pass",
+                "structured_fact_status": "exact_fact_materialized",
+                "claim_boundary": "Annual filing production-volume row only.",
+                "metric_family": "production_or_throughput",
+                "metric_name": "sheet steel produced",
+                "product_or_segment": "sheet steel operations",
+                "period": "FY2025",
+                "unit": "tons",
+                "value": 10_000_000.0,
+                "exact_value_authority": True,
+                "can_support_company_exact_fact": True,
+            }
+        ],
+        capital_market_rows=[],
+        market_liquidity_rows=[],
+        company_count=1,
+    )
+
+    footprint = payload["company_rows"][0]["dimensions"]["customer_deployment_depth"]
+    assert footprint["status"] == "business_operating_footprint_signal_ready"
+    assert footprint["target_depth_met"] is True
+
+
 def test_depth_parity_does_not_accept_product_revenue_as_customer_dimension_footprint() -> None:
     payload = build_second_third_layer_depth_parity_matrix(
         company_universe_rows=[{"ticker": "SHOP"}],
@@ -447,6 +595,83 @@ def test_depth_parity_does_not_accept_product_revenue_as_customer_dimension_foot
                 "period": "FY2024",
                 "unit": "USD",
                 "value": 100.0,
+            }
+        ],
+        capital_market_rows=[],
+        market_liquidity_rows=[],
+        company_count=1,
+    )
+
+    customer_dimension = payload["company_rows"][0]["dimensions"]["customer_deployment_depth"]
+    assert customer_dimension["status"] == "missing_customer_deployment_signal"
+    assert customer_dimension["target_depth_met"] is False
+
+
+def test_depth_parity_accepts_non_us_backlog_or_orders_as_customer_footprint() -> None:
+    payload = build_second_third_layer_depth_parity_matrix(
+        company_universe_rows=[{"ticker": "373220.KS"}],
+        product_kpi_closeout_rows=[{"ticker": "373220.KS", "status": "product_kpi_exact_gap"}],
+        product_kpi_rows=[],
+        product_spec_rows=[],
+        customer_deployment_rows=[
+            {
+                "_source_file": "non_us_product_kpi_local_disclosure_runtime_rows_v0_1.jsonl",
+                "ticker": "373220.KS",
+                "evidence_ref": "non_us_product_kpi_l1:lges:ess_backlog",
+                "source_id": "company_reported_product_operating_metrics",
+                "source_url": "https://news.lgensol.com/company-news/press-releases/4303/",
+                "parser_status": "value_unit_period_product_citation_parser_pass",
+                "structured_fact_status": "exact_fact_materialized",
+                "allowed_claims": ["company_disclosed_product_kpi", "backlog_or_orders"],
+                "claim_types": ["company_disclosed_product_kpi", "company_reported_product_operating_fact"],
+                "claim_boundary": "Issuer-disclosed backlog/order row; no customer identity, revenue, ASP, sell-through, or share authority.",
+                "metric_family": "backlog_or_orders",
+                "metric_name": "ESS battery order backlog",
+                "product_or_segment": "ESS battery",
+                "period": "FY2025",
+                "unit": "GWh",
+                "value": 120.0,
+                "exact_value_authority": True,
+                "can_support_company_exact_fact": True,
+            }
+        ],
+        capital_market_rows=[],
+        market_liquidity_rows=[],
+        company_count=1,
+    )
+
+    customer_dimension = payload["company_rows"][0]["dimensions"]["customer_deployment_depth"]
+    assert customer_dimension["status"] == "business_operating_footprint_signal_ready"
+    assert customer_dimension["target_depth_met"] is True
+    assert "do not infer revenue" in customer_dimension["next_action"]
+
+
+def test_depth_parity_does_not_accept_non_us_product_revenue_as_customer_dimension() -> None:
+    payload = build_second_third_layer_depth_parity_matrix(
+        company_universe_rows=[{"ticker": "300750.SZ"}],
+        product_kpi_closeout_rows=[{"ticker": "300750.SZ", "status": "product_kpi_exact_gap"}],
+        product_kpi_rows=[],
+        product_spec_rows=[],
+        customer_deployment_rows=[
+            {
+                "_source_file": "non_us_product_kpi_local_disclosure_runtime_rows_v0_1.jsonl",
+                "ticker": "300750.SZ",
+                "evidence_ref": "non_us_product_kpi_l1:catl:product_revenue",
+                "source_id": "company_reported_product_operating_metrics",
+                "source_url": "http://static.cninfo.com.cn/finalpage/2026-03-10/1225002214.PDF",
+                "parser_status": "value_unit_period_product_citation_parser_pass",
+                "structured_fact_status": "exact_fact_materialized",
+                "allowed_claims": ["company_disclosed_product_kpi", "product_revenue"],
+                "claim_types": ["company_disclosed_product_kpi", "company_reported_product_operating_fact"],
+                "claim_boundary": "Product revenue exact row only; not a customer deployment, order, channel, or operating footprint signal.",
+                "metric_family": "product_revenue",
+                "metric_name": "product revenue",
+                "product_or_segment": "动力电池系统",
+                "period": "FY2025",
+                "unit": "CNY",
+                "value": 316506369000.0,
+                "exact_value_authority": True,
+                "can_support_company_exact_fact": True,
             }
         ],
         capital_market_rows=[],

@@ -138,7 +138,7 @@ def test_industry_snapshot_queries_duckdb_observations_with_facets(tmp_path: Pat
         limit=10,
     )
 
-    assert result["status"] == "ok"
+    assert result["status"] == "ok", result
     assert result["summary"]["evidence_row_count"] == 1
     assert result["summary"]["observation_count"] == 1
     assert result["observations"][0]["series_id"] == "EIA_RETAIL_SALES::US::ALL::sales"
@@ -164,7 +164,7 @@ def test_mcp_registry_invokes_industry_tool(tmp_path: Path) -> None:
         },
     )
 
-    assert result["status"] == "ok"
+    assert result["status"] == "ok", result
     assert result["observations"]
 
 
@@ -439,6 +439,86 @@ def test_mcp_registry_returns_source_gap_when_manifest_scope_has_no_available_fi
     assert result["source_gaps"]
     assert result["source_gaps"][0]["ticker"] == "ASML"
     assert result["source_gaps"][0]["reason_code"] == "not_in_manifest_for_mcp_route_scope"
+
+
+def test_mcp_registry_uses_fpi_6k_as_interim_route_without_false_sec_gap(tmp_path: Path, monkeypatch) -> None:
+    manifest_path = tmp_path / "manifest.jsonl"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "ticker": "ASML",
+                "fiscal_year": 2026,
+                "form_type": "6-K",
+                "source_tier": "company_authored_unaudited_sec_filing",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    def fake_build_query_plan_for_graph(runtime_args, query):
+        return {
+            "query_contract": {
+                "task_type": "company_single",
+                "search_scope_tickers": ["ASML"],
+                "focus_tickers": ["ASML"],
+                "years": [2026],
+                "filing_types": ["10-Q", "8-K"],
+                "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+                "metric_families": ["orders_backlog", "revenue", "capex"],
+            },
+            "selected_tickers": ["ASML"],
+            "selected_years": [2026],
+        }
+
+    captured: dict[str, object] = {}
+
+    def fake_retrieve_context_for_graph(runtime_args, graph_state):
+        requirements = graph_state["query_contract"]["evidence_requirements"]
+        captured["requirements"] = requirements
+        captured["source_coverage_gaps"] = graph_state["query_contract"].get("source_coverage_gaps", [])
+        return {
+            "context_rows": [{"evidence_id": "ASML_2026_6K", "ticker": "ASML"}],
+            "retrieval_trace": {
+                "context_summary": {"context_row_count": 1},
+                "context_policy": {"candidate_row_count_pre_rerank": 1, "candidate_sent_to_bge": 1},
+            },
+            "context_runtime": {"context_runner": "fake"},
+            "artifact_refs": {"retrieved_context": str(tmp_path / "trace.jsonl")},
+        }
+
+    fake_interactive = SimpleNamespace(
+        build_query_plan_for_graph=fake_build_query_plan_for_graph,
+        retrieve_context_for_graph=fake_retrieve_context_for_graph,
+    )
+    monkeypatch.setattr("sec_agent.mcp_tool_registry._load_interactive_module", lambda: fake_interactive)
+
+    result = invoke_mcp_tool(
+        "sec_search_filings",
+        {
+            "query": "Find ASML latest order backlog commentary",
+            "tickers": ["ASML"],
+            "years": [2026],
+            "filing_types": ["10-Q", "8-K"],
+            "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+            "metric_families": ["orders_backlog", "revenue", "capex"],
+            "manifest_path": str(manifest_path),
+            "output_dir": str(tmp_path),
+        },
+    )
+
+    assert result["status"] == "ok", result
+    assert result["source_gaps"] == []
+    assert result["query_contract"]["source_coverage_gaps"] == []
+    requirements = captured["requirements"]
+    assert isinstance(requirements, list)
+    assert len(requirements) == 1
+    assert requirements[0]["tickers"] == ["ASML"]
+    assert requirements[0]["years"] == [2026]
+    assert requirements[0]["filing_types"] == ["6-K"]
+    assert requirements[0]["source_tiers"] == ["company_authored_unaudited_sec_filing"]
+    assert requirements[0]["evidence_routes"] == ["8k_commentary"]
+    assert captured["source_coverage_gaps"] == []
 
 
 def test_mcp_registry_converts_interactive_no_available_filings_error_to_source_gap(

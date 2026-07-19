@@ -2,6 +2,8 @@
 
 Date: 2026-06-30
 
+Supersession note: P22's original P21 rerun left B04/B05 open at that checkpoint. The later P25/B05 closeout closed B05; current P21 has only B04 open.
+
 ## Prompt
 
 The user confirmed that the five PRD/R-series audit gaps must be handled under the updated enterprise-grade source-of-truth rule. After P21 registered all blockers, this slice closes only the source-doc status drift blocker before any broad full-chain quality regression.

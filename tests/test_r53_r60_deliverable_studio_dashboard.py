@@ -33,8 +33,10 @@ def test_build_s7_gate_outputs_l4_scope_pass_and_artifacts(tmp_path: Path) -> No
 
     assert summary["release_decision"] == "S7_L4_scope_pass"
     assert summary["closeout_level"] == "L4_scope_pass"
-    assert summary["counts"]["gate_count"] == 10
+    assert summary["counts"]["gate_count"] == 11
     assert summary["counts"]["gate_fail_count"] == 0
+    assert summary["customer_ready_editorial_quality_pass"] is True
+    assert summary["editorial_acceptance_status"] == "deterministic_customer_ready_pass"
     assert summary["counts"]["render_jobs_s7"] == len(REQUIRED_FORMATS)
     assert (tmp_path / summary["outputs"]["schema"]).exists()
     assert (tmp_path / summary["outputs"]["gate_rows"]).exists()
@@ -50,6 +52,13 @@ def test_build_s7_gate_outputs_l4_scope_pass_and_artifacts(tmp_path: Path) -> No
         assert "word/document.xml" in archive.namelist()
     with zipfile.ZipFile(output_root / "evidence_appendix.xlsx") as archive:
         assert "xl/worksheets/sheet1.xml" in archive.namelist()
+    markdown = (output_root / "workpaper_review.md").read_text(encoding="utf-8")
+    assert "## Core Judgment" in markdown
+    assert "## Evidence Boundary Appendix" in markdown
+    assert "## ClaimCards" not in markdown
+    assert "section_intent" not in markdown
+    assert "writer_boundary" not in markdown
+    assert "claim_card_id" not in markdown
 
 
 def test_s7_sql_contract_links_plan_surfaces_render_jobs_dashboard_and_artifacts(tmp_path: Path) -> None:

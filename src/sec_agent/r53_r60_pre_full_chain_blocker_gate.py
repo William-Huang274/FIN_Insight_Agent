@@ -170,6 +170,49 @@ def _load_p24_product_acceptance_summary(root: Path) -> dict[str, Any]:
     return payload
 
 
+def _p24_manifest_acceptance_valid(root: Path) -> dict[str, Any]:
+    manifest_dir = root / "data" / "manifests"
+    human_rows_path = manifest_dir / "r53_r60_p24_b04_human_evidence_requirements_v0_1.jsonl"
+    defect_rows_path = manifest_dir / "r53_r60_p24_b04_defect_closeout_requirements_v0_1.jsonl"
+    decision_rows_path = manifest_dir / "r53_r60_p24_b04_acceptance_decision_rows_v0_1.jsonl"
+    gate_rows_path = manifest_dir / "r53_r60_p24_b04_product_acceptance_gate_rows_v0_1.jsonl"
+    human_rows = _read_jsonl(human_rows_path)
+    defect_rows = _read_jsonl(defect_rows_path)
+    decision_rows = _read_jsonl(decision_rows_path)
+    gate_rows = _read_jsonl(gate_rows_path)
+    pending_human = [row for row in human_rows if row.get("current_status") != "complete"]
+    pending_defects = [row for row in defect_rows if row.get("current_status") != "closed"]
+    accepted_decisions = [
+        row
+        for row in decision_rows
+        if row.get("decision_status") == "accepted"
+        and row.get("reviewer_role") not in {"", "pending_real_human_reviewer", "automation_e2e"}
+        and row.get("deliverable_ref")
+        and row.get("defect_closeout_status") == "closed"
+    ]
+    closure_gate = [
+        row
+        for row in gate_rows
+        if row.get("gate_id") == "p24_b04_closure_from_manifest_rows_not_summary_only" and row.get("status") == "pass"
+    ]
+    valid = bool(human_rows) and not pending_human and not pending_defects and bool(accepted_decisions) and bool(closure_gate)
+    return {
+        "valid": valid,
+        "paths": {
+            "human_rows": f"data/manifests/{human_rows_path.name}",
+            "defect_rows": f"data/manifests/{defect_rows_path.name}",
+            "decision_rows": f"data/manifests/{decision_rows_path.name}",
+            "gate_rows": f"data/manifests/{gate_rows_path.name}",
+        },
+        "human_row_count": len(human_rows),
+        "human_pending_count": len(pending_human),
+        "defect_row_count": len(defect_rows),
+        "defect_pending_count": len(pending_defects),
+        "accepted_decision_count": len(accepted_decisions),
+        "closure_gate_count": len(closure_gate),
+    }
+
+
 def _load_p25_pack_depth_summary(root: Path) -> dict[str, Any]:
     path = root / "data" / "manifests" / "r53_r60_p25_b05_pack_depth_summary_v0_1.json"
     if not path.exists():
@@ -271,6 +314,7 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
     p22_summary = _load_p22_source_doc_summary(root)
     p23_summary = _load_p23_product_acceptance_summary(root)
     p24_summary = _load_p24_product_acceptance_summary(root)
+    p24_manifest_acceptance = _p24_manifest_acceptance_valid(root)
     p25_summary = _load_p25_pack_depth_summary(root)
     p22_source_docs_closed = (
         p22_summary.get("exists")
@@ -285,6 +329,7 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
         and p24_summary.get("b04_status_after_p24") == "closed_by_real_human_product_acceptance"
         and int(p24_counts.get("human_evidence_pending_count", 1)) == 0
         and int(p24_counts.get("defect_closeout_pending_count", 1)) == 0
+        and p24_manifest_acceptance.get("valid") is True
     )
     p25_counts = p25_summary.get("counts") if isinstance(p25_summary.get("counts"), dict) else {}
     p25_pack_depth_closed = (
@@ -407,6 +452,7 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
                 },
                 "p23_product_acceptance_summary": p23_summary,
                 "p24_product_acceptance_summary": p24_summary,
+                "p24_manifest_acceptance": p24_manifest_acceptance,
             },
             "why_blocking": (
                 "Controlled deterministic pilot rows and P23 automated API/frontend E2E checks are useful for integration, "
@@ -424,7 +470,7 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
         },
         {
             "blocker_id": "B05-depth-packs-before-broad-full-chain",
-            "title": "Secondary-market, quant, deliverable, product graph, and data-depth packs must pass pack-level gates first",
+            "title": "Open secondary-market, deliverable, and retrieval/data-refresh packs must pass pack-level gates before broad full-chain quality claims",
             "source_audit_item": "AUD-05",
             "status": "closed_by_p25_pack_depth_ready"
             if p25_pack_depth_closed
@@ -436,11 +482,14 @@ def pre_full_chain_blockers(root: Path, current_status_rows: list[dict[str, Any]
                     for key in ("S7", "S8", "S9", "P14")
                 },
                 "p25_pack_depth_summary": p25_summary,
-                "baseline_dependency_note": "Historical Product-KPI, CustomerDeployment, ProductGraph, secondary-market, quant, and deliverable gaps remain data-depth dependencies.",
+                "baseline_dependency_note": (
+                    "P25/P26 now register ProductEvidence and QuantLab as ready. Broad quality claims remain blocked by "
+                    "the open secondary-market/capital-feedback, deliverable editorial acceptance, and retrieval/data-refresh packs."
+                ),
             },
             "why_blocking": (
                 "Broad full-chain cases mostly test orchestration when upstream packs are shallow; they do not "
-                "prove report quality if product, market, quant, and deliverable evidence packs are incomplete."
+                "prove report quality while market/capital-feedback, deliverable acceptance, or live retrieval/data-refresh packs remain incomplete."
             ),
             "closeout_acceptance": [
                 "Run deterministic node/pack-level gates for ProductEvidencePack, SecondaryMarketPack, QuantLab, Deliverable Studio, and Retrieval/Data refresh.",
@@ -517,16 +566,23 @@ def build_p21_pre_full_chain_blocker_gate(root: Path) -> dict[str, Any]:
         if str(item.get("status", "")).startswith("open_") or str(item.get("status", "")).endswith("_required")
     )
     full_chain_allowed = blocker_count_open == 0
+    release_decision = (
+        "P21_pre_full_chain_blockers_closed_broad_full_chain_allowed"
+        if full_chain_allowed
+        else "P21_pre_full_chain_blockers_registered_broad_full_chain_blocked"
+    )
 
     summary = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated_at,
         "status": "pass",
-        "release_decision": "P21_pre_full_chain_blockers_registered_broad_full_chain_blocked",
+        "release_decision": release_decision,
         "closeout_level": "L4_scope_pass_for_blocker_registration_only",
         "full_chain_broad_eval_allowed": full_chain_allowed,
         "allowed_while_blocked": ["deterministic_node_tests", "pack_level_tests", "targeted_full_chain_smoke_for_integration_only"],
-        "not_allowed_while_blocked": ["20_50_case_full_chain_quality_claim", "product_release_claim", "automation_from_stale_release_board"],
+        "not_allowed_while_blocked": []
+        if full_chain_allowed
+        else ["20_50_case_full_chain_quality_claim", "product_release_claim", "automation_from_stale_release_board"],
         "blocker_count_total": len(blockers),
         "blocker_count_open": blocker_count_open,
         "gate_count": len(gate_rows),
@@ -553,6 +609,26 @@ def build_p21_pre_full_chain_blocker_gate(root: Path) -> dict[str, Any]:
 
 
 def _write_report(path: Path, summary: dict[str, Any], blockers: list[dict[str, Any]]) -> None:
+    if summary["full_chain_broad_eval_allowed"]:
+        interpretation_en = (
+            "This artifact does not claim product release readiness. It proves the known pre-full-chain "
+            "blockers are machine-readable and currently closed, so broad 20-50 case full-chain quality "
+            "evaluation may start as evaluation evidence rather than release evidence."
+        )
+        interpretation_cn = (
+            "这个 artifact 不声明产品已经可上线；它证明 5 个已知阻塞项已经进入机器可读台账且当前均已关闭，"
+            "因此可以启动 20-50 个 broad full-chain case 作为质量评测证据，但不能直接等同于产品发布验收。"
+        )
+    else:
+        interpretation_en = (
+            "This artifact does not claim product readiness. It only proves that the known blockers are "
+            "machine-readable and that broad 20-50 case full-chain quality evaluation is blocked until "
+            "upstream layers close."
+        )
+        interpretation_cn = (
+            "这个 artifact 不声明产品已经可上线；它只证明 5 个已知阻塞项已经进入机器可读台账，并且在上游层关闭前"
+            "禁止把 20-50 个 broad full-chain case 当作研报质量或产品验收证据。"
+        )
     lines = [
         "# R53-R60 P21 Pre-Full-Chain Blocker Gate",
         "",
@@ -563,9 +639,9 @@ def _write_report(path: Path, summary: dict[str, Any], blockers: list[dict[str, 
         "",
         "## Interpretation / 解释",
         "",
-        "This artifact does not claim product readiness. It only proves that the known blockers are machine-readable and that broad 20-50 case full-chain quality evaluation is blocked until upstream layers close.",
+        interpretation_en,
         "",
-        "这个 artifact 不声明产品已经可上线；它只证明 5 个已知阻塞项已经进入机器可读台账，并且在上游层关闭前禁止把 20-50 个 broad full-chain case 当作研报质量或产品验收证据。",
+        interpretation_cn,
         "",
         "## Blockers",
         "",

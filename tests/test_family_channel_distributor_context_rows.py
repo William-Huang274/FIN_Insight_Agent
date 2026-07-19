@@ -101,6 +101,35 @@ def test_family_channel_distributor_ignores_unbound_official_surface_domain() ->
     assert any("bestbuy.com" in url for url in urls)
 
 
+def test_explicit_ticker_builds_channel_target_without_existing_requirement() -> None:
+    targets = MODULE.build_targets(
+        docket_rows=[],
+        company_source_matrix_rows=[
+            {
+                "ticker": "MKC",
+                "company_name": "McCormick & Company",
+                "primary_lane_id": "V8",
+                "source_role_matrix": [{"requirement_id": "official_product_surface"}],
+            }
+        ],
+        family_assignment_rows=[
+            {
+                "ticker": "MKC",
+                "family_id": "consumer_brands_cpg",
+                "family_name": "Consumer Brands / CPG",
+                "query_terms": ["spices", "seasoning"],
+            }
+        ],
+        tickers=["MKC"],
+    )
+
+    assert len(targets) == 1
+    assert targets[0]["ticker"] == "MKC"
+    assert targets[0]["docket_id"] == "explicit_ticker_channel_probe"
+    assert targets[0]["family_ids"] == ["consumer_brands_cpg"]
+    assert "spices" in targets[0]["query_terms"]
+
+
 def test_extract_locator_links_filters_noise() -> None:
     links = MODULE.extract_locator_links(
         """
@@ -323,6 +352,9 @@ def test_non_us_and_brand_manual_channel_seeds_are_allowed_by_overrides() -> Non
             {"ticker": "LI", "company_name": "Li Auto Inc.", "requirement_id": "channel_offer_proxy"},
             {"ticker": "ITW", "company_name": "Illinois Tool Works", "requirement_id": "channel_offer_proxy"},
             {"ticker": "DECK", "company_name": "Deckers Outdoor", "requirement_id": "channel_offer_proxy"},
+            {"ticker": "MDLZ", "company_name": "Mondelez International", "requirement_id": "channel_offer_proxy"},
+            {"ticker": "SJM", "company_name": "J.M. Smucker", "requirement_id": "channel_offer_proxy"},
+            {"ticker": "XOM", "company_name": "ExxonMobil", "requirement_id": "channel_offer_proxy"},
         ],
         family_assignment_rows=[],
     )
@@ -341,6 +373,9 @@ def test_non_us_and_brand_manual_channel_seeds_are_allowed_by_overrides() -> Non
     assert "https://www.millerwelds.com/where-to-buy" in [seed["url"] for seed in seeds["ITW"]]
     assert "https://www.hoka.com/en/us/store-locator/" in [seed["url"] for seed in seeds["DECK"]]
     assert "https://www.teva.com/storelocator" in [seed["url"] for seed in seeds["DECK"]]
+    assert "https://www.mondelezawayfromhome.com/where-to-buy/" in [seed["url"] for seed in seeds["MDLZ"]]
+    assert "https://www.smuckers.com/where-to-buy" in [seed["url"] for seed in seeds["SJM"]]
+    assert "https://www.exxon.com/en/find-station" in [seed["url"] for seed in seeds["XOM"]]
 
 
 def test_manual_contact_page_with_sales_email_materializes_sales_locator(tmp_path: Path) -> None:

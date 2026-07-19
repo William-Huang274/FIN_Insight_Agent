@@ -53,6 +53,16 @@ S6_ENDPOINTS = (
 DRILLDOWN_SURFACES = ("sections", "claims", "gaps", "lead_review", "judgment", "context", "gates", "artifacts", "events")
 REQUIRED_UI_PANELS = ("task_center", "evidence_drilldown", "workpaper_builder", "review_queue", "ops_panel")
 WORKBENCH_VISIBLE_GATE_SLICES = frozenset({"S0", "S1", "S2", "S3", "S4", "S5", "S6"})
+SUPPORTED_REVIEW_ACTIONS = {
+    "approve",
+    "accept",
+    "reject",
+    "supersede",
+    "request_repair",
+    "return_to_specialist",
+    "downgrade_claim",
+    "comment",
+}
 
 
 @dataclass(frozen=True)
@@ -551,14 +561,40 @@ def append_review_action(
     comment: str,
     reviewer_role: str = "senior_analyst",
     review_item_id: str = "",
+    review_target_type: str = "",
+    review_target_id: str = "",
+    idempotency_key: str = "",
 ) -> dict[str, Any]:
-    if action not in {"approve", "request_repair", "return_to_specialist", "downgrade_claim", "comment"}:
+    if action not in SUPPORTED_REVIEW_ACTIONS:
         raise ValueError(f"unsupported_review_action:{action}")
     ensure_s6_projection(root, task_id=task_id)
     paths = default_s6_paths(root.resolve())
     runtime = FinSightResearchRuntimeFacade(paths.db_path)
     state = runtime.get_task_state(task_id)
     run_id = str(state["task"]["current_run_id"])
+    review_action_id = (
+        stable_id("s6review", [task_id, run_id, idempotency_key])
+        if idempotency_key
+        else ""
+    )
+    if review_action_id:
+        with runtime.store._connect() as conn:
+            existing = conn.execute(
+                "select * from workbench_review_actions_s6 where review_action_id = ?",
+                (review_action_id,),
+            ).fetchone()
+        if existing is not None:
+            row = decode_json_fields(row_to_dict(existing))
+            return {
+                "schema_version": SCHEMA_VERSION,
+                "review_action_id": row["review_action_id"],
+                "task_id": row["task_id"],
+                "run_id": row["run_id"],
+                "action": row["action"],
+                "status": row["status"],
+                "workpaper_event_id": row["workpaper_event_id"],
+                "idempotent_replay": True,
+            }
     if not review_item_id:
         queue = get_review_queue(root, task_id=task_id)["review_queue"]
         review_item_id = str(queue[0].get("review_item_id") if queue else "")
@@ -566,11 +602,19 @@ def append_review_action(
         task_id,
         actor=reviewer_role,
         event_type=f"human_review_{action}",
-        section_id="human_review",
-        claim_id="",
-        payload={"action": action, "comment": comment, "review_item_id": review_item_id},
+        section_id=review_target_type or "human_review",
+        claim_id=review_target_id if review_target_type in {"claim_card", "judgment_card", "judgment_state"} else "",
+        payload={
+            "action": action,
+            "comment": comment,
+            "review_item_id": review_item_id,
+            "review_target_type": review_target_type,
+            "review_target_id": review_target_id,
+            "idempotency_key": idempotency_key,
+        },
     )
-    review_action_id = stable_id("s6review", [task_id, run_id, action, comment, workpaper_event["workpaper_event_id"]])
+    if not review_action_id:
+        review_action_id = stable_id("s6review", [task_id, run_id, action, comment, workpaper_event["workpaper_event_id"]])
     now = utc_now_iso()
     with runtime.store._connect() as conn:
         conn.execute(
@@ -590,7 +634,15 @@ def append_review_action(
                 comment,
                 workpaper_event["workpaper_event_id"],
                 "ledgered",
-                json_dumps({"source": "workbench_s6", "action": action}),
+                json_dumps(
+                    {
+                        "source": "workbench_s6",
+                        "action": action,
+                        "review_target_type": review_target_type,
+                        "review_target_id": review_target_id,
+                        "idempotency_key": idempotency_key,
+                    }
+                ),
                 now,
             ),
         )

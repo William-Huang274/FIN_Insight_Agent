@@ -12,6 +12,7 @@ S9 converts bounded research thesis drivers into internally reviewable quant val
 ## Counts
 
 - `signal_observation_count`: `3`
+- `research_judgment_card_count`: `3`
 - `factor_hypothesis_count`: `3`
 - `feature_spec_count`: `2`
 - `label_spec_count`: `2`

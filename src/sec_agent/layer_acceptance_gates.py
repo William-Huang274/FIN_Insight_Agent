@@ -147,6 +147,9 @@ CUSTOMER_DEPLOYMENT_DEPTH_SOURCE_FILES = {
     "sec_financial_statement_metric_runtime_rows_v0_1.jsonl",
     "industry_operating_metric_slot_rows_v0_1.jsonl",
     "company_reported_product_operating_metric_runtime_rows_v0_1.jsonl",
+    "non_us_product_kpi_local_disclosure_runtime_rows_v0_1.jsonl",
+    "customer_operating_footprint_signal_runtime_rows_v0_1.jsonl",
+    "filing_operating_footprint_context_rows_v0_1.jsonl",
     "official_business_asset_profile_context_rows_v0_1.jsonl",
 }
 
@@ -1108,8 +1111,10 @@ def _row_is_operating_footprint_signal(row: Mapping[str, Any]) -> bool:
         "arr_or_rpo",
         "aua",
         "client_assets",
+        "customer_count",
         "deposits",
         "financial_services_operating_metric",
+        "insurance_premiums_or_policies",
         "loan_balance",
         "marketplace_gross_order_value",
         "mw_or_generation_capacity",
@@ -1118,11 +1123,13 @@ def _row_is_operating_footprint_signal(row: Mapping[str, Any]) -> bool:
         "processed_transactions",
         "production_or_throughput",
         "rental_car_days",
+        "real_estate_footprint",
         "revenue_per_occupied_square_foot",
         "room_nights",
         "same_store_sales_growth",
         "same_store_revenue_growth_component",
         "shipments",
+        "store_or_location_count",
         "subscriber_count",
         "total_payment_volume",
         "tpv_mix_percent",
@@ -1171,7 +1178,11 @@ def _row_is_regulated_product_or_identity_signal(row: Mapping[str, Any]) -> bool
 
 
 def _row_is_customer_contract_liability_signal(row: Mapping[str, Any]) -> bool:
-    if str(row.get("_source_file") or "") != "sec_financial_statement_metric_runtime_rows_v0_1.jsonl":
+    source_file = str(row.get("_source_file") or "")
+    if source_file not in {
+        "sec_financial_statement_metric_runtime_rows_v0_1.jsonl",
+        "customer_operating_footprint_signal_runtime_rows_v0_1.jsonl",
+    }:
         return False
     if not str(row.get("ticker") or "").strip():
         return False
@@ -1187,6 +1198,24 @@ def _row_is_customer_contract_liability_signal(row: Mapping[str, Any]) -> bool:
         return False
     metric_family = str(row.get("metric_family") or "")
     metric_name = str(row.get("metric_name") or "")
+    source_role = str(row.get("source_role") or "")
+    signal_authority_type = str(row.get("signal_authority_type") or "")
+    if source_file == "customer_operating_footprint_signal_runtime_rows_v0_1.jsonl":
+        return bool(
+            metric_family
+            in {
+                "customer_contract_liability_or_deposit",
+                "customer_contract_asset_or_cost",
+                "remaining_performance_obligation",
+            }
+            or source_role in {"customer_contract_liability_footprint", "customer_contract_asset_footprint"}
+            or signal_authority_type
+            in {
+                "customer_contract_liability_footprint",
+                "customer_contract_asset_footprint",
+                "customer_contract_rpo_footprint",
+            }
+        )
     if metric_family == "deferred_revenue":
         return True
     return bool(re.search(r"contract with customer, liability|deferred revenue", metric_name, re.IGNORECASE))

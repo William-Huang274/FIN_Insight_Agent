@@ -18,9 +18,11 @@ pytest.importorskip("httpx")
 from fastapi.testclient import TestClient
 
 from apps.workbench.backend.app import create_app
+from sec_agent.r53_r60_b04_reviewer_acceptance_package import build_b04_reviewer_acceptance_package
 from sec_agent.workbench.job_runner import CommandSpec, start_command_job
 from sec_agent.workbench.jobs import new_local_smoke_job
 from sec_agent.workbench.store import WorkbenchStore
+from tests.test_r53_r60_b04_reviewer_acceptance_package import _seed_p24_inputs, _seed_runtime_db
 
 
 def test_workbench_backend_health() -> None:
@@ -534,9 +536,19 @@ def test_workbench_backend_cancels_running_job(tmp_path: Path) -> None:
 def test_workbench_backend_prunes_terminal_run_history(tmp_path: Path) -> None:
     client = TestClient(create_app(store_path=tmp_path / "workbench.sqlite"))
     store = WorkbenchStore(tmp_path / "workbench.sqlite")
+    fixture_times = {
+        "drop_fixture": "2026-01-01T00:00:00",
+        "keep_fixture": "2026-01-01T00:00:01",
+    }
     for job_id in ("keep_fixture", "drop_fixture"):
         job = new_local_smoke_job(job_id=job_id, trace_id=f"trace_{job_id}").model_copy(
-            update={"status": "completed"}
+            update={
+                "status": "completed",
+                "created_at": fixture_times[job_id],
+                "updated_at": fixture_times[job_id],
+                "started_at": fixture_times[job_id],
+                "finished_at": fixture_times[job_id],
+            }
         )
         store.upsert_run_job(job)
         store.append_run_event(job_id, stream="system", message=f"{job_id} event")
@@ -686,6 +698,56 @@ def test_workbench_backend_lists_and_starts_controlled_eval_runner(
     assert dashboard["recent_eval_jobs"][0]["job_id"] == "eval_fixture"
 
 
+def test_workbench_backend_projects_agent_information_economy_artifacts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import apps.workbench.backend.app as workbench_app
+
+    monkeypatch.setattr(workbench_app, "REPO_ROOT", tmp_path)
+    artifact_dir = tmp_path / "reports" / "r53_r60_p30_full_chain_ai_semis" / "aie_fixture"
+    artifact_dir.mkdir(parents=True)
+    _write_json(
+        artifact_dir / "agent_information_economy_preflight.json",
+        {
+            "schema_version": "finsight_agent_information_economy_ledger_v0_1",
+            "run_id": "aie_fixture",
+            "preflight_only": True,
+            "status": "fail",
+            "plan_status": "blocked_preflight_token_budget",
+            "estimated_total_tokens": 202800,
+            "estimated_paid_call_count": 16,
+            "scheduler_advice": {
+                "status": "split_required",
+                "recommended_batch_count": 2,
+                "batches": [{"case_ids": ["fin_deep_ai_infra_nvda_dell_capex_023"]}],
+            },
+            "cases": [
+                {
+                    "case_id": "fin_deep_ai_infra_nvda_dell_capex_023",
+                    "status": "pass",
+                    "estimated_total_tokens": 101400,
+                    "estimated_paid_call_count": 8,
+                    "prunable_specialist_agents": ["market_valuation_analyst"],
+                }
+            ],
+        },
+    )
+    client = TestClient(workbench_app.create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.get("/api/evals/agent-information-economy")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "fail"
+    assert payload["summary"]["latest_run_id"] == "aie_fixture"
+    assert payload["summary"]["budget_block_count"] == 1
+    assert payload["summary"]["highest_estimated_total_tokens"] == 202800
+    assert payload["latest_artifact"]["rel_path"].endswith("agent_information_economy_preflight.json")
+    assert payload["latest_artifact"]["scheduler_advice"]["status"] == "split_required"
+    assert payload["latest_artifact"]["cases"][0]["prunable_specialist_agents"] == ["market_valuation_analyst"]
+
+
 def test_workbench_backend_starts_g11_full_chain_eval_runner_without_secret_args(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -715,6 +777,10 @@ def test_workbench_backend_starts_g11_full_chain_eval_runner_without_secret_args
     assert "tests/fixtures/fin_agent_vnext_g11_cases_v0_1.jsonl" in spec.args
     assert "--summary-output-path" in spec.args
     assert "--strict" in spec.args
+    assert spec.args[spec.args.index("--token-budget-total") + 1] == "180000"
+    assert spec.args[spec.args.index("--token-budget-per-case") + 1] == "120000"
+    assert spec.args[spec.args.index("--max-paid-calls") + 1] == "8"
+    assert "--allow-expensive-llm" not in spec.args
     assert not any(str(arg).startswith("sk-") for arg in spec.args)
 
 
@@ -747,6 +813,10 @@ def test_workbench_backend_starts_diagnostic_probe_eval_runner_without_strict(
     assert "tests/fixtures/fin_agent_vnext_diagnostic_probe_cases_v0_1.jsonl" in spec.args
     assert "--summary-output-path" in spec.args
     assert "--strict" not in spec.args
+    assert spec.args[spec.args.index("--token-budget-total") + 1] == "180000"
+    assert spec.args[spec.args.index("--token-budget-per-case") + 1] == "120000"
+    assert spec.args[spec.args.index("--max-paid-calls") + 1] == "8"
+    assert "--allow-expensive-llm" not in spec.args
     assert not any(str(arg).startswith("sk-") for arg in spec.args)
 
 
@@ -783,7 +853,100 @@ def test_workbench_backend_starts_catalog_subset_eval_runner_without_secret_args
     assert "--case-subset" in spec.args
     assert spec.args[spec.args.index("--case-subset") + 1] == "r12_successor_12"
     assert "--strict" in spec.args
+    assert spec.args[spec.args.index("--token-budget-total") + 1] == "180000"
+    assert spec.args[spec.args.index("--token-budget-per-case") + 1] == "120000"
+    assert spec.args[spec.args.index("--max-paid-calls") + 1] == "8"
+    assert "--allow-expensive-llm" not in spec.args
     assert not any(str(arg).startswith("sk-") for arg in spec.args)
+
+
+def test_workbench_backend_records_b04_product_acceptance_evidence(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import apps.workbench.backend.app as workbench_app
+
+    monkeypatch.setattr(workbench_app, "REPO_ROOT", tmp_path)
+    client = TestClient(workbench_app.create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    initial = client.get("/api/r53-r60/product-acceptance/evidence")
+    assert initial.status_code == 200
+    assert initial.json()["evidence_status"]["counts"]["real_reviewer_evidence_row_count"] == 0
+
+    rejected = client.post(
+        "/api/r53-r60/product-acceptance/evidence",
+        json={
+            "evidence_type": "reviewer_session",
+            "action_source": "automation_e2e",
+            "reviewer_role": "lead_analyst",
+            "session_id": "session_api_001",
+            "task_id": "task_api_001",
+            "case_id": "case_api_001",
+        },
+    )
+    assert rejected.status_code == 400
+    assert rejected.json()["detail"] == "action_source_must_be_real_human"
+
+    accepted = client.post(
+        "/api/r53-r60/product-acceptance/evidence",
+        json={
+            "evidence_type": "reviewer_session",
+            "reviewer_role": "lead_analyst",
+            "session_id": "session_api_001",
+            "task_id": "task_api_001",
+            "case_id": "case_api_001",
+        },
+    )
+    duplicate = client.post(
+        "/api/r53-r60/product-acceptance/evidence",
+        json={
+            "evidence_type": "reviewer_session",
+            "reviewer_role": "lead_analyst",
+            "session_id": "session_api_001",
+            "task_id": "task_api_001",
+            "case_id": "case_api_001",
+        },
+    )
+    current = client.get("/api/r53-r60/product-acceptance/evidence")
+
+    assert accepted.status_code == 200
+    assert accepted.json()["status"] == "ledgered"
+    assert accepted.json()["evidence"]["action_source"] == "real_human"
+    assert duplicate.status_code == 200
+    assert duplicate.json()["status"] == "already_recorded"
+    assert current.status_code == 200
+    assert current.json()["evidence_status"]["counts"]["real_reviewer_evidence_row_count"] == 1
+    assert current.json()["evidence_status"]["counts"]["session_count"] == 1
+    assert current.json()["evidence_status"]["counts"]["ready_session_count"] == 0
+    session = current.json()["evidence_status"]["session_readiness"]["sessions"][0]
+    assert session["session_id"] == "session_api_001"
+    assert session["closeout_status"] == "pending_real_reviewer_completion"
+    assert "deliverable_acceptance" in session["missing_evidence_types"]
+
+
+def test_workbench_backend_exposes_b04_reviewer_acceptance_package(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import apps.workbench.backend.app as workbench_app
+
+    _seed_p24_inputs(tmp_path)
+    _seed_runtime_db(tmp_path)
+    build_b04_reviewer_acceptance_package(tmp_path, workbench_url="http://127.0.0.1:18080")
+    monkeypatch.setattr(workbench_app, "REPO_ROOT", tmp_path)
+    client = TestClient(workbench_app.create_app(store_path=tmp_path / "workbench.sqlite"))
+
+    response = client.get("/api/r53-r60/product-acceptance/reviewer-package")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["package_exists"] is True
+    assert payload["package"]["package_status"] == "ready_for_real_reviewer_execution"
+    assert payload["package"]["does_not_close_b04"] is True
+    assert len(payload["step_rows"]) == 3
+    assert len(payload["evidence_template_rows"]) == 5
+    assert len(payload["reviewer_candidate_rows"]) == 3
+    assert payload["report_markdown_path"].endswith("r53_r60_p27_b04_reviewer_acceptance_package.zh-CN.md")
 
 
 def test_workbench_backend_rejects_unknown_eval_runner(tmp_path: Path) -> None:

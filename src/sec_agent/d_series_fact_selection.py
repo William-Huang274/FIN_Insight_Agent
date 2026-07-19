@@ -6,6 +6,7 @@ from typing import Any, Mapping
 
 
 PRE_MEMO_FACT_SELECTION_SCHEMA_VERSION = "sec_agent_pre_memo_fact_selection_v0.1"
+DISPLAY_VALUE_LINEAGE_SCHEMA_VERSION = "sec_agent_display_value_lineage_v0.1"
 _STOPWORDS = {
     "and",
     "are",
@@ -41,6 +42,7 @@ def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
     candidates_by_id = _candidate_index(reconciliation)
     focus_tickers = set(_scope_tickers_from_state(state, "focus_tickers"))
     search_scope_tickers = set(_scope_tickers_from_state(state, "search_scope_tickers"))
+    demand_proxy_tickers = set(_demand_proxy_tickers_from_state(state))
 
     for group in _mapping_rows(reconciliation.get("reconciliation_groups")):
         group_id = _text(group.get("group_id"))
@@ -63,6 +65,7 @@ def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
             base["ticker"],
             focus_tickers=focus_tickers,
             search_scope_tickers=search_scope_tickers,
+            demand_proxy_tickers=demand_proxy_tickers,
         )
         memo_reject_reason = _resolved_group_memo_reject_reason(group, preferred)
         if status.startswith("resolved") and preferred and not blocking_gates and not memo_reject_reason:
@@ -119,20 +122,23 @@ def build_pre_memo_fact_selection(state: Mapping[str, Any]) -> dict[str, Any]:
         blocking_gates = _strings((row.get("gate_status_detail") or {}).get("blocking_gate_result_ids")) if isinstance(row.get("gate_status_detail"), Mapping) else []
         if _text(row.get("gate_status")) in {"pass", "warn"} and not blocked_inputs and not blocking_gates:
             approved_derived_metrics.append(
-                {
-                    "derived_metric_id": _text(row.get("derived_metric_id")),
-                    "derived_metric_family": _text(row.get("derived_metric_family")),
-                    "ticker": _text(row.get("ticker")).upper(),
-                    "value": _text(row.get("value")),
-                    "unit": _text(row.get("unit")),
-                    "period_key": _text(row.get("period_key")),
-                    "input_fact_ids": input_fact_ids,
-                    "input_reconciliation_group_ids": _strings(row.get("input_reconciliation_group_ids")),
-                    "gate_status": _text(row.get("gate_status")),
-                    "selection_status": "approved",
-                    "source_layer": "derived_metric_layer",
-                    "claim_boundary": "derived_metric_memo_eligible_only_with_formula_and_input_lineage",
-                }
+                _with_display_value_lineage(
+                    {
+                        "derived_metric_id": _text(row.get("derived_metric_id")),
+                        "derived_metric_family": _text(row.get("derived_metric_family")),
+                        "ticker": _text(row.get("ticker")).upper(),
+                        "value": _text(row.get("value")),
+                        "numeric_value": _text(row.get("numeric_value") or row.get("value")),
+                        "unit": _text(row.get("unit")),
+                        "period_key": _text(row.get("period_key")),
+                        "input_fact_ids": input_fact_ids,
+                        "input_reconciliation_group_ids": _strings(row.get("input_reconciliation_group_ids")),
+                        "gate_status": _text(row.get("gate_status")),
+                        "selection_status": "approved",
+                        "source_layer": "derived_metric_layer",
+                        "claim_boundary": "derived_metric_memo_eligible_only_with_formula_and_input_lineage",
+                    }
+                )
             )
         else:
             rejected_derived_metrics.append(
@@ -220,6 +226,8 @@ def apply_pre_memo_fact_selection_to_judgment(
     filtered_supported: list[dict[str, Any]] = []
     moved_to_unsupported: list[dict[str, Any]] = []
     for claim in supported:
+        if _text(claim.get("agent_id")) == "pre_memo_fact_selector":
+            continue
         evidence_refs = set(_strings(claim.get("evidence_refs") or claim.get("supporting_evidence_ids")))
         fact_refs = set(_strings(claim.get("fact_ids") or claim.get("input_fact_ids")))
         derived_refs = set(_strings(claim.get("derived_metric_ids")))
@@ -336,6 +344,11 @@ def _deterministic_fact_claims_from_approved_facts(
                 "metric_scope": [canonical_metric] if canonical_metric else [],
                 "memo_slot": "product_technology" if dimension == "product_and_production" else "fundamentals",
                 "analysis_dimension": dimension,
+                "scope_role": _text(row.get("scope_role")),
+                "economic_role": _text(row.get("economic_role")),
+                "transmission_role": _text(row.get("transmission_role")),
+                "memo_use_role": _text(row.get("memo_use_role")),
+                "role_boundary": _text(row.get("role_boundary")),
                 "materiality": "high" if canonical_metric in {"financial_metric:revenue", "financial_metric:capex", "product_kpi:product_revenue"} else "medium",
                 "direction": "unknown",
                 "evidence_refs": [evidence_ref] if evidence_ref else [],
@@ -368,11 +381,13 @@ def _deterministic_fact_claims_from_approved_facts(
                     "analysis_dimension": dimension,
                     "analyst_angle": _analysis_dimension_title_for_fact(dimension),
                     "analysis_lens": "Use approved reconciled financial facts as the numeric backbone before adding thesis interpretation.",
-                    "evidence_role": "reported_company_authority",
-                    "business_mechanism": _business_mechanism_for_fact(dimension),
+                    "evidence_role": _text(row.get("economic_role")) or "reported_company_authority",
+                    "transmission_role": _text(row.get("transmission_role")),
+                    "business_mechanism": _business_mechanism_for_fact(dimension, row=row),
                     "financial_bridge": "Use this verified numeric fact only after linking it to revenue, margin, capex, cash-flow, financing, or valuation mechanism explicitly.",
                     "comparison_basis": "Compare only against facts with the same ticker, metric, period_role, and product/segment key.",
                     "counter_read": "若同口径事实反向变化，或产品/期间口径发生切换，该维度权重需要下调并单独暴露冲突。",
+                    "role_boundary": _text(row.get("role_boundary")),
                     "analyst_depth_gate": "period_product_unit_conflict_must_not_be_averaged",
                 },
             }
@@ -456,10 +471,12 @@ def _approved_fact_can_be_claim_card(row: Mapping[str, Any]) -> bool:
         return False
     if _text(row.get("source_family")) in {"public_source_context", "live_public_web_context", "market_snapshot", "industry_snapshot", "relationship_graph", "milvus_semantic"}:
         return False
-    return bool(_text(row.get("value")) and _text(row.get("evidence_ref")))
+    return bool(_text(row.get("display_value")) and _text(row.get("evidence_ref")))
 
 
 def _approved_fact_unit_is_claim_card_safe(row: Mapping[str, Any], *, canonical_metric: str) -> bool:
+    if _metric_unit_memo_reject_reason(row, canonical_metric=canonical_metric):
+        return False
     if canonical_metric not in {
         "financial_metric:revenue",
         "financial_metric:gross_profit",
@@ -480,6 +497,35 @@ def _approved_fact_unit_is_claim_card_safe(row: Mapping[str, Any], *, canonical_
     return True
 
 
+def _metric_unit_memo_reject_reason(row: Mapping[str, Any], *, canonical_metric: str) -> str:
+    unit = _text(row.get("unit")).lower().replace(" ", "_")
+    unit_category = _text(row.get("unit_category")).lower().replace(" ", "_")
+    role = _text(row.get("metric_role") or row.get("value_role")).lower().replace(" ", "_")
+    numeric_value = _float_or_none(row.get("numeric_value") or row.get("value"))
+    percent_units = {"%", "percent", "percentage", "percent_of_revenue", "percentage_of_revenue"}
+    percent_like = unit in percent_units or unit_category in percent_units or role in {
+        "percentage_rate",
+        "rate",
+        "ratio",
+        "margin",
+        "growth_rate",
+        "percentage",
+        "period_change_percent",
+    }
+    if canonical_metric in {"product_kpi:product_revenue", "financial_metric:revenue"} and percent_like:
+        return "revenue_percent_or_change_not_exact_revenue_memo_eligible"
+    if canonical_metric == "product_kpi:backlog" and percent_like:
+        return "backlog_percent_or_change_not_exact_backlog_memo_eligible"
+    if canonical_metric == "financial_metric:gross_margin":
+        if unit and unit not in percent_units:
+            return "gross_margin_unit_mismatch_not_memo_eligible"
+        if numeric_value is not None and (numeric_value < -100 or numeric_value > 100):
+            return "gross_margin_rate_out_of_bounds_not_memo_eligible"
+    if canonical_metric == "financial_metric:gross_profit" and percent_like:
+        return "gross_profit_percent_unit_not_memo_eligible"
+    return ""
+
+
 def _is_unscored_peer_context_total_fact(row: Mapping[str, Any], *, canonical_metric: str) -> bool:
     if _text(row.get("scope_role")) != "peer_context_ticker":
         return False
@@ -498,7 +544,7 @@ def _is_unscored_peer_context_total_fact(row: Mapping[str, Any], *, canonical_me
     }
 
 
-def _approved_fact_priority(row: Mapping[str, Any]) -> tuple[int, int, int, str, str, str]:
+def _approved_fact_priority(row: Mapping[str, Any]) -> tuple[int, int, int, int, str, str, str]:
     canonical = _text(row.get("canonical_metric_id"))
     metric_priority = {
         "financial_metric:capex": 0,
@@ -515,9 +561,11 @@ def _approved_fact_priority(row: Mapping[str, Any]) -> tuple[int, int, int, str,
     }.get(canonical, 50)
     product_penalty = 0 if not _text(row.get("product_or_segment")) else 3
     relevance = _int(row.get("selection_relevance_score"))
+    recency = _period_recency_score(_text(row.get("period_key")))
     return (
         metric_priority,
         -relevance,
+        -recency,
         product_penalty,
         _text(row.get("ticker")).upper(),
         _text(row.get("period_key")),
@@ -530,19 +578,18 @@ def _approved_fact_claim_text(row: Mapping[str, Any]) -> str:
     canonical_metric = _text(row.get("canonical_metric_id"))
     metric = _metric_label(canonical_metric)
     product = _text(row.get("product_or_segment"))
-    value = _text(row.get("value"))
+    value = _text(row.get("display_value") or row.get("value"))
     unit = _text(row.get("unit"))
     period = _text(row.get("period_key"))
     product_part = f" for {product}" if product else ""
-    unit_part = f" {unit}" if unit and unit.lower() not in value.lower() else ""
+    unit_part = f" {unit}" if unit and unit.lower() not in value.lower() and "$" not in value and "%" not in value else ""
     period_part = f" in {period}" if period else ""
     numeric_value = _float_or_none(row.get("numeric_value") or value)
     if canonical_metric == "financial_metric:capex" and numeric_value is not None and numeric_value < 0:
-        magnitude = str(abs(numeric_value)).rstrip("0").rstrip(".")
-        magnitude_part = f"{magnitude}{unit_part}"
+        magnitude_part = value[1:] if value.startswith("-") else value
         return (
             f"{ticker} reported capital expenditure cash outflow/proxy of {magnitude_part}{period_part} "
-            f"(cash-flow sign convention: reported value {value}{unit_part})."
+            "(cash-flow sign convention: memo display uses the outflow magnitude)."
         )
     return f"{ticker} reported {metric}{product_part} of {value}{unit_part}{period_part}."
 
@@ -707,6 +754,9 @@ def _revenue_label_is_adjustment_or_cost(normalized_label: str) -> bool:
         "sales incentives",
         "sales allowance",
         "allowance for",
+        "provision release",
+        "provision release of",
+        "release of $",
     )
     return any(phrase in text for phrase in bad_phrases)
 
@@ -714,6 +764,9 @@ def _revenue_label_is_adjustment_or_cost(normalized_label: str) -> bool:
 def _resolved_group_memo_reject_reason(group: Mapping[str, Any], preferred: Mapping[str, Any]) -> str:
     canonical = _text(group.get("canonical_metric_id"))
     merged = {**dict(group), **dict(preferred)}
+    metric_unit_reason = _metric_unit_memo_reject_reason(merged, canonical_metric=canonical)
+    if metric_unit_reason:
+        return metric_unit_reason
     if not _approved_fact_unit_is_claim_card_safe(merged, canonical_metric=canonical):
         return "ambiguous_currency_scale_not_memo_display_eligible"
     if canonical == "financial_metric:revenue":
@@ -734,8 +787,11 @@ def _profitability_fact_label_is_claim_card_safe(row: Mapping[str, Any]) -> bool
             "product_or_segment",
             "metric_name",
             "row_label",
+            "column_label",
             "group_key",
             "evidence_ref",
+            "source_id",
+            "fact_id",
         )
     ).lower()
     if not text:
@@ -754,6 +810,17 @@ def _profitability_fact_label_is_claim_card_safe(row: Mapping[str, Any]) -> bool
         "diluted",
         "basic",
         "eps",
+        "change rate",
+        "change_rate",
+        "total revenue change",
+        "total_revenue",
+        "revenue change rate",
+        "cost of revenue change",
+        "cost_of_revenue",
+        "costs of revenue change",
+        "cost of sales change",
+        "period_change_rate",
+        "percentage_rate",
     )
     return not any(phrase in text for phrase in bad_phrases)
 
@@ -776,7 +843,16 @@ def _analysis_dimension_title_for_fact(dimension: str) -> str:
     }.get(dimension, "Analyst dimension")
 
 
-def _business_mechanism_for_fact(dimension: str) -> str:
+def _business_mechanism_for_fact(dimension: str, *, row: Mapping[str, Any] | None = None) -> str:
+    economic_role = _text((row or {}).get("economic_role"))
+    if economic_role == "customer_or_demand_side_capex_signal":
+        return "Customer or demand-side capex can support an end-market demand-pool read-through, but it is not supplier revenue, backlog, or a direct order without a counterparty bridge."
+    if economic_role == "issuer_own_capital_investment":
+        return "Issuer capex shows its own reinvestment, capacity preparation, or cash-flow pressure; it should not be labeled as customer demand."
+    if economic_role == "issuer_product_revenue_signal":
+        return "Company-disclosed product or segment revenue connects product activity to reported financial lines, but does not by itself prove SKU share, ASP, or customer deployment."
+    if economic_role == "issuer_order_backlog_signal":
+        return "Company-disclosed backlog supports order visibility and demand commitment, but does not by itself prove final shipment or sell-through."
     if dimension == "capital_and_financing":
         return "Capital spending, cash generation, debt, and liquidity shape reinvestment capacity and financing risk."
     if dimension == "product_and_production":
@@ -808,11 +884,201 @@ def _fact_selection_objective_text(state: Mapping[str, Any]) -> str:
 
 
 def _with_fact_selection_relevance(row: Mapping[str, Any], *, objective_text: str) -> dict[str, Any]:
-    enriched = dict(row)
+    enriched = _with_display_value_lineage(row)
+    enriched = _with_economic_role(enriched)
     score, reasons = _fact_selection_relevance(row, objective_text=objective_text)
     enriched["selection_relevance_score"] = score
     enriched["selection_relevance_reasons"] = reasons
     return enriched
+
+
+def _with_economic_role(row: Mapping[str, Any]) -> dict[str, Any]:
+    enriched = dict(row)
+    role = _economic_role_for_fact(enriched, canonical_metric=_text(enriched.get("canonical_metric_id")))
+    enriched.update(role)
+    return enriched
+
+
+def _economic_role_for_fact(row: Mapping[str, Any], *, canonical_metric: str) -> dict[str, str]:
+    scope_role = _text(row.get("scope_role")) or "unknown_scope"
+    product = _text(row.get("product_or_segment"))
+    is_peer = scope_role == "peer_context_ticker"
+    is_demand_proxy = scope_role == "demand_proxy_ticker"
+    if canonical_metric == "financial_metric:capex":
+        if is_demand_proxy:
+            return {
+                "economic_role": "customer_or_demand_side_capex_signal",
+                "transmission_role": "demand_pool_or_customer_infrastructure_spend_proxy",
+                "memo_use_role": "Use as demand-side spending context only; do not treat as supplier revenue, supplier order, or direct purchase order.",
+                "role_boundary": "capex_peer_context_not_supplier_revenue_or_order",
+            }
+        return {
+            "economic_role": "issuer_own_capital_investment",
+            "transmission_role": "supplier_or_issuer_reinvestment_capacity_and_asset_intensity",
+            "memo_use_role": "Use as the issuer's own reinvestment/capacity/cash-flow pressure signal; do not call it demand-side customer spend unless an explicit customer counterparty row exists.",
+            "role_boundary": "issuer_capex_not_customer_demand_without_counterparty",
+        }
+    if canonical_metric == "product_kpi:backlog":
+        return {
+            "economic_role": "issuer_order_backlog_signal",
+            "transmission_role": "order_visibility_or_demand_commitment",
+            "memo_use_role": "Use as issuer order/backlog visibility; do not replace customer concentration or shipment facts.",
+            "role_boundary": "backlog_supports_visibility_not_full_sell_through",
+        }
+    if canonical_metric == "product_kpi:product_revenue":
+        return {
+            "economic_role": "issuer_product_revenue_signal",
+            "transmission_role": "product_line_revenue_or_business_mix_bridge",
+            "memo_use_role": "Use as company-disclosed product or segment revenue; bridge to margin or mix only with matching profitability/cash-flow facts.",
+            "role_boundary": "product_revenue_not_sku_share_or_customer_order",
+        }
+    if canonical_metric == "financial_metric:gross_margin":
+        return {
+            "economic_role": "issuer_margin_quality_anchor",
+            "transmission_role": "pricing_power_or_cost_structure_anchor",
+            "memo_use_role": "Use as issuer profitability quality anchor; connect to product mix only if product facts exist.",
+            "role_boundary": "margin_anchor_not_product_adoption_fact",
+        }
+    if canonical_metric == "financial_metric:revenue" and is_peer:
+        return {
+            "economic_role": "counterparty_business_context",
+            "transmission_role": "counterparty_scale_or_end_market_context",
+            "memo_use_role": "Use as peer/customer business context only; do not treat as focus-company supplier-side proof.",
+            "role_boundary": "peer_revenue_context_not_focus_company_revenue",
+        }
+    if canonical_metric.startswith("financial_metric:"):
+        if is_peer:
+            return {
+                "economic_role": "counterparty_financial_context",
+                "transmission_role": "peer_or_customer_financial_context",
+                "memo_use_role": "Use as context for the relevant counterparty or peer; do not transfer it to focus-company financial quality.",
+                "role_boundary": "peer_financial_context_not_focus_company_fact",
+            }
+        return {
+            "economic_role": "issuer_financial_quality_anchor",
+            "transmission_role": "issuer_financial_statement_quality_or_capacity",
+            "memo_use_role": "Use as focus issuer financial quality or capacity anchor.",
+            "role_boundary": "issuer_financial_fact_only",
+        }
+    if product:
+        return {
+            "economic_role": "issuer_product_or_segment_context",
+            "transmission_role": "product_or_segment_business_context",
+            "memo_use_role": "Use as product or segment context with explicit boundary.",
+            "role_boundary": "product_context_requires_matching_metric_authority",
+        }
+    return {
+        "economic_role": "unclassified_evidence_context",
+        "transmission_role": "requires_contextual_mapping_before_thesis_use",
+        "memo_use_role": "Use only after Research Lead maps the fact to a company/product/counterparty role.",
+        "role_boundary": "unclassified_role_not_thesis_primary",
+    }
+
+
+def _with_display_value_lineage(row: Mapping[str, Any]) -> dict[str, Any]:
+    enriched = dict(row)
+    display_value, lineage = _display_value_and_lineage(enriched)
+    enriched["display_value"] = display_value
+    enriched["display_value_lineage"] = lineage
+    enriched["display_lineage_status"] = "pass" if display_value else "missing_display_value"
+    return enriched
+
+
+def _display_value_and_lineage(row: Mapping[str, Any]) -> tuple[str, dict[str, Any]]:
+    existing = _text(row.get("display_value") or row.get("display_value_zh"))
+    raw_value = _text(row.get("value"))
+    numeric_value = _float_or_none(row.get("numeric_value") or row.get("value"))
+    unit = _text(row.get("unit")).lower().replace(" ", "_")
+    if existing:
+        return existing, _display_value_lineage(
+            row,
+            transform="source_supplied_display_value",
+            raw_value=raw_value,
+            numeric_value=numeric_value,
+            unit=unit,
+        )
+    if numeric_value is None:
+        return raw_value, _display_value_lineage(
+            row,
+            transform="non_numeric_value_passthrough",
+            raw_value=raw_value,
+            numeric_value=None,
+            unit=unit,
+        )
+    value = _format_numeric_display_value(numeric_value, unit=unit)
+    return value, _display_value_lineage(
+        row,
+        transform="deterministic_unit_normalization",
+        raw_value=raw_value,
+        numeric_value=numeric_value,
+        unit=unit,
+    )
+
+
+def _display_value_lineage(
+    row: Mapping[str, Any],
+    *,
+    transform: str,
+    raw_value: str,
+    numeric_value: float | None,
+    unit: str,
+) -> dict[str, Any]:
+    return {
+        "schema_version": DISPLAY_VALUE_LINEAGE_SCHEMA_VERSION,
+        "source_value_field": "value",
+        "source_numeric_field": "numeric_value",
+        "raw_value": raw_value,
+        "numeric_value": numeric_value,
+        "unit": unit,
+        "transform": transform,
+        "selection_id": _text(row.get("selection_id") or row.get("derived_metric_id")),
+        "fact_id": _text(row.get("fact_id") or row.get("derived_metric_id")),
+        "period_key": _text(row.get("period_key")),
+        "evidence_ref": _text(row.get("evidence_ref")),
+    }
+
+
+def _format_numeric_display_value(value: float, *, unit: str) -> str:
+    unit = unit.lower().replace(" ", "_")
+    abs_value = abs(value)
+    sign = "-" if value < 0 else ""
+    magnitude = abs_value
+    suffix = ""
+    if unit in {"usd_millions", "usd_million", "million_usd", "millions_usd", "$mm", "us$millions"}:
+        magnitude = abs_value / 1000
+        suffix = "B"
+        return f"{sign}${_trim_float(magnitude)}{suffix}"
+    if unit in {"usd_thousands", "usd_thousand", "thousand_usd", "thousands_usd"}:
+        if abs_value >= 1_000_000:
+            return f"{sign}${_trim_float(abs_value / 1_000_000)}B"
+        return f"{sign}${_trim_float(abs_value / 1000)}M"
+    if unit in {"usd_billions", "usd_billion", "billion_usd", "billions_usd", "$bn"}:
+        return f"{sign}${_trim_float(abs_value)}B"
+    if unit in {"usd", "$", "dollar", "dollars"}:
+        if abs_value >= 1_000_000_000:
+            return f"{sign}${_trim_float(abs_value / 1_000_000_000)}B"
+        if abs_value >= 1_000_000:
+            return f"{sign}${_trim_float(abs_value / 1_000_000)}M"
+        if abs_value >= 1_000:
+            return f"{sign}${_trim_float(abs_value / 1_000)}K"
+        return f"{sign}${_trim_float(abs_value)}"
+    if unit in {"%", "percent", "percentage"}:
+        return f"{_trim_float(value)}%"
+    if unit in {"bps", "basis_points"}:
+        return f"{_trim_float(value)} bps"
+    if unit in {"shares", "share", "units", "unit", "customers", "subscribers"}:
+        return f"{sign}{abs_value:,.0f} {unit.replace('_', ' ')}"
+    if unit:
+        return f"{_trim_float(value)} {unit.replace('_', ' ')}"
+    return _trim_float(value)
+
+
+def _trim_float(value: float) -> str:
+    if abs(value) >= 100:
+        return f"{value:,.0f}"
+    if abs(value) >= 10:
+        return f"{value:,.1f}".rstrip("0").rstrip(".")
+    return f"{value:,.2f}".rstrip("0").rstrip(".")
 
 
 def _fact_selection_relevance(row: Mapping[str, Any], *, objective_text: str) -> tuple[int, list[str]]:
@@ -850,6 +1116,9 @@ def _fact_selection_relevance(row: Mapping[str, Any], *, objective_text: str) ->
     if overlap:
         score += min(18, 6 * len(overlap))
         reasons.append("product_segment_matches_research_objective")
+    if _normalized_phrase(product) and _normalized_phrase(product) in _normalized_phrase(objective_text):
+        score += 12
+        reasons.append("exact_product_phrase_matches_research_objective")
     if evidence_overlap:
         score += min(6, 2 * len(evidence_overlap))
         reasons.append("evidence_ref_matches_research_objective")
@@ -860,6 +1129,40 @@ def _fact_selection_relevance(row: Mapping[str, Any], *, objective_text: str) ->
         score += 2
         reasons.append("ticker_matches_research_objective")
     return score, _dedupe_strings(reasons)
+
+
+def _period_recency_score(period_key: str) -> int:
+    text = _text(period_key).lower().replace(":", " ").replace("-", " ").replace("_", " ")
+    year = 0
+    quarter = 0
+    for token in text.split():
+        if len(token) == 4 and token.isdigit():
+            year = max(year, int(token))
+        elif len(token) == 2 and token.startswith("q") and token[1:].isdigit():
+            quarter = max(quarter, int(token[1:]))
+        elif token == "ttm":
+            quarter = max(quarter, 6)
+        elif token in {"annual", "fy", "year"}:
+            quarter = max(quarter, 5)
+    return year * 10 + quarter
+
+
+def _normalized_phrase(value: str) -> str:
+    tokens: list[str] = []
+    current: list[str] = []
+    for ch in str(value or "").lower():
+        if ch.isalnum():
+            current.append(ch)
+        elif current:
+            token = "".join(current)
+            if len(token) >= 2 and token not in _STOPWORDS:
+                tokens.append(token)
+            current = []
+    if current:
+        token = "".join(current)
+        if len(token) >= 2 and token not in _STOPWORDS:
+            tokens.append(token)
+    return " ".join(tokens)
 
 
 def _expanded_product_terms(product: str) -> set[str]:
@@ -912,17 +1215,66 @@ def _scope_tickers_from_state(state: Mapping[str, Any], key: str) -> list[str]:
     return _dedupe_strings([value.upper() for value in values if value])
 
 
+def _demand_proxy_tickers_from_state(state: Mapping[str, Any]) -> list[str]:
+    values: list[str] = []
+    for key in (
+        "demand_proxy_tickers",
+        "customer_tickers",
+        "customer_or_demand_side_tickers",
+        "cloud_buyer_tickers",
+        "buyer_tickers",
+    ):
+        values.extend(_scope_tickers_from_state(state, key))
+
+    query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    scope = query_contract.get("scope") if isinstance(query_contract.get("scope"), Mapping) else {}
+    for container in (state, query_contract, activation, scope):
+        if not isinstance(container, Mapping):
+            continue
+        for key in ("ticker_roles", "company_roles", "role_by_ticker", "ticker_role_map"):
+            role_map = container.get(key)
+            if not isinstance(role_map, Mapping):
+                continue
+            for ticker, role in role_map.items():
+                role_text = " ".join(_strings(role)) if isinstance(role, (list, tuple, set)) else _text(role)
+                if _is_demand_proxy_role(role_text):
+                    values.append(_text(ticker).upper())
+    return _dedupe_strings([value.upper() for value in values if value])
+
+
+def _is_demand_proxy_role(role: str) -> bool:
+    role_text = _text(role).lower().replace("-", "_").replace(" ", "_")
+    if not role_text:
+        return False
+    markers = (
+        "demand_proxy",
+        "customer_proxy",
+        "customer_ticker",
+        "buyer_ticker",
+        "cloud_buyer",
+        "hyperscaler",
+        "customer_capex",
+        "demand_side",
+        "end_market_customer",
+    )
+    return any(marker in role_text for marker in markers)
+
+
 def _scope_role_for_ticker(
     ticker: str,
     *,
     focus_tickers: set[str],
     search_scope_tickers: set[str],
+    demand_proxy_tickers: set[str] | None = None,
 ) -> str:
     ticker = _text(ticker).upper()
     if not ticker:
         return ""
     if ticker in focus_tickers:
         return "focus_ticker"
+    if demand_proxy_tickers and ticker in demand_proxy_tickers:
+        return "demand_proxy_ticker"
     if search_scope_tickers and ticker in search_scope_tickers:
         return "peer_context_ticker"
     return ""
@@ -978,6 +1330,11 @@ def validate_pre_memo_fact_selection(payload: Mapping[str, Any]) -> dict[str, An
         approved_ids.add(fact_id)
         if _text(row.get("selection_status")) != "approved":
             errors.append({"type": "approved_fact_invalid_status", "fact_id": fact_id})
+        if _numeric_value_present(row) and not _text(row.get("display_value")):
+            errors.append({"type": "approved_fact_missing_display_value", "fact_id": fact_id})
+        lineage = row.get("display_value_lineage") if isinstance(row.get("display_value_lineage"), Mapping) else {}
+        if _numeric_value_present(row) and lineage.get("schema_version") != DISPLAY_VALUE_LINEAGE_SCHEMA_VERSION:
+            errors.append({"type": "approved_fact_missing_display_value_lineage", "fact_id": fact_id})
     for row in payload.get("rejected_facts") or []:
         if not isinstance(row, Mapping):
             continue
@@ -988,6 +1345,8 @@ def validate_pre_memo_fact_selection(payload: Mapping[str, Any]) -> dict[str, An
             continue
         if _text(row.get("gate_status")) not in {"pass", "warn"}:
             errors.append({"type": "approved_derived_metric_nonpassing_gate", "derived_metric_id": row.get("derived_metric_id")})
+        if _numeric_value_present(row) and not _text(row.get("display_value")):
+            errors.append({"type": "approved_derived_metric_missing_display_value", "derived_metric_id": row.get("derived_metric_id")})
         if not _strings(row.get("input_fact_ids")):
             warnings.append({"type": "approved_derived_metric_missing_input_fact_ids", "derived_metric_id": row.get("derived_metric_id")})
     return {
@@ -996,6 +1355,12 @@ def validate_pre_memo_fact_selection(payload: Mapping[str, Any]) -> dict[str, An
         "errors": errors,
         "warnings": warnings,
     }
+
+
+def _numeric_value_present(row: Mapping[str, Any]) -> bool:
+    if _text(row.get("numeric_value")):
+        return _float_or_none(row.get("numeric_value")) is not None
+    return _float_or_none(row.get("value")) is not None
 
 
 def _blocking_gate_index(gate_matrix: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:

@@ -54,6 +54,8 @@ def seed_p25_inputs(root: Path) -> None:
             "release_decision": "S7_L4_scope_pass",
             "closeout_level": "L4_scope_pass",
             "boundary": "deterministic render only",
+            "customer_ready_editorial_quality_pass": True,
+            "editorial_acceptance_status": "deterministic_customer_ready_pass",
             "counts": {"render_jobs_s7": 4, "deliverable_quality_gates_s7": 4, "gate_fail_count": 0},
             "render_jobs": [{"output_format": "markdown"}, {"output_format": "docx"}],
         },
@@ -97,7 +99,12 @@ def seed_p25_inputs(root: Path) -> None:
             "retrieval_control_status": "strategy_budget_context_bridge_ready",
             "lineage_status": "raw_to_runtime_lineage_ready",
             "context_bridge_status": "context_bridge_ready",
-            "policy": {"not_full_crawler_or_production_refresh": True},
+            "current_universe_refresh_status": "current_accepted_public_source_universe_ready",
+            "current_universe_refresh_evidence": [{"evidence_name": "fixture_current_universe", "status": "pass"}],
+            "policy": {
+                "current_accepted_universe_refresh_is_runtime_ready": True,
+                "not_full_internet_crawler_or_realtime_refresh": True,
+            },
             "readiness_report": {"known_gaps_json": "[]"},
         },
     )

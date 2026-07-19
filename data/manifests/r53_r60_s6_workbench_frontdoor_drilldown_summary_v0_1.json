@@ -65,11 +65,11 @@
     "workbench_drilldown_projection_s6": 1,
     "workbench_frontdoor_metadata": 3,
     "workbench_ops_projection_s6": 1,
-    "workbench_review_actions_s6": 0,
+    "workbench_review_actions_s6": 2,
     "workbench_task_projection_s6": 1
   },
   "failed_gates": [],
-  "generated_at": "2026-06-29T11:59:59Z",
+  "generated_at": "2026-07-04T18:05:33Z",
   "next_slice_unlocked": "S7",
   "outputs": {
     "closeout_report": "docs/internal/vnext_20260610/r53_r60_s6_workbench_frontdoor_drilldown_l4_scope_pass.zh-CN.md",
@@ -79,11 +79,11 @@
     "summary": "data/manifests/r53_r60_s6_workbench_frontdoor_drilldown_summary_v0_1.json"
   },
   "projection": {
-    "artifact_count": 3,
+    "artifact_count": 18,
     "claim_count": 6,
-    "event_count": 12,
+    "event_count": 35,
     "gap_count": 3,
-    "gate_count": 58,
+    "gate_count": 66,
     "human_review_status": "queued",
     "judgment_status": "ready_for_writer",
     "lead_review_status": "review_ready_with_visible_gaps",
@@ -107,7 +107,7 @@
     "task_id": "s5_scope_task_workpaper_lead_review",
     "trace_id": "trace_s5_scope_workpaper_lead_review",
     "trace_span_count": 1,
-    "updated_at": "2026-06-29T11:59:59Z"
+    "updated_at": "2026-07-04T18:05:33Z"
   },
   "release_decision": "S6_L4_scope_pass",
   "schema_version": "r53_r60_s6_workbench_frontdoor_drilldown_v0_1",

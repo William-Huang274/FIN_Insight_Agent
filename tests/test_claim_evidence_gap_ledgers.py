@@ -51,6 +51,65 @@ def test_typed_gap_ledger_normalizes_commercial_and_parser_gaps() -> None:
     assert "never_filled_with_public_proxy" in commercial["claim_boundary"]
 
 
+def test_typed_gap_ledger_suppresses_non_blocking_route_scope_notes() -> None:
+    ledger = build_typed_gap_ledger(
+        {
+            "focus_tickers": ["DELL", "NVDA"],
+            "pre_memo_fact_selection": {
+                "approved_facts": [
+                    {
+                        "ticker": "DELL",
+                        "source_family": "company_authored_unaudited_sec_filing",
+                        "evidence_ref": "dell_8k_ref",
+                    },
+                    {
+                        "ticker": "NVDA",
+                        "source_family": "primary_sec_filing",
+                        "evidence_ref": "nvda_10k_ref",
+                    },
+                ]
+            },
+            "source_gaps": [
+                {
+                    "ticker": "DELL",
+                    "reason_code": "not_in_manifest_for_mcp_route_scope",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                },
+                {
+                    "ticker": "NVDA",
+                    "reason_code": "not_in_manifest_for_mcp_route_scope",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                },
+                {
+                    "ticker": "ANET",
+                    "reason_code": "not_in_manifest_for_mcp_route_scope",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                },
+            ],
+        }
+    )
+
+    assert ledger["gaps"] == []
+
+
+def test_typed_gap_ledger_keeps_focus_route_scope_gap_without_visible_evidence() -> None:
+    ledger = build_typed_gap_ledger(
+        {
+            "focus_tickers": ["ASML"],
+            "source_gaps": [
+                {
+                    "ticker": "ASML",
+                    "reason_code": "not_in_manifest_for_mcp_route_scope",
+                    "source_family": "company_authored_unaudited_sec_filing",
+                }
+            ],
+        }
+    )
+
+    assert ledger["gap_count"] == 1
+    assert ledger["gaps"][0]["ticker"] == "ASML"
+
+
 def test_claim_evidence_ledger_projects_supported_conflict_and_gap_claims() -> None:
     typed_gaps = build_typed_gap_ledger(
         {

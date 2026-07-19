@@ -1,6 +1,6 @@
 # R53-R60 S2 Tool / Sandbox / Trace Spine L4 Scope Closeout
 
-Generated: `2026-06-28T18:10:09Z`
+Generated: `2026-07-04T17:23:24Z`
 Status: `pass`
 Release decision: `S2_L4_scope_pass`
 Closeout level: `L4_scope_pass`
@@ -12,7 +12,7 @@ Closeout level: `L4_scope_pass`
 - `sandbox_policies`: `5`
 - `approval_policies`: `6`
 - `approval_decisions`: `1`
-- `tool_invocations`: `9`
+- `tool_invocations`: `11`
 - `gate_count`: `12`
 - `gate_fail_count`: `0`
 

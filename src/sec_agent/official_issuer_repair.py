@@ -738,11 +738,19 @@ def _execute_probe(
     title, preview = _summarize_probe_body(body, content_type=content_type)
     as_of = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     source_layer_meta = _source_layer_metadata(repair_type=repair_type, source_class=source_class)
+    parser_diagnosis = _exact_value_parser_diagnosis(
+        ticker=ticker,
+        repair_type=repair_type,
+        source_class=source_class,
+        url=url,
+        metric_leads=_metric_leads_for_repair_type(repair_type, profile=_issuer_profile(ticker, repair), repair=repair),
+    )
     row = {
         "evidence_ref": snapshot_id,
         "evidence_id": snapshot_id,
         "source_family": "live_public_web_context",
         **source_layer_meta,
+        **parser_diagnosis,
         "retrieval_route": "live_public_web_context",
         "source_class": source_class,
         "repair_type": repair_type,
@@ -776,6 +784,7 @@ def _execute_probe(
         repair=repair,
         repair_type=repair_type,
         preview=preview,
+        parser_diagnosis=parser_diagnosis,
     )
     structured_rows = parse_public_web_context_rows(
         ticker=ticker,
@@ -794,6 +803,8 @@ def _execute_probe(
         authority_boundary=_authority_boundary(repair_type),
         repair=repair,
     )
+    for structured_row in structured_rows:
+        structured_row.update(parser_diagnosis)
     output_rows = [row, *lead_rows, *structured_rows]
     digest = hashlib.sha1(json.dumps(output_rows, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
     return {
@@ -836,6 +847,10 @@ def _execute_probe(
                 "structured_context_types": _unique_strings(
                     [str(item.get("structured_context_type") or item.get("fact_type") or "") for item in structured_rows]
                 )[:8],
+                "parser_diagnosis_complete": bool(parser_diagnosis.get("parser_diagnosis_complete")),
+                "source_specific_parser_status": parser_diagnosis.get("source_specific_parser_status") or "",
+                "exact_fact_parser_failure_reason": parser_diagnosis.get("exact_fact_parser_failure_reason") or "",
+                "next_parser_action": parser_diagnosis.get("next_parser_action") or "",
             }
         ],
     }
@@ -852,6 +867,7 @@ def _repair_lead_context_rows(
     repair: Mapping[str, Any],
     repair_type: str,
     preview: str,
+    parser_diagnosis: Mapping[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     profile = _issuer_profile(ticker, repair)
     product_surfaces = _product_surface_terms(profile, repair=repair)
@@ -868,6 +884,7 @@ def _repair_lead_context_rows(
             repair_type=repair_type,
             preview=preview,
             metric_leads=metric_leads,
+            parser_diagnosis=parser_diagnosis or {},
         )]
     if not product_surfaces and not metric_leads:
         return []
@@ -881,6 +898,7 @@ def _repair_lead_context_rows(
                 "parent_evidence_ref": snapshot_id,
                 "source_family": "live_public_web_context",
                 **_source_layer_metadata(repair_type=repair_type, source_class=source_class),
+                **dict(parser_diagnosis or {}),
                 "retrieval_route": "live_public_web_context",
                 "source_class": source_class,
                 "repair_type": repair_type,
@@ -933,6 +951,7 @@ def _non_product_lead_context_row(
     repair_type: str,
     preview: str,
     metric_leads: list[str],
+    parser_diagnosis: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     topic = _topic_for_repair_type(repair_type)
     lead_ref = f"{snapshot_id}:{repair_type}:{_slug(topic)}"
@@ -942,6 +961,7 @@ def _non_product_lead_context_row(
         "parent_evidence_ref": snapshot_id,
         "source_family": "live_public_web_context",
         **_source_layer_metadata(repair_type=repair_type, source_class=source_class),
+        **dict(parser_diagnosis or {}),
         "retrieval_route": "live_public_web_context",
         "source_class": source_class,
         "repair_type": repair_type,
@@ -997,6 +1017,99 @@ def _source_layer_metadata(*, repair_type: str, source_class: str) -> dict[str, 
         "source_layer_claim_boundary": _claim_scope_boundary(repair_type),
         "source_layer_memo_usage": memo_usage,
     }
+
+
+def _exact_value_parser_diagnosis(
+    *,
+    ticker: str,
+    repair_type: str,
+    source_class: str,
+    url: str,
+    metric_leads: list[str],
+) -> dict[str, Any]:
+    parser_status = _exact_parser_status_for_source(repair_type=repair_type, source_class=source_class, url=url)
+    reason = _exact_parser_failure_reason(
+        repair_type=repair_type,
+        source_class=source_class,
+        parser_status=parser_status,
+    )
+    next_action = _next_exact_parser_action(repair_type=repair_type, source_class=source_class, metric_leads=metric_leads)
+    return {
+        "source_attempt_status": "source_reached_context_materialized",
+        "source_attempt_outcome": "official_source_reached_context_only_no_exact_metric_promotion",
+        "source_route_diagnosis": _source_route_diagnosis(repair_type=repair_type, source_class=source_class, url=url),
+        "context_parser_status": "snapshot_context_parser_pass",
+        "source_specific_parser_status": parser_status,
+        "exact_value_parser_status": parser_status,
+        "exact_fact_promotion_status": "not_promoted_context_only",
+        "exact_fact_parser_failure_reason": reason,
+        "parser_failure_reason": reason,
+        "why_no_exact_fact_promoted": _why_no_exact_fact_promoted(repair_type=repair_type, metric_leads=metric_leads),
+        "next_parser_action": next_action,
+        "parser_diagnosis_complete": True,
+        "parser_diagnosis_policy": "official_source_context_row_must_explain_no_exact_fact_promotion_v0_1",
+        "diagnosis_ticker": ticker,
+    }
+
+
+def _exact_parser_status_for_source(*, repair_type: str, source_class: str, url: str) -> str:
+    if source_class == "government_dataset_endpoint":
+        return "filing_presence_parser_pass_exact_filing_document_parser_not_run"
+    if source_class in {"company_ir_material", "regulator_filings", "local_exchange_filings"}:
+        return "official_page_locator_pass_document_table_parser_not_run"
+    if repair_type == "product_surface" or source_class.startswith("company_product"):
+        return "official_product_surface_parser_pass_product_kpi_parser_not_run"
+    if repair_type == "supply_chain":
+        return "official_relationship_parser_pass_volume_order_parser_not_run"
+    if repair_type == "capital_ownership":
+        return "capital_source_locator_pass_amount_security_parser_not_run"
+    if "sec.gov" in str(url).lower():
+        return "sec_source_locator_pass_exact_fact_parser_not_run"
+    return "context_parser_pass_exact_value_parser_not_run"
+
+
+def _exact_parser_failure_reason(*, repair_type: str, source_class: str, parser_status: str) -> str:
+    if source_class == "government_dataset_endpoint":
+        return "SEC submissions JSON proves issuer filing presence, but this route does not fetch and parse the linked 6-K/20-F filing body tables into period/unit/citation exact facts."
+    if source_class == "company_ir_material":
+        return "Company IR page was reachable, but the current targeted repair only snapshots page context and does not download/parse IR deck or annual-report table attachments into exact metric rows."
+    if repair_type == "product_surface":
+        return "Official product surface was reachable, but product pages are treated as taxonomy/spec context and no source-specific product KPI table parser promoted orders, backlog, shipments, ASP, sales, or share."
+    if repair_type == "supply_chain":
+        return "Official relationship source was reachable, but no parser extracted issuer-bound order volume, shipment allocation, contract value, or revenue linkage."
+    if repair_type == "capital_ownership":
+        return "Capital/ownership source was reachable, but no source-specific parser extracted amount, security type, rate, maturity, holder, or ownership percentage."
+    return f"{parser_status}: no source-specific exact-value parser promoted period/unit/citation facts."
+
+
+def _next_exact_parser_action(*, repair_type: str, source_class: str, metric_leads: list[str]) -> str:
+    metrics = ", ".join(metric_leads[:5]) if metric_leads else "target metrics"
+    if source_class == "government_dataset_endpoint":
+        return f"resolve filing accession links, fetch 6-K/20-F/annual report documents, then parse tables for {metrics} with period/unit/citation gates"
+    if source_class == "company_ir_material":
+        return f"locate linked annual-report/quarterly-results PDFs or XLS tables and run table parser for {metrics}"
+    if repair_type == "product_surface":
+        return f"run product-surface/catalog/spec parser first, then only promote exact product KPI rows if value/unit/period/product/citation are present for {metrics}"
+    return f"add source-specific parser for {metrics} and keep context rows non-exact until that parser passes"
+
+
+def _source_route_diagnosis(*, repair_type: str, source_class: str, url: str) -> str:
+    if source_class == "government_dataset_endpoint":
+        return "official SEC submissions endpoint reached; route currently establishes FPI filing presence rather than exact filing-table facts"
+    if source_class == "company_ir_material":
+        return "company IR route reached; current adapter snapshots official page context and parser targets"
+    if repair_type == "product_surface":
+        return "official product/source route reached; current adapter materializes product taxonomy/spec leads"
+    return f"{source_class or 'public source'} route reached for {repair_type} context"
+
+
+def _why_no_exact_fact_promoted(*, repair_type: str, metric_leads: list[str]) -> str:
+    metrics = ", ".join(metric_leads[:5]) if metric_leads else "requested metrics"
+    if repair_type in {"issuer_official", "local_filing"}:
+        return f"official source proves coverage and parser targets for {metrics}, but no exact row with value/unit/period/citation was emitted"
+    if repair_type == "product_surface":
+        return f"official product source proves product taxonomy/spec context for {metrics}, but no product KPI exact row with value/unit/period/product/citation was emitted"
+    return f"context source was materialized for {metrics}, but exact value authority remains false until a source-specific parser emits gated rows"
 
 
 def _source_layer_id_for_repair(*, repair_type: str, source_class: str) -> str:

@@ -200,11 +200,19 @@ def test_s8_signals_gaps_edges_and_workpaper_event_are_bounded(tmp_path: Path) -
             """,
             (S8_TASK_ID,),
         ).fetchone()[0]
+        exact_rows = conn.execute(
+            """
+            select * from capital_feedback_signals_s8
+            where authority_class in ('exact_filing_fact', 'exact_financial_statement_fact')
+            """
+        ).fetchall()
 
     assert signals
     assert all(row["claim_boundary"] and json_loads(row["forbidden_claims_json"], []) for row in signals)
     assert lagged
     assert all("realtime" in row["forbidden_claims_json"] for row in lagged)
+    assert exact_rows
+    assert all("investment_recommendation" in row["forbidden_claims_json"] for row in exact_rows)
     assert derivative_signals == 0
     assert derivative_gaps == 2
     assert graph_bad == 0
@@ -228,3 +236,88 @@ def test_s8_rerun_is_idempotent_for_current_projection(tmp_path: Path) -> None:
     assert second["release_decision"] == "S8_L4_scope_pass"
     assert pack_count == 2
     assert event_count == 2
+
+
+def test_s8_public_context_coverage_signals_are_not_starved_by_role_cap(tmp_path: Path) -> None:
+    seed_s8_fixture(tmp_path)
+    paths = default_s8_paths(tmp_path)
+    capital_rows = [
+        {
+            "ticker": "AAA",
+            "source_id": "sec_annual_debt_footnote_chunk",
+            "source_role": "capital_structure_disclosure",
+            "object_type": "DebtInstrument",
+            "metric_name": f"debt_instrument_{idx}",
+            "evidence_ref": f"AAA_DEBT_{idx}",
+            "period": "2025-12-31",
+            "value": str(100 + idx),
+            "unit": "USD millions",
+            "allowed_claims": ["capital_structure_fact", "debt_context"],
+            "forbidden_claims": ["market_implied_credit_spread_without_market_source", "investment_recommendation"],
+            "claim_boundary": "Company-disclosed debt fact only.",
+            "exact_value_authority": True,
+        }
+        for idx in range(10)
+    ]
+    capital_rows.append(
+        {
+            "ticker": "BBB",
+            "source_id": "sec_financial_statement_data_sets",
+            "source_role": "working_capital_liquidity",
+            "object_type": "WorkingCapitalLiquidityMetric",
+            "metric_name": "cash_and_current_liabilities",
+            "evidence_ref": "BBB_FSD_CASH",
+            "period": "2025-12-31",
+            "value": "1200",
+            "unit": "USD millions",
+            "allowed_claims": ["working_capital_liquidity"],
+            "forbidden_claims": ["current_fund_flow_without_flow_source", "investment_recommendation"],
+            "claim_boundary": "Financial statement liquidity row, not market liquidity.",
+            "exact_value_authority": True,
+        }
+    )
+    public_context_rows = [
+        {
+            "ticker": "AAA",
+            "source_id": "fred_credit_spread_regime",
+            "source_role": "credit_funding",
+            "pack_role": "credit_funding",
+            "authority_class": "capital_feedback_signal",
+            "signal_type": "fred_credit_spread_regime_context",
+            "metric_name": "public_credit_spread_regime",
+            "evidence_ref": "fred_credit:AAA",
+            "period": "2026-06-30",
+            "value": {"investment_grade_oas": 1.1, "high_yield_oas": 3.5},
+            "unit": "percent_oas",
+            "allowed_claims": ["credit_market_regime_context"],
+            "forbidden_claims": ["issuer_credit_spread_without_issuer_bond_source", "cds_claim_without_source", "investment_recommendation"],
+            "claim_boundary": "FRED credit spreads are market-regime context only.",
+        }
+    ]
+    write_jsonl(paths.capital_rows_path, capital_rows)
+    write_jsonl(paths.public_context_rows_path, public_context_rows)
+
+    build_s8_gate(tmp_path)
+
+    with sqlite3.connect(paths.db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        aaa_credit_types = {
+            row["signal_type"]
+            for row in conn.execute(
+                """
+                select signal_type from capital_feedback_signals_s8
+                where task_id = ? and ticker = 'AAA' and pack_role = 'credit_funding'
+                """,
+                (S8_TASK_ID,),
+            )
+        }
+        aaa_credit_gap_count = conn.execute(
+            """
+            select count(*) from capital_feedback_gap_items_s8
+            where task_id = ? and ticker = 'AAA' and pack_role = 'credit_funding'
+            """,
+            (S8_TASK_ID,),
+        ).fetchone()[0]
+
+    assert "fred_credit_spread_regime_context" in aaa_credit_types
+    assert aaa_credit_gap_count == 0

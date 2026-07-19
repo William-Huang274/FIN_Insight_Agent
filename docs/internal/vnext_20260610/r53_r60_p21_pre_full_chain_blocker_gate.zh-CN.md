@@ -1,15 +1,15 @@
 # R53-R60 P21 Pre-Full-Chain Blocker Gate
 
-- Generated at: `2026-06-30T16:29:10Z`
-- Release decision: `P21_pre_full_chain_blockers_registered_broad_full_chain_blocked`
-- Broad full-chain eval allowed: `False`
-- Open blockers: `2/5`
+- Generated at: `2026-07-01T14:18:36Z`
+- Release decision: `P21_pre_full_chain_blockers_closed_broad_full_chain_allowed`
+- Broad full-chain eval allowed: `True`
+- Open blockers: `0/5`
 
 ## Interpretation / 解释
 
-This artifact does not claim product readiness. It only proves that the known blockers are machine-readable and that broad 20-50 case full-chain quality evaluation is blocked until upstream layers close.
+This artifact does not claim product release readiness. It proves the known pre-full-chain blockers are machine-readable and currently closed, so broad 20-50 case full-chain quality evaluation may start as evaluation evidence rather than release evidence.
 
-这个 artifact 不声明产品已经可上线；它只证明 5 个已知阻塞项已经进入机器可读台账，并且在上游层关闭前禁止把 20-50 个 broad full-chain case 当作研报质量或产品验收证据。
+这个 artifact 不声明产品已经可上线；它证明 5 个已知阻塞项已经进入机器可读台账且当前均已关闭，因此可以启动 20-50 个 broad full-chain case 作为质量评测证据，但不能直接等同于产品发布验收。
 
 ## Blockers
 
@@ -48,7 +48,7 @@ This artifact does not claim product readiness. It only proves that the known bl
 
 ### B04-prd-product-acceptance-not-met - PRD-level product acceptance is still open
 
-- Status: `open_product_acceptance_required`
+- Status: `closed_by_p24_real_human_product_acceptance`
 - Blocks: `product_release_claim, broad_full_chain_20_50_eval_as_quality_evidence`
 - Next slice: `P24-real-human-product-acceptance`
 - Why blocking: Controlled deterministic pilot rows and P23 automated API/frontend E2E checks are useful for integration, but they do not prove real reviewer adoption, accepted/rejected deliverables, defect closure, live runtime migration, or production data refresh.
@@ -57,12 +57,12 @@ This artifact does not claim product readiness. It only proves that the known bl
   - Browser visual E2E for Workbench task, evidence, workpaper, review, deliverable, and admin flows.
   - Runtime live migration and data/RAG live refresh are consumed by actual graph execution paths.
 
-### B05-depth-packs-before-broad-full-chain - Secondary-market, quant, deliverable, product graph, and data-depth packs must pass pack-level gates first
+### B05-depth-packs-before-broad-full-chain - Open secondary-market, deliverable, and retrieval/data-refresh packs must pass pack-level gates before broad full-chain quality claims
 
-- Status: `open_pack_level_depth_required`
+- Status: `closed_by_p25_pack_depth_ready`
 - Blocks: `broad_full_chain_20_50_eval_as_research_quality_evidence`
 - Next slice: `P25-pack-depth-before-broad-full-chain`
-- Why blocking: Broad full-chain cases mostly test orchestration when upstream packs are shallow; they do not prove report quality if product, market, quant, and deliverable evidence packs are incomplete.
+- Why blocking: Broad full-chain cases mostly test orchestration when upstream packs are shallow; they do not prove report quality while market/capital-feedback, deliverable acceptance, or live retrieval/data-refresh packs remain incomplete.
 - Closeout acceptance:
   - Run deterministic node/pack-level gates for ProductEvidencePack, SecondaryMarketPack, QuantLab, Deliverable Studio, and Retrieval/Data refresh.
   - Only after pack-level gates pass should 20-50 broad full-chain cases count as research-quality regression.

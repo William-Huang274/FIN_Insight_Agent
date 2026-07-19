@@ -7,7 +7,9 @@ name = "finsight-agent"
 version = "0.1.0"
 description = "Evidence-grounded financial research agent foundation."
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+  "pydantic>=2.13,<3",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -17,3 +19,16 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+markers = [
+  "fast_contract: hermetic deterministic contract or unit test",
+  "fixture_integration: integration test using temporary or repository fixtures without live external services",
+  "local_data_integration: test whose result may depend on local non-hermetic data assets",
+  "frontend_e2e: automated product or frontend journey test",
+  "full_chain: broad or deterministic full-chain gate; explicit opt-in profile",
+  "paid_model: test allowed to invoke a paid model; explicit opt-in and credential-gated",
+  "requires_subprocess: test launches a local subprocess",
+  "requires_java: test requires a local JDK/runtime",
+  "requires_browser: test requires a browser or Playwright runtime",
+  "requires_network: test requires outbound or local network access",
+  "requires_local_data: test requires workstation-local data outside its temporary fixture",
+]

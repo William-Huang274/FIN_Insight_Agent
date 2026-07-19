@@ -856,7 +856,7 @@ P20 closeout（2026-06-30）：`P20_L4_scope_pass_real_llm_dogfood_gate_repair_r
 | `P20b-D03-memo-logic-plan-quality-root` | investment-quality gate 能拦坏输出，但 MemoLogicPlan / evidence-to-thesis bridge 仍可能只给模板化、gap-first 计划 | Research Lead / Supervising Analyst 在写作前必须形成 answer-first、dimension-linked、citation-backed MemoLogicPlan | 不只 eval gate pass，还要检查 writer 主输入里已有 thesis/counter-thesis/decision-changing evidence |
 | `P20b-D04-source-doc-status-correction` | checklist / source docs 可能把 diagnostic、smoke、gate containment 写成 complete | 36、R60、checklist、相关 worklog 必须同步 status / boundary / next repair | 不存在“最小合同即通过”“gate 兜底即修复”的 stale wording |
 
-2026-06-30 hardening update：`P20b-D01` 已前移到 `src/sec_agent/reconciliation_ledger.py`，大额裸 `usd` / `$` / `dollar(s)` currency facts 在 reconciliation candidate 阶段标记为 `excluded_ambiguous_currency_scale`，并由 `tests/test_metric_product_ontology_reconciliation.py` 回归覆盖。随后 `P20b-D02` 在 `src/sec_agent/d_series_fact_selection.py` 前移到 pre-memo selection 层，`ambiguous_currency_scale_not_memo_display_eligible` 不再进入 `approved_facts`；`P20b-D03` 在 `src/sec_agent/memo_logic_plan.py` 和 `src/sec_agent/memo_llm.py` 补齐 `answer_first_outline` / `evidence_to_thesis_bridge` 并进入 writer compact payload。P20b 四项 root-cause hardening 当前均已关闭；P22 已关闭 source-doc status drift blocker；后续 broad full-chain 仍由 P21 的 B04-B05 阻塞。
+2026-06-30 hardening update：`P20b-D01` 已前移到 `src/sec_agent/reconciliation_ledger.py`，大额裸 `usd` / `$` / `dollar(s)` currency facts 在 reconciliation candidate 阶段标记为 `excluded_ambiguous_currency_scale`，并由 `tests/test_metric_product_ontology_reconciliation.py` 回归覆盖。随后 `P20b-D02` 在 `src/sec_agent/d_series_fact_selection.py` 前移到 pre-memo selection 层，`ambiguous_currency_scale_not_memo_display_eligible` 不再进入 `approved_facts`；`P20b-D03` 在 `src/sec_agent/memo_logic_plan.py` 和 `src/sec_agent/memo_llm.py` 补齐 `answer_first_outline` / `evidence_to_thesis_bridge` 并进入 writer compact payload。P20b 四项 root-cause hardening 当前均已关闭；P22 已关闭 source-doc status drift blocker。2026-07-01 P25/B05 closeout 后，P21 一度只剩 B04 阻塞；同日 product-owner acceptance 又关闭 B04，使 P21 broad full-chain gate 不再被这些五项 blocker 阻断。
 
 P20b closeout 必须执行 root-cause-first 顺序：复现症状 -> 定位最早 faulty artifact -> 修 parser/normalizer/reconciliation/planner/writer 输入 -> 保留 gate 做回归保护 -> 加 deterministic regression -> 更新源文档和 checklist。若根因未找到，只能标记 `blocked_root_cause_unknown` 或 `partial_diagnostic`，不得升级为 `L4_scope_pass`。
 
@@ -906,11 +906,11 @@ P21 已新增机器可读 blocker gate：
 | `status` | `pass` |
 | `closeout_level` | `L4_scope_pass_for_blocker_registration_only` |
 | `full_chain_broad_eval_allowed` | `false` |
-| `blocker_count_open` | `2/5` |
+| `blocker_count_open` | `1/5` latest after P25/B05 closeout |
 | `allowed_while_blocked` | `deterministic_node_tests`, `pack_level_tests`, `targeted_full_chain_smoke_for_integration_only` |
 | `not_allowed_while_blocked` | `20_50_case_full_chain_quality_claim`, `product_release_claim`, `automation_from_stale_release_board` |
 
-注意：P21 的 pass 只代表“阻塞项登记、current status overlay 和 broad full-chain 禁止规则”达到了自身范围的 L4-grade。它关闭 `B01-machine-readable-backlog-status-parity`、`B02-p20b-owned-root-cause-open`，并在 P22 通过后关闭 `B03-r-source-doc-status-reconciliation`；剩余 2 条 blocker 仍打开。下一步仍应按 blocker rows 的 `next_slice` 顺序修：`P23-real-product-dogfood-and-frontend-e2e`、`P24/P25 pack-depth gates`。
+注意：P21 的 pass 只代表“阻塞项登记、current status overlay 和 broad full-chain 禁止规则”达到了自身范围的 L4-grade。它关闭 `B01-machine-readable-backlog-status-parity`、`B02-p20b-owned-root-cause-open`，并在 P22 通过后关闭 `B03-r-source-doc-status-reconciliation`；2026-07-01 P25/B05 closeout 又关闭 `B05-depth-packs-before-broad-full-chain`。当前剩余 blocker 只有 `B04-prd-product-acceptance-not-met`，下一步仍应优先完成真实 reviewer acceptance / defect closeout，而不是把 broad full-chain 结果宣传为 full product pass。
 
 ## 4.14 P22 Source-Doc Status Reconciliation（2026-06-30）
 
@@ -950,10 +950,12 @@ R-series source-doc current status 分布：
 | R59 Backend / Frontend / Workbench | 7 | 13 | task ledger/callback/SSE/projections 已有；polished UI、auth/RBAC、load/SLA、live migration、visual E2E 仍 partial |
 | R60 Eval / Observability / Incident / Fallback | 11 | 7 | eval registry/gates/failure lifecycle 已有；online eval、release readiness、cost/SLA trends、dashboard product acceptance 仍 partial |
 
-P22 通过后，P21 blocker summary 已更新为 `blocker_count_open=2/5`。剩余 blocker 是：
+P22 通过后，P21 blocker summary 当时更新为 `blocker_count_open=2/5`。当时剩余 blocker 是：
 
 - `B04-prd-product-acceptance-not-met`
 - `B05-depth-packs-before-broad-full-chain`
+
+2026-07-01 supersession：后续 P25/B05 root-cause closeout 已关闭 `B05-depth-packs-before-broad-full-chain`。在 B04 正式验收前，P21 summary 一度是 `blocker_count_open=1/5`，只剩 `B04-prd-product-acceptance-not-met`；同日 product-owner acceptance 写入 formal evidence ledger 后，最新 P21 summary 已更新为 `blocker_count_open=0/5`。
 
 ## 4.15 P23 Product Dogfood / Frontend E2E Readiness（2026-06-30）
 
@@ -988,7 +990,7 @@ P23 目标是推进 `B04-prd-product-acceptance-not-met` 中可自动化验证�
 
 P23 修复过一个真实入口问题：builder 脚本环境只把 `src` 放进 import path，导致 `apps.workbench.backend.app` 在真实运行中不可导入。该问题已在 P23 API journey 中修为显式 repo-root import path contract，并由 `tests/test_r53_r60_product_dogfood_frontend_e2e.py` 覆盖。
 
-P23 自动化 API journey 会写入 `reviewer_role=automation_e2e` 的 action，用于证明 review action write path 可用；该 action 不计入真人 adoption。P21 已回读 P23 summary，并仍保持 `blocker_count_open=2/5`。B04 只有在真实 reviewer 完成 session、对 deliverable 作出 accepted/rejected 判断、缺陷关闭或转 typed gap 后才能关闭。
+P23 自动化 API journey 会写入 `reviewer_role=automation_e2e` 的 action，用于证明 review action write path 可用；该 action 不计入真人 adoption。P21 已回读 P23 summary，当时仍保持 `blocker_count_open=2/5`。2026-07-01 后续 P25/B05 closeout 将 P21 更新为 `blocker_count_open=1/5`；随后 B04 通过真实 product-owner session evidence 关闭。
 
 ## 4.16 P24 / B04 Product Acceptance Gate（2026-06-30）
 
@@ -1006,6 +1008,10 @@ P24 目标是把 `B04-prd-product-acceptance-not-met` 中“产品验收底座�
 - summary：`data/manifests/r53_r60_p24_b04_product_acceptance_summary_v0_1.json`
 - report：`docs/internal/vnext_20260610/r53_r60_p24_b04_product_acceptance_gate_human_pending.zh-CN.md`
 - builder：`scripts/engineering/build_r53_r60_p24_b04_product_acceptance_gate.py`
+- reviewer evidence CLI：`scripts/engineering/record_r53_r60_p24_b04_reviewer_acceptance_evidence.py`
+- Workbench API：
+  - `GET /api/r53-r60/product-acceptance/evidence`
+  - `POST /api/r53-r60/product-acceptance/evidence`
 - tests：`tests/test_r53_r60_product_acceptance_b04_gate.py`
 
 真实构建结果：
@@ -1016,9 +1022,9 @@ P24 目标是把 `B04-prd-product-acceptance-not-met` 中“产品验收底座�
 | `closeout_level` | `L4_scope_pass_for_product_acceptance_infrastructure_only` |
 | `release_decision` | `P24_b04_product_acceptance_infrastructure_ready_human_review_pending` |
 | `browser_e2e_status` | `pass` |
-| `browser_e2e_fail_count` | `0/9` |
-| `gate_fail_count` | `0/6` |
-| `gate_blocked_count` | `2/6` |
+| `browser_e2e_fail_count` | `0/10` |
+| `gate_fail_count` | `0/7` |
+| `gate_blocked_count` | `2/7` |
 | `human_evidence_pending_count` | `5` |
 | `defect_closeout_pending_count` | `8` |
 | `product_acceptance_status` | `pending_real_human_acceptance` |
@@ -1033,11 +1039,188 @@ P24 期间修复/明确的真实入口问题：
 4. SPA visual E2E 改为 `domcontentloaded` + body label polling + desktop/mobile viewport resize，不再用容易卡住的 `networkidle`。
 5. `/api/r53-r60/pilot/actions` 已经单独验证在 uvicorn 下约 26ms 返回；P24 API probe 前置到 browser visual 之前，避免 post-browser probe 对同一 server 造成测试性干扰。
 
-P21 已回读 P24 summary，并仍保持 `blocker_count_open=2/5`。B04 只有在 P24 summary 记录 `product_acceptance_status=accepted_by_real_human_review`、`b04_status_after_p24=closed_by_real_human_product_acceptance`、`human_evidence_pending_count=0` 且 `defect_closeout_pending_count=0` 后才能关闭。
+P21 已回读 P24 summary，当时仍保持 `blocker_count_open=2/5`。2026-07-01 后续 P25/B05 closeout 后，P21 一度更新为 `blocker_count_open=1/5`。同日 B04 closing contract 又做了 root-cause hardening：B04 不能再只凭 P24 summary 字段关闭；P24 必须从 `r53_r60_p24_b04_real_reviewer_acceptance_evidence_v0_1.jsonl`、human evidence rows、defect closeout rows、decision rows 和 gate rows 派生 accepted 状态，P21 必须校验 `p24_manifest_acceptance.valid=true` 后才允许 `B04=closed_by_p24_real_human_product_acceptance`。该 hardening 后，正式 product-owner evidence 已写入并关闭 B04。
+
+2026-07-01 follow-up：B04 不再要求 reviewer 手工改 JSONL。`src/sec_agent/r53_r60_product_acceptance_b04_gate.py` 新增 `validate_real_reviewer_acceptance_evidence` / `append_real_reviewer_acceptance_evidence` / `get_product_acceptance_evidence_status`，并接入 Workbench API 和 CLI。正式入口只接受 `action_source=real_human`、白名单 reviewer role、完整 `reviewer_session` / `deliverable_acceptance` / `defect_closeout` / `visual_acceptance` / `audit_replay` 行；automation 或不完整行会被拒绝。这个改动只补齐 B04 验收证据入口，不伪造真实验收，不关闭当前 B04。
+
+2026-07-01 follow-up 2：`Product acceptance evidence` 已接入 R53-R60 Workbench 前端，并纳入 P24 browser label gate。当时 P24 browser E2E 为 `10/10`，`gate_fail_count=0/7`，P21 为 `blocker_count_open=1/5`，唯一剩余 blocker 是 `B04-prd-product-acceptance-not-met`。该 UI 入口只负责让真实 reviewer 记录证据，不能替代真实 reviewer dogfood / deliverable acceptance / defect closeout；后续正式 product-owner evidence 已经通过该合同关闭 B04。
+
+2026-07-01 follow-up 3：新增 P27 B04 real-reviewer acceptance package，补齐真实 reviewer 的执行包而不是再补自动化兜底。`src/sec_agent/r53_r60_b04_reviewer_acceptance_package.py` 和 `scripts/engineering/build_r53_r60_p27_b04_reviewer_acceptance_package.py` 从 P24 human requirements / defect closeout rows / runtime task-artifact-trace refs 生成 reviewer step rows、template-only evidence rows、candidate refs 和人读报告。当前 P27 构建结果：`review_step_count=5`、`evidence_template_count=13`、`reviewer_candidate_ref_count=36`、`real_reviewer_evidence_row_count=0`、`does_not_close_b04=true`。因此 P27 只解决“真实 reviewer 怎么审”的操作问题，不关闭 B04，也不允许 broad full-chain product pass。
+
+2026-07-01 follow-up 4：新增 P28 B04 acceptance session-readiness layer。`src/sec_agent/r53_r60_product_acceptance_b04_gate.py` 现在按 `session_id` 聚合真实 reviewer evidence，检查五类必需证据、accepted deliverable、P24 defect source id coverage，并在 `get_product_acceptance_evidence_status` 返回 `session_readiness.sessions` / `ready_sessions` / `ready_session_count`。同时 B04 closeout 被收紧为“同一 ready session 的 accepted deliverable 才能生成 acceptance decision”，不能用多个不同 session 的 evidence 混合关闭 B04。Workbench `Product acceptance evidence` 面板显示 Ready sessions 和 Session readiness 表格，避免 reviewer 提交部分 evidence 后不知道还缺什么。P28 只增强真实验收操作闭环，不写入真实 reviewer evidence，不关闭 B04。
+
+2026-07-01 follow-up 5：新增 P29 B04 reviewer package Workbench surface。`src/sec_agent/r53_r60_b04_reviewer_acceptance_package.py` 现在提供 `get_b04_reviewer_acceptance_package`，Workbench 后端新增 `GET /api/r53-r60/product-acceptance/reviewer-package`，前端 `Product acceptance evidence` 面板展示 reviewer execution steps、template-only evidence rows、task/artifact/trace candidate refs、P27 report path 和 package status。这个入口只让真实 reviewer 能在产品验收面板里执行 P27 package，不把 package/template rows 计为真实验收 evidence；因此在 `real_reviewer_evidence_row_count=0` 的 P29 当时，B04 仍保持 open。后续正式 product-owner evidence 写入后，该 blocker 已关闭。
+
+2026-07-01 follow-up 6：用户作为 product owner 明确认可 B04 closeout packet 后，正式验收证据写入 `data/manifests/r53_r60_p24_b04_real_reviewer_acceptance_evidence_v0_1.jsonl`，同一 session 覆盖 `reviewer_session` / `deliverable_acceptance` / `defect_closeout` / `visual_acceptance` / `audit_replay` 五类必需证据。重新构建后，P24 summary 为 `status=pass`、`b04_status_after_p24=closed_by_real_human_product_acceptance`、`human_evidence_pending_count=0`、`defect_closeout_pending_count=0`、`accepted_decision_count=1`、`full_chain_broad_eval_allowed=true`。P21 同步修复 release-decision 根因：当 `blocker_count_open=0` 时不再保留 stale blocked release decision；最新 P21 summary 为 `release_decision=P21_pre_full_chain_blockers_closed_broad_full_chain_allowed`。
+
+## 4.16.1 P30 Workbench Product Surface Redesign（2026-07-01）
+
+P30 目标是把 R53-R60 Workbench 从 raw gate / manifest / artifact 表格堆叠，推进到 analyst-facing 的产品工作台首版。这个 slice 不宣称完成最终 B 端设计系统，但必须消除“工程调试台”体验里最阻碍产品使用的结构问题。
+
+实现内容：
+
+- 前端 `R53R60WorkbenchPanel` 拆为 `Analyst` / `Review` / `Deliverables` / `Ops` 四个 surface。
+- `Analyst` surface 提供 Task queue、Workpaper canvas、Evidence drawer，并把 Lead judgment、Judgment state、Workpaper outline、ClaimCards、Typed gaps、Review actions 组织到同一个研究任务视角下。
+- `Review` surface 汇总 Product acceptance evidence、reviewer package、pilot dogfood window。
+- `Deliverables` surface 汇总 Deliverable Studio、Dashboard Projection、quality gates 和 artifacts。
+- `Ops` surface 汇总 Ops projection、gate rows、scope gate 和 trace/rollback 状态。
+- 修复旧空态根因：当暂无 SQL-final task projection 时，旧代码提前返回“等待 S6 投影”，导致新工作台不可见；现在产品 shell 始终渲染，并在 task rail 内显示明确空态。
+
+验收：
+
+- TypeScript + Vite build pass。
+- Playwright element-level QA pass：`Analyst` / `Review` / `Deliverables` / `Ops` 文本检查均通过。
+- `等待 S6 投影` 旧空态从 P30 面板中移除。
+- 截图保存到 `D:/temp/finsight_p30_qa/p30_panel_desktop_*.png` 和 `D:/temp/finsight_p30_qa/p30_panel_mobile_analyst.png`。
+
+2026-07-02 P30 full-chain cost discipline update：P30 真实 AI/Semis case 暴露出 full-chain 回归过早、specialist 扇出过宽、specialist 输入过胖、claim yield 过低和缺少硬 token budget gate 五个执行问题。当前口径调整为：任何 paid full-chain 之前必须先通过 deterministic / node-level tests 和 token-budget preflight；`L0/L1` 级别问题不得靠 paid rerun 发现。实现侧已经新增 token-budget plan / `--token-budget-preflight-only` / `--allow-expensive-llm` / run-case-paid-call budget blocking，specialist 激活默认按 required item / explicit user intent / visible core evidence 精准触发，ProductSpecPack / CapitalMacroPack / FundamentalStatementPack / FundamentalPeerStatementPanel 进入 specialist prompt 前必须 role-specific compact。两条 AI/Semis case 的 no-paid preflight 当前为 `blocked_preflight_token_budget`：估算 `272000` tokens、`18` paid calls，超过默认 `180000` run budget 和 `8` paid-call cap。因此下一次 DeepSeek full-chain 不允许直接跑；必须先做 deterministic pruning / coalescing，或由用户显式批准 expensive-run override。
+
+2026-07-02 product-level reclassification：上述问题被升级为 `Agent Information Economy`，不是单纯省 token。P30/P31 后续必须证明 agent 框架能把上下文、证据、工具调用和 specialist 协作转化为 WorkpaperEvent、ClaimCard、JudgmentState、MemoLogicPlan 和可读判断。高 token / 低 insight 是 agent planning、context selection、信息传输、specialist scope、repair loop 或 writer contract 的质量缺陷。后续需求单应新增或补齐 `AgentInformationEconomyLedger`、`InformationTransferQualityGate`、`SpecialistYieldGate`、`RepairLoopRootCauseGate` 和 Workbench token-to-insight projection；pass 条件不能只是 "under budget"，还必须证明低重复输入、高有效产出、低无效 repair 和高 required-item answer density。
+
+2026-07-02 deterministic runtime update：`AgentInformationEconomyLedger` 首版已落到 `src/sec_agent/agent_information_economy.py`，并接入 `eval_multi_agent_real_llm_chain.py`。每次 real-chain eval 会在 `output_quality_audit` 后生成 `agent_information_economy_audit.json/.md`；preflight-only 也会生成 `agent_information_economy_preflight.json`，在付费模型调用前暴露高 token、paid-call fanout、specialist fanout 风险。该 ledger 目前复用已保存的 token stats、specialist stats、ClaimCard stats、quality flags 和 sidecar 摘要，能定位 `high_token_low_supported_claim_yield`、`high_token_low_rendered_claim_yield`、`overbroad_specialist_fanout`、`invalid_information_transfer_proxy`、`duplicate_evidence_ref_transfer_proxy`、`repair_loop_agent_failure_proxy` 等问题。随后把 case contract 拆成 `expected_specialist_agents`（研究覆盖期望）、`expected_paid_specialist_agents`（本轮付费激活期望）和 `expected_paid_specialist_priorities`（primary/supporting 输入预算），让 preflight 不再把所有质量覆盖 specialist 都直接计费。两条 AI/Semis case 仍保留 5 个研究覆盖 specialist，但 paid 清单剪掉非核心的 `market_valuation_analyst`，并把 `risk_counterevidence_analyst` 降为 supporting 输入包；两 case no-paid preflight 从 `272000` / `18` paid calls 降至 `239200` / `16` paid calls。单 case preflight 为 `119600` / `8` paid calls，已低于默认 `120000` per-case budget 且 AIE case gate pass；两 case 同批仍因 `180000` run budget 和 `8` paid-call cap blocked。runtime activation audit 也已修复：`market_snapshot` source tier 现在只触发 `market_operator`，不再自动升级为 `market_valuation_analyst`；两个真实 AI/Semis catalog case 的 deterministic active specialists 已与 `expected_paid_specialist_agents` 完全一致。因此下一次 DeepSeek 实测只能先单 case 跑，不能再合批两个 deep case。边界：精确跨 agent prompt-token overlap、Workbench UI 投影、真实 paid full-chain product closeout 尚未完成，不能替代下一步真实单 case 回归和输出质量审计。
+
+2026-07-02 prompt-pack fingerprint update：AIE 继续向“信息传输质量”推进。`specialist_route_results` 现在记录 `input_pack_fingerprint`，只保存 component digest、known evidence refs、row count 和 approximate payload chars，不保存完整 prompt 文本。`AgentInformationEconomyLedger` 会消费这些 fingerprint，识别多个 specialist 拿到相同 component digest 或高重叠 evidence refs 的 `prompt_pack_overlap_proxy`，并把根因指向 `specialist_input_pack_deduplication_or_coalescing`。这解决了此前只能用全局 evidence-ref 重复作为弱 proxy 的问题；随后 `capital_macro_pack` prompt 输入从整包复制改为 role projection：fundamental 只看资本结构相关 section，industry 只看 macro / exposure / vertical official sections，risk 只看 debt / macro / rejected risk sections，避免三个 specialist 重复阅读同一 capital/macro 大包。Memo Writer 侧也新增 `memo_route_result.input_pack_fingerprint`，覆盖 pass、salvage 和 blocked route，只记录 digest、item/ref count、approx payload chars、memo profile 和 response language；Verifier 侧新增 `verifier_input_pack_fingerprint`，证明它只看 final memo / referenced ClaimCard projection、allowed refs、source-boundary notes 和 deterministic verification summary。Research Lead 侧新增 request scope / source inventory / context / loop budget / registry / route-choice policy 的 digest-only fingerprint；Universe Relationship 侧新增 activation plan / compact relationship lookup prompt view / known relationship refs / source-inventory summary 的 digest-only fingerprint。`langgraph_orchestrator` 将两者落入 state 和 `llm_routes`，eval runner 将两者带入 `agent_audit`。AIE markdown 现在显示 lead/universe/Memo/Verifier refs 和 payload chars，用于定位 planner、relationship、writer/verifier 输入是否过胖或证据引用过少。对应 no-paid regression 最新 `41 passed`。当前仍不保存完整 prompt 文本；如后续需要精确 duplicate-token overlap，只能做 opt-in token meter。
+
+2026-07-02 token-budget estimator v0.2：预算门控不再使用完全静态的旧 deep-research 上界，而是标记为 `role_projected_compact_prompt_budget_v0_2`，反映 role-specific specialist pack projection 和 Memo Writer `writer_thesis_skeleton_first_compact_verified_inputs` 合同。单个 AI infra case 的 no-paid preflight 当前为 `allowed`，估算 `101400` tokens / `8` paid calls；两个 AI/Semis deep case 合批仍是 `blocked_preflight_token_budget`，估算 `202800` tokens / `16` paid calls，超过 run-level `180000` tokens 和 `8` paid-call cap。该估算仍不是实际 token meter；下一次有效单 case 后必须把实际模型调用 token、AIE ledger 和 data/script audit 对齐。
+
+2026-07-02 data/script root-cause update：用户复核指出，P30 当前不能再把问题归结为“多跑 full-chain / 多加 gate”。本轮新增 `DataScriptQualityAudit`，把 full-chain 已保存 artifacts 作为离线输入，在不调模型、不检索、不联网的情况下审计项目自有链路是否能解释输出质量。该 audit 已接入 `eval_multi_agent_real_llm_chain.py`，每次真实 eval 会生成 `data_script_quality_audit.json/.md`，并在发现 owned data/script defect 时把 `data_script_quality_gate` 标为 fail。当前离线复盘 `20260702_p30_root_cause_repair_ai_semis_r2` 显示：AI infra case 有 `4` 个 required items 属于 `available_not_rendered`，不是公开源缺失；两个 AI/Semis case 都缺 `memo_logic_plan.json` artifact，导致 writer 为什么漏证据不可 replay；AI infra case 触发 `deterministic_salvage_used` 且最终只渲染一句 bounded answer；semicap case 仍有 `source_route_scope_false_gap_present` 和非美披露 parser/root-cause rows。这些均归为项目内 root-cause repair，不允许被 broad full-chain 或 paid rerun 掩盖。`langgraph_orchestrator` 已补 `memo_logic_plan` artifact ref，并修复 renderer 在 verifier fail 时直接吞掉可渲染 memo 的问题：如果 memo 已有 `direct_answer` / `memo_claims` / dimension rows，即使 gate 仍 fail，也会渲染 bounded memo 供审阅，而不是替换成一句固定失败语。后续 paid 单 case 之前必须先让离线 data/script audit 不再报 `memo_logic_plan_artifact_missing`、`required_item_available_not_rendered`、`memo_writer_deterministic_salvage_used`、`product_evidence_available_not_rendered`、`owned_parser_locator_gap_present` 或 `source_route_scope_false_gap_present` 等阻塞项。换言之：下一步不是立即跑 DeepSeek，而是先用 deterministic / artifact-level repair 修到 audit 解释链路闭合。
+
+2026-07-02 data/script deterministic repair follow-up：在上述离线复盘后，P30 已先修 owned artifact/projection 问题，而不是直接付费 rerun。`memo_writer` 现在会在 writer 输出缺失时把 active `MemoLogicPlan` 嵌入 `memo_answer`；`memo_logic_plan.json` 持久化会按 `state.memo_logic_plan -> memo_answer.memo_logic_plan -> multi_agent_summary.memo_logic_plan` 顺序恢复，并记录 `artifact_persistence.source`，让后续审计能区分 standalone artifact persistence 缺陷和真正的 plan generation/state-loss。`DataScriptQualityAudit` 也已区分 `memo_logic_plan_standalone_artifact_persistence` 与 `memo_logic_plan_generation_or_state_loss`，并记录 `memo_answer_embedded_memo_logic_plan_present` / `summary_memo_logic_plan_present`；同时 source-route gap 计数改为只阻塞未解决 `not_in_manifest_for_mcp_route_scope`，若同一 ticker 已有 targeted-repair parser diagnosis（failure reason、parser status、next action 齐全），则作为 parser-boundary-diagnosed，不再误判为 source-route false gap。`memo_llm` 的 deterministic salvage 现在消费 `memo_logic_plan.required_item_answer_plan`，会把 required-item 证据投影成 bounded judgment / evidence bridge / counter-read / financial bridge 的 dimension rows；产品规格、架构、客户部署等非收入证据不再被写成 supplier revenue/order fact。验证：`tests/test_data_script_quality_audit.py` 最新 `8 passed`，其中新增 synthetic full-chain-shaped artifact proof 使用真实 `_write_memo_surface_artifacts` 写出 `memo_logic_plan.json` / `memo_answer.json` / `claim_cards.json` / rendered answer 后再跑 audit，确认 repaired artifact 形状能通过；writer/data/P30/AIE targeted regression `8 passed` 和 `14 passed`；ASML/FPI route/parser diagnosis tests `4 passed`；synthetic no-LLM AI infra P30 scorer 已通过 required-item coverage、answer-plan projection 和 economic-role checks。随后补充 specialist、Memo Writer、Verifier、Research Lead 和 Universe `input_pack_fingerprint` 后，最新 no-paid 回归覆盖 data/script audit、writer/verifier repair、upstream route fingerprint、P30 source-route diagnosis、AIE、output-quality audit、specialist fingerprint、Memo Writer input-pack audit 和 token-budget v0.2，共 `41 passed`，compileall / `git diff --check` / narrowed secret scan 通过。边界：历史 r2 artifacts 仍是 pre-repair failure sample；synthetic artifact-level proof 不等同真实 full-chain，新生成的真实 artifact 仍必须证明 `memo_logic_plan.json`、required-item projection 和 data/script audit 闭环，同时继续修 semicap source-route / non-US disclosure parser rows。付费 DeepSeek 单 case 仍需等 data/script audit 和 token preflight 双通过。
+
+2026-07-02 stale-state root-cause update：继续离线复盘 R13 semicap artifact 后，发现部分 `owned_parser_locator_gap_present` 和经济角色错误是 audit 过宽导致的误判，而真正让最终输出变成一行 bounded answer 的根因是 runtime state drift：pre-memo deterministic facts / supported material 已经出现，但 `memo_constraints` 仍沿用早期 `unsupported_specialist_claims_without_supported_claims`，`specialist_verification` 也没有在 governance refresh / Lead repair 后重算，导致 Memo Writer 在看到 stale false 后直接短路。修复口径：`refresh_judgment_plan_after_governance_filter` 必须用当前 supported / unsupported / validation state 重算 `memo_constraints`；`langgraph_orchestrator` 必须在 selected judgment 和 targeted repair 后重新生成 `specialist_verification`；`build_multi_agent_memo_draft` / `route_memo_writer_llm` 必须区分 stale verification block 与当前 unsafe judgment。provider/runtime specialist 失败不能进入正文 claims，但也不能吞掉已经验证的 ClaimCards，只能作为 partial-scope caveat 暴露。同步修复：DataScriptQualityAudit 只把显式 parser / locator / adapter failure 算作 owned parser gap，不再因 repair 文案含 parser/source boundary 就误判；P30 economic-role audit 只在文本明确把 focus issuer 自身 capex 当作 customer demand 时才报 misuse，不再误报 supplier revenue 对 customer capex 的 read-through。验证：contracts / memo route / D-series / data-script / economic-role / langgraph targeted no-paid tests 分别通过 `4`、`31`、`9`、`3`、`37`、`55`、`2` 项相关回归。边界：历史已保存 memo_answer 如果已经丢掉 supported_claims 无法离线恢复，只能证明 blocker 清理；下一次生成的新 artifact 必须证明 state refresh 后不会再发生一行 blocked memo。
+
+2026-07-03 Workbench budget hardening update：P30 信息经济门控从 CLI 扩展到 Workbench full-chain eval 入口。`src/sec_agent/workbench/job_runner.py` 对所有调用 `scripts/eval_multi_agent/eval_multi_agent_real_llm_chain.py` 的 Workbench eval runner 显式传入 `--token-budget-total 180000`、`--token-budget-per-case 120000`、`--max-paid-calls 8`，且默认不传 `--allow-expensive-llm`。这意味着 G11、diagnostic probe、R12 successor、broader release、load mix 等入口即使从前端/后端启动，也会先写 token budget plan 并在超预算时 fail closed，不能绕过 CLI preflight。验证：Workbench backend 三个 eval runner contract tests 通过；no-paid preflight `p30_workbench_budget_preflight_gate_20260703` 证明两个 AI/Semis deep case 合批仍被 run-level budget 拦截（`202800` estimated tokens / `16` paid calls），单个 AI infra case `p30_workbench_budget_single_case_preflight_20260703` 仍可通过预算（`101400` / `8`）。边界：这只是入口硬化，不等同真实输出质量改善；下一次 paid test 仍只能先单 case，并且必须回填 actual token / AIE ledger / data-script audit。
+
+2026-07-03 Workbench token-to-insight projection update：P30 AIE visibility 不再停留在 artifact 文件。新增 `src/sec_agent/workbench/agent_information_economy_projection.py` 和 `GET /api/evals/agent-information-economy`，从 compact `agent_information_economy_preflight.json` / `agent_information_economy_audit.json` 读取 run/case token plan、预算阻断、issue counts、root-cause candidates 和 artifact refs；前端在 eval 面板和 R53-R60 Ops 面板新增 `Agent Information Economy` 卡片，用户可以直接看到最新 run 是否 pass/fail、两 case batch 为什么被预算预检挡住、单 case 是否可跑，以及对应 JSON artifact 路径。验证：backend API contract test、TypeScript、Vite build 和 live projection quick check 均通过。边界：projection 只读 saved AIE JSON，不加载原始 prompt，不替代真实 paid 单 case 输出质量验收。
+
+2026-07-03 token-budget scheduler advice update：预算门控不再只输出“blocked”。`token_budget_plan.json` 现在带 `scheduler_advice`，把超预算拆成 `case_budget_repair_required`（单 case 自身不合格，必须先修）和 `split_required`（case 单独合格，但合批会超 run/call budget）。AIE preflight JSON 和 Workbench projection 同步保留该字段。最新 no-paid AI/Semis 两 case preflight `p30_scheduler_advice_preflight_20260703b` 显示：两条 case 均为单 case 可执行预算形态，但合批需要拆成两个 paid batches，每批一个 case，分别约 `101400` tokens / `8` paid calls。边界：这只是防误跑和调度建议，不是付费输出质量证明。
+
+2026-07-03 JudgmentCard / thesis-path root-cause update：围绕用户指出的 1-6 个核心问题，本轮继续按 deterministic / node-level 修复，不跑付费 full-chain。结论是：P30 的 token 问题不是简单省 token，而是 agent 信息传导质量问题；如果 Research Lead 只派单、ClaimCard 只是证据卡、MemoLogicPlan 没成为 writer 主输入、writer 又收到 evidence dump，那么换模型也只能部分缓解，不能稳定产出有洞察的投研判断。实现侧新增 `JudgmentCard` 和 `ThesisPath` 合同：ClaimCard 会被提升为带 `judgment`、`evidence_bridge`、`business_mechanism`、`financial_bridge`、`counter_read`、`what_would_change_view`、`authority_boundary` 的 writer-ready 判断卡；Research Lead / supervising aggregation 会把产品、财务、供应链、资本、风险维度组织成 `thesis_path`，显式表达 `product_to_financial_bridge`、`supply_chain_to_product_context`、`capital_structure_to_fundamental_bridge` 等机制边，而不是只把 specialist 输出拼接给 writer。`MemoLogicPlan` 现在投影并压缩 `judgment_cards` / `thesis_path`，writer skeleton 优先消费这些 judgment moves；compact payload 去掉重复的 required-item 详细提示，只保留计数和必要 id，避免同一材料多次传给模型。Memo Writer route 新增 digest-only `raw_output_audit`，记录 raw output hash、长度、parsed/normalized claim counts、deterministic gate error types 和 salvage trigger，但不保存原始模型文本；AIE 新增 `memo_writer_raw_gate_or_salvage_failure`，把 raw -> normalized -> salvage 的失败纳入 root-cause，而不是把 salvage 当作成功兜底。验证：`tests/test_multi_agent_contracts.py`、`tests/test_memo_logic_plan.py`、`tests/test_multi_agent_memo_llm_repair.py`、`tests/test_agent_information_economy.py` 全量相关回归 `128 passed`，compileall pass。边界：这是 P30 1-6 点的信息传导根因修复和 no-paid AI/Semis 样板级 deterministic proof；下一步 real single-case paid run 仍必须先通过 data/script audit、AIE preflight、route observability 和 token-budget gates，且输出要人工审阅 memo 是否真正形成产品/财务/供应链联动判断。
+
+2026-07-03 role-specific prompt-overlap closeout：在 JudgmentCard / ThesisPath 修复之后，新生成的 no-paid semicap mock artifact 显示剩余阻塞点变为 `prompt_pack_overlap_proxy`，根因是 specialist prompt 输入仍未按职责严格分流：risk 读取普通财务行，product 与 industry 共享 product profile / deployment refs，且 product prompt `ProductSpecPack` 内部仍含 customer-deployment / supply-chain sections。修复后，`specialist_llm.py` 在 prompt ranking / fingerprinting 前执行 role-level row filter：product 只读产品画像、规格、KPI、channel/field-inquiry 和 commercial gap；industry 只读 industry / relationship / customer deployment / order / supply-chain / channel / upstream-downstream 信号；risk 只读 risk / constraint / counterevidence 行，移除宽泛 counterclaim-slot 兜回和 `process-control` -> `control` 误命中。Product prompt projection 也排除 `customer_deployment_signals` / `supply_chain_signals`，原始 pack 仍保留这些 sections 供审计和 industry lens。验证：`tests/test_multi_agent_specialist_llm.py`、`tests/test_product_spec_pack.py`、`tests/test_agent_information_economy.py` 相关回归 `69 passed`，runner / routing / MemoLogicPlan / contracts 回归 `131 passed`；no-paid artifact `p30_mock_semicap_role_specific_prompt_overlap_repair_20260703` 的 `agent_information_economy_audit.status=pass`、`issue_counts={}`、`prompt_pack_overlap.overlap_detected=false`、`duplicate_prompt_evidence_ref_count=0`、`data_script_quality_audit.status=pass`。边界：runner summary 仍因 mock backend 保持 `gate_status=fail` / `diagnostic_only=true`，所以这不是 paid memo-quality closeout；下一次 paid 单 case 仍必须先通过 data/script、AIE、real-evidence、route/fanout、role-overlap、exact token-budget preflight。
+
+## 4.16.2 P31 Agent Self-Hardening / Project OS（2026-07-04）
+
+P31 目标是解决长线程推进中的系统性问题：Codex 不能依赖不可控的聊天记忆、上下文压缩或越来越长的 skill 文本来保持项目全局视野。这个 slice 把“我该怎么做”和“项目事实是什么”分开：skill 只保存操作规则，repo 内 `docs/project_os/` 保存机器可读状态、root-cause issue、技术模式和金融研究方法，full-chain preflight guard 则阻止在已知 blocker 下继续烧 token。
+
+新增 Project OS artifacts：
+
+- skills：
+  - `Z:/CodexHome/.codex/skills/fin-insight-global-stewardship/SKILL.md`
+  - `Z:/CodexHome/.codex/skills/fin-insight-project-os/SKILL.md`
+- repo context / ledgers：
+  - `docs/project_os/current_context_pack.zh-CN.md`
+  - `docs/project_os/capability_status_ledger.jsonl`
+  - `docs/project_os/root_cause_issue_ledger.jsonl`
+  - `docs/project_os/external_pattern_registry.jsonl`
+  - `docs/project_os/financial_research_method_registry.jsonl`
+  - `docs/project_os/full_chain_run_policy.zh-CN.md`
+  - `docs/project_os/token_budget_policy.zh-CN.md`
+  - `docs/project_os/done_definition_l4_scope_pass.zh-CN.md`
+  - `docs/project_os/full_chain_preflight_checklist.json`
+- runtime guard：
+  - `src/sec_agent/project_os_preflight.py`
+  - `scripts/eval_multi_agent/run_project_os_full_chain_preflight.py`
+  - `eval_multi_agent_real_llm_chain.py` 接入 `--project-os-preflight-only` / `--skip-project-os-preflight` / `--project-os-preflight-allow-open-blockers`
+
+当前规则：
+
+- 每轮非平凡任务启动前读 `current_context_pack`、capability ledger 和 root-cause ledger，不靠聊天记忆判断项目状态。
+- paid/full-chain 默认先跑 Project OS preflight；如果存在 `full_chain_blocker=true` 的 open root-cause issue，脚本 fail closed。
+- `--skip-project-os-preflight` 只允许 deterministic unit test 或用户明确批准的诊断场景，不能用于产品质量 closeout。
+- `L1_contract_pass` / smoke / mock 只能是中间检查点；slice closeout 必须达到自身范围的 `L4_scope_pass`。
+
+首批 root-cause ledger 当前仍保留 `RC-P30-001` / `RC-P30-002` / `RC-P30-003` 为 open full-chain blockers，因此 P31 会阻止 broad/paid full-chain 直接继续推进。下一步如果要跑真实单 case，必须先明确这是诊断 override，或先关闭这些 blocker。
+
+验收：
+
+- Project OS required files 存在且 capability rows 可机器读取。
+- `Project OS preflight` 能在无 blocker 时 pass，在 open full-chain blocker 时 fail closed，在显式 diagnostic override 下返回 `diagnostic_override`。
+- full-chain real LLM runner 已接入 Project OS preflight，且 token/provider preflight 仍作为后续独立 gate。
+- `tests/test_project_os_preflight.py` 覆盖 pass / blocker / diagnostic override / missing files。
+
+边界：
+
+- P31 不证明 memo 质量已经变好，也不关闭 P30 真实单 case artifact proof。
+- P31 不替代 R57 ContextEngine、R58 RAG/data governance、R60 eval/observability 的完整实现；它是这些系统执行时的项目状态和禁跑纪律层。
+
+## 4.16.3 P32 Method & Pattern Learning Gate（2026-07-04）
+
+P32 目标是把“金融研究方法学习”和“agent 工程经验吸收”做成可审计的项目能力，而不是靠聊天记忆、泛泛搜索或长 skill 文本。券商长篇行业报告的方法论可以吸收其研究地图、信息范围和见解深度，但最终输出仍面向 B 端内部 analyst workbench 的 buyside-style memo / workpaper，不按 sell-side marketing report 格式交付。
+
+新增 artifacts：
+
+- `docs/internal/vnext_20260610/r53_r60_p32_method_pattern_learning_gate.zh-CN.md`
+- `docs/project_os/financial_research_method_learning_ledger.jsonl`
+- `docs/project_os/agent_engineering_pattern_learning_ledger.jsonl`
+- `docs/worklog/product_strategy/073_p32_method_pattern_learning_gate.md`
+
+Learning gate 固定为：
+
+1. `P32-L0 Project Failure Inventory`：回读 P30/P31 blocker 和当前项目失败类型。
+2. `P32-L1 Source Discovery & Qualification`：登记 source URL、source type、相关性、吸收项和不吸收项。
+3. `P32-L2 Method / Pattern Extraction`：抽取方法、结构和机制，不摘抄长文。
+4. `P32-L3 Contract Translation`：映射到 FIN 的 pack、agent、graph、tool、eval、Workbench 对象。
+5. `P32-L4 AI/Semis No-Paid Deterministic Proof`：不调用 LLM，证明 playbook/pattern 能改变 Research Lead thesis path、required-item plan 和 writer input。
+6. `P32-L5 Registry Promotion`：只有通过 deterministic proof 的方法才进入 active registry。
+7. `P32-L6 Closeout Review`：更新 worklog、Project OS 和 source docs，明确剩余缺口。
+
+当前状态：P32 达到 `in_progress_registry_promotion_gate_pass`。首批金融研究方法和 agent 工程模式已进入 learning ledger，并抽出候选 L2 rows：
+
+- `docs/project_os/financial_research_method_extraction_ledger.jsonl`
+- `docs/project_os/agent_engineering_pattern_extraction_ledger.jsonl`
+
+同时新增 source snapshot / provenance 工具：
+
+- `scripts/engineering/build_p32_learning_source_snapshots.py`
+- `tests/test_p32_learning_source_snapshots.py`
+- `data/manifests/p32_learning_source_snapshots_v0_1.jsonl`
+
+2026-07-04 follow-up：根据用户确认的“双轨”口径，P32 新增：
+
+- `docs/project_os/p32_l1_coverage_matrix.jsonl`：说明当前 L1 哪些域足够推进初始 L3，哪些域仍是 source gap；
+- `docs/project_os/p32_l3_contract_translation_ledger.jsonl`：把 L2 extraction rows 翻译成 FIN runtime / agent / data / eval 合同。
+- `scripts/engineering/validate_p32_learning_gate.py` / `tests/test_p32_learning_gate_validation.py`：检查 L1/L2/L3/coverage 引用闭环和合同必填字段。
+- `data/manifests/p32_learning_gate_validation_v0_1.json`：当前校验 `status=pass`，`source_count=21`，`extraction_count=15`，`coverage_domain_count=15`，`contract_count=15`，`error_count=0`。
+
+当前 L1 coverage matrix 已不再有 `gap_needs_l1`：capital/market feedback、research-to-quant、enterprise RAG/data pipeline、Workbench product surface、sandbox/resource scheduler 已补到 initial-L3 coverage。但这些新增域只允许进入 L3 contract translation，不允许直接进入 runtime 或 paid full-chain。
+
+2026-07-04 L4 no-paid fixture update：
+
+- 新增 `scripts/engineering/run_p32_l4_ai_semis_deterministic_fixture.py`
+- 新增 `tests/test_p32_l4_ai_semis_deterministic_fixture.py`
+- 新增 `data/manifests/p32_l4_ai_semis_deterministic_fixture_v0_1.json`
+- 新增 `docs/internal/vnext_20260610/p32_l4_ai_semis_deterministic_fixture_report.zh-CN.md`
+- 验证结果：`python -m pytest tests/test_p32_l4_ai_semis_deterministic_fixture.py -q` -> `4 passed`；fixture run -> `status=pass`，`case_count=2`，`passed_case_count=2`。
+
+L4 fixture 证明范围：
+
+- baseline evidence list 可被 L3 contracts 转成 thesis path、required-item answer plan、JudgmentCards 和 writer-ready judgment material；
+- AI/Semis 产品规格/架构、客户部署、供应链/value-chain、财务桥、反证和 what-would-change 能进入同一判断路径；
+- 没有 SKU revenue / shipment / booking exact 不再等同于产品层无法判断；
+- LangGraph checkpoint、MCP/tool boundary、durable HIL、trace/AIE、ContextEngine 等已规划/部分实现能力被对齐为 case-level runtime alignment。
+
+2026-07-04 registry promotion follow-up：
+
+- 新增 `docs/project_os/p32_active_registry_promotion_ledger.jsonl`；
+- 新增 `scripts/engineering/validate_p32_registry_promotion.py`；
+- 新增 `tests/test_p32_registry_promotion_validation.py`；
+- 新增 `data/manifests/p32_registry_promotion_validation_v0_1.json`；
+- promotion validation：`status=pass`，`active_registry_ready_count=10`，`deferred_count=5`。
+
+进入 `active_registry_ready` 的只有 P32-L4 fixture 覆盖的 10 个旧合同，且仅限 feature-flagged 或 runtime-alignment-only。新增 5 个合同（capital-market feedback、research-to-quant、enterprise RAG pipeline、Workbench artifact review、sandbox/resource scheduler）全部保持 `deferred_pending_l4_fixture`。
+
+这仍不是 paid memo 质量改善或 full-chain 继续扩量的依据。它只证明 P32 的 method/pattern learning -> contract translation -> L4 fixture -> registry promotion 决策链条可审计、可回放、不会把新补 source 直接推 runtime。
+
+边界：
+
+- P32-L1 不允许直接改 runtime。
+- 外部 source 不能因“看起来成熟”就进入 active registry；必须先通过 L2/L3/L4。
+- 如果某个方法不能映射到 FIN 的 evidence authority、ThesisPath、JudgmentCard、ContextEngine、ToolGateway、Trace/Eval 或 Workbench，它只能留在 learning ledger，不进入执行主线。
 
 ## 4.17 P25 / B05 Pack Depth Gate（2026-06-30）
 
-P25 目标是推进 `B05-depth-packs-before-broad-full-chain`：在进入 20-50 case broad full-chain quality eval 之前，把产品证据、二级市场/资本反馈、量化实验、交付物、检索/数据刷新等 pack 的真实深度状态统一落到机器可读 SQL / manifest / report。P25 不补齐缺失数据，不把 classified gap 或 bounded scope 当作数据深度完成，也不关闭 B05。
+P25 目标是推进 `B05-depth-packs-before-broad-full-chain`：在进入 20-50 case broad full-chain quality eval 之前，把产品证据、二级市场/资本反馈、量化实验、交付物、检索/数据刷新等 pack 的真实深度状态统一落到机器可读 SQL / manifest / report。初始 P25 只登记 blocker，不补齐缺失数据，也不关闭 B05；2026-07-01 后续 root-cause closeout 已补齐 S8/S7/P14 的 owned gaps，并使 P25 达到 B05 范围内 `L4_scope_pass`。
 
 新增/更新 artifacts：
 
@@ -1060,17 +1243,17 @@ P25 目标是推进 `B05-depth-packs-before-broad-full-chain`：在进入 20-50 
 
 | Field | Value |
 | --- | --- |
-| `status` | `pass_with_pack_depth_blockers_registered` |
-| `closeout_level` | `L4_scope_pass_for_pack_depth_blocker_registration_only` |
-| `release_decision` | `P25_b05_pack_depth_blockers_registered_broad_full_chain_blocked` |
+| `status` | `pass` |
+| `closeout_level` | `L4_scope_pass_for_broad_full_chain_pack_depth` |
+| `release_decision` | `P25_b05_pack_depth_ready_broad_full_chain_allowed` |
 | `pack_count` | `6` |
-| `ready_pack_count` | `2` |
-| `blocked_pack_count` | `4` |
-| `blocked_requirement_count` | `4` |
+| `ready_pack_count` | `6` |
+| `blocked_pack_count` | `0` |
+| `blocked_requirement_count` | `0` |
 | `gate_fail_count` | `0/5` |
-| `gate_blocked_count` | `1/5` |
-| `b05_status_after_p25` | `open_pack_level_depth_required` |
-| `broad_full_chain_quality_eval_allowed` | `false` |
+| `gate_blocked_count` | `0/5` |
+| `b05_status_after_p25` | `closed_by_p25_pack_depth_ready` |
+| `broad_full_chain_quality_eval_allowed` | `true` |
 
 Pack readiness：
 
@@ -1078,10 +1261,10 @@ Pack readiness：
 | --- | --- | --- |
 | `ai_semis_product_evidence_pack` | `ready` | AI/Semis `53/53` strict pass，`gap_queue_count=0` |
 | `research_to_quant_lab_pack` | `ready` | S9 至少 2 个 approved factors、2 个 backtests，且 `no_live_trading=true` |
-| `product_evidence_pack_all_universe` | `blocked` | P26 分层后确认 Product Profile/Spec/Relationship ready；Product-KPI exact `160` 只阻断 exact KPI claims，CapitalMarketDetail `2` 转入资本包；当前真正阻断 ProductEvidence broad quality 的是 CustomerDeployment signal `72` |
-| `secondary_market_capital_feedback_pack` | `blocked` | `credit_funding`、`derivatives_market_signal`、`valuation_price_in` 三类 required roles 仍是 `603` 缺口 |
-| `deliverable_studio_pack` | `blocked` | S7 只证明 deterministic render/dashboard；缺真实 `customer_ready_editorial_quality_pass` |
-| `retrieval_data_refresh_pack` | `blocked` | P14 仍是 control plane；`not_full_crawler_or_production_refresh=true`，未证明 full crawler / production refresh |
+| `product_evidence_pack_all_universe` | `ready` | P26 root-cause repair 后 CustomerDeployment depth `603/603`；Product Profile/Spec/Relationship ready，Product-KPI exact `160` 只阻断 exact KPI claims |
+| `secondary_market_capital_feedback_pack` | `ready` | S8 已补 credit funding、derivatives market signal、valuation price-in public context；实时/商业市场深度是后续增强项，不再阻断 B05 |
+| `deliverable_studio_pack` | `ready` | S7 已改成 reader-facing Workpaper draft + evidence/gap appendix，并新增 `customer_ready_editorial_quality_pass=true` |
+| `retrieval_data_refresh_pack` | `ready` | P14 已新增 manifest-backed current accepted universe refresh evidence，`current_universe_refresh_status=current_accepted_public_source_universe_ready` |
 
 P26 ProductEvidence 分层 gate 的真实结果：
 
@@ -1101,7 +1284,7 @@ P25 修复/明确的真实 gating 问题：
 2. `pack-level tests` 和 `targeted_full_chain_smoke_for_integration_only` 仍允许；`20_50_case_full_chain_quality_claim`、`product_release_claim` 和从旧 release board 自动推进仍禁止。
 3. P25 的通过只代表“pack-depth blocker registration”达到自身范围内 L4-grade；它不是数据补齐、不是产品验收、也不是全系统上线信号。
 
-P21 已回读 P25 summary，并仍保持 broad full-chain blocked。B05 的后续真实关闭条件是：所有 required packs 要么达到 ready，要么以公开源/商业源边界形成可接受的 typed requirement closeout，且不能再存在阻断 `product_evidence_pack_all_universe`、`secondary_market_capital_feedback_pack`、`deliverable_studio_pack`、`retrieval_data_refresh_pack` 的 open pack-depth rows。对 `product_evidence_pack_all_universe` 来说，下一步不是继续泛化 Product-KPI exact，而是优先关闭 P26 暴露的 `customer_deployment_signal` 72 家缺口。
+P21 已回读最新 P25 summary：B05 的 pack-depth closeout 条件已经满足，`B05-depth-packs-before-broad-full-chain=closed_by_p25_pack_depth_ready`。在 B04 正式验收前，P21 仍保持 `full_chain_broad_eval_allowed=false`；2026-07-01 product-owner acceptance 后，P21 已更新为 `full_chain_broad_eval_allowed=true`。后续 broad full-chain 可以进入 scoped quality-eval 设计，但仍需按 R60 质量标准逐项记录，不得把单次 case 成功宣传成完整产品上线。
 
 ## 5. 单 Agent 执行节奏
 

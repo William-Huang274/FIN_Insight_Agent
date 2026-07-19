@@ -15,9 +15,9 @@ P12 proves a durable runtime drill through the SQL-final RuntimeFacade: checkpoi
 ## Counts
 
 - `drill_task_id`: `p12_runtime_drill_task_ai_infra_hil_resource_route`
-- `drill_run_id`: `run_d123e89dcef12683`
+- `drill_run_id`: `run_3dfab84fb66c10b6`
 - `drill_task_status`: `succeeded`
-- `drill_resume_count`: `1`
+- `drill_resume_count`: `5`
 - `runtime_facade_binding_count`: `1`
 - `graph_node_binding_count`: `5`
 - `checkpoint_bridge_count`: `2`

@@ -111,6 +111,7 @@ def data_ingestion_retrieval_control_plane_schema_contract() -> dict[str, Any]:
             "retrieval_quality_probe_records_p14",
             "data_quality_observations_p14",
             "database_performance_profiles_p14",
+            "current_universe_refresh_evidence_p14",
             "ingestion_lineage_edges_p14",
             "data_plane_acceptance_records_p14",
             "data_plane_readiness_reports_p14",
@@ -132,7 +133,10 @@ def data_ingestion_retrieval_control_plane_schema_contract() -> dict[str, Any]:
             "milvus_is_semantic_recall_not_exact_authority": True,
             "context_bridge_preserves_exact_refs": True,
             "failed_fetch_or_parser_creates_typed_gap": True,
-            "not_full_crawler_or_production_refresh": True,
+            "current_accepted_universe_refresh_requires_manifest_evidence": True,
+            "current_accepted_universe_refresh_is_runtime_ready": True,
+            "not_full_internet_crawler_or_realtime_refresh": True,
+            "not_production_p95_p99_sla": True,
         },
     }
 
@@ -326,6 +330,17 @@ def create_data_ingestion_retrieval_schema(conn: sqlite3.Connection) -> None:
             payload_json text not null default '{}',
             created_at text not null
         );
+        create table if not exists current_universe_refresh_evidence_p14 (
+            evidence_id text primary key,
+            evidence_name text not null,
+            manifest_path text not null,
+            evidence_scope text not null,
+            expected_contract text not null,
+            observed_value_json text not null default '{}',
+            status text not null,
+            boundary text not null,
+            created_at text not null
+        );
         create table if not exists ingestion_lineage_edges_p14 (
             lineage_edge_id text primary key,
             from_ref text not null,
@@ -406,6 +421,7 @@ def clear_p14_rows(conn: sqlite3.Connection) -> None:
         "data_plane_acceptance_records_p14",
         "ingestion_lineage_edges_p14",
         "database_performance_profiles_p14",
+        "current_universe_refresh_evidence_p14",
         "data_quality_observations_p14",
         "retrieval_quality_probe_records_p14",
         "retrieval_context_bridge_records_p14",
@@ -601,6 +617,7 @@ def materialize_data_plane_control(
             insert_quality_probes(conn, now=now)
             insert_data_quality_observations(conn, now=now)
             insert_performance_profiles(conn, now=now)
+            insert_current_universe_refresh_evidence(conn, root=root, now=now)
             insert_lineage_edges(conn, raw_docs=raw_docs, parser_runs=parser_runs, parsed_objects=parsed_objects, authority_rows=authority_rows, index_rows=index_rows, now=now)
             insert_data_plane_acceptance(conn, now=now)
             insert_data_plane_readiness_report(conn, task_id=drill_task_id, now=now)
@@ -1284,6 +1301,197 @@ def insert_performance_profiles(conn: sqlite3.Connection, *, now: str) -> None:
         )
 
 
+def insert_current_universe_refresh_evidence(conn: sqlite3.Connection, *, root: Path, now: str) -> list[dict[str, Any]]:
+    rows = build_current_universe_refresh_evidence_rows(root=root, now=now)
+    for row in rows:
+        conn.execute(
+            "insert into current_universe_refresh_evidence_p14 values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                row["evidence_id"],
+                row["evidence_name"],
+                row["manifest_path"],
+                row["evidence_scope"],
+                row["expected_contract"],
+                json_dumps(row["observed_value"]),
+                row["status"],
+                row["boundary"],
+                row["created_at"],
+            ),
+        )
+    return rows
+
+
+def build_current_universe_refresh_evidence_rows(*, root: Path, now: str) -> list[dict[str, Any]]:
+    manifest_dir = root / "data" / "manifests"
+
+    def read_manifest(filename: str) -> tuple[Path, dict[str, Any], bool]:
+        path = manifest_dir / filename
+        if not path.exists():
+            return path, {}, False
+        return path, json_loads(path.read_text(encoding="utf-8"), {}), True
+
+    def as_int(value: Any) -> int:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return 0
+
+    def counts(payload: Mapping[str, Any]) -> Mapping[str, Any]:
+        return payload.get("counts") if isinstance(payload.get("counts"), Mapping) else {}
+
+    specs: list[dict[str, Any]] = []
+
+    path, payload, exists = read_manifest("company_public_source_coverage_matrix_v0_1.json")
+    specs.append(
+        {
+            "evidence_name": "company_public_source_coverage_matrix",
+            "manifest_path": rel_path(path, root),
+            "evidence_scope": "603_company_public_source_role_matrix",
+            "expected_contract": "matrix exists for every accepted issuer and classifies remaining public/commercial source boundaries",
+            "observed_value": {
+                "exists": exists,
+                "status": payload.get("status"),
+                "company_count": payload.get("company_count"),
+                "repair_queue_count": len(payload.get("repair_queue") or []),
+            },
+            "passes": exists and as_int(payload.get("company_count")) >= 603 and payload.get("status") in {"pass", "gap"},
+            "boundary": "May contain typed source gaps; accepted as refresh evidence only when every runtime issuer is represented.",
+        }
+    )
+
+    path, payload, exists = read_manifest("source_coverage_gate_summary_v0_1.json")
+    specs.append(
+        {
+            "evidence_name": "source_coverage_gate_summary",
+            "manifest_path": rel_path(path, root),
+            "evidence_scope": "source_route_gate_and_gap_classification",
+            "expected_contract": "coverage gate exists and reports pass or typed gap status instead of silent missing source routes",
+            "observed_value": {"exists": exists, "status": payload.get("status"), "generated_at": payload.get("generated_at")},
+            "passes": exists and payload.get("status") in {"pass", "gap"},
+            "boundary": "A gap status is allowed only as typed public-source boundary evidence, not as proof of complete source depth.",
+        }
+    )
+
+    path, payload, exists = read_manifest("r53_r60_p26_product_evidence_all_universe_depth_summary_v0_1.json")
+    specs.append(
+        {
+            "evidence_name": "p26_product_evidence_all_universe_depth",
+            "manifest_path": rel_path(path, root),
+            "evidence_scope": "603_company_product_evidence_pack",
+            "expected_contract": "P26 product evidence pack is broad-full-chain ready with no blocking product/deployment gaps",
+            "observed_value": {
+                "exists": exists,
+                "status": payload.get("status"),
+                "release_decision": payload.get("release_decision"),
+                "product_pack_readiness_status": payload.get("product_pack_readiness_status"),
+                "broad_full_chain_product_pack_ready": payload.get("broad_full_chain_product_pack_ready"),
+                "counts": counts(payload),
+            },
+            "passes": exists and payload.get("status") == "pass" and bool(payload.get("broad_full_chain_product_pack_ready")),
+            "boundary": "Product-KPI exact gaps remain claim-scope limits if P26 marks them nonblocking.",
+        }
+    )
+
+    path, payload, exists = read_manifest("r53_r60_s8_secondary_market_capital_feedback_summary_v0_1.json")
+    s8_counts = counts(payload)
+    specs.append(
+        {
+            "evidence_name": "s8_secondary_market_capital_feedback",
+            "manifest_path": rel_path(path, root),
+            "evidence_scope": "603_company_secondary_market_capital_feedback_pack",
+            "expected_contract": "secondary-market/capital feedback packs exist for every accepted issuer",
+            "observed_value": {
+                "exists": exists,
+                "status": payload.get("status"),
+                "release_decision": payload.get("release_decision"),
+                "pack_count": s8_counts.get("pack_count") or s8_counts.get("capital_feedback_packs_s8"),
+                "signal_count": s8_counts.get("signal_count") or s8_counts.get("capital_feedback_signals_s8"),
+            },
+            "passes": exists and payload.get("status") == "pass" and as_int(s8_counts.get("pack_count") or s8_counts.get("capital_feedback_packs_s8")) >= 603,
+            "boundary": "Delayed/free market rows support market context, not real-time trading or dealer positioning.",
+        }
+    )
+
+    path, payload, exists = read_manifest("secondary_market_public_context_summary_v0_1.json")
+    specs.append(
+        {
+            "evidence_name": "secondary_market_public_context_rows",
+            "manifest_path": rel_path(path, root),
+            "evidence_scope": "603_ticker_public_market_context_rows",
+            "expected_contract": "public secondary-market context rows cover every accepted ticker",
+            "observed_value": {
+                "exists": exists,
+                "status": payload.get("status"),
+                "ticker_count": payload.get("ticker_count"),
+                "row_count": payload.get("row_count"),
+            },
+            "passes": exists and payload.get("status") == "pass" and as_int(payload.get("ticker_count")) >= 603 and as_int(payload.get("row_count")) >= 603,
+            "boundary": "Free public market context is lagged/delayed and cannot replace real-time commercial market feeds.",
+        }
+    )
+
+    path, payload, exists = read_manifest("gold_fact_signal_mart_summary_v0_1.json")
+    specs.append(
+        {
+            "evidence_name": "gold_fact_signal_mart",
+            "manifest_path": rel_path(path, root),
+            "evidence_scope": "603_company_gold_fact_signal_mart",
+            "expected_contract": "gold fact/signal mart has current runtime issuer coverage and non-empty rows",
+            "observed_value": {
+                "exists": exists,
+                "status": payload.get("status"),
+                "company_count": payload.get("company_count"),
+                "row_count": payload.get("row_count"),
+            },
+            "passes": exists and payload.get("status") == "pass" and as_int(payload.get("company_count")) >= 603 and as_int(payload.get("row_count")) > 0,
+            "boundary": "Gold rows remain parser/authority scoped; raw rows cannot be treated as final facts.",
+        }
+    )
+
+    path, payload, exists = read_manifest("retrieval_index_registry_summary_v0_1.json")
+    specs.append(
+        {
+            "evidence_name": "retrieval_index_registry",
+            "manifest_path": rel_path(path, root),
+            "evidence_scope": "runtime_retrieval_index_registry",
+            "expected_contract": "retrieval index registry is present and current enough for runtime route selection",
+            "observed_value": {"exists": exists, "status": payload.get("status"), "release_decision": payload.get("release_decision")},
+            "passes": exists and payload.get("status") == "pass",
+            "boundary": "Registry proves addressable route metadata, not semantic recall quality by itself.",
+        }
+    )
+
+    path, payload, exists = read_manifest("product_intelligence_graph_summary_v0_1.json")
+    specs.append(
+        {
+            "evidence_name": "product_intelligence_graph",
+            "manifest_path": rel_path(path, root),
+            "evidence_scope": "603_company_product_intelligence_graph",
+            "expected_contract": "ProductIntelligenceGraph exists for every accepted issuer",
+            "observed_value": {"exists": exists, "status": payload.get("status"), "company_count": payload.get("company_count")},
+            "passes": exists and payload.get("status") == "pass" and as_int(payload.get("company_count")) >= 603,
+            "boundary": "Product graph supports product/relationship reasoning; exact KPI claims still require exact rows.",
+        }
+    )
+
+    rows = []
+    for spec in specs:
+        rows.append(
+            {
+                "evidence_id": stable_id("p14current", [spec["evidence_name"], spec["manifest_path"]]),
+                "evidence_name": spec["evidence_name"],
+                "manifest_path": spec["manifest_path"],
+                "evidence_scope": spec["evidence_scope"],
+                "expected_contract": spec["expected_contract"],
+                "observed_value": spec["observed_value"],
+                "status": "pass" if spec["passes"] else "fail",
+                "boundary": spec["boundary"],
+                "created_at": now,
+            }
+        )
+    return rows
+
+
 def insert_lineage_edges(
     conn: sqlite3.Connection,
     *,
@@ -1353,11 +1561,6 @@ def insert_data_plane_acceptance(conn: sqlite3.Connection, *, now: str) -> None:
 
 def insert_data_plane_readiness_report(conn: sqlite3.Connection, *, task_id: str, now: str) -> None:
     known_gaps = [
-        {
-            "gap": "full_crawler_source_coverage",
-            "reason": "P14 proves the control plane with representative source modalities; it does not crawl every source or every company.",
-            "next_action": "Use this contract to onboard real R58 adapters source family by source family.",
-        },
         {
             "gap": "production_db_index_sla",
             "reason": "Performance profile is deterministic/local, not a cloud p95/p99 SLA.",
@@ -1440,6 +1643,17 @@ def evaluate_p14_gates(
             ).fetchone()[0]
         )
         perf_bad = int(conn.execute("select count(*) from database_performance_profiles_p14 where p95_latency_ms <= 0 or row_or_vector_count <= 0").fetchone()[0])
+        current_universe_count = int(conn.execute("select count(*) from current_universe_refresh_evidence_p14").fetchone()[0])
+        current_universe_fail = int(conn.execute("select count(*) from current_universe_refresh_evidence_p14 where status != 'pass'").fetchone()[0])
+        current_universe_rows = rows_to_dicts(
+            conn.execute(
+                """
+                select evidence_name, manifest_path, evidence_scope, status, observed_value_json, boundary
+                from current_universe_refresh_evidence_p14
+                order by evidence_name
+                """
+            ).fetchall()
+        )
         lineage_bad = int(conn.execute("select count(*) from ingestion_lineage_edges_p14 where lineage_status not in ('complete', 'blocked')").fetchone()[0])
         quality_fail = int(conn.execute("select count(*) from retrieval_quality_probe_records_p14 where status not in ('pass')").fetchone()[0])
         acceptance_bad = int(conn.execute("select count(*) from data_plane_acceptance_records_p14 where status != 'pass'").fetchone()[0])
@@ -1497,6 +1711,22 @@ def evaluate_p14_gates(
         gate("p14_context_bridge_preserves_exact_refs", "context_bridge", bridge_bad == 0 and materialized["context_bridge_count"] >= 4, {"bridge_bad": bridge_bad, "context_bridge_count": materialized["context_bridge_count"]}),
         gate("p14_perf_lineage_eval_records_ready", "quality_ops", perf_bad == 0 and lineage_bad == 0 and quality_fail == 0, {"perf_bad": perf_bad, "lineage_bad": lineage_bad, "quality_fail": quality_fail}),
         gate(
+            "p14_current_accepted_universe_refresh_evidence_ready",
+            "current_universe_refresh",
+            current_universe_count >= 8 and current_universe_fail == 0,
+            {
+                "current_universe_refresh_evidence_count": current_universe_count,
+                "current_universe_refresh_fail_count": current_universe_fail,
+                "evidence_rows": [
+                    {
+                        **{key: value for key, value in row.items() if key != "observed_value_json"},
+                        "observed_value": json_loads(str(row.get("observed_value_json") or "{}"), {}),
+                    }
+                    for row in current_universe_rows
+                ],
+            },
+        ),
+        gate(
             "p14_acceptance_and_boundary_report_ready",
             "release_boundary",
             materialized["acceptance_count"] == len(P14_DEMAND_IDS)
@@ -1541,6 +1771,7 @@ def collect_p14_counts(store: RuntimeTaskSpineStore, *, drill_task_id: str, run_
             "quality_probe_count": table_row_count(conn, "retrieval_quality_probe_records_p14"),
             "quality_observation_count": table_row_count(conn, "data_quality_observations_p14"),
             "performance_profile_count": table_row_count(conn, "database_performance_profiles_p14"),
+            "current_universe_refresh_evidence_count": table_row_count(conn, "current_universe_refresh_evidence_p14"),
             "lineage_edge_count": table_row_count(conn, "ingestion_lineage_edges_p14"),
             "acceptance_count": table_row_count(conn, "data_plane_acceptance_records_p14"),
         }
@@ -1550,6 +1781,13 @@ def count_where(conn: sqlite3.Connection, table: str, where_clause: str) -> int:
     if not table_exists(conn, table):
         return 0
     return int(conn.execute(f"select count(*) from {table} where {where_clause}").fetchone()[0])
+
+
+def decode_p14_evidence_row(row: Mapping[str, Any]) -> dict[str, Any]:
+    decoded = dict(row)
+    if "observed_value_json" in decoded:
+        decoded["observed_value"] = json_loads(str(decoded.pop("observed_value_json") or "{}"), {})
+    return decoded
 
 
 def persist_p14_gate_results(store: RuntimeTaskSpineStore, gate_rows: list[dict[str, Any]]) -> None:
@@ -1604,8 +1842,25 @@ def build_p14_summary(
         task = row_to_dict(conn.execute("select * from research_tasks where task_id = ?", (task_id,)).fetchone())
         drill_task = row_to_dict(conn.execute("select * from research_tasks where task_id = ?", (P14_DRILL_TASK_ID,)).fetchone())
         report = row_to_dict(conn.execute("select * from data_plane_readiness_reports_p14 limit 1").fetchone())
+        current_rows = [
+            decode_p14_evidence_row(row_to_dict(row))
+            for row in conn.execute(
+                """
+                select evidence_name, manifest_path, evidence_scope, expected_contract,
+                       observed_value_json, status, boundary
+                from current_universe_refresh_evidence_p14
+                order by evidence_name
+                """
+            ).fetchall()
+        ]
     fail_count = len([row for row in gate_rows if row["status"] != "pass"])
     status = "pass" if fail_count == 0 else "fail"
+    current_universe_failed = [row for row in current_rows if row.get("status") != "pass"]
+    current_universe_status = (
+        "current_accepted_public_source_universe_ready"
+        if current_rows and not current_universe_failed
+        else "blocked_current_accepted_universe_refresh_evidence"
+    )
     outputs = {
         "schema": rel_path(paths.schema_path, root),
         "gate_rows": rel_path(paths.gate_rows_path, root),
@@ -1625,6 +1880,8 @@ def build_p14_summary(
         "retrieval_control_status": report.get("retrieval_control_status") or "not_evaluated",
         "context_bridge_status": report.get("context_bridge_status") or "not_evaluated",
         "performance_status": report.get("performance_status") or "not_evaluated",
+        "current_universe_refresh_status": current_universe_status,
+        "current_universe_refresh_evidence": current_rows,
         "task": task,
         "drill_task": drill_task,
         "counts": {**dict(materialized), "gate_count": len(gate_rows), "gate_fail_count": fail_count},
@@ -1647,10 +1904,11 @@ def render_p14_report(summary: Mapping[str, Any], gate_rows: list[dict[str, Any]
         f"- Retrieval control status: `{summary['retrieval_control_status']}`",
         f"- Context bridge status: `{summary['context_bridge_status']}`",
         f"- Performance status: `{summary['performance_status']}`",
+        f"- Current universe refresh status: `{summary['current_universe_refresh_status']}`",
         "",
         "## Scope Boundary",
         "",
-        "P14 proves a SQL-final control plane for source snapshots, ingestion jobs, fetch attempts, parser runs, authority mapping, index refreshes, retrieval strategy budgets, ContextEngine retrieval bridge, quality probes, lineage and performance profiles. It does not claim full crawler coverage, all-company refresh completeness, or production p95/p99 SLA.",
+        "P14 proves a SQL-final control plane for source snapshots, ingestion jobs, fetch attempts, parser runs, authority mapping, index refreshes, retrieval strategy budgets, ContextEngine retrieval bridge, quality probes, lineage and performance profiles. It also verifies the current accepted 603-company data universe through manifest-backed refresh evidence. It does not claim unlimited internet crawler coverage, real-time refresh, or production p95/p99 SLA.",
         "",
         "## Counts",
         "",
@@ -1658,6 +1916,10 @@ def render_p14_report(summary: Mapping[str, Any], gate_rows: list[dict[str, Any]
     for key, value in summary["counts"].items():
         if isinstance(value, (str, int, float, bool)):
             lines.append(f"- `{key}`: `{value}`")
+    lines.extend(["", "## Current Accepted Universe Refresh Evidence", ""])
+    for row in summary["current_universe_refresh_evidence"]:
+        observed = row.get("observed_value") if isinstance(row.get("observed_value"), Mapping) else {}
+        lines.append(f"- `{row['status']}` `{row['evidence_name']}` -> `{row['manifest_path']}` ({observed})")
     lines.extend(["", "## Gates", ""])
     for row in gate_rows:
         lines.append(f"- `{row['gate_id']}` ({row['gate_group']}): `{row['status']}`")

@@ -1,0 +1,75 @@
+{
+  "schema_version": "finsight_calibration_case_selection_v0_1",
+  "status": "pass",
+  "positive_cases": [
+    {
+      "selection_id": "ai_infra_anchor",
+      "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+      "mechanism": "supply_chain_capital_intensive",
+      "role": "anchor_artifact_backed",
+      "historical_maturity": "fresh_specialist_fixture_proven",
+      "selection_status": "selected"
+    },
+    {
+      "selection_id": "saas_platform_shadow",
+      "case_id": "v3_software_cloud_developer_products_financial_product_bridge_001",
+      "mechanism": "subscription_platform",
+      "role": "shadow_contract_calibration",
+      "historical_maturity": "fixture_defined",
+      "selection_status": "selected"
+    },
+    {
+      "selection_id": "regulated_product_shadow",
+      "case_id": "v4_pharma_biotech_medtech_financial_product_bridge_001",
+      "mechanism": "regulated_milestone",
+      "role": "shadow_contract_calibration",
+      "historical_maturity": "fixture_defined",
+      "selection_status": "selected"
+    },
+    {
+      "selection_id": "balance_sheet_shadow",
+      "case_id": "v6_banks_financials_capital_markets_financial_product_bridge_001",
+      "mechanism": "balance_sheet_credit",
+      "role": "ontology_stress_shadow",
+      "historical_maturity": "fixture_defined",
+      "selection_status": "selected"
+    }
+  ],
+  "negative_controls": [
+    {
+      "case_id": "negative_relationship_graph_not_financial_fact_v0_1",
+      "historical_maturity": "exemplar_artifact_backed",
+      "selection_status": "selected"
+    },
+    {
+      "case_id": "negative_parser_gap_not_public_source_absent_v0_1",
+      "historical_maturity": "exemplar_artifact_backed",
+      "selection_status": "selected"
+    },
+    {
+      "case_id": "negative_commercial_tracker_boundary_v0_1",
+      "historical_maturity": "exemplar_artifact_backed",
+      "selection_status": "selected"
+    }
+  ],
+  "selection_rationale": [
+    "Retain the only artifact-backed AI/Semis case as an anchor, not as proof of generalization.",
+    "Add SaaS, regulated healthcare and bank shadow cases because their economic mechanisms and valuation ontologies differ materially.",
+    "Use negative controls to test evidence authority, parser/source-gap typing and commercial-data boundaries."
+  ],
+  "execution_policy": {
+    "phase_1": "deterministic_compiler_and_reviewer_calibration_only",
+    "paid_node_allowed_after_gate": true,
+    "full_chain_allowed": false,
+    "shadow_cases_are_not_quality_passes": true
+  },
+  "promotion_gates": [
+    "decision_surface_schema_valid",
+    "sector_required_cells_present",
+    "forbidden_substitution_rules_present",
+    "negative_controls_fail_closed",
+    "human_reviewer_cell_granularity_accepted",
+    "legacy_projection_diff_explained"
+  ],
+  "errors": []
+}

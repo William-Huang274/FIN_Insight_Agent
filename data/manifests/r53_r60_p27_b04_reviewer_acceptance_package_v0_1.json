@@ -1,0 +1,48 @@
+{
+  "b04_status_after_p27": "open_product_acceptance_required",
+  "counts": {
+    "defect_closeout_pending_count": 8,
+    "defect_closeout_requirement_count": 8,
+    "evidence_template_count": 13,
+    "human_evidence_pending_count": 5,
+    "human_evidence_requirement_count": 5,
+    "ready_reviewer_session_count": 0,
+    "real_reviewer_evidence_row_count": 0,
+    "review_step_count": 5,
+    "reviewer_candidate_ref_count": 36,
+    "reviewer_session_count": 0
+  },
+  "does_not_close_b04": true,
+  "full_chain_broad_eval_allowed": false,
+  "generated_at": "2026-07-01T12:25:58Z",
+  "outputs": {
+    "evidence_template_rows": "data/manifests/r53_r60_p27_b04_reviewer_acceptance_evidence_templates_v0_1.jsonl",
+    "package": "data/manifests/r53_r60_p27_b04_reviewer_acceptance_package_v0_1.json",
+    "report": "docs/internal/vnext_20260610/r53_r60_p27_b04_reviewer_acceptance_package.zh-CN.md",
+    "reviewer_candidate_rows": "data/manifests/r53_r60_p27_b04_reviewer_acceptance_candidate_refs_v0_1.jsonl",
+    "step_rows": "data/manifests/r53_r60_p27_b04_reviewer_acceptance_steps_v0_1.jsonl"
+  },
+  "package_status": "ready_for_real_reviewer_execution",
+  "report_id": "p27_b04_reviewer_acceptance_package_report_v0_1",
+  "reviewer_execution_contract": {
+    "after_real_review": [
+      "rerun P24",
+      "rerun P21",
+      "verify B04 closes only from manifest-backed evidence"
+    ],
+    "allowed_entrypoints": [
+      "Workbench Product acceptance evidence panel",
+      "POST /api/r53-r60/product-acceptance/evidence",
+      "scripts/engineering/record_r53_r60_p24_b04_reviewer_acceptance_evidence.py"
+    ],
+    "forbidden_shortcuts": [
+      "editing P24 summary fields to close B04",
+      "copying template rows into reviewer evidence without real review",
+      "using automation_e2e or deterministic drill rows as human acceptance"
+    ]
+  },
+  "schema_version": "r53_r60_p27_b04_reviewer_acceptance_package_v0_1",
+  "source_p24_summary": "data/manifests/r53_r60_p24_b04_product_acceptance_summary_v0_1.json",
+  "task_id": "p27_scope_task_b04_reviewer_acceptance_package",
+  "workbench_url": "http://127.0.0.1:18080"
+}

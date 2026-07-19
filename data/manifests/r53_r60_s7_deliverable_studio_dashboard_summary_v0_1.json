@@ -1,20 +1,22 @@
 {
-  "boundary": "S7 closes deterministic deliverable studio/dashboard projection only; it does not prove customer-ready editorial quality, RBAC, or production SLA.",
+  "boundary": "S7 closes deterministic customer-readable deliverable studio/dashboard projection for reviewed Workpaper content; it does not prove human-approved publication, RBAC, or production SLA.",
   "closeout_level": "L4_scope_pass",
   "counts": {
     "composer_permission_gates_s7": 1,
     "dashboard_projections_s7": 1,
     "deliverable_plans_s7": 1,
-    "deliverable_quality_gates_s7": 4,
+    "deliverable_quality_gates_s7": 7,
     "deliverable_studio_metadata": 3,
-    "gate_count": 10,
+    "gate_count": 11,
     "gate_fail_count": 0,
     "narrative_surface_contracts_s7": 4,
     "render_jobs_s7": 4
   },
+  "customer_ready_editorial_quality_pass": true,
   "deliverable_plan_id": "s7plan_0b186447f9abbd06",
+  "editorial_acceptance_status": "deterministic_customer_ready_pass",
   "failed_gates": [],
-  "generated_at": "2026-06-29T12:35:41Z",
+  "generated_at": "2026-07-04T18:05:33Z",
   "next_slice_unlocked": "S8",
   "outputs": {
     "closeout_report": "docs/internal/vnext_20260610/r53_r60_s7_deliverable_studio_dashboard_l4_scope_pass.zh-CN.md",
@@ -27,10 +29,10 @@
   "release_decision": "S7_L4_scope_pass",
   "render_jobs": [
     {
-      "artifact_ref_id": "artifact_26043c7a8e925168",
+      "artifact_ref_id": "artifact_694b1790da5eb546",
       "byte_size": 613,
-      "content_sha256": "ce0c4676f8ff434e7e0a21b068b539f61e948ad06a9edbd4308b606e407b7fe4",
-      "created_at": "2026-06-29T12:35:41Z",
+      "content_sha256": "9b0cf80bb366b63f246d99f51c9a18d06a486867c24f7c3dddc69b509b92b718",
+      "created_at": "2026-07-04T18:05:33Z",
       "deliverable_plan_id": "s7plan_0b186447f9abbd06",
       "output_format": "dashboard_projection",
       "output_uri": "reports/deliverables/r53_r60/s7/s5_scope_task_workpaper_lead_review/dashboard_projection.json",
@@ -44,10 +46,10 @@
       "task_id": "s5_scope_task_workpaper_lead_review"
     },
     {
-      "artifact_ref_id": "artifact_f7f3d8b29af87fe5",
-      "byte_size": 1274,
-      "content_sha256": "2283f87962ce5f98c5b008d23c5152900e2f099e724ad77e51b421a30019fa1a",
-      "created_at": "2026-06-29T12:35:41Z",
+      "artifact_ref_id": "artifact_ec151532cc064306",
+      "byte_size": 1764,
+      "content_sha256": "eca2c9d533f16c135575aac2d4af340a0a6eca9d5c5af65e5a5b1b8da13627cd",
+      "created_at": "2026-07-04T18:05:33Z",
       "deliverable_plan_id": "s7plan_0b186447f9abbd06",
       "output_format": "docx",
       "output_uri": "reports/deliverables/r53_r60/s7/s5_scope_task_workpaper_lead_review/workpaper_review.docx",
@@ -61,10 +63,10 @@
       "task_id": "s5_scope_task_workpaper_lead_review"
     },
     {
-      "artifact_ref_id": "artifact_84cfc325bc3e528a",
-      "byte_size": 3998,
-      "content_sha256": "5f471f451487fe6c29f7e38c3421c2c9252e342438d11e4a0c7e50b3fb6f3895",
-      "created_at": "2026-06-29T12:35:41Z",
+      "artifact_ref_id": "artifact_d104a83c2a5b15d2",
+      "byte_size": 5757,
+      "content_sha256": "60acd5ecac9661e1bb7c5704c02bf2d2e715549edc9588751f22d1babbc2d814",
+      "created_at": "2026-07-04T18:05:33Z",
       "deliverable_plan_id": "s7plan_0b186447f9abbd06",
       "output_format": "markdown",
       "output_uri": "reports/deliverables/r53_r60/s7/s5_scope_task_workpaper_lead_review/workpaper_review.md",
@@ -78,10 +80,10 @@
       "task_id": "s5_scope_task_workpaper_lead_review"
     },
     {
-      "artifact_ref_id": "artifact_b9ddee36b1d560fd",
-      "byte_size": 2388,
-      "content_sha256": "3c6e1152123ee0e6dca4b5855cf184c109ab818d61261b180a248cb2cfc84875",
-      "created_at": "2026-06-29T12:35:41Z",
+      "artifact_ref_id": "artifact_f69f18cfec149bc0",
+      "byte_size": 2747,
+      "content_sha256": "58338b439f9ffa53d45ed6d15a75c395a17101a307abe283ca0b2aa8e017b3b5",
+      "created_at": "2026-07-04T18:05:33Z",
       "deliverable_plan_id": "s7plan_0b186447f9abbd06",
       "output_format": "xlsx",
       "output_uri": "reports/deliverables/r53_r60/s7/s5_scope_task_workpaper_lead_review/evidence_appendix.xlsx",

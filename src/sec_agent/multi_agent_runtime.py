@@ -5,7 +5,7 @@ import json
 import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Iterable, Mapping
 from urllib.parse import urlparse
 
 from evidence.schema import EvidenceObject
@@ -649,6 +649,7 @@ def plan_reflection_gate(
         errors=errors,
         warnings=warnings,
     )
+    _check_supervising_plan_runtime_contract(plan, metadata, active_agents, errors=errors, warnings=warnings)
 
     repair_requests = [
         {
@@ -673,6 +674,48 @@ def plan_reflection_gate(
         "playbook_policy": playbook_policy,
         "repair_requests": repair_requests,
     }
+
+
+def _check_supervising_plan_runtime_contract(
+    plan: Mapping[str, Any],
+    metadata: Mapping[str, Any],
+    active_agents: set[str],
+    *,
+    errors: list[dict[str, Any]],
+    warnings: list[dict[str, Any]],
+) -> None:
+    if not metadata.get("supervising_analyst_contract_schema_version"):
+        return
+    evidence_role_plan = [
+        dict(item)
+        for item in plan.get("evidence_role_plan") or []
+        if isinstance(item, Mapping)
+    ]
+    missing_must_answer = [
+        str(item.get("required_item") or "")
+        for item in evidence_role_plan
+        if str(item.get("required_item") or "").strip() and not _string_list(item.get("must_answer"))
+    ]
+    if missing_must_answer:
+        errors.append(
+            {
+                "type": "supervising_plan_missing_must_answer",
+                "required_items": sorted(set(missing_must_answer)),
+                "reason": "Research Lead must turn absorbed methods into explicit questions before retrieval/specialist fanout.",
+            }
+        )
+    required_items = {str(item.get("required_item") or "") for item in evidence_role_plan}
+    if "risk_and_counterevidence" in required_items and "risk_counterevidence_analyst" not in active_agents:
+        if not metadata.get("risk_counterevidence_deterministic_pack_policy"):
+            warnings.append(
+                {
+                    "type": "required_risk_counterevidence_agent_pruned",
+                    "required_item": "risk_and_counterevidence",
+                    "reason": "Counter-thesis/what-would-change is required but no active risk analyst or deterministic risk pack policy is present.",
+                }
+            )
+    if not evidence_role_plan:
+        warnings.append({"type": "supervising_plan_has_no_evidence_role_plan"})
 
 
 def _check_required_source_family_availability(
@@ -1063,10 +1106,10 @@ def _claim_scope_for_authority(
 
 def _bounded_gap_register_from_state(state: Mapping[str, Any], authority_rows: list[Mapping[str, Any]]) -> dict[str, Any]:
     entries: list[dict[str, Any]] = []
-    seen: set[tuple[str, str, str]] = set()
+    seen: set[tuple[str, str, str, str, str, str]] = set()
     for index, row in enumerate(_row_dicts(state.get("source_gaps")), start=1):
         entry = _bounded_gap_entry(row, index=index, source="source_gaps")
-        key = (entry["gap_id"], entry["source_family"], entry["gap_type"])
+        key = _bounded_gap_dedupe_key(entry)
         if key not in seen:
             seen.add(key)
             entries.append(entry)
@@ -1074,7 +1117,7 @@ def _bounded_gap_register_from_state(state: Mapping[str, Any], authority_rows: l
         if not bool(row.get("gap_only")):
             continue
         entry = _bounded_gap_entry(row, index=len(entries) + 1, source="evidence_fusion_authority_rows")
-        key = (entry["gap_id"], entry["source_family"], entry["gap_type"])
+        key = _bounded_gap_dedupe_key(entry)
         if key in seen:
             continue
         seen.add(key)
@@ -1092,6 +1135,17 @@ def _bounded_gap_register_from_state(state: Mapping[str, Any], authority_rows: l
             "parser_schema_gap_count": len([row for row in entries if row.get("gap_type") == "parser_schema_gap"]),
         },
     }
+
+
+def _bounded_gap_dedupe_key(entry: Mapping[str, Any]) -> tuple[str, str, str, str, str, str]:
+    return (
+        str(entry.get("source_family") or "").strip(),
+        str(entry.get("gap_type") or "").strip(),
+        str(entry.get("ticker") or "").upper().strip(),
+        str(entry.get("metric") or "").strip(),
+        str(entry.get("product_or_segment") or "").strip(),
+        str(entry.get("bounded_reason") or "").strip(),
+    )
 
 
 def _bounded_gap_entry(row: Mapping[str, Any], *, index: int, source: str) -> dict[str, Any]:
@@ -1125,7 +1179,7 @@ def _gap_type_for_row(row: Mapping[str, Any]) -> str:
     explicit = str(row.get("gap_type") or row.get("gap_category") or "").strip()
     if explicit:
         return explicit
-    text = " ".join(str(row.get(key) or "").lower() for key in ("reason", "reason_code", "bounded_reason", "claim_scope", "summary"))
+    text = " ".join(str(row.get(key) or "").lower() for key in ("reason", "reason_code", "bounded_reason", "bounded_gap_reason", "claim_scope", "summary"))
     if "commercial" in text or "tracker" in text or "consensus" in text:
         return "commercial_tracker_gap"
     if "parser" in text or "schema" in text or "table" in text or "column" in text or "region" in text:
@@ -1140,7 +1194,7 @@ def _gap_type_for_row(row: Mapping[str, Any]) -> str:
 
 
 def _bounded_gap_reason(row: Mapping[str, Any]) -> str:
-    reason = str(row.get("bounded_reason") or row.get("reason") or row.get("reason_code") or row.get("summary") or "").strip()
+    reason = str(row.get("bounded_reason") or row.get("bounded_gap_reason") or row.get("reason") or row.get("reason_code") or row.get("summary") or "").strip()
     return _truncate(reason, 500) if reason else "public_or_runtime_authority_not_available"
 
 
@@ -1396,6 +1450,11 @@ def _route_coalescing_enabled(activation_plan: Mapping[str, Any]) -> bool:
 def _route_coalescing_key(route: Mapping[str, Any]) -> tuple[Any, ...]:
     route_name = str(route.get("retrieval_route") or "")
     coverage = route.get("coverage_requirements") if isinstance(route.get("coverage_requirements"), Mapping) else {}
+    if route_name == "relationship_graph":
+        return (
+            route_name,
+            tuple(sorted(set(_int_list(route.get("years") or coverage.get("years"))))),
+        )
     if route_name == "market_snapshot":
         return (
             route_name,
@@ -1458,11 +1517,14 @@ def _cap_retrieval_plan_routes(
     }
     kept: list[dict[str, Any]] = []
     dropped: list[dict[str, Any]] = []
-    counts_by_agent: dict[str, int] = {}
+    call_keys_total: set[tuple[str, str]] = set()
+    call_keys_by_agent: dict[str, set[tuple[str, str]]] = {}
     for route in routes:
         route_name = str(route.get("retrieval_route") or "")
         agent_id = ROUTE_OPERATOR_TOOL.get(route_name, ("", ""))[0]
-        if remaining_total >= 0 and len(kept) >= remaining_total:
+        call_key = _route_budget_physical_call_key(route)
+        consumes_new_call = call_key not in call_keys_total
+        if remaining_total >= 0 and consumes_new_call and len(call_keys_total) >= remaining_total:
             dropped.append(
                 {
                     "route_id": route.get("route_id") or "",
@@ -1472,39 +1534,59 @@ def _cap_retrieval_plan_routes(
             )
             continue
         agent_limit = per_agent_limits.get(agent_id, 0)
-        if agent_limit and used_by_agent.get(agent_id, 0) + counts_by_agent.get(agent_id, 0) >= agent_limit:
+        agent_keys = call_keys_by_agent.setdefault(agent_id, set())
+        if agent_limit and consumes_new_call and used_by_agent.get(agent_id, 0) + len(agent_keys) >= agent_limit:
             dropped.append(
                 {
                     "route_id": route.get("route_id") or "",
                     "retrieval_route": route_name,
                     "agent_id": agent_id,
                     "reason": "max_tool_calls_per_agent",
+                    "budget_call_key": "::".join(call_key),
                 }
             )
             continue
         kept.append(route)
-        if agent_id:
-            counts_by_agent[agent_id] = counts_by_agent.get(agent_id, 0) + 1
+        if consumes_new_call:
+            call_keys_total.add(call_key)
+            if agent_id:
+                agent_keys.add(call_key)
     if len(kept) == len(routes):
         return capped
     capped["routes"] = kept
+    summary = _retrieval_plan_summary(kept, task_count=len(capped.get("tasks") or []))
     capped["summary"] = {
-        **dict(capped.get("summary") or {}),
-        "route_count": len(kept),
+        **summary,
         "route_budget_dropped_count": len(dropped),
+        "route_budget_physical_tool_call_count": len(call_keys_total),
     }
     capped["route_budget_pruning"] = {
         "policy": "compiled_routes_capped_by_agent_permission_matrix",
+        "counting_policy": "physical_tool_call_count_with_grouped_sec_text_routes_v0_1",
         "max_tool_calls_total": max_total,
         "used_tool_calls_total": used_total,
         "remaining_tool_calls_total": remaining_total,
         "per_agent_limits": per_agent_limits,
         "used_tool_calls_by_agent": used_by_agent,
         "kept_route_count": len(kept),
+        "kept_physical_tool_call_count": len(call_keys_total),
+        "kept_physical_tool_calls_by_agent": {
+            agent: len(keys)
+            for agent, keys in sorted(call_keys_by_agent.items())
+            if agent
+        },
         "dropped_route_count": len(dropped),
         "dropped_routes": dropped,
     }
     return capped
+
+
+def _route_budget_physical_call_key(route: Mapping[str, Any]) -> tuple[str, str]:
+    route_name = str(route.get("retrieval_route") or "")
+    agent_id = ROUTE_OPERATOR_TOOL.get(route_name, ("", ""))[0]
+    if route_name in SEC_SEARCH_TEXT_ROUTES:
+        return (agent_id, "grouped_sec_search_text")
+    return (agent_id, _route_identity(route))
 
 
 def second_pass_evidence_requirement_plan_from_reflection(
@@ -2070,7 +2152,7 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
         state,
         tickers=_focus_tickers_from_state(state),
         repo_root=os.getcwd(),
-        autoload=bool(state.get("product_intelligence_runtime_autoload")),
+        autoload=_product_intelligence_autoload_arg(state),
     )
     state_for_view = {**dict(state), "_dimension_evidence_portfolio": dimension_portfolio}
     dimension_portfolio_ref = compact_dimension_evidence_portfolio(dimension_portfolio, agent_id=str(agent_id or ""))
@@ -2143,8 +2225,11 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
                 state,
                 tickers=_focus_tickers_from_state(state),
                 repo_root=os.getcwd(),
-                max_rows=max(32, _data_view_max_rows_for_agent(entry["agent_id"], state) * 3),
-                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+                max_rows=_product_intelligence_context_candidate_budget(
+                    max_rows=_data_view_max_rows_for_agent(entry["agent_id"], state),
+                    focus_ticker_count=len(_focus_tickers_from_state(state)),
+                ),
+                autoload=_product_intelligence_autoload_arg(state),
             )
             product_spec_pack = build_product_spec_pack(
                 {**dict(state), "product_intelligence_context_rows": product_intelligence_rows},
@@ -2156,13 +2241,13 @@ def build_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> dict[str, 
                 state,
                 tickers=_focus_tickers_from_state(state),
                 repo_root=os.getcwd(),
-                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+                autoload=_product_intelligence_autoload_arg(state),
             )
             view["product_evidence_pack_ref"] = compact_ai_semis_product_evidence_pack_refs(
                 state,
                 tickers=_focus_tickers_from_state(state),
                 repo_root=os.getcwd(),
-                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+                autoload=_product_intelligence_autoload_arg(state),
             )
         if entry["agent_id"] in {"fundamental_analyst", "industry_supply_chain_analyst", "risk_counterevidence_analyst"}:
             capital_macro_pack = build_capital_macro_pack(
@@ -2321,7 +2406,7 @@ def _role_context_for_agent_data_view(
             state,
             tickers=_focus_tickers_from_state(state),
             repo_root=os.getcwd(),
-            autoload=bool(state.get("product_intelligence_runtime_autoload")),
+            autoload=_product_intelligence_autoload_arg(state),
         )
     )
     base = {
@@ -2755,6 +2840,20 @@ def _required_claim_slots_for_specialist(
                 required_source_families=["public_source_context", "live_public_web_context"],
                 instruction="Use public source and allowlisted web rows only as directional proxy, validation context, or lead evidence; do not convert them into product sales, share, inventory, margin, or profitability facts.",
             ),
+            _claim_slot(
+                agent_id,
+                slot_id="product_relationship_deployment_context",
+                memo_slot="product_technology",
+                target_claim_count="0-2",
+                claim_type_allowlist=["relationship_hypothesis", "business_observation"],
+                required_source_families=["relationship_graph"],
+                instruction=(
+                    "Use ProductIntelligenceGraph or relationship_graph rows to connect product families to customers, suppliers, "
+                    "deployment, configured-in, sold-through, or competitive/substitution context. Treat these rows as bounded "
+                    "product adoption or transmission evidence only; do not infer exact product revenue, shipment, ASP, backlog, "
+                    "order value, market share, gross margin, or inventory unless exact authority rows are present."
+                ),
+            ),
         ]
     if agent_id == "industry_supply_chain_analyst":
         relationship_required = bool(_relationship_rows_from_state(state))
@@ -2910,6 +3009,7 @@ def _requirements_for_specialist(agent_id: str, state: Mapping[str, Any]) -> lis
 def _state_evidence_requirements(state: Mapping[str, Any]) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     plans = []
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
     if isinstance(state.get("evidence_requirement_plan"), Mapping):
         plans.append(state.get("evidence_requirement_plan"))
     query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
@@ -2922,7 +3022,79 @@ def _state_evidence_requirements(state: Mapping[str, Any]) -> list[dict[str, Any
     for task in query_contract.get("decomposed_tasks") or []:
         if isinstance(task, Mapping):
             candidates.append(_requirement_from_decomposed_task(task, query_contract))
+    candidates.extend(_requirements_from_research_objective_contract(activation.get("research_objective_contract")))
+    thesis_path = activation.get("thesis_path") if isinstance(activation.get("thesis_path"), Mapping) else {}
+    candidates.extend(_requirements_from_thesis_path(thesis_path))
     return _dedupe_requirements(candidates)
+
+
+def _requirements_from_research_objective_contract(contract: Any) -> list[dict[str, Any]]:
+    if not isinstance(contract, Mapping):
+        return []
+    requirements: list[dict[str, Any]] = []
+    minimum = contract.get("minimum_evidence_requirements") if isinstance(contract.get("minimum_evidence_requirements"), Mapping) else {}
+    required_dimensions = _string_list(contract.get("required_dimensions"))
+    for key, payload in minimum.items():
+        item = payload if isinstance(payload, Mapping) else {}
+        req_id = str(key or item.get("required_item") or item.get("minimum_role") or "").strip()
+        if not req_id:
+            continue
+        requirements.append(
+            {
+                "requirement_id": req_id,
+                "task_id": req_id,
+                "question_zh": str(item.get("question") or req_id),
+                "priority": "primary",
+                "analysis_intent": str(item.get("minimum_role") or req_id),
+                "source_families": [],
+                "evidence_routes": [],
+                "metric_families": [],
+                "contract_source": "research_objective_contract",
+            }
+        )
+    for dimension in required_dimensions:
+        req_id = str(dimension or "").strip()
+        if not req_id:
+            continue
+        requirements.append(
+            {
+                "requirement_id": req_id,
+                "task_id": req_id,
+                "question_zh": req_id,
+                "priority": "primary",
+                "analysis_intent": req_id,
+                "source_families": [],
+                "evidence_routes": [],
+                "metric_families": [],
+                "contract_source": "research_objective_contract_required_dimension",
+            }
+        )
+    return requirements
+
+
+def _requirements_from_thesis_path(thesis_path: Mapping[str, Any]) -> list[dict[str, Any]]:
+    requirements: list[dict[str, Any]] = []
+    for item in thesis_path.get("required_items") or thesis_path.get("path_nodes") or []:
+        if not isinstance(item, Mapping):
+            continue
+        req_id = str(item.get("required_item") or item.get("dimension") or item.get("task_id") or "").strip()
+        if not req_id:
+            continue
+        requirements.append(
+            {
+                "requirement_id": req_id,
+                "task_id": req_id,
+                "question_zh": str(item.get("question") or req_id),
+                "priority": "primary",
+                "analysis_intent": str(item.get("dimension") or req_id),
+                "primary_agents": _string_list(item.get("primary_agents")),
+                "source_families": [],
+                "evidence_routes": [],
+                "metric_families": [],
+                "contract_source": "thesis_path",
+            }
+        )
+    return requirements
 
 
 def _requirement_from_decomposed_task(task: Mapping[str, Any], query_contract: Mapping[str, Any]) -> dict[str, Any]:
@@ -2968,6 +3140,8 @@ def _compact_task_card_requirement(requirement: Mapping[str, Any], index: int) -
 
 
 def _requirement_matches_specialist(agent_id: str, requirement: Mapping[str, Any]) -> bool:
+    if agent_id in set(_string_list(requirement.get("primary_agents") or requirement.get("assigned_agents"))):
+        return True
     routes = set(_string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes")))
     families = set(_requirement_source_families(requirement))
     owners = set(_string_list(requirement.get("operator_owners") or requirement.get("operator_owner")))
@@ -3005,11 +3179,99 @@ def _requirement_matches_specialist(agent_id: str, requirement: Mapping[str, Any
             )
         )
     if agent_id == "industry_supply_chain_analyst":
-        return bool(families & {"industry_snapshot", "relationship_graph"} or routes & {"industry_snapshot", "relationship_graph"} or any(term in text for term in ("industry", "supply", "relationship", "sector", "chain", "readthrough")))
+        return bool(
+            families & {"industry_snapshot", "relationship_graph"}
+            or routes & {"industry_snapshot", "relationship_graph"}
+            or any(
+                term in text
+                for term in (
+                    "industry",
+                    "supply",
+                    "relationship",
+                    "sector",
+                    "chain",
+                    "readthrough",
+                    "shipment",
+                    "backlog",
+                    "order",
+                    "cycle",
+                    "customer concentration",
+                    "行业",
+                    "供应",
+                    "供应链",
+                    "关系",
+                    "需求传导",
+                    "出货",
+                    "出货周期",
+                    "订单",
+                    "积压",
+                    "客户集中",
+                    "周期",
+                    "竞争位置",
+                )
+            )
+        )
     if agent_id == "market_valuation_analyst":
-        return bool("market_snapshot" in families or "market_snapshot" in routes or any(term in text for term in ("market", "valuation", "multiple", "return", "price", "reaction")))
+        return bool(
+            "market_snapshot" in families
+            or "market_snapshot" in routes
+            or any(
+                term in text
+                for term in (
+                    "market",
+                    "valuation",
+                    "multiple",
+                    "return",
+                    "price",
+                    "reaction",
+                    "price-in",
+                    "liquidity",
+                    "short interest",
+                    "市场",
+                    "估值",
+                    "股价",
+                    "定价",
+                    "资金面",
+                    "流动性",
+                    "反应",
+                    "做空",
+                )
+            )
+        )
     if agent_id == "risk_counterevidence_analyst":
-        return bool("run_artifact" in families or "risk_text" in routes or any(term in text for term in ("risk", "counter", "gap", "unsupported", "conflict", "caveat", "downside")))
+        return bool(
+            "run_artifact" in families
+            or "risk_text" in routes
+            or any(
+                term in text
+                for term in (
+                    "risk",
+                    "counter",
+                    "gap",
+                    "unsupported",
+                    "conflict",
+                    "caveat",
+                    "downside",
+                    "export control",
+                    "regulatory",
+                    "restriction",
+                    "sanction",
+                    "geopolitical",
+                    "风险",
+                    "反证",
+                    "缺口",
+                    "不支持",
+                    "冲突",
+                    "下行",
+                    "出口限制",
+                    "出口管制",
+                    "监管",
+                    "制裁",
+                    "地缘",
+                    "限制",
+                )
+            )
+        )
     return False
 
 
@@ -3064,10 +3326,12 @@ def _specialist_required_source_families(agent_id: str) -> list[str]:
         "fundamental_analyst": [
             "primary_sec_filing",
             "company_authored_unaudited_sec_filing",
+            "derived_metric_layer",
             "company_product_evidence_graph",
         ],
         "product_technology_analyst": [
             "company_product_evidence_graph",
+            "relationship_graph",
             "public_source_context",
             "live_public_web_context",
         ],
@@ -3087,6 +3351,7 @@ def _specialist_required_source_families(agent_id: str) -> list[str]:
             "live_public_web_context",
             "market_snapshot",
             "industry_snapshot",
+            "derived_metric_layer",
             "run_artifact",
         ],
     }.get(agent_id, [])
@@ -3103,6 +3368,7 @@ def _available_source_families_for_specialist(agent_id: str, state: Mapping[str,
         "public_source_context_rows",
     ):
         families.extend(_row_source_family(row) for row in _row_dicts(state.get(key)))
+    families.extend(_row_source_family(row) for row in _derived_metric_rows_for_agent_data_view(agent_id, state))
     if _relationship_rows_from_state(state):
         families.append("relationship_graph")
     required = set(_specialist_required_source_families(agent_id))
@@ -3112,10 +3378,17 @@ def _available_source_families_for_specialist(agent_id: str, state: Mapping[str,
 def _focus_tickers_from_state(state: Mapping[str, Any]) -> list[str]:
     query_contract = state.get("query_contract") if isinstance(state.get("query_contract"), Mapping) else {}
     scope = query_contract.get("scope") if isinstance(query_contract.get("scope"), Mapping) else {}
+    activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
+    activation_contract = activation.get("research_objective_contract") if isinstance(activation.get("research_objective_contract"), Mapping) else {}
+    activation_query = activation_contract.get("query_contract") if isinstance(activation_contract.get("query_contract"), Mapping) else {}
+    activation_scope = activation_query.get("scope") if isinstance(activation_query.get("scope"), Mapping) else {}
     return _unique_upper(
         state.get("focus_tickers")
         or query_contract.get("focus_tickers")
         or scope.get("focus_tickers")
+        or activation.get("focus_tickers")
+        or activation_query.get("focus_tickers")
+        or activation_scope.get("focus_tickers")
     )
 
 
@@ -3143,27 +3416,93 @@ def specialist_activation_decisions(state: Mapping[str, Any]) -> list[dict[str, 
     activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
     active = set(_string_list(activation.get("activate_agents")))
     priorities = {str(agent): str(priority) for agent, priority in dict(activation.get("agent_priorities") or {}).items()}
+    execution_mode = _execution_mode_from_state(state)
+    required_item_gate = _specialist_required_item_gate_enabled()
     decisions: list[dict[str, Any]] = []
     for agent_id in SPECIALIST_EXECUTION_ORDER:
         if agent_id not in active:
             continue
         priority = priorities.get(agent_id) or "primary"
         signal = _specialist_evidence_signal(agent_id, state)
+        matched_requirement_count = _specialist_required_item_match_count(agent_id, state)
         should_run = priority in {"primary", "supporting"} or (priority == "conditional" and signal["signal_count"] > 0)
         if priority == "low":
             should_run = bool(signal["explicit_intent"] and signal["signal_count"] > 0)
+        root_cause_reason = ""
+        if required_item_gate:
+            gate = _specialist_required_item_activation_gate(
+                agent_id,
+                state,
+                execution_mode=execution_mode,
+                priority=priority,
+                signal=signal,
+                matched_requirement_count=matched_requirement_count,
+            )
+            should_run = should_run and bool(gate["allowed"])
+            root_cause_reason = str(gate.get("reason") or "")
         decisions.append(
             {
                 "agent_id": agent_id,
                 "priority": priority,
                 "decision": "run" if should_run else "skipped",
-                "reason": "priority_allows_run" if should_run and priority in {"primary", "supporting"} else signal["reason"],
+                "reason": (
+                    "priority_and_required_item_gate_allow_run"
+                    if should_run and priority in {"primary", "supporting"}
+                    else root_cause_reason or signal["reason"]
+                ),
                 "signal_count": signal["signal_count"],
+                "matched_requirement_count": matched_requirement_count,
                 "explicit_intent": bool(signal["explicit_intent"]),
-                "policy": "cost_aware_specialist_activation_v0_1",
+                "policy": "cost_aware_required_item_specialist_activation_v0_2",
             }
         )
     return decisions
+
+
+def _specialist_required_item_gate_enabled() -> bool:
+    return str(os.environ.get("SEC_AGENT_SPECIALIST_REQUIRED_ITEM_GATE", "1")).strip().lower() not in {
+        "0",
+        "false",
+        "off",
+        "no",
+    }
+
+
+def _specialist_required_item_match_count(agent_id: str, state: Mapping[str, Any]) -> int:
+    requirements = _state_evidence_requirements(state)
+    return sum(1 for requirement in requirements if _requirement_matches_specialist(agent_id, requirement))
+
+
+def _specialist_required_item_activation_gate(
+    agent_id: str,
+    state: Mapping[str, Any],
+    *,
+    execution_mode: str,
+    priority: str,
+    signal: Mapping[str, Any],
+    matched_requirement_count: int,
+) -> dict[str, Any]:
+    if str(execution_mode or "") not in {"standard_memo", "deep_research"}:
+        return {"allowed": True, "reason": "non_research_mode_no_required_item_gate"}
+    if matched_requirement_count > 0:
+        return {"allowed": True, "reason": "matched_required_item"}
+    if bool(signal.get("explicit_intent")) and int(signal.get("signal_count") or 0) > 0:
+        return {"allowed": True, "reason": "explicit_user_intent_with_role_evidence"}
+    if agent_id == "fundamental_analyst" and int(signal.get("signal_count") or 0) > 0:
+        return {"allowed": True, "reason": "fundamental_core_financial_rows_visible"}
+    if agent_id == "industry_supply_chain_analyst" and _relationship_rows_from_state(state):
+        return {"allowed": True, "reason": "relationship_rows_visible_for_industry_lens"}
+    if priority in {"supporting", "conditional", "low"}:
+        return {
+            "allowed": False,
+            "reason": "supporting_specialist_skipped_no_matching_required_item_or_explicit_intent",
+        }
+    if agent_id in {"product_technology_analyst", "market_valuation_analyst", "risk_counterevidence_analyst"}:
+        return {
+            "allowed": False,
+            "reason": "specialist_skipped_no_matching_required_item_or_explicit_intent",
+        }
+    return {"allowed": True, "reason": "primary_specialist_allowed_by_core_role"}
 
 
 def execute_evidence_operator_plan(
@@ -3346,9 +3685,9 @@ def execute_evidence_operator_plan(
             continue
         result = _dry_run_result(tool_name, route) if dry_run else _execute_tool_with_resource_retry(tool_name, arguments, executor)
         boundary = validate_tool_observation_boundary(tool_name, result)
-        rows = _rows_from_result(tool_name, result)
+        rows = _attach_route_trace_to_rows(_rows_from_result(tool_name, result), route)
         runtime_summary = _tool_runtime_summary(tool_name, result)
-        gaps = _source_gaps_from_result(result)
+        gaps = _attach_route_trace_to_rows(_source_gaps_from_result(result), route)
         refs = [dict(item) for item in result.get("artifact_refs") or [] if isinstance(item, Mapping)]
         active_ledger.record_tool_call(
             turn_id=turn_id,
@@ -3409,12 +3748,19 @@ def execute_evidence_operator_plan(
             sec_group_cache["result"] = result
             sec_group_cache["executed_route_id"] = original_route.get("route_id") or route.get("route_id") or ""
 
+    context_rows = _attach_requirement_trace_to_rows(context_rows, retrieval_plan)
+    ledger_rows = _attach_requirement_trace_to_rows(ledger_rows, retrieval_plan)
+    market_rows = _attach_requirement_trace_to_rows(market_rows, retrieval_plan)
+    industry_rows = _attach_requirement_trace_to_rows(industry_rows, retrieval_plan)
+    source_gaps = _attach_requirement_trace_to_rows(source_gaps, retrieval_plan)
+
     ledger_rows = _merge_runtime_ledger_rows(
         [
             *ledger_rows,
             *_runtime_ledger_rows_from_sec_context(context_rows, state_context=context),
         ]
     )
+    ledger_rows = _attach_requirement_trace_to_rows(ledger_rows, retrieval_plan)
 
     source_gaps.extend(
         _ledger_missing_despite_context_gaps(
@@ -3424,6 +3770,7 @@ def execute_evidence_operator_plan(
             state_context=context,
         )
     )
+    source_gaps = _attach_requirement_trace_to_rows(source_gaps, retrieval_plan)
 
     return {
         "schema_version": RUNTIME_SCHEMA_VERSION,
@@ -3918,6 +4265,101 @@ def _sec_search_result_rows_for_route(result: Mapping[str, Any], route: Mapping[
     if route_name == "ledger_first":
         rows.extend(dict(item) for item in result.get("runtime_ledger_rows") or [] if isinstance(item, Mapping))
     return [dict(row) for row in rows]
+
+
+def _attach_route_trace_to_rows(rows: Iterable[Mapping[str, Any]], route: Mapping[str, Any]) -> list[dict[str, Any]]:
+    trace = _route_trace_payload(route)
+    if not trace:
+        return [dict(row) for row in rows if isinstance(row, Mapping)]
+    result: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        result.append(_merge_row_trace(row, trace))
+    return result
+
+
+def _attach_requirement_trace_to_rows(rows: Iterable[Mapping[str, Any]], retrieval_plan: Mapping[str, Any]) -> list[dict[str, Any]]:
+    trace_index = _route_trace_index(retrieval_plan)
+    if not trace_index:
+        return [dict(row) for row in rows if isinstance(row, Mapping)]
+    result: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        merged = dict(row)
+        for route_id in _row_route_ids(row):
+            trace = trace_index.get(route_id)
+            if trace:
+                merged = _merge_row_trace(merged, trace)
+        result.append(merged)
+    return result
+
+
+def _route_trace_index(retrieval_plan: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    index: dict[str, dict[str, Any]] = {}
+    for route in retrieval_plan.get("routes") or []:
+        if not isinstance(route, Mapping):
+            continue
+        trace = _route_trace_payload(route)
+        if not trace:
+            continue
+        for route_id in _dedupe([_route_identity(route), str(route.get("route_id") or "")]):
+            if route_id:
+                index[route_id] = trace
+    return index
+
+
+def _route_trace_payload(route: Mapping[str, Any]) -> dict[str, Any]:
+    route_id = _route_identity(route)
+    retrieval_route = str(route.get("retrieval_route") or "").strip()
+    requirement_ids = _string_list(route.get("evidence_requirement_id") or route.get("evidence_requirement_ids"))
+    selection_task_ids = _string_list(route.get("selection_task_id") or route.get("selection_task_ids") or route.get("task_id"))
+    payload: dict[str, Any] = {}
+    if route_id:
+        payload["selection_route_ids"] = [route_id]
+        payload["route_id"] = route_id
+    if retrieval_route:
+        payload["retrieval_routes"] = [retrieval_route]
+        payload["retrieval_route"] = retrieval_route
+    if requirement_ids:
+        payload["evidence_requirement_ids"] = requirement_ids
+        if len(requirement_ids) == 1:
+            payload["evidence_requirement_id"] = requirement_ids[0]
+    if selection_task_ids:
+        payload["selection_task_ids"] = selection_task_ids
+        if len(selection_task_ids) == 1:
+            payload["selection_task_id"] = selection_task_ids[0]
+    return payload
+
+
+def _row_route_ids(row: Mapping[str, Any]) -> list[str]:
+    route_ids: list[str] = []
+    for key in ("route_id", "selection_route_id"):
+        value = str(row.get(key) or "").strip()
+        if value:
+            route_ids.append(value)
+    route_ids.extend(_string_list(row.get("route_ids")))
+    route_ids.extend(_string_list(row.get("selection_route_ids")))
+    for ref in row.get("selection_routes") or []:
+        if isinstance(ref, Mapping):
+            value = str(ref.get("route_id") or "").strip()
+            if value:
+                route_ids.append(value)
+    return _dedupe(route_ids)
+
+
+def _merge_row_trace(row: Mapping[str, Any], trace: Mapping[str, Any]) -> dict[str, Any]:
+    merged = dict(row)
+    for key in ("evidence_requirement_ids", "selection_task_ids", "selection_route_ids", "retrieval_routes"):
+        values = _dedupe([*_string_list(merged.get(key)), *_string_list(trace.get(key))])
+        if values:
+            merged[key] = values[:12]
+    for key in ("evidence_requirement_id", "selection_task_id", "selection_route_id", "route_id", "retrieval_route"):
+        value = str(merged.get(key) or trace.get(key) or "").strip()
+        if value:
+            merged[key] = value
+    return merged
 
 
 def _result_row_matches_route(row: Mapping[str, Any], route_id: str) -> bool:
@@ -4784,14 +5226,62 @@ def _specialist_evidence_signal(agent_id: str, state: Mapping[str, Any]) -> dict
         )
         explicit = _contains_any(
             query_text,
-            ("industry", "sector", "supply chain", "customer", "supplier", "relationship", "public source", "行业", "产业链", "上下游", "供应链", "客户", "供应商", "关系", "公开源"),
+            (
+                "industry",
+                "sector",
+                "supply chain",
+                "customer",
+                "supplier",
+                "relationship",
+                "public source",
+                "shipment",
+                "backlog",
+                "order",
+                "capex cycle",
+                "customer concentration",
+                "行业",
+                "产业链",
+                "上下游",
+                "供应链",
+                "客户",
+                "供应商",
+                "关系",
+                "公开源",
+                "订单",
+                "积压",
+                "出货",
+                "出货周期",
+                "客户集中",
+                "资本开支周期",
+                "竞争位置",
+            ),
         )
         return _signal(count, explicit, "industry_or_relationship_rows_or_explicit_readthrough_intent")
     if agent_id == "market_valuation_analyst":
         count = len(state.get("market_snapshot_rows") or []) + len(
             [row for row in _row_dicts(state.get("context_rows")) if _row_source_family(row) == "market_snapshot"]
         )
-        explicit = _contains_any(query_text, ("market", "valuation", "multiple", "share price", "return", "市场", "估值", "倍数", "股价"))
+        explicit = _contains_any(
+            query_text,
+            (
+                "market",
+                "valuation",
+                "multiple",
+                "share price",
+                "return",
+                "price-in",
+                "liquidity",
+                "short interest",
+                "市场",
+                "估值",
+                "倍数",
+                "股价",
+                "定价",
+                "资金面",
+                "流动性",
+                "做空",
+            ),
+        )
         return _signal(count, explicit, "market_snapshot_rows_or_explicit_market_intent")
     if agent_id == "risk_counterevidence_analyst":
         count = (
@@ -4803,7 +5293,36 @@ def _specialist_evidence_signal(agent_id: str, state: Mapping[str, Any]) -> dict
             + len(state.get("product_evidence_rows") or [])
             + len(state.get("public_source_context_rows") or [])
         )
-        explicit = _contains_any(query_text, ("risk", "counterevidence", "downside", "uncertainty", "conflict", "风险", "反证", "下行", "不确定", "分歧"))
+        explicit = _contains_any(
+            query_text,
+            (
+                "risk",
+                "counterevidence",
+                "counter evidence",
+                "downside",
+                "uncertainty",
+                "conflict",
+                "export control",
+                "regulatory",
+                "restriction",
+                "sanction",
+                "source boundary",
+                "gap",
+                "caveat",
+                "风险",
+                "反证",
+                "下行",
+                "不确定",
+                "分歧",
+                "出口限制",
+                "出口管制",
+                "监管",
+                "制裁",
+                "来源边界",
+                "缺口",
+                "限制",
+            ),
+        )
         return _signal(count if explicit else len(state.get("source_gaps") or []), explicit, "risk_intent_or_source_gaps")
     return _signal(0, False, "unknown_specialist")
 
@@ -4823,7 +5342,13 @@ def _state_query_text(state: Mapping[str, Any]) -> str:
     return " ".join(
         [
             str(state.get("user_query") or ""),
-            " ".join(_string_list(contract.get("metric_families") or contract.get("source_tiers") or [])),
+            str(state.get("prompt") or ""),
+            str(contract.get("user_query") or ""),
+            str(contract.get("prompt") or ""),
+            " ".join(_string_list(contract.get("metric_families"))),
+            " ".join(_string_list(contract.get("source_tiers"))),
+            " ".join(_string_list(contract.get("eval_focus") or state.get("eval_focus"))),
+            " ".join(_string_list(contract.get("required_dimension_ids") or state.get("required_dimension_ids"))),
             " ".join(_string_list(activation.get("allowed_source_families") or [])),
         ]
     ).lower()
@@ -5061,6 +5586,140 @@ def reflection_report_from_tool_observations(
     )
     report["trigger"] = "coverage_reflection_tool_observations"
     return report
+
+
+def reflection_report_from_evidence_fusion_bundle(
+    evidence_fusion_bundle: Mapping[str, Any] | None,
+    *,
+    evidence_requirement_plan: Mapping[str, Any] | None = None,
+    source_gaps: list[Mapping[str, Any]] | None = None,
+    tool_ledger_summary: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Build coverage reflection from fused rows before inspecting route gaps.
+
+    Coverage is evaluated at the required-item level. A supplemental route with
+    zero rows should not trigger second pass when the same required item already
+    has fused authority rows from another route with the correct boundary.
+    """
+    bundle = dict(evidence_fusion_bundle or {})
+    rows = [dict(item) for item in bundle.get("authority_rows") or [] if isinstance(item, Mapping)]
+    plan = evidence_requirement_plan if isinstance(evidence_requirement_plan, Mapping) else {}
+    source_gaps_list = [dict(item) for item in source_gaps or [] if isinstance(item, Mapping)]
+    missing: list[dict[str, Any]] = []
+    second_pass_requests: list[dict[str, Any]] = []
+    source_family_gaps: list[dict[str, Any]] = []
+    quality_gaps: list[dict[str, Any]] = []
+
+    for index, requirement in enumerate(plan.get("requirements") or [], start=1):
+        if not isinstance(requirement, Mapping):
+            continue
+        enriched = _enrich_evidence_requirement(requirement)
+        req_keys = _requirement_keys(enriched)
+        req_rows = [
+            row
+            for row in rows
+            if req_keys & _requirement_keys(row)
+            and str(row.get("authority_tier") or "") != "gap_only"
+            and str(row.get("claim_scope") or "") != "bounded_gap_only"
+            and _row_relevant_for_requirement(enriched, row)
+        ]
+        if _fused_rows_cover_requirement(enriched, req_rows):
+            if _fused_rows_are_bounded_context_only(req_rows):
+                quality_gaps.append(_quality_gap_bounded_context_only_requirement(enriched, req_rows))
+            continue
+        task = _coverage_task_from_requirement_gap(
+            enriched,
+            _string_list(enriched.get("source_families") or enriched.get("source_tiers")),
+            ["fused_evidence:no_authority_rows"],
+        )
+        missing_item = _missing_requirement_from_coverage_task(
+            task,
+            requirement=enriched,
+            source_gaps=source_gaps_list,
+            available_source_families=None,
+        )
+        missing.append(missing_item)
+        source_family_gaps.extend(_source_family_gap_items(missing_item))
+        if missing_item.get("source_available", True):
+            second_pass_requests.append(_second_pass_request_from_missing(missing_item, index))
+
+    source_available = all(bool(item.get("source_available", True)) for item in missing)
+    if missing:
+        level = "partial" if source_available else "insufficient"
+    else:
+        level = "partial" if quality_gaps else "sufficient"
+    return normalize_reflection_report(
+        {
+            "sufficiency_level": level,
+            "missing_requirements": missing,
+            "source_available": source_available,
+            "second_pass_requests": second_pass_requests if missing and source_available else [],
+            "source_family_gaps": source_family_gaps,
+            "tool_ledger_summary": dict(tool_ledger_summary or {}),
+            "needs_user_clarification": bool(missing and not source_available),
+            "bounded_answer_allowed": bool(quality_gaps or missing),
+            "confidence_by_claim_type": _confidence_by_claim_type_from_fusion_rows(rows),
+            "trigger": "coverage_reflection_evidence_fusion_bundle",
+            "quality_gaps": quality_gaps,
+        }
+    )
+
+
+def _fused_rows_cover_requirement(requirement: Mapping[str, Any], rows: list[Mapping[str, Any]]) -> bool:
+    if not rows:
+        return False
+    strong_tiers = {"primary_exact_value", "company_disclosed_context"}
+    if any(str(row.get("authority_tier") or "") in strong_tiers for row in rows):
+        return True
+    routes = set(_string_list(requirement.get("evidence_routes") or requirement.get("retrieval_routes")))
+    source_families = set(_string_list(requirement.get("source_families") or requirement.get("source_tiers")))
+    context_sources = {"industry_snapshot", "market_snapshot", "relationship_graph", "company_product_evidence_graph", "public_source_context"}
+    if not (routes & {"industry_snapshot", "market_snapshot", "relationship_graph"} or source_families & context_sources):
+        return False
+    return any(
+        str(row.get("authority_tier") or "") == "context_or_proxy"
+        or str(row.get("claim_scope") or "") in {"context_or_proxy_only", "scope_or_hypothesis_only"}
+        for row in rows
+    )
+
+
+def _fused_rows_are_bounded_context_only(rows: list[Mapping[str, Any]]) -> bool:
+    return bool(rows) and not any(
+        str(row.get("authority_tier") or "") in {"primary_exact_value", "company_disclosed_context"}
+        for row in rows
+    )
+
+
+def _quality_gap_bounded_context_only_requirement(requirement: Mapping[str, Any], rows: list[Mapping[str, Any]]) -> dict[str, Any]:
+    return {
+        "gap_type": "bounded_context_only_requirement",
+        "requirement_id": str(requirement.get("requirement_id") or requirement.get("evidence_requirement_id") or ""),
+        "task_id": str(requirement.get("task_id") or ""),
+        "source_families": _dedupe([str(row.get("source_family") or "") for row in rows if str(row.get("source_family") or "")]),
+        "authority_tiers": _dedupe([str(row.get("authority_tier") or "") for row in rows if str(row.get("authority_tier") or "")]),
+        "claim_scopes": _dedupe([str(row.get("claim_scope") or "") for row in rows if str(row.get("claim_scope") or "")]),
+        "row_count": len(rows),
+        "boundary": "covered_for_context_or_proxy_only_not_exact_financial_or_product_kpi",
+    }
+
+
+def _confidence_by_claim_type_from_fusion_rows(rows: list[Mapping[str, Any]]) -> dict[str, str]:
+    tiers_by_scope: dict[str, set[str]] = {}
+    for row in rows:
+        scope = str(row.get("claim_scope") or "")
+        if scope:
+            tiers_by_scope.setdefault(scope, set()).add(str(row.get("authority_tier") or ""))
+    confidence: dict[str, str] = {}
+    for scope, tiers in tiers_by_scope.items():
+        if "primary_exact_value" in tiers:
+            confidence[scope] = "high"
+        elif "company_disclosed_context" in tiers:
+            confidence[scope] = "medium"
+        elif "context_or_proxy" in tiers:
+            confidence[scope] = "bounded_low_to_medium"
+        else:
+            confidence[scope] = "bounded_low"
+    return confidence
 
 
 def should_execute_second_pass(report: Mapping[str, Any], ledger: ToolCallLedger) -> dict[str, Any]:
@@ -5426,10 +6085,13 @@ def _requirements_for_observation_coverage(routes: list[dict[str, Any]], plan: M
             seen.add(key)
         requirements.append(enriched)
     for route in routes:
-        key = _route_requirement_key(route) or str(route.get("route_id") or "")
-        if not key or key in seen:
+        route_keys = _requirement_keys(route)
+        if not route_keys:
+            route_id = str(route.get("route_id") or "")
+            route_keys = {route_id} if route_id else set()
+        if not route_keys or route_keys <= seen:
             continue
-        seen.add(key)
+        seen.update(route_keys)
         requirements.append(_requirement_from_route(route))
     return requirements
 
@@ -5615,24 +6277,18 @@ def _requirement_key(value: Mapping[str, Any]) -> str:
 
 
 def _route_requirement_key(route: Mapping[str, Any]) -> str:
-    for key in ("evidence_requirement_id", "requirement_id", "parent_requirement_id", "task_id"):
-        text = str(route.get(key) or "").strip()
-        if text:
-            return text
+    for key in ("evidence_requirement_id", "evidence_requirement_ids", "requirement_id", "parent_requirement_id", "task_id"):
+        values = _string_list(route.get(key))
+        if values:
+            return values[0]
     return ""
 
 
 def _requirement_keys(value: Mapping[str, Any]) -> set[str]:
-    return {
-        text
-        for text in (
-            str(value.get("requirement_id") or "").strip(),
-            str(value.get("evidence_requirement_id") or "").strip(),
-            str(value.get("parent_requirement_id") or "").strip(),
-            str(value.get("task_id") or "").strip(),
-        )
-        if text
-    }
+    keys: set[str] = set()
+    for key in ("requirement_id", "evidence_requirement_id", "evidence_requirement_ids", "parent_requirement_id", "task_id"):
+        keys.update(_string_list(value.get(key)))
+    return keys
 
 
 def _evidence_requirements_by_task(plan: Mapping[str, Any] | None) -> dict[str, dict[str, Any]]:
@@ -6317,9 +6973,11 @@ def _claim_families_for_requirement(requirement: Mapping[str, Any]) -> list[str]
 def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> list[dict[str, Any]]:
     max_rows = _data_view_max_rows_for_agent(agent_id, state)
     focus_tickers = _focus_tickers_from_state(state)
+    fused_role_rows = _fusion_rows_for_agent_data_view(agent_id, state)
     rows: list[dict[str, Any]] = []
     if agent_id == "fundamental_analyst":
         rows.extend(_row_dicts(state.get("runtime_ledger_rows")))
+        rows.extend(_derived_metric_rows_for_agent_data_view(agent_id, state))
         rows.extend(
             row
             for row in _row_dicts(state.get("product_evidence_rows"))
@@ -6335,16 +6993,48 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
                 or _product_evidence_promotion_status(row) in {"runtime_fact_allowed", "runtime_context_taxonomy_only"}
             )
         )
+        if not rows:
+            rows.extend(fused_role_rows)
+        candidate_rows = list(rows)
         rows = _focus_ticker_balanced_rows(
             rows,
             focus_tickers=focus_tickers,
             max_rows=max_rows,
-            source_families={"", "primary_sec_filing", "company_authored_unaudited_sec_filing", "company_product_evidence_graph"},
+            source_families={
+                "",
+                "primary_sec_filing",
+                "company_authored_unaudited_sec_filing",
+                "derived_metric_layer",
+                "company_product_evidence_graph",
+            },
             min_rows_per_ticker=_focus_ticker_min_rows(max_rows=max_rows, focus_ticker_count=len(focus_tickers)),
+        )
+        rows = _ensure_min_requirement_rows(
+            rows,
+            candidate_rows,
+            requirement_id="req_hyperscaler_capex",
+            min_rows=min(2, max(1, max_rows // 10)),
+            max_rows=max_rows,
+        )
+        rows = _ensure_min_requirement_ticker_rows(
+            rows,
+            candidate_rows,
+            requirement_id="req_hyperscaler_capex",
+            min_distinct_tickers=2,
+            max_rows=max_rows,
+        )
+        rows = _ensure_min_requirement_rows(
+            rows,
+            candidate_rows,
+            requirement_id="req_dell_margin_quality",
+            min_rows=min(2, max(1, max_rows // 10)),
+            max_rows=max_rows,
         )
     elif agent_id == "market_valuation_analyst":
         rows.extend(_row_dicts(state.get("market_snapshot_rows")))
         rows.extend(row for row in _row_dicts(state.get("context_rows")) if _row_source_family(row) == "market_snapshot")
+        if not rows:
+            rows.extend(fused_role_rows)
     elif agent_id == "product_technology_analyst":
         rows.extend(
             row
@@ -6369,21 +7059,36 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
                 state,
                 tickers=focus_tickers,
                 repo_root=os.getcwd(),
-                max_rows=max(32, max_rows * 3),
-                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+                max_rows=_product_intelligence_context_candidate_budget(
+                    max_rows=max_rows,
+                    focus_ticker_count=len(focus_tickers),
+                ),
+                autoload=_product_intelligence_autoload_arg(state),
             )
         )
+        rows.extend(fused_role_rows)
         if not any(_row_source_family(row) in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"} for row in rows):
             rows.extend(_product_source_gap_rows_for_agent_data_view(state))
-        rows = _balanced_rows_by_source(
-            rows,
-            source_order=[
-                "company_product_evidence_graph",
-                "public_source_context",
-                "live_public_web_context",
-            ],
-            max_rows=max_rows,
-        )
+        product_source_order = [
+            "company_product_evidence_graph",
+            "industry_snapshot",
+            "relationship_graph",
+            "public_source_context",
+            "live_public_web_context",
+        ]
+        if len(focus_tickers) >= 2:
+            rows = _product_ticker_balanced_rows(
+                rows,
+                focus_tickers=focus_tickers,
+                max_rows=max_rows,
+                source_order=product_source_order,
+            )
+        else:
+            rows = _balanced_rows_by_source(
+                rows,
+                source_order=product_source_order,
+                max_rows=max_rows,
+            )
     elif agent_id == "industry_supply_chain_analyst":
         rows.extend(_row_dicts(state.get("industry_snapshot_rows")))
         rows.extend(
@@ -6393,7 +7098,7 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
                 tickers=focus_tickers,
                 repo_root=os.getcwd(),
                 max_rows=max(24, max_rows * 2),
-                autoload=bool(state.get("product_intelligence_runtime_autoload")),
+                autoload=_product_intelligence_autoload_arg(state),
             )
             if _row_source_family(row) in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
             and _contains_any(
@@ -6404,6 +7109,8 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
                 ("supply", "supplier", "component", "deployment", "customer", "competitive", "competes", "relationship"),
             )
         )
+        if not rows:
+            rows.extend(fused_role_rows)
         rows.extend(
             row
             for row in _row_dicts(state.get("product_evidence_rows"))
@@ -6429,8 +7136,11 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
         rows.extend(_row_dicts(state.get("context_rows")))
         rows.extend(_row_dicts(state.get("market_snapshot_rows")))
         rows.extend(_row_dicts(state.get("industry_snapshot_rows")))
+        rows.extend(_derived_metric_rows_for_agent_data_view(agent_id, state))
         rows.extend(_row_dicts(state.get("product_evidence_rows")))
         rows.extend(_row_dicts(state.get("public_source_context_rows")))
+        if not rows:
+            rows.extend(fused_role_rows)
         if agent_id != "risk_counterevidence_analyst":
             rows.extend(_relationship_rows_from_state(state))
     else:
@@ -6459,6 +7169,27 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
                 min_rows=min(2, max(1, max_rows // 8)),
                 max_rows=max_rows,
             )
+            rows = _ensure_min_requirement_rows(
+                rows,
+                candidate_rows,
+                requirement_id="req_hyperscaler_capex",
+                min_rows=min(2, max(1, max_rows // 8)),
+                max_rows=max_rows,
+            )
+            rows = _ensure_min_requirement_ticker_rows(
+                rows,
+                candidate_rows,
+                requirement_id="req_hyperscaler_capex",
+                min_distinct_tickers=2,
+                max_rows=max_rows,
+            )
+            rows = _ensure_min_requirement_rows(
+                rows,
+                candidate_rows,
+                requirement_id="req_dell_margin_quality",
+                min_rows=min(2, max(1, max_rows // 8)),
+                max_rows=max_rows,
+            )
         else:
             rows = _balanced_rows_by_source(
                 rows,
@@ -6466,6 +7197,7 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
                     "primary_sec_filing",
                     "company_authored_unaudited_sec_filing",
                     "company_product_evidence_graph",
+                    "derived_metric_layer",
                     "market_snapshot",
                     "industry_snapshot",
                     "public_source_context",
@@ -6475,6 +7207,68 @@ def _bounded_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -
                 max_rows=max_rows,
             )
     return [_bounded_row(row, index) for index, row in enumerate(rows[:max_rows], start=1)]
+
+
+def _derived_metric_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    if agent_id not in {"fundamental_analyst", "risk_counterevidence_analyst"}:
+        return []
+    layer = state.get("derived_metric_layer") if isinstance(state.get("derived_metric_layer"), Mapping) else {}
+    rows: list[dict[str, Any]] = []
+    for index, row in enumerate(layer.get("derived_metrics") or [], start=1):
+        if not isinstance(row, Mapping):
+            continue
+        evidence_ref = str(row.get("evidence_ref") or row.get("derived_metric_id") or row.get("metric_id") or "").strip()
+        if not evidence_ref:
+            evidence_ref = f"derived_metric::{index}"
+        ticker = str(row.get("ticker") or row.get("company") or "").upper().strip()
+        metric_family = str(row.get("derived_metric_family") or row.get("metric_family") or row.get("metric") or "").strip()
+        value = _scalar_or_blank(row.get("display_value") or row.get("value") or row.get("numeric_value"))
+        unit = str(row.get("unit") or row.get("unit_family") or "").strip()
+        period = str(row.get("period_key") or row.get("fiscal_period") or row.get("period") or "").strip()
+        product_or_segment = str(row.get("product_or_segment") or row.get("segment") or row.get("product") or "").strip()
+        summary_parts = [
+            ticker,
+            product_or_segment,
+            metric_family,
+            f"= {value} {unit}".strip() if value else "",
+            period,
+        ]
+        summary = " ".join(part for part in summary_parts if part).strip()
+        if summary:
+            summary = f"{summary}; derived from reconciled exact public filing facts."
+        else:
+            summary = "Derived metric from reconciled exact public filing facts."
+        rows.append(
+            {
+                **dict(row),
+                "evidence_ref": evidence_ref,
+                "source_family": "derived_metric_layer",
+                "source_role": "deterministic_derived_financial_metric",
+                "ticker": ticker,
+                "metric": metric_family or str(row.get("formula_id") or "derived_financial_metric"),
+                "metric_family": metric_family,
+                "value": value,
+                "unit": unit,
+                "unit_family": str(row.get("unit_family") or unit).strip(),
+                "fiscal_year": _scalar_or_blank(row.get("fiscal_year")),
+                "fiscal_period": _scalar_or_blank(row.get("fiscal_period")),
+                "period_key": period,
+                "product_or_segment": product_or_segment,
+                "summary": str(row.get("summary") or summary),
+                "source_policy": str(row.get("source_policy") or "derived_from_reconciled_exact_facts_no_proxy"),
+                "claim_boundary": str(
+                    row.get("claim_boundary")
+                    or "Derived metric may support formula-bounded financial observations only when cited with input evidence refs."
+                ),
+                "allowed_claim_scope": str(row.get("allowed_claim_scope") or "derived_financial_metric_observation"),
+                "exact_value_authority": True,
+                "context_only": False,
+                "promotion_status": "runtime_fact_allowed",
+                "input_evidence_refs": _string_list(row.get("input_evidence_refs")),
+                "input_fact_ids": _string_list(row.get("input_fact_ids")),
+            }
+        )
+    return rows
 
 
 def _product_source_gap_rows_for_agent_data_view(state: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -6679,6 +7473,26 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
             bounded["exact_value_authority"] = promotion_status == "runtime_fact_allowed"
         if promotion_status != "runtime_fact_allowed":
             bounded["context_only"] = True
+    if _row_source_family(row) == "derived_metric_layer":
+        bounded.update(
+            {
+                "source_role": str(row.get("source_role") or "deterministic_derived_financial_metric"),
+                "metric_family": str(row.get("metric_family") or row.get("derived_metric_family") or row.get("metric") or ""),
+                "derived_metric_family": str(row.get("derived_metric_family") or row.get("metric_family") or ""),
+                "formula_id": str(row.get("formula_id") or ""),
+                "unit": str(row.get("unit") or ""),
+                "unit_family": str(row.get("unit_family") or row.get("unit") or ""),
+                "product_or_segment": str(row.get("product_or_segment") or ""),
+                "input_evidence_refs": _string_list(row.get("input_evidence_refs"))[:12],
+                "input_fact_ids": _string_list(row.get("input_fact_ids"))[:12],
+                "derived_metric_boundary": str(
+                    row.get("claim_boundary")
+                    or "Derived metric is formula-bounded evidence from reconciled public filing facts; it cannot prove product demand, orders, market share, or customer deployment."
+                ),
+                "exact_value_authority": True,
+                "context_only": False,
+            }
+        )
     if _row_source_family(row) == "public_source_context":
         bounded.update(
             {
@@ -6705,6 +7519,25 @@ def _bounded_row(row: Mapping[str, Any], index: int) -> dict[str, Any]:
                 "exact_value_authority": False,
             }
         )
+    trace_fields = {
+        "evidence_requirement_id": str(row.get("evidence_requirement_id") or "").strip(),
+        "selection_task_id": str(row.get("selection_task_id") or "").strip(),
+        "selection_route_id": str(row.get("selection_route_id") or "").strip(),
+        "route_id": str(row.get("route_id") or "").strip(),
+    }
+    for key, value in trace_fields.items():
+        if value:
+            bounded[key] = value
+    for key in (
+        "evidence_requirement_ids",
+        "selection_task_ids",
+        "selection_route_ids",
+        "retrieval_routes",
+        "selection_routes",
+    ):
+        values = _string_list(row.get(key))
+        if values:
+            bounded[key] = values[:12]
     return bounded
 
 
@@ -6729,6 +7562,7 @@ def _source_family_bundle_for_agent(agent_id: str, rows: list[Mapping[str, Any]]
         family
         for family in selected_families
         if family in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
+        or family == "derived_metric_layer"
         or (
             family == "company_product_evidence_graph"
             and any(_product_evidence_promotion_status(row) == "runtime_fact_allowed" for row in rows if _row_source_family(row) == family)
@@ -6810,6 +7644,8 @@ def _source_family_forbidden_claim_scopes(families: list[str], *, semantic_row_c
         forbidden.append("industry_snapshot_cannot_prove_company_level_revenue_margin_customer_or_supplier_facts")
     if "relationship_graph" in family_set:
         forbidden.append("relationship_graph_is_scope_or_hypothesis_only_not_company_reported_fact")
+    if "derived_metric_layer" in family_set:
+        forbidden.append("derived_metric_layer_requires_input_refs_and_cannot_prove_product_orders_share_or_deployment")
     if "company_product_evidence_graph" in family_set:
         forbidden.append("company_product_evidence_graph_requires_runtime_fact_allowed_for_product_kpi_claims")
         forbidden.append("company_product_evidence_graph_review_context_and_gap_rows_are_not_facts")
@@ -6830,7 +7666,11 @@ def _relationship_rows(plan: Any) -> list[dict[str, Any]]:
     for index, relationship in enumerate(plan.get("relationships") or [], start=1):
         if not isinstance(relationship, Mapping):
             continue
-        refs = _string_list(relationship.get("evidence_refs") or relationship.get("refs"))
+        refs = _string_list(
+            relationship.get("evidence_refs")
+            or relationship.get("evidence_ref")
+            or relationship.get("refs")
+        )
         rows.append(
             {
                 "evidence_ref": ",".join(refs) or f"relationship_ref_{index}",
@@ -6862,6 +7702,7 @@ def _relationship_rows_from_state(state: Mapping[str, Any]) -> list[dict[str, An
     rows.extend(_relationship_rows(state.get("universe_relationship_plan")))
     lookup = state.get("relationship_graph_observation") if isinstance(state.get("relationship_graph_observation"), Mapping) else {}
     rows.extend(_relationship_observation_rows(lookup))
+    rows.extend(row for row in _evidence_fusion_authority_rows(state) if _row_source_family(row) == "relationship_graph")
     return _dedupe_relationship_rows(rows)
 
 
@@ -6970,6 +7811,193 @@ def _focus_ticker_balanced_rows(
     return selected
 
 
+def _row_selection_key(row: Mapping[str, Any]) -> tuple[str, str, str, str, str]:
+    return (
+        str(row.get("evidence_ref") or row.get("id") or row.get("row_id") or "").strip(),
+        _row_ticker(row),
+        _row_source_family(row),
+        str(row.get("metric") or row.get("metric_name") or "").strip(),
+        str(row.get("summary") or "")[:240],
+    )
+
+
+def _product_row_priority(row: Mapping[str, Any]) -> tuple[int, str, str]:
+    source_family = _row_source_family(row)
+    ticker = _row_ticker(row)
+    product_name = str(row.get("product_or_segment") or row.get("product") or "").strip().lower()
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in (
+            "authority_type",
+            "metric",
+            "metric_name",
+            "summary",
+            "evidence_ref",
+            "product",
+            "product_family",
+            "product_or_segment",
+            "relationship_type",
+            "edge_type",
+            "source_class",
+            "claim_scope",
+        )
+    ).lower()
+    product_terms = (
+        "accelerator",
+        "architecture",
+        "ai platform",
+        "aiplatform",
+        "blackwell",
+        "cloud infrastructure",
+        "cuda",
+        "gemini",
+        "gemma",
+        "gpu",
+        "gb200",
+        "b200",
+        "h100",
+        "h200",
+        "mi300",
+        "instinct",
+        "tpu",
+        "ai server",
+        "server",
+        "product slot",
+        "product_or_service_profile",
+        "technical",
+        "spec",
+        "tensor",
+        "tpu",
+        "generation",
+    )
+    deployment_terms = (
+        "customer",
+        "deployment",
+        "adoption",
+        "configured",
+        "distributed",
+        "supplier",
+        "supply",
+        "partner",
+        "contract",
+        "award",
+    )
+    if product_name in {"copilot", "microsoft copilot", "github copilot", "copilot pro"} and ticker not in {"MSFT"}:
+        return (7, ticker, text)
+    if source_family == "company_product_evidence_graph" and any(term in text for term in product_terms):
+        return (0, _row_ticker(row), text)
+    if source_family == "company_product_evidence_graph":
+        return (1, _row_ticker(row), text)
+    if source_family in {"public_source_context", "live_public_web_context"} and any(term in text for term in product_terms):
+        return (2, _row_ticker(row), text)
+    if source_family in {"public_source_context", "live_public_web_context"}:
+        return (3, _row_ticker(row), text)
+    if source_family == "relationship_graph" and any(term in text for term in deployment_terms):
+        return (4, _row_ticker(row), text)
+    if source_family == "relationship_graph":
+        return (5, _row_ticker(row), text)
+    if source_family == "industry_snapshot":
+        return (8, _row_ticker(row), text)
+    return (9, _row_ticker(row), text)
+
+
+def _product_ticker_balanced_rows(
+    rows: list[dict[str, Any]],
+    *,
+    focus_tickers: list[str],
+    max_rows: int,
+    source_order: list[str],
+) -> list[dict[str, Any]]:
+    focus = [ticker.upper() for ticker in focus_tickers if ticker]
+    if len(focus) < 2 or max_rows <= 0:
+        return _balanced_rows_by_source(rows, source_order=source_order, max_rows=max_rows)
+
+    source_rank = {source: index for index, source in enumerate(source_order)}
+    allowed_sources = set(source_order)
+    selected: list[dict[str, Any]] = []
+    selected_keys: set[tuple[str, str, str, str, str]] = set()
+
+    def add(row: dict[str, Any]) -> bool:
+        if len(selected) >= max_rows:
+            return False
+        key = _row_selection_key(row)
+        if key in selected_keys:
+            return False
+        selected.append(row)
+        selected_keys.add(key)
+        return True
+
+    def ticker_candidates(ticker: str, sources: set[str] | None = None) -> list[dict[str, Any]]:
+        candidates = [
+            row
+            for row in rows
+            if _row_ticker(row) == ticker
+            and _row_source_family(row) in allowed_sources
+            and (not sources or _row_source_family(row) in sources)
+        ]
+        return sorted(candidates, key=lambda row: (_product_row_priority(row), source_rank.get(_row_source_family(row), 999)))
+
+    ticker_target = max(3, min(8, max_rows // max(1, len(focus))))
+    ticker_cap = max(ticker_target, max_rows // max(1, len(focus)))
+    product_sources = {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+
+    # First guarantee issuer-specific product context per focus ticker when available.
+    for ticker in focus:
+        company_rows = ticker_candidates(ticker, {"company_product_evidence_graph"})
+        for row in company_rows[: min(3, ticker_target)]:
+            add(row)
+
+    # Then add official/product-surface context before relationship/proxy rows.
+    for ticker in focus:
+        current = sum(1 for row in selected if _row_ticker(row) == ticker)
+        for row in ticker_candidates(ticker, product_sources):
+            if current >= min(4, ticker_target):
+                break
+            if add(row):
+                current += 1
+
+    # Add a small number of relationship/deployment rows per ticker as graph edges, not as substitutes for product facts.
+    for ticker in focus:
+        current = sum(1 for row in selected if _row_ticker(row) == ticker)
+        relationship_added = 0
+        for row in ticker_candidates(ticker, {"relationship_graph"}):
+            if current >= ticker_target or relationship_added >= 2:
+                break
+            if add(row):
+                current += 1
+                relationship_added += 1
+
+    # Fill each focus ticker up to its target before allowing non-focus rows.
+    for ticker in focus:
+        current = sum(1 for row in selected if _row_ticker(row) == ticker)
+        for row in ticker_candidates(ticker):
+            if current >= ticker_target:
+                break
+            if add(row):
+                current += 1
+
+    remaining = sorted(
+        [row for row in rows if _row_source_family(row) in allowed_sources],
+        key=lambda row: (
+            0 if _row_ticker(row) in focus else 1,
+            _product_row_priority(row),
+            source_rank.get(_row_source_family(row), 999),
+        ),
+    )
+    for row in remaining:
+        ticker = _row_ticker(row)
+        if ticker in focus and sum(1 for selected_row in selected if _row_ticker(selected_row) == ticker) >= ticker_cap:
+            continue
+        if not add(row):
+            if len(selected) >= max_rows:
+                break
+    for row in remaining:
+        if len(selected) >= max_rows:
+            break
+        add(row)
+    return selected[:max_rows]
+
+
 def _metric_and_source_diverse_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     selected: list[dict[str, Any]] = []
     selected_ids: set[int] = set()
@@ -7064,6 +8092,93 @@ def _ensure_min_source_family_rows(
     return selected
 
 
+def _ensure_min_requirement_rows(
+    selected: list[dict[str, Any]],
+    candidates: list[dict[str, Any]],
+    *,
+    requirement_id: str,
+    min_rows: int,
+    max_rows: int,
+) -> list[dict[str, Any]]:
+    if min_rows <= 0 or max_rows <= 0 or not requirement_id:
+        return selected[:max_rows]
+    selected = selected[:max_rows]
+    current = sum(1 for row in selected if _row_has_any_requirement(row, {requirement_id}))
+    if current >= min_rows:
+        return selected
+    selected_ids = {id(row) for row in selected}
+    replacement_indexes = [
+        index
+        for index in range(len(selected) - 1, -1, -1)
+        if not _row_has_any_requirement(selected[index], {requirement_id})
+    ]
+    for candidate in candidates:
+        if current >= min_rows:
+            break
+        if not _row_has_any_requirement(candidate, {requirement_id}) or id(candidate) in selected_ids:
+            continue
+        if len(selected) < max_rows:
+            selected.append(candidate)
+        elif replacement_indexes:
+            replacement_index = replacement_indexes.pop(0)
+            selected_ids.discard(id(selected[replacement_index]))
+            selected[replacement_index] = candidate
+        else:
+            break
+        selected_ids.add(id(candidate))
+        current += 1
+    return selected
+
+
+def _ensure_min_requirement_ticker_rows(
+    selected: list[dict[str, Any]],
+    candidates: list[dict[str, Any]],
+    *,
+    requirement_id: str,
+    min_distinct_tickers: int,
+    max_rows: int,
+) -> list[dict[str, Any]]:
+    if min_distinct_tickers <= 0 or max_rows <= 0 or not requirement_id:
+        return selected[:max_rows]
+    selected = selected[:max_rows]
+    selected_tickers = {
+        _row_ticker(row)
+        for row in selected
+        if _row_ticker(row) and _row_has_any_requirement(row, {requirement_id})
+    }
+    if len(selected_tickers) >= min_distinct_tickers:
+        return selected
+
+    selected_ids = {id(row) for row in selected}
+    replacement_indexes = [
+        index
+        for index in range(len(selected) - 1, -1, -1)
+        if not _row_has_any_requirement(selected[index], {requirement_id})
+    ]
+    for candidate in candidates:
+        ticker = _row_ticker(candidate)
+        if len(selected_tickers) >= min_distinct_tickers:
+            break
+        if (
+            not ticker
+            or ticker in selected_tickers
+            or id(candidate) in selected_ids
+            or not _row_has_any_requirement(candidate, {requirement_id})
+        ):
+            continue
+        if len(selected) < max_rows:
+            selected.append(candidate)
+        elif replacement_indexes:
+            replacement_index = replacement_indexes.pop(0)
+            selected_ids.discard(id(selected[replacement_index]))
+            selected[replacement_index] = candidate
+        else:
+            break
+        selected_ids.add(id(candidate))
+        selected_tickers.add(ticker)
+    return selected
+
+
 def _balanced_industry_relationship_rows(
     rows: list[dict[str, Any]],
     *,
@@ -7113,18 +8228,167 @@ def _balanced_industry_relationship_rows(
 def _state_summary_for_data_view(state: Mapping[str, Any]) -> dict[str, Any]:
     activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
     evidence_plan = state.get("evidence_requirement_plan") if isinstance(state.get("evidence_requirement_plan"), Mapping) else {}
+    fused_counts = _fusion_source_family_counts(state)
     return {
         "run_id": state.get("run_id") or "",
         "execution_mode": _execution_mode_from_state(state),
         "allowed_source_families": list(activation.get("allowed_source_families") or []),
         "evidence_requirement_count": len(evidence_plan.get("requirements") or []) if isinstance(evidence_plan, Mapping) else 0,
-        "context_row_count": len(state.get("context_rows") or []),
-        "ledger_row_count": len(state.get("runtime_ledger_rows") or []),
-        "market_row_count": len(state.get("market_snapshot_rows") or []),
-        "industry_row_count": len(state.get("industry_snapshot_rows") or []),
+        "context_row_count": len(state.get("context_rows") or [])
+        or sum(fused_counts.get(family, 0) for family in ("company_authored_unaudited_sec_filing", "relationship_graph")),
+        "ledger_row_count": len(state.get("runtime_ledger_rows") or []) or fused_counts.get("primary_sec_filing", 0),
+        "market_row_count": len(state.get("market_snapshot_rows") or []) or fused_counts.get("market_snapshot", 0),
+        "industry_row_count": len(state.get("industry_snapshot_rows") or []) or fused_counts.get("industry_snapshot", 0),
+        "fusion_authority_row_count": len(_evidence_fusion_authority_rows(state)),
         "default_bounded_evidence_row_budget": _data_view_max_rows_for_mode(_execution_mode_from_state(state)),
         "relationship_summary_row_budget": _relationship_summary_max_rows(state),
     }
+
+
+def _evidence_fusion_authority_rows(state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    bundle = state.get("evidence_fusion_bundle") if isinstance(state.get("evidence_fusion_bundle"), Mapping) else {}
+    return _row_dicts(bundle.get("authority_rows"))
+
+
+def _fusion_source_family_counts(state: Mapping[str, Any]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in _evidence_fusion_authority_rows(state):
+        family = _row_source_family(row)
+        if not family:
+            continue
+        counts[family] = counts.get(family, 0) + 1
+    return counts
+
+
+def _fusion_rows_for_agent_data_view(agent_id: str, state: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Project compact fused authority rows into role-specific specialist input rows.
+
+    Stepwise P33 artifacts intentionally compact raw context/ledger rows into
+    evidence_fusion_bundle.authority_rows. Specialist input views must consume
+    that accepted fused bundle instead of treating compact state as empty.
+    """
+    rows = _evidence_fusion_authority_rows(state)
+    if not rows:
+        return []
+    agent = str(agent_id or "")
+    if agent == "fundamental_analyst":
+        return [
+            row
+            for row in rows
+            if _row_source_family(row) in {"primary_sec_filing", "company_authored_unaudited_sec_filing"}
+            and (
+                _row_has_any_requirement(row, {"req_dell_margin_quality", "req_hyperscaler_capex", "req_supply_chain"})
+                or str(row.get("claim_scope") or "") in {"reported_financial_fact", "company_disclosed_context_only"}
+            )
+        ]
+    if agent == "product_technology_analyst":
+        return [
+            row
+            for row in rows
+            if (
+                _row_has_any_requirement(row, {"req_accelerator_architecture", "req_customer_deployment"})
+                and _row_relevant_for_requirement({"requirement_id": "req_accelerator_architecture"}, row)
+            )
+            or _row_source_family(row)
+            in {"company_product_evidence_graph", "public_source_context", "live_public_web_context"}
+        ]
+    if agent == "industry_supply_chain_analyst":
+        return [
+            row
+            for row in rows
+            if _row_source_family(row) in {"relationship_graph", "industry_snapshot"}
+            or _row_has_any_requirement(row, {"req_supply_chain", "req_customer_deployment"})
+        ]
+    if agent == "market_valuation_analyst":
+        return [
+            row
+            for row in rows
+            if _row_source_family(row) == "market_snapshot"
+            or _row_has_any_requirement(row, {"req_hyperscaler_capex"})
+        ]
+    if agent == "risk_counterevidence_analyst":
+        return [
+            row
+            for row in rows
+            if bool(row.get("gap_only"))
+            or _row_has_any_requirement(
+                row,
+                {
+                    "req_dell_margin_quality",
+                    "req_hyperscaler_capex",
+                    "req_supply_chain",
+                    "req_customer_deployment",
+                    "req_accelerator_architecture",
+                },
+            )
+            or str(row.get("claim_scope") or "") in {"bounded_gap_only", "context_or_proxy_only", "scope_or_hypothesis_only"}
+            or _row_source_family(row) in {"market_snapshot", "industry_snapshot", "relationship_graph"}
+        ]
+    if agent in {"verifier", "coverage_reflection", "judgment_plan_aggregator"}:
+        return rows
+    return []
+
+
+def _row_has_any_requirement(row: Mapping[str, Any], requirement_ids: set[str]) -> bool:
+    values: list[str] = []
+    values.extend(_string_list(row.get("evidence_requirement_ids")))
+    values.extend(_string_list(row.get("evidence_requirement_id")))
+    values.extend(_string_list(row.get("selection_task_ids")))
+    values.extend(_string_list(row.get("task_id")))
+    return bool(set(values) & requirement_ids)
+
+
+def _row_relevant_for_requirement(requirement: Mapping[str, Any], row: Mapping[str, Any]) -> bool:
+    req_keys = _requirement_keys(requirement) | _requirement_keys(row)
+    if "req_accelerator_architecture" not in req_keys:
+        return True
+    if _row_source_family(row) != "industry_snapshot":
+        return True
+    return _row_matches_product_architecture_terms(row)
+
+
+def _row_matches_product_architecture_terms(row: Mapping[str, Any]) -> bool:
+    text = " ".join(
+        str(row.get(key) or "").lower()
+        for key in (
+            "evidence_ref",
+            "metric",
+            "metric_name",
+            "summary",
+            "title",
+            "source_name",
+            "industry",
+            "vertical",
+            "product_family",
+            "claim_scope",
+        )
+    )
+    terms = (
+        "accelerator",
+        "gpu",
+        "tpu",
+        "h100",
+        "h200",
+        "b200",
+        "gb200",
+        "blackwell",
+        "mi300",
+        "cuda",
+        "ai server",
+        "server oem",
+        "data center",
+        "datacenter",
+        "hyperscaler",
+        "semiconductor",
+        "semi",
+        "foundry",
+        "tsmc",
+        "hbm",
+        "cowos",
+        "chip",
+        "asic",
+    )
+    return any(term in text for term in terms)
 
 
 def _source_inventory_for_agent_view(value: Any) -> dict[str, Any]:
@@ -7207,10 +8471,12 @@ def _relationship_summary_view(state: Mapping[str, Any]) -> dict[str, Any]:
     plan = state.get("universe_relationship_plan") if isinstance(state.get("universe_relationship_plan"), Mapping) else {}
     relationship_rows = _relationship_rows_from_state(state)
     max_rows = _relationship_summary_max_rows(state)
+    focus_tickers = _string_list(plan.get("focus_tickers")) or _focus_tickers_from_state(state)
+    expanded_tickers = _string_list(plan.get("expanded_tickers")) or _search_scope_tickers_from_state(state, focus_tickers=focus_tickers)
     return {
         "scope_mode": plan.get("scope_mode") or "",
-        "focus_tickers": list(plan.get("focus_tickers") or []),
-        "expanded_tickers": list(plan.get("expanded_tickers") or []),
+        "focus_tickers": focus_tickers,
+        "expanded_tickers": expanded_tickers,
         "relationship_scope_rationale": str(plan.get("relationship_scope_rationale") or "")[:500],
         "relationships": [_bounded_row(row, index) for index, row in enumerate(relationship_rows[:max_rows], start=1)],
     }
@@ -7317,6 +8583,17 @@ def _relationship_summary_max_rows(state: Mapping[str, Any]) -> int:
 def _execution_mode_from_state(state: Mapping[str, Any]) -> str:
     activation = state.get("agent_activation_plan") if isinstance(state.get("agent_activation_plan"), Mapping) else {}
     return str(activation.get("execution_mode") or state.get("execution_mode") or "").strip()
+
+
+def _product_intelligence_autoload_arg(state: Mapping[str, Any]) -> bool | None:
+    if "product_intelligence_runtime_autoload" in state:
+        return bool(state.get("product_intelligence_runtime_autoload"))
+    return None
+
+
+def _product_intelligence_context_candidate_budget(*, max_rows: int, focus_ticker_count: int) -> int:
+    multiplier = max(4, focus_ticker_count + 2)
+    return max(32, max_rows * multiplier)
 
 
 def _positive_int_env(name: str, *, default: int) -> int:

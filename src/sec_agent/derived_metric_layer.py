@@ -426,15 +426,29 @@ def _append_period_change(
     if current_value is None or prior_value is None:
         skipped.append(_skip(context, family=family, formula_id=formula_id, skip_reason="non_numeric_input", inputs={"current": current, "prior": prior}))
         return
-    if prior_value == 0:
+    rate_metric = _period_change_is_rate_metric(current)
+    if prior_value == 0 and not rate_metric:
         skipped.append(_skip(context, family=family, formula_id=formula_id, skip_reason="zero_prior_period", inputs={"current": current, "prior": prior}))
         return
-    value = (current_value - prior_value) / abs(prior_value) * Decimal("100")
+    if rate_metric:
+        output_family = "yoy_change_pp" if family == "yoy_growth" else "qoq_change_pp" if family == "qoq_growth" else f"{family}_pp"
+        output_formula = "current_rate - prior_rate"
+        output_formula_id = f"{output_family}:{current.get('canonical_metric_id')}"
+        value = current_value - prior_value
+        unit = "percentage_points"
+        unit_family = "percentage_points"
+    else:
+        output_family = family
+        output_formula = formula
+        output_formula_id = formula_id
+        value = (current_value - prior_value) / abs(prior_value) * Decimal("100")
+        unit = "percent"
+        unit_family = "percent"
     derived.append(
         _derived_row(
-            family=family,
-            formula_id=formula_id,
-            formula=formula,
+            family=output_family,
+            formula_id=output_formula_id,
+            formula=output_formula,
             ticker=str(current.get("ticker") or ""),
             product_key=str(current.get("product_key") or "__company_total__"),
             product_or_segment=str(current.get("product_or_segment") or ""),
@@ -442,12 +456,38 @@ def _append_period_change(
             fiscal_year=str(current.get("fiscal_year") or ""),
             fiscal_period=str(current.get("fiscal_period") or ""),
             value=value,
-            unit="percent",
-            unit_family="percent",
+            unit=unit,
+            unit_family=unit_family,
             input_facts=[dict(current), dict(prior)],
             gate_status=gate,
         )
     )
+
+
+def _period_change_is_rate_metric(fact: Mapping[str, Any]) -> bool:
+    text = " ".join(
+        str(fact.get(key) or "").lower()
+        for key in (
+            "canonical_metric_id",
+            "metric_family",
+            "metric_name",
+            "metric",
+            "unit",
+            "unit_family",
+        )
+    )
+    if "percentage_points" in text:
+        return True
+    rate_terms = (
+        "margin",
+        "rate",
+        "ratio",
+        "yield",
+        "percentage_rate",
+        "net_interest_margin",
+        "medical_loss_ratio",
+    )
+    return any(term in text for term in rate_terms)
 
 
 def _derived_row(

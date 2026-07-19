@@ -1,0 +1,77 @@
+{
+  "schema_version": "finsight_repository_architecture_policy_v0_1",
+  "source_roots": ["src"],
+  "script_roots": ["scripts"],
+  "test_roots": ["tests"],
+  "app_roots": ["apps"],
+  "documentation_roots": ["docs"],
+  "config_roots": ["configs"],
+  "audit_roots": ["archive"],
+  "root_files": [
+    "pyproject.toml",
+    "requirements.txt",
+    "requirements-workbench.txt",
+    "compose.yaml",
+    "compose.runtime.yaml",
+    "compose.dns-fallback.yaml",
+    "Dockerfile",
+    ".gitignore",
+    ".gitattributes"
+  ],
+  "excluded_directory_names": [
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "dist",
+    "node_modules"
+  ],
+  "generated_roots": [
+    "eval",
+    "reports",
+    "tmp"
+  ],
+  "generated_prefixes": [
+    ".tmp_"
+  ],
+  "archive_roots": ["archive", "scripts/archive"],
+  "legacy_compatible_prefixes": [
+    "src/sec_agent/r53_r60_"
+  ],
+  "phase_fixture_prefixes": [
+    "src/sec_agent/p33_",
+    "src/sec_agent/p34_",
+    "src/sec_agent/p35_",
+    "scripts/engineering/run_p32_",
+    "scripts/engineering/run_p33_",
+    "scripts/eval_multi_agent/run_p33_",
+    "scripts/eval_multi_agent/run_p34_",
+    "scripts/eval_multi_agent/run_p35_"
+  ],
+  "manual_entrypoint_paths": [
+    "scripts/workbench/install_wsl_python_env.sh",
+    "scripts/workbench/run_workbench_docker.ps1"
+  ],
+  "superseded_compatible_paths": [
+    "src/sec_agent/prompts/skills/fundamental_analysis_skill_v0_1.md",
+    "src/sec_agent/prompts/skills/industry_supply_chain_analysis_skill_v0_1.md",
+    "src/sec_agent/prompts/skills/market_valuation_analysis_skill_v0_1.md",
+    "src/sec_agent/prompts/skills/risk_counterevidence_skill_v0_1.md"
+  ],
+  "stable_entrypoints": [
+    "apps/workbench/backend/app.py",
+    "scripts/cloud/sec_agent_interactive.py",
+    "scripts/cloud/sec_agent_graph_runner.py",
+    "scripts/cloud/sec_agent_context_session_cli.py",
+    "scripts/eval_context/evaluate_sec_agent_resume_closeout_readiness.py",
+    "scripts/mcp/run_sec_agent_mcp_server.py",
+    "scripts/workbench/run_workbench.ps1",
+    "scripts/workbench/run_workbench.sh"
+  ],
+  "complexity_thresholds": {
+    "warning_lines": 1500,
+    "critical_lines": 4000,
+    "warning_bytes": 150000,
+    "critical_bytes": 350000
+  }
+}

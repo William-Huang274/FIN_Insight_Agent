@@ -1,0 +1,261 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FIN Insight Point 02 API",
+    "version": "v1.1.0-design",
+    "description": "Contract baseline only. No endpoint is implemented or admitted by this artifact."
+  },
+  "servers": [{"url": "/api/v1", "description": "future internal API prefix"}],
+  "tags": [{"name": "cases"}, {"name": "planning"}, {"name": "execution"}, {"name": "activity"}],
+  "x-p02-history": {
+    "supersedes": {
+      "path": "configs/releases/point02_api_v1_openapi_baseline_v1_0.json",
+      "canonical_digest": "04c172b496c2472246b3e7edf41e0701941882dd93fd90feed0e54de5bbd88d0",
+      "reason": "v1.0 used ambiguous checkpoint request semantics and omitted typed main-path success response schemas."
+    },
+    "v1_0_disposition": "historical_candidate_evidence_set_closure_not_approved"
+  },
+  "x-p02-future-not-admitted-actions": [
+    {
+      "route_action_id": "ResumeWorkUnit",
+      "canonical_command_id": "ResumeWorkUnitCommand",
+      "command_owner": "TECH_06",
+      "openapi_disposition": "not_exposed_in_P02_0_active_tranche",
+      "reason": "resume_and_targeted_state_recovery_is_deferred_to_VT2_P02_5; VT1 requires start_cancel_and_typed_stop_only"
+    }
+  ],
+  "paths": {
+    "/cases": {
+      "get": {
+        "tags": ["cases"],
+        "operationId": "listCases",
+        "responses": {
+          "200": {"description": "Task Center projection", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TaskCenterProjection"}}}},
+          "403": {"$ref": "#/components/responses/PermissionDenied"}
+        }
+      },
+      "post": {
+        "tags": ["cases"],
+        "operationId": "createCaseDraft",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateCaseDraftCommand"}}}},
+        "responses": {
+          "202": {"description": "Case workspace projection", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaseWorkspaceProjection"}}}},
+          "422": {"$ref": "#/components/responses/ValidationError"},
+          "409": {"$ref": "#/components/responses/VersionConflict"}
+        }
+      }
+    },
+    "/cases/{case_id}": {
+      "get": {
+        "tags": ["cases"],
+        "operationId": "getCaseWorkspace",
+        "parameters": [{"$ref": "#/components/parameters/CaseId"}],
+        "responses": {
+          "200": {"description": "Case workspace projection", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaseWorkspaceProjection"}}}},
+          "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      },
+      "patch": {
+        "tags": ["cases"],
+        "operationId": "updateCaseObjective",
+        "parameters": [{"$ref": "#/components/parameters/CaseId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/UpdateCaseObjectiveCommand"}}}},
+        "responses": {
+          "202": {"description": "Case workspace projection", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaseWorkspaceProjection"}}}},
+          "409": {"$ref": "#/components/responses/VersionConflict"}
+        }
+      }
+    },
+    "/cases/{case_id}/planning/compile": {
+      "post": {
+        "tags": ["planning"],
+        "operationId": "compileDecisionSurface",
+        "parameters": [{"$ref": "#/components/parameters/CaseId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CompileDecisionSurfaceCommand"}}}},
+        "responses": {
+          "202": {"description": "Decision Surface view", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/DecisionSurfaceView"}}}},
+          "403": {"$ref": "#/components/responses/OperationNotAdmitted"},
+          "409": {"$ref": "#/components/responses/StaleOrSuperseded"}
+        }
+      }
+    },
+    "/cases/{case_id}/planning/checkpoint": {
+      "post": {
+        "tags": ["planning"],
+        "operationId": "reviewPlanningCheckpoint",
+        "parameters": [{"$ref": "#/components/parameters/CaseId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/PlanningCheckpointDecisionCommand"}}}},
+        "responses": {
+          "202": {"description": "Decision Surface view after accept or return", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/DecisionSurfaceView"}}}},
+          "403": {"$ref": "#/components/responses/OperationNotAdmitted"},
+          "409": {"$ref": "#/components/responses/VersionConflict"}
+        }
+      }
+    },
+    "/cases/{case_id}/decision-surface": {
+      "get": {
+        "tags": ["planning"],
+        "operationId": "getDecisionSurface",
+        "parameters": [{"$ref": "#/components/parameters/CaseId"}],
+        "responses": {
+          "200": {"description": "Decision Surface view", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/DecisionSurfaceView"}}}},
+          "409": {"$ref": "#/components/responses/StaleOrSuperseded"}
+        }
+      }
+    },
+    "/cases/{case_id}/work-units": {
+      "get": {
+        "tags": ["execution"],
+        "operationId": "listWorkUnits",
+        "parameters": [{"$ref": "#/components/parameters/CaseId"}],
+        "responses": {
+          "200": {"description": "Work unit execution view", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/WorkUnitExecutionView"}}}}
+        }
+      },
+      "post": {
+        "tags": ["execution"],
+        "operationId": "createWorkUnit",
+        "parameters": [{"$ref": "#/components/parameters/CaseId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateWorkUnitCommand"}}}},
+        "responses": {
+          "202": {"description": "Work unit execution view", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/WorkUnitExecutionView"}}}},
+          "403": {"$ref": "#/components/responses/OperationNotAdmitted"},
+          "409": {"$ref": "#/components/responses/VersionConflict"}
+        }
+      }
+    },
+    "/cases/{case_id}/work-units/{work_unit_id}/cancel": {
+      "post": {
+        "tags": ["execution"],
+        "operationId": "cancelWorkUnit",
+        "parameters": [{"$ref": "#/components/parameters/CaseId"}, {"name": "work_unit_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CancelWorkUnitCommand"}}}},
+        "responses": {
+          "202": {"description": "Work unit execution view", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/WorkUnitExecutionView"}}}},
+          "409": {"$ref": "#/components/responses/VersionConflict"}
+        }
+      }
+    },
+    "/cases/{case_id}/activity": {
+      "get": {
+        "tags": ["activity"],
+        "operationId": "getActivityTrace",
+        "parameters": [{"$ref": "#/components/parameters/CaseId"}],
+        "responses": {
+          "200": {"description": "Activity trace view", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ActivityTraceView"}}}}
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "CaseId": {"name": "case_id", "in": "path", "required": true, "schema": {"type": "string", "minLength": 1}}
+    },
+    "schemas": {
+      "CreateCaseDraftCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["query", "as_of", "language", "source_policy_ref", "idempotency_key"],
+        "properties": {"query": {"type": "string", "minLength": 1}, "as_of": {"type": "string", "format": "date-time"}, "language": {"type": "string", "minLength": 1}, "source_policy_ref": {"type": "string", "minLength": 1}, "idempotency_key": {"type": "string", "minLength": 1}}
+      },
+      "UpdateCaseObjectiveCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["objective", "expected_case_version", "expected_summary_version", "actor_ref", "idempotency_key"],
+        "properties": {"objective": {"type": "string", "minLength": 1}, "expected_case_version": {"type": "integer", "minimum": 0}, "expected_summary_version": {"type": "integer", "minimum": 0}, "actor_ref": {"type": "string", "minLength": 1}, "idempotency_key": {"type": "string", "minLength": 1}}
+      },
+      "CompileDecisionSurfaceCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expected_case_version", "expected_summary_version", "compiler_policy_ref", "pack_selection_ref", "actor_ref", "idempotency_key"],
+        "properties": {"expected_case_version": {"type": "integer", "minimum": 0}, "expected_summary_version": {"type": "integer", "minimum": 0}, "compiler_policy_ref": {"type": "string", "minLength": 1}, "pack_selection_ref": {"type": "string", "minLength": 1}, "actor_ref": {"type": "string", "minLength": 1}, "idempotency_key": {"type": "string", "minLength": 1}}
+      },
+      "PlanningCheckpointDecisionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision", "expected_case_version", "expected_decision_surface_contract_version", "expected_checkpoint_version", "actor_ref", "idempotency_key"],
+        "properties": {"decision": {"type": "string", "enum": ["accept", "return"]}, "expected_case_version": {"type": "integer", "minimum": 0}, "expected_decision_surface_contract_version": {"type": "integer", "minimum": 0}, "expected_checkpoint_version": {"type": "integer", "minimum": 0}, "actor_ref": {"type": "string", "minLength": 1}, "idempotency_key": {"type": "string", "minLength": 1}}
+      },
+      "CreateWorkUnitCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["work_unit_type", "expected_case_version", "input_head_digest", "actor_ref", "idempotency_key"],
+        "properties": {"work_unit_type": {"type": "string", "minLength": 1}, "expected_case_version": {"type": "integer", "minimum": 0}, "input_head_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "actor_ref": {"type": "string", "minLength": 1}, "idempotency_key": {"type": "string", "minLength": 1}}
+      },
+      "CancelWorkUnitCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expected_work_unit_version", "expected_state_version", "fencing_token", "actor_ref", "idempotency_key"],
+        "properties": {"expected_work_unit_version": {"type": "integer", "minimum": 0}, "expected_state_version": {"type": "integer", "minimum": 0}, "fencing_token": {"type": "string", "minLength": 1}, "actor_ref": {"type": "string", "minLength": 1}, "idempotency_key": {"type": "string", "minLength": 1}}
+      },
+      "TaskCenterProjection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "next_cursor"],
+        "properties": {"items": {"type": "array", "items": {"$ref": "#/components/schemas/TaskCenterRow"}}, "next_cursor": {"type": ["string", "null"]}}
+      },
+      "TaskCenterRow": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "case_version", "status", "updated_at"],
+        "properties": {"case_id": {"type": "string"}, "case_version": {"type": "integer", "minimum": 0}, "status": {"type": "string"}, "updated_at": {"type": "string", "format": "date-time"}}
+      },
+      "CaseWorkspaceProjection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "case_version", "summary_version", "as_of", "planning_checkpoint_state"],
+        "properties": {"case_id": {"type": "string"}, "case_version": {"type": "integer", "minimum": 0}, "summary_version": {"type": "integer", "minimum": 0}, "as_of": {"type": "string", "format": "date-time"}, "planning_checkpoint_state": {"type": "string"}}
+      },
+      "DecisionSurfaceView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["contract_id", "contract_version", "contract_version_id", "checkpoint_version", "review_status", "cells"],
+        "properties": {"contract_id": {"type": "string"}, "contract_version": {"type": "integer", "minimum": 0}, "contract_version_id": {"type": "string"}, "checkpoint_version": {"type": "integer", "minimum": 0}, "review_status": {"type": "string", "enum": ["draft", "awaiting_review", "accepted", "returned"]}, "cells": {"type": "array", "items": {"$ref": "#/components/schemas/DecisionSurfaceCellView"}}}
+      },
+      "DecisionSurfaceCellView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cell_id", "owner", "stop_rule"],
+        "properties": {"cell_id": {"type": "string"}, "owner": {"type": "string"}, "stop_rule": {"type": "string"}}
+      },
+      "WorkUnitExecutionView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "work_units"],
+        "properties": {"case_id": {"type": "string"}, "work_units": {"type": "array", "items": {"$ref": "#/components/schemas/WorkUnitExecutionItem"}}}
+      },
+      "WorkUnitExecutionItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["work_unit_id", "work_unit_version", "state_version", "state", "input_head_digest"],
+        "properties": {"work_unit_id": {"type": "string"}, "work_unit_version": {"type": "integer", "minimum": 0}, "state_version": {"type": "integer", "minimum": 0}, "state": {"type": "string"}, "input_head_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+      },
+      "ActivityTraceView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "case_version", "events"],
+        "properties": {"case_id": {"type": "string"}, "case_version": {"type": "integer", "minimum": 0}, "events": {"type": "array", "items": {"$ref": "#/components/schemas/ActivityEvent"}}}
+      },
+      "ActivityEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["event_id", "sequence", "event_type", "occurred_at"],
+        "properties": {"event_id": {"type": "string"}, "sequence": {"type": "integer", "minimum": 0}, "event_type": {"type": "string"}, "occurred_at": {"type": "string", "format": "date-time"}, "typed_stop": {"type": ["string", "null"]}}
+      },
+      "Error": {
+        "type": "object",
+        "required": ["code", "message", "correlation_id"],
+        "properties": {"code": {"type": "string"}, "message": {"type": "string"}, "correlation_id": {"type": "string"}, "current_version": {"type": "integer"}}
+      }
+    },
+    "responses": {
+      "ValidationError": {"description": "Input rejected", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "VersionConflict": {"description": "Expected version is stale", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "StaleOrSuperseded": {"description": "Requested head is stale or superseded", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "PermissionDenied": {"description": "Actor lacks the required permission", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "OperationNotAdmitted": {"description": "The operation has no active runtime admission", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "NotFound": {"description": "Canonical object not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+    }
+  },
+  "x-p02-status": "versioned_design_baseline_set_closure_repaired_no_runtime_or_release_admission"
+}

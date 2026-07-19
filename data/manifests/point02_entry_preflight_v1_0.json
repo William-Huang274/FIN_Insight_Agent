@@ -1,0 +1,62 @@
+{
+  "schema_version": "finsight_point02_entry_preflight_v1_0",
+  "artifact_id": "point02-entry-preflight-v1-0",
+  "point": "P02.0",
+  "purpose": "Freeze the exact Point 02 contract-only entry boundary before any P02.1 or P02.2 implementation.",
+  "source_backlog": {
+    "active_override_ref": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json#/point_overrides/P02.0",
+    "base_execution_point_ref": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json#/points/0/execution_points/0",
+    "inheritance_rule": "v1.0 task definitions apply unless the active v1.1 override narrows them."
+  },
+  "required_contract_bindings": {
+    "point01_scope_closeout_decision": {
+      "ref": "configs/releases/point01_foundation_alpha_scope_closeout_decision_v1_0.json",
+      "canonical_digest": "f95aeefec9c21726896baf6cf40f3fdcfd4d6c34699f92fbeceabd705ca3902e"
+    },
+    "release_contract": {
+      "ref": "configs/releases/fin_ia_0_1_release_contract_v1_2.json",
+      "canonical_digest": "be7aec37c3020f6e679ef047b37fbaa6c8b1105eb8b825498bd9d15175f520ba"
+    },
+    "detailed_execution_backlog": {
+      "ref": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json",
+      "canonical_digest": "a35c772ca2acd358fbe8e20f2e9dd5ac271049e7c515c706a930224fadb0463b"
+    },
+    "feature_scope": {
+      "ref": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_0.json",
+      "sha256": "a7afc254a264d1c930ca9ee9d3355da21fab35a81dc740b799f424e4e3a11740",
+      "unchanged_required": true
+    }
+  },
+  "release_blocker": {
+    "debt_id": "REL-PROD-001-RG1-POINT01-OPERATIONAL-VERTICAL-PATH",
+    "status": "hard_blocker_not_bypassable",
+    "required_proof": [
+      "exact_package_entry_to_adapter_to_subprocess_to_clean_child_identity_invariant",
+      "one_bounded_operational_vertical_run",
+      "persisted_actual_oracle_reviewer_and_workbench_results"
+    ],
+    "effect": "blocks_P07_5_and_FIN_0_1_INTERNAL_ALPHA_RELEASED"
+  },
+  "authority_state": {
+    "legacy_global_authority": "retained",
+    "operational_qualification": "not_qualified_deferred_to_REL_PROD_001_RG1",
+    "production_readiness": "not_admitted",
+    "new_authority_or_receipt_created": false
+  },
+  "allowed_current_outputs": [
+    "contracts",
+    "schema_examples",
+    "api_and_route_design",
+    "fixture_and_shadow_test_design",
+    "rollback_adr"
+  ],
+  "forbidden_current_actions": [
+    "P02_1_or_P02_2_implementation",
+    "runtime_or_operational_execution",
+    "approval_authority_or_receipt_creation",
+    "network_model_tool_or_provider_use",
+    "real_business_case_mutation",
+    "production_cutover"
+  ],
+  "preflight_disposition": "pass_contract_only_fixture_shadow_internal_development"
+}

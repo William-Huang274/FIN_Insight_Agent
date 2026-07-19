@@ -1,0 +1,152 @@
+{
+  "schema_version": "finsight_point02_route_surface_map_v1_1",
+  "artifact_id": "point02-route-surface-map-v1-1",
+  "point": "P02.0-T04",
+  "api_prefix": "/api/v1",
+  "supersedes": {
+    "schema_version": "finsight_point02_route_surface_map_v1_0",
+    "artifact_id": "point02-route-surface-map-v1-0",
+    "path": "configs/releases/point02_route_surface_map_v1_0.json",
+    "canonical_digest": "208196b5716023a305287560b61c809a797293a8e4a295ec2f7e8d41ad570fe7",
+    "reason": "v1.0 mixed active and future actions and did not carry a machine-checkable action-to-command/query-to-operation mapping."
+  },
+  "history": {
+    "v1_0_disposition": "historical_candidate_evidence_set_closure_not_approved",
+    "v1_1_scope": "P02_0_existing_EP_bounded_set_closure_repair_only"
+  },
+  "active_tranche": "VT0_PRE_W1_CONTRACT_CLOSURE",
+  "closure_scope": "Case_list_get_planning_work_unit_activity_route_action_command_query_read_model_openapi_owner_set",
+  "refresh_rule": "URL_plus_canonical_current_head_must_restore_each_surface; React memory is not authoritative.",
+  "shared_error_contract": [
+    "validation_error",
+    "version_conflict",
+    "stale_or_superseded",
+    "permission_denied",
+    "not_found",
+    "typed_gap",
+    "operation_not_admitted"
+  ],
+  "surfaces": [
+    {
+      "route": "/cases",
+      "feature": "Task Center",
+      "admission": "active_vt0_contract",
+      "active_actions": ["ListCases", "CreateCaseDraft"],
+      "active_read_models": ["TaskCenterProjection"],
+      "states": ["loading", "empty", "ready", "error"],
+      "owner": "TECH_09",
+      "browser_acceptance": "list, empty and typed error render without direct store access"
+    },
+    {
+      "route": "/cases/new",
+      "feature": "New Research Task",
+      "admission": "active_vt0_contract",
+      "active_actions": ["CreateCaseDraft"],
+      "active_read_models": [],
+      "supporting_view_models": ["CaseDraftFormProjection"],
+      "states": ["editing", "submitting", "validation_error"],
+      "owner": "TECH_09",
+      "browser_acceptance": "required query, as-of, language and source-policy errors are visible"
+    },
+    {
+      "route": "/cases/:caseId/overview",
+      "feature": "Case Overview / Plan",
+      "admission": "active_vt0_contract",
+      "active_actions": ["GetCaseWorkspace", "UpdateCaseObjective", "CompileDecisionSurface", "AcceptPlanningCheckpoint", "ReturnPlanningCheckpoint"],
+      "active_read_models": ["CaseWorkspaceProjection", "DecisionSurfaceView"],
+      "states": ["loading", "planning", "awaiting_review", "stale", "error"],
+      "owner": "TECH_09",
+      "browser_acceptance": "refresh restores exact case/current-head or shows typed stale state"
+    },
+    {
+      "route": "/cases/:caseId/decision-surface",
+      "feature": "Decision Surface",
+      "admission": "active_vt0_contract",
+      "active_actions": ["GetDecisionSurface", "AcceptPlanningCheckpoint", "ReturnPlanningCheckpoint"],
+      "active_read_models": ["DecisionSurfaceView"],
+      "states": ["draft", "shadow", "awaiting_review", "typed_gap", "superseded"],
+      "owner": "TECH_09",
+      "browser_acceptance": "cell owner, slot and stop-rule visibility precedes any future execution action"
+    },
+    {
+      "route": "/cases/:caseId/evidence",
+      "feature": "Evidence & Numeric",
+      "admission": "future_not_admitted",
+      "active_actions": [],
+      "active_read_models": [],
+      "future_not_admitted_actions": ["RequestRepair", "RejectCandidate"],
+      "future_not_admitted_read_models": ["EvidenceWorkbenchView", "NumericAuditView"],
+      "states": ["not_admitted", "typed_gap", "context_only", "rejected"],
+      "owner": "TECH_10",
+      "reason": "P03.3 and P04.4 consume this surface after their own contracts; it is not part of VT0 active closure."
+    },
+    {
+      "route": "/cases/:caseId/workpaper",
+      "feature": "Workpaper & Repair",
+      "admission": "future_not_admitted",
+      "active_actions": [],
+      "active_read_models": [],
+      "future_not_admitted_actions": ["CreateRepairTicket", "LeadReview"],
+      "future_not_admitted_read_models": ["WorkpaperView", "RepairQueueView"],
+      "states": ["not_admitted", "awaiting_review", "typed_gap"],
+      "owner": "TECH_10",
+      "reason": "P05 owns the workpaper and repair contract; it is not part of VT0 active closure."
+    },
+    {
+      "route": "/cases/:caseId/deliverable",
+      "feature": "Deliverable & Review",
+      "admission": "future_not_admitted",
+      "active_actions": [],
+      "active_read_models": [],
+      "future_not_admitted_actions": ["Comment", "Return", "AcceptDeliverable"],
+      "future_not_admitted_read_models": ["DeliverableReviewView"],
+      "states": ["not_admitted", "stale", "superseded", "permission_denied"],
+      "owner": "TECH_10",
+      "reason": "P06 owns deliverable and review actions; it is not part of VT0 active closure."
+    },
+    {
+      "route": "/cases/:caseId/activity",
+      "feature": "Activity & Trace",
+      "admission": "active_vt0_contract",
+      "active_actions": ["ListWorkUnits", "CreateWorkUnit", "CancelWorkUnit", "GetActivityTrace"],
+      "active_read_models": ["WorkUnitExecutionView", "ActivityTraceView"],
+      "future_not_admitted_actions": ["ResumeWorkUnit"],
+      "states": ["pending", "running", "paused", "retryable_failed", "cancelled", "typed_gap"],
+      "owner": "TECH_09",
+      "browser_acceptance": "event order and typed stop are readable without exposing raw prompts or secrets"
+    }
+  ],
+  "route_action_mappings": [
+    {"route_action_id": "ListCases", "kind": "query", "canonical_query_id": "ListCasesQuery", "read_model_id": "TaskCenterProjection", "canonical_owner": "TECH_09", "openapi_operation_id": "listCases", "response_schema": "TaskCenterProjection"},
+    {"route_action_id": "CreateCaseDraft", "kind": "command", "canonical_command_id": "CreateCaseDraftCommand", "canonical_owner": "TECH_01", "openapi_operation_id": "createCaseDraft", "request_schema": "CreateCaseDraftCommand", "response_schema": "CaseWorkspaceProjection"},
+    {"route_action_id": "GetCaseWorkspace", "kind": "query", "canonical_query_id": "GetCaseWorkspaceQuery", "read_model_id": "CaseWorkspaceProjection", "canonical_owner": "TECH_09", "openapi_operation_id": "getCaseWorkspace", "response_schema": "CaseWorkspaceProjection"},
+    {"route_action_id": "UpdateCaseObjective", "kind": "command", "canonical_command_id": "UpdateCaseObjectiveCommand", "canonical_owner": "TECH_01", "openapi_operation_id": "updateCaseObjective", "request_schema": "UpdateCaseObjectiveCommand", "response_schema": "CaseWorkspaceProjection"},
+    {"route_action_id": "CompileDecisionSurface", "kind": "command", "canonical_command_id": "CompileDecisionSurfaceCommand", "canonical_owner": "TECH_01", "openapi_operation_id": "compileDecisionSurface", "request_schema": "CompileDecisionSurfaceCommand", "response_schema": "DecisionSurfaceView"},
+    {"route_action_id": "AcceptPlanningCheckpoint", "kind": "command", "canonical_command_id": "PlanningCheckpointDecisionCommand", "canonical_owner": "TECH_01", "decision": "accept", "openapi_operation_id": "reviewPlanningCheckpoint", "request_schema": "PlanningCheckpointDecisionCommand", "response_schema": "DecisionSurfaceView"},
+    {"route_action_id": "ReturnPlanningCheckpoint", "kind": "command", "canonical_command_id": "PlanningCheckpointDecisionCommand", "canonical_owner": "TECH_01", "decision": "return", "openapi_operation_id": "reviewPlanningCheckpoint", "request_schema": "PlanningCheckpointDecisionCommand", "response_schema": "DecisionSurfaceView"},
+    {"route_action_id": "GetDecisionSurface", "kind": "query", "canonical_query_id": "GetDecisionSurfaceQuery", "read_model_id": "DecisionSurfaceView", "canonical_owner": "TECH_09", "openapi_operation_id": "getDecisionSurface", "response_schema": "DecisionSurfaceView"},
+    {"route_action_id": "ListWorkUnits", "kind": "query", "canonical_query_id": "ListWorkUnitsQuery", "read_model_id": "WorkUnitExecutionView", "canonical_owner": "TECH_09", "openapi_operation_id": "listWorkUnits", "response_schema": "WorkUnitExecutionView"},
+    {"route_action_id": "CreateWorkUnit", "kind": "command", "canonical_command_id": "CreateWorkUnitCommand", "canonical_owner": "TECH_06", "openapi_operation_id": "createWorkUnit", "request_schema": "CreateWorkUnitCommand", "response_schema": "WorkUnitExecutionView"},
+    {"route_action_id": "CancelWorkUnit", "kind": "command", "canonical_command_id": "CancelWorkUnitCommand", "canonical_owner": "TECH_06", "openapi_operation_id": "cancelWorkUnit", "request_schema": "CancelWorkUnitCommand", "response_schema": "WorkUnitExecutionView"},
+    {"route_action_id": "GetActivityTrace", "kind": "query", "canonical_query_id": "GetActivityTraceQuery", "read_model_id": "ActivityTraceView", "canonical_owner": "TECH_09", "openapi_operation_id": "getActivityTrace", "response_schema": "ActivityTraceView"}
+  ],
+  "active_read_model_mappings": [
+    {"read_model_id": "TaskCenterProjection", "canonical_query_id": "ListCasesQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "listCases", "response_schema": "TaskCenterProjection"},
+    {"read_model_id": "CaseWorkspaceProjection", "canonical_query_id": "GetCaseWorkspaceQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "getCaseWorkspace", "response_schema": "CaseWorkspaceProjection"},
+    {"read_model_id": "DecisionSurfaceView", "canonical_query_id": "GetDecisionSurfaceQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "getDecisionSurface", "response_schema": "DecisionSurfaceView"},
+    {"read_model_id": "WorkUnitExecutionView", "canonical_query_id": "ListWorkUnitsQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "listWorkUnits", "response_schema": "WorkUnitExecutionView"},
+    {"read_model_id": "ActivityTraceView", "canonical_query_id": "GetActivityTraceQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "getActivityTrace", "response_schema": "ActivityTraceView"}
+  ],
+  "future_not_admitted_actions": [
+    {
+      "route_action_id": "ResumeWorkUnit",
+      "surface_route": "/cases/:caseId/activity",
+      "canonical_command_id": "ResumeWorkUnitCommand",
+      "command_owner": "TECH_06",
+      "openapi_disposition": "not_exposed_in_P02_0_active_tranche",
+      "reason": "resume_and_targeted_state_recovery_is_deferred_to_VT2_P02_5; VT1 requires start_cancel_and_typed_stop_only",
+      "runtime_admission": "not_granted"
+    }
+  ],
+  "implementation_status": "route_and_acceptance_contract_set_closure_repaired_only"
+}

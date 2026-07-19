@@ -69,6 +69,7 @@ B 端优先功能：
 | Internal Knowledge Base | 沉淀机构历史 thesis、投委会记录、修正、gold set、私有材料 |
 | Trace / Eval / Feedback | run trace、node eval、failure/gold lifecycle、成本和质量 dashboard |
 | Permission / Tenant / Cost Budget | 团队权限、模型/工具预算、私有数据边界、审计日志 |
+| Agent Information Economy | 把 token / 上下文 / 工具调用转化为可审阅判断，暴露无效传递、过宽 fanout、低 claim yield 和无效 repair |
 
 B 端产品形态：
 

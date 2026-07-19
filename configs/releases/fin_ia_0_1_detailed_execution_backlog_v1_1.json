@@ -1,0 +1,82 @@
+{
+  "schema_version": "fin_ia_0_1_detailed_execution_backlog_v1_1",
+  "release_id": "REL-PROD-001",
+  "version": "FIN_0_1_INTERNAL_ALPHA",
+  "status": "foundation_contract_runtime_proof_complete_fixture_shadow_internal_development_only",
+  "supersedes": {
+    "schema_version": "fin_ia_0_1_detailed_execution_backlog_v1_0",
+    "path": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json",
+    "reason": "v1.0 treated Point 01 Foundation Alpha closeout as an undifferentiated implementation entry gate."
+  },
+  "base_backlog_ref": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json",
+  "inheritance_rule": "All point/task definitions remain byte-for-byte governed by v1.0 unless an explicit override appears here.",
+  "entry_gate": {
+    "foundation_status": "POINT01_FOUNDATION_ALPHA_CONTRACT_RUNTIME_PROOF_COMPLETE",
+    "operational_qualification": "not_qualified_deferred_to_REL_PROD_001_RG1",
+    "development_admission": "fixture_shadow_internal_development_only",
+    "release_admission": "P07.5_after_RG1_to_RG5_only",
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained"
+  },
+  "point_overrides": {
+    "P02.0": {
+      "status": "development_admitted_fixture_shadow_internal_only",
+      "allowed_outputs": [
+        "contracts",
+        "schema_examples",
+        "API_and_route_design",
+        "fixture_and_shadow_tests",
+        "rollback_ADR"
+      ],
+      "forbidden_outputs": [
+        "operational_execution",
+        "production_cutover",
+        "paid_model_or_full_chain",
+        "real_business_case_mutation"
+      ],
+      "entry_preflight_must_bind": [
+        "point01_scope_closeout_decision",
+        "REL_PROD_001_RG1_vertical_path_deferred_blocker",
+        "legacy_authority_retained"
+      ]
+    },
+    "P07.5": {
+      "status": "release_decision_blocked_until_RG1_vertical_path_debt_closed",
+      "RG1_required_before_release": [
+        "exact_package_entry_to_adapter_to_subprocess_to_clean_child_identity_invariant",
+        "one_bounded_operational_vertical_run",
+        "persisted_actual_oracle_reviewer_and_workbench_results"
+      ]
+    }
+  },
+  "deferred_release_debt": [
+    {
+      "debt_id": "REL-PROD-001-RG1-POINT01-OPERATIONAL-VERTICAL-PATH",
+      "status": "hard_blocker_not_bypassable",
+      "source": "failed_single_operational_attempt_consumed_and_deferred_to_REL_PROD_001_RG1",
+      "required_proof": [
+        "entry_to_clean_child_identity_invariant",
+        "bounded_operational_vertical_run",
+        "actual_oracle_reviewer_workbench_artifacts"
+      ],
+      "release_effect": "blocks_P07_5_and_FIN_0_1_INTERNAL_ALPHA_RELEASED"
+    }
+  ],
+  "state_axes": {
+    "contract_maturity": "foundation_alpha_contract_runtime_proof_complete",
+    "runtime_proof": "deterministic_shadow_and_bounded_fail_closed_proof_retained",
+    "operational_qualification": "not_qualified_deferred",
+    "production_readiness": "not_admitted"
+  },
+  "test_profile_contract": {
+    "fast_and_component": "allowed_for_fixture_shadow_internal_development",
+    "operational": "not_qualified_deferred_to_REL_PROD_001_RG1",
+    "release": "P07_5_after_RG1_to_RG5_only",
+    "forbidden_currently": [
+      "replay_or_retry_of_consumed_Point01_receipt",
+      "operational_baseline_or_negative_tranche",
+      "production_cutover"
+    ]
+  },
+  "rollback_target": "REL-FND-001_with_legacy_global_authority_retained"
+}

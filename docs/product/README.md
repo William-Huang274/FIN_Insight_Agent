@@ -17,6 +17,10 @@ Product docs should not be implementation plans. Technical contracts, APIs, sche
 
 - [PRODUCT 2026-06-28 FinSight ToB / ToC Positioning And Product Line](PRODUCT_20260628_finsight_tob_toc_positioning_and_product_line.zh-CN.md)
 - [PRD 2026-06-28 B2B Financial Research Workbench](PRD_20260628_b2b_financial_research_workbench.zh-CN.md)
+- [PRODUCT 2026-07-17 Release Ladder And Cadence](PRODUCT_20260717_release_ladder_and_cadence.zh-CN.md)
+- [FIN 0.1 Internal Alpha Feature Scope Matrix](FIN_0_1_INTERNAL_ALPHA_FEATURE_SCOPE_MATRIX_20260717.zh-CN.md)
+- [FIN 0.1 Workbench UX Benchmark And Interaction Blueprint](FIN_0_1_WORKBENCH_UX_BENCHMARK_INTERACTION_BLUEPRINT_20260719.zh-CN.md)
+- [FIN 0.1 PRD / Product Stage Review](FIN_0_1_STAGE_REVIEW_20260719.zh-CN.md)
 
 ## Governance
 

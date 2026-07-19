@@ -1,0 +1,121 @@
+{
+  "schema_version": "fin_release_feature_scope_v1_0",
+  "release_id": "REL-PROD-001",
+  "version": "FIN_0_1_INTERNAL_ALPHA",
+  "status": "accepted_scope_implementation_not_started",
+  "detailed_design_ref": "docs/architecture/repository/RELEASE_FIN_IA_0_1_DETAILED_PRODUCT_TECHNICAL_DESIGN_20260717.zh-CN.md",
+  "detailed_execution_backlog_ref": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json",
+  "product_slices": [
+    "B0_product_shell_and_task_loop",
+    "B2_company_deep_research_workpaper",
+    "B3_product_competitive_supply_chain_bounded_subset",
+    "B7_decision_surface_evidence_numeric_repair"
+  ],
+  "target_workflow": [
+    "create_research_case",
+    "review_decision_surface_plan",
+    "run_and_observe_durable_research",
+    "review_evidence_and_numeric_trace",
+    "review_workpaper_and_request_targeted_repair",
+    "lead_review_and_writer_admission",
+    "generate_internal_deliverable_no_source",
+    "human_review_exact_version",
+    "trace_material_claims_bidirectionally"
+  ],
+  "feature_ids": [
+    "P001-F01",
+    "P001-F02",
+    "P001-F03",
+    "P001-F04",
+    "P001-F05",
+    "P001-F06",
+    "P001-F07",
+    "P001-F08",
+    "P001-F09",
+    "P001-F10",
+    "P001-F11",
+    "P001-F12",
+    "P001-F13",
+    "P001-F14",
+    "P001-F15"
+  ],
+  "feature_names": {
+    "P001-F01": "dashboard_task_center",
+    "P001-F02": "research_case_objective",
+    "P001-F03": "dynamic_decision_surface",
+    "P001-F04": "durable_execution_activity",
+    "P001-F05": "agentic_search",
+    "P001-F06": "evidence_workbench",
+    "P001-F07": "numeric_fact_audit",
+    "P001-F08": "workpaper_domain_judgment",
+    "P001-F09": "gap_repair_queue",
+    "P001-F10": "lead_review_writer_admission",
+    "P001-F11": "internal_deliverable",
+    "P001-F12": "human_review_accountability",
+    "P001-F13": "provenance_trace",
+    "P001-F14": "same_case_explanation",
+    "P001-F15": "quality_release_feedback"
+  },
+  "required_product_surfaces": [
+    "dashboard_task_center",
+    "case_overview_plan",
+    "decision_surface",
+    "evidence_numeric",
+    "workpaper_repair",
+    "deliverable_review",
+    "activity_trace"
+  ],
+  "frontend_delivery_contract": {
+    "required": true,
+    "implementation_root": "apps/workbench/frontend/vite/src",
+    "stack": "react_19_typescript_vite",
+    "api_root": "apps/workbench/backend",
+    "api_style": "versioned_fastapi_product_contracts",
+    "surface_delivery_mode": "incremental_vertical_slice_from_POINT_02_to_POINT_07",
+    "json_api_only_is_sufficient": false,
+    "desktop_first": true,
+    "minimum_supported_width_px": 1024,
+    "customer_grade_visual_system_required": false,
+    "mobile_release_gate": false
+  },
+  "decision_surface_policy": {
+    "composition": "universal_archetype_plus_ai_infra_sector_pack_plus_bounded_case_delta",
+    "min_cells": 10,
+    "target_cell_range": [12, 16],
+    "max_cells": 20,
+    "reviewer_planning_checkpoint_required": true,
+    "required_cell_families": [
+      "accelerator_demand_value_capture_concentration",
+      "server_oem_revenue_margin_cash_conversion",
+      "foundry_advanced_packaging_capacity_bottleneck_rent",
+      "hbm_demand_supply_pricing_concentration",
+      "semicap_capex_readthrough_cycle_export_policy",
+      "cross_chain_counterthesis_price_in_what_would_change"
+    ]
+  },
+  "required_runtime_capabilities": [
+    "internal_frontend_workbench_and_browser_e2e",
+    "lead_planning_and_review",
+    "evidence_request_tool_planner_gate",
+    "rag_sql_graph_market_and_official_sourcehunter",
+    "parser_numeric_program_trace",
+    "domain_judgment_and_counterevidence",
+    "role_specific_context_and_structured_handoff",
+    "targeted_repair",
+    "writer_no_source",
+    "human_review_and_bidirectional_provenance",
+    "release_eval_and_rollback"
+  ],
+  "deferred_capabilities": [
+    "data_room_private_licensed_data",
+    "watchlist_monitoring_and_r4_refresh",
+    "research_to_quant",
+    "all_sector_packs",
+    "ppt_word_excel_pdf_full_consistency",
+    "enterprise_sso_scim_oa_kms_dlp_multi_tenant",
+    "full_valuation_forecast_scenario_engine",
+    "real_time_market_full_derivatives_and_commercial_data",
+    "automated_trading_or_investment_advice"
+  ],
+  "source_document": "docs/product/FIN_0_1_INTERNAL_ALPHA_FEATURE_SCOPE_MATRIX_20260717.zh-CN.md"
+}

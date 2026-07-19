@@ -1,0 +1,115 @@
+{
+  "schema_version": "fin_release_contract_v1_2",
+  "release_id": "REL-PROD-001",
+  "version": "FIN_0_1_INTERNAL_ALPHA",
+  "release_channel": "internal_alpha",
+  "status": "foundation_contract_runtime_proof_complete_development_admission_only_rg1_vertical_path_blocked",
+  "supersedes": {
+    "schema_version": "fin_release_contract_v1_1",
+    "path": "configs/releases/fin_ia_0_1_release_contract_v1_1.json",
+    "reason": "Point 01 scope closeout distinguishes Foundation Alpha contract/runtime proof from deferred operational qualification and FIN 0.1 release admission."
+  },
+  "unchanged_v1_1_contract_inheritance": {
+    "path": "configs/releases/fin_ia_0_1_release_contract_v1_1.json",
+    "file_sha256": "93ea4fd19a20819452d0f3eb61fa2728bbc9747bfb23a169e3fa7100df98fb4d",
+    "resolution": "All v1.1 product-scope, delivery-surface, frontend, decision-surface, workstream, deferred-capability and model/external-boundary fields remain active unless explicitly overridden by v1.2.",
+    "overridden_fields": [
+      "schema_version",
+      "status",
+      "supersedes",
+      "detailed_execution_backlog_ref",
+      "point01_scope_closeout_ref",
+      "entry_gate",
+      "release_admission",
+      "rollback_target"
+    ]
+  },
+  "target_user": [
+    "internal_research_analyst",
+    "internal_senior_reviewer"
+  ],
+  "target_job": "Create, execute, repair, review and trace an AI infrastructure deep-research workpaper in one ResearchCase workspace",
+  "feature_scope_ref": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_0.json",
+  "feature_scope_change": "none",
+  "detailed_design_ref": "docs/architecture/repository/RELEASE_FIN_IA_0_1_DETAILED_PRODUCT_TECHNICAL_DESIGN_20260717.zh-CN.md",
+  "detailed_execution_backlog_ref": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json",
+  "point01_scope_closeout_ref": "configs/releases/point01_foundation_alpha_scope_closeout_decision_v1_0.json",
+  "entry_gate": {
+    "release_id": "REL-FND-001",
+    "foundation_status": "POINT01_FOUNDATION_ALPHA_CONTRACT_RUNTIME_PROOF_COMPLETE",
+    "development_admission": "fixture_shadow_internal_development_only",
+    "development_admission_not_equal": "FIN_0_1_INTERNAL_ALPHA_RELEASED",
+    "operational_qualification": "not_qualified_deferred_to_REL_PROD_001_RG1",
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained"
+  },
+  "release_admission": {
+    "issuer": "P07.5_only",
+    "required_status": "FIN_0_1_INTERNAL_ALPHA_RELEASED",
+    "hard_blockers": [
+      "RG1_vertical_path_entry_to_clean_child_identity_invariant",
+      "RG1_one_bounded_operational_vertical_run",
+      "RG1_actual_oracle_reviewer_workbench_result",
+      "RG2_evidence_numeric_integrity",
+      "RG3_research_outcome",
+      "RG4_review_product_value",
+      "RG5_release_rollback"
+    ]
+  },
+  "required_feature_ids": [
+    "P001-F01",
+    "P001-F02",
+    "P001-F03",
+    "P001-F04",
+    "P001-F05",
+    "P001-F06",
+    "P001-F07",
+    "P001-F08",
+    "P001-F09",
+    "P001-F10",
+    "P001-F11",
+    "P001-F12",
+    "P001-F13",
+    "P001-F14",
+    "P001-F15"
+  ],
+  "required_product_surfaces": [
+    "dashboard_task_center",
+    "case_overview_plan",
+    "decision_surface",
+    "evidence_numeric",
+    "workpaper_repair",
+    "deliverable_review",
+    "activity_trace"
+  ],
+  "release_gates": [
+    "RG1_vertical_path",
+    "RG2_evidence_numeric_integrity",
+    "RG3_research_outcome",
+    "RG4_review_product_value",
+    "RG5_release_rollback"
+  ],
+  "hard_invariants": {
+    "known_false_evidence_promotions": 0,
+    "material_numeric_trace_coverage": 1.0,
+    "writer_source_or_tool_calls": 0,
+    "material_claim_provenance_coverage": 1.0,
+    "dual_authoritative_writes": 0,
+    "feature_scope_unchanged_by_scope_closeout": true,
+    "production_cutover_authorized": false
+  },
+  "model_and_external_authority": {
+    "paid_or_model_node_run_requires_separate_preflight": true,
+    "broad_full_chain_authorized": false,
+    "commercial_data_spend_authorized": false,
+    "real_customer_data_authorized": false
+  },
+  "rollback_target": "REL-FND-001_with_legacy_global_authority_retained",
+  "source_documents": [
+    "docs/product/PRODUCT_20260717_release_ladder_and_cadence.zh-CN.md",
+    "docs/product/FIN_0_1_INTERNAL_ALPHA_FEATURE_SCOPE_MATRIX_20260717.zh-CN.md",
+    "docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md",
+    "docs/architecture/repository/RELEASE_FIN_IA_0_1_EXECUTION_PLAN_20260717.zh-CN.md",
+    "docs/architecture/repository/RELEASE_FIN_IA_0_1_DETAILED_PRODUCT_TECHNICAL_DESIGN_20260717.zh-CN.md"
+  ]
+}

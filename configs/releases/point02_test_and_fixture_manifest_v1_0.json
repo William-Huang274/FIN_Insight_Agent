@@ -1,0 +1,26 @@
+{
+  "schema_version": "finsight_point02_test_and_fixture_manifest_v1_0",
+  "artifact_id": "point02-test-and-fixture-manifest-v1-0",
+  "point": "P02.0-T07",
+  "fixtures": [
+    {"fixture_id": "p36_ai_infrastructure", "segment": "AI infrastructure", "role": "anchor DecisionSurface/case/route contract", "allowed_profiles": ["static", "fixture", "fast", "component"], "operational_status": "deferred_to_REL_PROD_001_RG1"},
+    {"fixture_id": "enterprise_ai_saas", "segment": "Enterprise AI / SaaS", "role": "DecisionSurface genericity and owner/slot regression", "allowed_profiles": ["static", "fixture", "fast", "component"], "operational_status": "deferred_to_REL_PROD_001_RG1"},
+    {"fixture_id": "us_banks", "segment": "US Banks", "role": "sector-specific period/metric and typed-gap regression", "allowed_profiles": ["static", "fixture", "fast", "component"], "operational_status": "deferred_to_REL_PROD_001_RG1"}
+  ],
+  "profiles": {
+    "static": {"purpose": "JSON, OpenAPI, ownership, authority and digest contract lint", "allowed_now": true, "network": 0, "store_write": 0},
+    "fixture": {"purpose": "sanitized schema, route and read-model examples", "allowed_now": true, "network": 0, "store_write": 0},
+    "fast": {"purpose": "deterministic component contracts", "allowed_now": true, "network": 0, "store_write": 0},
+    "component": {"purpose": "future in-memory or explicit temporary-root adapters only", "allowed_now": true, "network": 0, "store_write": 0},
+    "operational": {"purpose": "persistent lifecycle and vertical path proof", "allowed_now": false, "deferred_blocker": "REL-PROD-001-RG1-POINT01-OPERATIONAL-VERTICAL-PATH"},
+    "browser": {"purpose": "implemented route acceptance", "allowed_now": false, "deferred_until": "P02.2_and_separate_release_admission"}
+  },
+  "required_fixture_assertions": [
+    "case_objective_decision_surface_work_unit_version_visibility",
+    "typed_stale_and_permission_error_rendering",
+    "no_direct_store_or_python_object_browser_access",
+    "P36_SaaS_Bank_each_map_to_a_unique_owner_and_route_surface",
+    "operational_profile_cannot_be_selected_by_current_P02_0_contract"
+  ],
+  "execution_policy": "static_fixture_fast_component_only_no_operational_or_browser_run"
+}

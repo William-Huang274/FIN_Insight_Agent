@@ -1,0 +1,75 @@
+{
+  "schema_version": "finsight_point02_closeout_decision_v1_1",
+  "artifact_id": "point02-closeout-decision-v1-1",
+  "point": "P02.0",
+  "supersedes": {
+    "schema_version": "finsight_point02_closeout_decision_v1_0",
+    "artifact_id": "point02-closeout-decision-v1-0",
+    "path": "data/manifests/point02_closeout_decision_v1_0.json",
+    "canonical_digest": "9bbd6e313808a4b2cec7610e0b41596f7615a2b6270ee55e51810d83a8c69d6f",
+    "reason": "v1.0 was historical candidate evidence because active route action, canonical ownership, OpenAPI and typed-schema closure was not derived and verified."
+  },
+  "history": {
+    "v1_0_disposition": "historical_candidate_evidence_set_closure_not_approved",
+    "v1_1_scope": "P02_0_existing_EP_bounded_set_closure_repair_only"
+  },
+  "decision": "P02_0_CONTRACT_AND_DEPENDENCY_FREEZE_SET_CLOSURE_REPAIRED_PENDING_PARENT_INDEPENDENT_REVIEW",
+  "entry_preflight_ref": {
+    "path": "data/manifests/point02_entry_preflight_v1_0.json",
+    "canonical_digest": "824fce9e569ccba4e67767839dcf6d85a6450712927805b521c9434d2941ca41",
+    "disposition": "unchanged_historical_binding"
+  },
+  "task_outputs": {
+    "P02.0-T02": {"path": "docs/architecture/repository/ADR_POINT02_AUTHORITY_ROLLBACK_20260718.md", "file_sha256": "cb50f8eeb02ef644a2722609399442a63b78cd57c821415842ee2d33f89810bb", "disposition": "unchanged_historical_binding"},
+    "P02.0-T03": {"path": "configs/releases/point02_canonical_object_subset_v1_1.json", "canonical_digest": "5475ec3797c343e42b4532a009e8c39459562daad5fa506b15824d6d9c77c721", "supersedes": "configs/releases/point02_canonical_object_subset_v1_0.json"},
+    "P02.0-T04": {"path": "configs/releases/point02_route_surface_map_v1_1.json", "canonical_digest": "7b42980e46a94fa9458928fad05992f7cdb4d3caff5c4d79bc7825bb664b7210", "supersedes": "configs/releases/point02_route_surface_map_v1_0.json"},
+    "P02.0-T05": {"path": "configs/releases/point02_frontend_dependency_lock_v1_0.json", "canonical_digest": "422ccd2fea480e3c67fbb4a85ba6ff234c367d9f1a6037bdfeefd37c020348be", "disposition": "unchanged_historical_binding"},
+    "P02.0-T06": {"path": "configs/releases/point02_api_v1_openapi_baseline_v1_1.json", "canonical_digest": "5df8514daadb7772db895c384291eaabdd4c768ff7ac9eb51ccfee0326b118f9", "supersedes": "configs/releases/point02_api_v1_openapi_baseline_v1_0.json"},
+    "P02.0-T07": {"path": "configs/releases/point02_test_and_fixture_manifest_v1_0.json", "canonical_digest": "f2b04671608eee1ca9d0e1d5e7f89effa1dc4b2e232147620411f0c22fb21696", "disposition": "unchanged_historical_binding"},
+    "P02.0-T08": {"path": "data/manifests/point02_cross_owner_review_v1_1.json", "canonical_digest": "2abc8fc65acc35c431ba86b4ad3422a37435654b0a817e79562b8ac2cb0406c9", "supersedes": "data/manifests/point02_cross_owner_review_v1_0.json"}
+  },
+  "derived_set_closure_evidence": {
+    "status": "verified_by_targeted_contract_test",
+    "test": "tests/contract/test_point02_contract_dependency_freeze.py",
+    "assertions": [
+      "surface_active_action_set_equals_route_action_mapping_set_equals_cross_owner_action_mapping_set",
+      "active_command_and_query_sets_equal_canonical_command_and_query_sets",
+      "active_read_model_set_equals_canonical_read_model_set_equals_cross_owner_read_model_mapping_set",
+      "parsed_openapi_operation_set_equals_derived_mapped_operation_set",
+      "each_active_command_operation_has_its_mapped_versioned_request_schema_and_typed_success_response_schema",
+      "each_active_query_operation_has_its_mapped_typed_success_response_schema",
+      "mapped_canonical_owners_equal_canonical_command_query_and_read_model_owners",
+      "checkpoint_accept_and_return_are_distinct_decision_values_of_the_same_typed_versioned_command",
+      "resume_work_unit_is_future_not_admitted_and_has_no_active_openapi_operation"
+    ],
+    "scope": "VT0 Case/list/get/planning/work-unit/activity only",
+    "non_evidence": ["runtime_execution", "operational_execution", "browser_execution", "release_admission"]
+  },
+  "stage_acceptance": {
+    "skeleton": {"status": "pass_derived_set_closure_contract_only", "evidence": "all active route actions, commands, queries, read models, operations, schemas and owners are derived from the v1.1 contract artifacts"},
+    "fixture": {"status": "pass_contract_only", "evidence": "schema examples, fixture profiles and forbidden-authority paths remain explicitly frozen"},
+    "full": {"status": "pass_contract_only", "evidence": "cross-owner, API, feature-flag and rollback contracts are closed without implementation"},
+    "calibrated": {"status": "not_evaluated_in_P02_0", "evidence": "P36, SaaS and Bank runtime calibration belongs to later execution points"}
+  },
+  "readiness": {
+    "P02.1": "ready_for_skeleton_fixture_internal_development_only_pending_parent_independent_review",
+    "P02.2": "ready_for_skeleton_fixture_internal_development_only_pending_parent_independent_review",
+    "runtime_admission": "not_granted",
+    "operational_admission": "not_qualified_deferred_to_REL_PROD_001_RG1",
+    "release_admission": "not_admitted",
+    "legacy_global_authority": "retained"
+  },
+  "hard_blockers_retained": [
+    "REL-PROD-001-RG1-POINT01-OPERATIONAL-VERTICAL-PATH",
+    "no_replay_retry_renewal_or_replacement_of_consumed_Point01_receipt"
+  ],
+  "forbidden_next_actions": [
+    "runtime_implementation_in_this_execution_point",
+    "operational_execution",
+    "approval_authority_or_receipt_creation",
+    "network_model_tool_provider_or_paid_full_chain",
+    "real_business_case_mutation",
+    "production_cutover"
+  ],
+  "closeout_digest": "ca44ed89e88c49144c67d2d1d1c188025a5ac1900cff783fdd8501e94b45892a"
+}

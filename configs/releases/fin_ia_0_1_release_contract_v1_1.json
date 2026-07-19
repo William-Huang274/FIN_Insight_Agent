@@ -1,0 +1,181 @@
+{
+  "schema_version": "fin_release_contract_v1_1",
+  "release_id": "REL-PROD-001",
+  "version": "FIN_0_1_INTERNAL_ALPHA",
+  "release_channel": "internal_alpha",
+  "status": "scope_v1_1_accepted_entry_blocked_by_REL_FND_001",
+  "supersedes": {
+    "schema_version": "fin_release_contract_v1_0",
+    "path": "configs/releases/fin_ia_0_1_release_contract_v1_0.json",
+    "reason": "v1.0 conflated P36 anchor case cell families with the complete product feature scope"
+  },
+  "target_user": [
+    "internal_research_analyst",
+    "internal_senior_reviewer"
+  ],
+  "target_job": "Create, execute, repair, review and trace an AI infrastructure deep-research workpaper in one ResearchCase workspace",
+  "prd_slices": [
+    "B0_product_shell_and_task_loop",
+    "B2_company_deep_research_workpaper",
+    "B3_product_competitive_supply_chain_bounded_subset",
+    "B7_decision_surface_evidence_numeric_repair"
+  ],
+  "feature_scope_ref": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_0.json",
+  "detailed_design_ref": "docs/architecture/repository/RELEASE_FIN_IA_0_1_DETAILED_PRODUCT_TECHNICAL_DESIGN_20260717.zh-CN.md",
+  "detailed_execution_backlog_ref": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json",
+  "required_feature_ids": [
+    "P001-F01",
+    "P001-F02",
+    "P001-F03",
+    "P001-F04",
+    "P001-F05",
+    "P001-F06",
+    "P001-F07",
+    "P001-F08",
+    "P001-F09",
+    "P001-F10",
+    "P001-F11",
+    "P001-F12",
+    "P001-F13",
+    "P001-F14",
+    "P001-F15"
+  ],
+  "required_product_surfaces": [
+    "dashboard_task_center",
+    "case_overview_plan",
+    "decision_surface",
+    "evidence_numeric",
+    "workpaper_repair",
+    "deliverable_review",
+    "activity_trace"
+  ],
+  "frontend_delivery_contract": {
+    "required_for_internal_alpha": true,
+    "primary_stack": "existing_react_19_typescript_vite_workbench",
+    "backend_boundary": "fastapi_versioned_product_api",
+    "json_api_only_is_sufficient": false,
+    "desktop_first": true,
+    "mobile_release_gate": false,
+    "required_user_actions": [
+      "create_open_and_resume_case",
+      "review_edit_return_and_accept_plan",
+      "start_cancel_retry_and_targeted_resume",
+      "inspect_evidence_numeric_gap_and_lineage",
+      "reject_evidence_and_request_repair",
+      "review_workpaper_and_writer_admission",
+      "comment_return_request_repair_and_accept_artifact",
+      "ask_one_bounded_same_case_followup"
+    ],
+    "required_ui_states": [
+      "loading",
+      "ready",
+      "running",
+      "awaiting_review",
+      "typed_gap",
+      "failed_with_next_action",
+      "stale",
+      "superseded"
+    ],
+    "delivery_points": {
+      "POINT_02": "app_shell_task_center_case_plan_decision_surface_activity",
+      "POINT_03": "evidence_search_and_evidence_workbench",
+      "POINT_04": "numeric_drawer_and_fact_table",
+      "POINT_05": "workpaper_repair_lead_review_and_followup",
+      "POINT_06": "deliverable_review_comments_and_trace_explorer",
+      "POINT_07": "product_e2e_accessibility_and_release_qa"
+    }
+  },
+  "entry_gate": {
+    "release_id": "REL-FND-001",
+    "required_status": "POINT01_FOUNDATION_ALPHA_COMPLETE",
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained"
+  },
+  "target_product_maturity": "L2_internal_dogfood_pass",
+  "target_case_outcomes": {
+    "p36_ai_infrastructure": "R2_research_valid",
+    "enterprise_ai_saas_regression": "structural_regression_only",
+    "us_banks_regression": "structural_regression_only"
+  },
+  "decision_surface_policy": {
+    "composition": "universal_archetype_plus_ai_infra_sector_pack_plus_bounded_case_delta",
+    "min_cells": 10,
+    "target_cell_range": [12, 16],
+    "max_cells": 20,
+    "planning_checkpoint_required": true,
+    "required_cell_families": [
+      "accelerator_demand_value_capture_concentration",
+      "server_oem_revenue_margin_cash_conversion",
+      "foundry_advanced_packaging_capacity_bottleneck_rent",
+      "hbm_demand_supply_pricing_concentration",
+      "semicap_capex_readthrough_cycle_export_policy",
+      "cross_chain_counterthesis_price_in_what_would_change"
+    ]
+  },
+  "delivery_workstreams": [
+    "WS_A_research_control_and_product",
+    "WS_B_research_integrity_and_judgment",
+    "WS_C_workbench_and_quality"
+  ],
+  "consuming_points": [
+    "POINT_02_case_product_entry_and_decision_surface",
+    "POINT_03_evidence_addressing_retrieval_repair",
+    "POINT_04_parser_numeric_evidence_promotion",
+    "POINT_05_domain_judgment_workpaper_lead_repair",
+    "POINT_06_writer_workbench_review_provenance",
+    "POINT_07_dogfood_eval_release"
+  ],
+  "release_gates": [
+    "RG1_vertical_path",
+    "RG2_evidence_numeric_integrity",
+    "RG3_research_outcome",
+    "RG4_review_product_value",
+    "RG5_release_rollback"
+  ],
+  "hard_invariants": {
+    "known_false_evidence_promotions": 0,
+    "material_numeric_trace_coverage": 1.0,
+    "writer_source_or_tool_calls": 0,
+    "supervisor_supplement_boundary_accuracy": 1.0,
+    "material_claim_provenance_coverage": 1.0,
+    "dual_authoritative_writes": 0,
+    "product_surface_required_for_L2": true,
+    "frontend_build_and_browser_e2e_required_for_L2": true,
+    "production_cutover_authorized": false
+  },
+  "test_profiles": [
+    "fast",
+    "component",
+    "operational_explicit_approval_only",
+    "release_internal_alpha_product_e2e"
+  ],
+  "timebox": {
+    "train_weeks": 4,
+    "max_bounded_repairs_per_blocker": 2
+  },
+  "deferred_capabilities": [
+    "data_room_private_licensed_data",
+    "watchlist_monitoring_and_R4_refresh",
+    "research_to_quant",
+    "all_sector_packs",
+    "ppt_word_excel_pdf_full_consistency",
+    "enterprise_sso_scim_oa_kms_dlp_multi_tenant",
+    "full_valuation_forecast_scenario_engine",
+    "real_time_market_full_derivatives_and_commercial_data",
+    "production_multi_tenant_cutover"
+  ],
+  "model_and_external_authority": {
+    "paid_or_model_node_run_requires_separate_preflight": true,
+    "broad_full_chain_authorized": false,
+    "commercial_data_spend_authorized": false,
+    "real_customer_data_authorized": false
+  },
+  "rollback_target": "REL-FND-001_with_legacy_global_authority_retained",
+  "source_documents": [
+    "docs/product/PRODUCT_20260717_release_ladder_and_cadence.zh-CN.md",
+    "docs/product/FIN_0_1_INTERNAL_ALPHA_FEATURE_SCOPE_MATRIX_20260717.zh-CN.md",
+    "docs/architecture/repository/RELEASE_OPERATING_MODEL_20260717.zh-CN.md",
+    "docs/architecture/repository/RELEASE_FIN_IA_0_1_EXECUTION_PLAN_20260717.zh-CN.md",
+    "docs/architecture/repository/RELEASE_FIN_IA_0_1_DETAILED_PRODUCT_TECHNICAL_DESIGN_20260717.zh-CN.md"
+  ]
+}

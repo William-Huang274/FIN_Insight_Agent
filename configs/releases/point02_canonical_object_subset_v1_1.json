@@ -1,0 +1,154 @@
+{
+  "schema_version": "finsight_point02_canonical_object_subset_v1_1",
+  "artifact_id": "point02-canonical-object-subset-v1-1",
+  "point": "P02.0-T03",
+  "authority_boundary": "design_only_legacy_global_authority_retained",
+  "supersedes": {
+    "schema_version": "finsight_point02_canonical_object_subset_v1_0",
+    "artifact_id": "point02-canonical-object-subset-v1-0",
+    "path": "configs/releases/point02_canonical_object_subset_v1_0.json",
+    "canonical_digest": "bc13a5efd7da683fb380c7172d5540927507ef0f1d8fde4877811b38786e6d79",
+    "reason": "v1.0 did not enumerate active canonical commands, queries, read models, or the versioned checkpoint-decision wire contract."
+  },
+  "history": {
+    "v1_0_disposition": "historical_candidate_evidence_set_closure_not_approved",
+    "v1_1_scope": "P02_0_existing_EP_bounded_set_closure_repair_only"
+  },
+  "objects": [
+    {
+      "product_name": "ResearchCase",
+      "canonical_type": "InstitutionalResearchCase",
+      "version_fields": ["case_id", "case_version"],
+      "current_head": "CaseControlSummaryVersion",
+      "command_owner": "TECH_01",
+      "read_model_owner": "TECH_09",
+      "allowed_commands": ["CreateCaseDraftCommand"],
+      "forbidden_commands_at_p02_0": ["global_legacy_authority_change", "real_business_case_mutation"]
+    },
+    {
+      "product_name": "Objective",
+      "canonical_type": "CaseControlSummaryVersion",
+      "version_fields": ["summary_version_id", "summary_version", "as_of"],
+      "parent": "ResearchCase",
+      "command_owner": "TECH_01",
+      "read_model_owner": "TECH_09",
+      "allowed_commands": ["UpdateCaseObjectiveCommand"],
+      "concurrency_rule": "exact_case_and_summary_version_required"
+    },
+    {
+      "product_name": "DecisionSurface",
+      "canonical_type": "DecisionSurfaceContractVersion",
+      "version_fields": ["contract_id", "contract_version", "contract_version_id", "checkpoint_version"],
+      "children": ["DecisionSurfaceCellVersion", "EvidenceSlotVersion", "CompileTimeGapVersion"],
+      "command_owner": "TECH_01",
+      "read_model_owner": "TECH_09",
+      "allowed_commands": ["CompileDecisionSurfaceCommand", "PlanningCheckpointDecisionCommand"],
+      "concurrency_rule": "exact_case_summary_compiler_policy_pack_selection_and_checkpoint_lineage_required"
+    },
+    {
+      "product_name": "WorkUnit",
+      "canonical_type": "WorkUnit",
+      "version_fields": ["work_unit_id", "work_unit_version", "state_version", "input_head_digest"],
+      "child": "Attempt",
+      "command_owner": "TECH_06",
+      "read_model_owner": "TECH_09",
+      "allowed_commands": ["CreateWorkUnitCommand", "CancelWorkUnitCommand"],
+      "concurrency_rule": "fencing_token_expected_state_version_and_idempotency_key_required"
+    }
+  ],
+  "canonical_commands": [
+    {
+      "command_id": "CreateCaseDraftCommand",
+      "canonical_object": "ResearchCase",
+      "command_owner": "TECH_01",
+      "version_fields": ["idempotency_key"],
+      "openapi_operation_id": "createCaseDraft",
+      "request_schema": "CreateCaseDraftCommand",
+      "response_schema": "CaseWorkspaceProjection"
+    },
+    {
+      "command_id": "UpdateCaseObjectiveCommand",
+      "canonical_object": "Objective",
+      "command_owner": "TECH_01",
+      "version_fields": ["expected_case_version", "expected_summary_version"],
+      "openapi_operation_id": "updateCaseObjective",
+      "request_schema": "UpdateCaseObjectiveCommand",
+      "response_schema": "CaseWorkspaceProjection"
+    },
+    {
+      "command_id": "CompileDecisionSurfaceCommand",
+      "canonical_object": "DecisionSurface",
+      "command_owner": "TECH_01",
+      "version_fields": ["expected_case_version", "expected_summary_version"],
+      "openapi_operation_id": "compileDecisionSurface",
+      "request_schema": "CompileDecisionSurfaceCommand",
+      "response_schema": "DecisionSurfaceView"
+    },
+    {
+      "command_id": "PlanningCheckpointDecisionCommand",
+      "canonical_object": "DecisionSurface",
+      "command_owner": "TECH_01",
+      "version_fields": ["expected_case_version", "expected_decision_surface_contract_version", "expected_checkpoint_version"],
+      "decision_field": {
+        "name": "decision",
+        "allowed_values": ["accept", "return"],
+        "route_action_values": {
+          "AcceptPlanningCheckpoint": "accept",
+          "ReturnPlanningCheckpoint": "return"
+        }
+      },
+      "openapi_operation_id": "reviewPlanningCheckpoint",
+      "request_schema": "PlanningCheckpointDecisionCommand",
+      "response_schema": "DecisionSurfaceView"
+    },
+    {
+      "command_id": "CreateWorkUnitCommand",
+      "canonical_object": "WorkUnit",
+      "command_owner": "TECH_06",
+      "version_fields": ["expected_case_version", "input_head_digest"],
+      "openapi_operation_id": "createWorkUnit",
+      "request_schema": "CreateWorkUnitCommand",
+      "response_schema": "WorkUnitExecutionView"
+    },
+    {
+      "command_id": "CancelWorkUnitCommand",
+      "canonical_object": "WorkUnit",
+      "command_owner": "TECH_06",
+      "version_fields": ["expected_work_unit_version", "expected_state_version", "fencing_token"],
+      "openapi_operation_id": "cancelWorkUnit",
+      "request_schema": "CancelWorkUnitCommand",
+      "response_schema": "WorkUnitExecutionView"
+    }
+  ],
+  "canonical_queries": [
+    {"query_id": "ListCasesQuery", "read_model_id": "TaskCenterProjection", "query_owner": "TECH_09", "openapi_operation_id": "listCases"},
+    {"query_id": "GetCaseWorkspaceQuery", "read_model_id": "CaseWorkspaceProjection", "query_owner": "TECH_09", "openapi_operation_id": "getCaseWorkspace"},
+    {"query_id": "GetDecisionSurfaceQuery", "read_model_id": "DecisionSurfaceView", "query_owner": "TECH_09", "openapi_operation_id": "getDecisionSurface"},
+    {"query_id": "ListWorkUnitsQuery", "read_model_id": "WorkUnitExecutionView", "query_owner": "TECH_09", "openapi_operation_id": "listWorkUnits"},
+    {"query_id": "GetActivityTraceQuery", "read_model_id": "ActivityTraceView", "query_owner": "TECH_09", "openapi_operation_id": "getActivityTrace"}
+  ],
+  "canonical_read_models": [
+    {"read_model_id": "TaskCenterProjection", "read_model_owner": "TECH_09", "query_id": "ListCasesQuery", "response_schema": "TaskCenterProjection"},
+    {"read_model_id": "CaseWorkspaceProjection", "read_model_owner": "TECH_09", "query_id": "GetCaseWorkspaceQuery", "response_schema": "CaseWorkspaceProjection"},
+    {"read_model_id": "DecisionSurfaceView", "read_model_owner": "TECH_09", "query_id": "GetDecisionSurfaceQuery", "response_schema": "DecisionSurfaceView"},
+    {"read_model_id": "WorkUnitExecutionView", "read_model_owner": "TECH_09", "query_id": "ListWorkUnitsQuery", "response_schema": "WorkUnitExecutionView"},
+    {"read_model_id": "ActivityTraceView", "read_model_owner": "TECH_09", "query_id": "GetActivityTraceQuery", "response_schema": "ActivityTraceView"}
+  ],
+  "future_not_admitted_actions": [
+    {
+      "route_action_id": "ResumeWorkUnit",
+      "canonical_command_id": "ResumeWorkUnitCommand",
+      "command_owner": "TECH_06",
+      "openapi_disposition": "not_exposed_in_P02_0_active_tranche",
+      "reason": "resume_and_targeted_state_recovery_is_deferred_to_VT2_P02_5; VT1 requires start_cancel_and_typed_stop_only",
+      "runtime_admission": "not_granted"
+    }
+  ],
+  "single_source_of_truth": {
+    "business_semantics": "TECH_01",
+    "durable_commands_events_and_artifacts": "TECH_06",
+    "browser_routes_and_read_models": "TECH_09",
+    "rule": "frontend_and_adapters_consume_versioned_API_projections_only"
+  },
+  "implementation_status": "contract_set_closure_repaired_no_runtime_command_enabled"
+}

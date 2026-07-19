@@ -1,0 +1,33 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "FIN Insight Point 02 API", "version": "v1.0.0-design", "description": "Contract baseline only. No endpoint is implemented or admitted by this artifact."},
+  "servers": [{"url": "/api/v1", "description": "future internal API prefix"}],
+  "tags": [{"name": "cases"}, {"name": "planning"}, {"name": "execution"}, {"name": "activity"}],
+  "paths": {
+    "/cases": {"get": {"tags": ["cases"], "operationId": "listCases", "responses": {"200": {"description": "TaskCenterProjection"}, "403": {"$ref": "#/components/responses/PermissionDenied"}}}, "post": {"tags": ["cases"], "operationId": "createCaseDraft", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateCaseDraftCommand"}}}}, "responses": {"202": {"description": "Case draft accepted"}, "422": {"$ref": "#/components/responses/ValidationError"}, "409": {"$ref": "#/components/responses/VersionConflict"}}}},
+    "/cases/{case_id}": {"get": {"tags": ["cases"], "operationId": "getCaseWorkspace", "parameters": [{"$ref": "#/components/parameters/CaseId"}], "responses": {"200": {"description": "CaseWorkspaceProjection"}, "404": {"$ref": "#/components/responses/NotFound"}}}, "patch": {"tags": ["cases"], "operationId": "updateCaseObjective", "parameters": [{"$ref": "#/components/parameters/CaseId"}], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/VersionedCommand"}}}}, "responses": {"202": {"description": "Objective version accepted"}, "409": {"$ref": "#/components/responses/VersionConflict"}}}},
+    "/cases/{case_id}/planning/compile": {"post": {"tags": ["planning"], "operationId": "compileDecisionSurface", "parameters": [{"$ref": "#/components/parameters/CaseId"}], "responses": {"202": {"description": "DecisionSurface candidate"}, "403": {"$ref": "#/components/responses/OperationNotAdmitted"}, "409": {"$ref": "#/components/responses/StaleOrSuperseded"}}}},
+    "/cases/{case_id}/planning/checkpoint": {"post": {"tags": ["planning"], "operationId": "reviewPlanningCheckpoint", "parameters": [{"$ref": "#/components/parameters/CaseId"}], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/VersionedCommand"}}}}, "responses": {"202": {"description": "Planning review recorded"}, "403": {"$ref": "#/components/responses/OperationNotAdmitted"}}}},
+    "/cases/{case_id}/decision-surface": {"get": {"tags": ["planning"], "operationId": "getDecisionSurface", "parameters": [{"$ref": "#/components/parameters/CaseId"}], "responses": {"200": {"description": "DecisionSurfaceView"}, "409": {"$ref": "#/components/responses/StaleOrSuperseded"}}}},
+    "/cases/{case_id}/work-units": {"get": {"tags": ["execution"], "operationId": "listWorkUnits", "parameters": [{"$ref": "#/components/parameters/CaseId"}], "responses": {"200": {"description": "WorkUnitExecutionView"}}}, "post": {"tags": ["execution"], "operationId": "createWorkUnit", "parameters": [{"$ref": "#/components/parameters/CaseId"}], "responses": {"403": {"$ref": "#/components/responses/OperationNotAdmitted"}}}},
+    "/cases/{case_id}/work-units/{work_unit_id}/cancel": {"post": {"tags": ["execution"], "operationId": "cancelWorkUnit", "parameters": [{"$ref": "#/components/parameters/CaseId"}, {"name": "work_unit_id", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"202": {"description": "Cancellation recorded"}, "409": {"$ref": "#/components/responses/VersionConflict"}}}},
+    "/cases/{case_id}/activity": {"get": {"tags": ["activity"], "operationId": "getActivityTrace", "parameters": [{"$ref": "#/components/parameters/CaseId"}], "responses": {"200": {"description": "ActivityTraceView"}}}}
+  },
+  "components": {
+    "parameters": {"CaseId": {"name": "case_id", "in": "path", "required": true, "schema": {"type": "string"}}},
+    "schemas": {
+      "CreateCaseDraftCommand": {"type": "object", "required": ["query", "as_of", "language", "source_policy_ref", "idempotency_key"], "properties": {"query": {"type": "string"}, "as_of": {"type": "string", "format": "date-time"}, "language": {"type": "string"}, "source_policy_ref": {"type": "string"}, "idempotency_key": {"type": "string"}}},
+      "VersionedCommand": {"type": "object", "required": ["expected_version", "actor_ref", "idempotency_key"], "properties": {"expected_version": {"type": "integer", "minimum": 0}, "actor_ref": {"type": "string"}, "idempotency_key": {"type": "string"}}},
+      "Error": {"type": "object", "required": ["code", "message", "correlation_id"], "properties": {"code": {"type": "string"}, "message": {"type": "string"}, "correlation_id": {"type": "string"}, "current_version": {"type": "integer"}}}
+    },
+    "responses": {
+      "ValidationError": {"description": "Input rejected", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "VersionConflict": {"description": "Expected version is stale", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "StaleOrSuperseded": {"description": "Requested head is stale or superseded", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "PermissionDenied": {"description": "Actor lacks the required permission", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "OperationNotAdmitted": {"description": "The operation has no active runtime admission", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "NotFound": {"description": "Canonical object not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+    }
+  },
+  "x-p02-status": "versioned_design_baseline_no_runtime_or_release_admission"
+}

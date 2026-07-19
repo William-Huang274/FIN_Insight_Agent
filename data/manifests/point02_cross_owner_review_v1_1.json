@@ -1,0 +1,67 @@
+{
+  "schema_version": "finsight_point02_cross_owner_review_v1_1",
+  "artifact_id": "point02-cross-owner-review-v1-1",
+  "point": "P02.0-T08",
+  "supersedes": {
+    "schema_version": "finsight_point02_cross_owner_review_v1_0",
+    "artifact_id": "point02-cross-owner-review-v1-0",
+    "path": "data/manifests/point02_cross_owner_review_v1_0.json",
+    "canonical_digest": "81f3f53ed6a25076b164828d74096bab4761ae96d0bf1840592146bda1f5987b",
+    "reason": "v1.0 asserted an aggregate review disposition without an itemized, machine-checkable active set closure mapping."
+  },
+  "history": {
+    "v1_0_disposition": "historical_candidate_evidence_set_closure_not_approved",
+    "v1_1_scope": "P02_0_existing_EP_bounded_set_closure_repair_only"
+  },
+  "review_disposition": "pass_derived_set_closure_contract_only",
+  "closure_mapping": {
+    "method": "derive surface action and read-model sets from the route map, then compare each mapping to canonical command/query/read-model ownership and parsed OpenAPI operations and schemas.",
+    "source_artifacts": {
+      "canonical_object_subset": {"path": "configs/releases/point02_canonical_object_subset_v1_1.json", "canonical_digest": "5475ec3797c343e42b4532a009e8c39459562daad5fa506b15824d6d9c77c721"},
+      "route_surface_map": {"path": "configs/releases/point02_route_surface_map_v1_1.json", "canonical_digest": "7b42980e46a94fa9458928fad05992f7cdb4d3caff5c4d79bc7825bb664b7210"},
+      "openapi_baseline": {"path": "configs/releases/point02_api_v1_openapi_baseline_v1_1.json", "canonical_digest": "5df8514daadb7772db895c384291eaabdd4c768ff7ac9eb51ccfee0326b118f9"}
+    },
+    "active_route_action_bindings": [
+      {"route_action_id": "ListCases", "kind": "query", "canonical_query_id": "ListCasesQuery", "read_model_id": "TaskCenterProjection", "canonical_owner": "TECH_09", "openapi_operation_id": "listCases", "response_schema": "TaskCenterProjection", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "CreateCaseDraft", "kind": "command", "canonical_command_id": "CreateCaseDraftCommand", "canonical_owner": "TECH_01", "openapi_operation_id": "createCaseDraft", "request_schema": "CreateCaseDraftCommand", "response_schema": "CaseWorkspaceProjection", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "GetCaseWorkspace", "kind": "query", "canonical_query_id": "GetCaseWorkspaceQuery", "read_model_id": "CaseWorkspaceProjection", "canonical_owner": "TECH_09", "openapi_operation_id": "getCaseWorkspace", "response_schema": "CaseWorkspaceProjection", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "UpdateCaseObjective", "kind": "command", "canonical_command_id": "UpdateCaseObjectiveCommand", "canonical_owner": "TECH_01", "openapi_operation_id": "updateCaseObjective", "request_schema": "UpdateCaseObjectiveCommand", "response_schema": "CaseWorkspaceProjection", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "CompileDecisionSurface", "kind": "command", "canonical_command_id": "CompileDecisionSurfaceCommand", "canonical_owner": "TECH_01", "openapi_operation_id": "compileDecisionSurface", "request_schema": "CompileDecisionSurfaceCommand", "response_schema": "DecisionSurfaceView", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "AcceptPlanningCheckpoint", "kind": "command", "canonical_command_id": "PlanningCheckpointDecisionCommand", "canonical_owner": "TECH_01", "decision": "accept", "openapi_operation_id": "reviewPlanningCheckpoint", "request_schema": "PlanningCheckpointDecisionCommand", "response_schema": "DecisionSurfaceView", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "ReturnPlanningCheckpoint", "kind": "command", "canonical_command_id": "PlanningCheckpointDecisionCommand", "canonical_owner": "TECH_01", "decision": "return", "openapi_operation_id": "reviewPlanningCheckpoint", "request_schema": "PlanningCheckpointDecisionCommand", "response_schema": "DecisionSurfaceView", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "GetDecisionSurface", "kind": "query", "canonical_query_id": "GetDecisionSurfaceQuery", "read_model_id": "DecisionSurfaceView", "canonical_owner": "TECH_09", "openapi_operation_id": "getDecisionSurface", "response_schema": "DecisionSurfaceView", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "ListWorkUnits", "kind": "query", "canonical_query_id": "ListWorkUnitsQuery", "read_model_id": "WorkUnitExecutionView", "canonical_owner": "TECH_09", "openapi_operation_id": "listWorkUnits", "response_schema": "WorkUnitExecutionView", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "CreateWorkUnit", "kind": "command", "canonical_command_id": "CreateWorkUnitCommand", "canonical_owner": "TECH_06", "openapi_operation_id": "createWorkUnit", "request_schema": "CreateWorkUnitCommand", "response_schema": "WorkUnitExecutionView", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "CancelWorkUnit", "kind": "command", "canonical_command_id": "CancelWorkUnitCommand", "canonical_owner": "TECH_06", "openapi_operation_id": "cancelWorkUnit", "request_schema": "CancelWorkUnitCommand", "response_schema": "WorkUnitExecutionView", "openapi_contract_owner": "TECH_06"},
+      {"route_action_id": "GetActivityTrace", "kind": "query", "canonical_query_id": "GetActivityTraceQuery", "read_model_id": "ActivityTraceView", "canonical_owner": "TECH_09", "openapi_operation_id": "getActivityTrace", "response_schema": "ActivityTraceView", "openapi_contract_owner": "TECH_06"}
+    ],
+    "active_read_model_bindings": [
+      {"read_model_id": "TaskCenterProjection", "canonical_query_id": "ListCasesQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "listCases", "response_schema": "TaskCenterProjection", "openapi_contract_owner": "TECH_06"},
+      {"read_model_id": "CaseWorkspaceProjection", "canonical_query_id": "GetCaseWorkspaceQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "getCaseWorkspace", "response_schema": "CaseWorkspaceProjection", "openapi_contract_owner": "TECH_06"},
+      {"read_model_id": "DecisionSurfaceView", "canonical_query_id": "GetDecisionSurfaceQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "getDecisionSurface", "response_schema": "DecisionSurfaceView", "openapi_contract_owner": "TECH_06"},
+      {"read_model_id": "WorkUnitExecutionView", "canonical_query_id": "ListWorkUnitsQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "listWorkUnits", "response_schema": "WorkUnitExecutionView", "openapi_contract_owner": "TECH_06"},
+      {"read_model_id": "ActivityTraceView", "canonical_query_id": "GetActivityTraceQuery", "read_model_owner": "TECH_09", "openapi_operation_id": "getActivityTrace", "response_schema": "ActivityTraceView", "openapi_contract_owner": "TECH_06"}
+    ],
+    "future_not_admitted_actions": [
+      {"route_action_id": "ResumeWorkUnit", "canonical_command_id": "ResumeWorkUnitCommand", "command_owner": "TECH_06", "openapi_disposition": "not_exposed_in_P02_0_active_tranche", "reason": "resume_and_targeted_state_recovery_is_deferred_to_VT2_P02_5; VT1 requires start_cancel_and_typed_stop_only", "runtime_admission": "not_granted"}
+    ]
+  },
+  "ownership": [
+    {"item": "ResearchCase and Objective business semantics", "kind": "canonical_object", "owner": "TECH_01", "consumer": "TECH_09"},
+    {"item": "DecisionSurface compile and checkpoint decision semantics", "kind": "canonical_object", "owner": "TECH_01", "consumer": "TECH_09"},
+    {"item": "WorkUnit, Attempt, admission, events and artifact envelopes", "kind": "command_and_event", "owner": "TECH_06", "consumer": "TECH_09"},
+    {"item": "new-lane flag and rollback procedure", "kind": "authority_boundary", "owner": "TECH_06", "consumer": "release_owner"},
+    {"item": "Task Center, Case Overview, DecisionSurface and Activity routes", "kind": "browser_surface", "owner": "TECH_09", "consumer": "TECH_01_TECH_06"},
+    {"item": "OpenAPI source and generated client boundary", "kind": "api_contract", "owner": "TECH_06", "consumer": "TECH_09"},
+    {"item": "fixture profiles and acceptance mapping", "kind": "test_contract", "owner": "TECH_10", "consumer": "release_owner"},
+    {"item": "P02.0 closeout and P02.1/P02.2 readiness label", "kind": "release_decision", "owner": "release_owner", "consumer": "all_owners"}
+  ],
+  "no_parallel_source_of_truth_rules": [
+    "Frontend_never_owns_canonical_case_or_execution_state.",
+    "OpenAPI_is_the_only_product_API_source; generated_clients_are_derived.",
+    "Legacy_global_authority_remains_the_only_legacy_authority_source_until_a_future_explicit_cutover.",
+    "Fixture_expectations_never_become_runtime_authority_or_evidence_promotion."
+  ],
+  "unresolved_conflicts": [],
+  "implementation_status": "review_of_v1_1_contract_set_closure_only"
+}

@@ -1,0 +1,375 @@
+{
+  "schema_version": "fin_ia_0_1_vertical_release_train_overlay_v1_0",
+  "release_id": "REL-PROD-001",
+  "version": "FIN_0_1_INTERNAL_ALPHA",
+  "status": "approved_execution_control",
+  "approved_at": "2026-07-18T03:13:56+08:00",
+  "independent_review": {
+    "reviewer_agent_id": "019f7145-a3d7-7b12-97b2-05a913b624eb",
+    "disposition": "approve",
+    "remaining_P0_P1": 0,
+    "scope": "read_only_contract_dependency_maturity_integration_and_authority_review"
+  },
+  "purpose": "Control the actual Point 02-07 build and validation order as vertical product tranches without changing product scope, Point ownership, Point closeout contracts or RG1-RG5.",
+  "planning_only": true,
+  "implementation_authority_granted": false,
+  "feature_scope_change": "none",
+  "gate_family_change": "none",
+  "contract_bindings": [
+    {
+      "role": "release_scope_and_admission_authority",
+      "path": "configs/releases/fin_ia_0_1_release_contract_v1_2.json",
+      "sha256": "172d36cba76f3e4346ee3e5cd84ff11111d27bf3ec618d479b35ad97a3f2cd95"
+    },
+    {
+      "role": "product_feature_scope_authority",
+      "path": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_0.json",
+      "sha256": "a7afc254a264d1c930ca9ee9d3355da21fab35a81dc740b799f424e4e3a11740"
+    },
+    {
+      "role": "point_ownership_and_final_closeout_authority",
+      "path": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json",
+      "sha256": "10debfea792647e50f7fa7e88dc4e8136af371d22a12a2c8b51720efd2ddcd20"
+    },
+    {
+      "role": "active_entry_and_release_debt_override",
+      "path": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json",
+      "sha256": "a742d7707ccfdaa201d611ef7923b82aa170dd6d59fb2e938ac6707ef9363849"
+    },
+    {
+      "role": "release_execution_plan",
+      "path": "docs/architecture/repository/RELEASE_FIN_IA_0_1_EXECUTION_PLAN_20260717.zh-CN.md",
+      "sha256": "a61d636d11d859b97f7943401ef719abb5d1c91d31a669eaa606b02e4274a1f1"
+    },
+    {
+      "role": "detailed_product_technical_design",
+      "path": "docs/architecture/repository/RELEASE_FIN_IA_0_1_DETAILED_PRODUCT_TECHNICAL_DESIGN_20260717.zh-CN.md",
+      "sha256": "8b7d4786f10917f8fbc4f2778ee57ee6a551dfc1e97221cfc61f9a1d33f1787c"
+    }
+  ],
+  "precedence": {
+    "scope_and_release_admission": "ReleaseContract v1.2 and FeatureScopeMatrix v1.0",
+    "point_owner_and_final_point_closeout": "detailed backlog v1.1 over v1.0",
+    "actual_build_sequence_and_current_train_maturity": "this overlay",
+    "conflict_rule": "fail_closed_and_version_the_affected_contract; an executor or reviewer may not silently choose a meaning"
+  },
+  "problem_corrections": {
+    "planning_and_build_order": "Points remain capability owners, but the release is built as weekly cross-Point vertical tranches.",
+    "late_vertical_validation": "Every tranche has a product-entry-to-consumer integration probe; producer-only and manifest-constant tests are insufficient.",
+    "integration_defect_detection": "Exact package, schema and object identity are injected at entry and asserted at each consumer seam before any bounded operational attempt.",
+    "review_scope_growth": "A blocking finding must map to the current tranche acceptance, RG1-RG5, or a P0 data/permission/evidence safety invariant. Other findings are deferred."
+  },
+  "maturity_model": {
+    "labels": [
+      "skeleton",
+      "fixture",
+      "full",
+      "calibrated"
+    ],
+    "interpretation": "Evidence maturity labels, not four mandatory serial approval gates for every execution point.",
+    "current_train_required_stage": "The minimum evidence maturity needed before the current tranche may consume an execution point output.",
+    "point_closeout_rule": "Final Point closeout still requires the full and calibrated evidence declared by the base backlog.",
+    "walking_vertical_rule": "A three-cell full subset may be consumed by the release train before a 10-20-cell Point is calibrated, but it cannot be reported as Point complete.",
+    "integration_probe_is_not_stage_or_gate_family": true
+  },
+  "dependency_resolution": {
+    "point_closeout_dependency": "The depends_on fields in the base backlog remain authoritative for final full/calibrated Point closeout.",
+    "tranche_consumption_dependency": "A downstream execution point may consume an exact upstream tranche artifact once the upstream output meets the stage and scope declared in this overlay.",
+    "required_tranche_artifact_fields": [
+      "artifact_id",
+      "schema_version",
+      "producer_execution_point",
+      "consumer_execution_point",
+      "scope_cells_or_case",
+      "canonical_sha256",
+      "input_identity_refs",
+      "typed_limitations"
+    ],
+    "forbidden_shortcuts": [
+      "chat_memory_as_dependency",
+      "hardcoded_historical_package_path",
+      "direct_database_or_file_edit_to_bypass_product_action",
+      "producer_only_test_claimed_as_cross_owner_integration",
+      "fixture_or_scoped_pass_claimed_as_point_or_release_complete"
+    ]
+  },
+  "release_train": [
+    {
+      "tranche_id": "VT0_PRE_W1_CONTRACT_CLOSURE",
+      "timebox": "before_W1_implementation",
+      "incremental_feature_ids": [],
+      "user_visible_delta": "No new product capability; close only the P02.0 contract set needed to start the walking skeleton.",
+      "governance_budget": "maximum_15_percent_of_planned_release_engineering_effort_unless_P0_or_current_path_P1",
+      "execution_point_stage_targets": [
+        {
+          "execution_point": "P02.0",
+          "required_stage": "full",
+          "scope": "route_action_command_read_model_openapi_owner_set_closure_only"
+        }
+      ],
+      "integration_probe": "IP_P02_CONTRACT_SET_CLOSURE",
+      "exit_criteria": [
+        "every active route action has exactly one canonical command or query owner",
+        "every active browser operation has a versioned OpenAPI operation and typed request/response schema",
+        "AcceptPlanningCheckpoint and ReturnPlanningCheckpoint are distinguishable on the wire",
+        "ResumeWorkUnit is either fully owned and exposed or explicitly removed from the active tranche",
+        "tests recompute actual sets instead of comparing only self-declared constants"
+      ],
+      "forbidden_expansion": [
+        "new_milestone",
+        "new_package_family",
+        "new_gate_family",
+        "runtime_or_operational_execution"
+      ]
+    },
+    {
+      "tranche_id": "VT1_W1_CASE_PLAN_EVIDENCE_WALKING_SKELETON",
+      "timebox": "week_1",
+      "incremental_feature_ids": ["P001-F01", "P001-F02", "P001-F03", "P001-F04", "P001-F05", "P001-F06"],
+      "user_visible_delta": "An analyst creates and reopens a P36 Case in the browser, reviews a three-cell DecisionSurface, starts or cancels a bounded fixture WorkUnit, and inspects one CandidateBundle or typed gap per cell in Evidence Workbench.",
+      "execution_point_stage_targets": [
+        {"execution_point": "P02.1", "required_stage": "full", "scope": "internal_SQLite_ObjectStore_case_create_list_get_reopen"},
+        {"execution_point": "P02.2", "required_stage": "full", "scope": "AppShell_router_typed_client_live_api_v1_fixture_mode"},
+        {"execution_point": "P02.3", "required_stage": "full", "scope": "browser_TaskCenter_NewCase_Overview"},
+        {"execution_point": "P02.4", "required_stage": "full", "scope": "P36_three_cell_plan_compile_review_version_accept_return"},
+        {"execution_point": "P02.5", "required_stage": "full", "scope": "start_cancel_typed_stop_event_restore; resume_retry_not_yet_required"},
+        {"execution_point": "P03.0", "required_stage": "fixture", "scope": "three_cell_EvidenceRequest_CandidateBundle_Gap_owner_subset"},
+        {"execution_point": "P03.1", "required_stage": "fixture", "scope": "deterministic_request_and_nonexecuting_tool_plan"},
+        {"execution_point": "P03.2", "required_stage": "fixture", "scope": "fixture_candidate_neighbor_or_table_expansion"},
+        {"execution_point": "P03.3", "required_stage": "fixture", "scope": "fixture_backed_EvidenceWorkbench_components_and_review_actions"},
+        {"execution_point": "P04.0", "required_stage": "skeleton", "scope": "walking_seam_numeric_fact_trace_promotion_identity_only"},
+        {"execution_point": "P05.0", "required_stage": "skeleton", "scope": "walking_seam_CellEvidencePack_Judgment_WriterBrief_identity_only"},
+        {"execution_point": "P06.0", "required_stage": "skeleton", "scope": "walking_seam_WriterAdmission_Artifact_Review_Trace_identity_only"}
+      ],
+      "integration_probe": "IP_VT1_BROWSER_CASE_TO_EVIDENCE_FIXTURE",
+      "exit_criteria": [
+        "no JSON editing or direct DB shortcut is required",
+        "one exact Case and DecisionSurface version persists across browser refresh",
+        "the same three cell and slot identities reach CandidateBundle or typed gap",
+        "entry-selected package and fixture identity are visible at the consumer seam",
+        "the browser shows typed stop and next action"
+      ],
+      "deferred_within_release": [
+        "10_to_20_cell_calibration",
+        "broad_provider_routes",
+        "resume_retry",
+        "numeric_judgment_writer_execution"
+      ]
+    },
+    {
+      "tranche_id": "VT2_W2_NUMERIC_JUDGMENT_REPAIR_LEAD",
+      "timebox": "week_2",
+      "incremental_feature_ids": ["P001-F07", "P001-F08", "P001-F09", "P001-F10", "P001-F14"],
+      "user_visible_delta": "The three representative cells produce auditable numeric facts, structured judgments, a Workpaper, one bounded repair outcome, an exact LeadReview/WriterAdmission, and one bounded same-Case follow-up; the P36 plan then expands to 10-20 terminal cell projections.",
+      "execution_point_stage_targets": [
+        {"execution_point": "P02.5", "required_stage": "full", "scope": "resume_and_targeted_state_recovery"},
+        {"execution_point": "P02.6", "required_stage": "calibrated", "scope": "P36_10_to_20_cell_plan_and_SaaS_Bank_structural_fixtures"},
+        {"execution_point": "P03.1", "required_stage": "full", "scope": "bounded_internal_RAG_SQL_graph_plans_with_permission_budget_receipts_or_typed_stop"},
+        {"execution_point": "P03.2", "required_stage": "full", "scope": "representative_P36_candidate_and_context_expansion"},
+        {"execution_point": "P03.3", "required_stage": "full", "scope": "real_internal_candidate_workbench_projection"},
+        {"execution_point": "P03.4", "required_stage": "full", "scope": "one_official_first_repair_or_attempt_backed_stop"},
+        {"execution_point": "P03.5", "required_stage": "calibrated", "scope": "representative_required_slots_not_all_provider_breadth"},
+        {"execution_point": "P04.0", "required_stage": "full", "scope": "P36_material_metric_contract_subset"},
+        {"execution_point": "P04.1", "required_stage": "full", "scope": "P36_required_structured_and_table_profiles"},
+        {"execution_point": "P04.2", "required_stage": "full", "scope": "growth_margin_bridge_and_cell_scoped_traces"},
+        {"execution_point": "P04.3", "required_stage": "full", "scope": "promotion_hard_gate_and_known_false_promotion_controls"},
+        {"execution_point": "P04.4", "required_stage": "full", "scope": "NumericDrawer_FactTable_and_repair_action"},
+        {"execution_point": "P04.5", "required_stage": "calibrated", "scope": "P36_material_numbers_and_negative_corpus"},
+        {"execution_point": "P05.0", "required_stage": "full", "scope": "three_cell_then_P36_judgment_repair_lead_contract"},
+        {"execution_point": "P05.1", "required_stage": "full", "scope": "three_representative_cell_judgments_then_terminal_projection_expansion"},
+        {"execution_point": "P05.2", "required_stage": "full", "scope": "cell_first_workpaper_counterthesis_dependency_WWC"},
+        {"execution_point": "P05.3", "required_stage": "full", "scope": "one_source_owner_repair_and_affected_cell_only_resume"},
+        {"execution_point": "P05.4", "required_stage": "full", "scope": "exact_pack_LeadReview_WriterBrief_WriterAdmission"},
+        {"execution_point": "P05.5", "required_stage": "full", "scope": "one_current_Case_bounded_follow_up_or_refresh_needed_stop"},
+        {"execution_point": "P05.6", "required_stage": "full", "scope": "three_cell_Workpaper_Repair_Lead_follow_up_UI"}
+      ],
+      "integration_probe": "IP_VT2_CANDIDATE_TO_LEAD_ADMISSION",
+      "exit_criteria": [
+        "candidate identity survives parser numeric promotion judgment and Workpaper projection",
+        "every displayed material number is reproducible or explicitly typed as estimate gap or cannot infer",
+        "one repair returns to its source owner and resumes only the affected cell",
+        "LeadReview consumes exact Workpaper and emits exact WriterBrief and admission",
+        "no specialist prose or evidence dump is treated as a deliverable"
+      ],
+      "scope_reduction_order_if_late": [
+        "non_material_EvidenceSlots",
+        "provider_breadth",
+        "secondary_expansion_routes",
+        "visual_polish"
+      ]
+    },
+    {
+      "tranche_id": "VT3_W3_DELIVERABLE_REVIEW_TRACE",
+      "timebox": "week_3",
+      "incremental_feature_ids": ["P001-F11", "P001-F12", "P001-F13"],
+      "user_visible_delta": "An admitted P36 WriterBrief becomes immutable HTML and Markdown, receives exact-version human review, and supports bidirectional material-claim trace.",
+      "execution_point_stage_targets": [
+        {"execution_point": "P05.6", "required_stage": "calibrated", "scope": "P36_10_to_20_cell_workpaper_repair_lead_follow_up_review"},
+        {"execution_point": "P06.0", "required_stage": "full", "scope": "writer_renderer_review_provenance_contract"},
+        {"execution_point": "P06.1", "required_stage": "full", "scope": "exact_WriterBrief_no_source_writer; model_node_requires_separate_preflight"},
+        {"execution_point": "P06.2", "required_stage": "full", "scope": "CanonicalPresentationModel_HTML_Markdown_exact_hashes"},
+        {"execution_point": "P06.3", "required_stage": "full", "scope": "one_exact_version_comment_return_repair_accept_cycle"},
+        {"execution_point": "P06.4", "required_stage": "full", "scope": "material_claim_bidirectional_provenance_and_redacted_trace"},
+        {"execution_point": "P06.5", "required_stage": "calibrated", "scope": "P36_browser_deliverable_review_trace_and_parity"},
+        {"execution_point": "P07.0", "required_stage": "skeleton", "scope": "release_candidate_manifest_shape_and_hidden_dependency_detection"},
+        {"execution_point": "P07.2", "required_stage": "fixture", "scope": "SaaS_Bank_no_stale_fact_structural_preflight"}
+      ],
+      "integration_probe": "IP_VT3_WRITER_TO_REVIEW_TRACE",
+      "exit_criteria": [
+        "Writer source tool SQL and graph call counts are zero",
+        "new artifact versions do not inherit old acceptance",
+        "HTML and Markdown share one canonical presentation identity",
+        "material claims trace to evidence numeric program and tool lineage or an explicit gap",
+        "the full create-to-review fixture path runs before the bounded RG1 operational candidate"
+      ],
+      "separate_authority_requirements": [
+        "any_paid_or_model_writer_node",
+        "RG1_bounded_operational_vertical_run"
+      ]
+    },
+    {
+      "tranche_id": "VT4_W4_DOGFOOD_RELEASE_DECISION",
+      "timebox": "week_4",
+      "incremental_feature_ids": ["P001-F15"],
+      "user_visible_delta": "No new feature. Freeze one candidate, run P36 dogfood and structural regressions, measure product value, verify rollback, and issue a release or blocked decision through P07.5.",
+      "execution_point_stage_targets": [
+        {"execution_point": "P07.0", "required_stage": "full", "scope": "exact_reproducible_release_candidate"},
+        {"execution_point": "P07.1", "required_stage": "calibrated", "scope": "P36_internal_dogfood_and_senior_R2_review"},
+        {"execution_point": "P07.2", "required_stage": "calibrated", "scope": "SaaS_Bank_structural_regression"},
+        {"execution_point": "P07.3", "required_stage": "calibrated", "scope": "time_review_burden_repeated_work_cost_performance_accessibility_baseline"},
+        {"execution_point": "P07.4", "required_stage": "calibrated", "scope": "rollback_known_gaps_deferred_backlog_release_note"},
+        {"execution_point": "P07.5", "required_stage": "calibrated", "scope": "independent_RG1_to_RG5_and_release_or_block_decision"}
+      ],
+      "integration_probe": "RG1_to_RG5_existing_release_gates",
+      "exit_criteria": [
+        "RG1 includes exact entry_to_adapter_to_subprocess_to_clean_child identity",
+        "RG1 includes one separately authorized bounded operational vertical run and persisted actual oracle reviewer Workbench results",
+        "RG2_to_RG5 pass against the exact candidate",
+        "rollback to REL-FND-001 retains legacy global authority and audit history",
+        "only P07.5 may write FIN_0_1_INTERNAL_ALPHA_RELEASED"
+      ],
+      "forbidden_work": [
+        "new_feature",
+        "new_provider_breadth",
+        "nonblocking_refactor",
+        "production_cutover"
+      ]
+    }
+  ],
+  "integration_probes": {
+    "IP_P02_CONTRACT_SET_CLOSURE": {
+      "mode": "static_and_fixture",
+      "path": "route_action_to_canonical_command_or_query_to_openapi_operation_to_typed_schema_to_owner",
+      "must_recompute_actual_sets": true,
+      "success_effect": "unlocks_P02.1_and_P02.2_fixture_shadow_internal_development_only"
+    },
+    "IP_VT1_BROWSER_CASE_TO_EVIDENCE_FIXTURE": {
+      "mode": "fixture_shadow_internal",
+      "path": "browser_to_api_v1_to_application_service_to_SQLite_ObjectStore_to_plan_to_fixture_retrieval_adapter_to_CandidateBundle_to_EvidenceWorkbench",
+      "external_call_count": 0,
+      "business_case_mutation": 0
+    },
+    "IP_VT2_CANDIDATE_TO_LEAD_ADMISSION": {
+      "mode": "internal_bounded_no_paid_by_default",
+      "path": "CandidateBundle_to_parser_to_NumericProgramTrace_to_promotion_to_CellEvidencePack_to_DomainCellJudgmentPack_to_Workpaper_to_RepairTicket_to_LeadReview_to_WriterAdmission",
+      "known_false_promotion_count": 0
+    },
+    "IP_VT3_WRITER_TO_REVIEW_TRACE": {
+      "mode": "internal_candidate_with_separate_model_preflight_if_needed",
+      "path": "WriterAdmission_to_exact_WriterBrief_to_no_source_writer_to_CanonicalPresentationModel_to_HTML_Markdown_to_exact_version_review_to_TraceGraph",
+      "writer_source_or_tool_calls": 0
+    },
+    "IP_RG1_BOUNDED_OPERATIONAL_VERTICAL": {
+      "mode": "separately_authorized_once_candidate_is_VT3_complete",
+      "earliest_schedule": "after_VT3_full_fixture_candidate_before_VT4_release_freeze",
+      "path": "entry_to_adapter_to_subprocess_to_clean_child_to_actual_oracle_reviewer_Workbench",
+      "automatic_authority": false,
+      "failure_effect": "fail_closed_and_release_block_or_scope_decision; no automatic retry loop"
+    }
+  },
+  "execution_point_first_consumption": {
+    "VT0_PRE_W1_CONTRACT_CLOSURE": ["P02.0"],
+    "VT1_W1_CASE_PLAN_EVIDENCE_WALKING_SKELETON": ["P02.1", "P02.2", "P02.3", "P02.4", "P02.5", "P03.0", "P03.1", "P03.2", "P03.3", "P04.0", "P05.0", "P06.0"],
+    "VT2_W2_NUMERIC_JUDGMENT_REPAIR_LEAD": ["P02.6", "P03.4", "P03.5", "P04.1", "P04.2", "P04.3", "P04.4", "P04.5", "P05.1", "P05.2", "P05.3", "P05.4", "P05.5", "P05.6"],
+    "VT3_W3_DELIVERABLE_REVIEW_TRACE": ["P06.1", "P06.2", "P06.3", "P06.4", "P06.5", "P07.0", "P07.2"],
+    "VT4_W4_DOGFOOD_RELEASE_DECISION": ["P07.1", "P07.3", "P07.4", "P07.5"]
+  },
+  "coverage_invariant": {
+    "expected_execution_point_count": 38,
+    "duplicates_in_first_consumption_map_allowed": false,
+    "all_base_backlog_execution_points_must_be_mapped": true
+  },
+  "review_and_repair_policy": {
+    "blocking_priorities": [
+      "P0_data_permission_evidence_or_secret_safety",
+      "P1_current_tranche_user_workflow_or_declared_acceptance_failure",
+      "RG1_to_RG5_release_blocker_at_its_declared_checkpoint"
+    ],
+    "defer_by_default": [
+      "future_unconsumed_path_hardening",
+      "production_PKI_SLO_nonrepudiation",
+      "extra_adversarial_matrix_not_required_by_current_acceptance",
+      "code_cleanup_and_defense_in_depth"
+    ],
+    "finding_contract": "Every blocking finding must name the affected current tranche, exact acceptance reference, reproduced evidence and earliest faulty artifact.",
+    "repair_budget": "At most two bounded repairs for the same predeclared blocker, consistent with the release operating model; the budget is per blocker, not per execution point.",
+    "after_budget_exhaustion": [
+      "scope_reduction_with_feature_contract_preserved",
+      "defer_to_named_release_debt_if_not_current_path",
+      "block_release",
+      "request_user_decision"
+    ],
+    "forbidden_reviewer_behavior": [
+      "invent_new_acceptance_after_execution",
+      "create_R1_1_R1_2_milestone_families_for_audit_convenience",
+      "treat_P2_or_P3_as_EP_rejection",
+      "claim_fixture_or_scoped_pass_as_production_complete"
+    ],
+    "disposition_must_report": [
+      "product_capability_delta",
+      "governance_cost_delta",
+      "blocking_findings_P0_P1_only",
+      "deferred_findings_P2_P3",
+      "next_product_step"
+    ]
+  },
+  "current_boundaries": {
+    "development_admission": "fixture_shadow_internal_development_only",
+    "operational_qualification": "not_qualified_deferred_to_REL_PROD_001_RG1",
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained",
+    "automatic_paid_model_or_full_chain": false,
+    "automatic_network_tool_provider": false,
+    "automatic_commercial_data_spend": false,
+    "automatic_secret_persistence": false,
+    "automatic_real_business_case_mutation": false,
+    "automatic_production_cutover": false
+  },
+  "immediate_next_action_after_overlay_approval": {
+    "execution_point": "P02.0",
+    "work_package": "P02_0_EXISTING_EP_BOUNDED_SET_CLOSURE_REPAIR",
+    "new_milestone": false,
+    "new_gate_family": false,
+    "repair_budget_override": "exactly_one_bounded_repair_for_the_existing_set_closure_P1",
+    "required_changes": [
+      "close AcceptPlanningCheckpoint and ReturnPlanningCheckpoint wire semantics",
+      "close ResumeWorkUnit canonical command owner and OpenAPI operation or remove it from the active tranche consistently",
+      "add typed main-path response schemas for TaskCenterProjection CaseWorkspaceProjection DecisionSurfaceView WorkUnitExecutionView and ActivityTraceView",
+      "make cross-owner tests derive and compare actual action command query operation schema and owner sets",
+      "recompute referenced file digests where the contract claims exact file binding"
+    ],
+    "allowed_validation": [
+      "JSON_schema_OpenAPI_parse",
+      "targeted_fast_and_fixture_contract_tests",
+      "Git_diff_and_digest_verification"
+    ],
+    "forbidden_validation": [
+      "runtime_or_operational_execution",
+      "network_model_tool_provider",
+      "approval_authority_or_receipt",
+      "real_Case_mutation"
+    ],
+    "success_next_step": "start_P02.1_and_P02.2_in_parallel_then_run_IP_VT1_BROWSER_CASE_TO_EVIDENCE_FIXTURE",
+    "failure_effect": "keep_P02.0_not_approved_and_do_not_start_P02.1_or_P02.2; no_second_automatic_repair"
+  }
+}

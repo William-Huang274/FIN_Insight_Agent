@@ -1,0 +1,703 @@
+{
+  "schema_version": "fin_ia_0_1_detailed_execution_backlog_v1_0",
+  "release_id": "REL-PROD-001",
+  "version": "FIN_0_1_INTERNAL_ALPHA",
+  "status": "detailed_design_accepted_implementation_not_started",
+  "entry_gate": "REL-FND-001:POINT01_FOUNDATION_ALPHA_COMPLETE",
+  "production_readiness": "not_admitted",
+  "legacy_global_authority": "retained",
+  "source_document": "docs/architecture/repository/RELEASE_FIN_IA_0_1_DETAILED_PRODUCT_TECHNICAL_DESIGN_20260717.zh-CN.md",
+  "stage_contract": {
+    "skeleton": "schema_interface_empty_path_and_fail_closed_boundary_only",
+    "fixture": "deterministic_positive_negative_component_evidence_only",
+    "full": "declared_scope_real_store_service_adapter_and_ui_path",
+    "calibrated": "anchor_regression_human_review_and_metric_acceptance",
+    "completion_rule": "only_final_point_closeout_gate_may_mark_point_complete"
+  },
+  "global_invariants": [
+    "json_api_only_cannot_pass_internal_alpha",
+    "frontend_is_delivered_incrementally_from_POINT_02_to_POINT_07",
+    "writer_source_tool_sql_graph_calls_equal_zero",
+    "known_false_evidence_promotions_equal_zero",
+    "material_numeric_trace_coverage_equal_one",
+    "material_claim_provenance_coverage_equal_one",
+    "supervisor_supplement_never_masquerades_as_runtime_evidence",
+    "no_dual_authoritative_write",
+    "paid_model_network_commercial_data_and_production_cutover_require_separate_authority"
+  ],
+  "points": [
+    {
+      "point_id": "POINT_02",
+      "title": "Case Plan and Product Entry",
+      "feature_ids": ["P001-F01", "P001-F02", "P001-F03", "P001-F04"],
+      "release_gate_contribution": ["RG1_vertical_path", "RG5_release_rollback"],
+      "closeout_rule": "UI creates and restores a Case, reviews a 10-20-cell plan, starts or cancels bounded execution, and changes no legacy global authority",
+      "execution_points": [
+        {
+          "id": "P02.0",
+          "title": "Point 02 contract and dependency freeze",
+          "workstream": "WS_A_research_control_and_product",
+          "tech_owners": ["TECH_01", "TECH_06", "TECH_09", "TECH_10"],
+          "depends_on": ["REL-FND-001:P01-G5"],
+          "implementation_paths": ["docs/architecture/repository", "configs/releases", "apps/workbench/frontend/package.json"],
+          "outputs": ["point02_child_plan", "api_v1_openapi_baseline", "route_surface_map", "authority_rollback_adr", "frontend_dependency_lock"],
+          "task_sequence": [
+            {"task_id": "P02.0-T01", "owner": "release_owner", "action": "verify_REL_FND_001_P01_G5_and_capture_exact_release_inputs", "output": "point02_entry_preflight"},
+            {"task_id": "P02.0-T02", "owner": "TECH_06", "action": "freeze_new_lane_authority_store_object_store_feature_flag_and_rollback", "output": "authority_rollback_adr"},
+            {"task_id": "P02.0-T03", "owner": "TECH_01", "action": "freeze_Case_Objective_DecisionSurface_WorkUnit_version_and_command_ownership", "output": "point02_canonical_object_subset"},
+            {"task_id": "P02.0-T04", "owner": "TECH_09", "action": "freeze_routes_read_models_actions_states_errors_and_browser_acceptance", "output": "route_surface_map"},
+            {"task_id": "P02.0-T05", "owner": "TECH_06_TECH_09", "action": "select_and_lock_router_query_openapi_and_test_dependencies", "output": "frontend_dependency_lock"},
+            {"task_id": "P02.0-T06", "owner": "TECH_01_TECH_06", "action": "publish_versioned_api_v1_OpenAPI_for_case_planning_execution_and_activity", "output": "api_v1_openapi_baseline"},
+            {"task_id": "P02.0-T07", "owner": "TECH_10", "action": "freeze_P36_SaaS_Bank_fixtures_and_fast_component_operational_browser_manifests", "output": "point02_test_and_fixture_manifest"},
+            {"task_id": "P02.0-T08", "owner": "cross_owner_review", "action": "verify_every_feature_route_command_read_model_and_gate_has_one_owner_and_no_parallel_source_of_truth", "output": "point02_cross_owner_review"},
+            {"task_id": "P02.0-T09", "owner": "release_owner", "action": "run_P02_0_closeout_gate_and_unlock_only_P02_1_and_P02_2", "output": "P02_0_closeout_decision"}
+          ],
+          "stage_acceptance": {
+            "skeleton": "all required objects routes commands and owners enumerated",
+            "fixture": "schema examples and forbidden authority paths lint",
+            "full": "cross-owner review freezes exact schema API feature flag and rollback",
+            "calibrated": "P36 SaaS and Bank fixture requirements all map without owner or surface gaps"
+          },
+          "stop_rule": "no implementation if entry gate authority or rollback target is ambiguous"
+        },
+        {
+          "id": "P02.1",
+          "title": "Case and Task Center application service",
+          "workstream": "WS_A_research_control_and_product",
+          "tech_owners": ["TECH_01", "TECH_06"],
+          "depends_on": ["P02.0"],
+          "implementation_paths": ["apps/workbench/backend/api/v1/cases.py", "apps/workbench/backend/application/case_service.py", "src/sec_agent/canonical_runtime"],
+          "outputs": ["POST_api_v1_cases", "GET_api_v1_cases", "GET_api_v1_case", "TaskCenterRow", "CaseWorkspaceProjection"],
+          "stage_acceptance": {
+            "skeleton": "routes DTOs and permission dependencies exist and fail closed",
+            "fixture": "create list get idempotency cross-tenant and stale-version tests pass",
+            "full": "real SQLite and object-store Case create and reopen path succeeds",
+            "calibrated": "P36 Case and two regression Case identities project correctly"
+          },
+          "stop_rule": "reject any route that writes store outside RuntimeFacade"
+        },
+        {
+          "id": "P02.2",
+          "title": "Frontend app shell router API client and state primitives",
+          "workstream": "WS_A_research_control_and_product",
+          "tech_owners": ["TECH_06", "TECH_09"],
+          "depends_on": ["P02.0"],
+          "implementation_paths": ["apps/workbench/frontend/vite/src/app", "apps/workbench/frontend/vite/src/api", "apps/workbench/frontend/vite/src/shared"],
+          "outputs": ["AppShell", "router", "typed_api_client", "query_client", "SSE_client", "status_error_components"],
+          "stage_acceptance": {
+            "skeleton": "routes render with typed empty loading error and permission states",
+            "fixture": "component tests cover stale superseded conflict and reconnect",
+            "full": "frontend consumes live api_v1 Case projection without direct file or DB access",
+            "calibrated": "1024 and 1440 viewport shell remains usable across all seven surfaces"
+          },
+          "stop_rule": "do not add FIN 0.1 features to the existing monolithic main.tsx"
+        },
+        {
+          "id": "P02.3",
+          "title": "Task Center New Case and Overview UI",
+          "workstream": "WS_A_research_control_and_product",
+          "tech_owners": ["TECH_01", "TECH_06", "TECH_09"],
+          "depends_on": ["P02.1", "P02.2"],
+          "implementation_paths": ["apps/workbench/frontend/vite/src/features/task-center", "apps/workbench/frontend/vite/src/features/case-overview"],
+          "outputs": ["tasks_route", "new_case_route", "case_overview_route"],
+          "stage_acceptance": {
+            "skeleton": "forms tables filters and all empty error states render",
+            "fixture": "user creates opens filters and refreshes a fixture Case",
+            "full": "browser creates and restores a real internal Case version",
+            "calibrated": "analyst creates the P36 Case in under five minutes without JSON editing"
+          },
+          "stop_rule": "creation must not automatically enable model network or paid execution"
+        },
+        {
+          "id": "P02.4",
+          "title": "DecisionSurface planning API and UI",
+          "workstream": "WS_A_research_control_and_product",
+          "tech_owners": ["TECH_01", "TECH_05", "TECH_07", "TECH_08"],
+          "depends_on": ["P02.1", "P02.2"],
+          "implementation_paths": ["apps/workbench/backend/api/v1/planning.py", "apps/workbench/backend/application/planning_service.py", "apps/workbench/frontend/vite/src/features/decision-surface"],
+          "outputs": ["compile_plan_command", "DecisionSurfaceView", "revision_command", "plan_decision_command", "planning_checkpoint_UI"],
+          "stage_acceptance": {
+            "skeleton": "10-20 cell contract and matrix render with owner slot stop-rule fields",
+            "fixture": "mandatory-family omission forbidden-substitution and stale-edit negatives pass",
+            "full": "new immutable plan version is persisted and accepted through UI",
+            "calibrated": "P36 target 12-16 cells plus SaaS Bank structural plans pass reviewer calibration"
+          },
+          "stop_rule": "block plan acceptance when risk numeric sanity or writer boundary is silently removed"
+        },
+        {
+          "id": "P02.5",
+          "title": "Execution controls events and Activity UI",
+          "workstream": "WS_A_research_control_and_product",
+          "tech_owners": ["TECH_06", "TECH_08"],
+          "depends_on": ["P02.1", "P02.2", "P02.4"],
+          "implementation_paths": ["apps/workbench/backend/api/v1/execution.py", "apps/workbench/backend/application/execution_service.py", "apps/workbench/frontend/vite/src/features/activity-trace"],
+          "outputs": ["start_run", "cancel_resume_retry", "CaseExecutionView", "event_cursor_SSE", "Activity_UI"],
+          "stage_acceptance": {
+            "skeleton": "queued running paused terminal views and action eligibility exist",
+            "fixture": "cancel resume duplicate SSE stale token and permission negatives pass",
+            "full": "one bounded WorkUnit persists events and restores after browser refresh",
+            "calibrated": "P36 thin vertical exposes typed stop and next action to analyst"
+          },
+          "stop_rule": "HTTP request must enqueue work and never hide a long external call"
+        },
+        {
+          "id": "P02.6",
+          "title": "Point 02 vertical calibration and closeout",
+          "workstream": "WS_A_research_control_and_product",
+          "tech_owners": ["TECH_01", "TECH_06", "TECH_09", "TECH_10"],
+          "depends_on": ["P02.3", "P02.4", "P02.5"],
+          "implementation_paths": ["tests", "eval_sets", "reports/release_evidence"],
+          "outputs": ["point02_test_manifest", "browser_e2e_evidence", "rollback_result", "point02_closeout_gate"],
+          "stage_acceptance": {
+            "skeleton": "closeout manifest validates exact feature and route inventory",
+            "fixture": "three-cell UI/API/store vertical and negative controls pass",
+            "full": "P36 10-20 cell planning and execution-entry path succeeds",
+            "calibrated": "analyst and senior accept plan usability and structural regressions"
+          },
+          "stop_rule": "only the Point 02 closeout gate may mark Point 02 complete"
+        }
+      ]
+    },
+    {
+      "point_id": "POINT_03",
+      "title": "Evidence Addressing Retrieval and Repair",
+      "feature_ids": ["P001-F05", "P001-F06"],
+      "release_gate_contribution": ["RG1_vertical_path", "RG2_evidence_numeric_integrity"],
+      "closeout_rule": "each required slot has a CandidateBundle RejectedCandidateLedger or attempt-backed typed gap and the user can review the result in the product surface",
+      "execution_points": [
+        {
+          "id": "P03.0",
+          "title": "Evidence contracts top-K policy and owner freeze",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_02", "TECH_03", "TECH_06", "TECH_09"],
+          "depends_on": ["P02.0"],
+          "implementation_paths": ["docs/architecture/repository", "configs/releases"],
+          "outputs": ["EvidenceRequest_schema", "CandidateBundle_schema", "GapRecord_schema", "topK_neighbor_policy", "source_authority_policy"],
+          "stage_acceptance": {
+            "skeleton": "all evidence states routes owners and stop conditions enumerated",
+            "fixture": "relationship commercial and forbidden-substitution policy examples lint",
+            "full": "cross-owner review freezes API store permission and repair boundaries",
+            "calibrated": "P36 representative slots map to executable routes without free-text bypass"
+          },
+          "stop_rule": "do not execute retrieval before Candidate and Evidence identities are separated"
+        },
+        {
+          "id": "P03.1",
+          "title": "EvidenceRequest and bounded Tool Planner runtime",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_02", "TECH_06"],
+          "depends_on": ["P03.0", "P02.4"],
+          "implementation_paths": ["src/sec_agent/canonical_runtime/evidence_request.py", "src/sec_agent/canonical_runtime/tool_planner.py", "apps/workbench/backend/application/evidence_service.py"],
+          "outputs": ["EvidenceRequest", "ToolSelectionPlan", "ToolInvocationReceipt_or_typed_stop"],
+          "stage_acceptance": {
+            "skeleton": "exact slot compiles deterministic request and nonexecuting plan",
+            "fixture": "permission budget source-policy and route-bypass negatives pass",
+            "full": "bounded internal tool plan executes through M5 grants and budget ledger",
+            "calibrated": "route success cost and stop behavior measured on P36 representative slots"
+          },
+          "stop_rule": "no specialist or writer private search and no unreceipted tool invocation"
+        },
+        {
+          "id": "P03.2",
+          "title": "RAG SQL graph retrieval rerank and context expansion",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_02", "TECH_03", "TECH_04"],
+          "depends_on": ["P03.1"],
+          "implementation_paths": ["src/sec_agent/retrieval_plan.py", "src/sec_agent/d_series_fact_selection.py", "src/sec_agent/relationship_graph.py"],
+          "outputs": ["CandidateBundle", "neighbor_section_table_refs", "RetrievalExhaustion"],
+          "stage_acceptance": {
+            "skeleton": "adapter interfaces return typed empty or CandidateBundle",
+            "fixture": "metadata filter rerank diversity neighbor and table fixtures pass",
+            "full": "real internal RAG SQL and graph routes produce bounded candidates",
+            "calibrated": "precision coverage source diversity and expansion yield meet P36 thresholds"
+          },
+          "stop_rule": "before external sourcing exhaust metadata requery neighbor section and table expansion"
+        },
+        {
+          "id": "P03.3",
+          "title": "Evidence Workbench API UI and review actions",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_02", "TECH_03", "TECH_09"],
+          "depends_on": ["P03.1", "P03.2", "P02.2"],
+          "implementation_paths": ["apps/workbench/backend/api/v1/evidence.py", "apps/workbench/frontend/vite/src/features/evidence-numeric"],
+          "outputs": ["EvidenceWorkbenchView", "candidate_inspector", "reject_action", "request_repair_action"],
+          "stage_acceptance": {
+            "skeleton": "candidate accepted context rejected and gap states render distinctly",
+            "fixture": "filter inspect reject repair and permission component tests pass",
+            "full": "UI consumes real CandidateBundles and persists review actions",
+            "calibrated": "senior can locate source authority citation and promotion reason for material slots"
+          },
+          "stop_rule": "UI must not expose force-accept for deterministic hard failures"
+        },
+        {
+          "id": "P03.4",
+          "title": "SourceHunter supplement boundary and evidence repair",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_02", "TECH_03", "TECH_06"],
+          "depends_on": ["P03.1", "P03.2"],
+          "implementation_paths": ["src/sec_agent/official_issuer_repair.py", "src/sec_agent/canonical_runtime/repair_ticket.py"],
+          "outputs": ["SourceHunterRequest", "SupplementLedger", "RepairTicket", "typed_or_commercial_gap"],
+          "stage_acceptance": {
+            "skeleton": "trigger and prohibited source rules are executable",
+            "fixture": "P36 supervisor supplement cannot enter runtime evidence directly",
+            "full": "one official-first repair executes within permission and budget",
+            "calibrated": "one repair closes or reaches attempt-backed terminal stop with clear product display"
+          },
+          "stop_rule": "commercial gap is terminal and cannot be replaced with a low-authority web proxy"
+        },
+        {
+          "id": "P03.5",
+          "title": "Point 03 calibration and closeout",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_02", "TECH_03", "TECH_06", "TECH_09", "TECH_10"],
+          "depends_on": ["P03.3", "P03.4"],
+          "implementation_paths": ["tests", "eval_sets", "reports/release_evidence"],
+          "outputs": ["retrieval_quality_report", "supplement_boundary_report", "point03_closeout_gate"],
+          "stage_acceptance": {
+            "skeleton": "manifest checks route candidate and gap identities",
+            "fixture": "positive negative and expansion corpus passes",
+            "full": "P36 representative required slots complete the declared evidence path",
+            "calibrated": "reviewer accepts precision coverage repair behavior and product usability"
+          },
+          "stop_rule": "only Point 03 closeout gate may mark Point 03 complete"
+        }
+      ]
+    },
+    {
+      "point_id": "POINT_04",
+      "title": "Parser Numeric and Evidence Promotion",
+      "feature_ids": ["P001-F07"],
+      "release_gate_contribution": ["RG2_evidence_numeric_integrity"],
+      "closeout_rule": "all material numbers are reproducible or explicitly typed as estimate cannot-infer or commercial-gap and known false promotions equal zero",
+      "execution_points": [
+        {
+          "id": "P04.0",
+          "title": "Numeric contracts source profiles and promotion policy freeze",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_02", "TECH_03", "TECH_04", "TECH_09"],
+          "depends_on": ["P03.0"],
+          "implementation_paths": ["docs/architecture/repository", "configs/releases"],
+          "outputs": ["ParserCandidate_schema", "NormalizedNumericFact_schema", "NumericProgramTrace_schema", "promotion_policy", "source_profile_registry"],
+          "stage_acceptance": {
+            "skeleton": "structured table derived and rejected numeric paths are enumerated",
+            "fixture": "unit scale period coordinate and row-selector negative examples lint",
+            "full": "cross-owner review freezes parser numeric promotion and UI contracts",
+            "calibrated": "P36 material metric inventory maps to source profile and trace policy"
+          },
+          "stop_rule": "do not write a numeric runtime before unit period scale and lineage are mandatory"
+        },
+        {
+          "id": "P04.1",
+          "title": "Structured and table numeric fact normalization",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_03", "TECH_04"],
+          "depends_on": ["P04.0", "P03.2"],
+          "implementation_paths": ["src/sec_agent/canonical_runtime/parser_numeric.py", "src/sec_agent/d_series_fact_selection.py"],
+          "outputs": ["ParserCandidate", "NormalizedNumericFact", "NumericSanityLedger"],
+          "stage_acceptance": {
+            "skeleton": "structured and table adapters fail closed on missing metadata",
+            "fixture": "SEC XBRL and table row header footnote unit fixtures pass",
+            "full": "real bounded SEC IR inputs produce normalized exact facts",
+            "calibrated": "P36 material fact rows meet row unit period and coordinate accuracy thresholds"
+          },
+          "stop_rule": "parser failure remains parser_gap and never becomes source_absent"
+        },
+        {
+          "id": "P04.2",
+          "title": "Derived metrics and NumericProgramTrace runtime",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_04", "TECH_05"],
+          "depends_on": ["P04.1"],
+          "implementation_paths": ["src/sec_agent/derived_metric_layer.py", "src/sec_agent/canonical_runtime/parser_numeric.py"],
+          "outputs": ["MetricDefinition", "DerivedMetricRegistry", "NumericProgramTrace"],
+          "stage_acceptance": {
+            "skeleton": "formula eligibility input identity and output identity are explicit",
+            "fixture": "growth margin bridge multiple and divide-by-zero negatives pass",
+            "full": "real accepted inputs execute deterministic traces and reproduce outputs",
+            "calibrated": "P36 cell-scoped derived metrics are reviewed for relevance and correctness"
+          },
+          "stop_rule": "do not infer consensus real-time flow dealer gamma or CDS from unavailable public inputs"
+        },
+        {
+          "id": "P04.3",
+          "title": "Numeric and evidence promotion gate",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_02", "TECH_04", "TECH_09"],
+          "depends_on": ["P04.1", "P04.2"],
+          "implementation_paths": ["src/sec_agent/canonical_runtime/evidence_gate.py", "src/sec_agent/layer_acceptance_gates.py"],
+          "outputs": ["NumericPromotionAssessment", "EvidencePromotionDecision", "ConflictRecord"],
+          "stage_acceptance": {
+            "skeleton": "hard gate and semantic suggestion permissions are separated",
+            "fixture": "wrong entity period unit source authority and forbidden substitution fail",
+            "full": "authoritative gate writes accepted context rejected and gap decisions",
+            "calibrated": "false-promotion corpus has zero known escapes and conflicts are visible"
+          },
+          "stop_rule": "agent suggestion can never override deterministic hard failure"
+        },
+        {
+          "id": "P04.4",
+          "title": "Numeric Drawer Fact Table and review actions",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_04", "TECH_09"],
+          "depends_on": ["P04.2", "P04.3", "P02.2"],
+          "implementation_paths": ["apps/workbench/backend/api/v1/numeric.py", "apps/workbench/frontend/vite/src/features/evidence-numeric"],
+          "outputs": ["NumericAuditView", "FactTable", "NumericDrawer", "parser_repair_action"],
+          "stage_acceptance": {
+            "skeleton": "all required fact trace formula and ambiguity fields render",
+            "fixture": "normal estimate gap conflict stale and superseded components pass",
+            "full": "UI reads real facts traces and persists reviewer flags",
+            "calibrated": "senior can independently reproduce every P36 material displayed number"
+          },
+          "stop_rule": "raw JSON cannot be the primary numeric review experience"
+        },
+        {
+          "id": "P04.5",
+          "title": "Point 04 calibration and closeout",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_04", "TECH_09", "TECH_10"],
+          "depends_on": ["P04.4"],
+          "implementation_paths": ["tests", "eval_sets", "reports/release_evidence"],
+          "outputs": ["numeric_accuracy_report", "false_promotion_report", "point04_closeout_gate"],
+          "stage_acceptance": {
+            "skeleton": "manifest accounts for every material metric and negative cohort",
+            "fixture": "numeric and promotion regression suites pass",
+            "full": "P36 material numeric path executes from source candidate to UI",
+            "calibrated": "human review confirms reproducibility and zero known false promotion"
+          },
+          "stop_rule": "only Point 04 closeout gate may mark Point 04 complete"
+        }
+      ]
+    },
+    {
+      "point_id": "POINT_05",
+      "title": "Domain Judgment Workpaper Repair and Lead Review",
+      "feature_ids": ["P001-F08", "P001-F09", "P001-F10", "P001-F14"],
+      "release_gate_contribution": ["RG1_vertical_path", "RG3_research_outcome", "RG4_review_product_value"],
+      "closeout_rule": "every required cell has a terminal judgment or typed gap and the Lead review admits an exact WriterBrief only after coverage conflict counterevidence and storyline checks",
+      "execution_points": [
+        {
+          "id": "P05.0",
+          "title": "Judgment Workpaper Repair Lead and WWC contract freeze",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_01", "TECH_05", "TECH_06", "TECH_07", "TECH_08", "TECH_09"],
+          "depends_on": ["P03.0", "P04.0"],
+          "implementation_paths": ["docs/architecture/repository", "configs/releases"],
+          "outputs": ["DomainOperatorTask_schema", "DomainCellJudgmentPack_schema", "WorkpaperPack_schema", "Repair_lifecycle", "LeadReview_schema", "WWC_schema"],
+          "stage_acceptance": {
+            "skeleton": "owner inputs outputs states and authority boundaries are enumerated",
+            "fixture": "insufficient evidence conflicting judgment and writer-blocker examples lint",
+            "full": "cross-owner review freezes context handoff repair resume and lead contracts",
+            "calibrated": "P36 10-20 cells map to operators without generic persona or duplicate ownership"
+          },
+          "stop_rule": "do not activate operators without explicit cell required evidence and budget"
+        },
+        {
+          "id": "P05.1",
+          "title": "Domain operator projection and bounded judgment loop",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_05", "TECH_07", "TECH_08"],
+          "depends_on": ["P05.0", "P03.5", "P04.5"],
+          "implementation_paths": ["src/sec_agent/specialist_llm.py", "src/sec_agent/context_engine.py", "src/sec_agent/canonical_runtime"],
+          "outputs": ["DomainOperatorTask", "CellEvidencePack", "DomainCellJudgmentPack", "ContextInjectionPlan"],
+          "stage_acceptance": {
+            "skeleton": "typed projection and no-new-fact output path exist",
+            "fixture": "missing context role contamination duplicate operator and budget negatives pass",
+            "full": "declared domain operators consume accepted evidence and persist structured judgments",
+            "calibrated": "P36 mechanism and value-capture judgments meet reviewer rubric"
+          },
+          "stop_rule": "operator pauses with RepairTicket rather than inventing missing evidence"
+        },
+        {
+          "id": "P05.2",
+          "title": "Workpaper counter-thesis dependency and What-Would-Change",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_01", "TECH_05", "TECH_09"],
+          "depends_on": ["P05.1"],
+          "implementation_paths": ["src/sec_agent/memo_logic_plan.py", "src/sec_agent/workbench"],
+          "outputs": ["WorkpaperPack", "CellDependencyEdge", "WhatWouldChangeProgram"],
+          "stage_acceptance": {
+            "skeleton": "cell-first workpaper sections and WWC fields are stable",
+            "fixture": "evidence dump generic memo and boundary-only WWC negatives fail",
+            "full": "real cell judgments aggregate with refs gaps counterevidence and dependencies",
+            "calibrated": "reviewer accepts mechanism continuity and independent WWC section quality"
+          },
+          "stop_rule": "do not concatenate specialist prose into the Workpaper"
+        },
+        {
+          "id": "P05.3",
+          "title": "Gap dedupe RepairTicket lifecycle and targeted resume",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_01", "TECH_02", "TECH_04", "TECH_05", "TECH_06", "TECH_08"],
+          "depends_on": ["P05.0", "P05.1"],
+          "implementation_paths": ["src/sec_agent/claim_evidence_ledger.py", "src/sec_agent/canonical_runtime/repair_ticket.py", "src/sec_agent/canonical_runtime/recovery_lifecycle.py"],
+          "outputs": ["GapRecord", "RepairTicket", "RepairAttempt", "GapResolution", "targeted_resume"],
+          "stage_acceptance": {
+            "skeleton": "gap identity action attempt and resolution are separated",
+            "fixture": "dedupe reopen wrong-owner budget and stale-resume negatives pass",
+            "full": "one source-owner repair executes and resumes only affected cell work",
+            "calibrated": "P36 repair closes or reaches reviewer-accepted attempt-backed stop"
+          },
+          "stop_rule": "maximum two bounded repairs per release blocker before defer or redesign decision"
+        },
+        {
+          "id": "P05.4",
+          "title": "Pack-level LeadReview and WriterAdmission",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_01", "TECH_05", "TECH_09"],
+          "depends_on": ["P05.2", "P05.3"],
+          "implementation_paths": ["src/sec_agent/memo_logic_plan.py", "src/sec_agent/canonical_runtime"],
+          "outputs": ["CrossCellConflict", "LeadReviewDecision", "WriterBrief", "WriterAdmission"],
+          "stage_acceptance": {
+            "skeleton": "coverage conflict storyline and blocker checks are explicit",
+            "fixture": "hard omission stale pack unresolved conflict and gate override negatives fail",
+            "full": "LeadReview persists exact pack decision and admitted WriterBrief",
+            "calibrated": "senior agrees P36 story is coherent and material gaps remain visible"
+          },
+          "stop_rule": "Lead cannot convert deterministic hard failure into accepted evidence"
+        },
+        {
+          "id": "P05.5",
+          "title": "Bounded same-Case follow-up",
+          "workstream": "WS_A_research_control_and_product",
+          "tech_owners": ["TECH_01", "TECH_03", "TECH_07"],
+          "depends_on": ["P05.2", "P05.4"],
+          "implementation_paths": ["apps/workbench/backend/api/v1/workpaper.py", "src/sec_agent/context_engine.py"],
+          "outputs": ["FollowUpRequest", "followup_context_plan", "bounded_answer_or_refresh_stop"],
+          "stage_acceptance": {
+            "skeleton": "why gap and WWC question types route to exact Case heads",
+            "fixture": "cross-Case stale as-of hidden-search and unsupported refresh negatives pass",
+            "full": "one real current-Case explanation uses frozen refs and records provenance",
+            "calibrated": "reviewer accepts continuity and source boundary of P36 follow-up"
+          },
+          "stop_rule": "new external evidence requirement creates repair or refresh_not_supported and never silent web search"
+        },
+        {
+          "id": "P05.6",
+          "title": "Workpaper Repair Lead Follow-up UI and Point 05 closeout",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_01", "TECH_05", "TECH_09", "TECH_10"],
+          "depends_on": ["P05.2", "P05.3", "P05.4", "P05.5", "P02.2"],
+          "implementation_paths": ["apps/workbench/backend/api/v1/workpaper.py", "apps/workbench/frontend/vite/src/features/workpaper-repair", "tests"],
+          "outputs": ["WorkpaperView", "RepairQueueView", "LeadReview_UI", "followup_UI", "point05_closeout_gate"],
+          "stage_acceptance": {
+            "skeleton": "judgment gap repair lead and follow-up states render",
+            "fixture": "all actions and blocked states pass component E2E",
+            "full": "P36 10-20 cell workpaper repair and Lead review operate through UI",
+            "calibrated": "analyst senior review records show acceptable workpaper and repair burden"
+          },
+          "stop_rule": "only Point 05 closeout gate may mark Point 05 complete"
+        }
+      ]
+    },
+    {
+      "point_id": "POINT_06",
+      "title": "Writer Deliverable Human Review and Provenance",
+      "feature_ids": ["P001-F11", "P001-F12", "P001-F13"],
+      "release_gate_contribution": ["RG1_vertical_path", "RG2_evidence_numeric_integrity", "RG4_review_product_value"],
+      "closeout_rule": "an exact admitted pack produces consistent HTML and Markdown with zero source calls and every material claim is reviewable and traceable",
+      "execution_points": [
+        {
+          "id": "P06.0",
+          "title": "Writer presentation review and provenance contract freeze",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_06", "TECH_09", "TECH_10"],
+          "depends_on": ["P05.0"],
+          "implementation_paths": ["docs/architecture/repository", "configs/releases"],
+          "outputs": ["WriterAdmission_schema", "PresentationModel_schema", "ReviewAction_schema", "TraceGraph_schema", "renderer_boundary"],
+          "stage_acceptance": {
+            "skeleton": "input output review release and trace identities are enumerated",
+            "fixture": "stale admission mismatched hash and missing provenance examples lint",
+            "full": "cross-owner review freezes writer sandbox renderer and review contracts",
+            "calibrated": "P36 output requirements map to HTML Markdown and review surfaces"
+          },
+          "stop_rule": "do not invoke Writer until exact WriterAdmission is available"
+        },
+        {
+          "id": "P06.1",
+          "title": "WriterBrief compiler and no-source Writer runtime",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_01", "TECH_06", "TECH_09"],
+          "depends_on": ["P06.0", "P05.4"],
+          "implementation_paths": ["src/sec_agent/memo_llm.py", "src/sec_agent/prompts/skills/memo_writer_skill_v0_1.md"],
+          "outputs": ["exact_writer_payload", "writer_run_receipt", "draft_presentation_model"],
+          "stage_acceptance": {
+            "skeleton": "writer payload contains only admitted refs and source tools are absent",
+            "fixture": "hidden retrieval SQL graph and stale admission negatives fail",
+            "full": "bounded Writer invocation produces structured draft with call counts audited",
+            "calibrated": "P36 draft follows language format evidence gap and storyline requirements"
+          },
+          "stop_rule": "writer source tool SQL and graph call count must remain zero"
+        },
+        {
+          "id": "P06.2",
+          "title": "Canonical presentation HTML and Markdown rendering",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_09"],
+          "depends_on": ["P06.1"],
+          "implementation_paths": ["src/sec_agent/r53_r60_deliverable_studio_dashboard.py", "apps/workbench/backend/api/v1/deliverables.py"],
+          "outputs": ["CanonicalPresentationModel", "HTML_artifact", "Markdown_artifact", "ArtifactVersionEnvelope"],
+          "stage_acceptance": {
+            "skeleton": "renderer creates immutable empty artifact versions",
+            "fixture": "table chart citation and cross-format parity fixtures pass",
+            "full": "real P36 presentation model renders HTML Markdown with exact hashes",
+            "calibrated": "reviewer confirms semantic parity readability and approved-number binding"
+          },
+          "stop_rule": "never overwrite a released artifact version in place"
+        },
+        {
+          "id": "P06.3",
+          "title": "Human review accountability and exact-version actions",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_06", "TECH_09"],
+          "depends_on": ["P06.0", "P06.2"],
+          "implementation_paths": ["apps/workbench/backend/api/v1/reviews.py", "src/sec_agent/canonical_runtime/hitl_governance.py"],
+          "outputs": ["ReviewAction", "DecisionAttestation", "CommentThread", "review_queue_projection"],
+          "stage_acceptance": {
+            "skeleton": "comment return repair and accept commands bind exact target",
+            "fixture": "wrong actor permission hash stale version revoked and replay negatives fail",
+            "full": "one analyst senior review cycle persists and survives reopen",
+            "calibrated": "P36 exact artifact review is accepted or conditionally returned with reasons"
+          },
+          "stop_rule": "superseded artifact approval never transfers to a new version"
+        },
+        {
+          "id": "P06.4",
+          "title": "Bidirectional material-claim provenance and Trace Explorer",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_03", "TECH_04", "TECH_06", "TECH_09"],
+          "depends_on": ["P06.2", "P06.3"],
+          "implementation_paths": ["apps/workbench/backend/api/v1/traces.py", "apps/workbench/frontend/vite/src/features/activity-trace"],
+          "outputs": ["ArtifactProvenanceManifest", "TraceGraphView", "claim_to_source", "source_to_claim"],
+          "stage_acceptance": {
+            "skeleton": "trace nodes edges redaction and missing-lineage state render",
+            "fixture": "broken ref cross-tenant raw-CoT secret and stale-claim negatives fail",
+            "full": "every P36 material claim resolves through evidence numeric and tool lineage",
+            "calibrated": "senior locates source and affected claims within the product workflow"
+          },
+          "stop_rule": "raw CoT prompt secrets and unredacted observations are never product trace payloads"
+        },
+        {
+          "id": "P06.5",
+          "title": "Deliverable Review Trace UI integration and Point 06 closeout",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_06", "TECH_09", "TECH_10"],
+          "depends_on": ["P06.2", "P06.3", "P06.4", "P02.2"],
+          "implementation_paths": ["apps/workbench/frontend/vite/src/features/deliverable-review", "apps/workbench/frontend/vite/src/features/activity-trace", "tests"],
+          "outputs": ["DeliverableReviewView", "Review_UI", "TraceExplorer_UI", "point06_closeout_gate"],
+          "stage_acceptance": {
+            "skeleton": "artifact comments history and trace states render",
+            "fixture": "review action version conflict and trace component E2E pass",
+            "full": "P36 draft generation review and trace operate end to end in browser",
+            "calibrated": "senior accepts usability cross-format parity and provenance completeness"
+          },
+          "stop_rule": "only Point 06 closeout gate may mark Point 06 complete"
+        }
+      ]
+    },
+    {
+      "point_id": "POINT_07",
+      "title": "Dogfood Evaluation and Internal Alpha Release",
+      "feature_ids": ["P001-F15"],
+      "release_gate_contribution": ["RG1_vertical_path", "RG2_evidence_numeric_integrity", "RG3_research_outcome", "RG4_review_product_value", "RG5_release_rollback"],
+      "closeout_rule": "only the final independent RG1-RG5 gate may publish FIN_0_1_INTERNAL_ALPHA_RELEASED while production readiness remains not admitted",
+      "execution_points": [
+        {
+          "id": "P07.0",
+          "title": "Release candidate and evaluation freeze",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_06", "TECH_09", "TECH_10"],
+          "depends_on": ["P02.6", "P03.5", "P04.5", "P05.6", "P06.5"],
+          "implementation_paths": ["configs/releases", "reports/release_evidence"],
+          "outputs": ["ReleaseCandidateManifest", "test_manifest", "exact_code_config_schema_prompt_data_refs"],
+          "stage_acceptance": {
+            "skeleton": "candidate manifest lists every required feature surface and gate",
+            "fixture": "missing ref digest drift stale artifact and hidden-dependency negatives fail",
+            "full": "one exact release candidate is frozen and reproducible",
+            "calibrated": "reviewer accepts candidate scope known gaps and evaluation protocol"
+          },
+          "stop_rule": "any code config prompt data or policy change creates a new candidate digest"
+        },
+        {
+          "id": "P07.1",
+          "title": "P36 complete internal dogfood",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_01", "TECH_02", "TECH_04", "TECH_05", "TECH_09", "TECH_10"],
+          "depends_on": ["P07.0"],
+          "implementation_paths": ["eval_sets", "reports/release_evidence"],
+          "outputs": ["P36_Case_manifest", "senior_review", "R2_outcome_evidence", "trajectory_summary"],
+          "stage_acceptance": {
+            "skeleton": "dogfood protocol and stop conditions are frozen",
+            "fixture": "product E2E uses release candidate without direct DB shortcuts",
+            "full": "P36 completes create-to-review path with exact artifacts",
+            "calibrated": "senior accepts R2 research validity and records edits gaps and confidence"
+          },
+          "stop_rule": "supervisor supplement stays separately labeled and paid full-chain needs explicit authority"
+        },
+        {
+          "id": "P07.2",
+          "title": "SaaS and US Banks structural regression",
+          "workstream": "WS_B_research_integrity_and_judgment",
+          "tech_owners": ["TECH_01", "TECH_02", "TECH_04", "TECH_05", "TECH_10"],
+          "depends_on": ["P07.0"],
+          "implementation_paths": ["eval_sets", "reports/release_evidence"],
+          "outputs": ["saas_structural_regression", "banks_structural_regression"],
+          "stage_acceptance": {
+            "skeleton": "universal and sector-specific expected structures are frozen",
+            "fixture": "WorkBuddy facts numbers rankings and source policy are excluded",
+            "full": "both cases compile valid cell slot owner and gap structures",
+            "calibrated": "reviewer confirms no material generic-dimension collapse or stale case fact reuse"
+          },
+          "stop_rule": "regression proves structure only and cannot be reported as full sector research validity"
+        },
+        {
+          "id": "P07.3",
+          "title": "Product value performance accessibility and cost evaluation",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_09", "TECH_10"],
+          "depends_on": ["P07.1", "P07.2"],
+          "implementation_paths": ["tests", "reports/release_evidence"],
+          "outputs": ["time_to_workpaper", "review_burden", "repeated_work", "tool_model_cost", "browser_performance_accessibility"],
+          "stage_acceptance": {
+            "skeleton": "metric definitions cohorts and collection points are frozen",
+            "fixture": "instrumentation and redaction tests pass",
+            "full": "metrics are collected from the actual dogfood workflow",
+            "calibrated": "analyst senior review establishes an accepted Internal Alpha baseline"
+          },
+          "stop_rule": "do not claim time saved without a defined baseline and reviewer record"
+        },
+        {
+          "id": "P07.4",
+          "title": "Rollback known gaps and release note",
+          "workstream": "WS_A_research_control_and_product",
+          "tech_owners": ["TECH_06", "TECH_09", "TECH_10"],
+          "depends_on": ["P07.0"],
+          "implementation_paths": ["configs/releases", "docs/architecture/repository", "reports/release_evidence"],
+          "outputs": ["rollback_drill", "known_gap_ledger", "deferred_backlog", "release_note"],
+          "stage_acceptance": {
+            "skeleton": "rollback and deferred categories are enumerated",
+            "fixture": "feature flag disable and projection fallback tests pass",
+            "full": "release candidate rolls back to REL-FND-001 with legacy authority retained",
+            "calibrated": "reviewer accepts known claims limitations and recovery evidence"
+          },
+          "stop_rule": "rollback may disable FIN 0.1 lane but must not delete canonical audit history"
+        },
+        {
+          "id": "P07.5",
+          "title": "Final RG1-RG5 closeout and Internal Alpha release decision",
+          "workstream": "WS_C_workbench_and_quality",
+          "tech_owners": ["TECH_10"],
+          "depends_on": ["P07.1", "P07.2", "P07.3", "P07.4"],
+          "implementation_paths": ["reports/release_evidence", "docs/project_os", "docs/worklog"],
+          "outputs": ["ReleaseEvidenceManifest", "ReleaseGateDecision", "capability_maturity_delta", "FIN_0_1_release_or_block_decision"],
+          "stage_acceptance": {
+            "skeleton": "gate runner consumes exact candidate and evidence refs",
+            "fixture": "each missing hard invariant fails closed",
+            "full": "RG1 through RG5 independently rerun against the release candidate",
+            "calibrated": "human release owner approves release or records blocked rollback decision"
+          },
+          "stop_rule": "only this execution point may write FIN_0_1_INTERNAL_ALPHA_RELEASED and it must retain production_readiness_not_admitted"
+        }
+      ]
+    }
+  ]
+}

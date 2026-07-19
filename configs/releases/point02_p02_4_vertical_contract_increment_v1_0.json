@@ -1,0 +1,339 @@
+{
+  "schema_version": "finsight_point02_p02_4_vertical_contract_increment_v1_0",
+  "artifact_id": "point02-p02-4-vertical-contract-increment-v1-0",
+  "release": "REL-PROD-001",
+  "execution_point": "P02.4",
+  "tranche": "VT1_W1_CASE_PLAN_EVIDENCE_WALKING_SKELETON",
+  "authority": "fixture_shadow_internal_development_only",
+  "purpose": "Close the smallest product-contract gap required for a browser analyst to compile, revise, review, accept, return, refresh, and reopen one immutable three-cell P36 DecisionSurface without starting P02.5 execution lifecycle.",
+  "base_contracts": [
+    {
+      "path": "configs/releases/point02_canonical_object_subset_v1_1.json",
+      "canonical_digest": "5475ec3797c343e42b4532a009e8c39459562daad5fa506b15824d6d9c77c721"
+    },
+    {
+      "path": "configs/releases/point02_route_surface_map_v1_1.json",
+      "canonical_digest": "7b42980e46a94fa9458928fad05992f7cdb4d3caff5c4d79bc7825bb664b7210"
+    },
+    {
+      "path": "configs/releases/point02_api_v1_openapi_baseline_v1_1.json",
+      "canonical_digest": "5df8514daadb7772db895c384291eaabdd4c768ff7ac9eb51ccfee0326b118f9"
+    }
+  ],
+  "scope": {
+    "included": [
+      "fixed_P36_three_cell_fixture_plan",
+      "compile_new_immutable_contract_version",
+      "revise_one_or_more_cell_fields_into_new_immutable_contract_version",
+      "persist_planning_checkpoint_review_state",
+      "accept_or_return_with_exact_expected_versions",
+      "browser_refresh_and_reopen_from_canonical_projection"
+    ],
+    "deferred": [
+      "P36_10_to_20_cell_calibrated_plan",
+      "SaaS_and_bank_structural_plans",
+      "WorkUnit_or_Attempt_creation",
+      "runtime_or_operational_execution",
+      "model_network_tool_or_provider_calls",
+      "real_business_Case_mutation",
+      "production_authority_cutover"
+    ]
+  },
+  "fixed_cells": [
+    {
+      "cell_key": "demand_reality",
+      "decision_question": "Is AI infrastructure demand real, durable, and converting into recognized revenue?",
+      "owner_role": "industry_analyst",
+      "materiality": "high",
+      "required_evidence_roles": [
+        "demand_signal",
+        "revenue_conversion"
+      ],
+      "stop_rule": "Do not advance without issuer or filing evidence for demand and revenue conversion plus one counterindicator.",
+      "what_would_change": "Two consecutive quarters of weaker order-to-revenue conversion, material customer digestion, or evidence that demand is primarily inventory pull-forward.",
+      "evidence_slots": [
+        {
+          "evidence_role": "demand_signal",
+          "entity_scope": ["NVDA", "MSFT", "AMZN", "GOOGL", "META"],
+          "period_scope": "latest_two_quarters",
+          "source_policy_ref": "fixture:issuer_filing_first",
+          "required": true
+        },
+        {
+          "evidence_role": "revenue_conversion",
+          "entity_scope": ["NVDA", "SMCI", "TSM"],
+          "period_scope": "latest_two_quarters",
+          "source_policy_ref": "fixture:issuer_filing_first",
+          "required": true
+        }
+      ]
+    },
+    {
+      "cell_key": "value_profit_capture",
+      "decision_question": "Where are value and incremental profit captured across accelerators, servers, foundry and packaging, HBM, and semicap?",
+      "owner_role": "financial_analyst",
+      "materiality": "high",
+      "required_evidence_roles": [
+        "revenue_capture",
+        "margin_capture"
+      ],
+      "stop_rule": "Do not assign value capture without segment revenue or margin evidence and an explicit cross-chain comparison.",
+      "what_would_change": "Evidence that pricing power is competed away, mix shifts to lower-margin products, or upstream capacity captures the incremental economics.",
+      "evidence_slots": [
+        {
+          "evidence_role": "revenue_capture",
+          "entity_scope": ["NVDA", "SMCI", "TSM", "AVGO", "MU", "ASML", "AMAT"],
+          "period_scope": "latest_two_quarters",
+          "source_policy_ref": "fixture:issuer_filing_first",
+          "required": true
+        },
+        {
+          "evidence_role": "margin_capture",
+          "entity_scope": ["NVDA", "SMCI", "TSM", "AVGO", "MU"],
+          "period_scope": "latest_two_quarters",
+          "source_policy_ref": "fixture:issuer_filing_first",
+          "required": true
+        }
+      ]
+    },
+    {
+      "cell_key": "bottleneck_counterevidence",
+      "decision_question": "Which bottlenecks, constraints, and counterevidence could break the current AI infrastructure thesis?",
+      "owner_role": "risk_reviewer",
+      "materiality": "high",
+      "required_evidence_roles": [
+        "capacity_constraint",
+        "thesis_counterevidence"
+      ],
+      "stop_rule": "Do not close the thesis without one capacity bottleneck and one independent counterevidence route.",
+      "what_would_change": "A credible supply release, export restriction, capex digestion, customer concentration break, or price-in evidence that invalidates the expected risk-reward.",
+      "evidence_slots": [
+        {
+          "evidence_role": "capacity_constraint",
+          "entity_scope": ["TSM", "AVGO", "MU", "ASML", "AMAT"],
+          "period_scope": "latest_two_quarters",
+          "source_policy_ref": "fixture:issuer_filing_first",
+          "required": true
+        },
+        {
+          "evidence_role": "thesis_counterevidence",
+          "entity_scope": ["NVDA", "MSFT", "AMZN", "GOOGL", "META"],
+          "period_scope": "latest_two_quarters",
+          "source_policy_ref": "fixture:issuer_and_policy_first",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "canonical_delta": {
+    "models": [
+      {
+        "model": "DecisionSurfaceContractVersion",
+        "change": "retain stable contract_id and create monotonically increasing immutable contract_version and contract_version_id"
+      },
+      {
+        "model": "DecisionSurfaceCellVersion",
+        "change": "add what_would_change while preserving stable cell_id and immutable cell_version lineage"
+      },
+      {
+        "model": "EvidenceSlotVersion",
+        "change": "project required evidence slots under each cell"
+      },
+      {
+        "model": "PlanningCheckpointVersion",
+        "change": "new immutable review projection with checkpoint_version, contract_version_id, and review_status"
+      }
+    ],
+    "commands": [
+      {
+        "command_id": "CompileDecisionSurfaceCommand",
+        "expected_versions": [
+          "expected_case_version",
+          "expected_summary_version"
+        ],
+        "result": "DecisionSurfaceView"
+      },
+      {
+        "command_id": "ReviseDecisionSurfaceCommand",
+        "expected_versions": [
+          "expected_case_version",
+          "expected_decision_surface_contract_version",
+          "expected_checkpoint_version"
+        ],
+        "result": "DecisionSurfaceView"
+      },
+      {
+        "command_id": "PlanningCheckpointDecisionCommand",
+        "expected_versions": [
+          "expected_case_version",
+          "expected_decision_surface_contract_version",
+          "expected_checkpoint_version"
+        ],
+        "allowed_decisions": [
+          "accept",
+          "return"
+        ],
+        "result": "DecisionSurfaceView"
+      }
+    ],
+    "queries": [
+      {
+        "query_id": "GetDecisionSurfaceQuery",
+        "result": "DecisionSurfaceView"
+      }
+    ],
+    "persistence": {
+      "runtime_boundary": "RuntimeFacade",
+      "application_boundary": "PlanningService",
+      "tables": [
+        "canonical_decision_surface_contract_versions",
+        "canonical_decision_surface_cell_versions",
+        "canonical_evidence_slot_versions",
+        "canonical_planning_checkpoint_versions"
+      ],
+      "store_registration": {
+        "object_tables_add": "canonical_planning_checkpoint_versions",
+        "case_scoped_tables_add": "canonical_planning_checkpoint_versions",
+        "parent_binding": "PlanningCheckpointVersion.contract_version_id must reference the exact DecisionSurfaceContractVersion.contract_version_id in the same Case"
+      },
+      "must_not_require": [
+        "canonical_work_units",
+        "canonical_attempts",
+        "work_unit_id",
+        "attempt_id"
+      ],
+      "reason": "Planning is a Case-scoped product workflow. P02.5 owns execution lifecycle and must not be pulled forward to persist a draft plan."
+    }
+  },
+  "api_delta": {
+    "wire_schemas": {
+      "CompileDecisionSurfaceCommand": {
+        "required": [
+          "expected_case_version",
+          "expected_summary_version",
+          "compiler_policy_ref",
+          "pack_selection_ref",
+          "actor_ref",
+          "idempotency_key"
+        ],
+        "fixed_values": {
+          "compiler_policy_ref": "fixture:p36-three-cell-v1",
+          "pack_selection_ref": "fixture:p36-ai-infrastructure-v1"
+        }
+      },
+      "ReviseDecisionSurfaceCommand": {
+        "required": [
+          "expected_case_version",
+          "expected_decision_surface_contract_version",
+          "expected_checkpoint_version",
+          "changes",
+          "actor_ref",
+          "idempotency_key"
+        ],
+        "changes_item": {
+          "required": ["cell_id", "what_would_change"],
+          "optional": ["stop_rule"],
+          "minimum_items": 1
+        }
+      },
+      "PlanningCheckpointDecisionCommand": {
+        "required": [
+          "decision",
+          "expected_case_version",
+          "expected_decision_surface_contract_version",
+          "expected_checkpoint_version",
+          "actor_ref",
+          "idempotency_key"
+        ],
+        "decision_values": ["accept", "return"]
+      }
+    },
+    "operations": [
+      {
+        "method": "POST",
+        "path": "/api/v1/cases/{case_id}/planning/compile",
+        "operation_id": "compileDecisionSurface",
+        "request_schema": "CompileDecisionSurfaceCommand",
+        "response_schema": "DecisionSurfaceView"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/cases/{case_id}/decision-surface",
+        "operation_id": "reviseDecisionSurface",
+        "request_schema": "ReviseDecisionSurfaceCommand",
+        "response_schema": "DecisionSurfaceView"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/cases/{case_id}/planning/checkpoint",
+        "operation_id": "reviewPlanningCheckpoint",
+        "request_schema": "PlanningCheckpointDecisionCommand",
+        "response_schema": "DecisionSurfaceView"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/cases/{case_id}/decision-surface",
+        "operation_id": "getDecisionSurface",
+        "response_schema": "DecisionSurfaceView"
+      }
+    ],
+    "decision_surface_view_required": [
+      "case_id",
+      "contract_id",
+      "contract_version",
+      "contract_version_id",
+      "checkpoint_version",
+      "review_status",
+      "cells"
+    ],
+    "cell_view_required": [
+      "cell_id",
+      "cell_version",
+      "decision_question",
+      "owner",
+      "materiality",
+      "stop_rule",
+      "what_would_change",
+      "evidence_slots"
+    ],
+    "evidence_slot_view_required": [
+      "evidence_slot_id",
+      "evidence_role",
+      "entity_scope",
+      "period_scope",
+      "source_policy_ref",
+      "required"
+    ],
+    "permissions": {
+      "compile_or_revise": "planning:write",
+      "review": "planning:review",
+      "read": "planning:read"
+    }
+  },
+  "state_machine": {
+    "compile": "new_contract_version_plus_awaiting_review_checkpoint",
+    "revise": "new_contract_version_plus_awaiting_review_checkpoint",
+    "accept": "same_contract_version_plus_accepted_checkpoint",
+    "return": "same_contract_version_plus_returned_checkpoint",
+    "stale_command": "version_conflict_without_write"
+  },
+  "stage_acceptance": {
+    "fixture_full_for_current_train": [
+      "browser_compiles_exactly_three_fixed_cells",
+      "all_cells_show_question_owner_materiality_stop_rule_what_would_change_and_required_evidence_slots",
+      "revision_creates_a_new_contract_version_and_preserves_prior_version",
+      "accept_and_return_create_new_checkpoint_versions_without_changing_contract_content",
+      "refresh_and_reopen_restore_exact_latest_contract_and_checkpoint",
+      "stale_revision_or_review_fails_without_partial_write",
+      "permission_denied_fails_without_write",
+      "network_model_provider_paid_and_real_business_write_counts_are_zero"
+    ]
+  },
+  "non_authority": [
+    "does_not_reopen_P02_0",
+    "does_not_change_Point01_closeout",
+    "does_not_create_a_gate_or_package_family",
+    "does_not_admit_P02_5",
+    "does_not_admit_FIN_0_1_release_or_production"
+  ]
+}

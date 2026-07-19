@@ -1,0 +1,228 @@
+{
+  "schema_version": "fin_ia_0_1_vt3_deliverable_review_trace_contract_v1_0",
+  "contract_id": "REL-PROD-001:VT3:DELIVERABLE-REVIEW-TRACE",
+  "version": "1.0",
+  "status": "active_fixture_shadow_internal_development",
+  "release_id": "REL-PROD-001",
+  "tranche_id": "VT3_W3_DELIVERABLE_REVIEW_TRACE",
+  "purpose": "Turn the exact VT2 three-cell Workpaper and fixture-only WriterAdmission into immutable HTML and Markdown previews, exact-version review actions, and bidirectional material-claim trace without invoking a model, source, tool, provider, or release path.",
+  "consumes": {
+    "vt2_contract": "configs/releases/fin_ia_0_1_vt2_three_cell_integrity_workpaper_contract_v1_0.json",
+    "required_workpaper_state": "lead_reviewed_with_fixture_preview_writer_admission",
+    "required_lead_review_decision": "admit_fixture_writer_preview",
+    "required_writer_admission_scope": "fixture_preview_only_no_writer_execution",
+    "active_cell_roles": [
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence"
+    ]
+  },
+  "current_scope": {
+    "included_execution_points": [
+      "P06.0_current_train_full",
+      "P06.1_deterministic_no_source_fixture_composer",
+      "P06.2_current_train_full",
+      "P06.3_current_train_full",
+      "P06.4_current_train_full",
+      "P06.5_three_cell_browser_vertical"
+    ],
+    "deferred_execution_points": [
+      "P05.6_P36_10_to_20_cell_calibration",
+      "P06.1_separately_authorized_model_writer_node",
+      "P06.5_P36_10_to_20_cell_calibrated_owner_closeout",
+      "P07_release_candidate_and_dogfood",
+      "REL_PROD_001_RG1_operational_vertical"
+    ],
+    "point06_owner_closeout": "not_claimed"
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/v1/cases/{case_id}/deliverables",
+      "operation": "getDeliverableHead",
+      "permission": "deliverable:read"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{case_id}/deliverables",
+      "operation": "compileDeliverablePreviewFixture",
+      "permission": "deliverable:write"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/artifacts/{deliverable_id}/versions/{artifact_version}/review-actions",
+      "operation": "createDeliverableReviewAction",
+      "permission": "deliverable_review:decide"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/cases/{case_id}/trace",
+      "operation": "getCaseTrace",
+      "permission": "trace:read"
+    }
+  ],
+  "wire_contract": {
+    "compile_command_fields": [
+      "expected_workpaper_version",
+      "expected_workpaper_content_digest",
+      "writer_admission_id",
+      "actor_ref",
+      "idempotency_key"
+    ],
+    "review_command_fields": [
+      "expected_artifact_version",
+      "expected_content_digest",
+      "expected_canonical_presentation_digest",
+      "action_type",
+      "reason",
+      "actor_ref",
+      "idempotency_key"
+    ],
+    "deliverable_view_fields": [
+      "case_id",
+      "deliverable_id",
+      "artifact_version_id",
+      "artifact_version",
+      "content_digest",
+      "canonical_presentation_digest",
+      "status",
+      "title",
+      "sections",
+      "material_claims",
+      "renderings",
+      "review_actions",
+      "hard_boundaries"
+    ],
+    "trace_view_fields": [
+      "case_id",
+      "manifest_id",
+      "artifact_version_id",
+      "artifact_version",
+      "artifact_content_digest",
+      "canonical_presentation_digest",
+      "nodes",
+      "edges",
+      "claim_to_source",
+      "source_to_claim",
+      "redaction_summary"
+    ]
+  },
+  "composer_contract": {
+    "mode": "deterministic_no_source_fixture_composer",
+    "input": "exact_workpaper_judgments_and_fixture_writer_admission_only",
+    "writer_brief_sections": [
+      "executive_answer",
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence",
+      "what_would_change",
+      "remaining_gaps"
+    ],
+    "forbidden_inputs": [
+      "retrieval",
+      "sql",
+      "graph",
+      "network",
+      "tool",
+      "provider",
+      "model",
+      "chat_transcript",
+      "raw_chain_of_thought"
+    ],
+    "call_counts": {
+      "source": 0,
+      "retrieval": 0,
+      "sql": 0,
+      "graph": 0,
+      "network": 0,
+      "tool": 0,
+      "provider": 0,
+      "model": 0
+    }
+  },
+  "presentation_contract": {
+    "canonical_identity": "one_CanonicalPresentationModel_digest_shared_by_HTML_and_Markdown",
+    "artifact_semantics": "immutable_append_only_exact_version",
+    "renderers": [
+      "html",
+      "markdown"
+    ],
+    "required_claim_fields": [
+      "claim_id",
+      "cell_id",
+      "claim_text",
+      "claim_kind",
+      "evidence_refs",
+      "numeric_refs",
+      "repair_outcome_refs",
+      "gap_refs"
+    ],
+    "parity_basis": "both_renderers_consume_the_same_ordered_section_and_claim_arrays"
+  },
+  "review_contract": {
+    "actions": [
+      "comment",
+      "return_for_repair",
+      "accept_fixture_preview"
+    ],
+    "target_binding": [
+      "artifact_version_id",
+      "artifact_version",
+      "content_digest",
+      "canonical_presentation_digest"
+    ],
+    "terminal_actions": [
+      "return_for_repair",
+      "accept_fixture_preview"
+    ],
+    "inheritance": "review_actions_never_transfer_to_another_artifact_version"
+  },
+  "trace_contract": {
+    "directions": [
+      "claim_to_source",
+      "source_to_claim"
+    ],
+    "allowed_node_types": [
+      "material_claim",
+      "evidence_candidate",
+      "numeric_fact",
+      "repair_outcome",
+      "explicit_gap"
+    ],
+    "required_redactions": [
+      "raw_chain_of_thought",
+      "prompt",
+      "secret",
+      "unredacted_tool_observation"
+    ],
+    "missing_lineage_behavior": "explicit_gap_not_silent_success"
+  },
+  "version_contract": {
+    "deliverable": "immutable_exact_workpaper_version_content_digest_and_writer_admission",
+    "html_markdown": "exact_artifact_version_and_shared_canonical_presentation_digest",
+    "review": "append_only_exact_artifact_version_and_content_digest",
+    "trace": "immutable_manifest_bound_to_exact_artifact_version",
+    "idempotency": "required_on_every_mutation"
+  },
+  "hard_boundaries": {
+    "network_calls": 0,
+    "tool_invocations": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_full_chain": 0,
+    "writer_model_execution": 0,
+    "runtime_promotion": 0,
+    "release_evidence": 0,
+    "real_business_case_mutation": "forbidden",
+    "production_cutover": "forbidden"
+  },
+  "acceptance": [
+    "an exact fixture-only WriterAdmission compiles one deterministic WriterBrief without source SQL graph tool provider or model calls",
+    "HTML and Markdown render from one immutable CanonicalPresentationModel and expose exact content digests",
+    "material claims bind exact evidence numeric repair or explicit gap identities from the admitted Workpaper",
+    "comment return-for-repair and accept-fixture-preview actions bind the exact artifact version and stale versions fail closed",
+    "claim-to-source and source-to-claim trace exclude prompts secrets raw chain-of-thought and unredacted observations",
+    "browser refresh and backend restart restore the same deliverable review actions and trace manifest",
+    "the three-cell browser vertical is usable while P36 10-to-20-cell calibration Point06 owner closeout RG1 and release remain deferred"
+  ]
+}

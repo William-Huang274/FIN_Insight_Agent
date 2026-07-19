@@ -20,6 +20,7 @@ from .job_runner import (
     eval_runner_catalog,
     start_command_job,
 )
+from .agent_information_economy_projection import build_agent_information_economy_projection
 from .data_build import (
     DataBuildCommandPreview,
     DataBuildParameter,
@@ -97,6 +98,7 @@ __all__ = [
     "build_agent_session_turn_command",
     "build_data_build_command",
     "build_eval_command",
+    "build_agent_information_economy_projection",
     "build_local_smoke_command",
     "build_native_checkpoint_resume_command",
     "cancel_command_job",

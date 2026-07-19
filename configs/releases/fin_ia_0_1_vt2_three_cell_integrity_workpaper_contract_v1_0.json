@@ -1,0 +1,194 @@
+{
+  "schema_version": "fin_ia_0_1_vt2_three_cell_integrity_workpaper_contract_v1_0",
+  "contract_id": "REL-PROD-001:VT2:THREE-CELL-INTEGRITY-WORKPAPER",
+  "version": "1.0",
+  "status": "active_fixture_shadow_internal_development",
+  "release_id": "REL-PROD-001",
+  "tranche_id": "VT2_W2_NUMERIC_JUDGMENT_REPAIR_LEAD",
+  "purpose": "Extend the existing three-cell Evidence Workbench through one bounded repair, one auditable numeric fixture, structured cell judgments, a Workpaper, and an exact LeadReview without opening external execution or release authority.",
+  "consumes": {
+    "point03_vt1_contract": "configs/releases/point03_vt1_evidence_workbench_contract_v1_0.json",
+    "required_workspace_state": "compiled_fixture_with_exact_accepted_plan_and_pending_fixture_work_unit",
+    "active_cell_roles": [
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence"
+    ]
+  },
+  "current_scope": {
+    "included_execution_points": [
+      "P03.4_fixture_repair_subset",
+      "P04.0-P04.4_three_cell_numeric_subset",
+      "P05.0-P05.4_three_cell_workpaper_subset"
+    ],
+    "deferred_execution_points": [
+      "P02.6_10_to_20_cell_calibration",
+      "P03.1-P03.3_real_internal_retrieval",
+      "P03.5_calibration_and_closeout",
+      "P04.5_calibration_and_closeout",
+      "P05.5_same_case_follow_up",
+      "P05.6_calibration_and_closeout"
+    ]
+  },
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{case_id}/evidence/slots/{evidence_slot_id}/execute-repair",
+      "operation": "executeEvidenceRepairFixture",
+      "permission": "evidence:repair"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/cases/{case_id}/integrity/numeric",
+      "operation": "getNumericWorkbench",
+      "permission": "numeric:read"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{case_id}/integrity/numeric/compile",
+      "operation": "compileNumericFixture",
+      "permission": "numeric:write"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/cases/{case_id}/workpaper",
+      "operation": "getWorkpaper",
+      "permission": "workpaper:read"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{case_id}/workpaper/compile",
+      "operation": "compileWorkpaperFixture",
+      "permission": "workpaper:write"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{case_id}/workpaper/lead-review",
+      "operation": "completeLeadReviewFixture",
+      "permission": "lead_review:decide"
+    }
+  ],
+  "repair_fixture": {
+    "target_evidence_role": "thesis_counterevidence",
+    "precondition": "latest_append_only_request_repair_action_for_exact_slot",
+    "route_mode": "deterministic_local_official_policy_fixture",
+    "attempt_semantics": "one_bounded_fixture_attempt_no_retry",
+    "candidate": {
+      "metadata": {
+        "candidate_id": "p03_vt2_fixture_bis_export_control_counterevidence",
+        "document_id": "fixture_bis_advanced_computing_controls_2025",
+        "document_version": "fixture:v1",
+        "source_snapshot_ref": "fixture_snapshot:p36_ai_infra_counterevidence:v1",
+        "source_policy_ref": "fixture:issuer_and_policy_first",
+        "route_id": "fixture_policy_counterevidence_metadata_route",
+        "source_role": "official_policy",
+        "source_authority_rank": 5,
+        "entity_ref": "NVDA",
+        "period_ref": "latest_two_quarters",
+        "candidate_kind": "top_k_seed",
+        "section_or_table_ref": "advanced_computing_export_control_scope",
+        "metadata_rank": 1,
+        "content_ref": "fixture://p36/bis/export-control-counterevidence"
+      },
+      "display": {
+        "title": "Advanced-computing export-control counterevidence",
+        "source_name": "Official policy fixture",
+        "source_type": "Official policy",
+        "published_at": "2025-01-01",
+        "citation": "Advanced-computing export-control scope",
+        "excerpt": "The policy fixture supplies a bounded counterevidence route for shipment restrictions and customer access risk.",
+        "authority_label": "Official policy",
+        "applicability_boundary": "Internal fixture used to prove repair lineage; not live policy content and not release evidence."
+      }
+    }
+  },
+  "numeric_fixture": {
+    "source_evidence_role": "revenue_capture",
+    "source_candidate_id": "p03_fixture_tsm_packaging_table",
+    "parser_policy": {
+      "policy_ref": "fin-vt2-three-cell-parser-numeric-v1",
+      "allowed_units": [
+        "units"
+      ],
+      "allowed_scales": [
+        1
+      ]
+    },
+    "observation": {
+      "candidate_id": "p03_fixture_tsm_packaging_table",
+      "raw_value": "120000",
+      "row_label": "Advanced packaging capacity fixture units",
+      "unit": "units",
+      "period": "latest_two_quarters",
+      "source_coordinate": "advanced_packaging_capacity_table:row:capacity_units",
+      "scale_multiplier": 1
+    },
+    "metric_definition_ref": "fixture_metric:advanced_packaging_capacity_units:v1",
+    "evidence_gate_policy": {
+      "policy_ref": "fin-vt2-three-cell-evidence-gate-v1",
+      "minimum_source_authority_rank_by_evidence_role": {
+        "revenue_candidate": 4
+      }
+    },
+    "internal_promotion": {
+      "decision": "accepted_for_internal_fixture_judgment",
+      "scope": "internal_fixture_judgment_only",
+      "runtime_promotion_authorized": false,
+      "writer_citable": false,
+      "release_evidence": false
+    }
+  },
+  "workpaper_fixture": {
+    "required_judgment_roles": [
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence"
+    ],
+    "judgment_status_by_role": {
+      "demand_signal": "supported_by_bounded_candidate",
+      "revenue_capture": "supported_by_internal_fixture_numeric",
+      "thesis_counterevidence": "counterevidence_repair_completed"
+    },
+    "required_sections": [
+      "judgment",
+      "supporting_evidence",
+      "numeric_trace",
+      "counter_thesis",
+      "what_would_change",
+      "remaining_gaps"
+    ],
+    "lead_review_decisions": [
+      "admit_fixture_writer_preview",
+      "return_for_repair"
+    ],
+    "writer_admission_boundary": "fixture_preview_only_no_writer_execution"
+  },
+  "version_contract": {
+    "repair": "append_only_exact_workspace_version",
+    "numeric": "immutable_projection_exact_evidence_workspace_version",
+    "workpaper": "immutable_projection_exact_numeric_projection_version",
+    "lead_review": "append_only_exact_workpaper_version_and_content_digest",
+    "idempotency": "required_on_every_mutation"
+  },
+  "hard_boundaries": {
+    "network_calls": 0,
+    "tool_invocations": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_full_chain": 0,
+    "writer_execution": 0,
+    "runtime_promotion": 0,
+    "release_evidence": 0,
+    "real_business_case_mutation": "forbidden",
+    "production_cutover": "forbidden"
+  },
+  "acceptance": [
+    "a requested thesis-counterevidence repair produces exactly one append-only bounded outcome and one new candidate at the same slot identity",
+    "the numeric fixture preserves candidate bundle parser fact trace and promotion-decision lineage",
+    "the displayed value exposes entity period unit scale row coordinate program steps and fixture boundary",
+    "three cell judgments reference exact evidence numeric repair and planning identities",
+    "LeadReview binds the exact Workpaper content digest and either returns repair or emits fixture-only WriterAdmission",
+    "browser refresh and backend restart restore repair numeric Workpaper and LeadReview state",
+    "external model provider network tool writer and release call counts remain zero"
+  ]
+}

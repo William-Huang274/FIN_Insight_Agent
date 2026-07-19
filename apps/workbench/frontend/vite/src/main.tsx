@@ -1,19 +1,30 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { AppShell } from "./app/AppShell";
 import {
+  Activity,
+  AlertTriangle,
+  BarChart3,
   Database,
   FileSearch,
+  FileText,
   FlaskConical,
   FolderOpen,
   FolderSearch,
+  GitBranch,
   History,
+  Layers,
   MessageSquareText,
   Play,
   RefreshCcw,
   Terminal,
   Save,
+  Search,
+  Settings,
+  ShieldCheck,
   CircleStop,
   ClipboardCheck,
+  Users,
 } from "lucide-react";
 import "../../static/styles.css";
 import "./workbench.css";
@@ -237,6 +248,35 @@ type EvalDashboard = {
   latest_event_at?: string | null;
 };
 
+type AgentInformationEconomyArtifact = {
+  artifact_type: string;
+  rel_path: string;
+  updated_at: string;
+  read_status: string;
+  run_id: string;
+  status: string;
+  plan_status?: string;
+  preflight_only?: boolean;
+  estimated_total_tokens?: number;
+  estimated_paid_call_count?: number;
+  case_count?: number;
+  issue_counts?: Record<string, number>;
+  scheduler_advice?: Record<string, unknown>;
+  root_cause_candidates?: string[];
+  cases?: Record<string, unknown>[];
+};
+
+type AgentInformationEconomyProjection = {
+  schema_version: string;
+  status: string;
+  artifact_count: number;
+  visible_artifact_count: number;
+  latest_artifact?: AgentInformationEconomyArtifact | null;
+  summary: Record<string, unknown>;
+  artifacts: AgentInformationEconomyArtifact[];
+  policy: string;
+};
+
 type RunInspectionReport = {
   job: RunJob;
   artifact_index?: RunArtifactIndex | null;
@@ -362,6 +402,63 @@ type R53R60PilotActionLedger = {
   counts: Record<string, number>;
 };
 
+type R53R60ProductAcceptanceEvidenceStatus = {
+  schema_version: string;
+  evidence_path: string;
+  evidence_rows: Record<string, unknown>[];
+  summary: Record<string, unknown>;
+  counts: Record<string, number>;
+  pending: {
+    human_requirements?: Record<string, unknown>[];
+    human_requirement_ids?: string[];
+    defect_source_ids?: string[];
+  };
+  session_readiness?: {
+    sessions?: Record<string, unknown>[];
+    ready_sessions?: Record<string, unknown>[];
+    ready_session_count?: number;
+    status?: string;
+  };
+  next_action?: string;
+};
+
+type R53R60ProductAcceptanceEvidence = {
+  accepted_reviewer_roles: string[];
+  accepted_evidence_types: string[];
+  accepted_deliverable_decisions: string[];
+  accepted_defect_closeout_statuses: string[];
+  evidence_status: R53R60ProductAcceptanceEvidenceStatus;
+};
+
+type R53R60ReviewerAcceptancePackage = {
+  schema_version: string;
+  package: Record<string, unknown>;
+  step_rows: Record<string, unknown>[];
+  evidence_template_rows: Record<string, unknown>[];
+  reviewer_candidate_rows: Record<string, unknown>[];
+  report_markdown_path?: string;
+  package_exists?: boolean;
+};
+
+type R53R60AcceptanceEvidenceForm = {
+  evidenceType: string;
+  reviewerRole: string;
+  sessionId: string;
+  taskId: string;
+  caseId: string;
+  decisionStatus: string;
+  deliverableRef: string;
+  artifactRefId: string;
+  artifactRefIds: string;
+  reviewComment: string;
+  closeoutStatus: string;
+  sourceId: string;
+  coveredSourceIds: string;
+  visualDecision: string;
+  browserScreenshotRefs: string;
+  traceRef: string;
+};
+
 type NativeCheckpointInspection = {
   schema_version: string;
   checkpoint_path: string;
@@ -402,6 +499,25 @@ const initialForm: FormState = {
   repoRoot: ".",
 };
 
+const initialR53R60AcceptanceEvidenceForm: R53R60AcceptanceEvidenceForm = {
+  evidenceType: "reviewer_session",
+  reviewerRole: "lead_analyst",
+  sessionId: "",
+  taskId: "",
+  caseId: "",
+  decisionStatus: "accepted",
+  deliverableRef: "",
+  artifactRefId: "",
+  artifactRefIds: "",
+  reviewComment: "",
+  closeoutStatus: "repaired",
+  sourceId: "",
+  coveredSourceIds: "",
+  visualDecision: "accepted",
+  browserScreenshotRefs: "",
+  traceRef: "",
+};
+
 function App() {
   const [health, setHealth] = useState<Status>("neutral");
   const [form, setForm] = useState<FormState>(initialForm);
@@ -419,6 +535,7 @@ function App() {
   const [sessionTurns, setSessionTurns] = useState<RunJob[]>([]);
   const [evals, setEvals] = useState<EvalRunner[]>([]);
   const [evalDashboard, setEvalDashboard] = useState<EvalDashboard | null>(null);
+  const [agentInformationEconomy, setAgentInformationEconomy] = useState<AgentInformationEconomyProjection | null>(null);
   const [r53r60Tasks, setR53R60Tasks] = useState<R53R60TaskProjection[]>([]);
   const [r53r60SelectedTaskId, setR53R60SelectedTaskId] = useState("");
   const [r53r60Task, setR53R60Task] = useState<R53R60TaskProjection | null>(null);
@@ -430,9 +547,12 @@ function App() {
   const [r53r60DashboardProjection, setR53R60DashboardProjection] = useState<R53R60DashboardProjection | null>(null);
   const [r53r60PilotDashboard, setR53R60PilotDashboard] = useState<R53R60PilotDashboard | null>(null);
   const [r53r60PilotActions, setR53R60PilotActions] = useState<R53R60PilotActionLedger | null>(null);
+  const [r53r60ProductAcceptanceEvidence, setR53R60ProductAcceptanceEvidence] = useState<R53R60ProductAcceptanceEvidence | null>(null);
+  const [r53r60ReviewerAcceptancePackage, setR53R60ReviewerAcceptancePackage] = useState<R53R60ReviewerAcceptancePackage | null>(null);
   const [r53r60PilotCaseId, setR53R60PilotCaseId] = useState("");
   const [r53r60PilotReviewComment, setR53R60PilotReviewComment] = useState("Pilot reviewer note");
   const [r53r60ReviewComment, setR53R60ReviewComment] = useState("Workbench reviewer note");
+  const [r53r60AcceptanceEvidenceForm, setR53R60AcceptanceEvidenceForm] = useState<R53R60AcceptanceEvidenceForm>(initialR53R60AcceptanceEvidenceForm);
   const [dataBuildSteps, setDataBuildSteps] = useState<DataBuildStep[]>([]);
   const [dataBuildStepId, setDataBuildStepId] = useState("");
   const [dataBuildValues, setDataBuildValues] = useState<Record<string, string | boolean>>({});
@@ -610,19 +730,38 @@ function App() {
     setEvalDashboard(payload);
   }
 
+  async function loadAgentInformationEconomy() {
+    const payload = await requestJson<AgentInformationEconomyProjection>("/api/evals/agent-information-economy");
+    setAgentInformationEconomy(payload);
+  }
+
   async function loadR53R60Workbench() {
     try {
-      const [tasksPayload, gatePayload, pilotPayload, pilotActionsPayload] = await Promise.all([
+      const [
+        tasksPayload,
+        gatePayload,
+        pilotPayload,
+        pilotActionsPayload,
+        productAcceptanceEvidencePayload,
+        reviewerPackagePayload,
+        agentInformationEconomyPayload,
+      ] = await Promise.all([
         requestJson<{ tasks: R53R60TaskProjection[] }>("/api/r53-r60/tasks"),
         requestJson<R53R60ScopeGate>("/api/r53-r60/scope-gate"),
         requestJson<R53R60PilotDashboard>("/api/r53-r60/pilot/dashboard"),
         requestJson<R53R60PilotActionLedger>("/api/r53-r60/pilot/actions"),
+        requestJson<R53R60ProductAcceptanceEvidence>("/api/r53-r60/product-acceptance/evidence"),
+        requestJson<R53R60ReviewerAcceptancePackage>("/api/r53-r60/product-acceptance/reviewer-package"),
+        requestJson<AgentInformationEconomyProjection>("/api/evals/agent-information-economy"),
       ]);
       const tasks = tasksPayload.tasks ?? [];
       setR53R60Tasks(tasks);
       setR53R60ScopeGate(gatePayload);
       setR53R60PilotDashboard(pilotPayload);
       setR53R60PilotActions(pilotActionsPayload);
+      setR53R60ProductAcceptanceEvidence(productAcceptanceEvidencePayload);
+      setR53R60ReviewerAcceptancePackage(reviewerPackagePayload);
+      setAgentInformationEconomy(agentInformationEconomyPayload);
       setR53R60PilotCaseId((current) => current || pilotPayload.case_assignments?.[0]?.case_id?.toString() || "");
       const selected = r53r60SelectedTaskId || tasks[0]?.task_id || "";
       if (selected) {
@@ -681,6 +820,25 @@ function App() {
       ]);
       setR53R60PilotDashboard(pilotPayload);
       setR53R60PilotActions(actionPayload);
+    });
+  }
+
+  async function loadR53R60ProductAcceptanceEvidence() {
+    const [evidencePayload, reviewerPackagePayload] = await Promise.all([
+      requestJson<R53R60ProductAcceptanceEvidence>("/api/r53-r60/product-acceptance/evidence"),
+      requestJson<R53R60ReviewerAcceptancePackage>("/api/r53-r60/product-acceptance/reviewer-package"),
+    ]);
+    setR53R60ProductAcceptanceEvidence(evidencePayload);
+    setR53R60ReviewerAcceptancePackage(reviewerPackagePayload);
+  }
+
+  async function submitR53R60ProductAcceptanceEvidence() {
+    await runBusy("r53_r60_product_acceptance_evidence", async () => {
+      await requestJson("/api/r53-r60/product-acceptance/evidence", {
+        method: "POST",
+        body: JSON.stringify(productAcceptanceEvidencePayloadFromForm(r53r60AcceptanceEvidenceForm)),
+      });
+      await loadR53R60ProductAcceptanceEvidence();
     });
   }
 
@@ -1249,6 +1407,7 @@ function App() {
           </div>
 
           <EvalDashboardPanel dashboard={evalDashboard} onLoadRun={loadRun} />
+          <AgentInformationEconomyPanel projection={agentInformationEconomy} onRefresh={loadAgentInformationEconomy} />
           <EvalRunners evals={evals} busy={busy} onRun={startEvalRun} />
         </section>
 
@@ -1276,6 +1435,10 @@ function App() {
             dashboardProjection={r53r60DashboardProjection}
             pilotDashboard={r53r60PilotDashboard}
             pilotActions={r53r60PilotActions}
+            productAcceptanceEvidence={r53r60ProductAcceptanceEvidence}
+            reviewerAcceptancePackage={r53r60ReviewerAcceptancePackage}
+            agentInformationEconomy={agentInformationEconomy}
+            acceptanceEvidenceForm={r53r60AcceptanceEvidenceForm}
             pilotCaseId={r53r60PilotCaseId}
             pilotReviewComment={r53r60PilotReviewComment}
             reviewComment={r53r60ReviewComment}
@@ -1284,8 +1447,11 @@ function App() {
             onReviewCommentChange={setR53R60ReviewComment}
             onPilotCaseChange={setR53R60PilotCaseId}
             onPilotReviewCommentChange={setR53R60PilotReviewComment}
+            onAcceptanceEvidenceFormChange={setR53R60AcceptanceEvidenceForm}
             onSubmitReviewAction={submitR53R60ReviewAction}
             onSubmitPilotReviewAction={submitR53R60PilotReviewAction}
+            onSubmitProductAcceptanceEvidence={submitR53R60ProductAcceptanceEvidence}
+            onRefreshProductAcceptanceEvidence={loadR53R60ProductAcceptanceEvidence}
             onRenderDeliverables={renderR53R60Deliverables}
           />
         </section>
@@ -1338,6 +1504,10 @@ function R53R60WorkbenchPanel({
   dashboardProjection,
   pilotDashboard,
   pilotActions,
+  productAcceptanceEvidence,
+  reviewerAcceptancePackage,
+  agentInformationEconomy,
+  acceptanceEvidenceForm,
   pilotCaseId,
   pilotReviewComment,
   reviewComment,
@@ -1346,8 +1516,11 @@ function R53R60WorkbenchPanel({
   onReviewCommentChange,
   onPilotCaseChange,
   onPilotReviewCommentChange,
+  onAcceptanceEvidenceFormChange,
   onSubmitReviewAction,
   onSubmitPilotReviewAction,
+  onSubmitProductAcceptanceEvidence,
+  onRefreshProductAcceptanceEvidence,
   onRenderDeliverables,
 }: {
   tasks: R53R60TaskProjection[];
@@ -1361,6 +1534,10 @@ function R53R60WorkbenchPanel({
   dashboardProjection: R53R60DashboardProjection | null;
   pilotDashboard: R53R60PilotDashboard | null;
   pilotActions: R53R60PilotActionLedger | null;
+  productAcceptanceEvidence: R53R60ProductAcceptanceEvidence | null;
+  reviewerAcceptancePackage: R53R60ReviewerAcceptancePackage | null;
+  agentInformationEconomy: AgentInformationEconomyProjection | null;
+  acceptanceEvidenceForm: R53R60AcceptanceEvidenceForm;
   pilotCaseId: string;
   pilotReviewComment: string;
   reviewComment: string;
@@ -1369,20 +1546,14 @@ function R53R60WorkbenchPanel({
   onReviewCommentChange: (value: string) => void;
   onPilotCaseChange: (caseId: string) => void;
   onPilotReviewCommentChange: (value: string) => void;
+  onAcceptanceEvidenceFormChange: (form: R53R60AcceptanceEvidenceForm) => void;
   onSubmitReviewAction: (action: string) => void;
   onSubmitPilotReviewAction: (action: string) => void;
+  onSubmitProductAcceptanceEvidence: () => void;
+  onRefreshProductAcceptanceEvidence: () => void;
   onRenderDeliverables: () => void;
 }) {
-  if (!tasks.length && !task) {
-    return (
-      <div className="summary-grid empty-state">
-        <div>
-          <h3>等待 S6 投影</h3>
-          <p>刷新后会从 SQL-final runtime ledger 生成任务中心、审查队列和 drilldown 投影。</p>
-        </div>
-      </div>
-    );
-  }
+  const [activeSurface, setActiveSurface] = useState<"analysis" | "review" | "delivery" | "ops">("analysis");
 
   const claims = drilldown?.claims ?? [];
   const gaps = drilldown?.gaps ?? [];
@@ -1394,210 +1565,332 @@ function R53R60WorkbenchPanel({
   const renderJobs = deliverables?.render_jobs ?? [];
   const qualityGates = deliverables?.quality_gates ?? [];
   const dashboardPanelPayload = dashboardProjection?.dashboard_projection?.panel_payload;
+  const activeTask = task ?? tasks.find((item) => item.task_id === selectedTaskId) ?? tasks[0] ?? null;
+  const reviewerReadySessions =
+    productAcceptanceEvidence?.evidence_status?.session_readiness?.ready_sessions?.length ?? 0;
+  const pendingHumanEvidence =
+    productAcceptanceEvidence?.evidence_status?.counts?.human_evidence_pending_count ?? 0;
+  const pendingDefectCloseout =
+    productAcceptanceEvidence?.evidence_status?.counts?.defect_closeout_pending_count ?? 0;
+  const workpaperStatus =
+    activeTask?.human_review_status ?? drilldown?.lead_review?.status ?? activeTask?.lead_review_status ?? "review pending";
 
   return (
-    <div className="r53r60-workbench">
-      <div className="summary-grid">
-        <MetricBox label="Slice gate" value={scopeGate?.release_decision ?? "未生成"} detail={scopeGate?.closeout_level ?? ""} />
-        <MetricBox label="任务状态" value={task?.status ?? "未选择"} detail={task?.task_id ?? selectedTaskId} />
-        <MetricBox label="Workpaper" value={`${task?.section_count ?? 0} sections`} detail={`${task?.claim_count ?? 0} claims · ${task?.gap_count ?? 0} gaps`} />
-        <MetricBox label="Review" value={task?.human_review_status ?? "未入队"} detail={task?.lead_review_status ?? ""} />
-        <MetricBox label="Ops" value={`${ops?.trace_span_count ?? 0} traces`} detail={`${ops?.latency_ms ?? 0}ms · $${ops?.cost_amount ?? 0}`} />
-        <MetricBox label="Deliverables" value={`${renderJobs.length} artifacts`} detail={`${qualityGates.length} quality gates`} />
-        <MetricBox label="Gate rows" value={numberText(gateCounts.gate_count)} detail={`${numberText(gateCounts.gate_fail_count)} failed`} />
-      </div>
-
-      <R53R60PilotDogfoodPanel
-        dashboard={pilotDashboard}
-        actionLedger={pilotActions}
-        selectedCaseId={pilotCaseId}
-        reviewComment={pilotReviewComment}
-        busy={busy}
-        onCaseChange={onPilotCaseChange}
-        onReviewCommentChange={onPilotReviewCommentChange}
-        onSubmitReviewAction={onSubmitPilotReviewAction}
-      />
-
-      <div className="r53r60-grid">
-        <div className="saved-profiles compact-panel">
-          <h3>任务中心</h3>
-          <div className="saved-profile-list vertical-list">
-            {tasks.map((item) => (
-              <button
-                className={`saved-profile-button ${item.task_id === selectedTaskId ? "selected" : ""}`}
-                type="button"
-                onClick={() => onSelectTask(item.task_id)}
-                key={item.task_id}
-              >
-                {item.task_id}
-                <span>
-                  {item.status} · {item.progress}% · {item.claim_count} claims · {item.gap_count} gaps
-                </span>
-              </button>
-            ))}
+    <div className="r53r60-workbench product-workbench-shell">
+      <div className="product-workbench-hero">
+        <div className="hero-main">
+          <div className="hero-title-row">
+            <ClipboardCheck size={22} aria-hidden="true" />
+            <div>
+              <h2>Research Workbench</h2>
+              <p>{activeTask?.query_text ?? "等待 ResearchTask 投影。刷新后会展示任务中心、底稿、证据、缺口、审查和交付状态。"}</p>
+            </div>
           </div>
-        </div>
-
-        <div className="r53r60-card">
-          <h3>Lead / Judgment</h3>
-          <div className="readiness-columns">
-            <KeyValueBlock
-              title="Lead review"
-              values={{
-                status: objectValue(drilldown?.lead_review, "status"),
-                gaps: compactListValue(drilldown?.lead_review?.typed_gap_ids),
-                guidance: compactObjectValue(drilldown?.lead_review?.writing_guidance),
-              }}
-            />
-            <KeyValueBlock
-              title="Judgment state"
-              values={{
-                status: objectValue(drilldown?.judgment, "status"),
-                unsupported_claims: objectValue(drilldown?.judgment, "unsupported_claim_count"),
-                counter_thesis: compactObjectValue(drilldown?.judgment?.payload),
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="r53r60-grid wide">
-        <R53R60Table
-          title="Workpaper sections"
-          rows={sections.slice(0, 8)}
-          columns={[
-            ["section_key", "Section"],
-            ["title", "Title"],
-            ["claim_refs", "Claims"],
-          ]}
-        />
-        <R53R60Table
-          title="ClaimCards"
-          rows={claims.slice(0, 10)}
-          columns={[
-            ["claim_card_id", "Claim"],
-            ["dimension_id", "Dimension"],
-            ["authority_boundary", "Authority"],
-            ["source_boundary", "Boundary"],
-          ]}
-        />
-      </div>
-
-      <div className="r53r60-grid wide">
-        <R53R60Table
-          title="Typed gaps"
-          rows={gaps.slice(0, 10)}
-          columns={[
-            ["gap_id", "Gap"],
-            ["gap_type", "Type"],
-            ["dimension_id", "Dimension"],
-            ["status", "Status"],
-          ]}
-        />
-        <R53R60Table
-          title="Gate rows"
-          rows={gates.slice(0, 10)}
-          columns={[
-            ["slice_id", "Slice"],
-            ["gate_id", "Gate"],
-            ["status", "Status"],
-            ["description", "Description"],
-          ]}
-        />
-      </div>
-
-      <div className="r53r60-grid">
-        <div className="r53r60-card">
-          <h3>Review queue</h3>
-          <div className="summary-grid compact-metrics">
-            <MetricBox label="待审项" value={numberText(reviewItems.length)} />
-            <MetricBox label="已记账 action" value={numberText(actions.length)} />
-          </div>
-          <textarea value={reviewComment} onChange={(event) => onReviewCommentChange(event.target.value)} />
-          <div className="form-actions compact-actions">
-            <button type="button" className="secondary" onClick={() => onSubmitReviewAction("comment")} disabled={Boolean(busy)}>
-              追加评论
-            </button>
-            <button type="button" className="secondary" onClick={() => onSubmitReviewAction("request_repair")} disabled={Boolean(busy)}>
-              要求修复
-            </button>
-            <button type="button" onClick={() => onSubmitReviewAction("approve")} disabled={Boolean(busy)}>
-              审查通过
-            </button>
-          </div>
-          <ListBlock title="最近 review actions" values={listRecord(actions.slice(0, 5).map((row) => `${objectValue(row, "action")}: ${objectValue(row, "comment")}`))} />
-        </div>
-
-        <div className="r53r60-card">
-          <h3>Ops projection</h3>
-          <div className="summary-grid compact-metrics">
-            <MetricBox label="Queue" value={ops?.queue_status ?? "unknown"} detail={ops?.status ?? ""} />
-            <MetricBox label="Events" value={numberText(ops?.event_count)} detail={`${numberText(ops?.incident_count)} incidents`} />
-            <MetricBox label="Tokens" value={numberText(ops?.token_count)} detail="S6 deterministic projection" />
-          </div>
-          <KeyValueBlock
-            title="Rollback / trace"
-            values={{
-              rollback_ref: ops?.rollback_ref ?? "",
-              latest_event_at: ops?.latest_event_at ?? "",
-              boundary: scopeGate?.boundary ?? "",
-            }}
-          />
-        </div>
-      </div>
-
-      <div className="r53r60-grid wide">
-        <div className="r53r60-card">
-          <div className="inline-heading">
-            <h3>Deliverable Studio</h3>
+          <div className="hero-command-row">
+            <div className="command-search">
+              <Search size={16} aria-hidden="true" />
+              <span>{activeTask?.task_id ?? (selectedTaskId || "No task selected - refresh R53-R60 workbench")}</span>
+            </div>
             <button type="button" className="secondary" onClick={onRenderDeliverables} disabled={Boolean(busy)}>
-              {busy === "r53_r60_render" ? "渲染中" : "重新渲染"}
+              <FileText size={16} aria-hidden="true" />
+              {busy === "r53_r60_render" ? "渲染中" : "生成交付物"}
             </button>
           </div>
-          <div className="summary-grid compact-metrics">
-            <MetricBox label="Plan" value={objectValue(deliverables?.deliverable_plan, "status")} detail={objectValue(deliverables?.deliverable_plan, "audience")} />
-            <MetricBox label="Surfaces" value={numberText(deliverables?.narrative_surfaces?.length)} />
-            <MetricBox label="Composer" value={objectValue(deliverables?.composer_permission_gate, "status")} detail="no retrieval/db/web" />
+        </div>
+        <div className="hero-status-grid">
+          <MetricBox label="Review state" value={workpaperStatus} detail={activeTask?.lead_review_status ?? ""} />
+          <MetricBox label="Workpaper" value={`${activeTask?.section_count ?? sections.length} sections`} detail={`${activeTask?.claim_count ?? claims.length} claims · ${activeTask?.gap_count ?? gaps.length} gaps`} />
+          <MetricBox label="Deliverables" value={`${renderJobs.length} artifacts`} detail={`${qualityGates.length} gates`} />
+          <MetricBox label="B04 acceptance" value={objectValue(productAcceptanceEvidence?.evidence_status?.summary, "b04_status_after_p24")} detail={`${reviewerReadySessions} ready sessions`} />
+        </div>
+      </div>
+
+      <div className="surface-tabs" role="tablist" aria-label="Workbench surfaces">
+        {[
+          ["analysis", Layers, "Analyst"],
+          ["review", Users, "Review"],
+          ["delivery", FileText, "Deliverables"],
+          ["ops", Settings, "Ops"],
+        ].map(([key, Icon, label]) => (
+          <button
+            key={String(key)}
+            type="button"
+            className={`surface-tab ${activeSurface === key ? "active" : ""}`}
+            onClick={() => setActiveSurface(key as "analysis" | "review" | "delivery" | "ops")}
+          >
+            <Icon size={16} aria-hidden="true" />
+            {String(label)}
+          </button>
+        ))}
+      </div>
+
+      {activeSurface === "analysis" ? (
+        <div className="analyst-workspace-grid">
+          <aside className="task-rail">
+            <div className="rail-heading">
+              <h3>Task queue</h3>
+              <span>{tasks.length}</span>
+            </div>
+            <div className="task-list">
+              {tasks.length ? (
+                tasks.map((item) => (
+                  <button
+                    className={`task-row ${item.task_id === selectedTaskId ? "selected" : ""}`}
+                    type="button"
+                    onClick={() => onSelectTask(item.task_id)}
+                    key={item.task_id}
+                  >
+                    <span className="task-row-title">{item.task_id}</span>
+                    <span className="task-row-meta">
+                      {item.status} · {item.progress}% · {item.claim_count} claims
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <div className="compact-empty-state">
+                  <strong>No tasks projected</strong>
+                  <span>运行 S6/P30 refresh 或检查 SQL-final runtime ledger 后，这里会出现可审阅任务。</span>
+                </div>
+              )}
+            </div>
+          </aside>
+
+          <section className="workpaper-canvas">
+            <div className="canvas-section">
+              <div className="section-kicker">
+                <ShieldCheck size={16} aria-hidden="true" />
+                Lead judgment
+              </div>
+              <div className="judgment-grid">
+                <KeyValueBlock
+                  title="Lead review"
+                  values={{
+                    status: objectValue(drilldown?.lead_review, "status"),
+                    repair_targets: compactListValue(drilldown?.lead_review?.typed_gap_ids),
+                    writing_guidance: compactObjectValue(drilldown?.lead_review?.writing_guidance),
+                  }}
+                />
+                <KeyValueBlock
+                  title="Judgment state"
+                  values={{
+                    status: objectValue(drilldown?.judgment, "status"),
+                    unsupported_claims: objectValue(drilldown?.judgment, "unsupported_claim_count"),
+                    counter_thesis: compactObjectValue(drilldown?.judgment?.payload),
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="canvas-section">
+              <div className="section-kicker">
+                <FileText size={16} aria-hidden="true" />
+                Workpaper outline
+              </div>
+              <R53R60Table
+                title="Sections"
+                rows={sections.slice(0, 8)}
+                embedded
+                columns={[
+                  ["section_key", "Section"],
+                  ["title", "Title"],
+                  ["claim_refs", "Claims"],
+                ]}
+              />
+            </div>
+
+            <div className="canvas-section">
+              <div className="section-kicker">
+                <BarChart3 size={16} aria-hidden="true" />
+                Thesis evidence
+              </div>
+              <R53R60Table
+                title="ClaimCards"
+                rows={claims.slice(0, 8)}
+                embedded
+                columns={[
+                  ["claim_card_id", "Claim"],
+                  ["dimension_id", "Dimension"],
+                  ["authority_boundary", "Authority"],
+                  ["source_boundary", "Boundary"],
+                ]}
+              />
+            </div>
+          </section>
+
+          <aside className="evidence-drawer">
+            <div className="drawer-block">
+              <div className="rail-heading">
+                <h3>Evidence drawer</h3>
+                <span>{claims.length + gaps.length}</span>
+              </div>
+              <div className="evidence-stat-list">
+                <div>
+                  <span>Claims</span>
+                  <strong>{claims.length}</strong>
+                </div>
+                <div>
+                  <span>Typed gaps</span>
+                  <strong>{gaps.length}</strong>
+                </div>
+                <div>
+                  <span>Quality gates</span>
+                  <strong>{qualityGates.length}</strong>
+                </div>
+              </div>
+            </div>
+            <R53R60Table
+              title="Typed gaps"
+              rows={gaps.slice(0, 6)}
+              embedded
+              columns={[
+                ["gap_id", "Gap"],
+                ["gap_type", "Type"],
+                ["status", "Status"],
+              ]}
+            />
+            <div className="drawer-block">
+              <h3>Review actions</h3>
+              <textarea value={reviewComment} onChange={(event) => onReviewCommentChange(event.target.value)} />
+              <div className="form-actions compact-actions">
+                <button type="button" className="secondary" onClick={() => onSubmitReviewAction("comment")} disabled={Boolean(busy)}>
+                  评论
+                </button>
+                <button type="button" className="secondary" onClick={() => onSubmitReviewAction("request_repair")} disabled={Boolean(busy)}>
+                  修复
+                </button>
+                <button type="button" onClick={() => onSubmitReviewAction("approve")} disabled={Boolean(busy)}>
+                  批准
+                </button>
+              </div>
+              <ListBlock title="Recent actions" values={listRecord(actions.slice(0, 4).map((row) => `${objectValue(row, "action")}: ${objectValue(row, "comment")}`))} />
+            </div>
+          </aside>
+        </div>
+      ) : null}
+
+      {activeSurface === "review" ? (
+        <div className="product-surface-stack">
+          <div className="review-summary-strip">
+            <MetricBox label="Human pending" value={numberText(pendingHumanEvidence)} />
+            <MetricBox label="Defect closeout" value={numberText(pendingDefectCloseout)} />
+            <MetricBox label="Review items" value={numberText(reviewItems.length)} detail={`${actions.length} actions`} />
           </div>
-          <R53R60Table
-            title="Rendered artifacts"
-            rows={renderJobs}
-            embedded
-            columns={[
-              ["output_format", "Format"],
-              ["status", "Status"],
-              ["output_uri", "URI"],
-              ["artifact_ref_id", "ArtifactRef"],
-            ]}
+          <R53R60ProductAcceptanceEvidencePanel
+            evidence={productAcceptanceEvidence}
+            reviewerPackage={reviewerAcceptancePackage}
+            form={acceptanceEvidenceForm}
+            busy={busy}
+            onFormChange={onAcceptanceEvidenceFormChange}
+            onSubmit={onSubmitProductAcceptanceEvidence}
+            onRefresh={onRefreshProductAcceptanceEvidence}
+          />
+          <R53R60PilotDogfoodPanel
+            dashboard={pilotDashboard}
+            actionLedger={pilotActions}
+            selectedCaseId={pilotCaseId}
+            reviewComment={pilotReviewComment}
+            busy={busy}
+            onCaseChange={onPilotCaseChange}
+            onReviewCommentChange={onPilotReviewCommentChange}
+            onSubmitReviewAction={onSubmitPilotReviewAction}
           />
         </div>
+      ) : null}
 
-        <div className="r53r60-card">
-          <h3>Dashboard Projection</h3>
-          <div className="summary-grid compact-metrics">
-            <MetricBox label="Status" value={objectValue(dashboardProjection?.dashboard_projection, "status")} />
-            <MetricBox label="Claims" value={objectValue(dashboardProjection?.dashboard_projection, "claim_count")} />
-            <MetricBox label="Gaps" value={objectValue(dashboardProjection?.dashboard_projection, "gap_count")} />
+      {activeSurface === "delivery" ? (
+        <div className="delivery-grid">
+          <div className="r53r60-card">
+            <div className="inline-heading">
+              <h3>Deliverable Studio</h3>
+              <button type="button" className="secondary" onClick={onRenderDeliverables} disabled={Boolean(busy)}>
+                {busy === "r53_r60_render" ? "渲染中" : "重新渲染"}
+              </button>
+            </div>
+            <div className="summary-grid compact-metrics">
+              <MetricBox label="Plan" value={objectValue(deliverables?.deliverable_plan, "status")} detail={objectValue(deliverables?.deliverable_plan, "audience")} />
+              <MetricBox label="Surfaces" value={numberText(deliverables?.narrative_surfaces?.length)} />
+              <MetricBox label="Composer" value={objectValue(deliverables?.composer_permission_gate, "status")} detail="no retrieval/db/web" />
+            </div>
+            <R53R60Table
+              title="Rendered artifacts"
+              rows={renderJobs}
+              embedded
+              columns={[
+                ["output_format", "Format"],
+                ["status", "Status"],
+                ["output_uri", "URI"],
+                ["artifact_ref_id", "ArtifactRef"],
+              ]}
+            />
           </div>
-          <KeyValueBlock
-            title="Projection payload"
-            values={{
-              panels: compactObjectValue(dashboardPanelPayload),
-              artifacts: compactListValue(dashboardPanelPayload && typeof dashboardPanelPayload === "object" ? (dashboardPanelPayload as Record<string, unknown>).artifact_ref_ids : []),
-            }}
-          />
+
+          <div className="r53r60-card">
+            <h3>Dashboard Projection</h3>
+            <div className="summary-grid compact-metrics">
+              <MetricBox label="Status" value={objectValue(dashboardProjection?.dashboard_projection, "status")} />
+              <MetricBox label="Claims" value={objectValue(dashboardProjection?.dashboard_projection, "claim_count")} />
+              <MetricBox label="Gaps" value={objectValue(dashboardProjection?.dashboard_projection, "gap_count")} />
+            </div>
+            <KeyValueBlock
+              title="Projection payload"
+              values={{
+                panels: compactObjectValue(dashboardPanelPayload),
+                artifacts: compactListValue(dashboardPanelPayload && typeof dashboardPanelPayload === "object" ? (dashboardPanelPayload as Record<string, unknown>).artifact_ref_ids : []),
+              }}
+            />
+            <R53R60Table
+              title="Deliverable quality gates"
+              rows={qualityGates}
+              embedded
+              columns={[
+                ["gate_id", "Gate"],
+                ["status", "Status"],
+                ["detail", "Detail"],
+              ]}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {activeSurface === "ops" ? (
+        <div className="ops-console-grid">
+          <div className="r53r60-card">
+            <h3>Ops projection</h3>
+            <div className="summary-grid compact-metrics">
+              <MetricBox label="Queue" value={ops?.queue_status ?? "unknown"} detail={ops?.status ?? ""} />
+              <MetricBox label="Events" value={numberText(ops?.event_count)} detail={`${numberText(ops?.incident_count)} incidents`} />
+              <MetricBox label="Tokens" value={numberText(ops?.token_count)} detail={`${ops?.latency_ms ?? 0}ms · $${ops?.cost_amount ?? 0}`} />
+            </div>
+            <KeyValueBlock
+              title="Rollback / trace"
+              values={{
+                rollback_ref: ops?.rollback_ref ?? "",
+                latest_event_at: ops?.latest_event_at ?? "",
+                boundary: scopeGate?.boundary ?? "",
+              }}
+            />
+          </div>
+          <AgentInformationEconomyPanel projection={agentInformationEconomy} />
           <R53R60Table
-            title="Deliverable quality gates"
-            rows={qualityGates}
-            embedded
+            title="Gate rows"
+            rows={gates.slice(0, 12)}
             columns={[
+              ["slice_id", "Slice"],
               ["gate_id", "Gate"],
               ["status", "Status"],
-              ["detail", "Detail"],
+              ["description", "Description"],
             ]}
           />
+          <div className="r53r60-card">
+            <h3>Scope gate</h3>
+            <div className="summary-grid compact-metrics">
+              <MetricBox label="Slice gate" value={scopeGate?.release_decision ?? "未生成"} detail={scopeGate?.closeout_level ?? ""} />
+              <MetricBox label="Gate rows" value={numberText(gateCounts.gate_count)} detail={`${numberText(gateCounts.gate_fail_count)} failed`} />
+              <MetricBox label="Trace spans" value={numberText(ops?.trace_span_count)} detail={ops?.queue_status ?? ""} />
+            </div>
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
@@ -1772,6 +2065,256 @@ function R53R60PilotDogfoodPanel({
             ["status", "Status"],
           ]}
         />
+      </div>
+    </div>
+  );
+}
+
+function R53R60ProductAcceptanceEvidencePanel({
+  evidence,
+  reviewerPackage,
+  form,
+  busy,
+  onFormChange,
+  onSubmit,
+  onRefresh,
+}: {
+  evidence: R53R60ProductAcceptanceEvidence | null;
+  reviewerPackage: R53R60ReviewerAcceptancePackage | null;
+  form: R53R60AcceptanceEvidenceForm;
+  busy: string | null;
+  onFormChange: (form: R53R60AcceptanceEvidenceForm) => void;
+  onSubmit: () => void;
+  onRefresh: () => void;
+}) {
+  const status = evidence?.evidence_status;
+  const summary = status?.summary ?? {};
+  const counts = status?.counts ?? {};
+  const pendingHuman = status?.pending?.human_requirements ?? [];
+  const pendingDefects = status?.pending?.defect_source_ids ?? [];
+  const rows = status?.evidence_rows ?? [];
+  const sessionRows = status?.session_readiness?.sessions ?? [];
+  const readySessionRows = status?.session_readiness?.ready_sessions ?? [];
+  const reviewerPackageSummary = reviewerPackage?.package ?? {};
+  const reviewerPackageCounts = recordValue(reviewerPackageSummary, "counts");
+  const reviewerSteps = reviewerPackage?.step_rows ?? [];
+  const evidenceTemplates = reviewerPackage?.evidence_template_rows ?? [];
+  const reviewerCandidateRows = reviewerPackage?.reviewer_candidate_rows ?? [];
+  const acceptedRoles = evidence?.accepted_reviewer_roles ?? initialAcceptanceRoles();
+  const acceptedEvidenceTypes = evidence?.accepted_evidence_types ?? initialEvidenceTypes();
+  const acceptedDecisions = evidence?.accepted_deliverable_decisions ?? ["accepted", "rejected"];
+  const acceptedCloseoutStatuses = evidence?.accepted_defect_closeout_statuses ?? ["repaired", "regression_covered", "typed_gap_accepted"];
+  const update = (key: keyof R53R60AcceptanceEvidenceForm, value: string) => onFormChange({ ...form, [key]: value });
+  const evidenceType = form.evidenceType;
+  const requiresTaskAndCase = evidenceType === "reviewer_session";
+  const requiresDeliverable = evidenceType === "deliverable_acceptance";
+  const requiresDefectCloseout = evidenceType === "defect_closeout";
+  const requiresVisual = evidenceType === "visual_acceptance";
+  const requiresAudit = evidenceType === "audit_replay";
+
+  return (
+    <div className="r53r60-card product-acceptance-panel">
+      <div className="inline-heading">
+        <h3>Product acceptance evidence</h3>
+        <button type="button" className="secondary" onClick={onRefresh} disabled={Boolean(busy)}>
+          刷新证据
+        </button>
+      </div>
+      <div className="summary-grid compact-metrics">
+        <MetricBox label="B04" value={objectValue(summary, "b04_status_after_p24")} detail={objectValue(summary, "product_acceptance_status")} />
+        <MetricBox label="Evidence rows" value={numberText(counts.real_reviewer_evidence_row_count)} detail={objectValue(summary, "reviewer_evidence_path")} />
+        <MetricBox label="Human pending" value={numberText(counts.human_evidence_pending_count)} detail={`${numberText(counts.defect_closeout_pending_count)} defect rows`} />
+        <MetricBox label="Ready sessions" value={numberText(readySessionRows.length)} detail={status?.session_readiness?.status ?? "pending_real_reviewer_completion"} />
+        <MetricBox label="Reviewer package" value={objectValue(reviewerPackageSummary, "package_status")} detail={reviewerPackage?.report_markdown_path ?? ""} />
+        <MetricBox
+          label="Candidate refs"
+          value={numberText(Number(reviewerPackageCounts.reviewer_candidate_ref_count ?? 0))}
+          detail={`${numberText(Number(reviewerPackageCounts.review_step_count ?? 0))} steps · ${numberText(Number(reviewerPackageCounts.evidence_template_count ?? 0))} templates`}
+        />
+      </div>
+
+      <div className="r53r60-grid wide">
+        <R53R60Table
+          title="Reviewer execution steps"
+          rows={reviewerSteps}
+          embedded
+          columns={[
+            ["step_id", "Step"],
+            ["evidence_type", "Evidence"],
+            ["current_status", "Status"],
+            ["acceptance_impact", "Impact"],
+          ]}
+        />
+        <R53R60Table
+          title="Evidence templates"
+          rows={evidenceTemplates.slice(0, 8)}
+          embedded
+          columns={[
+            ["template_id", "Template"],
+            ["evidence_type", "Evidence"],
+            ["reviewer_role", "Role"],
+            ["template_only", "Template only"],
+          ]}
+        />
+        <R53R60Table
+          title="Candidate refs"
+          rows={reviewerCandidateRows.slice(0, 8)}
+          embedded
+          columns={[
+            ["candidate_type", "Type"],
+            ["task_id", "Task"],
+            ["run_id", "Run"],
+            ["artifact_ref_id", "Artifact"],
+          ]}
+        />
+      </div>
+
+      <div className="product-acceptance-form">
+        <label>
+          <span>Evidence type</span>
+          <select value={form.evidenceType} onChange={(event) => update("evidenceType", event.target.value)}>
+            {acceptedEvidenceTypes.map((type) => (
+              <option value={type} key={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Reviewer role</span>
+          <select value={form.reviewerRole} onChange={(event) => update("reviewerRole", event.target.value)}>
+            {acceptedRoles.map((role) => (
+              <option value={role} key={role}>
+                {role}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Session ID</span>
+          <input value={form.sessionId} onChange={(event) => update("sessionId", event.target.value)} autoComplete="off" />
+        </label>
+
+        {requiresTaskAndCase || requiresAudit ? (
+          <label>
+            <span>Task ID</span>
+            <input value={form.taskId} onChange={(event) => update("taskId", event.target.value)} autoComplete="off" />
+          </label>
+        ) : null}
+        {requiresTaskAndCase ? (
+          <label>
+            <span>Case ID</span>
+            <input value={form.caseId} onChange={(event) => update("caseId", event.target.value)} autoComplete="off" />
+          </label>
+        ) : null}
+        {requiresDeliverable ? (
+          <>
+            <label>
+              <span>Decision</span>
+              <select value={form.decisionStatus} onChange={(event) => update("decisionStatus", event.target.value)}>
+                {acceptedDecisions.map((statusValue) => (
+                  <option value={statusValue} key={statusValue}>
+                    {statusValue}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Deliverable ref</span>
+              <input value={form.deliverableRef} onChange={(event) => update("deliverableRef", event.target.value)} autoComplete="off" />
+            </label>
+            <label>
+              <span>Artifact ref</span>
+              <input value={form.artifactRefId} onChange={(event) => update("artifactRefId", event.target.value)} autoComplete="off" />
+            </label>
+          </>
+        ) : null}
+        {requiresDefectCloseout ? (
+          <>
+            <label>
+              <span>Closeout status</span>
+              <select value={form.closeoutStatus} onChange={(event) => update("closeoutStatus", event.target.value)}>
+                {acceptedCloseoutStatuses.map((statusValue) => (
+                  <option value={statusValue} key={statusValue}>
+                    {statusValue}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Source ID</span>
+              <input value={form.sourceId} onChange={(event) => update("sourceId", event.target.value)} autoComplete="off" />
+            </label>
+            <label>
+              <span>Covered source IDs</span>
+              <input value={form.coveredSourceIds} onChange={(event) => update("coveredSourceIds", event.target.value)} autoComplete="off" />
+            </label>
+          </>
+        ) : null}
+        {requiresVisual ? (
+          <>
+            <label>
+              <span>Visual decision</span>
+              <input value={form.visualDecision} onChange={(event) => update("visualDecision", event.target.value)} autoComplete="off" />
+            </label>
+            <label className="wide-field">
+              <span>Screenshot refs</span>
+              <input value={form.browserScreenshotRefs} onChange={(event) => update("browserScreenshotRefs", event.target.value)} autoComplete="off" />
+            </label>
+          </>
+        ) : null}
+        {requiresAudit ? (
+          <>
+            <label className="wide-field">
+              <span>Artifact refs</span>
+              <input value={form.artifactRefIds} onChange={(event) => update("artifactRefIds", event.target.value)} autoComplete="off" />
+            </label>
+            <label>
+              <span>Trace ref</span>
+              <input value={form.traceRef} onChange={(event) => update("traceRef", event.target.value)} autoComplete="off" />
+            </label>
+          </>
+        ) : null}
+        <label className="wide-field">
+          <span>Review comment</span>
+          <textarea value={form.reviewComment} onChange={(event) => update("reviewComment", event.target.value)} />
+        </label>
+        <div className="form-actions product-acceptance-actions">
+          <button type="button" onClick={onSubmit} disabled={Boolean(busy) || !form.sessionId.trim()}>
+            {busy === "r53_r60_product_acceptance_evidence" ? "记录中" : "记录真实 reviewer evidence"}
+          </button>
+        </div>
+      </div>
+
+      <div className="r53r60-grid wide">
+        <R53R60Table
+          title="Session readiness"
+          rows={sessionRows}
+          embedded
+          columns={[
+            ["session_id", "Session"],
+            ["reviewer_roles", "Role"],
+            ["closeout_status", "Status"],
+            ["missing_evidence_types", "Missing evidence"],
+            ["missing_defect_source_count", "Open defects"],
+          ]}
+        />
+        <R53R60Table
+          title="Recent evidence rows"
+          rows={rows.slice(-6).reverse()}
+          embedded
+          columns={[
+            ["evidence_type", "Type"],
+            ["reviewer_role", "Role"],
+            ["session_id", "Session"],
+            ["status", "Status"],
+          ]}
+        />
+        <div className="embedded-table">
+          <ListBlock title="Pending human requirements" values={listRecord(pendingHuman.slice(0, 8).map((row) => `${objectValue(row, "requirement_id")} / ${objectValue(row, "evidence_type")}`))} />
+          <ListBlock title="Pending defect source IDs" values={listRecord(pendingDefects.slice(0, 8))} />
+          <ListBlock title="Next actions" values={listRecord(sessionRows.flatMap((row) => Array.isArray(row.next_actions) ? row.next_actions.map((item) => shortCellValue(item)) : []).slice(0, 8))} />
+        </div>
       </div>
     </div>
   );
@@ -2260,6 +2803,91 @@ function EvalRunners({
   );
 }
 
+function AgentInformationEconomyPanel({
+  projection,
+  onRefresh,
+}: {
+  projection: AgentInformationEconomyProjection | null;
+  onRefresh?: () => void;
+}) {
+  if (!projection) {
+    return (
+      <div className="r53r60-card">
+        <div className="inline-heading">
+          <h3>Agent Information Economy</h3>
+          {onRefresh ? (
+            <button type="button" className="secondary" onClick={onRefresh}>
+              刷新
+            </button>
+          ) : null}
+        </div>
+        <p className="muted-text">还没有读取到 token-to-insight projection。</p>
+      </div>
+    );
+  }
+  const latest = projection.latest_artifact ?? null;
+  const summary = projection.summary ?? {};
+  const latestCases = latest?.cases ?? [];
+  return (
+    <div className="r53r60-card">
+      <div className="inline-heading">
+        <h3>Agent Information Economy</h3>
+        <StatusPill status={statusFromProjection(projection.status)} label={projection.status} />
+        {onRefresh ? (
+          <button type="button" className="secondary" onClick={onRefresh}>
+            刷新
+          </button>
+        ) : null}
+      </div>
+      <div className="summary-grid compact-metrics">
+        <MetricBox label="Latest run" value={objectValue(summary, "latest_run_id")} detail={objectValue(summary, "latest_plan_status")} />
+        <MetricBox label="Budget blocks" value={numberText(Number(summary.budget_block_count ?? 0))} detail={`${numberText(Number(summary.highest_estimated_paid_call_count ?? 0))} paid calls`} />
+        <MetricBox label="Max tokens" value={numberText(Number(summary.highest_estimated_total_tokens ?? 0))} detail={`${projection.artifact_count} artifacts`} />
+      </div>
+      {latest ? (
+        <KeyValueBlock
+          title="Latest artifact"
+          values={{
+            rel_path: latest.rel_path,
+            artifact_type: latest.artifact_type,
+            status: latest.status,
+            plan_status: latest.plan_status ?? "",
+            scheduler: compactObjectValue(latest.scheduler_advice),
+            issue_counts: compactObjectValue(latest.issue_counts),
+          }}
+        />
+      ) : null}
+      <R53R60Table
+        title="AIE artifacts"
+        rows={projection.artifacts.slice(0, 6) as Record<string, unknown>[]}
+        embedded
+        columns={[
+          ["run_id", "Run"],
+          ["artifact_type", "Type"],
+          ["status", "Status"],
+          ["estimated_total_tokens", "Tokens"],
+          ["estimated_paid_call_count", "Paid calls"],
+          ["rel_path", "Artifact"],
+        ]}
+      />
+      {latestCases.length ? (
+        <R53R60Table
+          title="Latest case token plan"
+          rows={latestCases.slice(0, 6)}
+          embedded
+          columns={[
+            ["case_id", "Case"],
+            ["status", "Status"],
+            ["estimated_total_tokens", "Tokens"],
+            ["estimated_paid_call_count", "Paid calls"],
+            ["prunable_specialist_agents", "Prunable"],
+          ]}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 function EvalDashboardPanel({
   dashboard,
   onLoadRun,
@@ -2590,6 +3218,13 @@ function jobStatus(job: RunJob | null): Status {
   return "neutral";
 }
 
+function statusFromProjection(status?: string | null): Status {
+  if (status === "pass") return "pass";
+  if (status === "fail") return "fail";
+  if (status === "missing" || !status) return "neutral";
+  return "warn";
+}
+
 function isTerminal(status: string) {
   return ["completed", "failed", "cancelled"].includes(status);
 }
@@ -2615,6 +3250,12 @@ function objectValue(value: Record<string, unknown> | null | undefined, key: str
   return shortCellValue(value?.[key]);
 }
 
+function recordValue(value: Record<string, unknown> | null | undefined, key: string): Record<string, unknown> {
+  const next = value?.[key];
+  if (!next || typeof next !== "object" || Array.isArray(next)) return {};
+  return next as Record<string, unknown>;
+}
+
 function compactListValue(value: unknown): string {
   if (!Array.isArray(value)) return shortCellValue(value);
   return value.slice(0, 5).map((item) => shortCellValue(item)).join(", ") || "无";
@@ -2631,6 +3272,64 @@ function shortCellValue(value: unknown): string {
   if (typeof value === "object") return compactObject(value as Record<string, unknown>);
   const text = String(value);
   return text.length > 120 ? `${text.slice(0, 117)}...` : text;
+}
+
+function initialAcceptanceRoles() {
+  return ["lead_analyst", "portfolio_manager", "senior_research_reviewer", "product_owner"];
+}
+
+function initialEvidenceTypes() {
+  return ["reviewer_session", "deliverable_acceptance", "defect_closeout", "visual_acceptance", "audit_replay"];
+}
+
+function commaList(value: string) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function putIfNotBlank(payload: Record<string, unknown>, key: string, value: string) {
+  const text = value.trim();
+  if (text) payload[key] = text;
+}
+
+function putListIfAny(payload: Record<string, unknown>, key: string, value: string) {
+  const items = commaList(value);
+  if (items.length) payload[key] = items;
+}
+
+function productAcceptanceEvidencePayloadFromForm(form: R53R60AcceptanceEvidenceForm) {
+  const payload: Record<string, unknown> = {
+    evidence_type: form.evidenceType,
+    reviewer_role: form.reviewerRole,
+    action_source: "real_human",
+    session_id: form.sessionId.trim(),
+  };
+  if (form.evidenceType === "reviewer_session") {
+    putIfNotBlank(payload, "task_id", form.taskId);
+    putIfNotBlank(payload, "case_id", form.caseId);
+  } else if (form.evidenceType === "deliverable_acceptance") {
+    putIfNotBlank(payload, "decision_status", form.decisionStatus);
+    putIfNotBlank(payload, "deliverable_ref", form.deliverableRef);
+    putIfNotBlank(payload, "artifact_ref_id", form.artifactRefId);
+    putIfNotBlank(payload, "review_comment", form.reviewComment);
+  } else if (form.evidenceType === "defect_closeout") {
+    putIfNotBlank(payload, "closeout_status", form.closeoutStatus);
+    putIfNotBlank(payload, "source_id", form.sourceId);
+    putListIfAny(payload, "covered_source_ids", form.coveredSourceIds);
+    putIfNotBlank(payload, "review_comment", form.reviewComment);
+  } else if (form.evidenceType === "visual_acceptance") {
+    putIfNotBlank(payload, "visual_decision", form.visualDecision);
+    putListIfAny(payload, "browser_screenshot_refs", form.browserScreenshotRefs);
+    putIfNotBlank(payload, "review_comment", form.reviewComment);
+  } else if (form.evidenceType === "audit_replay") {
+    putIfNotBlank(payload, "task_id", form.taskId);
+    putListIfAny(payload, "artifact_ref_ids", form.artifactRefIds);
+    putIfNotBlank(payload, "trace_ref", form.traceRef);
+    putIfNotBlank(payload, "review_comment", form.reviewComment);
+  }
+  return payload;
 }
 
 function commandLine(args: string[]) {
@@ -2809,6 +3508,6 @@ async function requestJson<T>(url: string, options: RequestInit = {}): Promise<T
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <AppShell legacyApp={<App />} />
   </React.StrictMode>,
 );

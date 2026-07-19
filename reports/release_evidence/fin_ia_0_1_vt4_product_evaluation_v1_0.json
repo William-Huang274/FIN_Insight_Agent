@@ -1,0 +1,78 @@
+{
+  "schema_version": "fin_ia_0_1_vt4_product_evaluation_v1_0",
+  "evaluation_id": "REL-PROD-001:VT4:P07.3:INTERNAL-FIXTURE-EVALUATION",
+  "release_id": "REL-PROD-001",
+  "execution_point": "P07.3",
+  "status": "observed_internal_fixture_metrics_only_human_baseline_pending",
+  "source_case_id": "case_80fb19038ebf44f5ef7ad5b5",
+  "metric_scope": "single_internal_fixture_dogfood_not_a_user_cohort",
+  "observations": {
+    "time_to_workpaper": {
+      "start": "2026-07-18T10:21:17.039688Z",
+      "end": "2026-07-18T10:22:39.870176Z",
+      "observed_seconds": 82.830488,
+      "baseline_seconds": null,
+      "time_saved_claim": "not_permitted_without_defined_baseline_and_reviewer_record"
+    },
+    "time_to_reviewed_deliverable": {
+      "start": "2026-07-18T10:21:17.039688Z",
+      "end": "2026-07-18T10:24:04.592711Z",
+      "observed_seconds": 167.553023,
+      "baseline_seconds": null,
+      "time_saved_claim": "not_made"
+    },
+    "review_burden": {
+      "observed_decision_count": 4,
+      "decisions": [
+        "planning_checkpoint_accept",
+        "evidence_request_repair",
+        "lead_review_admit_fixture_writer_preview",
+        "deliverable_accept_fixture_preview"
+      ],
+      "explicit_gap_count": 10,
+      "human_baseline": "not_established",
+      "accepted_internal_alpha_baseline": "pending"
+    },
+    "repeated_work": {
+      "dogfood_cycle_count": 2,
+      "discarded_historical_case_count": 1,
+      "discarded_historical_case_id": "case_5bf56ab01c61bcec73bcbec7",
+      "reason": "The first browser dogfood exposed character-fragment remaining gaps and static three-cell labels; the retained clean rerun verifies the bounded repair.",
+      "current_case_rework_count": 0
+    },
+    "tool_model_cost": {
+      "network_calls": 0,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "tool_invocations": 0,
+      "paid_call_count": 0,
+      "commercial_data_spend": 0
+    },
+    "browser_performance": {
+      "formal_performance_profile": "not_run",
+      "production_bundle_build": "pass",
+      "transformed_module_count": 1688,
+      "javascript_bundle_kib": 388.56,
+      "javascript_gzip_kib": 104.31,
+      "build_seconds": 5.82
+    },
+    "accessibility": {
+      "desktop_visual_qa": "pass",
+      "mobile_visual_qa": "pass_with_internal_navigation_scroll",
+      "page_horizontal_overflow": false,
+      "screen_reader_audit": "not_run",
+      "automated_accessibility_score": null,
+      "calibrated_accessibility_acceptance": "pending"
+    }
+  },
+  "stage_acceptance": {
+    "skeleton": "pass_metric_definitions_in_candidate_profile",
+    "fixture": "pass_zero_external_cost_and_redaction_boundaries",
+    "full": "pass_observations_collected_from_actual_internal_fixture_dogfood",
+    "calibrated": "pending_analyst_and_senior_accepted_baseline"
+  },
+  "release_gate_effect": {
+    "RG4_review_product_value": "blocked_human_baseline_pending",
+    "release_admission": "not_granted"
+  }
+}

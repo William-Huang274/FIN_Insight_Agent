@@ -110,6 +110,9 @@ _EVAL_RUNNERS = {
         "timeout_hint_s": 7200,
     },
 }
+_FULL_CHAIN_TOKEN_BUDGET_TOTAL = "180000"
+_FULL_CHAIN_TOKEN_BUDGET_PER_CASE = "120000"
+_FULL_CHAIN_MAX_PAID_CALLS = "8"
 _ACTIVE_PROCESSES: dict[str, subprocess.Popen[str]] = {}
 _CANCEL_REQUESTED: set[str] = set()
 _ACTIVE_PROCESSES_LOCK = threading.Lock()
@@ -266,6 +269,12 @@ def build_eval_command(
             "4200",
             "--verifier-max-tokens",
             "1200",
+            "--token-budget-total",
+            _FULL_CHAIN_TOKEN_BUDGET_TOTAL,
+            "--token-budget-per-case",
+            _FULL_CHAIN_TOKEN_BUDGET_PER_CASE,
+            "--max-paid-calls",
+            _FULL_CHAIN_MAX_PAID_CALLS,
             "--summary-output-path",
             str(output_path),
         ]

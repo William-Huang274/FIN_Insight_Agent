@@ -5,7 +5,9 @@ param(
     [switch]$Reload,
     [switch]$SkipFrontendBuild,
     [switch]$InstallNode,
-    [string]$NodeInstallRoot = ".tmp_node"
+    [string]$NodeInstallRoot = ".tmp_node",
+    [string]$FixtureRoot = "",
+    [string]$BaselineStore = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -82,6 +84,12 @@ $StartArgs = @(
 )
 if ($Reload) {
     $StartArgs += "--reload"
+}
+if ($FixtureRoot) {
+    $StartArgs += @("--fixture-root", $FixtureRoot)
+}
+if ($BaselineStore) {
+    $StartArgs += @("--baseline-store", $BaselineStore)
 }
 
 Write-Host ""

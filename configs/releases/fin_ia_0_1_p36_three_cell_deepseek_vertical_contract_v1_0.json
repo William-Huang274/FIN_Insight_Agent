@@ -1,0 +1,76 @@
+{
+  "schema_version": "fin_ia_0_1_p36_three_cell_deepseek_vertical_contract_v1_0",
+  "contract_id": "REL-PROD-001:P36:THREE-CELL:MODEL-VERTICAL",
+  "version": "1.0",
+  "status": "frozen_pending_explicit_paid_llm_approval",
+  "release_id": "REL-PROD-001",
+  "purpose": "Replace deterministic Domain Judgment, LeadReview, and Writer behavior for the three highest-value P36 cells with one bounded DeepSeek model vertical while retaining the existing local read-only retrieval, parser, numeric, and Evidence Gate inputs.",
+  "case_binding": {
+    "case_id": "case_80fb19038ebf44f5ef7ad5b5",
+    "research_preview_digest": "aa792b86fa5aed152ba38352eec54b08b8ad5a3603a553c57a66260eb389b093",
+    "analysis_digest": "9d47aa3b29db35839dd6aea10974747777dbf72177e7e54db5c4c9fb4311ee50",
+    "selected_roles": [
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence"
+    ]
+  },
+  "model_profile": {
+    "provider": "deepseek",
+    "base_url": "https://api.deepseek.com",
+    "chat_completions_path": "/chat/completions",
+    "model": "deepseek-v4-pro",
+    "thinking": "enabled",
+    "reasoning_effort": "high",
+    "response_format": "json_object",
+    "temperature": 0.0,
+    "api_key_env": "DEEPSEEK_API_KEY"
+  },
+  "stages": [
+    {
+      "stage_id": "domain_judgment",
+      "max_output_tokens": 3000,
+      "source_access": "frozen_three_cell_evidence_and_numeric_pack"
+    },
+    {
+      "stage_id": "lead_review_and_bounded_repair",
+      "max_output_tokens": 2400,
+      "source_access": "frozen_three_cell_evidence_plus_domain_judgment"
+    },
+    {
+      "stage_id": "writer_no_source",
+      "max_output_tokens": 2800,
+      "source_access": "reviewed_judgment_and_numeric_pack_only"
+    }
+  ],
+  "execution_budget": {
+    "max_model_calls": 3,
+    "max_transport_attempts_per_stage": 1,
+    "max_total_cost_usd": 0.05,
+    "pricing_snapshot": {
+      "as_of": "2026-07-19",
+      "input_cache_hit_usd_per_million": 0.003625,
+      "input_cache_miss_usd_per_million": 0.435,
+      "output_usd_per_million": 0.87,
+      "source": "https://api-docs.deepseek.com/quick_start/pricing/"
+    }
+  },
+  "acceptance": {
+    "domain_judgment_count": 3,
+    "lead_reviewed_judgment_count": 3,
+    "writer_section_count": 3,
+    "writer_source_access_calls": 0,
+    "required_final_status": "model_vertical_ready_for_exact_human_senior_review"
+  },
+  "hard_boundaries": {
+    "canonical_case_writes": 0,
+    "evidence_promotions": 0,
+    "business_case_mutations": 0,
+    "commercial_data_calls": 0,
+    "model_tool_calls": 0,
+    "release_admission": false,
+    "production_readiness": "not_admitted",
+    "artifact_root": ".codex_runtime/fin0.1-real-run",
+    "human_senior_review_required": true
+  }
+}

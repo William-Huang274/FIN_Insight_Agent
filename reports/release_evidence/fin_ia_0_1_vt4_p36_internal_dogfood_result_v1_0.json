@@ -1,0 +1,120 @@
+{
+  "schema_version": "fin_ia_0_1_vt4_p36_internal_dogfood_result_v1_0",
+  "result_id": "REL-PROD-001:VT4:P07.1:P36-INTERNAL-DOGFOOD",
+  "release_id": "REL-PROD-001",
+  "execution_point": "P07.1",
+  "status": "fixture_full_path_pass_calibrated_research_validity_pending",
+  "scope": "fixture_shadow_internal_only",
+  "candidate_binding": {
+    "profile_path": "configs/releases/fin_ia_0_1_vt4_p36_candidate_profile_v1_0.json",
+    "profile_file_sha256": "c11ef6b821f58fe494cd4fd11005dccae780299bdec64f7c53fe27bf3214512a",
+    "profile_canonical_json_sha256": "405ca48e251d04fac16c54e2afdc1133ff2fa24a35ba161cc181db1da943df17",
+    "lineage_observation": "The exact profile canonical digest is persisted on all ten DecisionSurface cells, all ten EvidenceSlots, the Workpaper, LeadReview, Deliverable, and DeliverableReview records."
+  },
+  "case": {
+    "case_id": "case_80fb19038ebf44f5ef7ad5b5",
+    "tenant_id": "fixture_internal",
+    "project_id": "workbench_internal",
+    "case_status": "shadow_created",
+    "planning_checkpoint_state": "legacy_authority_retained",
+    "started_at": "2026-07-18T10:21:17.039688Z",
+    "reviewed_deliverable_at": "2026-07-18T10:24:04.592711Z",
+    "observed_case_to_reviewed_deliverable_seconds": 167.553023
+  },
+  "vertical_path": {
+    "decision_surface": {
+      "cell_count": 10,
+      "review_status": "accepted",
+      "checkpoint_version": 2,
+      "contract_id": "p02_decision_surface_e5343e0f7c973acbb25ce0b2",
+      "content_digest": "a5fda60d2f2f1dfd16526bb06c44279e181f7f69ea59319a035392db59062efd"
+    },
+    "work_unit": {
+      "count": 1,
+      "state": "pending",
+      "attempt_count": 0,
+      "artifact_count": 0,
+      "reason": "The internal fixture path proves orchestration and projections without operational execution."
+    },
+    "evidence": {
+      "workspace_id": "evidence_workspace_ed90a5d396f4cbd65f16ffa9",
+      "workspace_version": 3,
+      "slot_count": 10,
+      "candidate_count": 10,
+      "context_only_count": 2,
+      "typed_gap_count": 6,
+      "repair_requested_count": 1,
+      "repair_completed_count": 1,
+      "review_action_count": 1
+    },
+    "numeric": {
+      "workspace_id": "numeric_workspace_6db99c25f24ede0b9000a217",
+      "workspace_version": 1,
+      "fact_count": 1,
+      "content_digest": "19c124f8a1e081a96e86d86dd88935c6d7fc6660f908827270f4010ae8d621a0"
+    },
+    "workpaper": {
+      "workpaper_id": "workpaper_9adf16b54e24647cfb7a1388",
+      "workpaper_version": 1,
+      "judgment_count": 10,
+      "explicit_gap_count": 10,
+      "content_digest": "fcc377ff2620688e47df0bbbf51bf4014176e8b6cec1fa9493eeda50f48a7739",
+      "lead_review_decision": "admit_fixture_writer_preview",
+      "writer_admission": "fixture_preview_only_no_writer_execution"
+    },
+    "deliverable": {
+      "deliverable_id": "deliverable_15c8e926c25426838ad86e40",
+      "artifact_version": 1,
+      "material_claim_count": 10,
+      "explicit_gap_count": 10,
+      "content_digest": "72a69c12e1817ad1e91f0b521d735c99b364cb4f964a4fc4b267d9206cee3088",
+      "canonical_presentation_digest": "d99501bc3287a6cab94db5c68e48102f542069134a9154371d3222747bf9da0d",
+      "review_action": "accept_fixture_preview",
+      "review_reason": "Accepted for internal fixture dogfood only; ten claims and explicit gaps are readable, with no sector-validity or release claim."
+    },
+    "trace": {
+      "node_count": 34,
+      "edge_count": 48,
+      "claim_to_source_claim_count": 10,
+      "source_to_claim_source_count": 24,
+      "bidirectional_projection": "pass"
+    }
+  },
+  "browser_qa": {
+    "desktop": {
+      "viewport": "1280x720",
+      "page_horizontal_overflow": false,
+      "result": "pass"
+    },
+    "mobile": {
+      "viewport": "390x844",
+      "page_horizontal_overflow": false,
+      "navigation": "internally_horizontal_scrollable",
+      "result": "pass_with_navigation_scroll_observation"
+    },
+    "screen_reader_or_formal_accessibility_audit": "not_run"
+  },
+  "stage_acceptance": {
+    "skeleton": "pass",
+    "fixture": "pass_browser_to_api_to_canonical_store_without_direct_db_shortcuts",
+    "full": "pass_create_to_review_with_exact_fixture_artifacts",
+    "calibrated": "pending_senior_R2_research_validity_review"
+  },
+  "research_outcome": {
+    "sector_research_validity": "not_claimed",
+    "senior_R2_review": "not_run",
+    "confidence_calibration": "not_run",
+    "RG3_research_outcome": "blocked"
+  },
+  "hard_boundaries": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "tool_invocations": 0,
+    "paid_full_chain": 0,
+    "real_business_case_writes": 0,
+    "release_admission": 0,
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained"
+  }
+}

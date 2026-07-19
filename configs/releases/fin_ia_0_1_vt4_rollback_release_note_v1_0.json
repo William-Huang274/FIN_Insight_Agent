@@ -1,0 +1,68 @@
+{
+  "schema_version": "fin_ia_0_1_vt4_rollback_release_note_v1_0",
+  "contract_id": "REL-PROD-001:VT4:P07.4:ROLLBACK-KNOWN-GAPS-RELEASE-NOTE",
+  "release_id": "REL-PROD-001",
+  "execution_point": "P07.4",
+  "status": "bounded_rollback_drill_pass_known_gaps_frozen_release_still_blocked",
+  "rollback": {
+    "target_release_id": "REL-FND-001",
+    "target_state": "POINT01_FOUNDATION_ALPHA_CONTRACT_RUNTIME_PROOF_COMPLETE",
+    "legacy_global_authority": "retained",
+    "production_readiness": "not_admitted",
+    "disable_action": "disable_FIN_0_1_fixture_lane_and_return_reads_to_legacy_global_authority",
+    "canonical_audit_history": "retain_immutable",
+    "data_deletion": "forbidden",
+    "feature_flag_disable_test": "pass_new_lane_read_and_write_fail_closed",
+    "projection_fallback_test": "pass_legacy_browser_shell_available",
+    "rollback_drill": "pass_bounded_local_fixture",
+    "rollback_result_ref": "reports/release_evidence/fin_ia_0_1_vt4_rollback_drill_v1_0.json",
+    "rollback_result_sha256": "48da7073ab1bf1a11db90dd7b578d7ddaf227b4c4f29df4db40695eec26a0cc8"
+  },
+  "known_gaps": [
+    {
+      "debt_id": "REL-PROD-001-RG1-POINT01-OPERATIONAL-VERTICAL-PATH",
+      "gate": "RG1_vertical_path",
+      "status": "blocked",
+      "required_closeout": "Prove exact entry-to-clean-child package identity, then run one separately authorized bounded operational vertical path with persisted actual, oracle, reviewer, and Workbench results."
+    },
+    {
+      "debt_id": "REL-PROD-001-RG3-CALIBRATED-SENIOR-R2",
+      "gate": "RG3_research_outcome",
+      "status": "blocked",
+      "required_closeout": "A calibrated senior reviewer must assess P36 research validity, edits, gaps, and confidence against the exact candidate."
+    },
+    {
+      "debt_id": "REL-PROD-001-RG4-HUMAN-PRODUCT-VALUE-BASELINE",
+      "gate": "RG4_review_product_value",
+      "status": "blocked",
+      "required_closeout": "Analyst and senior cohorts must establish an accepted time, review-burden, rework, performance, accessibility, and cost baseline."
+    }
+  ],
+  "deferred_backlog": [
+    "formal_browser_performance_profile",
+    "screen_reader_and_automated_accessibility_audit",
+    "calibrated_SaaS_and_US_Banks_generic_dimension_review",
+    "production_PKI_SLO_and_nonrepudiation_hardening"
+  ],
+  "release_note": {
+    "candidate_capability": "An internal analyst can run a deterministic ten-cell P36 fixture from Case creation through Evidence, bounded repair, Numeric, Workpaper, LeadReview, Deliverable, review, and bidirectional Trace in the browser.",
+    "limitations": "The path uses fixture metadata and structural judgments. It does not establish current P36 facts, sector research validity, human productivity gains, operational qualification, or production readiness.",
+    "release_decision": "blocked_pending_P07_5_RG1_to_RG5",
+    "FIN_0_1_INTERNAL_ALPHA_RELEASED": false
+  },
+  "stage_acceptance": {
+    "skeleton": "pass",
+    "fixture": "pass_feature_lane_disable_and_legacy_shell_fallback",
+    "full": "pass_bounded_rollback_to_legacy_authority_with_audit_preserved",
+    "calibrated": "pass_independent_engineering_review_release_owner_decision_remains_P07_5"
+  },
+  "hard_boundaries": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "tool_invocations": 0,
+    "paid_full_chain": 0,
+    "real_business_case_writes": 0,
+    "release_admission": 0
+  }
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinSight Workbench Next Prototype</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <dialog id="profile-dialog" class="profile-dialog">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">RUN PROFILE</p>
+          <h2>本次研究如何运行</h2>
+        </div>
+        <button class="icon-button" data-close-profile title="关闭">×</button>
+      </div>
+      <div class="profile-grid">
+        <section><span class="profile-index">01</span><h3>模型策略</h3><p>Research Pro · 长文档与数字核验自动路由</p><button class="text-button">查看回退策略</button></section>
+        <section><span class="profile-index">02</span><h3>数据与工具</h3><p>Official filings、Internal RAG、SQL、P36 Graph</p><button class="text-button">3 / 3 已连接</button></section>
+        <section><span class="profile-index">03</span><h3>Skills</h3><p>需求验证、利润桥、反证、Writer no-source</p><button class="text-button">已启用 6 项</button></section>
+        <section><span class="profile-index">04</span><h3>Agent 编排</h3><p>Lead + Evidence + Numeric + 4 Domain + Writer</p><button class="text-button">查看编排模板</button></section>
+      </div>
+      <div class="budget-strip"><span>时限 45 分钟</span><span>成本上限 US$12</span><span>外部写入 0</span><span>真实 Case mutation 禁止</span></div>
+      <div class="dialog-actions"><button class="button secondary" data-close-profile>取消</button><button class="button primary" data-close-profile>保留当前配置</button></div>
+    </dialog>
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./prototype.js"></script>
+  </body>
+</html>

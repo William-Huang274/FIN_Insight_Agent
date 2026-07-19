@@ -1,0 +1,890 @@
+{
+  "schema_version": "fin_ia_0_1_vt4_p36_candidate_profile_v1_0",
+  "contract_id": "REL-PROD-001:VT4:P36-TEN-CELL-CANDIDATE-PROFILE",
+  "version": "1.0",
+  "status": "candidate_profile_fixture_shadow_internal_only",
+  "release_id": "REL-PROD-001",
+  "tranche_id": "VT4_P36_TEN_CELL_CANDIDATE_PROFILE",
+  "purpose": "Freeze a ten-cell P36 fixture candidate profile for internal structural review without executing research, promoting evidence, admitting runtime, or changing historical three-cell artifacts.",
+  "authority": {
+    "development_mode": "fixture_shadow_internal_only",
+    "runtime_admission": "not_granted",
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained"
+  },
+  "supersedes": {
+    "scope": "active_candidate_profile_topology_only",
+    "three_cell_product_chain": "REL-PROD-001 VT1-VT3 three-cell fixture product chain",
+    "historical_artifacts": "retained_immutable_not_modified",
+    "does_not_supersede_historical_artifacts": true
+  },
+  "extends": {
+    "relationship": "extends the accepted three-cell product chain into a fixture-only ten-cell candidate profile",
+    "contract_paths": [
+      "configs/releases/point03_vt1_evidence_workbench_contract_v1_0.json",
+      "configs/releases/fin_ia_0_1_vt2_three_cell_integrity_workpaper_contract_v1_0.json",
+      "configs/releases/fin_ia_0_1_vt3_deliverable_review_trace_contract_v1_0.json"
+    ],
+    "historical_artifact_mutation": "forbidden"
+  },
+  "planning_profile": {
+    "compiler_policy_ref": "fixture:p36-ten-cell-v1",
+    "pack_selection_ref": "fixture:p36-ai-infrastructure-v2",
+    "exact_cell_count": 10,
+    "active_cell_roles": [
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence",
+      "server_oem_orders",
+      "server_oem_margin_cash",
+      "advanced_packaging_capacity",
+      "hbm_supply_pricing",
+      "semicap_capex_cycle",
+      "export_policy_risk",
+      "customer_concentration"
+    ],
+    "required_feature_scope_families": [
+      "accelerator_demand_value_capture_concentration",
+      "server_oem_revenue_margin_cash_conversion",
+      "foundry_advanced_packaging_capacity_bottleneck_rent",
+      "hbm_demand_supply_pricing_concentration",
+      "semicap_capex_readthrough_cycle_export_policy",
+      "cross_chain_counterthesis_price_in_what_would_change"
+    ],
+    "cells": [
+      {
+        "cell_key": "demand_reality",
+        "active_role": "demand_signal",
+        "legacy_chain_compatibility": "Preserves the VT1-VT3 demand-reality product question with demand_signal as the active role.",
+        "decision_question": "Can the fixture profile preserve the demand-reality question for AI infrastructure demand and revenue conversion without making a live demand claim?",
+        "owner_role": "industry_analyst",
+        "materiality": "high",
+        "feature_scope_families": [
+          "accelerator_demand_value_capture_concentration"
+        ],
+        "stop_rule": "Do not advance this fixture judgment when the structural demand slot is absent or is treated as a real demand observation.",
+        "what_would_change": "A future admitted evidence route could replace the structural fixture placeholder only after separate authority and typed evidence review.",
+        "evidence_slots": [
+          {
+            "evidence_role": "demand_signal",
+            "entity_scope": [
+              "NVDA",
+              "MSFT",
+              "AMZN",
+              "GOOGL",
+              "META"
+            ],
+            "period_scope": "latest_two_quarters",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "acceptance_role": "industry_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "value_profit_capture",
+        "active_role": "revenue_capture",
+        "legacy_chain_compatibility": "Preserves the VT1-VT3 value-profit-capture product question with revenue_capture as the active role.",
+        "decision_question": "Can the fixture profile preserve the value-and-profit-capture comparison without asserting an issuer, segment, or supply-chain outcome?",
+        "owner_role": "financial_analyst",
+        "materiality": "high",
+        "feature_scope_families": [
+          "accelerator_demand_value_capture_concentration"
+        ],
+        "stop_rule": "Do not assign fixture value capture when its structural revenue slot is absent or is read as a promoted fact.",
+        "what_would_change": "A separately admitted, traceable revenue and margin evidence path could replace the fixture-only structural judgment.",
+        "evidence_slots": [
+          {
+            "evidence_role": "revenue_capture",
+            "entity_scope": [
+              "NVDA",
+              "SMCI",
+              "TSM",
+              "AVGO",
+              "MU",
+              "ASML",
+              "AMAT"
+            ],
+            "period_scope": "latest_two_quarters",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "acceptance_role": "financial_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "bottleneck_counterevidence",
+        "active_role": "thesis_counterevidence",
+        "legacy_chain_compatibility": "Preserves the VT1-VT3 bottleneck-counterevidence product question with thesis_counterevidence as the active role.",
+        "decision_question": "Can the fixture profile preserve an independent counterevidence question without claiming that a bottleneck or risk exists?",
+        "owner_role": "risk_reviewer",
+        "materiality": "high",
+        "feature_scope_families": [
+          "cross_chain_counterthesis_price_in_what_would_change"
+        ],
+        "stop_rule": "Do not close the fixture thesis when the counterevidence slot is absent, untyped, or represented as live policy content.",
+        "what_would_change": "A separately admitted evidence route could establish a bounded counterthesis subject to reviewer acceptance.",
+        "evidence_slots": [
+          {
+            "evidence_role": "thesis_counterevidence",
+            "entity_scope": [
+              "NVDA",
+              "MSFT",
+              "AMZN",
+              "GOOGL",
+              "META"
+            ],
+            "period_scope": "latest_two_quarters",
+            "source_policy_ref": "fixture:issuer_and_policy_first",
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "server_oem_order_revenue_conversion",
+        "active_role": "server_oem_orders",
+        "decision_question": "Does the fixture profile structurally distinguish server OEM order signals from revenue conversion without asserting either outcome?",
+        "owner_role": "financial_analyst",
+        "materiality": "high",
+        "feature_scope_families": [
+          "server_oem_revenue_margin_cash_conversion"
+        ],
+        "stop_rule": "Do not infer an order or revenue result when the fixture-only server OEM order slot has no typed gap boundary.",
+        "what_would_change": "An admitted issuer filing route with reviewer-approved order and revenue definitions could replace this structural placeholder.",
+        "evidence_slots": [
+          {
+            "evidence_role": "server_oem_orders",
+            "entity_scope": [
+              "fixture:server_oem_orders"
+            ],
+            "period_scope": "fixture:comparison_window",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "acceptance_role": "financial_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "server_oem_margin_cash_conversion",
+        "active_role": "server_oem_margin_cash",
+        "decision_question": "Does the fixture profile structurally separate server OEM margin and cash conversion questions without asserting profitability or cash facts?",
+        "owner_role": "financial_analyst",
+        "materiality": "high",
+        "feature_scope_families": [
+          "server_oem_revenue_margin_cash_conversion"
+        ],
+        "stop_rule": "Do not infer margin or cash conversion when the fixture-only slot is missing or its explicit gap is removed.",
+        "what_would_change": "A separately admitted issuer evidence path could provide auditable definitions and period alignment for a later judgment.",
+        "evidence_slots": [
+          {
+            "evidence_role": "server_oem_margin_cash",
+            "entity_scope": [
+              "fixture:server_oem_margin_cash"
+            ],
+            "period_scope": "fixture:comparison_window",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "acceptance_role": "financial_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "advanced_packaging_capacity_bottleneck_rent",
+        "active_role": "advanced_packaging_capacity",
+        "decision_question": "Does the fixture profile preserve an advanced-packaging capacity, bottleneck, and rent question without asserting supply or economics?",
+        "owner_role": "supply_chain_analyst",
+        "materiality": "high",
+        "feature_scope_families": [
+          "foundry_advanced_packaging_capacity_bottleneck_rent"
+        ],
+        "stop_rule": "Do not describe a capacity bottleneck or rent capture when only a fixture structural slot is available.",
+        "what_would_change": "A future admitted capacity definition, period basis, and independent counterroute could support a non-fixture assessment.",
+        "evidence_slots": [
+          {
+            "evidence_role": "advanced_packaging_capacity",
+            "entity_scope": [
+              "fixture:advanced_packaging"
+            ],
+            "period_scope": "fixture:comparison_window",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "acceptance_role": "supply_chain_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "hbm_supply_pricing_concentration",
+        "active_role": "hbm_supply_pricing",
+        "decision_question": "Does the fixture profile structurally cover HBM demand, supply, pricing, and concentration without asserting market conditions?",
+        "owner_role": "supply_chain_analyst",
+        "materiality": "high",
+        "feature_scope_families": [
+          "hbm_demand_supply_pricing_concentration"
+        ],
+        "stop_rule": "Do not infer HBM demand, supply, pricing, or concentration from a fixture candidate or its metadata address.",
+        "what_would_change": "A separately admitted multi-source evidence route could replace this placeholder after concentration and pricing definitions are reviewed.",
+        "evidence_slots": [
+          {
+            "evidence_role": "hbm_supply_pricing",
+            "entity_scope": [
+              "fixture:hbm_supply_pricing"
+            ],
+            "period_scope": "fixture:comparison_window",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "acceptance_role": "supply_chain_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "semicap_capex_cycle_export",
+        "active_role": "semicap_capex_cycle",
+        "decision_question": "Does the fixture profile structurally separate semicap capex, cycle, and export readthrough questions without asserting a cycle position?",
+        "owner_role": "industry_analyst",
+        "materiality": "medium",
+        "feature_scope_families": [
+          "semicap_capex_readthrough_cycle_export_policy"
+        ],
+        "stop_rule": "Do not characterize capex, cycle, or export readthrough when only an unpromoted fixture slot is present.",
+        "what_would_change": "A future admitted issuer and policy evidence path could establish the relevant definitions, timing, and counterevidence.",
+        "evidence_slots": [
+          {
+            "evidence_role": "semicap_capex_cycle",
+            "entity_scope": [
+              "fixture:semicap_capex_cycle"
+            ],
+            "period_scope": "fixture:comparison_window",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "acceptance_role": "industry_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "export_policy_risk",
+        "active_role": "export_policy_risk",
+        "decision_question": "Does the fixture profile create a typed export-policy risk counterevidence slot without representing any policy as current or applicable?",
+        "owner_role": "risk_reviewer",
+        "materiality": "high",
+        "feature_scope_families": [
+          "semicap_capex_readthrough_cycle_export_policy",
+          "cross_chain_counterthesis_price_in_what_would_change"
+        ],
+        "stop_rule": "Do not infer policy scope, timing, or commercial impact from a fixture policy metadata candidate.",
+        "what_would_change": "A separately admitted official-policy route with applicability review could replace this fixture-only counterevidence placeholder.",
+        "evidence_slots": [
+          {
+            "evidence_role": "export_policy_risk",
+            "entity_scope": [
+              "fixture:export_policy_risk"
+            ],
+            "period_scope": "fixture:policy_window",
+            "source_policy_ref": "fixture:issuer_and_policy_first",
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "customer_concentration",
+        "active_role": "customer_concentration",
+        "decision_question": "Does the fixture profile retain a customer concentration and price-in question without assigning exposure, ranking, or valuation implications?",
+        "owner_role": "risk_reviewer",
+        "materiality": "high",
+        "feature_scope_families": [
+          "accelerator_demand_value_capture_concentration",
+          "hbm_demand_supply_pricing_concentration",
+          "cross_chain_counterthesis_price_in_what_would_change"
+        ],
+        "stop_rule": "Do not infer customer concentration, price-in, or investment implication from a fixture structural candidate.",
+        "what_would_change": "A future admitted concentration methodology and reviewer-approved evidence set could replace the explicit fixture gap.",
+        "evidence_slots": [
+          {
+            "evidence_role": "customer_concentration",
+            "entity_scope": [
+              "fixture:customer_concentration"
+            ],
+            "period_scope": "fixture:comparison_window",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "evidence_role_extensions": {
+    "server_oem_orders": {
+      "request_policy": {
+        "accepted_evidence_role": "revenue_candidate",
+        "evidence_domain": "server_oem_order_revenue_conversion",
+        "allowed_source_policy_refs": ["fixture:issuer_filing_first"],
+        "allowed_acceptance_roles": ["financial_analyst"],
+        "required_forbidden_substitutions": [],
+        "metadata_binding_requirements": ["document_id", "document_version", "section_or_table_ref", "source_authority"],
+        "numeric_binding_requirements": [],
+        "acceptable_proxy": [],
+        "preferred_routes": ["fixture_issuer_filing_metadata_route"],
+        "fallback_routes": ["fixture_official_commentary_metadata_route"],
+        "top_k": 1,
+        "candidate_limit": 1,
+        "tool_call_limit": 1,
+        "elapsed_seconds_limit": 30
+      },
+      "fixture_candidates": [
+        {
+          "metadata": {
+            "candidate_id": "p36_vt4_fixture_server_oem_orders_candidate_v1",
+            "document_id": "fixture_p36_vt4_server_oem_orders_document_v1",
+            "document_version": "fixture:v1",
+            "source_snapshot_ref": "fixture_snapshot:p36_vt4_ten_cell:v1",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "route_id": "fixture_issuer_filing_metadata_route",
+            "source_role": "official_issuer",
+            "source_authority_rank": 5,
+            "entity_ref": "fixture:server_oem_orders",
+            "period_ref": "fixture:comparison_window",
+            "candidate_kind": "top_k_seed",
+            "section_or_table_ref": "fixture_structural_slot_server_oem_orders",
+            "metadata_rank": 1,
+            "content_ref": "fixture://p36/vt4/server-oem-orders"
+          },
+          "display": {
+            "title": "Server OEM orders structural fixture candidate",
+            "source_name": "P36 issuer metadata fixture",
+            "source_type": "Fixture issuer metadata",
+            "published_at": "fixture-date-not-live",
+            "citation": "Fixture structural slot only",
+            "excerpt": "Fixture structural context only: deterministic metadata placeholder for a server OEM order slot; it contains no live issuer fact or business conclusion.",
+            "authority_label": "Fixture issuer metadata only",
+            "applicability_boundary": "Fixture-only candidate; promotion boundary is not in this contract."
+          }
+        }
+      ],
+      "promotion_boundary": "not_in_this_contract"
+    },
+    "server_oem_margin_cash": {
+      "request_policy": {
+        "accepted_evidence_role": "revenue_candidate",
+        "evidence_domain": "server_oem_margin_cash_conversion",
+        "allowed_source_policy_refs": ["fixture:issuer_filing_first"],
+        "allowed_acceptance_roles": ["financial_analyst"],
+        "required_forbidden_substitutions": [],
+        "metadata_binding_requirements": ["document_id", "document_version", "section_or_table_ref", "source_authority"],
+        "numeric_binding_requirements": [],
+        "acceptable_proxy": [],
+        "preferred_routes": ["fixture_issuer_filing_metadata_route"],
+        "fallback_routes": ["fixture_official_commentary_metadata_route"],
+        "top_k": 1,
+        "candidate_limit": 1,
+        "tool_call_limit": 1,
+        "elapsed_seconds_limit": 30
+      },
+      "fixture_candidates": [
+        {
+          "metadata": {
+            "candidate_id": "p36_vt4_fixture_server_oem_margin_cash_candidate_v1",
+            "document_id": "fixture_p36_vt4_server_oem_margin_cash_document_v1",
+            "document_version": "fixture:v1",
+            "source_snapshot_ref": "fixture_snapshot:p36_vt4_ten_cell:v1",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "route_id": "fixture_issuer_filing_metadata_route",
+            "source_role": "official_issuer",
+            "source_authority_rank": 5,
+            "entity_ref": "fixture:server_oem_margin_cash",
+            "period_ref": "fixture:comparison_window",
+            "candidate_kind": "top_k_seed",
+            "section_or_table_ref": "fixture_structural_slot_server_oem_margin_cash",
+            "metadata_rank": 1,
+            "content_ref": "fixture://p36/vt4/server-oem-margin-cash"
+          },
+          "display": {
+            "title": "Server OEM margin and cash structural fixture candidate",
+            "source_name": "P36 issuer metadata fixture",
+            "source_type": "Fixture issuer metadata",
+            "published_at": "fixture-date-not-live",
+            "citation": "Fixture structural slot only",
+            "excerpt": "Fixture structural context only: deterministic metadata placeholder for a server OEM margin and cash slot; it contains no live issuer fact or business conclusion.",
+            "authority_label": "Fixture issuer metadata only",
+            "applicability_boundary": "Fixture-only candidate; promotion boundary is not in this contract."
+          }
+        }
+      ],
+      "promotion_boundary": "not_in_this_contract"
+    },
+    "advanced_packaging_capacity": {
+      "request_policy": {
+        "accepted_evidence_role": "revenue_candidate",
+        "evidence_domain": "advanced_packaging_capacity_bottleneck_rent",
+        "allowed_source_policy_refs": ["fixture:issuer_filing_first"],
+        "allowed_acceptance_roles": ["supply_chain_analyst"],
+        "required_forbidden_substitutions": [],
+        "metadata_binding_requirements": ["document_id", "document_version", "section_or_table_ref", "source_authority"],
+        "numeric_binding_requirements": [],
+        "acceptable_proxy": [],
+        "preferred_routes": ["fixture_issuer_filing_metadata_route"],
+        "fallback_routes": ["fixture_official_commentary_metadata_route"],
+        "top_k": 1,
+        "candidate_limit": 1,
+        "tool_call_limit": 1,
+        "elapsed_seconds_limit": 30
+      },
+      "fixture_candidates": [
+        {
+          "metadata": {
+            "candidate_id": "p36_vt4_fixture_advanced_packaging_capacity_candidate_v1",
+            "document_id": "fixture_p36_vt4_advanced_packaging_capacity_document_v1",
+            "document_version": "fixture:v1",
+            "source_snapshot_ref": "fixture_snapshot:p36_vt4_ten_cell:v1",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "route_id": "fixture_issuer_filing_metadata_route",
+            "source_role": "official_issuer",
+            "source_authority_rank": 5,
+            "entity_ref": "fixture:advanced_packaging",
+            "period_ref": "fixture:comparison_window",
+            "candidate_kind": "top_k_seed",
+            "section_or_table_ref": "fixture_structural_slot_advanced_packaging_capacity",
+            "metadata_rank": 1,
+            "content_ref": "fixture://p36/vt4/advanced-packaging-capacity"
+          },
+          "display": {
+            "title": "Advanced packaging capacity structural fixture candidate",
+            "source_name": "P36 issuer metadata fixture",
+            "source_type": "Fixture issuer metadata",
+            "published_at": "fixture-date-not-live",
+            "citation": "Fixture structural slot only",
+            "excerpt": "Fixture structural context only: deterministic metadata placeholder for an advanced packaging capacity slot; it contains no live issuer fact or business conclusion.",
+            "authority_label": "Fixture issuer metadata only",
+            "applicability_boundary": "Fixture-only candidate; promotion boundary is not in this contract."
+          }
+        }
+      ],
+      "promotion_boundary": "not_in_this_contract"
+    },
+    "hbm_supply_pricing": {
+      "request_policy": {
+        "accepted_evidence_role": "revenue_candidate",
+        "evidence_domain": "hbm_demand_supply_pricing_concentration",
+        "allowed_source_policy_refs": ["fixture:issuer_filing_first"],
+        "allowed_acceptance_roles": ["supply_chain_analyst"],
+        "required_forbidden_substitutions": [],
+        "metadata_binding_requirements": ["document_id", "document_version", "section_or_table_ref", "source_authority"],
+        "numeric_binding_requirements": [],
+        "acceptable_proxy": [],
+        "preferred_routes": ["fixture_issuer_filing_metadata_route"],
+        "fallback_routes": ["fixture_official_commentary_metadata_route"],
+        "top_k": 1,
+        "candidate_limit": 1,
+        "tool_call_limit": 1,
+        "elapsed_seconds_limit": 30
+      },
+      "fixture_candidates": [
+        {
+          "metadata": {
+            "candidate_id": "p36_vt4_fixture_hbm_supply_pricing_candidate_v1",
+            "document_id": "fixture_p36_vt4_hbm_supply_pricing_document_v1",
+            "document_version": "fixture:v1",
+            "source_snapshot_ref": "fixture_snapshot:p36_vt4_ten_cell:v1",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "route_id": "fixture_issuer_filing_metadata_route",
+            "source_role": "official_issuer",
+            "source_authority_rank": 5,
+            "entity_ref": "fixture:hbm_supply_pricing",
+            "period_ref": "fixture:comparison_window",
+            "candidate_kind": "top_k_seed",
+            "section_or_table_ref": "fixture_structural_slot_hbm_supply_pricing",
+            "metadata_rank": 1,
+            "content_ref": "fixture://p36/vt4/hbm-supply-pricing"
+          },
+          "display": {
+            "title": "HBM supply and pricing structural fixture candidate",
+            "source_name": "P36 issuer metadata fixture",
+            "source_type": "Fixture issuer metadata",
+            "published_at": "fixture-date-not-live",
+            "citation": "Fixture structural slot only",
+            "excerpt": "Fixture structural context only: deterministic metadata placeholder for an HBM supply and pricing slot; it contains no live issuer fact or business conclusion.",
+            "authority_label": "Fixture issuer metadata only",
+            "applicability_boundary": "Fixture-only candidate; promotion boundary is not in this contract."
+          }
+        }
+      ],
+      "promotion_boundary": "not_in_this_contract"
+    },
+    "semicap_capex_cycle": {
+      "request_policy": {
+        "accepted_evidence_role": "revenue_candidate",
+        "evidence_domain": "semicap_capex_readthrough_cycle",
+        "allowed_source_policy_refs": ["fixture:issuer_filing_first"],
+        "allowed_acceptance_roles": ["industry_analyst"],
+        "required_forbidden_substitutions": [],
+        "metadata_binding_requirements": ["document_id", "document_version", "section_or_table_ref", "source_authority"],
+        "numeric_binding_requirements": [],
+        "acceptable_proxy": [],
+        "preferred_routes": ["fixture_issuer_filing_metadata_route"],
+        "fallback_routes": ["fixture_official_commentary_metadata_route"],
+        "top_k": 1,
+        "candidate_limit": 1,
+        "tool_call_limit": 1,
+        "elapsed_seconds_limit": 30
+      },
+      "fixture_candidates": [
+        {
+          "metadata": {
+            "candidate_id": "p36_vt4_fixture_semicap_capex_cycle_candidate_v1",
+            "document_id": "fixture_p36_vt4_semicap_capex_cycle_document_v1",
+            "document_version": "fixture:v1",
+            "source_snapshot_ref": "fixture_snapshot:p36_vt4_ten_cell:v1",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "route_id": "fixture_issuer_filing_metadata_route",
+            "source_role": "official_issuer",
+            "source_authority_rank": 5,
+            "entity_ref": "fixture:semicap_capex_cycle",
+            "period_ref": "fixture:comparison_window",
+            "candidate_kind": "top_k_seed",
+            "section_or_table_ref": "fixture_structural_slot_semicap_capex_cycle",
+            "metadata_rank": 1,
+            "content_ref": "fixture://p36/vt4/semicap-capex-cycle"
+          },
+          "display": {
+            "title": "Semicap capex and cycle structural fixture candidate",
+            "source_name": "P36 issuer metadata fixture",
+            "source_type": "Fixture issuer metadata",
+            "published_at": "fixture-date-not-live",
+            "citation": "Fixture structural slot only",
+            "excerpt": "Fixture structural context only: deterministic metadata placeholder for a semicap capex and cycle slot; it contains no live issuer fact or business conclusion.",
+            "authority_label": "Fixture issuer metadata only",
+            "applicability_boundary": "Fixture-only candidate; promotion boundary is not in this contract."
+          }
+        }
+      ],
+      "promotion_boundary": "not_in_this_contract"
+    },
+    "export_policy_risk": {
+      "request_policy": {
+        "accepted_evidence_role": "counterevidence_candidate",
+        "evidence_domain": "export_policy_risk",
+        "allowed_source_policy_refs": ["fixture:issuer_and_policy_first"],
+        "allowed_acceptance_roles": ["risk_reviewer"],
+        "required_forbidden_substitutions": [],
+        "metadata_binding_requirements": ["document_id", "document_version", "section_or_table_ref", "source_authority"],
+        "numeric_binding_requirements": [],
+        "acceptable_proxy": [],
+        "preferred_routes": ["fixture_policy_counterevidence_metadata_route"],
+        "fallback_routes": [],
+        "top_k": 1,
+        "candidate_limit": 1,
+        "tool_call_limit": 1,
+        "elapsed_seconds_limit": 30
+      },
+      "fixture_candidates": [
+        {
+          "metadata": {
+            "candidate_id": "p36_vt4_fixture_export_policy_risk_candidate_v1",
+            "document_id": "fixture_p36_vt4_export_policy_risk_document_v1",
+            "document_version": "fixture:v1",
+            "source_snapshot_ref": "fixture_snapshot:p36_vt4_ten_cell:v1",
+            "source_policy_ref": "fixture:issuer_and_policy_first",
+            "route_id": "fixture_policy_counterevidence_metadata_route",
+            "source_role": "official_policy",
+            "source_authority_rank": 5,
+            "entity_ref": "fixture:export_policy_risk",
+            "period_ref": "fixture:policy_window",
+            "candidate_kind": "top_k_seed",
+            "section_or_table_ref": "fixture_structural_slot_export_policy_risk",
+            "metadata_rank": 1,
+            "content_ref": "fixture://p36/vt4/export-policy-risk"
+          },
+          "display": {
+            "title": "Export policy risk structural fixture candidate",
+            "source_name": "P36 policy metadata fixture",
+            "source_type": "Fixture policy metadata",
+            "published_at": "fixture-date-not-live",
+            "citation": "Fixture structural slot only",
+            "excerpt": "Fixture structural context only: deterministic policy metadata placeholder for an export-risk slot; it contains no live policy fact or applicability conclusion.",
+            "authority_label": "Fixture policy metadata only",
+            "applicability_boundary": "Fixture-only candidate; promotion boundary is not in this contract."
+          }
+        }
+      ],
+      "promotion_boundary": "not_in_this_contract"
+    },
+    "customer_concentration": {
+      "request_policy": {
+        "accepted_evidence_role": "revenue_candidate",
+        "evidence_domain": "customer_concentration_and_price_in",
+        "allowed_source_policy_refs": ["fixture:issuer_filing_first"],
+        "allowed_acceptance_roles": ["risk_reviewer"],
+        "required_forbidden_substitutions": [],
+        "metadata_binding_requirements": ["document_id", "document_version", "section_or_table_ref", "source_authority"],
+        "numeric_binding_requirements": [],
+        "acceptable_proxy": [],
+        "preferred_routes": ["fixture_issuer_filing_metadata_route"],
+        "fallback_routes": ["fixture_official_commentary_metadata_route"],
+        "top_k": 1,
+        "candidate_limit": 1,
+        "tool_call_limit": 1,
+        "elapsed_seconds_limit": 30
+      },
+      "fixture_candidates": [
+        {
+          "metadata": {
+            "candidate_id": "p36_vt4_fixture_customer_concentration_candidate_v1",
+            "document_id": "fixture_p36_vt4_customer_concentration_document_v1",
+            "document_version": "fixture:v1",
+            "source_snapshot_ref": "fixture_snapshot:p36_vt4_ten_cell:v1",
+            "source_policy_ref": "fixture:issuer_filing_first",
+            "route_id": "fixture_issuer_filing_metadata_route",
+            "source_role": "official_issuer",
+            "source_authority_rank": 5,
+            "entity_ref": "fixture:customer_concentration",
+            "period_ref": "fixture:comparison_window",
+            "candidate_kind": "top_k_seed",
+            "section_or_table_ref": "fixture_structural_slot_customer_concentration",
+            "metadata_rank": 1,
+            "content_ref": "fixture://p36/vt4/customer-concentration"
+          },
+          "display": {
+            "title": "Customer concentration structural fixture candidate",
+            "source_name": "P36 issuer metadata fixture",
+            "source_type": "Fixture issuer metadata",
+            "published_at": "fixture-date-not-live",
+            "citation": "Fixture structural slot only",
+            "excerpt": "Fixture structural context only: deterministic metadata placeholder for a customer concentration slot; it contains no live issuer fact, ranking, or business conclusion.",
+            "authority_label": "Fixture issuer metadata only",
+            "applicability_boundary": "Fixture-only candidate; promotion boundary is not in this contract."
+          }
+        }
+      ],
+      "promotion_boundary": "not_in_this_contract"
+    }
+  },
+  "workpaper_profile": {
+    "required_judgment_roles": [
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence",
+      "server_oem_orders",
+      "server_oem_margin_cash",
+      "advanced_packaging_capacity",
+      "hbm_supply_pricing",
+      "semicap_capex_cycle",
+      "export_policy_risk",
+      "customer_concentration"
+    ],
+    "judgment_status_by_role": {
+      "demand_signal": "legacy_fixture_chain_preserved_with_explicit_gap",
+      "revenue_capture": "legacy_fixture_chain_preserved_with_explicit_gap",
+      "thesis_counterevidence": "legacy_fixture_chain_preserved_with_explicit_gap",
+      "server_oem_orders": "structural_fixture_only_explicit_gap",
+      "server_oem_margin_cash": "structural_fixture_only_explicit_gap",
+      "advanced_packaging_capacity": "structural_fixture_only_explicit_gap",
+      "hbm_supply_pricing": "structural_fixture_only_explicit_gap",
+      "semicap_capex_cycle": "structural_fixture_only_explicit_gap",
+      "export_policy_risk": "structural_fixture_only_explicit_gap",
+      "customer_concentration": "structural_fixture_only_explicit_gap"
+    },
+    "judgment_templates": {
+      "demand_signal": {
+        "judgment": "Fixture-only structural judgment preserves the demand-signal role without a live demand conclusion.",
+        "counter_thesis": "The structural slot could be incomplete or unsuitable for a future admitted demand assessment.",
+        "remaining_gaps": ["Explicit gap: no admitted live demand evidence is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      },
+      "revenue_capture": {
+        "judgment": "Fixture-only structural judgment preserves the revenue-capture role without a live value-capture conclusion.",
+        "counter_thesis": "The structural slot cannot establish revenue, margin, or cross-chain economics.",
+        "remaining_gaps": ["Explicit gap: no admitted live revenue or margin evidence is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      },
+      "thesis_counterevidence": {
+        "judgment": "Fixture-only structural judgment preserves the counterevidence role without a live risk conclusion.",
+        "counter_thesis": "The placeholder may not represent the counterevidence needed for an admitted thesis review.",
+        "remaining_gaps": ["Explicit gap: no admitted policy, supply, or market counterevidence is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      },
+      "server_oem_orders": {
+        "judgment": "Structural fixture judgment only: the server OEM order role is present and makes no industry conclusion.",
+        "counter_thesis": "The slot may be irrelevant, incomplete, or insufficient for an order-to-revenue analysis.",
+        "remaining_gaps": ["Explicit gap: no admitted order or revenue evidence, definition, or period alignment is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      },
+      "server_oem_margin_cash": {
+        "judgment": "Structural fixture judgment only: the server OEM margin-and-cash role is present and makes no industry conclusion.",
+        "counter_thesis": "The slot may not distinguish margin from cash conversion under future evidence definitions.",
+        "remaining_gaps": ["Explicit gap: no admitted margin, cash, or conversion evidence is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      },
+      "advanced_packaging_capacity": {
+        "judgment": "Structural fixture judgment only: the advanced-packaging role is present and makes no capacity or rent conclusion.",
+        "counter_thesis": "The fixture slot may not capture the bottleneck or rent mechanism needed for a real assessment.",
+        "remaining_gaps": ["Explicit gap: no admitted capacity, bottleneck, or rent evidence is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      },
+      "hbm_supply_pricing": {
+        "judgment": "Structural fixture judgment only: the HBM supply-and-pricing role is present and makes no market conclusion.",
+        "counter_thesis": "The fixture slot may not represent the supply, pricing, or concentration dimensions needed for review.",
+        "remaining_gaps": ["Explicit gap: no admitted HBM demand, supply, pricing, or concentration evidence is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      },
+      "semicap_capex_cycle": {
+        "judgment": "Structural fixture judgment only: the semicap capex-and-cycle role is present and makes no cycle conclusion.",
+        "counter_thesis": "The fixture slot may not establish any capex, cycle, or export readthrough relationship.",
+        "remaining_gaps": ["Explicit gap: no admitted capex, cycle, or export readthrough evidence is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      },
+      "export_policy_risk": {
+        "judgment": "Structural fixture judgment only: the export-policy-risk role is present and makes no policy applicability conclusion.",
+        "counter_thesis": "The fixture slot may not represent a current, applicable, or material policy counterthesis.",
+        "remaining_gaps": ["Explicit gap: no admitted policy text, applicability review, or commercial-impact evidence is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      },
+      "customer_concentration": {
+        "judgment": "Structural fixture judgment only: the customer-concentration role is present and makes no exposure or price-in conclusion.",
+        "counter_thesis": "The fixture slot may not capture the concentration definition or its relevance to a future thesis.",
+        "remaining_gaps": ["Explicit gap: no admitted customer concentration, ranking, or price-in evidence is present."],
+        "confidence": "fixture_structural_only_not_sector_research_validity"
+      }
+    }
+  },
+  "deliverable_profile": {
+    "title": "P36 ten-cell fixture candidate profile",
+    "executive_line": "P36 ten-cell fixture provides structural coverage only and does not state sector research conclusions.",
+    "active_cell_roles": [
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence",
+      "server_oem_orders",
+      "server_oem_margin_cash",
+      "advanced_packaging_capacity",
+      "hbm_supply_pricing",
+      "semicap_capex_cycle",
+      "export_policy_risk",
+      "customer_concentration"
+    ],
+    "writer_boundary": "no_writer_execution_or_release_admission"
+  },
+  "structural_regressions": {
+    "status": "structural_only_not_sector_research_validity",
+    "cases": [
+      {
+        "case_key": "saas",
+        "expected_cell_families": [
+          "accelerator_demand_value_capture_concentration",
+          "server_oem_revenue_margin_cash_conversion",
+          "foundry_advanced_packaging_capacity_bottleneck_rent",
+          "hbm_demand_supply_pricing_concentration",
+          "semicap_capex_readthrough_cycle_export_policy",
+          "cross_chain_counterthesis_price_in_what_would_change"
+        ],
+        "forbidden_inherited_facts": [
+          "P36 fixture sector conclusions",
+          "P36 fixture company assertions"
+        ],
+        "forbidden_inherited_numbers": [
+          "P36 fixture numeric values",
+          "P36 fixture percentages"
+        ],
+        "forbidden_inherited_rankings": [
+          "P36 fixture company rankings",
+          "P36 fixture customer ordering"
+        ],
+        "forbidden_inherited_source_refs": [
+          "P36 fixture issuer source references",
+          "P36 fixture policy source references"
+        ],
+        "required_observations": [
+          "typed_gaps_required",
+          "no_stale_P36_facts"
+        ],
+        "status": "structural_only_not_sector_research_validity"
+      },
+      {
+        "case_key": "us_banks",
+        "expected_cell_families": [
+          "accelerator_demand_value_capture_concentration",
+          "server_oem_revenue_margin_cash_conversion",
+          "foundry_advanced_packaging_capacity_bottleneck_rent",
+          "hbm_demand_supply_pricing_concentration",
+          "semicap_capex_readthrough_cycle_export_policy",
+          "cross_chain_counterthesis_price_in_what_would_change"
+        ],
+        "forbidden_inherited_facts": [
+          "P36 fixture sector conclusions",
+          "P36 fixture company assertions"
+        ],
+        "forbidden_inherited_numbers": [
+          "P36 fixture numeric values",
+          "P36 fixture percentages"
+        ],
+        "forbidden_inherited_rankings": [
+          "P36 fixture company rankings",
+          "P36 fixture customer ordering"
+        ],
+        "forbidden_inherited_source_refs": [
+          "P36 fixture issuer source references",
+          "P36 fixture policy source references"
+        ],
+        "required_observations": [
+          "typed_gaps_required",
+          "no_stale_P36_facts"
+        ],
+        "status": "structural_only_not_sector_research_validity"
+      }
+    ]
+  },
+  "evaluation_profile": {
+    "metrics": {
+      "time_to_workpaper": {
+        "definition": "Elapsed local fixture time from candidate-profile selection to a complete ten-role structural workpaper projection.",
+        "collection_point": "after deterministic structural workpaper assembly"
+      },
+      "review_burden": {
+        "definition": "Count of required reviewer decisions and explicit gaps across the ten-role structural workpaper.",
+        "collection_point": "during fixture-only reviewer checklist completion"
+      },
+      "repeated_work": {
+        "definition": "Count of duplicated role, slot, or judgment-template steps detected in deterministic profile assembly.",
+        "collection_point": "after ten-cell structural profile comparison"
+      },
+      "external_tool_model_cost": {
+        "definition": "Count and cost of external tool, model, provider, and paid calls; this candidate requires zero.",
+        "collection_point": "before and after local contract-test execution"
+      },
+      "browser_performance": {
+        "definition": "Local fixture render responsiveness for ten structural roles without running a research workflow.",
+        "collection_point": "future fixture-only browser review, not this contract test"
+      },
+      "accessibility": {
+        "definition": "Presence of role labels, explicit gaps, and reviewable structural status for a fixture-only ten-cell presentation.",
+        "collection_point": "future fixture-only browser review, not this contract test"
+      }
+    },
+    "p07_5": {
+      "status": "blocked_by_RG1_debt",
+      "blocking_debt": "RG1",
+      "reason": "P07.5 release admission remains blocked until separately authorized RG1 operational qualification is closed."
+    },
+    "rollback": {
+      "target_release_id": "REL-FND-001",
+      "legacy_global_authority": "retained"
+    }
+  },
+  "hard_boundaries": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "tool_invocations": 0,
+    "paid_full_chain": 0,
+    "full_chain": 0,
+    "real_business_case_write": 0,
+    "release_admission": 0
+  },
+  "scope_boundaries": {
+    "runtime_writes": 0,
+    "report_writes": 0,
+    "gate_family_creation": 0,
+    "package_family_creation": 0,
+    "historical_artifact_mutation": 0
+  }
+}

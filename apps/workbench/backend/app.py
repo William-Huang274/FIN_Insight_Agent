@@ -13,6 +13,22 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
+from .api.v1.cases import build_cases_router
+from .api.v1.evidence import build_evidence_router
+from .api.v1.deliverables import build_deliverables_router
+from .api.v1.execution import build_execution_router
+from .api.v1.integrity import build_integrity_router
+from .api.v1.human_baseline import build_human_baseline_router
+from .api.v1.local_research import build_local_research_router
+from .api.v1.planning import build_planning_router
+from .application.case_service import CaseService, case_service_from_env
+from .application.evidence_service import EvidenceService
+from .application.deliverable_service import DeliverableService
+from .application.execution_service import ExecutionService
+from .application.integrity_service import IntegrityService
+from .application.human_baseline_service import HumanBaselineService
+from .application.local_research_service import P36LocalResearchService
+from .application.planning_service import PlanningService
 from sec_agent.workbench import (
     RunCancelReport,
     RunInspectionReport,
@@ -25,6 +41,7 @@ from sec_agent.workbench import (
     build_data_build_command,
     build_agent_ask_command,
     build_agent_session_turn_command,
+    build_agent_information_economy_projection,
     build_eval_command,
     build_local_smoke_command,
     build_native_checkpoint_resume_command,
@@ -63,6 +80,17 @@ from sec_agent.r53_r60_internal_reviewer_action_capture import (
     append_live_reviewer_action as append_r53_r60_pilot_reviewer_action,
     get_pilot_action_ledger as get_r53_r60_pilot_action_ledger,
     get_pilot_case_action_ledger as get_r53_r60_pilot_case_action_ledger,
+)
+from sec_agent.r53_r60_product_acceptance_b04_gate import (
+    P24_DEFECT_CLOSEOUT_STATUSES,
+    P24_DELIVERABLE_DECISION_STATUSES,
+    P24_REAL_HUMAN_REVIEWER_ROLES,
+    P24_REVIEWER_EVIDENCE_TYPES,
+    append_real_reviewer_acceptance_evidence as append_r53_r60_product_acceptance_evidence,
+    get_product_acceptance_evidence_status as get_r53_r60_product_acceptance_evidence_status,
+)
+from sec_agent.r53_r60_b04_reviewer_acceptance_package import (
+    get_b04_reviewer_acceptance_package as get_r53_r60_b04_reviewer_acceptance_package,
 )
 from sec_agent.r53_r60_workbench_frontdoor_drilldown import (
     append_review_action as append_r53_r60_review_action,
@@ -219,10 +247,52 @@ class CancelRunRequest(BaseModel):
 class R53R60ReviewActionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    action: Literal["approve", "request_repair", "return_to_specialist", "downgrade_claim", "comment"]
+    action: Literal[
+        "approve",
+        "accept",
+        "reject",
+        "supersede",
+        "request_repair",
+        "return_to_specialist",
+        "downgrade_claim",
+        "comment",
+    ]
     comment: str = ""
     reviewer_role: str = "senior_analyst"
     review_item_id: str = ""
+
+
+class R53R60ProductAcceptanceEvidenceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_type: Literal[
+        "reviewer_session",
+        "deliverable_acceptance",
+        "defect_closeout",
+        "visual_acceptance",
+        "audit_replay",
+    ]
+    reviewer_role: str
+    session_id: str
+    status: str = "complete"
+    action_source: str = "real_human"
+    task_id: str | None = None
+    case_id: str | None = None
+    decision_status: Literal["accepted", "rejected"] | None = None
+    deliverable_ref: str | None = None
+    artifact_ref_id: str | None = None
+    artifact_ref_ids: list[str] | None = None
+    review_comment: str | None = None
+    closeout_status: Literal["repaired", "regression_covered", "typed_gap_accepted"] | None = None
+    source_id: str | list[str] | None = None
+    covered_source_ids: list[str] | None = None
+    repair_ref: str | None = None
+    regression_case_id: str | None = None
+    typed_gap_id: str | None = None
+    visual_decision: str | None = None
+    browser_screenshot_refs: list[str] | None = None
+    trace_ref: str | None = None
+    review_comment_ref: str | None = None
 
 
 class R53R60ResumeRequest(BaseModel):
@@ -265,8 +335,36 @@ class NativeCheckpointResumeRequest(BaseModel):
     checkpoint_mode: Literal["memory", "sqlite", "none"] = "sqlite"
 
 
-def create_app(store_path: str | Path | None = None) -> FastAPI:
+def create_app(
+    store_path: str | Path | None = None,
+    p02_case_service: CaseService | None = None,
+    p02_planning_service: PlanningService | None = None,
+    p02_execution_service: ExecutionService | None = None,
+    p03_evidence_service: EvidenceService | None = None,
+    p36_local_research_service: P36LocalResearchService | None = None,
+    human_baseline_service: HumanBaselineService | None = None,
+    vt2_integrity_service: IntegrityService | None = None,
+    vt3_deliverable_service: DeliverableService | None = None,
+) -> FastAPI:
     store = WorkbenchStore(store_path or default_store_path(REPO_ROOT))
+    case_service = p02_case_service or case_service_from_env(REPO_ROOT)
+    planning_service = p02_planning_service or PlanningService.from_case_service(case_service)
+    execution_service = p02_execution_service or ExecutionService.from_case_service(case_service)
+    evidence_service = p03_evidence_service or EvidenceService.from_case_service(
+        case_service, repo_root=REPO_ROOT
+    )
+    local_research_service = p36_local_research_service or P36LocalResearchService.from_case_service(
+        case_service, repo_root=REPO_ROOT
+    )
+    baseline_service = human_baseline_service or HumanBaselineService.from_services(
+        case_service, local_research_service, repo_root=REPO_ROOT
+    )
+    integrity_service = vt2_integrity_service or IntegrityService.from_services(
+        case_service, evidence_service, repo_root=REPO_ROOT
+    )
+    deliverable_service = vt3_deliverable_service or DeliverableService.from_services(
+        case_service, evidence_service, repo_root=REPO_ROOT
+    )
     app = FastAPI(
         title="FinSight Workbench API",
         version="0.1.0",
@@ -277,9 +375,17 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
         CORSMiddleware,
         allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
         allow_credentials=False,
-        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
         allow_headers=["*"],
     )
+    app.include_router(build_cases_router(case_service), prefix="/api/v1")
+    app.include_router(build_planning_router(planning_service), prefix="/api/v1")
+    app.include_router(build_execution_router(execution_service), prefix="/api/v1")
+    app.include_router(build_evidence_router(evidence_service), prefix="/api/v1")
+    app.include_router(build_local_research_router(local_research_service), prefix="/api/v1")
+    app.include_router(build_human_baseline_router(baseline_service), prefix="/api/v1")
+    app.include_router(build_integrity_router(integrity_service), prefix="/api/v1")
+    app.include_router(build_deliverables_router(deliverable_service), prefix="/api/v1")
     if (FRONTEND_DIST_ROOT / "assets").exists():
         app.mount("/assets", StaticFiles(directory=FRONTEND_DIST_ROOT / "assets"), name="assets")
     if (FRONTEND_ROOT / "static").exists():
@@ -457,6 +563,34 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
     def r53_r60_pilot_action_ledger():
         return get_r53_r60_pilot_action_ledger(REPO_ROOT)
 
+    @app.get("/api/r53-r60/product-acceptance/evidence")
+    def r53_r60_product_acceptance_evidence():
+        return {
+            "accepted_reviewer_roles": sorted(P24_REAL_HUMAN_REVIEWER_ROLES),
+            "accepted_evidence_types": sorted(P24_REVIEWER_EVIDENCE_TYPES),
+            "accepted_deliverable_decisions": sorted(P24_DELIVERABLE_DECISION_STATUSES),
+            "accepted_defect_closeout_statuses": sorted(P24_DEFECT_CLOSEOUT_STATUSES),
+            "evidence_status": get_r53_r60_product_acceptance_evidence_status(REPO_ROOT),
+        }
+
+    @app.get("/api/r53-r60/product-acceptance/reviewer-package")
+    def r53_r60_product_acceptance_reviewer_package():
+        return get_r53_r60_b04_reviewer_acceptance_package(REPO_ROOT)
+
+    @app.post("/api/r53-r60/product-acceptance/evidence")
+    def r53_r60_append_product_acceptance_evidence(payload: R53R60ProductAcceptanceEvidenceRequest):
+        try:
+            result = append_r53_r60_product_acceptance_evidence(
+                REPO_ROOT,
+                payload.model_dump(exclude_none=True),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {
+            **result,
+            "evidence_status": get_r53_r60_product_acceptance_evidence_status(REPO_ROOT),
+        }
+
     @app.get("/api/r53-r60/pilot/cases/{case_id}/actions")
     def r53_r60_pilot_case_action_ledger(case_id: str):
         try:
@@ -613,6 +747,10 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
     @app.get("/api/evals/dashboard")
     def eval_dashboard(limit: int = Query(default=50, ge=1, le=500)):
         return store.eval_dashboard(limit=limit)
+
+    @app.get("/api/evals/agent-information-economy")
+    def eval_agent_information_economy(limit: int = Query(default=12, ge=1, le=100)):
+        return build_agent_information_economy_projection(REPO_ROOT, limit=limit)
 
     @app.get("/api/data-build/steps")
     def list_data_build_steps():
@@ -878,6 +1016,12 @@ def create_app(store_path: str | Path | None = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         start_command_job(store, job, spec)
         return {"job": job}
+
+    @app.get("/tasks", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/legacy", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/cases/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    def point02_frontend_entrypoint(frontend_path: str = "") -> str:
+        return index()
 
     return app
 

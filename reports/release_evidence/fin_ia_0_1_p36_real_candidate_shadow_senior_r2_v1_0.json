@@ -1,0 +1,84 @@
+{
+  "schema_version": "fin_ia_0_1_p36_real_candidate_shadow_senior_r2_v1_0",
+  "review_id": "REL-PROD-001:P07.1:P36-REAL-CANDIDATE:SHADOW-SENIOR-R2",
+  "release_id": "REL-PROD-001",
+  "execution_point": "P07.1",
+  "status": "bounded_shadow_review_complete_exact_human_lead_review_pending",
+  "review_mode": "independent_internal_shadow_senior_r2_not_human_calibrated_acceptance",
+  "exact_candidate": {
+    "case_id": "case_80fb19038ebf44f5ef7ad5b5",
+    "local_research_preview_digest": "aa792b86fa5aed152ba38352eec54b08b8ad5a3603a553c57a66260eb389b093",
+    "local_analysis_digest": "9d47aa3b29db35839dd6aea10974747777dbf72177e7e54db5c4c9fb4311ee50",
+    "selected_cell_count": 10,
+    "mandatory_family_count": 6,
+    "candidate_count": 31,
+    "judgment_count": 10,
+    "repair_decision_count": 10,
+    "writer_section_count": 10
+  },
+  "review_result": {
+    "required_cell_coverage": "pass_10_of_10",
+    "mandatory_family_coverage": "pass_6_of_6",
+    "numeric_reproducibility": "pass_3_exact_facts_2_derived_ratios",
+    "writer_no_source_boundary": "pass_zero_source_access_zero_model_calls",
+    "explicit_gap_preservation": "pass_10_of_10_judgments_retain_remaining_gap",
+    "source_authority_and_freshness": "conditional",
+    "exact_human_lead_review": "missing",
+    "research_outcome": "R1_artifact_complete_R2_research_valid_not_closed"
+  },
+  "strengths": [
+    "The browser exposes all ten P36 roles across six mandatory research families rather than only a three-cell fixture.",
+    "Revenue, gross profit, and operating income are exact local company facts; gross margin 74.99% and operating margin 62.42% are deterministically reproducible.",
+    "Demand, HBM, export-policy, and customer-concentration lanes contain current-period issuer material while preserving claim boundaries.",
+    "The Workpaper and no-source Writer consume judgment lineage only; network, model, provider, Case mutation, evidence promotion, and writer source-access counts remain zero."
+  ],
+  "bounded_findings": [
+    {
+      "finding_id": "R2-F01-EXACT-HUMAN-LEAD-REVIEW",
+      "severity": "release_blocking_RG3_only",
+      "finding": "No calibrated human senior has recorded an exact-digest LeadReview over the real-candidate Workpaper and Writer draft.",
+      "disposition": "human_review_required_no_automatic_acceptance"
+    },
+    {
+      "finding_id": "R2-F02-ADVANCED-PACKAGING-SPECIFICITY",
+      "severity": "bounded_gap",
+      "finding": "The advanced-packaging lane currently proves general supply-capacity dependency, not CoWoS capacity, utilization, allocation, or rent capture.",
+      "disposition": "retain_gap_one_bounded_source_substitution_allowed"
+    },
+    {
+      "finding_id": "R2-F03-SEMICAP-FRESHNESS",
+      "severity": "bounded_gap",
+      "finding": "Semicap candidates are mainly FY2023-FY2024 and support a framework rather than the current cycle position.",
+      "disposition": "retain_gap_one_bounded_current_period_source_substitution_allowed"
+    },
+    {
+      "finding_id": "R2-F04-PROFIT-ATTRIBUTION",
+      "severity": "bounded_gap",
+      "finding": "Company-level revenue and profit facts are exact, but the current chain does not attribute those values to the accelerator layer or broader AI infrastructure chain.",
+      "disposition": "retain_gap_do_not_infer_segment_or_chain_profit"
+    }
+  ],
+  "bounded_follow_up": {
+    "budget": "one_review_cycle_only",
+    "allowed": [
+      "record one exact-digest human LeadReview",
+      "substitute at most one stronger current-period source for advanced_packaging_capacity",
+      "substitute at most one stronger current-period source for semicap_capex_cycle",
+      "retain or clarify the company-to-segment profit attribution gap"
+    ],
+    "forbidden": [
+      "new gate family or package family",
+      "broad source expansion",
+      "paid model or full-chain execution",
+      "rewriting a retained gap as a fact",
+      "claiming RG3 pass without exact human review"
+    ]
+  },
+  "gate_effect": {
+    "RG3_research_outcome": "blocked_exact_human_lead_review_pending",
+    "RG4_review_product_value": "blocked_human_task_baseline_pending",
+    "RG1_vertical_path": "not_authorized",
+    "FIN_0_1_INTERNAL_ALPHA_RELEASED": false,
+    "production_readiness": "not_admitted"
+  }
+}

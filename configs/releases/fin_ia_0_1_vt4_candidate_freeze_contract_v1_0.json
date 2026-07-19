@@ -1,0 +1,180 @@
+{
+  "schema_version": "fin_ia_0_1_vt4_candidate_freeze_contract_v1_0",
+  "contract_id": "REL-PROD-001:VT4:P07.0:INTERNAL-FIXTURE-CANDIDATE-FREEZE",
+  "version": "1.0",
+  "status": "fixture_shadow_internal_only_not_release_admission",
+  "purpose": "Freeze and verify one deterministic VT1-VT4 internal fixture candidate inventory without executing product, operational, provider, model, tool, or release-admission work.",
+  "source_authority": {
+    "release_contract": "configs/releases/fin_ia_0_1_release_contract_v1_2.json",
+    "feature_scope": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_0.json",
+    "backlog_base": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json",
+    "backlog_current": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json",
+    "vertical_release_train_overlay": "configs/releases/fin_ia_0_1_vertical_release_train_overlay_v1_0.json"
+  },
+  "candidate_profile": {
+    "path": "configs/releases/fin_ia_0_1_vt4_p36_candidate_profile_v1_0.json",
+    "required_schema_version": "fin_ia_0_1_vt4_p36_candidate_profile_v1_0",
+    "required_status": "candidate_profile_fixture_shadow_internal_only",
+    "digest_algorithm": "sha256",
+    "canonical_serialization": "json_sort_keys_utf8_compact"
+  },
+  "input_inventory": {
+    "digest_algorithm": "sha256",
+    "path_policy": "repository_relative_posix_no_dotdot_no_duplicates",
+    "source": [
+      "apps/workbench/backend/api/v1/cases.py",
+      "apps/workbench/backend/api/v1/deliverables.py",
+      "apps/workbench/backend/api/v1/evidence.py",
+      "apps/workbench/backend/api/v1/execution.py",
+      "apps/workbench/backend/api/v1/integrity.py",
+      "apps/workbench/backend/api/v1/planning.py",
+      "apps/workbench/backend/app.py",
+      "apps/workbench/backend/application/case_service.py",
+      "apps/workbench/backend/application/deliverable_service.py",
+      "apps/workbench/backend/application/evidence_service.py",
+      "apps/workbench/backend/application/execution_service.py",
+      "apps/workbench/backend/application/integrity_service.py",
+      "apps/workbench/backend/application/planning_service.py",
+      "scripts/releases/freeze_fin_ia_0_1_vt4_candidate.py",
+      "src/sec_agent/canonical_runtime/evidence_request.py",
+      "src/sec_agent/canonical_runtime/facade.py",
+      "src/sec_agent/canonical_runtime/models.py",
+      "src/sec_agent/canonical_runtime/planning_service.py"
+    ],
+    "config": [
+      "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json",
+      "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json",
+      "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_0.json",
+      "configs/releases/fin_ia_0_1_release_contract_v1_2.json",
+      "configs/releases/fin_ia_0_1_vertical_release_train_overlay_v1_0.json",
+      "configs/releases/fin_ia_0_1_vt2_three_cell_integrity_workpaper_contract_v1_0.json",
+      "configs/releases/fin_ia_0_1_vt3_deliverable_review_trace_contract_v1_0.json",
+      "configs/releases/fin_ia_0_1_vt4_candidate_freeze_contract_v1_0.json",
+      "configs/releases/fin_ia_0_1_vt4_p36_candidate_profile_v1_0.json",
+      "configs/releases/point02_route_surface_map_v1_1.json",
+      "configs/releases/point03_vt1_evidence_workbench_contract_v1_0.json"
+    ],
+    "frontend": [
+      "apps/workbench/frontend/vite/src/api/cases.ts",
+      "apps/workbench/frontend/vite/src/api/deliverables.ts",
+      "apps/workbench/frontend/vite/src/api/evidence.ts",
+      "apps/workbench/frontend/vite/src/api/execution.ts",
+      "apps/workbench/frontend/vite/src/api/integrity.ts",
+      "apps/workbench/frontend/vite/src/api/planning.ts",
+      "apps/workbench/frontend/vite/src/app/AppShell.tsx",
+      "apps/workbench/frontend/vite/src/app/p02-shell.css",
+      "apps/workbench/frontend/vite/src/features/activity-trace/ActivityTrace.tsx",
+      "apps/workbench/frontend/vite/src/features/case-overview/CaseOverview.tsx",
+      "apps/workbench/frontend/vite/src/features/decision-surface/DecisionSurface.tsx",
+      "apps/workbench/frontend/vite/src/features/deliverable-review/DeliverableReview.tsx",
+      "apps/workbench/frontend/vite/src/features/evidence-workbench/EvidenceWorkbench.tsx",
+      "apps/workbench/frontend/vite/src/features/numeric-workbench/NumericWorkbench.tsx",
+      "apps/workbench/frontend/vite/src/features/workpaper-review/WorkpaperReview.tsx",
+      "apps/workbench/frontend/vite/src/main.tsx",
+      "apps/workbench/frontend/vite/src/shared/RemoteStatus.tsx",
+      "apps/workbench/frontend/vite/src/workbench.css"
+    ],
+    "test": [
+      "tests/contract/test_point02_case_fixture_api.py",
+      "tests/contract/test_point02_execution_fixture_api.py",
+      "tests/contract/test_point02_planning_fixture_api.py",
+      "tests/contract/test_point03_evidence_fixture_api.py",
+      "tests/contract/test_vt2_frontend_integrity_contract.py",
+      "tests/contract/test_vt2_integrity_workpaper_api.py",
+      "tests/contract/test_vt2_three_cell_integrity_contract.py",
+      "tests/contract/test_vt3_deliverable_review_trace_api.py",
+      "tests/contract/test_vt3_deliverable_review_trace_contract.py",
+      "tests/contract/test_vt3_frontend_deliverable_contract.py",
+      "tests/contract/test_vt4_candidate_freeze.py",
+      "tests/contract/test_vt4_p36_candidate_profile_contract.py",
+      "tests/contract/test_vt4_p36_ten_cell_vertical_api.py"
+    ]
+  },
+  "allowed_route_surface": {
+    "browser_routes": [
+      "/tasks",
+      "/cases/new",
+      "/cases/:caseId/overview",
+      "/cases/:caseId/decision-surface",
+      "/cases/:caseId/activity",
+      "/cases/:caseId/evidence",
+      "/cases/:caseId/numbers",
+      "/cases/:caseId/workpaper",
+      "/cases/:caseId/deliverable",
+      "/legacy"
+    ],
+    "api_routes": [
+      "POST /api/v1/cases",
+      "GET /api/v1/cases",
+      "GET /api/v1/cases/{case_id}",
+      "POST /api/v1/cases/{case_id}/planning/compile",
+      "PATCH /api/v1/cases/{case_id}/decision-surface",
+      "POST /api/v1/cases/{case_id}/planning/checkpoint",
+      "GET /api/v1/cases/{case_id}/decision-surface",
+      "GET /api/v1/cases/{case_id}/work-units",
+      "POST /api/v1/cases/{case_id}/work-units",
+      "POST /api/v1/cases/{case_id}/work-units/{work_unit_id}/cancel",
+      "GET /api/v1/cases/{case_id}/activity",
+      "GET /api/v1/cases/{case_id}/evidence",
+      "POST /api/v1/cases/{case_id}/evidence/compile",
+      "POST /api/v1/cases/{case_id}/evidence/candidates/{candidate_id}/reject",
+      "POST /api/v1/cases/{case_id}/evidence/slots/{evidence_slot_id}/request-repair",
+      "POST /api/v1/cases/{case_id}/evidence/slots/{evidence_slot_id}/execute-repair",
+      "GET /api/v1/cases/{case_id}/integrity/numeric",
+      "POST /api/v1/cases/{case_id}/integrity/numeric/compile",
+      "GET /api/v1/cases/{case_id}/workpaper",
+      "POST /api/v1/cases/{case_id}/workpaper/compile",
+      "POST /api/v1/cases/{case_id}/workpaper/lead-review",
+      "GET /api/v1/cases/{case_id}/deliverables",
+      "POST /api/v1/cases/{case_id}/deliverables",
+      "POST /api/v1/artifacts/{deliverable_id}/versions/{artifact_version}/review-actions",
+      "GET /api/v1/cases/{case_id}/trace"
+    ]
+  },
+  "authority": {
+    "development_mode": "fixture_shadow_internal_only",
+    "runtime_admission": "not_granted",
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained",
+    "release_candidate_not_a_commit_or_release": true
+  },
+  "hard_boundaries": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "tool_invocations": 0,
+    "paid_full_chain": 0,
+    "full_chain": 0,
+    "real_business_case_write": 0,
+    "release_admission": 0
+  },
+  "release_blockers": {
+    "p07_5": {
+      "status": "blocked",
+      "reason": "P07.5 release admission remains blocked until RG1 through RG5 independently close against the exact candidate.",
+      "release_admission": "not_issued"
+    },
+    "rg1_vertical_path": {
+      "status": "blocked",
+      "exact_package_entry_to_leaf_identity": "entry_to_adapter_to_subprocess_to_clean_child",
+      "identity_status": "unproven_hard_blocker",
+      "bounded_operational_run_debt": {
+        "status": "not_run_separate_authority_required",
+        "required_run_count": 1,
+        "authority": "not_granted",
+        "required_persisted_results": [
+          "actual",
+          "oracle",
+          "reviewer",
+          "workbench"
+        ]
+      }
+    }
+  },
+  "prohibitions": {
+    "new_gate_family": false,
+    "release_admission": false,
+    "operational_execution": false,
+    "network_model_provider_tool_execution": false
+  }
+}

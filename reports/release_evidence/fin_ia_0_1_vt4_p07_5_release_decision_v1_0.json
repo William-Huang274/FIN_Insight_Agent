@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_0_1_vt4_p07_5_release_decision_v1_0",
+  "decision_id": "REL-PROD-001:VT4:P07.5:BLOCKED-RELEASE-DECISION",
+  "release_id": "REL-PROD-001",
+  "execution_point": "P07.5",
+  "status": "FIN_0_1_INTERNAL_ALPHA_BLOCKED",
+  "candidate": {
+    "manifest_path": "reports/release_evidence/fin_ia_0_1_vt4_candidate_manifest_v1_0.json",
+    "manifest_sha256": "42e1b9ea6137d012ab2c28485eb0dc5079488ff99a636021f9e87ca7592825b3",
+    "profile_canonical_json_sha256": "405ca48e251d04fac16c54e2afdc1133ff2fa24a35ba161cc181db1da943df17",
+    "release_commit_claimed": false
+  },
+  "independent_gate_disposition": {
+    "RG1_vertical_path": {
+      "status": "blocked",
+      "exact_entry_to_clean_child_package_identity": "unproven",
+      "bounded_operational_vertical_run": "not_run_separate_authority_required",
+      "required_persisted_actual_oracle_reviewer_workbench": "missing",
+      "automatic_execution_authorized": false
+    },
+    "RG2_evidence_numeric_integrity": {
+      "status": "pass_internal_fixture_candidate",
+      "known_false_evidence_promotions": 0,
+      "material_numeric_trace_coverage": 1.0,
+      "material_claim_provenance_coverage": 1.0,
+      "writer_source_or_tool_calls": 0,
+      "boundary": "This pass covers deterministic internal fixture integrity only."
+    },
+    "RG3_research_outcome": {
+      "status": "blocked",
+      "P36_senior_R2_research_validity": "not_run",
+      "confidence_calibration": "not_run"
+    },
+    "RG4_review_product_value": {
+      "status": "blocked",
+      "observed_internal_fixture_metrics": "recorded",
+      "analyst_senior_baseline": "not_established",
+      "time_saved_claim": "not_made",
+      "formal_performance_accessibility_acceptance": "pending"
+    },
+    "RG5_release_rollback": {
+      "status": "pass_bounded_internal_fixture",
+      "new_lane_disable": "fail_closed",
+      "legacy_shell_fallback": "available",
+      "canonical_audit_history": "preserved",
+      "rollback_result_sha256": "48da7073ab1bf1a11db90dd7b578d7ddaf227b4c4f29df4db40695eec26a0cc8"
+    }
+  },
+  "blocking_gates": [
+    "RG1_vertical_path",
+    "RG3_research_outcome",
+    "RG4_review_product_value"
+  ],
+  "release_decision": {
+    "FIN_0_1_INTERNAL_ALPHA_RELEASED": false,
+    "release_admission": "not_issued",
+    "development_mode": "fixture_shadow_internal_only",
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained",
+    "rollback_target": "REL-FND-001_with_legacy_global_authority_retained"
+  },
+  "product_summary": {
+    "available_now": "A browser-based ten-cell P36 internal fixture workflow from Case creation through reviewed Deliverable and bidirectional Trace.",
+    "not_proven": "Current P36 research validity, SaaS or US Banks research validity, human productivity improvement, operational qualification, or production readiness.",
+    "next_decisions": [
+      "Run calibrated senior R2 review on the exact candidate.",
+      "Establish an analyst and senior product-value baseline.",
+      "Separately authorize RG1 only when the user chooses to attempt the bounded operational vertical."
+    ]
+  },
+  "hard_boundaries": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "tool_invocations": 0,
+    "paid_full_chain": 0,
+    "commercial_data_spend": 0,
+    "real_business_case_writes": 0,
+    "operational_runs": 0,
+    "production_cutover": 0,
+    "release_admission": 0
+  }
+}

@@ -1,0 +1,491 @@
+{
+  "schema_version": "fin_insight_p33_multicase_goldset_readiness_v0_1",
+  "status": "blocked_until_multicase_artifact_depth_and_fresh_specialists_pass",
+  "case_count": 15,
+  "artifact_ready_count": 1,
+  "fresh_specialist_pass_count": 0,
+  "runtime_contract_ready_count": 15,
+  "blocking_case_count": 15,
+  "blocking_cases": [
+    "ai_semis_dell_nvda_anchor_v0_1",
+    "semicap_cycle_rubric_v0_1",
+    "cloud_saas_ai_monetization_rubric_v0_1",
+    "financials_rate_credit_capital_rubric_v0_1",
+    "healthcare_regulated_product_adoption_rubric_v0_1",
+    "energy_utilities_power_demand_rubric_v0_1",
+    "retail_consumer_traffic_margin_rubric_v0_1",
+    "auto_ev_industrial_cycle_rubric_v0_1",
+    "capital_market_feedback_price_in_rubric_v0_1",
+    "negative_sku_revenue_missing_not_product_failure_v0_1",
+    "negative_demand_pool_not_supplier_allocation_v0_1",
+    "negative_relationship_graph_not_financial_fact_v0_1",
+    "negative_parser_gap_not_public_source_absent_v0_1",
+    "negative_available_evidence_not_used_v0_1",
+    "negative_commercial_tracker_boundary_v0_1"
+  ],
+  "case_results": [
+    {
+      "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+      "case_type": "deep_gold_case",
+      "vertical": "AI/Semis",
+      "artifact_backed_evidence_depth": {
+        "status": "pass",
+        "basis": "ai_semis_gold_depth_content_pack_plus_single_case_projection",
+        "lane_marker_count": 6,
+        "single_case_projection_status": "pass"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "blocked_targeted_composite_not_fresh_all_specialist",
+        "basis": "accepted P33 specialist checkpoint was a targeted repaired composite, not a fresh all-specialist gold pass",
+        "required_next_artifact": "fresh optional_specialist_subgraph all-specialist gold pass after evidence-depth projection"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "deep gold case has source doc, audit spec, and P33 runtime artifacts"
+      },
+      "matrix_audit_status": "artifact_backed_fail_for_gold_depth",
+      "is_current_single_case": true,
+      "blocking_reasons": [
+        "fresh_all_specialist_gold_pass:blocked_targeted_composite_not_fresh_all_specialist"
+      ],
+      "next_repair": [
+        "Implement no-paid HumanmadeGoldSetAudit runner over aggregate r7 and writer payload.",
+        "Add BriefingPackQualityGate before Memo Writer.",
+        "Ingest AI/Semis human source ledger into runtime exact/product/deployment/benchmark/semicap slots.",
+        "Upgrade ProductIntelligenceGraph projection with investment-role product facts and edge roles.",
+        "Upgrade specialist skill/contract to require answer-exemplar-style briefing material.",
+        "Upgrade Research Lead post-specialist review to veto material that cannot form the gold chain.",
+        "Only then run one paid Memo Writer node from the accepted checkpoint; do not run broad full-chain."
+      ]
+    },
+    {
+      "case_id": "semicap_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Semiconductor equipment",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "rubric_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_semicap_cycle_rubric_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "rubric_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_semicap_cycle_rubric_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "rubric vertical playbook contract compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "partial_from_ai_semis_deep_case_unproven_as_standalone_runtime_case",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Ingest ASML/AMAT/LRCX/KLAC/TEL official results and IR tables into semicap exact/context slots.",
+        "Add semicap-specific required evidence roles: bookings, backlog, WFE/tool exposure, customer cycle, service mix, China/export risk.",
+        "Require industry_supply_chain_analyst to separate peer scope from cycle proof."
+      ]
+    },
+    {
+      "case_id": "cloud_saas_ai_monetization_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Cloud/SaaS",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "rubric_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_cloud_saas_ai_monetization_rubric_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "rubric_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_cloud_saas_ai_monetization_rubric_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "rubric vertical playbook contract compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "catalog_ready_runtime_artifact_missing",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add cloud/SaaS fixture with capex, cloud revenue, RPO/ARR/deferred revenue, margin and depreciation bridge.",
+        "Require Product/SaaS analyst to separate product adoption from monetized revenue.",
+        "Require Fundamental analyst to compute or explain AI capex return path and FCF/margin pressure."
+      ]
+    },
+    {
+      "case_id": "financials_rate_credit_capital_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Financials",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "rubric_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_financials_rate_credit_capital_rubric_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "rubric_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_financials_rate_credit_capital_rubric_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "rubric vertical playbook contract compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "catalog_ready_runtime_artifact_missing",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add financials fixture requiring deposit cost/mix, loan balance, NIM, provision, capital ratio and liquidity.",
+        "Make Research Lead route banks to balance-sheet-first analysis.",
+        "Prevent FRED/FDIC macro context from being promoted to issuer-level NIM or credit facts."
+      ]
+    },
+    {
+      "case_id": "healthcare_regulated_product_adoption_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Healthcare/Medtech/Pharma",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "rubric_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_healthcare_regulated_product_adoption_rubric_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "rubric_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_healthcare_regulated_product_adoption_rubric_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "rubric vertical playbook contract compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "catalog_ready_runtime_artifact_missing",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add healthcare fixture with product/indication, trial/FDA status, adoption/procedure proxy, reimbursement/access and revenue bridge/gap.",
+        "Force distinction between regulatory eligibility and commercial performance.",
+        "Classify missing prescription/procedure/share data as commercial/public boundary only after source-route attempts."
+      ]
+    },
+    {
+      "case_id": "energy_utilities_power_demand_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Energy/Utilities/Power",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "rubric_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_energy_utilities_power_demand_rubric_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "rubric_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_energy_utilities_power_demand_rubric_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "rubric vertical playbook contract compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "catalog_ready_runtime_artifact_missing",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add utility fixture requiring load growth, generation/asset exposure, rate case/RAB, capex/debt and cash-flow quality.",
+        "Prevent AI power-demand headlines from being promoted to EPS or ROE proof.",
+        "Connect rate-case/regulatory evidence to financing and capex pressure."
+      ]
+    },
+    {
+      "case_id": "retail_consumer_traffic_margin_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Retail/Consumer",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "rubric_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_retail_consumer_traffic_margin_rubric_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "rubric_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_retail_consumer_traffic_margin_rubric_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "rubric vertical playbook contract compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "catalog_ready_runtime_artifact_missing",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add retail fixture requiring same-store sales, traffic/ticket, price/mix, inventory, promotion and gross margin.",
+        "Keep POS/sell-through exact as commercial gap unless public rows exist.",
+        "Require revenue growth to be decomposed before memo pass."
+      ]
+    },
+    {
+      "case_id": "auto_ev_industrial_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Auto/EV/Industrial",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "rubric_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_auto_ev_industrial_cycle_rubric_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "rubric_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_auto_ev_industrial_cycle_rubric_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "rubric vertical playbook contract compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "catalog_ready_runtime_artifact_missing",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add auto/industrial fixture requiring delivery/volume, ASP/mix, inventory/channel, recall/quality, capacity and financing sensitivity.",
+        "Prevent deliveries alone from being written as margin-quality proof.",
+        "Route recall/quality context to product risk, not revenue proof."
+      ]
+    },
+    {
+      "case_id": "capital_market_feedback_price_in_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Cross-sector secondary market",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "rubric_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_capital_market_feedback_price_in_rubric_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "rubric_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_capital_market_feedback_price_in_rubric_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "rubric vertical playbook contract compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "partial_platform_foundation_but_case_pack_missing",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add price-in fixture requiring valuation/peer context, holder/ownership, liquidity/short/options context, credit/debt and event/corporate-action rows.",
+        "Make market feedback a bounded second-order layer, not a trade recommendation.",
+        "Require price-in section to state what is already reflected and what evidence is missing."
+      ]
+    },
+    {
+      "case_id": "negative_sku_revenue_missing_not_product_failure_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "AI/Semis product analysis",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "negative_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_negative_sku_revenue_missing_not_product_failure_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "negative_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_negative_sku_revenue_missing_not_product_failure_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "negative case failure gate compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "open_guard_needed_ai_semis_currently_fails_depth",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add product fact slots for official specs, architecture generation, benchmark/performance proxy, OEM/cloud config and deployment evidence.",
+        "Add negative gate: missing SKU revenue cannot make product section fail if technical/deployment evidence exists."
+      ]
+    },
+    {
+      "case_id": "negative_demand_pool_not_supplier_allocation_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "AI/Semis demand read-through",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "negative_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_negative_demand_pool_not_supplier_allocation_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "negative_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_negative_demand_pool_not_supplier_allocation_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "negative case failure gate compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "partial_guard_present_needs_machine_check",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add audit rule that hyperscaler capex can support demand pool but not supplier allocation exact.",
+        "Require what-would-upgrade evidence: customer deployment, purchase/order, supplier revenue/order/backlog."
+      ]
+    },
+    {
+      "case_id": "negative_relationship_graph_not_financial_fact_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Product relationship graph",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "negative_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_negative_relationship_graph_not_financial_fact_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "negative_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_negative_relationship_graph_not_financial_fact_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "negative case failure gate compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "partial_guard_present_projection_needs_investment_roles",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Attach edge_investment_role such as demand_validation, adoption_signal, supply_constraint, margin_pressure, substitution or customer_concentration.",
+        "Force every graph edge used in a memo to state cannot-infer financial facts."
+      ]
+    },
+    {
+      "case_id": "negative_parser_gap_not_public_source_absent_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Disclosure parser and source route",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "negative_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_negative_parser_gap_not_public_source_absent_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "negative_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_negative_parser_gap_not_public_source_absent_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "negative case failure gate compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "partial_guard_present_not_generalized",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add audit rule: located source plus failed extraction must become parser_gap or local_adapter_gap, never public_source_absent.",
+        "Add sample local/FPI filings to parser-boundary fixtures."
+      ]
+    },
+    {
+      "case_id": "negative_available_evidence_not_used_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Evidence projection and memo writer consumption",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "negative_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_negative_available_evidence_not_used_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "negative_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_negative_available_evidence_not_used_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "negative case failure gate compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "open_guard_needed_old_memo_showed_symptom",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add audit rule comparing aggregate/payload available facts with final memo missing-data claims.",
+        "Fail hard when final memo says evidence is missing while upstream accepted artifact contains it."
+      ]
+    },
+    {
+      "case_id": "negative_commercial_tracker_boundary_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Commercial tracker boundary",
+      "artifact_backed_evidence_depth": {
+        "status": "missing_artifact_backed_evidence_pack",
+        "basis": "negative_gold_case_catalog_or_exemplar_only",
+        "required_next_artifact": "p33_goldset_negative_commercial_tracker_boundary_v0_1_evidence_depth_pack"
+      },
+      "fresh_all_specialist_gold_pass": {
+        "status": "missing_fresh_all_specialist_artifact",
+        "basis": "negative_gold_case_has_no_specialist_runtime_artifact",
+        "required_next_artifact": "p33_goldset_negative_commercial_tracker_boundary_v0_1_fresh_all_specialist_pass"
+      },
+      "runtime_contract": {
+        "status": "pass",
+        "basis": "negative case failure gate compiled from HumanmadeGoldSetSpec and answer exemplars"
+      },
+      "matrix_audit_status": "contract_defined_runtime_guard_unproven",
+      "is_current_single_case": false,
+      "blocking_reasons": [
+        "artifact_backed_evidence_depth:missing_artifact_backed_evidence_pack",
+        "fresh_all_specialist_gold_pass:missing_fresh_all_specialist_artifact"
+      ],
+      "next_repair": [
+        "Add audit rule that public proxy can support direction/context but not exact commercial tracker metrics.",
+        "Require memos to preserve bounded proxy value instead of refusing the whole section."
+      ]
+    }
+  ],
+  "compiled_contracts": {
+    "rubric_vertical_playbook_contract_count": 8,
+    "negative_failure_gate_count": 6
+  },
+  "acceptance_policy": {
+    "evidence_depth": "Each gold case needs artifact-backed source/depth rows, not only catalog or rubric text.",
+    "specialist": "Targeted composite or stale specialist artifacts do not count. A fresh all-specialist gold pass is required per case before promotion.",
+    "runtime": "Rubric and negative cases must be contract-translated and runtime-consumable before broader case expansion."
+  },
+  "not_run": [
+    "paid_all_specialist_rerun",
+    "paid_memo_writer",
+    "full_chain",
+    "model_comparison"
+  ]
+}

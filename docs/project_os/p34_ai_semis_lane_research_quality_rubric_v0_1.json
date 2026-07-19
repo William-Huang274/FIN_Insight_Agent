@@ -1,0 +1,100 @@
+{
+  "schema_version": "fin_insight_lane_research_quality_rubric_v0_1",
+  "artifact_type": "lane_research_quality_rubric",
+  "status": "active_quality_contract_documented_not_runtime_injected",
+  "lane": "AI/Semis",
+  "created_at": "2026-07-07",
+  "source_docs": [
+    "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+    "docs/internal/vnext_20260610/p33_humanmade_gold_set_answer_exemplars_v0_2.zh-CN.md",
+    "docs/project_os/p33_goldset_live_source_backfill_v0_1.json"
+  ],
+  "purpose": "Define what counts as a high-quality AI/Semis analyst workpaper before source-route/parser engineering starts.",
+  "core_questions": [
+    {
+      "question_id": "q_demand_pool",
+      "question": "Is AI capex a real demand pool, pull-forward, or market narrative?",
+      "minimum_answer": "Separate cloud/hyperscaler capex as demand-pool evidence from supplier allocation evidence."
+    },
+    {
+      "question_id": "q_product_architecture",
+      "question": "How do accelerator architecture, memory, interconnect, software ecosystem, power and supply bottlenecks affect product competitiveness?",
+      "minimum_answer": "Compare NVDA Blackwell/GB200, AMD MI300/MI35x and Google TPU as product capability and substitution routes, without requiring SKU revenue."
+    },
+    {
+      "question_id": "q_customer_deployment",
+      "question": "Who deploys or configures the products, and is the deployment official, proxy, or inferred?",
+      "minimum_answer": "Distinguish official OEM/cloud/customer deployment from generic demand proxy."
+    },
+    {
+      "question_id": "q_financial_quality",
+      "question": "Does AI server demand improve Dell's profit quality, or only revenue visibility?",
+      "minimum_answer": "Bridge orders/backlog to shipments, ISG revenue, gross/operating margin, GPU pass-through cost, attach rate, working capital and cash conversion."
+    },
+    {
+      "question_id": "q_supply_chain",
+      "question": "How does AI demand read through to TSMC, HBM/CoWoS, ASML, AMAT, LRCX and KLAC?",
+      "minimum_answer": "Separate foundry, packaging, memory/HBM, lithography, deposition/etch and process-control mechanisms."
+    },
+    {
+      "question_id": "q_market_price_in",
+      "question": "Is the business improvement already priced in?",
+      "minimum_answer": "Require valuation, ownership, short/options/positioning, sector reaction and capital-feedback evidence before making price-in claims."
+    },
+    {
+      "question_id": "q_counter_thesis",
+      "question": "What would break or weaken the thesis?",
+      "minimum_answer": "Cover capex digestion, server-OEM margin dilution, substitution, supply bottlenecks, export controls, customer concentration and extreme price-in."
+    }
+  ],
+  "good_answer_requirements": [
+    "Open with a bounded analyst judgment, not a source list.",
+    "Explain the business mechanism from demand pool to product to deployment to financial quality to market expectation.",
+    "Use product/spec/deployment evidence for product capability even when SKU revenue is absent.",
+    "Never turn capex demand pool into supplier allocation without deployment/order/backlog/financial bridge.",
+    "Separate strong evidence, medium evidence, proxy evidence and typed gaps.",
+    "State what cannot be inferred from every proxy or relationship edge.",
+    "Include counter-thesis and what-would-change in the body of the workpaper."
+  ],
+  "bad_answer_patterns": [
+    "AI capex is high, therefore every AI infrastructure supplier benefits.",
+    "No SKU revenue is available, therefore the product layer cannot be judged.",
+    "Relationship graph edges are used as direct financial facts.",
+    "Dell AI server orders are treated as proof of high-margin growth without margin bridge.",
+    "Semicap peers are grouped together without bookings/backlog, WFE, EUV/DUV, memory/foundry/logic or export-control mechanism.",
+    "Market price-in is discussed without valuation, ownership, positioning, event or capital-feedback evidence.",
+    "Parser or locator gaps are reported as public-source absence."
+  ],
+  "minimum_analyst_depth": {
+    "must_have_judgment_chains": [
+      "ai_capex_demand_pool",
+      "accelerator_architecture_competition",
+      "customer_deployment_oem_adoption",
+      "dell_ai_server_financial_quality",
+      "foundry_semicap_readthrough",
+      "market_price_in_capital_feedback",
+      "counter_thesis_what_would_change"
+    ],
+    "must_not_depend_on": [
+      "row_count_alone",
+      "generic_relationship_graph_scope",
+      "consolidated_revenue_as_product_revenue",
+      "unbound_rubric_exemplar",
+      "writer_inference_without_judgment_card"
+    ]
+  },
+  "quality_gate": {
+    "research_quality_pass_requires": [
+      "all required judgment chains are answered or typed as partially_answered_with_boundary/parser_gap/source_absent_after_attempt/commercial_gap",
+      "at least one product/customer/supply-chain/financial bridge is explicit",
+      "negative cases are respected",
+      "writer-ready material can support a bounded analyst view"
+    ],
+    "engineering_pass_is_insufficient_when": [
+      "promoted rows exist but cannot answer a judgment chain",
+      "slot coverage exists but every slot is proxy-only",
+      "exact financial rows exist but product/architecture/customer deployment is absent",
+      "product rows exist but financial bridge is absent"
+    ]
+  }
+}

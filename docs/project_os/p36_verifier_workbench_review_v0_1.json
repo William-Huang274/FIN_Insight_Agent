@@ -1,0 +1,124 @@
+{
+  "schema_version": "fin_insight_p36_verifier_workbench_review_v0_1",
+  "created_at": "2026-07-09T11:30:00+08:00",
+  "artifact_type": "p36_manual_verifier_workbench_review",
+  "case_id": "p36_ai_infra_supply_chain_manual_full_chain_dogfood_v0_1",
+  "status": "node_11_review_recorded_runtime_bounded_supervisor_boundary_preserved",
+  "scope": {
+    "paid_llm_api_run": false,
+    "true_runtime_full_chain_run": false,
+    "verifier_runtime_run": false,
+    "workbench_runtime_replay_run": false,
+    "manual_codex_review": true,
+    "writer_runtime_may_self_source": false,
+    "supervisor_supplement_rows_are_runtime_rows": false
+  },
+  "reviewed_artifacts": [
+    "docs/internal/vnext_20260610/p36_node_10_writer_report_generation_manual_run.zh-CN.md",
+    "docs/internal/vnext_20260610/p36_ai_infra_manual_writer_research_report.zh-CN.md",
+    "docs/internal/vnext_20260610/p36_codex_as_paid_model_dogfood_recap_report.zh-CN.md",
+    "docs/project_os/p36_supervisor_source_supplement_ledger_v0_1.json",
+    "docs/project_os/p36_manual_full_chain_node_ledger_v0_1.json"
+  ],
+  "runtime_surfaces_reviewed": [
+    "src/sec_agent/memo_llm.py::_verifier_minimal_projection",
+    "src/sec_agent/memo_llm.py::_verifier_system_prompt",
+    "src/sec_agent/p33_workbench_artifact_review_surface_fixture.py",
+    "src/sec_agent/r53_r60_workbench_frontdoor_drilldown.py",
+    "apps/workbench/backend/app.py::R53R60ReviewActionRequest"
+  ],
+  "review_objects": {
+    "runtime_only_writer": {
+      "verdict": "pass_as_bounded_partial_only_fail_as_complete_report",
+      "complete_five_chain_report_gate": "fail",
+      "allowed_use": "bounded_partial_report_and_diagnostic_material",
+      "reason": "Node01-09 and Node10 runtime-only material preserve writer boundaries and partial judgment, but do not provide a complete five-chain DecisionSurfacePack, official source panel as accepted runtime rows, market/capital price-in cells, or Workbench cell review."
+    },
+    "supervisor_augmented_report": {
+      "verdict": "pass_for_manual_human_reading_with_supplement_boundary",
+      "runtime_capability_verdict": "fail_not_runtime_capability",
+      "source_boundary_gate": "pass",
+      "reason": "The report is useful and begins with a TL;DR and Decision Surface, but it explicitly depends on p36_supervisor_source_supplement_ledger_v0_1.json. The supplement ledger states that the rows are not parser-promoted, evidence-operator output, or accepted runtime rows."
+    },
+    "verifier_surface": {
+      "verdict": "partial",
+      "strength": "Existing verifier projection and prompts can check bounded answers, raw-row/tool-call violations, unsupported claims, source-boundary misuse, and blocked-answer allowance.",
+      "gap": "Current verifier projection is claim/ref oriented and does not validate a P36 five-chain x decision-cell matrix because there is no runtime DecisionSurfacePack to project."
+    },
+    "workbench_surface": {
+      "verdict": "partial_existing_claim_gap_artifact_review_ready_fail_for_p36_decision_cell_review",
+      "strength": "Existing S6/P33 Workbench surfaces can expose task, sections, ClaimCards, typed gaps, gates, artifacts, events, and append-only review actions.",
+      "gap": "Workbench review targets claim_card, gap, and judgment_state style objects. P36 needs decision_surface_cell review targets with accepted, needs_source, needs_parser, estimate_only, commercial_gap, and rejected statuses."
+    }
+  },
+  "gates": [
+    {
+      "gate_id": "no_paid_or_full_chain_executed",
+      "status": "pass",
+      "finding": "Node11 is a manual review. No paid LLM, true runtime full-chain, model comparison, case expansion, release eval, verifier runtime run, or Workbench replay was run."
+    },
+    {
+      "gate_id": "writer_no_self_source_preserved",
+      "status": "pass",
+      "finding": "Node10 documents that writer runtime cannot use database_query, live_web_snapshot, retrieval, or new_fact_generation."
+    },
+    {
+      "gate_id": "supervisor_supplement_separate",
+      "status": "pass",
+      "finding": "p36_supervisor_source_supplement_ledger_v0_1.json records all public source supplement rows as supervisor_supplement_only."
+    },
+    {
+      "gate_id": "runtime_only_full_report_blocked",
+      "status": "pass",
+      "finding": "Runtime-only writer is explicitly downgraded to bounded partial report and is not accepted as a complete research report."
+    },
+    {
+      "gate_id": "supervisor_augmented_report_runtime_claim_blocked",
+      "status": "pass",
+      "finding": "The supervisor-augmented report is allowed as a manual report, but the review blocks any claim that it proves current runtime retrieval/parser/writer capability."
+    },
+    {
+      "gate_id": "verifier_boundary_surface_available",
+      "status": "partial",
+      "finding": "Verifier contracts support claim/ref and source-boundary review, but not P36 decision-cell coverage review."
+    },
+    {
+      "gate_id": "workbench_claim_gap_review_surface_available",
+      "status": "partial",
+      "finding": "Workbench can review claim/gap/judgment artifacts and append actions, but not P36 decision_surface_cell objects."
+    },
+    {
+      "gate_id": "decision_cell_review_surface_available",
+      "status": "fail",
+      "finding": "No runtime artifact currently exposes five-chain decision cells with source grade, numeric sanity, official/estimate/proxy flags, cannot-infer, and what-would-change fields for Workbench review."
+    },
+    {
+      "gate_id": "next_paid_or_model_comparison_allowed",
+      "status": "fail",
+      "finding": "Paid writer rerun, broad full-chain, model comparison, case expansion, and release eval remain blocked until deterministic DecisionSurfacePack and Workbench cell-review fixtures pass."
+    }
+  ],
+  "decision": {
+    "runtime_only_writer_allowed_as_complete_report": false,
+    "runtime_only_writer_allowed_as_bounded_partial": true,
+    "supervisor_augmented_report_allowed_for_human_reading": true,
+    "supervisor_augmented_report_counts_as_runtime_capability": false,
+    "workbench_cell_review_ready": false,
+    "paid_writer_rerun_allowed": false,
+    "true_full_chain_allowed": false,
+    "model_comparison_allowed": false,
+    "case_expansion_allowed": false,
+    "release_eval_allowed": false
+  },
+  "next_runtime_repair_actions": [
+    "DecisionSurfaceContract fixture with five-chain x decision-cell schema",
+    "SourceHunterLoop fixture that converts supervisor supplement rows into official-first source-route attempts",
+    "issuer press release and IR PDF parser fixtures with value/unit/period/segment/source-grade output",
+    "supplement ledger to normalized runtime row fixture",
+    "ProductIndustryDecisionSurfaceProjection fixture",
+    "MarketCapitalDecisionSurfaceProjection fixture",
+    "RiskMatrixPack fixture",
+    "DecisionSurfaceAdjudicator and DecisionSurfacePack to MemoLogicPlan projection test",
+    "Workbench decision_surface_cell review replay with accepted, needs_source, needs_parser, estimate_only, commercial_gap, and rejected actions"
+  ]
+}

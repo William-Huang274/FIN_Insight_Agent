@@ -1,0 +1,938 @@
+{
+  "schema_version": "fin_insight_p34_ai_semis_adapter_fixture_report_v0_1",
+  "artifact_type": "ai_semis_adapter_fixture_report",
+  "status": "adapter_fixture_parser_contract_pass_live_fetch_pending",
+  "lane": "AI/Semis",
+  "source_route_plan": "docs/project_os/p34_ai_semis_source_route_plan_v0_1.json",
+  "scope": {
+    "fixture_scope": "local_artifact_backed_parser_contract_fixtures",
+    "live_fetch_performed": false,
+    "paid_llm_performed": false,
+    "full_chain_performed": false,
+    "does_not_prove": [
+      "official page still exists today",
+      "fresh source fetch or browser crawl",
+      "complete live parser coverage",
+      "runtime promotion against live source rows",
+      "paid specialist or Memo Writer quality"
+    ]
+  },
+  "metrics": {
+    "adapter_family_count": 3,
+    "fixture_count": 9,
+    "runtime_row_count": 9,
+    "rejected_candidate_count": 9,
+    "typed_gap_count": 0,
+    "priority_family_pass_count": 3,
+    "rows_with_parser_lineage_count": 9,
+    "rows_with_authority_scope_count": 9,
+    "p34_not_run_paid_llm": true,
+    "p34_not_run_full_chain": true,
+    "p34_not_run_live_fetch_or_new_crawl": true
+  },
+  "normalized_runtime_row_fields": [
+    "issuer",
+    "product_or_family",
+    "metric_or_attribute",
+    "value",
+    "unit",
+    "period_or_version",
+    "source_url",
+    "citation",
+    "parser_lineage",
+    "authority_scope",
+    "cannot_infer"
+  ],
+  "typed_gap_taxonomy": [
+    "locator_gap",
+    "parser_gap",
+    "source_absent_after_attempt",
+    "credential_gap",
+    "commercial_gap",
+    "case_binding_required"
+  ],
+  "family_results": [
+    {
+      "adapter_family": "sec_8k_earnings_release_table_adapter",
+      "status": "pass",
+      "planned_in_source_route_plan": true,
+      "fixture_count": 3,
+      "runtime_row_count": 3,
+      "rejected_candidate_count": 3,
+      "typed_gap_count": 0,
+      "fixture_results": [
+        {
+          "fixture_id": "dell_fy26_ai_orders_shipments_backlog",
+          "adapter_family": "sec_8k_earnings_release_table_adapter",
+          "source_name": "Dell FY26 Q4 8-K exhibit",
+          "fixture_source_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::dell_fy26_ai_orders_shipments_backlog",
+          "runtime_row_count": 1,
+          "rejected_candidate_count": 1,
+          "typed_gap_count": 0,
+          "runtime_rows": [
+            {
+              "row_id": "p34_fixture_row::dell_fy26_ai_orders_shipments_backlog",
+              "issuer": "DELL",
+              "product_or_family": "AI-optimized servers",
+              "metric_or_attribute": "orders_shipments_backlog",
+              "value": "orders 64B; shipments 25B; backlog 43B",
+              "unit": "USD billions",
+              "period_or_version": "FY26 / FY27 starting backlog",
+              "source_url": "source-ledger://p34/sec_8k_earnings_release_table_adapter/dell_fy26_ai_orders_shipments_backlog",
+              "citation": "Dell FY26 Q4 8-K exhibit",
+              "parser_lineage": {
+                "adapter_family": "sec_8k_earnings_release_table_adapter",
+                "fixture_id": "dell_fy26_ai_orders_shipments_backlog",
+                "parser_version": "p34_adapter_fixture_parser_v0_1",
+                "parsed_fields": {
+                  "orders": "64B",
+                  "shipments": "25B",
+                  "backlog": "43B"
+                },
+                "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::dell_fy26_ai_orders_shipments_backlog"
+              },
+              "authority_scope": "issuer_exact_operating_metric_with_margin_gap",
+              "cannot_infer": [
+                "AI server gross margin",
+                "GPU pass-through cost",
+                "customer concentration"
+              ],
+              "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "fixture_id": "dell_fy26_ai_orders_shipments_backlog",
+              "adapter_family": "sec_8k_earnings_release_table_adapter",
+              "candidate_type": "consolidated_revenue_substitute",
+              "rejection_reason": "Consolidated revenue without product/segment/AI-server binding cannot fill this slot.",
+              "typed_gap_if_no_better_source": "parser_gap"
+            }
+          ],
+          "typed_gaps": []
+        },
+        {
+          "fixture_id": "dell_fy26_q1_isg_segment_margin",
+          "adapter_family": "sec_8k_earnings_release_table_adapter",
+          "source_name": "Dell FY26 Q1 earnings release",
+          "fixture_source_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::dell_fy26_q1_isg_segment_margin",
+          "runtime_row_count": 1,
+          "rejected_candidate_count": 1,
+          "typed_gap_count": 0,
+          "runtime_rows": [
+            {
+              "row_id": "p34_fixture_row::dell_fy26_q1_isg_segment_margin",
+              "issuer": "DELL",
+              "product_or_family": "Infrastructure Solutions Group",
+              "metric_or_attribute": "isg_revenue_operating_income_margin",
+              "value": "ISG revenue 10.3B; Servers/Networking 6.3B; operating income 998M; margin 9.7%",
+              "unit": "USD / percent",
+              "period_or_version": "FY26 Q1",
+              "source_url": "source-ledger://p34/sec_8k_earnings_release_table_adapter/dell_fy26_q1_isg_segment_margin",
+              "citation": "Dell FY26 Q1 earnings release",
+              "parser_lineage": {
+                "adapter_family": "sec_8k_earnings_release_table_adapter",
+                "fixture_id": "dell_fy26_q1_isg_segment_margin",
+                "parser_version": "p34_adapter_fixture_parser_v0_1",
+                "parsed_fields": {
+                  "isg_revenue": "10.3B",
+                  "servers_networking_revenue": "6.3B",
+                  "operating_income": "998M",
+                  "operating_margin": "9.7%"
+                },
+                "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::dell_fy26_q1_isg_segment_margin"
+              },
+              "authority_scope": "issuer_exact_segment_metric_not_ai_server_margin",
+              "cannot_infer": [
+                "AI server gross margin",
+                "Blackwell mix",
+                "attach economics"
+              ],
+              "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "fixture_id": "dell_fy26_q1_isg_segment_margin",
+              "adapter_family": "sec_8k_earnings_release_table_adapter",
+              "candidate_type": "consolidated_revenue_substitute",
+              "rejection_reason": "Consolidated revenue without product/segment/AI-server binding cannot fill this slot.",
+              "typed_gap_if_no_better_source": "parser_gap"
+            }
+          ],
+          "typed_gaps": []
+        },
+        {
+          "fixture_id": "nvda_q1_fy2027_data_center_revenue",
+          "adapter_family": "sec_8k_earnings_release_table_adapter",
+          "source_name": "NVIDIA Q1 FY2027 IR page",
+          "fixture_source_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::nvda_q1_fy2027_data_center_revenue",
+          "runtime_row_count": 1,
+          "rejected_candidate_count": 1,
+          "typed_gap_count": 0,
+          "runtime_rows": [
+            {
+              "row_id": "p34_fixture_row::nvda_q1_fy2027_data_center_revenue",
+              "issuer": "NVDA",
+              "product_or_family": "Data Center / accelerator systems",
+              "metric_or_attribute": "data_center_revenue",
+              "value": "39.1B",
+              "unit": "USD billions",
+              "period_or_version": "Q1 FY2027",
+              "source_url": "source-ledger://p34/sec_8k_earnings_release_table_adapter/nvda_q1_fy2027_data_center_revenue",
+              "citation": "NVIDIA Q1 FY2027 IR page",
+              "parser_lineage": {
+                "adapter_family": "sec_8k_earnings_release_table_adapter",
+                "fixture_id": "nvda_q1_fy2027_data_center_revenue",
+                "parser_version": "p34_adapter_fixture_parser_v0_1",
+                "parsed_fields": {
+                  "data_center_revenue": "39.1B"
+                },
+                "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::nvda_q1_fy2027_data_center_revenue"
+              },
+              "authority_scope": "issuer_exact_segment_metric_not_sku_revenue",
+              "cannot_infer": [
+                "B200/GB200 SKU revenue",
+                "DELL allocation",
+                "server OEM margin"
+              ],
+              "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "fixture_id": "nvda_q1_fy2027_data_center_revenue",
+              "adapter_family": "sec_8k_earnings_release_table_adapter",
+              "candidate_type": "consolidated_revenue_substitute",
+              "rejection_reason": "Consolidated revenue without product/segment/AI-server binding cannot fill this slot.",
+              "typed_gap_if_no_better_source": "parser_gap"
+            }
+          ],
+          "typed_gaps": []
+        }
+      ],
+      "parser_contract": {
+        "required_output_fields": [
+          "issuer",
+          "product_or_family",
+          "metric_or_attribute",
+          "value",
+          "unit",
+          "period_or_version",
+          "source_url",
+          "citation",
+          "parser_lineage",
+          "authority_scope",
+          "cannot_infer"
+        ],
+        "must_preserve_parser_lineage": true,
+        "promotion_without_parser_lineage_allowed": false,
+        "authority_boundary_required": true,
+        "cannot_infer_required": true
+      }
+    },
+    {
+      "adapter_family": "official_product_spec_page_adapter",
+      "status": "pass",
+      "planned_in_source_route_plan": true,
+      "fixture_count": 3,
+      "runtime_row_count": 3,
+      "rejected_candidate_count": 3,
+      "typed_gap_count": 0,
+      "fixture_results": [
+        {
+          "fixture_id": "nvda_gb200_nvl72_architecture",
+          "adapter_family": "official_product_spec_page_adapter",
+          "source_name": "NVIDIA GB200 NVL72 official page",
+          "fixture_source_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::nvda_gb200_nvl72_architecture",
+          "runtime_row_count": 1,
+          "rejected_candidate_count": 1,
+          "typed_gap_count": 0,
+          "runtime_rows": [
+            {
+              "row_id": "p34_fixture_row::nvda_gb200_nvl72_architecture",
+              "issuer": "NVDA",
+              "product_or_family": "GB200 NVL72",
+              "metric_or_attribute": "rack_scale_architecture_spec",
+              "value": "36 Grace CPUs; 72 Blackwell GPUs; rack-scale NVLink; liquid-cooled",
+              "unit": "technical specification",
+              "period_or_version": "Blackwell / GB200 generation",
+              "source_url": "source-ledger://p34/official_product_spec_page_adapter/nvda_gb200_nvl72_architecture",
+              "citation": "NVIDIA GB200 NVL72 official page",
+              "parser_lineage": {
+                "adapter_family": "official_product_spec_page_adapter",
+                "fixture_id": "nvda_gb200_nvl72_architecture",
+                "parser_version": "p34_adapter_fixture_parser_v0_1",
+                "parsed_fields": {
+                  "grace_cpus": "36",
+                  "blackwell_gpus": "72",
+                  "interconnect": "rack-scale NVLink",
+                  "deployment": "liquid-cooled"
+                },
+                "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::nvda_gb200_nvl72_architecture"
+              },
+              "authority_scope": "official_technical_fact_not_revenue_or_share",
+              "cannot_infer": [
+                "GB200 SKU revenue",
+                "customer purchase quantity",
+                "server OEM gross margin"
+              ],
+              "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "fixture_id": "nvda_gb200_nvl72_architecture",
+              "adapter_family": "official_product_spec_page_adapter",
+              "candidate_type": "marketing_page_without_spec_slot",
+              "rejection_reason": "A generic product page without architecture/spec/version fields cannot be promoted.",
+              "typed_gap_if_no_better_source": "parser_gap"
+            }
+          ],
+          "typed_gaps": []
+        },
+        {
+          "fixture_id": "amd_mi300x_memory_bandwidth",
+          "adapter_family": "official_product_spec_page_adapter",
+          "source_name": "AMD MI300X official product page",
+          "fixture_source_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::amd_mi300x_memory_bandwidth",
+          "runtime_row_count": 1,
+          "rejected_candidate_count": 1,
+          "typed_gap_count": 0,
+          "runtime_rows": [
+            {
+              "row_id": "p34_fixture_row::amd_mi300x_memory_bandwidth",
+              "issuer": "AMD",
+              "product_or_family": "MI300X",
+              "metric_or_attribute": "accelerator_memory_bandwidth_spec",
+              "value": "192GB HBM3; 5.3 TB/s; CDNA3; FP8/FP16",
+              "unit": "technical specification",
+              "period_or_version": "MI300X generation",
+              "source_url": "source-ledger://p34/official_product_spec_page_adapter/amd_mi300x_memory_bandwidth",
+              "citation": "AMD MI300X official product page",
+              "parser_lineage": {
+                "adapter_family": "official_product_spec_page_adapter",
+                "fixture_id": "amd_mi300x_memory_bandwidth",
+                "parser_version": "p34_adapter_fixture_parser_v0_1",
+                "parsed_fields": {
+                  "memory": "192GB HBM3",
+                  "bandwidth": "5.3 TB/s",
+                  "architecture": "CDNA3",
+                  "precision_support": "FP8/FP16"
+                },
+                "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::amd_mi300x_memory_bandwidth"
+              },
+              "authority_scope": "official_technical_fact_not_revenue_or_share",
+              "cannot_infer": [
+                "MI300X revenue",
+                "market share",
+                "cloud deployment volume"
+              ],
+              "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "fixture_id": "amd_mi300x_memory_bandwidth",
+              "adapter_family": "official_product_spec_page_adapter",
+              "candidate_type": "marketing_page_without_spec_slot",
+              "rejection_reason": "A generic product page without architecture/spec/version fields cannot be promoted.",
+              "typed_gap_if_no_better_source": "parser_gap"
+            }
+          ],
+          "typed_gaps": []
+        },
+        {
+          "fixture_id": "google_tpu_v6e_trillium_architecture",
+          "adapter_family": "official_product_spec_page_adapter",
+          "source_name": "Google Cloud TPU docs",
+          "fixture_source_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::google_tpu_v6e_trillium_architecture",
+          "runtime_row_count": 1,
+          "rejected_candidate_count": 1,
+          "typed_gap_count": 0,
+          "runtime_rows": [
+            {
+              "row_id": "p34_fixture_row::google_tpu_v6e_trillium_architecture",
+              "issuer": "GOOGL",
+              "product_or_family": "TPU v6e / Trillium",
+              "metric_or_attribute": "custom_accelerator_architecture_spec",
+              "value": "TPU compute; HBM; ICI; pod size; network/all-reduce",
+              "unit": "technical specification",
+              "period_or_version": "TPU v6e / Trillium",
+              "source_url": "source-ledger://p34/official_product_spec_page_adapter/google_tpu_v6e_trillium_architecture",
+              "citation": "Google Cloud TPU docs",
+              "parser_lineage": {
+                "adapter_family": "official_product_spec_page_adapter",
+                "fixture_id": "google_tpu_v6e_trillium_architecture",
+                "parser_version": "p34_adapter_fixture_parser_v0_1",
+                "parsed_fields": {
+                  "compute": "TPU compute",
+                  "memory": "HBM",
+                  "interconnect": "ICI",
+                  "scale": "pod size / network all-reduce"
+                },
+                "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::google_tpu_v6e_trillium_architecture"
+              },
+              "authority_scope": "official_technical_fact_not_revenue_or_share",
+              "cannot_infer": [
+                "TPU procurement mix",
+                "NVIDIA replacement ratio",
+                "Google internal unit economics"
+              ],
+              "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "fixture_id": "google_tpu_v6e_trillium_architecture",
+              "adapter_family": "official_product_spec_page_adapter",
+              "candidate_type": "marketing_page_without_spec_slot",
+              "rejection_reason": "A generic product page without architecture/spec/version fields cannot be promoted.",
+              "typed_gap_if_no_better_source": "parser_gap"
+            }
+          ],
+          "typed_gaps": []
+        }
+      ],
+      "parser_contract": {
+        "required_output_fields": [
+          "issuer",
+          "product_or_family",
+          "metric_or_attribute",
+          "value",
+          "unit",
+          "period_or_version",
+          "source_url",
+          "citation",
+          "parser_lineage",
+          "authority_scope",
+          "cannot_infer"
+        ],
+        "must_preserve_parser_lineage": true,
+        "promotion_without_parser_lineage_allowed": false,
+        "authority_boundary_required": true,
+        "cannot_infer_required": true
+      }
+    },
+    {
+      "adapter_family": "semicap_bookings_backlog_adapter",
+      "status": "pass",
+      "planned_in_source_route_plan": true,
+      "fixture_count": 3,
+      "runtime_row_count": 3,
+      "rejected_candidate_count": 3,
+      "typed_gap_count": 0,
+      "fixture_results": [
+        {
+          "fixture_id": "asml_q1_2026_lithography_cycle",
+          "adapter_family": "semicap_bookings_backlog_adapter",
+          "source_name": "ASML Q1 2026 release",
+          "fixture_source_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::asml_q1_2026_lithography_cycle",
+          "runtime_row_count": 1,
+          "rejected_candidate_count": 1,
+          "typed_gap_count": 0,
+          "runtime_rows": [
+            {
+              "row_id": "p34_fixture_row::asml_q1_2026_lithography_cycle",
+              "issuer": "ASML",
+              "product_or_family": "EUV / DUV lithography and installed base",
+              "metric_or_attribute": "lithography_cycle_disclosure",
+              "value": "net sales; gross margin; installed-base management; systems sold; guide",
+              "unit": "disclosure context",
+              "period_or_version": "Q1 2026",
+              "source_url": "source-ledger://p34/semicap_bookings_backlog_adapter/asml_q1_2026_lithography_cycle",
+              "citation": "ASML Q1 2026 release",
+              "parser_lineage": {
+                "adapter_family": "semicap_bookings_backlog_adapter",
+                "fixture_id": "asml_q1_2026_lithography_cycle",
+                "parser_version": "p34_adapter_fixture_parser_v0_1",
+                "parsed_fields": {
+                  "net_sales": "present",
+                  "gross_margin": "present",
+                  "installed_base": "present",
+                  "systems_sold": "present",
+                  "guide": "present"
+                },
+                "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::asml_q1_2026_lithography_cycle"
+              },
+              "authority_scope": "semicap_primary_disclosure_context_or_exact_if_table_bound",
+              "cannot_infer": [
+                "AI-specific ASML orders",
+                "customer allocation",
+                "bookings by end customer without table"
+              ],
+              "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "fixture_id": "asml_q1_2026_lithography_cycle",
+              "adapter_family": "semicap_bookings_backlog_adapter",
+              "candidate_type": "peer_group_scope_substitute",
+              "rejection_reason": "Semicap peer group membership cannot replace company-specific segment/bookings/backlog mechanism.",
+              "typed_gap_if_no_better_source": "parser_gap"
+            }
+          ],
+          "typed_gaps": []
+        },
+        {
+          "fixture_id": "amat_q2_fy26_semiconductor_systems_mix",
+          "adapter_family": "semicap_bookings_backlog_adapter",
+          "source_name": "AMAT Q2 FY26 release",
+          "fixture_source_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::amat_q2_fy26_semiconductor_systems_mix",
+          "runtime_row_count": 1,
+          "rejected_candidate_count": 1,
+          "typed_gap_count": 0,
+          "runtime_rows": [
+            {
+              "row_id": "p34_fixture_row::amat_q2_fy26_semiconductor_systems_mix",
+              "issuer": "AMAT",
+              "product_or_family": "Semiconductor Systems",
+              "metric_or_attribute": "semiconductor_systems_mix_disclosure",
+              "value": "revenue; gross margin; Semiconductor Systems; foundry/logic; DRAM; flash; services mix",
+              "unit": "disclosure context",
+              "period_or_version": "Q2 FY26",
+              "source_url": "source-ledger://p34/semicap_bookings_backlog_adapter/amat_q2_fy26_semiconductor_systems_mix",
+              "citation": "AMAT Q2 FY26 release",
+              "parser_lineage": {
+                "adapter_family": "semicap_bookings_backlog_adapter",
+                "fixture_id": "amat_q2_fy26_semiconductor_systems_mix",
+                "parser_version": "p34_adapter_fixture_parser_v0_1",
+                "parsed_fields": {
+                  "revenue": "present",
+                  "gross_margin": "present",
+                  "semiconductor_systems": "present",
+                  "end_market_mix": "foundry/logic; DRAM; flash; services"
+                },
+                "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::amat_q2_fy26_semiconductor_systems_mix"
+              },
+              "authority_scope": "semicap_segment_mix_context_or_exact_if_table_bound",
+              "cannot_infer": [
+                "AI-specific order backlog",
+                "single-customer exposure",
+                "HBM tool share"
+              ],
+              "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "fixture_id": "amat_q2_fy26_semiconductor_systems_mix",
+              "adapter_family": "semicap_bookings_backlog_adapter",
+              "candidate_type": "peer_group_scope_substitute",
+              "rejection_reason": "Semicap peer group membership cannot replace company-specific segment/bookings/backlog mechanism.",
+              "typed_gap_if_no_better_source": "parser_gap"
+            }
+          ],
+          "typed_gaps": []
+        },
+        {
+          "fixture_id": "lrcx_mar_2026_memory_hbm_intensity",
+          "adapter_family": "semicap_bookings_backlog_adapter",
+          "source_name": "LRCX Mar 2026 results",
+          "fixture_source_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::lrcx_mar_2026_memory_hbm_intensity",
+          "runtime_row_count": 1,
+          "rejected_candidate_count": 1,
+          "typed_gap_count": 0,
+          "runtime_rows": [
+            {
+              "row_id": "p34_fixture_row::lrcx_mar_2026_memory_hbm_intensity",
+              "issuer": "LRCX",
+              "product_or_family": "Etch / deposition / memory and HBM process intensity",
+              "metric_or_attribute": "memory_hbm_process_intensity_context",
+              "value": "revenue; gross margin; memory/foundry logic context; HBM process intensity",
+              "unit": "disclosure context",
+              "period_or_version": "Mar 2026 quarter",
+              "source_url": "source-ledger://p34/semicap_bookings_backlog_adapter/lrcx_mar_2026_memory_hbm_intensity",
+              "citation": "LRCX Mar 2026 results",
+              "parser_lineage": {
+                "adapter_family": "semicap_bookings_backlog_adapter",
+                "fixture_id": "lrcx_mar_2026_memory_hbm_intensity",
+                "parser_version": "p34_adapter_fixture_parser_v0_1",
+                "parsed_fields": {
+                  "revenue": "present",
+                  "gross_margin": "present",
+                  "memory_context": "present",
+                  "hbm_process_intensity": "present"
+                },
+                "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::lrcx_mar_2026_memory_hbm_intensity"
+              },
+              "authority_scope": "semicap_process_intensity_context_not_customer_order",
+              "cannot_infer": [
+                "AI-specific LRCX bookings",
+                "exact HBM equipment share",
+                "customer purchase orders"
+              ],
+              "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "fixture_id": "lrcx_mar_2026_memory_hbm_intensity",
+              "adapter_family": "semicap_bookings_backlog_adapter",
+              "candidate_type": "peer_group_scope_substitute",
+              "rejection_reason": "Semicap peer group membership cannot replace company-specific segment/bookings/backlog mechanism.",
+              "typed_gap_if_no_better_source": "parser_gap"
+            }
+          ],
+          "typed_gaps": []
+        }
+      ],
+      "parser_contract": {
+        "required_output_fields": [
+          "issuer",
+          "product_or_family",
+          "metric_or_attribute",
+          "value",
+          "unit",
+          "period_or_version",
+          "source_url",
+          "citation",
+          "parser_lineage",
+          "authority_scope",
+          "cannot_infer"
+        ],
+        "must_preserve_parser_lineage": true,
+        "promotion_without_parser_lineage_allowed": false,
+        "authority_boundary_required": true,
+        "cannot_infer_required": true
+      }
+    }
+  ],
+  "runtime_rows": [
+    {
+      "row_id": "p34_fixture_row::dell_fy26_ai_orders_shipments_backlog",
+      "issuer": "DELL",
+      "product_or_family": "AI-optimized servers",
+      "metric_or_attribute": "orders_shipments_backlog",
+      "value": "orders 64B; shipments 25B; backlog 43B",
+      "unit": "USD billions",
+      "period_or_version": "FY26 / FY27 starting backlog",
+      "source_url": "source-ledger://p34/sec_8k_earnings_release_table_adapter/dell_fy26_ai_orders_shipments_backlog",
+      "citation": "Dell FY26 Q4 8-K exhibit",
+      "parser_lineage": {
+        "adapter_family": "sec_8k_earnings_release_table_adapter",
+        "fixture_id": "dell_fy26_ai_orders_shipments_backlog",
+        "parser_version": "p34_adapter_fixture_parser_v0_1",
+        "parsed_fields": {
+          "orders": "64B",
+          "shipments": "25B",
+          "backlog": "43B"
+        },
+        "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::dell_fy26_ai_orders_shipments_backlog"
+      },
+      "authority_scope": "issuer_exact_operating_metric_with_margin_gap",
+      "cannot_infer": [
+        "AI server gross margin",
+        "GPU pass-through cost",
+        "customer concentration"
+      ],
+      "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+    },
+    {
+      "row_id": "p34_fixture_row::dell_fy26_q1_isg_segment_margin",
+      "issuer": "DELL",
+      "product_or_family": "Infrastructure Solutions Group",
+      "metric_or_attribute": "isg_revenue_operating_income_margin",
+      "value": "ISG revenue 10.3B; Servers/Networking 6.3B; operating income 998M; margin 9.7%",
+      "unit": "USD / percent",
+      "period_or_version": "FY26 Q1",
+      "source_url": "source-ledger://p34/sec_8k_earnings_release_table_adapter/dell_fy26_q1_isg_segment_margin",
+      "citation": "Dell FY26 Q1 earnings release",
+      "parser_lineage": {
+        "adapter_family": "sec_8k_earnings_release_table_adapter",
+        "fixture_id": "dell_fy26_q1_isg_segment_margin",
+        "parser_version": "p34_adapter_fixture_parser_v0_1",
+        "parsed_fields": {
+          "isg_revenue": "10.3B",
+          "servers_networking_revenue": "6.3B",
+          "operating_income": "998M",
+          "operating_margin": "9.7%"
+        },
+        "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::dell_fy26_q1_isg_segment_margin"
+      },
+      "authority_scope": "issuer_exact_segment_metric_not_ai_server_margin",
+      "cannot_infer": [
+        "AI server gross margin",
+        "Blackwell mix",
+        "attach economics"
+      ],
+      "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+    },
+    {
+      "row_id": "p34_fixture_row::nvda_q1_fy2027_data_center_revenue",
+      "issuer": "NVDA",
+      "product_or_family": "Data Center / accelerator systems",
+      "metric_or_attribute": "data_center_revenue",
+      "value": "39.1B",
+      "unit": "USD billions",
+      "period_or_version": "Q1 FY2027",
+      "source_url": "source-ledger://p34/sec_8k_earnings_release_table_adapter/nvda_q1_fy2027_data_center_revenue",
+      "citation": "NVIDIA Q1 FY2027 IR page",
+      "parser_lineage": {
+        "adapter_family": "sec_8k_earnings_release_table_adapter",
+        "fixture_id": "nvda_q1_fy2027_data_center_revenue",
+        "parser_version": "p34_adapter_fixture_parser_v0_1",
+        "parsed_fields": {
+          "data_center_revenue": "39.1B"
+        },
+        "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::nvda_q1_fy2027_data_center_revenue"
+      },
+      "authority_scope": "issuer_exact_segment_metric_not_sku_revenue",
+      "cannot_infer": [
+        "B200/GB200 SKU revenue",
+        "DELL allocation",
+        "server OEM margin"
+      ],
+      "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+    },
+    {
+      "row_id": "p34_fixture_row::nvda_gb200_nvl72_architecture",
+      "issuer": "NVDA",
+      "product_or_family": "GB200 NVL72",
+      "metric_or_attribute": "rack_scale_architecture_spec",
+      "value": "36 Grace CPUs; 72 Blackwell GPUs; rack-scale NVLink; liquid-cooled",
+      "unit": "technical specification",
+      "period_or_version": "Blackwell / GB200 generation",
+      "source_url": "source-ledger://p34/official_product_spec_page_adapter/nvda_gb200_nvl72_architecture",
+      "citation": "NVIDIA GB200 NVL72 official page",
+      "parser_lineage": {
+        "adapter_family": "official_product_spec_page_adapter",
+        "fixture_id": "nvda_gb200_nvl72_architecture",
+        "parser_version": "p34_adapter_fixture_parser_v0_1",
+        "parsed_fields": {
+          "grace_cpus": "36",
+          "blackwell_gpus": "72",
+          "interconnect": "rack-scale NVLink",
+          "deployment": "liquid-cooled"
+        },
+        "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::nvda_gb200_nvl72_architecture"
+      },
+      "authority_scope": "official_technical_fact_not_revenue_or_share",
+      "cannot_infer": [
+        "GB200 SKU revenue",
+        "customer purchase quantity",
+        "server OEM gross margin"
+      ],
+      "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+    },
+    {
+      "row_id": "p34_fixture_row::amd_mi300x_memory_bandwidth",
+      "issuer": "AMD",
+      "product_or_family": "MI300X",
+      "metric_or_attribute": "accelerator_memory_bandwidth_spec",
+      "value": "192GB HBM3; 5.3 TB/s; CDNA3; FP8/FP16",
+      "unit": "technical specification",
+      "period_or_version": "MI300X generation",
+      "source_url": "source-ledger://p34/official_product_spec_page_adapter/amd_mi300x_memory_bandwidth",
+      "citation": "AMD MI300X official product page",
+      "parser_lineage": {
+        "adapter_family": "official_product_spec_page_adapter",
+        "fixture_id": "amd_mi300x_memory_bandwidth",
+        "parser_version": "p34_adapter_fixture_parser_v0_1",
+        "parsed_fields": {
+          "memory": "192GB HBM3",
+          "bandwidth": "5.3 TB/s",
+          "architecture": "CDNA3",
+          "precision_support": "FP8/FP16"
+        },
+        "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::amd_mi300x_memory_bandwidth"
+      },
+      "authority_scope": "official_technical_fact_not_revenue_or_share",
+      "cannot_infer": [
+        "MI300X revenue",
+        "market share",
+        "cloud deployment volume"
+      ],
+      "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+    },
+    {
+      "row_id": "p34_fixture_row::google_tpu_v6e_trillium_architecture",
+      "issuer": "GOOGL",
+      "product_or_family": "TPU v6e / Trillium",
+      "metric_or_attribute": "custom_accelerator_architecture_spec",
+      "value": "TPU compute; HBM; ICI; pod size; network/all-reduce",
+      "unit": "technical specification",
+      "period_or_version": "TPU v6e / Trillium",
+      "source_url": "source-ledger://p34/official_product_spec_page_adapter/google_tpu_v6e_trillium_architecture",
+      "citation": "Google Cloud TPU docs",
+      "parser_lineage": {
+        "adapter_family": "official_product_spec_page_adapter",
+        "fixture_id": "google_tpu_v6e_trillium_architecture",
+        "parser_version": "p34_adapter_fixture_parser_v0_1",
+        "parsed_fields": {
+          "compute": "TPU compute",
+          "memory": "HBM",
+          "interconnect": "ICI",
+          "scale": "pod size / network all-reduce"
+        },
+        "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::google_tpu_v6e_trillium_architecture"
+      },
+      "authority_scope": "official_technical_fact_not_revenue_or_share",
+      "cannot_infer": [
+        "TPU procurement mix",
+        "NVIDIA replacement ratio",
+        "Google internal unit economics"
+      ],
+      "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+    },
+    {
+      "row_id": "p34_fixture_row::asml_q1_2026_lithography_cycle",
+      "issuer": "ASML",
+      "product_or_family": "EUV / DUV lithography and installed base",
+      "metric_or_attribute": "lithography_cycle_disclosure",
+      "value": "net sales; gross margin; installed-base management; systems sold; guide",
+      "unit": "disclosure context",
+      "period_or_version": "Q1 2026",
+      "source_url": "source-ledger://p34/semicap_bookings_backlog_adapter/asml_q1_2026_lithography_cycle",
+      "citation": "ASML Q1 2026 release",
+      "parser_lineage": {
+        "adapter_family": "semicap_bookings_backlog_adapter",
+        "fixture_id": "asml_q1_2026_lithography_cycle",
+        "parser_version": "p34_adapter_fixture_parser_v0_1",
+        "parsed_fields": {
+          "net_sales": "present",
+          "gross_margin": "present",
+          "installed_base": "present",
+          "systems_sold": "present",
+          "guide": "present"
+        },
+        "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::asml_q1_2026_lithography_cycle"
+      },
+      "authority_scope": "semicap_primary_disclosure_context_or_exact_if_table_bound",
+      "cannot_infer": [
+        "AI-specific ASML orders",
+        "customer allocation",
+        "bookings by end customer without table"
+      ],
+      "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+    },
+    {
+      "row_id": "p34_fixture_row::amat_q2_fy26_semiconductor_systems_mix",
+      "issuer": "AMAT",
+      "product_or_family": "Semiconductor Systems",
+      "metric_or_attribute": "semiconductor_systems_mix_disclosure",
+      "value": "revenue; gross margin; Semiconductor Systems; foundry/logic; DRAM; flash; services mix",
+      "unit": "disclosure context",
+      "period_or_version": "Q2 FY26",
+      "source_url": "source-ledger://p34/semicap_bookings_backlog_adapter/amat_q2_fy26_semiconductor_systems_mix",
+      "citation": "AMAT Q2 FY26 release",
+      "parser_lineage": {
+        "adapter_family": "semicap_bookings_backlog_adapter",
+        "fixture_id": "amat_q2_fy26_semiconductor_systems_mix",
+        "parser_version": "p34_adapter_fixture_parser_v0_1",
+        "parsed_fields": {
+          "revenue": "present",
+          "gross_margin": "present",
+          "semiconductor_systems": "present",
+          "end_market_mix": "foundry/logic; DRAM; flash; services"
+        },
+        "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::amat_q2_fy26_semiconductor_systems_mix"
+      },
+      "authority_scope": "semicap_segment_mix_context_or_exact_if_table_bound",
+      "cannot_infer": [
+        "AI-specific order backlog",
+        "single-customer exposure",
+        "HBM tool share"
+      ],
+      "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+    },
+    {
+      "row_id": "p34_fixture_row::lrcx_mar_2026_memory_hbm_intensity",
+      "issuer": "LRCX",
+      "product_or_family": "Etch / deposition / memory and HBM process intensity",
+      "metric_or_attribute": "memory_hbm_process_intensity_context",
+      "value": "revenue; gross margin; memory/foundry logic context; HBM process intensity",
+      "unit": "disclosure context",
+      "period_or_version": "Mar 2026 quarter",
+      "source_url": "source-ledger://p34/semicap_bookings_backlog_adapter/lrcx_mar_2026_memory_hbm_intensity",
+      "citation": "LRCX Mar 2026 results",
+      "parser_lineage": {
+        "adapter_family": "semicap_bookings_backlog_adapter",
+        "fixture_id": "lrcx_mar_2026_memory_hbm_intensity",
+        "parser_version": "p34_adapter_fixture_parser_v0_1",
+        "parsed_fields": {
+          "revenue": "present",
+          "gross_margin": "present",
+          "memory_context": "present",
+          "hbm_process_intensity": "present"
+        },
+        "input_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json::lrcx_mar_2026_memory_hbm_intensity"
+      },
+      "authority_scope": "semicap_process_intensity_context_not_customer_order",
+      "cannot_infer": [
+        "AI-specific LRCX bookings",
+        "exact HBM equipment share",
+        "customer purchase orders"
+      ],
+      "promotion_status": "fixture_parser_contract_pass_live_fetch_pending"
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "fixture_id": "dell_fy26_ai_orders_shipments_backlog",
+      "adapter_family": "sec_8k_earnings_release_table_adapter",
+      "candidate_type": "consolidated_revenue_substitute",
+      "rejection_reason": "Consolidated revenue without product/segment/AI-server binding cannot fill this slot.",
+      "typed_gap_if_no_better_source": "parser_gap"
+    },
+    {
+      "fixture_id": "dell_fy26_q1_isg_segment_margin",
+      "adapter_family": "sec_8k_earnings_release_table_adapter",
+      "candidate_type": "consolidated_revenue_substitute",
+      "rejection_reason": "Consolidated revenue without product/segment/AI-server binding cannot fill this slot.",
+      "typed_gap_if_no_better_source": "parser_gap"
+    },
+    {
+      "fixture_id": "nvda_q1_fy2027_data_center_revenue",
+      "adapter_family": "sec_8k_earnings_release_table_adapter",
+      "candidate_type": "consolidated_revenue_substitute",
+      "rejection_reason": "Consolidated revenue without product/segment/AI-server binding cannot fill this slot.",
+      "typed_gap_if_no_better_source": "parser_gap"
+    },
+    {
+      "fixture_id": "nvda_gb200_nvl72_architecture",
+      "adapter_family": "official_product_spec_page_adapter",
+      "candidate_type": "marketing_page_without_spec_slot",
+      "rejection_reason": "A generic product page without architecture/spec/version fields cannot be promoted.",
+      "typed_gap_if_no_better_source": "parser_gap"
+    },
+    {
+      "fixture_id": "amd_mi300x_memory_bandwidth",
+      "adapter_family": "official_product_spec_page_adapter",
+      "candidate_type": "marketing_page_without_spec_slot",
+      "rejection_reason": "A generic product page without architecture/spec/version fields cannot be promoted.",
+      "typed_gap_if_no_better_source": "parser_gap"
+    },
+    {
+      "fixture_id": "google_tpu_v6e_trillium_architecture",
+      "adapter_family": "official_product_spec_page_adapter",
+      "candidate_type": "marketing_page_without_spec_slot",
+      "rejection_reason": "A generic product page without architecture/spec/version fields cannot be promoted.",
+      "typed_gap_if_no_better_source": "parser_gap"
+    },
+    {
+      "fixture_id": "asml_q1_2026_lithography_cycle",
+      "adapter_family": "semicap_bookings_backlog_adapter",
+      "candidate_type": "peer_group_scope_substitute",
+      "rejection_reason": "Semicap peer group membership cannot replace company-specific segment/bookings/backlog mechanism.",
+      "typed_gap_if_no_better_source": "parser_gap"
+    },
+    {
+      "fixture_id": "amat_q2_fy26_semiconductor_systems_mix",
+      "adapter_family": "semicap_bookings_backlog_adapter",
+      "candidate_type": "peer_group_scope_substitute",
+      "rejection_reason": "Semicap peer group membership cannot replace company-specific segment/bookings/backlog mechanism.",
+      "typed_gap_if_no_better_source": "parser_gap"
+    },
+    {
+      "fixture_id": "lrcx_mar_2026_memory_hbm_intensity",
+      "adapter_family": "semicap_bookings_backlog_adapter",
+      "candidate_type": "peer_group_scope_substitute",
+      "rejection_reason": "Semicap peer group membership cannot replace company-specific segment/bookings/backlog mechanism.",
+      "typed_gap_if_no_better_source": "parser_gap"
+    }
+  ],
+  "typed_gaps": [],
+  "next_step": "Run P34 no-paid quality audit only after adapter fixtures are connected to live source route attempts or attempt-backed typed gaps."
+}

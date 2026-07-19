@@ -1,0 +1,84 @@
+{
+  "schema_version": "fin_insight_p34_ai_semis_goldcase_rag_availability_alignment_v0_1",
+  "created_at": "2026-07-08T17:40:20+00:00",
+  "status": "goldcase_aligned_to_current_rag_and_route_availability_before_full_chain",
+  "scope": {
+    "case_id": "p34_ai_semis_scoped_writer_case_v0_1",
+    "lane": "AI/Semis",
+    "full_chain_run": false,
+    "paid_llm_run": false,
+    "purpose": "Align the AI/Semis humanmade gold case to what the current RAG/SQL/Milvus manifests and P34 live source-route runtime rows can actually support before any true full-chain eval."
+  },
+  "current_data_availability": {
+    "indexed_row_count": 154484,
+    "indexed_ticker_count": 603,
+    "p33_goldset_live_ready_row_count": 4,
+    "p34_slot_count": 20,
+    "p34_attempted_slot_count": 20,
+    "p34_accepted_runtime_row_count": 21,
+    "p34_typed_gap_count": 2,
+    "analyst_fact_table_block_count": 7,
+    "analyst_fact_table_row_count": 23,
+    "analyst_fact_rows_by_value_quality": {
+      "structured_metric_context": 6,
+      "specific_technical_or_deployment_fact": 8,
+      "context_summary": 7,
+      "attempt_backed_gap": 2
+    }
+  },
+  "important_boundary": {
+    "rag_retrieval_role": "The current P34 scoped writer case is a source-route/runtime-row replay, not a Milvus/rerank-driven full-chain retrieval run. RAG/Milvus remains the broader discovery and retrieval substrate, but this case intentionally tests whether accepted source-route rows can be made analyst-ready.",
+    "sec_parser_boundary": "The issue found here is not that SEC/8-K table parsing is globally broken. Some P34 rows come from official press releases/pages and current live-route adapters still preserve them as context_summary instead of extracting every numeric table cell. Standardized SEC/XBRL/ledger rows remain usable where already materialized, but this scoped case cannot assume numbers not present in accepted runtime rows."
+  },
+  "goldcase_alignment_decisions": [
+    {
+      "goldcase_requirement": "Product / architecture judgment",
+      "current_support": "Supported by official/spec rows for NVDA GB200 NVL72, AMD MI300X/MI355X, Google TPU and A4X/GB200 deployment surface.",
+      "allowed_answer": "Can compare product capability, architecture, bandwidth/memory, benchmark proxy and deployment/adoption path.",
+      "not_allowed": "Cannot infer SKU revenue, ASP, shipment, supplier allocation or market share.",
+      "goldcase_status": "supported_with_boundary"
+    },
+    {
+      "goldcase_requirement": "DELL AI server financial quality",
+      "current_support": "Supported for orders/shipments/backlog and ISG baseline visibility, but not AI server gross margin, GPU pass-through, attach rate or backlog conversion.",
+      "allowed_answer": "Can state demand/revenue visibility is stronger than generic server demand.",
+      "not_allowed": "Cannot conclude AI server growth is high-quality profit until margin bridge rows are parsed or disclosed.",
+      "goldcase_status": "attempt_backed_gap_for_margin_quality"
+    },
+    {
+      "goldcase_requirement": "Hyperscaler capex read-through",
+      "current_support": "Supported as demand-pool context from MSFT/GOOGL/META/AMZN rows.",
+      "allowed_answer": "Can discuss demand-pool strength and supplier-capture conditions.",
+      "not_allowed": "Cannot turn capex into NVDA/DELL/ASML/LRCX revenue, allocation, backlog or order exact.",
+      "goldcase_status": "supported_context_not_supplier_capture"
+    },
+    {
+      "goldcase_requirement": "Semicap read-through",
+      "current_support": "Supported by TSM/ASML/AMAT/LRCX rows as mechanism context.",
+      "allowed_answer": "Can separate advanced node, lithography, materials engineering and HBM/process-intensity read-through.",
+      "not_allowed": "Cannot claim AI-specific bookings, backlog, shipments, customer allocation or China exposure exact unless parsed from issuer rows.",
+      "goldcase_status": "supported_with_deeper_parser_boundary"
+    },
+    {
+      "goldcase_requirement": "Market price-in / capital feedback",
+      "current_support": "Only bounded fixture/market context is present in this scoped case.",
+      "allowed_answer": "Can say recommendation-quality judgment is constrained by missing valuation/positioning/flow evidence.",
+      "not_allowed": "Cannot output buy/sell strength, real-time crowding, complete options positioning, borrow cost or price-in conclusion.",
+      "goldcase_status": "bounded_gap_until_market_pack_runtime_rows_exist"
+    }
+  ],
+  "quality_eval_update": {
+    "new_required_pre_full_chain_checks": [
+      "Every memo writer payload must include analyst_fact_table_blocks or explicitly explain why the case has no tableable facts.",
+      "Eval must separate retrieval path: SQL/Milvus/RAG, source-route live attempt, existing manifest row, or deterministic fixture.",
+      "Each goldcase required item must map to available/runtime, context_summary, attempt_backed_gap, commercial_gap, or not_in_current_rag_scope.",
+      "Writer output must render fact tables before required-item boundary language.",
+      "A true full-chain eval cannot pass if a goldcase requirement is absent from RAG/route availability but still demanded as exact output."
+    ],
+    "blocked_until_user_approval": [
+      "true_full_chain_eval",
+      "paid_model_comparison",
+      "case_expansion_release_eval"
+    ]
+  }
+}

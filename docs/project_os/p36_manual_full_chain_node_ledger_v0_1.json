@@ -1,0 +1,1232 @@
+{
+  "schema_version": "fin_insight_p36_manual_full_chain_node_ledger_v0_1",
+  "created_at": "2026-07-09T03:40:00+08:00",
+  "artifact_type": "codex_as_paid_model_manual_full_chain_node_ledger",
+  "case_id": "p36_ai_infra_supply_chain_manual_full_chain_dogfood_v0_1",
+  "ruler_ref": "docs/project_os/p36_agent_dogfood_ruler_v0_1.json",
+  "status": "node_11_verifier_workbench_review_recorded",
+  "run_boundary": {
+    "paid_llm_api_run": false,
+    "true_runtime_full_chain_run": false,
+    "codex_manually_plays_paid_model": true,
+    "writer_runtime_may_self_source": false,
+    "supervisor_supplements_must_be_separate": true
+  },
+  "node_runs": [
+    {
+      "node_id": "node_01_research_lead",
+      "node_role": "Research Lead",
+      "status": "manual_run_recorded_partial_until_downstream_evidence",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_01_research_lead_manual_run.zh-CN.md",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/prompts/skills/research_lead_planning_skill_v0_1.md",
+        "src/sec_agent/prompts/skills/evidence_requirement_and_sufficiency_skill_v0_1.md",
+        "src/sec_agent/prompts/skills/fundamental_analysis_skill_v0_2.md",
+        "src/sec_agent/prompts/skills/industry_supply_chain_analysis_skill_v0_2.md",
+        "src/sec_agent/prompts/skills/market_valuation_analysis_skill_v0_2.md",
+        "docs/project_os/p35_ai_infra_decision_surface_framework_v0_1.json",
+        "docs/project_os/p35_ai_infra_current_system_gap_audit_v0_1.json"
+      ],
+      "can_write_quality_material_under_node_constraints": true,
+      "codex_or_supervisor_supplement_used": false,
+      "research_quality_summary": {
+        "question_answerability": "pass",
+        "decision_surface_completeness": "pass",
+        "financial_and_operating_depth": "partial",
+        "capital_market_price_in_depth": "partial",
+        "source_grade_and_lineage": "pass",
+        "counter_thesis_and_turning_signals": "pass",
+        "writer_readiness": "partial"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "partial",
+        "tool_affordance_fit": "pass_for_planning",
+        "observability": "pass",
+        "recoverability": "pass",
+        "information_economy": "pass",
+        "marginal_contribution": "pass",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial"
+      },
+      "root_cause_notes": [
+        "Research Lead can produce a high-quality plan when P35 decision surface is manually injected.",
+        "The P35 decision surface is not yet an original runtime contract consumed by Research Lead.",
+        "Capital-market and HBM/server/CoWoS/semicap peer panel needs must be explicit required items, not inferred later by writer."
+      ],
+      "next_node": "node_02_retrieval_rag_sql_source_route"
+    },
+    {
+      "node_id": "node_02_retrieval_rag_sql_source_route",
+      "node_role": "Retrieval / RAG / SQL / Source Route",
+      "status": "manual_run_recorded_partial_runtime_rows_not_sufficient_for_full_decision_surface",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_02_retrieval_rag_sql_source_route_manual_run.zh-CN.md",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/agent_registry.py",
+        "src/sec_agent/agent_contracts.py",
+        "src/sec_agent/mcp_tool_registry.py",
+        "src/sec_agent/mcp_contracts.py",
+        "src/sec_agent/market_snapshot.py",
+        "src/sec_agent/p34_lane_quality_runtime.py",
+        "src/retrieval/object_bm25_retriever.py",
+        "docs/project_os/p34_ai_semis_source_route_plan_v0_1.json",
+        "docs/project_os/p34_ai_semis_live_route_attempt_report_v0_1.json",
+        "docs/project_os/p34_ai_semis_goldcase_rag_availability_alignment_v0_1.json",
+        "docs/project_os/p35_ai_infra_current_system_gap_audit_v0_1.json",
+        "docs/project_os/p35_ai_infra_source_supplement_ledger_v0_1.json"
+      ],
+      "local_tools_or_artifacts_probed": [
+        "ObjectBM25Retriever over data/indexes/bm25/sec_investment_coverage_mixed_with_8k_fy2023_2027_objects",
+        "ObjectBM25Retriever over data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027_objects",
+        "market_get_snapshot logic over data/processed_private/market/evidence_packs/20260624_market_yahoo_chart_603_3m_v1_3m_market_evidence.jsonl",
+        "market_get_snapshot logic over data/processed_private/market/evidence_packs/20260528_market_yahoo_chart_full78_3m_fmp_valuation_v1_3m_market_evidence.jsonl",
+        "capital ownership JSONL probe over Z:/FIN_Insight_Agent_data/processed_private/capital_macro_source_adapters/capital_macro_source_adapter_v0_1/capital_ownership_rows.jsonl"
+      ],
+      "can_write_quality_material_under_node_constraints": false,
+      "can_prepare_candidate_evidence_under_node_constraints": true,
+      "codex_or_supervisor_supplement_used": false,
+      "runtime_accepted_rows_reviewed": {
+        "p34_accepted_runtime_row_count": 21,
+        "p34_typed_gap_count": 2,
+        "p34_attempted_slot_count": 20
+      },
+      "rag_probe_summary": {
+        "sec_investment_object_index_records": 1118234,
+        "sector_depth_full238_object_index_records": 3035688,
+        "strong_or_partial_hits": [
+          "NVDA",
+          "MU",
+          "AMAT",
+          "MSFT",
+          "META",
+          "DELL",
+          "SMCI",
+          "HPE",
+          "LRCX",
+          "KLAC"
+        ],
+        "weak_or_zero_hit_cells": [
+          "TSM_CoWoS",
+          "ASML_quarterly_backlog_china_export",
+          "SK_hynix_HBM",
+          "Samsung_HBM",
+          "full_semicap_peer_panel",
+          "cell_level_price_in_valuation_positioning"
+        ],
+        "key_finding": "Project-native RAG recall exists but is not decision-cell-driven and is not automatically promoted into accepted runtime rows."
+      },
+      "market_and_ownership_probe_summary": {
+        "market_snapshot_rows_for_case_tickers": 13,
+        "market_snapshot_field_gap_count": 104,
+        "ownership_rows_exist_for": {
+          "NVDA": 59,
+          "AMD": 23,
+          "MU": 17,
+          "KLAC": 16,
+          "DELL": 10,
+          "AMAT": 9,
+          "SMCI": 6,
+          "ASML": 5,
+          "HPE": 5,
+          "LRCX": 4
+        },
+        "boundary": "Market rows support non-real-time price action / partial valuation only; ownership rows support lagged holder context only."
+      },
+      "research_quality_summary": {
+        "question_answerability": "partial",
+        "decision_surface_completeness": "partial",
+        "financial_and_operating_depth": "partial",
+        "capital_market_price_in_depth": "partial",
+        "source_grade_and_lineage": "pass",
+        "counter_thesis_and_turning_signals": "partial",
+        "writer_readiness": "partial"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "partial",
+        "tool_affordance_fit": "partial",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial"
+      },
+      "root_cause_notes": [
+        "DecisionSurfaceContract is not yet a first-class retrieval input, so source lookup is not segment x dimension cell-driven.",
+        "P34 scoped runtime used source-route replay rather than a full SQL/RAG/Milvus discovery pass.",
+        "Local RAG results depend heavily on index selection; one index can return zero hits while another has usable official filing rows.",
+        "Market snapshot and 13F/ownership data exist but are not wired into this case's price-in decision surface.",
+        "Non-US official disclosures and IR/PDF/press-release tables remain weakly ingested for SK hynix, Samsung, TSMC and ASML.",
+        "Writer no-self-source boundary is correct, but a SourceHunterLoop must run before writer to prevent boundary prose from dominating."
+      ],
+      "next_node": "node_03_parser_evidence_operator"
+    },
+    {
+      "node_id": "node_03_parser_evidence_operator",
+      "node_role": "Parser / Evidence Operator",
+      "status": "manual_run_recorded_partial_foundation_financials_available_business_line_economics_and_sanity_gaps_remain",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_03_parser_evidence_operator_manual_run.zh-CN.md",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/ledger_store.py",
+        "src/sec_agent/mcp_tool_registry.py",
+        "src/sec_agent/mcp_contracts.py",
+        "src/sec_agent/exact_slot_contracts.py",
+        "data/manifests/parser_run_ledger_v0_1.jsonl",
+        "data/manifests/exact_slot_rows_v0_1.jsonl",
+        "data/manifests/exact_slot_coverage_matrix_v0_1.json",
+        "data/manifests/industry_operating_metric_slot_summary_v0_1.json",
+        "data/manifests/product_kpi_source_specific_verifier_summary_v0_1.json"
+      ],
+      "local_tools_or_artifacts_probed": [
+        "sec_query_exact_value_ledger over data/processed_private/ledger/sec_investment_coverage_mixed_with_8k_fy2023_2027_core_ledger.duckdb",
+        "sec_query_exact_value_ledger over data/processed_private/ledger/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027_core_ledger.duckdb",
+        "data/manifests/exact_slot_rows_v0_1.jsonl",
+        "data/manifests/industry_operating_metric_slot_rows_v0_1.jsonl",
+        "data/manifests/product_kpi_source_specific_verifier_promotable_rows_v0_1.jsonl"
+      ],
+      "can_write_quality_material_under_node_constraints": false,
+      "can_prepare_candidate_evidence_under_node_constraints": true,
+      "codex_or_supervisor_supplement_used": false,
+      "ledger_probe_summary": {
+        "sec_investment_ledger_useful_for": [
+          "NVDA",
+          "MU",
+          "AMAT"
+        ],
+        "sector_depth_ledger_useful_for": [
+          "DELL",
+          "SMCI",
+          "HPE",
+          "MU",
+          "AMAT",
+          "LRCX",
+          "KLAC"
+        ],
+        "ledger_tool_zero_or_weak_for": [
+          "ASML",
+          "TSM",
+          "SK_hynix_HBM_specific",
+          "Samsung_HBM_specific",
+          "CoWoS_specific",
+          "AI_server_margin_bridge"
+        ],
+        "numeric_sanity_examples": [
+          "NVDA gross margin rows returned 1.0 and -1.2 as usd_millions, likely non-headline table deltas.",
+          "SMCI rows include both usd_thousands and usd_millions representations for similar net sales values.",
+          "KLAC rows include deferred system revenue under broad revenue family."
+        ]
+      },
+      "parser_slot_summary": {
+        "product_kpi_promotable_metric_count": 12,
+        "product_kpi_promotable_ticker_count": 1,
+        "industry_operating_runtime_row_count": 1923,
+        "industry_operating_runtime_ticker_count": 186,
+        "industry_operating_rejection_count": 7876,
+        "exact_slot_rows_exist_for_case_tickers": {
+          "AMD": 182,
+          "HPE": 97,
+          "ASML": 98,
+          "NVDA": 93,
+          "AMAT": 85,
+          "DELL": 64,
+          "MU": 60,
+          "SMCI": 57,
+          "KLAC": 47,
+          "005930.KS": 43,
+          "LRCX": 34,
+          "TSM": 25,
+          "000660.KS": 23
+        },
+        "unsafe_or_needs_review_examples": [
+          "ASML industry operating rows classify inventories, bank accounts, finished products, and reserve utilization as product revenue-like rows.",
+          "Product KPI verifier is safe but too sparse for AI/Semis product economics."
+        ]
+      },
+      "research_quality_summary": {
+        "question_answerability": "partial",
+        "decision_surface_completeness": "partial",
+        "financial_and_operating_depth": "partial",
+        "capital_market_price_in_depth": "partial",
+        "source_grade_and_lineage": "pass",
+        "counter_thesis_and_turning_signals": "partial",
+        "writer_readiness": "partial"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "partial",
+        "tool_affordance_fit": "partial",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial"
+      },
+      "root_cause_notes": [
+        "Exact-Value Ledger is a metric-family query layer, not a decision-cell promotion API.",
+        "Multiple stores and manifests contain overlapping but inconsistent evidence surfaces.",
+        "Headline selector, unit sanity, period role and row-label sanity are not sufficient for automatic writer use.",
+        "Industry operating metric parser has false-positive risk for non-operating rows in some non-US disclosures.",
+        "Product KPI verifier prevents over-promotion but is too sparse for AI/Semis business-line economics.",
+        "Exact slot rows support consolidated fundamentals but do not answer HBM-only, CoWoS or AI server margin economics.",
+        "Market and ownership rows need separate price-in pack projection instead of being mixed into fundamental exact ledger."
+      ],
+      "next_node": "node_04_graph_relationship_value_capture"
+    },
+    {
+      "node_id": "node_04_graph_relationship_value_capture",
+      "node_role": "Graph / Relationship / Value-Capture",
+      "status": "manual_run_recorded_partial_graph_assets_exist_but_not_decision_surface_projection",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_04_graph_relationship_value_capture_manual_run.zh-CN.md",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/relationship_graph.py",
+        "src/sec_agent/product_slot_relationship_graph.py",
+        "src/sec_agent/product_intelligence_graph.py",
+        "src/sec_agent/research_graph_store.py",
+        "src/sec_agent/universe_relationship_llm.py",
+        "src/sec_agent/agent_registry.py",
+        "src/sec_agent/agent_contracts.py",
+        "src/sec_agent/specialist_llm.py",
+        "tests/test_relationship_graph_lookup.py",
+        "tests/test_product_intelligence_graph.py",
+        "docs/internal/vnext_20260610/product_intelligence_graph_v0_1.zh-CN.md",
+        "docs/internal/vnext_20260610/rd4_research_graph_store.zh-CN.md",
+        "docs/internal/vnext_20260610/p33_capital_market_feedback_fixture_report.zh-CN.md"
+      ],
+      "local_tools_or_artifacts_probed": [
+        "relationship_graph_lookup via sec_agent.mcp_tool_registry.invoke_mcp_tool",
+        "data/workbench_private/research_data/product_intelligence_graph_v0_1.sqlite",
+        "data/workbench_private/research_data/research_graph_store_v0_1.sqlite",
+        "data/manifests/product_relationship_graph_summary_v0_1.json",
+        "data/manifests/product_intelligence_graph_summary_v0_1.json",
+        "data/manifests/research_graph_summary_v0_1.json",
+        "data/manifests/p33_capital_market_feedback_fixture_v0_1.json"
+      ],
+      "can_write_quality_material_under_node_constraints": false,
+      "can_prepare_candidate_evidence_under_node_constraints": true,
+      "codex_or_supervisor_supplement_used": false,
+      "graph_asset_summary": {
+        "product_relationship_graph": {
+          "company_count": 603,
+          "node_count": 8187,
+          "edge_count": 25251,
+          "parser_backed_relationship_edge_count": 741,
+          "boundary": "scope_or_hypothesis_only"
+        },
+        "product_intelligence_graph": {
+          "company_count": 603,
+          "node_count": 36046,
+          "edge_count": 71034,
+          "company_pack_count": 603,
+          "evidence_bundle_edge_count": 67343,
+          "company_pack_status_counts": {
+            "pass": 18,
+            "pass_with_gaps": 585
+          }
+        },
+        "research_graph_store": {
+          "node_count": 26538,
+          "edge_count": 100145,
+          "evidence_support_row_count": 113199,
+          "unsupported_edge_count": 0
+        },
+        "capital_market_feedback_fixture": {
+          "signal_count": 14706,
+          "graph_edge_count": 4221,
+          "judgment_material_count": 42,
+          "promotion_scope": "runtime_alignment_only"
+        }
+      },
+      "relationship_lookup_probe_summary": {
+        "case_focus_sets": [
+          "NVDA",
+          "DELL/SMCI/HPE",
+          "TSM/ASML/AMAT/LRCX/KLAC/MU",
+          "000660.KS/005930.KS/MU"
+        ],
+        "returned_status": "ok",
+        "max_relationships_returned_per_focus": 30,
+        "observed_graph_rows_per_focus": 568,
+        "key_issue": "product graph edge normalization often leaves related_ticker blank and focus filtering is too broad for writer-ready value-capture analysis"
+      },
+      "product_intelligence_case_pack_summary": {
+        "NVDA": {"status": "pass_with_gaps", "product_slot_count": 35, "product_kpi_exact_count": 0, "technical_spec_count": 4, "deployment_signal_count": 3, "supply_chain_signal_count": 3},
+        "AMD": {"status": "pass", "product_slot_count": 46, "product_kpi_exact_count": 29, "technical_spec_count": 8, "deployment_signal_count": 2, "supply_chain_signal_count": 4},
+        "DELL": {"status": "pass_with_gaps", "product_slot_count": 3, "product_kpi_exact_count": 0, "industry_operating_metric_count": 25, "deployment_signal_count": 3, "supply_chain_signal_count": 6},
+        "SMCI": {"status": "pass_with_gaps", "product_slot_count": 4, "product_kpi_exact_count": 12, "deployment_signal_count": 0, "supply_chain_signal_count": 1},
+        "HPE": {"status": "pass_with_gaps", "product_slot_count": 6, "product_kpi_exact_count": 18, "deployment_signal_count": 3, "supply_chain_signal_count": 1},
+        "TSM": {"status": "pass_with_gaps", "product_slot_count": 1, "product_kpi_exact_count": 15, "industry_operating_metric_count": 24, "deployment_signal_count": 6, "supply_chain_signal_count": 6},
+        "ASML": {"status": "pass", "product_slot_count": 21, "product_kpi_exact_count": 10, "industry_operating_metric_count": 25, "technical_spec_count": 14, "deployment_signal_count": 1, "supply_chain_signal_count": 6},
+        "AMAT": {"status": "pass_with_gaps", "product_slot_count": 4, "product_kpi_exact_count": 21, "supply_chain_signal_count": 8},
+        "LRCX": {"status": "pass_with_gaps", "product_slot_count": 1, "product_kpi_exact_count": 63, "industry_operating_metric_count": 5, "supply_chain_signal_count": 5},
+        "KLAC": {"status": "pass_with_gaps", "product_slot_count": 1, "product_kpi_exact_count": 4, "supply_chain_signal_count": 8},
+        "MU": {"status": "pass", "product_slot_count": 29, "product_kpi_exact_count": 18, "technical_spec_count": 3, "deployment_signal_count": 6, "supply_chain_signal_count": 8},
+        "000660.KS": {"status": "pass_with_gaps", "product_slot_count": 5, "product_kpi_exact_count": 2, "deployment_signal_count": 0, "supply_chain_signal_count": 3},
+        "005930.KS": {"status": "pass_with_gaps", "product_slot_count": 3, "product_kpi_exact_count": 12, "deployment_signal_count": 0, "supply_chain_signal_count": 3}
+      },
+      "research_quality_summary": {
+        "question_answerability": "partial",
+        "decision_surface_completeness": "partial",
+        "financial_and_operating_depth": "partial",
+        "capital_market_price_in_depth": "partial",
+        "source_grade_and_lineage": "pass",
+        "counter_thesis_and_turning_signals": "partial",
+        "writer_readiness": "partial"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "partial",
+        "tool_affordance_fit": "partial",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial"
+      },
+      "root_cause_notes": [
+        "Graph layer is currently a scope/evidence-support graph, not an investment decision graph.",
+        "relationship_graph_lookup does not yet expose product graph edges as crisp from_ticker/to_ticker/family/value-chain roles.",
+        "ProductIntelligenceGraph is a strong potential differentiator but lacks DecisionSurfaceGraphProjection.",
+        "Research Graph Store proves support rows but not value-capture direction, economic materiality or risk-transmission strength.",
+        "Capital-market feedback graph exists but is not a first-class source family for market_valuation_analyst or this case writer payload.",
+        "Without GraphToDecisionCellProjection, graph boundaries add caution prose instead of improving the report's main decision surface."
+      ],
+      "next_node": "node_05_fundamental_specialist"
+    },
+    {
+      "node_id": "node_05_fundamental_specialist",
+      "node_role": "Fundamental Specialist",
+      "status": "manual_run_recorded_partial_skill_good_input_pack_not_decision_cell_ready",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_05_fundamental_specialist_manual_run.zh-CN.md",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/prompts/skills/fundamental_analysis_skill_v0_2.md",
+        "src/sec_agent/prompts/skills/shared_evidence_boundary_skill_v0_1.md",
+        "src/sec_agent/specialist_llm.py",
+        "src/sec_agent/multi_agent_runtime.py",
+        "src/sec_agent/role_evidence_selector.py",
+        "src/sec_agent/agent_registry.py",
+        "docs/internal/vnext_20260610/p36_node_03_parser_evidence_operator_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_node_04_graph_relationship_value_capture_manual_run.zh-CN.md"
+      ],
+      "local_tools_or_artifacts_probed": [
+        "data/workbench_private/research_data/product_intelligence_graph_v0_1.sqlite",
+        "data/processed_private/ledger/sec_investment_coverage_mixed_with_8k_fy2023_2027_core_ledger.duckdb",
+        "data/processed_private/ledger/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027_core_ledger.duckdb",
+        "data/manifests/product_kpi_source_specific_verifier_summary_v0_1.json",
+        "data/manifests/industry_operating_metric_slot_summary_v0_1.json"
+      ],
+      "probe_boundary": "local probes reconstruct upstream material that should have been available to the specialist; they are not Fundamental Specialist runtime tool calls and are not external source supplement",
+      "can_write_quality_material_under_node_constraints": true,
+      "can_write_complete_case_under_node_constraints": false,
+      "can_prepare_candidate_evidence_under_node_constraints": true,
+      "codex_or_supervisor_supplement_used": false,
+      "fundamental_runtime_contract_summary": {
+        "tool_permission": "inspect_only",
+        "allowed_tools": [],
+        "skill_quality": "strong",
+        "core_input_dependency": "fundamental_statement_pack_and_fundamental_peer_statement_panel_from_state_rows",
+        "key_engineering_issue": "ProductIntelligenceGraph and operating metrics only help if upstream promotes them into product_evidence_rows/context_rows with runtime_fact_allowed/runtime_context_taxonomy_only and maps them to decision cells"
+      },
+      "manual_memolet_summary": {
+        "observations_possible": [
+          "Accelerator: NVDA revenue/gross-margin exact ledger rows plus AMD Data Center revenue rows support strong revenue/profit-quality direction, but not Data Center-only margin or export-control adjusted profit pool.",
+          "Server OEM: DELL/HPE/SMCI rows support server revenue exposure and demand-proxy framing; SMCI net sales/gross profit rows support low-margin risk direction, but not AI server-only margin bridge.",
+          "Foundry/Packaging: TSM HPC revenue-mix rows support AI/HPC exposure; CoWoS pricing, capacity, allocation and packaging profit pool remain absent.",
+          "HBM/Memory: MU/SK hynix/Samsung rows support memory/semiconductor segment exposure; HBM-only revenue and gross margin remain absent.",
+          "Semicap: AMAT/LRCX/KLAC rows support equipment peer baseline; AI-specific bookings/backlog, China/export mix, and capex digestion timing remain absent."
+        ],
+        "unsupported_or_missing_confirmations": [
+          "AI server-only gross margin and GPU pass-through economics",
+          "HBM-only revenue, gross margin, capacity and allocation",
+          "CoWoS capacity, pricing and allocation",
+          "Semicap AI-specific bookings/backlog and export-sensitive tool mix",
+          "Ticker-level price-in, ownership crowding and valuation positioning"
+        ]
+      },
+      "data_quality_probe_summary": {
+        "product_kpi_promotable_metric_count": 12,
+        "product_kpi_promotable_ticker_count": 1,
+        "industry_operating_runtime_row_count": 1923,
+        "industry_operating_rejection_count": 7876,
+        "sanity_risks": [
+          "AMD 8-K rows can mix revenue metric labels with percent change values.",
+          "MU gross margin rows can return dollar amounts rather than margin percentage.",
+          "AMAT/KLAC rows can mix headline gross margin with change/delta rows.",
+          "PIG product/operating rows may duplicate segment values or lack period-role normalization."
+        ]
+      },
+      "research_quality_summary": {
+        "question_answerability": "partial",
+        "decision_surface_completeness": "partial",
+        "financial_and_operating_depth": "partial",
+        "capital_market_price_in_depth": "fail_for_this_node",
+        "source_grade_and_lineage": "pass_with_sanity_caveat",
+        "counter_thesis_and_turning_signals": "partial",
+        "writer_readiness": "partial"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "pass_partial",
+        "tool_affordance_fit": "pass_for_role_boundary",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial"
+      },
+      "root_cause_notes": [
+        "Fundamental Specialist prompt and skill are not the main weak point; the node knows how to reason about revenue, margin, cash flow, capex and peer comparability.",
+        "The missing link is DecisionSurfaceContract to EvidenceOperator to ProductIntelligenceGraph/exact-ledger/operating-metric to FundamentalStatementPack projection.",
+        "ProductIntelligenceGraph has useful business-line rows, but they need promotion status, sanity checks and decision-cell mapping before fundamental can consume them reliably.",
+        "Product KPI verifier is safe but too sparse; industry operating metrics are richer but need headline selector, unit sanity and row-label sanity before writer use.",
+        "If forced to answer the full case under current input constraints, the specialist will naturally produce missing confirmations and boundary prose."
+      ],
+      "next_node": "node_06_industry_product_specialist"
+    },
+    {
+      "node_id": "node_06_industry_product_specialist",
+      "node_role": "Product / Industry Specialist",
+      "status": "manual_run_recorded_partial_pig_autoload_useful_selector_not_decision_surface_balanced",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_06_industry_product_specialist_manual_run.zh-CN.md",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/prompts/skills/product_technology_analysis_skill_v0_1.md",
+        "src/sec_agent/prompts/skills/industry_supply_chain_analysis_skill_v0_2.md",
+        "src/sec_agent/product_intelligence_runtime.py",
+        "src/sec_agent/multi_agent_runtime.py",
+        "src/sec_agent/specialist_llm.py"
+      ],
+      "local_tools_or_artifacts_probed": [
+        "product_intelligence_context_rows_for_state over data/workbench_private/research_data/product_intelligence_graph_v0_1.sqlite",
+        "build_agent_data_view('product_technology_analyst', synthetic minimal state)",
+        "build_agent_data_view('industry_supply_chain_analyst', synthetic minimal state)"
+      ],
+      "probe_boundary": "local probes simulate runtime data-view behavior; they are not specialist tool calls and are not external source supplement",
+      "can_write_quality_material_under_node_constraints": true,
+      "can_write_complete_case_under_node_constraints": false,
+      "codex_or_supervisor_supplement_used": false,
+      "pig_context_probe_summary": {
+        "ticker_count": 13,
+        "row_count": 592,
+        "by_source_class": {
+          "product_intelligence_product_slot": 76,
+          "product_intelligence_exact_product_kpi": 112,
+          "product_intelligence_product_profile_or_spec": 155,
+          "product_intelligence_relationship_edge": 174,
+          "official_customer_deployment_event": 24,
+          "product_intelligence_industry_operating_metric": 41,
+          "product_intelligence_gap": 10
+        },
+        "by_promotion": {
+          "runtime_context_taxonomy_only": 231,
+          "runtime_fact_allowed": 153,
+          "context_or_lead_available": 198,
+          "gap_exposed_not_fallback": 10
+        }
+      },
+      "product_data_view_probe_summary": {
+        "bounded_row_count": 48,
+        "by_source_class": {
+          "product_intelligence_product_slot": 35,
+          "product_intelligence_product_profile_or_spec": 7,
+          "product_intelligence_relationship_edge": 5,
+          "product_intelligence_gap": 1
+        },
+        "product_spec_pack_status": "pass",
+        "product_spec_pack_input_row_count": 592,
+        "product_spec_pack_product_kpi_ref_count": 32,
+        "product_spec_pack_customer_deployment_signal_count": 32,
+        "product_spec_pack_supply_chain_signal_count": 29,
+        "product_intelligence_pack_ref_pack_count": 8,
+        "product_evidence_pack_ref_pack_count": 8,
+        "key_issue": "final bounded rows are taxonomy-heavy and may omit exact product KPI rows despite pack summary containing product_kpi_refs"
+      },
+      "industry_data_view_probe_summary": {
+        "bounded_row_count": 48,
+        "by_source_class": {
+          "product_intelligence_product_profile_or_spec": 11,
+          "product_intelligence_relationship_edge": 37
+        },
+        "by_ticker": {
+          "000660.KS": 25,
+          "005930.KS": 23
+        },
+        "key_issue": "industry rows skew to memory relationship rows and do not cover accelerator/server/foundry/semicap chains in the minimal state probe"
+      },
+      "manual_memolet_summary": {
+        "observations_possible": [
+          "Accelerator: NVDA/AMD product taxonomy and AMD Data Center product revenue rows support accelerator as real demand carrier, but not units/ASP/allocation/margin.",
+          "Server OEM: DELL/SMCI/HPE product slots support AI server/rack OEM role and demand-proxy framing, but not AI server-only margin or GPU pass-through.",
+          "Foundry/Packaging: TSM HPC mix and 3DFabric context support foundry/advanced-packaging exposure and bottleneck lead, but not CoWoS capacity/pricing/allocation.",
+          "HBM/Memory: MU/SK hynix/Samsung memory rows and component-input relationships support bottleneck hypothesis, but not HBM-only economics.",
+          "Semicap: ASML/AMAT/LRCX/KLAC product slots and enables-production edges support upstream tooling read-through, but not AI-specific backlog/bookings/export mix."
+        ],
+        "unsupported_or_missing_confirmations": [
+          "GPU units, ASP, allocation and margin",
+          "AI server-only revenue/gross margin and rack backlog",
+          "CoWoS capacity, pricing, allocation and packaging margin",
+          "HBM-only revenue, gross margin, yield and customer split",
+          "Semicap AI-specific bookings/backlog and export-control exposure"
+        ]
+      },
+      "research_quality_summary": {
+        "question_answerability": "partial",
+        "decision_surface_completeness": "partial",
+        "financial_and_operating_depth": "partial",
+        "capital_market_price_in_depth": "fail_for_this_node",
+        "source_grade_and_lineage": "pass_with_selector_caveat",
+        "counter_thesis_and_turning_signals": "partial",
+        "writer_readiness": "partial"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "partial",
+        "tool_affordance_fit": "partial",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial"
+      },
+      "root_cause_notes": [
+        "Product and Industry skills are directionally strong; they know how to separate exact KPI facts from taxonomy, deployment, public proxy and relationship hypotheses.",
+        "PIG autoload is a real differentiator, but bounded-row selection and pack compacting are not decision-surface balanced.",
+        "Product Specialist final rows are product-slot heavy and can omit exact product KPI rows even when ProductSpecPack summary has product KPI refs.",
+        "Industry Specialist final rows can be dominated by one chain, here memory, leaving accelerator/server/foundry/semicap under-covered.",
+        "template_context_edge filtering is boundary-correct, but upstream relationship graph must then provide concrete relationship rows for server/foundry/semicap chains.",
+        "The next repair needs cell-level ProductIndustryDecisionSurfaceProjection rather than more generic product rows."
+      ],
+      "next_node": "node_07_market_capital_price_in_specialist"
+    },
+    {
+      "node_id": "node_07_market_capital_price_in_specialist",
+      "node_role": "Market / Capital / Price-in Specialist",
+      "status": "manual_run_recorded_partial_market_snapshot_available_capital_feedback_not_wired_to_price_in_surface",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_07_market_capital_price_in_specialist_manual_run.zh-CN.md",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/prompts/skills/market_valuation_analysis_skill_v0_2.md",
+        "src/sec_agent/agent_registry.py",
+        "src/sec_agent/multi_agent_runtime.py",
+        "src/sec_agent/capital_macro_pack.py",
+        "data/manifests/p33_capital_market_feedback_fixture_v0_1.json"
+      ],
+      "local_tools_or_artifacts_probed": [
+        "market evidence pack data/processed_private/market/evidence_packs/20260624_market_yahoo_chart_603_3m_v1_3m_market_evidence.jsonl",
+        "valuation-enriched market evidence pack data/processed_private/market/evidence_packs/20260528_market_yahoo_chart_full78_3m_fmp_valuation_v1_3m_market_evidence.jsonl",
+        "capital ownership rows Z:/FIN_Insight_Agent_data/processed_private/capital_macro_source_adapters/capital_macro_source_adapter_v0_1/capital_ownership_rows.jsonl",
+        "build_agent_data_view('market_valuation_analyst', synthetic minimal state)",
+        "build_capital_macro_pack(synthetic minimal state)"
+      ],
+      "probe_boundary": "local probes simulate supervisor/runtime data-view behavior; they are not market specialist tool calls, not writer self-sourcing, and not external source supplement",
+      "can_write_quality_material_under_node_constraints": true,
+      "can_write_complete_case_under_node_constraints": false,
+      "codex_or_supervisor_supplement_used": false,
+      "market_snapshot_probe_summary": {
+        "case_ticker_count": 13,
+        "full_coverage_pack": "20260624_market_yahoo_chart_603_3m_v1",
+        "full_coverage_pack_rows_for_case": 13,
+        "full_coverage_pack_missing_valuation_fields_for_all_case_tickers": [
+          "market_cap",
+          "enterprise_value",
+          "pe_ttm",
+          "ev_sales_ttm",
+          "ev_ebitda_ttm"
+        ],
+        "valuation_enriched_pack": "20260528_market_yahoo_chart_full78_3m_fmp_valuation_v1",
+        "valuation_enriched_case_tickers": [
+          "NVDA",
+          "AMD",
+          "AMAT",
+          "MU"
+        ],
+        "valuation_rows_with_multiples": {
+          "NVDA": {
+            "pe_ttm": 32.29196732095756,
+            "ev_sales_ttm": 20.27637617443223,
+            "as_of_date": "2026-05-27"
+          },
+          "AMD": {
+            "pe_ttm": 161.76661110001996,
+            "ev_sales_ttm": 21.58165114540503,
+            "as_of_date": "2026-05-27"
+          }
+        }
+      },
+      "capital_ownership_probe_summary": {
+        "ownership_or_capital_rows_for_case": 154,
+        "covered_tickers": {
+          "NVDA": 59,
+          "AMD": 23,
+          "DELL": 10,
+          "SMCI": 6,
+          "HPE": 5,
+          "ASML": 5,
+          "AMAT": 9,
+          "LRCX": 4,
+          "KLAC": 16,
+          "MU": 17
+        },
+        "missing_tickers": [
+          "TSM",
+          "000660.KS",
+          "005930.KS"
+        ],
+        "capital_macro_pack_probe": {
+          "status": "pass",
+          "input_row_count": 154,
+          "capital_structure_count": 8,
+          "debt_instrument_count": 16,
+          "credit_facility_count": 22,
+          "ownership_position_count": 24,
+          "boundary": "13F rows are lagged ownership context only, not realtime flow or complete position proof"
+        }
+      },
+      "p33_capital_feedback_probe_summary": {
+        "signal_count": 14706,
+        "graph_edge_count": 4221,
+        "judgment_material_count": 42,
+        "case_covered_tickers_with_7_roles": [
+          "NVDA",
+          "AMD",
+          "DELL",
+          "ASML",
+          "000660.KS",
+          "005930.KS"
+        ],
+        "case_missing_tickers": [
+          "SMCI",
+          "HPE",
+          "TSM",
+          "AMAT",
+          "LRCX",
+          "KLAC",
+          "MU"
+        ],
+        "boundary": "P33 capital feedback is runtime-alignment fixture material and is not consumed by current market_valuation_analyst"
+      },
+      "market_data_view_probe_summary": {
+        "input_market_rows": 17,
+        "input_capital_or_ownership_rows": 154,
+        "bounded_row_count": 16,
+        "bounded_by_source_family": {
+          "market_snapshot": 16
+        },
+        "has_capital_macro_pack": false,
+        "selected_source_families": [
+          "market_snapshot"
+        ],
+        "context_only_source_families": [
+          "market_snapshot"
+        ],
+        "required_claim_slots_count": 1,
+        "key_issue": "market_valuation_analyst only receives market_snapshot rows; capital/ownership rows and capital_macro_pack are not present, and nested market fields are compressed into summary text"
+      },
+      "manual_memolet_summary": {
+        "observations_possible": [
+          "AI/Semis case tickers have broad non-real-time price-action coverage; AMD, DELL, MU, SK hynix and several semicap names show strong 3M/YTD moves and high volatility in the 2026-06-24 snapshot.",
+          "Server OEM price action can support market-attention and volatility-risk context, but cannot prove AI server margin quality.",
+          "HBM/memory names show momentum and volatility context, but market rows cannot prove HBM-only economics.",
+          "Accelerator price-in cannot be inferred from NVDA alone; AMD's relative move and valuation-enriched row indicate expectation/catch-up risk.",
+          "AMD's 2026-05-27 valuation-enriched row supports a bounded valuation-premium observation, but it is non-real-time and not a complete peer comp."
+        ],
+        "unsupported_or_missing_confirmations": [
+          "current prices, targets or investment recommendations",
+          "realtime fund flows, current buying pressure or complete holder concentration",
+          "complete crowding metrics from short interest, options positioning, borrow, flows or consensus revision",
+          "valuation bridge by five-chain segment",
+          "using price action to prove revenue quality or margin quality"
+        ]
+      },
+      "research_quality_summary": {
+        "question_answerability": "partial",
+        "decision_surface_completeness": "partial",
+        "financial_and_operating_depth": "fail_for_this_node",
+        "capital_market_price_in_depth": "partial",
+        "source_grade_and_lineage": "pass_with_boundary",
+        "counter_thesis_and_turning_signals": "partial",
+        "writer_readiness": "partial"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "partial",
+        "tool_affordance_fit": "fail_for_price_in",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial"
+      },
+      "root_cause_notes": [
+        "Market Valuation skill is boundary-correct, but the registered agent is effectively a market snapshot specialist rather than a capital/price-in analyst.",
+        "Market snapshot rows cover all case tickers for price action, but valuation multiples are sparse and not unified with the full-coverage pack.",
+        "CapitalMacroPack can be built from case rows, and P33 capital feedback has meaningful bounded judgment material, but neither is wired into the market specialist.",
+        "_bounded_row() compresses nested market_reaction, valuation_context and event_window fields into summary text, reducing structured readability and auditability.",
+        "The next repair needs MarketCapitalDecisionSurfaceProjection and a price-in/crowding/capital-risk cell schema, not more generic market rows."
+      ],
+      "next_node": "node_08_risk_counterevidence_specialist"
+    },
+    {
+      "node_id": "node_08_risk_counterevidence_specialist",
+      "node_role": "Risk / Counterevidence Specialist",
+      "status": "manual_run_recorded_partial_risk_skill_good_projection_not_risk_cell_specific",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_08_risk_counterevidence_specialist_manual_run.zh-CN.md",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/prompts/skills/risk_counterevidence_skill_v0_2.md",
+        "src/sec_agent/prompts/skills/shared_evidence_boundary_skill_v0_1.md",
+        "src/sec_agent/agent_registry.py",
+        "src/sec_agent/multi_agent_runtime.py",
+        "src/sec_agent/specialist_llm.py",
+        "src/sec_agent/dimension_evidence_portfolio.py",
+        "src/sec_agent/capital_macro_pack.py"
+      ],
+      "local_tools_or_artifacts_probed": [
+        "build_agent_data_view('risk_counterevidence_analyst', minimal synthetic state with market/capital/gap rows)",
+        "build_agent_data_view('risk_counterevidence_analyst', synthetic state with supervisor-projected PIG product_evidence_rows)",
+        "product_intelligence_context_rows_for_state over ProductIntelligenceGraph",
+        "market evidence packs used in node 07",
+        "capital ownership rows used in node 07"
+      ],
+      "probe_boundary": "local probes simulate runtime data-view behavior and supervisor-projected variants; they are not risk specialist tool calls, not writer self-sourcing, and not external source supplement",
+      "can_write_quality_material_under_node_constraints": true,
+      "can_write_complete_case_under_node_constraints": false,
+      "codex_or_supervisor_supplement_used": false,
+      "risk_skill_summary": {
+        "direction": "strong",
+        "ai_semis_required_risk_menu": [
+          "capex digestion",
+          "export control",
+          "customer concentration",
+          "margin dilution",
+          "supply bottleneck",
+          "pricing pressure",
+          "product or deployment delay",
+          "missing but retrievable evidence"
+        ],
+        "key_strength": "skill requires supported risks, unsupported thesis components, direct conflicts, and judgment_candidates rather than a generic risk list"
+      },
+      "runtime_data_view_summary": {
+        "tool_permission": "inspect_only",
+        "allowed_tools": [],
+        "allowed_data_views": [
+          "bounded_rows",
+          "coverage_summary"
+        ],
+        "source_families": [
+          "primary_sec_filing",
+          "company_authored_unaudited_sec_filing",
+          "company_product_evidence_graph",
+          "public_source_context",
+          "live_public_web_context",
+          "milvus_semantic",
+          "market_snapshot",
+          "industry_snapshot"
+        ],
+        "capital_macro_pack_attached": true,
+        "pig_autoload_in_risk_data_view": false,
+        "relationship_rows_auto_appended": false
+      },
+      "prompt_projection_summary": {
+        "risk_prompt_selector_hardcoded_requirement_ids": [
+          "req_dell_margin_quality",
+          "req_hyperscaler_capex",
+          "req_supply_chain",
+          "req_customer_deployment"
+        ],
+        "issue": "these are old P33/P34 required ids, not P36 five-chain risk-cell ids",
+        "capital_macro_pack_risk_included_sections": [
+          "debt_instruments",
+          "macro_drivers",
+          "rejected_objects"
+        ],
+        "capital_macro_pack_risk_excluded_sections": [
+          "ownership_positions",
+          "insider_transactions",
+          "company_exposure_edges",
+          "vertical_official_objects"
+        ]
+      },
+      "data_view_probe_minimal_no_product_rows": {
+        "input_market_rows": 17,
+        "input_capital_or_ownership_rows": 154,
+        "input_synthetic_gap_refs": 5,
+        "bounded_row_count": 16,
+        "bounded_by_source_family": {
+          "market_snapshot": 16
+        },
+        "has_capital_macro_pack": true,
+        "bounded_gap_refs": 5,
+        "key_issue": "risk node can see market rows, capital pack summary, and gap refs, but no product/industry/supply-chain bounded rows unless upstream projects them"
+      },
+      "data_view_probe_with_supervisor_projected_product_rows": {
+        "input_product_evidence_rows": 592,
+        "bounded_row_count": 16,
+        "bounded_by_source_family": {
+          "company_product_evidence_graph": 12,
+          "live_public_web_context": 1,
+          "market_snapshot": 3
+        },
+        "bounded_by_metric": {
+          "product revenue": 5,
+          "revenue mix percent": 4,
+          "segment revenue": 1,
+          "revenue": 1,
+          "product_or_business_line_profile": 1,
+          "product_or_service_profile": 1,
+          "unknown": 3
+        },
+        "key_issue": "rows become richer but are still not risk-specific; several rows are product/revenue slots rather than direct risks, conflicts, or falsifiers"
+      },
+      "manual_memolet_summary": {
+        "observations_possible": [
+          "Server OEM margin dilution is the top unsupported thesis component because server/product/market rows do not prove AI server-only gross margin or GPU pass-through economics.",
+          "Price-in risk can be supported as bounded context from strong price action and volatility, especially DELL, AMD, MU, SK hynix, semicap beta names and SMCI drawdown/volatility.",
+          "HBM and CoWoS profit-pool theses lack company-level HBM-only economics and CoWoS capacity/pricing/allocation rows.",
+          "Semicap last-baton and export-control risk remain material but unsupported without AI-specific backlog/bookings and China/export mix rows.",
+          "Capex digestion cannot be fully stressed in this node without hyperscaler capex/revenue and customer spending capacity rows."
+        ],
+        "unsupported_or_missing_confirmations": [
+          "AI server-only margin and BOM pass-through bridge",
+          "HBM-only revenue/margin/yield/allocation",
+          "CoWoS capacity/pricing/allocation",
+          "AI-specific semicap backlog/bookings and export-control mix",
+          "complete price-in/crowding evidence from ownership, short, options, borrow, flow or revision data"
+        ]
+      },
+      "research_quality_summary": {
+        "question_answerability": "partial",
+        "decision_surface_completeness": "partial",
+        "financial_and_operating_depth": "partial",
+        "capital_market_price_in_depth": "partial",
+        "source_grade_and_lineage": "pass",
+        "counter_thesis_and_turning_signals": "partial",
+        "writer_readiness": "partial"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "pass_partial",
+        "tool_affordance_fit": "partial",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial"
+      },
+      "root_cause_notes": [
+        "Risk skill is directionally strong and can create real counter-thesis material, but the node does not receive a P36 risk-cell projection.",
+        "Risk data view does not autoload PIG and does not auto-append relationship rows, so supply-chain and product conflicts depend on upstream projection.",
+        "Risk prompt selection still contains old P33/P34 required ids instead of current five-chain risk dimensions.",
+        "CapitalMacroPack risk projection excludes ownership_positions, weakening price-in and crowding analysis.",
+        "The next repair needs RiskCounterevidenceDecisionSurfaceProjection and a RiskMatrixPack before writer."
+      ],
+      "next_node": "node_09_aggregate_judgment_planner"
+    },
+    {
+      "node_id": "node_09_aggregate_judgment_planner",
+      "node_role": "Aggregate / Judgment Planner / MemoLogicPlan",
+      "status": "manual_run_recorded_partial_generic_judgment_plan_ready_but_no_case_specific_decision_surface_adjudication",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_09_aggregate_judgment_planner_manual_run.zh-CN.md",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/multi_agent_contracts.py",
+        "src/sec_agent/memo_logic_plan.py",
+        "src/sec_agent/langgraph_orchestrator.py",
+        "src/sec_agent/prompts/skills/judgment_plan_aggregation_skill_v0_1.md",
+        "scripts/eval_multi_agent/run_p33_aggregate_judgment_plan_from_specialist_checkpoint.py",
+        "tests/test_multi_agent_judgment_memo_verifier.py",
+        "tests/test_memo_logic_plan.py",
+        "tests/test_p33_aggregate_judgment_plan_runner.py"
+      ],
+      "local_tools_or_artifacts_probed": [
+        "aggregate_specialist_judgment_plan with hand-built P36-style specialist memolets",
+        "verify_specialist_outputs_for_memo over the synthetic judgment plan",
+        "attach_judgment_state over the synthetic judgment plan",
+        "build_memo_logic_plan over the synthetic judgment_state and required_question_items",
+        "second probe with forced chain_* analysis_dimension values"
+      ],
+      "probe_boundary": "local deterministic probes use handcrafted memolets to test current aggregation contracts; they are not paid LLM calls, not true runtime full-chain, not external source supplement, and not writer self-sourcing",
+      "can_write_quality_material_under_node_constraints": true,
+      "can_write_complete_case_decision_surface_under_node_constraints": false,
+      "codex_or_supervisor_supplement_used": false,
+      "runtime_capability_summary": {
+        "supported_claims_preserved": true,
+        "unsupported_claims_excluded_from_writer": true,
+        "conflicts_preserved": true,
+        "memo_thesis_plan_generated": true,
+        "memo_thesis_pack_generated": true,
+        "thesis_driver_pack_generated": true,
+        "judgment_cards_generated": true,
+        "thesis_path_generated": true,
+        "memo_logic_plan_writer_forbidden_tools": [
+          "database_query",
+          "live_web_snapshot",
+          "retrieval",
+          "new_fact_generation"
+        ],
+        "key_strength": "aggregate layer is a real writer-safety and thesis-path layer, not just a summary concatenator"
+      },
+      "probe_a_generic_dimension_summary": {
+        "input_shape": "handcrafted specialist memolets from fundamental, product, industry, market and risk roles",
+        "judgment_status": "partial",
+        "memo_writer_allowed": true,
+        "verification_status": "pass",
+        "supported_claim_count": 9,
+        "unsupported_claim_count": 1,
+        "memo_outline_supported_slots": [
+          "thesis",
+          "fundamentals",
+          "product_technology",
+          "industry_relationship",
+          "market_valuation",
+          "risk_counterevidence"
+        ],
+        "thesis_driver_dimension_ids": [
+          "fundamentals",
+          "product_and_production",
+          "capital_and_financing",
+          "competition_and_market_position",
+          "industry_supply_chain",
+          "risk_and_counterevidence",
+          "evidence_gap"
+        ],
+        "required_item_answer_plan_preserved": true,
+        "memo_logic_validation_status": "fail",
+        "memo_logic_validation_errors": [
+          "product_section_missing_product_reasoning_frame"
+        ],
+        "key_issue": "good ClaimCards produce a safe generic writer plan, but not a five-chain evidence-quality matrix"
+      },
+      "probe_b_forced_chain_dimension_summary": {
+        "input_shape": "handcrafted ClaimCards with analysis_dimension values such as chain_accelerator, chain_server_oem, chain_foundry_packaging, chain_hbm and chain_semicap",
+        "judgment_status": "pass",
+        "memo_writer_allowed": true,
+        "memo_logic_validation_status": "pass",
+        "forced_chain_dimensions_preserved": false,
+        "actual_dimension_sections": [
+          "product_and_production",
+          "capital_and_financing",
+          "competition_and_market_position",
+          "industry_supply_chain",
+          "risk_and_counterevidence",
+          "evidence_gap"
+        ],
+        "key_issue": "_analysis_dimension_for_claim and depth annotation collapse case-specific chain dimensions into generic analysis dimensions"
+      },
+      "research_quality_summary": {
+        "question_answerability": "partial",
+        "decision_surface_completeness": "fail_for_case_specific_surface",
+        "financial_and_operating_depth": "partial_depends_on_upstream_claims",
+        "capital_market_price_in_depth": "partial_depends_on_upstream_claims",
+        "source_grade_and_lineage": "pass_for_claim_boundary",
+        "counter_thesis_and_turning_signals": "partial",
+        "writer_readiness": "partial"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "partial",
+        "tool_affordance_fit": "pass_for_writer_safety",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial_until_decision_surface_pack_exists"
+      },
+      "root_cause_notes": [
+        "Aggregate/JudgmentPlanner is organized around generic memo slots and generic analysis dimensions, not the user's five-chain decision cells.",
+        "Current ClaimCard contracts do not preserve first-class decision_surface_id, chain_segment_id, decision_cell_id, evidence_quality_grade, real_demand_vs_proxy, value_capture_rank, numeric_sanity_status or cell_conclusion fields.",
+        "Even forced chain_* analysis_dimension values are normalized into generic product/capital/competition/industry/risk dimensions.",
+        "MemoLogicPlan can carry required item answer plans, but it does not adjudicate required items into a report-first matrix.",
+        "Product reasoning frame is required for product sections but is not automatically built from PIG / DecisionSurfaceProjection in this path.",
+        "The next repair needs a DecisionSurfaceAdjudicator and DecisionSurfacePack between aggregate judgment and MemoLogicPlan."
+      ],
+      "next_node": "node_10_writer_report_generation_manual_run"
+    },
+    {
+      "node_id": "node_10_writer_report_generation_manual_run",
+      "node_role": "Writer / Report Generation",
+      "status": "manual_run_recorded_runtime_only_bounded_supervisor_augmented_report_written",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_10_writer_report_generation_manual_run.zh-CN.md",
+      "report_refs": [
+        "docs/internal/vnext_20260610/p36_ai_infra_manual_writer_research_report.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_codex_as_paid_model_dogfood_recap_report.zh-CN.md"
+      ],
+      "supervisor_supplement_ledger_ref": "docs/project_os/p36_supervisor_source_supplement_ledger_v0_1.json",
+      "runtime_files_or_prompts_read": [
+        "docs/internal/vnext_20260610/p36_node_01_research_lead_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_node_02_retrieval_rag_sql_source_route_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_node_03_parser_evidence_operator_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_node_04_graph_relationship_value_capture_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_node_05_fundamental_specialist_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_node_06_industry_product_specialist_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_node_07_market_capital_price_in_specialist_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_node_08_risk_counterevidence_specialist_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_node_09_aggregate_judgment_planner_manual_run.zh-CN.md",
+        "docs/project_os/p36_manual_full_chain_node_ledger_v0_1.json"
+      ],
+      "web_or_public_sources_opened_by_supervisor": [
+        "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-first-quarter-fiscal-2027",
+        "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~05~dell-technologies-delivers-first-quarter-fiscal-2027-financial-results.htm",
+        "https://ir.supermicro.com/news/news-details/2026/Supermicro-Announces-Third-Quarter-Fiscal-Year-2026-Financial-Results/default.aspx",
+        "https://investors.hpe.com/~/media/Files/H/HP-Enterprise-IR/documents/q2-2026/q2-2026-earnings-presentation.pdf",
+        "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-04/e85216eea8dccd8ca75d7e040e8d57be3ccd618b/1Q26%20EarningsRelease.pdf",
+        "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-04/a7e3abe65a3fbc342aa55f9f53a5490dd621c1ac/1Q26%20Presentation%20%28E%29.pdf",
+        "https://www.prnewswire.com/news-releases/sk-hynix-announces-1q26-financial-results-302750959.html",
+        "https://news.samsung.com/global/samsung-electronics-announces-first-quarter-2026-results",
+        "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+        "https://www.asml.com/en/news/press-releases/2026/q1-2026-financial-results",
+        "https://ir.appliedmaterials.com/news-releases/news-release-details/applied-materials-announces-second-quarter-2026-results",
+        "https://www.prnewswire.com/news-releases/lam-research-corporation-reports-financial-results-for-the-quarter-ended-march-29-2026-302750629.html",
+        "https://www.prnewswire.com/news-releases/kla-corporation-reports-fiscal-2026-third-quarter-results-302757602.html",
+        "https://www.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china"
+      ],
+      "writer_boundary": {
+        "writer_runtime_may_self_source": false,
+        "runtime_only_writer_result": "bounded_partial_report_possible_complete_decision_surface_not_supported",
+        "supervisor_augmented_report_written": true,
+        "supervisor_supplement_rows_are_runtime_rows": false
+      },
+      "runtime_only_assessment": {
+        "can_write_quality_material_under_node_constraints": true,
+        "can_write_complete_case_decision_surface_under_node_constraints": false,
+        "key_reason": "Node01-09 provide partial judgments and strong boundaries, but no complete five-chain DecisionSurfacePack, no HBM/server/foundry/semicap official source panel as accepted runtime rows, and no market/capital price-in surface."
+      },
+      "supervisor_supplement_summary": {
+        "source_row_count": 14,
+        "official_or_government_grade_count": 11,
+        "official_pdf_count": 3,
+        "wire_official_mirror_count": 3,
+        "key_segments_supplemented": [
+          "accelerator",
+          "server_oem",
+          "foundry_packaging",
+          "hbm",
+          "semicap",
+          "export_control"
+        ],
+        "runtime_ingestion_status": "not_runtime_ingested"
+      },
+      "research_report_summary": {
+        "investment_conclusion": "AI infrastructure demand is real, but profit capture is uneven; HBM and TSMC/advanced packaging look most like bottleneck rent, NVIDIA has the hardest revenue and gross-margin facts but concentrated export/capex/price-in risk, server OEMs have real revenue with margin/cash-conversion dispersion, and semicap is high-quality but lagged capex read-through.",
+        "ranking": [
+          "HBM",
+          "Foundry/Packaging",
+          "Accelerator",
+          "Server OEM",
+          "Semicap"
+        ],
+        "major_runtime_boundary": "The final report quality depends on supervisor source supplement, not current runtime writer input."
+      },
+      "research_quality_summary": {
+        "question_answerability": "pass_with_supervisor_boundary",
+        "decision_surface_completeness": "pass_for_manual_report_not_runtime",
+        "financial_and_operating_depth": "pass_partial",
+        "capital_market_price_in_depth": "partial",
+        "source_grade_and_lineage": "pass_with_supplement_ledger",
+        "counter_thesis_and_turning_signals": "pass_partial",
+        "writer_readiness": "runtime_partial_supervisor_augmented_pass"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "partial_runtime_pass_manual_report_pass",
+        "tool_affordance_fit": "pass_for_writer_boundary",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial",
+        "product_value_over_single_agent": "partial_until_supplement_becomes_runtime"
+      },
+      "root_cause_notes": [
+        "Writer no-source boundary is correct; the failure is upstream absence of DecisionSurfacePack and source-hunter/parser-promoted cell rows.",
+        "The public sources needed for the report are reachable, but current runtime does not turn them into accepted source-route/parser/evidence rows.",
+        "Supervisor can write a stronger report, but that proves the product target shape, not FIN runtime capability.",
+        "Next repair must convert supplement ledger rows into source-route attempts, parser fixtures, normalized runtime rows, and Workbench cell review."
+      ],
+      "next_node": "node_11_verifier_workbench_review"
+    },
+    {
+      "node_id": "node_11_verifier_workbench_review",
+      "node_role": "Verifier / Workbench Review",
+      "status": "manual_review_recorded_runtime_bounded_supervisor_boundary_preserved_workbench_cell_surface_missing",
+      "output_ref": "docs/internal/vnext_20260610/p36_node_11_verifier_workbench_review_manual_run.zh-CN.md",
+      "review_artifact_ref": "docs/project_os/p36_verifier_workbench_review_v0_1.json",
+      "runtime_files_or_prompts_read": [
+        "src/sec_agent/memo_llm.py",
+        "src/sec_agent/p33_workbench_artifact_review_surface_fixture.py",
+        "src/sec_agent/r53_r60_workbench_frontdoor_drilldown.py",
+        "apps/workbench/backend/app.py",
+        "tests/test_multi_agent_judgment_memo_verifier.py",
+        "tests/test_multi_agent_memo_llm_repair.py",
+        "tests/test_p33_workbench_artifact_review_surface_fixture.py",
+        "tests/test_workbench_backend.py",
+        "docs/internal/vnext_20260610/p36_node_10_writer_report_generation_manual_run.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_ai_infra_manual_writer_research_report.zh-CN.md",
+        "docs/internal/vnext_20260610/p36_codex_as_paid_model_dogfood_recap_report.zh-CN.md",
+        "docs/project_os/p36_supervisor_source_supplement_ledger_v0_1.json"
+      ],
+      "local_tools_or_artifacts_probed": [
+        "manual code review of verifier minimal projection and bounded answer policy",
+        "manual code review of S6/P33 Workbench claim/gap/artifact/review-action surfaces",
+        "manual review of Node10 report and supplement boundary"
+      ],
+      "probe_boundary": "manual review only; no verifier runtime replay, no Workbench runtime replay, no paid LLM, no true runtime full-chain, no model comparison, no case expansion, and no release eval",
+      "review_results": {
+        "runtime_only_writer": "pass_as_bounded_partial_only_fail_as_complete_report",
+        "supervisor_augmented_report": "pass_for_manual_human_reading_with_supplement_boundary_fail_as_runtime_capability",
+        "verifier_surface": "partial_claim_ref_source_boundary_review_available_no_decision_cell_matrix_review",
+        "workbench_surface": "partial_claim_gap_artifact_review_available_decision_surface_cell_review_missing"
+      },
+      "decision": {
+        "runtime_only_writer_allowed_as_complete_report": false,
+        "runtime_only_writer_allowed_as_bounded_partial": true,
+        "supervisor_augmented_report_allowed_for_human_reading": true,
+        "supervisor_augmented_report_counts_as_runtime_capability": false,
+        "workbench_cell_review_ready": false,
+        "paid_writer_rerun_allowed": false,
+        "true_full_chain_allowed": false,
+        "model_comparison_allowed": false,
+        "case_expansion_allowed": false,
+        "release_eval_allowed": false
+      },
+      "research_quality_summary": {
+        "question_answerability": "pass_for_supervisor_augmented_manual_report_not_runtime",
+        "decision_surface_completeness": "pass_manual_fail_runtime_pack",
+        "financial_and_operating_depth": "pass_partial_with_supplement_boundary",
+        "capital_market_price_in_depth": "partial",
+        "source_grade_and_lineage": "pass_with_supplement_boundary",
+        "counter_thesis_and_turning_signals": "pass_partial",
+        "verifier_readiness": "partial",
+        "workbench_review_readiness": "partial_fail_for_decision_cell_review"
+      },
+      "agent_product_engineering_summary": {
+        "input_contract_quality": "partial",
+        "output_contract_quality": "partial_manual_report_pass_runtime_fail",
+        "tool_affordance_fit": "pass_for_boundary_review",
+        "observability": "pass",
+        "recoverability": "partial",
+        "information_economy": "partial",
+        "marginal_contribution": "partial",
+        "human_review_surface": "partial_claim_gap_available_cell_review_missing",
+        "product_value_over_single_agent": "partial_until_decision_cell_review_and_runtime_ingestion_exist"
+      },
+      "root_cause_notes": [
+        "Verifier can preserve writer/source boundaries but currently reviews memo claims and evidence refs, not five-chain decision cells.",
+        "Workbench can expose task, claims, gaps, gates, artifacts and append-only review actions, but lacks decision_surface_cell review targets and statuses.",
+        "The supervisor-augmented report can be accepted as a manual human-readable report only because supplement rows are separately ledgered.",
+        "Paid writer rerun, true full-chain, model comparison, case expansion and release eval remain blocked until DecisionSurfacePack and Workbench cell-review deterministic fixtures pass."
+      ],
+      "next_node": "manual_dogfood_closeout_or_runtime_repair_backlog"
+    }
+  ],
+  "not_run": [
+    "paid_llm_api",
+    "true_runtime_full_chain",
+    "model_comparison",
+    "case_expansion",
+    "release_eval"
+  ]
+}

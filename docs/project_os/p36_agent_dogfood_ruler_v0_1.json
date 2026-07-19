@@ -1,0 +1,199 @@
+{
+  "schema_version": "fin_insight_p36_agent_dogfood_ruler_v0_1",
+  "created_at": "2026-07-09T03:40:00+08:00",
+  "artifact_type": "codex_as_paid_model_manual_full_chain_dogfood_ruler",
+  "case_id": "p36_ai_infra_supply_chain_manual_full_chain_dogfood_v0_1",
+  "case_question": "Does AI infrastructure demand translate into high-quality revenue and profits across accelerators, server OEMs, foundry/packaging, HBM, and semicap, and where are demand proxy, margin dilution, supply bottleneck, capex digestion, export control, and price-in risks?",
+  "run_type": "codex_as_paid_model_manual_full_chain_dogfood",
+  "run_boundary": {
+    "paid_llm_api_run": false,
+    "true_runtime_full_chain_run": false,
+    "codex_manually_plays_paid_model": true,
+    "writer_runtime_may_self_source": false,
+    "supervisor_may_source_separately": true,
+    "source_supplement_must_be_ledgered_separately": true,
+    "supplement_rows_are_not_runtime_capability_until_ingested": true
+  },
+  "research_quality_ruler": [
+    {
+      "dimension_id": "question_answerability",
+      "label": "Question answerability",
+      "pass_criteria": "Node output preserves the exact user question and advances a direct answer rather than a generic evidence summary."
+    },
+    {
+      "dimension_id": "decision_surface_completeness",
+      "label": "Decision surface completeness",
+      "pass_criteria": "Output maps the case into the five chain segments and required judgment dimensions, including real demand, demand proxy, lagged read-through, margin dilution, capex digestion, export control, price-in, counter-thesis, source grade, and numeric sanity."
+    },
+    {
+      "dimension_id": "financial_and_operating_depth",
+      "label": "Financial and operating depth",
+      "pass_criteria": "Output asks for or uses revenue, margin, cash conversion, orders, backlog, capex, customer capex, segment mix, and operating metrics rather than relying only on narrative."
+    },
+    {
+      "dimension_id": "capital_market_price_in_depth",
+      "label": "Capital-market / price-in depth",
+      "pass_criteria": "Output includes valuation, ownership/13F, event reaction, estimates/revisions, market positioning, or typed gaps for unavailable market data."
+    },
+    {
+      "dimension_id": "source_grade_and_lineage",
+      "label": "Source grade and lineage",
+      "pass_criteria": "Output separates official facts, parsed runtime rows, secondary estimates, analyst inference, commercial gaps, and supervisor supplements."
+    },
+    {
+      "dimension_id": "counter_thesis_and_turning_signals",
+      "label": "Counter-thesis and turning signals",
+      "pass_criteria": "Output names falsifiers, reversal signals, and what-would-change for every material chain."
+    },
+    {
+      "dimension_id": "writer_readiness",
+      "label": "Writer readiness",
+      "pass_criteria": "Output creates material that a writer can use without inventing facts or turning the answer into boundary prose."
+    }
+  ],
+  "agent_product_engineering_ruler": [
+    {
+      "dimension_id": "input_contract_quality",
+      "label": "Input contract quality",
+      "pass_criteria": "Node input is structured, scoped, non-duplicative, source-boundary aware, and sufficient for the assigned role."
+    },
+    {
+      "dimension_id": "output_contract_quality",
+      "label": "Output contract quality",
+      "pass_criteria": "Node output is structured, downstream-consumable, traceable, and not merely a prose summary."
+    },
+    {
+      "dimension_id": "tool_affordance_fit",
+      "label": "Tool affordance fit",
+      "pass_criteria": "Allowed tools match the job; missing tool authority is explicit and does not force the model to infer."
+    },
+    {
+      "dimension_id": "observability",
+      "label": "Observability",
+      "pass_criteria": "The run records which inputs, sources, graph rows, prompts, skills, and evidence refs were used, rejected, or missing."
+    },
+    {
+      "dimension_id": "recoverability",
+      "label": "Recoverability",
+      "pass_criteria": "A failed or partial node can be repaired locally through source-hunter, parser, graph, or prompt contract changes without rerunning the whole chain."
+    },
+    {
+      "dimension_id": "information_economy",
+      "label": "Information economy",
+      "pass_criteria": "Node reduces downstream burden and token noise by selecting the useful material rather than expanding evidence dumps."
+    },
+    {
+      "dimension_id": "marginal_contribution",
+      "label": "Marginal contribution",
+      "pass_criteria": "Node adds a unique judgment, transformation, selection, or control that another node does not already provide."
+    },
+    {
+      "dimension_id": "human_review_surface",
+      "label": "Human review surface",
+      "pass_criteria": "Node output can be reviewed at cell, claim, source, gap, or tool-attempt level."
+    },
+    {
+      "dimension_id": "product_value_over_single_agent",
+      "label": "Product value over single-agent",
+      "pass_criteria": "Node creates repeatability, auditability, source discipline, or workflow control that a generic single-agent web report cannot reliably provide."
+    }
+  ],
+  "node_sequence": [
+    {
+      "node_id": "node_01_research_lead",
+      "role": "Research Lead",
+      "primary_files_to_read": [
+        "src/sec_agent/prompts/skills/research_lead_planning_skill_v0_1.md",
+        "src/sec_agent/prompts/skills/evidence_requirement_and_sufficiency_skill_v0_1.md",
+        "docs/project_os/p35_ai_infra_decision_surface_framework_v0_1.json",
+        "docs/project_os/p35_ai_infra_current_system_gap_audit_v0_1.json"
+      ],
+      "manual_run_goal": "Create thesis path, required items, source-route plan, specialist assignments, missing-but-retrievable list, bounded gaps, and writer order without performing retrieval or final writing."
+    },
+    {
+      "node_id": "node_02_retrieval_rag_sql_source_route",
+      "role": "Retrieval / RAG / SQL / Source Route",
+      "manual_run_goal": "Use project-native retrieval/source artifacts first, compare top evidence quality against Codex/manual public-source discovery, and record weak retrieval or rerank failures."
+    },
+    {
+      "node_id": "node_03_parser_evidence_operator",
+      "role": "Parser / Evidence Operator",
+      "manual_run_goal": "Check whether retrieved materials become metric/value/unit/period/segment/source rows or degrade into context summaries."
+    },
+    {
+      "node_id": "node_04_graph_relationship_value_capture",
+      "role": "Graph / Relationship / Value Capture",
+      "manual_run_goal": "Test whether graph inputs support value capture, bottleneck rent, pass-through, capex lag, export risk, and margin dilution rather than only relationship scope."
+    },
+    {
+      "node_id": "node_05_fundamental_specialist",
+      "role": "Fundamental Specialist",
+      "manual_run_goal": "Produce bounded financial-quality observations from runtime rows and identify where missing financial packs block analysis."
+    },
+    {
+      "node_id": "node_06_industry_product_specialist",
+      "role": "Industry / Product / Supply Chain Specialist",
+      "manual_run_goal": "Produce value-chain mechanism judgments and identify whether product/industry evidence is hypothesis-only or company-confirmed."
+    },
+    {
+      "node_id": "node_07_capital_market_specialist",
+      "role": "Capital Market / Price-in Specialist",
+      "manual_run_goal": "Assess valuation, ownership, event reaction, and market positioning evidence or typed gaps."
+    },
+    {
+      "node_id": "node_08_risk_counterevidence_specialist",
+      "role": "Risk / Counterevidence Specialist",
+      "manual_run_goal": "Produce falsifiers, downside cases, export-control constraints, capex digestion risks, and what-would-change triggers."
+    },
+    {
+      "node_id": "node_09_aggregate_judgment_planner",
+      "role": "Aggregate / Judgment Planner",
+      "manual_run_goal": "Merge specialist materials into ranked segment judgments, conflicts, gaps, and writer-ready claim plan."
+    },
+    {
+      "node_id": "node_10_writer",
+      "role": "Memo Writer",
+      "manual_run_goal": "Write from upstream material only. The writer cannot self-source; any extra Codex/supervisor source must be separately ledgered before writer and cannot be presented as runtime capability."
+    },
+    {
+      "node_id": "node_11_verifier_workbench_review",
+      "role": "Verifier / Workbench Review",
+      "manual_run_goal": "Verify not only lineage and forbidden claims but also decision-surface completeness, answer quality, and cell-level reviewability."
+    }
+  ],
+  "node_eval_template": {
+    "node_id": "",
+    "node_role": "",
+    "status": "not_started",
+    "runtime_files_or_prompts_read": [],
+    "node_allowed_tools": [],
+    "node_forbidden_actions": [],
+    "input_snapshot": {
+      "provided_runtime_rows": [],
+      "provided_graph_rows": [],
+      "provided_skill_or_prompt_refs": [],
+      "provided_source_boundaries": []
+    },
+    "manual_paid_model_output_ref": "",
+    "ruler_scores": {
+      "research_quality": {},
+      "agent_product_engineering": {}
+    },
+    "can_write_quality_material_under_node_constraints": null,
+    "blocking_reason_if_partial": "",
+    "codex_or_supervisor_supplement_used": false,
+    "supplement_ledger_refs": [],
+    "root_cause_notes": [],
+    "repair_suggestions": []
+  },
+  "global_orchestration_questions": [
+    "Which nodes create real marginal contribution versus repeated summaries?",
+    "Where does the DAG need a supervisor loop with missing-cell repair?",
+    "Which tool calls should be moved earlier into source hunter or retrieval?",
+    "Which skills are only prompts rather than runtime contracts?",
+    "Which graph edges need value-capture semantics?",
+    "Where does writer receive incomplete material and become boundary-heavy?",
+    "Where does verifier check lineage but not answer completeness?",
+    "Does multi-agent create repeatable product value over a single-agent web report?"
+  ]
+}

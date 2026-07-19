@@ -1,0 +1,1061 @@
+{
+  "schema_version": "fin_insight_p35_ai_infra_decision_surface_framework_v0_1",
+  "created_at": "2026-07-08T17:56:05+00:00",
+  "artifact_type": "ai_infra_decision_surface_framework",
+  "case_question": "Does AI infrastructure demand translate into high-quality revenue and profits across accelerators, server OEMs, foundry/packaging, HBM, and semicap, and where are demand proxy, margin dilution, supply bottleneck, capex digestion, export control, and price-in risks?",
+  "north_star_output": {
+    "front_office_surface": [
+      "TL;DR judgment",
+      "segment decision surface",
+      "evidence quality matrix",
+      "real-demand vs demand-proxy classification",
+      "ranked evidence chain",
+      "turning signals",
+      "source-grade and numeric-sanity appendix"
+    ],
+    "internal_advantage": [
+      "claim-level source lineage",
+      "numeric sanity checks",
+      "runtime-row versus source-supplement separation",
+      "typed gaps that preserve attempted source paths",
+      "Workbench reviewable cells and claim cards"
+    ]
+  },
+  "chain_segments": [
+    {
+      "segment_id": "accelerator",
+      "label": "Accelerator",
+      "core_entities": [
+        "NVDA",
+        "AMD",
+        "hyperscaler_custom_silicon"
+      ],
+      "capture_mechanism": "accelerator revenue, system ASP, software ecosystem, supply allocation, and substitution risk"
+    },
+    {
+      "segment_id": "server_oem",
+      "label": "Server OEM",
+      "core_entities": [
+        "DELL",
+        "SMCI",
+        "HPE"
+      ],
+      "capture_mechanism": "AI server orders, shipments, backlog conversion, attach economics, cash conversion, and GPU pass-through"
+    },
+    {
+      "segment_id": "foundry_packaging",
+      "label": "Foundry / Packaging",
+      "core_entities": [
+        "TSMC",
+        "advanced_packaging",
+        "CoWoS"
+      ],
+      "capture_mechanism": "advanced-node demand, CoWoS capacity, utilization, pricing, customer allocation, and capex recovery"
+    },
+    {
+      "segment_id": "hbm",
+      "label": "HBM Memory",
+      "core_entities": [
+        "SK_hynix",
+        "Samsung",
+        "Micron"
+      ],
+      "capture_mechanism": "HBM bit growth, ASP, qualification, long-term agreements, capacity bottlenecks, and margin uplift"
+    },
+    {
+      "segment_id": "semicap",
+      "label": "Semicap Equipment",
+      "core_entities": [
+        "ASML",
+        "AMAT",
+        "LRCX",
+        "KLAC"
+      ],
+      "capture_mechanism": "WFE, EUV/DUV, deposition/etch, process control, advanced packaging, memory/HBM process intensity, and export exposure"
+    }
+  ],
+  "decision_dimensions": [
+    {
+      "dimension_id": "demand_proof",
+      "label": "Demand proof",
+      "question": "Is AI infrastructure demand observable in customer capex, deployment, orders, backlog, shipment, or revenue?"
+    },
+    {
+      "dimension_id": "capture_mechanism",
+      "label": "Capture mechanism",
+      "question": "How does the demand pool become revenue for this value-chain segment?"
+    },
+    {
+      "dimension_id": "revenue_evidence",
+      "label": "Revenue evidence",
+      "question": "Is supplier revenue already disclosed, or is the evidence only demand proxy / estimate?"
+    },
+    {
+      "dimension_id": "profit_quality",
+      "label": "Profit quality",
+      "question": "Does the demand carry pricing power, gross margin, operating leverage, cash conversion, or only pass-through revenue?"
+    },
+    {
+      "dimension_id": "bottleneck_monetization",
+      "label": "Bottleneck monetization",
+      "question": "Can supply scarcity be monetized by this segment, and who captures the bottleneck rent?"
+    },
+    {
+      "dimension_id": "margin_dilution",
+      "label": "Margin dilution",
+      "question": "Is growth diluting gross margin, operating margin, or cash flow quality?"
+    },
+    {
+      "dimension_id": "capex_digestion",
+      "label": "Capex digestion",
+      "question": "Could customer capex growth slow before supplier revenue expectations are digested?"
+    },
+    {
+      "dimension_id": "export_control",
+      "label": "Export control",
+      "question": "What policy/geography constraint could cap TAM, shipments, customer mix, or installed-base service?"
+    },
+    {
+      "dimension_id": "price_in",
+      "label": "Price-in",
+      "question": "How much of the business improvement is already reflected in valuation, positioning, and event reaction?"
+    },
+    {
+      "dimension_id": "counter_thesis",
+      "label": "Counter-thesis",
+      "question": "What evidence would weaken or reverse the current segment judgment?"
+    },
+    {
+      "dimension_id": "source_grade",
+      "label": "Source grade",
+      "question": "Which claims are official, parsed, secondary estimate, inference, commercial-gap, or attempt-backed gap?"
+    },
+    {
+      "dimension_id": "numeric_sanity",
+      "label": "Numeric sanity",
+      "question": "Do the segment numbers tie across period, unit, numerator/denominator, and comparable peer scope?"
+    }
+  ],
+  "decision_surface_cells": [
+    {
+      "cell_id": "accelerator::demand_proof",
+      "segment_id": "accelerator",
+      "dimension_id": "demand_proof",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::capture_mechanism",
+      "segment_id": "accelerator",
+      "dimension_id": "capture_mechanism",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::revenue_evidence",
+      "segment_id": "accelerator",
+      "dimension_id": "revenue_evidence",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::profit_quality",
+      "segment_id": "accelerator",
+      "dimension_id": "profit_quality",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::bottleneck_monetization",
+      "segment_id": "accelerator",
+      "dimension_id": "bottleneck_monetization",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::margin_dilution",
+      "segment_id": "accelerator",
+      "dimension_id": "margin_dilution",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::capex_digestion",
+      "segment_id": "accelerator",
+      "dimension_id": "capex_digestion",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::export_control",
+      "segment_id": "accelerator",
+      "dimension_id": "export_control",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::price_in",
+      "segment_id": "accelerator",
+      "dimension_id": "price_in",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::counter_thesis",
+      "segment_id": "accelerator",
+      "dimension_id": "counter_thesis",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::source_grade",
+      "segment_id": "accelerator",
+      "dimension_id": "source_grade",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "accelerator::numeric_sanity",
+      "segment_id": "accelerator",
+      "dimension_id": "numeric_sanity",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::demand_proof",
+      "segment_id": "server_oem",
+      "dimension_id": "demand_proof",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::capture_mechanism",
+      "segment_id": "server_oem",
+      "dimension_id": "capture_mechanism",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::revenue_evidence",
+      "segment_id": "server_oem",
+      "dimension_id": "revenue_evidence",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::profit_quality",
+      "segment_id": "server_oem",
+      "dimension_id": "profit_quality",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::bottleneck_monetization",
+      "segment_id": "server_oem",
+      "dimension_id": "bottleneck_monetization",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::margin_dilution",
+      "segment_id": "server_oem",
+      "dimension_id": "margin_dilution",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::capex_digestion",
+      "segment_id": "server_oem",
+      "dimension_id": "capex_digestion",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::export_control",
+      "segment_id": "server_oem",
+      "dimension_id": "export_control",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::price_in",
+      "segment_id": "server_oem",
+      "dimension_id": "price_in",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::counter_thesis",
+      "segment_id": "server_oem",
+      "dimension_id": "counter_thesis",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::source_grade",
+      "segment_id": "server_oem",
+      "dimension_id": "source_grade",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "server_oem::numeric_sanity",
+      "segment_id": "server_oem",
+      "dimension_id": "numeric_sanity",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::demand_proof",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "demand_proof",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::capture_mechanism",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "capture_mechanism",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::revenue_evidence",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "revenue_evidence",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::profit_quality",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "profit_quality",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::bottleneck_monetization",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "bottleneck_monetization",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::margin_dilution",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "margin_dilution",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::capex_digestion",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "capex_digestion",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::export_control",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "export_control",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::price_in",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "price_in",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::counter_thesis",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "counter_thesis",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::source_grade",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "source_grade",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "foundry_packaging::numeric_sanity",
+      "segment_id": "foundry_packaging",
+      "dimension_id": "numeric_sanity",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::demand_proof",
+      "segment_id": "hbm",
+      "dimension_id": "demand_proof",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::capture_mechanism",
+      "segment_id": "hbm",
+      "dimension_id": "capture_mechanism",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::revenue_evidence",
+      "segment_id": "hbm",
+      "dimension_id": "revenue_evidence",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::profit_quality",
+      "segment_id": "hbm",
+      "dimension_id": "profit_quality",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::bottleneck_monetization",
+      "segment_id": "hbm",
+      "dimension_id": "bottleneck_monetization",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::margin_dilution",
+      "segment_id": "hbm",
+      "dimension_id": "margin_dilution",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::capex_digestion",
+      "segment_id": "hbm",
+      "dimension_id": "capex_digestion",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::export_control",
+      "segment_id": "hbm",
+      "dimension_id": "export_control",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::price_in",
+      "segment_id": "hbm",
+      "dimension_id": "price_in",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::counter_thesis",
+      "segment_id": "hbm",
+      "dimension_id": "counter_thesis",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::source_grade",
+      "segment_id": "hbm",
+      "dimension_id": "source_grade",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "hbm::numeric_sanity",
+      "segment_id": "hbm",
+      "dimension_id": "numeric_sanity",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::demand_proof",
+      "segment_id": "semicap",
+      "dimension_id": "demand_proof",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::capture_mechanism",
+      "segment_id": "semicap",
+      "dimension_id": "capture_mechanism",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::revenue_evidence",
+      "segment_id": "semicap",
+      "dimension_id": "revenue_evidence",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::profit_quality",
+      "segment_id": "semicap",
+      "dimension_id": "profit_quality",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::bottleneck_monetization",
+      "segment_id": "semicap",
+      "dimension_id": "bottleneck_monetization",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::margin_dilution",
+      "segment_id": "semicap",
+      "dimension_id": "margin_dilution",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::capex_digestion",
+      "segment_id": "semicap",
+      "dimension_id": "capex_digestion",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::export_control",
+      "segment_id": "semicap",
+      "dimension_id": "export_control",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::price_in",
+      "segment_id": "semicap",
+      "dimension_id": "price_in",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::counter_thesis",
+      "segment_id": "semicap",
+      "dimension_id": "counter_thesis",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::source_grade",
+      "segment_id": "semicap",
+      "dimension_id": "source_grade",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    },
+    {
+      "cell_id": "semicap::numeric_sanity",
+      "segment_id": "semicap",
+      "dimension_id": "numeric_sanity",
+      "required_output_fields": [
+        "judgment",
+        "key_numbers",
+        "source_grade",
+        "official_or_estimate",
+        "lineage_or_source_url",
+        "numeric_sanity_status",
+        "cannot_infer",
+        "what_would_change"
+      ]
+    }
+  ],
+  "acceptance_gates": [
+    "The final report must open with a decision surface before source-boundary prose.",
+    "Every segment must have at least one explicit current judgment and one what-would-change signal.",
+    "Real demand, demand proxy, lagged read-through, and market price-in must be separated.",
+    "Official disclosures, parsed rows, secondary estimates, and analyst inferences must be visibly labeled.",
+    "Boundary language must attach to the cell or claim it constrains; it cannot become the main report body.",
+    "If current runtime rows cannot support a cell, the supervisor must run a source-hunter supplement before writing the report or mark a typed gap with attempted source path."
+  ],
+  "method_mapping": {
+    "thesis_path_first_research": "used to force answer-first segment judgments",
+    "product_to_financial_bridge": "used to bridge product/deployment/HBM/CoWoS evidence into revenue and profit quality",
+    "three_statement_peer_panel": "used for margins, cash conversion, capex, and peer comparison",
+    "secondary_market_capital_feedback": "used for price-in, ownership, valuation, and event reaction",
+    "customer_supplier_readthrough": "used for hyperscaler capex to supplier capture boundaries",
+    "bounded_leading_signal_promotion": "used for product/deployment/estimate rows that are strong but not official revenue facts"
+  },
+  "workbuddy_comparison_role": {
+    "used_as": "competitor expression and minimum front-office decision-surface benchmark",
+    "not_used_as": "source-of-truth ontology or claim-level authority system"
+  }
+}

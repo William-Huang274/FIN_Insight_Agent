@@ -1,0 +1,305 @@
+{
+  "schema_version": "fin_insight_p36_supervisor_source_supplement_ledger_v0_1",
+  "created_at": "2026-07-09T10:45:00+08:00",
+  "artifact_type": "supervisor_source_supplement_ledger",
+  "case_id": "p36_ai_infra_supply_chain_manual_full_chain_dogfood_v0_1",
+  "status": "supervisor_source_supplement_recorded_not_runtime_ingested",
+  "scope": {
+    "paid_llm_api_run": false,
+    "true_runtime_full_chain_run": false,
+    "writer_runtime_may_self_source": false,
+    "supplement_owner": "codex_supervisor",
+    "purpose": "Record official or high-grade public sources used by Codex supervisor to write the P36 supervisor-augmented report after the runtime-only writer material proved incomplete.",
+    "relationship_to_runtime": "These rows are not accepted runtime rows, not evidence operator output, not parser-promoted rows, and not proof that FIN_Insight_Agent runtime can retrieve or consume them automatically."
+  },
+  "runtime_allowed_material_before_supplement": {
+    "node_01_to_09_refs": [
+      "docs/internal/vnext_20260610/p36_node_01_research_lead_manual_run.zh-CN.md",
+      "docs/internal/vnext_20260610/p36_node_02_retrieval_rag_sql_source_route_manual_run.zh-CN.md",
+      "docs/internal/vnext_20260610/p36_node_03_parser_evidence_operator_manual_run.zh-CN.md",
+      "docs/internal/vnext_20260610/p36_node_04_graph_relationship_value_capture_manual_run.zh-CN.md",
+      "docs/internal/vnext_20260610/p36_node_05_fundamental_specialist_manual_run.zh-CN.md",
+      "docs/internal/vnext_20260610/p36_node_06_industry_product_specialist_manual_run.zh-CN.md",
+      "docs/internal/vnext_20260610/p36_node_07_market_capital_price_in_specialist_manual_run.zh-CN.md",
+      "docs/internal/vnext_20260610/p36_node_08_risk_counterevidence_specialist_manual_run.zh-CN.md",
+      "docs/internal/vnext_20260610/p36_node_09_aggregate_judgment_planner_manual_run.zh-CN.md"
+    ],
+    "usable_runtime_character": "bounded partial judgment material, local probes, and candidate rows; not a complete five-chain DecisionSurfacePack",
+    "runtime_only_writer_result": "bounded_report_possible_but_complete_decision_surface_not_supported"
+  },
+  "source_rows": [
+    {
+      "source_id": "p36_sup_src_nvda_q1_fy2027_official",
+      "segment": "accelerator",
+      "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-first-quarter-fiscal-2027",
+      "source_type": "issuer_press_release",
+      "source_grade": "A_official",
+      "key_facts": [
+        "Q1 FY2027 revenue $81.6B, up 85% YoY",
+        "Data Center revenue $75.2B, up 92% YoY",
+        "GAAP and non-GAAP gross margins 74.9% and 75.0%",
+        "Q2 FY2027 revenue guide $91.0B +/- 2%; no Data Center compute revenue from China assumed"
+      ],
+      "used_for_cells": [
+        "accelerator.revenue_evidence",
+        "accelerator.profit_quality",
+        "accelerator.export_control"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_dell_q1_fy2027_official",
+      "segment": "server_oem",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~05~dell-technologies-delivers-first-quarter-fiscal-2027-financial-results.htm",
+      "source_type": "issuer_press_release",
+      "source_grade": "A_official",
+      "key_facts": [
+        "Q1 FY2027 revenue $43.8B, up 88% YoY",
+        "AI orders $24.4B and AI-Optimized Servers revenue $16.1B",
+        "ISG revenue $29.0B and ISG operating income $3.1B",
+        "ISG operating income was 10.5% of ISG net revenue",
+        "FY2027 AI-Optimized Servers revenue expected to be roughly $60B"
+      ],
+      "used_for_cells": [
+        "server_oem.revenue_evidence",
+        "server_oem.profit_quality",
+        "server_oem.margin_dilution"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_smci_q3_fy2026_official",
+      "segment": "server_oem",
+      "source_url": "https://ir.supermicro.com/news/news-details/2026/Supermicro-Announces-Third-Quarter-Fiscal-Year-2026-Financial-Results/default.aspx",
+      "source_type": "issuer_press_release",
+      "source_grade": "A_official_preliminary",
+      "key_facts": [
+        "Q3 FY2026 net sales $10.2B",
+        "Gross margin 9.9% and non-GAAP gross margin 10.1%",
+        "Cash flow used in operations $6.6B",
+        "FY2026 net sales outlook $38.9B-$40.4B",
+        "Company states the interim financial information is preliminary"
+      ],
+      "used_for_cells": [
+        "server_oem.margin_dilution",
+        "server_oem.cash_conversion",
+        "server_oem.counter_thesis"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_hpe_q2_fy2026_presentation",
+      "segment": "server_oem",
+      "source_url": "https://investors.hpe.com/~/media/Files/H/HP-Enterprise-IR/documents/q2-2026/q2-2026-earnings-presentation.pdf",
+      "source_type": "issuer_presentation_pdf",
+      "source_grade": "A_official_pdf",
+      "key_facts": [
+        "Q2 FY2026 revenue $10.7B, up 40% YoY",
+        "Cloud & AI revenue $7.7B, up 23% YoY",
+        "Cloud & AI operating profit $954M, 12.4% of revenue",
+        "Record AI Systems backlog $5.9B including $1.8B in new AI Systems orders",
+        "More than $6.3B AI backlog, with 61% cumulative order mix in sovereign and enterprise customer segments"
+      ],
+      "used_for_cells": [
+        "server_oem.revenue_evidence",
+        "server_oem.backlog_quality",
+        "server_oem.customer_mix"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_tsmc_q1_2026_official",
+      "segment": "foundry_packaging",
+      "source_url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-04/e85216eea8dccd8ca75d7e040e8d57be3ccd618b/1Q26%20EarningsRelease.pdf",
+      "source_type": "issuer_earnings_release_pdf",
+      "source_grade": "A_official_pdf",
+      "key_facts": [
+        "Q1 2026 revenue $35.90B, up 40.6% YoY",
+        "Gross margin 66.2%, operating margin 58.1%, net profit margin 50.5%",
+        "3nm, 5nm and 7nm were 25%, 36% and 13% of wafer revenue; 7nm and below were 74%",
+        "Q2 2026 revenue guidance $39.0B-$40.2B"
+      ],
+      "used_for_cells": [
+        "foundry_packaging.revenue_evidence",
+        "foundry_packaging.profit_quality",
+        "foundry_packaging.advanced_node_mix"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_tsmc_q1_2026_presentation",
+      "segment": "foundry_packaging",
+      "source_url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-04/a7e3abe65a3fbc342aa55f9f53a5490dd621c1ac/1Q26%20Presentation%20%28E%29.pdf",
+      "source_type": "issuer_presentation_pdf",
+      "source_grade": "A_official_pdf",
+      "key_facts": [
+        "Q1 2026 free cash flow NT$348.21B",
+        "Q2 2026 gross margin guidance 65.5%-67.5%",
+        "2026 revenue expected to increase above 30% in USD terms"
+      ],
+      "used_for_cells": [
+        "foundry_packaging.cash_generation",
+        "foundry_packaging.forward_growth",
+        "foundry_packaging.capex_digestion"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_skhynix_q1_2026_official_mirror",
+      "segment": "hbm",
+      "source_url": "https://www.prnewswire.com/news-releases/sk-hynix-announces-1q26-financial-results-302750959.html",
+      "source_type": "company_press_release_wire",
+      "source_grade": "A_minus_company_wire_official_mirror",
+      "key_facts": [
+        "Revenue surpassed KRW 50T for the first time on a quarterly basis",
+        "Operating profit KRW 37.6T",
+        "Operating margin 72%",
+        "Profitability improvement tied to high value-added products and strong AI demand"
+      ],
+      "used_for_cells": [
+        "hbm.revenue_evidence",
+        "hbm.profit_quality",
+        "hbm.bottleneck_monetization"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_samsung_q1_2026_official",
+      "segment": "hbm",
+      "source_url": "https://news.samsung.com/global/samsung-electronics-announces-first-quarter-2026-results",
+      "source_type": "issuer_press_release",
+      "source_grade": "A_official",
+      "key_facts": [
+        "Q1 2026 consolidated revenue KRW 133.9T and operating profit KRW 57.2T",
+        "Device Solutions revenue KRW 81.7T and operating profit KRW 53.7T",
+        "Memory business set all-time high quarterly revenue and operating profit",
+        "High-value-added AI demand and limited supply supported memory performance",
+        "Samsung disclosed HBM4 mass product sales for NVIDIA's Vera Rubin platform"
+      ],
+      "used_for_cells": [
+        "hbm.revenue_evidence",
+        "hbm.profit_quality",
+        "hbm.supply_bottleneck"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_micron_q3_fy2026_official",
+      "segment": "hbm",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_type": "issuer_press_release",
+      "source_grade": "A_official",
+      "key_facts": [
+        "FQ3 2026 revenue $41.46B",
+        "HBM4 in high-volume shipments for lead customer's platform",
+        "HBM4E volume production expected in calendar 2027"
+      ],
+      "used_for_cells": [
+        "hbm.product_cycle",
+        "hbm.supply_release_risk",
+        "hbm.what_would_change"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_asml_q1_2026_official",
+      "segment": "semicap",
+      "source_url": "https://www.asml.com/en/news/press-releases/2026/q1-2026-financial-results",
+      "source_type": "issuer_press_release",
+      "source_grade": "A_official",
+      "key_facts": [
+        "Q1 2026 total net sales EUR 8.8B",
+        "Gross margin 53.0% and net income EUR 2.8B",
+        "2026 total net sales expected EUR 36B-EUR 40B, gross margin 51%-53%",
+        "Guidance range accommodates potential outcomes of export-control discussions"
+      ],
+      "used_for_cells": [
+        "semicap.revenue_evidence",
+        "semicap.profit_quality",
+        "semicap.export_control"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_amat_q2_fy2026_official",
+      "segment": "semicap",
+      "source_url": "https://ir.appliedmaterials.com/news-releases/news-release-details/applied-materials-announces-second-quarter-2026-results",
+      "source_type": "issuer_press_release",
+      "source_grade": "A_official",
+      "key_facts": [
+        "Q2 FY2026 record revenue $7.91B, up 11% YoY",
+        "GAAP gross margin 49.9% and operating margin 31.9%",
+        "Semiconductor Systems revenue $5.965B with gross margin 54.7%",
+        "Management linked outlook to AI infrastructure, leading-edge logic, DRAM and advanced packaging"
+      ],
+      "used_for_cells": [
+        "semicap.revenue_evidence",
+        "semicap.profit_quality",
+        "semicap.ai_capex_readthrough"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_lrcx_march_2026_official_mirror",
+      "segment": "semicap",
+      "source_url": "https://www.prnewswire.com/news-releases/lam-research-corporation-reports-financial-results-for-the-quarter-ended-march-29-2026-302750629.html",
+      "source_type": "issuer_press_release_wire",
+      "source_grade": "A_minus_company_wire_official_mirror",
+      "key_facts": [
+        "March 2026 quarter revenue $5.84B",
+        "GAAP gross margin 49.8% and operating margin 35.0%",
+        "China was 34% of revenue; Korea 23%; Taiwan 23%"
+      ],
+      "used_for_cells": [
+        "semicap.revenue_evidence",
+        "semicap.profit_quality",
+        "semicap.export_control"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_klac_q3_fy2026_official_mirror",
+      "segment": "semicap",
+      "source_url": "https://www.prnewswire.com/news-releases/kla-corporation-reports-fiscal-2026-third-quarter-results-302757602.html",
+      "source_type": "issuer_press_release_wire",
+      "source_grade": "A_minus_company_wire_official_mirror",
+      "key_facts": [
+        "Fiscal Q3 2026 revenue $3.415B",
+        "GAAP diluted EPS $9.12 and non-GAAP diluted EPS $9.40",
+        "Quarter operating cash flow $707.5M and free cash flow $622.3M"
+      ],
+      "used_for_cells": [
+        "semicap.peer_panel",
+        "semicap.cash_generation",
+        "semicap.profit_quality"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    },
+    {
+      "source_id": "p36_sup_src_bis_export_policy_2026_official",
+      "segment": "accelerator_semicap_cross_risk",
+      "source_url": "https://www.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china",
+      "source_type": "government_press_release",
+      "source_grade": "A_government",
+      "key_facts": [
+        "BIS revised license review policy for Nvidia H200, AMD MI325X and similar chips exported to China",
+        "Applications are reviewed case-by-case if security requirements are met",
+        "Applicants must show exports do not reduce semiconductor production capacity available to U.S. customers and must meet compliance and testing conditions"
+      ],
+      "used_for_cells": [
+        "accelerator.export_control",
+        "semicap.export_control",
+        "cross_segment.regulatory_risk"
+      ],
+      "runtime_ingestion_status": "supervisor_supplement_only"
+    }
+  ],
+  "summary": {
+    "source_row_count": 14,
+    "official_or_government_grade_count": 11,
+    "official_pdf_count": 3,
+    "wire_official_mirror_count": 3,
+    "runtime_gap_explained": "The public sources needed for a complete AI infrastructure decision surface are reachable, but the current P36 runtime path has not converted them into source-route attempts, parser-promoted rows, specialist cell packs, DecisionSurfacePack, or accepted writer input.",
+    "next_runtime_action": "Convert this ledger into source-route plans, fetch/parser fixtures, normalized runtime rows, source-grade/numeric-sanity checks, and cell-level Workbench review before any paid writer or model comparison claim."
+  }
+}

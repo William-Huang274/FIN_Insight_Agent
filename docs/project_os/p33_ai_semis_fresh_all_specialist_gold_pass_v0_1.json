@@ -1,0 +1,272 @@
+{
+  "schema_version": "fin_insight_fresh_all_specialist_gold_pass_v0_1",
+  "artifact_type": "ai_semis_fresh_all_specialist_gold_pass",
+  "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+  "status": "pass",
+  "fresh_scope": "no_paid_fresh_projection_from_current_gold_depth_content_pack",
+  "role_count": 5,
+  "role_pass_count": 5,
+  "role_fail_count": 0,
+  "role_outputs": [
+    {
+      "role_id": "product_technology_analyst",
+      "status": "pass",
+      "material_count": 1,
+      "required_items_answered": [
+        "req_accelerator_architecture"
+      ],
+      "evidence_refs": [
+        "nvda_gb200_nvl72_rack_architecture",
+        "amd_mi300x_memory_bandwidth_competition",
+        "amd_mlperf_mi355x_performance_proxy",
+        "google_tpu_v6e_trillium_architecture",
+        "google_a4x_gb200_cloud_deployment_surface"
+      ],
+      "graph_edge_refs": [
+        "nvda_gb200_configured_in_dell_xe9712",
+        "google_tpu_substitutes_for_external_gpu",
+        "amd_mi300_competes_with_nvda_memory_heavy_workloads"
+      ],
+      "judgment_candidates": [
+        {
+          "judgment": "NVIDIA remains the main external accelerator system bottleneck because GB200 is a rack-scale system, but AMD MI300/MI35x and Google TPU are real workload-specific substitutes.",
+          "required_item_answered": "req_accelerator_architecture",
+          "memo_slot": "product_architecture_competition",
+          "business_mechanism": "Product evidence should be read as architecture, performance and adoption evidence, not as SKU revenue. The graph must connect GB200 -> Dell/Google cloud deployment, AMD -> memory-heavy competition, and TPU -> custom-silicon substitution.",
+          "cannot_infer": "Cannot infer SKU revenue, share, shipment, ASP or margin from specs/benchmarks/cloud surfaces.",
+          "counter_read": "If AMD/TPU production deployments broaden or GB200 deployment slips, NVIDIA pricing and allocation power weakens.",
+          "what_would_change_view": [
+            "Production deployments, procurement mix and pricing evidence would change the weight."
+          ],
+          "evidence_refs": [
+            "nvda_gb200_nvl72_rack_architecture",
+            "amd_mi300x_memory_bandwidth_competition",
+            "amd_mlperf_mi355x_performance_proxy",
+            "google_tpu_v6e_trillium_architecture",
+            "google_a4x_gb200_cloud_deployment_surface"
+          ],
+          "graph_edge_refs": [
+            "nvda_gb200_configured_in_dell_xe9712",
+            "google_tpu_substitutes_for_external_gpu",
+            "amd_mi300_competes_with_nvda_memory_heavy_workloads"
+          ]
+        }
+      ],
+      "freshness_boundary": "No historical targeted specialist composite is reused. This is a no-paid, role-by-role gold material projection from the current content pack; it is not a paid specialist LLM run."
+    },
+    {
+      "role_id": "fundamental_analyst",
+      "status": "pass",
+      "material_count": 1,
+      "required_items_answered": [
+        "req_dell_margin_quality"
+      ],
+      "evidence_refs": [
+        "dell_ai_server_orders_shipments_backlog",
+        "dell_isg_revenue_margin_baseline"
+      ],
+      "graph_edge_refs": [
+        "nvda_gpu_supply_input_to_dell_ai_server",
+        "dell_ai_orders_bridge_to_isg_margin_quality"
+      ],
+      "judgment_candidates": [
+        {
+          "judgment": "Dell has unusually visible AI server revenue demand, but the investment-quality question is margin conversion, not whether demand exists.",
+          "required_item_answered": "req_dell_margin_quality",
+          "memo_slot": "financial_quality",
+          "business_mechanism": "The right bridge is orders/backlog -> shipments -> ISG revenue -> gross/operating margin -> cash conversion. Current public rows prove the first half and leave AI server mix, GPU pass-through and attach economics unresolved.",
+          "cannot_infer": "Cannot call Dell AI server growth high-margin until AI server gross margin, GPU pass-through, attach rate and backlog conversion are disclosed.",
+          "counter_read": "Revenue tailwind may be low-margin GPU pass-through, with working-capital pressure or customer concentration.",
+          "what_would_change_view": [
+            "Improving ISG margin with backlog conversion and attach economics would strengthen Dell quality."
+          ],
+          "evidence_refs": [
+            "dell_ai_server_orders_shipments_backlog",
+            "dell_isg_revenue_margin_baseline"
+          ],
+          "graph_edge_refs": [
+            "nvda_gpu_supply_input_to_dell_ai_server",
+            "dell_ai_orders_bridge_to_isg_margin_quality"
+          ]
+        }
+      ],
+      "freshness_boundary": "No historical targeted specialist composite is reused. This is a no-paid, role-by-role gold material projection from the current content pack; it is not a paid specialist LLM run."
+    },
+    {
+      "role_id": "industry_supply_chain_analyst",
+      "status": "pass",
+      "material_count": 2,
+      "required_items_answered": [
+        "req_supply_chain",
+        "req_customer_deployment"
+      ],
+      "evidence_refs": [
+        "tsmc_advanced_node_hpc_ai_readthrough",
+        "asml_lithography_installed_base_readthrough",
+        "amat_semiconductor_systems_mix",
+        "lrcx_memory_hbm_process_intensity",
+        "dell_nvidia_poweredge_ai_factory_product_path",
+        "google_a4x_gb200_cloud_deployment_surface",
+        "dell_ai_server_orders_shipments_backlog"
+      ],
+      "graph_edge_refs": [
+        "tsmc_advanced_node_upstream_of_accelerators",
+        "semicap_tools_enable_ai_foundry_memory_packaging",
+        "nvda_gb200_configured_in_dell_xe9712"
+      ],
+      "judgment_candidates": [
+        {
+          "judgment": "AI read-through is strongest when split by mechanism: TSMC advanced node, ASML lithography/installed base, AMAT materials engineering and LRCX memory/HBM process intensity.",
+          "required_item_answered": "req_supply_chain",
+          "memo_slot": "semicap_readthrough",
+          "business_mechanism": "Peer group membership is not evidence. The product graph should map advanced-node/HBM/packaging demand into specific tool mechanisms and keep bookings/backlog/customer allocation as follow-up requirements.",
+          "cannot_infer": "Cannot infer AI-specific orders or customer allocation from broad revenue/margin alone.",
+          "counter_read": "Export controls, China exposure, memory/foundry cycle shifts, or missing bookings can break the read-through.",
+          "what_would_change_view": [
+            "Bookings/backlog by tool category, HBM/advanced packaging orders and customer concentration would change confidence."
+          ],
+          "evidence_refs": [
+            "tsmc_advanced_node_hpc_ai_readthrough",
+            "asml_lithography_installed_base_readthrough",
+            "amat_semiconductor_systems_mix",
+            "lrcx_memory_hbm_process_intensity"
+          ],
+          "graph_edge_refs": [
+            "tsmc_advanced_node_upstream_of_accelerators",
+            "semicap_tools_enable_ai_foundry_memory_packaging"
+          ]
+        },
+        {
+          "judgment": "Dell and Google provide official deployment surfaces that make GB200 adoption plausible, but public evidence still needs customer/order/config mix for investment-grade deployment quality.",
+          "required_item_answered": "req_customer_deployment",
+          "memo_slot": "customer_deployment",
+          "business_mechanism": "Dell XE9680/XE9712 and Google A4X prove product surfaces and cloud/OEM availability; they do not prove signed customer demand or Dell margin.",
+          "cannot_infer": "Cannot infer customer concentration, deployment scale, or revenue per customer.",
+          "counter_read": "Preview-stage cloud availability or concentrated mega orders could limit the adoption signal.",
+          "what_would_change_view": [
+            "Official customer deployments and GA cloud capacity would upgrade this lane."
+          ],
+          "evidence_refs": [
+            "dell_nvidia_poweredge_ai_factory_product_path",
+            "google_a4x_gb200_cloud_deployment_surface",
+            "dell_ai_server_orders_shipments_backlog"
+          ],
+          "graph_edge_refs": [
+            "nvda_gb200_configured_in_dell_xe9712"
+          ]
+        }
+      ],
+      "freshness_boundary": "No historical targeted specialist composite is reused. This is a no-paid, role-by-role gold material projection from the current content pack; it is not a paid specialist LLM run."
+    },
+    {
+      "role_id": "market_valuation_analyst",
+      "status": "pass",
+      "material_count": 1,
+      "required_items_answered": [
+        "req_market_price_in"
+      ],
+      "evidence_refs": [
+        "market_price_in_valuation_positioning_gap"
+      ],
+      "graph_edge_refs": [
+        "market_price_in_gap_constrains_recommendation"
+      ],
+      "judgment_candidates": [
+        {
+          "judgment": "The business chain is directionally positive, but recommendation quality is blocked by missing valuation, positioning, short/options, ETF flow and price-reaction data.",
+          "required_item_answered": "req_market_price_in",
+          "memo_slot": "market_price_in",
+          "business_mechanism": "Market lane should not invent price-in from fundamentals. It should make capital-feedback rows a required next pack before buy/sell recommendation.",
+          "cannot_infer": "Cannot infer crowding, price-in or recommendation from business evidence alone.",
+          "counter_read": "The thesis can be right fundamentally but already fully reflected in valuation and positioning.",
+          "what_would_change_view": [
+            "Valuation percentile, 13F/ETF/insider/short/options and event reaction rows would unlock recommendation analysis."
+          ],
+          "evidence_refs": [
+            "market_price_in_valuation_positioning_gap"
+          ],
+          "graph_edge_refs": [
+            "market_price_in_gap_constrains_recommendation"
+          ]
+        }
+      ],
+      "freshness_boundary": "No historical targeted specialist composite is reused. This is a no-paid, role-by-role gold material projection from the current content pack; it is not a paid specialist LLM run."
+    },
+    {
+      "role_id": "risk_counterevidence_analyst",
+      "status": "pass",
+      "material_count": 1,
+      "required_items_answered": [
+        "req_counter_thesis"
+      ],
+      "evidence_refs": [
+        "meta_capex_component_pricing_risk",
+        "amd_mi300x_memory_bandwidth_competition",
+        "google_tpu_v6e_trillium_architecture",
+        "market_price_in_valuation_positioning_gap",
+        "counter_thesis_pack_ai_semis"
+      ],
+      "graph_edge_refs": [
+        "nvda_gpu_supply_input_to_dell_ai_server",
+        "google_tpu_substitutes_for_external_gpu",
+        "amd_mi300_competes_with_nvda_memory_heavy_workloads",
+        "market_price_in_gap_constrains_recommendation"
+      ],
+      "judgment_candidates": [
+        {
+          "judgment": "The strongest counter-thesis is not generic 'AI risk'; it is capex digestion, Dell margin dilution, AMD/TPU substitution, supply bottlenecks, export controls, concentration and price-in.",
+          "required_item_answered": "req_counter_thesis",
+          "memo_slot": "risk_counterevidence",
+          "business_mechanism": "Each risk maps to a mechanism in the thesis chain: demand pool durability, product substitution, OEM margin bridge, supply capacity, policy constraints and market feedback.",
+          "cannot_infer": "Cannot quantify probability or valuation impact without follow-up data.",
+          "counter_read": "If Dell margin fails to improve or hyperscaler capex shifts to internal accelerators, the positive chain weakens.",
+          "what_would_change_view": [
+            "ISG margin, supplier allocation, TPU/AMD deployment and valuation/positioning data are the main trigger conditions."
+          ],
+          "evidence_refs": [
+            "meta_capex_component_pricing_risk",
+            "amd_mi300x_memory_bandwidth_competition",
+            "google_tpu_v6e_trillium_architecture",
+            "market_price_in_valuation_positioning_gap",
+            "counter_thesis_pack_ai_semis"
+          ],
+          "graph_edge_refs": [
+            "nvda_gpu_supply_input_to_dell_ai_server",
+            "google_tpu_substitutes_for_external_gpu",
+            "amd_mi300_competes_with_nvda_memory_heavy_workloads",
+            "market_price_in_gap_constrains_recommendation"
+          ]
+        }
+      ],
+      "freshness_boundary": "No historical targeted specialist composite is reused. This is a no-paid, role-by-role gold material projection from the current content pack; it is not a paid specialist LLM run."
+    }
+  ],
+  "content_pack_profile": {
+    "row_count": 20,
+    "edge_count": 9,
+    "material_count": 6,
+    "lane_counts": {
+      "dell_financial_quality_bridge": 2,
+      "customer_deployment_adoption": 2,
+      "product_architecture_competition": 5,
+      "demand_pool": 4,
+      "counter_thesis_and_what_would_change": 2,
+      "semicap_foundry_readthrough": 4,
+      "market_expectation_price_in": 1
+    },
+    "memo_slot_counts": {
+      "product_architecture_competition": 1,
+      "financial_quality": 1,
+      "semicap_readthrough": 1,
+      "customer_deployment": 1,
+      "market_price_in": 1,
+      "risk_counterevidence": 1
+    }
+  },
+  "pass_condition": "All five analyst roles must have writer-ready judgment candidates with evidence refs, graph refs, business mechanism, cannot-infer boundary, and what-would-change material.",
+  "not_run": [
+    "paid_specialist_llm",
+    "full_chain",
+    "model_comparison"
+  ]
+}

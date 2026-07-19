@@ -1,0 +1,849 @@
+{
+  "schema_version": "fin_insight_p33_memo_projection_replay_v0_1",
+  "status": "pass",
+  "case_id": "p34_ai_semis_scoped_writer_case_v0_1",
+  "source_artifact": "eval/sec_cases/outputs/p34_ai_semis_scoped_writer_runs/p34_scoped_memo_writer_node_deepseek_20260707_120609/p34_ai_semis_scoped_writer_case_v0_1/memo_writer_node_result.json",
+  "checks": {
+    "renderer_projection_pass": true,
+    "final_verifier_projection_pass": true,
+    "workbench_projection_pass": true,
+    "no_paid_llm_called": true
+  },
+  "errors": [],
+  "renderer_projection": {
+    "schema_version": "fin_insight_p33_renderer_projection_v0_1",
+    "status": "pass",
+    "source_artifact": "eval/sec_cases/outputs/p34_ai_semis_scoped_writer_runs/p34_scoped_memo_writer_node_deepseek_20260707_120609/p34_ai_semis_scoped_writer_case_v0_1/memo_writer_node_result.json",
+    "rendered_answer_chars": 6105,
+    "heading_presence": {
+      "核心判断": true,
+      "分维度分析": true,
+      "关键问题回应": true,
+      "关键论据": true,
+      "投资含义": true,
+      "什么会改变判断": true,
+      "后续跟踪": true,
+      "可行动的证据缺口": true,
+      "证据索引": true
+    },
+    "citation_label_count": 14,
+    "citation_labels": [
+      "[C10]",
+      "[C11]",
+      "[C12]",
+      "[C14]",
+      "[C15]",
+      "[C1]",
+      "[C2]",
+      "[C3]",
+      "[C4]",
+      "[C5]",
+      "[C6]",
+      "[C7]",
+      "[C8]",
+      "[C9]"
+    ],
+    "internal_marker_hits": [],
+    "errors": [],
+    "rendered_answer": "核心判断:\n已披露事实给出的主线是：DELL 的orders shipments backlog/isg revenue operating income margin提供基本面锚点，需要和利润率、现金流及订单证据一起判断。NVDA/AMD/GOOGL 的accelerator memory bandwidth spec/mlperf inference performance proxy说明产品线、技术能力或经营锚点存在，可用于判断需求承接，但不能自动等同于 SKU revenue 或订单。MSFT/AMZN/GOOGL 的technical infrastructure capex context/aws revenue operating income只能说明客户/需求侧资本开支或终端需求池扩张，不能当作供应商收入、backlog 或直接订单。TSM/ASML/AMAT 的equipment segment mix/lithography cycle disclosure用于验证行业需求能否传到具体供应商收入和毛利。主要折价项来自 NVDA/DELL/AMD / accelerator memory bandwidth spec/mlperf inference performance proxy 指向影响。因此当前判断框架是：客户/需求侧 capex、供应商自身 capex、产品收入/订单与毛利锚点要分层看；只有当客户部署、订单或利润质量证据能连上时，供应链传导才可以上升为更强判断\n\n分维度分析:\n1. 资本需求、市场定价与反馈：业务机制是把基本面和产品证据再映射到估值、持仓、拥挤度、期权/short、ETF flow 和事件反应，判断好消息是否已经 price-in 资本市场桥是把业务改善与估值分位、资金持仓、流动性、short/options 和事件反应相互校验，判断预期是否已经被股价吸收 [C1][C2][C3]\n2. 产品架构、部署与采用：业务机制是用架构、benchmark、云实例、OEM 配置和官方产品线判断产品能力与采用路径，再把它连接到收入承接和供应链瓶颈，而不是把产品页冒充收入或份额 财务桥是产品能力和客户部署先进入 OEM/server revenue visibility，再通过 backlog conversion、attach rate 和 margin mix 决定利润质量 [C7][C8][C9]\n3. 基本面：DELL 的核心不是 AI server 需求是否存在，而是订单和 backlog 能否转化成高质量利润：现有公开材料能证明 AI server revenue tailwind 和 ISG 财务桥，但还不能证明 AI server gross margin、GPU pass-through、attach rate 或 backlog conversion 已经改善 业务机制是 orders/backlog -> shipments -> ISG revenue -> gross/operating margin -> cash conversion；缺任何一段都只能说明需求或收入可见度，不能说明利润质量 财务桥必须落到 DELL ISG revenue、Servers/Networking、gross/operating margin、working capital 和 cash conversion，而不是只写订单金额或收入增长\n4. 行业与供应链：AI read-through 必须按机制拆开：TSMC 承接 advanced node / 先进封装，ASML 承接 lithography / installed base，AMAT 对应 materials engineering，LRCX 更偏 memory/HBM process intensity；这能支持半导体设备周期传导 业务机制是把 AI accelerator / HBM / packaging / advanced-node demand 映射到 foundry 和 semicap 工具链的具体环节，而不是用 peer group 代替订单 财务桥是从 AI demand 到 TSMC/HBM/advanced packaging，再到 ASML/AMAT/LRCX 等设备公司的 bookings、backlog、services 和区域/客户暴露\n5. 风险与反证：反证不是泛泛的 AI 风险，而是 hyperscaler capex digestion、DELL margin dilution、AMD/TPU 替代、NVDA supply delay、出口管制、客户集中和 semicap 订单滞后；如果订单/部署兑现放缓、利润率恶化或 capex 下修，AI infrastructure thesis 应该降权 业务机制是先识别主线判断最脆弱的传导环节，再用反证限制结论权重，而不是在结尾泛泛列风险 反证的财务桥包括 DELL 低毛利放量、GPU pass-through 压缩利润、capex digestion 降低订单、出口管制和 semicap backlog 延后\n\n关键问题回应:\n1. 云厂商 capex 到供应商的传导：市场价格层面还不能形成强买卖建议：业务链条方向偏正面，但缺 valuation percentile、13F/ETF/insider/short/options、事件后价格反应等 price-in 证据，所以当前只能给出有边界的研究判断，不能判断市场是否已经充分定价 不能外推：Supplier allocation, OEM order conversion, or AI server margin from cloud capex alone. 会改变判断：Named procurement, supplier allocation, cloud instance deployment, or order/backlog conversion rows.\n2. 必答问题：产品层可以形成有边界的判断：NVDA GB200/Blackwell 仍代表外部加速器系统的关键瓶颈，AMD MI300/MI35x 与 Google TPU 构成真实但更偏工作负载或自用体系的替代压力。 不能外推：不能从规格、benchmark 或云实例表面推出 SKU 收入、份额、出货量、ASP 或毛利。 会改变判断：生产部署、采购 mix、定价证据和客户配置会改变产品竞争权重\n3. 必答问题：客户部署层面，DELL AI server / NVIDIA GB200 配置路径和 Google cloud TPU/GB200 云实例表面能证明采用路径存在，但仍不足以推出部署规模、客户集中度或单客户收入。 不能外推：不能从采用路径或配置表面推出部署规模、客户集中度或单客户收入。 会改变判断：官方客户部署、GA capacity、配置 mix 或订单规模披露会提高采用证据强度\n4. 必答问题：DELL 的 AI server 需求可见度较强，但投资质量取决于 ISG margin、GPU pass-through、attach rate 和 backlog conversion，而不是只看 AI server revenue 或订单表述。 不能外推：不能在 AI server 毛利、GPU pass-through、attach rate 和 backlog conversion 披露前认定 DELL 利润质量已经改善。 会改变判断：ISG margin 随 backlog 转化改善，并伴随 attach economics 提升，会提高 DELL 质量判断\n5. 必答问题：供应链 read-through 必须按机制拆开：TSMC 对应 advanced node / 先进封装，ASML 对应光刻和 installed base，AMAT 对应 materials engineering，LRCX 更偏 memory/HBM 工艺强度。 不能外推：不能从 broad revenue / margin 直接推出 AI-specific orders、客户 allocation 或具体设备订单。 会改变判断：按工具类别的 bookings/backlog、HBM/先进封装订单和客户集中度会改变 semicap read-through 置信度\n6. 必答问题：市场 price-in 仍是薄弱项：业务链条方向偏正面，但缺估值分位、持仓拥挤度、short/options、ETF flow 和事件后价格反应，不能形成强买卖建议。 不能外推：不能只凭业务证据推出拥挤度、price-in 程度或买卖建议。 会改变判断：估值分位、13F/ETF/insider/short/options 和事件反应数据会打开 recommendation 级别判断\n\n关键论据:\n1. Dell 通过订单、出货和积压数据拥有 AI 服务器收入可见度，但利润质量因缺乏 GPU 传递成本、附加率和积压转换细节而受限 [C14]\n2. NVIDIA 凭借 Blackwell/GB200 架构保持最强外部加速器系统瓶颈信号，AMD MI300/MI355X 和 Google TPU 提供真实但有限的替代压力 [C7]\n3. MSFT、AMZN、GOOGL、META 的投融资与资本开支证据提供当前判断锚点；涉及 technical infrastructure capex context、aws revenue operating income；该证据应进入利润质量和产品组合判断，不能只写成收入增长线索 [C1]\n4. TSM、ASML、AMAT、LRCX 的投资判断证据提供当前判断锚点；涉及 equipment segment mix、lithography cycle disclosure；该证据应说明需求如何沿客户、供应链或产能瓶颈传导 [C15]\n5. NVDA、DELL、AMD、GOOGL 的投资判断证据提供当前判断锚点；涉及 accelerator memory bandwidth spec、mlperf inference performance proxy；该证据可支撑需求端资本开支强度，但不能直接证明供应商订单或份额 [C7]\n6. DELL、GOOGL、NVDA 的产品与产线证据提供当前判断锚点；涉及 technical infrastructure capex context、orders shipments backlog；该证据可支撑采用/部署存在性，但不能替代订单金额、sell-through 或 backlog [C1]\n\n投资含义:\n- AI 基建链条的方向偏正面，但当前更适合写成有边界的研究判断：NVDA/Blackwell 仍是供给瓶颈，DELL 受益于 AI server demand，但投资质量取决于 ISG margin、GPU pass-through 和 backlog conversion\n- 半导体设备 read-through 应按 TSMC advanced node、ASML lithography、AMAT materials engineering、LRCX memory/HBM process intensity 分机制判断，不能用 peer group 替代订单或 backlog\n\n什么会改变判断:\n- 如果 DELL backlog 转化时 ISG margin 没改善，或 AI server 只是低毛利 GPU pass-through，DELL 的投资质量应降权\n- 如果 AMD/TPU 部署扩散、NVDA supply delay、hyperscaler capex 下修或 semicap bookings/backlog 滞后，AI infrastructure 主线应降权\n\n后续跟踪:\n- 跟踪 DELL AI server orders、shipments、backlog conversion、ISG margin 与 attach economics，确认收入可见度能否转化为利润质量\n- 跟踪 NVDA/AMD/Google TPU 的生产部署、采购 mix、cloud availability、OEM configuration 和定价证据，确认产品竞争与替代压力\n- 跟踪 valuation percentile、13F/ETF/insider/short/options、事件后价格反应，判断 AI 基建好消息是否已经 price-in\n\n可行动的证据缺口:\n- 仍需公开源或商业 tracker 补齐：AI server gross margin、GPU pass-through、客户配置 mix、供应商 allocation、SKU/ASP/shipments 和 market positioning 数据\n\n限制与注意事项:\n- 市场定价边界因缺少估值、持仓和资金流数据而受限，无法形成强买卖建议\n- 产品分析基于规格和部署表面，非 SKU 收入或份额数据\n\n证据边界: P34 AI/Semis 已验收公开源 runtime rows\n\n证据索引:\n- [C1] alphabet capex server chain context\n- [C2] amzn aws demand pool context\n- [C3] meta capex component pricing risk\n- [C4] msft cloud ai capex supply shortfall\n- [C5] nvda data center revenue demand confirmation\n- [C6] market price in valuation positioning gap\n- [C7] amd mi300x memory bandwidth competition\n- [C8] amd mlperf mi355x performance proxy\n- [C9] dell nvidia poweredge ai factory product path\n- [C10] dell xe9712 gb200 oem system config\n- [C11] google a4x gb200 cloud deployment surface\n- [C12] google tpu v6e trillium architecture",
+    "rendering_policy": "memo_logic_plan_to_user_workpaper_markdown_no_internal_fields_v0_1"
+  },
+  "final_verifier_projection": {
+    "schema_version": "fin_insight_p33_final_verifier_projection_v0_1",
+    "status": "pass",
+    "errors": [],
+    "deterministic_status": "pass",
+    "deterministic_error_count": 0,
+    "deterministic_warning_count": 1,
+    "projection_stats": {
+      "schema_version": "sec_agent_verifier_minimal_projection_v0.1",
+      "projection_policy": "final_memo_claims_and_referenced_evidence_only",
+      "input_supported_claim_count": 7,
+      "memo_claim_count": 6,
+      "projected_claim_count": 6,
+      "projected_evidence_ref_count": 15,
+      "source_boundary_note_count": 0,
+      "input_pack_fingerprint": {
+        "schema_version": "sec_agent_verifier_input_pack_fingerprint_v0_1",
+        "agent_id": "verifier",
+        "digest": "sha256:934db26c0fb45de6",
+        "component_summaries": {
+          "memo_answer": {
+            "digest": "sha256:f19780c702ef270d",
+            "item_count": 10,
+            "evidence_ref_count": 8,
+            "approx_chars": 8088
+          },
+          "memo_claim_ref_inventory": {
+            "digest": "sha256:754444561709fa7d",
+            "item_count": 6,
+            "evidence_ref_count": 15,
+            "approx_chars": 3371
+          },
+          "allowed_evidence_refs": {
+            "digest": "sha256:ca8666ced5dd6e98",
+            "item_count": 15,
+            "evidence_ref_count": 0,
+            "approx_chars": 588
+          },
+          "source_boundary_notes": {
+            "digest": "sha256:4f53cda18c2baa0c",
+            "item_count": 0,
+            "evidence_ref_count": 0,
+            "approx_chars": 2
+          },
+          "deterministic_verification": {
+            "digest": "sha256:e362a5ef7f99a6e8",
+            "item_count": 5,
+            "evidence_ref_count": 0,
+            "approx_chars": 164
+          }
+        },
+        "known_evidence_ref_count": 15,
+        "known_evidence_refs": [
+          "alphabet_capex_server_chain_context",
+          "amzn_aws_demand_pool_context",
+          "meta_capex_component_pricing_risk",
+          "amd_mi300x_memory_bandwidth_competition",
+          "amd_mlperf_mi355x_performance_proxy",
+          "dell_nvidia_poweredge_ai_factory_product_path",
+          "dell_ai_server_orders_shipments_backlog",
+          "amat_semiconductor_systems_mix",
+          "msft_cloud_ai_capex_supply_shortfall",
+          "dell_xe9712_gb200_oem_system_config",
+          "dell_isg_revenue_margin_baseline",
+          "asml_lithography_installed_base_readthrough",
+          "lrcx_memory_hbm_process_intensity",
+          "tsmc_advanced_node_hpc_ai_readthrough",
+          "counter_thesis_pack_ai_semis"
+        ],
+        "known_evidence_refs_truncated": false,
+        "approx_prompt_payload_chars": 12213,
+        "static_prompt_scaffold_summary": {
+          "policy_id": "verifier_compact_instruction_scaffold_v0_1",
+          "system_prompt_chars": 2074,
+          "user_instruction_chars": 191,
+          "system_prompt_digest": "sha256:dd55caeae6b12e3b",
+          "user_instruction_digest": "sha256:c6a6ddf5204249e5",
+          "prompt_text_persisted": false
+        },
+        "approx_total_prompt_chars_with_scaffold": 14478,
+        "fingerprint_policy": "fingerprint_only_no_prompt_text_persisted_v0_1",
+        "capture_source": "p33_projection_replay_from_scoped_memo_writer_artifact"
+      }
+    },
+    "input_pack_fingerprint": {
+      "schema_version": "sec_agent_verifier_input_pack_fingerprint_v0_1",
+      "agent_id": "verifier",
+      "digest": "sha256:934db26c0fb45de6",
+      "component_summaries": {
+        "memo_answer": {
+          "digest": "sha256:f19780c702ef270d",
+          "item_count": 10,
+          "evidence_ref_count": 8,
+          "approx_chars": 8088
+        },
+        "memo_claim_ref_inventory": {
+          "digest": "sha256:754444561709fa7d",
+          "item_count": 6,
+          "evidence_ref_count": 15,
+          "approx_chars": 3371
+        },
+        "allowed_evidence_refs": {
+          "digest": "sha256:ca8666ced5dd6e98",
+          "item_count": 15,
+          "evidence_ref_count": 0,
+          "approx_chars": 588
+        },
+        "source_boundary_notes": {
+          "digest": "sha256:4f53cda18c2baa0c",
+          "item_count": 0,
+          "evidence_ref_count": 0,
+          "approx_chars": 2
+        },
+        "deterministic_verification": {
+          "digest": "sha256:e362a5ef7f99a6e8",
+          "item_count": 5,
+          "evidence_ref_count": 0,
+          "approx_chars": 164
+        }
+      },
+      "known_evidence_ref_count": 15,
+      "known_evidence_refs": [
+        "alphabet_capex_server_chain_context",
+        "amzn_aws_demand_pool_context",
+        "meta_capex_component_pricing_risk",
+        "amd_mi300x_memory_bandwidth_competition",
+        "amd_mlperf_mi355x_performance_proxy",
+        "dell_nvidia_poweredge_ai_factory_product_path",
+        "dell_ai_server_orders_shipments_backlog",
+        "amat_semiconductor_systems_mix",
+        "msft_cloud_ai_capex_supply_shortfall",
+        "dell_xe9712_gb200_oem_system_config",
+        "dell_isg_revenue_margin_baseline",
+        "asml_lithography_installed_base_readthrough",
+        "lrcx_memory_hbm_process_intensity",
+        "tsmc_advanced_node_hpc_ai_readthrough",
+        "counter_thesis_pack_ai_semis"
+      ],
+      "known_evidence_refs_truncated": false,
+      "approx_prompt_payload_chars": 12213,
+      "static_prompt_scaffold_summary": {
+        "policy_id": "verifier_compact_instruction_scaffold_v0_1",
+        "system_prompt_chars": 2074,
+        "user_instruction_chars": 191,
+        "system_prompt_digest": "sha256:dd55caeae6b12e3b",
+        "user_instruction_digest": "sha256:c6a6ddf5204249e5",
+        "prompt_text_persisted": false
+      },
+      "approx_total_prompt_chars_with_scaffold": 14478,
+      "fingerprint_policy": "fingerprint_only_no_prompt_text_persisted_v0_1",
+      "capture_source": "p33_projection_replay_from_scoped_memo_writer_artifact"
+    },
+    "projection": {
+      "schema_version": "sec_agent_verifier_minimal_projection_v0.1",
+      "projection_policy": "final_memo_claims_and_referenced_evidence_only",
+      "memo_claim_ref_inventory": [
+        {
+          "claim_id": "p34_judgment_claim::jc_ai_capex_demand_pool",
+          "agent_id": "",
+          "claim": "AI capex is a real demand pool, but it only becomes supplier revenue evidence after a named dep...[truncated]",
+          "evidence_refs": [
+            "alphabet_capex_server_chain_context",
+            "amzn_aws_demand_pool_context",
+            "meta_capex_component_pricing_risk",
+            "msft_cloud_ai_capex_supply_shortfall"
+          ],
+          "source_families": [
+            "p34_live_runtime_row",
+            "hyperscaler_capex_and_data_center_demand_context"
+          ],
+          "input_evidence_ref_count": 5,
+          "projected_ref_policy": "memo_intersection_refs_only_v0_1"
+        },
+        {
+          "claim_id": "p34_judgment_claim::jc_accelerator_architecture_competition",
+          "agent_id": "",
+          "claim": "NVIDIA retains the strongest external accelerator-system bottleneck signal through GB200/NVL72...[truncated]",
+          "evidence_refs": [
+            "amd_mi300x_memory_bandwidth_competition",
+            "amd_mlperf_mi355x_performance_proxy",
+            "dell_nvidia_poweredge_ai_factory_product_path",
+            "dell_xe9712_gb200_oem_system_config"
+          ],
+          "source_families": [
+            "p34_live_runtime_row",
+            "official_product_spec_benchmark_and_oem_configuration"
+          ],
+          "input_evidence_ref_count": 8,
+          "projected_ref_policy": "memo_intersection_refs_only_v0_1"
+        },
+        {
+          "claim_id": "p34_judgment_claim::jc_customer_deployment_oem_adoption",
+          "agent_id": "",
+          "claim": "Dell PowerEdge/AI Factory and Google A4X surfaces confirm adoption paths for NVIDIA GB200-class...[truncated]",
+          "evidence_refs": [
+            "alphabet_capex_server_chain_context",
+            "dell_ai_server_orders_shipments_backlog",
+            "dell_nvidia_poweredge_ai_factory_product_path",
+            "dell_xe9712_gb200_oem_system_config"
+          ],
+          "source_families": [
+            "p34_live_runtime_row",
+            "official_customer_deployment_oem_configuration"
+          ],
+          "input_evidence_ref_count": 5,
+          "projected_ref_policy": "memo_intersection_refs_only_v0_1"
+        },
+        {
+          "claim_id": "p34_judgment_claim::jc_dell_ai_server_financial_quality",
+          "agent_id": "",
+          "claim": "Dell has AI server revenue visibility through orders, shipments, backlog and ISG baseline margi...[truncated]",
+          "evidence_refs": [
+            "dell_ai_server_orders_shipments_backlog",
+            "dell_isg_revenue_margin_baseline"
+          ],
+          "source_families": [
+            "p34_live_runtime_row",
+            "issuer_primary_disclosure_and_segment_margin"
+          ],
+          "input_evidence_ref_count": 2,
+          "projected_ref_policy": "memo_intersection_refs_only_v0_1"
+        },
+        {
+          "claim_id": "p34_judgment_claim::jc_foundry_semicap_readthrough",
+          "agent_id": "",
+          "claim": "AI demand reads through semicap only by vendor mechanism: TSM advanced node/HPC, ASML lithograp...[truncated]",
+          "evidence_refs": [
+            "amat_semiconductor_systems_mix",
+            "asml_lithography_installed_base_readthrough",
+            "lrcx_memory_hbm_process_intensity",
+            "tsmc_advanced_node_hpc_ai_readthrough"
+          ],
+          "source_families": [
+            "p34_live_runtime_row",
+            "semicap_primary_disclosure_and_process_intensity_context"
+          ],
+          "input_evidence_ref_count": 4,
+          "projected_ref_policy": "memo_intersection_refs_only_v0_1"
+        },
+        {
+          "claim_id": "p34_judgment_claim::jc_counter_thesis_what_would_change",
+          "agent_id": "",
+          "claim": "The strongest counter-thesis is not generic AI risk: it is capex digestion, Dell margin dilutio...[truncated]",
+          "evidence_refs": [
+            "amd_mi300x_memory_bandwidth_competition",
+            "amd_mlperf_mi355x_performance_proxy",
+            "asml_lithography_installed_base_readthrough",
+            "counter_thesis_pack_ai_semis"
+          ],
+          "source_families": [
+            "p34_live_runtime_row",
+            "independent_counter_thesis_pack"
+          ],
+          "input_evidence_ref_count": 7,
+          "projected_ref_policy": "memo_intersection_refs_only_v0_1"
+        }
+      ],
+      "allowed_evidence_refs": [
+        "alphabet_capex_server_chain_context",
+        "amat_semiconductor_systems_mix",
+        "amd_mi300x_memory_bandwidth_competition",
+        "amd_mlperf_mi355x_performance_proxy",
+        "amzn_aws_demand_pool_context",
+        "asml_lithography_installed_base_readthrough",
+        "counter_thesis_pack_ai_semis",
+        "dell_ai_server_orders_shipments_backlog",
+        "dell_isg_revenue_margin_baseline",
+        "dell_nvidia_poweredge_ai_factory_product_path",
+        "dell_xe9712_gb200_oem_system_config",
+        "lrcx_memory_hbm_process_intensity",
+        "meta_capex_component_pricing_risk",
+        "msft_cloud_ai_capex_supply_shortfall",
+        "tsmc_advanced_node_hpc_ai_readthrough"
+      ],
+      "source_boundary_notes": [],
+      "deterministic_verification": {
+        "status": "pass",
+        "error_types": [],
+        "warning_types": [
+          "analyst_depth_pack_missing_dimension_sections"
+        ],
+        "bounded_answer_allowed": false,
+        "repair_instruction": ""
+      },
+      "projection_stats": {
+        "schema_version": "sec_agent_verifier_minimal_projection_v0.1",
+        "projection_policy": "final_memo_claims_and_referenced_evidence_only",
+        "input_supported_claim_count": 7,
+        "memo_claim_count": 6,
+        "projected_claim_count": 6,
+        "projected_evidence_ref_count": 15,
+        "source_boundary_note_count": 0,
+        "input_pack_fingerprint": {
+          "schema_version": "sec_agent_verifier_input_pack_fingerprint_v0_1",
+          "agent_id": "verifier",
+          "digest": "sha256:934db26c0fb45de6",
+          "component_summaries": {
+            "memo_answer": {
+              "digest": "sha256:f19780c702ef270d",
+              "item_count": 10,
+              "evidence_ref_count": 8,
+              "approx_chars": 8088
+            },
+            "memo_claim_ref_inventory": {
+              "digest": "sha256:754444561709fa7d",
+              "item_count": 6,
+              "evidence_ref_count": 15,
+              "approx_chars": 3371
+            },
+            "allowed_evidence_refs": {
+              "digest": "sha256:ca8666ced5dd6e98",
+              "item_count": 15,
+              "evidence_ref_count": 0,
+              "approx_chars": 588
+            },
+            "source_boundary_notes": {
+              "digest": "sha256:4f53cda18c2baa0c",
+              "item_count": 0,
+              "evidence_ref_count": 0,
+              "approx_chars": 2
+            },
+            "deterministic_verification": {
+              "digest": "sha256:e362a5ef7f99a6e8",
+              "item_count": 5,
+              "evidence_ref_count": 0,
+              "approx_chars": 164
+            }
+          },
+          "known_evidence_ref_count": 15,
+          "known_evidence_refs": [
+            "alphabet_capex_server_chain_context",
+            "amzn_aws_demand_pool_context",
+            "meta_capex_component_pricing_risk",
+            "amd_mi300x_memory_bandwidth_competition",
+            "amd_mlperf_mi355x_performance_proxy",
+            "dell_nvidia_poweredge_ai_factory_product_path",
+            "dell_ai_server_orders_shipments_backlog",
+            "amat_semiconductor_systems_mix",
+            "msft_cloud_ai_capex_supply_shortfall",
+            "dell_xe9712_gb200_oem_system_config",
+            "dell_isg_revenue_margin_baseline",
+            "asml_lithography_installed_base_readthrough",
+            "lrcx_memory_hbm_process_intensity",
+            "tsmc_advanced_node_hpc_ai_readthrough",
+            "counter_thesis_pack_ai_semis"
+          ],
+          "known_evidence_refs_truncated": false,
+          "approx_prompt_payload_chars": 12213,
+          "static_prompt_scaffold_summary": {
+            "policy_id": "verifier_compact_instruction_scaffold_v0_1",
+            "system_prompt_chars": 2074,
+            "user_instruction_chars": 191,
+            "system_prompt_digest": "sha256:dd55caeae6b12e3b",
+            "user_instruction_digest": "sha256:c6a6ddf5204249e5",
+            "prompt_text_persisted": false
+          },
+          "approx_total_prompt_chars_with_scaffold": 14478,
+          "fingerprint_policy": "fingerprint_only_no_prompt_text_persisted_v0_1",
+          "capture_source": "p33_projection_replay_from_scoped_memo_writer_artifact"
+        }
+      },
+      "input_pack_fingerprint": {
+        "schema_version": "sec_agent_verifier_input_pack_fingerprint_v0_1",
+        "agent_id": "verifier",
+        "digest": "sha256:934db26c0fb45de6",
+        "component_summaries": {
+          "memo_answer": {
+            "digest": "sha256:f19780c702ef270d",
+            "item_count": 10,
+            "evidence_ref_count": 8,
+            "approx_chars": 8088
+          },
+          "memo_claim_ref_inventory": {
+            "digest": "sha256:754444561709fa7d",
+            "item_count": 6,
+            "evidence_ref_count": 15,
+            "approx_chars": 3371
+          },
+          "allowed_evidence_refs": {
+            "digest": "sha256:ca8666ced5dd6e98",
+            "item_count": 15,
+            "evidence_ref_count": 0,
+            "approx_chars": 588
+          },
+          "source_boundary_notes": {
+            "digest": "sha256:4f53cda18c2baa0c",
+            "item_count": 0,
+            "evidence_ref_count": 0,
+            "approx_chars": 2
+          },
+          "deterministic_verification": {
+            "digest": "sha256:e362a5ef7f99a6e8",
+            "item_count": 5,
+            "evidence_ref_count": 0,
+            "approx_chars": 164
+          }
+        },
+        "known_evidence_ref_count": 15,
+        "known_evidence_refs": [
+          "alphabet_capex_server_chain_context",
+          "amzn_aws_demand_pool_context",
+          "meta_capex_component_pricing_risk",
+          "amd_mi300x_memory_bandwidth_competition",
+          "amd_mlperf_mi355x_performance_proxy",
+          "dell_nvidia_poweredge_ai_factory_product_path",
+          "dell_ai_server_orders_shipments_backlog",
+          "amat_semiconductor_systems_mix",
+          "msft_cloud_ai_capex_supply_shortfall",
+          "dell_xe9712_gb200_oem_system_config",
+          "dell_isg_revenue_margin_baseline",
+          "asml_lithography_installed_base_readthrough",
+          "lrcx_memory_hbm_process_intensity",
+          "tsmc_advanced_node_hpc_ai_readthrough",
+          "counter_thesis_pack_ai_semis"
+        ],
+        "known_evidence_refs_truncated": false,
+        "approx_prompt_payload_chars": 12213,
+        "static_prompt_scaffold_summary": {
+          "policy_id": "verifier_compact_instruction_scaffold_v0_1",
+          "system_prompt_chars": 2074,
+          "user_instruction_chars": 191,
+          "system_prompt_digest": "sha256:dd55caeae6b12e3b",
+          "user_instruction_digest": "sha256:c6a6ddf5204249e5",
+          "prompt_text_persisted": false
+        },
+        "approx_total_prompt_chars_with_scaffold": 14478,
+        "fingerprint_policy": "fingerprint_only_no_prompt_text_persisted_v0_1",
+        "capture_source": "p33_projection_replay_from_scoped_memo_writer_artifact"
+      }
+    },
+    "projection_policy": "final_memo_claims_and_referenced_evidence_only_no_raw_evidence_dump_v0_1"
+  },
+  "workbench_projection": {
+    "schema_version": "fin_insight_p33_workbench_projection_v0_1",
+    "status": "pass",
+    "task_id": "p34_ai_semis_scoped_writer_case_v0_1",
+    "run_id": "p34_scoped_memo_writer_node_deepseek_20260707_120609",
+    "surfaces": [
+      "sections",
+      "claims",
+      "gaps",
+      "gates",
+      "artifacts",
+      "events"
+    ],
+    "sections": [
+      {
+        "section_id": "capital_and_financing",
+        "title": "Capital demand, market price-in and feedback",
+        "display_order": 1,
+        "logic_role": "boundary_and_gap",
+        "claim_ids": [
+          "p34_judgment_claim::jc_ai_capex_demand_pool",
+          "p34_judgment_claim::jc_market_price_in_capital_feedback"
+        ],
+        "evidence_refs": [
+          "alphabet_capex_server_chain_context",
+          "amzn_aws_demand_pool_context",
+          "meta_capex_component_pricing_risk",
+          "msft_cloud_ai_capex_supply_shortfall",
+          "nvda_data_center_revenue_demand_confirmation",
+          "market_price_in_valuation_positioning_gap"
+        ],
+        "required_item_ids": [
+          "cloud_capex_read_through",
+          "req_market_price_in"
+        ],
+        "source": "memo_logic_plan.sections"
+      },
+      {
+        "section_id": "product_and_production",
+        "title": "Product architecture, deployment and adoption",
+        "display_order": 2,
+        "logic_role": "core_analysis",
+        "claim_ids": [
+          "p34_judgment_claim::jc_accelerator_architecture_competition",
+          "p34_judgment_claim::jc_customer_deployment_oem_adoption"
+        ],
+        "evidence_refs": [
+          "amd_mi300x_memory_bandwidth_competition",
+          "amd_mlperf_mi355x_performance_proxy",
+          "dell_nvidia_poweredge_ai_factory_product_path",
+          "dell_xe9712_gb200_oem_system_config",
+          "google_a4x_gb200_cloud_deployment_surface",
+          "google_tpu_v6e_trillium_architecture",
+          "nvda_data_center_revenue_demand_confirmation",
+          "nvda_gb200_nvl72_rack_architecture"
+        ],
+        "required_item_ids": [
+          "req_accelerator_architecture",
+          "req_customer_deployment"
+        ],
+        "source": "memo_logic_plan.sections"
+      },
+      {
+        "section_id": "fundamentals",
+        "title": "Fundamental / financial quality",
+        "display_order": 3,
+        "logic_role": "boundary_and_gap",
+        "claim_ids": [
+          "p34_judgment_claim::jc_dell_ai_server_financial_quality"
+        ],
+        "evidence_refs": [],
+        "required_item_ids": [
+          "req_dell_margin_quality"
+        ],
+        "source": "memo_logic_plan.sections"
+      },
+      {
+        "section_id": "industry_supply_chain",
+        "title": "Foundry, packaging, HBM and semicap read-through",
+        "display_order": 4,
+        "logic_role": "core_analysis",
+        "claim_ids": [
+          "p34_judgment_claim::jc_foundry_semicap_readthrough"
+        ],
+        "evidence_refs": [],
+        "required_item_ids": [
+          "req_supply_chain"
+        ],
+        "source": "memo_logic_plan.sections"
+      },
+      {
+        "section_id": "risk_and_counterevidence",
+        "title": "Counter-thesis and what would change the view",
+        "display_order": 5,
+        "logic_role": "core_analysis",
+        "claim_ids": [
+          "p34_judgment_claim::jc_counter_thesis_what_would_change"
+        ],
+        "evidence_refs": [],
+        "required_item_ids": [
+          "req_counter_thesis"
+        ],
+        "source": "memo_logic_plan.sections"
+      },
+      {
+        "section_id": "required_item_answers",
+        "title": "关键问题回应",
+        "display_order": 6,
+        "logic_role": "required_item_answer_review",
+        "claim_ids": [
+          "p34_judgment_claim::jc_dell_ai_server_financial_quality",
+          "p34_judgment_claim::jc_accelerator_architecture_competition",
+          "p34_judgment_claim::jc_ai_capex_demand_pool",
+          "p34_judgment_claim::jc_foundry_semicap_readthrough",
+          "p34_judgment_claim::jc_counter_thesis_what_would_change",
+          "p34_judgment_claim::jc_customer_deployment_oem_adoption"
+        ],
+        "evidence_refs": [
+          "alphabet_capex_server_chain_context",
+          "amzn_aws_demand_pool_context",
+          "meta_capex_component_pricing_risk",
+          "msft_cloud_ai_capex_supply_shortfall",
+          "nvda_data_center_revenue_demand_confirmation",
+          "amd_mi300x_memory_bandwidth_competition",
+          "amd_mlperf_mi355x_performance_proxy",
+          "dell_nvidia_poweredge_ai_factory_product_path",
+          "dell_xe9712_gb200_oem_system_config",
+          "google_a4x_gb200_cloud_deployment_surface",
+          "google_tpu_v6e_trillium_architecture",
+          "nvda_gb200_nvl72_rack_architecture"
+        ],
+        "required_item_ids": [
+          "cloud_capex_read_through",
+          "req_accelerator_architecture",
+          "req_customer_deployment",
+          "req_dell_margin_quality",
+          "req_supply_chain",
+          "req_market_price_in",
+          "req_counter_thesis"
+        ],
+        "source": "memo_logic_plan.required_item_answer_plan"
+      },
+      {
+        "section_id": "investment_implications",
+        "title": "投资含义",
+        "display_order": 7,
+        "logic_role": "review_surface",
+        "claim_ids": [
+          "p34_judgment_claim::jc_dell_ai_server_financial_quality",
+          "p34_judgment_claim::jc_accelerator_architecture_competition",
+          "p34_judgment_claim::jc_ai_capex_demand_pool",
+          "p34_judgment_claim::jc_foundry_semicap_readthrough",
+          "p34_judgment_claim::jc_counter_thesis_what_would_change",
+          "p34_judgment_claim::jc_customer_deployment_oem_adoption"
+        ],
+        "evidence_refs": [
+          "dell_ai_server_orders_shipments_backlog",
+          "amd_mi300x_memory_bandwidth_competition",
+          "alphabet_capex_server_chain_context",
+          "amat_semiconductor_systems_mix"
+        ],
+        "required_item_ids": [],
+        "source": "memo_answer.investment_implications"
+      },
+      {
+        "section_id": "what_would_change_view",
+        "title": "什么会改变判断",
+        "display_order": 8,
+        "logic_role": "review_surface",
+        "claim_ids": [
+          "p34_judgment_claim::jc_dell_ai_server_financial_quality",
+          "p34_judgment_claim::jc_accelerator_architecture_competition",
+          "p34_judgment_claim::jc_ai_capex_demand_pool",
+          "p34_judgment_claim::jc_foundry_semicap_readthrough",
+          "p34_judgment_claim::jc_counter_thesis_what_would_change",
+          "p34_judgment_claim::jc_customer_deployment_oem_adoption"
+        ],
+        "evidence_refs": [
+          "dell_ai_server_orders_shipments_backlog",
+          "amd_mi300x_memory_bandwidth_competition",
+          "alphabet_capex_server_chain_context",
+          "amat_semiconductor_systems_mix"
+        ],
+        "required_item_ids": [],
+        "source": "memo_answer.what_would_change_view"
+      },
+      {
+        "section_id": "evidence_gaps_but_actionable",
+        "title": "可行动的证据缺口",
+        "display_order": 9,
+        "logic_role": "review_surface",
+        "claim_ids": [
+          "p34_judgment_claim::jc_dell_ai_server_financial_quality",
+          "p34_judgment_claim::jc_accelerator_architecture_competition",
+          "p34_judgment_claim::jc_ai_capex_demand_pool",
+          "p34_judgment_claim::jc_foundry_semicap_readthrough",
+          "p34_judgment_claim::jc_counter_thesis_what_would_change",
+          "p34_judgment_claim::jc_customer_deployment_oem_adoption"
+        ],
+        "evidence_refs": [
+          "dell_ai_server_orders_shipments_backlog",
+          "amd_mi300x_memory_bandwidth_competition",
+          "alphabet_capex_server_chain_context",
+          "amat_semiconductor_systems_mix"
+        ],
+        "required_item_ids": [],
+        "source": "memo_answer.evidence_gaps_but_actionable"
+      }
+    ],
+    "claims": [
+      {
+        "claim_card_id": "p34_judgment_claim::jc_dell_ai_server_financial_quality",
+        "claim_text": "Dell 通过订单、出货和积压数据拥有 AI 服务器收入可见度，但利润质量因缺乏 GPU 传递成本、附加率和积压转换细节而受限。",
+        "dimension_id": "fundamentals",
+        "confidence": "bounded_medium",
+        "materiality": "",
+        "evidence_refs": [
+          "dell_ai_server_orders_shipments_backlog"
+        ],
+        "cannot_infer": [],
+        "source": "memo_answer.memo_claims"
+      },
+      {
+        "claim_card_id": "p34_judgment_claim::jc_accelerator_architecture_competition",
+        "claim_text": "NVIDIA 凭借 Blackwell/GB200 架构保持最强外部加速器系统瓶颈信号，AMD MI300/MI355X 和 Google TPU 提供真实但有限的替代压力。",
+        "dimension_id": "product_and_production",
+        "confidence": "medium_high",
+        "materiality": "",
+        "evidence_refs": [
+          "amd_mi300x_memory_bandwidth_competition"
+        ],
+        "cannot_infer": [],
+        "source": "memo_answer.memo_claims"
+      },
+      {
+        "claim_card_id": "p34_judgment_claim::jc_ai_capex_demand_pool",
+        "claim_text": "MSFT、AMZN、GOOGL、META 的投融资与资本开支证据提供当前判断锚点；涉及 technical infrastructure capex context、aws revenue operating income；该证据应进入利润质量和产品组合判断，不能只写成收入增长线索。",
+        "dimension_id": "capital_and_financing",
+        "confidence": "medium_high",
+        "materiality": "",
+        "evidence_refs": [
+          "alphabet_capex_server_chain_context"
+        ],
+        "cannot_infer": [],
+        "source": "memo_answer.memo_claims"
+      },
+      {
+        "claim_card_id": "p34_judgment_claim::jc_foundry_semicap_readthrough",
+        "claim_text": "TSM、ASML、AMAT、LRCX 的投资判断证据提供当前判断锚点；涉及 equipment segment mix、lithography cycle disclosure；该证据应说明需求如何沿客户、供应链或产能瓶颈传导。",
+        "dimension_id": "industry_supply_chain",
+        "confidence": "medium_high",
+        "materiality": "",
+        "evidence_refs": [
+          "amat_semiconductor_systems_mix"
+        ],
+        "cannot_infer": [],
+        "source": "memo_answer.memo_claims"
+      },
+      {
+        "claim_card_id": "p34_judgment_claim::jc_counter_thesis_what_would_change",
+        "claim_text": "NVDA、DELL、AMD、GOOGL 的投资判断证据提供当前判断锚点；涉及 accelerator memory bandwidth spec、mlperf inference performance proxy；该证据可支撑需求端资本开支强度，但不能直接证明供应商订单或份额。",
+        "dimension_id": "risk_and_counterevidence",
+        "confidence": "medium_high",
+        "materiality": "",
+        "evidence_refs": [
+          "amd_mi300x_memory_bandwidth_competition"
+        ],
+        "cannot_infer": [],
+        "source": "memo_answer.memo_claims"
+      },
+      {
+        "claim_card_id": "p34_judgment_claim::jc_customer_deployment_oem_adoption",
+        "claim_text": "DELL、GOOGL、NVDA 的产品与产线证据提供当前判断锚点；涉及 technical infrastructure capex context、orders shipments backlog；该证据可支撑采用/部署存在性，但不能替代订单金额、sell-through 或 backlog。",
+        "dimension_id": "product_and_production",
+        "confidence": "medium_high",
+        "materiality": "",
+        "evidence_refs": [
+          "alphabet_capex_server_chain_context"
+        ],
+        "cannot_infer": [],
+        "source": "memo_answer.memo_claims"
+      }
+    ],
+    "gaps": [
+      {
+        "gap_id": "memo_gap_1",
+        "gap_type": "actionable_evidence_gap",
+        "description": "仍需公开源或商业 tracker 补齐：AI server gross margin、GPU pass-through、客户配置 mix、供应商 allocation、SKU/ASP/shipments 和 market positioning 数据。",
+        "evidence_refs": [],
+        "source": "memo_answer.evidence_gaps_but_actionable"
+      }
+    ],
+    "gates": [
+      {
+        "gate_id": "memo_writer_node_gate",
+        "status": "pass",
+        "detail": {
+          "attempt_count": 1,
+          "repair_attempts": 0,
+          "total_tokens": 16441
+        }
+      },
+      {
+        "gate_id": "memo_deterministic_hard_check",
+        "status": "pass",
+        "detail": {
+          "policy": "verify_multi_agent_memo_draft"
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "artifact_id": "memo_writer_node_result",
+        "artifact_type": "json",
+        "path": "eval/sec_cases/outputs/p34_ai_semis_scoped_writer_runs/p34_scoped_memo_writer_node_deepseek_20260707_120609/p34_ai_semis_scoped_writer_case_v0_1/memo_writer_node_result.json",
+        "exists": true
+      },
+      {
+        "artifact_id": "p33_single_case_projection_replay",
+        "artifact_type": "json",
+        "path": "docs/project_os/p33_single_case_projection_replay_v0_1.json",
+        "exists": true
+      }
+    ],
+    "events": [
+      {
+        "sequence": 1,
+        "event_type": "memo_writer_node_pass",
+        "source": "scoped_paid_node_artifact"
+      },
+      {
+        "sequence": 2,
+        "event_type": "renderer_projection_replay",
+        "source": "deterministic_replay"
+      },
+      {
+        "sequence": 3,
+        "event_type": "final_verifier_projection_replay",
+        "source": "deterministic_replay"
+      },
+      {
+        "sequence": 4,
+        "event_type": "workbench_projection_replay",
+        "source": "deterministic_replay"
+      }
+    ],
+    "counts": {
+      "section_count": 9,
+      "claim_count": 6,
+      "gap_count": 1,
+      "gate_count": 2,
+      "artifact_count": 2,
+      "event_count": 4,
+      "evidence_linked_claim_count": 6,
+      "section_claim_link_count": 9
+    },
+    "errors": [],
+    "projection_policy": "artifact_backed_workbench_drilldown_without_sql_write_v0_1"
+  },
+  "not_run": [
+    "paid_llm",
+    "full_chain",
+    "model_comparison",
+    "case_expansion"
+  ],
+  "acceptance_boundary": "A pass here only proves renderer/final-verifier/Workbench projection from the scoped memo artifact. It is not a fresh specialist pass, full-chain pass, or human-accepted gold workpaper."
+}

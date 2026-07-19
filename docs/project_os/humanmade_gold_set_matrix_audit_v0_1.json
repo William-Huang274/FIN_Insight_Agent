@@ -1,0 +1,662 @@
+{
+  "schema_version": "fin_insight_humanmade_gold_set_matrix_audit_v0_1",
+  "updated_at": "2026-07-06",
+  "status": "no_paid_matrix_audit_completed_findings_open",
+  "scope": {
+    "audit_mode": "no_paid_gold_set_matrix_audit",
+    "deep_gold_case_count": 1,
+    "rubric_gold_case_count": 8,
+    "negative_gold_case_count": 6,
+    "not_run": [
+      "paid_llm",
+      "full_chain",
+      "model_comparison",
+      "new_retrieval",
+      "crawler_or_parser"
+    ]
+  },
+  "input_documents": {
+    "gold_set_spec": "docs\\project_os\\humanmade_gold_set_spec_v0_1.json",
+    "answer_exemplars": "docs\\project_os\\humanmade_gold_set_answer_exemplars_v0_2.json",
+    "artifact_audit": "docs\\project_os\\humanmade_gold_set_artifact_audit_v0_1.json"
+  },
+  "status_counts": {
+    "artifact_backed_fail_for_gold_depth": 1,
+    "partial_from_ai_semis_deep_case_unproven_as_standalone_runtime_case": 1,
+    "catalog_ready_runtime_artifact_missing": 6,
+    "partial_platform_foundation_but_case_pack_missing": 1,
+    "open_guard_needed_ai_semis_currently_fails_depth": 1,
+    "partial_guard_present_needs_machine_check": 1,
+    "partial_guard_present_projection_needs_investment_roles": 1,
+    "partial_guard_present_not_generalized": 1,
+    "open_guard_needed_old_memo_showed_symptom": 1,
+    "contract_defined_runtime_guard_unproven": 1
+  },
+  "case_results": [
+    {
+      "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+      "case_type": "deep_gold_case",
+      "vertical": "AI/Semis",
+      "status": "artifact_backed_fail_for_gold_depth",
+      "audit_scope": "direct_artifact_audit",
+      "story_role": "The deep case proves the system can build a chain-shaped artifact, but also proves the chain is not yet strong enough to become an analyst workpaper.",
+      "answer_exemplar": "",
+      "evidence_basis": {
+        "gold_item_count": 9,
+        "fail_count": 3,
+        "partial_count": 6,
+        "pass_like_count": 1,
+        "artifact_metrics": {
+          "p33_full_chain_gate_status": "fail",
+          "p33_full_chain_quality_issues": [
+            "high_total_token_cost",
+            "low_memo_chars_per_token",
+            "memo_payload_not_dense_enough",
+            "memo_writer_high_token_cost",
+            "memo_writer_retry_cost_present"
+          ],
+          "evidence_fusion": {
+            "row_count": 375,
+            "exact_authority_row_count": 232,
+            "context_only_row_count": 139,
+            "gap_only_row_count": 4,
+            "bounded_gap_count": 4,
+            "product_runtime_fact_count": 0,
+            "required_like_counts": {
+              "req_hyperscaler_capex": 42,
+              "req_dell_margin_quality": 99,
+              "req_supply_chain": 75,
+              "req_customer_deployment": 60,
+              "req_accelerator_architecture": 10
+            }
+          },
+          "coverage_reflection": {
+            "sufficiency_level": "partial",
+            "missing_requirement_count": 0,
+            "quality_gap_count": 1,
+            "product_runtime_fact_count": 0,
+            "bounded_answer_allowed": true
+          },
+          "specialist_composite": {
+            "verification_status": "pass",
+            "writer_allowed": true,
+            "supported_claim_count": 16,
+            "unsupported_claim_count": 7,
+            "conflict_count": 1
+          },
+          "aggregate_r7": {
+            "supported_claim_count": 26,
+            "unsupported_claim_count": 7,
+            "conflict_count": 1,
+            "memo_outline_count": 7,
+            "judgment_card_count": 14,
+            "required_question_item_count": 10,
+            "required_item_answer_plan_count": 10
+          },
+          "writer_payload_preflight": {
+            "gate_status": "pass",
+            "compact_required_item_count": 10,
+            "compact_section_count": 7,
+            "compact_supported_claim_count": 8,
+            "known_evidence_ref_count": 5,
+            "approx_total_prompt_chars_with_scaffold": 56016
+          }
+        }
+      },
+      "problem_pattern": "Trace and shape exist, but product architecture, customer deployment, Dell margin bridge, semicap read-through, market price-in and counter-thesis are not all gold-depth.",
+      "likely_faulty_layers": [
+        "source_runtime_ingestion",
+        "ProductIntelligenceGraph projection",
+        "Coverage depth gate",
+        "specialist answer-exemplar contract",
+        "Research Lead post-specialist veto",
+        "writer semantic material selection"
+      ],
+      "next_repair": [
+        "Implement no-paid HumanmadeGoldSetAudit runner over aggregate r7 and writer payload.",
+        "Add BriefingPackQualityGate before Memo Writer.",
+        "Ingest AI/Semis human source ledger into runtime exact/product/deployment/benchmark/semicap slots.",
+        "Upgrade ProductIntelligenceGraph projection with investment-role product facts and edge roles.",
+        "Upgrade specialist skill/contract to require answer-exemplar-style briefing material.",
+        "Upgrade Research Lead post-specialist review to veto material that cannot form the gold chain.",
+        "Only then run one paid Memo Writer node from the accepted checkpoint; do not run broad full-chain."
+      ]
+    },
+    {
+      "case_id": "semicap_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Semiconductor equipment",
+      "status": "partial_from_ai_semis_deep_case_unproven_as_standalone_runtime_case",
+      "audit_scope": "inferred_from_ai_semis_deep_artifact_plus_gold_exemplar",
+      "story_role": "AI/Semis deep case already shows semicap read-through exists as mechanism, but not yet as bookings/backlog/customer-cycle proof.",
+      "answer_exemplar": "半导体设备公司的 AI read-through 不能写成“AI capex 增长，所以 ASML / AMAT / LRCX / KLAC 都受益”。AI 需求只有通过 foundry / memory / logic 客户的实际资本开支，进一步落到 WFE、EUV / DUV、deposition、etch、process control、advanced packaging 等设备类别，才会转成设备商的 bookings、backlog、shipment 和 service revenue。ASML 的关键在 EUV/DUV 订单、installed base service 和先进制程客户节奏；AMAT / LRCX / KLAC 的关键更偏工艺步骤暴露、存储周期、晶圆厂利用率、客户集中度和服务收入韧性。若只有 peer group、行业关系图谱或 AI 需求叙事，最多只能支持 research scope，不能当成订单周期和利润改善的主证据。",
+      "must_answer_items": [
+        "bookings_or_backlog_direction",
+        "EUV_DUV_WFE_or_process_control_exposure",
+        "foundry_memory_logic_customer_cycle",
+        "China_or_export_restriction_risk",
+        "service_mix_and_margin_quality"
+      ],
+      "evidence_roles": [
+        "company_disclosed_order_or_backlog",
+        "company_IR_or_annual_report",
+        "local_exchange_or_FPI_filing",
+        "official_customer_or_regulatory_context",
+        "scope_hypothesis_peer_group"
+      ],
+      "problem_pattern": "The system can name ASML/AMAT/LRCX/KLAC and explain the broad semicap mechanism, but current rows are still too close to peer-scope/context. The gold answer needs bookings, backlog, shipment, service mix, customer cycle and China/export exposure.",
+      "likely_faulty_layers": [
+        "FPI/company_IR/local_disclosure_parser",
+        "semicap_playbook_to_specialist_contract",
+        "ProductIntelligenceGraph edge investment projection",
+        "BriefingPackQualityGate missing semicap depth checks"
+      ],
+      "next_repair": [
+        "Ingest ASML/AMAT/LRCX/KLAC/TEL official results and IR tables into semicap exact/context slots.",
+        "Add semicap-specific required evidence roles: bookings, backlog, WFE/tool exposure, customer cycle, service mix, China/export risk.",
+        "Require industry_supply_chain_analyst to separate peer scope from cycle proof."
+      ]
+    },
+    {
+      "case_id": "cloud_saas_ai_monetization_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Cloud/SaaS",
+      "status": "catalog_ready_runtime_artifact_missing",
+      "audit_scope": "rubric_only_no_case_artifact",
+      "story_role": "This case tests whether AI capex is translated into monetization instead of being treated as automatically positive.",
+      "answer_exemplar": "Cloud / SaaS 的 AI 投资不能简单写成“AI 产品发布，所以公司会增长”。AI 同时是需求入口和成本压力。对 Microsoft、Amazon、Google 这类云厂商，capex 和 GPU / data center 支出先进入资产负债表和折旧，再通过 Azure / AWS / Google Cloud revenue、usage growth、AI workload attach、enterprise contract、RPO、gross margin 和 operating margin 体现回报。若只有 capex 增加而缺 monetization 指标，结论应是 bounded：AI 提供增长期权，但短期可能压制 FCF 和 margin。",
+      "must_answer_items": [
+        "cloud_or_saas_growth",
+        "RPO_ARR_or_backlog_proxy",
+        "capex_depreciation_margin_bridge",
+        "customer_or_developer_adoption",
+        "price_in_and_expectations"
+      ],
+      "evidence_roles": [
+        "company_disclosed_financials",
+        "official_product_surface",
+        "developer_ecosystem_proxy",
+        "market_expectation_proxy"
+      ],
+      "problem_pattern": "The project has capex and product/source layers, but this rubric has not been proven as a runtime workpaper. The likely failure is treating AI product launch or capex growth as growth proof without RPO/ARR/usage/margin/depreciation bridge.",
+      "likely_faulty_layers": [
+        "Research Lead required-item planning for monetization versus cost burden",
+        "FundamentalStatementPack SaaS/cloud operating metric slots",
+        "CapitalMarketFeedback price-in and capex burden projection",
+        "specialist answer-exemplar contract"
+      ],
+      "next_repair": [
+        "Add cloud/SaaS fixture with capex, cloud revenue, RPO/ARR/deferred revenue, margin and depreciation bridge.",
+        "Require Product/SaaS analyst to separate product adoption from monetized revenue.",
+        "Require Fundamental analyst to compute or explain AI capex return path and FCF/margin pressure."
+      ]
+    },
+    {
+      "case_id": "financials_rate_credit_capital_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Financials",
+      "status": "catalog_ready_runtime_artifact_missing",
+      "audit_scope": "rubric_only_no_case_artifact",
+      "story_role": "This case tests whether the system can switch from product-led analysis to balance-sheet-led financials analysis.",
+      "answer_exemplar": "银行和券商类金融公司的分析不能停在 revenue / EPS。利率上行也不是线性利好，关键要看资产端收益率重定价和负债端存款成本、存款流失、批发融资成本之间的差。合格结论应当是资产负债表驱动的：如果高利率提高资产收益但存款成本和信用损失上升更快，NIM 或 ROE 可能并不改善；如果贷款增长弱但信用质量恶化，收入韧性也可能掩盖未来拨备压力。宏观利率和 FDIC/FRED 数据只能提供环境，不能替代 issuer-level deposit、loan、capital、credit rows。",
+      "must_answer_items": [
+        "deposit_and_funding_cost",
+        "loan_balance_growth",
+        "NIM",
+        "provision_and_credit_quality",
+        "capital_ratio_and_liquidity",
+        "rate_sensitivity"
+      ],
+      "evidence_roles": [
+        "company_disclosed_balance_sheet",
+        "FDIC_context",
+        "FRED_rate_series",
+        "credit_spread_proxy",
+        "capital_action_context"
+      ],
+      "problem_pattern": "The current AI/Semis evidence path does not prove bank/financials behavior. The likely failure is analyzing banks like industrial companies, using revenue/EPS while underweighting deposits, NIM, loan growth, provisions, capital and liquidity.",
+      "likely_faulty_layers": [
+        "financials industry playbook not runtime-proven",
+        "FundamentalStatementPack bank-specific KPI slots",
+        "macro/rate context to issuer financial bridge",
+        "Research Lead industry routing"
+      ],
+      "next_repair": [
+        "Add financials fixture requiring deposit cost/mix, loan balance, NIM, provision, capital ratio and liquidity.",
+        "Make Research Lead route banks to balance-sheet-first analysis.",
+        "Prevent FRED/FDIC macro context from being promoted to issuer-level NIM or credit facts."
+      ]
+    },
+    {
+      "case_id": "healthcare_regulated_product_adoption_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Healthcare/Medtech/Pharma",
+      "status": "catalog_ready_runtime_artifact_missing",
+      "audit_scope": "rubric_only_no_case_artifact",
+      "story_role": "This case tests whether regulatory/product evidence can be used without pretending it is sales evidence.",
+      "answer_exemplar": "医药和医疗器械不能把 trial、FDA 或产品存在直接写成销售成功。产品/适应症先要有 clinical evidence 或 regulatory pathway，再看 label、payer / reimbursement、医生或医院采用、产能/渠道、procedure volume 或 prescription/usage proxy，最后才进入 revenue、gross margin 和 pipeline optionality。ClinicalTrials / openFDA / FDA approval 能支持产品存在、研发阶段、适应症和监管路径，但不能直接支持处方量、市场份额或产品收入。",
+      "must_answer_items": [
+        "product_or_indication",
+        "clinical_trial_or_FDA_status",
+        "adoption_or_procedure_volume",
+        "reimbursement_or_access",
+        "financial_bridge_or_gap"
+      ],
+      "evidence_roles": [
+        "company_disclosed_product_context",
+        "ClinicalTrials_context",
+        "openFDA_context",
+        "procedure_volume_proxy",
+        "commercial_tracker_gap"
+      ],
+      "problem_pattern": "The system has ClinicalTrials/openFDA source concepts, but no audited runtime case proving trial/FDA/product/adoption/reimbursement facts become a product-performance briefing.",
+      "likely_faulty_layers": [
+        "regulated product context adapter depth",
+        "healthcare product-to-commercialization playbook",
+        "ProductIntelligenceGraph product indication and adoption edges",
+        "commercial tracker boundary gate"
+      ],
+      "next_repair": [
+        "Add healthcare fixture with product/indication, trial/FDA status, adoption/procedure proxy, reimbursement/access and revenue bridge/gap.",
+        "Force distinction between regulatory eligibility and commercial performance.",
+        "Classify missing prescription/procedure/share data as commercial/public boundary only after source-route attempts."
+      ]
+    },
+    {
+      "case_id": "energy_utilities_power_demand_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Energy/Utilities/Power",
+      "status": "catalog_ready_runtime_artifact_missing",
+      "audit_scope": "rubric_only_no_case_artifact",
+      "story_role": "This case tests whether AI power demand is converted into regulated return, capex and financing analysis.",
+      "answer_exemplar": "AI data center 用电增长不能直接写成公用事业利润增长。对 regulated utility，负荷增长只有在进入 rate base、capex plan、transmission/distribution investment、allowed ROE 和 rate case 后，才会变成较可见的长期 earnings base；同时 capex 扩张也会带来债务、利息、股权融资和监管滞后风险。若只有 EIA/电价/AI 用电新闻，则只能支持需求背景，不能直接推断 EPS、ROE 或股价上行。",
+      "must_answer_items": [
+        "load_or_demand_growth",
+        "generation_or_asset_exposure",
+        "regulated_asset_base_or_rate_case",
+        "capex_and_debt_bridge",
+        "cash_flow_quality"
+      ],
+      "evidence_roles": [
+        "company_disclosed_financials",
+        "EIA_or_regulatory_context",
+        "power_price_proxy",
+        "data_center_demand_proxy",
+        "debt_market_context"
+      ],
+      "problem_pattern": "The system has macro/regulatory source ideas and capital packs, but no runtime proof that load growth, rate base, allowed ROE, capex, debt and cash flow are analyzed together.",
+      "likely_faulty_layers": [
+        "utility industry operating metric slots",
+        "EIA/regulatory data adapter to issuer exposure bridge",
+        "capital/debt/FCF bridge projection",
+        "Research Lead utility playbook injection"
+      ],
+      "next_repair": [
+        "Add utility fixture requiring load growth, generation/asset exposure, rate case/RAB, capex/debt and cash-flow quality.",
+        "Prevent AI power-demand headlines from being promoted to EPS or ROE proof.",
+        "Connect rate-case/regulatory evidence to financing and capex pressure."
+      ]
+    },
+    {
+      "case_id": "retail_consumer_traffic_margin_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Retail/Consumer",
+      "status": "catalog_ready_runtime_artifact_missing",
+      "audit_scope": "rubric_only_no_case_artifact",
+      "story_role": "This case tests whether consumer growth is decomposed into traffic, ticket, price/mix, units, inventory and margin.",
+      "answer_exemplar": "Retail / consumer 的收入增长必须拆成 traffic、ticket、price/mix、unit volume、store expansion 和 promotion。同样是 revenue growth，同店销售靠客流增长和会员/复购支撑，比靠价格或促销更健康；gross margin 改善如果来自 freight relief 或 shrink 改善，和来自价格转嫁的可持续性不同。公开源下可用的是公司披露 operating KPI、同店销售、traffic/ticket、库存、毛利、宏观消费和渠道 proxy；公开 proxy 可以帮助判断方向，但不能冒充 sell-through exact。",
+      "must_answer_items": [
+        "same_store_sales_or_volume",
+        "traffic_vs_ticket",
+        "price_mix_margin_bridge",
+        "inventory_or_promotion",
+        "consumer_context"
+      ],
+      "evidence_roles": [
+        "company_disclosed_operating_metrics",
+        "consumer_macro_proxy",
+        "channel_or_POS_proxy",
+        "commercial_tracker_gap"
+      ],
+      "problem_pattern": "The system likely has revenue and company-disclosed KPI rows for some issuers, but has not proven it can avoid writing consumer/retail as generic revenue growth.",
+      "likely_faulty_layers": [
+        "retail operating metric slot normalization",
+        "commercial POS/channel boundary",
+        "Fundamental analyst operating decomposition skill",
+        "MemoLogicPlan dimension requirements"
+      ],
+      "next_repair": [
+        "Add retail fixture requiring same-store sales, traffic/ticket, price/mix, inventory, promotion and gross margin.",
+        "Keep POS/sell-through exact as commercial gap unless public rows exist.",
+        "Require revenue growth to be decomposed before memo pass."
+      ]
+    },
+    {
+      "case_id": "auto_ev_industrial_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Auto/EV/Industrial",
+      "status": "catalog_ready_runtime_artifact_missing",
+      "audit_scope": "rubric_only_no_case_artifact",
+      "story_role": "This case tests whether volume growth is separated from profit quality.",
+      "answer_exemplar": "Auto / EV 不能只看 deliveries，工业公司也不能只看订单标题。交付量增长如果伴随 ASP 下滑、库存上升、激励增加或融资成本上升，利润质量可能下降；NHTSA recall、质量事件和产能利用率会影响产品风险和成本。合格答案应该区分“需求量”和“利润质量”：交付增长能证明产品或渠道有需求，但不能单独证明 margin 改善；ASP、mix、inventory days、warranty/recall、capacity utilization、financing rate 和 dealer/channel data 才能回答需求是否健康。",
+      "must_answer_items": [
+        "delivery_or_volume",
+        "ASP_or_price_mix_proxy",
+        "inventory_or_channel_pressure",
+        "NHTSA_or_recall_context",
+        "capacity_utilization",
+        "financing_cost_sensitivity"
+      ],
+      "evidence_roles": [
+        "company_disclosed_operating_metric",
+        "NHTSA_context",
+        "dealer_or_channel_proxy",
+        "macro_rate_context"
+      ],
+      "problem_pattern": "The system has NHTSA/source concepts and product layers, but no proof that deliveries, ASP, inventory, recall, capacity utilization and financing sensitivity are bridged to margin quality.",
+      "likely_faulty_layers": [
+        "auto/industrial operating metric slots",
+        "NHTSA and recall context projection",
+        "channel/inventory parser routes",
+        "specialist product-to-margin bridge"
+      ],
+      "next_repair": [
+        "Add auto/industrial fixture requiring delivery/volume, ASP/mix, inventory/channel, recall/quality, capacity and financing sensitivity.",
+        "Prevent deliveries alone from being written as margin-quality proof.",
+        "Route recall/quality context to product risk, not revenue proof."
+      ]
+    },
+    {
+      "case_id": "capital_market_feedback_price_in_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Cross-sector secondary market",
+      "status": "partial_platform_foundation_but_case_pack_missing",
+      "audit_scope": "capability_exists_no_gold_case_artifact",
+      "story_role": "This case tests whether the system can say not only what improved, but whether the market already paid for it.",
+      "answer_exemplar": "二级市场分析不是替代基本面，而是回答“好消息是否已经被定价，以及资金和资本结构是否会反过来影响公司”。基本面和产品证据回答“公司有没有变好”，市场资金面和资本反馈回答“市场是否已经给了这个价格、融资窗口是否改善、是否存在拥挤或事件风险”。如果估值已显著扩张、期权 implied move 很高、持仓拥挤或公司有潜在增发/可转债/解禁压力，即使基本面方向正确，也要降低短期 risk/reward。不能把这些写成面向外部用户的交易建议。",
+      "must_answer_items": [
+        "valuation_and_peer_context",
+        "holder_or_ownership_proxy",
+        "liquidity_short_interest_or_options_context",
+        "credit_funding_or_debt_context",
+        "buyback_offering_or_event_catalyst"
+      ],
+      "evidence_roles": [
+        "market_snapshot_context",
+        "ownership_filing_context",
+        "credit_or_debt_context",
+        "derivatives_proxy",
+        "corporate_action_filing"
+      ],
+      "problem_pattern": "S8 capital feedback exists at platform level, but the AI/Semis audit shows NVDA/AMD/GOOGL/DELL valuation, positioning and crowding rows were missing for the concrete case.",
+      "likely_faulty_layers": [
+        "CapitalMarketFeedback case-specific pack selection",
+        "valuation/ownership/liquidity source routing",
+        "market_valuation_analyst required-item contract",
+        "MemoLogicPlan price-in dimension"
+      ],
+      "next_repair": [
+        "Add price-in fixture requiring valuation/peer context, holder/ownership, liquidity/short/options context, credit/debt and event/corporate-action rows.",
+        "Make market feedback a bounded second-order layer, not a trade recommendation.",
+        "Require price-in section to state what is already reflected and what evidence is missing."
+      ]
+    },
+    {
+      "case_id": "negative_sku_revenue_missing_not_product_failure_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "AI/Semis product analysis",
+      "status": "open_guard_needed_ai_semis_currently_fails_depth",
+      "audit_scope": "negative_pattern_relevant_to_ai_semis_artifact",
+      "story_role": "This negative case is the clearest symptom of the current product-layer weakness.",
+      "answer_exemplar": "不能因为 NVIDIA 没拆 H100 / H200 / B200 / GB200 的 SKU 收入，就说产品层无法判断。NVIDIA 当前 AI accelerator 竞争力可以从 GPU 代际升级、显存/带宽/互联、CUDA / Networking / NVLink / InfiniBand 生态、客户部署、OEM AI server 配置、CoWoS/HBM 供应瓶颈和数据中心 capex 约束来判断。边界是：这些证据能支持产品能力强、采用真实、供应链有瓶颈、替代短期有限，不能直接推出 SKU revenue、ASP、shipment 或 share。",
+      "must_answer_items": [
+        "product_capability_judgment",
+        "exact_kpi_gap_reason",
+        "cannot_infer_boundary"
+      ],
+      "evidence_roles": [
+        "technical_fact",
+        "deployment_signal",
+        "performance_proxy",
+        "exact_product_kpi_gap"
+      ],
+      "problem_pattern": "The system should keep product analysis alive without SKU revenue, but the current AI/Semis artifact still lacks product runtime facts and risks reducing product judgment to exact-KPI absence.",
+      "likely_faulty_layers": [
+        "product source runtime ingestion",
+        "ProductIntelligenceGraph product fact projection",
+        "product specialist answer contract",
+        "BriefingPackQualityGate product-depth check"
+      ],
+      "next_repair": [
+        "Add product fact slots for official specs, architecture generation, benchmark/performance proxy, OEM/cloud config and deployment evidence.",
+        "Add negative gate: missing SKU revenue cannot make product section fail if technical/deployment evidence exists."
+      ]
+    },
+    {
+      "case_id": "negative_demand_pool_not_supplier_allocation_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "AI/Semis demand read-through",
+      "status": "partial_guard_present_needs_machine_check",
+      "audit_scope": "negative_pattern_relevant_to_ai_semis_artifact",
+      "story_role": "This negative case is mostly understood, but not yet hardened as a matrix gate.",
+      "answer_exemplar": "MSFT / AMZN / GOOGL / META capex 上升可以说明 AI infrastructure demand pool 真实存在，但不能直接说明这些钱流向了某一家 GPU、server OEM、semicap 或 power/cooling 公司。capex 增长提高了需求池可信度，NVDA / DELL / ASML / LRCX 的受益需要进一步看产品供给、客户部署、供应瓶颈和公司财务桥。没有这些桥时，只能写 bounded demand read-through，不能写 supplier allocation exact。",
+      "must_answer_items": [
+        "demand_pool_judgment",
+        "supplier_allocation_boundary",
+        "what_evidence_would_upgrade"
+      ],
+      "evidence_roles": [
+        "company_disclosed_capex",
+        "demand_pool_context",
+        "supplier_relationship_scope",
+        "allocation_gap"
+      ],
+      "problem_pattern": "MSFT/AMZN capex is treated as demand-pool evidence and not direct supplier allocation in the audit, but future writer/specialist outputs still need a deterministic check.",
+      "likely_faulty_layers": [
+        "Research Lead evidence role plan",
+        "specialist cannot-infer boundary",
+        "Memo Writer source-role projection"
+      ],
+      "next_repair": [
+        "Add audit rule that hyperscaler capex can support demand pool but not supplier allocation exact.",
+        "Require what-would-upgrade evidence: customer deployment, purchase/order, supplier revenue/order/backlog."
+      ]
+    },
+    {
+      "case_id": "negative_relationship_graph_not_financial_fact_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Product relationship graph",
+      "status": "partial_guard_present_projection_needs_investment_roles",
+      "audit_scope": "negative_pattern_relevant_to_ai_semis_artifact",
+      "story_role": "This negative case exposes why graph quality is not the same as analysis quality.",
+      "answer_exemplar": "ProductRelationshipGraph 的价值是把研究路径打通，不是直接替代证据。图谱边能帮助解释 NVIDIA GPU、TSMC advanced packaging、HBM、DELL AI servers、hyperscaler capex、ASML/LRCX/AMAT/KLAC semicap 之间的机制，也能提示下一步 evidence search。它不能写成订单、收入、毛利或 backlog。图谱是 thesis map 和 evidence search guide，不是财务结论。",
+      "must_answer_items": [
+        "edge_investment_role",
+        "supported_mechanism",
+        "cannot_infer_financial_fact"
+      ],
+      "evidence_roles": [
+        "relationship_graph_scope",
+        "mechanism_context",
+        "evidence_requirement_seed"
+      ],
+      "problem_pattern": "Current graph rows are mostly treated as scope/hypothesis, which avoids direct financial over-promotion, but they still lack stable investment-role projection.",
+      "likely_faulty_layers": [
+        "ProductIntelligenceGraph investment-role projection",
+        "relationship_graph edge authority schema",
+        "JudgmentCard graph_edge_refs"
+      ],
+      "next_repair": [
+        "Attach edge_investment_role such as demand_validation, adoption_signal, supply_constraint, margin_pressure, substitution or customer_concentration.",
+        "Force every graph edge used in a memo to state cannot-infer financial facts."
+      ]
+    },
+    {
+      "case_id": "negative_parser_gap_not_public_source_absent_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Disclosure parser and source route",
+      "status": "partial_guard_present_not_generalized",
+      "audit_scope": "negative_pattern_relevant_to_ai_semis_artifact",
+      "story_role": "This negative case is how source gaps stop being fake public-data gaps.",
+      "answer_exemplar": "如果 ASML、TEL、Hon Hai、DART、本地交易所或公司 IR 的年报/季报/演示稿已经定位到，但表格、附注或数字没有被抽出来，正确结论不是“公开源没有数据”。正确结论是：source 存在，当前 parser / locator / local disclosure adapter 没能把它转成可审计 row。这个 gap 应写成 parser_gap、table_extraction_gap、local_filing_adapter_gap 或 source_route_runtime_gap，并触发具体 parser 修复。",
+      "must_answer_items": [
+        "source_presence",
+        "parser_failure_reason",
+        "correct_gap_type"
+      ],
+      "evidence_roles": [
+        "located_public_source",
+        "parser_gap",
+        "local_disclosure_adapter_gap"
+      ],
+      "problem_pattern": "ASML/TSM SEC manifest gaps are now typed as retrievable route gaps, but this does not prove non-US/local disclosure parser discipline across all cases.",
+      "likely_faulty_layers": [
+        "FPI/company_IR/local_exchange source router",
+        "table/PDF parser attribution",
+        "gap taxonomy"
+      ],
+      "next_repair": [
+        "Add audit rule: located source plus failed extraction must become parser_gap or local_adapter_gap, never public_source_absent.",
+        "Add sample local/FPI filings to parser-boundary fixtures."
+      ]
+    },
+    {
+      "case_id": "negative_available_evidence_not_used_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Evidence projection and memo writer consumption",
+      "status": "open_guard_needed_old_memo_showed_symptom",
+      "audit_scope": "negative_pattern_relevant_to_old_paid_memo_and_writer_payload",
+      "story_role": "This negative case connects data transmission failures to bad final prose.",
+      "answer_exemplar": "如果 pre_memo_fact_selection、aggregate r7 或 writer payload 已经包含 LRCX revenue/capex、DELL ISG revenue、gross margin、operating income、working capital 或 capex rows，最终 memo 就不能写“缺少 LRCX/DELL 财务数据”。这不是数据缺失，而是 selector、projection、JudgmentCard、MemoLogicPlan 或 writer consumption 的内部传导失败。正确处理是 fail 并回溯最早 faulty layer。",
+      "must_answer_items": [
+        "available_evidence_ref",
+        "missing_in_memo_symptom",
+        "root_cause_layer"
+      ],
+      "evidence_roles": [
+        "pre_memo_fact_selection",
+        "aggregate_payload",
+        "memo_output",
+        "projection_gap"
+      ],
+      "problem_pattern": "Previous outputs could say data was missing or remain generic even when aggregate or payload contained relevant DELL/LRCX financial rows. That is not a source gap; it is selector/projection/writer consumption failure.",
+      "likely_faulty_layers": [
+        "selected claim bridge",
+        "MemoLogicPlan required_item_answer_plan consumption",
+        "Memo Writer evidence ref inventory",
+        "Verifier contradiction check"
+      ],
+      "next_repair": [
+        "Add audit rule comparing aggregate/payload available facts with final memo missing-data claims.",
+        "Fail hard when final memo says evidence is missing while upstream accepted artifact contains it."
+      ]
+    },
+    {
+      "case_id": "negative_commercial_tracker_boundary_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Commercial tracker boundary",
+      "status": "contract_defined_runtime_guard_unproven",
+      "audit_scope": "negative_pattern_no_case_artifact",
+      "story_role": "This negative case protects the product from becoming either overconfident or useless.",
+      "answer_exemplar": "公开网页、新闻、App Store 排名、电商 listing、招聘、开发者生态、channel availability 和政府/监管 proxy 可以支持方向性判断，但不能冒充 IDC、Gartner、IQVIA、NielsenIQ、POS sell-through、OPRA、borrow cost 或 app revenue 这类商业/授权数据。正确做法是保留公开 proxy 的研究价值，同时明确 exact commercial tracker gap；错误做法是把公开 proxy 填成 exact sales/share，或者因为没有商业 tracker 就整段拒答。",
+      "must_answer_items": [
+        "public_proxy_role",
+        "commercial_gap_reason",
+        "cannot_infer_exact_metric"
+      ],
+      "evidence_roles": [
+        "public_proxy",
+        "commercial_tracker_gap",
+        "authorization_gap"
+      ],
+      "problem_pattern": "The platform has commercial/public-boundary concepts, but no matrix audit has proven that public proxy keeps research value without being promoted to exact sales/share/flow.",
+      "likely_faulty_layers": [
+        "source authority model",
+        "commercial_gap taxonomy",
+        "Memo Writer proxy wording",
+        "Verifier proxy-to-exact misuse gate"
+      ],
+      "next_repair": [
+        "Add audit rule that public proxy can support direction/context but not exact commercial tracker metrics.",
+        "Require memos to preserve bounded proxy value instead of refusing the whole section."
+      ]
+    }
+  ],
+  "story_chapters": [
+    {
+      "chapter": "1_engineering_chain_exists_but_research_chain_is_thin",
+      "finding": "The project no longer fails because there is no graph or no evidence path. It fails because the evidence path still turns into context, boundaries and generic anchors before it becomes an analyst-grade judgment.",
+      "supported_by_cases": [
+        "ai_semis_dell_nvda_anchor_v0_1"
+      ]
+    },
+    {
+      "chapter": "2_deep_case_exposes_the_first_faulty_floor",
+      "finding": "AI/Semis shows the earliest hard failure at gold-depth source rows and product graph projection: product_runtime_fact_count=0 and several required items remain context/proxy even though route/shape gates pass.",
+      "supported_by_cases": [
+        "ai_semis_dell_nvda_anchor_v0_1",
+        "negative_sku_revenue_missing_not_product_failure_v0_1"
+      ]
+    },
+    {
+      "chapter": "3_rubric_cases_show_this_will_generalize_unless_methods_become_runtime_contracts",
+      "finding": "Semicap, Cloud/SaaS, Financials, Healthcare, Energy, Retail, Auto and Secondary-market cases each require different operating metrics and evidence bridges. Current P33 success on AI/Semis structure does not prove those vertical methods are runtime-active.",
+      "supported_by_cases": [
+        "semicap_cycle_rubric_v0_1",
+        "cloud_saas_ai_monetization_rubric_v0_1",
+        "financials_rate_credit_capital_rubric_v0_1",
+        "healthcare_regulated_product_adoption_rubric_v0_1",
+        "energy_utilities_power_demand_rubric_v0_1",
+        "retail_consumer_traffic_margin_rubric_v0_1",
+        "auto_ev_industrial_cycle_rubric_v0_1",
+        "capital_market_feedback_price_in_rubric_v0_1"
+      ]
+    },
+    {
+      "chapter": "4_negative_cases_define_the_failure_modes_that_must_be_machine_checked",
+      "finding": "The most dangerous failures are not empty answers. They are over-promotion, false source absence, available evidence not used, and public proxy pretending to be exact. These need gates tied to artifacts, not reviewer memory.",
+      "supported_by_cases": [
+        "negative_sku_revenue_missing_not_product_failure_v0_1",
+        "negative_demand_pool_not_supplier_allocation_v0_1",
+        "negative_relationship_graph_not_financial_fact_v0_1",
+        "negative_parser_gap_not_public_source_absent_v0_1",
+        "negative_available_evidence_not_used_v0_1",
+        "negative_commercial_tracker_boundary_v0_1"
+      ]
+    },
+    {
+      "chapter": "5_next_repair_must_compile_gold_set_into_runtime",
+      "finding": "The next useful engineering step is not another model run. It is to compile the gold set into HumanmadeGoldSetAudit, BriefingPackQualityGate, source ingestion, graph projection, specialist contracts and Research Lead veto.",
+      "supported_by_cases": [
+        "ai_semis_dell_nvda_anchor_v0_1",
+        "semicap_cycle_rubric_v0_1",
+        "cloud_saas_ai_monetization_rubric_v0_1",
+        "financials_rate_credit_capital_rubric_v0_1",
+        "healthcare_regulated_product_adoption_rubric_v0_1",
+        "energy_utilities_power_demand_rubric_v0_1",
+        "retail_consumer_traffic_margin_rubric_v0_1",
+        "auto_ev_industrial_cycle_rubric_v0_1",
+        "capital_market_feedback_price_in_rubric_v0_1",
+        "negative_sku_revenue_missing_not_product_failure_v0_1",
+        "negative_demand_pool_not_supplier_allocation_v0_1",
+        "negative_relationship_graph_not_financial_fact_v0_1",
+        "negative_parser_gap_not_public_source_absent_v0_1",
+        "negative_available_evidence_not_used_v0_1",
+        "negative_commercial_tracker_boundary_v0_1"
+      ]
+    }
+  ],
+  "cross_case_conclusion": {
+    "short_form": "The project has moved past basic orchestration failure, but has not yet converted vertical research methods and public-source evidence into reusable runtime judgment assets.",
+    "why_ai_semis_matters": "AI/Semis is the first deep artifact-backed proof that shape/trace can pass while research depth still fails.",
+    "why_rubric_cases_matter": "The rubric cases show the same weakness would reappear across sectors unless each vertical's method, operating metrics and authority boundaries are compiled into runtime contracts.",
+    "why_negative_cases_matter": "The negative cases define the exact ways a financial agent can sound plausible while being wrong: over-promotion, false missing-data claims, parser/source confusion and proxy/exact misuse."
+  },
+  "next_repair_order": [
+    "Implement artifact-backed HumanmadeGoldSetAudit runner output as a required pre-writer gate.",
+    "Add BriefingPackQualityGate with per-gold-case depth checks.",
+    "Ingest AI/Semis human source ledger into runtime slots first; do not expand paid cases.",
+    "Compile rubric cases into vertical playbook runtime contracts before claiming cross-sector readiness.",
+    "Compile negative cases into deterministic failure gates against aggregate, writer payload and final memo."
+  ]
+}

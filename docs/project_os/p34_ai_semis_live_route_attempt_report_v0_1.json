@@ -1,0 +1,1373 @@
+{
+  "schema_version": "fin_insight_p34_ai_semis_live_route_attempt_report_v0_1",
+  "artifact_type": "ai_semis_live_route_attempt_report",
+  "status": "live_route_attempts_recorded_with_remaining_typed_gaps",
+  "lane": "AI/Semis",
+  "scope": {
+    "purpose": "Connect P34 evidence slots to source route attempts or attempt-backed typed gaps before paid/full-chain.",
+    "perform_network": true,
+    "paid_llm_performed": false,
+    "full_chain_performed": false,
+    "promotion_rule": "Only accepted_runtime_rows can support judgment chains; typed gaps explain why missing rows cannot be promoted."
+  },
+  "metrics": {
+    "slot_count": 20,
+    "attempt_count": 21,
+    "attempted_slot_count": 20,
+    "accepted_runtime_row_count": 21,
+    "accepted_slot_count": 20,
+    "typed_gap_count": 2,
+    "attempt_backed_gap_slot_count": 2,
+    "unattempted_slot_count": 0,
+    "network_attempt_count": 15,
+    "network_ok_count": 15,
+    "perform_network": true,
+    "paid_llm_run": false,
+    "full_chain_run": false
+  },
+  "accepted_slot_ids": [
+    "alphabet_capex_server_chain_context",
+    "amat_semiconductor_systems_mix",
+    "amd_mi300x_memory_bandwidth_competition",
+    "amd_mlperf_mi355x_performance_proxy",
+    "amzn_aws_demand_pool_context",
+    "asml_lithography_installed_base_readthrough",
+    "counter_thesis_pack_ai_semis",
+    "dell_ai_server_orders_shipments_backlog",
+    "dell_isg_revenue_margin_baseline",
+    "dell_nvidia_poweredge_ai_factory_product_path",
+    "dell_xe9712_gb200_oem_system_config",
+    "google_a4x_gb200_cloud_deployment_surface",
+    "google_tpu_v6e_trillium_architecture",
+    "lrcx_memory_hbm_process_intensity",
+    "market_price_in_valuation_positioning_gap",
+    "meta_capex_component_pricing_risk",
+    "msft_cloud_ai_capex_supply_shortfall",
+    "nvda_data_center_revenue_demand_confirmation",
+    "nvda_gb200_nvl72_rack_architecture",
+    "tsmc_advanced_node_hpc_ai_readthrough"
+  ],
+  "attempt_backed_gap_slot_ids": [
+    "dell_ai_server_margin_bridge_quality_gap",
+    "market_price_in_exact_positioning_gap"
+  ],
+  "unattempted_slot_ids": [],
+  "attempts": [
+    {
+      "attempt_id": "p34_attempt::amat_semiconductor_systems_mix::local_manifest_live_ready",
+      "evidence_row_id": "amat_semiconductor_systems_mix",
+      "judgment_chain_ids": [
+        "jc_foundry_semicap_readthrough"
+      ],
+      "route_id": "p34_route::amat_semiconductor_systems_mix::01::semicap_bookings_backlog_adapter",
+      "adapter_family": "semicap_bookings_backlog_adapter",
+      "route_role": "existing_strict_live_ready_manifest",
+      "attempted_url_or_query": "PRODUCTKPI::AMAT::product_revenue::STRUCTURED::811e4cb8712497",
+      "source_domain": "local_manifest",
+      "fetch_mode": "local_manifest_lookup",
+      "fetch_status": "ok",
+      "http_status": null,
+      "parser_status": "accepted_existing_manifest_live_ready",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "docs/project_os/p33_goldset_live_source_backfill_v0_1.json#sha256:3dc5045337df81fe",
+      "found_keywords": [
+        "amat_semiconductor_systems_mix"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::amzn_aws_demand_pool_context::local_manifest_live_ready",
+      "evidence_row_id": "amzn_aws_demand_pool_context",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool"
+      ],
+      "route_id": "p34_route::amzn_aws_demand_pool_context::01::sec_8k_earnings_release_table_adapter",
+      "adapter_family": "sec_8k_earnings_release_table_adapter",
+      "route_role": "existing_strict_live_ready_manifest",
+      "attempted_url_or_query": "PRODUCTKPI::AMZN::product_revenue::STRUCTURED::92dbdb4256d6c9",
+      "source_domain": "local_manifest",
+      "fetch_mode": "local_manifest_lookup",
+      "fetch_status": "ok",
+      "http_status": null,
+      "parser_status": "accepted_existing_manifest_live_ready",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "docs/project_os/p33_goldset_live_source_backfill_v0_1.json#sha256:841eddd94d6ff506",
+      "found_keywords": [
+        "amzn_aws_demand_pool_context"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::nvda_gb200_nvl72_rack_architecture::local_manifest_live_ready",
+      "evidence_row_id": "nvda_gb200_nvl72_rack_architecture",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition"
+      ],
+      "route_id": "p34_route::nvda_gb200_nvl72_rack_architecture::01::official_product_spec_page_adapter",
+      "adapter_family": "official_product_spec_page_adapter",
+      "route_role": "existing_strict_live_ready_manifest",
+      "attempted_url_or_query": "official_product_spec:af35fa88d92108ad",
+      "source_domain": "local_manifest",
+      "fetch_mode": "local_manifest_lookup",
+      "fetch_status": "ok",
+      "http_status": null,
+      "parser_status": "accepted_existing_manifest_live_ready",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "docs/project_os/p33_goldset_live_source_backfill_v0_1.json#sha256:2be0961d65e67271",
+      "found_keywords": [
+        "nvda_gb200_nvl72_rack_architecture"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::tsmc_advanced_node_hpc_ai_readthrough::local_manifest_live_ready",
+      "evidence_row_id": "tsmc_advanced_node_hpc_ai_readthrough",
+      "judgment_chain_ids": [
+        "jc_foundry_semicap_readthrough"
+      ],
+      "route_id": "p34_route::tsmc_advanced_node_hpc_ai_readthrough::01::investor_deck_pdf_table_adapter",
+      "adapter_family": "investor_deck_pdf_table_adapter",
+      "route_role": "existing_strict_live_ready_manifest",
+      "attempted_url_or_query": "company_disclosed_product_business_mix:a8d8a41539f82e6a",
+      "source_domain": "local_manifest",
+      "fetch_mode": "local_manifest_lookup",
+      "fetch_status": "ok",
+      "http_status": null,
+      "parser_status": "accepted_existing_manifest_live_ready",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "docs/project_os/p33_goldset_live_source_backfill_v0_1.json#sha256:d59e1d121557e723",
+      "found_keywords": [
+        "tsmc_advanced_node_hpc_ai_readthrough"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::dell_ai_server_orders_shipments_backlog::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+      "evidence_row_id": "dell_ai_server_orders_shipments_backlog",
+      "judgment_chain_ids": [
+        "jc_dell_ai_server_financial_quality",
+        "jc_customer_deployment_oem_adoption"
+      ],
+      "route_id": "p34_route::dell_ai_server_orders_shipments_backlog::01::sec_8k_earnings_release_table_adapter",
+      "adapter_family": "sec_8k_earnings_release_table_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~2~dell-technologies-delivers-fourth-quarter-and-full-year-fiscal-2026-results.htm",
+      "source_domain": "www.dell.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~2~dell-technologies-delivers-fourth-quarter-and-full-year-fiscal-2026-results.htm#sha256:2a42d20560567b59",
+      "found_keywords": [
+        "AI-optimized server orders",
+        "shipped",
+        "backlog"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::dell_isg_revenue_margin_baseline::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+      "evidence_row_id": "dell_isg_revenue_margin_baseline",
+      "judgment_chain_ids": [
+        "jc_dell_ai_server_financial_quality"
+      ],
+      "route_id": "p34_route::dell_isg_revenue_margin_baseline::01::sec_8k_earnings_release_table_adapter",
+      "adapter_family": "sec_8k_earnings_release_table_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2025~05~dell-technologies-delivers-first-quarter-fiscal-2026-financial-results.htm",
+      "source_domain": "www.dell.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2025~05~dell-technologies-delivers-first-quarter-fiscal-2026-financial-results.htm#sha256:1fe6a1f9bf91b72f",
+      "found_keywords": [
+        "Total ISG net revenue",
+        "ISG operating income",
+        "9.7"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::dell_nvidia_poweredge_ai_factory_product_path::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+      "evidence_row_id": "dell_nvidia_poweredge_ai_factory_product_path",
+      "judgment_chain_ids": [
+        "jc_customer_deployment_oem_adoption",
+        "jc_accelerator_architecture_competition"
+      ],
+      "route_id": "p34_route::dell_nvidia_poweredge_ai_factory_product_path::02::customer_deployment_news_adapter",
+      "adapter_family": "customer_deployment_news_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~10~dell-servers-storage-at-ocp.htm",
+      "source_domain": "www.dell.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~10~dell-servers-storage-at-ocp.htm#sha256:07d71364b6864e84",
+      "found_keywords": [
+        "PowerEdge",
+        "NVIDIA",
+        "GB200",
+        "NVL72"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::dell_xe9712_gb200_oem_system_config::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+      "evidence_row_id": "dell_xe9712_gb200_oem_system_config",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_customer_deployment_oem_adoption"
+      ],
+      "route_id": "p34_route::dell_xe9712_gb200_oem_system_config::02::oem_configuration_adapter",
+      "adapter_family": "oem_configuration_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~10~dell-servers-storage-at-ocp.htm",
+      "source_domain": "www.dell.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~10~dell-servers-storage-at-ocp.htm#sha256:76855d96692e2325",
+      "found_keywords": [
+        "PowerEdge XE9712",
+        "GB200",
+        "NVL72"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::nvda_data_center_revenue_demand_confirmation::investor_nvidia_com_news_press_release_details_2026_NVIDIA_Announces_Financial_R",
+      "evidence_row_id": "nvda_data_center_revenue_demand_confirmation",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool",
+        "jc_accelerator_architecture_competition"
+      ],
+      "route_id": "p34_route::nvda_data_center_revenue_demand_confirmation::01::sec_8k_earnings_release_table_adapter",
+      "adapter_family": "sec_8k_earnings_release_table_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-First-Quarter-Fiscal-2027/default.aspx",
+      "source_domain": "investor.nvidia.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-First-Quarter-Fiscal-2027/default.aspx#sha256:4740e45439573ec1",
+      "found_keywords": [
+        "Data Center",
+        "revenue",
+        "AI"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::amd_mi300x_memory_bandwidth_competition::www_amd_com_en_products_accelerators_instinct_mi300_mi300x_html",
+      "evidence_row_id": "amd_mi300x_memory_bandwidth_competition",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "route_id": "p34_route::amd_mi300x_memory_bandwidth_competition::01::official_product_spec_page_adapter",
+      "adapter_family": "official_product_spec_page_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://www.amd.com/en/products/accelerators/instinct/mi300/mi300x.html",
+      "source_domain": "www.amd.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://www.amd.com/en/products/accelerators/instinct/mi300/mi300x.html#sha256:8a1c712b86a4dd14",
+      "found_keywords": [
+        "MI300X",
+        "192 GB",
+        "HBM3",
+        "5.3 TB/s"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::amd_mi300x_memory_bandwidth_competition::www_amd_com_content_dam_amd_en_documents_instinct_tech_docs_data_sheets_amd_inst",
+      "evidence_row_id": "amd_mi300x_memory_bandwidth_competition",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "route_id": "p34_route::amd_mi300x_memory_bandwidth_competition::02::official_product_docs_or_pdf_adapter",
+      "adapter_family": "official_product_docs_or_pdf_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/data-sheets/amd-instinct-mi300x-data-sheet.pdf",
+      "source_domain": "www.amd.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/data-sheets/amd-instinct-mi300x-data-sheet.pdf#sha256:60d78bc2849cd7c3",
+      "found_keywords": [
+        "MI300X",
+        "192 GB",
+        "5.3 TB/s"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::google_tpu_v6e_trillium_architecture::cloud_google_com_tpu_docs_v6e",
+      "evidence_row_id": "google_tpu_v6e_trillium_architecture",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "route_id": "p34_route::google_tpu_v6e_trillium_architecture::01::official_product_spec_page_adapter",
+      "adapter_family": "official_product_spec_page_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://cloud.google.com/tpu/docs/v6e",
+      "source_domain": "cloud.google.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://cloud.google.com/tpu/docs/v6e#sha256:5b355c7138cc2303",
+      "found_keywords": [
+        "TPU v6e",
+        "Trillium",
+        "HBM"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::amd_mlperf_mi355x_performance_proxy::www_amd_com_en_blogs_2026_amd_delivers_breakthrough_mlperf_inference_6_0_results",
+      "evidence_row_id": "amd_mlperf_mi355x_performance_proxy",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "route_id": "p34_route::amd_mlperf_mi355x_performance_proxy::01::benchmark_result_adapter",
+      "adapter_family": "benchmark_result_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://www.amd.com/en/blogs/2026/amd-delivers-breakthrough-mlperf-inference-6-0-results.html",
+      "source_domain": "www.amd.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://www.amd.com/en/blogs/2026/amd-delivers-breakthrough-mlperf-inference-6-0-results.html#sha256:5761045b62350235",
+      "found_keywords": [
+        "MLPerf",
+        "MI355X",
+        "tokens"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::google_a4x_gb200_cloud_deployment_surface::cloud_google_com_blog_products_compute_new_a4x_vms_powered_by_nvidia_gb200_gpus",
+      "evidence_row_id": "google_a4x_gb200_cloud_deployment_surface",
+      "judgment_chain_ids": [
+        "jc_customer_deployment_oem_adoption",
+        "jc_accelerator_architecture_competition"
+      ],
+      "route_id": "p34_route::google_a4x_gb200_cloud_deployment_surface::01::customer_deployment_news_adapter",
+      "adapter_family": "customer_deployment_news_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://cloud.google.com/blog/products/compute/new-a4x-vms-powered-by-nvidia-gb200-gpus",
+      "source_domain": "cloud.google.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://cloud.google.com/blog/products/compute/new-a4x-vms-powered-by-nvidia-gb200-gpus#sha256:ff719cd93f6fd894",
+      "found_keywords": [
+        "A4X",
+        "GB200",
+        "NVIDIA"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::msft_cloud_ai_capex_supply_shortfall::www_microsoft_com_investor_reports_ar25_index_html",
+      "evidence_row_id": "msft_cloud_ai_capex_supply_shortfall",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "route_id": "p34_route::msft_cloud_ai_capex_supply_shortfall::01::cloud_capex_filing_adapter",
+      "adapter_family": "cloud_capex_filing_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://www.microsoft.com/investor/reports/ar25/index.html",
+      "source_domain": "www.microsoft.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://www.microsoft.com/investor/reports/ar25/index.html#sha256:564154a15ac28c0f",
+      "found_keywords": [
+        "capital expenditures",
+        "AI",
+        "cloud"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::alphabet_capex_server_chain_context::abc_xyz_investor_events_event_details_2025_2025_Q1_Earnings_Call",
+      "evidence_row_id": "alphabet_capex_server_chain_context",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool",
+        "jc_customer_deployment_oem_adoption"
+      ],
+      "route_id": "p34_route::alphabet_capex_server_chain_context::01::cloud_capex_filing_adapter",
+      "adapter_family": "cloud_capex_filing_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://abc.xyz/investor/events/event-details/2025/2025-Q1-Earnings-Call/",
+      "source_domain": "abc.xyz",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://abc.xyz/investor/events/event-details/2025/2025-Q1-Earnings-Call/#sha256:4522c3b63dca5733",
+      "found_keywords": [
+        "CapEx",
+        "technical infrastructure",
+        "AI"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::meta_capex_component_pricing_risk::investor_atmeta_com_investor_news_press_release_details_2026_Meta_Reports_Fourth",
+      "evidence_row_id": "meta_capex_component_pricing_risk",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "route_id": "p34_route::meta_capex_component_pricing_risk::01::cloud_capex_filing_adapter",
+      "adapter_family": "cloud_capex_filing_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Fourth-Quarter-and-Full-Year-2025-Results/default.aspx",
+      "source_domain": "investor.atmeta.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Fourth-Quarter-and-Full-Year-2025-Results/default.aspx#sha256:d8f1c69533f01e8b",
+      "found_keywords": [
+        "capital expenditures",
+        "AI",
+        "infrastructure"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::asml_lithography_installed_base_readthrough::www_asml_com_news_press_releases_2026_q1_2026_financial_results",
+      "evidence_row_id": "asml_lithography_installed_base_readthrough",
+      "judgment_chain_ids": [
+        "jc_foundry_semicap_readthrough",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "route_id": "p34_route::asml_lithography_installed_base_readthrough::01::semicap_bookings_backlog_adapter",
+      "adapter_family": "semicap_bookings_backlog_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://www.asml.com/news/press-releases/2026/q1-2026-financial-results",
+      "source_domain": "www.asml.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://www.asml.com/news/press-releases/2026/q1-2026-financial-results#sha256:2af789c451771fef",
+      "found_keywords": [
+        "net sales",
+        "gross margin",
+        "installed base",
+        "EUV"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::lrcx_memory_hbm_process_intensity::newsroom_lamresearch_com_inside_the_chip_advanced_packaging",
+      "evidence_row_id": "lrcx_memory_hbm_process_intensity",
+      "judgment_chain_ids": [
+        "jc_foundry_semicap_readthrough"
+      ],
+      "route_id": "p34_route::lrcx_memory_hbm_process_intensity::01::semicap_bookings_backlog_adapter",
+      "adapter_family": "semicap_bookings_backlog_adapter",
+      "route_role": "live_source_probe",
+      "attempted_url_or_query": "https://newsroom.lamresearch.com/inside-the-chip-advanced-packaging?blog=true",
+      "source_domain": "newsroom.lamresearch.com",
+      "fetch_mode": "http_get",
+      "fetch_status": "ok",
+      "http_status": 200,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "https://newsroom.lamresearch.com/inside-the-chip-advanced-packaging?blog=true#sha256:5322d21627bd7be2",
+      "found_keywords": [
+        "HBM",
+        "TSV",
+        "etch",
+        "deposition"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::market_price_in_valuation_positioning_gap::local_capital_market_feedback_fixture",
+      "evidence_row_id": "market_price_in_valuation_positioning_gap",
+      "judgment_chain_ids": [
+        "jc_market_price_in_capital_feedback"
+      ],
+      "route_id": "p34_route::market_price_in_valuation_positioning_gap::01::market_snapshot_context_adapter",
+      "adapter_family": "market_snapshot_context_adapter",
+      "route_role": "local_runtime_context_lookup",
+      "attempted_url_or_query": "data/manifests/p33_capital_market_feedback_fixture_v0_1.json",
+      "source_domain": "local_manifest",
+      "fetch_mode": "local_file_lookup",
+      "fetch_status": "ok",
+      "http_status": null,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "data/manifests/p33_capital_market_feedback_fixture_v0_1.json#sha256:a2cd647957eba82a",
+      "found_keywords": [
+        "capital_market_feedback"
+      ],
+      "missing_keywords": []
+    },
+    {
+      "attempt_id": "p34_attempt::counter_thesis_pack_ai_semis::derived_from_independent_counter_sources",
+      "evidence_row_id": "counter_thesis_pack_ai_semis",
+      "judgment_chain_ids": [
+        "jc_counter_thesis_what_would_change"
+      ],
+      "route_id": "p34_route::counter_thesis_pack_ai_semis::01::risk_counterevidence_context_adapter",
+      "adapter_family": "risk_counterevidence_context_adapter",
+      "route_role": "derived_counter_thesis_pack_from_attempted_sources",
+      "attempted_url_or_query": "p34_attempt::amd_mi300x_memory_bandwidth_competition::www_amd_com_en_products_accelerators_instinct_mi300_mi300x_html;p34_attempt::amd_mi300x_memory_bandwidth_competition::www_amd_com_content_dam_amd_en_documents_instinct_tech_docs_data_sheets_amd_inst;p34_attempt::google_tpu_v6e_trillium_architecture::cloud_google_com_tpu_docs_v6e;p34_attempt::google_a4x_gb200_cloud_deployment_surface::cloud_google_com_blog_products_compute_new_a4x_vms_powered_by_nvidia_gb200_gpus;p34_attempt::meta_capex_component_pricing_risk::investor_atmeta_com_investor_news_press_release_details_2026_Meta_Reports_Fourth;p34_attempt::market_price_in_valuation_positioning_gap::local_capital_market_feedback_fixture",
+      "source_domain": "derived_from_attempted_sources",
+      "fetch_mode": "derived_from_live_route_attempts",
+      "fetch_status": "ok",
+      "http_status": null,
+      "parser_status": "accepted_runtime_row",
+      "row_count": 1,
+      "failure_reason": "",
+      "source_snapshot_ref": "derived://p34/counter_thesis/e5f0cec7728ebf60",
+      "found_keywords": [
+        "amd_mi300x_memory_bandwidth_competition",
+        "google_a4x_gb200_cloud_deployment_surface",
+        "google_tpu_v6e_trillium_architecture",
+        "market_price_in_valuation_positioning_gap",
+        "meta_capex_component_pricing_risk"
+      ],
+      "missing_keywords": []
+    }
+  ],
+  "accepted_runtime_rows": [
+    {
+      "row_id": "p34_live_row::amat_semiconductor_systems_mix::p33_manifest",
+      "evidence_row_id": "amat_semiconductor_systems_mix",
+      "judgment_chain_ids": [
+        "jc_foundry_semicap_readthrough"
+      ],
+      "issuer": "AMAT",
+      "product_or_family": "Semiconductor Systems / foundry-logic / DRAM / flash",
+      "metric_or_attribute": "equipment_segment_mix",
+      "value": "revenue / margin / Semiconductor Systems mix",
+      "unit": "USD / percent",
+      "period_or_version": "Q2 FY26",
+      "source_url": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+      "citation": "AMAT Q2 FY26 release",
+      "parser_lineage": {
+        "route_id": "p34_route::amat_semiconductor_systems_mix::01::semicap_bookings_backlog_adapter",
+        "attempt_id": "p34_attempt::amat_semiconductor_systems_mix::local_manifest_live_ready",
+        "adapter_family": "semicap_bookings_backlog_adapter",
+        "parser_version": "p34_existing_manifest_live_ready_adapter_v0_1",
+        "source_snapshot_ref": "docs/project_os/p33_goldset_live_source_backfill_v0_1.json#sha256:3dc5045337df81fe",
+        "bound_runtime_row_refs": [
+          "PRODUCTKPI::AMAT::product_revenue::STRUCTURED::811e4cb8712497"
+        ],
+        "source_rowset_paths": [
+          "data/manifests/company_reported_product_operating_metric_runtime_rows_v0_1.jsonl"
+        ]
+      },
+      "authority_scope": "May support company-disclosed product KPI facts from structured row/column cells; does not prove market share, channel inventory, or undisclosed product economics.",
+      "cannot_infer": [
+        "AI-specific order value",
+        "customer concentration"
+      ],
+      "promotion_status": "accepted_existing_manifest_live_ready"
+    },
+    {
+      "row_id": "p34_live_row::amzn_aws_demand_pool_context::p33_manifest",
+      "evidence_row_id": "amzn_aws_demand_pool_context",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool"
+      ],
+      "issuer": "AMZN",
+      "product_or_family": "AWS",
+      "metric_or_attribute": "aws_revenue_operating_income",
+      "value": "AWS revenue and operating income growth disclosed",
+      "unit": "USD / growth",
+      "period_or_version": "Q1 2026",
+      "source_url": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+      "citation": "AMZN Q1 2026 results",
+      "parser_lineage": {
+        "route_id": "p34_route::amzn_aws_demand_pool_context::01::sec_8k_earnings_release_table_adapter",
+        "attempt_id": "p34_attempt::amzn_aws_demand_pool_context::local_manifest_live_ready",
+        "adapter_family": "sec_8k_earnings_release_table_adapter",
+        "parser_version": "p34_existing_manifest_live_ready_adapter_v0_1",
+        "source_snapshot_ref": "docs/project_os/p33_goldset_live_source_backfill_v0_1.json#sha256:841eddd94d6ff506",
+        "bound_runtime_row_refs": [
+          "PRODUCTKPI::AMZN::product_revenue::STRUCTURED::92dbdb4256d6c9"
+        ],
+        "source_rowset_paths": [
+          "data/manifests/company_reported_product_operating_metric_runtime_rows_v0_1.jsonl"
+        ]
+      },
+      "authority_scope": "May support company-disclosed product KPI facts from structured row/column cells; does not prove market share, channel inventory, or undisclosed product economics.",
+      "cannot_infer": [
+        "GPU purchase amount",
+        "DELL/SMCI orders",
+        "NVDA allocation"
+      ],
+      "promotion_status": "accepted_existing_manifest_live_ready"
+    },
+    {
+      "row_id": "p34_live_row::nvda_gb200_nvl72_rack_architecture::p33_manifest",
+      "evidence_row_id": "nvda_gb200_nvl72_rack_architecture",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition"
+      ],
+      "issuer": "NVDA",
+      "product_or_family": "GB200 NVL72",
+      "metric_or_attribute": "rack_scale_architecture",
+      "value": "36 Grace CPUs / 72 Blackwell GPUs / NVLink rack-scale domain",
+      "unit": "system specification",
+      "period_or_version": "Blackwell generation",
+      "source_url": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+      "citation": "NVIDIA GB200 NVL72 official page",
+      "parser_lineage": {
+        "route_id": "p34_route::nvda_gb200_nvl72_rack_architecture::01::official_product_spec_page_adapter",
+        "attempt_id": "p34_attempt::nvda_gb200_nvl72_rack_architecture::local_manifest_live_ready",
+        "adapter_family": "official_product_spec_page_adapter",
+        "parser_version": "p34_existing_manifest_live_ready_adapter_v0_1",
+        "source_snapshot_ref": "docs/project_os/p33_goldset_live_source_backfill_v0_1.json#sha256:2be0961d65e67271",
+        "bound_runtime_row_refs": [
+          "official_product_spec:af35fa88d92108ad"
+        ],
+        "source_rowset_paths": [
+          "data/manifests/gold_fact_signal_mart_rows_v0_1.jsonl"
+        ]
+      },
+      "authority_scope": "Official technical product specification. Supports bounded product capability/generation/comparison analysis only; no product revenue, unit sales, ASP, share, inventory, sell-through, backlog, customer order value, or demand proof.",
+      "cannot_infer": [
+        "GB200 revenue",
+        "supplier allocation",
+        "market share"
+      ],
+      "promotion_status": "accepted_existing_manifest_live_ready"
+    },
+    {
+      "row_id": "p34_live_row::tsmc_advanced_node_hpc_ai_readthrough::p33_manifest",
+      "evidence_row_id": "tsmc_advanced_node_hpc_ai_readthrough",
+      "judgment_chain_ids": [
+        "jc_foundry_semicap_readthrough"
+      ],
+      "issuer": "TSM",
+      "product_or_family": "advanced technologies / HPC",
+      "metric_or_attribute": "advanced_node_revenue_margin",
+      "value": "revenue / margin / advanced-node share disclosed",
+      "unit": "USD / percent",
+      "period_or_version": "Q1 2026",
+      "source_url": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+      "citation": "TSMC Q1 2026 release",
+      "parser_lineage": {
+        "route_id": "p34_route::tsmc_advanced_node_hpc_ai_readthrough::01::investor_deck_pdf_table_adapter",
+        "attempt_id": "p34_attempt::tsmc_advanced_node_hpc_ai_readthrough::local_manifest_live_ready",
+        "adapter_family": "investor_deck_pdf_table_adapter",
+        "parser_version": "p34_existing_manifest_live_ready_adapter_v0_1",
+        "source_snapshot_ref": "docs/project_os/p33_goldset_live_source_backfill_v0_1.json#sha256:d59e1d121557e723",
+        "bound_runtime_row_refs": [
+          "company_disclosed_product_business_mix:a8d8a41539f82e6a"
+        ],
+        "source_rowset_paths": [
+          "data/manifests/company_disclosed_product_business_mix_runtime_rows_v0_1.jsonl"
+        ]
+      },
+      "authority_scope": "Company-disclosed product/business revenue-mix percentage for the cited product or business line only; do not convert to absolute revenue, ASP, volume, market share, sell-through, backlog, or order value.",
+      "cannot_infer": [
+        "NVDA/AMD/GOOGL customer split",
+        "CoWoS capacity exact unless disclosed"
+      ],
+      "promotion_status": "accepted_existing_manifest_live_ready"
+    },
+    {
+      "row_id": "p34_live_row::dell_ai_server_orders_shipments_backlog::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+      "evidence_row_id": "dell_ai_server_orders_shipments_backlog",
+      "judgment_chain_ids": [
+        "jc_dell_ai_server_financial_quality",
+        "jc_customer_deployment_oem_adoption"
+      ],
+      "issuer": "DELL",
+      "product_or_family": "AI-optimized servers",
+      "metric_or_attribute": "orders_shipments_backlog",
+      "value": "Dell discloses AI-optimized server orders, shipments and backlog in FY26 results.",
+      "unit": "USD demand/revenue visibility context",
+      "period_or_version": "FY2026 / FY2027 starting backlog",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~2~dell-technologies-delivers-fourth-quarter-and-full-year-fiscal-2026-results.htm",
+      "citation": "Dell Technologies fourth quarter and full-year fiscal 2026 results",
+      "parser_lineage": {
+        "route_id": "p34_route::dell_ai_server_orders_shipments_backlog::01::sec_8k_earnings_release_table_adapter",
+        "attempt_id": "p34_attempt::dell_ai_server_orders_shipments_backlog::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+        "adapter_family": "sec_8k_earnings_release_table_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~2~dell-technologies-delivers-fourth-quarter-and-full-year-fiscal-2026-results.htm#sha256:2a42d20560567b59",
+        "found_keywords": [
+          "AI-optimized server orders",
+          "shipped",
+          "backlog"
+        ]
+      },
+      "authority_scope": "issuer_exact_operating_metric_with_margin_gap",
+      "cannot_infer": [
+        "AI server gross margin",
+        "GPU pass-through cost",
+        "customer allocation"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::dell_isg_revenue_margin_baseline::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+      "evidence_row_id": "dell_isg_revenue_margin_baseline",
+      "judgment_chain_ids": [
+        "jc_dell_ai_server_financial_quality"
+      ],
+      "issuer": "DELL",
+      "product_or_family": "Infrastructure Solutions Group",
+      "metric_or_attribute": "isg_revenue_operating_income_margin",
+      "value": "Dell Q1 FY26 results disclose ISG revenue, Servers and Networking revenue and ISG operating income margin.",
+      "unit": "USD / percent",
+      "period_or_version": "FY2026 Q1",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2025~05~dell-technologies-delivers-first-quarter-fiscal-2026-financial-results.htm",
+      "citation": "Dell Technologies first quarter fiscal 2026 results",
+      "parser_lineage": {
+        "route_id": "p34_route::dell_isg_revenue_margin_baseline::01::sec_8k_earnings_release_table_adapter",
+        "attempt_id": "p34_attempt::dell_isg_revenue_margin_baseline::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+        "adapter_family": "sec_8k_earnings_release_table_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2025~05~dell-technologies-delivers-first-quarter-fiscal-2026-financial-results.htm#sha256:1fe6a1f9bf91b72f",
+        "found_keywords": [
+          "Total ISG net revenue",
+          "ISG operating income",
+          "9.7"
+        ]
+      },
+      "authority_scope": "issuer_exact_segment_metric_not_ai_server_margin",
+      "cannot_infer": [
+        "AI server gross margin",
+        "Blackwell mix",
+        "GPU pass-through economics"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::dell_nvidia_poweredge_ai_factory_product_path::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+      "evidence_row_id": "dell_nvidia_poweredge_ai_factory_product_path",
+      "judgment_chain_ids": [
+        "jc_customer_deployment_oem_adoption",
+        "jc_accelerator_architecture_competition"
+      ],
+      "issuer": "DELL",
+      "product_or_family": "PowerEdge / Dell AI Factory with NVIDIA",
+      "metric_or_attribute": "official_oem_product_path",
+      "value": "Dell official product path links PowerEdge systems to NVIDIA GB200/NVL72 AI infrastructure.",
+      "unit": "official deployment/product path",
+      "period_or_version": "2024 OCP announcement",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~10~dell-servers-storage-at-ocp.htm",
+      "citation": "Dell OCP 2024 server/storage announcement",
+      "parser_lineage": {
+        "route_id": "p34_route::dell_nvidia_poweredge_ai_factory_product_path::02::customer_deployment_news_adapter",
+        "attempt_id": "p34_attempt::dell_nvidia_poweredge_ai_factory_product_path::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+        "adapter_family": "customer_deployment_news_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~10~dell-servers-storage-at-ocp.htm#sha256:07d71364b6864e84",
+        "found_keywords": [
+          "PowerEdge",
+          "NVIDIA",
+          "GB200",
+          "NVL72"
+        ]
+      },
+      "authority_scope": "official_oem_product_path_not_order_value_or_margin",
+      "cannot_infer": [
+        "order value",
+        "shipment volume",
+        "AI server gross margin"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::dell_xe9712_gb200_oem_system_config::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+      "evidence_row_id": "dell_xe9712_gb200_oem_system_config",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_customer_deployment_oem_adoption"
+      ],
+      "issuer": "DELL",
+      "product_or_family": "PowerEdge XE9712 / NVIDIA GB200 NVL72",
+      "metric_or_attribute": "oem_system_configuration",
+      "value": "Dell PowerEdge XE9712 is identified with NVIDIA GB200 NVL72 rack-scale configuration context.",
+      "unit": "official OEM configuration",
+      "period_or_version": "2024 OCP announcement",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~10~dell-servers-storage-at-ocp.htm",
+      "citation": "Dell OCP 2024 PowerEdge XE9712 announcement",
+      "parser_lineage": {
+        "route_id": "p34_route::dell_xe9712_gb200_oem_system_config::02::oem_configuration_adapter",
+        "attempt_id": "p34_attempt::dell_xe9712_gb200_oem_system_config::www_dell_com_en_us_dt_corporate_newsroom_announcements_detailpage_press_releases",
+        "adapter_family": "oem_configuration_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~10~dell-servers-storage-at-ocp.htm#sha256:76855d96692e2325",
+        "found_keywords": [
+          "PowerEdge XE9712",
+          "GB200",
+          "NVL72"
+        ]
+      },
+      "authority_scope": "official_configuration_not_customer_purchase_or_margin",
+      "cannot_infer": [
+        "DELL revenue",
+        "customer purchase volume",
+        "AI server gross margin"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::nvda_data_center_revenue_demand_confirmation::investor_nvidia_com_news_press_release_details_2026_NVIDIA_Announces_Financial_R",
+      "evidence_row_id": "nvda_data_center_revenue_demand_confirmation",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool",
+        "jc_accelerator_architecture_competition"
+      ],
+      "issuer": "NVDA",
+      "product_or_family": "Data Center / accelerator systems",
+      "metric_or_attribute": "data_center_revenue",
+      "value": "NVIDIA Data Center revenue provides segment-level accelerator demand confirmation.",
+      "unit": "USD segment revenue context",
+      "period_or_version": "Q1 FY2027",
+      "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-First-Quarter-Fiscal-2027/default.aspx",
+      "citation": "NVIDIA first quarter fiscal 2027 financial results",
+      "parser_lineage": {
+        "route_id": "p34_route::nvda_data_center_revenue_demand_confirmation::01::sec_8k_earnings_release_table_adapter",
+        "attempt_id": "p34_attempt::nvda_data_center_revenue_demand_confirmation::investor_nvidia_com_news_press_release_details_2026_NVIDIA_Announces_Financial_R",
+        "adapter_family": "sec_8k_earnings_release_table_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-First-Quarter-Fiscal-2027/default.aspx#sha256:4740e45439573ec1",
+        "found_keywords": [
+          "Data Center",
+          "revenue",
+          "AI"
+        ]
+      },
+      "authority_scope": "issuer_exact_segment_metric_not_sku_revenue",
+      "cannot_infer": [
+        "GB200 SKU revenue",
+        "DELL allocation",
+        "server OEM margin"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::amd_mi300x_memory_bandwidth_competition::www_amd_com_en_products_accelerators_instinct_mi300_mi300x_html",
+      "evidence_row_id": "amd_mi300x_memory_bandwidth_competition",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "issuer": "AMD",
+      "product_or_family": "MI300X",
+      "metric_or_attribute": "accelerator_memory_bandwidth_spec",
+      "value": "MI300X official specs include 192GB HBM3 and 5.3 TB/s memory bandwidth.",
+      "unit": "technical specification",
+      "period_or_version": "MI300X generation",
+      "source_url": "https://www.amd.com/en/products/accelerators/instinct/mi300/mi300x.html",
+      "citation": "AMD Instinct MI300X official product page",
+      "parser_lineage": {
+        "route_id": "p34_route::amd_mi300x_memory_bandwidth_competition::01::official_product_spec_page_adapter",
+        "attempt_id": "p34_attempt::amd_mi300x_memory_bandwidth_competition::www_amd_com_en_products_accelerators_instinct_mi300_mi300x_html",
+        "adapter_family": "official_product_spec_page_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://www.amd.com/en/products/accelerators/instinct/mi300/mi300x.html#sha256:8a1c712b86a4dd14",
+        "found_keywords": [
+          "MI300X",
+          "192 GB",
+          "HBM3",
+          "5.3 TB/s"
+        ]
+      },
+      "authority_scope": "official_technical_fact_not_revenue_or_share",
+      "cannot_infer": [
+        "MI300X revenue",
+        "market share",
+        "cloud deployment volume"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::amd_mi300x_memory_bandwidth_competition::www_amd_com_content_dam_amd_en_documents_instinct_tech_docs_data_sheets_amd_inst",
+      "evidence_row_id": "amd_mi300x_memory_bandwidth_competition",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "issuer": "AMD",
+      "product_or_family": "MI300X",
+      "metric_or_attribute": "accelerator_memory_bandwidth_spec",
+      "value": "MI300X official datasheet includes up to 192 GB HBM3 and 5.3 TB/s max peak theoretical memory bandwidth.",
+      "unit": "technical specification",
+      "period_or_version": "MI300X generation",
+      "source_url": "https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/data-sheets/amd-instinct-mi300x-data-sheet.pdf",
+      "citation": "AMD Instinct MI300X official datasheet",
+      "parser_lineage": {
+        "route_id": "p34_route::amd_mi300x_memory_bandwidth_competition::02::official_product_docs_or_pdf_adapter",
+        "attempt_id": "p34_attempt::amd_mi300x_memory_bandwidth_competition::www_amd_com_content_dam_amd_en_documents_instinct_tech_docs_data_sheets_amd_inst",
+        "adapter_family": "official_product_docs_or_pdf_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/data-sheets/amd-instinct-mi300x-data-sheet.pdf#sha256:60d78bc2849cd7c3",
+        "found_keywords": [
+          "MI300X",
+          "192 GB",
+          "5.3 TB/s"
+        ]
+      },
+      "authority_scope": "official_technical_fact_not_revenue_or_share",
+      "cannot_infer": [
+        "MI300X revenue",
+        "market share",
+        "cloud deployment volume"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::google_tpu_v6e_trillium_architecture::cloud_google_com_tpu_docs_v6e",
+      "evidence_row_id": "google_tpu_v6e_trillium_architecture",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "issuer": "GOOGL",
+      "product_or_family": "TPU v6e / Trillium",
+      "metric_or_attribute": "custom_accelerator_architecture_spec",
+      "value": "Google TPU v6e / Trillium docs provide custom accelerator architecture context.",
+      "unit": "technical specification",
+      "period_or_version": "TPU v6e / Trillium",
+      "source_url": "https://cloud.google.com/tpu/docs/v6e",
+      "citation": "Google Cloud TPU v6e documentation",
+      "parser_lineage": {
+        "route_id": "p34_route::google_tpu_v6e_trillium_architecture::01::official_product_spec_page_adapter",
+        "attempt_id": "p34_attempt::google_tpu_v6e_trillium_architecture::cloud_google_com_tpu_docs_v6e",
+        "adapter_family": "official_product_spec_page_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://cloud.google.com/tpu/docs/v6e#sha256:5b355c7138cc2303",
+        "found_keywords": [
+          "TPU v6e",
+          "Trillium",
+          "HBM"
+        ]
+      },
+      "authority_scope": "official_technical_fact_not_revenue_or_share",
+      "cannot_infer": [
+        "TPU procurement mix",
+        "NVIDIA replacement ratio",
+        "Google internal unit economics"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::amd_mlperf_mi355x_performance_proxy::www_amd_com_en_blogs_2026_amd_delivers_breakthrough_mlperf_inference_6_0_results",
+      "evidence_row_id": "amd_mlperf_mi355x_performance_proxy",
+      "judgment_chain_ids": [
+        "jc_accelerator_architecture_competition",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "issuer": "AMD",
+      "product_or_family": "MI355X / MLPerf Inference 6.0",
+      "metric_or_attribute": "mlperf_inference_performance_proxy",
+      "value": "AMD reports MI355X MLPerf Inference 6.0 throughput/proxy performance progress.",
+      "unit": "performance proxy",
+      "period_or_version": "MLPerf Inference 6.0",
+      "source_url": "https://www.amd.com/en/blogs/2026/amd-delivers-breakthrough-mlperf-inference-6-0-results.html",
+      "citation": "AMD MLPerf Inference 6.0 results blog",
+      "parser_lineage": {
+        "route_id": "p34_route::amd_mlperf_mi355x_performance_proxy::01::benchmark_result_adapter",
+        "attempt_id": "p34_attempt::amd_mlperf_mi355x_performance_proxy::www_amd_com_en_blogs_2026_amd_delivers_breakthrough_mlperf_inference_6_0_results",
+        "adapter_family": "benchmark_result_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://www.amd.com/en/blogs/2026/amd-delivers-breakthrough-mlperf-inference-6-0-results.html#sha256:5761045b62350235",
+        "found_keywords": [
+          "MLPerf",
+          "MI355X",
+          "tokens"
+        ]
+      },
+      "authority_scope": "performance_proxy_not_sales_or_share",
+      "cannot_infer": [
+        "accelerator revenue",
+        "market share",
+        "cloud deployment volume"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::google_a4x_gb200_cloud_deployment_surface::cloud_google_com_blog_products_compute_new_a4x_vms_powered_by_nvidia_gb200_gpus",
+      "evidence_row_id": "google_a4x_gb200_cloud_deployment_surface",
+      "judgment_chain_ids": [
+        "jc_customer_deployment_oem_adoption",
+        "jc_accelerator_architecture_competition"
+      ],
+      "issuer": "GOOGL",
+      "product_or_family": "Google Cloud A4X / NVIDIA GB200",
+      "metric_or_attribute": "cloud_deployment_surface",
+      "value": "Google Cloud A4X VMs expose NVIDIA GB200 GPU deployment surface.",
+      "unit": "official cloud deployment surface",
+      "period_or_version": "A4X / GB200 generation",
+      "source_url": "https://cloud.google.com/blog/products/compute/new-a4x-vms-powered-by-nvidia-gb200-gpus",
+      "citation": "Google Cloud A4X VMs powered by NVIDIA GB200 GPUs",
+      "parser_lineage": {
+        "route_id": "p34_route::google_a4x_gb200_cloud_deployment_surface::01::customer_deployment_news_adapter",
+        "attempt_id": "p34_attempt::google_a4x_gb200_cloud_deployment_surface::cloud_google_com_blog_products_compute_new_a4x_vms_powered_by_nvidia_gb200_gpus",
+        "adapter_family": "customer_deployment_news_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://cloud.google.com/blog/products/compute/new-a4x-vms-powered-by-nvidia-gb200-gpus#sha256:ff719cd93f6fd894",
+        "found_keywords": [
+          "A4X",
+          "GB200",
+          "NVIDIA"
+        ]
+      },
+      "authority_scope": "official_deployment_signal_not_supplier_revenue_or_share",
+      "cannot_infer": [
+        "Google purchase quantity",
+        "NVIDIA allocation",
+        "DELL margin"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::msft_cloud_ai_capex_supply_shortfall::www_microsoft_com_investor_reports_ar25_index_html",
+      "evidence_row_id": "msft_cloud_ai_capex_supply_shortfall",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "issuer": "MSFT",
+      "product_or_family": "Microsoft Cloud / AI infrastructure",
+      "metric_or_attribute": "cloud_ai_capex_context",
+      "value": "Microsoft annual report discloses capital expenditure context tied to cloud and AI infrastructure.",
+      "unit": "demand pool context",
+      "period_or_version": "FY2025 annual report",
+      "source_url": "https://www.microsoft.com/investor/reports/ar25/index.html",
+      "citation": "Microsoft 2025 annual report",
+      "parser_lineage": {
+        "route_id": "p34_route::msft_cloud_ai_capex_supply_shortfall::01::cloud_capex_filing_adapter",
+        "attempt_id": "p34_attempt::msft_cloud_ai_capex_supply_shortfall::www_microsoft_com_investor_reports_ar25_index_html",
+        "adapter_family": "cloud_capex_filing_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://www.microsoft.com/investor/reports/ar25/index.html#sha256:564154a15ac28c0f",
+        "found_keywords": [
+          "capital expenditures",
+          "AI",
+          "cloud"
+        ]
+      },
+      "authority_scope": "demand_pool_context_not_supplier_allocation",
+      "cannot_infer": [
+        "NVDA allocation",
+        "DELL order conversion",
+        "AI server gross margin"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::alphabet_capex_server_chain_context::abc_xyz_investor_events_event_details_2025_2025_Q1_Earnings_Call",
+      "evidence_row_id": "alphabet_capex_server_chain_context",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool",
+        "jc_customer_deployment_oem_adoption"
+      ],
+      "issuer": "GOOGL",
+      "product_or_family": "Alphabet technical infrastructure",
+      "metric_or_attribute": "technical_infrastructure_capex_context",
+      "value": "Alphabet management discussion provides technical infrastructure / AI capex demand-pool context.",
+      "unit": "demand pool context",
+      "period_or_version": "2025 Q1",
+      "source_url": "https://abc.xyz/investor/events/event-details/2025/2025-Q1-Earnings-Call/",
+      "citation": "Alphabet 2025 Q1 earnings call",
+      "parser_lineage": {
+        "route_id": "p34_route::alphabet_capex_server_chain_context::01::cloud_capex_filing_adapter",
+        "attempt_id": "p34_attempt::alphabet_capex_server_chain_context::abc_xyz_investor_events_event_details_2025_2025_Q1_Earnings_Call",
+        "adapter_family": "cloud_capex_filing_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://abc.xyz/investor/events/event-details/2025/2025-Q1-Earnings-Call/#sha256:4522c3b63dca5733",
+        "found_keywords": [
+          "CapEx",
+          "technical infrastructure",
+          "AI"
+        ]
+      },
+      "authority_scope": "demand_pool_context_not_supplier_allocation",
+      "cannot_infer": [
+        "GPU unit demand",
+        "server OEM share",
+        "supplier margin"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::meta_capex_component_pricing_risk::investor_atmeta_com_investor_news_press_release_details_2026_Meta_Reports_Fourth",
+      "evidence_row_id": "meta_capex_component_pricing_risk",
+      "judgment_chain_ids": [
+        "jc_ai_capex_demand_pool",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "issuer": "META",
+      "product_or_family": "Meta AI infrastructure",
+      "metric_or_attribute": "ai_infrastructure_capex_and_component_cost_risk",
+      "value": "Meta capex outlook provides AI infrastructure demand-pool and component cost risk context.",
+      "unit": "demand pool / risk context",
+      "period_or_version": "FY2025 / 2026 outlook",
+      "source_url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Fourth-Quarter-and-Full-Year-2025-Results/default.aspx",
+      "citation": "Meta FY2025 results and 2026 capex outlook",
+      "parser_lineage": {
+        "route_id": "p34_route::meta_capex_component_pricing_risk::01::cloud_capex_filing_adapter",
+        "attempt_id": "p34_attempt::meta_capex_component_pricing_risk::investor_atmeta_com_investor_news_press_release_details_2026_Meta_Reports_Fourth",
+        "adapter_family": "cloud_capex_filing_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Fourth-Quarter-and-Full-Year-2025-Results/default.aspx#sha256:d8f1c69533f01e8b",
+        "found_keywords": [
+          "capital expenditures",
+          "AI",
+          "infrastructure"
+        ]
+      },
+      "authority_scope": "demand_pool_and_cost_risk_context_not_supplier_allocation",
+      "cannot_infer": [
+        "NVDA allocation",
+        "DELL revenue",
+        "server OEM margin"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::asml_lithography_installed_base_readthrough::www_asml_com_news_press_releases_2026_q1_2026_financial_results",
+      "evidence_row_id": "asml_lithography_installed_base_readthrough",
+      "judgment_chain_ids": [
+        "jc_foundry_semicap_readthrough",
+        "jc_counter_thesis_what_would_change"
+      ],
+      "issuer": "ASML",
+      "product_or_family": "EUV / DUV lithography and installed base",
+      "metric_or_attribute": "lithography_cycle_disclosure",
+      "value": "ASML Q1 results provide lithography cycle, installed base and margin context.",
+      "unit": "semicap primary disclosure context",
+      "period_or_version": "Q1 2026",
+      "source_url": "https://www.asml.com/news/press-releases/2026/q1-2026-financial-results",
+      "citation": "ASML Q1 2026 financial results",
+      "parser_lineage": {
+        "route_id": "p34_route::asml_lithography_installed_base_readthrough::01::semicap_bookings_backlog_adapter",
+        "attempt_id": "p34_attempt::asml_lithography_installed_base_readthrough::www_asml_com_news_press_releases_2026_q1_2026_financial_results",
+        "adapter_family": "semicap_bookings_backlog_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://www.asml.com/news/press-releases/2026/q1-2026-financial-results#sha256:2af789c451771fef",
+        "found_keywords": [
+          "net sales",
+          "gross margin",
+          "installed base",
+          "EUV"
+        ]
+      },
+      "authority_scope": "semicap_primary_disclosure_context_or_exact_if_table_bound",
+      "cannot_infer": [
+        "AI-specific ASML order",
+        "customer allocation",
+        "supplier share"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::lrcx_memory_hbm_process_intensity::newsroom_lamresearch_com_inside_the_chip_advanced_packaging",
+      "evidence_row_id": "lrcx_memory_hbm_process_intensity",
+      "judgment_chain_ids": [
+        "jc_foundry_semicap_readthrough"
+      ],
+      "issuer": "LRCX",
+      "product_or_family": "Etch / deposition / memory and HBM process intensity",
+      "metric_or_attribute": "memory_hbm_process_intensity_context",
+      "value": "Lam official technology content links advanced packaging, HBM stacking, TSV etch and copper deposition to AI-era process intensity.",
+      "unit": "semicap product/process intensity context",
+      "period_or_version": "official technology overview",
+      "source_url": "https://newsroom.lamresearch.com/inside-the-chip-advanced-packaging?blog=true",
+      "citation": "Lam Research advanced packaging technology overview",
+      "parser_lineage": {
+        "route_id": "p34_route::lrcx_memory_hbm_process_intensity::01::semicap_bookings_backlog_adapter",
+        "attempt_id": "p34_attempt::lrcx_memory_hbm_process_intensity::newsroom_lamresearch_com_inside_the_chip_advanced_packaging",
+        "adapter_family": "semicap_bookings_backlog_adapter",
+        "parser_version": "p34_live_keyword_route_parser_v0_1",
+        "source_snapshot_ref": "https://newsroom.lamresearch.com/inside-the-chip-advanced-packaging?blog=true#sha256:5322d21627bd7be2",
+        "found_keywords": [
+          "HBM",
+          "TSV",
+          "etch",
+          "deposition"
+        ]
+      },
+      "authority_scope": "semicap_process_intensity_context_not_customer_order",
+      "cannot_infer": [
+        "AI-specific LRCX booking",
+        "exact HBM equipment share",
+        "customer purchase orders"
+      ],
+      "promotion_status": "accepted_live_route_attempt"
+    },
+    {
+      "row_id": "p34_live_row::market_price_in_valuation_positioning_gap::capital_market_feedback_fixture",
+      "evidence_row_id": "market_price_in_valuation_positioning_gap",
+      "judgment_chain_ids": [
+        "jc_market_price_in_capital_feedback"
+      ],
+      "issuer": "AI_SEMIS_BASKET",
+      "product_or_family": "AI/Semis basket",
+      "metric_or_attribute": "market_price_in_capital_feedback_context",
+      "value": "P33 capital-market feedback fixture provides bounded valuation, liquidity, holder/market proxy and capital-feedback context.",
+      "unit": "bounded market context",
+      "period_or_version": "P33 fixture snapshot",
+      "source_url": "data/manifests/p33_capital_market_feedback_fixture_v0_1.json",
+      "citation": "P33 capital-market feedback fixture",
+      "parser_lineage": {
+        "route_id": "p34_route::market_price_in_valuation_positioning_gap::01::market_snapshot_context_adapter",
+        "attempt_id": "p34_attempt::market_price_in_valuation_positioning_gap::local_capital_market_feedback_fixture",
+        "adapter_family": "market_snapshot_context_adapter",
+        "parser_version": "p34_local_market_context_adapter_v0_1",
+        "source_snapshot_ref": "data/manifests/p33_capital_market_feedback_fixture_v0_1.json#sha256:a2cd647957eba82a"
+      },
+      "authority_scope": "market_context_not_fundamental_fact_or_realtime_flow",
+      "cannot_infer": [
+        "real-time fund flow",
+        "complete single-stock options positioning",
+        "borrow cost",
+        "investment recommendation"
+      ],
+      "promotion_status": "accepted_live_route_attempt_bounded_context"
+    },
+    {
+      "row_id": "p34_live_row::counter_thesis_pack_ai_semis::derived_counter_pack",
+      "evidence_row_id": "counter_thesis_pack_ai_semis",
+      "judgment_chain_ids": [
+        "jc_counter_thesis_what_would_change"
+      ],
+      "issuer": "AI_SEMIS_BASKET",
+      "product_or_family": "AI/Semis counter-thesis pack",
+      "metric_or_attribute": "independent_counter_thesis_context",
+      "value": "Counter-thesis can use accepted independent rows for AMD accelerator competition, Google TPU/GB200 deployment, Meta capex/component-cost risk, and market price-in context.",
+      "unit": "bounded counter-thesis context",
+      "period_or_version": "P34 live route attempt set",
+      "source_url": "derived://p34/counter_thesis_pack_ai_semis",
+      "citation": "Derived from accepted independent P34 source route attempts",
+      "parser_lineage": {
+        "route_id": "p34_route::counter_thesis_pack_ai_semis::01::risk_counterevidence_context_adapter",
+        "attempt_id": "p34_attempt::counter_thesis_pack_ai_semis::derived_from_independent_counter_sources",
+        "adapter_family": "risk_counterevidence_context_adapter",
+        "parser_version": "p34_counter_thesis_context_adapter_v0_1",
+        "source_attempt_ids": [
+          "p34_attempt::amd_mi300x_memory_bandwidth_competition::www_amd_com_en_products_accelerators_instinct_mi300_mi300x_html",
+          "p34_attempt::amd_mi300x_memory_bandwidth_competition::www_amd_com_content_dam_amd_en_documents_instinct_tech_docs_data_sheets_amd_inst",
+          "p34_attempt::google_tpu_v6e_trillium_architecture::cloud_google_com_tpu_docs_v6e",
+          "p34_attempt::google_a4x_gb200_cloud_deployment_surface::cloud_google_com_blog_products_compute_new_a4x_vms_powered_by_nvidia_gb200_gpus",
+          "p34_attempt::meta_capex_component_pricing_risk::investor_atmeta_com_investor_news_press_release_details_2026_Meta_Reports_Fourth",
+          "p34_attempt::market_price_in_valuation_positioning_gap::local_capital_market_feedback_fixture"
+        ],
+        "source_snapshot_ref": "derived://p34/counter_thesis/e5f0cec7728ebf60"
+      },
+      "authority_scope": "counterevidence_context_with_explicit_cannot_infer",
+      "cannot_infer": [
+        "revenue impact magnitude",
+        "market-share change",
+        "investment recommendation"
+      ],
+      "promotion_status": "accepted_live_route_attempt_bounded_context"
+    }
+  ],
+  "typed_gaps": [
+    {
+      "gap_id": "p34_gap::dell_ai_server_margin_bridge_quality_gap",
+      "evidence_row_id": "dell_ai_server_margin_bridge_quality_gap",
+      "judgment_chain_ids": [
+        "jc_dell_ai_server_financial_quality"
+      ],
+      "gap_type": "source_absent_after_attempt",
+      "attempt_id": "derived_from_dell_orders_and_isg_attempts",
+      "attempted_url_or_query": "Dell AI server orders/backlog + ISG segment margin route attempts",
+      "adapter_family": "sec_8k_earnings_release_table_adapter",
+      "reason": "Public issuer rows can support AI server revenue visibility and ISG baseline, but do not disclose AI server mix, GPU pass-through cost, or AI server gross margin.",
+      "cannot_infer": [
+        "AI server gross margin",
+        "GPU pass-through economics",
+        "backlog conversion margin"
+      ],
+      "attempt_backed": true
+    },
+    {
+      "gap_id": "p34_gap::market_price_in_exact_positioning_gap",
+      "evidence_row_id": "market_price_in_exact_positioning_gap",
+      "judgment_chain_ids": [
+        "jc_market_price_in_capital_feedback"
+      ],
+      "gap_type": "commercial_gap",
+      "attempt_id": "derived_from_public_market_context_attempts",
+      "attempted_url_or_query": "Public market snapshot / capital-market feedback context",
+      "adapter_family": "market_snapshot_context_adapter",
+      "reason": "Public delayed/context rows can support price-in discussion, but exact crowding, real-time flow, complete options positioning, borrow cost and institutional flow need licensed feeds or deeper adapters.",
+      "cannot_infer": [
+        "real-time fund flow",
+        "single-stock gamma exposure",
+        "complete borrow-cost curve"
+      ],
+      "attempt_backed": true
+    }
+  ],
+  "pre_writer_decision": {
+    "allow_paid_memo_writer": false,
+    "allow_full_chain": false,
+    "reason": "Live route attempts improve source-runtime closure, but P34 no-paid quality audit must pass before paid writer/full-chain."
+  },
+  "created_at": "2026-07-08T17:40:09+00:00",
+  "artifact_refs": {
+    "json_out": "docs/project_os/p34_ai_semis_live_route_attempt_report_v0_1.json",
+    "md_out": "docs/internal/vnext_20260610/p34_ai_semis_live_route_attempt_report_v0_1.zh-CN.md"
+  }
+}

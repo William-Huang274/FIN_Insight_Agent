@@ -1,0 +1,223 @@
+{
+  "schema_version": "fin_insight_p34_ai_semis_no_paid_quality_audit_v0_1",
+  "artifact_type": "ai_semis_no_paid_quality_audit",
+  "status": "bounded_quality_audit_pass_scoped_writer_allowed_full_chain_blocked",
+  "lane": "AI/Semis",
+  "inputs": {
+    "source_route_plan_status": "source_route_plan_ready_adapter_fixtures_pending",
+    "adapter_fixture_report_status": "adapter_fixture_parser_contract_pass_live_fetch_pending",
+    "slot_contract_ref": "docs/project_os/p34_ai_semis_evidence_slot_contract_mapping_v0_1.json",
+    "judgment_chain_ref": "docs/project_os/p34_ai_semis_judgment_chain_registry_v0_1.json"
+  },
+  "metrics": {
+    "judgment_chain_count": 7,
+    "chain_pass_count": 5,
+    "chain_partial_count": 2,
+    "chain_fail_count": 0,
+    "source_route_gap_count": 0,
+    "adapter_fixture_runtime_row_count": 9,
+    "adapter_fixture_rejected_candidate_count": 9,
+    "live_route_attempt_report_status": "live_route_attempts_recorded_with_remaining_typed_gaps",
+    "live_route_attempt_count": 21,
+    "accepted_live_runtime_row_count": 21,
+    "attempt_backed_typed_gap_count": 2,
+    "unattempted_slot_count": 0,
+    "live_fetch_performed": true,
+    "all_live_gaps_attempt_backed": true,
+    "bounded_scoped_writer_ready": true,
+    "paid_llm_run": false,
+    "full_chain_run": false,
+    "allow_paid_memo_writer": true,
+    "allow_scoped_paid_memo_writer": true,
+    "allow_full_chain": false
+  },
+  "chain_results": [
+    {
+      "chain_id": "jc_ai_capex_demand_pool",
+      "question_answered": "Is AI capex a real demand pool and what can it prove?",
+      "fixture_answerability_status": "pass_hyperscaler_capex_demand_pool_live_supported",
+      "required_slot_count": 5,
+      "fixture_supported_slot_count": 1,
+      "live_supported_slot_count": 5,
+      "attempt_backed_gap_slot_count": 0,
+      "fixture_supported_slots": [
+        "nvda_data_center_revenue_demand_confirmation"
+      ],
+      "live_supported_slots": [
+        "alphabet_capex_server_chain_context",
+        "amzn_aws_demand_pool_context",
+        "meta_capex_component_pricing_risk",
+        "msft_cloud_ai_capex_supply_shortfall",
+        "nvda_data_center_revenue_demand_confirmation"
+      ],
+      "attempt_backed_gap_slots": [],
+      "missing_slots": [],
+      "minimum_quality_bar": "Capex must be treated as demand-pool evidence, not as supplier allocation.",
+      "writer_must_say": "AI capex supports the existence of demand, but supplier capture needs product/deployment/supply-chain/financial bridge evidence.",
+      "blocking_reason": ""
+    },
+    {
+      "chain_id": "jc_accelerator_architecture_competition",
+      "question_answered": "How do NVIDIA, AMD and Google TPU differ in product capability and substitution risk?",
+      "fixture_answerability_status": "pass_product_architecture_competition_live_supported",
+      "required_slot_count": 8,
+      "fixture_supported_slot_count": 4,
+      "live_supported_slot_count": 8,
+      "attempt_backed_gap_slot_count": 0,
+      "fixture_supported_slots": [
+        "amd_mi300x_memory_bandwidth_competition",
+        "google_tpu_v6e_trillium_architecture",
+        "nvda_data_center_revenue_demand_confirmation",
+        "nvda_gb200_nvl72_rack_architecture"
+      ],
+      "live_supported_slots": [
+        "amd_mi300x_memory_bandwidth_competition",
+        "amd_mlperf_mi355x_performance_proxy",
+        "dell_nvidia_poweredge_ai_factory_product_path",
+        "dell_xe9712_gb200_oem_system_config",
+        "google_a4x_gb200_cloud_deployment_surface",
+        "google_tpu_v6e_trillium_architecture",
+        "nvda_data_center_revenue_demand_confirmation",
+        "nvda_gb200_nvl72_rack_architecture"
+      ],
+      "attempt_backed_gap_slots": [],
+      "missing_slots": [],
+      "minimum_quality_bar": "Product layer can be judged without SKU revenue, but cannot infer revenue, ASP, shipment or share.",
+      "writer_must_say": "Use product/spec/deployment evidence to judge product capability and substitution, while keeping revenue/share inference out of scope.",
+      "blocking_reason": ""
+    },
+    {
+      "chain_id": "jc_customer_deployment_oem_adoption",
+      "question_answered": "Who is deploying, configuring or adopting AI infrastructure products?",
+      "fixture_answerability_status": "pass_customer_deployment_oem_adoption_live_supported",
+      "required_slot_count": 5,
+      "fixture_supported_slot_count": 1,
+      "live_supported_slot_count": 5,
+      "attempt_backed_gap_slot_count": 0,
+      "fixture_supported_slots": [
+        "dell_ai_server_orders_shipments_backlog"
+      ],
+      "live_supported_slots": [
+        "alphabet_capex_server_chain_context",
+        "dell_ai_server_orders_shipments_backlog",
+        "dell_nvidia_poweredge_ai_factory_product_path",
+        "dell_xe9712_gb200_oem_system_config",
+        "google_a4x_gb200_cloud_deployment_surface"
+      ],
+      "attempt_backed_gap_slots": [],
+      "missing_slots": [],
+      "minimum_quality_bar": "Distinguish official deployment/configuration from demand proxy and relationship graph scope.",
+      "writer_must_say": "Deployment and OEM configuration support adoption direction, not total sales or margin unless order/backlog/financial rows exist.",
+      "blocking_reason": ""
+    },
+    {
+      "chain_id": "jc_dell_ai_server_financial_quality",
+      "question_answered": "Is Dell AI server growth high-quality profit or low-margin revenue pass-through?",
+      "fixture_answerability_status": "partial_dell_revenue_visibility_live_margin_bridge_attempt_backed_gap",
+      "required_slot_count": 2,
+      "fixture_supported_slot_count": 2,
+      "live_supported_slot_count": 2,
+      "attempt_backed_gap_slot_count": 1,
+      "fixture_supported_slots": [
+        "dell_ai_server_orders_shipments_backlog",
+        "dell_isg_revenue_margin_baseline"
+      ],
+      "live_supported_slots": [
+        "dell_ai_server_orders_shipments_backlog",
+        "dell_isg_revenue_margin_baseline"
+      ],
+      "attempt_backed_gap_slots": [
+        "dell_ai_server_margin_bridge_quality_gap"
+      ],
+      "missing_slots": [],
+      "minimum_quality_bar": "Revenue visibility and margin quality must be separated.",
+      "writer_must_say": "Dell has supported AI server revenue visibility if order/backlog rows exist, but margin-quality proof requires ISG margin and AI server mix/pass-through bridge.",
+      "blocking_reason": "Dell orders/backlog and ISG baseline exist as fixture rows, but AI server mix, GPU pass-through and margin bridge remain unresolved."
+    },
+    {
+      "chain_id": "jc_foundry_semicap_readthrough",
+      "question_answered": "How does AI demand read through to foundry, packaging, HBM and semicap equipment?",
+      "fixture_answerability_status": "pass_foundry_semicap_readthrough_live_supported",
+      "required_slot_count": 4,
+      "fixture_supported_slot_count": 3,
+      "live_supported_slot_count": 4,
+      "attempt_backed_gap_slot_count": 0,
+      "fixture_supported_slots": [
+        "amat_semiconductor_systems_mix",
+        "asml_lithography_installed_base_readthrough",
+        "lrcx_memory_hbm_process_intensity"
+      ],
+      "live_supported_slots": [
+        "amat_semiconductor_systems_mix",
+        "asml_lithography_installed_base_readthrough",
+        "lrcx_memory_hbm_process_intensity",
+        "tsmc_advanced_node_hpc_ai_readthrough"
+      ],
+      "attempt_backed_gap_slots": [],
+      "missing_slots": [],
+      "minimum_quality_bar": "Separate TSMC, ASML, AMAT, LRCX and KLAC mechanisms; peer group scope is not evidence.",
+      "writer_must_say": "AI supports semicap read-through only through vendor-specific WFE, EUV/DUV, deposition/etch, process-control, advanced packaging or services evidence.",
+      "blocking_reason": ""
+    },
+    {
+      "chain_id": "jc_market_price_in_capital_feedback",
+      "question_answered": "Is the AI infrastructure thesis already priced in?",
+      "fixture_answerability_status": "partial_market_price_in_context_live_exact_positioning_gap",
+      "required_slot_count": 1,
+      "fixture_supported_slot_count": 0,
+      "live_supported_slot_count": 1,
+      "attempt_backed_gap_slot_count": 1,
+      "fixture_supported_slots": [],
+      "live_supported_slots": [
+        "market_price_in_valuation_positioning_gap"
+      ],
+      "attempt_backed_gap_slots": [
+        "market_price_in_exact_positioning_gap"
+      ],
+      "missing_slots": [],
+      "minimum_quality_bar": "Do not make price-in claims without capital-feedback evidence.",
+      "writer_must_say": "Business evidence can be positive while market price-in remains unresolved until capital-feedback pack is available.",
+      "blocking_reason": "Public market context is live, but exact crowding, options positioning, borrow cost and institutional flow remain commercial/deeper-adapter boundaries."
+    },
+    {
+      "chain_id": "jc_counter_thesis_what_would_change",
+      "question_answered": "What would weaken or change the AI/Semis thesis?",
+      "fixture_answerability_status": "pass_counter_thesis_runtime_pack_live_supported",
+      "required_slot_count": 7,
+      "fixture_supported_slot_count": 3,
+      "live_supported_slot_count": 7,
+      "attempt_backed_gap_slot_count": 0,
+      "fixture_supported_slots": [
+        "amd_mi300x_memory_bandwidth_competition",
+        "asml_lithography_installed_base_readthrough",
+        "google_tpu_v6e_trillium_architecture"
+      ],
+      "live_supported_slots": [
+        "amd_mi300x_memory_bandwidth_competition",
+        "amd_mlperf_mi355x_performance_proxy",
+        "asml_lithography_installed_base_readthrough",
+        "counter_thesis_pack_ai_semis",
+        "google_tpu_v6e_trillium_architecture",
+        "meta_capex_component_pricing_risk",
+        "msft_cloud_ai_capex_supply_shortfall"
+      ],
+      "attempt_backed_gap_slots": [],
+      "missing_slots": [],
+      "minimum_quality_bar": "Every positive thesis must carry counter-thesis and what-would-change conditions.",
+      "writer_must_say": "A credible workpaper states both the current bounded view and the evidence that would change it.",
+      "blocking_reason": ""
+    }
+  ],
+  "quality_decision": {
+    "allow_paid_memo_writer": true,
+    "allow_scoped_paid_memo_writer": true,
+    "allow_full_chain": false,
+    "reason": "All P34 AI/Semis source routes have been attempted and no judgment chain fails. Remaining partial chains are explicit attempt-backed boundaries, so a scoped paid Memo Writer may write a bounded analyst view; broad full-chain/case expansion remains blocked.",
+    "next_required_actions": [
+      "if scoped paid writer is run, force bounded language for Dell AI server margin quality and market price-in",
+      "keep full-chain/model-comparison/case-expansion blocked until renderer/verifier/Workbench/human review gates pass",
+      "continue optional deeper public-source search for Dell AI server mix/pass-through margin bridge",
+      "record market exact positioning as commercial/deeper-adapter boundary unless licensed/free exact source is added"
+    ]
+  }
+}

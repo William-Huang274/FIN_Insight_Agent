@@ -1,0 +1,268 @@
+{
+  "schema_version": "fin_insight_negative_gold_failure_fixture_v0_1",
+  "artifact_type": "negative_gold_failure_fixtures",
+  "status": "pass",
+  "fixture_count": 6,
+  "fixtures": [
+    {
+      "fixture_id": "negative_gold_fixture::negative_sku_revenue_missing_not_product_failure_v0_1",
+      "case_id": "negative_sku_revenue_missing_not_product_failure_v0_1",
+      "status": "pass",
+      "case_type": "negative_gold_case",
+      "vertical": "AI/Semis product analysis",
+      "target_artifact_stages": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "compiled_gate_targets": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "failure_condition": "forbidden_inference_detected",
+      "correct_response_pattern": "不能因为 NVIDIA 没拆 H100 / H200 / B200 / GB200 的 SKU 收入，就说产品层无法判断。NVIDIA 当前 AI accelerator 竞争力可以从 GPU 代际升级、显存/带宽/互联、CUDA / Networking / NVLink / InfiniBand 生态、客户部署、OEM AI server 配置、CoWoS/HBM 供应瓶颈和数据中心 capex 约束来判断。边界是：这些证据能支持产品能力强、采用真实、供应链有瓶颈、替代短期有限，不能直接推出 SKU revenue、ASP、shipment 或 share。",
+      "forbidden_inferences": [
+        "SKU revenue",
+        "shipment",
+        "ASP",
+        "market share exact"
+      ],
+      "fail_criteria": [
+        "Says product layer cannot be judged because SKU revenue is missing."
+      ],
+      "pass_if": [
+        "The target artifact preserves the correct boundary.",
+        "The artifact does not promote proxy/scope/parser/context rows into exact facts.",
+        "If upstream evidence exists, downstream memo cannot claim it is missing."
+      ],
+      "artifact_refs": [
+        "docs/project_os/humanmade_gold_set_spec_v0_1.json",
+        "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json"
+      ],
+      "runtime_consumers": [
+        "aggregate.failure_fixture_gate",
+        "MemoLogicPlan.failure_fixture_gate",
+        "MemoWriter.preflight",
+        "FinalVerifier.deterministic_failure_gate",
+        "Workbench.review_gap_projection"
+      ]
+    },
+    {
+      "fixture_id": "negative_gold_fixture::negative_demand_pool_not_supplier_allocation_v0_1",
+      "case_id": "negative_demand_pool_not_supplier_allocation_v0_1",
+      "status": "pass",
+      "case_type": "negative_gold_case",
+      "vertical": "AI/Semis demand read-through",
+      "target_artifact_stages": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "compiled_gate_targets": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "failure_condition": "forbidden_inference_detected",
+      "correct_response_pattern": "MSFT / AMZN / GOOGL / META capex 上升可以说明 AI infrastructure demand pool 真实存在，但不能直接说明这些钱流向了某一家 GPU、server OEM、semicap 或 power/cooling 公司。capex 增长提高了需求池可信度，NVDA / DELL / ASML / LRCX 的受益需要进一步看产品供给、客户部署、供应瓶颈和公司财务桥。没有这些桥时，只能写 bounded demand read-through，不能写 supplier allocation exact。",
+      "forbidden_inferences": [
+        "specific supplier order value",
+        "supplier market share",
+        "OEM gross margin improvement"
+      ],
+      "fail_criteria": [
+        "Capex is written as direct evidence of supplier orders or share gains."
+      ],
+      "pass_if": [
+        "The target artifact preserves the correct boundary.",
+        "The artifact does not promote proxy/scope/parser/context rows into exact facts.",
+        "If upstream evidence exists, downstream memo cannot claim it is missing."
+      ],
+      "artifact_refs": [
+        "docs/project_os/humanmade_gold_set_spec_v0_1.json",
+        "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json"
+      ],
+      "runtime_consumers": [
+        "aggregate.failure_fixture_gate",
+        "MemoLogicPlan.failure_fixture_gate",
+        "MemoWriter.preflight",
+        "FinalVerifier.deterministic_failure_gate",
+        "Workbench.review_gap_projection"
+      ]
+    },
+    {
+      "fixture_id": "negative_gold_fixture::negative_relationship_graph_not_financial_fact_v0_1",
+      "case_id": "negative_relationship_graph_not_financial_fact_v0_1",
+      "status": "pass",
+      "case_type": "negative_gold_case",
+      "vertical": "Product relationship graph",
+      "target_artifact_stages": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "compiled_gate_targets": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "failure_condition": "forbidden_inference_detected",
+      "correct_response_pattern": "ProductRelationshipGraph 的价值是把研究路径打通，不是直接替代证据。图谱边能帮助解释 NVIDIA GPU、TSMC advanced packaging、HBM、DELL AI servers、hyperscaler capex、ASML/LRCX/AMAT/KLAC semicap 之间的机制，也能提示下一步 evidence search。它不能写成订单、收入、毛利或 backlog。图谱是 thesis map 和 evidence search guide，不是财务结论。",
+      "forbidden_inferences": [
+        "order amount",
+        "revenue",
+        "gross margin",
+        "backlog"
+      ],
+      "fail_criteria": [
+        "Relationship graph is used as main financial proof."
+      ],
+      "pass_if": [
+        "The target artifact preserves the correct boundary.",
+        "The artifact does not promote proxy/scope/parser/context rows into exact facts.",
+        "If upstream evidence exists, downstream memo cannot claim it is missing."
+      ],
+      "artifact_refs": [
+        "docs/project_os/humanmade_gold_set_spec_v0_1.json",
+        "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json"
+      ],
+      "runtime_consumers": [
+        "aggregate.failure_fixture_gate",
+        "MemoLogicPlan.failure_fixture_gate",
+        "MemoWriter.preflight",
+        "FinalVerifier.deterministic_failure_gate",
+        "Workbench.review_gap_projection"
+      ]
+    },
+    {
+      "fixture_id": "negative_gold_fixture::negative_parser_gap_not_public_source_absent_v0_1",
+      "case_id": "negative_parser_gap_not_public_source_absent_v0_1",
+      "status": "pass",
+      "case_type": "negative_gold_case",
+      "vertical": "Disclosure parser and source route",
+      "target_artifact_stages": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "compiled_gate_targets": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "failure_condition": "located_or_route_gap_written_as_public_source_absent",
+      "correct_response_pattern": "如果 ASML、TEL、Hon Hai、DART、本地交易所或公司 IR 的年报/季报/演示稿已经定位到，但表格、附注或数字没有被抽出来，正确结论不是“公开源没有数据”。正确结论是：source 存在，当前 parser / locator / local disclosure adapter 没能把它转成可审计 row。这个 gap 应写成 parser_gap、table_extraction_gap、local_filing_adapter_gap 或 source_route_runtime_gap，并触发具体 parser 修复。",
+      "forbidden_inferences": [
+        "public_source_absent",
+        "issuer_does_not_disclose"
+      ],
+      "fail_criteria": [
+        "Memo says public source is absent after the file was located."
+      ],
+      "pass_if": [
+        "The target artifact preserves the correct boundary.",
+        "The artifact does not promote proxy/scope/parser/context rows into exact facts.",
+        "If upstream evidence exists, downstream memo cannot claim it is missing."
+      ],
+      "artifact_refs": [
+        "docs/project_os/humanmade_gold_set_spec_v0_1.json",
+        "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json"
+      ],
+      "runtime_consumers": [
+        "aggregate.failure_fixture_gate",
+        "MemoLogicPlan.failure_fixture_gate",
+        "MemoWriter.preflight",
+        "FinalVerifier.deterministic_failure_gate",
+        "Workbench.review_gap_projection"
+      ]
+    },
+    {
+      "fixture_id": "negative_gold_fixture::negative_available_evidence_not_used_v0_1",
+      "case_id": "negative_available_evidence_not_used_v0_1",
+      "status": "pass",
+      "case_type": "negative_gold_case",
+      "vertical": "Evidence projection and memo writer consumption",
+      "target_artifact_stages": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "compiled_gate_targets": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "failure_condition": "final_memo_claims_missing_when_upstream_contains_evidence",
+      "correct_response_pattern": "如果 pre_memo_fact_selection、aggregate r7 或 writer payload 已经包含 LRCX revenue/capex、DELL ISG revenue、gross margin、operating income、working capital 或 capex rows，最终 memo 就不能写“缺少 LRCX/DELL 财务数据”。这不是数据缺失，而是 selector、projection、JudgmentCard、MemoLogicPlan 或 writer consumption 的内部传导失败。正确处理是 fail 并回溯最早 faulty layer。",
+      "forbidden_inferences": [
+        "data_missing",
+        "public_source_absent"
+      ],
+      "fail_criteria": [
+        "Final memo says evidence is missing while upstream payload contains it."
+      ],
+      "pass_if": [
+        "The target artifact preserves the correct boundary.",
+        "The artifact does not promote proxy/scope/parser/context rows into exact facts.",
+        "If upstream evidence exists, downstream memo cannot claim it is missing."
+      ],
+      "artifact_refs": [
+        "docs/project_os/humanmade_gold_set_spec_v0_1.json",
+        "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json"
+      ],
+      "runtime_consumers": [
+        "aggregate.failure_fixture_gate",
+        "MemoLogicPlan.failure_fixture_gate",
+        "MemoWriter.preflight",
+        "FinalVerifier.deterministic_failure_gate",
+        "Workbench.review_gap_projection"
+      ]
+    },
+    {
+      "fixture_id": "negative_gold_fixture::negative_commercial_tracker_boundary_v0_1",
+      "case_id": "negative_commercial_tracker_boundary_v0_1",
+      "status": "pass",
+      "case_type": "negative_gold_case",
+      "vertical": "Commercial tracker boundary",
+      "target_artifact_stages": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "compiled_gate_targets": [
+        "aggregate",
+        "writer_payload",
+        "final_memo"
+      ],
+      "failure_condition": "public_proxy_promoted_to_commercial_exact",
+      "correct_response_pattern": "公开网页、新闻、App Store 排名、电商 listing、招聘、开发者生态、channel availability 和政府/监管 proxy 可以支持方向性判断，但不能冒充 IDC、Gartner、IQVIA、NielsenIQ、POS sell-through、OPRA、borrow cost 或 app revenue 这类商业/授权数据。正确做法是保留公开 proxy 的研究价值，同时明确 exact commercial tracker gap；错误做法是把公开 proxy 填成 exact sales/share，或者因为没有商业 tracker 就整段拒答。",
+      "forbidden_inferences": [
+        "market share exact",
+        "sell-through exact",
+        "app revenue exact",
+        "real-time gamma",
+        "borrow cost exact"
+      ],
+      "fail_criteria": [
+        "Public proxy is used as commercial tracker exact."
+      ],
+      "pass_if": [
+        "The target artifact preserves the correct boundary.",
+        "The artifact does not promote proxy/scope/parser/context rows into exact facts.",
+        "If upstream evidence exists, downstream memo cannot claim it is missing."
+      ],
+      "artifact_refs": [
+        "docs/project_os/humanmade_gold_set_spec_v0_1.json",
+        "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json"
+      ],
+      "runtime_consumers": [
+        "aggregate.failure_fixture_gate",
+        "MemoLogicPlan.failure_fixture_gate",
+        "MemoWriter.preflight",
+        "FinalVerifier.deterministic_failure_gate",
+        "Workbench.review_gap_projection"
+      ]
+    }
+  ]
+}

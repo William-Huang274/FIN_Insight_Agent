@@ -1,0 +1,36 @@
+{
+  "schema_version": "fin_insight_project_os_full_chain_preflight_checklist_v0_1",
+  "updated_at": "2026-07-04",
+  "checks": [
+    {
+      "check_id": "project_os_context_pack_read",
+      "required": true,
+      "description": "current_context_pack and machine-readable ledgers must be available before expensive runs."
+    },
+    {
+      "check_id": "root_cause_blockers_closed_or_overridden",
+      "required": true,
+      "description": "No open full_chain_blocker root-cause rows for the requested run_scope unless the run is explicitly diagnostic and user-approved. Scope-specific blockers can keep broad/release eval blocked while allowing a controlled single-case proof."
+    },
+    {
+      "check_id": "token_budget_preflight_passed",
+      "required": true,
+      "description": "Run token-budget preflight before provider/model calls."
+    },
+    {
+      "check_id": "provider_health_preflight_passed",
+      "required": true,
+      "description": "Run minimal provider connectivity/auth probe before paid graph execution."
+    },
+    {
+      "check_id": "real_evidence_mode_required_when_case_demands_it",
+      "required": true,
+      "description": "Cases requiring real retrieval cannot be validated with dry-run evidence operators."
+    },
+    {
+      "check_id": "aie_and_data_script_gate_clean_for_known_blockers",
+      "required": true,
+      "description": "Known Agent Information Economy and DataScriptQuality blockers must not be carried into paid run."
+    }
+  ]
+}

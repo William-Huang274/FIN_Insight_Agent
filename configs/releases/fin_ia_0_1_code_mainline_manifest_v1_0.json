@@ -1,0 +1,467 @@
+{
+  "schema_version": "fin_ia_0_1_code_mainline_manifest_v1_0",
+  "manifest_id": "fin_ia_0_1_code_mainline_20260719",
+  "as_of": "2026-07-19",
+  "git_baseline": {
+    "branch": "codex/layered-data-source-expansion",
+    "head": "e8596d88bd82f4dce465a20eb50a55d70c1cea62",
+    "head_subject": "Add P26 product evidence depth split gate",
+    "working_tree_policy": "inventory_only_no_bulk_stage_reset_or_commit"
+  },
+  "authority": {
+    "product_state": "internal_development_candidate",
+    "release_admission": "not_issued",
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained",
+    "point01_status": "POINT01_FOUNDATION_ALPHA_CONTRACT_RUNTIME_PROOF_COMPLETE"
+  },
+  "path_groups": {
+    "current_product_runtime": [
+      {
+        "path": "apps/workbench/backend/app.py",
+        "path_type": "file",
+        "status": "active_entrypoint",
+        "required_exists": true
+      },
+      {
+        "path": "apps/workbench/backend/api/v1",
+        "path_type": "directory",
+        "status": "active_http_surface",
+        "required_exists": true
+      },
+      {
+        "path": "apps/workbench/backend/application",
+        "path_type": "directory",
+        "status": "active_application_services",
+        "required_exists": true
+      },
+      {
+        "path": "apps/workbench/frontend/vite/src",
+        "path_type": "directory",
+        "status": "active_react_source",
+        "required_exists": true
+      },
+      {
+        "path": "apps/workbench/frontend/package.json",
+        "path_type": "file",
+        "status": "active_npm_contract",
+        "required_exists": true
+      },
+      {
+        "path": "apps/workbench/frontend/package-lock.json",
+        "path_type": "file",
+        "status": "active_dependency_lock",
+        "required_exists": true
+      },
+      {
+        "path": "scripts/workbench/start_internal_alpha.ps1",
+        "path_type": "file",
+        "status": "active_local_operator_entrypoint",
+        "required_exists": true
+      },
+      {
+        "path": "scripts/workbench/stop_internal_alpha.ps1",
+        "path_type": "file",
+        "status": "active_local_operator_entrypoint",
+        "required_exists": true
+      }
+    ],
+    "reusable_foundation": [
+      {
+        "path": "src/sec_agent/canonical_runtime",
+        "path_type": "directory",
+        "status": "active_core_plus_path_stable_point01_proof_support",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/workbench",
+        "path_type": "directory",
+        "status": "legacy_workbench_runtime_still_imported_by_active_backend",
+        "required_exists": true
+      },
+      {
+        "path": "src/retrieval/object_bm25_retriever.py",
+        "path_type": "file",
+        "status": "active_local_retrieval_dependency",
+        "required_exists": true
+      }
+    ],
+    "legacy_compatibility_and_rollback": [
+      {
+        "path": "apps/workbench/frontend/index.html",
+        "path_type": "file",
+        "status": "legacy_static_fallback_when_vite_dist_is_absent",
+        "required_exists": true
+      },
+      {
+        "path": "apps/workbench/frontend/static",
+        "path_type": "directory",
+        "status": "legacy_static_assets_mounted_by_current_fastapi_app",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/workbench",
+        "path_type": "directory",
+        "status": "legacy_job_session_eval_compatibility_consumed_by_current_fastapi_app",
+        "required_exists": true
+      },
+      {
+        "path": "apps/workbench/backend/app.py",
+        "path_type": "file",
+        "status": "cohosts_current_api_v1_and_legacy_r53_r60_compatibility_routes",
+        "required_exists": true
+      }
+    ],
+    "historical_agent_engine_reuse_candidates": [
+      {
+        "path": "src/sec_agent/langgraph_orchestrator.py",
+        "path_type": "file",
+        "status": "implemented_historical_engine_not_current_fin_0_1_execution_mainline",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/agent_registry.py",
+        "path_type": "file",
+        "status": "implemented_registry_with_contract_drift",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/research_skills.py",
+        "path_type": "file",
+        "status": "implemented_skill_registry_not_consumed_by_current_fin_0_1_chain",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/research_lead_llm.py",
+        "path_type": "file",
+        "status": "implemented_historical_research_lead",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/specialist_llm.py",
+        "path_type": "file",
+        "status": "implemented_historical_specialist_runtime",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/memo_llm.py",
+        "path_type": "file",
+        "status": "implemented_historical_writer_runtime",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/tool_controller.py",
+        "path_type": "file",
+        "status": "implemented_bounded_react_controller_not_wired_to_current_fin_0_1_chain",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/research_graph_store.py",
+        "path_type": "file",
+        "status": "implemented_graph_store_not_used_as_agentic_current_fin_0_1_planner",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/relationship_graph.py",
+        "path_type": "file",
+        "status": "implemented_graph_lookup_not_current_fin_0_1_orchestrator",
+        "required_exists": true
+      }
+    ],
+    "release_reproducibility": [
+      {
+        "path": "configs/releases",
+        "path_type": "directory",
+        "status": "versioned_release_contracts",
+        "required_exists": true
+      },
+      {
+        "path": "scripts/releases",
+        "path_type": "directory",
+        "status": "bounded_reproducibility_commands_not_application_runtime",
+        "required_exists": true
+      },
+      {
+        "path": "tests/contract",
+        "path_type": "directory",
+        "status": "current_contract_and_release_regression_suite",
+        "required_exists": true
+      }
+    ],
+    "durable_release_evidence": [
+      {
+        "path": "reports/release_evidence",
+        "path_type": "directory",
+        "status": "small_reviewable_release_evidence_track_in_git",
+        "required_exists": true
+      }
+    ],
+    "historical_point01_proof_support": [
+      {
+        "path": "configs/engineering_handoff",
+        "path_type": "directory",
+        "status": "audit_history_keep_path_stable",
+        "required_exists": true
+      },
+      {
+        "path": "data/manifests",
+        "path_type": "directory",
+        "status": "mixed_durable_manifests_keep_point01_exact_artifacts_path_stable",
+        "required_exists": true
+      },
+      {
+        "path": "src/sec_agent/canonical_runtime",
+        "path_type": "directory",
+        "status": "mixed_with_reusable_core_do_not_move_before_digest_migration",
+        "required_exists": true
+      }
+    ],
+    "design_reference": [
+      {
+        "path": "docs/product/FIN_0_1_WORKBENCH_UX_BENCHMARK_INTERACTION_BLUEPRINT_20260719.zh-CN.md",
+        "path_type": "file",
+        "status": "approved_design_source",
+        "required_exists": true
+      },
+      {
+        "path": "docs/product/prototypes/fin_0_1_workbench_next",
+        "path_type": "directory",
+        "status": "standalone_design_reference_not_application_runtime",
+        "required_exists": true
+      },
+      {
+        "path": "docs/product/design_assets/fin_0_1_workbench_next",
+        "path_type": "directory",
+        "status": "visual_acceptance_reference",
+        "required_exists": true
+      }
+    ],
+    "generated_local_excluded": [
+      {
+        "path": ".codex_runtime",
+        "path_type": "directory",
+        "status": "local_runtime_state_never_git_authority",
+        "required_exists": false
+      },
+      {
+        "path": "output",
+        "path_type": "directory",
+        "status": "generated_preview_output_never_git_authority",
+        "required_exists": false
+      },
+      {
+        "path": "apps/workbench/frontend/dist",
+        "path_type": "directory",
+        "status": "generated_build_output",
+        "required_exists": false
+      },
+      {
+        "path": "apps/workbench/frontend/node_modules",
+        "path_type": "directory",
+        "status": "installed_dependency_cache",
+        "required_exists": false
+      },
+      {
+        "path": "data/workbench_private",
+        "path_type": "directory",
+        "status": "private_local_research_data_not_git_authority",
+        "required_exists": false
+      }
+    ]
+  },
+  "release_contract_versions": [
+    {
+      "family": "fin_ia_0_1_release_contract",
+      "active": "configs/releases/fin_ia_0_1_release_contract_v1_2.json",
+      "historical_or_superseded": [
+        "configs/releases/fin_ia_0_1_release_contract_v1_0.json",
+        "configs/releases/fin_ia_0_1_release_contract_v1_1.json"
+      ]
+    },
+    {
+      "family": "fin_ia_0_1_execution_backlog",
+      "active": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json",
+      "historical_or_base_reference": [
+        "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json"
+      ]
+    },
+    {
+      "family": "p36_three_cell_deepseek_vertical",
+      "active": "configs/releases/fin_ia_0_1_p36_three_cell_deepseek_vertical_contract_v1_1.json",
+      "historical_or_superseded": [
+        "configs/releases/fin_ia_0_1_p36_three_cell_deepseek_vertical_contract_v1_0.json"
+      ]
+    },
+    {
+      "family": "point02_contract_freeze",
+      "active": [
+        "configs/releases/point02_api_v1_openapi_baseline_v1_1.json",
+        "configs/releases/point02_canonical_object_subset_v1_1.json",
+        "configs/releases/point02_route_surface_map_v1_1.json"
+      ],
+      "historical_or_superseded": [
+        "configs/releases/point02_api_v1_openapi_baseline_v1_0.json",
+        "configs/releases/point02_canonical_object_subset_v1_0.json",
+        "configs/releases/point02_route_surface_map_v1_0.json"
+      ]
+    }
+  ],
+  "disconnected_slices": [
+    {
+      "slice_id": "historical_multi_agent_engine_vs_fin_0_1_product_chain",
+      "implemented_capability": "LangGraph Research Lead, specialists, evidence operators, judgment aggregation, writer, verifier and renderer",
+      "producer_paths": [
+        "src/sec_agent/langgraph_orchestrator.py",
+        "src/sec_agent/research_lead_llm.py",
+        "src/sec_agent/specialist_llm.py",
+        "src/sec_agent/memo_llm.py"
+      ],
+      "not_connected_to": [
+        "apps/workbench/backend/application/local_research_service.py",
+        "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx"
+      ],
+      "reason": "FIN 0.1 chose a bounded deterministic local vertical to ship an inspectable product slice without paid or operational authority; the integration adapter back to the historical engine was never implemented.",
+      "effect": "Current FIN 0.1 proves product flow and deterministic fallback, not the planned agentic research orchestration.",
+      "decision": "retain_as_reuse_candidate_integrate_through_one_versioned_runtime_adapter"
+    },
+    {
+      "slice_id": "research_skill_registry_vs_fin_0_1_runtime",
+      "implemented_capability": "Versioned research skills and role bindings consumed by the historical LLM engine",
+      "producer_paths": [
+        "src/sec_agent/research_skills.py",
+        "src/sec_agent/research_lead_llm.py",
+        "src/sec_agent/specialist_llm.py"
+      ],
+      "not_connected_to": [
+        "apps/workbench/backend/application/local_research_service.py",
+        "scripts/releases/run_fin_ia_0_1_p36_three_cell_deepseek_vertical.py"
+      ],
+      "reason": "The deterministic service hard-codes the ten-cell analysis and the standalone DeepSeek runner freezes prompts directly instead of resolving the shared skill registry.",
+      "effect": "Skills exist and were historically exercised, but they are not selectable or traceable in the current product path.",
+      "decision": "retain_and_make_skill_resolution_an_input_to_the_future_runtime_adapter"
+    },
+    {
+      "slice_id": "graph_assets_vs_agentic_graph_research",
+      "implemented_capability": "Large local graph store plus historical relationship graph planning and lookup",
+      "producer_paths": [
+        "src/sec_agent/research_graph_store.py",
+        "src/sec_agent/relationship_graph.py",
+        "data/workbench_private/research_data/research_graph_store_v0_1.sqlite"
+      ],
+      "not_connected_to": [
+        "apps/workbench/backend/application/local_research_service.py"
+      ],
+      "reason": "The current product service executes one fixed read-only graph SQL query for counterevidence rather than exposing graph traversal to an agent planner.",
+      "effect": "Graph data is used, but knowledge-graph reasoning and adaptive expansion are not current product capabilities.",
+      "decision": "retain_data_and_engine_add_bounded_graph_query_tool_to_runtime_adapter"
+    },
+    {
+      "slice_id": "bounded_react_controller_vs_fin_0_1_runtime",
+      "implemented_capability": "DeepSeek tool-call loop with bounded steps and tool traces",
+      "producer_paths": [
+        "src/sec_agent/tool_controller.py"
+      ],
+      "not_connected_to": [
+        "apps/workbench/backend/application/local_research_service.py",
+        "scripts/releases/run_fin_ia_0_1_p36_three_cell_deepseek_vertical.py"
+      ],
+      "reason": "The controller remains SEC-oriented and defaults to execute_tools=false; FIN 0.1 did not define or admit a product tool registry.",
+      "effect": "ReAct/agentic search exists as historical infrastructure but is not available in Workbench Next.",
+      "decision": "retain_and_refactor_only_after_current_tool_contract_and_authority_are_defined"
+    },
+    {
+      "slice_id": "three_cell_deepseek_runner_vs_product_case",
+      "implemented_capability": "Digest-bound three-cell Domain/Lead/Writer execution package with fail-closed accounting",
+      "producer_paths": [
+        "configs/releases/fin_ia_0_1_p36_three_cell_deepseek_vertical_contract_v1_1.json",
+        "scripts/releases/run_fin_ia_0_1_p36_three_cell_deepseek_vertical.py"
+      ],
+      "not_connected_to": [
+        "apps/workbench/backend/api/v1",
+        "apps/workbench/backend/application/case_service.py",
+        "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx"
+      ],
+      "reason": "It was frozen as a standalone bounded release experiment pending explicit paid approval and therefore writes only local runtime artifacts.",
+      "effect": "No model result, call trace or Lead synthesis currently appears in the product or canonical Case.",
+      "decision": "retain_as_release_reproducibility_tool_do_not_call_it_application_runtime"
+    },
+    {
+      "slice_id": "human_baseline_vs_canonical_case",
+      "implemented_capability": "Timed analyst tasks, Senior Review, exact digest attestation and JSON export",
+      "producer_paths": [
+        "apps/workbench/backend/application/human_baseline_service.py",
+        "apps/workbench/frontend/vite/src/features/human-baseline"
+      ],
+      "not_connected_to": [
+        "apps/workbench/backend/application/case_service.py",
+        "src/sec_agent/canonical_runtime/store.py"
+      ],
+      "reason": "The first internal baseline intentionally used a separate local SQLite store to avoid mutating canonical Case authority before product acceptance.",
+      "effect": "The review workflow is usable for internal measurement but cannot yet close RG3/RG4 or become canonical release evidence by itself.",
+      "decision": "retain_local_boundary_add_explicit_review_import_after_schema_and_authority_review"
+    },
+    {
+      "slice_id": "standalone_ux_prototype_vs_react_runtime",
+      "implemented_capability": "Eight-screen clickable information architecture prototype",
+      "producer_paths": [
+        "docs/product/prototypes/fin_0_1_workbench_next",
+        "docs/product/design_assets/fin_0_1_workbench_next"
+      ],
+      "not_connected_to": [
+        "apps/workbench/frontend/vite/src"
+      ],
+      "reason": "The artifact is an approved design and interaction reference, not production code; React implementation selectively consumes it.",
+      "effect": "Visual differences are acceptance drift, not a missing runtime import.",
+      "decision": "retain_as_design_reference_and_use_screenshot_acceptance_not_runtime_linkage"
+    },
+    {
+      "slice_id": "legacy_workbench_and_r53_r60_routes_cohosted_with_fin_0_1",
+      "implemented_capability": "Historical Workbench profile/job/session/eval and R53-R60 reviewer/deliverable APIs plus static fallback UI",
+      "producer_paths": [
+        "apps/workbench/backend/app.py",
+        "src/sec_agent/workbench",
+        "apps/workbench/frontend/index.html",
+        "apps/workbench/frontend/static"
+      ],
+      "not_connected_to": [
+        "apps/workbench/backend/api/v1",
+        "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx"
+      ],
+      "reason": "The new FIN 0.1 API and React product were added to the existing FastAPI host to preserve rollback and historical tools instead of replacing the old application in one cutover.",
+      "effect": "One process exposes two product generations; this is intentional compatibility but app.py ownership is broad and can obscure the current mainline.",
+      "decision": "retain_until_fin_0_1_release_then_extract_legacy_router_bundle_before_any_deletion"
+    }
+  ],
+  "commit_slices": [
+    {
+      "order": 1,
+      "name": "repository_hygiene_and_mainline_inventory",
+      "scope": "ignore rules, archive inventory, mainline manifest, audit and directory READMEs"
+    },
+    {
+      "order": 2,
+      "name": "point01_foundation_contract_runtime_proof",
+      "scope": "canonical runtime, Point01 policies, exact durable manifests, tests and narrow closeout"
+    },
+    {
+      "order": 3,
+      "name": "fin_0_1_release_contracts_and_vertical_train",
+      "scope": "PRD/TECH/Point execution contracts, P02 freeze and VT overlay"
+    },
+    {
+      "order": 4,
+      "name": "workbench_case_to_deliverable_vertical",
+      "scope": "backend API/services, React product shell, evidence/numeric/workpaper/deliverable/trace and focused tests"
+    },
+    {
+      "order": 5,
+      "name": "vt4_local_research_human_baseline_and_release_evidence",
+      "scope": "read-only local research chain, Workbench Next, human baseline, bounded release scripts and durable evidence"
+    },
+    {
+      "order": 6,
+      "name": "project_os_and_stage_review",
+      "scope": "capability/root-cause ledgers, worklogs and PRD/TECH/Point stage review"
+    }
+  ]
+}

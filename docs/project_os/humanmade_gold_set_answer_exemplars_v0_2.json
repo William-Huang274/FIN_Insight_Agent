@@ -1,0 +1,114 @@
+{
+  "schema_version": "fin_insight_humanmade_gold_set_answer_exemplars_v0_2",
+  "updated_at": "2026-07-06",
+  "status": "answer_exemplars_documented_pending_user_review",
+  "source_spec": "docs/project_os/humanmade_gold_set_spec_v0_1.json",
+  "source_doc": "docs/internal/vnext_20260610/p33_humanmade_gold_set_answer_exemplars_v0_2.zh-CN.md",
+  "not_started": [
+    "aggregate_r7_audit",
+    "memo_writer_payload_audit",
+    "audit_runner",
+    "paid_memo_writer",
+    "full_chain",
+    "model_comparison"
+  ],
+  "answer_quality_contract": {
+    "must_have": [
+      "judgment_first",
+      "business_mechanism",
+      "evidence_role_and_authority_boundary",
+      "financial_or_operating_bridge",
+      "cannot_infer_boundary",
+      "what_would_change_view_when_applicable"
+    ],
+    "must_not_have": [
+      "rule_only_answer",
+      "evidence_list_without_judgment",
+      "generic_refusal_when_bounded_judgment_is_possible",
+      "proxy_promoted_to_exact",
+      "available_evidence_reported_missing",
+      "parser_gap_reported_as_public_source_absent"
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "semicap_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "answer_example": "半导体设备公司的 AI read-through 不能写成“AI capex 增长，所以 ASML / AMAT / LRCX / KLAC 都受益”。AI 需求只有通过 foundry / memory / logic 客户的实际资本开支，进一步落到 WFE、EUV / DUV、deposition、etch、process control、advanced packaging 等设备类别，才会转成设备商的 bookings、backlog、shipment 和 service revenue。ASML 的关键在 EUV/DUV 订单、installed base service 和先进制程客户节奏；AMAT / LRCX / KLAC 的关键更偏工艺步骤暴露、存储周期、晶圆厂利用率、客户集中度和服务收入韧性。若只有 peer group、行业关系图谱或 AI 需求叙事，最多只能支持 research scope，不能当成订单周期和利润改善的主证据。"
+    },
+    {
+      "case_id": "cloud_saas_ai_monetization_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "answer_example": "Cloud / SaaS 的 AI 投资不能简单写成“AI 产品发布，所以公司会增长”。AI 同时是需求入口和成本压力。对 Microsoft、Amazon、Google 这类云厂商，capex 和 GPU / data center 支出先进入资产负债表和折旧，再通过 Azure / AWS / Google Cloud revenue、usage growth、AI workload attach、enterprise contract、RPO、gross margin 和 operating margin 体现回报。若只有 capex 增加而缺 monetization 指标，结论应是 bounded：AI 提供增长期权，但短期可能压制 FCF 和 margin。"
+    },
+    {
+      "case_id": "financials_rate_credit_capital_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "answer_example": "银行和券商类金融公司的分析不能停在 revenue / EPS。利率上行也不是线性利好，关键要看资产端收益率重定价和负债端存款成本、存款流失、批发融资成本之间的差。合格结论应当是资产负债表驱动的：如果高利率提高资产收益但存款成本和信用损失上升更快，NIM 或 ROE 可能并不改善；如果贷款增长弱但信用质量恶化，收入韧性也可能掩盖未来拨备压力。宏观利率和 FDIC/FRED 数据只能提供环境，不能替代 issuer-level deposit、loan、capital、credit rows。"
+    },
+    {
+      "case_id": "healthcare_regulated_product_adoption_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "answer_example": "医药和医疗器械不能把 trial、FDA 或产品存在直接写成销售成功。产品/适应症先要有 clinical evidence 或 regulatory pathway，再看 label、payer / reimbursement、医生或医院采用、产能/渠道、procedure volume 或 prescription/usage proxy，最后才进入 revenue、gross margin 和 pipeline optionality。ClinicalTrials / openFDA / FDA approval 能支持产品存在、研发阶段、适应症和监管路径，但不能直接支持处方量、市场份额或产品收入。"
+    },
+    {
+      "case_id": "energy_utilities_power_demand_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "answer_example": "AI data center 用电增长不能直接写成公用事业利润增长。对 regulated utility，负荷增长只有在进入 rate base、capex plan、transmission/distribution investment、allowed ROE 和 rate case 后，才会变成较可见的长期 earnings base；同时 capex 扩张也会带来债务、利息、股权融资和监管滞后风险。若只有 EIA/电价/AI 用电新闻，则只能支持需求背景，不能直接推断 EPS、ROE 或股价上行。"
+    },
+    {
+      "case_id": "retail_consumer_traffic_margin_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "answer_example": "Retail / consumer 的收入增长必须拆成 traffic、ticket、price/mix、unit volume、store expansion 和 promotion。同样是 revenue growth，同店销售靠客流增长和会员/复购支撑，比靠价格或促销更健康；gross margin 改善如果来自 freight relief 或 shrink 改善，和来自价格转嫁的可持续性不同。公开源下可用的是公司披露 operating KPI、同店销售、traffic/ticket、库存、毛利、宏观消费和渠道 proxy；公开 proxy 可以帮助判断方向，但不能冒充 sell-through exact。"
+    },
+    {
+      "case_id": "auto_ev_industrial_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "answer_example": "Auto / EV 不能只看 deliveries，工业公司也不能只看订单标题。交付量增长如果伴随 ASP 下滑、库存上升、激励增加或融资成本上升，利润质量可能下降；NHTSA recall、质量事件和产能利用率会影响产品风险和成本。合格答案应该区分“需求量”和“利润质量”：交付增长能证明产品或渠道有需求，但不能单独证明 margin 改善；ASP、mix、inventory days、warranty/recall、capacity utilization、financing rate 和 dealer/channel data 才能回答需求是否健康。"
+    },
+    {
+      "case_id": "capital_market_feedback_price_in_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "answer_example": "二级市场分析不是替代基本面，而是回答“好消息是否已经被定价，以及资金和资本结构是否会反过来影响公司”。基本面和产品证据回答“公司有没有变好”，市场资金面和资本反馈回答“市场是否已经给了这个价格、融资窗口是否改善、是否存在拥挤或事件风险”。如果估值已显著扩张、期权 implied move 很高、持仓拥挤或公司有潜在增发/可转债/解禁压力，即使基本面方向正确，也要降低短期 risk/reward。不能把这些写成面向外部用户的交易建议。"
+    },
+    {
+      "case_id": "negative_sku_revenue_missing_not_product_failure_v0_1",
+      "case_type": "negative_gold_case",
+      "correct_response_pattern": "不能因为 NVIDIA 没拆 H100 / H200 / B200 / GB200 的 SKU 收入，就说产品层无法判断。NVIDIA 当前 AI accelerator 竞争力可以从 GPU 代际升级、显存/带宽/互联、CUDA / Networking / NVLink / InfiniBand 生态、客户部署、OEM AI server 配置、CoWoS/HBM 供应瓶颈和数据中心 capex 约束来判断。边界是：这些证据能支持产品能力强、采用真实、供应链有瓶颈、替代短期有限，不能直接推出 SKU revenue、ASP、shipment 或 share。"
+    },
+    {
+      "case_id": "negative_demand_pool_not_supplier_allocation_v0_1",
+      "case_type": "negative_gold_case",
+      "correct_response_pattern": "MSFT / AMZN / GOOGL / META capex 上升可以说明 AI infrastructure demand pool 真实存在，但不能直接说明这些钱流向了某一家 GPU、server OEM、semicap 或 power/cooling 公司。capex 增长提高了需求池可信度，NVDA / DELL / ASML / LRCX 的受益需要进一步看产品供给、客户部署、供应瓶颈和公司财务桥。没有这些桥时，只能写 bounded demand read-through，不能写 supplier allocation exact。"
+    },
+    {
+      "case_id": "negative_relationship_graph_not_financial_fact_v0_1",
+      "case_type": "negative_gold_case",
+      "correct_response_pattern": "ProductRelationshipGraph 的价值是把研究路径打通，不是直接替代证据。图谱边能帮助解释 NVIDIA GPU、TSMC advanced packaging、HBM、DELL AI servers、hyperscaler capex、ASML/LRCX/AMAT/KLAC semicap 之间的机制，也能提示下一步 evidence search。它不能写成订单、收入、毛利或 backlog。图谱是 thesis map 和 evidence search guide，不是财务结论。"
+    },
+    {
+      "case_id": "negative_parser_gap_not_public_source_absent_v0_1",
+      "case_type": "negative_gold_case",
+      "correct_response_pattern": "如果 ASML、TEL、Hon Hai、DART、本地交易所或公司 IR 的年报/季报/演示稿已经定位到，但表格、附注或数字没有被抽出来，正确结论不是“公开源没有数据”。正确结论是：source 存在，当前 parser / locator / local disclosure adapter 没能把它转成可审计 row。这个 gap 应写成 parser_gap、table_extraction_gap、local_filing_adapter_gap 或 source_route_runtime_gap，并触发具体 parser 修复。"
+    },
+    {
+      "case_id": "negative_available_evidence_not_used_v0_1",
+      "case_type": "negative_gold_case",
+      "correct_response_pattern": "如果 pre_memo_fact_selection、aggregate r7 或 writer payload 已经包含 LRCX revenue/capex、DELL ISG revenue、gross margin、operating income、working capital 或 capex rows，最终 memo 就不能写“缺少 LRCX/DELL 财务数据”。这不是数据缺失，而是 selector、projection、JudgmentCard、MemoLogicPlan 或 writer consumption 的内部传导失败。正确处理是 fail 并回溯最早 faulty layer。"
+    },
+    {
+      "case_id": "negative_commercial_tracker_boundary_v0_1",
+      "case_type": "negative_gold_case",
+      "correct_response_pattern": "公开网页、新闻、App Store 排名、电商 listing、招聘、开发者生态、channel availability 和政府/监管 proxy 可以支持方向性判断，但不能冒充 IDC、Gartner、IQVIA、NielsenIQ、POS sell-through、OPRA、borrow cost 或 app revenue 这类商业/授权数据。正确做法是保留公开 proxy 的研究价值，同时明确 exact commercial tracker gap；错误做法是把公开 proxy 填成 exact sales/share，或者因为没有商业 tracker 就整段拒答。"
+    }
+  ],
+  "next_step_after_user_review": {
+    "phase_id": "P33-3_humanmade_gold_set_audit_spec_and_runner",
+    "allowed_after": "user_review_accepts_or_edits_answer_exemplars_v0_2",
+    "inputs": [
+      "docs/project_os/humanmade_gold_set_spec_v0_1.json",
+      "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+      "docs/internal/vnext_20260610/p33_humanmade_gold_set_answer_exemplars_v0_2.zh-CN.md"
+    ]
+  }
+}

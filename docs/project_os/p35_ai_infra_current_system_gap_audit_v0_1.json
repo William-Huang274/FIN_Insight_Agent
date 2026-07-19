@@ -1,0 +1,513 @@
+{
+  "schema_version": "fin_insight_p35_ai_infra_current_system_gap_audit_v0_1",
+  "created_at": "2026-07-08T17:56:05+00:00",
+  "artifact_type": "ai_infra_supervisor_dogfood_gap_audit",
+  "status": "current_system_gap_audit_completed_no_paid_llm",
+  "scope": {
+    "full_chain_run": false,
+    "paid_llm_run": false,
+    "workbuddy_samples_read": 9,
+    "p34_runtime_rows_read": 21,
+    "p34_typed_gaps_read": 2
+  },
+  "target_framework_ref": "fin_insight_p35_ai_infra_decision_surface_framework_v0_1",
+  "current_p34_coverage": {
+    "accepted_row_count": 21,
+    "typed_gap_count": 2,
+    "issuer_count": 12,
+    "issuers": [
+      "AI_SEMIS_BASKET",
+      "AMAT",
+      "AMD",
+      "AMZN",
+      "ASML",
+      "DELL",
+      "GOOGL",
+      "LRCX",
+      "META",
+      "MSFT",
+      "NVDA",
+      "TSM"
+    ],
+    "quality_audit_status": "bounded_quality_audit_pass_scoped_writer_allowed_full_chain_blocked",
+    "chain_pass_count": 5,
+    "chain_partial_count": 2,
+    "chain_fail_count": 0,
+    "full_chain_allowed": false,
+    "analyst_fact_table_row_count": 23,
+    "rows_by_value_quality": {
+      "structured_metric_context": 6,
+      "specific_technical_or_deployment_fact": 8,
+      "context_summary": 7,
+      "attempt_backed_gap": 2
+    },
+    "observable_strengths": [
+      "P34 has a bounded judgment-chain audit and a fact-table projection.",
+      "P34 preserves two attempt-backed typed gaps rather than hiding them.",
+      "P34 can distinguish product/deployment facts from revenue and margin claims."
+    ],
+    "observable_limits": [
+      "HBM producers are not covered as first-class segment rows.",
+      "SMCI/HPE are not covered as first-class server OEM peer rows.",
+      "CoWoS capacity/pricing/customer allocation are not extracted into exact rows.",
+      "Semicap lacks full ASML/AMAT/LRCX/KLAC bookings/backlog/China/WFE peer panel.",
+      "Price-in remains bounded fixture/context rather than live market/holder/valuation pack."
+    ]
+  },
+  "missing_decision_surface_cells": [
+    {
+      "segment_id": "accelerator",
+      "dimension_id": "price_in",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "accelerator",
+      "dimension_id": "export_control",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "accelerator",
+      "dimension_id": "numeric_sanity",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "server_oem",
+      "dimension_id": "profit_quality",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "server_oem",
+      "dimension_id": "margin_dilution",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "server_oem",
+      "dimension_id": "cash_conversion",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "server_oem",
+      "dimension_id": "peer_panel",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "server_oem",
+      "dimension_id": "price_in",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "foundry_packaging",
+      "dimension_id": "bottleneck_monetization",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "foundry_packaging",
+      "dimension_id": "profit_quality",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "foundry_packaging",
+      "dimension_id": "capex_recovery",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "foundry_packaging",
+      "dimension_id": "customer_allocation",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "foundry_packaging",
+      "dimension_id": "numeric_sanity",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "hbm",
+      "dimension_id": "demand_proof",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "hbm",
+      "dimension_id": "revenue_evidence",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "hbm",
+      "dimension_id": "profit_quality",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "hbm",
+      "dimension_id": "bottleneck_monetization",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "hbm",
+      "dimension_id": "price_in",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "hbm",
+      "dimension_id": "numeric_sanity",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "semicap",
+      "dimension_id": "revenue_evidence",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "semicap",
+      "dimension_id": "profit_quality",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "semicap",
+      "dimension_id": "capex_digestion",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "semicap",
+      "dimension_id": "export_control",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "semicap",
+      "dimension_id": "peer_panel",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    },
+    {
+      "segment_id": "semicap",
+      "dimension_id": "numeric_sanity",
+      "status": "not_sufficiently_covered_by_current_p34_runtime_rows"
+    }
+  ],
+  "workbuddy_sample_summary": [
+    {
+      "path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-08-23-22-06\\AI_Infra_Supply_Chain_Analysis.html",
+      "title": "AI 基建需求转化分析 — 半导体供应链证据链与风险评估",
+      "h1": [
+        "AI 基建需求 → 半导体供应链：证据链与风险矩阵"
+      ],
+      "h2": [
+        "一、证据质量矩阵 (Evidence Quality Matrix)",
+        "二、逐链深度分析",
+        "三、五大风险交叉映射",
+        "四、综合结论",
+        "五、附录：关键数据速查"
+      ],
+      "h3": [
+        "📊 证据链强度排序（从强到弱）",
+        "⚠️ Demand Proxy vs Real Demand —— 关键区分",
+        "🔮 最需要关注的三个转折信号"
+      ],
+      "table_count": 2,
+      "echarts_count": 0,
+      "contains_tldr": false,
+      "contains_risk_matrix": true,
+      "contains_source_boundary": true,
+      "plain_text_chars": 7867
+    },
+    {
+      "path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-09-00-26-34\\HBM-超级周期-三国杀分析-20260709.html",
+      "title": "HBM 超级周期三国杀：SK海力士 vs 三星 vs 美光 深度对比",
+      "h1": [
+        "HBM 超级周期三国杀"
+      ],
+      "h2": [],
+      "h3": [
+        "🔑 利润捕获三大判断"
+      ],
+      "table_count": 11,
+      "echarts_count": 9,
+      "contains_tldr": true,
+      "contains_risk_matrix": false,
+      "contains_source_boundary": true,
+      "plain_text_chars": 7768
+    },
+    {
+      "path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-09-00-29-17\\outputs\\AI_server_OEM_analysis.html",
+      "title": "Dell / Supermicro / HPE：AI Server 高质量受益者还是\"GPU 搬运费\"？",
+      "h1": [
+        "Dell / Supermicro / HPE：AI Server 高质量受益者 还是\"GPU 搬运费\"？"
+      ],
+      "h2": [
+        "一、收入与订单：谁在真正吃到 AI 增量？",
+        "二、Backlog 分析：收入能见度 vs 交付风险",
+        "三、毛利率与 GPU BOM 占比：搬运费结构的数学解剖",
+        "四、现金流：谁在创造真实价值，谁在烧钱？",
+        "五、客户集中度：谁在掌控议价权？",
+        "六、估值：市场在定价什么？",
+        "七、八维综合评分雷达图",
+        "八、最终结论：三个层次，三种答案"
+      ],
+      "h3": [
+        "核心判断：答案是分层的"
+      ],
+      "table_count": 7,
+      "echarts_count": 10,
+      "contains_tldr": false,
+      "contains_risk_matrix": false,
+      "contains_source_boundary": true,
+      "plain_text_chars": 6864
+    },
+    {
+      "path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-09-00-30-02\\TSMC_CoWoS_Pricing_Power_Analysis.html",
+      "title": "TSMC CoWoS 先进封装定价权分析 | 2026年7月",
+      "h1": [
+        "TSMC CoWoS 先进封装定价权深度分析"
+      ],
+      "h2": [
+        "核心结论",
+        "一、CoWoS 产能：四年扩张超 10 倍，仍供不应求",
+        "二、产能利用率：满载运行，订单排至 2027 年",
+        "三、客户分配：NVIDIA 独占六成，但多元化正在推进",
+        "四、定价权：CoWoS ASP 已等效 7nm 制程",
+        "五、竞争替代：时间窗口至少到 2028 年",
+        "六、Capex 回收：低强度、长周期、高确定性",
+        "七、利润率影响：由拖累转向驱动",
+        "八、数据来源归因：官方 vs 估算 vs 推断"
+      ],
+      "h3": [
+        "月度产能与年度需求",
+        "产能扩张三大驱动力",
+        "关键瓶颈信号",
+        "2026 年 CoWoS 产能分配（摩根士丹利预测）",
+        "2027 年格局：NVIDIA 占比下降但绝对量上升",
+        "定价数据汇总",
+        "定价权传导机制：三条路径",
+        "主要竞争者对比",
+        "竞争替代的核心判断",
+        "台积电资本支出全景",
+        "Capex 回收两大优势",
+        "Capex 回收周期量化"
+      ],
+      "table_count": 9,
+      "echarts_count": 7,
+      "contains_tldr": true,
+      "contains_risk_matrix": false,
+      "contains_source_boundary": true,
+      "plain_text_chars": 6537
+    },
+    {
+      "path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-09-00-32-22\\AI_Semi_Equipment_Analysis_20260709.html",
+      "title": "AI基建扩张 × 半导体设备四巨头——需求质量深度拆解",
+      "h1": [
+        "AI 基建扩张对半导体设备四巨头的拉动：真正高质量需求，还是半导体 capex 周期的滞后反映？"
+      ],
+      "h2": [
+        "核心结论（TL;DR）",
+        "一、WFE 全景：AI 能不能改变半导体设备的周期属性？",
+        "二、七个维度逐一拆解：真实需求 vs 周期滞后",
+        "三、周期锚定：这次真的不一样吗？",
+        "四、分场景投资框架",
+        "五、接下来需要跟踪的关键指标（建议存入 Watchlist）",
+        "六、总结：AI 基建扩张是高质量需求吗？"
+      ],
+      "h3": [
+        "1.1 当前周期定位：P2.3-P2.7（扩张中后期）",
+        "1.2 \"AI 结构性转变\" vs \"周期延长\"——当前市场核心分歧",
+        "维度 1：WFE（晶圆制造设备）总量",
+        "维度 2：EUV（极紫外光刻）—— 真正高质量需求",
+        "维度 3：Etch / Deposition（刻蚀与沉积）—— 半周期半结构",
+        "维度 4：Advanced Packaging（先进封装）—— 真正高质量需求",
+        "维度 5：China Exposure（中国敞口）—— 最大尾部风险",
+        "维度 6：订单 / 收入滞后（Order-to-Revenue Lag）",
+        "维度 7：估值 Price-in 程度"
+      ],
+      "table_count": 8,
+      "echarts_count": 6,
+      "contains_tldr": true,
+      "contains_risk_matrix": false,
+      "contains_source_boundary": true,
+      "plain_text_chars": 8100
+    },
+    {
+      "path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-09-00-37-36\\NVDA_Deep_Analysis_20260709.html",
+      "title": "NVIDIA AI Accelerator 可持续性深度分析 | 2026.07",
+      "h1": [
+        "NVIDIA AI Accelerator 可持续性深度分析"
+      ],
+      "h2": [
+        "核心结论",
+        "一、收入与毛利：量价齐升的黄金周期是否见顶？",
+        "二、产品周期：Blackwell 独舞，Rubin 迟到",
+        "三、Hyperscaler Capex：$725B 的盛宴还能持续多久？",
+        "四、竞争格局：三线作战，ASIC 比 AMD 更危险",
+        "五、出口管制与中国替代：永久性的 $50B+ 市场丧失",
+        "六、估值：市场 Price-in 了什么？",
+        "七、Bull / Base / Bear 三情景判断",
+        "八、投资结论",
+        "一句话本质"
+      ],
+      "h3": [
+        "1.1 收入引擎：数据中心从$47.5B到$193.7B的跃迁",
+        "1.2 毛利率：74%+ 的护城河有多宽？",
+        "2.1 2026 年：Blackwell 年",
+        "2.2 Rubin 延迟的四大技术瓶颈",
+        "3.1 2026 年：四巨头同步扩表",
+        "3.2 钱的去向：GPU 只占一半",
+        "3.3 消化风险：ROI 尚未追上折旧",
+        "4.1 AMD：从\"备胎\"到\"可信第二来源\"",
+        "4.2 定制 ASIC：真正的结构性威胁",
+        "5.1 从 20-25% 到\"有效归零\"",
+        "5.2 国产替代的\"倒逼效应\"",
+        "6.1 当前估值水平"
+      ],
+      "table_count": 7,
+      "echarts_count": 7,
+      "contains_tldr": true,
+      "contains_risk_matrix": true,
+      "contains_source_boundary": true,
+      "plain_text_chars": 9263
+    },
+    {
+      "path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-09-00-37-45\\ai-capex-analysis-20260709.html",
+      "title": "五大科技巨头 AI Capex 深度分析 — 过度投资还是军备竞赛？",
+      "h1": [
+        "五大科技巨头 AI Capex 深度分析"
+      ],
+      "h2": [
+        "核心判断：尚未进入\"过度投资\"，但已逼近临界点",
+        "一、Capex 全景：从 $410B 到 $725B 的跳跃",
+        "二、Capex/Revenue 比率：已进入公用事业/电信级别",
+        "三、AI 收入货币化：每 $1 Capex 仅产生 ~20¢ 收入",
+        "四、折旧压力：$116B 年度折旧 + 使用寿命缩短的\"定时炸弹\"",
+        "五、ROIC 分析：结构性上升但边际放缓",
+        "六、云业务增长：AI 正成为核心增长引擎",
+        "七、GPU/数据中心供给：不是过剩，而是严重短缺",
+        "八、未来 12–24 个月的转折信号：关键监测框架",
+        "九、综合判断与排序"
+      ],
+      "h3": [
+        "电力：真正的硬约束",
+        "信号灯总览",
+        "牛熊情景推演",
+        "12–24 个月关键监测清单"
+      ],
+      "table_count": 4,
+      "echarts_count": 9,
+      "contains_tldr": true,
+      "contains_risk_matrix": false,
+      "contains_source_boundary": true,
+      "plain_text_chars": 7091
+    },
+    {
+      "path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-09-00-37-57\\ai-datacenter-power-equipment-analysis-20260709.html",
+      "title": "AI数据中心电力设备产业链深度分析 | 2026年7月",
+      "h1": [
+        "AI数据中心电力设备产业链：高质量投资机会还是泡沫前夜？"
+      ],
+      "h2": [
+        "核心结论（TL;DR）",
+        "一、产业背景：从芯片瓶颈到电力瓶颈的结构性切换",
+        "二、五家公司深度拆解",
+        "三、五家公司关键指标横向对比",
+        "四、子赛道分析：液冷、UPS、开关柜、电网瓶颈",
+        "五、风险矩阵",
+        "六、综合排序与投资策略建议"
+      ],
+      "h3": [
+        "1.1 AI数据中心的物理革命",
+        "1.2 电网瓶颈：需求确定性最强的供给侧约束",
+        "收入真实性评估： 高",
+        "利润质量评估： 优质",
+        "核心风险： 中高",
+        "收入真实性评估： 高",
+        "利润质量评估： 中高（短期承压）",
+        "核心风险： 中",
+        "收入真实性评估： 极高",
+        "利润质量评估： 中（改善趋势极强）",
+        "核心风险： 中",
+        "收入真实性评估： 高"
+      ],
+      "table_count": 5,
+      "echarts_count": 7,
+      "contains_tldr": true,
+      "contains_risk_matrix": true,
+      "contains_source_boundary": true,
+      "plain_text_chars": 8200
+    },
+    {
+      "path": "C:\\Users\\hht13\\WorkBuddy\\2026-07-09-00-38-22\\outputs\\ai-cloud-comparison.html",
+      "title": "AI 基建投入：四大云厂商收入与利润转化深度比较",
+      "h1": [
+        "AI 基建投入能否转化为云厂商的真实收入和利润？"
+      ],
+      "h2": [
+        "核心结论",
+        "全景速览：四大云厂商 AI 经济核心指标",
+        "一、AI 收入：兑现程度与增速对比",
+        "二、GPU 容量与自研芯片战略：谁拥有基础设施主权？",
+        "三、客户需求：订单积压与供给瓶颈",
+        "四、Capex 强度：钱花在哪，花的有多快？",
+        "五、折旧：每家 ~4-5% 利润的\"会计魔法\"",
+        "六、毛利率与运营利润率：AI 是利润引擎还是利润杀手？",
+        "七、竞争风险矩阵：谁的护城河最宽？",
+        "综合评分：AI 基建投入 → 真实收入与利润转化力排序",
+        "最终判断：AI 基建正在转化为收入，但利润拐点尚未到来"
+      ],
+      "h3": [
+        "收入侧：正在兑现",
+        "利润侧：关键拐点在 2027-2028",
+        "竞争终局判断"
+      ],
+      "table_count": 8,
+      "echarts_count": 10,
+      "contains_tldr": true,
+      "contains_risk_matrix": true,
+      "contains_source_boundary": true,
+      "plain_text_chars": 7793
+    }
+  ],
+  "root_causes": [
+    {
+      "root_cause_id": "p35_case_scope_mismatch",
+      "layer": "case_definition",
+      "finding": "P34 grew out of the AI/Semis gold case around accelerator, Dell, customer deployment, capex, semicap read-through, and market boundary. The user case now asks for a full five-segment industry decision surface that explicitly includes HBM, SMCI/HPE, CoWoS pricing, semicap peer split, and price-in.",
+      "why_it_matters": "The current runtime can pass P34 gates while still failing the user's visible question.",
+      "repair_direction": "Make the decision surface the upstream contract, not a renderer afterthought."
+    },
+    {
+      "root_cause_id": "p35_decision_surface_not_runtime_contract",
+      "layer": "research_lead_to_writer_contract",
+      "finding": "P34 has judgment chains and fact-table blocks, but no segment-by-dimension decision surface with required fields for every cell. The verifier therefore checks lineage and typed gaps more strongly than front-office completeness.",
+      "why_it_matters": "A report can be safe yet incomplete; the user experiences it as boundary-heavy.",
+      "repair_direction": "Inject decision-surface cells into Research Lead, source routes, specialist outputs, MemoLogicPlan, and verifier."
+    },
+    {
+      "root_cause_id": "p35_source_hunter_loop_absent",
+      "layer": "source_route_runtime",
+      "finding": "Current P34 source routes are predetermined by 20 evidence slots. WorkBuddy instead repeatedly searches and fetches until the story has enough surface area.",
+      "why_it_matters": "Our RAG/graph/sql assets do not automatically compensate when the specific case surface is under-specified.",
+      "repair_direction": "Add a supervisor source-hunter loop that opens missing decision-surface cells, tries official first, then graded secondary sources, and writes supplement rows."
+    },
+    {
+      "root_cause_id": "p35_parser_depth_vs_context_rows",
+      "layer": "parser_adapter",
+      "finding": "P34 accepted rows include useful official context, but several rows are context_summary rather than extracted value/unit/period/product table cells.",
+      "why_it_matters": "Writer receives enough material to say what cannot be inferred, but not enough numbers to rank segments with confidence.",
+      "repair_direction": "Prioritize official IR/press/PDF table extraction for HBM, CoWoS, server OEM peers, semicap bookings/backlog, and capex/depreciation."
+    },
+    {
+      "root_cause_id": "p35_output_product_surface_gap",
+      "layer": "deliverable_surface",
+      "finding": "WorkBuddy renders polished HTML/ECharts-style artifacts by default. FIN currently projects memo/workpaper text and Workbench review surfaces, but the report product is not yet optimized for decision scanning.",
+      "why_it_matters": "Even when our evidence is better governed, users compare the visible artifact first.",
+      "repair_direction": "Treat decision tables, heatmaps, and source-grade appendices as first-class render targets."
+    }
+  ],
+  "required_next_repairs": [
+    "Implement decision-surface schema as runtime input and verifier requirement.",
+    "Add source-hunter supplement rows for missing cells before writer.",
+    "Promote source supplement rows into a ledger with source grade and numeric-sanity status.",
+    "Only then run a scoped writer/report generation pass.",
+    "Use Workbench review to accept/reject each decision-surface cell, not only whole memo prose."
+  ],
+  "not_run": [
+    "paid_llm",
+    "true_full_chain",
+    "model_comparison",
+    "case_expansion",
+    "release_eval"
+  ]
+}

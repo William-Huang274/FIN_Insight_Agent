@@ -1,0 +1,162 @@
+{
+  "schema_version": "fin_insight_humanmade_gold_set_artifact_audit_v0_1",
+  "updated_at": "2026-07-06",
+  "status": "no_paid_artifact_audit_completed_findings_open",
+  "scope": {
+    "case_id": "p33_3_ai_semis_accelerator_dell_gold_case_v0_1",
+    "audit_mode": "no_paid_artifact_review",
+    "not_run": [
+      "paid_llm",
+      "full_chain",
+      "model_comparison",
+      "new_retrieval",
+      "crawler_or_parser"
+    ]
+  },
+  "source_documents": [
+    "docs/internal/vnext_20260610/p33_ai_semis_research_judgment_ruler.zh-CN.md",
+    "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+    "docs/project_os/humanmade_gold_set_spec_v0_1.json",
+    "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json"
+  ],
+  "audited_artifacts": {
+    "p30_full_chain_deepseek": "reports/r53_r60_p30_full_chain_ai_semis/p30_ai_infra_deepseek_fullchain_after_graph_program_split_20260704_r1/p30_ai_infra_deepseek_fullchain_after_graph_program_split_20260704_r1/ma_real_sector_ai_infra_full_chain_real_retrieval/qwen/rendered_answer.md",
+    "p33_full_chain_deepseek_failed": "eval/sec_cases/outputs/p33_gold_case_runs/p33_gold_case_deepseek_full_chain_after_milvus_available_semantics_fix_20260705_r1/p33_3_ai_semis_accelerator_dell_gold_case_v0_1/qwen/rendered_answer.md",
+    "research_lead": "eval/sec_cases/outputs/p33_gold_case_runs/p33_stepwise_research_lead_after_route_scope_fix_deepseek_20260705_r5/p33_3_ai_semis_accelerator_dell_gold_case_v0_1/stepwise_node_result.json",
+    "evidence_fusion": "eval/sec_cases/outputs/p33_gold_case_runs/p33_stepwise_evidence_fusion_selector_after_requirement_trace_fix_20260705_r4/p33_3_ai_semis_accelerator_dell_gold_case_v0_1/evidence_fusion_selector_node_result.json",
+    "coverage_reflection": "eval/sec_cases/outputs/p33_gold_case_runs/p33_stepwise_coverage_reflection_enriched_state_after_fusion_fix_20260705_r3/p33_3_ai_semis_accelerator_dell_gold_case_v0_1/coverage_reflection_node_result.json",
+    "specialist_composite": "eval/sec_cases/outputs/p33_gold_case_runs/p33_stepwise_optional_specialist_composite_after_targeted_repairs_20260705_r1/p33_3_ai_semis_accelerator_dell_gold_case_v0_1/optional_specialist_subgraph_node_result.json",
+    "aggregate_r7": "eval/sec_cases/outputs/p33_gold_case_runs/p33_stepwise_aggregate_judgment_plan_after_required_item_gate_hardening_20260705_r7/p33_3_ai_semis_accelerator_dell_gold_case_v0_1/aggregate_judgment_plan_node_result.json",
+    "writer_payload_preflight": "eval/sec_cases/outputs/p33_gold_case_runs/p33_stepwise_memo_writer_payload_preflight_source_coverage_hardening_20260706_r1/p33_3_ai_semis_accelerator_dell_gold_case_v0_1/memo_writer_payload_preflight_summary.json",
+    "old_paid_memo_invalid": "eval/sec_cases/outputs/p33_gold_case_runs/p33_stepwise_memo_writer_node_from_aggregate_r7_deepseek_20260705_r1/p33_3_ai_semis_accelerator_dell_gold_case_v0_1/memo_answer.json"
+  },
+  "artifact_metrics": {
+    "p33_full_chain_gate_status": "fail",
+    "p33_full_chain_quality_issues": [
+      "high_total_token_cost",
+      "low_memo_chars_per_token",
+      "memo_payload_not_dense_enough",
+      "memo_writer_high_token_cost",
+      "memo_writer_retry_cost_present"
+    ],
+    "evidence_fusion": {
+      "row_count": 375,
+      "exact_authority_row_count": 232,
+      "context_only_row_count": 139,
+      "gap_only_row_count": 4,
+      "bounded_gap_count": 4,
+      "product_runtime_fact_count": 0,
+      "required_like_counts": {
+        "req_hyperscaler_capex": 42,
+        "req_dell_margin_quality": 99,
+        "req_supply_chain": 75,
+        "req_customer_deployment": 60,
+        "req_accelerator_architecture": 10
+      }
+    },
+    "coverage_reflection": {
+      "sufficiency_level": "partial",
+      "missing_requirement_count": 0,
+      "quality_gap_count": 1,
+      "product_runtime_fact_count": 0,
+      "bounded_answer_allowed": true
+    },
+    "specialist_composite": {
+      "verification_status": "pass",
+      "writer_allowed": true,
+      "supported_claim_count": 16,
+      "unsupported_claim_count": 7,
+      "conflict_count": 1
+    },
+    "aggregate_r7": {
+      "supported_claim_count": 26,
+      "unsupported_claim_count": 7,
+      "conflict_count": 1,
+      "memo_outline_count": 7,
+      "judgment_card_count": 14,
+      "required_question_item_count": 10,
+      "required_item_answer_plan_count": 10
+    },
+    "writer_payload_preflight": {
+      "gate_status": "pass",
+      "compact_required_item_count": 10,
+      "compact_section_count": 7,
+      "compact_supported_claim_count": 8,
+      "known_evidence_ref_count": 5,
+      "approx_total_prompt_chars_with_scaffold": 56016
+    }
+  },
+  "gold_item_results": [
+    {
+      "gold_item": "opening_bounded_thesis",
+      "status": "partial",
+      "finding": "Research Lead and aggregate have a thesis path, but historical memo output still starts from generic capex/revenue/margin anchors rather than a humanmade demand-to-product-to-financial chain.",
+      "earliest_faulty_layer": "memo_writer_projection"
+    },
+    {
+      "gold_item": "demand_pool_vs_supplier_allocation",
+      "status": "partial_pass",
+      "finding": "MSFT/AMZN capex rows support demand pool and boundaries are mostly preserved, but GOOGL/META and AI/non-AI capex bridge are not deep enough for gold answer quality.",
+      "earliest_faulty_layer": "source_depth_and_capital_feedback_pack"
+    },
+    {
+      "gold_item": "product_architecture_competition",
+      "status": "fail_for_gold_depth",
+      "finding": "product_runtime_fact_count=0; GOOGL TPU architecture remains unsupported; NVDA/AMD facts are mostly taxonomy/product-slot level rather than spec, benchmark, cloud/OEM deployment evidence.",
+      "earliest_faulty_layer": "product_source_route_and_product_intelligence_graph_projection"
+    },
+    {
+      "gold_item": "customer_deployment_adoption",
+      "status": "partial",
+      "finding": "relationship_graph gives context for DELL/NVDA/AMD/AMZN links, but rows remain scope/hypothesis and do not include sufficient official customer deployment/order/config evidence.",
+      "earliest_faulty_layer": "customer_deployment_source_role_runtime_ingestion"
+    },
+    {
+      "gold_item": "dell_financial_quality_margin_bridge",
+      "status": "partial_fail",
+      "finding": "DELL operating income/gross margin rows exist, but AI server orders/backlog to ISG revenue, AI server mix, GPU pass-through, attach economics and cash conversion bridge are missing.",
+      "earliest_faulty_layer": "financial_bridge_source_depth_and_specialist_contract"
+    },
+    {
+      "gold_item": "semicap_foundry_readthrough",
+      "status": "partial",
+      "finding": "Semicap/foundry relationship mechanism exists, but ASML/TSM route gaps and semicap company-specific bookings/backlog/systems sold/process exposure are not runtime-deep enough.",
+      "earliest_faulty_layer": "fpi_ir_local_disclosure_parser_and_semicap_playbook"
+    },
+    {
+      "gold_item": "market_expectation_price_in",
+      "status": "fail",
+      "finding": "Market specialist explicitly reports missing valuation, positioning and crowding rows for NVDA/AMD/GOOGL/DELL.",
+      "earliest_faulty_layer": "capital_market_feedback_case_pack"
+    },
+    {
+      "gold_item": "risk_counter_thesis",
+      "status": "partial",
+      "finding": "Capex digestion and DELL margin dilution appear, but substitution, customer concentration, export control and product delay risks are still thin or unsupported.",
+      "earliest_faulty_layer": "risk_source_routes_and_product_deployment_depth"
+    },
+    {
+      "gold_item": "final_memo_surface",
+      "status": "fail",
+      "finding": "Historical paid memo is generic and was invalidated by the hardened verifier with analyst_depth errors.",
+      "earliest_faulty_layer": "memo_writer_prompt_and_writer_ready_material_quality"
+    }
+  ],
+  "deeper_root_causes": [
+    "Humanmade gold source ledger is not fully ingested into runtime exact/product/deployment/benchmark slots.",
+    "ProductIntelligenceGraph remains relationship/scope-heavy for this case; product_runtime_fact_count is zero at evidence fusion.",
+    "Coverage reflection allows downstream on missing_requirement_count=0 despite gold-depth quality gap.",
+    "Specialist contract proves JudgmentCandidates exist but not answer-exemplar-quality briefing paragraphs.",
+    "Research Lead lacks a hard post-specialist quality veto for structurally complete but insight-thin material.",
+    "Writer payload preflight checks shape and budget, not semantic coverage against Humanmade Gold Set."
+  ],
+  "next_repair_order": [
+    "Implement no-paid HumanmadeGoldSetAudit runner over aggregate r7 and writer payload.",
+    "Add BriefingPackQualityGate before Memo Writer.",
+    "Ingest AI/Semis human source ledger into runtime exact/product/deployment/benchmark/semicap slots.",
+    "Upgrade ProductIntelligenceGraph projection with investment-role product facts and edge roles.",
+    "Upgrade specialist skill/contract to require answer-exemplar-style briefing material.",
+    "Upgrade Research Lead post-specialist review to veto material that cannot form the gold chain.",
+    "Only then run one paid Memo Writer node from the accepted checkpoint; do not run broad full-chain."
+  ]
+}

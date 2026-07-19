@@ -1,0 +1,345 @@
+{
+  "schema_version": "fin_insight_humanmade_gold_set_runtime_v0_1",
+  "artifact_type": "ai_semis_human_source_runtime_slots",
+  "status": "pass_runtime_slots_compiled",
+  "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+  "slot_count": 18,
+  "slot_type_counts": {
+    "issuer_exact_financial_operating_bridge": 2,
+    "official_product_architecture_spec": 3,
+    "issuer_exact_financial_or_operating": 1,
+    "benchmark_performance_proxy": 2,
+    "cloud_deployment_product_surface": 3,
+    "official_customer_deployment_context": 1,
+    "hyperscaler_capex_demand_pool": 2,
+    "foundry_advanced_node_context": 1,
+    "semicap_readthrough_context": 3
+  },
+  "slots": [
+    {
+      "slot_id": "ai_semis_source_slot:cda42f9eed0d",
+      "slot_type": "issuer_exact_financial_operating_bridge",
+      "source_name": "Dell FY26 Q4 8-K exhibit",
+      "authority_role": "issuer exact / operating disclosure",
+      "key_info": "Dell 披露 FY26 全年 AI-optimized server orders、shipments、FY27 backlog，以及全年收入、现金流、资本返还",
+      "supports": "AI server 订单/出货/积压是真实经营事件；DELL 已经有可量化 AI server demand",
+      "cannot_infer": "不能直接证明 AI server 毛利率、GPU pass-through cost、客户集中度或每个客户订单",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support issuer-reported financial or operating facts within disclosed metric/unit/period; cannot infer undisclosed SKU mix, margin, ASP, share, or customer allocation.",
+      "runtime_consumers": [
+        "FundamentalStatementPack",
+        "fundamental_analyst",
+        "JudgmentCard",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:956ad5423e71",
+      "slot_type": "issuer_exact_financial_operating_bridge",
+      "source_name": "Dell FY26 Q1 release",
+      "authority_role": "issuer exact / segment disclosure",
+      "key_info": "ISG、Servers and Networking、Storage revenue；ISG operating income / margin",
+      "supports": "DELL ISG 财务桥的基准；AI server 增长应落到 ISG 收入/利润质量",
+      "cannot_infer": "不能单独拆 AI server margin，也不能证明 Blackwell 配置占比",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support issuer-reported financial or operating facts within disclosed metric/unit/period; cannot infer undisclosed SKU mix, margin, ASP, share, or customer allocation.",
+      "runtime_consumers": [
+        "FundamentalStatementPack",
+        "fundamental_analyst",
+        "JudgmentCard",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:1bb808cf017c",
+      "slot_type": "official_product_architecture_spec",
+      "source_name": "Dell + NVIDIA AI Factory / PowerEdge announcements",
+      "authority_role": "issuer official product / deployment surface",
+      "key_info": "PowerEdge XE9680 支持 H200/B200；XE9712 是 GB200 NVL72 平台",
+      "supports": "DELL 有具体 NVIDIA-powered AI server / rack 产品路径",
+      "cannot_infer": "不能证明收入、订单量、客户签约或利润率",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support product capability, architecture, adoption, and competitive/substitution context; cannot infer revenue, shipment, ASP, share, or margin.",
+      "runtime_consumers": [
+        "ProductIntelligenceGraph",
+        "product_technology_analyst",
+        "BriefingPackQualityGate",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:95c8b670dec2",
+      "slot_type": "official_product_architecture_spec",
+      "source_name": "NVIDIA GB200 NVL72 official page",
+      "authority_role": "product architecture / technical fact",
+      "key_info": "GB200 NVL72 为 36 Grace CPU + 72 Blackwell GPU，rack-scale NVLink domain，面向 trillion-parameter inference/training",
+      "supports": "NVDA 产品从 GPU 卡扩展到 rack-scale system，支持 supply bottleneck 和系统级定价能力判断",
+      "cannot_infer": "不能证明 NVDA SKU 收入、DELL 订单或客户采购量",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support product capability, architecture, adoption, and competitive/substitution context; cannot infer revenue, shipment, ASP, share, or margin.",
+      "runtime_consumers": [
+        "ProductIntelligenceGraph",
+        "product_technology_analyst",
+        "BriefingPackQualityGate",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:110941a6a5fe",
+      "slot_type": "issuer_exact_financial_or_operating",
+      "source_name": "NVIDIA Q1 FY2027 IR page",
+      "authority_role": "issuer exact / segment revenue",
+      "key_info": "NVIDIA 披露 record revenue 和 Data Center revenue；Data Center revenue 高速增长",
+      "supports": "AI accelerator demand 已进入 NVDA 财报，不只是宏观叙事",
+      "cannot_infer": "不能拆到 B200/GB200/GB300 每个 SKU，不能证明 DELL 份额",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support issuer-reported financial or operating facts within disclosed metric/unit/period; cannot infer undisclosed SKU mix, margin, ASP, share, or customer allocation.",
+      "runtime_consumers": [
+        "FundamentalStatementPack",
+        "fundamental_analyst",
+        "JudgmentCard",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:7c9e518d1876",
+      "slot_type": "official_product_architecture_spec",
+      "source_name": "AMD MI300X official product page",
+      "authority_role": "product architecture / competitor spec",
+      "key_info": "MI300X 有 192GB HBM3、5.3 TB/s bandwidth、CDNA3、FP8/FP16 等规格",
+      "supports": "AMD 是真实替代/竞争路线，特别在 memory-heavy inference/training 场景",
+      "cannot_infer": "不能证明 AMD 市占、客户迁移规模或 NVDA 定价下行",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support product capability, architecture, adoption, and competitive/substitution context; cannot infer revenue, shipment, ASP, share, or margin.",
+      "runtime_consumers": [
+        "ProductIntelligenceGraph",
+        "product_technology_analyst",
+        "BriefingPackQualityGate",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:921fb53894f8",
+      "slot_type": "benchmark_performance_proxy",
+      "source_name": "AMD MLPerf 6.0 blog / MLCommons results",
+      "authority_role": "performance proxy / benchmark context",
+      "key_info": "AMD 新一代 MI355X 在若干 MLPerf inference 场景接近或部分超过 B200/B300，且强调 ROCm/scale-out",
+      "supports": "支持 AMD 竞争力改善和软件栈进步的方向性判断",
+      "cannot_infer": "厂商 blog 不能替代独立采购决策；benchmark 不能直接外推出收入或份额",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support product capability, architecture, adoption, and competitive/substitution context; cannot infer revenue, shipment, ASP, share, or margin.",
+      "runtime_consumers": [
+        "ProductIntelligenceGraph",
+        "product_technology_analyst",
+        "BriefingPackQualityGate",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:6b90c283d747",
+      "slot_type": "cloud_deployment_product_surface",
+      "source_name": "Google Cloud TPU v6e docs",
+      "authority_role": "product architecture / cloud deployment surface",
+      "key_info": "TPU v6e/Trillium 有官方规格：bf16/int8 compute、HBM、ICI、Pod size、all-reduce/network bandwidth",
+      "supports": "TPU 是 hyperscaler 自研 accelerator 的真实替代路线；GOOGL 内部/外部云可降低纯 NVIDIA 依赖",
+      "cannot_infer": "不能证明 TPU 对 NVDA 的实际替代比例或 GOOGL 内部采购节奏",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support product capability, architecture, adoption, and competitive/substitution context; cannot infer revenue, shipment, ASP, share, or margin.",
+      "runtime_consumers": [
+        "ProductIntelligenceGraph",
+        "product_technology_analyst",
+        "BriefingPackQualityGate",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:3c92ec8090f0",
+      "slot_type": "cloud_deployment_product_surface",
+      "source_name": "Google Cloud A4X GB200 blog",
+      "authority_role": "cloud deployment / adoption signal",
+      "key_info": "Google Cloud A4X preview 使用 GB200 NVL72，并说明 B200/A4 与 GB200/A4X 的定位",
+      "supports": "证明 GB200 已进入 hyperscaler cloud product surface；同时体现云厂商既用 NVIDIA 也做 TPU",
+      "cannot_infer": "不能证明购买金额、供货方收入或可用区域规模",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support product capability, architecture, adoption, and competitive/substitution context; cannot infer revenue, shipment, ASP, share, or margin.",
+      "runtime_consumers": [
+        "ProductIntelligenceGraph",
+        "product_technology_analyst",
+        "BriefingPackQualityGate",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:573d2da3d1b2",
+      "slot_type": "official_customer_deployment_context",
+      "source_name": "MSFT FY26 Q2/Q3 investor materials",
+      "authority_role": "hyperscaler capex / demand pool",
+      "key_info": "capex、云/AI 收入增长、customer demand exceeding supply 等披露",
+      "supports": "AI compute capex 是大规模真实需求池；可作为 upstream demand proxy",
+      "cannot_infer": "不能直接传导到 NVDA/DELL 订单份额",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support adoption/deployment existence and mechanism; cannot infer total demand, revenue, or customer concentration without exact rows.",
+      "runtime_consumers": [
+        "ResearchLead",
+        "industry_supply_chain_analyst",
+        "ProductIntelligenceGraph",
+        "BriefingPackQualityGate"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:a53986db26fd",
+      "slot_type": "hyperscaler_capex_demand_pool",
+      "source_name": "AMZN Q1 2026 results",
+      "authority_role": "hyperscaler / AWS demand pool",
+      "key_info": "AWS sales and operating income growth",
+      "supports": "AWS AI/cloud demand context",
+      "cannot_infer": "不能直接证明 AWS 买了多少 NVDA GPU 或 DELL server",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support AI infrastructure demand pool and upstream read-through direction; cannot infer direct supplier allocation or order value.",
+      "runtime_consumers": [
+        "ResearchLead",
+        "industry_supply_chain_analyst",
+        "ProductIntelligenceGraph",
+        "BriefingPackQualityGate"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:252b2025df99",
+      "slot_type": "cloud_deployment_product_surface",
+      "source_name": "Alphabet Q1 2026 release/call",
+      "authority_role": "hyperscaler capex / cloud growth / TPU context",
+      "key_info": "CapEx、服务器/数据中心网络占比、Google Cloud revenue growth",
+      "supports": "GOOGL capex 和 cloud AI demand 是真实需求背景；服务器占比可连接 accelerator/server chain",
+      "cannot_infer": "不能证明 NVDA vs TPU 采购拆分",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support product capability, architecture, adoption, and competitive/substitution context; cannot infer revenue, shipment, ASP, share, or margin.",
+      "runtime_consumers": [
+        "ProductIntelligenceGraph",
+        "product_technology_analyst",
+        "BriefingPackQualityGate",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:265f34782ed7",
+      "slot_type": "hyperscaler_capex_demand_pool",
+      "source_name": "Meta Q1 2026 transcript",
+      "authority_role": "hyperscaler capex / risk",
+      "key_info": "2026 capex guidance raised to support future capacity and component pricing",
+      "supports": "AI infra demand pool 和 component price pressure",
+      "cannot_infer": "不能直接证明供应商收入；也提示 capex digestion / overbuild 风险",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support AI infrastructure demand pool and upstream read-through direction; cannot infer direct supplier allocation or order value.",
+      "runtime_consumers": [
+        "ResearchLead",
+        "industry_supply_chain_analyst",
+        "ProductIntelligenceGraph",
+        "BriefingPackQualityGate"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:f9f556c8746a",
+      "slot_type": "foundry_advanced_node_context",
+      "source_name": "TSMC Q1 2026 release",
+      "authority_role": "foundry exact / advanced node",
+      "key_info": "revenue、margin、advanced technology wafer revenue share；leading-edge process demand",
+      "supports": "advanced node / HPC/AI read-through；foundry 端有财务质量支撑",
+      "cannot_infer": "不能单独证明 NVDA/AMD/Apple/TPU 各客户占比",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support foundry/semicap read-through and cycle context; exact bookings/backlog/customer allocation require company-disclosed rows.",
+      "runtime_consumers": [
+        "ResearchLead",
+        "industry_supply_chain_analyst",
+        "ProductIntelligenceGraph",
+        "BriefingPackQualityGate"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:1087a314a0e0",
+      "slot_type": "semicap_readthrough_context",
+      "source_name": "ASML Q1 2026 release",
+      "authority_role": "semicap exact / lithography",
+      "key_info": "net sales、gross margin、installed-base management、new/used lithography systems sold、2026 guide",
+      "supports": "EUV/DUV/installed-base read-through 和 semicap cycle 背景",
+      "cannot_infer": "不能直接把 AI capex 等同 ASML 订单；需区分 memory/foundry/logic/China exposure",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support foundry/semicap read-through and cycle context; exact bookings/backlog/customer allocation require company-disclosed rows.",
+      "runtime_consumers": [
+        "ResearchLead",
+        "industry_supply_chain_analyst",
+        "ProductIntelligenceGraph",
+        "BriefingPackQualityGate"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:29f7e4558b2d",
+      "slot_type": "semicap_readthrough_context",
+      "source_name": "AMAT Q2 FY26 release",
+      "authority_role": "semicap exact / equipment mix",
+      "key_info": "revenue、gross margin、Semiconductor Systems segment, foundry/logic/DRAM/flash mix",
+      "supports": "WFE / foundry-logic / DRAM 和 AI packaging/equipment exposure",
+      "cannot_infer": "不能替代 customer order backlog",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support foundry/semicap read-through and cycle context; exact bookings/backlog/customer allocation require company-disclosed rows.",
+      "runtime_consumers": [
+        "ResearchLead",
+        "industry_supply_chain_analyst",
+        "ProductIntelligenceGraph",
+        "BriefingPackQualityGate"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:35da60a3f0e1",
+      "slot_type": "semicap_readthrough_context",
+      "source_name": "LRCX Mar 2026 results",
+      "authority_role": "semicap exact / etch/deposition / memory",
+      "key_info": "revenue、gross margin、operating margin；AI-driven demand management commentary",
+      "supports": "memory/HBM/foundry process equipment read-through",
+      "cannot_infer": "不能证明每个 HBM / advanced packaging 订单",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support foundry/semicap read-through and cycle context; exact bookings/backlog/customer allocation require company-disclosed rows.",
+      "runtime_consumers": [
+        "ResearchLead",
+        "industry_supply_chain_analyst",
+        "ProductIntelligenceGraph",
+        "BriefingPackQualityGate"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    },
+    {
+      "slot_id": "ai_semis_source_slot:abbb0533b4af",
+      "slot_type": "benchmark_performance_proxy",
+      "source_name": "MLCommons MLPerf",
+      "authority_role": "neutral benchmark methodology",
+      "key_info": "公开、同行可比较的 inference/training benchmark 框架、availability/category/closed/open division",
+      "supports": "可作为产品能力/性能 proxy 的高质量公开基准",
+      "cannot_infer": "不可直接推导销量、ASP、份额或财务结果",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "source_authority_boundary": "Can support product capability, architecture, adoption, and competitive/substitution context; cannot infer revenue, shipment, ASP, share, or margin.",
+      "runtime_consumers": [
+        "ProductIntelligenceGraph",
+        "product_technology_analyst",
+        "BriefingPackQualityGate",
+        "MemoLogicPlan"
+      ],
+      "status": "runtime_slot_ready_not_yet_proven_consumed_by_current_artifact"
+    }
+  ],
+  "acceptance_boundary": "This compiles the human source ledger into runtime slots. It does not by itself prove the current Research Lead, specialists, aggregate, or Memo Writer consumed those slots."
+}

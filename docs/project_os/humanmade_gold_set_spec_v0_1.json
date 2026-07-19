@@ -1,0 +1,903 @@
+{
+  "schema_version": "fin_insight_humanmade_gold_set_spec_v0_1",
+  "updated_at": "2026-07-06",
+  "status": "catalog_schema_documented_pending_user_review",
+  "scope": {
+    "purpose": "Define humanmade gold set catalog, schema, pass criteria, rubric cases, and negative cases before auditing current P33 aggregate and writer artifacts.",
+    "case_counts": {
+      "deep_gold_case": 1,
+      "rubric_gold_case": 8,
+      "negative_gold_case": 6
+    },
+    "not_started": [
+      "aggregate_r7_audit",
+      "memo_writer_payload_audit",
+      "humanmade_gold_case_audit_runner",
+      "paid_memo_writer_rerun",
+      "full_chain",
+      "model_comparison"
+    ]
+  },
+  "research_method_rubric": {
+    "core_chain": [
+      "problem_definition",
+      "business_or_product_mechanism",
+      "evidence_role_assignment",
+      "financial_or_operating_bridge",
+      "market_expectation_or_price_in",
+      "counter_thesis_and_what_would_change",
+      "typed_boundary"
+    ],
+    "minimum_answer_shape": [
+      "judgment",
+      "business_mechanism",
+      "evidence_roles",
+      "cannot_infer",
+      "what_would_change_view",
+      "typed_gap"
+    ],
+    "source_authority_order": [
+      "company_disclosed_exact",
+      "company_disclosed_context",
+      "regulatory_or_exchange",
+      "official_product_surface",
+      "official_customer_or_partner",
+      "public_proxy",
+      "scope_hypothesis",
+      "commercial_gap"
+    ]
+  },
+  "case_type_definitions": {
+    "deep_gold_case": {
+      "requires": [
+        "source_ledger",
+        "human_workflow",
+        "human_workpaper_or_polished_memo",
+        "audit_spec_target"
+      ],
+      "intended_use": "Audit the current agent artifact against a human analyst target."
+    },
+    "rubric_gold_case": {
+      "requires": [
+        "must_answer_items",
+        "evidence_roles",
+        "pass_criteria",
+        "fail_criteria"
+      ],
+      "intended_use": "Prevent overfitting to one deep case and define vertical-quality expectations."
+    },
+    "negative_gold_case": {
+      "requires": [
+        "forbidden_inferences",
+        "correct_boundary",
+        "fail_criteria"
+      ],
+      "intended_use": "Block common over-promotion, missing-evidence, parser-boundary, and commercial-boundary failures."
+    }
+  },
+  "cases": [
+    {
+      "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+      "case_type": "deep_gold_case",
+      "status": "source_doc_ready_pending_machine_readable_audit",
+      "vertical": "AI/Semis",
+      "source_doc": "docs/internal/vnext_20260610/p33_ai_semis_humanmade_gold_case.zh-CN.md",
+      "companies": [
+        "MSFT",
+        "AMZN",
+        "GOOGL",
+        "META",
+        "NVDA",
+        "AMD",
+        "GOOGL_TPU",
+        "DELL",
+        "SMCI",
+        "TSM",
+        "ASML",
+        "AMAT",
+        "LRCX",
+        "KLAC"
+      ],
+      "user_question": "Does AI infrastructure demand translate into high-quality revenue and profit for accelerator, server OEM, foundry/packaging, HBM, and semicap companies?",
+      "research_chain": [
+        "hyperscaler_capex_demand_pool",
+        "accelerator_product_capability_and_supply",
+        "customer_deployment_and_oem_adoption",
+        "dell_ai_server_revenue_visibility_vs_margin_quality",
+        "foundry_packaging_hbm_semicap_readthrough",
+        "market_expectation_price_in",
+        "counter_thesis_and_what_would_change"
+      ],
+      "must_answer_items": [
+        "Whether AI server demand improves DELL quality of earnings or only adds low-margin pass-through revenue.",
+        "How NVDA/AMD/TPU product capability and supply affect server OEM and semicap read-through.",
+        "Which customer deployment or official relationship signals support adoption, and what they cannot prove.",
+        "How foundry, advanced packaging, HBM, and semicap cycles connect to the AI demand pool.",
+        "Whether market expectations and price-in risk change the interpretation of fundamentals."
+      ],
+      "evidence_roles": [
+        "company_disclosed_exact_financials",
+        "official_product_architecture_context",
+        "official_customer_deployment_context",
+        "relationship_graph_scope_and_mechanism",
+        "public_proxy",
+        "typed_gap"
+      ],
+      "promotable_boundaries": [
+        "Hyperscaler capex can support demand pool and read-through direction.",
+        "Official product specs and architecture can support product capability and competitive context.",
+        "Official customer deployment or partner evidence can support adoption existence and mechanism.",
+        "Company-reported segment revenue, margin, backlog, capex, and cash flow can support financial bridge."
+      ],
+      "forbidden_inferences": [
+        "Do not infer SKU revenue, shipment, ASP, share, or exact supplier allocation without exact rows.",
+        "Do not infer DELL AI server gross margin improvement without margin mix or bridge evidence.",
+        "Do not treat relationship graph as order, revenue, or margin fact.",
+        "Do not use source coverage rows as main thesis claims."
+      ],
+      "pass_criteria": [
+        "Memo has a clear thesis before caveats.",
+        "Memo connects product, deployment, supply chain, financial quality, market expectation, and counter-thesis.",
+        "Each required item is answered or typed as a bounded gap with root-cause category.",
+        "Cannot-infer boundaries are stated without turning the memo into a non-answer."
+      ],
+      "fail_criteria": [
+        "Output says product layer cannot be judged only because SKU revenue is missing.",
+        "Output treats hyperscaler capex as direct supplier order allocation.",
+        "Output says financial data is missing when accepted upstream payload contains relevant facts.",
+        "Output is primarily a list of evidence rather than a judgment path."
+      ],
+      "expected_artifacts": [
+        "HumanmadeGoldCaseSpec",
+        "HumanmadeGoldCaseAudit",
+        "JudgmentCardAudit",
+        "MemoLogicPlanAudit"
+      ],
+      "next_use": "First audit target for accepted aggregate r7 and Memo Writer payload after user review."
+    },
+    {
+      "case_id": "semicap_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Semiconductor equipment",
+      "companies": [
+        "ASML",
+        "AMAT",
+        "LRCX",
+        "KLAC",
+        "TEL"
+      ],
+      "user_question": "Does leading-edge and AI-related capex translate into semicap bookings, backlog, shipment, service revenue, and margin quality?",
+      "research_chain": [
+        "foundry_memory_logic_cycle",
+        "bookings_backlog_shipments",
+        "tool_category_exposure",
+        "china_export_restriction",
+        "customer_concentration",
+        "service_mix_margin"
+      ],
+      "must_answer_items": [
+        "bookings_or_backlog_direction",
+        "EUV_DUV_WFE_or_process_control_exposure",
+        "foundry_memory_logic_customer_cycle",
+        "China_or_export_restriction_risk",
+        "service_mix_and_margin_quality"
+      ],
+      "evidence_roles": [
+        "company_disclosed_order_or_backlog",
+        "company_IR_or_annual_report",
+        "local_exchange_or_FPI_filing",
+        "official_customer_or_regulatory_context",
+        "scope_hypothesis_peer_group"
+      ],
+      "promotable_boundaries": [
+        "Bookings/backlog/customer concentration can support cycle-quality judgment.",
+        "Peer group can scope comparison but cannot be main proof."
+      ],
+      "forbidden_inferences": [
+        "Do not equate same peer group with order cycle proof.",
+        "Do not infer China exposure exact value without disclosed row."
+      ],
+      "pass_criteria": [
+        "Separates tool-cycle proof from broad semicap scope.",
+        "Explains why bookings/backlog and customer mix matter to quality of revenue."
+      ],
+      "fail_criteria": [
+        "Uses only ASML/AMAT/LRCX/KLAC same-sector relationship as the core evidence."
+      ],
+      "expected_artifacts": [
+        "rubric_case_audit"
+      ],
+      "next_use": "Regression rubric after AI/Semis deep case."
+    },
+    {
+      "case_id": "cloud_saas_ai_monetization_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Cloud/SaaS",
+      "companies": [
+        "MSFT",
+        "AMZN",
+        "GOOGL",
+        "CRM",
+        "NOW",
+        "ORCL"
+      ],
+      "user_question": "Is AI capex turning into cloud/SaaS monetization, retention, RPO/ARR, and margin, or only increasing cost?",
+      "research_chain": [
+        "ai_capex",
+        "product_adoption_or_usage",
+        "cloud_or_saas_revenue",
+        "RPO_ARR_or_deferred_revenue",
+        "margin_and_depreciation_tradeoff",
+        "developer_ecosystem"
+      ],
+      "must_answer_items": [
+        "cloud_or_saas_growth",
+        "RPO_ARR_or_backlog_proxy",
+        "capex_depreciation_margin_bridge",
+        "customer_or_developer_adoption",
+        "price_in_and_expectations"
+      ],
+      "evidence_roles": [
+        "company_disclosed_financials",
+        "official_product_surface",
+        "developer_ecosystem_proxy",
+        "market_expectation_proxy"
+      ],
+      "promotable_boundaries": [
+        "Company RPO/ARR/cloud growth can support monetization.",
+        "Developer ecosystem can support adoption context but not revenue exact."
+      ],
+      "forbidden_inferences": [
+        "Do not equate AI product launch with monetized revenue.",
+        "Do not treat capex growth alone as positive without margin/depreciation bridge."
+      ],
+      "pass_criteria": [
+        "Explains monetization versus capex burden.",
+        "Separates product adoption evidence from revenue exact evidence."
+      ],
+      "fail_criteria": [
+        "Only says AI spend is high without discussing economic return."
+      ],
+      "expected_artifacts": [
+        "rubric_case_audit"
+      ],
+      "next_use": "Vertical expansion rubric for Cloud/SaaS."
+    },
+    {
+      "case_id": "financials_rate_credit_capital_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Financials",
+      "companies": [
+        "JPM",
+        "BAC",
+        "WFC",
+        "C",
+        "SCHW",
+        "regional_banks"
+      ],
+      "user_question": "How do rates and credit cycle affect NIM, deposit cost, loan growth, losses, capital and shareholder return?",
+      "research_chain": [
+        "rate_curve",
+        "deposit_cost_and_mix",
+        "loan_growth",
+        "credit_losses_and_provisions",
+        "capital_ratio_and_liquidity",
+        "buyback_dividend_or_funding_cost"
+      ],
+      "must_answer_items": [
+        "deposit_and_funding_cost",
+        "loan_balance_growth",
+        "NIM",
+        "provision_and_credit_quality",
+        "capital_ratio_and_liquidity",
+        "rate_sensitivity"
+      ],
+      "evidence_roles": [
+        "company_disclosed_balance_sheet",
+        "FDIC_context",
+        "FRED_rate_series",
+        "credit_spread_proxy",
+        "capital_action_context"
+      ],
+      "promotable_boundaries": [
+        "Balance-sheet rows can support financial quality.",
+        "Macro rate series can support context and sensitivity, not issuer-specific NIM by itself."
+      ],
+      "forbidden_inferences": [
+        "Do not analyze banks only by revenue or EPS.",
+        "Do not infer credit loss improvement from stock price movement."
+      ],
+      "pass_criteria": [
+        "Includes three-statement and balance-sheet-led analysis.",
+        "Connects rates to deposits, NIM, credit, and capital."
+      ],
+      "fail_criteria": [
+        "Ignores deposits, capital ratios, and credit quality."
+      ],
+      "expected_artifacts": [
+        "rubric_case_audit"
+      ],
+      "next_use": "Vertical expansion rubric for Financials."
+    },
+    {
+      "case_id": "healthcare_regulated_product_adoption_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Healthcare/Medtech/Pharma",
+      "companies": [
+        "LLY",
+        "AMGN",
+        "ISRG",
+        "MDT",
+        "ABT",
+        "ZTS"
+      ],
+      "user_question": "Do clinical, regulatory, procedure, reimbursement and product adoption signals support product performance?",
+      "research_chain": [
+        "pipeline_or_product_profile",
+        "clinical_or_regulatory_status",
+        "procedure_or_usage_context",
+        "reimbursement_or_channel",
+        "commercialization_boundary",
+        "financial_bridge"
+      ],
+      "must_answer_items": [
+        "product_or_indication",
+        "clinical_trial_or_FDA_status",
+        "adoption_or_procedure_volume",
+        "reimbursement_or_access",
+        "financial_bridge_or_gap"
+      ],
+      "evidence_roles": [
+        "company_disclosed_product_context",
+        "ClinicalTrials_context",
+        "openFDA_context",
+        "procedure_volume_proxy",
+        "commercial_tracker_gap"
+      ],
+      "promotable_boundaries": [
+        "Regulatory approval can support product existence and eligibility.",
+        "Procedure/adoption proxy can support directional context but not market share exact."
+      ],
+      "forbidden_inferences": [
+        "Do not infer sales share from trial existence.",
+        "Do not convert FDA context into revenue exact."
+      ],
+      "pass_criteria": [
+        "Separates R&D/regulatory context from commercial performance.",
+        "Identifies whether product adoption evidence is exact, proxy, or gap."
+      ],
+      "fail_criteria": [
+        "Uses clinical/FDA context as direct sales proof."
+      ],
+      "expected_artifacts": [
+        "rubric_case_audit"
+      ],
+      "next_use": "Vertical expansion rubric for Healthcare."
+    },
+    {
+      "case_id": "energy_utilities_power_demand_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Energy/Utilities/Power",
+      "companies": [
+        "NEE",
+        "DUK",
+        "SO",
+        "CEG",
+        "VST",
+        "XEL"
+      ],
+      "user_question": "How do data-center and electrification demand translate into load growth, regulated assets, capex, power pricing, debt and cash flow?",
+      "research_chain": [
+        "load_growth",
+        "generation_mix_or_asset_base",
+        "capex_plan",
+        "regulatory_allowed_return",
+        "debt_and_cash_flow",
+        "power_price_or_fuel_cost"
+      ],
+      "must_answer_items": [
+        "load_or_demand_growth",
+        "generation_or_asset_exposure",
+        "regulated_asset_base_or_rate_case",
+        "capex_and_debt_bridge",
+        "cash_flow_quality"
+      ],
+      "evidence_roles": [
+        "company_disclosed_financials",
+        "EIA_or_regulatory_context",
+        "power_price_proxy",
+        "data_center_demand_proxy",
+        "debt_market_context"
+      ],
+      "promotable_boundaries": [
+        "Company capex/debt/cash-flow rows can support quality judgment.",
+        "Data-center demand proxy can support load direction but not exact contract economics."
+      ],
+      "forbidden_inferences": [
+        "Do not treat AI power demand as automatic earnings growth.",
+        "Do not ignore financing and regulatory constraints."
+      ],
+      "pass_criteria": [
+        "Links demand to regulated return, capex and balance sheet.",
+        "Distinguishes merchant power exposure from regulated utility exposure."
+      ],
+      "fail_criteria": [
+        "Only says data centers use more power."
+      ],
+      "expected_artifacts": [
+        "rubric_case_audit"
+      ],
+      "next_use": "Vertical expansion rubric for Energy/Utilities."
+    },
+    {
+      "case_id": "retail_consumer_traffic_margin_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Retail/Consumer",
+      "companies": [
+        "WMT",
+        "COST",
+        "TGT",
+        "SBUX",
+        "MCD",
+        "PG",
+        "KO"
+      ],
+      "user_question": "Is growth driven by traffic, ticket, price/mix, unit volume, store expansion, promotion, or margin improvement?",
+      "research_chain": [
+        "traffic_or_units",
+        "ticket_or_price_mix",
+        "same_store_sales",
+        "inventory_and_promotion",
+        "gross_margin",
+        "consumer_spending_context"
+      ],
+      "must_answer_items": [
+        "same_store_sales_or_volume",
+        "traffic_vs_ticket",
+        "price_mix_margin_bridge",
+        "inventory_or_promotion",
+        "consumer_context"
+      ],
+      "evidence_roles": [
+        "company_disclosed_operating_metrics",
+        "consumer_macro_proxy",
+        "channel_or_POS_proxy",
+        "commercial_tracker_gap"
+      ],
+      "promotable_boundaries": [
+        "Company traffic/ticket/SSS rows can support operating analysis.",
+        "Macro and channel proxy can support context but not POS exact."
+      ],
+      "forbidden_inferences": [
+        "Do not infer sell-through exact from generic consumer proxy.",
+        "Do not treat price increases as unit demand without traffic/volume evidence."
+      ],
+      "pass_criteria": [
+        "Breaks growth into traffic, ticket, price/mix, units and margin.",
+        "Separates disclosed operating KPI from commercial POS gap."
+      ],
+      "fail_criteria": [
+        "Only cites revenue growth."
+      ],
+      "expected_artifacts": [
+        "rubric_case_audit"
+      ],
+      "next_use": "Vertical expansion rubric for Retail/Consumer."
+    },
+    {
+      "case_id": "auto_ev_industrial_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Auto/EV/Industrial",
+      "companies": [
+        "TSLA",
+        "GM",
+        "F",
+        "TM",
+        "CAT",
+        "DE"
+      ],
+      "user_question": "How do deliveries, ASP, inventory, recalls, capacity, financing and industrial cycle affect profit quality?",
+      "research_chain": [
+        "deliveries_or_units",
+        "ASP_or_price_mix",
+        "inventory_and_channel",
+        "recall_or_quality_context",
+        "capacity_utilization",
+        "financing_sensitivity"
+      ],
+      "must_answer_items": [
+        "delivery_or_volume",
+        "ASP_or_price_mix_proxy",
+        "inventory_or_channel_pressure",
+        "NHTSA_or_recall_context",
+        "capacity_utilization",
+        "financing_cost_sensitivity"
+      ],
+      "evidence_roles": [
+        "company_disclosed_operating_metric",
+        "NHTSA_context",
+        "dealer_or_channel_proxy",
+        "macro_rate_context"
+      ],
+      "promotable_boundaries": [
+        "Disclosed deliveries and inventory can support operating quality.",
+        "Recall data can support product quality/risk context."
+      ],
+      "forbidden_inferences": [
+        "Do not infer margin quality from delivery volume alone.",
+        "Do not infer ASP exact from channel commentary without disclosed row."
+      ],
+      "pass_criteria": [
+        "Connects volume, price, inventory and margin.",
+        "Separates product/quality risk from revenue growth."
+      ],
+      "fail_criteria": [
+        "Only uses deliveries or order headlines."
+      ],
+      "expected_artifacts": [
+        "rubric_case_audit"
+      ],
+      "next_use": "Vertical expansion rubric for Auto/Industrial."
+    },
+    {
+      "case_id": "capital_market_feedback_price_in_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Cross-sector secondary market",
+      "companies": [
+        "covered_issuer_basket"
+      ],
+      "user_question": "Are fundamentals and product changes already priced in by valuation, positioning, liquidity, credit and event risk?",
+      "research_chain": [
+        "fundamental_or_product_judgment",
+        "valuation_context",
+        "ownership_or_positioning",
+        "liquidity_and_short_interest",
+        "credit_or_funding_cost",
+        "corporate_action_or_event_calendar"
+      ],
+      "must_answer_items": [
+        "valuation_and_peer_context",
+        "holder_or_ownership_proxy",
+        "liquidity_short_interest_or_options_context",
+        "credit_funding_or_debt_context",
+        "buyback_offering_or_event_catalyst"
+      ],
+      "evidence_roles": [
+        "market_snapshot_context",
+        "ownership_filing_context",
+        "credit_or_debt_context",
+        "derivatives_proxy",
+        "corporate_action_filing"
+      ],
+      "promotable_boundaries": [
+        "Market signals can support price-in and risk-appetite context.",
+        "Corporate actions can support capital feedback analysis."
+      ],
+      "forbidden_inferences": [
+        "Do not turn market positioning into investment advice.",
+        "Do not treat options or holder proxy as fundamental improvement."
+      ],
+      "pass_criteria": [
+        "Separates long-term value judgment from market price-in and positioning.",
+        "States capital feedback boundaries."
+      ],
+      "fail_criteria": [
+        "Treats price action or options flow as proof of company fundamentals."
+      ],
+      "expected_artifacts": [
+        "rubric_case_audit"
+      ],
+      "next_use": "Cross-sector market feedback rubric."
+    },
+    {
+      "case_id": "negative_sku_revenue_missing_not_product_failure_v0_1",
+      "case_type": "negative_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "AI/Semis product analysis",
+      "companies": [
+        "NVDA",
+        "AMD",
+        "GOOGL_TPU"
+      ],
+      "user_question": "How should the agent behave when SKU revenue is missing but product/spec/deployment evidence exists?",
+      "research_chain": [
+        "official_product_specs",
+        "architecture_or_generation",
+        "benchmark_or_performance_proxy",
+        "deployment_or_adoption_context",
+        "explicit_exact_kpi_gap"
+      ],
+      "must_answer_items": [
+        "product_capability_judgment",
+        "exact_kpi_gap_reason",
+        "cannot_infer_boundary"
+      ],
+      "evidence_roles": [
+        "technical_fact",
+        "deployment_signal",
+        "performance_proxy",
+        "exact_product_kpi_gap"
+      ],
+      "promotable_boundaries": [
+        "Specs, architecture, benchmark and deployment can support bounded product capability judgment."
+      ],
+      "forbidden_inferences": [
+        "SKU revenue",
+        "shipment",
+        "ASP",
+        "market share exact"
+      ],
+      "pass_criteria": [
+        "Product layer remains analyzable even without SKU revenue.",
+        "Exact KPI absence is explained separately."
+      ],
+      "fail_criteria": [
+        "Says product layer cannot be judged because SKU revenue is missing."
+      ],
+      "expected_artifacts": [
+        "negative_case_gate"
+      ],
+      "next_use": "Immediate negative check before P33 memo audit."
+    },
+    {
+      "case_id": "negative_demand_pool_not_supplier_allocation_v0_1",
+      "case_type": "negative_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "AI/Semis demand read-through",
+      "companies": [
+        "MSFT",
+        "AMZN",
+        "GOOGL",
+        "META",
+        "NVDA",
+        "DELL",
+        "ASML",
+        "LRCX"
+      ],
+      "user_question": "How should hyperscaler capex evidence be used without over-infering supplier allocation?",
+      "research_chain": [
+        "capex_growth",
+        "AI_infrastructure_demand_pool",
+        "supplier_readthrough_context",
+        "allocation_gap"
+      ],
+      "must_answer_items": [
+        "demand_pool_judgment",
+        "supplier_allocation_boundary",
+        "what_evidence_would_upgrade"
+      ],
+      "evidence_roles": [
+        "company_disclosed_capex",
+        "demand_pool_context",
+        "supplier_relationship_scope",
+        "allocation_gap"
+      ],
+      "promotable_boundaries": [
+        "Hyperscaler capex can support demand pool and directional read-through."
+      ],
+      "forbidden_inferences": [
+        "specific supplier order value",
+        "supplier market share",
+        "OEM gross margin improvement"
+      ],
+      "pass_criteria": [
+        "Demand-pool conclusion is separated from supplier allocation."
+      ],
+      "fail_criteria": [
+        "Capex is written as direct evidence of supplier orders or share gains."
+      ],
+      "expected_artifacts": [
+        "negative_case_gate"
+      ],
+      "next_use": "Immediate negative check before P33 memo audit."
+    },
+    {
+      "case_id": "negative_relationship_graph_not_financial_fact_v0_1",
+      "case_type": "negative_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Product relationship graph",
+      "companies": [
+        "covered_issuer_basket"
+      ],
+      "user_question": "How should relationship edges be used without promoting them to financial facts?",
+      "research_chain": [
+        "relationship_edge",
+        "business_mechanism",
+        "evidence_search_guidance",
+        "financial_fact_gap"
+      ],
+      "must_answer_items": [
+        "edge_investment_role",
+        "supported_mechanism",
+        "cannot_infer_financial_fact"
+      ],
+      "evidence_roles": [
+        "relationship_graph_scope",
+        "mechanism_context",
+        "evidence_requirement_seed"
+      ],
+      "promotable_boundaries": [
+        "Graph edges can support mechanism, scope, and search guidance."
+      ],
+      "forbidden_inferences": [
+        "order amount",
+        "revenue",
+        "gross margin",
+        "backlog"
+      ],
+      "pass_criteria": [
+        "Every graph edge has an investment role and a cannot-infer boundary."
+      ],
+      "fail_criteria": [
+        "Relationship graph is used as main financial proof."
+      ],
+      "expected_artifacts": [
+        "negative_case_gate"
+      ],
+      "next_use": "Graph projection regression."
+    },
+    {
+      "case_id": "negative_parser_gap_not_public_source_absent_v0_1",
+      "case_type": "negative_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Disclosure parser and source route",
+      "companies": [
+        "ASML",
+        "TEL",
+        "Hon_Hai",
+        "non_US_or_local_exchange_issuers"
+      ],
+      "user_question": "How should the agent classify located public filings whose tables or numbers are not parsed?",
+      "research_chain": [
+        "source_located",
+        "parser_or_locator_failure",
+        "typed_gap",
+        "next_adapter"
+      ],
+      "must_answer_items": [
+        "source_presence",
+        "parser_failure_reason",
+        "correct_gap_type"
+      ],
+      "evidence_roles": [
+        "located_public_source",
+        "parser_gap",
+        "local_disclosure_adapter_gap"
+      ],
+      "promotable_boundaries": [
+        "Located public source can prove source availability and parser obligation."
+      ],
+      "forbidden_inferences": [
+        "public_source_absent",
+        "issuer_does_not_disclose"
+      ],
+      "pass_criteria": [
+        "Gap is attributed to parser/locator/local disclosure adapter when source exists."
+      ],
+      "fail_criteria": [
+        "Memo says public source is absent after the file was located."
+      ],
+      "expected_artifacts": [
+        "negative_case_gate"
+      ],
+      "next_use": "Parser boundary regression."
+    },
+    {
+      "case_id": "negative_available_evidence_not_used_v0_1",
+      "case_type": "negative_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Evidence projection and memo writer consumption",
+      "companies": [
+        "LRCX",
+        "DELL",
+        "covered_issuer_basket"
+      ],
+      "user_question": "How should the system behave when upstream evidence exists but the memo says it is missing?",
+      "research_chain": [
+        "upstream_evidence_exists",
+        "selector_or_projection",
+        "writer_consumption",
+        "contradiction_fail"
+      ],
+      "must_answer_items": [
+        "available_evidence_ref",
+        "missing_in_memo_symptom",
+        "root_cause_layer"
+      ],
+      "evidence_roles": [
+        "pre_memo_fact_selection",
+        "aggregate_payload",
+        "memo_output",
+        "projection_gap"
+      ],
+      "promotable_boundaries": [
+        "Available upstream exact evidence must be consumed or explicitly rejected with reason."
+      ],
+      "forbidden_inferences": [
+        "data_missing",
+        "public_source_absent"
+      ],
+      "pass_criteria": [
+        "System fails the case and attributes the defect to selector/projection/writer, not source absence."
+      ],
+      "fail_criteria": [
+        "Final memo says evidence is missing while upstream payload contains it."
+      ],
+      "expected_artifacts": [
+        "negative_case_gate"
+      ],
+      "next_use": "Immediate audit check over accepted aggregate r7 and writer payload."
+    },
+    {
+      "case_id": "negative_commercial_tracker_boundary_v0_1",
+      "case_type": "negative_gold_case",
+      "status": "catalog_ready_pending_user_review",
+      "vertical": "Commercial tracker boundary",
+      "companies": [
+        "covered_issuer_basket"
+      ],
+      "user_question": "How should public proxy be separated from commercial tracker exact data?",
+      "research_chain": [
+        "public_proxy",
+        "commercial_exact_gap",
+        "bounded_context",
+        "forbidden_exact_claim"
+      ],
+      "must_answer_items": [
+        "public_proxy_role",
+        "commercial_gap_reason",
+        "cannot_infer_exact_metric"
+      ],
+      "evidence_roles": [
+        "public_proxy",
+        "commercial_tracker_gap",
+        "authorization_gap"
+      ],
+      "promotable_boundaries": [
+        "Public proxy can support direction or context only."
+      ],
+      "forbidden_inferences": [
+        "market share exact",
+        "sell-through exact",
+        "app revenue exact",
+        "real-time gamma",
+        "borrow cost exact"
+      ],
+      "pass_criteria": [
+        "Public proxy is labeled as bounded context and exact gap is exposed."
+      ],
+      "fail_criteria": [
+        "Public proxy is used as commercial tracker exact."
+      ],
+      "expected_artifacts": [
+        "negative_case_gate"
+      ],
+      "next_use": "Boundary regression across future vertical expansion."
+    }
+  ],
+  "next_step_after_user_review": {
+    "phase_id": "P33-3_humanmade_gold_set_audit_spec_and_runner",
+    "allowed_after": "user_review_accepts_or_edits_gold_set_spec",
+    "actions": [
+      "build_no_paid_audit_spec",
+      "audit_accepted_aggregate_r7",
+      "audit_memo_writer_payload",
+      "produce_human_expectation_to_agent_artifact_gap_table",
+      "classify_root_cause_by_data_parser_runtime_specialist_aggregation_writer"
+    ],
+    "still_forbidden_until_pass_or_bounded_pass": [
+      "paid_memo_writer_rerun",
+      "full_chain",
+      "model_comparison",
+      "case_expansion"
+    ]
+  }
+}

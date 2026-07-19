@@ -55,6 +55,7 @@
 /reports/quality/
 /reports/query_contracts/
 /reports/verifier/
+/reports/r53_r60_*/
 /reports/model_runs/*.json
 /reports/retrieval_eval/*.json
 /reports/retrieval_eval/*.jsonl
@@ -64,11 +65,13 @@
 *.html
 *.htm
 !/apps/workbench/frontend/index.html
+!/docs/product/prototypes/fin_0_1_workbench_next/index.html
 *.parquet
 *.sqlite
 .env
 __pycache__/
 .pytest_cache/
+.ruff_cache/
 .ipynb_checkpoints/
 .venv/
 venv/
@@ -78,3 +81,12 @@ dist/
 !/data/logs/.gitkeep
 
 docs/interview/
+# Point01 M6.3/M6.5 restricted evidence: preserve locally for audit, never Git.
+/data/manifests/point01_m6_3_5_v4_single_fixed_nvda_10k_live_pilot_result_v1_0.json
+/.tmp_point01_m6_3_5_v4_single_fixed_nvda_10k_live_pilot/
+/.runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval/
+
+# Local Codex/Workbench runtime state and generated visual previews.
+# Durable release evidence belongs under /reports/release_evidence/ instead.
+/.codex_runtime/
+/output/

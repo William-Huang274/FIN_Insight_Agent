@@ -1,0 +1,1841 @@
+{
+  "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+  "artifact_type": "multicase_goldset_evidence_depth_packs",
+  "status": "pass",
+  "case_count": 15,
+  "artifact_ready_count": 15,
+  "case_type_counts": {
+    "deep_gold_case": 1,
+    "rubric_gold_case": 8,
+    "negative_gold_case": 6
+  },
+  "packs": [
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+      "case_type": "deep_gold_case",
+      "vertical": "AI/Semis",
+      "status": "pass",
+      "evidence_row_count": 20,
+      "depth_lanes": [
+        "counter_thesis_and_what_would_change",
+        "customer_deployment_adoption",
+        "dell_financial_quality_bridge",
+        "demand_pool",
+        "market_expectation_price_in",
+        "product_architecture_competition",
+        "semicap_foundry_readthrough"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "dell_ai_server_orders_shipments_backlog",
+          "row_type": "issuer_exact_operating_metric",
+          "role": "dell_financial_quality_bridge",
+          "source_authority": "issuer_exact",
+          "fact": "Dell disclosed FY26 AI-optimized server orders above $64B, shipments above $25B, and FY27 starting backlog of about $43B.",
+          "supports": "AI server revenue demand is real and issuer-disclosed.",
+          "cannot_infer": "Does not prove AI server gross margin, GPU pass-through cost, customer concentration, or per-customer order size.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "FundamentalStatementPack",
+            "fundamental_analyst",
+            "JudgmentCard",
+            "MemoLogicPlan"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "dell_isg_revenue_margin_baseline",
+          "row_type": "issuer_exact_segment_metric",
+          "role": "dell_financial_quality_bridge",
+          "source_authority": "issuer_exact",
+          "fact": "Dell disclosed ISG revenue, Servers and Networking revenue, Storage revenue, and ISG operating income / margin.",
+          "supports": "ISG is the financial bridge through which AI server orders should show revenue and margin quality.",
+          "cannot_infer": "Does not split AI server gross margin, Blackwell mix, attach rate, or customer-level profitability.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "FundamentalStatementPack",
+            "fundamental_analyst",
+            "JudgmentCard",
+            "MemoLogicPlan"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "dell_nvidia_poweredge_ai_factory_product_path",
+          "row_type": "official_product_surface",
+          "role": "customer_deployment_adoption",
+          "source_authority": "issuer_official_product_surface",
+          "fact": "Dell official announcements connect PowerEdge XE9680 to H200/B200 and XE9712 to the GB200 NVL72 platform.",
+          "supports": "Dell has a concrete NVIDIA-powered AI server / rack product path.",
+          "cannot_infer": "Does not prove revenue, order volume, signed customer contracts, or gross margin.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ProductIntelligenceGraph",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "dell_xe9712_gb200_oem_system_config",
+          "row_type": "official_product_architecture_spec",
+          "role": "product_architecture_competition",
+          "source_authority": "issuer_official_product_surface",
+          "fact": "Dell's XE9712 / Integrated Rack path links GB200 NVL72 to a concrete OEM rack-scale AI server configuration.",
+          "supports": "Product analysis can connect NVIDIA rack-scale architecture to Dell's server product surface.",
+          "cannot_infer": "Does not prove Dell revenue, customer order value, shipment count, or system gross margin.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ProductIntelligenceGraph",
+            "product_technology_analyst",
+            "JudgmentCard"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "nvda_gb200_nvl72_rack_architecture",
+          "row_type": "official_product_architecture_spec",
+          "role": "product_architecture_competition",
+          "source_authority": "official_technical_fact",
+          "fact": "GB200 NVL72 is a rack-scale system with 36 Grace CPUs, 72 Blackwell GPUs, a large NVLink domain, and liquid-cooled deployment.",
+          "supports": "NVIDIA product advantage is system-level, not just single-GPU compute.",
+          "cannot_infer": "Does not prove SKU revenue, Dell orders, customer purchase volume, ASP, or margin.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ProductIntelligenceGraph",
+            "product_technology_analyst",
+            "JudgmentCard"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "nvda_data_center_revenue_demand_confirmation",
+          "row_type": "issuer_exact_segment_metric",
+          "role": "demand_pool",
+          "source_authority": "issuer_exact",
+          "fact": "NVIDIA disclosed record revenue and high Data Center revenue growth.",
+          "supports": "AI accelerator demand has entered NVIDIA financials, not just macro narrative.",
+          "cannot_infer": "Does not split B200/GB200/GB300 SKU revenue or Dell share.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "FundamentalStatementPack",
+            "fundamental_analyst",
+            "market_valuation_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "amd_mi300x_memory_bandwidth_competition",
+          "row_type": "official_product_architecture_spec",
+          "role": "product_architecture_competition",
+          "source_authority": "official_technical_fact",
+          "fact": "AMD MI300X discloses 192GB HBM3 memory, 5.3 TB/s bandwidth, CDNA3, FP8 and FP16 support.",
+          "supports": "AMD is a real accelerator substitute in memory-heavy inference/training workloads.",
+          "cannot_infer": "Does not prove market share, customer migration scale, or NVIDIA pricing pressure by itself.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ProductIntelligenceGraph",
+            "product_technology_analyst",
+            "risk_counterevidence_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "amd_mlperf_mi355x_performance_proxy",
+          "row_type": "benchmark_performance_proxy",
+          "role": "product_architecture_competition",
+          "source_authority": "benchmark_proxy",
+          "fact": "AMD reported MI355X MLPerf inference progress and MLCommons provides the public benchmark framework for cross-system comparison.",
+          "supports": "AMD competitive capability and software stack progress are real product-performance signals.",
+          "cannot_infer": "Benchmark does not directly prove procurement, revenue, share, ASP, or gross margin.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ProductIntelligenceGraph",
+            "product_technology_analyst",
+            "risk_counterevidence_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "google_tpu_v6e_trillium_architecture",
+          "row_type": "official_product_architecture_spec",
+          "role": "product_architecture_competition",
+          "source_authority": "official_technical_fact",
+          "fact": "Google Cloud TPU docs disclose TPU compute, HBM, ICI, pod size, and network/all-reduce characteristics.",
+          "supports": "TPU is a real hyperscaler custom-silicon alternative to external GPUs in selected workloads.",
+          "cannot_infer": "Does not prove replacement ratio, internal procurement cadence, or NVIDIA revenue loss.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ProductIntelligenceGraph",
+            "product_technology_analyst",
+            "risk_counterevidence_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "google_a4x_gb200_cloud_deployment_surface",
+          "row_type": "cloud_deployment_product_surface",
+          "role": "customer_deployment_adoption",
+          "source_authority": "official_cloud_product_surface",
+          "fact": "Google Cloud A4X preview uses GB200 NVL72 and positions B200/A4 plus GB200/A4X cloud offerings.",
+          "supports": "GB200 has entered a hyperscaler cloud product surface; clouds may use both NVIDIA GPUs and TPU.",
+          "cannot_infer": "Does not prove purchase amount, supplier revenue, availability scale, or regional capacity.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ProductIntelligenceGraph",
+            "product_technology_analyst",
+            "industry_supply_chain_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "msft_cloud_ai_capex_supply_shortfall",
+          "row_type": "hyperscaler_demand_pool",
+          "role": "demand_pool",
+          "source_authority": "issuer_capex_context",
+          "fact": "Microsoft disclosed large AI/cloud capex, cloud/AI revenue growth, and demand exceeding supply.",
+          "supports": "Hyperscaler demand pool is real and supply constrained.",
+          "cannot_infer": "Does not identify how much flows to NVIDIA, Dell, ODMs, networking, power/cooling, or custom silicon.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ResearchLead",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "amzn_aws_demand_pool_context",
+          "row_type": "hyperscaler_demand_pool",
+          "role": "demand_pool",
+          "source_authority": "issuer_exact_context",
+          "fact": "Amazon disclosed AWS sales and operating income growth.",
+          "supports": "AWS cloud demand context is positive for AI infrastructure demand pool.",
+          "cannot_infer": "Does not reveal AWS GPU vendor mix, Dell server purchases, or capex allocation.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ResearchLead",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "alphabet_capex_server_chain_context",
+          "row_type": "hyperscaler_demand_pool",
+          "role": "demand_pool",
+          "source_authority": "issuer_capex_context",
+          "fact": "Alphabet disclosed capex mainly for technical infrastructure, with servers/data-center network as a major share, plus Google Cloud revenue growth.",
+          "supports": "Google capex connects to accelerator/server demand background.",
+          "cannot_infer": "Does not split NVIDIA GPU versus TPU procurement.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "ResearchLead",
+            "industry_supply_chain_analyst",
+            "market_valuation_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "meta_capex_component_pricing_risk",
+          "row_type": "hyperscaler_demand_pool",
+          "role": "counter_thesis_and_what_would_change",
+          "source_authority": "issuer_capex_context",
+          "fact": "Meta raised 2026 capex guidance for future capacity and cited component pricing.",
+          "supports": "AI demand pool and component price pressure are both active.",
+          "cannot_infer": "Does not prove supplier revenue or exact vendor allocation.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "risk_counterevidence_analyst",
+            "industry_supply_chain_analyst"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "tsmc_advanced_node_hpc_ai_readthrough",
+          "row_type": "foundry_exact_readthrough",
+          "role": "semicap_foundry_readthrough",
+          "source_authority": "issuer_exact_foundry_context",
+          "fact": "TSMC disclosed revenue, margin, advanced technology wafer revenue share, and leading-edge process demand.",
+          "supports": "AI/HPC demand is visible at the leading-edge foundry layer.",
+          "cannot_infer": "Does not disclose customer-level allocation across NVIDIA, AMD, Google, Apple, or others.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "industry_supply_chain_analyst",
+            "fundamental_analyst",
+            "ProductIntelligenceGraph"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "asml_lithography_installed_base_readthrough",
+          "row_type": "semicap_exact_company_mechanism",
+          "role": "semicap_foundry_readthrough",
+          "source_authority": "issuer_exact_semicap_context",
+          "fact": "ASML disclosed net sales, gross margin, installed-base management, new/used lithography systems sold, and 2026 guide.",
+          "supports": "ASML read-through should be separated into EUV/DUV, installed base, China/export, and bookings/backlog cycle.",
+          "cannot_infer": "Does not prove AI-specific ASML orders or customer allocation.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "industry_supply_chain_analyst",
+            "fundamental_analyst",
+            "ProductIntelligenceGraph"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "amat_semiconductor_systems_mix",
+          "row_type": "semicap_exact_company_mechanism",
+          "role": "semicap_foundry_readthrough",
+          "source_authority": "issuer_exact_semicap_context",
+          "fact": "Applied Materials disclosed revenue, gross margin, Semiconductor Systems segment, and foundry/logic/DRAM/flash mix.",
+          "supports": "AMAT AI read-through runs through materials engineering, deposition, foundry/logic, DRAM, flash, and advanced packaging exposure.",
+          "cannot_infer": "Does not replace customer order backlog or AI-specific bookings.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "industry_supply_chain_analyst",
+            "fundamental_analyst",
+            "ProductIntelligenceGraph"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "lrcx_memory_hbm_process_intensity",
+          "row_type": "semicap_exact_company_mechanism",
+          "role": "semicap_foundry_readthrough",
+          "source_authority": "issuer_exact_semicap_context",
+          "fact": "Lam Research disclosed revenue, gross margin, operating margin, and AI-driven demand management commentary.",
+          "supports": "LRCX read-through should focus on etch/deposition, memory/HBM, advanced packaging, and process intensity.",
+          "cannot_infer": "Does not prove each HBM or advanced packaging customer order.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "industry_supply_chain_analyst",
+            "fundamental_analyst",
+            "ProductIntelligenceGraph"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "market_price_in_valuation_positioning_gap",
+          "row_type": "typed_gap_required_for_recommendation",
+          "role": "market_expectation_price_in",
+          "source_authority": "typed_gap",
+          "fact": "The current business evidence pack does not include valuation percentiles, ownership/positioning, options/short interest, ETF flows, or event reaction asymmetry.",
+          "supports": "The workpaper can say business evidence is directionally positive but cannot issue a price-sensitive recommendation without capital-feedback data.",
+          "cannot_infer": "Cannot infer price-in, crowding, upside/downside skew, or trading recommendation.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "market_valuation_analyst",
+            "ResearchLead",
+            "MemoLogicPlan"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        },
+        {
+          "row_id": "counter_thesis_pack_ai_semis",
+          "row_type": "counter_thesis_material",
+          "role": "counter_thesis_and_what_would_change",
+          "source_authority": "analyst_synthesis_from_public_sources",
+          "fact": "The core counter-thesis includes capex digestion, OEM margin dilution, AMD/TPU substitution, HBM/CoWoS/power bottlenecks, export controls, customer concentration, and price-in risk.",
+          "supports": "Counter-thesis and what-would-change must be part of the main workpaper, not a generic appendix.",
+          "cannot_infer": "Does not quantify probability or valuation impact without follow-up data.",
+          "artifact_ref": "docs/project_os/ai_semis_gold_depth_content_pack_v0_1.json",
+          "runtime_consumers": [
+            "risk_counterevidence_analyst",
+            "ResearchLead",
+            "MemoLogicPlan",
+            "Verifier"
+          ],
+          "source_status": "human_source_ledger_runtime_row"
+        }
+      ],
+      "graph_edge_count": 9,
+      "specialist_material_count": 6,
+      "answer_exemplar": "",
+      "required_items": [
+        "Whether AI server demand improves DELL quality of earnings or only adds low-margin pass-through revenue.",
+        "How NVDA/AMD/TPU product capability and supply affect server OEM and semicap read-through.",
+        "Which customer deployment or official relationship signals support adoption, and what they cannot prove.",
+        "How foundry, advanced packaging, HBM, and semicap cycles connect to the AI demand pool.",
+        "Whether market expectations and price-in risk change the interpretation of fundamentals."
+      ],
+      "pass_conditions": [
+        "Memo has a clear thesis before caveats.",
+        "Memo connects product, deployment, supply chain, financial quality, market expectation, and counter-thesis.",
+        "Each required item is answered or typed as a bounded gap with root-cause category.",
+        "Cannot-infer boundaries are stated without turning the memo into a non-answer."
+      ],
+      "fail_conditions": [
+        "Output says product layer cannot be judged only because SKU revenue is missing.",
+        "Output treats hyperscaler capex as direct supplier order allocation.",
+        "Output says financial data is missing when accepted upstream payload contains relevant facts.",
+        "Output is primarily a list of evidence rather than a judgment path."
+      ],
+      "runtime_consumers": [
+        "EvidenceFusion.authority_rows",
+        "ProductIntelligenceGraph.investment_edges",
+        "SpecialistJudgmentMaterial",
+        "JudgmentCard",
+        "MemoLogicPlan",
+        "BriefingPackQualityGate"
+      ],
+      "source_boundary": "concrete_ai_semis_gold_depth_runtime_rows_not_live_retrieval_claim"
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "semicap_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Semiconductor equipment",
+      "status": "pass",
+      "evidence_row_count": 5,
+      "depth_lanes": [
+        "bookings_or_backlog_direction",
+        "EUV_DUV_WFE_or_process_control_exposure",
+        "foundry_memory_logic_customer_cycle",
+        "China_or_export_restriction_risk",
+        "service_mix_and_margin_quality"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "semicap_cycle_rubric_v0_1:required_item:1",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_order_or_backlog",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "bookings_or_backlog_direction",
+          "fact": "For Semiconductor equipment, `bookings_or_backlog_direction` must be answered with `company_disclosed_order_or_backlog` evidence. Gold exemplar anchor: 半导体设备公司的 AI read-through 不能写成“AI capex 增长，所以 ASML / AMAT / LRCX / KLAC 都受益”。AI 需求只有通过 foundry / memory / logic 客户的实际资本开支，进一步落到 WFE、EUV / DUV、deposition、etch、process control、advanced packaging 等设备类别，才会转成设备商的 bookings、back",
+          "supports": "Supports the rubric answer for `bookings_or_backlog_direction` if a runtime source row is found.",
+          "cannot_infer": "Do not equate same peer group with order cycle proof.; Do not infer China exposure exact value without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "semicap_cycle_rubric_v0_1:required_item:2",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_IR_or_annual_report",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "EUV_DUV_WFE_or_process_control_exposure",
+          "fact": "For Semiconductor equipment, `EUV_DUV_WFE_or_process_control_exposure` must be answered with `company_IR_or_annual_report` evidence. Gold exemplar anchor: 半导体设备公司的 AI read-through 不能写成“AI capex 增长，所以 ASML / AMAT / LRCX / KLAC 都受益”。AI 需求只有通过 foundry / memory / logic 客户的实际资本开支，进一步落到 WFE、EUV / DUV、deposition、etch、process control、advanced packaging 等设备类别，才会转成设备商的 bookings、back",
+          "supports": "Supports the rubric answer for `EUV_DUV_WFE_or_process_control_exposure` if a runtime source row is found.",
+          "cannot_infer": "Do not equate same peer group with order cycle proof.; Do not infer China exposure exact value without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "semicap_cycle_rubric_v0_1:required_item:3",
+          "row_type": "gold_required_evidence_slot",
+          "role": "local_exchange_or_FPI_filing",
+          "source_authority": "regulatory_or_exchange_context",
+          "required_item_answered": "foundry_memory_logic_customer_cycle",
+          "fact": "For Semiconductor equipment, `foundry_memory_logic_customer_cycle` must be answered with `local_exchange_or_FPI_filing` evidence. Gold exemplar anchor: 半导体设备公司的 AI read-through 不能写成“AI capex 增长，所以 ASML / AMAT / LRCX / KLAC 都受益”。AI 需求只有通过 foundry / memory / logic 客户的实际资本开支，进一步落到 WFE、EUV / DUV、deposition、etch、process control、advanced packaging 等设备类别，才会转成设备商的 bookings、back",
+          "supports": "Supports the rubric answer for `foundry_memory_logic_customer_cycle` if a runtime source row is found.",
+          "cannot_infer": "Do not equate same peer group with order cycle proof.; Do not infer China exposure exact value without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "semicap_cycle_rubric_v0_1:required_item:4",
+          "row_type": "gold_required_evidence_slot",
+          "role": "official_customer_or_regulatory_context",
+          "source_authority": "official_product_or_customer_context",
+          "required_item_answered": "China_or_export_restriction_risk",
+          "fact": "For Semiconductor equipment, `China_or_export_restriction_risk` must be answered with `official_customer_or_regulatory_context` evidence. Gold exemplar anchor: 半导体设备公司的 AI read-through 不能写成“AI capex 增长，所以 ASML / AMAT / LRCX / KLAC 都受益”。AI 需求只有通过 foundry / memory / logic 客户的实际资本开支，进一步落到 WFE、EUV / DUV、deposition、etch、process control、advanced packaging 等设备类别，才会转成设备商的 bookings、back",
+          "supports": "Supports the rubric answer for `China_or_export_restriction_risk` if a runtime source row is found.",
+          "cannot_infer": "Do not equate same peer group with order cycle proof.; Do not infer China exposure exact value without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "semicap_cycle_rubric_v0_1:required_item:5",
+          "row_type": "gold_required_evidence_slot",
+          "role": "scope_hypothesis_peer_group",
+          "source_authority": "scope_hypothesis_not_primary_proof",
+          "required_item_answered": "service_mix_and_margin_quality",
+          "fact": "For Semiconductor equipment, `service_mix_and_margin_quality` must be answered with `scope_hypothesis_peer_group` evidence. Gold exemplar anchor: 半导体设备公司的 AI read-through 不能写成“AI capex 增长，所以 ASML / AMAT / LRCX / KLAC 都受益”。AI 需求只有通过 foundry / memory / logic 客户的实际资本开支，进一步落到 WFE、EUV / DUV、deposition、etch、process control、advanced packaging 等设备类别，才会转成设备商的 bookings、back",
+          "supports": "Supports the rubric answer for `service_mix_and_margin_quality` if a runtime source row is found.",
+          "cannot_infer": "Do not equate same peer group with order cycle proof.; Do not infer China exposure exact value without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        }
+      ],
+      "answer_exemplar": "半导体设备公司的 AI read-through 不能写成“AI capex 增长，所以 ASML / AMAT / LRCX / KLAC 都受益”。AI 需求只有通过 foundry / memory / logic 客户的实际资本开支，进一步落到 WFE、EUV / DUV、deposition、etch、process control、advanced packaging 等设备类别，才会转成设备商的 bookings、backlog、shipment 和 service revenue。ASML 的关键在 EUV/DUV 订单、installed base service 和先进制程客户节奏；AMAT / LRCX / KLAC 的关键更偏工艺步骤暴露、存储周期、晶圆厂利用率、客户集中度和服务收入韧性。若只有 peer group、行业关系图谱或 AI 需求叙事，最多只能支持 research scope，不能当成订单周期和利润改善的主证据。",
+      "required_items": [
+        "bookings_or_backlog_direction",
+        "EUV_DUV_WFE_or_process_control_exposure",
+        "foundry_memory_logic_customer_cycle",
+        "China_or_export_restriction_risk",
+        "service_mix_and_margin_quality"
+      ],
+      "pass_conditions": [
+        "Separates tool-cycle proof from broad semicap scope.",
+        "Explains why bookings/backlog and customer mix matter to quality of revenue."
+      ],
+      "fail_conditions": [
+        "Uses only ASML/AMAT/LRCX/KLAC same-sector relationship as the core evidence."
+      ],
+      "runtime_consumers": [
+        "ResearchLead",
+        "ContextEngine",
+        "specialist.role_specific_contract",
+        "JudgmentCard",
+        "MemoLogicPlan",
+        "BriefingPackQualityGate"
+      ],
+      "source_boundary": "Rubric pack is executable gold-depth contract material, not a claim that live sector-specific retrieval/parser rows already exist."
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "cloud_saas_ai_monetization_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Cloud/SaaS",
+      "status": "pass",
+      "evidence_row_count": 5,
+      "depth_lanes": [
+        "cloud_or_saas_growth",
+        "RPO_ARR_or_backlog_proxy",
+        "capex_depreciation_margin_bridge",
+        "customer_or_developer_adoption",
+        "price_in_and_expectations"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "cloud_saas_ai_monetization_rubric_v0_1:required_item:1",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_financials",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "cloud_or_saas_growth",
+          "fact": "For Cloud/SaaS, `cloud_or_saas_growth` must be answered with `company_disclosed_financials` evidence. Gold exemplar anchor: Cloud / SaaS 的 AI 投资不能简单写成“AI 产品发布，所以公司会增长”。AI 同时是需求入口和成本压力。对 Microsoft、Amazon、Google 这类云厂商，capex 和 GPU / data center 支出先进入资产负债表和折旧，再通过 Azure / AWS / Google Cloud revenue、usage growth、AI workload attach、enterprise contra",
+          "supports": "Supports the rubric answer for `cloud_or_saas_growth` if a runtime source row is found.",
+          "cannot_infer": "Do not equate AI product launch with monetized revenue.; Do not treat capex growth alone as positive without margin/depreciation bridge.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "cloud_saas_ai_monetization_rubric_v0_1:required_item:2",
+          "row_type": "gold_required_evidence_slot",
+          "role": "official_product_surface",
+          "source_authority": "official_product_or_customer_context",
+          "required_item_answered": "RPO_ARR_or_backlog_proxy",
+          "fact": "For Cloud/SaaS, `RPO_ARR_or_backlog_proxy` must be answered with `official_product_surface` evidence. Gold exemplar anchor: Cloud / SaaS 的 AI 投资不能简单写成“AI 产品发布，所以公司会增长”。AI 同时是需求入口和成本压力。对 Microsoft、Amazon、Google 这类云厂商，capex 和 GPU / data center 支出先进入资产负债表和折旧，再通过 Azure / AWS / Google Cloud revenue、usage growth、AI workload attach、enterprise contra",
+          "supports": "Supports the rubric answer for `RPO_ARR_or_backlog_proxy` if a runtime source row is found.",
+          "cannot_infer": "Do not equate AI product launch with monetized revenue.; Do not treat capex growth alone as positive without margin/depreciation bridge.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "cloud_saas_ai_monetization_rubric_v0_1:required_item:3",
+          "row_type": "gold_required_evidence_slot",
+          "role": "developer_ecosystem_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "capex_depreciation_margin_bridge",
+          "fact": "For Cloud/SaaS, `capex_depreciation_margin_bridge` must be answered with `developer_ecosystem_proxy` evidence. Gold exemplar anchor: Cloud / SaaS 的 AI 投资不能简单写成“AI 产品发布，所以公司会增长”。AI 同时是需求入口和成本压力。对 Microsoft、Amazon、Google 这类云厂商，capex 和 GPU / data center 支出先进入资产负债表和折旧，再通过 Azure / AWS / Google Cloud revenue、usage growth、AI workload attach、enterprise contra",
+          "supports": "Supports the rubric answer for `capex_depreciation_margin_bridge` if a runtime source row is found.",
+          "cannot_infer": "Do not equate AI product launch with monetized revenue.; Do not treat capex growth alone as positive without margin/depreciation bridge.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "cloud_saas_ai_monetization_rubric_v0_1:required_item:4",
+          "row_type": "gold_required_evidence_slot",
+          "role": "market_expectation_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "customer_or_developer_adoption",
+          "fact": "For Cloud/SaaS, `customer_or_developer_adoption` must be answered with `market_expectation_proxy` evidence. Gold exemplar anchor: Cloud / SaaS 的 AI 投资不能简单写成“AI 产品发布，所以公司会增长”。AI 同时是需求入口和成本压力。对 Microsoft、Amazon、Google 这类云厂商，capex 和 GPU / data center 支出先进入资产负债表和折旧，再通过 Azure / AWS / Google Cloud revenue、usage growth、AI workload attach、enterprise contra",
+          "supports": "Supports the rubric answer for `customer_or_developer_adoption` if a runtime source row is found.",
+          "cannot_infer": "Do not equate AI product launch with monetized revenue.; Do not treat capex growth alone as positive without margin/depreciation bridge.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "cloud_saas_ai_monetization_rubric_v0_1:required_item:5",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_financials",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "price_in_and_expectations",
+          "fact": "For Cloud/SaaS, `price_in_and_expectations` must be answered with `company_disclosed_financials` evidence. Gold exemplar anchor: Cloud / SaaS 的 AI 投资不能简单写成“AI 产品发布，所以公司会增长”。AI 同时是需求入口和成本压力。对 Microsoft、Amazon、Google 这类云厂商，capex 和 GPU / data center 支出先进入资产负债表和折旧，再通过 Azure / AWS / Google Cloud revenue、usage growth、AI workload attach、enterprise contra",
+          "supports": "Supports the rubric answer for `price_in_and_expectations` if a runtime source row is found.",
+          "cannot_infer": "Do not equate AI product launch with monetized revenue.; Do not treat capex growth alone as positive without margin/depreciation bridge.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        }
+      ],
+      "answer_exemplar": "Cloud / SaaS 的 AI 投资不能简单写成“AI 产品发布，所以公司会增长”。AI 同时是需求入口和成本压力。对 Microsoft、Amazon、Google 这类云厂商，capex 和 GPU / data center 支出先进入资产负债表和折旧，再通过 Azure / AWS / Google Cloud revenue、usage growth、AI workload attach、enterprise contract、RPO、gross margin 和 operating margin 体现回报。若只有 capex 增加而缺 monetization 指标，结论应是 bounded：AI 提供增长期权，但短期可能压制 FCF 和 margin。",
+      "required_items": [
+        "cloud_or_saas_growth",
+        "RPO_ARR_or_backlog_proxy",
+        "capex_depreciation_margin_bridge",
+        "customer_or_developer_adoption",
+        "price_in_and_expectations"
+      ],
+      "pass_conditions": [
+        "Explains monetization versus capex burden.",
+        "Separates product adoption evidence from revenue exact evidence."
+      ],
+      "fail_conditions": [
+        "Only says AI spend is high without discussing economic return."
+      ],
+      "runtime_consumers": [
+        "ResearchLead",
+        "ContextEngine",
+        "specialist.role_specific_contract",
+        "JudgmentCard",
+        "MemoLogicPlan",
+        "BriefingPackQualityGate"
+      ],
+      "source_boundary": "Rubric pack is executable gold-depth contract material, not a claim that live sector-specific retrieval/parser rows already exist."
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "financials_rate_credit_capital_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Financials",
+      "status": "pass",
+      "evidence_row_count": 6,
+      "depth_lanes": [
+        "deposit_and_funding_cost",
+        "loan_balance_growth",
+        "NIM",
+        "provision_and_credit_quality",
+        "capital_ratio_and_liquidity",
+        "rate_sensitivity"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "financials_rate_credit_capital_rubric_v0_1:required_item:1",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_balance_sheet",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "deposit_and_funding_cost",
+          "fact": "For Financials, `deposit_and_funding_cost` must be answered with `company_disclosed_balance_sheet` evidence. Gold exemplar anchor: 银行和券商类金融公司的分析不能停在 revenue / EPS。利率上行也不是线性利好，关键要看资产端收益率重定价和负债端存款成本、存款流失、批发融资成本之间的差。合格结论应当是资产负债表驱动的：如果高利率提高资产收益但存款成本和信用损失上升更快，NIM 或 ROE 可能并不改善；如果贷款增长弱但信用质量恶化，收入韧性也可能掩盖未来拨备压力。宏观利率和 FDIC/FRED 数据只能提供环境，不能替代 issuer-level depos",
+          "supports": "Supports the rubric answer for `deposit_and_funding_cost` if a runtime source row is found.",
+          "cannot_infer": "Do not analyze banks only by revenue or EPS.; Do not infer credit loss improvement from stock price movement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "financials_rate_credit_capital_rubric_v0_1:required_item:2",
+          "row_type": "gold_required_evidence_slot",
+          "role": "FDIC_context",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "loan_balance_growth",
+          "fact": "For Financials, `loan_balance_growth` must be answered with `FDIC_context` evidence. Gold exemplar anchor: 银行和券商类金融公司的分析不能停在 revenue / EPS。利率上行也不是线性利好，关键要看资产端收益率重定价和负债端存款成本、存款流失、批发融资成本之间的差。合格结论应当是资产负债表驱动的：如果高利率提高资产收益但存款成本和信用损失上升更快，NIM 或 ROE 可能并不改善；如果贷款增长弱但信用质量恶化，收入韧性也可能掩盖未来拨备压力。宏观利率和 FDIC/FRED 数据只能提供环境，不能替代 issuer-level depos",
+          "supports": "Supports the rubric answer for `loan_balance_growth` if a runtime source row is found.",
+          "cannot_infer": "Do not analyze banks only by revenue or EPS.; Do not infer credit loss improvement from stock price movement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "financials_rate_credit_capital_rubric_v0_1:required_item:3",
+          "row_type": "gold_required_evidence_slot",
+          "role": "FRED_rate_series",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "NIM",
+          "fact": "For Financials, `NIM` must be answered with `FRED_rate_series` evidence. Gold exemplar anchor: 银行和券商类金融公司的分析不能停在 revenue / EPS。利率上行也不是线性利好，关键要看资产端收益率重定价和负债端存款成本、存款流失、批发融资成本之间的差。合格结论应当是资产负债表驱动的：如果高利率提高资产收益但存款成本和信用损失上升更快，NIM 或 ROE 可能并不改善；如果贷款增长弱但信用质量恶化，收入韧性也可能掩盖未来拨备压力。宏观利率和 FDIC/FRED 数据只能提供环境，不能替代 issuer-level depos",
+          "supports": "Supports the rubric answer for `NIM` if a runtime source row is found.",
+          "cannot_infer": "Do not analyze banks only by revenue or EPS.; Do not infer credit loss improvement from stock price movement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "financials_rate_credit_capital_rubric_v0_1:required_item:4",
+          "row_type": "gold_required_evidence_slot",
+          "role": "credit_spread_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "provision_and_credit_quality",
+          "fact": "For Financials, `provision_and_credit_quality` must be answered with `credit_spread_proxy` evidence. Gold exemplar anchor: 银行和券商类金融公司的分析不能停在 revenue / EPS。利率上行也不是线性利好，关键要看资产端收益率重定价和负债端存款成本、存款流失、批发融资成本之间的差。合格结论应当是资产负债表驱动的：如果高利率提高资产收益但存款成本和信用损失上升更快，NIM 或 ROE 可能并不改善；如果贷款增长弱但信用质量恶化，收入韧性也可能掩盖未来拨备压力。宏观利率和 FDIC/FRED 数据只能提供环境，不能替代 issuer-level depos",
+          "supports": "Supports the rubric answer for `provision_and_credit_quality` if a runtime source row is found.",
+          "cannot_infer": "Do not analyze banks only by revenue or EPS.; Do not infer credit loss improvement from stock price movement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "financials_rate_credit_capital_rubric_v0_1:required_item:5",
+          "row_type": "gold_required_evidence_slot",
+          "role": "capital_action_context",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "capital_ratio_and_liquidity",
+          "fact": "For Financials, `capital_ratio_and_liquidity` must be answered with `capital_action_context` evidence. Gold exemplar anchor: 银行和券商类金融公司的分析不能停在 revenue / EPS。利率上行也不是线性利好，关键要看资产端收益率重定价和负债端存款成本、存款流失、批发融资成本之间的差。合格结论应当是资产负债表驱动的：如果高利率提高资产收益但存款成本和信用损失上升更快，NIM 或 ROE 可能并不改善；如果贷款增长弱但信用质量恶化，收入韧性也可能掩盖未来拨备压力。宏观利率和 FDIC/FRED 数据只能提供环境，不能替代 issuer-level depos",
+          "supports": "Supports the rubric answer for `capital_ratio_and_liquidity` if a runtime source row is found.",
+          "cannot_infer": "Do not analyze banks only by revenue or EPS.; Do not infer credit loss improvement from stock price movement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "financials_rate_credit_capital_rubric_v0_1:required_item:6",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_balance_sheet",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "rate_sensitivity",
+          "fact": "For Financials, `rate_sensitivity` must be answered with `company_disclosed_balance_sheet` evidence. Gold exemplar anchor: 银行和券商类金融公司的分析不能停在 revenue / EPS。利率上行也不是线性利好，关键要看资产端收益率重定价和负债端存款成本、存款流失、批发融资成本之间的差。合格结论应当是资产负债表驱动的：如果高利率提高资产收益但存款成本和信用损失上升更快，NIM 或 ROE 可能并不改善；如果贷款增长弱但信用质量恶化，收入韧性也可能掩盖未来拨备压力。宏观利率和 FDIC/FRED 数据只能提供环境，不能替代 issuer-level depos",
+          "supports": "Supports the rubric answer for `rate_sensitivity` if a runtime source row is found.",
+          "cannot_infer": "Do not analyze banks only by revenue or EPS.; Do not infer credit loss improvement from stock price movement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        }
+      ],
+      "answer_exemplar": "银行和券商类金融公司的分析不能停在 revenue / EPS。利率上行也不是线性利好，关键要看资产端收益率重定价和负债端存款成本、存款流失、批发融资成本之间的差。合格结论应当是资产负债表驱动的：如果高利率提高资产收益但存款成本和信用损失上升更快，NIM 或 ROE 可能并不改善；如果贷款增长弱但信用质量恶化，收入韧性也可能掩盖未来拨备压力。宏观利率和 FDIC/FRED 数据只能提供环境，不能替代 issuer-level deposit、loan、capital、credit rows。",
+      "required_items": [
+        "deposit_and_funding_cost",
+        "loan_balance_growth",
+        "NIM",
+        "provision_and_credit_quality",
+        "capital_ratio_and_liquidity",
+        "rate_sensitivity"
+      ],
+      "pass_conditions": [
+        "Includes three-statement and balance-sheet-led analysis.",
+        "Connects rates to deposits, NIM, credit, and capital."
+      ],
+      "fail_conditions": [
+        "Ignores deposits, capital ratios, and credit quality."
+      ],
+      "runtime_consumers": [
+        "ResearchLead",
+        "ContextEngine",
+        "specialist.role_specific_contract",
+        "JudgmentCard",
+        "MemoLogicPlan",
+        "BriefingPackQualityGate"
+      ],
+      "source_boundary": "Rubric pack is executable gold-depth contract material, not a claim that live sector-specific retrieval/parser rows already exist."
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "healthcare_regulated_product_adoption_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Healthcare/Medtech/Pharma",
+      "status": "pass",
+      "evidence_row_count": 5,
+      "depth_lanes": [
+        "product_or_indication",
+        "clinical_trial_or_FDA_status",
+        "adoption_or_procedure_volume",
+        "reimbursement_or_access",
+        "financial_bridge_or_gap"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "healthcare_regulated_product_adoption_rubric_v0_1:required_item:1",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_product_context",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "product_or_indication",
+          "fact": "For Healthcare/Medtech/Pharma, `product_or_indication` must be answered with `company_disclosed_product_context` evidence. Gold exemplar anchor: 医药和医疗器械不能把 trial、FDA 或产品存在直接写成销售成功。产品/适应症先要有 clinical evidence 或 regulatory pathway，再看 label、payer / reimbursement、医生或医院采用、产能/渠道、procedure volume 或 prescription/usage proxy，最后才进入 revenue、gross margin 和 pipeline optionali",
+          "supports": "Supports the rubric answer for `product_or_indication` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sales share from trial existence.; Do not convert FDA context into revenue exact.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "healthcare_regulated_product_adoption_rubric_v0_1:required_item:2",
+          "row_type": "gold_required_evidence_slot",
+          "role": "ClinicalTrials_context",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "clinical_trial_or_FDA_status",
+          "fact": "For Healthcare/Medtech/Pharma, `clinical_trial_or_FDA_status` must be answered with `ClinicalTrials_context` evidence. Gold exemplar anchor: 医药和医疗器械不能把 trial、FDA 或产品存在直接写成销售成功。产品/适应症先要有 clinical evidence 或 regulatory pathway，再看 label、payer / reimbursement、医生或医院采用、产能/渠道、procedure volume 或 prescription/usage proxy，最后才进入 revenue、gross margin 和 pipeline optionali",
+          "supports": "Supports the rubric answer for `clinical_trial_or_FDA_status` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sales share from trial existence.; Do not convert FDA context into revenue exact.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "healthcare_regulated_product_adoption_rubric_v0_1:required_item:3",
+          "row_type": "gold_required_evidence_slot",
+          "role": "openFDA_context",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "adoption_or_procedure_volume",
+          "fact": "For Healthcare/Medtech/Pharma, `adoption_or_procedure_volume` must be answered with `openFDA_context` evidence. Gold exemplar anchor: 医药和医疗器械不能把 trial、FDA 或产品存在直接写成销售成功。产品/适应症先要有 clinical evidence 或 regulatory pathway，再看 label、payer / reimbursement、医生或医院采用、产能/渠道、procedure volume 或 prescription/usage proxy，最后才进入 revenue、gross margin 和 pipeline optionali",
+          "supports": "Supports the rubric answer for `adoption_or_procedure_volume` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sales share from trial existence.; Do not convert FDA context into revenue exact.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "healthcare_regulated_product_adoption_rubric_v0_1:required_item:4",
+          "row_type": "gold_required_evidence_slot",
+          "role": "procedure_volume_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "reimbursement_or_access",
+          "fact": "For Healthcare/Medtech/Pharma, `reimbursement_or_access` must be answered with `procedure_volume_proxy` evidence. Gold exemplar anchor: 医药和医疗器械不能把 trial、FDA 或产品存在直接写成销售成功。产品/适应症先要有 clinical evidence 或 regulatory pathway，再看 label、payer / reimbursement、医生或医院采用、产能/渠道、procedure volume 或 prescription/usage proxy，最后才进入 revenue、gross margin 和 pipeline optionali",
+          "supports": "Supports the rubric answer for `reimbursement_or_access` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sales share from trial existence.; Do not convert FDA context into revenue exact.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "healthcare_regulated_product_adoption_rubric_v0_1:required_item:5",
+          "row_type": "gold_required_evidence_slot",
+          "role": "commercial_tracker_gap",
+          "source_authority": "typed_gap_boundary",
+          "required_item_answered": "financial_bridge_or_gap",
+          "fact": "For Healthcare/Medtech/Pharma, `financial_bridge_or_gap` must be answered with `commercial_tracker_gap` evidence. Gold exemplar anchor: 医药和医疗器械不能把 trial、FDA 或产品存在直接写成销售成功。产品/适应症先要有 clinical evidence 或 regulatory pathway，再看 label、payer / reimbursement、医生或医院采用、产能/渠道、procedure volume 或 prescription/usage proxy，最后才进入 revenue、gross margin 和 pipeline optionali",
+          "supports": "Supports the rubric answer for `financial_bridge_or_gap` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sales share from trial existence.; Do not convert FDA context into revenue exact.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        }
+      ],
+      "answer_exemplar": "医药和医疗器械不能把 trial、FDA 或产品存在直接写成销售成功。产品/适应症先要有 clinical evidence 或 regulatory pathway，再看 label、payer / reimbursement、医生或医院采用、产能/渠道、procedure volume 或 prescription/usage proxy，最后才进入 revenue、gross margin 和 pipeline optionality。ClinicalTrials / openFDA / FDA approval 能支持产品存在、研发阶段、适应症和监管路径，但不能直接支持处方量、市场份额或产品收入。",
+      "required_items": [
+        "product_or_indication",
+        "clinical_trial_or_FDA_status",
+        "adoption_or_procedure_volume",
+        "reimbursement_or_access",
+        "financial_bridge_or_gap"
+      ],
+      "pass_conditions": [
+        "Separates R&D/regulatory context from commercial performance.",
+        "Identifies whether product adoption evidence is exact, proxy, or gap."
+      ],
+      "fail_conditions": [
+        "Uses clinical/FDA context as direct sales proof."
+      ],
+      "runtime_consumers": [
+        "ResearchLead",
+        "ContextEngine",
+        "specialist.role_specific_contract",
+        "JudgmentCard",
+        "MemoLogicPlan",
+        "BriefingPackQualityGate"
+      ],
+      "source_boundary": "Rubric pack is executable gold-depth contract material, not a claim that live sector-specific retrieval/parser rows already exist."
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "energy_utilities_power_demand_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Energy/Utilities/Power",
+      "status": "pass",
+      "evidence_row_count": 5,
+      "depth_lanes": [
+        "load_or_demand_growth",
+        "generation_or_asset_exposure",
+        "regulated_asset_base_or_rate_case",
+        "capex_and_debt_bridge",
+        "cash_flow_quality"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "energy_utilities_power_demand_rubric_v0_1:required_item:1",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_financials",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "load_or_demand_growth",
+          "fact": "For Energy/Utilities/Power, `load_or_demand_growth` must be answered with `company_disclosed_financials` evidence. Gold exemplar anchor: AI data center 用电增长不能直接写成公用事业利润增长。对 regulated utility，负荷增长只有在进入 rate base、capex plan、transmission/distribution investment、allowed ROE 和 rate case 后，才会变成较可见的长期 earnings base；同时 capex 扩张也会带来债务、利息、股权融资和监管滞后风险。若只有 EIA/电价/AI ",
+          "supports": "Supports the rubric answer for `load_or_demand_growth` if a runtime source row is found.",
+          "cannot_infer": "Do not treat AI power demand as automatic earnings growth.; Do not ignore financing and regulatory constraints.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "energy_utilities_power_demand_rubric_v0_1:required_item:2",
+          "row_type": "gold_required_evidence_slot",
+          "role": "EIA_or_regulatory_context",
+          "source_authority": "regulatory_or_exchange_context",
+          "required_item_answered": "generation_or_asset_exposure",
+          "fact": "For Energy/Utilities/Power, `generation_or_asset_exposure` must be answered with `EIA_or_regulatory_context` evidence. Gold exemplar anchor: AI data center 用电增长不能直接写成公用事业利润增长。对 regulated utility，负荷增长只有在进入 rate base、capex plan、transmission/distribution investment、allowed ROE 和 rate case 后，才会变成较可见的长期 earnings base；同时 capex 扩张也会带来债务、利息、股权融资和监管滞后风险。若只有 EIA/电价/AI ",
+          "supports": "Supports the rubric answer for `generation_or_asset_exposure` if a runtime source row is found.",
+          "cannot_infer": "Do not treat AI power demand as automatic earnings growth.; Do not ignore financing and regulatory constraints.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "energy_utilities_power_demand_rubric_v0_1:required_item:3",
+          "row_type": "gold_required_evidence_slot",
+          "role": "power_price_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "regulated_asset_base_or_rate_case",
+          "fact": "For Energy/Utilities/Power, `regulated_asset_base_or_rate_case` must be answered with `power_price_proxy` evidence. Gold exemplar anchor: AI data center 用电增长不能直接写成公用事业利润增长。对 regulated utility，负荷增长只有在进入 rate base、capex plan、transmission/distribution investment、allowed ROE 和 rate case 后，才会变成较可见的长期 earnings base；同时 capex 扩张也会带来债务、利息、股权融资和监管滞后风险。若只有 EIA/电价/AI ",
+          "supports": "Supports the rubric answer for `regulated_asset_base_or_rate_case` if a runtime source row is found.",
+          "cannot_infer": "Do not treat AI power demand as automatic earnings growth.; Do not ignore financing and regulatory constraints.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "energy_utilities_power_demand_rubric_v0_1:required_item:4",
+          "row_type": "gold_required_evidence_slot",
+          "role": "data_center_demand_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "capex_and_debt_bridge",
+          "fact": "For Energy/Utilities/Power, `capex_and_debt_bridge` must be answered with `data_center_demand_proxy` evidence. Gold exemplar anchor: AI data center 用电增长不能直接写成公用事业利润增长。对 regulated utility，负荷增长只有在进入 rate base、capex plan、transmission/distribution investment、allowed ROE 和 rate case 后，才会变成较可见的长期 earnings base；同时 capex 扩张也会带来债务、利息、股权融资和监管滞后风险。若只有 EIA/电价/AI ",
+          "supports": "Supports the rubric answer for `capex_and_debt_bridge` if a runtime source row is found.",
+          "cannot_infer": "Do not treat AI power demand as automatic earnings growth.; Do not ignore financing and regulatory constraints.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "energy_utilities_power_demand_rubric_v0_1:required_item:5",
+          "row_type": "gold_required_evidence_slot",
+          "role": "debt_market_context",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "cash_flow_quality",
+          "fact": "For Energy/Utilities/Power, `cash_flow_quality` must be answered with `debt_market_context` evidence. Gold exemplar anchor: AI data center 用电增长不能直接写成公用事业利润增长。对 regulated utility，负荷增长只有在进入 rate base、capex plan、transmission/distribution investment、allowed ROE 和 rate case 后，才会变成较可见的长期 earnings base；同时 capex 扩张也会带来债务、利息、股权融资和监管滞后风险。若只有 EIA/电价/AI ",
+          "supports": "Supports the rubric answer for `cash_flow_quality` if a runtime source row is found.",
+          "cannot_infer": "Do not treat AI power demand as automatic earnings growth.; Do not ignore financing and regulatory constraints.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        }
+      ],
+      "answer_exemplar": "AI data center 用电增长不能直接写成公用事业利润增长。对 regulated utility，负荷增长只有在进入 rate base、capex plan、transmission/distribution investment、allowed ROE 和 rate case 后，才会变成较可见的长期 earnings base；同时 capex 扩张也会带来债务、利息、股权融资和监管滞后风险。若只有 EIA/电价/AI 用电新闻，则只能支持需求背景，不能直接推断 EPS、ROE 或股价上行。",
+      "required_items": [
+        "load_or_demand_growth",
+        "generation_or_asset_exposure",
+        "regulated_asset_base_or_rate_case",
+        "capex_and_debt_bridge",
+        "cash_flow_quality"
+      ],
+      "pass_conditions": [
+        "Links demand to regulated return, capex and balance sheet.",
+        "Distinguishes merchant power exposure from regulated utility exposure."
+      ],
+      "fail_conditions": [
+        "Only says data centers use more power."
+      ],
+      "runtime_consumers": [
+        "ResearchLead",
+        "ContextEngine",
+        "specialist.role_specific_contract",
+        "JudgmentCard",
+        "MemoLogicPlan",
+        "BriefingPackQualityGate"
+      ],
+      "source_boundary": "Rubric pack is executable gold-depth contract material, not a claim that live sector-specific retrieval/parser rows already exist."
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "retail_consumer_traffic_margin_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Retail/Consumer",
+      "status": "pass",
+      "evidence_row_count": 5,
+      "depth_lanes": [
+        "same_store_sales_or_volume",
+        "traffic_vs_ticket",
+        "price_mix_margin_bridge",
+        "inventory_or_promotion",
+        "consumer_context"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "retail_consumer_traffic_margin_rubric_v0_1:required_item:1",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_operating_metrics",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "same_store_sales_or_volume",
+          "fact": "For Retail/Consumer, `same_store_sales_or_volume` must be answered with `company_disclosed_operating_metrics` evidence. Gold exemplar anchor: Retail / consumer 的收入增长必须拆成 traffic、ticket、price/mix、unit volume、store expansion 和 promotion。同样是 revenue growth，同店销售靠客流增长和会员/复购支撑，比靠价格或促销更健康；gross margin 改善如果来自 freight relief 或 shrink 改善，和来自价格转嫁的可持续性不同。公开源下可用的是公司披露 oper",
+          "supports": "Supports the rubric answer for `same_store_sales_or_volume` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sell-through exact from generic consumer proxy.; Do not treat price increases as unit demand without traffic/volume evidence.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "retail_consumer_traffic_margin_rubric_v0_1:required_item:2",
+          "row_type": "gold_required_evidence_slot",
+          "role": "consumer_macro_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "traffic_vs_ticket",
+          "fact": "For Retail/Consumer, `traffic_vs_ticket` must be answered with `consumer_macro_proxy` evidence. Gold exemplar anchor: Retail / consumer 的收入增长必须拆成 traffic、ticket、price/mix、unit volume、store expansion 和 promotion。同样是 revenue growth，同店销售靠客流增长和会员/复购支撑，比靠价格或促销更健康；gross margin 改善如果来自 freight relief 或 shrink 改善，和来自价格转嫁的可持续性不同。公开源下可用的是公司披露 oper",
+          "supports": "Supports the rubric answer for `traffic_vs_ticket` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sell-through exact from generic consumer proxy.; Do not treat price increases as unit demand without traffic/volume evidence.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "retail_consumer_traffic_margin_rubric_v0_1:required_item:3",
+          "row_type": "gold_required_evidence_slot",
+          "role": "channel_or_POS_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "price_mix_margin_bridge",
+          "fact": "For Retail/Consumer, `price_mix_margin_bridge` must be answered with `channel_or_POS_proxy` evidence. Gold exemplar anchor: Retail / consumer 的收入增长必须拆成 traffic、ticket、price/mix、unit volume、store expansion 和 promotion。同样是 revenue growth，同店销售靠客流增长和会员/复购支撑，比靠价格或促销更健康；gross margin 改善如果来自 freight relief 或 shrink 改善，和来自价格转嫁的可持续性不同。公开源下可用的是公司披露 oper",
+          "supports": "Supports the rubric answer for `price_mix_margin_bridge` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sell-through exact from generic consumer proxy.; Do not treat price increases as unit demand without traffic/volume evidence.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "retail_consumer_traffic_margin_rubric_v0_1:required_item:4",
+          "row_type": "gold_required_evidence_slot",
+          "role": "commercial_tracker_gap",
+          "source_authority": "typed_gap_boundary",
+          "required_item_answered": "inventory_or_promotion",
+          "fact": "For Retail/Consumer, `inventory_or_promotion` must be answered with `commercial_tracker_gap` evidence. Gold exemplar anchor: Retail / consumer 的收入增长必须拆成 traffic、ticket、price/mix、unit volume、store expansion 和 promotion。同样是 revenue growth，同店销售靠客流增长和会员/复购支撑，比靠价格或促销更健康；gross margin 改善如果来自 freight relief 或 shrink 改善，和来自价格转嫁的可持续性不同。公开源下可用的是公司披露 oper",
+          "supports": "Supports the rubric answer for `inventory_or_promotion` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sell-through exact from generic consumer proxy.; Do not treat price increases as unit demand without traffic/volume evidence.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "retail_consumer_traffic_margin_rubric_v0_1:required_item:5",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_operating_metrics",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "consumer_context",
+          "fact": "For Retail/Consumer, `consumer_context` must be answered with `company_disclosed_operating_metrics` evidence. Gold exemplar anchor: Retail / consumer 的收入增长必须拆成 traffic、ticket、price/mix、unit volume、store expansion 和 promotion。同样是 revenue growth，同店销售靠客流增长和会员/复购支撑，比靠价格或促销更健康；gross margin 改善如果来自 freight relief 或 shrink 改善，和来自价格转嫁的可持续性不同。公开源下可用的是公司披露 oper",
+          "supports": "Supports the rubric answer for `consumer_context` if a runtime source row is found.",
+          "cannot_infer": "Do not infer sell-through exact from generic consumer proxy.; Do not treat price increases as unit demand without traffic/volume evidence.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        }
+      ],
+      "answer_exemplar": "Retail / consumer 的收入增长必须拆成 traffic、ticket、price/mix、unit volume、store expansion 和 promotion。同样是 revenue growth，同店销售靠客流增长和会员/复购支撑，比靠价格或促销更健康；gross margin 改善如果来自 freight relief 或 shrink 改善，和来自价格转嫁的可持续性不同。公开源下可用的是公司披露 operating KPI、同店销售、traffic/ticket、库存、毛利、宏观消费和渠道 proxy；公开 proxy 可以帮助判断方向，但不能冒充 sell-through exact。",
+      "required_items": [
+        "same_store_sales_or_volume",
+        "traffic_vs_ticket",
+        "price_mix_margin_bridge",
+        "inventory_or_promotion",
+        "consumer_context"
+      ],
+      "pass_conditions": [
+        "Breaks growth into traffic, ticket, price/mix, units and margin.",
+        "Separates disclosed operating KPI from commercial POS gap."
+      ],
+      "fail_conditions": [
+        "Only cites revenue growth."
+      ],
+      "runtime_consumers": [
+        "ResearchLead",
+        "ContextEngine",
+        "specialist.role_specific_contract",
+        "JudgmentCard",
+        "MemoLogicPlan",
+        "BriefingPackQualityGate"
+      ],
+      "source_boundary": "Rubric pack is executable gold-depth contract material, not a claim that live sector-specific retrieval/parser rows already exist."
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "auto_ev_industrial_cycle_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Auto/EV/Industrial",
+      "status": "pass",
+      "evidence_row_count": 6,
+      "depth_lanes": [
+        "delivery_or_volume",
+        "ASP_or_price_mix_proxy",
+        "inventory_or_channel_pressure",
+        "NHTSA_or_recall_context",
+        "capacity_utilization",
+        "financing_cost_sensitivity"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "auto_ev_industrial_cycle_rubric_v0_1:required_item:1",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_operating_metric",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "delivery_or_volume",
+          "fact": "For Auto/EV/Industrial, `delivery_or_volume` must be answered with `company_disclosed_operating_metric` evidence. Gold exemplar anchor: Auto / EV 不能只看 deliveries，工业公司也不能只看订单标题。交付量增长如果伴随 ASP 下滑、库存上升、激励增加或融资成本上升，利润质量可能下降；NHTSA recall、质量事件和产能利用率会影响产品风险和成本。合格答案应该区分“需求量”和“利润质量”：交付增长能证明产品或渠道有需求，但不能单独证明 margin 改善；ASP、mix、inventory days、warranty/recall、capacity ",
+          "supports": "Supports the rubric answer for `delivery_or_volume` if a runtime source row is found.",
+          "cannot_infer": "Do not infer margin quality from delivery volume alone.; Do not infer ASP exact from channel commentary without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "auto_ev_industrial_cycle_rubric_v0_1:required_item:2",
+          "row_type": "gold_required_evidence_slot",
+          "role": "NHTSA_context",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "ASP_or_price_mix_proxy",
+          "fact": "For Auto/EV/Industrial, `ASP_or_price_mix_proxy` must be answered with `NHTSA_context` evidence. Gold exemplar anchor: Auto / EV 不能只看 deliveries，工业公司也不能只看订单标题。交付量增长如果伴随 ASP 下滑、库存上升、激励增加或融资成本上升，利润质量可能下降；NHTSA recall、质量事件和产能利用率会影响产品风险和成本。合格答案应该区分“需求量”和“利润质量”：交付增长能证明产品或渠道有需求，但不能单独证明 margin 改善；ASP、mix、inventory days、warranty/recall、capacity ",
+          "supports": "Supports the rubric answer for `ASP_or_price_mix_proxy` if a runtime source row is found.",
+          "cannot_infer": "Do not infer margin quality from delivery volume alone.; Do not infer ASP exact from channel commentary without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "auto_ev_industrial_cycle_rubric_v0_1:required_item:3",
+          "row_type": "gold_required_evidence_slot",
+          "role": "dealer_or_channel_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "inventory_or_channel_pressure",
+          "fact": "For Auto/EV/Industrial, `inventory_or_channel_pressure` must be answered with `dealer_or_channel_proxy` evidence. Gold exemplar anchor: Auto / EV 不能只看 deliveries，工业公司也不能只看订单标题。交付量增长如果伴随 ASP 下滑、库存上升、激励增加或融资成本上升，利润质量可能下降；NHTSA recall、质量事件和产能利用率会影响产品风险和成本。合格答案应该区分“需求量”和“利润质量”：交付增长能证明产品或渠道有需求，但不能单独证明 margin 改善；ASP、mix、inventory days、warranty/recall、capacity ",
+          "supports": "Supports the rubric answer for `inventory_or_channel_pressure` if a runtime source row is found.",
+          "cannot_infer": "Do not infer margin quality from delivery volume alone.; Do not infer ASP exact from channel commentary without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "auto_ev_industrial_cycle_rubric_v0_1:required_item:4",
+          "row_type": "gold_required_evidence_slot",
+          "role": "macro_rate_context",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "NHTSA_or_recall_context",
+          "fact": "For Auto/EV/Industrial, `NHTSA_or_recall_context` must be answered with `macro_rate_context` evidence. Gold exemplar anchor: Auto / EV 不能只看 deliveries，工业公司也不能只看订单标题。交付量增长如果伴随 ASP 下滑、库存上升、激励增加或融资成本上升，利润质量可能下降；NHTSA recall、质量事件和产能利用率会影响产品风险和成本。合格答案应该区分“需求量”和“利润质量”：交付增长能证明产品或渠道有需求，但不能单独证明 margin 改善；ASP、mix、inventory days、warranty/recall、capacity ",
+          "supports": "Supports the rubric answer for `NHTSA_or_recall_context` if a runtime source row is found.",
+          "cannot_infer": "Do not infer margin quality from delivery volume alone.; Do not infer ASP exact from channel commentary without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "auto_ev_industrial_cycle_rubric_v0_1:required_item:5",
+          "row_type": "gold_required_evidence_slot",
+          "role": "company_disclosed_operating_metric",
+          "source_authority": "company_disclosed_or_issuer_exact_when_runtime_row_exists",
+          "required_item_answered": "capacity_utilization",
+          "fact": "For Auto/EV/Industrial, `capacity_utilization` must be answered with `company_disclosed_operating_metric` evidence. Gold exemplar anchor: Auto / EV 不能只看 deliveries，工业公司也不能只看订单标题。交付量增长如果伴随 ASP 下滑、库存上升、激励增加或融资成本上升，利润质量可能下降；NHTSA recall、质量事件和产能利用率会影响产品风险和成本。合格答案应该区分“需求量”和“利润质量”：交付增长能证明产品或渠道有需求，但不能单独证明 margin 改善；ASP、mix、inventory days、warranty/recall、capacity ",
+          "supports": "Supports the rubric answer for `capacity_utilization` if a runtime source row is found.",
+          "cannot_infer": "Do not infer margin quality from delivery volume alone.; Do not infer ASP exact from channel commentary without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "auto_ev_industrial_cycle_rubric_v0_1:required_item:6",
+          "row_type": "gold_required_evidence_slot",
+          "role": "NHTSA_context",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "financing_cost_sensitivity",
+          "fact": "For Auto/EV/Industrial, `financing_cost_sensitivity` must be answered with `NHTSA_context` evidence. Gold exemplar anchor: Auto / EV 不能只看 deliveries，工业公司也不能只看订单标题。交付量增长如果伴随 ASP 下滑、库存上升、激励增加或融资成本上升，利润质量可能下降；NHTSA recall、质量事件和产能利用率会影响产品风险和成本。合格答案应该区分“需求量”和“利润质量”：交付增长能证明产品或渠道有需求，但不能单独证明 margin 改善；ASP、mix、inventory days、warranty/recall、capacity ",
+          "supports": "Supports the rubric answer for `financing_cost_sensitivity` if a runtime source row is found.",
+          "cannot_infer": "Do not infer margin quality from delivery volume alone.; Do not infer ASP exact from channel commentary without disclosed row.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        }
+      ],
+      "answer_exemplar": "Auto / EV 不能只看 deliveries，工业公司也不能只看订单标题。交付量增长如果伴随 ASP 下滑、库存上升、激励增加或融资成本上升，利润质量可能下降；NHTSA recall、质量事件和产能利用率会影响产品风险和成本。合格答案应该区分“需求量”和“利润质量”：交付增长能证明产品或渠道有需求，但不能单独证明 margin 改善；ASP、mix、inventory days、warranty/recall、capacity utilization、financing rate 和 dealer/channel data 才能回答需求是否健康。",
+      "required_items": [
+        "delivery_or_volume",
+        "ASP_or_price_mix_proxy",
+        "inventory_or_channel_pressure",
+        "NHTSA_or_recall_context",
+        "capacity_utilization",
+        "financing_cost_sensitivity"
+      ],
+      "pass_conditions": [
+        "Connects volume, price, inventory and margin.",
+        "Separates product/quality risk from revenue growth."
+      ],
+      "fail_conditions": [
+        "Only uses deliveries or order headlines."
+      ],
+      "runtime_consumers": [
+        "ResearchLead",
+        "ContextEngine",
+        "specialist.role_specific_contract",
+        "JudgmentCard",
+        "MemoLogicPlan",
+        "BriefingPackQualityGate"
+      ],
+      "source_boundary": "Rubric pack is executable gold-depth contract material, not a claim that live sector-specific retrieval/parser rows already exist."
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "capital_market_feedback_price_in_rubric_v0_1",
+      "case_type": "rubric_gold_case",
+      "vertical": "Cross-sector secondary market",
+      "status": "pass",
+      "evidence_row_count": 5,
+      "depth_lanes": [
+        "valuation_and_peer_context",
+        "holder_or_ownership_proxy",
+        "liquidity_short_interest_or_options_context",
+        "credit_funding_or_debt_context",
+        "buyback_offering_or_event_catalyst"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "capital_market_feedback_price_in_rubric_v0_1:required_item:1",
+          "row_type": "gold_required_evidence_slot",
+          "role": "market_snapshot_context",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "valuation_and_peer_context",
+          "fact": "For Cross-sector secondary market, `valuation_and_peer_context` must be answered with `market_snapshot_context` evidence. Gold exemplar anchor: 二级市场分析不是替代基本面，而是回答“好消息是否已经被定价，以及资金和资本结构是否会反过来影响公司”。基本面和产品证据回答“公司有没有变好”，市场资金面和资本反馈回答“市场是否已经给了这个价格、融资窗口是否改善、是否存在拥挤或事件风险”。如果估值已显著扩张、期权 implied move 很高、持仓拥挤或公司有潜在增发/可转债/解禁压力，即使基本面方向正确，也要降低短期 risk/reward。不能把这些写成面向外部用户的交易建议。",
+          "supports": "Supports the rubric answer for `valuation_and_peer_context` if a runtime source row is found.",
+          "cannot_infer": "Do not turn market positioning into investment advice.; Do not treat options or holder proxy as fundamental improvement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "capital_market_feedback_price_in_rubric_v0_1:required_item:2",
+          "row_type": "gold_required_evidence_slot",
+          "role": "ownership_filing_context",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "holder_or_ownership_proxy",
+          "fact": "For Cross-sector secondary market, `holder_or_ownership_proxy` must be answered with `ownership_filing_context` evidence. Gold exemplar anchor: 二级市场分析不是替代基本面，而是回答“好消息是否已经被定价，以及资金和资本结构是否会反过来影响公司”。基本面和产品证据回答“公司有没有变好”，市场资金面和资本反馈回答“市场是否已经给了这个价格、融资窗口是否改善、是否存在拥挤或事件风险”。如果估值已显著扩张、期权 implied move 很高、持仓拥挤或公司有潜在增发/可转债/解禁压力，即使基本面方向正确，也要降低短期 risk/reward。不能把这些写成面向外部用户的交易建议。",
+          "supports": "Supports the rubric answer for `holder_or_ownership_proxy` if a runtime source row is found.",
+          "cannot_infer": "Do not turn market positioning into investment advice.; Do not treat options or holder proxy as fundamental improvement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "capital_market_feedback_price_in_rubric_v0_1:required_item:3",
+          "row_type": "gold_required_evidence_slot",
+          "role": "credit_or_debt_context",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "liquidity_short_interest_or_options_context",
+          "fact": "For Cross-sector secondary market, `liquidity_short_interest_or_options_context` must be answered with `credit_or_debt_context` evidence. Gold exemplar anchor: 二级市场分析不是替代基本面，而是回答“好消息是否已经被定价，以及资金和资本结构是否会反过来影响公司”。基本面和产品证据回答“公司有没有变好”，市场资金面和资本反馈回答“市场是否已经给了这个价格、融资窗口是否改善、是否存在拥挤或事件风险”。如果估值已显著扩张、期权 implied move 很高、持仓拥挤或公司有潜在增发/可转债/解禁压力，即使基本面方向正确，也要降低短期 risk/reward。不能把这些写成面向外部用户的交易建议。",
+          "supports": "Supports the rubric answer for `liquidity_short_interest_or_options_context` if a runtime source row is found.",
+          "cannot_infer": "Do not turn market positioning into investment advice.; Do not treat options or holder proxy as fundamental improvement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "capital_market_feedback_price_in_rubric_v0_1:required_item:4",
+          "row_type": "gold_required_evidence_slot",
+          "role": "derivatives_proxy",
+          "source_authority": "bounded_public_proxy",
+          "required_item_answered": "credit_funding_or_debt_context",
+          "fact": "For Cross-sector secondary market, `credit_funding_or_debt_context` must be answered with `derivatives_proxy` evidence. Gold exemplar anchor: 二级市场分析不是替代基本面，而是回答“好消息是否已经被定价，以及资金和资本结构是否会反过来影响公司”。基本面和产品证据回答“公司有没有变好”，市场资金面和资本反馈回答“市场是否已经给了这个价格、融资窗口是否改善、是否存在拥挤或事件风险”。如果估值已显著扩张、期权 implied move 很高、持仓拥挤或公司有潜在增发/可转债/解禁压力，即使基本面方向正确，也要降低短期 risk/reward。不能把这些写成面向外部用户的交易建议。",
+          "supports": "Supports the rubric answer for `credit_funding_or_debt_context` if a runtime source row is found.",
+          "cannot_infer": "Do not turn market positioning into investment advice.; Do not treat options or holder proxy as fundamental improvement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        },
+        {
+          "row_id": "capital_market_feedback_price_in_rubric_v0_1:required_item:5",
+          "row_type": "gold_required_evidence_slot",
+          "role": "corporate_action_filing",
+          "source_authority": "gold_rubric_required_source_role",
+          "required_item_answered": "buyback_offering_or_event_catalyst",
+          "fact": "For Cross-sector secondary market, `buyback_offering_or_event_catalyst` must be answered with `corporate_action_filing` evidence. Gold exemplar anchor: 二级市场分析不是替代基本面，而是回答“好消息是否已经被定价，以及资金和资本结构是否会反过来影响公司”。基本面和产品证据回答“公司有没有变好”，市场资金面和资本反馈回答“市场是否已经给了这个价格、融资窗口是否改善、是否存在拥挤或事件风险”。如果估值已显著扩张、期权 implied move 很高、持仓拥挤或公司有潜在增发/可转债/解禁压力，即使基本面方向正确，也要降低短期 risk/reward。不能把这些写成面向外部用户的交易建议。",
+          "supports": "Supports the rubric answer for `buyback_offering_or_event_catalyst` if a runtime source row is found.",
+          "cannot_infer": "Do not turn market positioning into investment advice.; Do not treat options or holder proxy as fundamental improvement.",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_exemplar_backed_required_runtime_artifact_not_live_retrieval",
+          "runtime_consumers": [
+            "ResearchLead.required_item_plan",
+            "specialist.role_specific_prompt",
+            "JudgmentCard.required_item_answered",
+            "MemoLogicPlan.section_contract",
+            "BriefingPackQualityGate.vertical_depth_check"
+          ]
+        }
+      ],
+      "answer_exemplar": "二级市场分析不是替代基本面，而是回答“好消息是否已经被定价，以及资金和资本结构是否会反过来影响公司”。基本面和产品证据回答“公司有没有变好”，市场资金面和资本反馈回答“市场是否已经给了这个价格、融资窗口是否改善、是否存在拥挤或事件风险”。如果估值已显著扩张、期权 implied move 很高、持仓拥挤或公司有潜在增发/可转债/解禁压力，即使基本面方向正确，也要降低短期 risk/reward。不能把这些写成面向外部用户的交易建议。",
+      "required_items": [
+        "valuation_and_peer_context",
+        "holder_or_ownership_proxy",
+        "liquidity_short_interest_or_options_context",
+        "credit_funding_or_debt_context",
+        "buyback_offering_or_event_catalyst"
+      ],
+      "pass_conditions": [
+        "Separates long-term value judgment from market price-in and positioning.",
+        "States capital feedback boundaries."
+      ],
+      "fail_conditions": [
+        "Treats price action or options flow as proof of company fundamentals."
+      ],
+      "runtime_consumers": [
+        "ResearchLead",
+        "ContextEngine",
+        "specialist.role_specific_contract",
+        "JudgmentCard",
+        "MemoLogicPlan",
+        "BriefingPackQualityGate"
+      ],
+      "source_boundary": "Rubric pack is executable gold-depth contract material, not a claim that live sector-specific retrieval/parser rows already exist."
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "negative_sku_revenue_missing_not_product_failure_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "AI/Semis product analysis",
+      "status": "pass",
+      "evidence_row_count": 1,
+      "depth_lanes": [
+        "negative_boundary",
+        "failure_gate",
+        "correct_response_pattern"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "negative_sku_revenue_missing_not_product_failure_v0_1:failure_fixture:1",
+          "row_type": "negative_gold_failure_fixture_row",
+          "role": "failure_gate",
+          "source_authority": "gold_negative_exemplar",
+          "required_item_answered": "failure_prevention",
+          "fact": "Says product layer cannot be judged because SKU revenue is missing.",
+          "supports": "Defines a machine-checkable failure mode for aggregate, writer payload, and final memo.",
+          "cannot_infer": "不能因为 NVIDIA 没拆 H100 / H200 / B200 / GB200 的 SKU 收入，就说产品层无法判断。NVIDIA 当前 AI accelerator 竞争力可以从 GPU 代际升级、显存/带宽/互联、CUDA / Networking / NVLink / InfiniBand 生态、客户部署、OEM AI server 配置、CoWoS/HBM 供应瓶颈和数据中心 capex 约束来判断。边界是：这些证据能支持产品能力强、采用真实、供应链有瓶颈、替代短期有限，不能直接推出 SKU revenue、ASP、shipment 或 share。",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_negative_fixture",
+          "runtime_consumers": [
+            "aggregate.failure_fixture_gate",
+            "MemoWriter.preflight",
+            "FinalVerifier",
+            "Workbench.review_gap_projection"
+          ]
+        }
+      ],
+      "answer_exemplar": "不能因为 NVIDIA 没拆 H100 / H200 / B200 / GB200 的 SKU 收入，就说产品层无法判断。NVIDIA 当前 AI accelerator 竞争力可以从 GPU 代际升级、显存/带宽/互联、CUDA / Networking / NVLink / InfiniBand 生态、客户部署、OEM AI server 配置、CoWoS/HBM 供应瓶颈和数据中心 capex 约束来判断。边界是：这些证据能支持产品能力强、采用真实、供应链有瓶颈、替代短期有限，不能直接推出 SKU revenue、ASP、shipment 或 share。",
+      "required_items": [
+        "preserve_boundary",
+        "fail_on_bad_pattern",
+        "trace_faulty_artifact"
+      ],
+      "pass_conditions": [
+        "Bad pattern is detected deterministically.",
+        "Correct boundary is preserved.",
+        "The failure is attributed to aggregate / writer_payload / final_memo instead of hidden as a gap."
+      ],
+      "fail_conditions": [
+        "Says product layer cannot be judged because SKU revenue is missing."
+      ],
+      "runtime_consumers": [
+        "AggregateFailureGate",
+        "MemoWriterPreflight",
+        "FinalVerifier",
+        "WorkbenchReview"
+      ],
+      "source_boundary": "negative_gold_fixture_not_live_source_evidence"
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "negative_demand_pool_not_supplier_allocation_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "AI/Semis demand read-through",
+      "status": "pass",
+      "evidence_row_count": 1,
+      "depth_lanes": [
+        "negative_boundary",
+        "failure_gate",
+        "correct_response_pattern"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "negative_demand_pool_not_supplier_allocation_v0_1:failure_fixture:1",
+          "row_type": "negative_gold_failure_fixture_row",
+          "role": "failure_gate",
+          "source_authority": "gold_negative_exemplar",
+          "required_item_answered": "failure_prevention",
+          "fact": "Capex is written as direct evidence of supplier orders or share gains.",
+          "supports": "Defines a machine-checkable failure mode for aggregate, writer payload, and final memo.",
+          "cannot_infer": "MSFT / AMZN / GOOGL / META capex 上升可以说明 AI infrastructure demand pool 真实存在，但不能直接说明这些钱流向了某一家 GPU、server OEM、semicap 或 power/cooling 公司。capex 增长提高了需求池可信度，NVDA / DELL / ASML / LRCX 的受益需要进一步看产品供给、客户部署、供应瓶颈和公司财务桥。没有这些桥时，只能写 bounded demand read-through，不能写 supplier allocation exact。",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_negative_fixture",
+          "runtime_consumers": [
+            "aggregate.failure_fixture_gate",
+            "MemoWriter.preflight",
+            "FinalVerifier",
+            "Workbench.review_gap_projection"
+          ]
+        }
+      ],
+      "answer_exemplar": "MSFT / AMZN / GOOGL / META capex 上升可以说明 AI infrastructure demand pool 真实存在，但不能直接说明这些钱流向了某一家 GPU、server OEM、semicap 或 power/cooling 公司。capex 增长提高了需求池可信度，NVDA / DELL / ASML / LRCX 的受益需要进一步看产品供给、客户部署、供应瓶颈和公司财务桥。没有这些桥时，只能写 bounded demand read-through，不能写 supplier allocation exact。",
+      "required_items": [
+        "preserve_boundary",
+        "fail_on_bad_pattern",
+        "trace_faulty_artifact"
+      ],
+      "pass_conditions": [
+        "Bad pattern is detected deterministically.",
+        "Correct boundary is preserved.",
+        "The failure is attributed to aggregate / writer_payload / final_memo instead of hidden as a gap."
+      ],
+      "fail_conditions": [
+        "Capex is written as direct evidence of supplier orders or share gains."
+      ],
+      "runtime_consumers": [
+        "AggregateFailureGate",
+        "MemoWriterPreflight",
+        "FinalVerifier",
+        "WorkbenchReview"
+      ],
+      "source_boundary": "negative_gold_fixture_not_live_source_evidence"
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "negative_relationship_graph_not_financial_fact_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Product relationship graph",
+      "status": "pass",
+      "evidence_row_count": 1,
+      "depth_lanes": [
+        "negative_boundary",
+        "failure_gate",
+        "correct_response_pattern"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "negative_relationship_graph_not_financial_fact_v0_1:failure_fixture:1",
+          "row_type": "negative_gold_failure_fixture_row",
+          "role": "failure_gate",
+          "source_authority": "gold_negative_exemplar",
+          "required_item_answered": "failure_prevention",
+          "fact": "Relationship graph is used as main financial proof.",
+          "supports": "Defines a machine-checkable failure mode for aggregate, writer payload, and final memo.",
+          "cannot_infer": "ProductRelationshipGraph 的价值是把研究路径打通，不是直接替代证据。图谱边能帮助解释 NVIDIA GPU、TSMC advanced packaging、HBM、DELL AI servers、hyperscaler capex、ASML/LRCX/AMAT/KLAC semicap 之间的机制，也能提示下一步 evidence search。它不能写成订单、收入、毛利或 backlog。图谱是 thesis map 和 evidence search guide，不是财务结论。",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_negative_fixture",
+          "runtime_consumers": [
+            "aggregate.failure_fixture_gate",
+            "MemoWriter.preflight",
+            "FinalVerifier",
+            "Workbench.review_gap_projection"
+          ]
+        }
+      ],
+      "answer_exemplar": "ProductRelationshipGraph 的价值是把研究路径打通，不是直接替代证据。图谱边能帮助解释 NVIDIA GPU、TSMC advanced packaging、HBM、DELL AI servers、hyperscaler capex、ASML/LRCX/AMAT/KLAC semicap 之间的机制，也能提示下一步 evidence search。它不能写成订单、收入、毛利或 backlog。图谱是 thesis map 和 evidence search guide，不是财务结论。",
+      "required_items": [
+        "preserve_boundary",
+        "fail_on_bad_pattern",
+        "trace_faulty_artifact"
+      ],
+      "pass_conditions": [
+        "Bad pattern is detected deterministically.",
+        "Correct boundary is preserved.",
+        "The failure is attributed to aggregate / writer_payload / final_memo instead of hidden as a gap."
+      ],
+      "fail_conditions": [
+        "Relationship graph is used as main financial proof."
+      ],
+      "runtime_consumers": [
+        "AggregateFailureGate",
+        "MemoWriterPreflight",
+        "FinalVerifier",
+        "WorkbenchReview"
+      ],
+      "source_boundary": "negative_gold_fixture_not_live_source_evidence"
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "negative_parser_gap_not_public_source_absent_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Disclosure parser and source route",
+      "status": "pass",
+      "evidence_row_count": 1,
+      "depth_lanes": [
+        "negative_boundary",
+        "failure_gate",
+        "correct_response_pattern"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "negative_parser_gap_not_public_source_absent_v0_1:failure_fixture:1",
+          "row_type": "negative_gold_failure_fixture_row",
+          "role": "failure_gate",
+          "source_authority": "gold_negative_exemplar",
+          "required_item_answered": "failure_prevention",
+          "fact": "Memo says public source is absent after the file was located.",
+          "supports": "Defines a machine-checkable failure mode for aggregate, writer payload, and final memo.",
+          "cannot_infer": "如果 ASML、TEL、Hon Hai、DART、本地交易所或公司 IR 的年报/季报/演示稿已经定位到，但表格、附注或数字没有被抽出来，正确结论不是“公开源没有数据”。正确结论是：source 存在，当前 parser / locator / local disclosure adapter 没能把它转成可审计 row。这个 gap 应写成 parser_gap、table_extraction_gap、local_filing_adapter_gap 或 source_route_runtime_gap，并触发具体 parser 修复。",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_negative_fixture",
+          "runtime_consumers": [
+            "aggregate.failure_fixture_gate",
+            "MemoWriter.preflight",
+            "FinalVerifier",
+            "Workbench.review_gap_projection"
+          ]
+        }
+      ],
+      "answer_exemplar": "如果 ASML、TEL、Hon Hai、DART、本地交易所或公司 IR 的年报/季报/演示稿已经定位到，但表格、附注或数字没有被抽出来，正确结论不是“公开源没有数据”。正确结论是：source 存在，当前 parser / locator / local disclosure adapter 没能把它转成可审计 row。这个 gap 应写成 parser_gap、table_extraction_gap、local_filing_adapter_gap 或 source_route_runtime_gap，并触发具体 parser 修复。",
+      "required_items": [
+        "preserve_boundary",
+        "fail_on_bad_pattern",
+        "trace_faulty_artifact"
+      ],
+      "pass_conditions": [
+        "Bad pattern is detected deterministically.",
+        "Correct boundary is preserved.",
+        "The failure is attributed to aggregate / writer_payload / final_memo instead of hidden as a gap."
+      ],
+      "fail_conditions": [
+        "Memo says public source is absent after the file was located."
+      ],
+      "runtime_consumers": [
+        "AggregateFailureGate",
+        "MemoWriterPreflight",
+        "FinalVerifier",
+        "WorkbenchReview"
+      ],
+      "source_boundary": "negative_gold_fixture_not_live_source_evidence"
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "negative_available_evidence_not_used_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Evidence projection and memo writer consumption",
+      "status": "pass",
+      "evidence_row_count": 1,
+      "depth_lanes": [
+        "negative_boundary",
+        "failure_gate",
+        "correct_response_pattern"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "negative_available_evidence_not_used_v0_1:failure_fixture:1",
+          "row_type": "negative_gold_failure_fixture_row",
+          "role": "failure_gate",
+          "source_authority": "gold_negative_exemplar",
+          "required_item_answered": "failure_prevention",
+          "fact": "Final memo says evidence is missing while upstream payload contains it.",
+          "supports": "Defines a machine-checkable failure mode for aggregate, writer payload, and final memo.",
+          "cannot_infer": "如果 pre_memo_fact_selection、aggregate r7 或 writer payload 已经包含 LRCX revenue/capex、DELL ISG revenue、gross margin、operating income、working capital 或 capex rows，最终 memo 就不能写“缺少 LRCX/DELL 财务数据”。这不是数据缺失，而是 selector、projection、JudgmentCard、MemoLogicPlan 或 writer consumption 的内部传导失败。正确处理是 fail 并回溯最早 faulty layer。",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_negative_fixture",
+          "runtime_consumers": [
+            "aggregate.failure_fixture_gate",
+            "MemoWriter.preflight",
+            "FinalVerifier",
+            "Workbench.review_gap_projection"
+          ]
+        }
+      ],
+      "answer_exemplar": "如果 pre_memo_fact_selection、aggregate r7 或 writer payload 已经包含 LRCX revenue/capex、DELL ISG revenue、gross margin、operating income、working capital 或 capex rows，最终 memo 就不能写“缺少 LRCX/DELL 财务数据”。这不是数据缺失，而是 selector、projection、JudgmentCard、MemoLogicPlan 或 writer consumption 的内部传导失败。正确处理是 fail 并回溯最早 faulty layer。",
+      "required_items": [
+        "preserve_boundary",
+        "fail_on_bad_pattern",
+        "trace_faulty_artifact"
+      ],
+      "pass_conditions": [
+        "Bad pattern is detected deterministically.",
+        "Correct boundary is preserved.",
+        "The failure is attributed to aggregate / writer_payload / final_memo instead of hidden as a gap."
+      ],
+      "fail_conditions": [
+        "Final memo says evidence is missing while upstream payload contains it."
+      ],
+      "runtime_consumers": [
+        "AggregateFailureGate",
+        "MemoWriterPreflight",
+        "FinalVerifier",
+        "WorkbenchReview"
+      ],
+      "source_boundary": "negative_gold_fixture_not_live_source_evidence"
+    },
+    {
+      "schema_version": "fin_insight_multicase_goldset_evidence_depth_v0_1",
+      "case_id": "negative_commercial_tracker_boundary_v0_1",
+      "case_type": "negative_gold_case",
+      "vertical": "Commercial tracker boundary",
+      "status": "pass",
+      "evidence_row_count": 1,
+      "depth_lanes": [
+        "negative_boundary",
+        "failure_gate",
+        "correct_response_pattern"
+      ],
+      "evidence_rows": [
+        {
+          "row_id": "negative_commercial_tracker_boundary_v0_1:failure_fixture:1",
+          "row_type": "negative_gold_failure_fixture_row",
+          "role": "failure_gate",
+          "source_authority": "gold_negative_exemplar",
+          "required_item_answered": "failure_prevention",
+          "fact": "Public proxy is used as commercial tracker exact.",
+          "supports": "Defines a machine-checkable failure mode for aggregate, writer payload, and final memo.",
+          "cannot_infer": "公开网页、新闻、App Store 排名、电商 listing、招聘、开发者生态、channel availability 和政府/监管 proxy 可以支持方向性判断，但不能冒充 IDC、Gartner、IQVIA、NielsenIQ、POS sell-through、OPRA、borrow cost 或 app revenue 这类商业/授权数据。正确做法是保留公开 proxy 的研究价值，同时明确 exact commercial tracker gap；错误做法是把公开 proxy 填成 exact sales/share，或者因为没有商业 tracker 就整段拒答。",
+          "artifact_ref": "docs/project_os/humanmade_gold_set_answer_exemplars_v0_2.json",
+          "source_status": "gold_negative_fixture",
+          "runtime_consumers": [
+            "aggregate.failure_fixture_gate",
+            "MemoWriter.preflight",
+            "FinalVerifier",
+            "Workbench.review_gap_projection"
+          ]
+        }
+      ],
+      "answer_exemplar": "公开网页、新闻、App Store 排名、电商 listing、招聘、开发者生态、channel availability 和政府/监管 proxy 可以支持方向性判断，但不能冒充 IDC、Gartner、IQVIA、NielsenIQ、POS sell-through、OPRA、borrow cost 或 app revenue 这类商业/授权数据。正确做法是保留公开 proxy 的研究价值，同时明确 exact commercial tracker gap；错误做法是把公开 proxy 填成 exact sales/share，或者因为没有商业 tracker 就整段拒答。",
+      "required_items": [
+        "preserve_boundary",
+        "fail_on_bad_pattern",
+        "trace_faulty_artifact"
+      ],
+      "pass_conditions": [
+        "Bad pattern is detected deterministically.",
+        "Correct boundary is preserved.",
+        "The failure is attributed to aggregate / writer_payload / final_memo instead of hidden as a gap."
+      ],
+      "fail_conditions": [
+        "Public proxy is used as commercial tracker exact."
+      ],
+      "runtime_consumers": [
+        "AggregateFailureGate",
+        "MemoWriterPreflight",
+        "FinalVerifier",
+        "WorkbenchReview"
+      ],
+      "source_boundary": "negative_gold_fixture_not_live_source_evidence"
+    }
+  ],
+  "acceptance_boundary": "AI/Semis deep case uses concrete gold-depth runtime rows/edges/materials. Rubric and negative cases are gold-exemplar-backed executable artifacts: they define required evidence slots, authority roles, failure conditions, and runtime consumers, but they do not claim live retrieval/parser proof."
+}

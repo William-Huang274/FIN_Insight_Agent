@@ -1,0 +1,79 @@
+{
+  "schema_version": "fin_insight_required_judgment_chain_registry_v0_1",
+  "artifact_type": "required_judgment_chain_registry",
+  "status": "active_quality_contract_documented_not_runtime_injected",
+  "lane": "AI/Semis",
+  "created_at": "2026-07-07",
+  "chains": [
+    {
+      "chain_id": "jc_ai_capex_demand_pool",
+      "question_answered": "Is AI capex a real demand pool and what can it prove?",
+      "business_mechanism": "Hyperscaler capex funds compute capacity, data centers, networking and accelerators, but does not allocate dollars to suppliers without deployment/order evidence.",
+      "required_evidence_roles": ["hyperscaler_capex", "cloud_revenue_or_growth", "management_supply_demand_commentary"],
+      "counter_evidence_roles": ["capex_digestion", "internal_custom_silicon_shift", "FCF_margin_pressure"],
+      "minimum_quality_bar": "Capex must be treated as demand-pool evidence, not as supplier allocation.",
+      "failure_conditions": ["capex is written as DELL/NVDA/ASML order proof", "capex is used without issuer/period/citation"],
+      "writer_must_say": "AI capex supports the existence of demand, but supplier capture needs product/deployment/supply-chain/financial bridge evidence."
+    },
+    {
+      "chain_id": "jc_accelerator_architecture_competition",
+      "question_answered": "How do NVIDIA, AMD and Google TPU differ in product capability and substitution risk?",
+      "business_mechanism": "Architecture, memory, interconnect, software ecosystem and benchmark/deployment evidence shape bargaining power, supply bottlenecks and substitution boundaries.",
+      "required_evidence_roles": ["official_product_spec", "benchmark_or_performance_proxy", "cloud_or_oem_configuration"],
+      "counter_evidence_roles": ["substitution_risk", "benchmark_context_boundary", "software_ecosystem_gap"],
+      "minimum_quality_bar": "Product layer can be judged without SKU revenue, but cannot infer revenue, ASP, shipment or share.",
+      "failure_conditions": ["missing SKU revenue is treated as product-analysis failure", "desktop/client product spec is substituted for AI accelerator spec"],
+      "writer_must_say": "Use product/spec/deployment evidence to judge product capability and substitution, while keeping revenue/share inference out of scope."
+    },
+    {
+      "chain_id": "jc_customer_deployment_oem_adoption",
+      "question_answered": "Who is deploying, configuring or adopting AI infrastructure products?",
+      "business_mechanism": "Official cloud/OEM/customer deployment converts product capability and demand pool into adoption evidence, but still does not prove total order size or margin.",
+      "required_evidence_roles": ["official_customer_deployment", "oem_configuration", "cloud_instance_availability", "issuer_order_or_backlog"],
+      "counter_evidence_roles": ["preview_not_general_availability", "customer_concentration", "deployment_delay"],
+      "minimum_quality_bar": "Distinguish official deployment/configuration from demand proxy and relationship graph scope.",
+      "failure_conditions": ["relationship graph is used as deployment fact", "generic partner page is used as customer order proof"],
+      "writer_must_say": "Deployment and OEM configuration support adoption direction, not total sales or margin unless order/backlog/financial rows exist."
+    },
+    {
+      "chain_id": "jc_dell_ai_server_financial_quality",
+      "question_answered": "Is Dell AI server growth high-quality profit or low-margin revenue pass-through?",
+      "business_mechanism": "AI server orders/backlog must flow through shipments, ISG revenue, gross/operating margin, GPU pass-through cost, attach rate, working capital and cash conversion.",
+      "required_evidence_roles": ["issuer_orders_shipments_backlog", "segment_revenue_margin", "gross_or_operating_margin_bridge", "working_capital_cash_flow"],
+      "counter_evidence_roles": ["margin_dilution", "GPU_pass_through_cost", "backlog_conversion_risk", "customer_concentration"],
+      "minimum_quality_bar": "Revenue visibility and margin quality must be separated.",
+      "failure_conditions": ["orders/backlog are written as proof of margin improvement", "consolidated revenue/gross profit is used as AI server margin"],
+      "writer_must_say": "Dell has supported AI server revenue visibility if order/backlog rows exist, but margin-quality proof requires ISG margin and AI server mix/pass-through bridge."
+    },
+    {
+      "chain_id": "jc_foundry_semicap_readthrough",
+      "question_answered": "How does AI demand read through to foundry, packaging, HBM and semicap equipment?",
+      "business_mechanism": "AI accelerator demand drives leading-edge foundry, packaging, memory/HBM and equipment process intensity, but each equipment vendor has different mechanisms.",
+      "required_evidence_roles": ["advanced_node_or_HPC_mix", "bookings_or_backlog", "equipment_segment_mix", "China_export_or_customer_exposure"],
+      "counter_evidence_roles": ["export_control", "memory_cycle", "order_timing", "installed_base_mix"],
+      "minimum_quality_bar": "Separate TSMC, ASML, AMAT, LRCX and KLAC mechanisms; peer group scope is not evidence.",
+      "failure_conditions": ["semicap peers are treated as identical", "generic revenue is used as AI-specific backlog/order evidence"],
+      "writer_must_say": "AI supports semicap read-through only through vendor-specific WFE, EUV/DUV, deposition/etch, process-control, advanced packaging or services evidence."
+    },
+    {
+      "chain_id": "jc_market_price_in_capital_feedback",
+      "question_answered": "Is the AI infrastructure thesis already priced in?",
+      "business_mechanism": "Valuation, ownership, liquidity, options/short interest, credit/funding and event reaction determine whether business improvement creates attractive risk/reward.",
+      "required_evidence_roles": ["valuation_peer_context", "ownership_or_positioning", "liquidity_short_options", "credit_funding_or_corporate_action", "event_price_reaction"],
+      "counter_evidence_roles": ["crowding", "high_implied_expectation", "financing_or_dilution_risk"],
+      "minimum_quality_bar": "Do not make price-in claims without capital-feedback evidence.",
+      "failure_conditions": ["business momentum is converted into investment recommendation without valuation/positioning evidence"],
+      "writer_must_say": "Business evidence can be positive while market price-in remains unresolved until capital-feedback pack is available."
+    },
+    {
+      "chain_id": "jc_counter_thesis_what_would_change",
+      "question_answered": "What would weaken or change the AI/Semis thesis?",
+      "business_mechanism": "Counter-thesis turns uncertainty into monitorable risk factors and prevents proxy evidence from becoming overconfident judgment.",
+      "required_evidence_roles": ["capex_digestion", "margin_dilution", "substitution", "supply_bottleneck", "export_control", "customer_concentration", "price_in"],
+      "counter_evidence_roles": ["positive_backlog_conversion", "margin_improvement", "deployment_breadth", "less_crowded_positioning"],
+      "minimum_quality_bar": "Every positive thesis must carry counter-thesis and what-would-change conditions.",
+      "failure_conditions": ["risk is generic boilerplate", "counter-thesis is absent from main judgment"],
+      "writer_must_say": "A credible workpaper states both the current bounded view and the evidence that would change it."
+    }
+  ]
+}
